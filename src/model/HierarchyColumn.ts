@@ -2,6 +2,7 @@
  * Created by Samuel Gratzl on 28.06.2017.
  */
 import {schemeCategory10} from 'd3-scale';
+import {toolbar} from './annotations';
 import Column from './Column';
 import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
@@ -36,6 +37,7 @@ export interface ICategoryInternalNode {
 /**
  * column for hierarchical categorical values
  */
+@toolbar('cutoff', 'stratify')
 export default class HierarchyColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_CUTOFF_CHANGED = 'cutOffChanged';
 

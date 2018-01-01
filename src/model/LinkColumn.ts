@@ -2,6 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
+import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {isMissingValue} from './missing';
@@ -25,6 +26,7 @@ export declare type ILinkColumnDesc = ILinkDesc & IStringColumnDesc;
 /**
  * a string column in which the label is a text but the value a link
  */
+@toolbar('editLink')
 export default class LinkColumn extends StringColumn {
   static readonly EVENT_LINK_CHANGED = 'linkChanged';
   /**

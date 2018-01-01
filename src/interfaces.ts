@@ -2,7 +2,8 @@ import {IGroupData, IGroupItem} from './model';
 import Ranking from './model/Ranking';
 import {IDataProvider} from './provider/ADataProvider';
 import {ICellRendererFactory} from './renderer';
-import {IFilterDialog, ISummaryRenderer} from './ui/interfaces';
+import {ISummaryRenderer} from './ui/interfaces';
+import {IToolbarAction} from './ui/toolbar';
 
 export interface IDynamicHeight {
   defaultHeight: number;
@@ -15,7 +16,7 @@ export interface IDynamicHeight {
 export interface ILineUpOptions {
   idPrefix: string;
 
-  filters: { [type: string]: IFilterDialog };
+  toolbar: { [key: string]: IToolbarAction };
   summaries: { [type: string]: ISummaryRenderer<any> };
   renderers: { [type: string]: ICellRendererFactory };
 

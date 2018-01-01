@@ -3,6 +3,7 @@ import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn} from 
 import {IDataProvider} from '../provider/ADataProvider';
 import {IRenderContext} from '../renderer';
 import AFilterDialog from './dialogs/AFilterDialog';
+import {IToolbarAction} from './toolbar';
 
 export const RENDERER_EVENT_HOVER_CHANGED = 'hoverChanged';
 
@@ -25,7 +26,7 @@ export interface IRankingHeaderContextContainer {
   readonly document: Document;
   provider: IDataProvider;
 
-  filters: { [type: string]: IFilterDialog };
+  toolbar: { [key: string]: IToolbarAction };
   summaries: { [type: string]: ISummaryRenderer<any> };
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;

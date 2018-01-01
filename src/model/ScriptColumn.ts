@@ -2,6 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
+import {toolbar} from './annotations';
 import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
@@ -155,6 +156,7 @@ export interface IScriptDesc extends ICompositeNumberDesc {
 export declare type IScriptColumnDesc = IScriptDesc & ICompositeNumberDesc;
 
 
+@toolbar('script')
 export default class ScriptColumn extends CompositeNumberColumn {
   static readonly EVENT_SCRIPT_CHANGED = 'scriptChanged';
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;

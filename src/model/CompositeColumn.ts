@@ -3,6 +3,7 @@
  */
 
 import {suffix} from '../internal/AEventDispatcher';
+import {toolbar} from './annotations';
 import Column, {IColumnParent, IFlatColumn} from './Column';
 import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
@@ -15,6 +16,7 @@ export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn & Colu
 /**
  * implementation of a combine column, standard operations how to select
  */
+@toolbar('compositeContained', 'splitCombined')
 export default class CompositeColumn extends Column implements IColumnParent {
   protected readonly _children: Column[] = [];
 
@@ -137,6 +139,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     }
     return this.move(col, i + 1);
   }
+
 
   remove(child: Column) {
     const i = this._children.indexOf(child);

@@ -11,7 +11,7 @@ export default class EditLinkDialog extends ADialog {
    * @param idPrefix dom id prefix
    * @param title optional title
    */
-  constructor(private readonly column: LinkColumn, header: HTMLElement, private readonly idPrefix: string, private readonly templates: string[] = [], title = 'Edit Link ($ as Placeholder)') {
+  constructor(private readonly column: LinkColumn, header: HTMLElement, private readonly idPrefix: string, title = 'Edit Link ($ as Placeholder)') {
     super(header, title);
   }
 
@@ -23,10 +23,10 @@ export default class EditLinkDialog extends ADialog {
         required="required"
         autofocus="autofocus"
         placeholder="link pattern"
-        ${this.templates.length > 0 ? `list="ui${this.idPrefix}lineupPatternList"` : ''}
+        ${this.column.templates.length > 0 ? `list="ui${this.idPrefix}lineupPatternList"` : ''}
       ><br>`;
-    if (this.templates.length > 0) {
-      t += `<datalist id="ui${this.idPrefix}lineupPatternList">${this.templates.map((t) => `<option value="${t}">`)}</datalist>`;
+    if (this.column.templates.length > 0) {
+      t += `<datalist id="ui${this.idPrefix}lineupPatternList">${this.column.templates.map((t) => `<option value="${t}">`)}</datalist>`;
     }
 
     const popup = this.makePopup(t);

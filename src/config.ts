@@ -3,8 +3,8 @@ import {ILineUpOptions} from './interfaces';
  * Created by Samuel Gratzl on 15.08.2017.
  */
 import {renderers as defaultRenderers} from './renderer';
-import {filters as defaultFilters} from './ui/dialogs';
 import {defaultSummaries} from './ui/summary';
+import {icons} from './ui/toolbar';
 
 /** number of bins before switching to dense mode
  */
@@ -19,7 +19,7 @@ export function defaultOptions(): ILineUpOptions {
   const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
   return {
     idPrefix,
-    filters: Object.assign({}, defaultFilters),
+    toolbar: Object.assign({}, icons),
     summaries: Object.assign({}, defaultSummaries),
     renderers: Object.assign({}, defaultRenderers),
 

@@ -2,6 +2,7 @@
  * Created by bikramkawan on 24/11/2016.
  */
 import {scaleLinear} from 'd3-scale';
+import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
@@ -43,6 +44,7 @@ export interface ISplicer {
   splice(values: number[]): number[];
 }
 
+@toolbar('numbersSort', 'filterMapped')
 export default class NumbersColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_SPLICE_CHANGED = 'spliceChanged';

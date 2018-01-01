@@ -2,6 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
+import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
@@ -25,6 +26,7 @@ export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 /**
  * a string column with optional alignment
  */
+@toolbar('search', 'filterString')
 export default class StringColumn extends ValueColumn<string> {
   //magic key for filtering missing ones
   static readonly FILTER_MISSING = '__FILTER_MISSING';

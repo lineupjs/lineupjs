@@ -3,8 +3,7 @@
  */
 
 import {scaleOrdinal, schemeCategory10, schemeCategory20} from 'd3-scale';
-import CategoricalFilterDialog from '../ui/dialogs/CategoricalFilterDialog';
-import {filterBy} from './annotations';
+import {toolbar} from './annotations';
 import Column from './Column';
 import {
   IBaseCategoricalDesc, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter,
@@ -26,6 +25,7 @@ function colorPool() {
 /**
  * column for categorical values
  */
+@toolbar('stratify', 'filterCategorical')
 export default class CategoricalColumn extends ValueColumn<string> implements ICategoricalColumn {
   /**
    * colors for each category
@@ -242,7 +242,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter;
   }
 
-  @filterBy(CategoricalFilterDialog)
   setFilter(filter: ICategoricalFilter | null) {
     if (isEqualFilter(this.currentFilter, filter)) {
       return;

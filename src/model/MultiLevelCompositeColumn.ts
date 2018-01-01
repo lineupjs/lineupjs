@@ -3,12 +3,14 @@
  */
 
 import {similar} from '../internal/math';
+import {toolbar} from './annotations';
 import Column, {IColumnDesc, IFlatColumn} from './Column';
 import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './CompositeColumn';
 import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import StackColumn from './StackColumn';
 
+@toolbar('collapse')
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
   static readonly EVENT_MULTI_LEVEL_CHANGED = StackColumn.EVENT_MULTI_LEVEL_CHANGED;

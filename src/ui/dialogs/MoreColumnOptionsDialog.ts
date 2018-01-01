@@ -21,6 +21,6 @@ export default class MoreColumnOptionsDialog extends ADialog {
     const popup = this.makeMenuPopup('');
     popup.classList.add('lu-more-options');
 
-    createToolbarMenuItems(<any>addIconDOM(popup, this.column, true), this.column, this.ctx);
+    createToolbarMenuItems(<any>addIconDOM(popup, this.column, this.ctx, true), this.column, this.ctx);
   }
 }

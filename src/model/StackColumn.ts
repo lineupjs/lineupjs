@@ -3,6 +3,7 @@
  */
 
 import {similar} from '../internal/math';
+import {toolbar} from './annotations';
 import Column, {IFlatColumn} from './Column';
 import {IMultiLevelColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
@@ -21,6 +22,7 @@ export function createDesc(label: string = 'Weighted Sum') {
 /**
  * implementation of the stacked column
  */
+@toolbar('editWeights', 'collapse')
 export default class StackColumn extends CompositeNumberColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = 'collapseChanged';
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';

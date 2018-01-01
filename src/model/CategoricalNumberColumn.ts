@@ -3,6 +3,7 @@
  */
 
 import {scaleOrdinal, schemeCategory10} from 'd3-scale';
+import {toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {IBaseCategoricalDesc, ICategoricalColumn, ICategoricalFilter} from './ICategoricalColumn';
@@ -23,6 +24,7 @@ function min(v: number[]) {
 /**
  * similar to a categorical column but the categories are mapped to numbers
  */
+@toolbar('stratify', 'filterOrdinal')
 export default class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 

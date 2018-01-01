@@ -1,39 +1,12 @@
 import {dragAble, dropAble, IDropResult} from '../internal/dnd';
 import {equalArrays} from '../internal/utils';
-import {createNestedDesc, createStackDesc, isCategoricalColumn, isNumberColumn, isSupportType} from '../model';
-import BoxPlotColumn from '../model/BoxPlotColumn';
-/**
- * Created by Samuel Gratzl on 25.07.2017.
- */
+import {createNestedDesc, createStackDesc, isCategoricalColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import GroupColumn from '../model/GroupColumn';
-import HierarchyColumn from '../model/HierarchyColumn';
 import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
-import LinkColumn from '../model/LinkColumn';
-import NumberColumn from '../model/NumberColumn';
-import NumbersColumn from '../model/NumbersColumn';
-import RankColumn from '../model/RankColumn';
 import Ranking from '../model/Ranking';
-import ScriptColumn from '../model/ScriptColumn';
-import SelectionColumn from '../model/SelectionColumn';
-import StackColumn from '../model/StackColumn';
-import StringColumn from '../model/StringColumn';
-import {findTypeLike} from '../model/utils';
-import ADialog from './dialogs/ADialog';
-import ChangeRendererDialog from './dialogs/ChangeRendererDialog';
-import CompositeChildrenDialog from './dialogs/CompositeChildrenDialog';
-import CutOffHierarchyDialog from './dialogs/CutOffHierarchyDialog';
-import EditLinkDialog from './dialogs/EditLinkDialog';
-import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
-import RenameDialog from './dialogs/RenameDialog';
-import ScriptEditDialog from './dialogs/ScriptEditDialog';
-import SearchDialog from './dialogs/SearchDialog';
-import SortDialog from './dialogs/SortDialog';
-import SortGroupDialog from './dialogs/SortGroupDialog';
-import StratifyThresholdDialog from './dialogs/StratifyThresholdDialog';
-import WeightsEditDialog from './dialogs/WeightsEditDialog';
 import {IRankingHeaderContext} from './interfaces';
+import toolbarActions, {IOnClickHandler, more} from './toolbar';
 
 
 /**
@@ -117,194 +90,36 @@ export function updateHeader(node: HTMLElement, col: Column) {
   }
 }
 
-export function addIconDOM(node: HTMLElement, col: Column, showLabel: boolean) {
-  return (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
+export function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, showLabel: boolean) {
+  return (title: string, onClick: IOnClickHandler) => {
     node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
-    if (!dialogClass) {
-      return i;
-    }
     i.onclick = (evt) => {
       evt.stopPropagation();
-      const dialog = new dialogClass(col, i, ...dialogArgs);
-      dialog.openDialog();
+      onClick(col, <any>evt, ctx);
     };
     return i;
   };
 }
 
 export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
-  return createShortcutMenuItems(<any>addIconDOM(node, col, false), col, ctx);
+  return createShortcutMenuItems(<any>addIconDOM(node, col, ctx, false), col, ctx);
 }
 
 interface IAddIcon {
-  (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }) => any };
+  (title: string, onClick: IOnClickHandler): void;
 }
 
 export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+  const actions = toolbarActions(col, ctx);
 
-  if (!isSupportType(col.desc) || col instanceof SelectionColumn) {
-    addIcon('Sort').onclick = (evt) => {
-      evt.stopPropagation();
-      col.toggleMySorting();
-    };
-  }
-
-  if (col instanceof GroupColumn) {
-    addIcon('Sort Group by &hellip;', SortGroupDialog);
-  }
-
-  //stratify
-  if (isCategoricalColumn(col)) {
-    addIcon('Stratify').onclick = (evt) => {
-      evt.stopPropagation();
-      col.groupByMe();
-    };
-  }
-
-  if (col instanceof NumberColumn) {
-    addIcon('Stratify by Threshold &hellip;', StratifyThresholdDialog);
-  }
-
-  if (!(col instanceof RankColumn)) {
-    addIcon('Remove').onclick = (evt) => {
-      evt.stopPropagation();
-      if (!(col instanceof RankColumn)) {
-        col.removeMe();
-        return;
-      }
-      ctx.provider.removeRanking(col.findMyRanker()!);
-      ctx.provider.ensureOneRanking();
-    };
-  }
-
-  addIcon('More &hellip;', MoreColumnOptionsDialog, '', ctx);
+  actions.filter((d) => d.options.shortcut).forEach((d) => addIcon(d.title, d.onClick));
 }
 
 export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
-  const isSupportColumn = isSupportType(col.desc);
+  const actions = toolbarActions(col, ctx);
 
-  if (!isSupportColumn) {
-    //rename
-    addIcon('Rename + Color &hellip;', RenameDialog);
-  }
-
-  if (!isSupportType(col.desc) || col instanceof SelectionColumn) {
-    addIcon('Sort').onclick = (evt) => {
-      evt.stopPropagation();
-      col.toggleMySorting();
-    };
-  }
-
-  if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
-    //Numbers Sort
-    addIcon('Sort by &hellip;', SortDialog);
-  }
-
-  if (col instanceof StringColumn) {
-    addIcon('Sort Group by Name').onclick = (evt) => {
-      evt.stopPropagation();
-      col.toggleMyGroupSorting();
-    };
-  }
-
-  if (col instanceof NumberColumn) {
-    addIcon('Sort Group by &hellip;', SortDialog);
-  }
-
-  if (col instanceof GroupColumn) {
-    addIcon('Sort Group by &hellip;', SortGroupDialog);
-  }
-
-  //stratify
-  if (isCategoricalColumn(col) || col instanceof SelectionColumn) {
-    addIcon('Stratify').onclick = (evt) => {
-      evt.stopPropagation();
-      col.groupByMe();
-    };
-  }
-
-  if (col instanceof NumberColumn) {
-    addIcon('Stratify by Threshold &hellip;', StratifyThresholdDialog);
-  }
-
-  const possible = ctx.getPossibleRenderer(col);
-  if (possible.item.length > 2 || possible.group.length > 2) { // default always possible
-    //Renderer Change
-    addIcon('Visualization &hellip;', ChangeRendererDialog, ctx);
-  }
-
-  if (col instanceof LinkColumn) {
-    //edit link
-    addIcon('Edit Link Pattern &hellip;', EditLinkDialog, ctx.idPrefix, col.templates);
-  }
-
-  if (col instanceof ScriptColumn) {
-    //edit script
-    addIcon('Edit Combine Script &hellip;', ScriptEditDialog);
-  }
-
-  //filter
-  const filter = findTypeLike(col, ctx.filters);
-  if (filter) {
-    addIcon('Filter &hellip;', filter, '', ctx.provider, ctx.idPrefix);
-  }
-
-  if (col instanceof HierarchyColumn) {
-    //cutoff
-    addIcon('Set Cut Off &hellip;', CutOffHierarchyDialog, ctx.idPrefix);
-  }
-
-  if (col instanceof StringColumn) {
-    //search
-    addIcon('Search &hellip;', SearchDialog, ctx.provider);
-  }
-
-  if (col instanceof StackColumn) {
-    //edit weights
-    addIcon('Edit Weights &hellip;', WeightsEditDialog);
-  }
-
-  if (isMultiLevelColumn(col)) {
-    const mcol = <IMultiLevelColumn>col;
-    addIcon(mcol.getCollapsed() ? 'Expand' : 'Compress').onclick = (evt) => {
-      evt.stopPropagation();
-      mcol.setCollapsed(!mcol.getCollapsed());
-      const i = <HTMLElement>evt.currentTarget;
-      i.title = mcol.getCollapsed() ? 'Expand' : 'Compress';
-    };
-  }
-
-  if (col instanceof CompositeColumn && col.parent instanceof Ranking) {
-    addIcon('Split Combined Column').onclick = (evt) => {
-      evt.stopPropagation();
-      // split the combined column into its children
-      col.children.reverse().forEach((c) => col.insertAfterMe(c));
-      col.removeMe();
-    };
-  }
-
-  if (col instanceof CompositeColumn && (!isMultiLevelColumn(col) || col.getCollapsed())) {
-    addIcon('Contained Columns &hellip;', CompositeChildrenDialog, ctx);
-  }
-
-  if (!isSupportColumn) {
-    //clone
-    addIcon('Generate Snapshot').onclick = (evt) => {
-      evt.stopPropagation();
-      ctx.provider.takeSnapshot(col);
-    };
-  }
-
-  addIcon('Remove').onclick = (evt) => {
-    evt.stopPropagation();
-    if (!(col instanceof RankColumn)) {
-      col.removeMe();
-      return;
-    }
-    ctx.provider.removeRanking(col.findMyRanker()!);
-    ctx.provider.ensureOneRanking();
-  };
+  actions.filter((d) => d !== more).forEach((d) => addIcon(d.title, d.onClick));
 }
 
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {

@@ -4,6 +4,7 @@
 
 import {format} from 'd3-format';
 import {equalArrays} from '../internal/utils';
+import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow, IGroupData} from './interfaces';
 import {
@@ -41,6 +42,7 @@ export function isMapAbleColumn(col: any): col is IMapAbleColumn {
 /**
  * a number column mapped from an original input scale to an output range
  */
+@toolbar('stratifyThreshold', 'numbersSortGroup', 'filterMapped')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
 
@@ -281,6 +283,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.currentStratifyThresholds = value.slice();
     this.fire([Column.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
+
 
   group(row: IDataRow) {
     if (this.currentStratifyThresholds.length === 0) {

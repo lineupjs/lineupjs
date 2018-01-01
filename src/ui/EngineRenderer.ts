@@ -54,7 +54,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.ctx = {
       document: parent.ownerDocument,
       provider: data,
-      filters: this.options.filters!,
+      toolbar: this.options.toolbar,
       summaries: this.options.summaries ? this.options.summaries! : {},
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
