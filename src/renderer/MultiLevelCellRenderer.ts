@@ -1,4 +1,3 @@
-import {isEdge} from 'lineupengine/src/style';
 import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
@@ -70,8 +69,6 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           if (!useGrid) {
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = stacked ? null : `${padding}px`;
-          } else if (isEdge) {
-            cnode.style.msGridColumn = (ci + 1).toString();
           } else {
             (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           }
@@ -120,8 +117,6 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           if (!useGrid) {
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = `${padding}px`;
-          } else if (isEdge) {
-            cnode.style.msGridColumn = (ci + 1).toString();
           } else {
             (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           }

@@ -48,4 +48,4 @@ export const BOX_PLOT = {
 };
 
 export const SLOPEGRAPH_WIDTH = 200;
-export const CANVAS_HEIGHT = 1;
+export const CANVAS_HEIGHT = 4;

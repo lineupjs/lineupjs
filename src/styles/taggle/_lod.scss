@@ -6,7 +6,7 @@
 
     [data-lod=low][data-agg=detail]:not(:hover) {
       /* shrink rows in low + medium LOD that are not hovered */
-      padding-top: 0;
+      margin-top: 0 !important;
 
       &[data-meta~=first] {
         /* change rendering of the first row for a group to show the collapse arrow of `[data-renderer=aggregate]` */

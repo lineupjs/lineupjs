@@ -19,7 +19,7 @@ export default class Taggle extends ALineUp {
   constructor(node: HTMLElement, data: DataProvider, options: Partial<ITaggleOptions> = {}) {
     super(node, data);
 
-    this.node.classList.add('lu-taggle');
+    this.node.classList.add('lu-taggle', 'lu');
     this.node.innerHTML = `<aside class="panel">
         <div class="lu-rule-button-chooser">
           <span>Overview</span>

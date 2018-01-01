@@ -91,7 +91,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
       this.style.addRule('lineup_rowPadding', `
        #${options.idPrefix} > main > article > div {
-         padding-top: ${options.rowPadding}px;
+         margin-top: ${options.rowPadding}px;
        }`);
     }
 
@@ -201,7 +201,8 @@ export default class EngineRenderer extends AEventDispatcher {
 
     const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
       animation: this.options.animation,
-      customRowUpdate: this.options.customRowUpdate || (() => undefined)
+      customRowUpdate: this.options.customRowUpdate || (() => undefined),
+      levelOfDetail: this.options.levelOfDetail || (() => 'high')
     }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
@@ -244,7 +245,8 @@ export default class EngineRenderer extends AEventDispatcher {
     }
 
     const round2 = (v: number) => round(v, 2);
-
+    const rowPadding = round2(this.zoomFactor * this.options.rowPadding!);
+    const groupPadding = round2(this.zoomFactor * this.options.groupPadding!);
 
     const heightsFor = (ranking: Ranking, data: (IGroupItem | IGroupData)[]) => {
       if (this.options.dynamicHeight) {
@@ -252,7 +254,8 @@ export default class EngineRenderer extends AEventDispatcher {
         if (impl) {
           return {
             defaultHeight: round2(this.zoomFactor * impl.defaultHeight),
-            height: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * impl.height(d))
+            height: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * impl.height(d)),
+            padding: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * impl.padding(d)),
           };
         }
       }
@@ -260,22 +263,22 @@ export default class EngineRenderer extends AEventDispatcher {
       const group = round2(this.zoomFactor * this.options.groupHeight!);
       return {
         defaultHeight: item,
-        height: (d: IGroupItem | IGroupData) => isGroup(d) ? group : item
+        height: (d: IGroupItem | IGroupData) => isGroup(d) ? group : item,
+        padding: rowPadding
       };
     };
-    const groupPadding = round2(this.zoomFactor * this.options.groupPadding!);
-    const rowPadding = round2(this.zoomFactor * this.options.rowPadding!);
 
     rankings.forEach((r, i) => {
       const grouped = r.groupData(localData[i]);
 
-      const {height, defaultHeight} = heightsFor(r.ranking, grouped);
+      const {height, defaultHeight, padding} = heightsFor(r.ranking, grouped);
 
       const rowContext = nonUniformContext(grouped.map(height), defaultHeight, (index) => {
+        const pad = index < 0 ? rowPadding : (typeof padding === 'number' ? padding : padding(grouped[index]));
         if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last' || (<IGroupItem>grouped[index]).meta === 'first last')) {
-          return groupPadding + rowPadding;
+          return groupPadding + pad;
         }
-        return rowPadding;
+        return pad;
       });
       r.render(grouped, rowContext);
     });

@@ -42,4 +42,9 @@
   .#{$lu_css_prefix}-grid-space {
     grid-column-gap: $lu_engine_grip_gap;
   }
+
+  > canvas {
+    width: 100%;
+    height: 100%;
+  }
 }

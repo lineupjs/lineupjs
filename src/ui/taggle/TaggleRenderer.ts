@@ -10,6 +10,7 @@ import {IRule} from './interfaces';
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
+  rowPadding: number;
 }
 
 export default class TaggleRenderer extends AEventDispatcher {
@@ -27,7 +28,8 @@ export default class TaggleRenderer extends AEventDispatcher {
   private readonly renderer: EngineRenderer;
 
   private readonly options: Readonly<ITaggleOptions> = {
-    violationChanged: () => undefined
+    violationChanged: () => undefined,
+    rowPadding: 2
   };
 
   constructor(parent: HTMLElement, public data: DataProvider, options: (Partial<ITaggleOptions> & Readonly<ILineUpOptions>)) {
@@ -95,9 +97,15 @@ export default class TaggleRenderer extends AEventDispatcher {
       return this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
     };
 
+    const padding = (item: IGroupData|IGroupItem) => {
+      const lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
+      return lod === 'high' ? this.options.rowPadding : 0;
+    };
+
     return {
       defaultHeight: typeof instance.item === 'number' ? instance.item : NaN,
-      height
+      height,
+      padding
     };
   }
 

@@ -4,6 +4,13 @@ import {IDataProvider} from './provider/ADataProvider';
 import {ICellRendererFactory} from './renderer';
 import {IFilterDialog, ISummaryRenderer} from './ui/interfaces';
 
+export interface IDynamicHeight {
+  defaultHeight: number;
+
+  height(item: IGroupItem | IGroupData): number;
+
+  padding(item: IGroupItem | IGroupData): number;
+}
 
 export interface ILineUpOptions {
   idPrefix: string;
@@ -20,8 +27,8 @@ export interface ILineUpOptions {
   rowPadding: number;
   rowHeight: number;
 
-  levelOfDetail: (rowIndex: number) => 'high'|'false';
-  dynamicHeight: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => { defaultHeight: number, height: (item: IGroupItem | IGroupData) => number } | null;
+  levelOfDetail: (rowIndex: number) => 'high' | 'low';
+  dynamicHeight: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => IDynamicHeight | null;
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
 
 }

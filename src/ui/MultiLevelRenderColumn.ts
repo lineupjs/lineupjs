@@ -1,4 +1,4 @@
-import {isEdge, StyleManager} from 'lineupengine/src/style';
+import {StyleManager} from 'lineupengine/src/style';
 import {round} from '../internal/math';
 /**
  * Created by Samuel Gratzl on 25.07.2017.
@@ -39,11 +39,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       const n = createHeader(cc, this.ctx);
       n.style.marginLeft = i > 0 ? `${COLUMN_PADDING * 2}px` : null;
       n.classList.add('lu-header');
-      if (isEdge) {
-        n.style.msGridColumn = (i + 1).toString();
-      } else {
-        (<any>n.style).gridColumnStart = (i + 1).toString();
-      }
+      (<any>n.style).gridColumnStart = (i + 1).toString();
 
       const summary = findTypeLike(cc, this.ctx.summaries);
       this.summaries.push(!summary ? null : new summary(cc, <HTMLElement>n.querySelector('.lu-summary')!, false));
@@ -70,8 +66,8 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     const widths = mc.children.map((c) => `${round(100 * c.getWidth() / total, 2)}%`);
     const clazz = gridClass(this.c);
     style.updateRule(`stacked-${this.c.id}`, `.lineup-engine .${clazz} {
-      display: ${isEdge ? '-ms-grid' : 'grid'};
-      ${isEdge ? '-ms-grid-columns' : 'grid-template-columns'}: ${widths.join(' ')};
+      display: grid;
+      grid-template-columns: ${widths.join(' ')};
     }`);
     return clazz;
   }

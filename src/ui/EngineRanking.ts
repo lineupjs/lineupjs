@@ -124,6 +124,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     // default context
     this.columns = ranking.children.filter((c) => !c.isHidden()).map((c, i) => this.createCol(c, i));
+    this.updateCanvasRule();
     this._context = Object.assign({
       columns: this.columns,
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
@@ -183,6 +184,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     canvas.width = this.width;
     canvas.height = CANVAS_HEIGHT;
     const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     this.columns.forEach((c) => {
@@ -207,12 +209,21 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       c.renderers = this.ctx.createRenderer(c.c);
     });
 
+    this.updateCanvasRule();
+
     this._context = Object.assign({}, this._context, {
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     });
 
     super.recreate();
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
+  }
+
+  private updateCanvasRule() {
+    this.style.updateRule(`__canvas_gap${this.tableId}`, `
+      ${this.style.id}_B${this.tableId} > .lu-row > canvas {
+        grid-column-start: span ${this.columns.length};
+      }`);
   }
 
   updateBody() {
@@ -270,6 +281,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const isGroup = this.renderCtx.isGroup(rowIndex);
     const wasGroup = node.dataset.agg === 'group';
 
+    if (lod === 'high') {
+      delete node.dataset.lod;
+    } else {
+      node.dataset.lod = lod;
+    }
+
     if (isGroup !== wasGroup) {
       // change of mode clear the children to reinitialize them
       node.innerHTML = '';
@@ -294,27 +311,27 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.dataset.meta = meta || '';
     this.selection.updateState(node, i);
 
+    const canvas = <HTMLCanvasElement>Array.from(node.children).find((d) => d.nodeName.toLowerCase() === 'canvas');
     if (lod === 'high') {
-      if (lod !== wasLod) {
-        const r = node.querySelector('canvas')!;
-        this.canvasPool.push(r);
-        r.remove();
+      if (canvas) {
+        this.canvasPool.push(canvas);
+        canvas.remove();
       }
       super.updateRow(node, rowIndex);
       return;
     }
     // use canvas
-    if (wasLod !== 'high') {
-      this.renderRow(node.querySelector('canvas')!, rowIndex);
+    if (wasLod !== 'high' && canvas) {
+      this.renderRow(canvas, rowIndex);
       return;
     }
     // clear old
     node.innerHTML = '';
     node.dataset.agg = 'detail';
     node.dataset.lod = lod;
-    const canvas = this.selectCanvas();
-    node.appendChild(canvas);
-    this.renderRow(canvas, rowIndex);
+    const canvas2 = this.selectCanvas();
+    node.appendChild(canvas2);
+    this.renderRow(canvas2, rowIndex);
   }
 
   updateSelection(selectedDataIndices: { has(i: number): boolean }) {
