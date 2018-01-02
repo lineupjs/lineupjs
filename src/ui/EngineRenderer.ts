@@ -42,6 +42,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
     this.node.id = this.options.idPrefix;
+    this.node.classList.toggle('lu-whole-hover', options.wholeHover);
     parent.appendChild(this.node);
 
     const statsOf = (col: Column) => {

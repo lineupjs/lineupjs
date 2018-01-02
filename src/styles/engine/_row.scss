@@ -48,3 +48,9 @@
     height: 100%;
   }
 }
+
+.#{$lu-css_prefix}-whole-hover {
+  .#{$lu-css_prefix}-row:hover {
+    height: auto !important;
+  }
+}

@@ -63,7 +63,7 @@ window.onload = function () {
     const p = new LineUpJS.LocalDataProvider(data, desc);
     p.deriveDefault();
 
-    const lineup = new LineUpJS.LineUp(document.body, p);
+    const lineup = new LineUpJS.LineUp(document.body, p, { wholeHover: true});
     lineup.update();
   })
 };

@@ -25,6 +25,7 @@ export function defaultOptions(): ILineUpOptions {
 
     summary: true,
     animation: true,
+    wholeHover: false,
 
     rowHeight: 18,
     groupHeight: 40,
