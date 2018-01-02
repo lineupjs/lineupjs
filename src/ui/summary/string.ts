@@ -1,10 +1,10 @@
 import StringColumn from '../../model/StringColumn';
-import {stringFilter} from '../dialogs/StringFilterDialog';
+import {filterMissingMarkup} from '../missing';
 
 export default class StringSummary {
   readonly update: () => void;
 
-  constructor(col: StringColumn, node: HTMLElement, interactive: boolean) {
+  constructor(private readonly col: StringColumn, private readonly node: HTMLElement, interactive: boolean) {
     node.dataset.summary = 'string';
     if (!interactive) {
       this.update = () => {
@@ -14,10 +14,44 @@ export default class StringSummary {
       this.update();
       return;
     }
-    const base = stringFilter(col);
-    node.innerHTML = base.template;
-    base.init(node);
+    this.update = this.initInteractive();
+  }
 
-    this.update = () => base.update(node);
+  private initInteractive() {
+    let bak = this.col.getFilter() || '';
+    const bakMissing = bak === StringColumn.FILTER_MISSING;
+    if (bakMissing) {
+      bak = '';
+    }
+    this.node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
+    <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
+    ${filterMissingMarkup(bakMissing)}`);
+
+    const filterMissing = <HTMLInputElement>this.node.querySelector('input[type="checkbox"].lu_filter_missing');
+    const input = <HTMLInputElement>this.node.querySelector('input[type="text"]');
+    const isRegex = <HTMLInputElement>this.node.querySelector('input[type="checkbox"]:first-of-type');
+
+    const update = () => {
+      if (filterMissing.checked) {
+        this.col.setFilter(StringColumn.FILTER_MISSING);
+        return;
+      }
+      this.col.setFilter(isRegex ? new RegExp(input.value) : input.value);
+    };
+
+    filterMissing.onchange = update;
+    input.onchange = update;
+    isRegex.onchange = update;
+
+    return () => {
+      let bak = this.col.getFilter() || '';
+      const bakMissing = bak === StringColumn.FILTER_MISSING;
+      if (bakMissing) {
+        bak = '';
+      }
+      filterMissing.checked = bakMissing;
+      input.value = bak instanceof RegExp ? bak.source : bak;
+      isRegex.checked = bak instanceof RegExp;
+    };
   }
 }

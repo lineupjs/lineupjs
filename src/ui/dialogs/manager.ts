@@ -1,17 +1,17 @@
-import Popper from 'popper.js';
 import ADialog from './ADialog';
 
 
 const visiblePopups: ADialog[] = [];
 
-export function removePopup(popup: HTMLElement) {
+
+export function removePopup(popup: ADialog) {
   const index = visiblePopups.indexOf(popup);
   if (index > -1 && popup) {
     visiblePopups.splice(index, 1);
-    popup.remove();
+    popup.destroy();
   }
   if (visiblePopups.length === 0) {
-    popup.ownerDocument.removeEventListener('keyup', escKeyListener);
+    popup.node.ownerDocument.removeEventListener('keyup', escKeyListener);
   }
 }
 
@@ -21,54 +21,45 @@ export function removeAllPopups() {
   }
 
   visiblePopups.splice(0, visiblePopups.length).forEach((d) => {
-    d.ownerDocument.removeEventListener('keyup', escKeyListener);
-    d.remove();
+    d.node.ownerDocument.removeEventListener('keyup', escKeyListener);
+    d.destroy();
   });
 }
 
-export function registerPopup(popup: HTMLElement, popper: Popper, replace: boolean, enableCloseOnOutside = true) {
-  if (replace) {
-    removeAllPopups();
-  }
+
+export function registerPopup(popup: ADialog, hideOnClickOutside: boolean, hideOnMoveOutside: boolean) {
   if (visiblePopups.length === 0) {
-    popup.ownerDocument.addEventListener('keyup', escKeyListener);
+    popup.node.ownerDocument.addEventListener('keyup', escKeyListener);
+  }
+  if (hideOnMoveOutside) {
+    const closePopupOnMouseLeave = () => {
+      if (visiblePopups[visiblePopups.length - 1] !== popup) {
+        return;
+      }
+      removePopup(popup);
+    };
+    popup.node.addEventListener('mouseleave', closePopupOnMouseLeave);
   }
 
-  const closePopupOnMouseLeave = () => {
-    if (visiblePopups[visiblePopups.length - 1] !== popup) {
-      return;
-    }
-    popup.removeEventListener('mouseleave', closePopupOnMouseLeave);
-    popper.destroy();
-    removePopup(popup);
-  };
-
-  if (enableCloseOnOutside) {
-    popup.addEventListener('mouseleave', closePopupOnMouseLeave);
+  if (hideOnClickOutside) {
+    popup.node.addEventListener('click', (evt) => {
+      // don't bubble up click events within the popup
+      evt.stopPropagation();
+    });
+    popup.node.ownerDocument.body.addEventListener('click', clickListener);
   }
 
   visiblePopups.push(popup);
 }
 
-
 function escKeyListener(evt: KeyboardEvent) {
-  if (evt.which === 27 && ADialog.visiblePopups.length > 0) {
-    const popup = ADialog.visiblePopups[ADialog.visiblePopups.length - 1];
-    ADialog.removePopup(popup);
+  if (evt.which === 27 && visiblePopups.length > 0) {
+    const popup = visiblePopups[visiblePopups.length - 1];
+    removePopup(popup);
   }
 }
 
-
-
-  protected hidePopupOnClickOutside(popup: HTMLElement) {
-    const body = this.attachment.ownerDocument.body;
-    popup.addEventListener('click', (evt) => {
-      // don't bubble up click events within the popup
-      evt.stopPropagation();
-    });
-    const l = () => {
-      ADialog.removeAllPopups();
-      body.removeEventListener('click', l);
-    };
-    body.addEventListener('click', l);
-  }
+function clickListener(evt: KeyboardEvent) {
+  removeAllPopups();
+  evt.currentTarget.removeEventListener('click', clickListener);
+}

@@ -1,60 +1,46 @@
+import {round} from '../../internal/math';
 import StackColumn from '../../model/StackColumn';
 import ADialog from './ADialog';
 
 
 export default class WeightsEditDialog extends ADialog {
-  /**
-   * opens a dialog for editing the weights of a stack column
-   * @param column the column to filter
-   * @param header the visual header element of this column
-   * @param title optional title
-   */
-  constructor(private readonly column: StackColumn, header: HTMLElement, title = 'Edit Weights') {
-    super(header, title);
+
+  private readonly weights: number[];
+
+  constructor(private readonly column: StackColumn, attachment: HTMLElement) {
+    super(attachment, {
+      fullDialog: true
+    });
+
+    this.weights = this.column.getWeights();
   }
 
-  openDialog() {
-    const weights = this.column.getWeights();
-    const children = this.column.children.map((d, i) => ({col: d, weight: Math.round(weights[i] * 100)}));
-
-    //map weights to pixels
-    const scale = (v: number) => Math.round((v / 100) * 120);
-
-    const popup = this.makePopup('<table></table>');
-
-    //show as a table with inputs and bars
-    const base = popup.querySelector('table')!;
-    children.forEach((d) => {
-      base.insertAdjacentHTML('beforeend', `<tr>
-        <td><input type="number" value="${d.weight}" min="0" max="100" size="5"></td>
-        <td width="100px"><div class="${d.col.cssClass} bar" style="background-color: ${d.col.color}"></div></td>
-        <td>${d.col.label}</td>
-       </tr>`);
-      base.lastElementChild!.querySelector('input')!.addEventListener('input', function (this: HTMLInputElement) {
-        d.weight = +this.value;
-        redraw();
-      });
+  protected reset() {
+    Array.from(this.node.querySelectorAll('input[type=number]')).forEach((n: HTMLInputElement) => {
+      const v = round(100 / this.weights.length, 2);
+      n.value = String(v);
+      (<HTMLElement>n.nextElementSibling!).style.width = `${v}%`;
     });
+    this.column.setWeights(this.weights.slice().fill(100 / this.weights.length));
+  }
 
-    function redraw() {
-      Array.from(base.querySelectorAll('.bar')).forEach((n: HTMLElement, i) => n.style.width = `${scale(children[i].weight)}px`);
-    }
+  protected build(node: HTMLElement) {
+    node.classList.add('lu-filter-table');
 
-    redraw();
-
-    this.onButton(popup, {
-      cancel: () => {
-        this.column.setWeights(weights);
-      },
-      reset: () => {
-        children.forEach((d, i) => d.weight = Math.round(weights[i] * 100));
-        Array.from(base.querySelectorAll('input')).forEach((n: HTMLInputElement, i) => n.value = children[i].weight.toString());
-        redraw();
-      },
-      submit: () => {
-        this.column.setWeights(children.map((d) => d.weight));
-        return true;
-      }
+    const children = this.column.children;
+    node.insertAdjacentHTML('beforeend', `<div>
+        ${this.weights.map((weight, i) => `<div><input type="number" value="${round(weight * 100, 2)}" min="0" max="100" size="5"><span style="background-color: ${children[i].color}; width: ${round(weight * 100, 2)}%"></span>${children[i].label}</div>`)}
+    </div>`);
+    this.forEach('input[type=number]', (d: HTMLInputElement) => {
+      d.oninput = () => {
+        (<HTMLElement>d.nextElementSibling).style.width = `${d.value}px`;
+      };
     });
+  }
+
+  submit() {
+    const items = this.forEach('input[type=number]', (n: HTMLInputElement) => parseFloat(n.value) / 100);
+    this.column.setWeights(items);
+    return true;
   }
 }

@@ -4,6 +4,7 @@ import {ICategoricalColumn} from '../../model';
 import CategoricalColumn from '../../model/CategoricalColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import Column from '../../model/Column';
+import {isIncluded} from '../../model/ICategoricalColumn';
 import {IRankingHeaderContext} from '../interfaces';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 
@@ -19,7 +20,7 @@ export default class CategoricalSummary {
     }
     const interactiveOne = (col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn);
     if (!interactive || !interactiveOne) {
-      this.update =  interactiveOne ? this.initStaticFilter() : this.initStatic();
+      this.update = interactiveOne ? this.initStaticFilter() : this.initStatic();
       return;
     }
     this.update = this.initInteractive();
@@ -111,7 +112,7 @@ export default class CategoricalSummary {
     return () => {
       const f = col.getFilter();
       bins.forEach((bin, i) => {
-        if (!CategoricalColumn.filter(f, cats[i])) {
+        if (!isIncluded(f, cats[i])) {
           bin.dataset.filtered = 'filtered';
         } else {
           delete bin.dataset.filtered;

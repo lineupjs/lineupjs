@@ -13,12 +13,12 @@
       "email": "samuel-gratzl@gmx.at"
     },
     {
-      "name": "Marc Streit",
-      "email": "marc@streit.com"
-    },
-    {
       "name": "Holger Stitz",
       "email": "kontakt@holgerstitz.de"
+    },
+    {
+      "name": "Marc Streit",
+      "email": "marc@streit.com"
     }
   ],
   "engines": {
