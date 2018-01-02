@@ -18,6 +18,16 @@ export interface IStringDesc {
    * escape html tags
    */
   readonly escape?: boolean;
+
+  /**
+   * replacement pattern, use $1 for the input string
+   */
+  readonly pattern?: string;
+
+  /**
+   * optional list of pattern templates
+   */
+  readonly patternTemplates?: string[];
 }
 
 
@@ -26,20 +36,25 @@ export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'filterString')
+@toolbar('search', 'filterString', 'editPattern')
 export default class StringColumn extends ValueColumn<string> {
+  static readonly EVENT_PATTERN_CHANGED = 'patternChanged';
   //magic key for filtering missing ones
   static readonly FILTER_MISSING = '__FILTER_MISSING';
   private currentFilter: string | RegExp | null = null;
 
   private _alignment: 'left' | 'right' | 'center' = 'left';
   private _escape: boolean = true;
+  private pattern: string | null = null;
+  readonly patternTemplates: string[];
 
   constructor(id: string, desc: IStringColumnDesc) {
     super(id, desc);
     this.setWidthImpl(200); //by default 200
     this._alignment = <any>desc.alignment || 'left';
     this._escape = desc.escape !== false;
+    this.pattern = desc.pattern || 'null';
+    this.patternTemplates = desc.patternTemplates || [];
   }
 
   //readonly
@@ -51,12 +66,31 @@ export default class StringColumn extends ValueColumn<string> {
     return this._escape;
   }
 
+  setPattern(pattern: string) {
+    /* tslint:disable */
+    if (pattern == this.pattern) { /*== on purpose*/
+      return;
+    }
+    /* tslint:enable */
+    this.fire([StringColumn.EVENT_PATTERN_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.pattern, this.pattern = pattern);
+  }
+
+  getPattern() {
+    return this.pattern || '';
+  }
+
   getValue(row: IDataRow) {
     const v: any = super.getValue(row);
-    if (typeof(v) === 'undefined' || v == null) {
-      return '';
-    }
+    return this.replacePattern(typeof(v) === 'undefined' || v == null ? '' : String(v));
+  }
+
+  getLabel(row: IDataRow) {
+    const v: any = super.getValue(row);
     return String(v);
+  }
+
+  replacePattern(s: string) {
+    return this.pattern ? this.pattern.replace(/\$1/g, s || '') : s;
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -66,8 +100,11 @@ export default class StringColumn extends ValueColumn<string> {
     } else {
       r.filter = this.currentFilter;
     }
-    r.alignment = this.alignment;
-    r.escape = this.escape;
+    /* tslint:disable */
+    if (this.pattern != (<any>this.desc).pattern) {
+      r.pattern = this.pattern;
+    }
+    /* tslint:enable */
     return r;
   }
 
@@ -78,8 +115,9 @@ export default class StringColumn extends ValueColumn<string> {
     } else {
       this.currentFilter = dump.filter || null;
     }
-    this._alignment = dump.alignment || this._alignment;
-    this._escape = dump._escape !== null ? dump._escape : this._escape;
+    if (dump.pattern) {
+      this.pattern = dump.pattern;
+    }
   }
 
   isFiltered() {

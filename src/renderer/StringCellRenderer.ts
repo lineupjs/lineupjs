@@ -35,20 +35,23 @@ export default class StringCellRenderer implements ICellRendererFactory {
 
   private static exampleText(col: Column, rows: IDataRow[]) {
     const numExampleRows = 5;
-    let examples = rows
-      .slice(0, numExampleRows)
-      .map((r) => col.getLabel(r))
-      .join(', ');
-
-    if (rows.length > numExampleRows) {
-      examples += ', &hellip;';
+    const examples = <string[]>[];
+    for(const row of rows) {
+      if (col.isMissing(row)) {
+        continue;
+      }
+      const v = col.getLabel(row);
+      examples.push(v);
+      if (examples.length >= numExampleRows) {
+        break;
+      }
     }
-    return examples;
+    return `${examples.join(', ')}${examples.length < rows.length} ? ', &hellip;': ''}`;
   }
 
   createGroup(col: StringColumn) {
     return {
-      template: `<div class="text"> </div>`,
+      template: `<div> </div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
         n.innerHTML = `${StringCellRenderer.exampleText(col, rows)}`;
       }

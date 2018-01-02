@@ -1,30 +1,58 @@
-import {IDataRow} from '../model';
+import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import LinkColumn from '../model/LinkColumn';
+import StringColumn from '../model/StringColumn';
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer} from './utils';
+import {noop, setText} from './utils';
 
 
 export default class LinkCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title = 'Link';
 
   canRender(col: Column) {
-    return col instanceof LinkColumn;
+    return col instanceof StringColumn && Boolean(col.getPattern());
   }
 
-  create(col: LinkColumn) {
+  create(col: StringColumn) {
+    const align = col.alignment || 'left';
     return {
-      template: `<div class='link text'></div>`,
-      update: (n: HTMLElement, d: IDataRow) => {
-        renderMissingDOM(n, col, d);
-        n.innerHTML = col.isLink(d) ? `<a class="link" href="${col.getValue(d)}" target="_blank">${col.getLabel(d)}</a>` : col.getLabel(d);
+      template: `<a${align !== 'left' ? ` class="lu-${align}"` : ''} target="_blank" href=""></a>`,
+      update: (n: HTMLAnchorElement, d: IDataRow) => {
+        if (renderMissingDOM(n, col, d)) {
+          return;
+        }
+        n.href = col.getValue(d);
+        if (col.escape) {
+          setText(n, col.getLabel(d));
+        } else {
+          n.innerHTML = col.getLabel(d);
+        }
       },
       render: noop
     };
   }
 
-  createGroup() {
-    return noRenderer;
+  private static exampleText(col: Column, rows: IDataRow[]) {
+    const numExampleRows = 5;
+    const examples = <string[]>[];
+    for(const row of rows) {
+      if (col.isMissing(row)) {
+        continue;
+      }
+      examples.push(`<a target="_blank" href="${col.getValue(row)}">${col.getLabel(row)}</a>`);
+      if (examples.length >= numExampleRows) {
+        break;
+      }
+    }
+    return `${examples.join(', ')}${examples.length < rows.length} ? ', &hellip;': ''}`;
+  }
+
+  createGroup(col: StringColumn) {
+    return {
+      template: `<div> </div>`,
+      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
+        n.innerHTML = `${LinkCellRenderer.exampleText(col, rows)}`;
+      }
+    };
   }
 }

@@ -15,7 +15,6 @@ import DatesColumn from './DatesColumn';
 import GroupColumn from './GroupColumn';
 import HierarchyColumn from './HierarchyColumn';
 import ImpositionCompositeColumn from './ImpositionCompositeColumn';
-import LinkColumn from './LinkColumn';
 import MaxColumn from './MaxColumn';
 import MeanColumn from './MeanColumn';
 import MinColumn from './MinColumn';
@@ -96,9 +95,7 @@ export function models() {
     dates: DatesColumn,
     group: GroupColumn,
     hierarchy: HierarchyColumn,
-    image: LinkColumn,
     imposition: ImpositionCompositeColumn,
-    link: LinkColumn,
     max: MaxColumn,
     mean: MeanColumn,
     min: MinColumn,

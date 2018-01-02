@@ -1,10 +1,10 @@
+import {nest} from 'd3-collection';
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import MapColumn, {IKeyValue} from '../model/MapColumn';
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop} from './utils';
-import {nest} from 'd3-collection';
 
 export default class MapCellRenderer implements ICellRendererFactory {
   readonly title = 'Table';

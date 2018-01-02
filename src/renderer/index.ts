@@ -22,6 +22,7 @@ import ImageCellRenderer from './ImageCellRenderer';
 import {ICellRendererFactory} from './interfaces';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import LinkCellRenderer from './LinkCellRenderer';
+import LinkMapCellRenderer from './LinkMapCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
 import MapBarCellRenderer from './MapBarCellRenderer';
 import MapCellRenderer from './MapCellRenderer';
@@ -66,6 +67,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   image: new ImageCellRenderer(),
   interleaving: new InterleavingCellRenderer(),
   link: new LinkCellRenderer(),
+  linkMap: new LinkMapCellRenderer(),
   loading: new LoadingCellRenderer(),
   nested: new MultiLevelCellRenderer(false),
   map: new MapCellRenderer(),

@@ -10,7 +10,7 @@ import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
 import CategoricalMappingFilterDialog from './dialogs/CategoricalMappingFilterDialog';
 import CompositeChildrenDialog from './dialogs/CompositeChildrenDialog';
 import CutOffHierarchyDialog from './dialogs/CutOffHierarchyDialog';
-import EditLinkDialog from './dialogs/EditLinkDialog';
+import EditPatternDialog from './dialogs/EditPatternDialog';
 import MappingsFilterDialog from './dialogs/MappingsFilterDialog';
 import ScriptEditDialog from './dialogs/ScriptEditDialog';
 import SearchDialog from './dialogs/SearchDialog';
@@ -160,7 +160,7 @@ export const icons: { [key: string]: IToolbarAction } = {
   filterMapped: filterBy(MappingsFilterDialog),
   sortGroup: uiDialog('Sort Group by &hellip;', SortGroupDialog, () => [], {shortcut: true, order: 1}),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
-  editLink: uiDialog('Edit Link Pattern &hellip;', EditLinkDialog, (ctx) => [ctx.idPrefix]),
+  editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
   stratifyThreshold: uiDialog('Stratify by Threshold &hellip;', StratifyThresholdDialog, () => [], {
     shortcut: true,
     order: 2
