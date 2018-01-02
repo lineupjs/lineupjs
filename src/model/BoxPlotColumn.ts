@@ -88,7 +88,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   getValue(row: IDataRow) {
     const v = this.getRawValue(row);
-    if (v === null) {
+    if (v == null) {
       return v;
     }
     return {
@@ -110,7 +110,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   getLabel(row: IDataRow): string {
     const v = this.getRawValue(row);
-    if (v === null) {
+    if (v == null) {
       return '';
     }
     const f = BoxPlotColumn.DEFAULT_FORMATTER;

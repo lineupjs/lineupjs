@@ -101,7 +101,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   get categoryLabels() {
     //no mapping
-    if (this.catLabels === null || this.catLabels.size === 0) {
+    if (this.catLabels == null || this.catLabels.size === 0) {
       return this.categories;
     }
     //label or identity mapping
@@ -110,7 +110,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   getLabel(row: IDataRow) {
     //no mapping
-    if (this.catLabels === null || this.catLabels.size === 0) {
+    if (this.catLabels == null || this.catLabels.size === 0) {
       return StringColumn.prototype.getValue.call(this, row);
     }
     return this.getLabels(row).join(this.separator);
@@ -126,7 +126,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     const r = v ? v.split(this.separator) : [];
 
     const mapToLabel = (values: string[]) => {
-      if (this.catLabels === null || this.catLabels.size === 0) {
+      if (this.catLabels == null || this.catLabels.size === 0) {
         return values;
       }
       return values.map((v) => this.catLabels.has(v) ? this.catLabels.get(v) : v);
@@ -155,7 +155,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   getColor(row: IDataRow) {
     const cat = this.getValue(row);
-    if (cat === null || cat === '') {
+    if (cat == null || cat === '') {
       return null;
     }
     return this.colors(cat);

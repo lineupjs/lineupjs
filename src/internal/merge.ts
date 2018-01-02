@@ -7,7 +7,7 @@ export default function merge(...args: any[]) {
   for (const toMerge of args) {
     const keys = Object.keys(toMerge);
 
-    if (result === null) {
+    if (result == null) {
       result = toMerge;
       continue;
     }

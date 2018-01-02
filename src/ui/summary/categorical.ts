@@ -78,7 +78,7 @@ export default class CategoricalSummary {
 
         // toggle filter
         const old = col.getFilter();
-        if (old === null || !Array.isArray(old.filter)) {
+        if (old == null || !Array.isArray(old.filter)) {
           // deselect
           const without = cats.slice();
           bin.dataset.filtered = 'filtered';
@@ -149,7 +149,7 @@ export default class CategoricalSummary {
       // toggle filter
       const v = filterMissing.checked;
       const old = col.getFilter();
-      if (old === null) {
+      if (old == null) {
         col.setFilter(v ? {filterMissing: v, filter: col.categories} : null);
       } else {
         col.setFilter({filterMissing: v, filter: old.filter});

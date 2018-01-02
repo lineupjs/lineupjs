@@ -92,7 +92,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
   getNumber(row: IDataRow) {
     const r = this.getValue(row);
-    return r === null ? NaN : r;
+    return r == null ? NaN : r;
   }
 
   getRawNumber(row: IDataRow) {

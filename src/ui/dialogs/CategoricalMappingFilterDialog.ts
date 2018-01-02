@@ -85,7 +85,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     redrawSelectAll();
 
     const updateData = (filter: string[] | null, filterMissing: boolean) => {
-      const noFilter = filter === null && filterMissing === false;
+      const noFilter = filter == null && filterMissing === false;
       this.markFiltered(!noFilter);
       this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
     };

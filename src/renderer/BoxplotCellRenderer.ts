@@ -13,7 +13,7 @@ import {default as IRenderContext, ICellRendererFactory, IImposer} from './inter
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export function computeLabel(v: IBoxPlotData) {
-  if (v === null) {
+  if (v == null) {
     return '';
   }
   const f = BoxPlotColumn.DEFAULT_FORMATTER;

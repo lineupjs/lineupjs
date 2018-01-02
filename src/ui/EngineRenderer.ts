@@ -186,10 +186,10 @@ export default class EngineRenderer extends AEventDispatcher {
       const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
       cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: NumberColumn) => {
-        this.histCache.set(col.id, histo === null ? null : histo.stats(col));
+        this.histCache.set(col.id, histo == null ? null : histo.stats(col));
       });
       cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn & Column) => {
-        this.histCache.set(col.id, histo === null ? null : histo.hist(col));
+        this.histCache.set(col.id, histo == null ? null : histo.hist(col));
       });
       r.updateHeaders();
     });

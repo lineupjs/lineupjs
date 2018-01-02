@@ -64,12 +64,16 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> {
     if (this.splicer && r !== null) {
       r = this.splicer.splice(r);
     }
-    return r === null ? [] : r;
+    return r == null ? [] : r;
+  }
+
+  getLabels(row: IDataRow) {
+    return this.getValue(row).map(String);
   }
 
   getLabel(row: IDataRow): string {
-    const v = this.getValue(row);
-    if (v === null) {
+    const v = this.getLabels(row);
+    if (!v) {
       return '';
     }
     return v.toString();

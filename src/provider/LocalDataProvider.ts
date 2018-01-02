@@ -210,7 +210,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   stats(indices: number[]): IStatsBuilder {
     let d: IDataRow[] | null = null;
     const getD = () => {
-      if (d === null) {
+      if (d == null) {
         d = this.viewRawRows(indices);
       }
       return d;

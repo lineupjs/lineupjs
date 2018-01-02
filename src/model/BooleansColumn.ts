@@ -30,16 +30,16 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ICat
 
   getColor(row: IDataRow) {
     const flagged = this.getValue(row);
-    return flagged ? 'green' : 'red';
+    return flagged.reduce((a,b) => a + (b ? 1 : 0), 0) >= flagged.length/2 ? 'green' : 'red';
   }
 
   compare(a: IDataRow, b: IDataRow) {
     const aVal = this.getValue(a);
     const bVal = this.getValue(b);
-    if (aVal === null) {
-      return bVal === null ? 0 : FIRST_IS_NAN;
+    if (aVal == null) {
+      return bVal == null ? 0 : FIRST_IS_NAN;
     }
-    if (bVal === null) {
+    if (bVal == null) {
       return FIRST_IS_NAN * -1;
     }
 

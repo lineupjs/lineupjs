@@ -67,10 +67,10 @@ export interface IBoxPlotData {
 export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
   const aVal = col.getBoxPlotData(a);
   const bVal = col.getBoxPlotData(b);
-  if (aVal === null) {
-    return bVal === null ? 0 : FIRST_IS_NAN;
+  if (aVal == null) {
+    return bVal == null ? 0 : FIRST_IS_NAN;
   }
-  if (bVal === null) {
+  if (bVal == null) {
     return FIRST_IS_NAN * -1;
   }
   const method = <keyof IBoxPlotData>col.getSortMethod();
@@ -79,7 +79,7 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
 
 export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw' | 'normalized'): number {
   const data = mode === 'normalized' ? col.getBoxPlotData(row) : col.getRawBoxPlotData(row);
-  if (data === null) {
+  if (data == null) {
     return NaN;
   }
   return <number>data[<keyof IBoxPlotData>col.getSortMethod()];
@@ -224,8 +224,8 @@ export function isNumbersColumn(col: any): col is INumbersColumn {
  * @return {number}
  */
 export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
-  aMissing = aMissing || a === null || isNaN(a);
-  bMissing = bMissing || b === null || isNaN(b);
+  aMissing = aMissing || a == null || isNaN(a);
+  bMissing = bMissing || b == null || isNaN(b);
   if (aMissing) { //NaN are smaller
     return bMissing ? 0 : FIRST_IS_NAN;
   }

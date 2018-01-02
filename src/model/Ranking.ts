@@ -213,7 +213,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   getSortCriteria(): ISortCriteria | null {
     const p = this.primarySortCriteria;
-    return p === null ? null : Object.assign({}, p);
+    return p == null ? null : Object.assign({}, p);
   }
 
   getSortCriterias(): ISortCriteria[] {
@@ -285,7 +285,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return false; //not one of mine
     }
     const primary = this.primarySortCriteria;
-    if ((col === null && primary === null) || (primary && primary.col === col && primary.asc === ascending)) {
+    if ((col == null && primary == null) || (primary && primary.col === col && primary.asc === ascending)) {
       return true; //already in this order
     }
     const bak = this.getSortCriteria();

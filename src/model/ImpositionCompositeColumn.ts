@@ -54,7 +54,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
 
   getNumber(row: IDataRow) {
     const r = this.getValue(row);
-    return r === null ? NaN : r;
+    return r == null ? NaN : r;
   }
 
   getRawNumber(row: IDataRow) {

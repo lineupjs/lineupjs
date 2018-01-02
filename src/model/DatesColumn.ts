@@ -46,9 +46,8 @@ export default class DatesColumn extends ArrayColumn<Date|null> {
     });
   }
 
-  getLabel(row: IDataRow) {
-    const v = this.getValue(row);
-    return `[${v.map((v) => (v instanceof Date) ? this.format(v) : '').join(', ')}]`;
+  getLabels(row: IDataRow) {
+    return this.getValue(row).map((v) => (v instanceof Date) ? this.format(v) : '');
   }
 
   getSortMethod() {

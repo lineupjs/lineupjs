@@ -75,7 +75,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
 
   get categoryLabels() {
     //no mapping
-    if (this.catLabels === null || this.catLabels.size === 0) {
+    if (this.catLabels == null || this.catLabels.size === 0) {
       return this.categories;
     }
     //label or identity mapping

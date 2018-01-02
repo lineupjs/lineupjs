@@ -137,7 +137,7 @@ class ColumnContext {
    * @return {ColumnContext}
    */
   get all() {
-    if (this._all === null) {
+    if (this._all == null) {
       this._all = this.allFactory ? this.allFactory() : null;
     }
     return this._all!;

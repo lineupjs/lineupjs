@@ -62,7 +62,7 @@ export function isEqualFilter(a: ICategoricalFilter | null, b: ICategoricalFilte
   if (a === b) {
     return true;
   }
-  if (a === null || b === null) {
+  if (a == null || b == null) {
     return false;
   }
   if (a.filterMissing !== b.filterMissing || (typeof a.filter !== typeof b.filter)) {

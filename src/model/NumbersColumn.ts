@@ -112,7 +112,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
 
   getBoxPlotData(row: IDataRow) {
     const data = this.getRawValue(row);
-    if (data === null) {
+    if (data == null) {
       return null;
     }
     return new LazyBoxPlotData(data, this.mapping);
@@ -124,7 +124,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
 
   getRawBoxPlotData(row: IDataRow) {
     const data = this.getRawValue(row);
-    if (data === null) {
+    if (data == null) {
       return null;
     }
     return new LazyBoxPlotData(data);
@@ -149,15 +149,11 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
 
   getRawValue(row: IDataRow) {
     const r = super.getValue(row);
-    return r === null ? [] : r;
+    return r == null ? [] : r;
   }
 
-  getLabel(row: IDataRow): string {
-    const v = this.getRawValue(row);
-    if (v === null) {
-      return '';
-    }
-    return `[${v.map(DEFAULT_FORMATTER).join(', ')}]`;
+  getLabels(row: IDataRow) {
+    return this.getValue(row).map(DEFAULT_FORMATTER);
   }
 
   getSortMethod() {

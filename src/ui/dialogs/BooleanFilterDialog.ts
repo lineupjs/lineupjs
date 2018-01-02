@@ -16,7 +16,7 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
   openDialog() {
     const bak = this.column.getFilter();
 
-    const popup = this.makePopup(`<label><input type="radio" name="boolean_check" value="null" ${bak === null ? 'checked="checked"' : ''}>No Filter</label><br>
+    const popup = this.makePopup(`<label><input type="radio" name="boolean_check" value="null" ${bak == null ? 'checked="checked"' : ''}>No Filter</label><br>
      <label><input type="radio" name="boolean_check" value="true" ${bak === true ? 'checked="checked"' : ''}>True</label><br>
      <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"' : ''}>False</label>
     <br>`);
@@ -39,7 +39,7 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
     this.onButton(popup, {
       cancel: () => updateData(bak),
       reset: () => {
-        const v = bak === null ? 'null' : String(bak);
+        const v = bak == null ? 'null' : String(bak);
         radios.forEach((r) => r.checked = r.value === v);
         updateData(null);
       },

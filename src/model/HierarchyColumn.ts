@@ -135,7 +135,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   private resolveCategories(row: IDataRow): ICategoryInternalNode[] {
     const base: string = StringColumn.prototype.getValue.call(this, row);
-    if (base === null || base === '') {
+    if (base == null || base === '') {
       return [];
     }
     return <ICategoryInternalNode[]>base.split(this.separator).map((v) => {
