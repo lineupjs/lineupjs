@@ -1,52 +1,40 @@
 import BooleanColumn from '../../model/BooleanColumn';
-import AFilterDialog from './AFilterDialog';
+import ADialog from './ADialog';
 
-export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
+export default class BooleanFilterDialog extends ADialog {
 
-  /**
-   * opens a dialog for filtering a boolean column
-   * @param column the column to filter
-   * @param header the visual header element of this column
-   * @param title optional title
-   */
-  constructor(column: BooleanColumn, header: HTMLElement, title = 'Filter') {
-    super(column, header, title);
+  private readonly before: boolean | null;
+
+  constructor(private readonly column: BooleanColumn, attachment: HTMLElement) {
+    super(attachment, {
+      fullDialog: true
+    });
+    this.before = this.column.getFilter();
   }
 
-  openDialog() {
-    const bak = this.column.getFilter();
+  protected build(node: HTMLElement) {
+    node.insertAdjacentHTML('beforeend', `
+     <label><input type="radio" name="boolean_check" value="null" ${this.before == null ? 'checked="checked"' : ''}>No Filter</label>
+     <label><input type="radio" name="boolean_check" value="true" ${this.before === true ? 'checked="checked"' : ''}>True</label>
+     <label><input type="radio" name="boolean_check" value="false" ${this.before === false ? 'checked="checked"' : ''}>False</label>
+    `);
+  }
 
-    const popup = this.makePopup(`<label><input type="radio" name="boolean_check" value="null" ${bak == null ? 'checked="checked"' : ''}>No Filter</label><br>
-     <label><input type="radio" name="boolean_check" value="true" ${bak === true ? 'checked="checked"' : ''}>True</label><br>
-     <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"' : ''}>False</label>
-    <br>`);
+  private updateFilter(filter: boolean | null) {
+    this.attachment.classList.toggle('lu-filtered', filter != null);
+    this.column.setFilter(filter);
+  }
 
-    const updateData = (filter: boolean | null) => {
-      this.markFiltered((filter !== null));
-      this.column.setFilter(filter);
-    };
+  reset() {
+    const v = 'null';
+    this.forEach('input[type="radio"]', (d: HTMLInputElement) => d.checked = d.value === v);
+    this.updateFilter(null);
+  }
 
-    function updateImpl() {
-      //get value
-      const isTrue = (<HTMLInputElement>popup.querySelector('input[type="radio"][value="true"]')).checked;
-      const isFalse = (<HTMLInputElement>popup.querySelector('input[type="radio"][value="false"]')).checked;
-      updateData(isTrue ? true : (isFalse ? false : null));
-    }
-
-    const radios = <HTMLInputElement[]>Array.from(popup.querySelectorAll('input[type="radio"]'));
-    radios.forEach((r) => r.addEventListener('change', updateImpl));
-
-    this.onButton(popup, {
-      cancel: () => updateData(bak),
-      reset: () => {
-        const v = bak == null ? 'null' : String(bak);
-        radios.forEach((r) => r.checked = r.value === v);
-        updateData(null);
-      },
-      submit: () => {
-        updateImpl();
-        return true;
-      }
-    });
+  submit() {
+    const isTrue = this.findInput('input[type="radio"][value="true"]').checked;
+    const isFalse = this.findInput('input[type="radio"][value="false"]').checked;
+    this.updateFilter(isTrue ? true : (isFalse ? false : null));
+    return true;
   }
 }

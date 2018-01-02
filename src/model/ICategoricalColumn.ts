@@ -85,3 +85,23 @@ function arrayEquals<T>(a: T[], b: T[]) {
   }
   return a.every((ai, i) => ai === b[i]);
 }
+
+export function isIncluded(filter: ICategoricalFilter | null, category: string) {
+  if (!filter) {
+    return true;
+  }
+  if (category == null && filter.filterMissing) {
+    return false;
+  }
+  const filterObj = filter.filter;
+  if (Array.isArray(filterObj)) { //array mode
+    return filterObj.indexOf(category) >= 0;
+  }
+  if (typeof filterObj === 'string' && filterObj.length > 0) { //search mode
+    return category != null && category.toLowerCase().indexOf(filterObj.toLowerCase()) >= 0;
+  }
+  if (filterObj instanceof RegExp) { //regex match mode
+    return category != null && filterObj.test(category);
+  }
+  return true;
+}

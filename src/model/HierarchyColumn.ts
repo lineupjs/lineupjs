@@ -34,6 +34,11 @@ export interface ICategoryInternalNode {
   readonly children: ICategoryInternalNode[];
 }
 
+export interface ICutOffNode {
+  node: ICategoryInternalNode;
+  maxDepth: number;
+}
+
 /**
  * column for hierarchical categorical values
  */
@@ -114,21 +119,22 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return this.currentLeaves.map((c) => c.color);
   }
 
-  getCutOff() {
+  getCutOff(): ICutOffNode {
     return {
       node: this.currentNode,
       maxDepth: this.currentMaxDepth
     };
   }
 
-  setCutOff(node: ICategoryInternalNode, maxDepth: number = Infinity) {
-    if (this.currentNode === node && this.currentMaxDepth === maxDepth) {
+  setCutOff(value: ICutOffNode) {
+    const maxDepth = value.maxDepth == null ? Infinity: value.maxDepth;
+    if (this.currentNode === value.node && this.currentMaxDepth === maxDepth) {
       return;
     }
     const bak = this.getCutOff();
-    this.currentNode = node;
+    this.currentNode = value.node;
     this.currentMaxDepth = maxDepth;
-    this.currentLeaves = computeLeaves(node, maxDepth);
+    this.currentLeaves = computeLeaves(value.node, maxDepth);
     this.updateCaches();
     this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
   }

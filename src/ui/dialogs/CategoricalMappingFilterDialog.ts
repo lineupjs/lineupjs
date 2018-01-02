@@ -1,119 +1,82 @@
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
+import {ICategoricalFilter, isIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup} from '../missing';
-import {sortByProperty} from './ADialog';
-import AFilterDialog from './AFilterDialog';
+import ADialog from './ADialog';
+import {filtered} from './CategoricalFilterDialog';
 
 
-export default class CategoricalMappingFilterDialog extends AFilterDialog<CategoricalNumberColumn> {
+export default class CategoricalMappingFilterDialog extends ADialog {
 
-  /**
-   * opens the mapping editor for a given CategoricalNumberColumn, i.e. to map categories to numbers
-   * @param column the column to rename
-   * @param header the visual header element of this column
-   * @param title mapping title
-   */
-  constructor(column: CategoricalNumberColumn, header: HTMLElement, title = 'Edit Categorical Mapping') {
-    super(column, header, title);
+  private readonly before: ICategoricalFilter;
+
+  constructor(private readonly column: CategoricalNumberColumn, attachment: HTMLElement) {
+    super(attachment, {
+      fullDialog: true
+    });
+    this.before = this.column.getFilter() || {filter: this.column.categories.slice(), filterMissing: false};
   }
 
-  openDialog() {
-    const bakOri = this.column.getFilter() || {filter: [], filterMissing: false};
-    const bak = <string[]>bakOri.filter;
-    const bakMissing = bakOri.filterMissing;
+  protected build(node: HTMLElement) {
+    node.classList.add('lu-filter-table');
+    const range = this.column.getScale().range;
+    const colors = this.column.categoryColors;
+    const labels = this.column.categoryLabels;
 
-    const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>
-        ${filterMissingMarkup(bakMissing)}<br>`);
+    const joint = this.column.categories.map((d, i) => ({
+      cat: d,
+      color: colors[i]!,
+      label: labels[i]!,
+      range: range[i]!
+    }));
+    joint.sort((a, b) => a.label.localeCompare(b.label));
 
-    const range = this.column.getScale().range,
-      colors = this.column.categoryColors,
-      labels = this.column.categoryLabels;
-
-    const trData = this.column.categories.map((d, i) => {
-      return {
-        cat: d,
-        label: labels[i]!,
-        isChecked: bak.length === 0 || bak.indexOf(d) >= 0,
-        range: range[i]! * 100,
-        color: colors[i]!
-      };
-    }).sort(sortByProperty('label'));
-
-    const base = popup.querySelector('table')!;
-    const rows = trData.map((d) => {
-      base.insertAdjacentHTML('beforeend', `<tr>
-          <td class="checkmark"></td>
-          <td><input type="number" value="${d.range}" min="0" max="100" size="5"></td>
-          <td><div class="bar" style="background-color: ${d.color}"></div></td>
-          <td class="datalabel">${d.label}</td>
-         </tr>`);
-      const row = <HTMLElement>base.lastElementChild!;
-      row.querySelector('td.checkmark')!.addEventListener('click', () => {
-        d.isChecked = !d.isChecked;
-        redraw();
-      });
-      row.querySelector('input')!.addEventListener('input', function (this: HTMLInputElement) {
-        d.range = parseFloat(this.value);
-        redraw();
-      });
-      return row;
-    });
-
-    function redraw() {
-      rows.forEach((row, i) => {
-        const d = trData[i];
-        (<HTMLElement>row.querySelector('.checkmark')).innerHTML = `<i class="lu-${(d.isChecked) ? 'checked' : 'unchecked'}"></i>`;
-        (<HTMLElement>row.querySelector('.bar')).style.width = `${d.range * 1.2}px`;
-        (<HTMLElement>row.querySelector('.datalabel')).style.opacity = d.isChecked ? '1.0' : '.8';
-      });
-    }
-
-    redraw();
-
-    let isCheckedAll = true;
-
-    function redrawSelectAll() {
-      (<HTMLElement>popup.querySelector('.selectAll')).innerHTML = `<i class="lu-${isCheckedAll ? 'checked' : 'unchecked'}"></i>`;
-    }
-
-    popup.querySelector('thead')!.addEventListener('click', () => {
-      isCheckedAll = !isCheckedAll;
-      trData.forEach((row) => row.isChecked = isCheckedAll);
-      redraw();
-      redrawSelectAll();
-    });
-
-    redrawSelectAll();
-
-    const updateData = (filter: string[] | null, filterMissing: boolean) => {
-      const noFilter = filter == null && filterMissing === false;
-      this.markFiltered(!noFilter);
-      this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
+    node.insertAdjacentHTML('beforeend', `<div>
+        ${joint.map(({cat, color, label, range}) => `<div${!isIncluded(this.before, cat) ? 'data-no="no"' : ''} data-cat="${cat}">
+        <input type="number" value="${range}" min="0" max="100" size="5"><span style="background-color: ${color}; width: ${range}%"></span>${label}</div>`)}
+        <div>Unselect All</div>
+    </div>`);
+    // selectAll
+    (<HTMLElement>node.lastElementChild!.lastElementChild!).onclick = function (this: HTMLElement) {
+      const no = this.dataset.no !== 'no';
+      filtered(this, no);
+      Array.from(node.querySelectorAll('[data-cat]')).forEach((n: HTMLElement) => filtered(n, no));
     };
-
-    this.onButton(popup, {
-      cancel: () => {
-        updateData(bak, bakMissing);
-        this.column.setMapping(range);
-      },
-      reset: () => {
-        trData.forEach((d) => {
-          d.isChecked = true;
-          d.range = 50;
-        });
-        redraw();
-        updateData(null, false);
-        this.column.setMapping(trData.map(() => 1));
-      },
-      submit: () => {
-        let f: string[] | null = trData.filter((d) => d.isChecked).map((d) => d.cat);
-        if (f.length === trData.length) {
-          f = null;
-        }
-        const filterMissing = (<HTMLInputElement>popup.querySelector('input[type="checkbox"].lu_filter_missing')!).checked;
-        updateData(f, filterMissing);
-        this.column.setMapping(trData.map((d) => d.range / 100));
-        return true;
-      }
+    this.forEach('input[type=number]', (d: HTMLInputElement) => {
+      d.oninput = () => {
+        (<HTMLElement>d.nextElementSibling).style.width = `${d.value}px`;
+      };
     });
+    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
+  }
+
+  private updateFilter(filter: string[] | null, filterMissing: boolean) {
+    const noFilter = filter == null && filterMissing === false;
+    this.attachment.classList.toggle('lu-filtered', !noFilter);
+    this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
+  }
+
+  reset() {
+    this.forEach('[data-cat]', (n: HTMLElement) => {
+      filtered(n, false);
+      n.querySelector('input')!.value = '50';
+    });
+    this.updateFilter(null, false);
+    this.column.setMapping(this.column.categories.map(() => 1));
+  }
+
+  submit() {
+    const items = this.forEach('[data-cat]', (n: HTMLElement) => ({
+      checked: n.dataset.no !== 'no',
+      cat: n.dataset.cat!,
+      range: parseFloat(n.querySelector('input')!.value)
+    }));
+    let f: string[] | null = items.filter((d) => d.checked).map((d) => d.cat);
+    if (f.length === this.column.categories.length) { // all checked = no filter
+      f = null;
+    }
+    const filterMissing = this.findInput('input[type="checkbox"].lu_filter_missing').checked;
+    this.updateFilter(f, filterMissing);
+    this.column.setMapping(items.map((d) => d.range / 100));
+    return true;
   }
 }

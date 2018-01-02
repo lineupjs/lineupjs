@@ -4,23 +4,18 @@ import ADialog from './ADialog';
 
 export default class SearchDialog extends ADialog {
 
-  /**
-   * opens a search dialog for the given column
-   * @param column the column to rename
-   * @param header the visual header element of this column
-   * @param provider the data provider for the actual search
-   * @param title optional title
-   */
-  constructor(private readonly column: Column, header: HTMLElement, private readonly provider: IDataProvider, title = 'Search') {
-    super(header, title);
+  constructor(private readonly column: Column, attachment: HTMLElement, private readonly provider: IDataProvider) {
+    super(attachment, {
+      hideOnMoveOutside: true
+    });
   }
 
-  openDialog() {
-    const popup = this.makePopup('<input type="text" size="15" value="" required autofocus placeholder="search..."><br><label><input type="checkbox">RegExp</label><br>');
+  protected build(node: HTMLElement) {
+    node.insertAdjacentHTML('beforeend', `<input type="text" size="15" value="" required autofocus placeholder="search..."><label><input type="checkbox">RegExp</label>`);
 
-    const input = <HTMLInputElement>popup.querySelector('input[type="text"]')!;
-    const checkbox = <HTMLInputElement>popup.querySelector('input[type="checkbox"]')!;
-    input.addEventListener('input', () => {
+    const input = <HTMLInputElement>node.querySelector('input[type="text"]')!;
+    const checkbox = <HTMLInputElement>node.querySelector('input[type="checkbox"]')!;
+    const update = () => {
       let search: any = input.value;
       if (search.length < 3) {
         return;
@@ -30,29 +25,8 @@ export default class SearchDialog extends ADialog {
         search = new RegExp(search);
       }
       this.provider.searchAndJump(search, this.column);
-    });
-
-    const updateImpl = () => {
-      let search: string | RegExp = input.value;
-      const isRegex = checkbox.checked;
-      if (search.length > 0) {
-        if (isRegex) {
-          search = new RegExp(search);
-        }
-        this.provider.searchAndJump(search, this.column);
-      }
-      ADialog.removePopup(popup);
     };
-
-    checkbox.addEventListener('change', updateImpl);
-
-    this.onButton(popup, {
-      cancel: () => undefined,
-      reset: () => undefined,
-      submit: () => {
-        updateImpl();
-        return true;
-      }
-    });
+    input.addEventListener('input', update);
+    checkbox.addEventListener('change', update);
   }
 }

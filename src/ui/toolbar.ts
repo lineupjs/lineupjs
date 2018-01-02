@@ -1,6 +1,7 @@
 import {getAllToolbarActions, isSupportType} from '../model/annotations';
 import Column from '../model/Column';
 import {default as CompositeColumn, IMultiLevelColumn} from '../model/CompositeColumn';
+import {IDataProvider} from '../provider/ADataProvider';
 import ADialog from '../ui/dialogs/ADialog';
 import ChangeRendererDialog from '../ui/dialogs/ChangeRendererDialog';
 import MoreColumnOptionsDialog from '../ui/dialogs/MoreColumnOptionsDialog';
@@ -20,7 +21,7 @@ import SortGroupDialog from './dialogs/SortGroupDialog';
 import StratifyThresholdDialog from './dialogs/StratifyThresholdDialog';
 import StringFilterDialog from './dialogs/StringFilterDialog';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
-import {IFilterDialog, IRankingHeaderContext} from './interfaces';
+import {IRankingHeaderContext} from './interfaces';
 
 export interface IUIOptions {
   shortcut: boolean;
@@ -40,7 +41,11 @@ export interface IToolbarAction {
 }
 
 export interface IDialogClass {
-  new(col: any, icon: HTMLElement, ...args: any[]): ADialog;
+  new(col: any, attachement: HTMLElement, ...args: any[]): ADialog;
+}
+
+export interface IFilterDialog {
+  new(col: Column, attachement: HTMLElement, data: IDataProvider, idPrefix: string): ADialog;
 }
 
 export function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
@@ -52,13 +57,13 @@ export function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((
     title,
     onClick: (col, evt, ctx) => {
       const dialog = new dialogClass(col, <HTMLElement>evt.currentTarget, ... extraArgs(ctx));
-      dialog.openDialog();
+      dialog.open();
     }, options
   };
 }
 
 export function filterBy(dialogClass: IFilterDialog) {
-  return uiDialog('Filter &hellip;', dialogClass, (ctx) => ['', ctx.provider, ctx.idPrefix]);
+  return uiDialog('Filter &hellip;', dialogClass, (ctx) => [ctx.provider, ctx.idPrefix]);
 }
 
 const sort: IToolbarAction = {
@@ -76,7 +81,7 @@ const rename: IToolbarAction = {
   title: 'Rename + Color &hellip;',
   onClick: (col, evt) => {
     const dialog = new RenameDialog(col, <HTMLElement>evt.currentTarget);
-    dialog.openDialog();
+    dialog.open();
   },
   options: {
     order: 3
@@ -87,7 +92,7 @@ const vis: IToolbarAction = {
   title: 'Visualization &hellip;',
   onClick: (col, evt, ctx) => {
     const dialog = new ChangeRendererDialog(col, <HTMLElement>evt.currentTarget, ctx);
-    dialog.openDialog();
+    dialog.open();
   },
   options: {}
 };
@@ -105,8 +110,8 @@ const clone: IToolbarAction = {
 export const more: IToolbarAction = {
   title: 'More &hellip;',
   onClick: (col, evt, ctx) => {
-    const dialog = new MoreColumnOptionsDialog(col, <HTMLElement>evt.currentTarget, '', ctx);
-    dialog.openDialog();
+    const dialog = new MoreColumnOptionsDialog(col, <HTMLElement>evt.currentTarget, ctx);
+    dialog.open();
   },
   options: {
     shortcut: true,

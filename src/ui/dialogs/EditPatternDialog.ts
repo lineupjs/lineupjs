@@ -5,42 +5,39 @@ import ADialog from './ADialog';
 
 export default class EditPatternDialog extends ADialog {
 
-  /**
-   * opens a dialog for editing the link of a column
-   * @param column the column to rename
-   * @param header the visual header element of this column
-   * @param idPrefix dom id prefix
-   * @param title optional title
-   */
-  constructor(private readonly column: StringColumn|StringsColumn|StringMapColumn, header: HTMLElement, private readonly idPrefix: string, title = 'Edit Pattern ($1 as Placeholder)') {
-    super(header, title);
+  private readonly before: string;
+
+  constructor(private readonly column: StringColumn | StringsColumn | StringMapColumn, attachment: HTMLElement, private readonly idPrefix: string) {
+    super(attachment, {
+      fullDialog: true
+    });
+    this.before = column.getPattern();
   }
 
-  openDialog() {
+  protected build(node: HTMLElement) {
     const templates = this.column.patternTemplates;
-    let t = `<input
+    node.insertAdjacentHTML('beforeend', `<input
         type="text"
         size="15"
-        value="${this.column.getPattern()}"
-        required="required"
-        autofocus="autofocus"
-        placeholder="link pattern"
+        value="${this.before}"
+        required
+        autofocus
+        placeholder="pattern ($1 as placeholder)"
         ${templates.length > 0 ? `list="ui${this.idPrefix}lineupPatternList"` : ''}
-      ><br>`;
+      >`);
     if (templates.length > 0) {
-      t += `<datalist id="ui${this.idPrefix}lineupPatternList">${templates.map((t) => `<option value="${t}">`)}</datalist>`;
+      node.insertAdjacentHTML('beforeend', `<datalist id="ui${this.idPrefix}lineupPatternList">${templates.map((t) => `<option value="${t}">`)}</datalist>`);
     }
+  }
 
-    const popup = this.makePopup(t);
+  protected reset() {
+    this.node.querySelector('input')!.value = this.before;
+    this.column.setPattern(this.before);
+  }
 
-    this.onButton(popup, {
-      cancel: () => undefined,
-      reset: () => undefined,
-      submit: () => {
-        const newValue = popup.querySelector('input')!.value;
-        this.column.setPattern(newValue);
-        return true;
-      }
-    });
+  protected submit() {
+    const newValue = this.node.querySelector('input')!.value;
+    this.column.setPattern(newValue);
+    return true;
   }
 }

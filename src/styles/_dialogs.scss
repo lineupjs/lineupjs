@@ -5,21 +5,10 @@
 @import './icons/index';
 
 @at-root {
-  .#{$lu_css_prefix}-popup {
-    position: absolute;
-    dominant-baseline: central;
-    text-anchor: middle;
-
-    .ok {
-      position: absolute;
-      right: 10px;
-    }
-  }
-
-  .#{$lu_css_prefix}-popup,
-  .#{$lu_css_prefix}-popup2 {
+  .#{$lu_css_prefix}-dialog {
     background-color: white;
     border: 1px solid black;
+    display: block;
     position: absolute;
     padding: 5px;
     z-index: 9;
@@ -36,10 +25,6 @@
       z-index: -1;
     }
 
-    form {
-      display: block;
-    }
-
     label {
       font-weight: normal;
     }
@@ -48,6 +33,32 @@
       font-size: 8pt;
     }
 
+    button[type=submit],
+    button[type=reset],
+    button[title=cancel] {
+      &::before {
+        @include lu_icons();
+      }
+    }
+
+    button[type=submit]::before {
+      content: $lu_icon_check;
+    }
+
+    button[title=cancel]::before {
+      content: $lu_icon_times;
+    }
+
+    button[type=reset]::before {
+      content: $lu_icon_undo;
+    }
+
+    button[type=submit] {
+      float: right;
+    }
+  }
+
+  .#{$lu_css_prefix}-dialog {
     .selectionTable {
       background: white;
       overflow-x: auto;
@@ -75,11 +86,6 @@
       }
     }
 
-    .lu-popup-title {
-      cursor: pointer;
-      cursor: -webkit-grab;
-    }
-
     .script-description {
       font-size: 120%;
       max-width: 50em;
@@ -104,39 +110,12 @@
       }
     }
 
-    button[type=submit],
-    button.cancel,
-    button.reset {
-      &::before {
-        @include lu_icons();
-      }
-    }
-
-    button[type=submit]::before {
-      content: $lu_icon_check;
-    }
-
-    button.cancel::before {
-      content: $lu_icon_times;
-    }
-
-    button.reset::before {
-      content: $lu_icon_undo;
-    }
-  }
-
-  .#{$lu_css_prefix}-popup2 {
-    * {
-      margin: 0;
-    }
-
-    .ok {
-      float: right;
-    }
-
     div.bar {
       height: 1em;
       transition: width 0.5s ease;
     }
   }
 }
+
+
+

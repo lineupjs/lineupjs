@@ -6,21 +6,13 @@ import ADialog from './ADialog';
 
 export default class MoreColumnOptionsDialog extends ADialog {
 
-  /**
-   * opens a rename dialog for the given column
-   * @param column the column to rename
-   * @param header the visual header element of this column
-   * @param title optional title
-   * @param ctx
-   */
-  constructor(readonly column: Column, header: HTMLElement, title = 'More', private ctx: IRankingHeaderContext) {
-    super(header, title);
+  constructor(private readonly column: Column, attachment: HTMLElement, private readonly ctx: IRankingHeaderContext) {
+    super(attachment, {
+      hideOnMoveOutside: true
+    });
   }
 
-  openDialog() {
-    const popup = this.makeMenuPopup('');
-    popup.classList.add('lu-more-options');
-
-    createToolbarMenuItems(<any>addIconDOM(popup, this.column, this.ctx, true), this.column, this.ctx);
+  protected build(node: HTMLElement) {
+    createToolbarMenuItems(<any>addIconDOM(node, this.column, this.ctx, true), this.column, this.ctx);
   }
 }

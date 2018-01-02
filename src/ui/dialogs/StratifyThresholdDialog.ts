@@ -3,46 +3,45 @@ import ADialog from './ADialog';
 
 export default class StratifyThresholdDialog extends ADialog {
 
-  /**
-   * opens a dialog for editing the link of a column
-   * @param column the column to rename
-   * @param header the visual header element of this column
-   */
-  constructor(private readonly column: NumberColumn, header: HTMLElement) {
-    super(header, 'Stratify by Threshold');
+  private readonly before: number[];
+
+  constructor(private readonly column: NumberColumn, attachment: HTMLElement) {
+    super(attachment, {
+      fullDialog: true
+    });
+    this.before = this.column.getStratifyThresholds();
   }
 
-  openDialog() {
+  protected build(node: HTMLElement) {
     if (this.column.isGroupedBy() >= 0) {
       // disable grouping
       this.column.groupByMe();
-      return;
+      return false;
     }
     const domain = this.column.getOriginalMapping().domain;
-    const bak = this.column.getStratifyThresholds();
-
-    const t = `<input
+    node.insertAdjacentHTML('beforeend', `<input
         type="number"
         size="15"
-        value="${bak.length > 0 ? bak[0] : (domain[1] - domain[0]) / 2}"
+        value="${this.before.length > 0 ? this.before[0] : (domain[1] - domain[0]) / 2}"
         required
         autofocus
         min="${domain[0]}"
         max="${domain[1]}"
         step="any"
-      ><br>`;
+      >`);
+    return true;
+  }
 
-    const popup = this.makePopup(t);
+  reset() {
+    const domain = this.column.getOriginalMapping().domain;
+    this.findInput('input[type="number"]').value = `${this.before.length > 0 ? this.before[0] : (domain[1] - domain[0]) / 2}`;
+    this.column.setStratifyThresholds(this.before);
+  }
 
-    this.onButton(popup, {
-      cancel: () => undefined,
-      reset: () => undefined,
-      submit: () => {
-        const newValue = +(<HTMLInputElement>popup.querySelector('input[type="number"]')).value;
-        this.column.setStratifyThresholds([newValue]);
-        this.column.groupByMe();
-        return true;
-      }
-    });
+  submit() {
+    const newValue = +this.findInput('input[type="number"]').value;
+    this.column.setStratifyThresholds([newValue]);
+    this.column.groupByMe();
+    return true;
   }
 }

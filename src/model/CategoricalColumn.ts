@@ -7,7 +7,7 @@ import {toolbar} from './annotations';
 import Column from './Column';
 import {
   IBaseCategoricalDesc, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter,
-  isEqualFilter,
+  isEqualFilter, isIncluded,
 } from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
@@ -209,26 +209,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter != null;
   }
 
-  static filter(filter: ICategoricalFilter | null, category: string) {
-    if (!filter) {
-      return true;
-    }
-    if (category == null && filter.filterMissing) {
-      return false;
-    }
-    const filterObj = filter.filter;
-    if (Array.isArray(filterObj)) { //array mode
-      return filterObj.indexOf(category) >= 0;
-    }
-    if (typeof filterObj === 'string' && filterObj.length > 0) { //search mode
-      return category != null && category.toLowerCase().indexOf(filterObj.toLowerCase()) >= 0;
-    }
-    if (filterObj instanceof RegExp) { //regex match mode
-      return category != null && filterObj.test(category);
-    }
-    return true;
-  }
-
   filter(row: IDataRow): boolean {
     if (!this.isFiltered()) {
       return true;
@@ -239,7 +219,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       return false;
     }
 
-    return vs.every((v) => CategoricalColumn.filter(this.currentFilter, v));
+    return vs.every((v) => isIncluded(this.currentFilter, v));
   }
 
   getFilter() {

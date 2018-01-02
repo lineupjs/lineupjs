@@ -1,21 +1,37 @@
 import StringColumn from '../../model/StringColumn';
-import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
+import ADialog from './ADialog';
 
 
-export default class StringFilterDialog extends AFilterDialog<StringColumn> {
-  /**
-   * opens a dialog for filtering a string column
-   * @param column the column to filter
-   * @param header the visual header element of this column
-   * @param title optional title
-   */
-  constructor(column: StringColumn, header: HTMLElement, title = 'Filter') {
-    super(column, header, title);
+export default class StringFilterDialog extends ADialog {
+  private readonly base: any;
+
+  constructor(private readonly column: StringColumn, attachment: HTMLElement) {
+    super(attachment, {
+      fullDialog: true
+    });
+    this.base = stringFilter(this.column);
   }
 
-  openDialog() {
-    const base = stringFilter(this.column);
-    const popup = this.makePopup(base.template);
+  private updateFilter(filter: string | RegExp | null) {
+    this.attachment.classList.toggle('lu-filtered', filter != null);
+    this.column.setFilter(filter);
+  }
+
+  reset() {
+    this.findInput('input[type="text"]').value = '';
+    this.forEach('input[type=checkbox', (n: HTMLInputElement) => n.checked = false);
+    this.updateFilter(null);
+  }
+
+  submit() {
+    const isTrue = this.findInput('input[type="radio"][value="true"]').checked;
+    const isFalse = this.findInput('input[type="radio"][value="false"]').checked;
+    this.updateFilter(isTrue ? true : (isFalse ? false : null));
+    return true;
+  }
+
+  protected build(node: HTMLElement) {
+    node.insertAdjacentHTML('beforeend', this.base.template);
 
     const updateData = (filter: string | RegExp | null) => {
       this.markFiltered(filter != null && filter !== '');

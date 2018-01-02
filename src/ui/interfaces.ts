@@ -2,14 +2,9 @@ import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn} from '../model';
 import {IDataProvider} from '../provider/ADataProvider';
 import {IRenderContext} from '../renderer';
-import AFilterDialog from './dialogs/AFilterDialog';
 import {IToolbarAction} from './toolbar';
 
 export const RENDERER_EVENT_HOVER_CHANGED = 'hoverChanged';
-
-export interface IFilterDialog {
-  new(column: Column, header: HTMLElement, title: string, data: IDataProvider, idPrefix: string): AFilterDialog<Column>;
-}
 
 export interface ISummaryRenderer<T extends Column> {
   new(col: T, node: HTMLElement, interactive: boolean): ISummaryUpdater;

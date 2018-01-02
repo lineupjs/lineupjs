@@ -1,56 +1,56 @@
-import HierarchyColumn, {resolveInnerNodes} from '../../model/HierarchyColumn';
+
+import HierarchyColumn, {ICategoryInternalNode, ICutOffNode, resolveInnerNodes} from '../../model/HierarchyColumn';
 import ADialog from './ADialog';
 
 export default class CutOffHierarchyDialog extends ADialog {
 
-  /**
-   * opens a dialog for filtering a categorical column
-   * @param column the column to rename
-   * @param header the visual header element of this column
-   * @param idPrefix id prefix used for generated ids
-   */
-  constructor(private readonly column: HierarchyColumn, header: HTMLElement, private readonly idPrefix: string) {
-    super(header, 'Edit Hierarchy Cutoff');
+  private readonly innerNodes: ICategoryInternalNode[];
+  private readonly innerNodePaths: string[];
+
+  private readonly before: ICutOffNode;
+
+
+  constructor(private readonly column: HierarchyColumn, attachment: HTMLElement, private readonly idPrefix: string) {
+    super(attachment, {
+      fullDialog: true
+    });
+
+    this.innerNodes = resolveInnerNodes(this.column.hierarchy);
+    this.innerNodePaths = this.innerNodes.map((n) => n.path);
+    this.before = column.getCutOff();
   }
 
-  openDialog() {
-    const bak = this.column.getCutOff();
-    const innerNodes = resolveInnerNodes(this.column.hierarchy);
-    const innerNodePaths = innerNodes.map((n) => n.path);
-    const t = `<input type="text" value="${bak.node.label}"
-        required="required" autofocus="autofocus" list="ui${this.idPrefix}lineupHierarchyList" placeholder="cut off node"><br>
-        <input type="number" value="${isFinite(bak.maxDepth) ? bak.maxDepth : ''}" placeholder="max depth (&infin;)"><br>
-        <datalist id="ui${this.idPrefix}lineupHierarchyList">${innerNodes.map((node) => `<option value="${node.path}">${node.label}</option>`)}</datalist>`;
-
-    const popup = this.makePopup(t, false);
+  protected build(node: HTMLElement) {
+    node.insertAdjacentHTML('beforeend',  `
+        <input type="text" value="${this.before.node.label}" required="required" autofocus="autofocus" list="ui${this.idPrefix}lineupHierarchyList" placeholder="cut off node">
+        <input type="number" value="${isFinite(this.before.maxDepth) ? this.before.maxDepth : ''}" placeholder="max depth (&infin;)">
+        <datalist id="ui${this.idPrefix}lineupHierarchyList">${this.innerNodes.map((node) => `<option value="${node.path}">${node.label}</option>`)}</datalist>`);
 
     //custom validation
-    popup.querySelector('input[type="text"]')!.addEventListener('change', function (this: HTMLInputElement) {
+    const innerNodePaths = this.innerNodePaths;
+    this.findInput('input[type="text"]').addEventListener('change', function (this: HTMLInputElement) {
       const value = this.value;
-      console.log('validate', value);
       if (innerNodePaths.indexOf(value) < 0) {
         this.setCustomValidity('invalid node');
       } else {
         this.setCustomValidity('');
       }
     });
+  }
 
-    this.onButton(popup, {
-      cancel: () => undefined,
-      reset: () => undefined,
-      submit: () => {
-        const form = <HTMLFormElement>popup.querySelector('form');
-        if (!form.checkValidity()) {
-          return false;
-        }
-        const newNode = (<HTMLInputElement>popup.querySelector('input[type="text"]')).value;
-        const newNodeIndex = innerNodePaths.indexOf(newNode);
-        const node = innerNodes[newNodeIndex];
-        const maxDepthText = (<HTMLInputElement>popup.querySelector('input[type="number"]')).value;
-        const maxDepth = maxDepthText === '' ? Infinity : parseInt(maxDepthText, 10);
-        this.column.setCutOff(node, maxDepth);
-        return true;
-      }
-    });
+  protected reset() {
+    this.findInput('input[type="text"]').value = this.before.node.label;
+    this.findInput('input[type="number"]').value = isFinite(this.before.maxDepth) ? String(this.before.maxDepth): '';
+    this.column.setCutOff(this.before);
+  }
+
+  protected submit() {
+    const newNode = this.findInput('input[type="text"]').value;
+    const newNodeIndex = this.innerNodePaths.indexOf(newNode);
+    const node = this.innerNodes[newNodeIndex];
+    const maxDepthText = this.findInput('input[type="number"]').value;
+    const maxDepth = maxDepthText === '' ? Infinity : parseInt(maxDepthText, 10);
+    this.column.setCutOff({node, maxDepth});
+    return true;
   }
 }

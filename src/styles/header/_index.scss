@@ -40,11 +40,7 @@
     flex: 1;
   }
 
-  &.filtered .#{$lu_css_prefix}-toolbar i[title='Filter'] {
-    color: $lu_header_active_filter_color;
-  }
-
-  &.grouped .#{$lu_css_prefix}-toolbar i[title='Stratify by'] {
+  &.#{$lu_css_prefix}-filtered i[title='Filter'] {
     color: $lu_header_active_filter_color;
   }
 
