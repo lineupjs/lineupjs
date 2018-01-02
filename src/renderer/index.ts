@@ -29,6 +29,7 @@ import RankCellRenderer from './RankCellRenderer';
 import SelectionRenderer from './SelectionRenderer';
 import SparklineCellRenderer from './SparklineCellRenderer';
 import StringCellRenderer from './StringCellRenderer';
+import TableCellRenderer from './TableCellRenderer';
 import UpSetCellRenderer from './UpSetCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 
@@ -46,34 +47,35 @@ export const defaultCellRenderer = new DefaultCellRenderer();
  * default render factories
  */
 export const renderers: { [key: string]: ICellRendererFactory } = {
-  rank: new RankCellRenderer(),
-  boolean: new BooleanCellRenderer(),
-  number: new BarCellRenderer(),
-  string: new StringCellRenderer(),
-  selection: new SelectionRenderer(),
-  heatmap: new HeatmapCellRenderer(),
-  image: new ImageCellRenderer(),
-  link: new LinkCellRenderer(),
-  annotate: new AnnotationRenderer(),
   actions: new ActionRenderer(),
-  stack: new MultiLevelCellRenderer(),
-  nested: new MultiLevelCellRenderer(false),
-  categorical: new CategoricalCellRenderer(),
+  aggregate: new AggregateGroupRenderer(),
+  annotate: new AnnotationRenderer(),
+  boolean: new BooleanCellRenderer(),
+  boxplot: new BoxplotCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
   catdistributionbar: new CategoricalStackedDistributionlRenderer(),
-  numbers: new NumbersCellRenderer(),
-  sparkline: new SparklineCellRenderer(),
-  verticalbar: new VerticalBarCellRenderer(),
-  upset: new UpSetCellRenderer(),
+  categorical: new CategoricalCellRenderer(),
   circle: new CircleCellRenderer(),
-  boxplot: new BoxplotCellRenderer(),
-  loading: new LoadingCellRenderer(),
-  aggregate: new AggregateGroupRenderer(),
-  histogram: new HistogramRenderer(),
-  interleaving: new InterleavingCellRenderer(),
+  default: defaultCellRenderer,
   dot: new DotCellRenderer(),
   group: new GroupCellRenderer(),
-  default: defaultCellRenderer
+  heatmap: new HeatmapCellRenderer(),
+  histogram: new HistogramRenderer(),
+  image: new ImageCellRenderer(),
+  interleaving: new InterleavingCellRenderer(),
+  link: new LinkCellRenderer(),
+  loading: new LoadingCellRenderer(),
+  nested: new MultiLevelCellRenderer(false),
+  number: new BarCellRenderer(),
+  numbers: new NumbersCellRenderer(),
+  rank: new RankCellRenderer(),
+  selection: new SelectionRenderer(),
+  sparkline: new SparklineCellRenderer(),
+  stack: new MultiLevelCellRenderer(),
+  string: new StringCellRenderer(),
+  table: new TableCellRenderer(),
+  upset: new UpSetCellRenderer(),
+  verticalbar: new VerticalBarCellRenderer()
 };
 
 
