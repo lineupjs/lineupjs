@@ -11,7 +11,7 @@ import {
   ADVANCED_SORT_METHOD, default as INumberColumn, groupCompare, INumberDesc, INumberFilter, isSameFilter,
   noNumberFilter, numberCompare, restoreFilter, SortMethod
 } from './INumberColumn';
-import {createMappingFunction, IMappingFunction, ScaleMappingFunction} from './MappingFunction';
+import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
@@ -67,11 +67,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   constructor(id: string, desc: INumberColumnDesc) {
     super(id, desc);
 
-    if (desc.map) {
-      this.mapping = createMappingFunction(desc.map);
-    } else if (desc.domain) {
-      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
-    }
+    this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
 
     if (desc.numberFormat) {

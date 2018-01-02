@@ -1,55 +1,29 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import {scaleLinear} from 'd3-scale';
-import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberFilter, INumbersColumn,
+  compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc, INumberFilter,
   isSameFilter, LazyBoxPlotData, noNumberFilter, restoreFilter, SORT_METHOD, SortMethod
 } from './INumberColumn';
+import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {IMapAbleColumn} from './NumberColumn';
 
-
-export interface INumbersDesc extends IArrayDesc {
-  /**
-   * dump of mapping function
-   */
-  readonly map?: any;
-  /**
-   * either map or domain should be available
-   */
-  readonly domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  readonly range?: [number, number];
-
+export interface INumberMapDesc extends INumberDesc {
   readonly sort?: string;
-  readonly threshold?: number;
-  readonly colorRange?: string[];
 }
 
+export declare type INumberMapColumnDesc = INumberMapDesc & IMapColumnDesc<number>;
 
-export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>;
-
-export interface ISplicer {
-  length: number;
-
-  splice<T>(values: T[]): T[];
-}
-
-@toolbar('numbersSort', 'filterMapped')
-export default class NumbersColumn extends ArrayColumn<number> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
+@toolbar('filterMapped', 'numbersSort')
+export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 
   private sort: SortMethod;
-  private readonly threshold: number;
-  private readonly colorRange: string[];
 
   private mapping: IMappingFunction;
 
@@ -61,49 +35,15 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  constructor(id: string, desc: INumbersColumnDesc) {
+  constructor(id: string, desc: INumberMapColumnDesc) {
     super(id, desc);
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
-
-    this.threshold = desc.threshold || 0;
-    this.colorRange = desc.colorRange || ['blue', 'red'];
     this.sort = desc.sort || SORT_METHOD.median;
-
-    // better initialize the default with based on the data length
-    this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
   }
 
   compare(a: IDataRow, b: IDataRow): number {
     return compareBoxPlot(this, a, b);
-  }
-
-  getColorRange() {
-    return this.colorRange.slice();
-  }
-
-  getRawColorScale() {
-    const colorScale = scaleLinear<string, string>();
-    const domain = this.mapping.domain;
-    if (domain[0] < 0) {
-      colorScale
-        .domain([domain[0], 0, domain[1]])
-        .range([this.colorRange[0], (this.colorRange.length > 2 ? this.colorRange[1] : 'white'), this.colorRange[this.colorRange.length - 1]]);
-
-    } else {
-      colorScale
-        .domain([domain[0], domain[1]])
-        .range([this.colorRange[0], this.colorRange[this.colorRange.length - 1]]);
-    }
-    return colorScale;
-  }
-
-  getRawNumbers(row: IDataRow) {
-    return this.getRawValue(row);
-  }
-
-  getThreshold() {
-    return this.threshold;
   }
 
   getBoxPlotData(row: IDataRow) {
@@ -111,7 +51,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data, this.mapping);
+    return new LazyBoxPlotData(data.map((d) => d.value), this.mapping);
   }
 
   getRange() {
@@ -123,11 +63,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data);
-  }
-
-  getNumbers(row: IDataRow) {
-    return this.getValue(row);
+    return new LazyBoxPlotData(data.map((d) => d.value));
   }
 
   getNumber(row: IDataRow): number {
@@ -140,7 +76,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
 
   getValue(row: IDataRow) {
     const values = this.getRawValue(row);
-    return values.map((d) => isMissingValue(d) ? NaN : this.mapping.apply(d));
+    return values.map(({key, value}) => ({key, value: isMissingValue(value) ? NaN : this.mapping.apply(value)}));
   }
 
   getRawValue(row: IDataRow) {
@@ -149,7 +85,8 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
   }
 
   getLabels(row: IDataRow) {
-    return this.getValue(row).map(DEFAULT_FORMATTER);
+    const v = this.getValue(row);
+    return v.map(({key, value}) => ({key, value: DEFAULT_FORMATTER(value)}));
   }
 
   getSortMethod() {
@@ -191,7 +128,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([NumberMapColumn.EVENT_MAPPING_CHANGED]);
   }
 
   getOriginalMapping() {
@@ -206,7 +143,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumbersColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([NumberMapColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   isFiltered() {

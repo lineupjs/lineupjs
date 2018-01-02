@@ -21,12 +21,14 @@ import MeanColumn from './MeanColumn';
 import MinColumn from './MinColumn';
 import NestedColumn from './NestedColumn';
 import NumberColumn from './NumberColumn';
+import NumberMapColumn from './NumberMapColumn';
 import NumbersColumn from './NumbersColumn';
 import RankColumn from './RankColumn';
 import ScriptColumn from './ScriptColumn';
 import SelectionColumn from './SelectionColumn';
 import StackColumn from './StackColumn';
 import StringColumn from './StringColumn';
+import StringMapColumn from './StringMapColumn';
 import StringsColumn from './StringsColumn';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
@@ -103,12 +105,14 @@ export function models() {
     nested: NestedColumn,
     number: NumberColumn,
     numbers: NumbersColumn,
+    numberMap: NumberMapColumn,
     ordinal: CategoricalNumberColumn,
     rank: RankColumn,
     script: ScriptColumn,
     selection: SelectionColumn,
     stack: StackColumn,
     string: StringColumn,
+    stringMap: StringMapColumn,
     strings: StringsColumn
   };
 }

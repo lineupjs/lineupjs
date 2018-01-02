@@ -1,0 +1,41 @@
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {IDataRow, isMissingValue, isNumberColumn} from '../model';
+import Column from '../model/Column';
+import {DEFAULT_FORMATTER} from '../model/INumberColumn';
+import {IMapColumn} from '../model/MapColumn';
+import {isMapAbleColumn} from '../model/NumberColumn';
+import {colorOf} from './impose';
+import {ICellRendererFactory, IImposer, default as IRenderContext} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {noop, noRenderer} from './utils';
+
+export default class MapBarCellRenderer implements ICellRendererFactory {
+  readonly title = 'Bar Table';
+
+  canRender(col: Column, isGroup: boolean) {
+    return isMapAbleColumn(col) && isNumberColumn(col) && !isGroup;
+  }
+
+  create(col: IMapColumn<number> & Column, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+    return {
+      template: `<div></div>`,
+      update: (node: HTMLElement, d: IDataRow) => {
+        if (renderMissingDOM(node, col, d)) {
+          return;
+        }
+        node.innerHTML = col.getMap(d).map(({key, value}) => {
+          if (isMissingValue(value)) {
+            return `<div>${key}</div><div class="lu-missing"></div>`;
+          }
+          const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
+          return `<div>${key}</div><div title="${DEFAULT_FORMATTER(value)}" style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}">${value}</div>`;
+        }).join('');
+      },
+      render: noop
+    };
+  }
+
+  createGroup() {
+    return noRenderer;
+  }
+}

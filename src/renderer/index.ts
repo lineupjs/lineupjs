@@ -23,6 +23,8 @@ import {ICellRendererFactory} from './interfaces';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import LinkCellRenderer from './LinkCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
+import MapBarCellRenderer from './MapBarCellRenderer';
+import MapCellRenderer from './MapCellRenderer';
 import MultiLevelCellRenderer from './MultiLevelCellRenderer';
 import NumbersCellRenderer from './NumbersCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
@@ -66,7 +68,9 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   link: new LinkCellRenderer(),
   loading: new LoadingCellRenderer(),
   nested: new MultiLevelCellRenderer(false),
+  stringMap: new MapCellRenderer(),
   number: new BarCellRenderer(),
+  numberMap: new MapBarCellRenderer(),
   numbers: new NumbersCellRenderer(),
   rank: new RankCellRenderer(),
   selection: new SelectionRenderer(),

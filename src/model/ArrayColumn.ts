@@ -1,6 +1,7 @@
 import Column from './Column';
 import {range} from 'd3-array';
 import {IDataRow} from './interfaces';
+import {IMapColumn} from './MapColumn';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 
@@ -19,7 +20,7 @@ export interface IArrayColumnDesc<T> extends IArrayDesc, IValueColumnDesc<T[]> {
   // dummy
 }
 
-export default class ArrayColumn<T> extends ValueColumn<T[]> {
+export default class ArrayColumn<T> extends ValueColumn<T[]> implements IMapColumn<T> {
   static readonly EVENT_SPLICE_CHANGED = 'spliceChanged';
 
   protected readonly dataLength: number;
@@ -78,6 +79,16 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> {
       return '';
     }
     return v.toString();
+  }
+
+  getMap(row: IDataRow) {
+    const labels = this.labels;
+    return this.getValue(row).map((value, i) => ({key: labels[i], value}));
+  }
+
+  getMapLabel(row: IDataRow) {
+    const labels = this.labels;
+    return this.getLabels(row).map((value, i) => ({key: labels[i], value}));
   }
 
   protected createEventList() {

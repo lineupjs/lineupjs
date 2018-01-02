@@ -19,7 +19,8 @@
       [data-renderer=selection],
       [data-renderer=sparkline],
       [data-renderer=threshold],
-      [data-renderer=table] {
+      [data-renderer=table],
+      [data-renderer=map] {
         display: none !important;
       }
 
