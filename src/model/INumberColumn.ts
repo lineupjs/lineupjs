@@ -194,6 +194,8 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
 }
 
 export interface INumbersColumn extends INumberColumn {
+  labels: string[];
+
   getNumbers(row: IDataRow): number[];
 
   getRawNumbers(row: IDataRow): number[];

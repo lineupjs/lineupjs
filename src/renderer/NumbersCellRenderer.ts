@@ -13,6 +13,7 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
   protected createContext(col: INumbersColumn & Column, context: IRenderContext) {
     const cellDimension = context.colWidth(col) / col.getDataLength();
     const colorScale = col.getRawColorScale();
+    const labels = col.labels;
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
       templateRows += `<div style="background-color: white" title=""></div>`;
@@ -23,7 +24,7 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
         forEachChild(row, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {
-            title: DEFAULT_FORMATTER(v),
+            title: `${labels[i]}: ${DEFAULT_FORMATTER(v)}`,
             'class': isMissingValue(v) ? 'lu-missing' : ''
           }, {
             'background-color': isMissingValue(v) ? null : colorScale(v)
