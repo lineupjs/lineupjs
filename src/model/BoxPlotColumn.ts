@@ -39,7 +39,7 @@ export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlo
 
 export {IBoxPlotData} from './INumberColumn';
 
-@toolbar('numbersSort', 'filterMapped')
+@toolbar('sortNumbers', 'filterMapped')
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly DEFAULT_FORMATTER = format('.3n');

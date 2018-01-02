@@ -148,29 +148,29 @@ export const icons: { [key: string]: IToolbarAction } = {
   rename,
   vis,
   search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider]),
-  numbersSort: uiDialog('Sort by &hellip;', SortDialog),
-  datesSort: uiDialog('Sort by &hellip;', SortDateDialog),
-  numbersSortGroup: uiDialog('Sort Group by &hellip;', SortDialog),
+  sortNumbers: uiDialog('Sort by &hellip;', SortDialog),
+  sortDates: uiDialog('Sort by &hellip;', SortDateDialog),
+  sortNumbersGroup: uiDialog('Sort Group by &hellip;', SortDialog),
+  sortGroup: uiDialog('Sort Group by &hellip;', SortGroupDialog, () => [], {shortcut: true, order: 1}),
+  stratifyThreshold: uiDialog('Stratify by Threshold &hellip;', StratifyThresholdDialog, () => [], {
+    shortcut: true,
+    order: 2
+  }),
+  filterMapped: filterBy(MappingsFilterDialog),
+  filterString: filterBy(StringFilterDialog),
+  filterCategorical: filterBy(CategoricalFilterDialog),
+  filterOrdinal: filterBy(CategoricalMappingFilterDialog),
+  filterBoolean: filterBy(BooleanFilterDialog),
+  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog),
+  cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
+  editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
+  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx]),
   splitCombined: ui('Split Combined Column', (col) => {
     // split the combined column into its children
     (<CompositeColumn>col).children.reverse().forEach((c) => col.insertAfterMe(c));
     col.removeMe();
-  }),
-  filterMapped: filterBy(MappingsFilterDialog),
-  sortGroup: uiDialog('Sort Group by &hellip;', SortGroupDialog, () => [], {shortcut: true, order: 1}),
-  cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
-  editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
-  stratifyThreshold: uiDialog('Stratify by Threshold &hellip;', StratifyThresholdDialog, () => [], {
-    shortcut: true,
-    order: 2
-  }),
-  filterString: filterBy(StringFilterDialog),
-  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog),
-  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog),
-  filterCategorical: filterBy(CategoricalFilterDialog),
-  filterOrdinal: filterBy(CategoricalMappingFilterDialog),
-  filterBoolean: filterBy(BooleanFilterDialog)
+  })
 };
 
 const cache = new Map<string, IToolbarAction[]>();

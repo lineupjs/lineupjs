@@ -43,7 +43,7 @@ export interface ISplicer {
   splice<T>(values: T[]): T[];
 }
 
-@toolbar('numbersSort', 'filterMapped')
+@toolbar('sortNumbers', 'filterMapped')
 export default class NumbersColumn extends ArrayColumn<number> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 

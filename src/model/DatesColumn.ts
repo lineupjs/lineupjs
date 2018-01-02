@@ -20,7 +20,7 @@ export interface IDatesDesc extends IDateDesc {
 export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
 
 
-@toolbar('datesSort')
+@toolbar('sortDates')
 export default class DatesColumn extends ArrayColumn<Date|null> {
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;

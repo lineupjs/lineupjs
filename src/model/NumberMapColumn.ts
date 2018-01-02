@@ -19,7 +19,7 @@ export interface INumberMapDesc extends INumberDesc {
 
 export declare type INumberMapColumnDesc = INumberMapDesc & IMapColumnDesc<number>;
 
-@toolbar('filterMapped', 'numbersSort')
+@toolbar('filterMapped', 'sortNumbers')
 export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 

@@ -42,7 +42,7 @@ export function isMapAbleColumn(col: any): col is IMapAbleColumn {
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('stratifyThreshold', 'numbersSortGroup', 'filterMapped')
+@toolbar('stratifyThreshold', 'sortNumbersGroup', 'filterMapped')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
 
