@@ -17,8 +17,9 @@ export default class CategoricalSummary {
       this.update = () => undefined;
       return;
     }
-    if (!interactive) {
-      this.update = (col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn) ? this.initStaticFilter() : this.initStatic();
+    const interactiveOne = (col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn);
+    if (!interactive || !interactiveOne) {
+      this.update =  interactiveOne ? this.initStaticFilter() : this.initStatic();
       return;
     }
     this.update = this.initInteractive();

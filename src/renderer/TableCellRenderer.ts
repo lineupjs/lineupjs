@@ -14,7 +14,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
 
   private static template(col: ArrayColumn<any>) {
     const labels = col.labels;
-    return `<table>${labels.map((l) => `<tr><th>${l}</th><td></td></tr>`).join('\n')}</table>`;
+    return `<div>${labels.map((l) => `<div>${l}</div><div data-v></div>`).join('\n')}</div>`;
   }
 
   create(col: ArrayColumn<any>) {
@@ -25,7 +25,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
           return;
         }
         const value = col.getLabels(d);
-        forEach(node, 'td', (n: HTMLElement, i) => {
+        forEach(node, '[data-v]', (n: HTMLElement, i) => {
           n.innerHTML = value[i];
         });
       },
@@ -39,7 +39,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
       update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const numExampleRows = 5;
         const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getLabels(d));
-        forEach(node, 'td', (n: HTMLElement, i) => {
+        forEach(node, '[data-v]', (n: HTMLElement, i) => {
           const values = <string[]>[];
           for (const v of vs) {
             const vi = v[i];

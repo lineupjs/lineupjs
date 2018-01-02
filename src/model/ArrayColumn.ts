@@ -1,4 +1,5 @@
 import Column from './Column';
+import {range} from 'd3-array';
 import {IDataRow} from './interfaces';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
@@ -30,7 +31,7 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> {
   constructor(id: string, desc: IArrayColumnDesc<T>) {
     super(id, desc);
     this.dataLength = desc.dataLength || 0;
-    this.originalLabels = desc.labels || (new Array<string>(this.dataLength).map((_d, i) => `Column ${i}`));
+    this.originalLabels = desc.labels || (range(this.dataLength).map((_d, i) => `Column ${i}`));
     this.splicer = {
       length: this.dataLength,
       splice: (v) => v

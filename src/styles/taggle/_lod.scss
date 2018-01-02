@@ -18,7 +18,8 @@
       [data-renderer=circle],
       [data-renderer=selection],
       [data-renderer=sparkline],
-      [data-renderer=threshold] {
+      [data-renderer=threshold],
+      [data-renderer=table] {
         display: none !important;
       }
 
