@@ -3,11 +3,11 @@
  */
 import {schemeCategory10} from 'd3-scale';
 import {toolbar} from './annotations';
+import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
-import StringColumn from './StringColumn';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface ICategoryNode extends ICategory {
@@ -134,7 +134,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   private resolveCategories(row: IDataRow): ICategoryInternalNode[] {
-    const base: string = StringColumn.prototype.getValue.call(this, row);
+    const base: string = CategoricalColumn.prototype.getSaveValue.call(this, row);
     if (base == null || base === '') {
       return [];
     }

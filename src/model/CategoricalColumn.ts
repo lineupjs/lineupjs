@@ -11,7 +11,6 @@ import {
 } from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
-import StringColumn from './StringColumn';
 import ValueColumn from './ValueColumn';
 
 
@@ -108,10 +107,15 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c)! : c);
   }
 
+  getSaveValue(row: IDataRow) {
+    const v = super.getValue(row);
+    return typeof(v) === 'undefined' || v == null ? '' : String(v);
+  }
+
   getLabel(row: IDataRow) {
     //no mapping
     if (this.catLabels == null || this.catLabels.size === 0) {
-      return StringColumn.prototype.getValue.call(this, row);
+      return this.getSaveValue(row);
     }
     return this.getLabels(row).join(this.separator);
   }
@@ -122,7 +126,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   getLabels(row: IDataRow) {
-    const v = StringColumn.prototype.getValue.call(this, row);
+    const v = this.getSaveValue(row);
     const r = v ? v.split(this.separator) : [];
 
     const mapToLabel = (values: string[]) => {
@@ -140,7 +144,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   getValues(row: IDataRow): string[] {
-    const v = StringColumn.prototype.getValue.call(this, row);
+    const v = this.getSaveValue(row);
     return v ? v.split(this.separator) : [];
   }
 
