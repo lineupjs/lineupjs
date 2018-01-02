@@ -21,9 +21,9 @@ export interface IDateDesc {
   readonly dateParse?: string;
 }
 
-export declare type IDateColumnDesc = IValueColumnDesc<Date | string> & IDateDesc;
+export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
 
-export default class DateColumn extends ValueColumn<Date | string> {
+export default class DateColumn extends ValueColumn<Date> {
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;
 

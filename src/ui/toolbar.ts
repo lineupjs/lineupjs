@@ -14,6 +14,7 @@ import EditLinkDialog from './dialogs/EditLinkDialog';
 import MappingsFilterDialog from './dialogs/MappingsFilterDialog';
 import ScriptEditDialog from './dialogs/ScriptEditDialog';
 import SearchDialog from './dialogs/SearchDialog';
+import SortDateDialog from './dialogs/SortDateDialog';
 import SortDialog from './dialogs/SortDialog';
 import SortGroupDialog from './dialogs/SortGroupDialog';
 import StratifyThresholdDialog from './dialogs/StratifyThresholdDialog';
@@ -148,6 +149,7 @@ export const icons: { [key: string]: IToolbarAction } = {
   vis,
   search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider]),
   numbersSort: uiDialog('Sort by &hellip;', SortDialog),
+  datesSort: uiDialog('Sort by &hellip;', SortDateDialog),
   numbersSortGroup: uiDialog('Sort Group by &hellip;', SortDialog),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx]),
   splitCombined: ui('Split Combined Column', (col) => {

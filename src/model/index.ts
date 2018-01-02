@@ -11,6 +11,7 @@ import BoxPlotColumn from './BoxPlotColumn';
 import CategoricalColumn from './CategoricalColumn';
 import CategoricalNumberColumn from './CategoricalNumberColumn';
 import DateColumn from './DateColumn';
+import DatesColumn from './DatesColumn';
 import GroupColumn from './GroupColumn';
 import HierarchyColumn from './HierarchyColumn';
 import ImpositionCompositeColumn from './ImpositionCompositeColumn';
@@ -26,6 +27,7 @@ import ScriptColumn from './ScriptColumn';
 import SelectionColumn from './SelectionColumn';
 import StackColumn from './StackColumn';
 import StringColumn from './StringColumn';
+import StringsColumn from './StringsColumn';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export {default, default as Column, IColumnDesc, IColumnMetaData, IColumnParent, IFlatColumn} from './Column';
@@ -81,30 +83,32 @@ export function defineColumn<T>(name: string, functions: any = {}) {
  */
 export function models() {
   return {
-    number: NumberColumn,
-    date: DateColumn,
-    image: LinkColumn,
-    numbers: NumbersColumn,
-    string: StringColumn,
-    link: LinkColumn,
-    stack: StackColumn,
-    rank: RankColumn,
+    actions: ActionColumn,
+    aggregate: AggregateGroupColumn,
+    annotate: AnnotateColumn,
     boolean: BooleanColumn,
     booleans: BooleansColumn,
-    categorical: CategoricalColumn,
-    ordinal: CategoricalNumberColumn,
-    actions: ActionColumn,
-    annotate: AnnotateColumn,
-    selection: SelectionColumn,
-    max: MaxColumn,
-    min: MinColumn,
-    mean: MeanColumn,
-    script: ScriptColumn,
-    nested: NestedColumn,
     boxplot: BoxPlotColumn,
-    aggregate: AggregateGroupColumn,
+    categorical: CategoricalColumn,
+    date: DateColumn,
+    dates: DatesColumn,
+    group: GroupColumn,
     hierarchy: HierarchyColumn,
+    image: LinkColumn,
     imposition: ImpositionCompositeColumn,
-    group: GroupColumn
+    link: LinkColumn,
+    max: MaxColumn,
+    mean: MeanColumn,
+    min: MinColumn,
+    nested: NestedColumn,
+    number: NumberColumn,
+    numbers: NumbersColumn,
+    ordinal: CategoricalNumberColumn,
+    rank: RankColumn,
+    script: ScriptColumn,
+    selection: SelectionColumn,
+    stack: StackColumn,
+    string: StringColumn,
+    strings: StringsColumn
   };
 }

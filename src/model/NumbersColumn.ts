@@ -2,6 +2,7 @@
  * Created by bikramkawan on 24/11/2016.
  */
 import {scaleLinear} from 'd3-scale';
+import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
@@ -12,10 +13,9 @@ import {
 import {createMappingFunction, IMappingFunction, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {IMapAbleColumn} from './NumberColumn';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 
-export interface INumbersDesc {
+export interface INumbersDesc extends IArrayDesc {
   /**
    * dump of mapping function
    */
@@ -31,34 +31,29 @@ export interface INumbersDesc {
 
   readonly sort?: string;
   readonly threshold?: number;
-  readonly dataLength: number;
   readonly colorRange?: string[];
 }
 
 
-export declare type INumbersColumnDesc = INumbersDesc & IValueColumnDesc<number[]>;
+export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>;
 
 export interface ISplicer {
   length: number;
 
-  splice(values: number[]): number[];
+  splice<T>(values: T[]): T[];
 }
 
 @toolbar('numbersSort', 'filterMapped')
-export default class NumbersColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
+export default class NumbersColumn extends ArrayColumn<number> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
-  static readonly EVENT_SPLICE_CHANGED = 'spliceChanged';
 
   private sort: SortMethod;
   private readonly threshold: number;
-  private readonly dataLength: number;
   private readonly colorRange: string[];
 
   private mapping: IMappingFunction;
 
   private original: IMappingFunction;
-
-  private splicer: ISplicer;
   /**
    * currently active filter
    * @type {{min: number, max: number}}
@@ -75,26 +70,12 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     }
     this.original = this.mapping.clone();
 
-    this.dataLength = desc.dataLength || 0;
     this.threshold = desc.threshold || 0;
     this.colorRange = desc.colorRange || ['blue', 'red'];
     this.sort = desc.sort || SORT_METHOD.median;
 
     // better initialize the default with based on the data length
     this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
-
-    this.splicer = {
-      length: this.dataLength,
-      splice: (v) => v
-    };
-  }
-
-  setSplicer(splicer: ISplicer) {
-    this.fire([NumbersColumn.EVENT_SPLICE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.splicer, this.splicer = splicer);
-  }
-
-  getSplicer() {
-    return this.splicer;
   }
 
   compare(a: IDataRow, b: IDataRow): number {
@@ -123,13 +104,6 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
 
   getRawNumbers(row: IDataRow) {
     return this.getRawValue(row);
-  }
-
-  getDataLength() {
-    if (this.splicer) {
-      return this.splicer.length;
-    }
-    return this.dataLength;
   }
 
   getThreshold() {
@@ -174,10 +148,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   getRawValue(row: IDataRow) {
-    let r = super.getValue(row);
-    if (this.splicer && r !== null) {
-      r = this.splicer.splice(r);
-    }
+    const r = super.getValue(row);
     return r === null ? [] : r;
   }
 
@@ -228,7 +199,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SPLICE_CHANGED]);
+    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED]);
   }
 
   getOriginalMapping() {

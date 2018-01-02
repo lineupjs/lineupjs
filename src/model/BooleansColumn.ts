@@ -1,30 +1,18 @@
+import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ICategoricalColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN} from './missing';
-/**
- * Created by bikramkawan on 24/11/2016.
- */
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
-export interface IBooleansDesc {
-  readonly dataLength: number;
-}
+export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
 
-export declare type IBooleansColumnDesc = IValueColumnDesc<boolean[]> & IBooleansDesc;
-
-export default class BooleansColumn extends ValueColumn<boolean[]> implements ICategoricalColumn {
-  private readonly dataLength: number;
-  readonly categories: string[];
-
+export default class BooleansColumn extends ArrayColumn<boolean> implements ICategoricalColumn {
   constructor(id: string, desc: IBooleansColumnDesc) {
     super(id, desc);
-    this.dataLength = desc.dataLength;
-    this.categories = [];
-    for (let i = 0; i < this.dataLength; ++i) {
-      this.categories.push(`Category #${i + 1}`);
-    }
-
     this.setDefaultRenderer('upset');
+  }
+
+  get categories() {
+    return this.labels;
   }
 
   get categoryLabels() {
@@ -46,7 +34,6 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
   }
 
   compare(a: IDataRow, b: IDataRow) {
-
     const aVal = this.getValue(a);
     const bVal = this.getValue(b);
     if (aVal === null) {
@@ -59,9 +46,5 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
     const aCat = aVal.filter((x) => x).length;
     const bCat = bVal.filter((x) => x).length;
     return (aCat - bCat);
-  }
-
-  getDataLength() {
-    return this.dataLength;
   }
 }
