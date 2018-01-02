@@ -20,6 +20,7 @@ export default class StringMapColumn extends MapColumn<string> {
     super(id, desc);
     this.setWidthImpl(200); //by default 200
     this._escape = desc.escape !== false;
+    this.setDefaultRenderer('map');
   }
 
   get escape() {

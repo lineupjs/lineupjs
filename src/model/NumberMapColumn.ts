@@ -40,6 +40,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
     this.sort = desc.sort || SORT_METHOD.median;
+    this.setDefaultRenderer('mapbars');
   }
 
   compare(a: IDataRow, b: IDataRow): number {

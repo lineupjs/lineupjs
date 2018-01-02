@@ -28,7 +28,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
             return `<div>${key}</div><div class="lu-missing"></div>`;
           }
           const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
-          return `<div>${key}</div><div title="${DEFAULT_FORMATTER(value)}" style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}">${value}</div>`;
+          return `<div>${key}</div><div title="${DEFAULT_FORMATTER(value)}"><div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}"><span class="lu-hover-only">${value}</span></div></div>`;
         }).join('');
       },
       render: noop
