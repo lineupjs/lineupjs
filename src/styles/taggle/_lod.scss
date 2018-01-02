@@ -15,12 +15,13 @@
       .lu-selection-only,
       [data-renderer=rank],
       [data-renderer=string],
+      [data-renderer=link],
       [data-renderer=circle],
       [data-renderer=selection],
       [data-renderer=sparkline],
       [data-renderer=threshold],
       [data-renderer=table],
-      [data-renderer=map] {
+      [data-renderer^=map] {
         display: none !important;
       }
 
