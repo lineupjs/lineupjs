@@ -12,7 +12,7 @@ export default class EditPatternDialog extends ADialog {
    * @param idPrefix dom id prefix
    * @param title optional title
    */
-  constructor(private readonly column: StringColumn|StringsColumn|StringMapColumn, header: HTMLElement, private readonly idPrefix: string, title = 'Edit Pattern ($ as Placeholder)') {
+  constructor(private readonly column: StringColumn|StringsColumn|StringMapColumn, header: HTMLElement, private readonly idPrefix: string, title = 'Edit Pattern ($1 as Placeholder)') {
     super(header, title);
   }
 

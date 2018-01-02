@@ -46,6 +46,10 @@ export default class StringsColumn extends ArrayColumn<string> {
     return this.pattern || '';
   }
 
+  protected createEventList() {
+    return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED]);
+  }
+
   getValue(row: IDataRow) {
     return super.getValue(row).map((v) => StringColumn.prototype.replacePattern.call(this, v));
   }

@@ -8,8 +8,8 @@ import {noop, noRenderer} from './utils';
 export default class ImageCellRenderer implements ICellRendererFactory {
   readonly title = 'Image';
 
-  canRender(col: Column) {
-    return col instanceof StringColumn && Boolean(col.getPattern());
+  canRender(col: Column, isGroup: boolean) {
+    return !isGroup && col instanceof StringColumn;
   }
 
   create(col: StringColumn) {

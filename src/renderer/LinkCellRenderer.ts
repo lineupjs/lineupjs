@@ -10,7 +10,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title = 'Link';
 
   canRender(col: Column) {
-    return col instanceof StringColumn && Boolean(col.getPattern());
+    return col instanceof StringColumn;
   }
 
   create(col: StringColumn) {

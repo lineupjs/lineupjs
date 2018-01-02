@@ -53,7 +53,7 @@ export default class StringColumn extends ValueColumn<string> {
     this.setWidthImpl(200); //by default 200
     this._alignment = <any>desc.alignment || 'left';
     this._escape = desc.escape !== false;
-    this.pattern = desc.pattern || 'null';
+    this.pattern = desc.pattern || null;
     this.patternTemplates = desc.patternTemplates || [];
   }
 
@@ -77,6 +77,10 @@ export default class StringColumn extends ValueColumn<string> {
 
   getPattern() {
     return this.pattern || '';
+  }
+
+  protected createEventList() {
+    return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED]);
   }
 
   getValue(row: IDataRow) {

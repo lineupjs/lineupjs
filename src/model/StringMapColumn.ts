@@ -47,6 +47,10 @@ export default class StringMapColumn extends MapColumn<string> {
     return this.pattern || '';
   }
 
+  protected createEventList() {
+    return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED]);
+  }
+
   getValue(row: IDataRow) {
     return super.getValue(row).map(({key, value}) => ({
       key,
