@@ -16,6 +16,10 @@
     font-size: $lu_dialog_font_size;
     clear: right;
 
+    h4 {
+      margin: 0.2em;
+    }
+
     &::before {
       content: '';
       top: -$lu_dialog_mouse_region;

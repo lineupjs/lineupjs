@@ -19,7 +19,7 @@ export default class ChangeRendererDialog extends ADialog {
 
     node.insertAdjacentHTML('beforeend', `
       ${possible.map((d) => `<label><input type="radio" name="renderer" value=${d.type}  ${(current === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
-      <div>Group Visualization</div>
+      <h4>Group Visualization</h4>
       ${possibleGroup.map((d) => `<label><input type="radio" name="group" value=${d.type}  ${(currentGroup === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
     `);
     Array.from(node.querySelectorAll('input[name="renderer"]')).forEach((n: HTMLInputElement) => {
