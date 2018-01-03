@@ -18,6 +18,7 @@
 
     h4 {
       margin: 0.2em;
+      display: inline-block;
     }
 
     &::before {
@@ -38,10 +39,7 @@
       font-size: 8pt;
     }
 
-    button[type=submit],
-    button[type=reset],
-    button[title=cancel] {
-      margin-top: 1em;
+    button {
       border: none;
       background: none;
       color: $lu_toolbar_color_base;
@@ -56,6 +54,12 @@
       &::before {
         @include lu_icons();
       }
+    }
+
+    button[type=submit],
+    button[type=reset],
+    button[title=cancel] {
+      margin-top: 1em;
     }
 
     button[type=submit]::before {
@@ -114,9 +118,54 @@
     }
 
     &.#{$lu_css_prefix}-dialog-mapper {
+      width: 20em;
       > .#{$lu_css_prefix}-summary {
-        width: 20em;
+        margin-top: 0.5em;
         height: 5em;
+      }
+
+      input[type=number] {
+        width: 5em;
+      }
+
+      div.#{$lu_css_prefix}-script {
+        margin-top: 1em;
+        display: none;
+
+        textarea {
+          height: 4em;
+          width: 98%;
+          font-size: 8pt;
+          display: block;
+        }
+      }
+
+      &[data-scale=script] div.#{$lu_css_prefix}-script {
+        display: block;
+      }
+
+      h4[data-toggle] {
+        margin-top: 1em;
+
+        &::before {
+          @include lu_icons();
+          content: $lu_icon_caret_right;
+          width: 0.8em;
+          cursor: pointer;
+        }
+
+        &[data-toggle=open]::before {
+          content: $lu_icon_caret_down;
+        }
+      }
+
+
+      div.#{$lu_css_prefix}-details {
+        display: none;
+      }
+
+      [data-toggle=open] + div.#{$lu_css_prefix}-details {
+        display: block;
       }
     }
 

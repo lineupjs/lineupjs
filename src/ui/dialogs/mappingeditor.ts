@@ -82,24 +82,8 @@ export default class MappingEditor {
     const height = options.height - options.padding_ver * 2 - options.filter_height;
 
     (<HTMLElement>$root.node()).innerHTML = `<form onsubmit="return false">
-      <div><label for="me${options.idPrefix}mapping_type"><span class="title">Mapping / Scaling Type: </span><select id="me${options.idPrefix}mapping_type">
-        <option value="linear">Linear</option>
-        <option value="linear_invert">Invert</option>
-        <option value="linear_abs">Absolute</option>
-        <option value="log">Log</option>
-        <option value="pow1.1">Pow 1.1</option>
-        <option value="pow2">Pow 2</option>
-        <option value="pow3">Pow 3</option>
-        <option value="sqrt">Sqrt</option>
-        <option value="script">Custom Script</option>
-      </select>
-      </label></div>
       <div class="filter_part"><span class="title">Mapping:</span></div>
       <div class="mapping_area">
-        <div>
-          <span>0</span>
-          <input type="text" class="raw_min" id="me${options.idPrefix}raw_min" value="0"><label for="me${options.idPrefix}raw_min">Min</label>
-        </div>
         <svg width="${options.width}" height="${options.height + 35}">
           <text x="${width / 2}" y="10">Normalized Input</text>
           <text x="${width / 2}" y="${options.height - options.filter_height + 5}">Raw Input</text>
@@ -124,30 +108,6 @@ export default class MappingEditor {
             </g>
           </g>
         </svg>
-        <div>
-          <span>1</span>
-          <input type="text" class="raw_max" id="me${options.idPrefix}raw_max" value="1"><label for="me${options.idPrefix}raw_max">Max</label>
-        </div>
-      </div>
-      <div class="filter_part2" style=""><span class="title">Filter:</span></div>
-
-      <div id="me${options.idPrefix}filter_inputs">
-        <div>
-          <label for="me${options.idPrefix}min_filter_input">Min Filter:</label>
-          <input id="me${options.idPrefix}min_filter_input" type="number" step="0.1">
-        </div>
-        <div>
-          <label for="me${options.idPrefix}max_filter_input">Max Filter:</label>
-          <input id="me${options.idPrefix}max_filter_input" type="number" step="0.1">
-        </div>
-      </div>
-      <div>
-         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.oldFilter.filterMissing ? 'checked="checked"' : ''}>${filterMissingText}</label>
-      </div>
-      <div class="script" style="/* display: none; */">
-        <label for="me${options.idPrefix}script_code">Custom Script</label><button>Apply</button>
-        <textarea id="me${options.idPrefix}script_code">
-        </textarea>
       </div>
     </form>`;
 
@@ -418,25 +378,8 @@ export default class MappingEditor {
       $mapping.exit().remove();
     }
 
-    function renderScript() {
-      if (!(that.scale instanceof ScriptMappingFunction)) {
-        $root.select('div.script').style('display', 'none');
-        return;
-      }
-      $root.select('div.script').style('display', null!);
-
-      const sscale = <ScriptMappingFunction>that.scale;
-      const $text = $root.select('textarea').text(sscale.code);
-
-      $root.select('div.script').select('button').on('click', () => {
-        sscale.code = $text.property('value');
-        updateDataLines();
-        triggerUpdate();
-      });
-    }
 
     renderMappingLines();
-    renderScript();
 
     function triggerUpdate(isDragEnd = false) {
       if (isDragEnd && (options.triggerCallback !== 'dragend')) {
@@ -444,111 +387,5 @@ export default class MappingEditor {
       }
       options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
     }
-
-    {
-
-      const minFilter = (isFinite(this.oldFilter.min) ? raw2pixel(this.oldFilter.min) : 0);
-      const maxFilter = (isFinite(this.oldFilter.max) ? raw2pixel(this.oldFilter.max) : width);
-
-      // use the old filter if one was available, set to domain boundaries otherwise
-      const initialValues = [
-        (isFinite(this.oldFilter.min) ? this.oldFilter.min : inputDomain[0]).toFixed(1),
-        (isFinite(this.oldFilter.max) ? this.oldFilter.max : inputDomain[1]).toFixed(1)
-      ];
-
-      selectAll(`#me${options.idPrefix}filter_inputs div input`)
-        .attr('min', inputDomain[0])
-        .attr('max', inputDomain[1])
-        .data(initialValues)
-        .attr('value', (d) => d)
-        .on('change', function (this: HTMLInputElement, _d, i) {
-          const value = parseFloat(this.value);
-          const which = i === 0 ? 'min' : 'max';
-          if (value >= inputDomain[0] && value <= inputDomain[1]) {
-            const selector: string = (which === 'min') ? 'left' : 'right';
-
-            const px = raw2pixel(value);
-            that._filter[which] = (value === inputDomain[0]) ? -Infinity : (value === inputDomain[1]) ? Infinity : value;
-
-            $root.select(`g.${selector}_filter`).attr('transform', `translate(${px}, 0)`);
-          }
-          triggerUpdate();
-        });
-
-      $root.selectAll('g.left_filter, g.right_filter')
-        .data([this.oldFilter.min, this.oldFilter.max])
-        .attr('transform', (_d, i) => `translate(${i === 0 ? minFilter : maxFilter},0)`).call(createDrag(function (this: SVGGElement, _d, i) {
-
-        //drag normalized
-        const px = clamp((<D3DragEvent<any, any, any>>d3event).x, 0, width);
-        const v = raw2pixel.invert(px);
-        const which = i === 0 ? 'min' : 'max';
-        const filter = (px <= 0 && which === 'min' ? -Infinity : (px >= width && which === 'max' ? Infinity : v));
-
-        that._filter[which] = filter;
-
-        (<HTMLInputElement>document.querySelector(`#me${options.idPrefix}filter_inputs #me${options.idPrefix}${which}_filter_input`)).value = v.toFixed(1);
-        select(this).datum(filter)
-          .attr('transform', `translate(${px},0)`);
-      }));
-    }
-
-    this.computeFilter = () => {
-      return {
-        min: this._filter.min,
-        max: this._filter.max,
-        filterMissing: $root.select('input[type="checkbox"]').property('checked')
-      };
-    };
-
-    function updateRaw() {
-      const d = raw2pixel.domain();
-      $root.select('input.raw_min').property('value', d[0]);
-      $root.select('input.raw_max').property('value', d[1]);
-
-      updateDataLines();
-      renderMappingLines();
-
-      updateFilter();
-    }
-
-    function updateFilter() {
-      const raw = raw2pixel.domain();
-      $root.select(`g.left_filter`).attr('transform', `translate(${raw2pixel(isFinite(that._filter.min) ? that._filter.min : raw[0])}, 0)`);
-      $root.select(`g.right_filter`).attr('transform', `translate(${raw2pixel(isFinite(that._filter.max) ? that._filter.max : raw[1])}, 0)`);
-
-      const filterValues = [
-        (isFinite(that._filter.min) ? that._filter.min : raw[0]).toFixed(1),
-        (isFinite(that._filter.max) ? that._filter.max : raw[1]).toFixed(1)
-      ];
-      selectAll(`#me${options.idPrefix}filter_inputs div input`).data(filterValues).property('value', String);
-    }
-
-    updateRaw();
-
-    $root.select('select').on('change', function (this: HTMLSelectElement) {
-      const v = this.value;
-      if (v === 'linear_invert') {
-        that.scale = new ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
-      } else if (v === 'linear_abs') {
-        const d = raw2pixel.domain();
-        that.scale = new ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
-      } else if (v === 'script') {
-        that.scale = new ScriptMappingFunction(raw2pixel.domain());
-      } else {
-        that.scale = new ScaleMappingFunction(raw2pixel.domain(), v);
-      }
-      updateDataLines();
-      renderMappingLines();
-      renderScript();
-      triggerUpdate();
-    }).property('selectedIndex', function () {
-      let name = 'script';
-      if (that.scale instanceof ScaleMappingFunction) {
-        name = (<ScaleMappingFunction>that.scale).scaleType;
-      }
-      const types = ['linear', 'linear_invert', 'linear_abs', 'log', 'pow1.1', 'pow2', 'pow3', 'sqrt', 'script'];
-      return types.indexOf(name);
-    });
   }
 }

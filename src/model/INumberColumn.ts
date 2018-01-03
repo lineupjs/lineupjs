@@ -249,6 +249,7 @@ export function medianIndex(rows: IDataRow[], col: INumberColumn & Column): numb
 export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn & Column, sortMethod: keyof LazyBoxPlotData) {
   const va = new LazyBoxPlotData(a.map((row) => col.getNumber(row)));
   const vb = new LazyBoxPlotData(b.map((row) => col.getNumber(row)));
+
   return numberCompare(<number>va[sortMethod], <number>vb[sortMethod]);
 }
 
