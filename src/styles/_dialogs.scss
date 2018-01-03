@@ -187,7 +187,7 @@
 
     svg {
       shape-rendering: geometricprecision;
-      height: 20em;
+      height: 20em * 6 / 10;
 
       rect {
         fill: transparent;
@@ -196,12 +196,13 @@
 
       line {
         stroke: $lu_mapping_bg;
+        stroke-width: 0.75;
         stroke-linejoin: round;
         stroke-linecap: round;
       }
 
       line:not([x1]) { // the horizontal lines
-        stroke-width: 1.5;
+        stroke-width: 1;
       }
 
       circle {
@@ -214,6 +215,14 @@
           stroke-width: 5;
           stroke: transparent !important;
         }
+
+        &.#{$lu_css_prefix}-frozen {
+          circle:first-of-type {
+            cursor: not-allowed;
+            fill: $lu_mapping_circle !important;
+          }
+        }
+
         &:hover {
           circle {
             fill: $lu_mapping_hover;
