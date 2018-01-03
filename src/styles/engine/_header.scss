@@ -23,7 +23,7 @@ section.#{$lu_css_prefix}-header {
   }
 
   &:hover {
-    background-color: $lu_even_bg;
+    background-color: $lu_hover_color !important;
 
     > .#{$lu_css_prefix}-toolbar {
       color: $lu_toolbar_color_base2;

@@ -23,9 +23,6 @@ $lu_slope_group_color: rgba(169, 169, 169, 0.5) !default;
 $lu_slope_group_selected_color: rgba(255, 165, 0, 0.5) !default;
 $lu_slope_stroke_width: 1 !default;
 
-$lu_meanline_color: darkgray !default;
-$lu_even_bg: #f7f7f7 !default;
-
 $lu_renderer_boxplot_box: #e0e0e0 !default;
 $lu_renderer_boxplot_stroke: black !default;
 $lu_renderer_boxplot_sort_indicator: #ffa500 !default;
@@ -49,6 +46,10 @@ $lu_missing_dash_width: 10px !default;
 $lu_missing_dash_color: #c1c1c1 !default;
 
 $lu_axis_color: #c1c1c1 !default;
+
+$lu_mapping_circle: $lu_toolbar_color_base2;
+$lu_mapping_hover: $lu_selected_color;
+$lu_mapping_bg: $lu_toolbar_color_hover;
 
 $lu_side_panel_bg_color: #f0f0f0 !default;
 $lu_side_panel_toolbar_bg: #6d6c6c !default;

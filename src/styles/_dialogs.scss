@@ -116,59 +116,6 @@
         }
       }
     }
-
-    &.#{$lu_css_prefix}-dialog-mapper {
-      width: 20em;
-      > .#{$lu_css_prefix}-summary {
-        margin-top: 0.5em;
-        height: 5em;
-      }
-
-      input[type=number] {
-        width: 5em;
-      }
-
-      div.#{$lu_css_prefix}-script {
-        margin-top: 1em;
-        display: none;
-
-        textarea {
-          height: 4em;
-          width: 98%;
-          font-size: 8pt;
-          display: block;
-        }
-      }
-
-      &[data-scale=script] div.#{$lu_css_prefix}-script {
-        display: block;
-      }
-
-      h4[data-toggle] {
-        margin-top: 1em;
-
-        &::before {
-          @include lu_icons();
-          content: $lu_icon_caret_right;
-          width: 0.8em;
-          cursor: pointer;
-        }
-
-        &[data-toggle=open]::before {
-          content: $lu_icon_caret_down;
-        }
-      }
-
-
-      div.#{$lu_css_prefix}-details {
-        display: none;
-      }
-
-      [data-toggle=open] + div.#{$lu_css_prefix}-details {
-        display: block;
-      }
-    }
-
     .#{$lu_css_prefix}_filter_missing {
       margin-top: 1em;
     }
@@ -182,6 +129,98 @@
 
         dd {
           padding-left: 1em;
+        }
+      }
+    }
+  }
+
+  .#{$lu_css_prefix}-dialog-mapper {
+    width: 20em;
+
+    > .#{$lu_css_prefix}-summary {
+      height: 5em;
+      margin: 0.5em 3px 0 3px;
+    }
+
+    input[type=number] {
+      width: 5em;
+    }
+
+    div.#{$lu_css_prefix}-script {
+      margin-top: 1em;
+      display: none;
+
+      textarea {
+        height: 4em;
+        width: 98%;
+        font-size: 8pt;
+        display: block;
+      }
+    }
+
+    &[data-scale=script] div.#{$lu_css_prefix}-script {
+      display: block;
+    }
+
+    h4[data-toggle] {
+      margin-top: 1em;
+
+      &::before {
+        @include lu_icons();
+        content: $lu_icon_caret_right;
+        width: 0.8em;
+        cursor: pointer;
+      }
+
+      &[data-toggle=open]::before {
+        content: $lu_icon_caret_down;
+      }
+    }
+
+    .#{$lu_css_prefix}-details {
+      display: none;
+    }
+
+    [data-toggle=open] ~ .#{$lu_css_prefix}-details {
+      display: block;
+    }
+
+    svg {
+      shape-rendering: geometricprecision;
+      height: 20em;
+
+      rect {
+        fill: transparent;
+        stroke: none;
+      }
+
+      line {
+        stroke: $lu_mapping_bg;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+      }
+
+      line:not([x1]) { // the horizontal lines
+        stroke-width: 1.5;
+      }
+
+      circle {
+        fill: $lu_mapping_circle
+      }
+
+      g.#{$lu_css_prefix}-mapping {
+        cursor: ew-resize;
+        > line:first-child {
+          stroke-width: 5;
+          stroke: transparent !important;
+        }
+        &:hover {
+          circle {
+            fill: $lu_mapping_hover;
+          }
+          line {
+            stroke: $lu_mapping_hover;
+          }
         }
       }
     }

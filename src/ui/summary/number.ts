@@ -103,8 +103,8 @@ export default class NumberSummary {
     node.insertAdjacentHTML('beforeend', `
       <div data-handle="min-hint" style="width: ${f.percent(f.filterMin)}%"></div>
       <div data-handle="max-hint" style="width: ${100 - f.percent(f.filterMax)}%"></div>
-      <div data-handle="min" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or right click to change"></div>
-      <div data-handle='max' data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or right click to change"></div>
+      <div data-handle="min" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or shift click to change"></div>
+      <div data-handle='max' data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or shift click to change"></div>
       ${filterMissingNumberMarkup(f.filterMissing, 0)}
     `);
 
@@ -126,7 +126,10 @@ export default class NumberSummary {
       });
     };
 
-    min.oncontextmenu = (evt) => {
+    min.onclick = (evt) => {
+      if (!evt.shiftKey) {
+        return;
+      }
       evt.preventDefault();
       evt.stopPropagation();
 
@@ -144,7 +147,10 @@ export default class NumberSummary {
       dialog.open();
     };
 
-    max.oncontextmenu = (evt) => {
+    max.onclick = (evt) => {
+      if (!evt.shiftKey) {
+        return;
+      }
       evt.preventDefault();
       evt.stopPropagation();
 
@@ -165,6 +171,7 @@ export default class NumberSummary {
     filterMissing.onchange = () => setFilter();
 
     selectAll([min, max]).call(drag()
+      .filter(() => d3event.button === 0 && !d3event.shiftKey)
       .on('start', function (this: HTMLElement) {
         this.classList.add('lu-dragging');
       })

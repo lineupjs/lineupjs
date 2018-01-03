@@ -2,12 +2,11 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {D3DragEvent, drag} from 'd3-drag';
+import {drag} from 'd3-drag';
 import {scaleLinear} from 'd3-scale';
-import {event as d3event, mouse, select, selectAll, Selection} from 'd3-selection';
+import {event as d3event, mouse, select, Selection} from 'd3-selection';
 import {INumberFilter} from '../../model/INumberColumn';
-import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../../model/MappingFunction';
-import {filterMissingText} from '../missing';
+import {IMappingFunction, ScaleMappingFunction} from '../../model/MappingFunction';
 
 
 function clamp(v: number, min: number, max: number) {
@@ -120,33 +119,6 @@ export default class MappingEditor {
     const inputDomain = raw2pixel.domain();
     const outputDomain = normal2pixel.domain();
 
-    $root.select('input.raw_min')
-      .property('value', raw2pixel.domain()[0])
-      .on('blur', function (this: HTMLInputElement) {
-        const d = raw2pixel.domain();
-        d[0] = parseFloat(this.value);
-        raw2pixel.domain(d);
-        const old = that.scale.domain;
-        old[0] = d[0];
-        that.scale.domain = old;
-        updateRaw();
-        triggerUpdate();
-      });
-    $root.select('input.raw_max')
-      .property('value', raw2pixel.domain()[1])
-      .on('blur', function (this: HTMLInputElement) {
-        const d = raw2pixel.domain();
-        d[1] = parseFloat(this.value);
-        raw2pixel.domain(d);
-        const old = that.scale.domain;
-        old[old.length - 1] = d[1];
-        that.scale.domain = old;
-        updateRaw();
-        triggerUpdate();
-      });
-    $root.select('input[type="checkbox"]').on('change', () => {
-      triggerUpdate();
-    });
 
     //lines that show mapping of individual data items
     let datalines = $root.select('g.samples').selectAll('line').data(<number[]>[]);
