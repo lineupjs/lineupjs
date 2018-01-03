@@ -47,8 +47,7 @@ abstract class ADialog {
 
     parent.appendChild(this.node);
     this.popper = new Popper(this.attachment, this.node, {
-      placement: 'bottom-start',
-      removeOnDestroy: true
+      placement: 'bottom-start'
     });
 
     const auto = this.find<HTMLInputElement>('input[autofocus]');
@@ -110,6 +109,7 @@ abstract class ADialog {
 
   destroy() {
     this.popper.destroy();
+    this.node.remove();
   }
 }
 

@@ -8,7 +8,8 @@
   .#{$lu_css_prefix}-dialog {
     background-color: white;
     border: 1px solid black;
-    display: block;
+    display: flex;
+    flex-direction: column;
     position: absolute;
     padding: 5px;
     z-index: 9;
@@ -36,6 +37,16 @@
     button[type=submit],
     button[type=reset],
     button[title=cancel] {
+      margin-top: 0.5em;
+      border: none;
+      background: none;
+
+      &:hover,
+      &:active,
+      &:focus {
+        color: darkblue;
+      }
+
       &::before {
         @include lu_icons();
       }
@@ -56,34 +67,48 @@
     button[type=submit] {
       float: right;
     }
-  }
 
-  .#{$lu_css_prefix}-dialog {
-    .selectionTable {
-      background: white;
-      overflow-x: auto;
-      overflow-y: auto;
-      max-height: 50vh;
+    &.#{$lu_css_prefix}-sub-nested {
+      width: 100px;
+    }
 
-      td,
-      th {
-        white-space: nowrap;
-        padding: 1px 5px 1px 3px;
-        cursor: pointer;
+    &.#{$lu_css_prefix}-filter-table {
+      > div:first-of-type {
+        overflow-y: auto;
+        max-height: 50vh;
+        display: flex;
+        flex-direction: column;
+
+        * {
+          transition: all 0.5s ease;
+        }
+
+        span {
+          width: 1.2em;
+          margin: 0 0.5em;
+        }
+
+        input[type=number] + div {
+          width: 3em;
+          position: relative;
+
+          > * {
+            height: 100%;
+          }
+        }
+
+        input[type=checkbox]:not(:checked) ~ * {
+          opacity: 0.5;
+        }
+
+        > * {
+          display: flex;
+        }
       }
+    }
 
-      th {
-        border-bottom: #c1c1c1 1px solid;
-      }
-
-      table {
-        width: 95%;
-        border: 0;
-      }
-
-      tr:hover {
-        background-color: lightblue;
-      }
+    .#{$lu_css_prefix}_filter_missing {
+      margin-top: 1em;
     }
 
     .script-description {
@@ -97,22 +122,6 @@
           padding-left: 1em;
         }
       }
-    }
-
-    .lu-sub-nested {
-      width: 100px;
-    }
-
-    &.lu-rename-dialog {
-      input {
-        width: 100%;
-        display: block;
-      }
-    }
-
-    div.bar {
-      height: 1em;
-      transition: width 0.5s ease;
     }
   }
 }

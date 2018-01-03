@@ -13,6 +13,7 @@ export default class MoreColumnOptionsDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
+    node.classList.add('lu-more-options');
     createToolbarMenuItems(<any>addIconDOM(node, this.column, this.ctx, true), this.column, this.ctx);
   }
 }

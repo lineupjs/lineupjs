@@ -29,7 +29,7 @@ export default class WeightsEditDialog extends ADialog {
 
     const children = this.column.children;
     node.insertAdjacentHTML('beforeend', `<div>
-        ${this.weights.map((weight, i) => `<div><input type="number" value="${round(weight * 100, 2)}" min="0" max="100" size="5"><span style="background-color: ${children[i].color}; width: ${round(weight * 100, 2)}%"></span>${children[i].label}</div>`)}
+        ${this.weights.map((weight, i) => `<div><input type="number" value="${round(weight * 100, 2)}" min="0" max="100" size="5"><span style="background-color: ${children[i].color}; width: ${round(weight * 100, 2)}%"></span>${children[i].label}</div>`).join('')}
     </div>`);
     this.forEach('input[type=number]', (d: HTMLInputElement) => {
       d.oninput = () => {

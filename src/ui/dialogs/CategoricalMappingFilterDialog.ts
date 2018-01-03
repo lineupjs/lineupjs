@@ -1,8 +1,8 @@
+import {round} from '../../internal/math';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import {ICategoricalFilter, isIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup} from '../missing';
 import ADialog from './ADialog';
-import {filtered} from './CategoricalFilterDialog';
 
 
 export default class CategoricalMappingFilterDialog extends ADialog {
@@ -26,24 +26,22 @@ export default class CategoricalMappingFilterDialog extends ADialog {
       cat: d,
       color: colors[i]!,
       label: labels[i]!,
-      range: range[i]!
+      range: round(range[i]!*100,2)
     }));
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
     node.insertAdjacentHTML('beforeend', `<div>
-        ${joint.map(({cat, color, label, range}) => `<div${!isIncluded(this.before, cat) ? 'data-no="no"' : ''} data-cat="${cat}">
-        <input type="number" value="${range}" min="0" max="100" size="5"><span style="background-color: ${color}; width: ${range}%"></span>${label}</div>`)}
-        <div>Unselect All</div>
+        ${joint.map(({cat, color, label, range}) => `<label><input data-cat="${cat}" type="checkbox"${isIncluded(this.before, cat) ? 'checked' : ''}>
+        <input type="number" value="${range}" min="0" max="100" size="5"><div><div style="background-color: ${color}; width: ${range}%"></div></div><div>${label}</div></label>`).join('')}
+        <label><input type="checkbox" checked><div>Unselect All</div></label>
     </div>`);
     // selectAll
-    (<HTMLElement>node.lastElementChild!.lastElementChild!).onclick = function (this: HTMLElement) {
-      const no = this.dataset.no !== 'no';
-      filtered(this, no);
-      Array.from(node.querySelectorAll('[data-cat]')).forEach((n: HTMLElement) => filtered(n, no));
+    this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: HTMLInputElement) {
+      Array.from(node.querySelectorAll('[data-cat]')).forEach((n: HTMLInputElement) => n.checked = this.checked);
     };
     this.forEach('input[type=number]', (d: HTMLInputElement) => {
       d.oninput = () => {
-        (<HTMLElement>d.nextElementSibling).style.width = `${d.value}px`;
+        (<HTMLElement>d.nextElementSibling!.firstElementChild).style.width = `${d.value}%`;
       };
     });
     node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
@@ -56,19 +54,19 @@ export default class CategoricalMappingFilterDialog extends ADialog {
   }
 
   reset() {
-    this.forEach('[data-cat]', (n: HTMLElement) => {
-      filtered(n, false);
-      n.querySelector('input')!.value = '50';
+    this.forEach('[data-cat]', (n: HTMLInputElement) => {
+      n.checked = false;
+      (<HTMLInputElement>n.nextElementSibling!).value = '50';
     });
     this.updateFilter(null, false);
     this.column.setMapping(this.column.categories.map(() => 1));
   }
 
   submit() {
-    const items = this.forEach('[data-cat]', (n: HTMLElement) => ({
-      checked: n.dataset.no !== 'no',
+    const items = this.forEach('input[data-cat]', (n: HTMLInputElement) => ({
+      checked: n.checked,
       cat: n.dataset.cat!,
-      range: parseFloat(n.querySelector('input')!.value)
+      range: parseFloat((<HTMLInputElement>n.nextElementSibling)!.value)
     }));
     let f: string[] | null = items.filter((d) => d.checked).map((d) => d.cat);
     if (f.length === this.column.categories.length) { // all checked = no filter

@@ -20,7 +20,7 @@ export function removeAllPopups() {
     return;
   }
 
-  visiblePopups.splice(0, visiblePopups.length).forEach((d) => {
+  visiblePopups.splice(0, visiblePopups.length).reverse().forEach((d) => {
     d.node.ownerDocument.removeEventListener('keyup', escKeyListener);
     d.destroy();
   });

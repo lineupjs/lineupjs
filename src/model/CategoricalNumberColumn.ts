@@ -86,6 +86,11 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.colors(cat);
   }
 
+  getSaveValue(row: IDataRow) {
+    const v = super.getValue(row);
+    return typeof(v) === 'undefined' || v == null ? '' : String(v);
+  }
+
   getLabel(row: IDataRow) {
     return CategoricalColumn.prototype.getLabel.call(this, row);
   }

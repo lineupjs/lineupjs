@@ -23,14 +23,12 @@ export default class CategoricalFilterDialog extends ADialog {
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
     node.insertAdjacentHTML('beforeend', `<div>
-        ${joint.map(({cat, color, label}) => `<div${!isIncluded(this.before, cat) ? 'data-no="no"': ''} data-cat="${cat}"><span style="background-color: ${color}"></span>${label}</div>`)}
-        <div>Unselect All</div>
+        ${joint.map(({cat, color, label}) => `<label><input data-cat="${cat}" type="checkbox"${isIncluded(this.before, cat) ? 'checked': ''}><span style="background-color: ${color}"></span><div>${label}</div></label>`).join('')}
+        <label><input type="checkbox" checked><span></span><div>Unselect All</div></label>
     </div>`);
     // selectAll
-    (<HTMLElement>this.node.lastElementChild!.lastElementChild!).onclick = function(this: HTMLElement) {
-      const no = this.dataset.no !== 'no';
-      filtered(this, no);
-      Array.from(node.querySelectorAll('[data-cat]')).forEach( (n: HTMLElement) => filtered(n, no));
+    this.findInput('input:not([data-cat])').onchange = function(this: HTMLInputElement) {
+      Array.from(node.querySelectorAll('input[data-cat]')).forEach( (n: HTMLInputElement) => n.checked = this.checked);
     };
     node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
   }
@@ -42,25 +40,17 @@ export default class CategoricalFilterDialog extends ADialog {
   }
 
   reset() {
-    this.forEach('[data-cat]', (n: HTMLElement) => filtered(n, false));
+    this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked = true);
     this.updateFilter(null, false);
   }
 
   submit() {
-    let f: string[]|null = this.forEach('[data-cat]', (n: HTMLElement) => ({checked: n.dataset.no !== 'no', cat: n.dataset.cat!})).filter((d) => d.checked).map((d) => d.cat);
+    let f: string[]|null = this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked ? n.dataset.cat! : '').filter(Boolean);
     if (f.length === this.column.categories.length) { // all checked = no filter
       f = null;
     }
     const filterMissing = this.findInput('input[type="checkbox"].lu_filter_missing').checked;
     this.updateFilter(f, filterMissing);
     return true;
-  }
-}
-
-export function filtered(n: HTMLElement, filtered: boolean) {
-  if (filtered) {
-    delete n.dataset.no;
-  } else {
-    n.dataset.no = 'no';
   }
 }
