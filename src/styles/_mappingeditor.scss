@@ -1,0 +1,106 @@
+@import './vars';
+@import './icons/index';
+
+@at-root {
+  .#{$lu_css_prefix}-dialog-mapper {
+    width: 20em;
+
+    > .#{$lu_css_prefix}-summary {
+      height: 5em;
+      margin: 0.5em 3px 0;
+    }
+
+    input[type=number] {
+      width: 5em;
+    }
+
+    div.#{$lu_css_prefix}-script {
+      margin-top: 1em;
+      display: none;
+
+      textarea {
+        height: 4em;
+        width: 98%;
+        font-size: 8pt;
+        display: block;
+      }
+    }
+
+    &[data-scale=script] div.#{$lu_css_prefix}-script {
+      display: block;
+    }
+
+    h4[data-toggle] {
+      margin-top: 1em;
+
+      &::before {
+        @include lu_icons();
+
+        content: $lu_icon_caret_right;
+        width: 0.8em;
+        cursor: pointer;
+      }
+
+      &[data-toggle=open]::before {
+        content: $lu_icon_caret_down;
+      }
+    }
+
+    .#{$lu_css_prefix}-details {
+      display: none;
+    }
+
+    [data-toggle=open] ~ .#{$lu_css_prefix}-details {
+      display: block;
+    }
+
+    svg {
+      shape-rendering: geometricprecision;
+      height: 20em * 6 / 10;
+
+      rect {
+        fill: transparent;
+        stroke: none;
+      }
+
+      line {
+        stroke: $lu_mapping_bg;
+        stroke-width: 0.75;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+      }
+
+      line:not([x1]) { // the horizontal lines
+        stroke-width: 1;
+      }
+
+      circle {
+        fill: $lu_mapping_circle;
+      }
+
+      g.#{$lu_css_prefix}-mapping {
+        cursor: ew-resize;
+
+        > line:first-child {
+          stroke-width: 5;
+          stroke: transparent !important;
+        }
+
+        &.#{$lu_css_prefix}-frozen circle:first-of-type {
+          cursor: not-allowed;
+          fill: $lu_mapping_circle !important;
+        }
+
+        &:hover {
+          circle {
+            fill: $lu_mapping_hover;
+          }
+
+          line {
+            stroke: $lu_mapping_hover;
+          }
+        }
+      }
+    }
+  }
+}
