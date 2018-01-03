@@ -8,8 +8,7 @@
   overflow: hidden;
   display: grid;
   grid-template-columns: auto auto;
-  grid-column-gap: 0.2em;
-  grid-row-gap: 0.2em;
+  grid-gap: 0.2em;
 
   > div {
     overflow: hidden;
