@@ -1,6 +1,4 @@
-import {D3DragEvent, drag} from 'd3-drag';
-import {event as d3event, select, Selection} from 'd3-selection';
-import {round, similar} from '../../internal/math';
+import {round} from '../../internal/math';
 import Column from '../../model/Column';
 import {isSameFilter, noNumberFilter} from '../../model/INumberColumn';
 import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../../model/MappingFunction';
@@ -8,85 +6,8 @@ import {IMapAbleColumn} from '../../model/NumberColumn';
 import {IRankingHeaderContext} from '../interfaces';
 import NumberSummary from '../summary/number';
 import ADialog from './ADialog';
+import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 
-function clamp(v: number) {
-  return Math.max(Math.min(v, 100), 0);
-}
-
-class MappingLine {
-  readonly node: SVGGElement;
-
-  private readonly $select: Selection<SVGGElement, any, any, any>;
-
-  constructor(g: SVGGElement, public domain: number, public range: number, updated: () => void) {
-    g.insertAdjacentHTML('beforeend', `<g class="lu-mapping" transform="translate(${domain},0)">
-      <line x1="0" x2="${range - domain}" y2="60"></line>
-      <line x1="0" x2="${range - domain}" y2="60"></line>
-      <circle r="3"></circle>
-      <circle cx="${range - domain}" cy="60" r="3"></circle>
-      <title>Drag the anchor circle to change the mapping, shift click to edit</title>
-    </g>`);
-    this.node = <SVGGElement>g.lastElementChild!;
-
-    // freeze 0 and 100 domain = raw domain ones
-    this.node.classList.toggle('lu-frozen', similar(0, domain) || similar(domain, 100));
-    this.$select = select(this.node);
-    {
-      let beforeDomain: number;
-      let beforeRange: number;
-      let shiftDomain: number;
-      let shiftRange: number;
-      this.$select.selectAll('line:first-of-type, circle').call(drag()
-        .container(function (this: SVGCircleElement) {
-          return <any>this.parentNode!.parentNode;
-        }).filter(() => d3event.button === 0 && !d3event.shiftKey)
-        .on('start', () => {
-          beforeDomain = this.domain;
-          beforeRange = this.range;
-          const evt = (<D3DragEvent<any, any, any>>d3event);
-          shiftDomain = this.domain - evt.x;
-          shiftRange = this.range - evt.x;
-        }).on('drag', (_, i) => {
-          const evt = (<D3DragEvent<any, any, any>>d3event);
-          switch(i) {
-            case 0: // line
-              this.update(clamp(evt.x + shiftDomain), clamp(evt.x + shiftRange));
-              break;
-            case 1: // domain circle
-              this.update(clamp(evt.x), this.range);
-              break;
-            case 2: // range circle
-              this.update(this.domain, clamp(evt.x));
-              break;
-          }
-        }).on('end', () => {
-          if (!similar(beforeDomain, this.domain) || !similar(beforeRange, this.range)) {
-            updated();
-          }
-        })
-      );
-    }
-  }
-
-  destroy() {
-    this.node.remove();
-  }
-
-  update(domain: number, range: number) {
-    if (similar(domain, this.domain) && similar(range, this.range)) {
-      return;
-    }
-    if (this.node.classList.contains('lu-frozen')) {
-      domain = this.domain;
-    }
-    this.domain = domain;
-    this.range = range;
-    this.node.setAttribute('transform', `translate(${domain},0)`);
-    const shift = range - domain;
-    this.$select.selectAll('line')!.attr('x2', String(shift));
-    this.$select.select('circle[cx]').attr('cx', String(shift));
-  }
-}
 
 export default class MappingsFilterDialog extends ADialog {
 
@@ -96,6 +17,16 @@ export default class MappingsFilterDialog extends ADialog {
 
   private mappingLines: MappingLine[] = [];
   private rawDomain: number[];
+
+  private readonly mappingAdapter: IMappingAdapter = {
+    destroyed: (self: MappingLine) => {
+      this.mappingLines.splice(this.mappingLines.indexOf(self), 1);
+    },
+    updated: () => null, // TODO
+    domain: () => this.rawDomain,
+    normalizeRaw: this.normalizeRaw.bind(this),
+    unnormalizeRaw: this.unnormalizeRaw.bind(this)
+  };
 
   constructor(private readonly column: IMapAbleColumn & Column, attachment: HTMLElement, private readonly ctx: IRankingHeaderContext) {
     super(attachment, {
@@ -167,7 +98,7 @@ export default class MappingsFilterDialog extends ADialog {
       evt.stopPropagation();
       evt.preventDefault();
       const elem = (<HTMLElement>evt.currentTarget).dataset;
-      elem.toggle = elem.toggle === 'open'  ? '' : 'open';
+      elem.toggle = elem.toggle === 'open' ? '' : 'open';
     };
 
     const g = <SVGGElement>node.querySelector('.lu-details > g');
@@ -177,11 +108,20 @@ export default class MappingsFilterDialog extends ADialog {
       evt.stopPropagation();
       const bb = d.getBoundingClientRect();
       const x = round((evt.x - bb.left) * 100 / bb.width, 2);
-      const m = new MappingLine(g, x, x, () => null);
+      const m = new MappingLine(g, x, x, this.mappingAdapter);
       this.mappingLines.push(m);
     });
 
     {
+      const createMappings = () => {
+        if (!(this.scale instanceof ScaleMappingFunction)) {
+          return;
+        }
+        const domain = this.scale.domain;
+        const range = this.scale.range;
+        this.mappingLines = domain.map((d, i) => new MappingLine(g, this.normalizeRaw(d), range[i] * 100, this.mappingAdapter));
+      };
+
       const select = <HTMLSelectElement>this.find('select');
       const textarea = <HTMLTextAreaElement>this.find('textarea');
       select.onchange = (evt) => {
@@ -204,11 +144,7 @@ export default class MappingsFilterDialog extends ADialog {
         }
         this.mappingLines.forEach((d) => d.destroy());
         this.mappingLines = [];
-        if (this.scale instanceof ScaleMappingFunction) {
-          const domain = this.scale.domain;
-          const range = this.scale.range;
-          this.mappingLines = domain.map((d, i) => new MappingLine(g, this.normalizeRaw(d), range[i] * 100, () => null));
-        }
+        createMappings();
         node.dataset.scale = select.value;
       };
       const scaleType = node.dataset.scale = this.scaleType;
@@ -217,11 +153,7 @@ export default class MappingsFilterDialog extends ADialog {
       if (scaleType === 'script') {
         textarea.value = (<ScriptMappingFunction>this.scale).code;
       }
-      if (this.scale instanceof ScaleMappingFunction) {
-        const domain = this.scale.domain;
-        const range = this.scale.range;
-        this.mappingLines = domain.map((d, i) => new MappingLine(g, this.normalizeRaw(d), range[i] * 100, () => null));
-      }
+      createMappings();
     }
 
     {
@@ -231,7 +163,7 @@ export default class MappingsFilterDialog extends ADialog {
           d.setCustomValidity('');
           return;
         }
-        const other =  this.rawDomain[1 - i];
+        const other = this.rawDomain[1 - i];
         if (isNaN(v) || (i === 0 && v >= other) || (i === 1 && v <= other)) {
           d.setCustomValidity(`value has to be ${i === 0 ? '<= max' : '>= min'}`);
           return;
@@ -286,6 +218,7 @@ export default class MappingsFilterDialog extends ADialog {
       this.scale.domain = this.rawDomain.slice();
     }
     if (this.scale instanceof ScaleMappingFunction) {
+      this.mappingLines.sort((a, b) => a.domain - b.domain);
       this.scale.domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
       this.scale.range = this.mappingLines.map((d) => d.range / 100);
     }
