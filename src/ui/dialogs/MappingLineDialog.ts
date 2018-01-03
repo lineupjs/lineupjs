@@ -9,11 +9,52 @@ function clamp(v: number) {
 
 export interface IMappingAdapter {
   destroyed(self: MappingLine): void;
+
   updated(self: MappingLine): void;
+
   domain(): number[];
+
   normalizeRaw(v: number): number;
+
   unnormalizeRaw(v: number): number;
 }
+
+
+export default class MappingLineDialog extends ADialog {
+  constructor(private readonly line: { destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void }, attachment: HTMLElement, private readonly adapter: IMappingAdapter) {
+    super(attachment, {
+      hideOnMoveOutside: true
+    });
+  }
+
+  build(node: HTMLElement) {
+    const domain = this.adapter.domain();
+    node.insertAdjacentHTML('beforeend', `
+        <h4>Input Domain Value (min ... max)</h4>
+        <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
+        <h4>Output Normalized Value (0 ... 1)</h4>
+        <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
+        <button type="button" ${this.line.frozen ? 'disabled' : ''} >Remove Mapping Line</button>
+      `);
+
+    this.forEach('input', (d) => d.onchange = () => this.submit());
+    this.find('button').addEventListener('click', () => {
+      this.destroy();
+      this.line.destroy();
+    });
+  }
+
+  protected submit() {
+    if (!this.node.checkValidity()) {
+      return false;
+    }
+    const domain = this.adapter.normalizeRaw(parseFloat(this.findInput('input[type=number]').value));
+    const range = parseFloat(this.findInput('input[type=number]:last-of-type').value) * 100;
+    this.line.update(domain, range);
+    return true;
+  }
+}
+
 
 export class MappingLine {
   readonly node: SVGGElement;
@@ -100,40 +141,5 @@ export class MappingLine {
     const shift = range - domain;
     this.$select.selectAll('line')!.attr('x2', String(shift));
     this.$select.select('circle[cx]').attr('cx', String(shift));
-  }
-}
-
-export default class MappingLineDialog extends ADialog {
-  constructor(private readonly line: MappingLine, attachment: HTMLElement, private readonly adapter: IMappingAdapter) {
-    super(attachment, {
-      hideOnMoveOutside: true
-    });
-  }
-
-  build(node: HTMLElement) {
-    const domain = this.adapter.domain();
-    node.insertAdjacentHTML('beforeend', `
-        <h4>Input Domain Value (min ... max)</h4>
-        <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
-        <h4>Output Normalized Value (0 ... 1)</h4>
-        <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
-        <button type="button" ${this.line.frozen ? 'disabled' : ''} >Remove Mapping Line</button>
-      `);
-
-    this.forEach('input', (d) => d.onchange = () => this.submit());
-    this.find('button').addEventListener('click', () => {
-      this.destroy();
-      this.line.destroy();
-    });
-  }
-
-  protected submit() {
-    if (!this.node.checkValidity()) {
-      return false;
-    }
-    const domain = this.adapter.normalizeRaw(parseFloat(this.findInput('input[type=number]').value));
-    const range = parseFloat(this.findInput('input[type=number]:last-of-type').value) * 100;
-    this.line.update(domain, range);
-    return true;
   }
 }
