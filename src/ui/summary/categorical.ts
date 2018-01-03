@@ -1,16 +1,19 @@
 import {DENSE_HISTOGRAM} from '../../config';
-import {ICategoricalStatistics} from '../../internal/math';
+import {ICategoricalStatistics, IStatistics} from '../../internal/math';
 import {ICategoricalColumn} from '../../model';
 import CategoricalColumn from '../../model/CategoricalColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import Column from '../../model/Column';
 import {isIncluded} from '../../model/ICategoricalColumn';
-import {IRankingHeaderContext} from '../interfaces';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 
 
+interface IContextIsh {
+  statsOf(col: ICategoricalColumn & Column): IStatistics | null | ICategoricalStatistics;
+}
+
 export default class CategoricalSummary {
-  update: (ctx: IRankingHeaderContext) => void;
+  update: (ctx: IContextIsh) => void;
 
   constructor(private readonly col: ICategoricalColumn & Column, private readonly node: HTMLElement, interactive: boolean) {
     if (col.categories.length > DENSE_HISTOGRAM * 2) {
@@ -61,7 +64,7 @@ export default class CategoricalSummary {
 
     const common = this.initCommon(false);
 
-    return (ctx: IRankingHeaderContext) => {
+    return (ctx: IContextIsh) => {
       const stats = <ICategoricalStatistics>ctx.statsOf(this.col);
       common(stats);
     };
@@ -129,7 +132,7 @@ export default class CategoricalSummary {
 
     const interactive = this.interactiveHist(col);
 
-    return (ctx: IRankingHeaderContext) => {
+    return (ctx: IContextIsh) => {
       const stats = <ICategoricalStatistics>ctx.statsOf(this.col);
       common(stats);
       interactive();
@@ -158,7 +161,7 @@ export default class CategoricalSummary {
       }
     };
 
-    return (ctx: IRankingHeaderContext) => {
+    return (ctx: IContextIsh) => {
       const stats = <ICategoricalStatistics>ctx.statsOf(this.col);
       common(stats);
       interactive();

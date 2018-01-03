@@ -5,9 +5,9 @@
 import {D3DragEvent, drag} from 'd3-drag';
 import {scaleLinear} from 'd3-scale';
 import {event as d3event, mouse, select, selectAll, Selection} from 'd3-selection';
-import {INumberFilter} from '../model/INumberColumn';
-import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../model/MappingFunction';
-import {filterMissingText} from './missing';
+import {INumberFilter} from '../../model/INumberColumn';
+import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../../model/MappingFunction';
+import {filterMissingText} from '../missing';
 
 
 function clamp(v: number, min: number, max: number) {

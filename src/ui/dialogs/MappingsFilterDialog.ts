@@ -3,7 +3,7 @@ import {INumberFilter, noNumberFilter} from '../../model/INumberColumn';
 import {IMappingFunction} from '../../model/MappingFunction';
 import {IMapAbleColumn} from '../../model/NumberColumn';
 import {IDataProvider} from '../../provider/ADataProvider';
-import MappingEditor, {IMappingEditorOptions} from '../mappingeditor';
+import MappingEditor, {IMappingEditorOptions} from './mappingeditor';
 import ADialog from './ADialog';
 
 export default class MappingsFilterDialog extends ADialog {

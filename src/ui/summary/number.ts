@@ -1,16 +1,18 @@
 import {D3DragEvent, drag} from 'd3-drag';
 import {event as d3event, selectAll} from 'd3-selection';
 import {DENSE_HISTOGRAM} from '../../config';
-import {IStatistics, round} from '../../internal/math';
+import {ICategoricalStatistics, IStatistics, round} from '../../internal/math';
 import {INumberColumn} from '../../model';
 import Column from '../../model/Column';
 import NumberColumn, {isMapAbleColumn} from '../../model/NumberColumn';
-import {IRankingHeaderContext} from '../interfaces';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 
+interface IContextIsh {
+  statsOf(col: INumberColumn & Column): IStatistics | null | ICategoricalStatistics;
+}
 
 export default class NumberSummary {
-  update: (ctx: IRankingHeaderContext) => void;
+  update: (ctx: IContextIsh) => void;
 
   constructor(private readonly col: INumberColumn & Column, private readonly node: HTMLElement, interactive: boolean) {
     this.update = interactive && col instanceof NumberColumn ? this.initInteractive() : this.initStatic();
@@ -19,7 +21,7 @@ export default class NumberSummary {
   private initStatic() {
     this.node.dataset.summary = 'hist';
 
-    return (ctx: IRankingHeaderContext) => {
+    return (ctx: IContextIsh) => {
       this.node.innerHTML = '';
 
       if (isMapAbleColumn(this.col)) {
@@ -48,7 +50,7 @@ export default class NumberSummary {
 
     const updateFilter = this.initFilter(ncol);
 
-    return (ctx: IRankingHeaderContext) => {
+    return (ctx: IContextIsh) => {
       const stats = <IStatistics>ctx.statsOf(this.col);
       updateFilter(stats.missing || 0);
 
@@ -98,8 +100,8 @@ export default class NumberSummary {
     node.insertAdjacentHTML('beforeend', `
       <div data-handle="min-hint" style="width: ${f.percent(f.filterMin)}%"></div>
       <div data-handle="max-hint" style="width: ${100 - f.percent(f.filterMax)}%"></div>
-      <div data-handle="min" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%"></div>
-      <div data-handle='max' data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%"></div>
+      <div data-handle="min" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
+      <div data-handle='max' data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
       ${filterMissingNumberMarkup(f.filterMissing, 0)}
     `);
 
@@ -120,6 +122,16 @@ export default class NumberSummary {
         min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : minValue,
         max: Math.abs(maxValue - domain[1]) < 0.001 ? NaN : maxValue
       });
+    };
+
+    min.ondblclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+    };
+
+    min.ondblclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
     };
 
     filterMissing.onchange = () => setFilter();
