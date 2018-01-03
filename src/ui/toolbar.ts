@@ -1,7 +1,6 @@
 import {getAllToolbarActions, isSupportType} from '../model/annotations';
 import Column from '../model/Column';
 import {default as CompositeColumn, IMultiLevelColumn} from '../model/CompositeColumn';
-import {IDataProvider} from '../provider/ADataProvider';
 import ADialog from '../ui/dialogs/ADialog';
 import ChangeRendererDialog from '../ui/dialogs/ChangeRendererDialog';
 import MoreColumnOptionsDialog from '../ui/dialogs/MoreColumnOptionsDialog';
@@ -44,10 +43,6 @@ export interface IDialogClass {
   new(col: any, attachement: HTMLElement, ...args: any[]): ADialog;
 }
 
-export interface IFilterDialog {
-  new(col: Column, attachement: HTMLElement, data: IDataProvider, idPrefix: string): ADialog;
-}
-
 export function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
   return {title, onClick, options};
 }
@@ -60,10 +55,6 @@ export function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((
       dialog.open();
     }, options
   };
-}
-
-export function filterBy(dialogClass: IFilterDialog) {
-  return uiDialog('Filter &hellip;', dialogClass, (ctx) => [ctx.provider, ctx.idPrefix]);
 }
 
 const sort: IToolbarAction = {
@@ -161,11 +152,11 @@ export const icons: { [key: string]: IToolbarAction } = {
     shortcut: true,
     order: 2
   }),
-  filterMapped: filterBy(MappingsFilterDialog),
-  filterString: filterBy(StringFilterDialog),
-  filterCategorical: filterBy(CategoricalFilterDialog),
-  filterOrdinal: filterBy(CategoricalMappingFilterDialog),
-  filterBoolean: filterBy(BooleanFilterDialog),
+  filterMapped: uiDialog('Filter &hellip;', MappingsFilterDialog, (ctx) => [ctx]),
+  filterString: uiDialog('Filter &hellip;', StringFilterDialog),
+  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog),
+  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog),
+  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog),
   script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),

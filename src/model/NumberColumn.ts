@@ -21,7 +21,7 @@ export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
 
-export interface IMapAbleColumn {
+export interface IMapAbleColumn extends INumberColumn {
   getOriginalMapping(): IMappingFunction;
 
   getMapping(): IMappingFunction;

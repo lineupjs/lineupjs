@@ -5,6 +5,7 @@ import {ICategoricalStatistics, IStatistics, round} from '../../internal/math';
 import {INumberColumn} from '../../model';
 import Column from '../../model/Column';
 import NumberColumn, {isMapAbleColumn} from '../../model/NumberColumn';
+import InputNumberDialog from '../dialogs/InputNumberDialog';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 
 interface IContextIsh {
@@ -82,12 +83,14 @@ export default class NumberSummary {
     const filter = col.getFilter();
     const domain = col.getMapping().domain;
     const percent = (v: number) => Math.round(100 * (v - domain[0]) / (domain[1] - domain[0]));
+    const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
     const filterMin = isFinite(filter.min) ? filter.min : domain[0];
     const filterMax = isFinite(filter.max) ? filter.max : domain[1];
     return {
       filterMissing: filter.filterMissing,
       domain,
       percent,
+      unpercent,
       filterMin,
       filterMax
     };
@@ -100,8 +103,8 @@ export default class NumberSummary {
     node.insertAdjacentHTML('beforeend', `
       <div data-handle="min-hint" style="width: ${f.percent(f.filterMin)}%"></div>
       <div data-handle="max-hint" style="width: ${100 - f.percent(f.filterMax)}%"></div>
-      <div data-handle="min" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
-      <div data-handle='max' data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
+      <div data-handle="min" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or right click to change"></div>
+      <div data-handle='max' data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or right click to change"></div>
       ${filterMissingNumberMarkup(f.filterMissing, 0)}
     `);
 
@@ -113,25 +116,50 @@ export default class NumberSummary {
 
 
     const setFilter = () => {
-      const domain = col.getMapping().domain;
-      const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
-      const minValue = unpercent(parseFloat(min.style.left!));
-      const maxValue = unpercent(100 - parseFloat(max.style.right!));
+      const f = NumberSummary.filter(col);
+      const minValue = f.unpercent(parseFloat(min.style.left!));
+      const maxValue = f.unpercent(100 - parseFloat(max.style.right!));
       col.setFilter({
         filterMissing: filterMissing.checked,
-        min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : minValue,
-        max: Math.abs(maxValue - domain[1]) < 0.001 ? NaN : maxValue
+        min: Math.abs(minValue - f.domain[0]) < 0.001 ? NaN : minValue,
+        max: Math.abs(maxValue - f.domain[1]) < 0.001 ? NaN : maxValue
       });
     };
 
-    min.ondblclick = (evt) => {
+    min.oncontextmenu = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
+
+      const f = NumberSummary.filter(col);
+      const value = f.unpercent(parseFloat(min.style.left!));
+
+      const dialog = new InputNumberDialog(min, (newValue) => {
+        minHint.style.width = `${f.percent(newValue)}%`;
+        min.dataset.value = round(newValue, 2).toString();
+        min.style.left = `${f.percent(newValue)}%`;
+        setFilter();
+      }, {
+        value, min: f.domain[0], max: f.domain[1]
+      });
+      dialog.open();
     };
 
-    min.ondblclick = (evt) => {
+    max.oncontextmenu = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
+
+      const f = NumberSummary.filter(col);
+      const value = f.unpercent(100 - parseFloat(max.style.right!));
+
+      const dialog = new InputNumberDialog(max, (newValue) => {
+        maxHint.style.width = `${100 - f.percent(newValue)}%`;
+        max.dataset.value = round(newValue, 2).toString();
+        max.style.right = `${100 - f.percent(newValue)}%`;
+        setFilter();
+      }, {
+        value, min: f.domain[0], max: f.domain[1]
+      });
+      dialog.open();
     };
 
     filterMissing.onchange = () => setFilter();

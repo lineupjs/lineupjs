@@ -6,6 +6,11 @@ export interface IDialogOptions {
   hideOnClickOutside: boolean;
   hideOnMoveOutside: boolean;
   fullDialog: boolean;
+
+  // popper options
+  placement?: Popper.Placement;
+  eventsEnabled?: boolean;
+  modifiers?: Popper.Modifiers;
 }
 
 abstract class ADialog {
@@ -14,7 +19,8 @@ abstract class ADialog {
     title: '',
     hideOnClickOutside: true,
     hideOnMoveOutside: false,
-    fullDialog: false
+    fullDialog: false,
+    placement: 'bottom-start'
   };
 
   readonly node: HTMLFormElement;
@@ -46,13 +52,12 @@ abstract class ADialog {
     }
 
     parent.appendChild(this.node);
-    this.popper = new Popper(this.attachment, this.node, {
-      placement: 'bottom-start'
-    });
+    this.popper = new Popper(this.attachment, this.node, this.options);
 
     const auto = this.find<HTMLInputElement>('input[autofocus]');
     if (auto) {
-      auto.focus();
+      // delay such that it works
+      setTimeout(() => auto.focus());
     }
 
     const reset = this.find<HTMLButtonElement>('button[type=reset]');

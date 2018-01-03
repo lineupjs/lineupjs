@@ -41,14 +41,16 @@
     button[type=submit],
     button[type=reset],
     button[title=cancel] {
-      margin-top: 0.5em;
+      margin-top: 1em;
       border: none;
       background: none;
+      color: $lu_toolbar_color_base;
+      transition: all 0.5s ease;
 
       &:hover,
       &:active,
       &:focus {
-        color: darkblue;
+        color: $lu_toolbar_color_hover;
       }
 
       &::before {
@@ -108,6 +110,13 @@
         > * {
           display: flex;
         }
+      }
+    }
+
+    &.#{$lu_css_prefix}-dialog-mapper {
+      > .#{$lu_css_prefix}-summary {
+        width: 20em;
+        height: 5em;
       }
     }
 
