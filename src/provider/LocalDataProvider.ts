@@ -224,7 +224,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
 
   mappingSample(col: INumberColumn & Column): number[] {
-    const MAX_SAMPLE = 500; //at most 500 sample lines
+    const MAX_SAMPLE = 120; //at most 500 sample lines
     const l = this._dataRows.length;
     if (l <= MAX_SAMPLE) {
       return <number[]>this._dataRows.map(col.getRawNumber.bind(col));

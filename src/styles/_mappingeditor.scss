@@ -32,13 +32,13 @@
 
     h4[data-toggle] {
       margin-top: 1em;
+      cursor: pointer;
 
       &::before {
         @include lu_icons();
 
         content: $lu_icon_caret_right;
         width: 0.8em;
-        cursor: pointer;
       }
 
       &[data-toggle=open]::before {
@@ -65,13 +65,20 @@
 
       line {
         stroke: $lu_mapping_bg;
-        stroke-width: 0.75;
+        stroke-width: 1;
         stroke-linejoin: round;
         stroke-linecap: round;
       }
 
       line:not([x1]) { // the horizontal lines
-        stroke-width: 1;
+        stroke-width: 1.25;
+      }
+
+      line[data-v] {
+        stroke-opacity: 0.5;
+        stroke-width: 0.5;
+        stroke: $lu_toolbar_color_base2;
+        pointer-events: none;
       }
 
       circle {
