@@ -23,6 +23,7 @@ export interface ILineUpOptions {
   summary: boolean;
   animation: boolean;
   wholeHover: boolean;
+  panel: boolean;
 
   groupHeight: number;
   groupPadding: number;

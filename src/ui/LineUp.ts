@@ -12,18 +12,21 @@ export default class LineUp extends ALineUp {
   private readonly renderer: EngineRenderer;
   private readonly panel: SidePanel;
 
+  private readonly options = defaultOptions();
 
   constructor(node: HTMLElement, data: DataProvider, options: Partial<ILineUpOptions> = {}) {
     super(node, data);
 
+    merge(this.options, options);
     this.node.classList.add('lu');
     this.node.innerHTML = `<aside class="panel"></aside>`;
 
-    this.renderer = new EngineRenderer(data, this.node, merge(defaultOptions(), options));
-    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument);
-    this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
-    this.node.firstElementChild!.appendChild(this.panel.node);
-
+    this.renderer = new EngineRenderer(data, this.node, this.options);
+    if (this.options.panel) {
+      this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument);
+      this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
+      this.node.firstElementChild!.appendChild(this.panel.node);
+    }
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
   }
 
@@ -40,6 +43,8 @@ export default class LineUp extends ALineUp {
     super.setDataProvider(data, dump);
     this.renderer.setDataProvider(data);
     this.update();
-    this.panel.update(this.renderer.ctx);
+    if (this.panel) {
+      this.panel.update(this.renderer.ctx);
+    }
   }
 }
