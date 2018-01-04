@@ -1,5 +1,6 @@
-import {IDataRow, IGroup, INumbersColumn, isMissingValue, isNumbersColumn} from '../model';
+import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
+import NumbersColumn from '../model/NumbersColumn';
 import {matchRows} from './ANumbersCellRenderer';
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
@@ -29,13 +30,14 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
   readonly title = 'Sparkline';
 
   canRender(col: Column) {
-    return isNumbersColumn(col);
+    return col instanceof NumbersColumn;
   }
 
-  create(col: INumbersColumn & Column) {
-    const yPos = 1 - col.getMapping().apply(col.getThreshold());
+  create(col: NumbersColumn) {
+    const dataLength = col.dataLength!;
+    const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
-      template: `<svg viewBox="0 0 ${col.getDataLength() - 1} 1" preserveAspectRatio="none meet"><line x1="0" x2="${col.getDataLength() - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
+      template: `<svg viewBox="0 0 ${dataLength - 1} 1" preserveAspectRatio="none meet"><line x1="0" x2="${dataLength - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;
@@ -47,10 +49,11 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn & Column) {
-    const yPos = 1 - col.getMapping().apply(col.getThreshold());
+  createGroup(col: NumbersColumn) {
+    const dataLength = col.dataLength!;
+    const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
-      template: `<svg viewBox="0 0 ${col.getDataLength()} 1" preserveAspectRatio="none meet"><line x1="0" x2="${col.getDataLength() - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
+      template: `<svg viewBox="0 0 ${dataLength} 1" preserveAspectRatio="none meet"><line x1="0" x2="${dataLength - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         //overlapping ones
         matchRows(n, rows, `<path></path>`);

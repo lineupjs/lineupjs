@@ -30,6 +30,7 @@ export interface ISplicer {
 @toolbar('sortNumbers', 'filterMapped')
 export default class NumbersColumn extends ArrayColumn<number> implements IAdvancedBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly CENTER = 0;
 
   private sort: EAdvancedSortMethod;
   private mapping: IMappingFunction;

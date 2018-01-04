@@ -2,7 +2,7 @@ import {DENSE_HISTOGRAM} from '../config';
 import {computeStats, getNumberOfBins, IStatistics} from '../internal/math';
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
+import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {colorOf} from './impose';
 import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
@@ -16,10 +16,10 @@ export default class HistogramRenderer implements ICellRendererFactory {
   readonly title = 'Histogram';
 
   canRender(col: Column, isGroup: boolean) {
-    return (isNumberColumn(col) && isGroup) || (isNumbersColumn(col) && !isGroup);
+    return (isNumberColumn(col) && isGroup) || (col instanceof NumbersColumn && !isGroup);
   }
 
-  private static getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn & Column, globalHist: IStatistics | null, imposer?: IImposer) {
+  private static getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn, globalHist: IStatistics | null, imposer?: IImposer) {
     const guessedBins = getNumberOfBins(totalNumberOfRows);
     let bins = '';
     for (let i = 0; i < guessedBins; ++i) {
@@ -62,7 +62,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumberColumn & Column, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
     const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, hist, imposer);
     return {
       template,
@@ -72,10 +72,10 @@ export default class HistogramRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createHist(globalHist: IStatistics | null, guessedBins: number, rows: IDataRow[], col: INumberColumn & Column) {
+  private static createHist(globalHist: IStatistics | null, guessedBins: number, rows: IDataRow[], col: INumberColumn) {
     const bins = globalHist ? globalHist.hist.length : guessedBins;
     let stats: IStatistics;
-    if (isNumbersColumn(col)) {
+    if (col instanceof NumbersColumn) {
       //multiple values
       const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r)));
       stats = computeStats(values, (v: number) => v, isMissingValue, [0, 1], bins);

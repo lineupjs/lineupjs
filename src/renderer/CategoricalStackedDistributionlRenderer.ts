@@ -18,15 +18,14 @@ export default class CategoricalStackedDistributionlRenderer implements ICellRen
     return noRenderer;
   }
 
-  createGroup(col: ICategoricalColumn & Column) {
-    const colors = col.categoryColors;
-    const labels = col.categoryLabels;
-    const bins = col.categories.map((c, i) => `<div style="background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}">${labels[i]}</div>`).join('');
+  createGroup(col: ICategoricalColumn) {
+    const cats = col.categories;
+    const bins = cats.map((c) => `<div style="background-color: ${c.color}" title="${c.label}: 0" data-cat="${c.name}">${c.label}</div>`).join('');
 
     return {
       template: `<div>${bins}<div title="Missing Values"></div></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const {hist, missing} = computeHist(rows, (r: IDataRow) => col.getCategories(r), col.categories);
+        const {hist, missing} = computeHist(rows, (r: IDataRow) => col.isMissing(r) ? '' : col.getCategory(r)!.name, col.categories.map((d) => d.name));
 
         const total = hist.reduce((acc, {y}) => acc + y, missing);
         forEachChild(n, (d: HTMLElement, i) => {
@@ -37,7 +36,7 @@ export default class CategoricalStackedDistributionlRenderer implements ICellRen
             label = 'Missing Values';
           } else {
             y = hist[i].y;
-            label = labels[i];
+            label = cats[i].label;
           }
           d.style.flexGrow = `${Math.round(total === 0 ? 0 : y)}`;
           d.title = `${label}: ${y}`;

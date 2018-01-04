@@ -1,12 +1,10 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, IGroup, isNumberColumn} from '../model';
-import {default as BoxPlotColumn, isBoxPlotColumn} from '../model/BoxPlotColumn';
+import {default as BoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
-import {
-  IBoxPlotColumn, IBoxPlotData, INumberColumn, INumbersColumn, isNumbersColumn,
-  LazyBoxPlotData
-} from '../model/INumberColumn';
+import {IBoxPlotColumn, IBoxPlotData, INumberColumn, isBoxPlotColumn, LazyBoxPlotData} from '../model/INumberColumn';
 import NumberColumn from '../model/NumberColumn';
+import NumbersColumn from '../model/NumbersColumn';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
@@ -27,7 +25,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (isBoxPlotColumn(col) && !isGroup || (isNumberColumn(col) && isGroup));
   }
 
-  create(col: IBoxPlotColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
@@ -68,13 +66,13 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createAggregatedBoxPlot(col: INumbersColumn & Column, rows: IDataRow[], raw = false): IBoxPlotData {
+  private static createAggregatedBoxPlot(col: NumbersColumn, rows: IDataRow[], raw = false): IBoxPlotData {
     // concat all values
     const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumber(r))));
     return new LazyBoxPlotData(vs);
   }
 
-  createGroup(col: INumberColumn & Column, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: `<div title="">
@@ -87,7 +85,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         }
         let box: IBoxPlotData, label: IBoxPlotData;
 
-        if (isNumbersColumn(col)) {
+        if (col instanceof NumbersColumn) {
           box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
           label = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows, true);
         } else {

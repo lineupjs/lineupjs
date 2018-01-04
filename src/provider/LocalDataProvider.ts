@@ -217,13 +217,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
 
     return {
-      stats: (col: INumberColumn & Column) => computeStats(getD(), col.getNumber.bind(col), col.isMissing.bind(col), [0, 1]),
-      hist: (col: ICategoricalColumn & Column) => computeHist(getD(), col.getCategories.bind(col), col.categories)
+      stats: (col: INumberColumn) => computeStats(getD(), col.getNumber.bind(col), col.isMissing.bind(col), [0, 1]),
+      hist: (col: ICategoricalColumn) => computeHist(getD(), col.getCategory.bind(col), col.categories.map((d) => d.name))
     };
   }
 
 
-  mappingSample(col: INumberColumn & Column): number[] {
+  mappingSample(col: INumberColumn): number[] {
     const MAX_SAMPLE = 120; //at most 500 sample lines
     const l = this._dataRows.length;
     if (l <= MAX_SAMPLE) {

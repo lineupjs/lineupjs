@@ -1,13 +1,12 @@
 /**
  * Created by Samuel Gratzl on 28.06.2017.
  */
-import {schemeCategory10} from 'd3-scale';
 import {toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {colorPool, ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_NAN, missingGroup} from './missing';
+import {missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface ICategoryNode extends ICategory {
@@ -25,11 +24,8 @@ export interface IHierarchyDesc {
 
 export declare type IHierarchyColumnDesc = IHierarchyDesc & IValueColumnDesc<string>;
 
-export interface ICategoryInternalNode {
+export interface ICategoryInternalNode extends ICategory {
   path: string;
-  name: string;
-  label: string;
-  color: string;
   children: Readonly<ICategoryInternalNode>[];
 }
 
@@ -78,6 +74,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
             name: child,
             label: path,
             color: colors(),
+            value: 0,
             children: []
           };
         }
@@ -90,25 +87,17 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
       });
       const path = prefix + name;
       const label = node.label ? `${node.label}` : path;
-      return {path, name, children, label, color: node.color!};
+      return {path, name, children, label, color: node.color!, value: 0};
     };
     return add('', root);
   }
 
+  get categories() {
+    return this.currentLeaves;
+  }
+
   protected createEventList() {
     return super.createEventList().concat([HierarchyColumn.EVENT_CUTOFF_CHANGED]);
-  }
-
-  get categories() {
-    return this.currentLeaves.map((c) => c.name);
-  }
-
-  get categoryLabels() {
-    return this.currentLeaves.map((c) => c.label);
-  }
-
-  get categoryColors() {
-    return this.currentLeaves.map((c) => c.color);
   }
 
   getCutOff(): ICutOffNode {
@@ -131,94 +120,70 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
   }
 
-  private resolveCategories(row: IDataRow): ICategoryInternalNode[] {
-    const base: string = CategoricalColumn.prototype.getSaveValue.call(this, row);
-    if (base == null || base === '') {
-      return [];
+  getCategory(row: IDataRow) {
+    let v = super.getValue(row);
+    if (v == null || v === '') {
+      return null;
     }
-    return <ICategoryInternalNode[]>base.split(this.separator).map((v) => {
-      v = v.trim();
-      if (this.currentLeavesNameCache.has(v)) {
-        return this.currentLeavesNameCache.get(v);
-      }
-      if (this.currentLeavesPathCache.has(v)) {
-        return this.currentLeavesPathCache.get(v);
-      }
-      return this.currentLeaves.find((n) => {
-        //direct hit or is a child of it
-        return n.path === v || n.name === v || v.startsWith(n.path + this.hierarchySeparator);
-      });
-    }).filter((v) => Boolean(v));
+    v = v.trim();
+    if (this.currentLeavesNameCache.has(v)) {
+      return this.currentLeavesNameCache.get(v)!;
+    }
+    if (this.currentLeavesPathCache.has(v)) {
+      return this.currentLeavesPathCache.get(v)!;
+    }
+    return this.currentLeaves.find((n) => {
+      //direct hit or is a child of it
+      return n.path === v || n.name === v || v!.startsWith(n.path + this.hierarchySeparator);
+    }) || null;
   }
 
-  private resolveCategory(row: IDataRow) {
-    const base = this.resolveCategories(row);
-    return base.length > 0 ? base[0] : null;
+  get dataLength() {
+    return this.currentLeaves.length;
+  }
+
+  get labels() {
+    return this.currentLeaves.map((d) => d.label);
   }
 
   getValue(row: IDataRow) {
-    const base = this.getValues(row);
-    return base.length > 0 ? base[0] : null;
-  }
-
-  getValues(row: IDataRow) {
-    const base = this.resolveCategories(row);
-    return base.map((d) => d.name);
+    const v = this.getCategory(row);
+    return v ? v.name : null;
   }
 
   getLabel(row: IDataRow) {
-    return this.getLabels(row).join(this.separator);
+    return CategoricalColumn.prototype.getLabel.call(this, row);
   }
 
   getLabels(row: IDataRow) {
-    const base = this.resolveCategories(row);
-    return base.map((d) => d.label);
+    return CategoricalColumn.prototype.getLabels.call(this, row);
   }
 
-  getFirstLabel(row: IDataRow) {
-    const l = this.getLabels(row);
-    return l.length > 0 ? l[0] : null;
+  getValues(row: IDataRow) {
+    return CategoricalColumn.prototype.getValues.call(this, row);
   }
 
-  getCategories(row: IDataRow) {
-    return this.getValues(row);
+  getMap(row: IDataRow) {
+    return CategoricalColumn.prototype.getMap.call(this, row);
   }
 
-  getColor(row: IDataRow) {
-    const base = this.resolveCategory(row);
-    return base ? base.color : null;
+  getMapLabel(row: IDataRow) {
+    return CategoricalColumn.prototype.getMapLabel.call(this, row);
   }
 
   compare(a: IDataRow, b: IDataRow) {
-    const va = this.resolveCategories(a);
-    const vb = this.resolveCategories(b);
-    if (va.length === 0) {
-      // missing
-      return vb.length === 0 ? 0 : FIRST_IS_NAN;
-    }
-    if (vb.length === 0) {
-      return FIRST_IS_NAN * -1;
-    }
-    //check all categories
-    for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
-      const ci = va[i].path.localeCompare(vb[i].path);
-      if (ci !== 0) {
-        return ci;
-      }
-    }
-    //smaller length wins
-    return va.length - vb.length;
+    return CategoricalColumn.prototype.compare.call(this, a, b);
   }
 
   group(row: IDataRow) {
     if (this.isMissing(row)) {
       return missingGroup;
     }
-    const base = this.resolveCategory(row);
+    const base = this.getCategory(row);
     if (!base) {
       return super.group(row);
     }
-    return {name: base.name, color: base.color};
+    return {name: base.label, color: base.color};
   }
 
   private updateCaches() {
@@ -259,7 +224,7 @@ export function resolveInnerNodes(node: ICategoryInternalNode) {
   return queue;
 }
 
-export function isHierarchical(categories: (string | ICategory)[]) {
+export function isHierarchical(categories: (string | Partial<ICategory>)[]) {
   if (categories.length === 0 || typeof categories[0] === 'string') {
     return false;
   }
@@ -267,17 +232,17 @@ export function isHierarchical(categories: (string | ICategory)[]) {
   return categories.some((c) => (<any>c).parent != null);
 }
 
-export function deriveHierarchy(categories: (ICategory & { parent: string | null })[]) {
+export function deriveHierarchy(categories: (Partial<ICategory> & { parent: string | null })[]) {
   const lookup = new Map<string, ICategoryNode>();
   categories.forEach((c) => {
     const p = c.parent || '';
     // set and fill up proxy
-    const item = Object.assign({children: []}, lookup.get(c.name) || {}, c);
-    lookup.set(c.name, item);
+    const item = Object.assign(<ICategoryNode>{children: [], label: c.name!, name: c.name!, color: Column.DEFAULT_COLOR, value: 0}, lookup.get(c.name!) || {}, c);
+    lookup.set(c.name!, item);
 
     if (!lookup.has(p)) {
       // create proxy
-      lookup.set(p, {name: p, children: []});
+      lookup.set(p, {name: p, children: [], label: p, value: 0, color: Column.DEFAULT_COLOR});
     }
     lookup.get(p)!.children.push(item);
   });

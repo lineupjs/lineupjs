@@ -17,7 +17,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     return isCategoricalColumn(col);
   }
 
-  create(col: ICategoricalColumn & Column, context: IRenderContext) {
+  create(col: ICategoricalColumn, context: IRenderContext) {
     const width = context.colWidth(col);
     return {
       template: `<div>
@@ -25,33 +25,33 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
-        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = col.getColor(d);
+        const v = col.getCategory(d);
+        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = v ? v.color : null;
         setText(<HTMLSpanElement>n.lastElementChild!, col.getLabel(d));
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
-        ctx.fillStyle = col.getColor(d) || '';
+        const v = col.getCategory(d);
+        ctx.fillStyle = v ? v.color : '';
         ctx.fillRect(0, 0, width, CANVAS_HEIGHT);
       }
     };
   }
 
-  createGroup(col: ICategoricalColumn & Column, _context: IRenderContext, globalHist: ICategoricalStatistics | null) {
-    const colors = col.categoryColors;
-    const labels = col.categoryLabels;
-    const bins = col.categories.map((c, i) => `<div title="${labels[i]}: 0" data-cat="${c}"><div style="height: 0; background-color: ${colors[i]}"></div></div>`).join('');
+  createGroup(col: ICategoricalColumn, _context: IRenderContext, globalHist: ICategoricalStatistics | null) {
+    const bins = col.categories.map((c) => `<div title="${c.label}: 0" data-cat="${c.name}"><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');
 
     return {
       template: `<div>${bins}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const {maxBin, hist} = computeHist(rows, (r: IDataRow) => col.getCategories(r), col.categories);
+        const {maxBin, hist} = computeHist(rows, (r: IDataRow) => col.isMissing(r) ? '' : col.getCategory(r)!.name, col.categories.map((d) => d.name));
 
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
         forEachChild(n, (d: HTMLElement, i) => {
           const {y} = hist[i];
-          d.title = `${labels[i]}: ${y}`;
+          d.title = `${col.categories[i].label}: ${y}`;
           const inner = <HTMLElement>d.firstElementChild!;
           inner.style.height = `${Math.round(y * 100 / max)}%`;
         });

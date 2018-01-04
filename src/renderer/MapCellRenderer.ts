@@ -1,7 +1,8 @@
 import {nest} from 'd3-collection';
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import MapColumn, {IKeyValue} from '../model/MapColumn';
+import {IKeyValue} from '../model/IArrayColumn';
+import MapColumn from '../model/MapColumn';
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop} from './utils';

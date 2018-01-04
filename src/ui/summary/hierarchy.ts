@@ -17,9 +17,6 @@ export default class HierarchySummary {
       this.node.classList.add('lu-invalid-hist');
       return;
     }
-
-    const colors = this.col.categoryColors;
-    const labels = this.col.categoryLabels;
     this.node.classList.remove('lu-invalid-hist');
     this.node.classList.toggle('lu-dense', cats.length > DENSE_HISTOGRAM);
 
@@ -34,15 +31,15 @@ export default class HierarchySummary {
 
     const lookup = new Map(stats.hist.map((d) => (<[string, number]>[d.cat, d.y])));
     cats.forEach((cat, i) => {
-      const y = lookup.get(cat) || 0;
+      const y = lookup.get(cat.name) || 0;
       const bin = bins[i];
       const inner = (<HTMLElement>bin.firstElementChild!);
       inner.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
-      inner.style.backgroundColor = colors[i];
-      bin.title = `${labels[i]}: ${y}`;
-      bin.dataset.cat = cat;
+      inner.style.backgroundColor = cat.color;
+      bin.title = `${cat.label}: ${y}`;
+      bin.dataset.cat = cat.name;
       if (showLabels && cats.length <= DENSE_HISTOGRAM) {
-        bin.dataset.title = labels[i];
+        bin.dataset.title = cat.label;
       }
     });
   }

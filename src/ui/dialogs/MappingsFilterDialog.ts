@@ -1,9 +1,10 @@
 import {computeStats, IStatistics, round} from '../../internal/math';
 import {isMissingValue} from '../../model';
-import Column from '../../model/Column';
-import {isSameFilter, noNumberFilter} from '../../model/INumberColumn';
-import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../../model/MappingFunction';
-import {IMapAbleColumn} from '../../model/NumberColumn';
+import {isDummyFilter, noNumberFilter} from '../../model/INumberColumn';
+import {
+  IMapAbleColumn, IMappingFunction, ScaleMappingFunction,
+  ScriptMappingFunction
+} from '../../model/MappingFunction';
 import {IRankingHeaderContext} from '../interfaces';
 import NumberSummary from '../summary/number';
 import ADialog from './ADialog';
@@ -34,7 +35,7 @@ export default class MappingsFilterDialog extends ADialog {
     unnormalizeRaw: this.unnormalizeRaw.bind(this)
   };
 
-  constructor(private readonly column: IMapAbleColumn & Column, attachment: HTMLElement, ctx: IRankingHeaderContext) {
+  constructor(private readonly column: IMapAbleColumn, attachment: HTMLElement, ctx: IRankingHeaderContext) {
     super(attachment, {
       fullDialog: true
     });
@@ -222,7 +223,7 @@ export default class MappingsFilterDialog extends ADialog {
   }
 
   private applyMapping(newScale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) {
-    this.attachment.classList.toggle('lu-filtered', (!newScale.eq(this.original) || !isSameFilter(noNumberFilter(), filter)));
+    this.attachment.classList.toggle('lu-filtered', (!newScale.eq(this.original) || !isDummyFilter(filter)));
 
     this.column.setMapping(newScale);
     this.column.setFilter(filter);

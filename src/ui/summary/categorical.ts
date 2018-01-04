@@ -2,26 +2,25 @@ import {DENSE_HISTOGRAM} from '../../config';
 import {ICategoricalStatistics, IStatistics} from '../../internal/math';
 import {ICategoricalColumn} from '../../model';
 import CategoricalColumn from '../../model/CategoricalColumn';
-import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
-import Column from '../../model/Column';
 import {isIncluded} from '../../model/ICategoricalColumn';
+import OrdinalColumn from '../../model/OrdinalColumn';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 
 
 interface IContextIsh {
-  statsOf(col: ICategoricalColumn & Column): IStatistics | null | ICategoricalStatistics;
+  statsOf(col: ICategoricalColumn): IStatistics | null | ICategoricalStatistics;
 }
 
 export default class CategoricalSummary {
   update: (ctx: IContextIsh) => void;
 
-  constructor(private readonly col: ICategoricalColumn & Column, private readonly node: HTMLElement, interactive: boolean) {
+  constructor(private readonly col: ICategoricalColumn, private readonly node: HTMLElement, interactive: boolean) {
     if (col.categories.length > DENSE_HISTOGRAM * 2) {
       // no rendering at all
       this.update = () => undefined;
       return;
     }
-    const interactiveOne = (col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn);
+    const interactiveOne = (col instanceof CategoricalColumn || col instanceof OrdinalColumn);
     if (!interactive || !interactiveOne) {
       this.update = interactiveOne ? this.initStaticFilter() : this.initStatic();
       return;
@@ -31,13 +30,11 @@ export default class CategoricalSummary {
 
   private initCommon(showLabels: boolean) {
     const cats = this.col.categories;
-    const colors = this.col.categoryColors;
-    const labels = this.col.categoryLabels;
 
     this.node.classList.toggle('lu-dense', cats.length > DENSE_HISTOGRAM);
 
-    cats.forEach((cat, i) => {
-      this.node.insertAdjacentHTML('beforeend', `<div title="${labels[i]}" data-cat="${cat}" ${showLabels ? `data-title="${labels[i]}"` : ''}><div style="height: 0; background-color: ${colors[i]}"></div></div>`);
+    cats.forEach((cat) => {
+      this.node.insertAdjacentHTML('beforeend', `<div title="${cat.label}" data-cat="${cat.name}" ${showLabels ? `data-title="${cat.label}"` : ''}><div style="height: 0; background-color: ${cat.color}"></div></div>`);
     });
 
     const bins = <HTMLElement[]>Array.from(this.node.querySelectorAll('[data-cat]'));
@@ -51,10 +48,10 @@ export default class CategoricalSummary {
       const lookup = new Map(stats.hist.map((d) => (<[string, number]>[d.cat, d.y])));
 
       cats.forEach((cat, i) => {
-        const y = lookup.get(cat) || 0;
+        const y = lookup.get(cat.name) || 0;
         const bin = bins[i];
         (<HTMLElement>bin.firstElementChild!).style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
-        bin.title = `${labels[i]}: ${y}`;
+        bin.title = `${cat.label}: ${y}`;
       });
     };
   }
@@ -70,7 +67,7 @@ export default class CategoricalSummary {
     };
   }
 
-  private interactiveHist(col: CategoricalColumn | CategoricalNumberColumn) {
+  private interactiveHist(col: CategoricalColumn | OrdinalColumn) {
     const bins = <HTMLElement[]>Array.from(this.node.querySelectorAll('[data-cat]'));
     const cats = this.col.categories;
 
@@ -90,12 +87,12 @@ export default class CategoricalSummary {
           without.splice(i, 1);
           col.setFilter({
             filterMissing: old ? old.filterMissing : false,
-            filter: without
+            filter: without.map((d) => d.name)
           });
           return;
         }
         const filter = old.filter.slice();
-        const contained = filter.indexOf(cat);
+        const contained = filter.indexOf(cat.name);
         if (contained >= 0) {
           // remove
           bin.dataset.filtered = 'filtered';
@@ -103,7 +100,7 @@ export default class CategoricalSummary {
         } else {
           // readd
           delete bin.dataset.filtered;
-          filter.push(cat);
+          filter.push(cat.name);
         }
         col.setFilter({
           filterMissing: old.filterMissing,
@@ -125,7 +122,7 @@ export default class CategoricalSummary {
   }
 
   private initStaticFilter() {
-    const col = <CategoricalColumn | CategoricalNumberColumn>this.col;
+    const col = <CategoricalColumn | OrdinalColumn>this.col;
     this.node.dataset.summary = 'interactive-hist';
 
     const common = this.initCommon(false);
@@ -140,7 +137,7 @@ export default class CategoricalSummary {
   }
 
   private initInteractive() {
-    const col = <CategoricalColumn | CategoricalNumberColumn>this.col;
+    const col = <CategoricalColumn | OrdinalColumn>this.col;
     this.node.dataset.summary = 'interactive-filter-hist';
 
     const common = this.initCommon(true);
@@ -155,7 +152,7 @@ export default class CategoricalSummary {
       const v = filterMissing.checked;
       const old = col.getFilter();
       if (old == null) {
-        col.setFilter(v ? {filterMissing: v, filter: col.categories} : null);
+        col.setFilter(v ? {filterMissing: v, filter: col.categories.map((d) => d.name)} : null);
       } else {
         col.setFilter({filterMissing: v, filter: old.filter});
       }

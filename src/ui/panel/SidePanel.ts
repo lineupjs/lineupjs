@@ -5,7 +5,7 @@
 import {nest} from 'd3-collection';
 import {suffix} from '../../internal/AEventDispatcher';
 import {
-  createImpositionDesc, createMaxDesc, createMeanDesc, createMinDesc, createNestedDesc, createScriptDesc,
+  createImpositionDesc, createReduceDesc, createNestedDesc, createScriptDesc,
   createStackDesc, isSupportType
 } from '../../model';
 import {default as Column, IColumnDesc} from '../../model/Column';
@@ -27,9 +27,7 @@ export default class SidePanel {
       createStackDesc('Weighted Sum'),
       createScriptDesc('Scripted Formula'),
       createNestedDesc('Nested'),
-      createMaxDesc(),
-      createMinDesc(),
-      createMeanDesc(),
+      createReduceDesc(),
       createImpositionDesc()
     ],
     chooser: true,

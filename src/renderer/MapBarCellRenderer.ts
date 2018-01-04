@@ -1,8 +1,8 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, isMissingValue, isNumberColumn} from '../model';
 import Column from '../model/Column';
+import {IMapColumn, isMapColumn} from '../model/IArrayColumn';
 import {DEFAULT_FORMATTER} from '../model/INumberColumn';
-import {IMapColumn, isMapColumn} from '../model/MapColumn';
 import {colorOf} from './impose';
 import {ICellRendererFactory, IImposer, default as IRenderContext} from './interfaces';
 import {renderMissingDOM} from './missing';
@@ -15,7 +15,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
     return isMapColumn(col) && isNumberColumn(col) && !isGroup;
   }
 
-  create(col: IMapColumn<number> & Column, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IMapColumn<number>, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     return {
       template: `<div></div>`,
       update: (node: HTMLElement, d: IDataRow) => {

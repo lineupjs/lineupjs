@@ -9,7 +9,14 @@ export function colorOf(col: Column, row: IDataRow | null, imposer?: IImposer) {
   if (imposer && imposer.color) {
     return imposer.color(row);
   }
-  if (row && (col instanceof CompositeNumberColumn || isCategoricalColumn(col) || col instanceof ImpositionCompositeColumn)) {
+  if (!row) {
+    return col.color;
+  }
+  if (isCategoricalColumn(col)) {
+    const c = col.getCategory(row);
+    return c ? c.color : col.color;
+  }
+  if (col instanceof ImpositionCompositeColumn || col instanceof CompositeNumberColumn) {
     return col.getColor(row);
   }
   return col.color;

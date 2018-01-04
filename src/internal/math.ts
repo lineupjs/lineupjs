@@ -91,20 +91,17 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
  */
-export function computeHist<T>(arr: T[], acc: (row: T) => string[], categories: string[]): ICategoricalStatistics {
+export function computeHist<T>(arr: T[], acc: (row: T) => string, categories: string[]): ICategoricalStatistics {
   const m = new Map<string, number>();
   let missingCount = 0;
   categories.forEach((cat) => m.set(cat, 0));
 
   arr.forEach((a) => {
-    const vs = acc(a);
-    if (vs == null || vs.length === 0) {
+    const v = acc(a);
+    if (v == null) {
       missingCount += 1;
       return;
-    }
-    vs.forEach((v) => {
-      m.set(v, (m.get(v) || 0) + 1);
-    });
+    }m.set(v, (m.get(v) || 0) + 1);
   });
   const entries: { cat: string; y: number }[] = [];
   m.forEach((v, k) => entries.push({cat: k, y: v}));

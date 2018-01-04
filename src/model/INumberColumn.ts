@@ -50,7 +50,7 @@ export interface INumberDesc {
  * @param col
  * @returns {boolean}
  */
-export function isNumberColumn(col: Column): col is INumberColumn & Column;
+export function isNumberColumn(col: Column): col is INumberColumn;
 export function isNumberColumn(col: IColumnDesc): col is INumberDesc & IColumnDesc;
 export function isNumberColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
@@ -219,7 +219,7 @@ export function numberCompare(a: number | null, b: number | null, aMissing = fal
   return a! - b!;
 }
 
-export function medianIndex(rows: IDataRow[], col: INumberColumn & Column): number {
+export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
   //return the median row
   const data = rows.map((r, i) => ({i, v: col.getNumber(r), m: col.isMissing(r)}));
   const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
@@ -230,7 +230,7 @@ export function medianIndex(rows: IDataRow[], col: INumberColumn & Column): numb
   return index.i;
 }
 
-export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn & Column, sortMethod: keyof LazyBoxPlotData) {
+export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
   const va = new LazyBoxPlotData(a.map((row) => col.getNumber(row)));
   const vb = new LazyBoxPlotData(b.map((row) => col.getNumber(row)));
 

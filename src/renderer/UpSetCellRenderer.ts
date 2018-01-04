@@ -1,13 +1,16 @@
-import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
+import {ICategoricalColumn, ICategory, IDataRow, IGroup, isCategoricalColumn} from '../model';
 import Column from '../model/Column';
 import {CANVAS_HEIGHT, UPSET} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {attr} from './utils';
 
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
   readonly title = 'Matrix';
+
+  canRender(col: Column) {
+    return isCategoricalColumn(col);
+  }
 
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
     const catindexes: number[] = [];
@@ -19,20 +22,18 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {left, right};
   }
 
-  private static createDOMContext(col: ICategoricalColumn & Column) {
-    const dataLength = col.categories.length;
+  private static createDOMContext(col: ICategoricalColumn) {
+    const categories = col.categories;
     let templateRows = '';
-    for (let i = 0; i < dataLength; ++i) {
-      templateRows += `<div></div>`;
+    for (const cat of categories) {
+      templateRows += `<div title="${cat.label}"></div>`;
     }
     return {
       templateRow: templateRows,
       render: (n: HTMLElement, value: boolean[]) => {
         Array.from(n.children).slice(1).forEach((d, i) => {
           const v = value[i];
-          attr(<HTMLElement>d, {
-            'class': v ? 'enabled' : ''
-          });
+          d.classList.toggle('enabled', v);
         });
 
         const line = <HTMLElement>n.firstElementChild;
@@ -46,27 +47,25 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         line.style.display = null;
         line.style.left = `${Math.round(100 * (left + 0.5) / value.length)}%`;
         line.style.width = `${Math.round(100 * (right - left) / value.length)}%`;
-      },
-      dataLength
+      }
     };
   }
 
   private static union(col: ICategoricalColumn, rows: IDataRow[]) {
-    const values = new Set<string>();
+    const values = new Set<ICategory>();
     rows.forEach((d) => {
-      col.getCategories(d).forEach((cat) => values.add(cat));
+      const v = col.getCategory(d);
+      if (v) {
+        values.add(v);
+      }
     });
     return col.categories.map((cat) => values.has(cat));
   }
 
-  canRender(col: Column) {
-    return isCategoricalColumn(col);
-  }
-
-  create(col: ICategoricalColumn & Column, context: IRenderContext) {
-    const {templateRow, render, dataLength} = UpSetCellRenderer.createDOMContext(col);
+  create(col: ICategoricalColumn, context: IRenderContext) {
+    const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
-    const cellDimension = width / dataLength;
+    const cellDimension = width / col.dataLength!;
 
     return {
       template: `<div><div></div>${templateRow}</div>`,
@@ -74,17 +73,14 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        const values = new Set(col.getCategories(d));
-        const value = col.categories.map((cat) => values.has(cat));
-        render(n, value);
+        render(n, col.getValues(d));
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
         // Circle
-        const values = new Set(col.getCategories(d));
-        const data = col.categories.map((cat) => values.has(cat));
+        const data = col.getValues(d);
 
         const hasTrueValues = data.some((d) => d); //some values are true?
 
@@ -112,7 +108,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ICategoricalColumn & Column) {
+  createGroup(col: ICategoricalColumn) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     return {
       template: `<div><div></div>${templateRow}</div>`,

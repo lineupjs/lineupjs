@@ -189,7 +189,7 @@ export default class EngineRenderer extends AEventDispatcher {
       cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: NumberColumn) => {
         this.histCache.set(col.id, histo == null ? null : histo.stats(col));
       });
-      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn & Column) => {
+      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn) => {
         this.histCache.set(col.id, histo == null ? null : histo.hist(col));
       });
       r.updateHeaders();

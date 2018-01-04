@@ -1,18 +1,18 @@
 import BoxPlotColumn from '../../model/BoxPlotColumn';
 import Column from '../../model/Column';
-import {ADVANCED_SORT_METHOD, IBoxPlotColumn, SORT_METHOD} from '../../model/INumberColumn';
+import {EAdvancedSortMethod, ESortMethod, IBoxPlotColumn} from '../../model/INumberColumn';
 import NumberColumn from '../../model/NumberColumn';
 import ADialog from './ADialog';
 
 export default class SortDialog extends ADialog {
-  constructor(private readonly column: (IBoxPlotColumn | NumberColumn) & Column, attachment: HTMLElement) {
+  constructor(private readonly column: (IBoxPlotColumn | NumberColumn), attachment: HTMLElement) {
     super(attachment, {
       hideOnMoveOutside: true
     });
   }
 
   protected build(node: HTMLElement) {
-    sortMethods(node, this.column, Object.keys(this.column instanceof BoxPlotColumn ? SORT_METHOD : ADVANCED_SORT_METHOD));
+    sortMethods(node, this.column, Object.keys(this.column instanceof BoxPlotColumn ? ESortMethod : EAdvancedSortMethod));
     sortOrder(node, this.column, this.column instanceof NumberColumn);
   }
 }

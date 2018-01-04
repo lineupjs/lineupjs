@@ -4,7 +4,8 @@ import {default as INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColu
  * a renderer rendering a bar for numerical columns
  */
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER, isNumbersColumn} from '../model/INumberColumn';
+import {DEFAULT_FORMATTER} from '../model/INumberColumn';
+import NumbersColumn from '../model/NumbersColumn';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
@@ -18,8 +19,8 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return isNumberColumn(col);
   }
 
-  private static getDOMRenderer(col: INumberColumn & Column) {
-    const dots = isNumbersColumn(col) ? col.getDataLength() : 1;
+  private static getDOMRenderer(col: INumberColumn) {
+    const dots = (col instanceof NumbersColumn) ? col.dataLength! : 1;
     let tmp = '';
     for (let i = 0; i < dots; ++i) {
       tmp += `<div style='background-color: ${col.color}' title=''></div>`;
@@ -61,7 +62,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {template: `<div>${tmp}</div>`, update, render};
   }
 
-  create(col: INumberColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     const {template, render, update} = DotCellRenderer.getDOMRenderer(col);
     const width = context.colWidth(col);
     return {
@@ -72,7 +73,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         }
         const color = colorOf(col, d, imposer);
         const v = col.getValue(d);
-        if (!isNumbersColumn(col)) {
+        if (!(col instanceof NumbersColumn)) {
           return update(n, [v], [col.getLabel(d)], [color]);
         }
         const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
@@ -84,7 +85,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         }
         const color = colorOf(col, d, imposer);
         const v = col.getValue(d);
-        if (!isNumbersColumn(col)) {
+        if (!(col instanceof NumbersColumn)) {
           return render(ctx, [v], [color], width);
         }
         const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
@@ -93,7 +94,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumberColumn & Column, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     const {template, update} = DotCellRenderer.getDOMRenderer(col);
     return {
       template,
@@ -101,7 +102,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         const vs = rows.map((r) => col.getValue(r));
         const colors = rows.map((r) => colorOf(col, r, imposer));
 
-        if (!isNumbersColumn(col)) {
+        if (!(col instanceof NumbersColumn)) {
           return update(n, vs, rows.map((r) => col.getLabel(r)), colors);
         }
         // concatenate all columns

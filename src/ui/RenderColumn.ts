@@ -38,7 +38,7 @@ export default class RenderColumn implements IColumn {
 
   createHeader() {
     const node = createHeader(this.c, this.ctx);
-    node.className = `lu-header${this.c.cssClass ? ` ${this.c.cssClass}` : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+    node.className = `lu-header${this.c.isFiltered() ? ' lu-filtered' : ''}`;
     node.classList.toggle('frozen', this.c.frozen);
 
     const summary = findTypeLike(this.c, this.ctx.summaries);

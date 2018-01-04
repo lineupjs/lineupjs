@@ -3,19 +3,19 @@ import {event as d3event, selectAll} from 'd3-selection';
 import {DENSE_HISTOGRAM} from '../../config';
 import {ICategoricalStatistics, IStatistics, round} from '../../internal/math';
 import {INumberColumn} from '../../model';
-import Column from '../../model/Column';
-import NumberColumn, {isMapAbleColumn} from '../../model/NumberColumn';
+import {isMapAbleColumn} from '../../model/MappingFunction';
+import NumberColumn from '../../model/NumberColumn';
 import InputNumberDialog from '../dialogs/InputNumberDialog';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 
 interface IContextIsh {
-  statsOf(col: INumberColumn & Column): IStatistics | null | ICategoricalStatistics;
+  statsOf(col: INumberColumn): IStatistics | null | ICategoricalStatistics;
 }
 
 export default class NumberSummary {
   update: (ctx: IContextIsh) => void;
 
-  constructor(private readonly col: INumberColumn & Column, private readonly node: HTMLElement, interactive: boolean) {
+  constructor(private readonly col: INumberColumn, private readonly node: HTMLElement, interactive: boolean) {
     this.update = interactive && col instanceof NumberColumn ? this.initInteractive() : this.initStatic();
   }
 

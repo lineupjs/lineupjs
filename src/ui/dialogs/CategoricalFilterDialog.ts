@@ -11,19 +11,14 @@ export default class CategoricalFilterDialog extends ADialog {
     super(attachment, {
       fullDialog: true
     });
-    this.before = this.column.getFilter() || {filter: this.column.categories.slice(), filterMissing: false};
+    this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
   }
 
   protected build(node: HTMLElement) {
     node.classList.add('lu-filter-table');
-    const colors = this.column.categoryColors;
-    const labels = this.column.categoryLabels;
-
-    const joint = this.column.categories.map((d, i) => ({cat: d, color: colors[i]!, label: labels[i]!}));
-    joint.sort((a, b) => a.label.localeCompare(b.label));
 
     node.insertAdjacentHTML('beforeend', `<div>
-        ${joint.map(({cat, color, label}) => `<label><input data-cat="${cat}" type="checkbox"${isIncluded(this.before, cat) ? 'checked': ''}><span style="background-color: ${color}"></span><div>${label}</div></label>`).join('')}
+        ${this.column.categories.map((c) => `<label><input data-cat="${c.name}" type="checkbox"${isIncluded(this.before, c) ? 'checked': ''}><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
         <label><input type="checkbox" checked><span></span><div>Unselect All</div></label>
     </div>`);
     // selectAll

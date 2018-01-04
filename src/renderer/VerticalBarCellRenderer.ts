@@ -1,8 +1,11 @@
+import {IDataRow} from '../model';
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
+import {DEFAULT_FORMATTER} from '../model/INumberColumn';
+import NumbersColumn from '../model/NumbersColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
-import IRenderContext from './interfaces';
+import {toHeatMapColor} from './HeatmapCellRenderer';
+import IRenderContext, {IImposer} from './interfaces';
 import {attr, forEachChild} from './utils';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
@@ -21,37 +24,40 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
     return {height: (v - threshold), bottom: (threshold - domain[0])};
   }
 
-  protected createContext(col: INumbersColumn & Column, context: IRenderContext) {
-    const colorScale = col.getRawColorScale();
-    const domain = col.getMapping().domain;
-    const cellDimension = context.colWidth(col) / col.getDataLength();
-    const threshold = col.getThreshold();
-    const range = domain[1] - domain[0];
+  protected createContext(col: NumbersColumn, context: IRenderContext, imposer?: IImposer) {
+    const cellDimension = context.colWidth(col) / col.dataLength!;
+    const threshold = col.getMapping().apply(NumbersColumn.CENTER);
+    const range = 1;
     let templateRows = '';
-    for (let i = 0; i < col.getDataLength(); ++i) {
+    for (let i = 0; i < col.dataLength!; ++i) {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
       templateRow: templateRows,
-      update: (row: HTMLElement, data: number[]) => {
+      update: (row: HTMLElement, data: number[], item: IDataRow) => {
+        const zero = toHeatMapColor(0, item, col, imposer);
+        const one = toHeatMapColor(1, item, col, imposer);
+
         forEachChild(row, (d, i) => {
           const v = data[i];
-          const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, domain);
+          const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
           attr(<HTMLElement>d, {
             title: DEFAULT_FORMATTER(v)
           }, {
-            'background-color': colorScale(v),
+            'background-color': v < threshold ? zero : one,
             bottom: `${Math.round((100 * bottom) / range)}%`,
             height: `${Math.round((100 * height) / range)}%`
           });
         });
       },
-      render: (ctx: CanvasRenderingContext2D, data: number[]) => {
+      render: (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow) => {
+        const zero = toHeatMapColor(0, item, col, imposer);
+        const one = toHeatMapColor(1, item, col, imposer);
         const scale = CANVAS_HEIGHT / range;
         data.forEach((v, j) => {
-          ctx.fillStyle = colorScale(v);
+          ctx.fillStyle = v < threshold ? zero : one;
           const xpos = (j * cellDimension);
-          const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, domain);
+          const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
           ctx.fillRect(xpos, (range - height - bottom) * scale, cellDimension, height * scale);
         });
       }

@@ -128,6 +128,6 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
 
   protected aggregatedIndex(rows: IDataRow[], col: IMultiLevelColumn & Column) {
     console.assert(isNumberColumn(col));
-    return medianIndex(rows, (<INumberColumn & Column><any>col));
+    return medianIndex(rows, (<INumberColumn><any>col));
   }
 }

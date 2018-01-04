@@ -1,6 +1,7 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {IDataRow, INumberColumn, isNumberColumn, isNumbersColumn} from '../model';
+import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
+import NumbersColumn from '../model/NumbersColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
@@ -23,10 +24,10 @@ export default class BarCellRenderer implements ICellRendererFactory {
   }
 
   canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
+    return isNumberColumn(col) && !isGroup && !(col instanceof NumbersColumn);
   }
 
-  create(col: INumberColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     const width = context.colWidth(col);
     return {
       template: `<div title="">

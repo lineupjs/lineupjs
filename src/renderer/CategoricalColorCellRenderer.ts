@@ -1,5 +1,4 @@
-import {ICategoricalColumn, IDataRow, IGroup} from '../model';
-import Column from '../model/Column';
+import {ICategoricalColumn, ICategory, IDataRow, IGroup} from '../model';
 import {CANVAS_HEIGHT} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -14,48 +13,55 @@ export default class CategoricalColorCellRenderer implements ICellRendererFactor
     return false; // only direct selection
   }
 
-  create(col: ICategoricalColumn & Column, context: IRenderContext) {
+  create(col: ICategoricalColumn, context: IRenderContext) {
     const width = context.colWidth(col);
     return {
       template: `<div style="background-color: transparent" title=""></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);
-        n.style.backgroundColor = missing ? null : col.getColor(d);
+        const v = col.getCategory(d);
+        n.style.backgroundColor = missing || !v ? null : v.color;
         n.title = col.getLabel(d);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
-        ctx.fillStyle = col.getColor(d) || '';
+        const v = col.getCategory(d);
+        ctx.fillStyle = v ? v.color : '';
         ctx.fillRect(0, 0, width, CANVAS_HEIGHT);
       }
     };
   }
 
-  static choose(col: ICategoricalColumn & Column, rows: IDataRow[]) {
-    const hist = new Map<string, number>();
-    col.categories.forEach((cat) => hist.set(cat, 0));
-    rows.forEach((row) =>
-      col.getCategories(row).forEach((cat) =>
-        hist.set(cat, (hist.get(cat) || 0) + 1)));
+  static choose(col: ICategoricalColumn, rows: IDataRow[]) {
+    const hist = new Map<ICategory, number>();
+    const cats = col.categories;
+    cats.forEach((cat) => hist.set(cat, 0));
+    rows.forEach((row) => {
+      const v = col.getCategory(row);
+      if (v) {
+        hist.set(v, (hist.get(v) || 0) + 1);
+      }
+    });
 
     let max = 0, maxCat = 0;
-    col.categories.forEach((cat, i) => {
+    cats.forEach((cat, i) => {
       const count = hist.get(cat)!;
       if (count > max) {
         max = count;
         maxCat = i;
       }
     });
+    const maxCategory = cats[maxCat];
     return {
       count: max,
-      label: col.categoryLabels[maxCat],
-      color: col.categoryColors[maxCat]
+      label: maxCategory.label,
+      color: maxCategory.color
     };
   }
 
-  createGroup(col: ICategoricalColumn & Column) {
+  createGroup(col: ICategoricalColumn) {
     return {
       template: `<div style="background-color: white"></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {

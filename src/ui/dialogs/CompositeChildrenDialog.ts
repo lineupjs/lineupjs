@@ -29,7 +29,7 @@ export default class CompositeChildrenDialog extends ADialog {
         mergeDropAble: false,
         resizeable: false
       });
-      n.className = `lu-header${c.cssClass ? ` ${c.cssClass}` : ''}${c.isFiltered() ? ' lu-filtered' : ''}`;
+      n.className = `lu-header${c.isFiltered() ? ' lu-filtered' : ''}`;
       updateHeader(n, c);
       node.appendChild(n);
     });
@@ -46,7 +46,7 @@ export default class CompositeChildrenDialog extends ADialog {
           mergeDropAble: false,
           resizeable: false
         });
-        n.className = `lu-header${c.cssClass ? ` ${c.cssClass}` : ''}${c.isFiltered() ? ' lu-filtered' : ''}`;
+        n.className = `lu-header${c.isFiltered() ? ' lu-filtered' : ''}`;
         updateHeader(n, c);
         // TODO summary
         node.appendChild(n);

@@ -1,20 +1,21 @@
-import {mean} from 'd3-array';
-import {IDataRow, IGroup, INumbersColumn, isMissingValue, isNumbersColumn} from '../model';
+import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {LazyBoxPlotData} from '../model/INumberColumn';
+import NumbersColumn from '../model/NumbersColumn';
+import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
   abstract readonly title: string;
 
   canRender(col: Column, _isGroup: boolean) {
-    return isNumbersColumn(col) && col.isFixedLength;
+    return col instanceof NumbersColumn && Boolean(col.dataLength);
   }
 
-  protected abstract createContext(col: INumbersColumn & Column, context: IRenderContext): {
+  protected abstract createContext(col: NumbersColumn, context: IRenderContext, imposer?: IImposer): {
     templateRow: string,
-    update: (row: HTMLElement, data: number[]) => void,
-    render: (ctx: CanvasRenderingContext2D, data: number[]) => void,
+    update: (row: HTMLElement, data: number[], d: IDataRow) => void,
+    render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
   /**
@@ -23,46 +24,51 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
    * @param {IDataRow[]} rows
    * @return {number[]}
    */
-  private static choose(col: INumbersColumn & Column, rows: IDataRow[]) {
-    const data = rows.map((r) => col.getRawNumbers(r));
-    const cols = col.getDataLength()!;
+  private static choose(col: NumbersColumn, rows: IDataRow[]) {
+    const data = rows.map((r) => col.getNumbers(r));
+    const cols = col.dataLength!;
     const r = <number[]>[];
     // mean column
     for (let i = 0; i < cols; ++i) {
-      const col = data.map((d) => d[i]).filter((d) => !isMissingValue(d));
-      r.push(mean(col)!);
+      const vs = data.map((d) => d[i]).filter((d) => !isMissingValue(d));
+      if (!vs) {
+        r.push(NaN);
+      } else {
+        const box = new LazyBoxPlotData(vs);
+        r.push(box[col.getSortMethod()]);
+      }
     }
     return r;
   }
 
-  create(col: INumbersColumn & Column, context: IRenderContext) {
+  create(col: NumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
     const width = context.colWidth(col);
-    const {templateRow, render, update} = this.createContext(col, context);
+    const {templateRow, render, update} = this.createContext(col, context, imposer);
     return {
       template: `<div>${templateRow}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        update(n, col.getRawNumbers(d));
+        update(n, col.getNumbers(d), d);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
-        render(ctx, col.getRawNumbers(d));
+        render(ctx, col.getNumbers(d), d);
       },
     };
   }
 
-  createGroup(col: INumbersColumn & Column, context: IRenderContext) {
-    const {templateRow, update} = this.createContext(col, context);
+  createGroup(col: NumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+    const {templateRow, update} = this.createContext(col, context, imposer);
     return {
       template: `<div>${templateRow}</div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
         // render a heatmap
         const chosen = ANumbersCellRenderer.choose(col, rows);
-        update(n, chosen);
+        update(n, chosen, rows[0]);
       }
     };
   }

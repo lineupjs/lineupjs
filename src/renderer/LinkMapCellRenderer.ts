@@ -1,6 +1,6 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import {IKeyValue} from '../model/MapColumn';
+import {IKeyValue} from '../model/IArrayColumn';
 import StringMapColumn from '../model/StringMapColumn';
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';

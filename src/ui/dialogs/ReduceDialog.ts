@@ -15,6 +15,6 @@ export default class ReduceDialog extends ADialog {
       getSortMethod: () => this.column.getReduce(),
       setSortMethod: (s: EAdvancedSortMethod) => this.column.setReduce(s)
     };
-    sortMethods(node,wrapper, EAdvancedSortMethod);
+    sortMethods(node,wrapper, Object.keys(EAdvancedSortMethod));
   }
 }

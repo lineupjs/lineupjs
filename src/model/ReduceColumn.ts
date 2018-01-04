@@ -14,7 +14,7 @@ import {EAdvancedSortMethod} from './INumberColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Aggregate') {
+export function createDesc(label: string = 'Reduce (Min, Max, ...)') {
   return {type: 'reduce', label};
 }
 

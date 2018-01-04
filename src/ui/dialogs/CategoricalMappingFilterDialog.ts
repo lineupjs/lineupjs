@@ -1,5 +1,5 @@
 import {round} from '../../internal/math';
-import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
+import OrdinalColumn from '../../model/OrdinalColumn';
 import {ICategoricalFilter, isIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup} from '../missing';
 import ADialog from './ADialog';
@@ -9,29 +9,22 @@ export default class CategoricalMappingFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;
 
-  constructor(private readonly column: CategoricalNumberColumn, attachment: HTMLElement) {
+  constructor(private readonly column: OrdinalColumn, attachment: HTMLElement) {
     super(attachment, {
       fullDialog: true
     });
-    this.before = this.column.getFilter() || {filter: this.column.categories.slice(), filterMissing: false};
+    this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
   }
 
   protected build(node: HTMLElement) {
     node.classList.add('lu-filter-table');
-    const range = this.column.getScale().range;
-    const colors = this.column.categoryColors;
-    const labels = this.column.categoryLabels;
-
-    const joint = this.column.categories.map((d, i) => ({
-      cat: d,
-      color: colors[i]!,
-      label: labels[i]!,
-      range: round(range[i]!*100,2)
+    const joint = this.column.categories.map((d) => Object.assign({
+      range: round(d.value*100,2)
     }));
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
     node.insertAdjacentHTML('beforeend', `<div>
-        ${joint.map(({cat, color, label, range}) => `<label><input data-cat="${cat}" type="checkbox"${isIncluded(this.before, cat) ? 'checked' : ''}>
+        ${joint.map(({name, color, label, range}) => `<label><input data-cat="${name}" type="checkbox"${isIncluded(this.before, name) ? 'checked' : ''}>
         <input type="number" value="${range}" min="0" max="100" size="5"><div><div style="background-color: ${color}; width: ${range}%"></div></div><div>${label}</div></label>`).join('')}
         <label><input type="checkbox" checked><div>Unselect All</div></label>
     </div>`);

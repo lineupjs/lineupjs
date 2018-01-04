@@ -1,6 +1,7 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {IDataRow, INumberColumn, isNumberColumn, isNumbersColumn} from '../model';
+import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
+import NumbersColumn from '../model/NumbersColumn';
 import {colorOf} from './impose';
 import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
@@ -10,10 +11,10 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title = 'Proportional Symbol';
 
   canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
+    return isNumberColumn(col) && !isGroup && !(col instanceof NumbersColumn);
   }
 
-  create(col: INumberColumn & Column, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     return {
       template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
               <div class="lu-hover-only"></div>
