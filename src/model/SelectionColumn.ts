@@ -43,9 +43,9 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   };
   static readonly EVENT_SELECT = 'select';
 
-  constructor(id: string, desc: ISelectionColumnDesc) {
+  constructor(id: string, desc: Readonly<ISelectionColumnDesc>) {
     super(id, desc);
-    this.setWidth(20);
+    this.setDefaultWidth(20);
   }
 
   get frozen() {

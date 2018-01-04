@@ -1,36 +1,13 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {ICategoricalColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN} from './missing';
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
 
-export default class BooleansColumn extends ArrayColumn<boolean> implements ICategoricalColumn {
-  constructor(id: string, desc: IBooleansColumnDesc) {
+export default class BooleansColumn extends ArrayColumn<boolean> {
+  constructor(id: string, desc: Readonly<IBooleansColumnDesc>) {
     super(id, desc);
     this.setDefaultRenderer('upset');
-  }
-
-  get categories() {
-    return this.labels;
-  }
-
-  get categoryLabels() {
-    return this.categories;
-  }
-
-  get categoryColors() {
-    return ['green', 'red'];
-  }
-
-  getCategories(row: IDataRow): string[] {
-    const flagged = this.getValue(row);
-    return this.categories.filter((_d, i) => flagged != null && flagged[i]);
-  }
-
-  getColor(row: IDataRow) {
-    const flagged = this.getValue(row);
-    return flagged.reduce((a,b) => a + (b ? 1 : 0), 0) >= flagged.length/2 ? 'green' : 'red';
   }
 
   compare(a: IDataRow, b: IDataRow) {

@@ -281,7 +281,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   sortBy(col: Column | null, ascending: boolean = false) {
-    if (col !== null && col.findMyRanker() !== this) {
+    if (col != null && col.findMyRanker() !== this) {
       return false; //not one of mine
     }
     const primary = this.primarySortCriteria;

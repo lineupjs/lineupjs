@@ -23,7 +23,7 @@ export default class RankColumn extends ValueColumn<number> {
 
   constructor(id: string, desc: IValueColumnDesc<number>) {
     super(id, desc);
-    this.setWidthImpl(50);
+    this.setDefaultWidth(50);
   }
 
   get frozen() {

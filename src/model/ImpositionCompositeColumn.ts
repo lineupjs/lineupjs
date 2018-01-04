@@ -24,7 +24,7 @@ export function createDesc(label: string = 'Imposition') {
  * implementation of a combine column, standard operations how to select
  */
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
-  constructor(id: string, desc: IColumnDesc) {
+  constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
 
     this.setDefaultRenderer('number');
@@ -49,7 +49,11 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
 
   getColor(row: IDataRow) {
     const c = this._children;
-    return c.length < 2 ? this.color : (<ICategoricalColumn><any>c[1]).getColor(row);
+    if (c.length < 2) {
+      return this.color;
+    }
+    const v = (<ICategoricalColumn><any>c[1]).getCategory(row);
+    return v ? v.color : this.color;
   }
 
   getNumber(row: IDataRow) {

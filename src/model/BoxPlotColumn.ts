@@ -3,36 +3,20 @@ import Column from './Column';
 import {toolbar} from './annotations';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, getBoxPlotNumber, IBoxPlotColumn, IBoxPlotData, INumberFilter, isSameFilter, noNumberFilter,
-  restoreFilter, SORT_METHOD, SortMethod
+  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, IBoxPlotData, INumberFilter, isDummyFilter,
+  noNumberFilter,
+  restoreFilter
 } from './INumberColumn';
-import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
-import NumberColumn, {IMapAbleColumn} from './NumberColumn';
-/**
- * Created by bikramkawan on 24/11/2016.
- */
+import {
+  createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
+  ScaleMappingFunction
+} from './MappingFunction';
+import NumberColumn from './NumberColumn';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 
-export function isBoxPlotColumn(col: any): col is IBoxPlotColumn {
-  return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
-}
-
-export interface IBoxPlotDesc {
-  /**
-   * dump of mapping function
-   */
-  readonly map?: any;
-  /**
-   * either map or domain should be available
-   */
-  readonly domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  readonly range?: [number, number];
-
-  readonly sort?: string;
+export interface IBoxPlotDesc extends IMapAbleDesc {
+  sort?: ESortMethod;
 }
 
 export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
@@ -40,15 +24,15 @@ export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlo
 export {IBoxPlotData} from './INumberColumn';
 
 @toolbar('sortNumbers', 'filterMapped')
-export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn, IMapAbleColumn {
+export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly DEFAULT_FORMATTER = format('.3n');
 
-  private sort: SortMethod;
+  private sort: ESortMethod;
 
   private mapping: IMappingFunction;
 
-  private original: IMappingFunction;
+  private original: Readonly<IMappingFunction>;
   /**
    * currently active filter
    * @type {{min: number, max: number}}
@@ -57,12 +41,12 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   private currentFilter: INumberFilter = noNumberFilter();
 
 
-  constructor(id: string, desc: IBoxPlotColumnDesc) {
+  constructor(id: string, desc: Readonly<IBoxPlotColumnDesc>) {
     super(id, desc);
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
 
-    this.sort = desc.sort || SORT_METHOD.min;
+    this.sort = desc.sort || ESortMethod.min;
 
   }
 
@@ -121,11 +105,11 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return this.sort;
   }
 
-  setSortMethod(sort: string) {
+  setSortMethod(sort: ESortMethod) {
     if (this.sort === sort) {
       return;
     }
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
+    this.fire(Column.EVENT_SORTMETHOD_CHANGED, this.sort, this.sort = sort);
     // sort by me if not already sorted by me
     if (!this.isSortedByMe().asc) {
       this.sortByMe();
@@ -135,7 +119,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = !isSameFilter(this.currentFilter, noNumberFilter()) ? this.currentFilter : null;
+    r.filter = !isDummyFilter(this.currentFilter) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }

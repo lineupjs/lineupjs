@@ -33,7 +33,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
   private numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id: string, desc: ICompositeNumberColumnDesc) {
+  constructor(id: string, desc: Readonly<ICompositeNumberColumnDesc>) {
     super(id, desc);
 
     if (desc.numberFormat) {

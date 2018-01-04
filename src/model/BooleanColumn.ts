@@ -3,15 +3,16 @@
  */
 
 import {toolbar} from './annotations';
+import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
-import {ICategoricalColumn} from './ICategoricalColumn';
+import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface IBooleanDesc {
   /**
    * string to show for true
-   * @default X
+   * @default ✓
    */
   trueMarker?: string;
   /**
@@ -32,26 +33,23 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   static readonly GROUP_FALSE = {name: 'False', color: 'white'};
 
   private currentFilter: boolean | null = null;
-  private trueMarker = 'X';
-  private falseMarker = '';
+  readonly categories: ICategory[];
 
-  constructor(id: string, desc: IBooleanColumnDesc) {
+  constructor(id: string, desc: Readonly<IBooleanColumnDesc>) {
     super(id, desc);
     this.setWidthImpl(30);
-    this.trueMarker = desc.trueMarker || this.trueMarker;
-    this.falseMarker = desc.falseMarker || this.falseMarker;
+    this.categories = [
+      {name: desc.trueMarker || '✓', color: BooleanColumn.GROUP_TRUE.color, label: BooleanColumn.GROUP_TRUE.name, value: 0},
+      {name: desc.trueMarker || '', color: BooleanColumn.GROUP_FALSE.color, label: BooleanColumn.GROUP_FALSE.name, value: 1}
+    ];
   }
 
-  get categories() {
-    return [this.trueMarker, this.falseMarker];
+  get dataLength() {
+    return this.categories.length;
   }
 
-  get categoryLabels() {
-    return ['True', 'False'];
-  }
-
-  get categoryColors() {
-    return ['green', 'red'];
+  get labels() {
+    return this.categories.map((d) => d.label);
   }
 
   getValue(row: IDataRow) {
@@ -66,24 +64,34 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return false;
   }
 
-  getCategories(row: IDataRow) {
+  getCategory(row: IDataRow) {
     const v = this.getValue(row);
-    return v ? [this.trueMarker] : [this.falseMarker];
-  }
-
-  getColor(row: IDataRow) {
-    const flagged = this.getValue(row);
-    return flagged ? this.categoryColors[0] : this.categoryColors[1];
+    return this.categories[v ? 0 : 1];
   }
 
   getLabel(row: IDataRow) {
-    const v = this.getValue(row);
-    return v ? this.trueMarker : this.falseMarker;
+    return CategoricalColumn.prototype.getLabel.call(this, row);
+  }
+
+  getLabels(row: IDataRow) {
+    return CategoricalColumn.prototype.getLabels.call(this, row);
+  }
+
+  getValues(row: IDataRow) {
+    return CategoricalColumn.prototype.getValues.call(this, row);
+  }
+
+  getMap(row: IDataRow) {
+    return CategoricalColumn.prototype.getMap.call(this, row);
+  }
+
+  getMapLabel(row: IDataRow) {
+    return CategoricalColumn.prototype.getMapLabel.call(this, row);
   }
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    if (this.currentFilter !== null) {
+    if (this.currentFilter != null) {
       r.filter = this.currentFilter;
     }
     return r;
@@ -97,7 +105,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   }
 
   isFiltered() {
-    return this.currentFilter !== null;
+    return this.currentFilter != null;
   }
 
   filter(row: IDataRow) {

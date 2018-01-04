@@ -1,45 +1,84 @@
-import Column, {IColumnDesc} from './Column';
-import {IDataRow} from './interfaces';
+import {schemeCategory10, schemeCategory20} from 'd3-scale';
+import Column from './Column';
+import {IArrayColumn} from './IArrayColumn';
+import {IColumnDesc, IDataRow} from './interfaces';
+import {FIRST_IS_NAN} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
 
-export interface IBaseCategoricalDesc {
-  /**
-   * separator to split  multi value
-   * @defualt ;
-   */
-  separator?: string;
-
-  categories: (string | ICategory)[];
+export interface ICategoricalDesc {
+  categories: (string | Partial<ICategory>)[];
+  missingCategory: (string | Partial<ICategory>);
 }
 
-export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoricalDesc;
+export declare type ICategoricalColumnDesc = IValueColumnDesc<string> & ICategoricalDesc;
 
-export interface ICategoricalColumn {
-  readonly categories: string[];
-  readonly categoryLabels: string[];
-  readonly categoryColors: string[];
+export interface ICategoricalColumn extends IArrayColumn<boolean> {
+  readonly categories: ICategory[];
 
-  getCategories(row: IDataRow): string[];
-
-  getColor(row: IDataRow): string | null;
+  getCategory(row: IDataRow): ICategory|null;
 }
 
 export interface ICategory {
-  name: string;
+  readonly name: string;
 
   /**
    * optional label of this category (the one to render)
    */
-  label?: string;
-  /**
-   * associated value with this category
-   */
-  value?: any;
+  readonly label: string;
   /**
    * category color
    * @default next in d3 color 10 range
    */
-  color?: string;
+  readonly color: string;
+
+  value: number;
+}
+
+
+export function colorPool() {
+  // dark, bright, and repeat
+  const colors = schemeCategory10.concat(schemeCategory20.filter((_d, i) => i % 2 === 1));
+  let act = 0;
+  return () => colors[(act++) % colors.length];
+}
+
+export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: ()=>string = () => Column.DEFAULT_COLOR) {
+  if (typeof cat === 'string') {
+      //just the category value
+      return {name: cat, label: cat, color: nextColor(), value};
+    }
+    const name = cat.name == null ? String(cat.value) : cat.name;
+    return {
+      name,
+      label: cat.label || name,
+      color: cat.color || nextColor(),
+      value: cat.value != null ? cat.value : value
+    };
+}
+
+export function compareCategory(a: ICategory|null, b: ICategory|null) {
+  const aNull = a == null || isNaN(a.value);
+  const bNull = b == null || isNaN(b.value);
+  if (aNull || a == null) {
+    return bNull ? 0 : FIRST_IS_NAN;
+  }
+  if (bNull || b == null) {
+    return -FIRST_IS_NAN;
+  }
+  if (a.value === b.value) {
+    return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
+  }
+  return a.value - b.value;
+}
+
+export function toCategories(desc: ICategoricalDesc) {
+  if (!desc.categories) {
+    return [];
+  }
+  const nextColor = colorPool();
+  const l = desc.categories.length - 1;
+  const cats = desc.categories.map((cat, i) => toCategory(cat, i / l, nextColor));
+  return cats.sort(compareCategory);
 }
 
 /**
@@ -47,10 +86,10 @@ export interface ICategory {
  * @param col
  * @returns {boolean}
  */
-export function isCategoricalColumn(col: Column): col is ICategoricalColumn & Column;
-export function isCategoricalColumn(col: IColumnDesc): col is ICategoricalDesc;
+export function isCategoricalColumn(col: Column): col is ICategoricalColumn;
+export function isCategoricalColumn(col: IColumnDesc): col is ICategoricalColumnDesc & IColumnDesc;
 export function isCategoricalColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
+  return (col instanceof Column && typeof (<any>col).getCategory === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
 }
 
 export interface ICategoricalFilter {
@@ -86,22 +125,22 @@ function arrayEquals<T>(a: T[], b: T[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
-export function isIncluded(filter: ICategoricalFilter | null, category: string) {
+export function isIncluded(filter: ICategoricalFilter | null, category: ICategory | null) {
   if (!filter) {
     return true;
   }
-  if (category == null && filter.filterMissing) {
-    return false;
+  if (category == null || isNaN(category.value)) {
+    return !filter.filterMissing;
   }
   const filterObj = filter.filter;
   if (Array.isArray(filterObj)) { //array mode
-    return filterObj.indexOf(category) >= 0;
+    return filterObj.indexOf(category.name) >= 0;
   }
   if (typeof filterObj === 'string' && filterObj.length > 0) { //search mode
-    return category != null && category.toLowerCase().indexOf(filterObj.toLowerCase()) >= 0;
+    return category.name.toLowerCase().indexOf(filterObj.toLowerCase()) >= 0;
   }
   if (filterObj instanceof RegExp) { //regex match mode
-    return category != null && filterObj.test(category);
+    return filterObj.test(category.name);
   }
   return true;
 }

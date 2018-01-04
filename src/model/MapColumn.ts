@@ -1,36 +1,16 @@
-import Column from './Column';
+import {IKeyValue, IMapColumn} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
-
-export interface IMapDesc {
-  readonly escape?: boolean;
-}
-
-export interface IKeyValue<T> {
-  key: string;
-  value: T;
-}
-
-export interface IMapColumnDesc<T> extends IMapDesc, IValueColumnDesc<IKeyValue<T>[]> {
+export interface IMapColumnDesc<T> extends IValueColumnDesc<IKeyValue<T>[]> {
   // dummy
-}
-
-export interface IMapColumn<T> {
-  getMap(row: IDataRow): IKeyValue<T>[];
-
-  getMapLabel(row: IDataRow): IKeyValue<string>[];
-}
-
-export function isMapColumn(col: any): col is IMapColumn<any> {
-  return typeof col.getMap === 'function' &&  typeof col.getMapLabel === 'function' && col instanceof Column;
 }
 
 export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements IMapColumn<T> {
 
-  constructor(id: string, desc: IMapColumnDesc<T>) {
+  constructor(id: string, desc: Readonly<IMapColumnDesc<T>>) {
     super(id, desc);
-    this.setWidthImpl(200); //by default 200
+    this.setDefaultWidth(200); //by default 200
   }
 
   getValue(row: IDataRow) {

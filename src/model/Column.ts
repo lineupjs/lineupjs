@@ -6,10 +6,11 @@ import AEventDispatcher from '../internal/AEventDispatcher';
 import {similar} from '../internal/math';
 import {fixCSS} from '../internal/utils';
 import {defaultGroup} from './Group';
-import {IDataRow, IGroupData} from './interfaces';
+import {IColumnDesc, IDataRow, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
 import Ranking, {ISortCriteria} from './Ranking';
 
+export {IColumnDesc} from './interfaces';
 
 export interface IFlatColumn {
   readonly col: Column;
@@ -41,52 +42,10 @@ export interface IColumnParent {
 }
 
 
-export interface IColumnDesc {
-  /**
-   * label of the column
-   */
-  readonly label: string;
-  /**
-   * the column type
-   */
-  readonly type: string;
-
-  /**
-   * column description
-   */
-  readonly description?: string;
-
-  /**
-   * color of this column
-   */
-  readonly color?: string;
-  /**
-   * css class to append to elements of this column
-   */
-  readonly cssClass?: string;
-
-  /**
-   * frozen column
-   * @default isSupportType
-   */
-  readonly frozen?: boolean;
-
-  /**
-   * default renderer to use
-   */
-  readonly renderer?: string;
-
-  /**
-   * default group renderer to use
-   */
-  readonly groupRenderer?: string;
-}
-
-
 export interface IColumnMetaData {
-  readonly label: string;
-  readonly description: string;
-  readonly color: string | null;
+  label: string;
+  description: string;
+  color: string | null;
 }
 
 /**
@@ -135,30 +94,24 @@ export default class Column extends AEventDispatcher {
   /**
    * parent column of this column, set when added to a ranking or combined column
    */
-  parent: IColumnParent | null = null;
+  parent: Readonly<IColumnParent> | null = null;
 
-  private metadata: IColumnMetaData;
-
-  /**
-   * alternative to specifying a color is defining a css class that should be used
-   */
-  readonly cssClass: string;
-
+  private metadata: Readonly<IColumnMetaData>;
   private renderer: string;
   private groupRenderer: string;
 
 
-  constructor(id: string, public readonly desc: IColumnDesc) {
+  constructor(id: string, public readonly desc: Readonly<IColumnDesc>) {
     super();
     this.uid = fixCSS(id);
     this.renderer = this.desc.renderer || this.desc.type;
     this.groupRenderer = this.desc.groupRenderer || this.desc.type;
+    this.width = this.desc.width != null && this.desc.width >= 0 ? this.desc.width : 100;
 
-    this.cssClass = desc.cssClass || '';
     this.metadata = {
       label: desc.label || this.id,
       description: desc.description || '',
-      color: desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+      color: desc.color || Column.DEFAULT_COLOR
     };
   }
 
@@ -258,7 +211,7 @@ export default class Column extends AEventDispatcher {
     this.width = value;
   }
 
-  setMetaData(value: IColumnMetaData) {
+  setMetaData(value: Readonly<IColumnMetaData>) {
     if (value.label === this.label && this.color === value.color && this.description === value.description) {
       return;
     }
@@ -276,7 +229,7 @@ export default class Column extends AEventDispatcher {
     this.fire(events, bak, this.getMetaData());
   }
 
-  getMetaData(): IColumnMetaData {
+  getMetaData(): Readonly<IColumnMetaData> {
     return {
       label: this.label,
       color: this.color,
@@ -297,7 +250,7 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  groupByMe() {
+  groupByMe(): boolean {
     const r = this.findMyRanker();
     if (r) {
       return r.toggleGrouping(this);
@@ -514,7 +467,7 @@ export default class Column extends AEventDispatcher {
    * @return {boolean}
    */
   filter(row: IDataRow) {
-    return row !== null;
+    return row != null;
   }
 
   /**
@@ -557,5 +510,12 @@ export default class Column extends AEventDispatcher {
       return;
     }
     return this.setGroupRenderer(renderer);
+  }
+
+  protected setDefaultWidth(width: number) {
+    if (this.width !== 100) {
+      return;
+    }
+    return this.setWidthImpl(width);
   }
 }

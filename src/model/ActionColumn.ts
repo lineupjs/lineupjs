@@ -27,13 +27,13 @@ export interface IGroupAction {
  * @param groupActions
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label = 'actions', actions: IAction[] = [], groupActions: IGroupAction[] = []) {
+export function createDesc(label = 'actions', actions: Readonly<IAction>[] = [], groupActions: Readonly<IGroupAction>[] = []) {
   return {type: 'actions', label, actions, groupActions};
 }
 
 export interface IActionDesc {
-  actions?: IAction[];
-  groupActions?: IGroupAction[];
+  actions?: Readonly<IAction>[];
+  groupActions?: Readonly<IGroupAction>[];
 }
 
 export declare type IActionColumnDesc = IColumnDesc & IActionDesc;
@@ -47,7 +47,7 @@ export default class ActionColumn extends Column {
   readonly actions: IAction[];
   readonly groupActions: IGroupAction[];
 
-  constructor(id: string, desc: IActionColumnDesc) {
+  constructor(id: string, desc: Readonly<IActionColumnDesc>) {
     super(id, desc);
 
     this.actions = desc.actions || [];

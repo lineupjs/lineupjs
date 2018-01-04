@@ -1,5 +1,7 @@
 import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
 import {similar} from '../internal/math';
+import Column from './Column';
+import INumberColumn, {INumberFilter} from './INumberColumn';
 
 /**
  * interface of a d3 scale
@@ -52,6 +54,25 @@ function toScale(type = 'linear'): IScale {
     default:
       return scaleLinear().clamp(true);
   }
+}
+
+
+export interface IMapAbleColumn extends INumberColumn {
+  getOriginalMapping(): IMappingFunction;
+
+  getMapping(): IMappingFunction;
+
+  setMapping(mapping: IMappingFunction): void;
+
+  getFilter(): INumberFilter;
+
+  setFilter(value?: INumberFilter): void;
+
+  getRange(): [string, string];
+}
+
+export function isMapAbleColumn(col: Column): col is IMapAbleColumn {
+  return typeof (<any>col).getMapping === 'function';
 }
 
 function isSame(a: number[], b: number[]) {
@@ -205,6 +226,21 @@ export class ScriptMappingFunction implements IMappingFunction {
   }
 }
 
+export interface IMapAbleDesc {
+  /**
+   * dump of mapping function
+   */
+  map?: any;
+  /**
+   * either map or domain should be available
+   */
+  domain?: [number, number];
+  /**
+   * @default [0,1]
+   */
+  range?: [number, number];
+}
+
 export function createMappingFunction(dump: any): IMappingFunction {
   if (dump.type === 'script') {
     const s = new ScriptMappingFunction();
@@ -216,7 +252,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
   return l;
 }
 
-export function restoreMapping(desc: { map?: any, domain?: [number, number], range?: [number, number] }): IMappingFunction {
+export function restoreMapping(desc: IMapAbleDesc): IMappingFunction {
   if (desc.map) {
     return createMappingFunction(desc.map);
   }

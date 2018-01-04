@@ -5,37 +5,36 @@ import {schemeCategory10} from 'd3-scale';
 import {toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
-import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
+import {colorPool, ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface ICategoryNode extends ICategory {
-  readonly children: ICategoryNode[];
+  children: Readonly<ICategoryNode>[];
+}
+
+interface IPartialCategoryNode extends Partial<ICategory> {
+  children: IPartialCategoryNode[];
 }
 
 export interface IHierarchyDesc {
-  /**
-   * separator to split  multi value
-   * @defualt ;
-   */
-  separator?: string;
-  readonly hierarchy: ICategoryNode;
-  readonly hierarchySeparator?: string;
+  hierarchy: IPartialCategoryNode;
+  hierarchySeparator?: string;
 }
 
 export declare type IHierarchyColumnDesc = IHierarchyDesc & IValueColumnDesc<string>;
 
 export interface ICategoryInternalNode {
-  readonly path: string;
-  readonly name: string;
-  readonly label: string;
-  readonly color: string;
-  readonly children: ICategoryInternalNode[];
+  path: string;
+  name: string;
+  label: string;
+  color: string;
+  children: Readonly<ICategoryInternalNode>[];
 }
 
 export interface ICutOffNode {
-  node: ICategoryInternalNode;
+  node: Readonly<ICategoryInternalNode>;
   maxDepth: number;
 }
 
@@ -47,22 +46,16 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   static readonly EVENT_CUTOFF_CHANGED = 'cutOffChanged';
 
   private readonly hierarchySeparator: string;
-  readonly hierarchy: ICategoryInternalNode;
+  readonly hierarchy: Readonly<ICategoryInternalNode>;
 
-  private currentNode: ICategoryInternalNode;
+  private currentNode: Readonly<ICategoryInternalNode>;
   private currentMaxDepth: number = Infinity;
-  private currentLeaves: ICategoryInternalNode[] = [];
-  private readonly currentLeavesNameCache = new Map<string, ICategoryInternalNode>();
-  private readonly currentLeavesPathCache = new Map<string, ICategoryInternalNode>();
-  /**
-   * split multiple categories
-   * @type {string}
-   */
-  private separator = ';';
+  private currentLeaves: Readonly<ICategoryInternalNode>[] = [];
+  private readonly currentLeavesNameCache = new Map<string, Readonly<ICategoryInternalNode>>();
+  private readonly currentLeavesPathCache = new Map<string, Readonly<ICategoryInternalNode>>();
 
-  constructor(id: string, desc: IHierarchyColumnDesc) {
+  constructor(id: string, desc: Readonly<IHierarchyColumnDesc>) {
     super(id, desc);
-    this.separator = desc.separator || this.separator;
     this.hierarchySeparator = desc.hierarchySeparator || '.';
     this.hierarchy = this.initHierarchy(desc.hierarchy);
     this.currentNode = this.hierarchy;
@@ -72,27 +65,26 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.setDefaultRenderer('categorical');
   }
 
-  initHierarchy(root: ICategoryNode) {
-    const colors = schemeCategory10.slice();
+  private initHierarchy(root: IPartialCategoryNode) {
+    const colors = colorPool();
     const s = this.hierarchySeparator;
-    const add = (prefix: string, node: ICategoryNode): ICategoryInternalNode => {
-      const name = node.name === undefined ? node.value : node.name;
-      let lastColorUsed = -1;
-      const children = (node.children || []).map((child: ICategoryNode | string): ICategoryInternalNode => {
+    const add = (prefix: string, node: IPartialCategoryNode): ICategoryInternalNode => {
+      const name = node.name == null ? String(node.value) : node.name;
+      const children = (node.children || []).map((child: IPartialCategoryNode | string): ICategoryInternalNode => {
         if (typeof child === 'string') {
           const path = prefix + child;
           return {
             path,
             name: child,
             label: path,
-            color: colors[(lastColorUsed++) % colors.length]!,
+            color: colors(),
             children: []
           };
         }
         const r = add(`${prefix}${name}${s}`, child);
         if (!r.color) {
           //hack to inject the next color
-          (<any>r).color = colors[(lastColorUsed++) % colors.length];
+          (<any>r).color = colors();
         }
         return r;
       });

@@ -5,28 +5,27 @@ import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc, INumberFilter,
-  isSameFilter, LazyBoxPlotData, noNumberFilter, restoreFilter, SORT_METHOD, SortMethod
+  compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc,
+  INumberFilter, isDummyFilter,
+  LazyBoxPlotData, noNumberFilter, restoreFilter
 } from './INumberColumn';
 import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
-import NumberColumn, {IMapAbleColumn} from './NumberColumn';
+import NumberColumn from './NumberColumn';
 
 export interface INumberMapDesc extends INumberDesc {
-  readonly sort?: string;
+  readonly sort?: EAdvancedSortMethod;
 }
 
 export declare type INumberMapColumnDesc = INumberMapDesc & IMapColumnDesc<number>;
 
 @toolbar('filterMapped', 'sortNumbers')
-export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn, IMapAbleColumn {
+export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 
-  private sort: SortMethod;
-
+  private sort: EAdvancedSortMethod;
   private mapping: IMappingFunction;
-
   private original: IMappingFunction;
   /**
    * currently active filter
@@ -35,11 +34,11 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  constructor(id: string, desc: INumberMapColumnDesc) {
+  constructor(id: string, desc: Readonly<INumberMapColumnDesc>) {
     super(id, desc);
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
-    this.sort = desc.sort || SORT_METHOD.median;
+    this.sort = desc.sort || EAdvancedSortMethod.median;
     this.setDefaultRenderer('mapbars');
   }
 
@@ -94,7 +93,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return this.sort;
   }
 
-  setSortMethod(sort: string) {
+  setSortMethod(sort: EAdvancedSortMethod) {
     if (this.sort === sort) {
       return;
     }
@@ -108,7 +107,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = !isSameFilter(this.currentFilter, noNumberFilter()) ? this.currentFilter : null;
+    r.filter = !isDummyFilter(this.currentFilter) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }

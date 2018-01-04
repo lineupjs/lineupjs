@@ -11,10 +11,14 @@ import {IDateDesc} from './DateColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN, isMissingValue} from './missing';
 
-export declare type DateSort = 'min'|'max'|'median';
+export enum EDateSort {
+  min = 'min',
+  max = 'max',
+  median = 'median'
+}
 
 export interface IDatesDesc extends IDateDesc {
-  readonly sort?: DateSort;
+  sort?: EDateSort;
 }
 
 export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
@@ -24,13 +28,13 @@ export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
 export default class DatesColumn extends ArrayColumn<Date|null> {
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;
-  private sort: DateSort;
+  private sort: EDateSort;
 
-  constructor(id: string, desc: IDatesColumnDesc) {
+  constructor(id: string, desc: Readonly<IDatesColumnDesc>) {
     super(id, desc);
     this.format = timeFormat(desc.dateFormat || '%x');
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || '%x');
-    this.sort = desc.sort || 'median';
+    this.sort = desc.sort || EDateSort.median;
     this.setDefaultRenderer('default');
   }
 
@@ -54,7 +58,7 @@ export default class DatesColumn extends ArrayColumn<Date|null> {
     return this.sort;
   }
 
-  setSortMethod(sort: DateSort) {
+  setSortMethod(sort: EDateSort) {
     if (this.sort === sort) {
       return;
     }
@@ -96,10 +100,10 @@ export default class DatesColumn extends ArrayColumn<Date|null> {
   }
 }
 
-function compute(arr: Date[], sort: DateSort) {
+function compute(arr: Date[], sort: EDateSort) {
   switch(sort) {
-    case 'min': return min(arr, (d) => d.getTime())!;
-    case 'max': return max(arr, (d) => d.getTime())!;
-    case 'median': return median(arr, (d) => d.getTime())!;
+    case EDateSort.min: return min(arr, (d) => d.getTime())!;
+    case EDateSort.max: return max(arr, (d) => d.getTime())!;
+    case EDateSort.median: return median(arr, (d) => d.getTime())!;
   }
 }

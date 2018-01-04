@@ -9,20 +9,18 @@ import BooleanColumn from './BooleanColumn';
 import BooleansColumn from './BooleansColumn';
 import BoxPlotColumn from './BoxPlotColumn';
 import CategoricalColumn from './CategoricalColumn';
-import CategoricalNumberColumn from './CategoricalNumberColumn';
 import DateColumn from './DateColumn';
 import DatesColumn from './DatesColumn';
 import GroupColumn from './GroupColumn';
 import HierarchyColumn from './HierarchyColumn';
 import ImpositionCompositeColumn from './ImpositionCompositeColumn';
-import MaxColumn from './MaxColumn';
-import MeanColumn from './MeanColumn';
-import MinColumn from './MinColumn';
 import NestedColumn from './NestedColumn';
 import NumberColumn from './NumberColumn';
 import NumberMapColumn from './NumberMapColumn';
 import NumbersColumn from './NumbersColumn';
+import OrdinalColumn from './OrdinalColumn';
 import RankColumn from './RankColumn';
+import ReduceColumn from './ReduceColumn';
 import ScriptColumn from './ScriptColumn';
 import SelectionColumn from './SelectionColumn';
 import StackColumn from './StackColumn';
@@ -35,12 +33,10 @@ export {default, default as Column, IColumnDesc, IColumnMetaData, IColumnParent,
 export {default as CompositeColumn} from './CompositeColumn';
 export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './MappingFunction';
 export {IDataRow, IGroup, IGroupData, IGroupItem, isGroup, IGroupParent, isSupportType} from './interfaces';
-export {isNumberColumn, INumberColumn, INumbersColumn, isNumbersColumn} from './INumberColumn';
+export {isNumberColumn, INumberColumn} from './INumberColumn';
 export {isCategoricalColumn, ICategoricalColumn, ICategory} from './ICategoricalColumn';
 export {default as Ranking} from './Ranking';
-export {createDesc as createMinDesc} from './MinColumn';
-export {createDesc as createMaxDesc} from './MaxColumn';
-export {createDesc as createMeanDesc} from './MeanColumn';
+export {createDesc as createReduceDesc} from './ReduceColumn';
 export {createDesc as createRankDesc} from './RankColumn';
 export {createDesc as createSelectionDesc} from './SelectionColumn';
 export {createDesc as createScriptDesc} from './ScriptColumn';
@@ -96,14 +92,12 @@ export function models() {
     group: GroupColumn,
     hierarchy: HierarchyColumn,
     imposition: ImpositionCompositeColumn,
-    max: MaxColumn,
-    mean: MeanColumn,
-    min: MinColumn,
+    reduce: ReduceColumn,
     nested: NestedColumn,
     number: NumberColumn,
     numbers: NumbersColumn,
     numberMap: NumberMapColumn,
-    ordinal: CategoricalNumberColumn,
+    ordinal: OrdinalColumn,
     rank: RankColumn,
     script: ScriptColumn,
     selection: SelectionColumn,

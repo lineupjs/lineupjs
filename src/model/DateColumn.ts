@@ -12,13 +12,13 @@ export interface IDateDesc {
    * d3 formatting option
    * @default %x
    */
-  readonly dateFormat?: string;
+  dateFormat?: string;
 
   /**
    * d3 formation option
    * @dfeault dateFormat
    */
-  readonly dateParse?: string;
+  dateParse?: string;
 }
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
@@ -27,7 +27,7 @@ export default class DateColumn extends ValueColumn<Date> {
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;
 
-  constructor(id: string, desc: IDateColumnDesc) {
+  constructor(id: string, desc: Readonly<IDateColumnDesc>) {
     super(id, desc);
     this.format = timeFormat(desc.dateFormat || '%x');
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || '%x');

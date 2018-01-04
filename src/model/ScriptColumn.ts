@@ -164,7 +164,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
   private script = ScriptColumn.DEFAULT_SCRIPT;
   private f: Function | null = null;
 
-  constructor(id: string, desc: IScriptColumnDesc) {
+  constructor(id: string, desc: Readonly<IScriptColumnDesc>) {
     super(id, desc);
     this.script = desc.script || this.script;
   }

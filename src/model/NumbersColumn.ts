@@ -1,37 +1,21 @@
-/**
- * Created by bikramkawan on 24/11/2016.
- */
-import {scaleLinear} from 'd3-scale';
 import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberFilter, INumbersColumn,
-  isSameFilter, LazyBoxPlotData, noNumberFilter, restoreFilter, SORT_METHOD, SortMethod
+  compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberFilter, LazyBoxPlotData,
+  noNumberFilter, restoreFilter, isDummyFilter, EAdvancedSortMethod
 } from './INumberColumn';
-import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {
+  createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
+  ScaleMappingFunction
+} from './MappingFunction';
 import {isMissingValue} from './missing';
-import NumberColumn, {IMapAbleColumn} from './NumberColumn';
+import NumberColumn from './NumberColumn';
 
 
-export interface INumbersDesc extends IArrayDesc {
-  /**
-   * dump of mapping function
-   */
-  readonly map?: any;
-  /**
-   * either map or domain should be available
-   */
-  readonly domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  readonly range?: [number, number];
-
-  readonly sort?: string;
-  readonly threshold?: number;
-  readonly colorRange?: string[];
+export interface INumbersDesc extends IArrayDesc, IMapAbleDesc {
+  readonly sort?: EAdvancedSortMethod;
 }
 
 
@@ -44,15 +28,11 @@ export interface ISplicer {
 }
 
 @toolbar('sortNumbers', 'filterMapped')
-export default class NumbersColumn extends ArrayColumn<number> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
+export default class NumbersColumn extends ArrayColumn<number> implements IAdvancedBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 
-  private sort: SortMethod;
-  private readonly threshold: number;
-  private readonly colorRange: string[];
-
+  private sort: EAdvancedSortMethod;
   private mapping: IMappingFunction;
-
   private original: IMappingFunction;
   /**
    * currently active filter
@@ -61,49 +41,25 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  constructor(id: string, desc: INumbersColumnDesc) {
+  constructor(id: string, desc: Readonly<INumbersColumnDesc>) {
     super(id, desc);
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
 
-    this.threshold = desc.threshold || 0;
-    this.colorRange = desc.colorRange || ['blue', 'red'];
-    this.sort = desc.sort || SORT_METHOD.median;
+    this.sort = desc.sort || EAdvancedSortMethod.median;
 
     // better initialize the default with based on the data length
-    this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
+    if (this.dataLength) {
+      this.setDefaultWidth(Math.min(Math.max(100, this.dataLength! * 10), 500));
+    }
   }
 
   compare(a: IDataRow, b: IDataRow): number {
     return compareBoxPlot(this, a, b);
   }
 
-  getColorRange() {
-    return this.colorRange.slice();
-  }
-
-  getRawColorScale() {
-    const colorScale = scaleLinear<string, string>();
-    const domain = this.mapping.domain;
-    if (domain[0] < 0) {
-      colorScale
-        .domain([domain[0], 0, domain[1]])
-        .range([this.colorRange[0], (this.colorRange.length > 2 ? this.colorRange[1] : 'white'), this.colorRange[this.colorRange.length - 1]]);
-
-    } else {
-      colorScale
-        .domain([domain[0], domain[1]])
-        .range([this.colorRange[0], this.colorRange[this.colorRange.length - 1]]);
-    }
-    return colorScale;
-  }
-
   getRawNumbers(row: IDataRow) {
     return this.getRawValue(row);
-  }
-
-  getThreshold() {
-    return this.threshold;
   }
 
   getBoxPlotData(row: IDataRow) {
@@ -156,7 +112,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
     return this.sort;
   }
 
-  setSortMethod(sort: string) {
+  setSortMethod(sort: EAdvancedSortMethod) {
     if (this.sort === sort) {
       return;
     }
@@ -170,7 +126,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements IAdvan
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = !isSameFilter(this.currentFilter, noNumberFilter()) ? this.currentFilter : null;
+    r.filter = !isDummyFilter(this.currentFilter) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }

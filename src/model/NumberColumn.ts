@@ -8,10 +8,13 @@ import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow, IGroupData} from './interfaces';
 import {
-  ADVANCED_SORT_METHOD, default as INumberColumn, groupCompare, INumberDesc, INumberFilter, isSameFilter,
-  noNumberFilter, numberCompare, restoreFilter, SortMethod
+  default as INumberColumn, EAdvancedSortMethod, groupCompare, INumberDesc, INumberFilter, isDummyFilter,
+  isEqualFilter, isIncluded, noNumberFilter, numberCompare, restoreFilter
 } from './INumberColumn';
-import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {
+  createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,
+  ScaleMappingFunction
+} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
@@ -21,23 +24,6 @@ export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
 
-export interface IMapAbleColumn extends INumberColumn {
-  getOriginalMapping(): IMappingFunction;
-
-  getMapping(): IMappingFunction;
-
-  setMapping(mapping: IMappingFunction): void;
-
-  getFilter(): INumberFilter;
-
-  setFilter(value?: INumberFilter): void;
-
-  getRange(): [string, string];
-}
-
-export function isMapAbleColumn(col: any): col is IMapAbleColumn {
-  return typeof col.getMapping === 'function';
-}
 
 /**
  * a number column mapped from an original input scale to an output range
@@ -46,10 +32,9 @@ export function isMapAbleColumn(col: any): col is IMapAbleColumn {
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
 
-  missingValue = NaN;
+  private readonly missingValue: number;
 
   private mapping: IMappingFunction;
-
   private original: IMappingFunction;
 
   /**
@@ -62,7 +47,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private numberFormat: (n: number) => string = format('.2f');
 
   private currentStratifyThresholds: number[] = [];
-  private groupSortMethod: SortMethod = ADVANCED_SORT_METHOD.median;
+  private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
   constructor(id: string, desc: INumberColumnDesc) {
     super(id, desc);
@@ -73,10 +58,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-
-    if (desc.missingValue !== undefined) {
-      this.missingValue = desc.missingValue;
-    }
+    this.missingValue = desc.missingValue != null ? desc.missingValue : NaN;
 
     this.setGroupRenderer('boxplot');
   }
@@ -84,8 +66,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
     r.map = this.mapping.dump();
-    r.filter = isSameFilter(this.currentFilter, noNumberFilter()) ? null : this.currentFilter;
-    r.missingValue = this.missingValue;
+    r.filter = isDummyFilter(this.currentFilter) ? null : this.currentFilter;
     r.groupSortMethod = this.groupSortMethod;
     if (this.currentStratifyThresholds) {
       r.stratifyThreshholds = this.currentStratifyThresholds;
@@ -108,9 +89,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     if (dump.stratifyThreshholds) {
       this.currentStratifyThresholds = dump.stratifyThresholds;
-    }
-    if (dump.missingValue !== undefined) {
-      this.missingValue = dump.missingValue;
     }
     if (dump.numberFormat) {
       this.numberFormat = format(dump.numberFormat);
@@ -197,49 +175,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   isFiltered() {
-    return this.currentFilter.filterMissing || isFinite(this.currentFilter.min) || isFinite(this.currentFilter.max);
-  }
-
-  get filterMin() {
-    return this.currentFilter.min;
-  }
-
-  get filterMax() {
-    return this.currentFilter.max;
-  }
-
-  get filterMissing() {
-    return this.currentFilter.filterMissing;
+    return isDummyFilter(this.currentFilter);
   }
 
   getFilter(): INumberFilter {
-    return {
-      min: this.currentFilter.min,
-      max: this.currentFilter.max,
-      filterMissing: this.currentFilter.filterMissing
-    };
-  }
-
-  set filterMin(min: number) {
-    const bak = this.getFilter();
-    this.currentFilter.min = isUnknown(min) ? -Infinity : min;
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
-  }
-
-  set filterMax(max: number) {
-    const bak = this.getFilter();
-    this.currentFilter.max = isUnknown(max) ? Infinity : max;
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
-  }
-
-  set filterMissing(filterMissing: boolean) {
-    const bak = this.getFilter();
-    this.currentFilter.filterMissing = filterMissing;
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
+    return Object.assign({}, this.currentFilter);
   }
 
   setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
-    if (isSameFilter(value, this.currentFilter)) {
+    if (isEqualFilter(value, this.currentFilter)) {
       return;
     }
     const bak = this.getFilter();
@@ -255,16 +199,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @returns {boolean}
    */
   filter(row: IDataRow) {
-    if (!this.isFiltered()) {
-      return true;
-    }
-    //force a known missing value
-    const v: any = this.getRawNumber(row, NaN);
-    if (isNaN(v)) {
-      return !this.filterMissing;
-    }
-    const vn = +v;
-    return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
+    return isIncluded(this.currentFilter, this.getRawNumber(row, NaN));
   }
 
   getStratifyThresholds() {
@@ -313,7 +248,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.groupSortMethod;
   }
 
-  setSortMethod(sortMethod: string) {
+  setSortMethod(sortMethod: EAdvancedSortMethod) {
     if (this.groupSortMethod === sortMethod) {
       return;
     }

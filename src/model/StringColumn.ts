@@ -5,14 +5,21 @@
 import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
+import {FIRST_IS_NAN} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+
+export enum EAlignment {
+  left = 'left',
+  center = 'center',
+  right = 'right'
+}
 
 export interface IStringDesc {
   /**
    * column alignment: left, center, right
    * @default left
    */
-  readonly alignment?: 'left' | 'center' | 'right';
+  readonly alignment?: EAlignment;
 
   /**
    * escape html tags
@@ -43,40 +50,30 @@ export default class StringColumn extends ValueColumn<string> {
   static readonly FILTER_MISSING = '__FILTER_MISSING';
   private currentFilter: string | RegExp | null = null;
 
-  private _alignment: 'left' | 'right' | 'center' = 'left';
-  private _escape: boolean = true;
-  private pattern: string | null = null;
+  readonly alignment: EAlignment;
+  readonly escape: boolean;
+  private pattern: string;
   readonly patternTemplates: string[];
 
-  constructor(id: string, desc: IStringColumnDesc) {
+  constructor(id: string, desc: Readonly<IStringColumnDesc>) {
     super(id, desc);
-    this.setWidthImpl(200); //by default 200
-    this._alignment = <any>desc.alignment || 'left';
-    this._escape = desc.escape !== false;
-    this.pattern = desc.pattern || null;
+    this.setDefaultWidth(200); //by default 200
+    this.alignment = <any>desc.alignment || EAlignment.left;
+    this.escape = desc.escape !== false;
+    this.pattern = desc.pattern || '';
     this.patternTemplates = desc.patternTemplates || [];
   }
 
-  //readonly
-  get alignment() {
-    return this._alignment;
-  }
-
-  get escape() {
-    return this._escape;
-  }
 
   setPattern(pattern: string) {
-    /* tslint:disable */
-    if (pattern == this.pattern) { /*== on purpose*/
+    if (pattern === this.pattern) { /*== on purpose*/
       return;
     }
-    /* tslint:enable */
     this.fire([StringColumn.EVENT_PATTERN_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.pattern, this.pattern = pattern);
   }
 
   getPattern() {
-    return this.pattern || '';
+    return this.pattern;
   }
 
   protected createEventList() {
@@ -104,11 +101,9 @@ export default class StringColumn extends ValueColumn<string> {
     } else {
       r.filter = this.currentFilter;
     }
-    /* tslint:disable */
-    if (this.pattern != (<any>this.desc).pattern) {
+    if (this.pattern !== (<any>this.desc).pattern) {
       r.pattern = this.pattern;
     }
-    /* tslint:enable */
     return r;
   }
 
@@ -165,10 +160,10 @@ export default class StringColumn extends ValueColumn<string> {
     const aValue = this.getValue(a);
     const bValue = this.getValue(b);
     if (aValue === '') {
-      return bValue === '' ? 0 : +1; //same = 0
+      return bValue === '' ? 0 : FIRST_IS_NAN; //same = 0
     }
     if (bValue === '') {
-      return -1;
+      return - FIRST_IS_NAN;
     }
     return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
   }

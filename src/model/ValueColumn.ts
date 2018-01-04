@@ -1,8 +1,8 @@
 /**
  * Created by sam on 04.11.2016.
  */
-import Column, {IColumnDesc} from './Column';
-import {IDataRow} from './interfaces';
+import Column from './Column';
+import {IColumnDesc, IDataRow} from './interfaces';
 import Ranking from './Ranking';
 
 
@@ -37,7 +37,7 @@ export default class ValueColumn<T> extends Column {
    */
   private loaded: boolean;
 
-  constructor(id: string, desc: IValueColumnDesc<T>) {
+  constructor(id: string, desc: Readonly<IValueColumnDesc<T>>) {
     super(id, desc);
     //find accessor
     this.accessor = desc.accessor! || (() => null);

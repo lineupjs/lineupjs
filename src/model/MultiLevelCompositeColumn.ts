@@ -24,7 +24,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    */
   private collapsed = false;
 
-  constructor(id: string, desc: IColumnDesc) {
+  constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
     const that = this;
     this.adaptChange = function (old, newValue) {

@@ -391,7 +391,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
         return false;
       }
       if (column instanceof CompositeColumn) {
-        return (column.push(col) !== null);
+        return (column.push(col) != null);
       }
       const ranking = column.findMyRanker()!;
       const index = ranking.indexOf(column);

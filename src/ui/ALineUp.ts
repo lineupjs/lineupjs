@@ -59,6 +59,6 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     if (col) {
       col.sortByMe(ascending);
     }
-    return col !== null;
+    return col != null;
   }
 }

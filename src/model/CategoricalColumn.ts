@@ -2,42 +2,29 @@
  * Created by sam on 04.11.2016.
  */
 
-import {scaleOrdinal, schemeCategory10, schemeCategory20} from 'd3-scale';
 import {toolbar} from './annotations';
 import Column from './Column';
 import {
-  IBaseCategoricalDesc, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter,
-  isEqualFilter, isIncluded,
+  compareCategory,
+  ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
+  isEqualFilter, isIncluded, toCategories, toCategory,
 } from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_NAN, missingGroup} from './missing';
+import {missingGroup} from './missing';
 import ValueColumn from './ValueColumn';
 
-
-function colorPool() {
-  // dark, bright, and repeat
-  const colors = schemeCategory10.concat(schemeCategory20.filter((_d, i) => i % 2 === 1));
-  let act = 0;
-  return () => colors[(act++) % colors.length];
-}
 
 /**
  * column for categorical values
  */
 @toolbar('stratify', 'filterCategorical')
 export default class CategoricalColumn extends ValueColumn<string> implements ICategoricalColumn {
-  /**
-   * colors for each category
-   * @type {Ordinal<string, string>}
-   */
-  private colors = scaleOrdinal(schemeCategory10);
 
-  /**
-   * category labels by default the category name itself
-   * @type {Array}
-   */
-  private catLabels = new Map<string, string>();
+  readonly categories: ICategory[];
 
+  private missingCategory: ICategory|null;
+
+  private readonly lookup = new Map<string, Readonly<ICategory>>();
   /**
    * set of categories to show
    * @type {null}
@@ -45,164 +32,82 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    */
   private currentFilter: ICategoricalFilter | null = null;
 
-  /**
-   * split multiple categories
-   * @type {string}
-   */
-  private separator = ';';
-
-  constructor(id: string, desc: ICategoricalDesc) {
+  constructor(id: string, desc: Readonly<ICategoricalColumnDesc>) {
     super(id, desc);
-    this.separator = desc.separator || this.separator;
-    this.initCategories(desc);
-    //TODO infer categories from data
-  }
-
-  initCategories(desc: IBaseCategoricalDesc) {
-    if (!desc.categories) {
-      return;
-    }
-    const nextColor = colorPool();
-    const cats: string[] = [];
-    const colors: string[] = [];
-    const labels = new Map<string, string>();
-    desc.categories.forEach((cat) => {
-      if (typeof cat === 'string') {
-        //just the category value
-        cats.push(cat);
-        colors.push(nextColor());
-        return;
-      }
-      //the name or value of the category
-      cats.push(cat.name || cat.value);
-      //optional label mapping
-      if (cat.label) {
-        labels.set(cat.name, cat.label);
-      }
-      //optional color
-      if (cat.color) {
-        colors.push(cat.color);
-      } else {
-        colors.push(nextColor());
-      }
-    });
-    this.catLabels = labels;
-    this.colors.domain(cats).range(colors);
-  }
-
-  get categories() {
-    return this.colors.domain();
-  }
-
-  get categoryColors() {
-    return this.colors.range();
-  }
-
-  get categoryLabels() {
-    //no mapping
-    if (this.catLabels == null || this.catLabels.size === 0) {
-      return this.categories;
-    }
-    //label or identity mapping
-    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c)! : c);
-  }
-
-  getSaveValue(row: IDataRow) {
-    const v = super.getValue(row);
-    return typeof(v) === 'undefined' || v == null ? '' : String(v);
-  }
-
-  getLabel(row: IDataRow) {
-    //no mapping
-    if (this.catLabels == null || this.catLabels.size === 0) {
-      return this.getSaveValue(row);
-    }
-    return this.getLabels(row).join(this.separator);
-  }
-
-  getFirstLabel(row: IDataRow) {
-    const l = this.getLabels(row);
-    return l.length > 0 ? l[0] : null;
-  }
-
-  getLabels(row: IDataRow) {
-    const v = this.getSaveValue(row);
-    const r = v ? v.split(this.separator) : [];
-
-    const mapToLabel = (values: string[]) => {
-      if (this.catLabels == null || this.catLabels.size === 0) {
-        return values;
-      }
-      return values.map((v) => this.catLabels.has(v) ? this.catLabels.get(v) : v);
-    };
-    return mapToLabel(r);
+    this.categories = toCategories(desc);
+    this.missingCategory = desc.missingCategory ? toCategory(desc.missingCategory, NaN) : null;
+    this.categories.forEach((d) => this.lookup.set(d.name, d));
   }
 
   getValue(row: IDataRow) {
-    const r = this.getValues(row);
-    return r.length > 0 ? r[0] : null;
+    const v = this.getCategory(row);
+    return v ? v.name : null;
   }
 
-  getValues(row: IDataRow): string[] {
-    const v = this.getSaveValue(row);
-    return v ? v.split(this.separator) : [];
+  getCategory(row: IDataRow) {
+    const v = super.getValue(row);
+    if (!v) {
+      return this.missingCategory;
+    }
+    const vs = String(v);
+    return this.lookup.has(vs) ? this.lookup.get(vs)! : this.missingCategory;
+  }
+
+  get dataLength() {
+    return this.categories.length;
+  }
+
+  get labels() {
+    return this.categories.map((d) => d.label);
+  }
+
+  getLabel(row: IDataRow) {
+    const v = this.getCategory(row);
+    return v ? v.label : '';
+  }
+
+  getValues(row: IDataRow) {
+    const v = this.getCategory(row);
+    return this.categories.map((d) => d === v);
+  }
+
+  getLabels(row: IDataRow) {
+    return this.getValues(row).map(String);
+  }
+
+  getMap(row: IDataRow) {
+    const cats = this.categories;
+    return this.getValues(row).map((value, i) => ({key: cats[i].label, value}));
+  }
+
+  getMapLabel(row: IDataRow) {
+    const cats = this.categories;
+    return this.getLabels(row).map((value, i) => ({key: cats[i].label, value}));
   }
 
   isMissing(row: IDataRow) {
-    const v = this.getValues(row);
-    return !v || v.length === 0;
+    return this.getCategory(row) === this.missingCategory;
   }
 
-  getCategories(row: IDataRow) {
-    return this.getValues(row);
-  }
-
-  getColor(row: IDataRow) {
-    const cat = this.getValue(row);
-    if (cat == null || cat === '') {
-      return null;
-    }
-    return this.colors(cat);
-  }
-
-  getColors(row: IDataRow) {
-    return this.getCategories(row).map(this.colors);
-  }
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.filter = this.currentFilter;
-    r.colors = {
-      domain: this.colors.domain(),
-      range: this.colors.range(),
-      separator: this.separator
-    };
-    if (this.catLabels !== null && this.catLabels.size !== 0) {
-      r.labels = Array.from(this.catLabels.entries());
-    }
     return r;
   }
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    if ('filter' in dump) {
-      const bak = dump.filter;
-      if (typeof bak === 'string' || Array.isArray(bak)) {
-        this.currentFilter = {filter: bak, filterMissing: false};
-      } else {
-        this.currentFilter = bak;
-      }
-    } else {
+    if (!('filter' in dump)) {
       this.currentFilter = null;
+      return;
     }
-    if (dump.colors) {
-      this.colors.domain(dump.colors.domain).range(dump.colors.range);
+    const bak = dump.filter;
+    if (typeof bak === 'string' || Array.isArray(bak)) {
+      this.currentFilter = {filter: bak, filterMissing: false};
+    } else {
+      this.currentFilter = bak;
     }
-    if (Array.isArray(dump.labels)) {
-      this.catLabels = new Map<string, string>();
-      dump.labels.forEach((e: { key: string, value: string }) => this.catLabels.set(e.key, e.value));
-    }
-    this.separator = dump.separator || this.separator;
   }
 
   isFiltered() {
@@ -210,20 +115,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   filter(row: IDataRow): boolean {
-    if (!this.isFiltered()) {
-      return true;
-    }
-    const vs = this.getCategories(row);
-
-    if (this.currentFilter!.filterMissing && vs.length === 0) {
-      return false;
-    }
-
-    return vs.every((v) => isIncluded(this.currentFilter, v));
+    return isIncluded(this.currentFilter, this.getCategory(row));
   }
 
   getFilter() {
-    return this.currentFilter;
+    return this.currentFilter == null ? null : Object.assign({}, this.currentFilter);
   }
 
   setFilter(filter: ICategoricalFilter | null) {
@@ -234,36 +130,15 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   compare(a: IDataRow, b: IDataRow) {
-    const va = this.getValues(a);
-    const vb = this.getValues(b);
-    if (va.length === 0) {
-      // missing
-      return vb.length === 0 ? 0 : FIRST_IS_NAN;
-    }
-    if (vb.length === 0) {
-      return FIRST_IS_NAN * -1;
-    }
-    //check all categories
-    for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
-      const ci = va[i].localeCompare(vb[i]);
-      if (ci !== 0) {
-        return ci;
-      }
-    }
-    //smaller length wins
-    return va.length - vb.length;
+    return compareCategory(this.getCategory(a), this.getCategory(b));
   }
 
   group(row: IDataRow) {
-    if (this.isMissing(row)) {
+    const cat = this.getCategory(row);
+    if (!cat) {
       return missingGroup;
     }
-    const name = this.getValue(row);
-    if (!name) {
-      return super.group(row);
-    }
-    const color = this.getColor(row)!;
-    return {name, color};
+    return {name: cat.label, color: cat.color};
   }
 
   getGroupRenderer() {

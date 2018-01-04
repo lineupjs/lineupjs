@@ -6,7 +6,7 @@ import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDataRow} from './interfaces';
-import {default as StringColumn, IStringDesc} from './StringColumn';
+import {default as StringColumn, EAlignment, IStringDesc} from './StringColumn';
 
 export declare type IStringsColumnDesc = IStringDesc & IArrayColumnDesc<string>;
 
@@ -15,27 +15,18 @@ export declare type IStringsColumnDesc = IStringDesc & IArrayColumnDesc<string>;
  */
 @toolbar('search', 'editPattern')
 export default class StringsColumn extends ArrayColumn<string> {
-  private _alignment: 'left' | 'right' | 'center' = 'left';
-  private _escape: boolean = true;
-  private pattern: string | null = null;
+  readonly alignment: EAlignment;
+  readonly escape: boolean;
+  private pattern: string;
   readonly patternTemplates: string[];
 
-  constructor(id: string, desc: IStringsColumnDesc) {
+  constructor(id: string, desc: Readonly<IStringsColumnDesc>) {
     super(id, desc);
-    this.setWidthImpl(200); //by default 200
-    this._alignment = <any>desc.alignment || 'left';
-    this._escape = desc.escape !== false;
-    this.pattern = desc.pattern || 'null';
+    this.setDefaultWidth(200); //by default 200
+    this.alignment = <any>desc.alignment || EAlignment.left;
+    this.escape = desc.escape !== false;
+    this.pattern = desc.pattern || '';
     this.patternTemplates = desc.patternTemplates || [];
-  }
-
-  //readonly
-  get alignment() {
-    return this._alignment;
-  }
-
-  get escape() {
-    return this._escape;
   }
 
   setPattern(pattern: string) {
@@ -43,7 +34,7 @@ export default class StringsColumn extends ArrayColumn<string> {
   }
 
   getPattern() {
-    return this.pattern || '';
+    return this.pattern;
   }
 
   protected createEventList() {
@@ -56,11 +47,9 @@ export default class StringsColumn extends ArrayColumn<string> {
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    /* tslint:disable */
-    if (this.pattern != (<any>this.desc).pattern) {
+    if (this.pattern !== (<any>this.desc).pattern) {
       r.pattern = this.pattern;
     }
-    /* tslint:enable */
     return r;
   }
 

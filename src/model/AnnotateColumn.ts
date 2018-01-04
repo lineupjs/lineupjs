@@ -4,7 +4,7 @@
 
 import Column from './Column';
 import {IDataRow} from './interfaces';
-import StringColumn, {IStringColumnDesc} from './StringColumn';
+import StringColumn from './StringColumn';
 
 /**
  * a string column in which the values can be edited locally
@@ -13,10 +13,6 @@ export default class AnnotateColumn extends StringColumn {
   static readonly EVENT_VALUE_CHANGED = 'valueChanged';
 
   private readonly annotations = new Map<number, string>();
-
-  constructor(id: string, desc: IStringColumnDesc) {
-    super(id, desc);
-  }
 
   protected createEventList() {
     return super.createEventList().concat([AnnotateColumn.EVENT_VALUE_CHANGED]);

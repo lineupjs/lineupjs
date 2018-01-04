@@ -1,12 +1,8 @@
-import {isBoxPlotColumn} from './BoxPlotColumn';
-/**
- * Created by Samuel Gratzl on 04.10.2017.
- */
 import Column from './Column';
 import CompositeColumn, {isMultiLevelColumn} from './CompositeColumn';
 import CompositeNumberColumn from './CompositeNumberColumn';
 import {isCategoricalColumn} from './ICategoricalColumn';
-import {isNumberColumn} from './INumberColumn';
+import {isBoxPlotColumn, isNumberColumn} from './INumberColumn';
 import StringColumn from './StringColumn';
 
 export function findTypeLike<T>(col: Column, lookup: { [key: string]: T }): T | undefined {

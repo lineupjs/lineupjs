@@ -1,4 +1,42 @@
-import {IColumnDesc} from './Column';
+export interface IColumnDesc {
+  /**
+   * label of the column
+   */
+  label: string;
+  /**
+   * the column type
+   */
+  type: string;
+
+  /**
+   * column description
+   */
+  description?: string;
+
+  /**
+   * color of this column
+   */
+  color?: string;
+
+  /**
+   * frozen column
+   * @default isSupportType
+   */
+  frozen?: boolean;
+
+  /**
+   * default renderer to use
+   */
+  renderer?: string;
+
+  /**
+   * default group renderer to use
+   */
+  groupRenderer?: string;
+
+  width?: number;
+}
+
 
 /**
  * a data row for rendering
@@ -7,32 +45,32 @@ export interface IDataRow {
   /**
    * the value
    */
-  v: any;
+  readonly v: any;
   /**
    * the underlying data index
    */
-  i: number;
+  readonly i: number;
 }
 
 
 export interface IGroup {
   name: string;
   color: string;
-  parent?: IGroupParent | null;
+  parent?: Readonly<IGroupParent> | null;
 }
 
 export interface IGroupParent extends IGroup {
-  subGroups: (IGroupParent | IGroup)[];
+  subGroups: (Readonly<IGroupParent> | Readonly<IGroup>)[];
 }
 
 export interface IGroupItem extends IDataRow {
-  group: IGroup;
-  relativeIndex: number;
-  meta?: 'first' | 'last' | 'first last';
+  readonly group: IGroup;
+  readonly relativeIndex: number;
+  readonly meta?: 'first' | 'last' | 'first last';
 }
 
-export interface IGroupData extends IGroup {
-  rows: IDataRow[];
+export interface IGroupData extends Readonly<IGroup> {
+  readonly rows: IDataRow[];
 }
 
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {

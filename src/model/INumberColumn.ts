@@ -1,17 +1,18 @@
 import {ascending, mean, median, quantile} from 'd3-array';
 import {format} from 'd3-format';
 import {similar} from '../internal/math';
-import Column, {IColumnDesc} from './Column';
-import {IDataRow} from './interfaces';
-import {IMappingFunction} from './MappingFunction';
+import Column from './Column';
+import {IColumnDesc, IDataRow} from './interfaces';
+import {IMapAbleColumn, IMappingFunction} from './MappingFunction';
 import {FIRST_IS_NAN, isMissingValue} from './missing';
 
 
-export interface INumberColumn {
+export interface INumberColumn extends Column {
   getNumber(row: IDataRow): number;
 
   getRawNumber(row: IDataRow): number;
 }
+
 
 export const DEFAULT_FORMATTER = format('.3n');
 
@@ -22,26 +23,26 @@ export interface INumberDesc {
   /**
    * dump of mapping function
    */
-  readonly map?: any;
+  map?: any;
   /**
    * either map or domain should be available
    */
-  readonly domain?: [number, number];
+  domain?: [number, number];
   /**
    * @default [0,1]
    */
-  readonly range?: [number, number];
+  range?: [number, number];
   /**
    * d3 formatting option
    * @default .3n
    */
-  readonly numberFormat?: string;
+  numberFormat?: string;
 
   /**
    * missing value to use
    * @default 0
    */
-  readonly missingValue?: number;
+  missingValue?: number;
 }
 
 /**
@@ -85,19 +86,15 @@ export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw'
   return <number>data[<keyof IBoxPlotData>col.getSortMethod()];
 }
 
-export const SORT_METHOD = {
-  min: 'min',
-  max: 'max',
-  median: 'median',
-  q1: 'q1',
-  q3: 'q3'
-};
+export enum ESortMethod {
+  min = 'min',
+  max = 'max',
+  median = 'median',
+  q1 = 'q1',
+  q3 = 'q3'
+}
 
-// till it can be more specific
-export declare type SortMethod = string;
-
-
-export interface IBoxPlotColumn extends INumberColumn {
+export interface IBoxPlotColumn extends INumberColumn, IMapAbleColumn {
   getBoxPlotData(row: IDataRow): IBoxPlotData | null;
 
   getMapping(): IMappingFunction;
@@ -109,13 +106,22 @@ export interface IBoxPlotColumn extends INumberColumn {
   setSortMethod(sortMethod: string): void;
 }
 
+export function isBoxPlotColumn(col: Column): col is IBoxPlotColumn {
+  return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
+}
+
 export interface IAdvancedBoxPlotData extends IBoxPlotData {
   readonly mean: number;
 }
 
-export const ADVANCED_SORT_METHOD = Object.assign({
-  mean: 'mean'
-}, SORT_METHOD);
+export enum EAdvancedSortMethod {
+  min = 'min',
+  max = 'max',
+  median = 'median',
+  q1 = 'q1',
+  q3 = 'q3',
+  mean = 'mean'
+}
 
 export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
   getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null;
@@ -131,7 +137,7 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
   private _outlier: number[] | null = null;
   private readonly values: number[];
 
-  constructor(values: number[], private readonly scale?: IMappingFunction) {
+  constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>) {
     // filter out NaN
     this.values = values.filter((d) => !isMissingValue(d));
   }
@@ -148,7 +154,7 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
   }
 
   private map(v: number | undefined) {
-    return this.scale && v !== null ? this.scale.apply(v!) : v!;
+    return this.scale && v != null ? this.scale.apply(v!) : v!;
   }
 
   get min() {
@@ -191,28 +197,6 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
     return this._outlier;
 
   }
-}
-
-export interface INumbersColumn extends INumberColumn {
-  labels: string[];
-
-  getNumbers(row: IDataRow): number[];
-
-  getRawNumbers(row: IDataRow): number[];
-
-  getDataLength(): number;
-
-  getColorRange(): string[];
-
-  getRawColorScale(): (v: number) => string;
-
-  getThreshold(): number;
-
-  getMapping(): IMappingFunction;
-}
-
-export function isNumbersColumn(col: any): col is INumbersColumn {
-  return (<INumbersColumn>col).getNumbers !== undefined && isNumberColumn(col);
 }
 
 /**
@@ -264,14 +248,28 @@ export function noNumberFilter() {
   return ({min: -Infinity, max: Infinity, filterMissing: false});
 }
 
-export function isSameFilter(a: INumberFilter, b: INumberFilter) {
+export function isEqualFilter(a: INumberFilter, b: INumberFilter) {
   return similar(a.min, b.min, 0.001) && similar(a.max, b.max, 0.001) && a.filterMissing === b.filterMissing;
+}
+
+export function isDummyFilter(filter: INumberFilter) {
+  return !filter.filterMissing && !isFinite(filter.min) && !isFinite(filter.max);
+}
+
+export function isIncluded(filter: INumberFilter|null, value: number) {
+  if (!filter) {
+    return true;
+  }
+  if (isNaN(value)) {
+    return !filter.filterMissing;
+  }
+  return !((isFinite(filter.min) && value < filter.min) || (isFinite(filter.max) && value > filter.max));
 }
 
 export function restoreFilter(v: INumberFilter): INumberFilter {
   return {
-    min: v.min !== null && isFinite(v.min) ? v.min : -Infinity,
-    max: v.max !== null && isFinite(v.max) ? v.max : +Infinity,
+    min: v.min != null && isFinite(v.min) ? v.min : -Infinity,
+    max: v.max != null && isFinite(v.max) ? v.max : +Infinity,
     filterMissing: v.filterMissing
   };
 }

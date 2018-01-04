@@ -12,6 +12,7 @@ import CompositeChildrenDialog from './dialogs/CompositeChildrenDialog';
 import CutOffHierarchyDialog from './dialogs/CutOffHierarchyDialog';
 import EditPatternDialog from './dialogs/EditPatternDialog';
 import MappingsFilterDialog from './dialogs/MappingsFilterDialog';
+import ReduceDialog from './dialogs/ReduceDialog';
 import ScriptEditDialog from './dialogs/ScriptEditDialog';
 import SearchDialog from './dialogs/SearchDialog';
 import SortDateDialog from './dialogs/SortDateDialog';
@@ -158,6 +159,7 @@ export const icons: { [key: string]: IToolbarAction } = {
   filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog),
   filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog),
   script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog),
+  reduce: uiDialog('Reduce by &hellip;', ReduceDialog),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
   editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog),

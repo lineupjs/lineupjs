@@ -25,9 +25,9 @@ export interface IAggregateGroupColumnDesc extends IColumnDesc {
 export default class AggregateGroupColumn extends Column {
   static readonly EVENT_AGGREGATE = 'aggregate';
 
-  constructor(id: string, desc: IAggregateGroupColumnDesc) {
+  constructor(id: string, desc: Readonly<IAggregateGroupColumnDesc>) {
     super(id, desc);
-    this.setWidth(20);
+    this.setDefaultWidth(20);
   }
 
   get frozen() {

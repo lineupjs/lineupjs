@@ -8,7 +8,7 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
   abstract readonly title: string;
 
   canRender(col: Column, _isGroup: boolean) {
-    return isNumbersColumn(col);
+    return isNumbersColumn(col) && col.isFixedLength;
   }
 
   protected abstract createContext(col: INumbersColumn & Column, context: IRenderContext): {
@@ -25,7 +25,7 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
    */
   private static choose(col: INumbersColumn & Column, rows: IDataRow[]) {
     const data = rows.map((r) => col.getRawNumbers(r));
-    const cols = col.getDataLength();
+    const cols = col.getDataLength()!;
     const r = <number[]>[];
     // mean column
     for (let i = 0; i < cols; ++i) {
