@@ -27,6 +27,7 @@ import RankColumn from './RankColumn';
 import ReduceColumn from './ReduceColumn';
 import ScriptColumn from './ScriptColumn';
 import SelectionColumn from './SelectionColumn';
+import SetColumn from './SetColumn';
 import StackColumn from './StackColumn';
 import StringColumn from './StringColumn';
 import StringMapColumn from './StringMapColumn';
@@ -109,6 +110,7 @@ export function models() {
     rank: RankColumn,
     script: ScriptColumn,
     selection: SelectionColumn,
+    set: SetColumn,
     stack: StackColumn,
     string: StringColumn,
     stringMap: StringMapColumn,

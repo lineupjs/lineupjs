@@ -11,7 +11,7 @@ export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDes
 export default class CategoricalMapColumn extends MapColumn<string | null> {
   readonly categories: ICategory[];
 
-  private missingCategory: ICategory | null;
+  private readonly missingCategory: ICategory | null;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
 

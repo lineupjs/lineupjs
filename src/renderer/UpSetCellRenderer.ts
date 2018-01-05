@@ -1,5 +1,6 @@
-import {ICategoricalColumn, ICategory, IDataRow, IGroup, isCategoricalColumn} from '../model';
+import {ICategory, IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
+import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
 import {CANVAS_HEIGHT, UPSET} from '../styles';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -10,7 +11,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   readonly title = 'Matrix';
 
   canRender(col: Column, mode: ERenderMode) {
-    return isCategoricalColumn(col) && mode !== ERenderMode.SUMMARY;
+    return isSetColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
@@ -23,7 +24,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {left, right};
   }
 
-  private static createDOMContext(col: ICategoricalColumn) {
+  private static createDOMContext(col: ISetColumn) {
     const categories = col.categories;
     let templateRows = '';
     for (const cat of categories) {
@@ -52,18 +53,15 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static union(col: ICategoricalColumn, rows: IDataRow[]) {
+  private static union(col: ISetColumn, rows: IDataRow[]) {
     const values = new Set<ICategory>();
     rows.forEach((d) => {
-      const v = col.getCategory(d);
-      if (v) {
-        values.add(v);
-      }
+      col.getSet(d).forEach((c) => values.add(c));
     });
     return col.categories.map((cat) => values.has(cat));
   }
 
-  create(col: ICategoricalColumn, context: IRenderContext) {
+  create(col: ISetColumn, context: IRenderContext) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
     const cellDimension = width / col.dataLength!;
@@ -109,7 +107,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ICategoricalColumn) {
+  createGroup(col: ISetColumn) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     return {
       template: `<div><div></div>${templateRow}</div>`,

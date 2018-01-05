@@ -22,7 +22,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   readonly categories: ICategory[];
 
-  private missingCategory: ICategory|null;
+  private readonly missingCategory: ICategory|null;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
   /**
@@ -85,10 +85,18 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.getLabels(row).map((value, i) => ({key: cats[i].label, value}));
   }
 
+  getSet(row: IDataRow) {
+    const cat = this.getCategory(row);
+    const r = new Set<ICategory>();
+    if (cat && cat !== this.missingCategory) {
+      r.add(cat);
+    }
+    return r;
+  }
+
   isMissing(row: IDataRow) {
     return this.getCategory(row) === this.missingCategory;
   }
-
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);

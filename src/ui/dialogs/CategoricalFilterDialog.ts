@@ -1,5 +1,6 @@
 import CategoricalColumn from '../../model/CategoricalColumn';
 import {ICategoricalFilter, isIncluded} from '../../model/ICategoricalColumn';
+import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup} from '../missing';
 import {default as ADialog} from './ADialog';
 
@@ -7,7 +8,7 @@ export default class CategoricalFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;
 
-  constructor(private readonly column: CategoricalColumn, attachment: HTMLElement) {
+  constructor(private readonly column: CategoricalColumn|SetColumn, attachment: HTMLElement) {
     super(attachment, {
       fullDialog: true
     });

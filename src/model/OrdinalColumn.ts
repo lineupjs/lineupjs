@@ -84,6 +84,10 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return CategoricalColumn.prototype.getMapLabel.call(this, row);
   }
 
+  getSet(row: IDataRow) {
+    return CategoricalColumn.prototype.getSet.call(this, row);
+  }
+
   getNumber(row: IDataRow) {
     return this.getValue(row);
   }

@@ -89,6 +89,13 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return CategoricalColumn.prototype.getMapLabel.call(this, row);
   }
 
+  getSet(row: IDataRow) {
+    const v = this.getValue(row);
+    const r = new Set<ICategory>();
+    r.add(this.categories[v ? 0 : 1])
+    return r;
+  }
+
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     if (this.currentFilter != null) {

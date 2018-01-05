@@ -1,6 +1,6 @@
 import {schemeCategory10, schemeCategory20} from 'd3-scale';
 import Column from './Column';
-import {IArrayColumn} from './IArrayColumn';
+import {IArrayColumn, isArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {FIRST_IS_NAN} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
@@ -12,9 +12,17 @@ export interface ICategoricalDesc {
 
 export declare type ICategoricalColumnDesc = IValueColumnDesc<string> & ICategoricalDesc;
 
-export interface ICategoricalColumn extends IArrayColumn<boolean> {
+export interface ISetColumn extends IArrayColumn<boolean> {
   readonly categories: ICategory[];
 
+  getSet(row: IDataRow): Set<ICategory>;
+}
+
+export function isSetColumn(col: Column): col is ISetColumn {
+  return isArrayColumn(col) && (<ISetColumn>col).categories != null;
+}
+
+export interface ICategoricalColumn extends ISetColumn {
   getCategory(row: IDataRow): ICategory|null;
 }
 

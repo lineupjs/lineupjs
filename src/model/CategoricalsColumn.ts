@@ -2,6 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
+import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ICategoricalDesc, ICategory, toCategories, toCategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
@@ -11,10 +12,11 @@ export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDes
 /**
  * a string column with optional alignment
  */
+@toolbar('filterCategorical')
 export default class CategoricalsColumn extends ArrayColumn<string|null> {
   readonly categories: ICategory[];
 
-  private missingCategory: ICategory|null;
+  private readonly missingCategory: ICategory|null;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
 
@@ -33,6 +35,12 @@ export default class CategoricalsColumn extends ArrayColumn<string|null> {
       const vs = String(v);
       return this.lookup.has(vs) ? this.lookup.get(vs)! : this.missingCategory;
     });
+  }
+
+  getSet(row: IDataRow) {
+    const r = new Set(this.getCategories(row));
+    r.delete(this.missingCategory);
+    return r;
   }
 
   getValues(row: IDataRow) {
