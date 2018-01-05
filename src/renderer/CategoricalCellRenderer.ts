@@ -78,7 +78,7 @@ function staticSummary(col: ICategoricalColumn, interactive: boolean) {
 }
 
 function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean) {
-  const {template, update} = hist(col, wideEnough(col));
+  const {template, update} = hist(col, interactive || wideEnough(col));
   let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
   return {
     template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
