@@ -4,19 +4,30 @@
 
 import {extent, histogram, mean} from 'd3-array';
 
+export interface INumberBin {
+  x0: number;
+  x1: number;
+  length: number;
+}
+
 export interface IStatistics {
   readonly min: number;
   readonly max: number;
   readonly mean: number;
   readonly count: number;
   readonly maxBin: number;
-  readonly hist: { x0: number; x1: number; length: number; }[];
+  readonly hist: INumberBin[];
   readonly missing: number;
+}
+
+export interface ICategoricalBin {
+  cat: string;
+  y: number;
 }
 
 export interface ICategoricalStatistics {
   readonly maxBin: number;
-  readonly hist: { cat: string; y: number }[];
+  readonly hist: ICategoricalBin[];
   readonly missing: number;
 }
 
