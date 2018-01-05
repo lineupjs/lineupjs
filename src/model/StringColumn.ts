@@ -62,6 +62,11 @@ export default class StringColumn extends ValueColumn<string> {
     this.escape = desc.escape !== false;
     this.pattern = desc.pattern || '';
     this.patternTemplates = desc.patternTemplates || [];
+
+    if (this.pattern) {
+      this.setDefaultRenderer('link');
+      this.setDefaultGroupRenderer('link');
+    }
   }
 
 

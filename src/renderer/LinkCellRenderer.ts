@@ -44,7 +44,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
         break;
       }
     }
-    return `${examples.join(', ')}${examples.length < rows.length} ? ', &hellip;': ''}`;
+    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;': ''}`;
   }
 
   createGroup(col: StringColumn) {

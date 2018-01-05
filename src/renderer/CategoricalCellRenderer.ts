@@ -78,7 +78,7 @@ function staticSummary(col: ICategoricalColumn, interactive: boolean) {
 }
 
 function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean) {
-  const {template, update} = hist(col, true);
+  const {template, update} = hist(col, wideEnough(col));
   let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
   return {
     template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
@@ -97,6 +97,12 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
   };
 }
 
+
+function wideEnough(col: ICategoricalColumn) {
+  const w = col.getWidth();
+  const cats = col.categories.length;
+  return w / cats > 30; // at least 30 pixel
+}
 
 function hist(col: ICategoricalColumn, showLabels: boolean) {
   const bins = col.categories.map((c) => `<div title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');

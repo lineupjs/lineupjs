@@ -24,41 +24,43 @@
   background-position: center right;
 }
 
-[data-renderer=aggregate] {
-  text-align: center;
+.#{$lu_css_prefix}-row-body {
+  [data-renderer=aggregate] {
+    text-align: center;
 
-  @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, false, false);
-}
+    @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, false, false);
+  }
 
-[data-meta~=first] [data-renderer=aggregate] {
-  cursor: pointer;
+  [data-meta~=first] [data-renderer=aggregate] {
+    cursor: pointer;
 
-  @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, true, false);
+    @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, true, false);
 
-  &::before {
+    &::before {
+      @include lu_icons();
+
+      content: $lu_icon_caret_down;
+      padding-right: $lu_aggregate_square_bracket_width;
+    }
+  }
+
+  [data-meta=last] [data-renderer=aggregate] {
+    @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, false, true);
+  }
+
+  [data-meta='first last'] [data-renderer=aggregate],
+  [data-agg=group] [data-renderer=aggregate] {
+    padding-right: $lu_aggregate_square_bracket_width;
+    cursor: pointer;
+
+    @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, true, true);
+  }
+
+  [data-agg=group] [data-renderer=aggregate]::before {
     @include lu_icons();
 
-    content: $lu_icon_caret_down;
-    padding-right: $lu_aggregate_square_bracket_width;
+    content: $lu_icon_caret_right;
   }
-}
-
-[data-meta=last] [data-renderer=aggregate] {
-  @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, false, true);
-}
-
-[data-meta='first last'] [data-renderer=aggregate],
-[data-agg=group] [data-renderer=aggregate] {
-  padding-right: $lu_aggregate_square_bracket_width;
-  cursor: pointer;
-
-  @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, true, true);
-}
-
-[data-agg=group] [data-renderer=aggregate]::before {
-  @include lu_icons();
-
-  content: $lu_icon_caret_right;
 }
 
 .#{$lu_css_prefix}-summary[data-renderer=aggregate] > i {

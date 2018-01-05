@@ -6,7 +6,7 @@ import {CANVAS_HEIGHT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {attr, noRenderer, setText} from './utils';
+import {noRenderer, setText} from './utils';
 
 
 /**
@@ -42,13 +42,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
         const title = col.getLabel(d);
         n.title = title;
 
-        const bar = n.firstElementChild!;
-        attr(<HTMLElement>bar, {
-          title
-        }, {
-          width: missing ? '100%' : `${w}%`,
-          'background-color': missing ? null : colorOf(col, d, imposer)
-        });
+        const bar = <HTMLElement>n.firstElementChild!;
+        bar.style.width = missing ? '100%' : `${w}%`;
+        bar.style.backgroundColor = missing ? null : colorOf(col, d, imposer);
         setText(bar.firstElementChild!, title);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {

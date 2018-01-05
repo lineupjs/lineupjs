@@ -549,6 +549,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       debounceUpdate();
     });
     c.on(`${Column.EVENT_DIRTY_HEADER}.body`, () => this.updateHeaderOf(col.index));
+    c.on(`${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, () => {
+      // replace myself upon renderer type change
+      col.renderers = this.ctx.createRenderer(c);
+      this.updateHeaderOf(col.index)
+    });
     c.on(`${Column.EVENT_DIRTY_VALUES}.body`, debounceUpdate);
 
     if (isMultiLevelColumn(c) && !c.getCollapsed()) {
