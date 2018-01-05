@@ -1,6 +1,6 @@
 @import '../vars';
 
-[data-renderer=numbers],
+[data-renderer=heatmap],
 [data-renderer=threshold],
 [data-renderer=verticalbar] {
   display: flex;

@@ -1,6 +1,7 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-row-body {
+.#{$lu_css_prefix}-row-body,
+.#{$lu_css_prefix}-header {
   @import './aggregate';
   @import './bar';
   @import './boxplot';

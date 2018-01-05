@@ -152,22 +152,6 @@
     }
   }
 
-  &[data-summary=selection] > i,
-  &[data-summary=aggregation] > i {
-    cursor: pointer;
-    font-size: 150%;
-  }
-
-  &[data-summary=aggregation] > i {
-    padding-right: $lu_aggregate_square_bracket_width;
-  }
-
-  &[data-summary=string],
-  &[data-summary=selection],
-  &[data-summary=aggregation] {
-    display: block;
-  }
-
   label.#{$lu_css_prefix}-disabled {
     color: gray;
     user-select: none;

@@ -18,3 +18,12 @@
   content: $lu_icon_check_square_o;
   padding-left: 2px;
 }
+
+.#{$lu_css_prefix}-summary[data-renderer=string] {
+  display: block;
+
+  &[data-summary=selection] > i {
+    cursor: pointer;
+    font-size: 150%;
+  }
+}
