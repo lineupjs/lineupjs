@@ -9,6 +9,8 @@ import {noop, noRenderer, setText} from './utils';
  */
 export class DefaultCellRenderer implements ICellRendererFactory {
   title = 'String';
+  groupTitle = 'None';
+  summaryTitle = 'None';
 
   canRender(_col: Column, _mode: ERenderMode) {
     return true;
