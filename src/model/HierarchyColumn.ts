@@ -117,7 +117,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.currentMaxDepth = maxDepth;
     this.currentLeaves = computeLeaves(value.node, maxDepth);
     this.updateCaches();
-    this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
+    this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
   }
 
   getCategory(row: IDataRow) {

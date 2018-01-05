@@ -58,12 +58,12 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers.summary) {
       return;
     }
-    let summary = <HTMLElement>node.querySelector('.lu-summary')!;
+    const summary = <HTMLElement>node.querySelector('.lu-summary')!;
     const oldRenderer = summary.dataset.renderer;
     const currentRenderer = this.renderers.summaryId;
     if (oldRenderer !== currentRenderer) {
-      summary.innerHTML = this.renderers.summary.template;
-      summary = <HTMLElement>node.firstElementChild!;
+      summary.outerHTML = this.renderers.summary.template;
+      summary.classList.add('lu-summary');
       summary.dataset.renderer = currentRenderer;
     }
     this.renderers.summary.update(summary, this.ctx.statsOf(<any>this.c));

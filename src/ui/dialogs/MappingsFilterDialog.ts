@@ -5,8 +5,8 @@ import {
   IMapAbleColumn, IMappingFunction, ScaleMappingFunction,
   ScriptMappingFunction
 } from '../../model/MappingFunction';
+import {ISummaryRenderer} from '../../renderer/interfaces';
 import {IRankingHeaderContext} from '../interfaces';
-import NumberSummary from '../summary/number';
 import ADialog from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 
@@ -14,12 +14,12 @@ import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 export default class MappingsFilterDialog extends ADialog {
 
   private original: IMappingFunction;
-  private summary: NumberSummary;
   private scale: IMappingFunction;
 
   private readonly mappingLines: MappingLine[] = [];
   private rawDomain: [number, number];
 
+  private readonly summary: ISummaryRenderer;
   private readonly data: Promise<number[]>;
   private readonly idPrefix: string;
   private loadedData: number[];
@@ -45,6 +45,7 @@ export default class MappingsFilterDialog extends ADialog {
     this.scale = this.column.getMapping().clone();
     const domain = this.scale.domain;
     this.rawDomain = [domain[0], domain[domain.length - 1]];
+    this.summary = ctx.summaryRenderer(this.column, true);
 
     this.data = Promise.resolve(ctx.provider.mappingSample(column));
   }
@@ -84,7 +85,7 @@ export default class MappingsFilterDialog extends ADialog {
         <option value="script">Custom Script</option>
       </select>
       </label></div>
-        <div class="lu-summary"></div>
+        ${this.summary.template}
         <h4 data-toggle>Mapping Details</h4>
         <div class="lu-details"><h4>Domain (min - max): </h4><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" > - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" ></div>
         <h4 class="lu-details" style="text-align: center">Input Domain (min - max)</h4>
@@ -102,7 +103,11 @@ export default class MappingsFilterDialog extends ADialog {
           <textarea></textarea>
         </div>`);
 
-    this.summary = new NumberSummary(this.column, <HTMLElement>node.querySelector('.lu-summary')!, true);
+    // patch in lu-summary and renderer
+    const summary = <HTMLElement>node.children[1];
+    summary.classList.add('lu-summary');
+    summary.dataset.renderer = this.column.getSummaryRenderer();
+
 
     this.find('[data-toggle]').onclick = (evt) => {
       evt.stopPropagation();
@@ -185,7 +190,7 @@ export default class MappingsFilterDialog extends ADialog {
           return;
         }
         this.hist = computeStats(this.loadedData, (v) => v, (v) => isMissingValue(v), this.rawDomain);
-        this.summary.update({statsOf: () => this.hist});
+        this.summary.update(summary, this.hist);
         this.updateLines();
       });
     }
@@ -193,7 +198,7 @@ export default class MappingsFilterDialog extends ADialog {
     this.data.then((values) => {
       this.loadedData = values.filter((v) => !isMissingValue(v));
       this.hist = computeStats(this.loadedData, (v) => v, () => false, this.rawDomain);
-      this.summary.update({statsOf: () => this.hist});
+      this.summary.update(summary, this.hist);
 
       Array.from(this.loadedData).forEach((v) => {
         g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v)*100, 2)}" y2="60"></line>`);
@@ -234,7 +239,7 @@ export default class MappingsFilterDialog extends ADialog {
     this.applyMapping(this.scale, noNumberFilter());
     this.update();
     if (this.hist) {
-      this.summary.update({statsOf: () => this.hist});
+      this.summary.update(this.find('.lu-summary'), this.hist);
     }
     this.updateLines();
   }
