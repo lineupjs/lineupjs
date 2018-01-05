@@ -1,11 +1,12 @@
 import {DENSE_HISTOGRAM} from '../config';
-import {computeHist, ICategoricalStatistics} from '../internal/math';
+import {computeHist, ICategoricalBin, ICategoricalStatistics} from '../internal/math';
 import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import {isIncluded} from '../model/ICategoricalColumn';
 import OrdinalColumn from '../model/OrdinalColumn';
 import {CANVAS_HEIGHT} from '../styles';
+import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {forEachChild, setText} from './utils';
@@ -44,24 +45,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static hist(col: ICategoricalColumn, showLabels: boolean) {
-    const bins = col.categories.map((c) => `<div title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');
-
-    return {
-      template: `<div${col.dataLength! > DENSE_HISTOGRAM ? 'class="lu-dense"': ''}>${bins}</div>`,
-      update: (n: HTMLElement, maxBin: number, hist: { cat: string; y: number }[]) => {
-        forEachChild(n, (d: HTMLElement, i) => {
-          const {y} = hist[i];
-          d.title = `${col.categories[i].label}: ${y}`;
-          const inner = <HTMLElement>d.firstElementChild!;
-          inner.style.height = `${Math.round(y * 100 / maxBin)}%`;
-        });
-      }
-    };
-  }
-
   createGroup(col: ICategoricalColumn, _context: IRenderContext, globalHist: ICategoricalStatistics | null) {
-    const {template, update} = CategoricalCellRenderer.hist(col, false);
+    const {template, update} = hist(col, false);
     return {
       template,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
@@ -73,82 +58,134 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  static interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HTMLElement) {
-    const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
-    const cats = col.categories;
+  createSummary(col: ICategoricalColumn, _context: IRenderContext, interactive: boolean) {
+    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive) : staticSummary(col, interactive);
+  }
+}
 
-    bins.forEach((bin, i) => {
-      const cat = cats[i];
+function staticSummary(col: ICategoricalColumn, interactive: boolean) {
+  const {template, update} = hist(col, interactive);
+  return {
+    template,
+    update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
+      n.classList.toggle('lu-missing', !hist);
+      if (!hist) {
+        return;
+      }
+      update(n, hist.maxBin, hist.hist);
+    }
+  };
+}
 
-      bin.onclick = (evt) => {
-        evt.preventDefault();
-        evt.stopPropagation();
+function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean) {
+  const {template, update} = hist(col, true);
+  let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
+  return {
+    template: template + (interactive ? filterMissingNumberMarkup(false, 0) : ''),
+    update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
+      if (!filterUpdate) {
+        filterUpdate = interactiveHist(col, n);
+      }
+      filterUpdate(hist ? hist.missing : 0, col);
 
-        // toggle filter
-        const old = col.getFilter();
-        if (old == null || !Array.isArray(old.filter)) {
-          // deselect
-          const without = cats.slice();
-          bin.dataset.filtered = 'filtered';
-          without.splice(i, 1);
-          col.setFilter({
-            filterMissing: old ? old.filterMissing : false,
-            filter: without.map((d) => d.name)
-          });
-          return;
-        }
-        const filter = old.filter.slice();
-        const contained = filter.indexOf(cat.name);
-        if (contained >= 0) {
-          // remove
-          bin.dataset.filtered = 'filtered';
-          filter.splice(contained, 1);
-        } else {
-          // readd
-          delete bin.dataset.filtered;
-          filter.push(cat.name);
-        }
+      n.classList.toggle('lu-missing', !hist);
+      if (!hist) {
+        return;
+      }
+      update(n, hist.maxBin, hist.hist);
+    }
+  };
+}
+
+
+function hist(col: ICategoricalColumn, showLabels: boolean) {
+  const bins = col.categories.map((c) => `<div title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');
+
+  return {
+    template: `<div${col.dataLength! > DENSE_HISTOGRAM ? 'class="lu-dense"' : ''}>${bins}</div>`,
+    update: (n: HTMLElement, maxBin: number, hist: ICategoricalBin[]) => {
+      forEachChild(n, (d: HTMLElement, i) => {
+        const {y} = hist[i];
+        d.title = `${col.categories[i].label}: ${y}`;
+        const inner = <HTMLElement>d.firstElementChild!;
+        inner.style.height = `${Math.round(y * 100 / maxBin)}%`;
+      });
+    }
+  };
+}
+
+export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HTMLElement) {
+  const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
+
+  bins.forEach((bin, i) => {
+    const cat = col.categories[i];
+
+    bin.onclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      // toggle filter
+      const old = col.getFilter();
+      if (old == null || !Array.isArray(old.filter)) {
+        // deselect
+        const without = col.categories.slice();
+        bin.dataset.filtered = 'filtered';
+        without.splice(i, 1);
         col.setFilter({
-          filterMissing: old.filterMissing,
-          filter
+          filterMissing: old ? old.filterMissing : false,
+          filter: without.map((d) => d.name)
         });
-      };
-    });
-
-    return () => {
-      const f = col.getFilter();
-      bins.forEach((bin, i) => {
-        if (!isIncluded(f, cats[i])) {
-          bin.dataset.filtered = 'filtered';
-        } else {
-          delete bin.dataset.filtered;
-        }
+        return;
+      }
+      const filter = old.filter.slice();
+      const contained = filter.indexOf(cat.name);
+      if (contained >= 0) {
+        // remove
+        bin.dataset.filtered = 'filtered';
+        filter.splice(contained, 1);
+      } else {
+        // readd
+        delete bin.dataset.filtered;
+        filter.push(cat.name);
+      }
+      col.setFilter({
+        filterMissing: old.filterMissing,
+        filter
       });
     };
-  }
+  });
 
-  createSummary(col: ICategoricalColumn, _context: IRenderContext, interactive: boolean) {
-    const {template, update} = CategoricalCellRenderer.hist(col, interactive);
-    let filterUpdate: ()=>void;
-    return {
-      template,
-      update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
 
-        if (col instanceof CategoricalColumn || col instanceof OrdinalColumn) {
-          if (!filterUpdate) {
-            filterUpdate = CategoricalCellRenderer.interactiveHist(col, n);
-          }
-          filterUpdate();
-        }
+  const filterMissing = <HTMLInputElement>node.querySelector('input')!;
 
-        // TODO full interactive
-
-        n.style.display = hist ? null : 'none';
-        if (!hist) {
-          return;
-        }
-        update(n, hist.maxBin, hist.hist);
+  if (filterMissing) {
+    filterMissing.onchange = () => {
+      // toggle filter
+      const v = filterMissing.checked;
+      const old = col.getFilter();
+      if (old == null) {
+        col.setFilter(v ? {filterMissing: v, filter: col.categories.map((d) => d.name)} : null);
+      } else {
+        col.setFilter({filterMissing: v, filter: old.filter});
       }
     };
   }
+
+
+  return (missing: number, actCol: CategoricalColumn | OrdinalColumn) => {
+    col = actCol;
+    const cats = col.categories;
+    const f = col.getFilter();
+    bins.forEach((bin, i) => {
+      if (!isIncluded(f, cats[i])) {
+        bin.dataset.filtered = 'filtered';
+      } else {
+        delete bin.dataset.filtered;
+      }
+    });
+    if (filterMissing) {
+      filterMissing.checked = f != null && f.filterMissing;
+      updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, missing);
+    }
+  };
 }
