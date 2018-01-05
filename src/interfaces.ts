@@ -2,7 +2,6 @@ import {IGroupData, IGroupItem} from './model';
 import Ranking from './model/Ranking';
 import {IDataProvider} from './provider/ADataProvider';
 import {ICellRendererFactory} from './renderer';
-import {ISummaryRenderer} from './ui/interfaces';
 import {IToolbarAction} from './ui/toolbar';
 
 export interface IDynamicHeight {
@@ -17,7 +16,6 @@ export interface ILineUpOptions {
   idPrefix: string;
 
   toolbar: { [key: string]: IToolbarAction };
-  summaries: { [type: string]: ISummaryRenderer<any> };
   renderers: { [type: string]: ICellRendererFactory };
 
   summary: boolean;

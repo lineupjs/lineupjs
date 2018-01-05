@@ -5,16 +5,16 @@ import {round} from '../internal/math';
  */
 import Column from '../model/Column';
 import {IMultiLevelColumn} from '../model/CompositeColumn';
-import {findTypeLike} from '../model/utils';
+import {ISummaryRenderer} from '../renderer/interfaces';
 import {gridClass} from '../renderer/MultiLevelCellRenderer';
 import {COLUMN_PADDING} from '../styles';
-import {createHeader, updateHeader} from './header';
-import {IRankingContext, ISummaryUpdater} from './interfaces';
+import {createHeader} from './header';
+import {IRankingContext} from './interfaces';
 import RenderColumn from './RenderColumn';
 
 
 export default class MultiLevelRenderColumn extends RenderColumn {
-  private readonly summaries: (ISummaryUpdater | null)[] = [];
+  private readonly summaries: ISummaryRenderer[] = [];
 
   constructor(c: IMultiLevelColumn & Column, index: number, ctx: IRankingContext) {
     super(c, index, ctx);
@@ -41,8 +41,13 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       n.classList.add('lu-header');
       (<any>n.style).gridColumnStart = (i + 1).toString();
 
-      const summary = findTypeLike(cc, this.ctx.summaries);
-      this.summaries.push(!summary ? null : new summary(cc, <HTMLElement>n.querySelector('.lu-summary')!, false));
+      const summary = this.ctx.summaryRenderer(cc, false);
+      n.insertAdjacentHTML('beforeend', summary.template);
+      const summaryNode = <HTMLElement>n.lastElementChild!;
+      summaryNode.classList.add('lu-summary');
+      summaryNode.dataset.renderer = cc.getSummaryRenderer();
+      this.summaries.push(summary);
+      summary.update(summaryNode, this.ctx.statsOf(<any>cc));
       wrapper.appendChild(n);
     });
 
@@ -78,10 +83,17 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     sub.forEach((c, i) => {
       const node = children[i];
       node.classList.toggle('lu-filtered', c.isFiltered());
-      updateHeader(node, c);
-      if (this.summaries[i]) {
-        this.summaries[i]!.update(this.ctx);
+      let summary = <HTMLElement>node.querySelector('.lu-summary')!;
+      const oldRenderer = summary.dataset.renderer;
+      const currentRenderer = c.getSummaryRenderer();
+      if (oldRenderer !== currentRenderer) {
+        const renderer = this.ctx.summaryRenderer(c, false);
+        summary.innerHTML = renderer.template;
+        summary = <HTMLElement>node.firstElementChild!;
+        summary.dataset.renderer = currentRenderer;
+        this.summaries[i] = renderer;
       }
+      this.summaries[i].update(summary, this.ctx.statsOf(<any>this.c));
     });
   }
 }

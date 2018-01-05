@@ -3,14 +3,12 @@ import {IGroupData, IGroupItem} from '../model';
 import Ranking from '../model/Ranking';
 import ADataProvider from '../provider/ADataProvider';
 import {ICellRendererFactory} from '../renderer';
-import {ISummaryRenderer} from '../ui/interfaces';
 import LineUp from '../ui/LineUp';
 import Taggle from '../ui/taggle/Taggle';
 import {IToolbarAction} from '../ui/toolbar';
 
 export default class LineUpBuilder {
   private readonly options: Partial<ILineUpOptions> = {
-    summaries: {},
     renderers: {},
     toolbar: {}
   };
@@ -38,11 +36,6 @@ export default class LineUpBuilder {
 
   registerRenderer(id: string, factory: ICellRendererFactory) {
     this.options.renderers![id] = factory;
-    return this;
-  }
-
-  registerSummary(id: string, clazz: ISummaryRenderer<any>) {
-    this.options.summaries![id] = clazz;
     return this;
   }
 

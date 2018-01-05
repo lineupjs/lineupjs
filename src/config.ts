@@ -3,7 +3,6 @@ import {ILineUpOptions} from './interfaces';
  * Created by Samuel Gratzl on 15.08.2017.
  */
 import {renderers as defaultRenderers} from './renderer';
-import {defaultSummaries} from './ui/summary';
 import {icons} from './ui/toolbar';
 
 /** number of bins before switching to dense mode
@@ -20,7 +19,6 @@ export function defaultOptions(): ILineUpOptions {
   return {
     idPrefix,
     toolbar: Object.assign({}, icons),
-    summaries: Object.assign({}, defaultSummaries),
     renderers: Object.assign({}, defaultRenderers),
 
     summary: true,

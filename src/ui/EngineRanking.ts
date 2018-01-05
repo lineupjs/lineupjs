@@ -14,7 +14,7 @@ import Column from '../model/Column';
 import {isMultiLevelColumn} from '../model/CompositeColumn';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
-import {IRenderContext} from '../renderer';
+import {IImposer, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING} from '../styles';
 import {lineupAnimation} from './animation';
 import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
@@ -23,7 +23,7 @@ import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
-  createRenderer(c: Column): IRenderers;
+  createRenderer(c: Column, imposer?: IImposer): IRenderers;
 }
 
 

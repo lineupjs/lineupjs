@@ -3,10 +3,10 @@
  */
 import {IColumn} from 'lineupengine/src';
 import Column from '../model/Column';
-import {findTypeLike} from '../model/utils';
 import {ICellRenderer, IGroupCellRenderer} from '../renderer';
+import {ISummaryRenderer} from '../renderer/interfaces';
 import {createHeader, updateHeader} from './header';
-import {IRankingContext, ISummaryUpdater} from './interfaces';
+import {IRankingContext} from './interfaces';
 
 
 export interface IRenderers {
@@ -14,10 +14,11 @@ export interface IRenderers {
   single: ICellRenderer;
   groupId: string;
   group: IGroupCellRenderer;
+  summaryId: string;
+  summary: ISummaryRenderer|null;
 }
 
 export default class RenderColumn implements IColumn {
-  private summary: ISummaryUpdater;
   renderers: IRenderers;
 
   constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext) {
@@ -41,9 +42,11 @@ export default class RenderColumn implements IColumn {
     node.className = `lu-header${this.c.isFiltered() ? ' lu-filtered' : ''}`;
     node.classList.toggle('frozen', this.c.frozen);
 
-    const summary = findTypeLike(this.c, this.ctx.summaries);
-    if (summary) {
-      this.summary = new summary(this.c, <HTMLElement>node.querySelector('.lu-summary')!, false);
+    if (this.renderers.summary) {
+      const summary = asElement(this.ctx.document, this.renderers.summary.template);
+      summary.dataset.renderer = this.renderers.summaryId;
+      summary.classList.add('lu-summary');
+      node.appendChild(summary);
     }
     this.updateHeader(node);
     return node;
@@ -52,14 +55,23 @@ export default class RenderColumn implements IColumn {
   updateHeader(node: HTMLElement) {
     node.classList.toggle('lu-filtered', this.c.isFiltered());
     updateHeader(node, this.c);
-    if (this.summary) {
-      this.summary.update(this.ctx);
+    if (!this.renderers.summary) {
+      return;
     }
+    let summary = <HTMLElement>node.querySelector('.lu-summary')!;
+    const oldRenderer = summary.dataset.renderer;
+    const currentRenderer = this.renderers.summaryId;
+    if (oldRenderer !== currentRenderer) {
+      summary.innerHTML = this.renderers.summary.template;
+      summary = <HTMLElement>node.firstElementChild!;
+      summary.dataset.renderer = currentRenderer;
+    }
+    this.renderers.summary.update(summary, this.ctx.statsOf(<any>this.c));
   }
 
   createCell(index: number) {
     const isGroup = this.ctx.isGroup(index);
-    const node = asElement(document, isGroup ? this.renderers.group.template : this.renderers.single.template);
+    const node = asElement(this.ctx.document, isGroup ? this.renderers.group.template : this.renderers.single.template);
     node.dataset.renderer = isGroup ? this.renderers.groupId : this.renderers.singleId;
     node.dataset.group = isGroup ? 'g' : 'd';
     this.updateCell(node, index);
@@ -75,7 +87,8 @@ export default class RenderColumn implements IColumn {
     const oldGroup = node.dataset.group;
     const currentGroup = (isGroup ? 'g' : 'd');
     if (oldRenderer !== currentRenderer || oldGroup !== currentGroup) {
-      node = asElement(document, isGroup ? this.renderers.group.template : this.renderers.single.template);
+      node.innerHTML = isGroup ? this.renderers.group.template : this.renderers.single.template;
+      node = <HTMLElement>node.firstElementChild!;
       node.dataset.renderer = currentRenderer;
       node.dataset.group = currentGroup;
     }

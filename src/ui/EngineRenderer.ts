@@ -12,8 +12,8 @@ import NumberColumn from '../model/NumberColumn';
 import Ranking from '../model/Ranking';
 import DataProvider, {default as ADataProvider} from '../provider/ADataProvider';
 import {
-  chooseGroupRenderer, chooseRenderer, IImposer, IRenderContext, possibleGroupRenderer,
-  possibleRenderer
+  chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, IImposer, IRenderContext, possibleGroupRenderer,
+  possibleRenderer, possibleSummaryRenderer
 } from '../renderer';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
@@ -53,10 +53,10 @@ export default class EngineRenderer extends AEventDispatcher {
       return r;
     };
     this.ctx = {
+      idPrefix: this.options.idPrefix,
       document: parent.ownerDocument,
       provider: data,
       toolbar: this.options.toolbar,
-      summaries: this.options.summaries ? this.options.summaries! : {},
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
       renderer: (col: Column, imposer?: IImposer) => {
@@ -66,16 +66,22 @@ export default class EngineRenderer extends AEventDispatcher {
       groupRenderer: (col: Column, imposer?: IImposer) => {
         const r = chooseGroupRenderer(col, this.options.renderers);
         return r.createGroup(col, this.ctx, statsOf(col), imposer);
-      }, idPrefix: this.options.idPrefix,
+      },
+      summaryRenderer: (col: Column, interactive: boolean, imposer?: IImposer) => {
+        const r = chooseSummaryRenderer(col, this.options.renderers);
+        return r.createSummary(col, this.ctx, interactive, imposer);
+      },
       totalNumberOfRows: 0,
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
         const group = this.groupRenderer(col, imposer);
-        return {single, group, singleId: col.getRenderer(), groupId: col.getGroupRenderer()};
+        const summary = options.summary ? this.summaryRenderer(col, false, imposer): null;
+        return {single, group, summary, singleId: col.getRenderer(), groupId: col.getGroupRenderer(), summaryId: col.getSummaryRenderer()};
       },
       getPossibleRenderer: (col: Column) => ({
         item: possibleRenderer(col, this.options.renderers),
-        group: possibleGroupRenderer(col, this.options.renderers)
+        group: possibleGroupRenderer(col, this.options.renderers),
+        summary: possibleSummaryRenderer(col, this.options.renderers)
       }),
       colWidth: (col: Column) => col.isHidden() ? 0 : col.getWidth()
     };
@@ -137,7 +143,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.takeDownProvider();
 
     this.data = data;
-    this.ctx.provider = data;
+    (<any>this.ctx).provider = data;
 
     this.initProvider(data);
   }
