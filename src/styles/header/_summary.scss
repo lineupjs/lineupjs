@@ -3,6 +3,18 @@
 &[data-summary$=hist] {
   display: flex;
 
+  // only create ::before pseudo-elements if the histogram is not in dense mode
+  &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
+    content: attr(data-title);
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+
   > div {
     flex: 1 1 auto;
     position: relative;
@@ -23,17 +35,6 @@
 
     > .#{$lu_css_prefix}-selected {
       background-color: $lu_selected_color;
-    }
-
-    &[data-title]::before {
-      content: attr(data-title);
-      position: absolute;
-      top: 100%;
-      width: 100%;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      text-align: center;
     }
   }
 

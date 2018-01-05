@@ -121,14 +121,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         renderMissingCanvas(ctx, col, rows[0], height); // doesn't matter since all
         return;
       }
-      let box: IBoxPlotData, label: IBoxPlotData;
+      let box: IBoxPlotData;
 
       if (isNumbersColumn(col)) {
         box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
-        label = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows, true);
       } else {
         box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
-        label = new LazyBoxPlotData(rows.map((row) => col.getRawNumber(row.v, row.dataIndex)));
       }
       const scaled = {
         min: box.min * width,
