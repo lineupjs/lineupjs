@@ -4,7 +4,7 @@ import {CANVAS_HEIGHT} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
-import {matchColumns} from './utils';
+import {matchColumns, noRenderer} from './utils';
 
 
 /**
@@ -59,5 +59,10 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
         });
       }
     };
+  }
+
+  createSummary(_col: CompositeNumberColumn) {
+    // TODO create grouped histogram
+    return noRenderer;
   }
 }

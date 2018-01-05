@@ -2,7 +2,7 @@ import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import GroupColumn from '../model/GroupColumn';
 import {ICellRendererFactory} from './interfaces';
-import {noop} from './utils';
+import {noop, noRenderer} from './utils';
 
 /**
  * renders a string with additional alignment behavior
@@ -32,5 +32,9 @@ export default class GroupCellRenderer implements ICellRendererFactory {
         (<HTMLElement>node.firstElementChild!).innerText = `${group.name} (${rows.length})`;
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }

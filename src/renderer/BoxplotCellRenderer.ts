@@ -7,7 +7,7 @@ import NumberColumn from '../model/NumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export function computeLabel(v: IBoxPlotData) {
@@ -21,8 +21,8 @@ export function computeLabel(v: IBoxPlotData) {
 export default class BoxplotCellRenderer implements ICellRendererFactory {
   readonly title = 'Box Plot';
 
-  canRender(col: Column, isGroup: boolean) {
-    return (isBoxPlotColumn(col) && !isGroup || (isNumberColumn(col) && isGroup));
+  canRender(col: Column, mode: ERenderMode) {
+    return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));
   }
 
   create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {

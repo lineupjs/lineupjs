@@ -4,7 +4,7 @@ import Column from '../model/Column';
 import NumbersColumn from '../model/NumbersColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {attr, noRenderer, setText} from './utils';
 
@@ -23,8 +23,8 @@ export default class BarCellRenderer implements ICellRendererFactory {
   constructor(private readonly renderValue: boolean = false) {
   }
 
-  canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup && !(col instanceof NumbersColumn);
+  canRender(col: Column, mode: ERenderMode) {
+    return mode === ERenderMode.CELL && isNumberColumn(col) && !(col instanceof NumbersColumn);
   }
 
   create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
@@ -64,6 +64,10 @@ export default class BarCellRenderer implements ICellRendererFactory {
   }
 
   createGroup() {
+    return noRenderer;
+  }
+
+  createSummary() {
     return noRenderer;
   }
 }

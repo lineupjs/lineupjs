@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import RankColumn from '../model/RankColumn';
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, setText} from './utils';
+import {noop, noRenderer, setText} from './utils';
 
 export default class RankCellRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -38,5 +38,9 @@ export default class RankCellRenderer implements ICellRendererFactory {
         toTSpan.textContent = col.getLabel(rows[rows.length - 1],);
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }

@@ -3,16 +3,17 @@ import {IDataRow, isMissingValue, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {IMapColumn, isMapColumn} from '../model/IArrayColumn';
 import {DEFAULT_FORMATTER} from '../model/INumberColumn';
+import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
 import {colorOf} from './impose';
-import {ICellRendererFactory, IImposer, default as IRenderContext} from './interfaces';
+import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
 
 export default class MapBarCellRenderer implements ICellRendererFactory {
   readonly title = 'Bar Table';
 
-  canRender(col: Column, isGroup: boolean) {
-    return isMapColumn(col) && isNumberColumn(col) && !isGroup;
+  canRender(col: Column, mode: ERenderMode) {
+    return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));
   }
 
   create(col: IMapColumn<number>, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
@@ -36,5 +37,17 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
 
   createGroup() {
     return noRenderer;
+  }
+
+  createSummary(col: IMapColumn<number> & IMapAbleColumn) {
+    return {
+      template: `<div><div>Key</div><div><span></span><span></span>Value</div></div>`,
+      update: (node: HTMLElement) => {
+        const range = col.getRange();
+        const value = <HTMLElement>node.lastElementChild!;
+        value.firstElementChild!.textContent = range[0];
+        value.children[1]!.textContent = range[1];
+      }
+    };
   }
 }

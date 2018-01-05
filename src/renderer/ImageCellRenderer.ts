@@ -1,15 +1,15 @@
 import {IDataRow} from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
-import {ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
 
 export default class ImageCellRenderer implements ICellRendererFactory {
   readonly title = 'Image';
 
-  canRender(col: Column, isGroup: boolean) {
-    return !isGroup && col instanceof StringColumn;
+  canRender(col: Column, mode: ERenderMode) {
+    return col instanceof StringColumn && mode === ERenderMode.CELL;
   }
 
   create(col: StringColumn) {
@@ -25,6 +25,10 @@ export default class ImageCellRenderer implements ICellRendererFactory {
   }
 
   createGroup() {
+    return noRenderer;
+  }
+
+  createSummary() {
     return noRenderer;
   }
 }

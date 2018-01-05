@@ -75,6 +75,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
   static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
   static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererChanged';
+  static readonly EVENT_SUMMARY_RENDERER_TYPE_CHANGED = 'summaryRendererChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
   static readonly EVENT_DATA_LOADED = 'dataLoaded';
@@ -99,6 +100,7 @@ export default class Column extends AEventDispatcher {
   private metadata: Readonly<IColumnMetaData>;
   private renderer: string;
   private groupRenderer: string;
+  private summaryRenderer: string;
 
 
   constructor(id: string, public readonly desc: Readonly<IColumnDesc>) {
@@ -106,6 +108,7 @@ export default class Column extends AEventDispatcher {
     this.uid = fixCSS(id);
     this.renderer = this.desc.renderer || this.desc.type;
     this.groupRenderer = this.desc.groupRenderer || this.desc.type;
+    this.summaryRenderer = this.desc.summaryRenderer || this.desc.type;
     this.width = this.desc.width != null && this.desc.width >= 0 ? this.desc.width : 100;
 
     this.metadata = {
@@ -165,7 +168,7 @@ export default class Column extends AEventDispatcher {
    */
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
-      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED,
+      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_MOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED, Column.EVENT_DATA_LOADED]);
   }
@@ -379,6 +382,9 @@ export default class Column extends AEventDispatcher {
     if (this.getGroupRenderer() !== this.desc.type) {
       r.groupRenderer = this.getGroupRenderer();
     }
+    if (this.getSummaryRenderer() !== this.desc.type) {
+      r.summaryRenderer = this.getSummaryRenderer();
+    }
     return r;
   }
 
@@ -399,6 +405,9 @@ export default class Column extends AEventDispatcher {
     }
     if (dump.groupRenderer) {
       this.groupRenderer = dump.groupRenderer;
+    }
+    if (dump.summaryRenderer) {
+      this.summaryRenderer = dump.summaryRenderer;
     }
   }
 
@@ -482,6 +491,10 @@ export default class Column extends AEventDispatcher {
     return this.groupRenderer;
   }
 
+  getSummaryRenderer(): string {
+    return this.summaryRenderer;
+  }
+
   setRenderer(renderer: string) {
     if (renderer === this.renderer) {
       // nothing changes
@@ -510,6 +523,21 @@ export default class Column extends AEventDispatcher {
       return;
     }
     return this.setGroupRenderer(renderer);
+  }
+
+  setSummaryRenderer(renderer: string) {
+    if (renderer === this.summaryRenderer) {
+      // nothing changes
+      return;
+    }
+    this.fire([Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.summaryRenderer, this.summaryRenderer = renderer);
+  }
+
+  protected setDefaultSummaryRenderer(renderer: string) {
+    if (this.summaryRenderer !== this.desc.type) {
+      return;
+    }
+    return this.setSummaryRenderer(renderer);
   }
 
   protected setDefaultWidth(width: number) {

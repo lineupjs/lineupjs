@@ -1,6 +1,7 @@
+import {nest} from 'd3-collection';
 import {IDataRow, IGroup, isMissingValue} from '../model';
-import ArrayColumn from '../model/ArrayColumn';
 import Column from '../model/Column';
+import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn} from '../model/IArrayColumn';
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
@@ -9,15 +10,32 @@ export default class TableCellRenderer implements ICellRendererFactory {
   readonly title = 'Table';
 
   canRender(col: Column) {
-    return col instanceof ArrayColumn;
+    return isMapColumn(col);
   }
 
-  private static template(col: ArrayColumn<any>) {
+  create(col: IMapColumn<any>) {
+    if (isArrayColumn(col) && col.dataLength) {
+      // fixed length optimized rendering
+      return this.createFixed(col);
+    }
+    return {
+      template: `<div></div>`,
+      update: (node: HTMLElement, d: IDataRow) => {
+        if (renderMissingDOM(node, col, d)) {
+          return;
+        }
+        node.innerHTML = col.getMapLabel(d).map(({key, value}) => `<div>${key}</div><div>${value}</div>`).join('');
+      },
+      render: noop
+    };
+  }
+
+  private static template(col: IArrayColumn<any>) {
     const labels = col.labels;
     return `<div>${labels.map((l) => `<div>${l}</div><div data-v></div>`).join('\n')}</div>`;
   }
 
-  create(col: ArrayColumn<any>) {
+  private createFixed(col: IArrayColumn<any>) {
     return {
       template: TableCellRenderer.template(col),
       update: (node: HTMLElement, d: IDataRow) => {
@@ -33,7 +51,29 @@ export default class TableCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ArrayColumn<any>) {
+  private static example(arr: IKeyValue<string>[]) {
+    const numExampleRows = 5;
+    return `${arr.slice(0, numExampleRows).map((d) => d.value).join(', ')}${numExampleRows < arr.length ? ', &hellip;' : ''}`;
+  }
+
+  createGroup(col: IMapColumn<any>) {
+    if (isArrayColumn(col) && col.dataLength) {
+      // fixed length optimized rendering
+      return this.createFixedGroup(col);
+    }
+    return {
+      template: `<div></div>`,
+      update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getMapLabel(d));
+
+        const entries = nest<IKeyValue<string>>().key((d) => d.key).entries((<IKeyValue<string>[]>[]).concat(...vs));
+
+        node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div>${TableCellRenderer.example(values)}</div>`).join('');
+      }
+    };
+  }
+
+  private createFixedGroup(col: IArrayColumn<any>) {
     return {
       template: TableCellRenderer.template(col),
       update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
@@ -56,4 +96,12 @@ export default class TableCellRenderer implements ICellRendererFactory {
       }
     };
   }
+
+  createSummary() {
+    return {
+      template: `<div><div>Key</div><div>Value</div></div>`,
+      update: noop
+    };
+  }
+
 }

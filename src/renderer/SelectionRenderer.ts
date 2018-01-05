@@ -1,7 +1,7 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
-import {ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {noop} from './utils';
 
 export default class SelectionRenderer implements ICellRendererFactory {
@@ -41,6 +41,24 @@ export default class SelectionRenderer implements ICellRendererFactory {
           event.stopPropagation();
           const value = n.classList.toggle('lu-group-selected');
           col.setValues(rows, value);
+        };
+      }
+    };
+  }
+
+  createSummary(col: SelectionColumn, context: IRenderContext) {
+    return {
+      template: `<i class='lu-unchecked' title='(Un)Select All'></i>`,
+      update: (node: HTMLElement) => {
+        node.onclick = (evt) => {
+          evt.stopPropagation();
+          if (node.classList.contains('lu-unchecked')) {
+            context.provider.selectAllOf(col.findMyRanker()!);
+          } else {
+            context.provider.setSelection([]);
+          }
+          node.classList.toggle('lu-unchecked');
+          node.classList.toggle('lu-checked');
         };
       }
     };

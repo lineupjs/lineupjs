@@ -1,6 +1,6 @@
 import {IDataRow} from '../model';
 import Column from '../model/Column';
-import {ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText} from './utils';
 
@@ -10,7 +10,7 @@ import {noop, noRenderer, setText} from './utils';
 export class DefaultCellRenderer implements ICellRendererFactory {
   title = 'String';
 
-  canRender(_col: Column) {
+  canRender(_col: Column, _mode: ERenderMode) {
     return true;
   }
 
@@ -26,6 +26,10 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(_col: Column) {
+    return noRenderer;
+  }
+
+  createSummary() {
     return noRenderer;
   }
 }

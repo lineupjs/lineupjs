@@ -2,16 +2,16 @@ import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {IKeyValue} from '../model/IArrayColumn';
 import StringMapColumn from '../model/StringMapColumn';
-import {ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop} from './utils';
+import {noop, noRenderer} from './utils';
 import {nest} from 'd3-collection';
 
 export default class LinkMapCellRenderer implements ICellRendererFactory {
   readonly title = 'Table with Links';
 
-  canRender(col: Column) {
-    return col instanceof StringMapColumn;
+  canRender(col: Column, mode: ERenderMode) {
+    return col instanceof StringMapColumn && mode !== ERenderMode.SUMMARY;
   }
 
   create(col: StringMapColumn) {
@@ -57,5 +57,9 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
         node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="lu-${align}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }

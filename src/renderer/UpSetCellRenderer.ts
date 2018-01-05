@@ -1,15 +1,16 @@
 import {ICategoricalColumn, ICategory, IDataRow, IGroup, isCategoricalColumn} from '../model';
 import Column from '../model/Column';
 import {CANVAS_HEIGHT, UPSET} from '../styles';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {noop, noRenderer} from './utils';
 
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
   readonly title = 'Matrix';
 
-  canRender(col: Column) {
-    return isCategoricalColumn(col);
+  canRender(col: Column, mode: ERenderMode) {
+    return isCategoricalColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
@@ -117,5 +118,9 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         render(n, value);
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }

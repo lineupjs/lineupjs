@@ -2,7 +2,7 @@ import {IDataRow, IGroup} from '../model';
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
 import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
-import {ICellRendererFactory, default as IRenderContext} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -37,6 +37,35 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           event.preventDefault();
           event.stopPropagation();
           col.setAggregated(group, false);
+        };
+      }
+    };
+  }
+
+  createSummary(col: AggregateGroupColumn, context: IRenderContext) {
+    return {
+      template: `<i class='lu-caret-down' title='(Un)Aggregate All'></i>`,
+      update: (node: HTMLElement) => {
+        let defaultValue = 'down';
+        const ranking = col.findMyRanker();
+        if (ranking) {
+          const all = ranking.getGroups().every((g) => col.isAggregated(g));
+          if (all) {
+            defaultValue = 'right';
+          }
+        }
+        node.className = `lu-caret-${defaultValue}`;
+
+        node.onclick = (evt) => {
+          evt.stopPropagation();
+          const ranking = col.findMyRanker();
+          if (!ranking || !context) {
+            return;
+          }
+          const aggregate = node.classList.contains('lu-caret-down');
+          node.classList.toggle('lu-caret-down');
+          node.classList.toggle('lu-caret-right');
+          context.provider.aggregateAllOf(ranking, aggregate);
         };
       }
     };

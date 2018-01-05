@@ -1,7 +1,8 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
-import {ICellRendererFactory} from './interfaces';
+import {filterMissingMarkup} from '../ui/missing';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, setText} from './utils';
 
@@ -36,7 +37,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
   private static exampleText(col: Column, rows: IDataRow[]) {
     const numExampleRows = 5;
     const examples = <string[]>[];
-    for(const row of rows) {
+    for (const row of rows) {
       if (col.isMissing(row)) {
         continue;
       }
@@ -54,6 +55,65 @@ export default class StringCellRenderer implements ICellRendererFactory {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
         n.innerHTML = `${StringCellRenderer.exampleText(col, rows)}`;
+      }
+    };
+  }
+
+  private static interactiveSummary(col: StringColumn, node: HTMLElement) {
+    const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');
+    const input = <HTMLInputElement>node.querySelector('input[type="text"]');
+    const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
+
+    const update = () => {
+      if (filterMissing.checked) {
+        col.setFilter(StringColumn.FILTER_MISSING);
+        return;
+      }
+      col.setFilter(isRegex ? new RegExp(input.value) : input.value);
+    };
+
+    filterMissing.onchange = update;
+    input.onchange = update;
+    isRegex.onchange = update;
+
+    return () => {
+      let bak = col.getFilter() || '';
+      const bakMissing = bak === StringColumn.FILTER_MISSING;
+      if (bakMissing) {
+        bak = '';
+      }
+      filterMissing.checked = bakMissing;
+      input.value = bak instanceof RegExp ? bak.source : bak;
+      isRegex.checked = bak instanceof RegExp;
+    };
+  }
+
+  createSummary(col: StringColumn, _context: IRenderContext, interactive: boolean) {
+    if (!interactive) {
+      return {
+        template: `<div></div>`,
+        update: (node: HTMLElement) => {
+          const filter = col.getFilter() || '';
+          node.textContent = filter === StringColumn.FILTER_MISSING ? '' : String(filter);
+        }
+      };
+    }
+    let bak = col.getFilter() || '';
+    const bakMissing = bak === StringColumn.FILTER_MISSING;
+    if (bakMissing) {
+      bak = '';
+    }
+    let update: () => void;
+
+    return {
+      template: `<input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
+          <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
+          ${filterMissingMarkup(bakMissing)}`,
+      update: (node: HTMLElement) => {
+        if (!update) {
+          update = StringCellRenderer.interactiveSummary(col, node);
+        }
+        update();
       }
     };
   }

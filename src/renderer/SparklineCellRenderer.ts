@@ -2,9 +2,9 @@ import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
 import NumbersColumn from '../model/NumbersColumn';
 import {matchRows} from './ANumbersCellRenderer';
-import {ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {forEachChild, noop} from './utils';
+import {forEachChild, noop, noRenderer} from './utils';
 
 export function line(data: number[]) {
   if (data.length === 0) {
@@ -29,8 +29,8 @@ export function line(data: number[]) {
 export default class SparklineCellRenderer implements ICellRendererFactory {
   readonly title = 'Sparkline';
 
-  canRender(col: Column) {
-    return col instanceof NumbersColumn;
+  canRender(col: Column, mode: ERenderMode) {
+    return col instanceof NumbersColumn && mode !== ERenderMode.SUMMARY;
   }
 
   create(col: NumbersColumn) {
@@ -63,6 +63,10 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
         }));
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 
 }

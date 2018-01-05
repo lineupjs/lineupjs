@@ -1,15 +1,15 @@
 import {IDataRow, IGroup} from '../model';
 import {default as ActionColumn} from '../model/ActionColumn';
 import Column from '../model/Column';
-import {ICellRendererFactory} from './interfaces';
-import {forEachChild, noop} from './utils';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
+import {forEachChild, noop, noRenderer} from './utils';
 
 
 export default class ActionRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
-  canRender(col: Column) {
-    return col instanceof ActionColumn;
+  canRender(col: Column, mode: ERenderMode) {
+    return col instanceof ActionColumn && mode !== ERenderMode.SUMMARY;
   }
 
   create(col: ActionColumn) {
@@ -43,5 +43,9 @@ export default class ActionRenderer implements ICellRendererFactory {
         });
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }

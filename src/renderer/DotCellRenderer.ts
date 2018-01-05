@@ -8,15 +8,16 @@ import {DEFAULT_FORMATTER} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {attr, forEachChild} from './utils';
+import {attr, forEachChild, noRenderer} from './utils';
 
 export default class DotCellRenderer implements ICellRendererFactory {
-  readonly title = 'Dot(s)';
+  readonly title = 'Dot';
+  readonly groupTitle = 'Dots';
 
-  canRender(col: Column) {
-    return isNumberColumn(col);
+  canRender(col: Column, mode: ERenderMode) {
+    return isNumberColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
   private static getDOMRenderer(col: INumberColumn) {
@@ -110,5 +111,9 @@ export default class DotCellRenderer implements ICellRendererFactory {
         return update(n, all, all.map(DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }

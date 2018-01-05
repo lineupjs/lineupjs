@@ -1,16 +1,16 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
-import {ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, setText} from './utils';
+import {noop, noRenderer, setText} from './utils';
 
 
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title = 'Link';
 
-  canRender(col: Column) {
-    return col instanceof StringColumn;
+  canRender(col: Column, mode: ERenderMode) {
+    return col instanceof StringColumn && mode !== ERenderMode.SUMMARY;
   }
 
   create(col: StringColumn) {
@@ -54,5 +54,9 @@ export default class LinkCellRenderer implements ICellRendererFactory {
         n.innerHTML = `${LinkCellRenderer.exampleText(col, rows)}`;
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }

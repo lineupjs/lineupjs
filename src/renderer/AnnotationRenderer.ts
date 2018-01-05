@@ -1,14 +1,14 @@
 import {IDataRow} from '../model';
 import AnnotateColumn from '../model/AnnotateColumn';
 import Column from '../model/Column';
-import {ICellRendererFactory} from './interfaces';
-import {noop, noRenderer} from './utils';
+import StringCellRenderer from './StringCellRenderer';
+import {noop} from './utils';
 
-export default class AnnotationRenderer implements ICellRendererFactory {
+export default class AnnotationRenderer extends StringCellRenderer {
   readonly title = 'Default';
 
   canRender(col: Column) {
-    return col instanceof AnnotateColumn;
+    return super.canRender(col) && col instanceof AnnotateColumn;
   }
 
   create(col: AnnotateColumn) {
@@ -29,9 +29,5 @@ export default class AnnotationRenderer implements ICellRendererFactory {
       },
       render: noop
     };
-  }
-
-  createGroup() {
-    return noRenderer;
   }
 }

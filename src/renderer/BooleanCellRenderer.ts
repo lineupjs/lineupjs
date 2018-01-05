@@ -1,12 +1,13 @@
 import BooleanColumn from '../model/BooleanColumn';
 import Column from '../model/Column';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
+import {ERenderMode} from './interfaces';
 
 export default class BooleanCellRenderer extends DefaultCellRenderer {
   readonly title = 'Default';
 
-  canRender(col: Column) {
-    return col instanceof BooleanColumn;
+  canRender(col: Column, mode: ERenderMode) {
+    return col instanceof BooleanColumn && mode === ERenderMode.CELL;
   }
 
   create(col: Column) {

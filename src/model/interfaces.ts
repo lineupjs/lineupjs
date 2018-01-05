@@ -34,6 +34,8 @@ export interface IColumnDesc {
    */
   groupRenderer?: string;
 
+  summaryRenderer?: string;
+
   width?: number;
 }
 
