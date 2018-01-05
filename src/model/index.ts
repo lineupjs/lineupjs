@@ -9,11 +9,15 @@ import BooleanColumn from './BooleanColumn';
 import BooleansColumn from './BooleansColumn';
 import BoxPlotColumn from './BoxPlotColumn';
 import CategoricalColumn from './CategoricalColumn';
+import CategoricalMapColumn from './CategoricalMapColumn';
+import CategoricalsColumn from './CategoricalsColumn';
 import DateColumn from './DateColumn';
 import DatesColumn from './DatesColumn';
+import DatesMapColumn from './DatesMapColumn';
 import GroupColumn from './GroupColumn';
 import HierarchyColumn from './HierarchyColumn';
 import ImpositionCompositeColumn from './ImpositionCompositeColumn';
+import ImpositionCompositesColumn from './ImpositionCompositesColumn';
 import NestedColumn from './NestedColumn';
 import NumberColumn from './NumberColumn';
 import NumberMapColumn from './NumberMapColumn';
@@ -87,11 +91,15 @@ export function models() {
     booleans: BooleansColumn,
     boxplot: BoxPlotColumn,
     categorical: CategoricalColumn,
+    categoricalMap: CategoricalMapColumn,
+    categoricals: CategoricalsColumn,
     date: DateColumn,
+    dateMap: DatesMapColumn,
     dates: DatesColumn,
     group: GroupColumn,
     hierarchy: HierarchyColumn,
     imposition: ImpositionCompositeColumn,
+    impositions: ImpositionCompositesColumn,
     reduce: ReduceColumn,
     nested: NestedColumn,
     number: NumberColumn,

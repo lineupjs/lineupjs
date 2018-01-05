@@ -3,12 +3,15 @@
  */
 
 
+import {suffix} from '../internal/AEventDispatcher';
+import {toolbar} from './annotations';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
 import {IDataRow, IGroupData} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
+import NumbersColumn from './NumbersColumn';
 
 
 /**
@@ -23,12 +26,24 @@ export function createDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
+@toolbar('filterMapped')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
+  static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+
   constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
 
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('boxplot');
+  }
+
+  private get wrapper(): INumberColumn|null {
+    const c = this._children;
+    return c.length === 0 ? null : <INumberColumn>c[0];
+  }
+
+  protected createEventList() {
+    return super.createEventList().concat([ImpositionCompositeColumn.EVENT_MAPPING_CHANGED]);
   }
 
   getLabel(row: IDataRow) {
@@ -42,11 +57,6 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     return `${c[0].getLabel(row)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
   }
 
-  getValue(row: IDataRow) {
-    const c = this._children;
-    return c.length === 0 ? NaN : c[0].getValue(row);
-  }
-
   getColor(row: IDataRow) {
     const c = this._children;
     if (c.length < 2) {
@@ -56,21 +66,32 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     return v ? v.color : this.color;
   }
 
+  getValue(row: IDataRow) {
+    const w = this.wrapper;
+    return w ? w.getValue(row) : [];
+  }
+
   getNumber(row: IDataRow) {
-    const r = this.getValue(row);
-    return r == null ? NaN : r;
+    const w = this.wrapper;
+    return w ? w.getNumber(row) : NaN;
   }
 
   getRawNumber(row: IDataRow) {
-    return this.getNumber(row);
+    const w = this.wrapper;
+    return w ? w.getRawNumber(row) : NaN;
   }
 
   isMissing(row: IDataRow) {
-    return this._children.length === 0 || this._children[0].isMissing(row);
+    const w = this.wrapper;
+    return w ? w.isMissing(row) : true;
   }
 
   compare(a: IDataRow, b: IDataRow) {
     return NumberColumn.prototype.compare.call(this, a, b);
+  }
+
+  group(row: IDataRow) {
+    return NumberColumn.prototype.group.call(this, row);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
@@ -89,5 +110,15 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
       return null;
     }
     return super.insert(col, index);
+  }
+
+  protected insertImpl(col: Column, index: number) {
+    this.forward(col, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
+    return super.insertImpl(col, index);
+  }
+
+  protected removeImpl(child: Column) {
+    this.unforward(child, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
+    return super.removeImpl(child);
   }
 }

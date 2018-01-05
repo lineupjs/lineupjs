@@ -1,10 +1,10 @@
-import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import {toolbar} from './annotations';
+import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberFilter, LazyBoxPlotData,
-  noNumberFilter, restoreFilter, isDummyFilter, EAdvancedSortMethod
+  compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
+  isDummyFilter, LazyBoxPlotData, noNumberFilter, restoreFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
@@ -28,7 +28,7 @@ export interface ISplicer {
 }
 
 @toolbar('sortNumbers', 'filterMapped')
-export default class NumbersColumn extends ArrayColumn<number> implements IAdvancedBoxPlotColumn {
+export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly CENTER = 0;
 

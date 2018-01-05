@@ -41,8 +41,8 @@ export default class StringsColumn extends ArrayColumn<string> {
     return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED]);
   }
 
-  getValue(row: IDataRow) {
-    return super.getValue(row).map((v) => StringColumn.prototype.replacePattern.call(this, v));
+  getValues(row: IDataRow) {
+    return super.getValues(row).map((v) => StringColumn.prototype.replacePattern.call(this, v));
   }
 
   dump(toDescRef: (desc: any) => any): any {

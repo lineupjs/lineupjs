@@ -2,6 +2,7 @@ import {ascending, mean, median, quantile} from 'd3-array';
 import {format} from 'd3-format';
 import {similar} from '../internal/math';
 import Column from './Column';
+import {IArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {IMapAbleColumn, IMappingFunction} from './MappingFunction';
 import {FIRST_IS_NAN, isMissingValue} from './missing';
@@ -109,6 +110,17 @@ export interface IBoxPlotColumn extends INumberColumn, IMapAbleColumn {
 export function isBoxPlotColumn(col: Column): col is IBoxPlotColumn {
   return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
 }
+
+export interface INumbersColumn extends IAdvancedBoxPlotColumn, IArrayColumn<number> {
+  getNumbers(row: IDataRow): number[];
+
+  getRawNumbers(row: IDataRow): number[];
+}
+
+export function isNumbersColumn(col: Column): col is INumbersColumn {
+  return isBoxPlotColumn(col) && typeof (<INumbersColumn>col).getNumbers === 'function';
+}
+
 
 export interface IAdvancedBoxPlotData extends IBoxPlotData {
   readonly mean: number;
@@ -256,7 +268,7 @@ export function isDummyFilter(filter: INumberFilter) {
   return !filter.filterMissing && !isFinite(filter.min) && !isFinite(filter.max);
 }
 
-export function isIncluded(filter: INumberFilter|null, value: number) {
+export function isIncluded(filter: INumberFilter | null, value: number) {
   if (!filter) {
     return true;
   }
