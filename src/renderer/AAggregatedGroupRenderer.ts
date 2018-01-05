@@ -2,9 +2,10 @@ import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {
-  default as IRenderContext, ICellRenderer, ICellRendererFactory, IGroupCellRenderer,
+  default as IRenderContext, ERenderMode, ICellRenderer, ICellRendererFactory, IGroupCellRenderer,
   IImposer
 } from './interfaces';
+import {noRenderer} from './utils';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item
@@ -12,7 +13,7 @@ import {
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
   abstract readonly title: string;
 
-  abstract canRender(col: Column): boolean;
+  abstract canRender(col: Column, mode: ERenderMode): boolean;
 
   abstract create(col: T, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer;
 
@@ -27,6 +28,10 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
         single.update(<HTMLElement>node.firstElementChild!, rows[aggregate], aggregate, group);
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }
 

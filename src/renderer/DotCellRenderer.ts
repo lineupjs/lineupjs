@@ -4,8 +4,7 @@ import {default as INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColu
  * a renderer rendering a bar for numerical columns
  */
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER} from '../model/INumberColumn';
-import NumbersColumn from '../model/NumbersColumn';
+import {DEFAULT_FORMATTER, isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
@@ -21,7 +20,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
   }
 
   private static getDOMRenderer(col: INumberColumn) {
-    const dots = (col instanceof NumbersColumn) ? col.dataLength! : 1;
+    const dots = isNumbersColumn(col) ? col.dataLength! : 1;
     let tmp = '';
     for (let i = 0; i < dots; ++i) {
       tmp += `<div style='background-color: ${col.color}' title=''></div>`;
@@ -74,7 +73,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         }
         const color = colorOf(col, d, imposer);
         const v = col.getValue(d);
-        if (!(col instanceof NumbersColumn)) {
+        if (!isNumbersColumn(col)) {
           return update(n, [v], [col.getLabel(d)], [color]);
         }
         const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
@@ -86,7 +85,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         }
         const color = colorOf(col, d, imposer);
         const v = col.getValue(d);
-        if (!(col instanceof NumbersColumn)) {
+        if (!isNumbersColumn(col)) {
           return render(ctx, [v], [color], width);
         }
         const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
@@ -103,7 +102,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         const vs = rows.map((r) => col.getValue(r));
         const colors = rows.map((r) => colorOf(col, r, imposer));
 
-        if (!(col instanceof NumbersColumn)) {
+        if (!isNumbersColumn(col)) {
           return update(n, vs, rows.map((r) => col.getLabel(r)), colors);
         }
         // concatenate all columns

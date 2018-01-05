@@ -1,7 +1,7 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
-import NumbersColumn from '../model/NumbersColumn';
+import {isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
@@ -24,7 +24,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
   }
 
   canRender(col: Column, mode: ERenderMode) {
-    return mode === ERenderMode.CELL && isNumberColumn(col) && !(col instanceof NumbersColumn);
+    return mode === ERenderMode.CELL && isNumberColumn(col) && !isNumbersColumn(col);
   }
 
   create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {

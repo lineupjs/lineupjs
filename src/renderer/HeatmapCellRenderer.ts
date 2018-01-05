@@ -1,54 +1,47 @@
-import {hsl} from 'd3-color';
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {IDataRow, INumberColumn, isNumberColumn} from '../model';
-import Column from '../model/Column';
-import NumbersColumn from '../model/NumbersColumn';
+import {IDataRow, isMissingValue} from '../model';
+import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT} from '../styles';
-import {colorOf} from './impose';
-import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {noRenderer, setText} from './utils';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
+import {toHeatMapColor} from './BrightnessCellRenderer';
+import IRenderContext, {IImposer} from './interfaces';
+import {renderMissingValue} from './missing';
+import {attr, forEachChild} from './utils';
 
-export function toHeatMapColor(v: number|null, row: IDataRow, col: INumberColumn, imposer?: IImposer) {
-  if (v == null || isNaN(v)) {
-    v = 1; // max = brightest
-  }
-  //hsl space encoding, encode in lightness
-  const color = hsl(colorOf(col, row, imposer) || Column.DEFAULT_COLOR);
-  color.l = 1 - v; // largest value = darkest color
-  return color.toString();
-}
+export default class HeatmapCellRenderer extends ANumbersCellRenderer {
+  readonly title = 'Heatmap';
 
-export default class HeatmapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Brightness';
-
-  canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup && !(col instanceof NumbersColumn);
-  }
-
-  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
-    const width = context.colWidth(col);
+  protected createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
+    const cellDimension = context.colWidth(col) / col.dataLength!;
+    const labels = col.labels;
+    let templateRows = '';
+    for (let i = 0; i < col.dataLength!; ++i) {
+      templateRows += `<div style="background-color: white" title=""></div>`;
+    }
     return {
-      template: `<div title="">
-        <div style="background-color: ${col.color}"></div><div> </div>
-      </div>`,
-      update: (n: HTMLElement, d: IDataRow) => {
-        const missing = renderMissingDOM(n, col, d);
-        n.title = col.getLabel(d);
-        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = missing ? null : toHeatMapColor(col.getNumber(d), d, col, imposer);
-        setText(<HTMLSpanElement>n.lastElementChild!, n.title);
+      templateRow: templateRows,
+      update: (row: HTMLElement, data: number[], item: IDataRow) => {
+        forEachChild(row, (d, i) => {
+          const v = data[i];
+          attr(<HTMLDivElement>d, {
+            title: `${labels[i]}: ${DEFAULT_FORMATTER(v)}`,
+            'class': isMissingValue(v) ? 'lu-missing' : ''
+          }, {
+            'background-color': isMissingValue(v) ? null : toHeatMapColor(v, item, col, imposer)
+          });
+        });
       },
-      render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
-        if (renderMissingCanvas(ctx, col, d, width)) {
-          return;
-        }
-        ctx.fillStyle = toHeatMapColor(col.getNumber(d), d, col, imposer);
-        ctx.fillRect(0, 0, width, CANVAS_HEIGHT);
+      render: (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow) => {
+        data.forEach((d: number, j: number) => {
+          const x = j * cellDimension;
+          if (isMissingValue(d)) {
+            renderMissingValue(ctx, cellDimension, CANVAS_HEIGHT, x, 0);
+            return;
+          }
+          ctx.beginPath();
+          ctx.fillStyle = toHeatMapColor(d, item, col, imposer);
+          ctx.fillRect(x, 0, cellDimension, CANVAS_HEIGHT);
+        });
       }
     };
-  }
-
-  createGroup() {
-    return noRenderer;
   }
 }

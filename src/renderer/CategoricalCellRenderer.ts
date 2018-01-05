@@ -73,7 +73,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HTMLElement) {
+  static interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HTMLElement) {
     const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
     const cats = col.categories;
 
@@ -140,6 +140,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
           }
           filterUpdate();
         }
+
+        // TODO full interactive
 
         n.style.display = hist ? null : 'none';
         if (!hist) {

@@ -9,25 +9,23 @@ import AnnotationRenderer from './AnnotationRenderer';
 import BarCellRenderer from './BarCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
+import BrightnessCellRenderer from './BrightnessCellRenderer';
 import CategoricalCellRenderer from './CategoricalCellRenderer';
-import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
-import CategoricalStackedDistributionlRenderer from './CategoricalStackedDistributionlRenderer';
+import CategoricalStackedDistributionlCellRenderer from './CategoricalStackedDistributionlCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
 import GroupCellRenderer from './GroupCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
-import HistogramRenderer from './HistogramRenderer';
+import HistogramCellRenderer from './HistogramCellRenderer';
 import ImageCellRenderer from './ImageCellRenderer';
-import {ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import LinkCellRenderer from './LinkCellRenderer';
 import LinkMapCellRenderer from './LinkMapCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
 import MapBarCellRenderer from './MapBarCellRenderer';
-import MapCellRenderer from './MapCellRenderer';
 import MultiLevelCellRenderer from './MultiLevelCellRenderer';
-import NumbersCellRenderer from './NumbersCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
 import SelectionRenderer from './SelectionRenderer';
 import SparklineCellRenderer from './SparklineCellRenderer';
@@ -55,25 +53,23 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   annotate: new AnnotationRenderer(),
   boolean: new BooleanCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
-  catcolor: new CategoricalColorCellRenderer(),
-  catdistributionbar: new CategoricalStackedDistributionlRenderer(),
+  brightness: new BrightnessCellRenderer(),
+  catdistributionbar: new CategoricalStackedDistributionlCellRenderer(),
   categorical: new CategoricalCellRenderer(),
   circle: new CircleCellRenderer(),
   default: defaultCellRenderer,
   dot: new DotCellRenderer(),
   group: new GroupCellRenderer(),
   heatmap: new HeatmapCellRenderer(),
-  histogram: new HistogramRenderer(),
+  histogram: new HistogramCellRenderer(),
   image: new ImageCellRenderer(),
   interleaving: new InterleavingCellRenderer(),
   link: new LinkCellRenderer(),
   linkMap: new LinkMapCellRenderer(),
   loading: new LoadingCellRenderer(),
   nested: new MultiLevelCellRenderer(false),
-  map: new MapCellRenderer(),
   number: new BarCellRenderer(),
   mapbars: new MapBarCellRenderer(),
-  numbers: new NumbersCellRenderer(),
   rank: new RankCellRenderer(),
   selection: new SelectionRenderer(),
   sparkline: new SparklineCellRenderer(),
@@ -95,19 +91,32 @@ export function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICe
   return r || defaultCellRenderer;
 }
 
-export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, isGroup: boolean = false): { type: string, label: string }[] {
+export function chooseSummaryRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
+  const r = renderers[col.getSummaryRenderer()];
+  return r || defaultCellRenderer;
+}
+
+export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, mode: ERenderMode = ERenderMode.CELL): { type: string, label: string }[] {
   const valid = Object.keys(renderers).filter((type) => {
     const factory = renderers[type];
-    return factory.canRender(col, isGroup);
+    return factory.canRender(col, mode);
   });
   // TODO some magic to remove and order
 
-  return valid.map((type) => ({
-    type,
-    label: !isGroup ? renderers[type].title : (renderers[type].groupTitle || renderers[type].title)
-  }));
+
+  return valid.map((type) => {
+    const r = renderers[type];
+    return {
+      type,
+      label: mode === ERenderMode.CELL ? r.title : (mode === ERenderMode.GROUP ? r.groupTitle || r.title : r.summaryTitle || r.groupTitle || r.title)
+    };
+  });
 }
 
 export function possibleGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {
-  return possibleRenderer(col, renderers, true);
+  return possibleRenderer(col, renderers, ERenderMode.GROUP);
+}
+
+export function possibleSummaryRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {
+  return possibleRenderer(col, renderers, ERenderMode.SUMMARY);
 }

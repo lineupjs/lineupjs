@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import {CANVAS_HEIGHT, UPSET} from '../styles';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {noop, noRenderer} from './utils';
+import {noRenderer} from './utils';
 
 
 export default class UpSetCellRenderer implements ICellRendererFactory {

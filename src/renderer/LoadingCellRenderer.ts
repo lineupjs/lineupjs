@@ -20,4 +20,8 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
   createGroup() {
     return this.create();
   }
+
+  createSummary() {
+    return this.create();
+  }
 }

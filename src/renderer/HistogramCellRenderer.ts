@@ -2,21 +2,23 @@ import {DENSE_HISTOGRAM} from '../config';
 import {computeStats, getNumberOfBins, IStatistics} from '../internal/math';
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn} from '../model/INumberColumn';
-import NumbersColumn from '../model/NumbersColumn';
+import {
+  DEFAULT_FORMATTER, INumberColumn, INumbersColumn, isNumberColumn,
+  isNumbersColumn
+} from '../model/INumberColumn';
 import {colorOf} from './impose';
-import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {forEachChild, noop} from './utils';
+import {forEachChild, noop, noRenderer} from './utils';
 
 /**
  * a renderer rendering a bar for numerical columns
  */
-export default class HistogramRenderer implements ICellRendererFactory {
+export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title = 'Histogram';
 
-  canRender(col: Column, isGroup: boolean) {
-    return (isNumberColumn(col) && isGroup) || (col instanceof NumbersColumn && !isGroup);
+  canRender(col: Column, mode: ERenderMode) {
+    return (isNumberColumn(col) && mode !== ERenderMode.CELL) || (isNumbersColumn(col) && mode === ERenderMode.CELL);
   }
 
   private static getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn, globalHist: IStatistics | null, imposer?: IImposer) {
@@ -27,7 +29,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
     }
 
     const render = (n: HTMLElement, rows: IDataRow[]) => {
-      const {bins, max, hist} = HistogramRenderer.createHist(globalHist, guessedBins, rows, col);
+      const {bins, max, hist} = HistogramCellRenderer.createHist(globalHist, guessedBins, rows, col);
       //adapt the number of children
       if (n.children.length !== bins) {
         let tmp = '';
@@ -48,8 +50,8 @@ export default class HistogramRenderer implements ICellRendererFactory {
     return {template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense' : ''}>${bins}</div>`, render};
   }
 
-  create(col: NumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
-    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, hist, imposer);
+  create(col: INumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
+    const {template, render} = HistogramCellRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, hist, imposer);
     return {
       template,
       update: (n: HTMLElement, row: IDataRow) => {
@@ -63,7 +65,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: INumberColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
-    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, hist, imposer);
+    const {template, render} = HistogramCellRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, hist, imposer);
     return {
       template,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
@@ -72,10 +74,15 @@ export default class HistogramRenderer implements ICellRendererFactory {
     };
   }
 
+  createSummary(_col: INumberColumn, _context: IRenderContext, _interactive: boolean, _imposer?: IImposer) {
+    // TODO
+    return noRenderer;
+  }
+
   private static createHist(globalHist: IStatistics | null, guessedBins: number, rows: IDataRow[], col: INumberColumn) {
     const bins = globalHist ? globalHist.hist.length : guessedBins;
     let stats: IStatistics;
-    if (col instanceof NumbersColumn) {
+    if (isNumbersColumn(col)) {
       //multiple values
       const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r)));
       stats = computeStats(values, (v: number) => v, isMissingValue, [0, 1], bins);

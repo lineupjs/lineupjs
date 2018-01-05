@@ -2,13 +2,16 @@ import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, IGroup, isNumberColumn} from '../model';
 import {default as BoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
-import {IBoxPlotColumn, IBoxPlotData, INumberColumn, isBoxPlotColumn, LazyBoxPlotData} from '../model/INumberColumn';
+import {
+  IBoxPlotColumn, IBoxPlotData, INumberColumn, INumbersColumn, isBoxPlotColumn, isNumbersColumn,
+  LazyBoxPlotData
+} from '../model/INumberColumn';
 import NumberColumn from '../model/NumberColumn';
-import NumbersColumn from '../model/NumbersColumn';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {noRenderer} from './utils';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v == null) {
@@ -22,7 +25,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   readonly title = 'Box Plot';
 
   canRender(col: Column, mode: ERenderMode) {
-    return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));
+    return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode === ERenderMode.GROUP));
   }
 
   create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
@@ -66,7 +69,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createAggregatedBoxPlot(col: NumbersColumn, rows: IDataRow[], raw = false): IBoxPlotData {
+  private static createAggregatedBoxPlot(col: INumbersColumn, rows: IDataRow[], raw = false): IBoxPlotData {
     // concat all values
     const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumber(r))));
     return new LazyBoxPlotData(vs);
@@ -85,7 +88,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         }
         let box: IBoxPlotData, label: IBoxPlotData;
 
-        if (col instanceof NumbersColumn) {
+        if (isNumbersColumn(col)) {
           box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
           label = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows, true);
         } else {
@@ -95,6 +98,11 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         renderDOMBoxPlot(n, box, label, sort, colorOf(col, null, imposer));
       }
     };
+  }
+
+  createSummary() {
+    // TODO when IStatistics provides everything for a boxplot
+    return noRenderer;
   }
 }
 

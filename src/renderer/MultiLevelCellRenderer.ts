@@ -5,7 +5,7 @@ import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import {default as INumberColumn, isNumberColumn, medianIndex} from '../model/INumberColumn';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 
@@ -43,8 +43,8 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     this.title = this.stacked ? 'Stacked Bar' : 'Nested';
   }
 
-  canRender(col: Column) {
-    return isMultiLevelColumn(col);
+  canRender(col: Column, mode: ERenderMode) {
+    return isMultiLevelColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
   create(col: IMultiLevelColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {

@@ -1,30 +1,24 @@
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
-import {LazyBoxPlotData} from '../model/INumberColumn';
-import NumbersColumn from '../model/NumbersColumn';
-import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {INumbersColumn, isNumbersColumn, LazyBoxPlotData} from '../model/INumberColumn';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {noRenderer} from './utils';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
   abstract readonly title: string;
 
-  canRender(col: Column, _isGroup: boolean) {
-    return col instanceof NumbersColumn && Boolean(col.dataLength);
+  canRender(col: Column, mode: ERenderMode) {
+    return isNumbersColumn(col) && Boolean(col.dataLength) && mode !== ERenderMode.SUMMARY;
   }
 
-  protected abstract createContext(col: NumbersColumn, context: IRenderContext, imposer?: IImposer): {
+  protected abstract createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): {
     templateRow: string,
     update: (row: HTMLElement, data: number[], d: IDataRow) => void,
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
-  /**
-   * mean value for now
-   * @param {INumbersColumn & Column} col
-   * @param {IDataRow[]} rows
-   * @return {number[]}
-   */
-  private static choose(col: NumbersColumn, rows: IDataRow[]) {
+  private static choose(col: INumbersColumn, rows: IDataRow[]) {
     const data = rows.map((r) => col.getNumbers(r));
     const cols = col.dataLength!;
     const r = <number[]>[];
@@ -34,14 +28,14 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
       if (!vs) {
         r.push(NaN);
       } else {
-        const box = new LazyBoxPlotData(vs);
+        const box = <any>new LazyBoxPlotData(vs);
         r.push(box[col.getSortMethod()]);
       }
     }
     return r;
   }
 
-  create(col: NumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
     const width = context.colWidth(col);
     const {templateRow, render, update} = this.createContext(col, context, imposer);
     return {
@@ -61,7 +55,7 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: NumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
     const {templateRow, update} = this.createContext(col, context, imposer);
     return {
       template: `<div>${templateRow}</div>`,
@@ -71,6 +65,10 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
         update(n, chosen, rows[0]);
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }
 

@@ -1,7 +1,7 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import ADataProvider from '../provider/ADataProvider';
+import {IDataProvider} from '../provider/ADataProvider';
 
 export interface IImposer {
   color?(row: IDataRow | null): string | null;
@@ -73,7 +73,7 @@ interface IRenderContext {
    */
   groupRenderer(col: Column, imposer?: IImposer): IGroupCellRenderer;
 
-  summaryRenderer(co: Column, imposer?: IImposer): ISummaryRenderer;
+  summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 
   /**
    * prefix used for all generated id names
@@ -91,7 +91,7 @@ interface IRenderContext {
 
   colWidth(col: Column): number;
 
-  readonly provider: ADataProvider;
+  readonly provider: IDataProvider;
 }
 
 export enum ERenderMode {

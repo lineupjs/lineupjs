@@ -1,18 +1,18 @@
 import {IDataRow} from '../model';
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER} from '../model/INumberColumn';
+import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
-import {toHeatMapColor} from './HeatmapCellRenderer';
-import IRenderContext, {IImposer} from './interfaces';
+import {toHeatMapColor} from './BrightnessCellRenderer';
+import IRenderContext, {ERenderMode, IImposer} from './interfaces';
 import {attr, forEachChild} from './utils';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
   readonly title = 'Bar Chart';
 
-  canRender(col: Column, isGroup: boolean) {
-    return super.canRender(col, isGroup) && !isGroup;
+  canRender(col: Column, mode: ERenderMode) {
+    return super.canRender(col, mode) && mode === ERenderMode.CELL;
   }
 
   private static compute(v: number, threshold: number, domain: number[]) {
@@ -24,7 +24,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
     return {height: (v - threshold), bottom: (threshold - domain[0])};
   }
 
-  protected createContext(col: NumbersColumn, context: IRenderContext, imposer?: IImposer) {
+  protected createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const cellDimension = context.colWidth(col) / col.dataLength!;
     const threshold = col.getMapping().apply(NumbersColumn.CENTER);
     const range = 1;

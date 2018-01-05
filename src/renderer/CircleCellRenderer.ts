@@ -1,17 +1,17 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
-import NumbersColumn from '../model/NumbersColumn';
+import {isNumbersColumn} from '../model/INumberColumn';
 import {colorOf} from './impose';
-import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {attr, noop, noRenderer, setText} from './utils';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title = 'Proportional Symbol';
 
-  canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup && !(col instanceof NumbersColumn);
+  canRender(col: Column, mode: ERenderMode) {
+    return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);
   }
 
   create(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
@@ -33,6 +33,10 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   }
 
   createGroup() {
+    return noRenderer;
+  }
+
+  createSummary() {
     return noRenderer;
   }
 }

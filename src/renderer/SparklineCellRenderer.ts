@@ -1,5 +1,6 @@
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
+import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {matchRows} from './ANumbersCellRenderer';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
@@ -30,10 +31,10 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
   readonly title = 'Sparkline';
 
   canRender(col: Column, mode: ERenderMode) {
-    return col instanceof NumbersColumn && mode !== ERenderMode.SUMMARY;
+    return isNumbersColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: NumbersColumn) {
+  create(col: INumbersColumn) {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
@@ -49,7 +50,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: NumbersColumn) {
+  createGroup(col: INumbersColumn) {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
