@@ -71,7 +71,8 @@ article.#{$lu_css_prefix}-side-panel-entry {
     height: 50px;
     font-size: small;
 
-    &[data-renderer=histogram] {
+    &[data-renderer=histogram],
+    &[data-renderer=categorical] {
       margin-bottom: 3em;
     }
 

@@ -185,7 +185,7 @@ export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
 
   {
     const possible = ctx.getPossibleRenderer(col);
-    if (possible.item.length > 2 || possible.group.length > 2) { // default always possible
+    if (possible.item.length > 2 || possible.group.length > 2 || possible.summary.length > 2) { // default always possible
       actions.add(vis);
     }
   }
