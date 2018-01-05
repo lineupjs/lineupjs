@@ -9,7 +9,7 @@ import {CANVAS_HEIGHT} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {setText} from './utils';
+import {setText, wideEnough} from './utils';
 
 /**
  * renders categorical columns as a colored rect with label
@@ -95,13 +95,6 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
       update(n, hist.maxBin, hist.hist);
     }
   };
-}
-
-
-function wideEnough(col: ICategoricalColumn) {
-  const w = col.getWidth();
-  const cats = col.categories.length;
-  return w / cats > 30; // at least 30 pixel
 }
 
 function hist(col: ICategoricalColumn, showLabels: boolean) {

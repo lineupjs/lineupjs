@@ -8,6 +8,7 @@ import {icons} from './ui/toolbar';
 /** number of bins before switching to dense mode
  */
 export const DENSE_HISTOGRAM = 19;
+export const MIN_LABEL_WIDTH = 30;
 /**
  * number of milliseconds to wait before a hovered canvas row will be replaced with a DOM one
  * @type {number}

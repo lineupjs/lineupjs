@@ -53,14 +53,6 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static union(col: ISetColumn, rows: IDataRow[]) {
-    const values = new Set<ICategory>();
-    rows.forEach((d) => {
-      col.getSet(d).forEach((c) => values.add(c));
-    });
-    return col.categories.map((cat) => values.has(cat));
-  }
-
   create(col: ISetColumn, context: IRenderContext) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
@@ -112,7 +104,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {
       template: `<div><div></div>${templateRow}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const value = UpSetCellRenderer.union(col, rows);
+        const value = union(col, rows);
         render(n, value);
       }
     };
@@ -121,4 +113,13 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   createSummary() {
     return noRenderer;
   }
+}
+
+
+export function union(col: ISetColumn, rows: IDataRow[]) {
+  const values = new Set<ICategory>();
+  rows.forEach((d) => {
+    col.getSet(d).forEach((c) => values.add(c));
+  });
+  return col.categories.map((cat) => values.has(cat));
 }

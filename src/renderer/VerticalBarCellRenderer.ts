@@ -1,18 +1,18 @@
 import {IDataRow} from '../model';
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
+import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
-import IRenderContext, {ERenderMode, IImposer} from './interfaces';
-import {attr, forEachChild} from './utils';
+import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {attr, forEachChild, noRenderer} from './utils';
 
-export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
+export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
   readonly title = 'Bar Chart';
 
   canRender(col: Column, mode: ERenderMode) {
-    return super.canRender(col, mode) && mode === ERenderMode.CELL;
+    return isNumbersColumn(col) && Boolean(col.dataLength) && mode === ERenderMode.CELL;
   }
 
   private static compute(v: number, threshold: number, domain: number[]) {
@@ -62,5 +62,9 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
         });
       }
     };
+  }
+
+  createSummary() {
+    return noRenderer;
   }
 }

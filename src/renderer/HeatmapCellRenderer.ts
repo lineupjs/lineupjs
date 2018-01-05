@@ -1,14 +1,19 @@
 import {IDataRow, isMissingValue} from '../model';
-import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
+import Column from '../model/Column';
+import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
-import IRenderContext, {IImposer} from './interfaces';
+import IRenderContext, {ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingValue} from './missing';
-import {attr, forEachChild} from './utils';
+import {attr, forEachChild, noop, wideEnough} from './utils';
 
-export default class HeatmapCellRenderer extends ANumbersCellRenderer {
+export default class HeatmapCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
   readonly title = 'Heatmap';
+
+  canRender(col: Column) {
+    return isNumbersColumn(col) && Boolean(col.dataLength);
+  }
 
   protected createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const cellDimension = context.colWidth(col) / col.dataLength!;
@@ -42,6 +47,21 @@ export default class HeatmapCellRenderer extends ANumbersCellRenderer {
           ctx.fillRect(x, 0, cellDimension, CANVAS_HEIGHT);
         });
       }
+    };
+  }
+
+  createSummary(col: INumbersColumn) {
+    let labels = col.labels.slice();
+    while (labels.length > 0 && !wideEnough(col, labels.length)) {
+      labels = labels.filter((_, i) => i % 2 === 0); // even
+    }
+    let templateRows = '';
+    for (const label of labels) {
+      templateRows += `<div title="${label}" data-title="${label}"></div>`;
+    }
+    return {
+      template: templateRows,
+      update: noop
     };
   }
 }

@@ -1,4 +1,6 @@
+import {MIN_LABEL_WIDTH} from '../config';
 import Column from '../model/Column';
+import {IArrayColumn} from '../model/IArrayColumn';
 import {ICellRenderer, IGroupCellRenderer} from './interfaces';
 
 /**
@@ -119,4 +121,9 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     }
     node.appendChild(cnode);
   });
+}
+
+export function wideEnough(col: IArrayColumn<any>, length: number = col.labels.length) {
+  const w = col.getWidth();
+  return w / length > MIN_LABEL_WIDTH; // at least 30 pixel
 }

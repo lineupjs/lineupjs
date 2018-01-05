@@ -1,16 +1,10 @@
 import {IDataRow, IGroup, isMissingValue} from '../model';
-import Column from '../model/Column';
-import {INumbersColumn, isNumbersColumn, LazyBoxPlotData} from '../model/INumberColumn';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {INumbersColumn, LazyBoxPlotData} from '../model/INumberColumn';
+import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {noRenderer} from './utils';
 
-export abstract class ANumbersCellRenderer implements ICellRendererFactory {
+export abstract class ANumbersCellRenderer {
   abstract readonly title: string;
-
-  canRender(col: Column, mode: ERenderMode) {
-    return isNumbersColumn(col) && Boolean(col.dataLength) && mode !== ERenderMode.SUMMARY;
-  }
 
   protected abstract createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): {
     templateRow: string,
@@ -65,10 +59,6 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
         update(n, chosen, rows[0]);
       }
     };
-  }
-
-  createSummary() {
-    return noRenderer;
   }
 }
 
