@@ -111,17 +111,6 @@ export function isBoxPlotColumn(col: Column): col is IBoxPlotColumn {
   return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
 }
 
-export interface INumbersColumn extends IAdvancedBoxPlotColumn, IArrayColumn<number> {
-  getNumbers(row: IDataRow): number[];
-
-  getRawNumbers(row: IDataRow): number[];
-}
-
-export function isNumbersColumn(col: Column): col is INumbersColumn {
-  return isBoxPlotColumn(col) && typeof (<INumbersColumn>col).getNumbers === 'function';
-}
-
-
 export interface IAdvancedBoxPlotData extends IBoxPlotData {
   readonly mean: number;
 }
@@ -140,6 +129,17 @@ export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
 
   getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null;
 }
+
+export interface INumbersColumn extends IAdvancedBoxPlotColumn, IArrayColumn<number> {
+  getNumbers(row: IDataRow): number[];
+
+  getRawNumbers(row: IDataRow): number[];
+}
+
+export function isNumbersColumn(col: Column): col is INumbersColumn {
+  return isBoxPlotColumn(col) && typeof (<INumbersColumn>col).getNumbers === 'function';
+}
+
 
 /**
  * helper class to lazily compute box plotdata out of a given number array

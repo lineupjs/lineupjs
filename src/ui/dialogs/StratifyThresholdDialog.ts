@@ -19,7 +19,7 @@ export default class StratifyThresholdDialog extends ADialog {
       return false;
     }
     const domain = this.column.getOriginalMapping().domain;
-    node.insertAdjacentHTML('beforeend', `<input
+    node.insertAdjacentHTML('beforeend', `<h4>Threshold: </h4><input
         type="number"
         size="15"
         value="${this.before.length > 0 ? this.before[0] : (domain[1] - domain[0]) / 2}"
