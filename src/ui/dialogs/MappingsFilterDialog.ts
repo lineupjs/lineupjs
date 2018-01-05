@@ -106,6 +106,7 @@ export default class MappingsFilterDialog extends ADialog {
     // patch in lu-summary and renderer
     const summary = <HTMLElement>node.children[1];
     summary.classList.add('lu-summary');
+    summary.dataset.interactive = '';
     summary.dataset.renderer = this.column.getSummaryRenderer();
 
 

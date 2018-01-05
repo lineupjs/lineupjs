@@ -158,6 +158,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       columns: this.columns,
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     }, uniformContext(0, 20));
+
+    this.columns.forEach((column) => {
+      if (column instanceof MultiLevelRenderColumn) {
+        column.updateWidthRule(this.style);
+      }
+      column.renderers = this.ctx.createRenderer(column.c);
+    });
   }
 
   get id() {

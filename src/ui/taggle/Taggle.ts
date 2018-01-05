@@ -20,17 +20,19 @@ export default class Taggle extends ALineUp {
     super(node, data);
 
     this.node.classList.add('lu-taggle', 'lu');
-    this.node.innerHTML = `<aside class="panel">
-        <div class="lu-rule-button-chooser">
-          <span>Overview</span>
-          <div></div>
-        </div>
-    </aside>`;
 
     const config = merge(defaultOptions(), options, {
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     });
 
+    this.renderer = new TaggleRenderer(this.node, data, config);
+    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument);
+    this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
+    this.node.insertBefore(this.panel.node, this.node.firstChild);
+    this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser">
+          <span>Overview</span>
+          <div></div>
+        </div>`);
     {
       const spaceFilling = spaceFillingRule(config);
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
@@ -39,12 +41,6 @@ export default class Taggle extends ALineUp {
         this.renderer.switchRule(selected ? spaceFilling : null);
       });
     }
-
-    this.renderer = new TaggleRenderer(this.node, data, config);
-    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument);
-    this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
-    this.node.firstElementChild!.appendChild(this.panel.node);
-
     this.forward(this.renderer, `${RENDERER_EVENT_HOVER_CHANGED}.main`);
   }
 

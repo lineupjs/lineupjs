@@ -1,7 +1,7 @@
 @import '../vars';
 @import '../icons/index';
 
-[data-renderer=selection] {
+.#{$lu_css_prefix}-row [data-renderer=selection] {
   text-align: center;
 
   &::before {
@@ -19,11 +19,7 @@
   padding-left: 2px;
 }
 
-.#{$lu_css_prefix}-summary[data-renderer=string] {
-  display: block;
-
-  &[data-summary=selection] > i {
-    cursor: pointer;
-    font-size: 150%;
-  }
+.#{$lu_css_prefix}-summary[data-renderer=selection] > i {
+  cursor: pointer;
+  font-size: 150%;
 }

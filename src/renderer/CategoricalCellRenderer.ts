@@ -9,7 +9,7 @@ import {CANVAS_HEIGHT} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {forEachChild, setText} from './utils';
+import {setText} from './utils';
 
 /**
  * renders categorical columns as a colored rect with label
@@ -48,9 +48,9 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createGroup(col: ICategoricalColumn, _context: IRenderContext, globalHist: ICategoricalStatistics | null) {
     const {template, update} = hist(col, false);
     return {
-      template,
+      template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const {maxBin, hist} = computeHist(rows, (r: IDataRow) => col.isMissing(r) ? '' : col.getCategory(r)!.name, col.categories.map((d) => d.name));
+        const {maxBin, hist} = computeHist(rows, (r: IDataRow) => col.getCategory(r), col.categories);
 
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
         update(n, max, hist);
@@ -66,7 +66,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
 function staticSummary(col: ICategoricalColumn, interactive: boolean) {
   const {template, update} = hist(col, interactive);
   return {
-    template,
+    template: `${template}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
       n.classList.toggle('lu-missing', !hist);
       if (!hist) {
@@ -81,7 +81,7 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
   const {template, update} = hist(col, true);
   let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
   return {
-    template: template + (interactive ? filterMissingNumberMarkup(false, 0) : ''),
+    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
@@ -102,9 +102,9 @@ function hist(col: ICategoricalColumn, showLabels: boolean) {
   const bins = col.categories.map((c) => `<div title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');
 
   return {
-    template: `<div${col.dataLength! > DENSE_HISTOGRAM ? 'class="lu-dense"' : ''}>${bins}</div>`,
+    template: `<div${col.dataLength! > DENSE_HISTOGRAM ? 'class="lu-dense"' : ''}>${bins}`, // no closing div to be able to append things
     update: (n: HTMLElement, maxBin: number, hist: ICategoricalBin[]) => {
-      forEachChild(n, (d: HTMLElement, i) => {
+      Array.from(n.querySelectorAll('[data-cat]')).forEach((d: HTMLElement, i) => {
         const {y} = hist[i];
         d.title = `${col.categories[i].label}: ${y}`;
         const inner = <HTMLElement>d.firstElementChild!;

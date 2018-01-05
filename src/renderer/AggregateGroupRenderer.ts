@@ -44,17 +44,14 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
   createSummary(col: AggregateGroupColumn, context: IRenderContext) {
     return {
-      template: `<i class='lu-caret-down' title='(Un)Aggregate All'></i>`,
+      template: `<div><i class='lu-caret-down' title='(Un)Aggregate All'></i></div>`,
       update: (node: HTMLElement) => {
-        let defaultValue = 'down';
         const ranking = col.findMyRanker();
-        if (ranking) {
-          const all = ranking.getGroups().every((g) => col.isAggregated(g));
-          if (all) {
-            defaultValue = 'right';
-          }
-        }
-        node.className = `lu-caret-${defaultValue}`;
+        const right = Boolean(ranking && ranking.getGroups().every((g) => col.isAggregated(g)));
+
+        node = <HTMLElement>node.firstElementChild!;
+        node.classList.toggle('lu-caret-down', !right);
+        node.classList.toggle('lu-caret-right', right);
 
         node.onclick = (evt) => {
           evt.stopPropagation();

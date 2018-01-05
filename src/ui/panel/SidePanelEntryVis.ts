@@ -33,6 +33,8 @@ export default class SidePanelEntryVis {
 
     const summary = <HTMLElement>this.node.lastElementChild!;
     summary.classList.add('lu-summary');
+    summary.dataset.renderer = this.column.getSummaryRenderer();
+    summary.dataset.interactive = '';
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {

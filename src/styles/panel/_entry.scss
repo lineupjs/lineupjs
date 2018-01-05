@@ -66,16 +66,16 @@ article.#{$lu_css_prefix}-side-panel-entry {
     padding: 0;
   }
 
-  main.#{$lu_css_prefix}-summary {
+  .#{$lu_css_prefix}-summary {
     margin: 0.5em;
     height: 50px;
     font-size: small;
 
-    &[data-summary=interactive-filter-hist] {
+    &[data-renderer=histogram] {
       margin-bottom: 3em;
     }
 
-    &[data-summary=string] {
+    &[data-renderer=string] {
       display: block;
       height: auto;
     }

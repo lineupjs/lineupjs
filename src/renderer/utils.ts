@@ -30,7 +30,7 @@ export function noop() {
 }
 
 export const noRenderer = {
-  template: ``,
+  template: `<div></div>`,
   update: noop,
   render: noop
 };

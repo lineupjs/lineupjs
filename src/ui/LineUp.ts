@@ -19,13 +19,12 @@ export default class LineUp extends ALineUp {
 
     merge(this.options, options);
     this.node.classList.add('lu');
-    this.node.innerHTML = `<aside class="panel"></aside>`;
 
     this.renderer = new EngineRenderer(data, this.node, this.options);
     if (this.options.panel) {
       this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument);
       this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
-      this.node.firstElementChild!.appendChild(this.panel.node);
+      this.node.insertBefore(this.panel.node, this.node.firstChild);
     }
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
   }

@@ -26,9 +26,9 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
   createGroup(col: ICategoricalColumn) {
     const {template, update} = stackedBar(col);
     return {
-      template,
+      template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const {hist, missing} = computeHist(rows, (r: IDataRow) => col.isMissing(r) ? '' : col.getCategory(r)!.name, col.categories.map((d) => d.name));
+        const {hist, missing} = computeHist(rows, (r: IDataRow) => col.getCategory(r), col.categories);
         update(n, hist, missing);
       }
     };
@@ -42,7 +42,7 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
 function staticSummary(col: ICategoricalColumn) {
   const {template, update} = stackedBar(col);
   return {
-    template,
+    template: `${template}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
       n.classList.toggle('lu-missing', !hist);
       if (!hist) {
@@ -57,7 +57,7 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
   const {template, update} = stackedBar(col);
   let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
   return {
-    template: template + (interactive ? filterMissingNumberMarkup(false, 0) : ''),
+    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
@@ -78,7 +78,7 @@ function stackedBar(col: ICategoricalColumn) {
   const bins = cats.map((c) => `<div style="background-color: ${c.color}" title="${c.label}: 0" data-cat="${c.name}">${c.label}</div>`).join('');
 
   return {
-    template: `<div>${bins}<div title="Missing Values"></div></div>`,
+    template: `<div>${bins}<div title="Missing Values"></div>`, // no closing div to be able to append things
     update: (n: HTMLElement, hist: ICategoricalBin[], missing: number) => {
       const total = hist.reduce((acc, {y}) => acc + y, missing);
       forEachChild(n, (d: HTMLElement, i) => {

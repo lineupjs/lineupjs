@@ -53,6 +53,9 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.dataLength) {
       this.setDefaultWidth(Math.min(Math.max(100, this.dataLength! * 10), 500));
     }
+    this.setDefaultRenderer('heatmap');
+    this.setDefaultGroupRenderer('heatmap');
+    this.setDefaultSummaryRenderer('histogram');
   }
 
   compare(a: IDataRow, b: IDataRow): number {

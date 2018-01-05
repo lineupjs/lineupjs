@@ -61,6 +61,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.missingValue = desc.missingValue != null ? desc.missingValue : NaN;
 
     this.setGroupRenderer('boxplot');
+    this.setDefaultSummaryRenderer('histogram');
   }
 
   dump(toDescRef: (desc: any) => any) {

@@ -48,8 +48,9 @@ export default class SelectionRenderer implements ICellRendererFactory {
 
   createSummary(col: SelectionColumn, context: IRenderContext) {
     return {
-      template: `<i class='lu-unchecked' title='(Un)Select All'></i>`,
+      template: `<div><i class='lu-unchecked' title='(Un)Select All'></i></div>`,
       update: (node: HTMLElement) => {
+        node = <HTMLElement>node.firstElementChild!;
         node.onclick = (evt) => {
           evt.stopPropagation();
           if (node.classList.contains('lu-unchecked')) {

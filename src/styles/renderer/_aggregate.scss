@@ -61,11 +61,8 @@
   content: $lu_icon_caret_right;
 }
 
-.#{$lu_css_prefix}-summary[data-renderer=aggregate] {
-  display: block;
-  > i {
-    padding-right: $lu_aggregate_square_bracket_width;
-    cursor: pointer;
-    font-size: 150%;
-  }
+.#{$lu_css_prefix}-summary[data-renderer=aggregate] > i {
+  padding-right: $lu_aggregate_square_bracket_width;
+  cursor: pointer;
+  font-size: 150%;
 }

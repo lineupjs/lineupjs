@@ -29,7 +29,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
   create(col: INumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
     const {template, render, guessedBins} = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
-      template,
+      template: `${template}</div>`,
       update: (n: HTMLElement, row: IDataRow) => {
         if (renderMissingDOM(n, col, row)) {
           return;
@@ -43,7 +43,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
   createGroup(col: INumberColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
     const {template, render, guessedBins} = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
-      template,
+      template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         render(n, createHist(hist, guessedBins, rows, col));
       }
@@ -65,7 +65,7 @@ function staticSummary(col: INumberColumn, template: string, render: (n: HTMLEle
     template += `<span>${range[0]}</span><span>${range[1]}</span>`;
   }
   return {
-    template,
+    template: `${template}</div>`,
     update: (node: HTMLElement, hist: IStatistics | null) => {
       if (isMapAbleColumn(col)) {
         const range = col.getRange();
@@ -94,7 +94,7 @@ function interactiveSummary(col: IMapAbleColumn, template: string, render: (n: H
   let updateFilter: (missing: number, col: IMapAbleColumn)=>void;
 
   return {
-    template,
+    template: `${template}</div>`,
     update: (node: HTMLElement, hist: IStatistics | null) => {
       if (!updateFilter) {
         updateFilter = initFilter(node, col);
@@ -258,7 +258,7 @@ function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn, impos
     });
   };
   return {
-    template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense' : ''}>${bins}</div>`,
+    template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense' : ''}>${bins}`, // no closing div to be able to append things
     render,
     guessedBins
   };
