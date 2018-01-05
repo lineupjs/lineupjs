@@ -65,7 +65,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private readonly events = new RankingEvents();
   readonly on = this.events.on.bind(this.events);
 
-  private options: Readonly<IEngineRankingOptions> = {
+  private roptions: Readonly<IEngineRankingOptions> = {
     animation: true,
     levelOfDetail: () => 'high',
     customRowUpdate: () => undefined
@@ -100,9 +100,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
   };
 
-  constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
-    super(header, body, tableId, style, PrefetchMixin);
-    Object.assign(this.options, options);
+  constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, roptions: Partial<IEngineRankingOptions> = {}) {
+    super(header, body, tableId, style, { mixins: [PrefetchMixin]});
+    Object.assign(this.roptions, roptions);
     body.classList.add('lu-row-body');
 
     const that = this;
@@ -278,7 +278,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   protected createRow(node: HTMLElement, rowIndex: number): void {
     node.classList.add('lu-row');
-    this.options.customRowUpdate(node, rowIndex);
+    this.roptions.customRowUpdate(node, rowIndex);
 
     const isGroup = this.renderCtx.isGroup(rowIndex);
 
@@ -300,7 +300,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.selection.updateState(node, i);
     this.selection.add(node);
 
-    const lod = this.options.levelOfDetail(rowIndex);
+    const lod = this.roptions.levelOfDetail(rowIndex);
 
     if (lod === 'high' || meta || this.ctx.provider.isSelected(i)) {
       super.createRow(node, rowIndex);
@@ -316,9 +316,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number, forcedLod?: 'high'|'low'): void {
-    this.options.customRowUpdate(node, rowIndex);
+    this.roptions.customRowUpdate(node, rowIndex);
 
-    const computedLod = this.options.levelOfDetail(rowIndex);
+    const computedLod = this.roptions.levelOfDetail(rowIndex);
     const lod = forcedLod ? forcedLod : computedLod;
     const wasLod = node.dataset.lod || 'high';
     const isGroup = this.renderCtx.isGroup(rowIndex);
@@ -521,7 +521,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     }, rowContext);
 
-    return super.recreate(this.options.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
+    return super.recreate(this.roptions.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
   }
 
   fakeHover(dataIndex: number) {
