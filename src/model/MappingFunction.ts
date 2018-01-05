@@ -72,7 +72,7 @@ export interface IMapAbleColumn extends INumberColumn {
 }
 
 export function isMapAbleColumn(col: Column): col is IMapAbleColumn {
-  return typeof (<any>col).getMapping === 'function';
+  return typeof (<IMapAbleColumn>col).getMapping === 'function';
 }
 
 function isSame(a: number[], b: number[]) {

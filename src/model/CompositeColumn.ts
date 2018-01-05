@@ -9,8 +9,8 @@ import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
 
-export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn & Column {
-  return typeof ((<any>col).getCollapsed) === 'function';
+export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {
+  return typeof ((<IMultiLevelColumn>col).getCollapsed) === 'function';
 }
 
 /**

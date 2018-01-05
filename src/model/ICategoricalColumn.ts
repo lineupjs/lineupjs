@@ -19,7 +19,7 @@ export interface ISetColumn extends IArrayColumn<boolean> {
 }
 
 export function isSetColumn(col: Column): col is ISetColumn {
-  return isArrayColumn(col) && (<ISetColumn>col).categories != null;
+  return isArrayColumn(col) && Array.isArray((<ISetColumn>col).categories);
 }
 
 export interface ICategoricalColumn extends ISetColumn {
@@ -97,7 +97,7 @@ export function toCategories(desc: ICategoricalDesc) {
 export function isCategoricalColumn(col: Column): col is ICategoricalColumn;
 export function isCategoricalColumn(col: IColumnDesc): col is ICategoricalColumnDesc & IColumnDesc;
 export function isCategoricalColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getCategory === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
+  return (col instanceof Column && typeof (<ICategoricalColumn>col).getCategory === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
 }
 
 export interface ICategoricalFilter {

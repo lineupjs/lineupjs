@@ -14,7 +14,7 @@ export interface IMapColumn<T> extends Column {
 }
 
 export function isMapColumn(col: Column): col is IMapColumn<any> {
-  return typeof (<any>col).getMap === 'function' && (<any>col).getMapLabel === 'function';
+  return typeof (<IMapColumn<any>>col).getMap === 'function' && typeof (<IMapColumn<any>>col).getMapLabel === 'function';
 }
 
 export interface IArrayColumn<T> extends IMapColumn<T> {
@@ -27,5 +27,5 @@ export interface IArrayColumn<T> extends IMapColumn<T> {
 }
 
 export function isArrayColumn(col: Column): col is IArrayColumn<any> {
-  return typeof (<any>col).getLabels === 'function' && typeof (<any>col).getValues === 'function' && isMapColumn(col);
+  return typeof (<IArrayColumn<any>>col).getLabels === 'function' && typeof (<IArrayColumn<any>>col).getValues === 'function' && isMapColumn(col);
 }

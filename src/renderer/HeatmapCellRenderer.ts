@@ -55,10 +55,11 @@ export default class HeatmapCellRenderer extends ANumbersCellRenderer implements
     while (labels.length > 0 && !wideEnough(col, labels.length)) {
       labels = labels.filter((_, i) => i % 2 === 0); // even
     }
-    let templateRows = '';
+    let templateRows = '<div>';
     for (const label of labels) {
       templateRows += `<div title="${label}" data-title="${label}"></div>`;
     }
+    templateRows += '</div>';
     return {
       template: templateRows,
       update: noop

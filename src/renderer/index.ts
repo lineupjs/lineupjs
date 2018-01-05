@@ -11,6 +11,7 @@ import BooleanCellRenderer from './BooleanCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
 import BrightnessCellRenderer from './BrightnessCellRenderer';
 import CategoricalCellRenderer from './CategoricalCellRenderer';
+import CategoricalHeatmapCellRenderer from './CategoricalHeatmapCellRenderer';
 import CategoricalStackedDistributionlCellRenderer from './CategoricalStackedDistributionlCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
@@ -61,6 +62,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   dot: new DotCellRenderer(),
   group: new GroupCellRenderer(),
   heatmap: new HeatmapCellRenderer(),
+  catheatmap: new CategoricalHeatmapCellRenderer(),
   histogram: new HistogramCellRenderer(),
   image: new ImageCellRenderer(),
   interleaving: new InterleavingCellRenderer(),

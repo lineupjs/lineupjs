@@ -7,7 +7,10 @@ import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
  * Created by Samuel Gratzl on 18.07.2017.
  */
 import {findOption} from '../internal/utils';
-import {Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup} from '../model';
+import {
+  Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup,
+  isNumberColumn
+} from '../model';
 import NumberColumn from '../model/NumberColumn';
 import Ranking from '../model/Ranking';
 import DataProvider, {default as ADataProvider} from '../provider/ADataProvider';
@@ -192,7 +195,7 @@ export default class EngineRenderer extends AEventDispatcher {
       const order = ranking.getOrder();
       const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
-      cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: NumberColumn) => {
+      cols.filter((d) => isNumberColumn(d) && !d.isHidden()).forEach((col: NumberColumn) => {
         this.histCache.set(col.id, histo == null ? null : histo.stats(col));
       });
       cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn) => {

@@ -57,7 +57,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
           if (!data[j]) {
             return;
           }
-          const posx = (j * cellDimension) + (cellDimension / 2);
+          const posx = (j * cellDimension);
           ctx.fillStyle = d.color;
           ctx.fillRect(posx, 0, cellDimension, CANVAS_HEIGHT);
         });
@@ -80,11 +80,12 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
 
   createSummary(col: ISetColumn) {
     const categories = col.categories;
-    let templateRows = '';
+    let templateRows = '<div>';
     const labels = wideEnough(col);
     for (const cat of categories) {
-      templateRows += `<div title="${cat.label}"${labels ? ` data-title="${cat.label}"`: ''} style="background-color: ${cat.color}"></div>`;
+      templateRows += `<div title="${cat.label}"${labels ? ` data-title="${cat.label}"` : ''} style="background-color: ${cat.color}"></div>`;
     }
+    templateRows += '</div>';
     return {
       template: templateRows,
       update: noop

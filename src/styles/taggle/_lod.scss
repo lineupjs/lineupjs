@@ -13,19 +13,17 @@
 
       .lu-hover-only,
       .lu-selection-only,
-      [data-renderer=rank],
-      [data-renderer=string],
-      [data-renderer=link],
-      [data-renderer=circle],
-      [data-renderer=selection],
-      [data-renderer=sparkline],
-      [data-renderer=threshold],
-      [data-renderer=table],
-      [data-renderer^=map] {
+      [data-renderer] {
         display: none !important;
       }
 
+      [data-renderer=heatmap],
+      [data-renderer=catheatmap] {
+        display: block !important;
+      }
+
       [data-renderer=aggregate] {
+        display: block !important;
         overflow: visible !important;
 
         &::before {
@@ -36,6 +34,7 @@
       }
 
       [data-renderer=group] {
+        display: block !important;
         overflow: visible !important;
 
         > * {
@@ -45,12 +44,18 @@
         }
       }
 
-      [data-renderer=number] > * {
-        top: 0;
-        bottom: 0;
+      [data-renderer=number] {
+        display: block !important;
+
+        > * {
+          top: 0;
+          bottom: 0;
+        }
       }
 
       [data-renderer=boxplot] {
+        display: block !important;
+
         > div {
           height: 100%;
 
@@ -69,6 +74,7 @@
       }
 
       [data-renderer=upset] {
+        display: block !important;
         align-items: stretch;
 
         > div:first-child {
@@ -86,7 +92,9 @@
       }
 
       [data-renderer=categorical],
-      [data-renderer=heatmap] {
+      [data-renderer=brightness] {
+        display: block !important;
+
         > div:first-of-type {
           margin-right: 0;
           flex: 1 1 auto;
@@ -97,10 +105,14 @@
         }
       }
 
-      [data-renderer=dot] > div {
-        top: 0 !important;
-        height: 100%;
-        margin-top: 0;
+      [data-renderer=dot] {
+        display: block !important;
+
+        > div {
+          top: 0 !important;
+          height: 100%;
+          margin-top: 0;
+        }
       }
     }
   }

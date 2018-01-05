@@ -233,7 +233,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   protected updateCanvasCell(canvas: HTMLCanvasElement, index: number, column: RenderColumn, x: number) {
     const ctx = canvas.getContext('2d')!;
-    ctx.clearRect(x, 0, column.width, canvas.height);
+    ctx.clearRect(x - 1, 0, column.width + 2, canvas.height);
     ctx.save();
     ctx.translate(x, 0);
     column.renderCell(ctx, index);
@@ -302,7 +302,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     const lod = this.options.levelOfDetail(rowIndex);
 
-    if (lod === 'high' || meta) {
+    if (lod === 'high' || meta || this.ctx.provider.isSelected(i)) {
       super.createRow(node, rowIndex);
       return;
     }
@@ -361,7 +361,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.selection.updateState(node, i);
 
     const canvas = <HTMLCanvasElement>Array.from(node.children).find((d) => d.nodeName.toLowerCase() === 'canvas');
-    if (lod === 'high' || meta) {
+    if (lod === 'high' || meta || this.ctx.provider.isSelected(i)) {
       if (canvas) {
         this.canvasPool.push(canvas);
         canvas.remove();

@@ -37,18 +37,6 @@
     bottom: -3.5em;
   }
 
-  &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
-    content: attr(data-title);
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-align: center;
-  }
-
   &.#{$lu_css_prefix}-dense {
     > div {
       margin: 0;
@@ -84,6 +72,24 @@
       text-align: right;
       background-position: right top;
     }
+  }
+}
+
+[data-renderer=categorical],
+[data-renderer=categorical],
+[data-renderer=histogram],
+[data-renderer=heatmap],
+[data-renderer=catheatmap] {
+  &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
+    content: attr(data-title);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
   }
 }
 

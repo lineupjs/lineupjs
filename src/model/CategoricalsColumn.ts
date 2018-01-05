@@ -2,7 +2,6 @@
  * Created by sam on 04.11.2016.
  */
 
-import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ICategoricalDesc, ICategory, toCategories, toCategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
@@ -12,7 +11,6 @@ export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDes
 /**
  * a string column with optional alignment
  */
-@toolbar('filterCategorical')
 export default class CategoricalsColumn extends ArrayColumn<string|null> {
   readonly categories: ICategory[];
 

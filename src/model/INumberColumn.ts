@@ -54,7 +54,7 @@ export interface INumberDesc {
 export function isNumberColumn(col: Column): col is INumberColumn;
 export function isNumberColumn(col: IColumnDesc): col is INumberDesc & IColumnDesc;
 export function isNumberColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
+  return (col instanceof Column && typeof (<INumberColumn>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
 export interface IBoxPlotData {

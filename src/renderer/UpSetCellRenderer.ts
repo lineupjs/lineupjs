@@ -87,7 +87,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         }
 
         data.forEach((d, j) => {
-          const posx = (j * cellDimension) + (cellDimension / 2);
+          const posx = (j * cellDimension);
           ctx.beginPath();
           ctx.globalAlpha = d ? 1 : UPSET.inactive;
           ctx.fillRect(posx, 0, cellDimension, CANVAS_HEIGHT);
