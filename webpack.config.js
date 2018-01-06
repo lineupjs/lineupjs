@@ -27,18 +27,17 @@ const banner = '/*! ' + (pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' +
 const webpackloaders = [
   {test: /\.scss$/, loader: 'style-loader!css-loader!sass-loader'},
   {test: /\.tsx?$/, loader: 'awesome-typescript-loader'},
-  {test: /\.json$/, loader: 'json-loader'},
   {
     test: /\.(png|jpg)$/,
     loader: 'url-loader',
-    query: {
+    options: {
       limit: 10000 //inline <= 10kb
     }
   },
   {
     test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
     loader: 'url-loader',
-    query: {
+    options: {
       limit: 10000, //inline <= 10kb
       mimetype: 'application/font-woff'
     }
@@ -46,7 +45,7 @@ const webpackloaders = [
   {
     test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
     loader: 'url-loader',
-    query: {
+    options: {
       limit: 10000, //inline <= 10kb
       mimetype: 'image/svg+xml'
     }
@@ -62,6 +61,7 @@ const isWorkspaceContext = fs.existsSync(resolve(__dirname, '..', 'phovea_regist
  */
 function generateWebpack(options) {
   const base = {
+    target: 'node',
     entry: {
       'LineUpJS': './src/index.ts'
     },
@@ -102,13 +102,6 @@ function generateWebpack(options) {
     module: {
       loaders: webpackloaders.slice()
     },
-    devServer: {
-      contentBase: resolve(__dirname, 'build'),
-      watchOptions: {
-        aggregateTimeout: 500,
-        ignored: /node_modules/
-      }
-    },
     watchOptions: {
       aggregateTimeout: 500,
       ignored: /node_modules/
@@ -128,7 +121,7 @@ function generateWebpack(options) {
 
   if (!options.isTest) {
     //extract the included css file to own file
-    let p = new ExtractTextPlugin({
+    const p = new ExtractTextPlugin({
       filename: `[name]${options.min && !options.nosuffix ? '.min' : ''}.css`,
       allChunks: true // there seems to be a bug in dynamically loaded chunk styles are not loaded, workaround: extract all styles from all chunks
     });
@@ -156,7 +149,7 @@ function generateWebpack(options) {
       }));
   } else {
     //generate source maps
-    base.devtool = 'inline-source-map';
+    base.devtool = 'cheap-module-eval-source-map';
   }
   return base;
 }
