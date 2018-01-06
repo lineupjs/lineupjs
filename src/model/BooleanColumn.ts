@@ -92,7 +92,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   getSet(row: IDataRow) {
     const v = this.getValue(row);
     const r = new Set<ICategory>();
-    r.add(this.categories[v ? 0 : 1])
+    r.add(this.categories[v ? 0 : 1]);
     return r;
   }
 

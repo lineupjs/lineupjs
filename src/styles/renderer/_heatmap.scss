@@ -21,8 +21,8 @@
 }
 
 [data-renderer=heatmap] &:not(.#{$lu_css_prefix}-dense) > div[data-title] {
-  // special alignment of heatmap labels
 
+  // special alignment of heatmap labels
   &:first-of-type::before {
     text-align: left;
   }
