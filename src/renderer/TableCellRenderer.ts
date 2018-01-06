@@ -1,4 +1,3 @@
-import {nest} from 'd3-collection';
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
 import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn} from '../model/IArrayColumn';
@@ -66,7 +65,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
       update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getMapLabel(d));
 
-        const entries = nest<IKeyValue<string>>().key((d) => d.key).entries((<IKeyValue<string>[]>[]).concat(...vs));
+        const entries = groupByKey(vs);
 
         node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div>${TableCellRenderer.example(values)}</div>`).join('');
       }
@@ -104,4 +103,16 @@ export default class TableCellRenderer implements ICellRendererFactory {
     };
   }
 
+}
+
+export function groupByKey<T extends {key: string}>(arr: T[][]) {
+  const m = new Map<string, T[]>();
+  arr.forEach((a) => a.forEach((d) => {
+    if (!m.has(d.key)) {
+      m.set(d.key, [d]);
+    } else {
+      m.get(d.key)!.push(d);
+    }
+  }));
+  return Array.from(m).sort((a, b) => a[0].localeCompare(b[0])).map(([key, values]) => ({key, values}));
 }

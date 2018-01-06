@@ -1,11 +1,10 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import {IKeyValue} from '../model/IArrayColumn';
 import StringMapColumn from '../model/StringMapColumn';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
+import {groupByKey} from './TableCellRenderer';
 import {noop, noRenderer} from './utils';
-import {nest} from 'd3-collection';
 
 export default class LinkMapCellRenderer implements ICellRendererFactory {
   readonly title = 'Table with Links';
@@ -29,10 +28,10 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static example(arr: {value: string, link: string}[]) {
+  private static example(arr: { value: string, link: string }[]) {
     const numExampleRows = 5;
     const examples = <string[]>[];
-    for(const row of arr) {
+    for (const row of arr) {
       examples.push(`<a target="_blank" href="${row.link}">${row.value}</a>`);
       if (examples.length >= numExampleRows) {
         break;
@@ -52,7 +51,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
           return labels.map(({key, value}, i) => ({key, value, link: values[i].value}));
         });
 
-        const entries = nest<IKeyValue<string>>().key((d) => d.key).entries((<IKeyValue<string>[]>[]).concat(...vs));
+        const entries = groupByKey(vs);
 
         node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="lu-${align}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
       }
