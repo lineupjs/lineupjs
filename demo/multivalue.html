@@ -2,28 +2,17 @@
 <html>
 <head lang="en">
   <meta charset="UTF-8">
-  <title>LineUp alpha</title>
+  <title>LineUp MultiValue Test</title>
+
   <link href="../build/LineUpJS.css" rel="stylesheet">
-
-  <style>
-    .lu {
-      clear: both;
-      position: absolute;
-      top: 1px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0;
-    }
-
-  </style>
+  <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="../build/LineUpJS.js"></script>
-<script>
 
-window.onload = function () {
+<script>
+  window.onload = function () {
   fetch('./multivalue.json' + location.search).then((r) => r.json()).then((data)  => {
 
     const years = [2012, 2013, 2014, 2015];

@@ -2,32 +2,17 @@
 <html>
 <head lang="en">
   <meta charset="UTF-8">
-  <title>LineUp alpha</title>
+  <title>LineUp Taggle Test</title>
 
   <link href="../build/LineUpJS.css" rel="stylesheet">
-
-  <style>
-    body {
-      margin: 0;
-    }
-    .lu {
-      clear: both;
-      position: absolute;
-      top: 1px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0;
-      overflow: auto;
-    }
-
-  </style>
+  <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="../build/LineUpJS.js"></script>
 
 <script>
-  (function () {
+  window.onload = function () {
     const arr = [];
     const cats = ['c1', 'c2', 'c3'];
     for (let i = 0; i < 1000; ++i) {
@@ -69,7 +54,7 @@
 
     const instance = new LineUpJS.Taggle(document.body, p);
     instance.update();
-  })();
+  };
 </script>
 
 </body>

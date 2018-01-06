@@ -2,46 +2,17 @@
 <html>
 <head lang="en">
   <meta charset="UTF-8">
-  <title>LineUp alpha</title>
+  <title>LineUp Test Bench</title>
 
   <link href="../build/LineUpJS.css" rel="stylesheet">
-
-  <style>
-    div.orange {
-      background-color: orange;
-    }
-
-    rect.bar.orange {
-      fill: orange;
-    }
-
-    div.green {
-      background-color: green;
-    }
-
-    rect.bar.green, .bar.green rect {
-      fill: green;
-    }
-
-    .lu {
-      clear: both;
-      position: absolute;
-      top: 1px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0;
-      overflow: auto;
-    }
-
-  </style>
+  <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="../build/LineUpJS.js"></script>
 
 <script>
-  (function () {
+  window.onload = function () {
     const parser = d3.timeParse('%d.%m.%Y');
     const arr = [
       {a: 10, b: 20, c: 30, d: 'Row1', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2', date: '12/11/2005', img: 'https://vignette.wikia.nocookie.net/simpsons/images/0/02/Homer_Simpson_2006.png/revision/latest'},
@@ -148,7 +119,7 @@
 
     const instance = new LineUpJS.LineUp(document.body, p);
     instance.update();
-  })();
+  };
 </script>
 
 </body>
