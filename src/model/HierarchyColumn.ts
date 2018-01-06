@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 28.06.2017.
  */
-import {toolbar} from './annotations';
+import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {colorPool, ICategoricalColumn, ICategory} from './ICategoricalColumn';
@@ -38,6 +38,7 @@ export interface ICutOffNode {
  * column for hierarchical categorical values
  */
 @toolbar('cutoff', 'stratify')
+@Category('categorical')
 export default class HierarchyColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_CUTOFF_CHANGED = 'cutOffChanged';
 

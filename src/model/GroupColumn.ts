@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {SupportType, toolbar} from './annotations';
+import {Category, SupportType, toolbar} from './annotations';
 import Column from './Column';
 import {IGroupData} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
@@ -13,6 +13,7 @@ export function createDesc(label = 'Group') {
 
 @SupportType()
 @toolbar('sortGroup')
+@Category('support')
 export default class GroupColumn extends Column {
   private groupSortMethod: 'name' | 'count' = 'name';
 

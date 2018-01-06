@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {toolbar} from './annotations';
+import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {
   compareCategory,
@@ -18,6 +18,7 @@ import ValueColumn from './ValueColumn';
  * column for categorical values
  */
 @toolbar('stratify', 'filterCategorical')
+@Category('categorical')
 export default class CategoricalColumn extends ValueColumn<string> implements ICategoricalColumn {
 
   readonly categories: ICategory[];

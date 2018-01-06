@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {SupportType} from './annotations';
+import {Category, SupportType} from './annotations';
 import Column, {IColumnDesc} from './Column';
 import {IDataRow, IGroup} from './interfaces';
 
@@ -42,6 +42,7 @@ export declare type IActionColumnDesc = IColumnDesc & IActionDesc;
  * a default column with no values
  */
 @SupportType()
+@Category('support')
 export default class ActionColumn extends Column {
 
   readonly actions: IAction[];

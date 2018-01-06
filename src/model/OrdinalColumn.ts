@@ -1,6 +1,6 @@
 import {extent} from 'd3-array';
 import {equalArrays} from '../internal/utils';
-import {toolbar} from './annotations';
+import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {
@@ -17,6 +17,7 @@ export declare type ICategoricalNumberColumnDesc = ICategoricalDesc & IValueColu
  * similar to a categorical column but the categories are mapped to numbers
  */
 @toolbar('stratify', 'filterOrdinal')
+@Category('categorical')
 export default class OrdinalColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 

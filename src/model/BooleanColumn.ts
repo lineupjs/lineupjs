@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {toolbar} from './annotations';
+import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
@@ -28,6 +28,7 @@ export declare type IBooleanColumnDesc = IValueColumnDesc<boolean> & IBooleanDes
  * a string column with optional alignment
  */
 @toolbar('stratify', 'filterBoolean')
+@Category('categorical')
 export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
   static readonly GROUP_TRUE = {name: 'True', color: 'black'};
   static readonly GROUP_FALSE = {name: 'False', color: 'white'};

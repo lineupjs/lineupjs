@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {toolbar} from './annotations';
+import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
@@ -21,6 +21,7 @@ export declare type ISetColumnDesc = ISetDesc & IValueColumnDesc<string[]>;
  * a string column with optional alignment
  */
 @toolbar('filterCategorical')
+@Category('categorical')
 export default class SetColumn extends ValueColumn<string[]> implements IArrayColumn<boolean> {
   readonly categories: ICategory[];
 

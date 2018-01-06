@@ -3,6 +3,7 @@
  */
 
 import {timeFormat, timeParse} from 'd3-time-format';
+import {Category} from './annotations';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN, isMissingValue} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
@@ -23,6 +24,7 @@ export interface IDateDesc {
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
 
+@Category('date')
 export default class DateColumn extends ValueColumn<Date> {
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;

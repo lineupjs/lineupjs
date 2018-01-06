@@ -1,4 +1,4 @@
-import {SupportType} from './annotations';
+import {Category, SupportType} from './annotations';
 import Column, {IColumnDesc} from './Column';
 import {IGroup} from './interfaces';
 import Ranking from './Ranking';
@@ -22,6 +22,7 @@ export interface IAggregateGroupColumnDesc extends IColumnDesc {
  * a checkbox column for selections
  */
 @SupportType()
+@Category('support')
 export default class AggregateGroupColumn extends Column {
   static readonly EVENT_AGGREGATE = 'aggregate';
 

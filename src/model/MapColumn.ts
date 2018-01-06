@@ -1,3 +1,4 @@
+import {Category} from './annotations';
 import {IKeyValue, IMapColumn} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
@@ -6,6 +7,7 @@ export interface IMapColumnDesc<T> extends IValueColumnDesc<IKeyValue<T>[]> {
   // dummy
 }
 
+@Category('map')
 export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements IMapColumn<T> {
 
   constructor(id: string, desc: Readonly<IMapColumnDesc<T>>) {

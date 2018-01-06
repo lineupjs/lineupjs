@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {SupportType, toolbar} from './annotations';
+import {Category, SupportType, toolbar} from './annotations';
 import {IDataRow, IGroup} from './interfaces';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
@@ -32,6 +32,7 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
  */
 @SupportType()
 @toolbar('sort', 'stratify')
+@Category('support')
 export default class SelectionColumn extends ValueColumn<boolean> {
   private static SELECTED_GROUP: IGroup = {
     name: 'Selected',

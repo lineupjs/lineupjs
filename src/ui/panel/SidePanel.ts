@@ -2,12 +2,12 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {nest} from 'd3-collection';
 import {suffix} from '../../internal/AEventDispatcher';
 import {
-  createImpositionDesc, createReduceDesc, createNestedDesc, createScriptDesc,
-  createStackDesc, isSupportType
+  createImpositionDesc, createNestedDesc, createReduceDesc, createScriptDesc, createStackDesc,
+  isSupportType
 } from '../../model';
+import {categoryOfDesc} from '../../model/annotations';
 import {default as Column, IColumnDesc} from '../../model/Column';
 import Ranking from '../../model/Ranking';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
@@ -89,7 +89,7 @@ export default class SidePanel {
     this.descs.forEach((v) => v.destroyVis());
     this.descs.clear();
     data.getColumns().concat(this.options.additionalDescs).forEach((col) => {
-      this.descs.set(col, new SidePanelEntry(col));
+      this.descs.set(col, new SidePanelEntry(col, categoryOfDesc(col, data.columnTypes)));
     });
 
     const handleRanking = (ranking: Ranking, added: boolean) => {
@@ -126,7 +126,7 @@ export default class SidePanel {
     data.getRankings().forEach((ranking) => handleRanking(ranking, true));
 
     data.on(`${DataProvider.EVENT_ADD_DESC}.panel`, (desc) => {
-      const v = new SidePanelEntry(desc);
+      const v = new SidePanelEntry(desc, categoryOfDesc(desc, data.columnTypes));
       that.descs.set(desc, v);
       this.updateChooser();
     });
@@ -257,34 +257,21 @@ export default class SidePanel {
 
 
   protected static groupByType(entries: SidePanelEntry[]): { key: string, values: SidePanelEntry[] }[] {
-    const order = ['label', 'categorical', 'numerical', 'matrix', 'combined', 'others'];
-    return nest<SidePanelEntry>().key((entry) => {
-      switch (entry.desc.type) {
-        case 'string':
-          return order[0];
-        case 'ordinal':
-        case 'categorical':
-          return order[1];
-        case 'number':
-          return order[2];
-        case 'numbers':
-        case 'booleans':
-        case 'boxplot':
-          return order[3];
-        case 'stack':
-        case 'min':
-        case 'max':
-        case 'mean':
-        case 'script':
-        case 'nested':
-        case 'imposition':
-          return order[4];
-        default:
-          return order[5];
+    const map = new Map<{label: string, order: number}, SidePanelEntry[]>();
+    entries.forEach((entry) => {
+      if (!map.has(entry.category)) {
+        map.set(entry.category, [entry]);
+      } else {
+        map.get(entry.category)!.push(entry);
       }
-    }).sortKeys((a, b) => order.indexOf(a) - order.indexOf(b))
-      .sortValues((a, b) => a.text.localeCompare(b.text))
-      .entries(entries);
+    });
+    return Array.from(map).map(([key,value]) => {
+      return {
+        key: key.label,
+        order: key.order,
+        values: value.sort((a, b) => a.text.localeCompare(b.text))
+      };
+    }).sort((a, b) => a.order - b.order);
   }
 
   protected updateChooser() {

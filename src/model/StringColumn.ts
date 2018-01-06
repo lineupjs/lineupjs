@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {toolbar} from './annotations';
+import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN} from './missing';
@@ -44,6 +44,7 @@ export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
  * a string column with optional alignment
  */
 @toolbar('search', 'filterString', 'editPattern')
+@Category('string')
 export default class StringColumn extends ValueColumn<string> {
   static readonly EVENT_PATTERN_CHANGED = 'patternChanged';
   //magic key for filtering missing ones

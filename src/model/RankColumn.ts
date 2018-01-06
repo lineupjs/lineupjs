@@ -3,7 +3,7 @@
  */
 
 
-import {SupportType} from './annotations';
+import {Category, SupportType} from './annotations';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 /**
@@ -19,6 +19,7 @@ export function createDesc(label: string = 'Rank') {
  * a rank column
  */
 @SupportType()
+@Category('support')
 export default class RankColumn extends ValueColumn<number> {
 
   constructor(id: string, desc: IValueColumnDesc<number>) {

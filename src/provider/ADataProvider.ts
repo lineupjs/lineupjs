@@ -38,6 +38,8 @@ export interface IDataProviderOptions {
 }
 
 export interface IDataProvider extends AEventDispatcher {
+  readonly columnTypes: { [columnType: string]: typeof Column };
+
   takeSnapshot(col: Column): void;
 
   selectAllOf(ranking: Ranking): void;

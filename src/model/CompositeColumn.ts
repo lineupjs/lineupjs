@@ -3,7 +3,7 @@
  */
 
 import {suffix} from '../internal/AEventDispatcher';
-import {toolbar} from './annotations';
+import {Category, toolbar} from './annotations';
 import Column, {IColumnParent, IFlatColumn} from './Column';
 import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
@@ -17,6 +17,7 @@ export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {
  * implementation of a combine column, standard operations how to select
  */
 @toolbar('compositeContained', 'splitCombined')
+@Category('composite')
 export default class CompositeColumn extends Column implements IColumnParent {
   protected readonly _children: Column[] = [];
 

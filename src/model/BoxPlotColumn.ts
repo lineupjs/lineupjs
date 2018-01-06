@@ -1,6 +1,6 @@
 import {format} from 'd3-format';
 import Column from './Column';
-import {toolbar} from './annotations';
+import {Category, toolbar} from './annotations';
 import {IDataRow} from './interfaces';
 import {
   compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, IBoxPlotData, INumberFilter, isDummyFilter,
@@ -24,6 +24,7 @@ export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlo
 export {IBoxPlotData} from './INumberColumn';
 
 @toolbar('sortNumbers', 'filterMapped')
+@Category('array')
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly DEFAULT_FORMATTER = format('.3n');

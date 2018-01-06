@@ -1,3 +1,4 @@
+import {Category} from './annotations';
 import Column from './Column';
 import {range} from 'd3-array';
 import {IArrayColumn} from './IArrayColumn';
@@ -20,6 +21,7 @@ export interface IArrayColumnDesc<T> extends IArrayDesc, IValueColumnDesc<T[]> {
   // dummy
 }
 
+@Category('array')
 export default class ArrayColumn<T> extends ValueColumn<T[]> implements IArrayColumn<T> {
   static readonly EVENT_SPLICE_CHANGED = 'spliceChanged';
 
