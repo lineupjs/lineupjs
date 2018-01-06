@@ -5,38 +5,6 @@ article.#{$lu_css_prefix}-side-panel-entry {
   background-color: #fff;
   margin-bottom: 0.8em;
 
-  &::before {
-    content: 'Drop here to change the sorting';
-    position: absolute;
-    z-index: 2;
-    opacity: 0;
-    visibility: hidden;
-    margin-bottom: 0.8em;
-    height: 0;
-    width: 100%;
-    user-select: none;
-    pointer-events: none;
-    font-size: 120%;
-    color: $lu_toolbar_color_hover;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px dashed $lu_drag_over;
-    background-color: lighten($lu_drag_over, 35%);
-    transition: height 0.2s ease, opacity 0.2s ease;
-  }
-
-  &.#{$lu_css_prefix}-dragover::after {
-    display: none;
-  }
-
-  &.#{$lu_css_prefix}-dragover::before {
-    position: static;
-    height: 50px;
-    opacity: 1;
-    visibility: visible;
-  }
-
   > header {
     display: flex;
     align-content: space-between;
@@ -77,7 +45,8 @@ article.#{$lu_css_prefix}-side-panel-entry {
     }
 
     &[data-renderer=string] {
-      display: block;
+      display: flex;
+      flex-direction: column;
       height: auto;
     }
   }

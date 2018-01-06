@@ -7,18 +7,14 @@
     cursor: not-allowed;
   }
 
-  input[type=text] {
-    width: 100%;
+  input[type=text],
+  select {
     border: 1px solid $lu_side_panel_input_border;
     border-radius: $lu_side_panel_input_border_radius;
     padding: 3px 5px;
   }
 
   select {
-    width: 100%;
-    border: 1px solid $lu_side_panel_input_border;
-    border-radius: $lu_side_panel_input_border_radius;
-    padding: 3px 5px;
     outline: none;
     cursor: pointer;
   }

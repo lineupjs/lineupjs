@@ -4,7 +4,7 @@
 
 @include exports('lineupjs/taggle/switcher') {
   div.#{$lu_css_prefix}-rule-button-chooser {
-    padding: 0.5em 0.5em 0;
+    padding: 0.5em 0.5em 0 1em;
     flex: 0 0 auto;
     cursor: pointer;
     display: flex;
