@@ -2,6 +2,7 @@ import {MIN_LABEL_WIDTH} from '../config';
 import {dragAble, dropAble, IDropResult} from '../internal/dnd';
 import {equalArrays} from '../internal/utils';
 import {createNestedDesc, createStackDesc, isCategoricalColumn, isNumberColumn} from '../model';
+import {categoryOf} from '../model/annotations';
 import Column from '../model/Column';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
@@ -65,6 +66,8 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 export function updateHeader(node: HTMLElement, col: Column) {
   node.querySelector('.lu-label')!.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label;
   node.title = toFullTooltip(col);
+  node.dataset.type = col.desc.type;
+  node.dataset.typeCat = categoryOf(Object.getPrototypeOf(col).constructor).name;
 
   const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
   if (sort) {

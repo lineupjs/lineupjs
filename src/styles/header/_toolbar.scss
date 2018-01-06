@@ -68,7 +68,7 @@
       content: $lu_icon_code_fork;
     }
 
-    &[title^='Sort by']::before {
+    &[title^='Sort']::before {
       content: $lu_icon_sort;
     }
 
@@ -76,14 +76,11 @@
       content: $lu_icon_exchange;
     }
 
-    &[title^='Edit Link Pattern']::before {
+    &[title^='Edit Pattern']::before {
       content: $lu_icon_external_link;
     }
 
-    &[title^='Sort Group by']::before {
-      content: $lu_icon_sort;
-    }
-
+    &[title^='Reduce by']::before,
     &[title^='Edit Combine Script']::before {
       content: $lu_icon_gears;
     }

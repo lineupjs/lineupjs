@@ -10,15 +10,15 @@ export function SupportType() {
 }
 
 export class Categories {
-  readonly string = {label: 'label', order: 1};
-  readonly categorical = {label: 'categorical', order: 2};
-  readonly number = {label: 'numerical', order: 3};
-  readonly date = {label: 'date', order: 4};
-  readonly array = {label: 'matrix', order: 5};
-  readonly map = {label: 'map', order: 6};
-  readonly composite = {label: 'combined', order: 7};
-  readonly support = {label: 'support', order: 8};
-  readonly other = {label: 'others', order: 9};
+  readonly string = {label: 'label', order: 1, name: 'string'};
+  readonly categorical = {label: 'categorical', order: 2, name: 'categorical'};
+  readonly number = {label: 'numerical', order: 3, name: 'number'};
+  readonly date = {label: 'date', order: 4, name: 'date'};
+  readonly array = {label: 'matrix', order: 5, name: 'array'};
+  readonly map = {label: 'map', order: 6, name: 'map'};
+  readonly composite = {label: 'combined', order: 7, name: 'composite'};
+  readonly support = {label: 'support', order: 8, name: 'support'};
+  readonly other = {label: 'others', order: 9, name: 'other'};
 }
 
 export const categories = new Categories();
