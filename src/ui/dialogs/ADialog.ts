@@ -38,7 +38,7 @@ abstract class ADialog {
     if (this.build(this.node) === false) {
       return;
     }
-    const parent = this.attachment.ownerDocument.body;
+    const parent = <HTMLElement>this.attachment.closest('.lu')!;
 
     if (this.options.title) {
       this.node.insertAdjacentHTML('afterbegin', `<h4>${this.options.title}</h4>`);

@@ -1,4 +1,4 @@
-import {MIN_LABEL_WIDTH} from '../config';
+import {HOVER_DELAY_SHOW_DETAIL, MIN_LABEL_WIDTH} from '../config';
 import {dragAble, dropAble, IDropResult} from '../internal/dnd';
 import {equalArrays} from '../internal/utils';
 import {createNestedDesc, createStackDesc, isCategoricalColumn, isNumberColumn} from '../model';
@@ -9,6 +9,7 @@ import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
 import Ranking from '../model/Ranking';
 import {IRankingHeaderContext} from './interfaces';
 import toolbarActions, {IOnClickHandler, more} from './toolbar';
+import Popper from 'popper.js';
 
 
 /**
@@ -44,6 +45,9 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="lu-spacing"></div>
     <div class="lu-handle"></div>
   `;
+
+  addTooltip(node, col);
+
   createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
 
   toggleToolbarIcons(node, col);
@@ -64,10 +68,11 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 }
 
 export function updateHeader(node: HTMLElement, col: Column) {
-  node.querySelector('.lu-label')!.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label;
-  node.title = toFullTooltip(col);
+  const label = <HTMLElement>node.querySelector('.lu-label')!;
+  label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label;
+  node.title = col.label;
   node.dataset.type = col.desc.type;
-  node.dataset.typeCat = categoryOf(Object.getPrototypeOf(col).constructor).name;
+  node.dataset.typeCat = categoryOf(col).name;
 
   const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
   if (sort) {
@@ -147,6 +152,52 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
       return a;
     }, 0);
     icon.classList.toggle('hidden', (currentWidth > availableWidth)); // hide icons if necessary
+  });
+}
+
+
+function addTooltip(node: HTMLElement, col: Column) {
+  let timer = -1;
+  let popper: Popper|null = null;
+
+  const showTooltip = () => {
+    timer = -1;
+    // no tooltip if no description
+    if (col.description.length <= 0) {
+      return;
+    }
+    const parent = <HTMLElement>node.closest('.lu')!;
+    parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
+        <div x-arrow></div>
+        <h4 class="lu-label">${col.label}</h4>
+        <p>${col.description.replace('\n',`<br/>`)}</p>
+    </div>`);
+    popper = new Popper(node, parent.lastElementChild!, {
+      removeOnDestroy: true,
+      placement: 'auto',
+      modifiers: {
+        flip: {
+          enabled: false
+        },
+        preventOverflow: {
+          enabled: false
+        }
+      }
+    });
+  };
+
+  node.addEventListener('mouseenter', () => {
+    timer = self.setTimeout(showTooltip, HOVER_DELAY_SHOW_DETAIL);
+  });
+  node.addEventListener('mouseleave', () => {
+    if (timer >= 0) {
+      clearTimeout(timer);
+      timer = -1;
+    }
+    if (popper) {
+      popper.destroy();
+      popper = null;
+    }
   });
 }
 

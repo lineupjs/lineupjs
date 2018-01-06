@@ -1,55 +1,58 @@
-@import '../vars';
-@import '../icons/index';
+@import './vars';
+@import './icons/index';
 
-.#{$lu_css_prefix}-side-panel {
-  .#{$lu_css_prefix}-label {
-    padding: 0 0 0 0.2em;
+.#{$lu_css_prefix} {
+  span[data-type-cat]::before,
+  [data-type-cat] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icons();
+
+    color: $lu_toolbar_color_base2;
+    width: 1.2em;
+    content: '';
   }
 
-  .#{$lu_css_prefix}-label,
-  .#{$lu_css_prefix}-search-item > span,
-  .#{$lu_css_prefix}-search-group > span {
-    &::before {
-      @include lu_custom_icons();
-
-      color: $lu_toolbar_color_base2;
-      width: 1.2em;
-      content: '';
-    }
-  }
-
-  .#{$lu_css_prefix}-search [data-type-cat='string']::before,
+  span[data-type-cat='string']::before,
   [data-type-cat='string'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_string, string);
   }
 
-  .#{$lu_css_prefix}-search [data-type-cat='categorical']::before,
+  span[data-type-cat='categorical']::before,
   [data-type-cat='categorical'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_categorical, categorical);
   }
 
-  .#{$lu_css_prefix}-search [data-type-cat='number']::before,
+  span[data-type-cat='number']::before,
   [data-type='number'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_numerical, numerical);
   }
 
-  .#{$lu_css_prefix}-search [data-type-cat='date']::before,
+  span[data-type-cat='date']::before,
   [data-type='date'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_date, date);
   }
 
-  .#{$lu_css_prefix}-search [data-type-cat='array']::before,
+  span[data-type-cat='array']::before,
   [data-type='array'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_matrix, matrix);
   }
 
-  .#{$lu_css_prefix}-search [data-type-cat='map']::before,
+  span[data-type-cat='map']::before,
   [data-type-cat='map'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_map, map);
   }
 
-  .#{$lu_css_prefix}-search [data-type-cat='composite']::before,
+  span[data-type-cat='composite']::before,
   [data-type-cat='composite'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_composite, composite);
+  }
+
+  span[data-type-cat='support']::before,
+  [data-type-cat='support'] .#{$lu_css_prefix}-label::before {
+    display: none;
+  }
+
+  span[data-type-cat='other']::before,
+  [data-type-cat='other'] .#{$lu_css_prefix}-label::before {
+    display: none;
   }
 }

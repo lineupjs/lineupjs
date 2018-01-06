@@ -38,8 +38,8 @@ export function isSupportType(col: Column) {
   return Reflect.hasMetadata(supportType, clazz);
 }
 
-export function categoryOf(col: typeof Column) {
-  const cat = <keyof Categories>Reflect.getMetadata(category, col) || 'other';
+export function categoryOf(col: (typeof Column)|Column) {
+  const cat = <keyof Categories>Reflect.getMetadata(category, col instanceof Column ? Object.getPrototypeOf(col).constructor : col) || 'other';
   return categories[cat] || categories.other;
 }
 

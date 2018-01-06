@@ -19,7 +19,7 @@ export default class RenameDialog extends ADialog {
     node.insertAdjacentHTML('beforeend', `
       <input type="text" value="${this.column.label}" required autofocus placeholder="name">
       <input type="color" value="${this.column.color}" required placeholder="color">
-      <textarea rows="5">${this.column.description}</textarea>`);
+      <textarea rows="5" placeholder="Description">${this.column.description}</textarea>`);
   }
 
   protected reset() {

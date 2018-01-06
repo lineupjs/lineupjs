@@ -6,6 +6,10 @@
   max-width: 26em;
   min-width: 19em;
 
+  .#{$lu_css_prefix}-label {
+    padding: 0 0 0 0.2em;
+  }
+
   > header {
     flex: 0 0 auto;
     text-align: center;
@@ -44,5 +48,4 @@
 
 @import './search';
 @import './entry';
-@import './panel';
 
