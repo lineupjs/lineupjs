@@ -1,7 +1,7 @@
 import {MIN_LABEL_WIDTH} from '../config';
 import {dragAble, dropAble, IDropResult} from '../internal/dnd';
 import {equalArrays} from '../internal/utils';
-import {createNestedDesc, createStackDesc, isCategoricalColumn, isNumberColumn, isSupportType} from '../model';
+import {createNestedDesc, createStackDesc, isCategoricalColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';

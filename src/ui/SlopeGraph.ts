@@ -161,8 +161,9 @@ export default class SlopeGraph implements ITableSection {
   }
 
   destroy() {
-    this.node.remove();
+    this.header.remove();
     this.body.parentElement!.removeEventListener('scroll', this.scrollListener);
+    this.body.remove();
   }
 
   rebuild(left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, right: (IGroupItem | IGroupData)[], rightContext: IExceptionContext) {

@@ -235,7 +235,7 @@ export default class EngineRenderer extends AEventDispatcher {
       return; // error
     }
     const section = this.rankings.splice(index, 1)[0]!;
-    const slope = this.slopeGraphs.splice(index - 1, 1)[0];
+    const slope = this.slopeGraphs.splice(index === 0 ? index : index - 1, 1)[0];
     this.table.remove(section);
     if (slope) {
       this.table.remove(slope);
