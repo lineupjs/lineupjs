@@ -7,7 +7,8 @@ import {equalArrays, fixCSS} from '../internal/utils';
 import Column, {IColumnParent, IFlatColumn} from './Column';
 import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
 import {isCategoricalColumn} from './ICategoricalColumn';
-import {IDataRow, IGroupData, isSupportType} from './interfaces';
+import {IDataRow, IGroupData} from './interfaces';
+import {isSupportType} from './annotations';
 import StringColumn from './StringColumn';
 
 export interface ISortCriteria {
@@ -468,7 +469,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
     this.fire([Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index);
 
-    if (this.sortCriteria.length === 0 && !isSupportType(col.desc)) {
+    if (this.sortCriteria.length === 0 && !isSupportType(col)) {
       this.sortBy(col, col instanceof StringColumn);
     }
     return col;
@@ -551,7 +552,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       if (this.sortCriteria.length > 0) {
         this.sortBy(this.sortCriteria[0].col);
       } else {
-        const next = this.columns.filter((d) => d !== col && !isSupportType(d.desc))[0];
+        const next = this.columns.filter((d) => d !== col && !isSupportType(d))[0];
         this.sortBy(next ? next : null);
       }
     } else if (isSortCriteria > 0) {

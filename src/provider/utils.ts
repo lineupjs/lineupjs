@@ -106,7 +106,7 @@ export interface IExportOptions {
    * filter specific column types, default: exclude all support types (selection, action, rank)
    * @param col the column description to filter
    */
-  filter: (col: IColumnDesc) => boolean; //!isSupportType
+  filter: (col: Column) => boolean; //!isSupportType
 
   /**
    * whether the description should be part of the column header
@@ -128,7 +128,7 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
     header: true,
     quote: false,
     quoteChar: '"',
-    filter: (c: IColumnDesc) => !isSupportType(c),
+    filter: (c: Column) => !isSupportType(c),
     verboseColumnHeaders: false
   }, options);
 
@@ -142,7 +142,7 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
     return l;
   }
 
-  const columns = ranking.flatColumns.filter((c) => opts.filter!(c.desc));
+  const columns = ranking.flatColumns.filter((c) => opts.filter(c));
   const order = ranking.getOrder();
 
   const r: string[] = [];

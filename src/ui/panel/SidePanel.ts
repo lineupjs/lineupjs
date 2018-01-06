@@ -204,7 +204,7 @@ export default class SidePanel {
       ranking.flatColumns.forEach((col) => {
         const key = col.desc;
         // just if not already part of
-        if (referenceColumns.has(key) || isSupportType(key)) {
+        if (referenceColumns.has(key) || isSupportType(col)) {
           return;
         }
         referenceColumns.set(key, col);

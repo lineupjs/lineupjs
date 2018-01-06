@@ -492,9 +492,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }
     const r = this.pushRanking();
     this.getColumns().forEach((col) => {
-      if (!isSupportType(col)) {
-        this.push(r, col);
+      const c = this.create(col);
+      if (!c || isSupportType(c)) {
+        return;
       }
+      r.push(c);
     });
   }
 
