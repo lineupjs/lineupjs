@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column from './Column';

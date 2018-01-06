@@ -1,8 +1,4 @@
 /**
- * Created by Samuel Gratzl on 12.09.2017.
- */
-
-/**
  * a set that preserves the insertion order
  */
 export default class OrderedSet<T> implements Iterable<T> {

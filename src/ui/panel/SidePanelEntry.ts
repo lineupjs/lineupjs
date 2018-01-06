@@ -1,6 +1,3 @@
-/**
- * Created by Samuel Gratzl on 05.09.2017.
- */
 import {default as Column, IColumnDesc} from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
 import SidePanelEntryVis from './SidePanelEntryVis';

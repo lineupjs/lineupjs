@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {computeHist, computeStats} from '../internal/math';
 import Column, {ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn} from '../model';
 import {defaultGroup, IOrderedGroup} from '../model/Group';

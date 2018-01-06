@@ -1,7 +1,3 @@
-/**
- * Created by Samuel Gratzl on 06.08.2015.
- */
-
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {equalArrays, fixCSS} from '../internal/utils';
 import Column, {IColumnParent, IFlatColumn} from './Column';

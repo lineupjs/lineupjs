@@ -1,7 +1,3 @@
-/**
- * Created by Samuel Gratzl on 06.08.2015.
- */
-
 import AEventDispatcher from '../internal/AEventDispatcher';
 import {similar} from '../internal/math';
 import {fixCSS} from '../internal/utils';

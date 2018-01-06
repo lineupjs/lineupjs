@@ -1,6 +1,3 @@
-/**
- * Created by Samuel Gratzl on 28.06.2017.
- */
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';

@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {suffix} from '../internal/AEventDispatcher';
 import {Category, toolbar} from './annotations';
 import Column, {IColumnParent, IFlatColumn} from './Column';

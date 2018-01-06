@@ -1,8 +1,3 @@
-/**
- * Created by Samuel Gratzl on 17.11.2017.
- */
-
-
 import {suffix} from '../internal/AEventDispatcher';
 import {toolbar} from './annotations';
 import Column, {IColumnDesc} from './Column';

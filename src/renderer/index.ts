@@ -1,7 +1,3 @@
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
 import Column from '../model/Column';
 import ActionRenderer from './ActionRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';

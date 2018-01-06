@@ -1,9 +1,6 @@
 import AEventDispatcher from '../internal/AEventDispatcher';
 import OrderedSet from '../internal/OrderedSet';
 import {IGroupData, IGroupItem, isGroup} from '../model';
-/**
- * Created by Samuel Gratzl on 11.10.2017.
- */
 import {IDataProvider} from '../provider/ADataProvider';
 
 interface IPoint {

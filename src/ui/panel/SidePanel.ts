@@ -1,7 +1,3 @@
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
 import {suffix} from '../../internal/AEventDispatcher';
 import {
   createImpositionDesc, createNestedDesc, createReduceDesc, createScriptDesc, createStackDesc,

@@ -1,7 +1,4 @@
 import {ILineUpOptions} from './interfaces';
-/**
- * Created by Samuel Gratzl on 15.08.2017.
- */
 import {renderers as defaultRenderers} from './renderer';
 import {icons} from './ui/toolbar';
 

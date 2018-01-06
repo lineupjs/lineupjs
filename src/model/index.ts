@@ -1,7 +1,3 @@
-/**
- * Created by Samuel Gratzl on 06.08.2015.
- */
-
 import ActionColumn from './ActionColumn';
 import AggregateGroupColumn from './AggregateGroupColumn';
 import AnnotateColumn from './AnnotateColumn';

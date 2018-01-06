@@ -5,11 +5,6 @@ import {
 import {IExceptionContext} from 'lineupengine/src/logic';
 import {IGroupData, IGroupItem, isGroup} from '../model';
 
-/**
- * Created by Samuel Gratzl on 25.10.2017.
- */
-
-
 export interface IGroupLookUp {
   item2groupIndex: Map<number, number>;
   group2firstItemIndex: Map<string, number>;

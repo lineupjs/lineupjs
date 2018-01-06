@@ -1,6 +1,3 @@
-/**
- * Created by bikramkawan on 24/11/2016.
- */
 import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';

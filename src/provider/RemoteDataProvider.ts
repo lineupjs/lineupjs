@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import Column, {IColumnDesc, IDataRow} from '../model';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';

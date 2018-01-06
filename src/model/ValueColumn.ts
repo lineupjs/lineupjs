@@ -1,6 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
 import Column from './Column';
 import {IColumnDesc, IDataRow} from './interfaces';
 import Ranking from './Ranking';

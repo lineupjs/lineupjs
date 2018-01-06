@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {Category, SupportType, toolbar} from './annotations';
 import {IDataRow, IGroup} from './interfaces';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';

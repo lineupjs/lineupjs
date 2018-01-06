@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ICategoricalDesc, ICategory, toCategories, toCategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';

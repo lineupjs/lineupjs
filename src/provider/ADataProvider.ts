@@ -1,7 +1,3 @@
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';

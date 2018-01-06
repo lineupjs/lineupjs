@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {

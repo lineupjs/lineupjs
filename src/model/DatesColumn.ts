@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {timeFormat, timeParse} from 'd3-time-format';
 import {median, min, max} from 'd3-array';
 import {toolbar} from './annotations';

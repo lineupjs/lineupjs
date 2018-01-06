@@ -1,6 +1,3 @@
-/**
- * Created by Samuel Gratzl on 27.09.2017.
- */
 import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
 import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
 import GridStyleManager, {setColumn} from 'lineupengine/src/style/GridStyleManager';

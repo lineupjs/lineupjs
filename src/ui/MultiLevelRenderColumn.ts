@@ -1,8 +1,5 @@
 import {StyleManager} from 'lineupengine/src/style';
 import {round} from '../internal/math';
-/**
- * Created by Samuel Gratzl on 25.07.2017.
- */
 import Column from '../model/Column';
 import {IMultiLevelColumn} from '../model/CompositeColumn';
 import {ISummaryRenderer} from '../renderer/interfaces';

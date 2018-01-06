@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import StringColumn from './StringColumn';

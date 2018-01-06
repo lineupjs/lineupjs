@@ -1,8 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-
 import {Category, SupportType} from './annotations';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 

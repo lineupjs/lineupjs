@@ -1,7 +1,3 @@
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
 
 export function findOption(options: any) {
   return (key: string, defaultValue: any): any => {

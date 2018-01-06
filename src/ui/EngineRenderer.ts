@@ -3,9 +3,6 @@ import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer'
 import {ILineUpOptions} from '../interfaces';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
-/**
- * Created by Samuel Gratzl on 18.07.2017.
- */
 import {findOption} from '../internal/utils';
 import {
   Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup,

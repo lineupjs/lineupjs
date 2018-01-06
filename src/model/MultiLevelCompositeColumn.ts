@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {similar} from '../internal/math';
 import {toolbar} from './annotations';
 import Column, {IColumnDesc, IFlatColumn} from './Column';

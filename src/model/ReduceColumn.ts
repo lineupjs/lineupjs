@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {median, quantile} from 'd3-array';
 import {toolbar} from './annotations';
 import Column from './Column';

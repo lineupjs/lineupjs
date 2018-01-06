@@ -1,7 +1,3 @@
-/**
- * Created by Samuel Gratzl on 10.08.2017.
- */
-
 import {extent, histogram, mean} from 'd3-array';
 import {ICategory} from '../model';
 

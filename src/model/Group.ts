@@ -1,6 +1,3 @@
-/**
- * Created by Samuel Gratzl on 24.05.2017.
- */
 import {IGroup, IGroupParent} from './interfaces';
 
 

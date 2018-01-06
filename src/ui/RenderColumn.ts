@@ -1,6 +1,3 @@
-/**
- * Created by Samuel Gratzl on 25.07.2017.
- */
 import {IColumn} from 'lineupengine/src';
 import Column from '../model/Column';
 import {ICellRenderer, IGroupCellRenderer} from '../renderer';

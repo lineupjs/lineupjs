@@ -1,6 +1,3 @@
-/**
- * Created by Samuel Gratzl on 25.10.2017.
- */
 import AEventDispatcher from '../../internal/AEventDispatcher';
 
 export interface IItem {

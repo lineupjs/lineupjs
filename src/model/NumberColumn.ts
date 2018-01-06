@@ -1,7 +1,3 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import {format} from 'd3-format';
 import {equalArrays} from '../internal/utils';
 import {Category, toolbar} from './annotations';

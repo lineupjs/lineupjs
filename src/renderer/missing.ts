@@ -1,6 +1,3 @@
-/**
- * Created by Samuel Gratzl on 11.10.2017.
- */
 import {IDataRow} from '../model';
 import Column from '../model/Column';
 import {CANVAS_HEIGHT, DASH} from '../styles';

@@ -1,9 +1,6 @@
 import {extent} from 'd3-array';
 import {schemeCategory10} from 'd3-scale';
 import {isNumberColumn, isSupportType} from '../model';
-/**
- * Created by Samuel Gratzl on 15.08.2017.
- */
 import {default as Column, IColumnDesc} from '../model/Column';
 import Ranking from '../model/Ranking';
 

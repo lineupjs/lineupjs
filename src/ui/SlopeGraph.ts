@@ -1,6 +1,3 @@
-/**
- * Created by Samuel Gratzl on 21.09.2017.
- */
 import {IExceptionContext, range} from 'lineupengine/src/logic';
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../model';
