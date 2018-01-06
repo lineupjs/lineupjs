@@ -67,49 +67,59 @@ export class LazyBoxPlotData implements IStatistics {
    * lazy compute sorted array
    * @returns {number[]}
    */
+  @cached()
   private get sorted(): number[] {
-    return replace(this, 'sorted', this.values.slice().sort(ascending));
+    return this.values.slice().sort(ascending);
   }
 
   private map(v: number | undefined) {
     return this.scale && v != null ? this.scale.apply(v!) : v!;
   }
 
+  @cached()
   get hist() {
     if (!this.histGen) {
       return [];
     }
-    return replace(this, 'hist', this.histGen(this.values));
+    return this.histGen(this.values);
   }
 
+  @cached()
   get maxBin() {
-    return replace(this, 'maxBin', Math.max(...this.hist.map((d) => d.length)));
+    return Math.max(...this.hist.map((d) => d.length));
   }
 
+  @cached()
   get min() {
-    return replace(this, 'min', this.map(Math.min(...this.values)));
+    return this.map(Math.min(...this.values));
   }
 
+  @cached()
   get max() {
-    return replace(this, 'min', this.map(Math.max(...this.values)));
+    return this.map(Math.max(...this.values));
   }
 
+  @cached()
   get median() {
-    return replace(this, 'min', this.map(median(this.sorted)));
+    return this.map(median(this.sorted));
   }
 
+  @cached()
   get q1() {
-    return replace(this, 'min', this.map(quantile(this.sorted, 0.25)));
+    return this.map(quantile(this.sorted, 0.25));
   }
 
+  @cached()
   get q3() {
-    return replace(this, 'min', this.map(quantile(this.sorted, 0.75)));
+    return this.map(quantile(this.sorted, 0.75));
   }
 
+  @cached()
   get mean() {
-    return replace(this, 'min', this.map(mean(this.values)));
+    return this.map(mean(this.values));
   }
 
+  @cached()
   get outlier() {
     const q1 = this.q1;
     const q3 = this.q3;
@@ -120,13 +130,27 @@ export class LazyBoxPlotData implements IStatistics {
     if (this.scale) {
       outlier = outlier.map((v) => this.scale!.apply(v));
     }
-    return replace(this, 'outlier', outlier);
+    return outlier;
   }
 }
 
-function replace<T>(obj: any, attr: string, value: T): T {
-  obj[attr] = value;
-  return value;
+/**
+ * cache the value in a hidden __ variable
+ */
+function cached() {
+  return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const getter = descriptor.get!;
+    const cacheKey = `__${propertyKey}`;
+    descriptor.get = function(this: any) {
+      if (this.hasOwnProperty(cacheKey)) {
+        return this[cacheKey];
+      }
+      const value = getter.call(this);
+      this[cacheKey] = value;
+      return value;
+    };
+    return descriptor;
+  };
 }
 
 
