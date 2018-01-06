@@ -2,6 +2,7 @@ import Column from '../../model/Column';
 import {addIconDOM, createToolbarMenuItems} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog from './ADialog';
+import {removeAllPopups} from './manager';
 
 
 export default class MoreColumnOptionsDialog extends ADialog {
@@ -10,6 +11,11 @@ export default class MoreColumnOptionsDialog extends ADialog {
     super(attachment, {
       hideOnMoveOutside: true
     });
+  }
+
+  open() {
+    removeAllPopups(); // close all open once
+    super.open();
   }
 
   protected build(node: HTMLElement) {

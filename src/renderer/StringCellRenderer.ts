@@ -60,23 +60,40 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 
   private static interactiveSummary(col: StringColumn, node: HTMLElement) {
+    const form = <HTMLFormElement>node;
     const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
 
     const update = () => {
+      input.disabled = filterMissing.checked;
+      isRegex.disabled = filterMissing.checked;
+
       if (filterMissing.checked) {
         col.setFilter(StringColumn.FILTER_MISSING);
         return;
       }
-      col.setFilter(isRegex ? new RegExp(input.value) : input.value);
+      const valid = input.value.trim();
+      filterMissing.disabled = valid.length > 0;
+      if (valid.length <= 0) {
+        col.setFilter(null);
+        return;
+      }
+      col.setFilter(isRegex.checked ? new RegExp(input.value) : input.value);
     };
 
     filterMissing.onchange = update;
     input.onchange = update;
     isRegex.onchange = update;
+    form.onsubmit = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      update();
+      return false;
+    };
 
-    return () => {
+    return (actCol: StringColumn) => {
+      col = actCol;
       let bak = col.getFilter() || '';
       const bakMissing = bak === StringColumn.FILTER_MISSING;
       if (bakMissing) {
@@ -85,6 +102,9 @@ export default class StringCellRenderer implements ICellRendererFactory {
       filterMissing.checked = bakMissing;
       input.value = bak instanceof RegExp ? bak.source : bak;
       isRegex.checked = bak instanceof RegExp;
+      filterMissing.disabled = input.value.trim().length > 0;
+      input.disabled = filterMissing.checked;
+      isRegex.disabled = filterMissing.checked;
     };
   }
 
@@ -94,7 +114,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
         template: `<div></div>`,
         update: (node: HTMLElement) => {
           const filter = col.getFilter() || '';
-          node.textContent = filter === StringColumn.FILTER_MISSING ? '' : String(filter);
+          node.textContent = toString(filter);
         }
       };
     }
@@ -103,18 +123,28 @@ export default class StringCellRenderer implements ICellRendererFactory {
     if (bakMissing) {
       bak = '';
     }
-    let update: () => void;
+    let update: (col: StringColumn) => void;
 
     return {
-      template: `<div><input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
+      template: `<form><input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
           <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
-          ${filterMissingMarkup(bakMissing)}</div>`,
+          ${filterMissingMarkup(bakMissing)}</form>`,
       update: (node: HTMLElement) => {
         if (!update) {
           update = StringCellRenderer.interactiveSummary(col, node);
         }
-        update();
+        update(col);
       }
     };
   }
+}
+
+function toString(filter: null|string|RegExp) {
+  if (filter == null || filter === '' || filter === StringColumn.FILTER_MISSING) {
+    return '';
+  }
+  if (filter instanceof RegExp) {
+    return filter.source;
+  }
+  return String(filter);
 }
