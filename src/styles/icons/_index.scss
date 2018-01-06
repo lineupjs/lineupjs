@@ -60,7 +60,7 @@ $lu_icon_window_restore: '\f2d2';
     @include fa_icon();
   } @else {
     display: inline-block;
-    font: normal normal normal 14px/1 lu-font; // shortening font declaration
+    font: normal normal normal 14px/1 lu-font, serif; // shortening font declaration
     font-size: inherit; // can't have font-size inherit on line above, so need to override
     text-rendering: auto; // optimizelegibility throws things off #1094
     -webkit-font-smoothing: antialiased;
