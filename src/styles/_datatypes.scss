@@ -11,6 +11,16 @@
     content: '';
   }
 
+  span[data-type-cat='composite']::before,
+  [data-type-cat='composite'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_composite, composite);
+  }
+
+  span[data-type-cat='map']::before,
+  [data-type-cat='map'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_map, map);
+  }
+
   span[data-type-cat='string']::before,
   [data-type-cat='string'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_string, string);
@@ -34,16 +44,6 @@
   span[data-type-cat='array']::before,
   [data-type='array'] .#{$lu_css_prefix}-label::before {
     @include lu_custom_icon($lu_icon_type_matrix, matrix);
-  }
-
-  span[data-type-cat='map']::before,
-  [data-type-cat='map'] .#{$lu_css_prefix}-label::before {
-    @include lu_custom_icon($lu_icon_type_map, map);
-  }
-
-  span[data-type-cat='composite']::before,
-  [data-type-cat='composite'] .#{$lu_css_prefix}-label::before {
-    @include lu_custom_icon($lu_icon_type_composite, composite);
   }
 
   span[data-type-cat='support']::before,

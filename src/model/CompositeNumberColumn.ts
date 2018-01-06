@@ -42,6 +42,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
     this.setDefaultRenderer('interleaving');
     this.setDefaultGroupRenderer('interleaving');
+    this.setDefaultSummaryRenderer('interleaving');
   }
 
 

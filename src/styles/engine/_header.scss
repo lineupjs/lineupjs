@@ -23,7 +23,7 @@ section.#{$lu_css_prefix}-header {
   }
 
   &:hover {
-    background-color: $lu_hover_color !important;
+    background-color: $lu_hover_header_color !important;
 
     > .#{$lu_css_prefix}-toolbar {
       color: $lu_toolbar_color_base2;
@@ -54,6 +54,10 @@ section.#{$lu_css_prefix}-header {
   > .#{$lu_css_prefix}-summary {
     height: 2em;
     margin-right: $lu-engine_grip_gap;
+
+    &:empty {
+      display: none;
+    }
   }
 
   > .#{$lu_css_prefix}-nested {

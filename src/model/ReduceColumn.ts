@@ -10,7 +10,7 @@ import {EAdvancedSortMethod} from './INumberColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Reduce (Min, Max, ...)') {
+export function createDesc(label: string = 'Reduce') {
   return {type: 'reduce', label};
 }
 
@@ -34,6 +34,16 @@ export default class ReduceColumn extends CompositeNumberColumn {
     super(id, desc);
     this.reduce = desc.reduce || EAdvancedSortMethod.max;
     this.setDefaultRenderer('interleaving');
+    this.setDefaultGroupRenderer('interleaving');
+    this.setDefaultSummaryRenderer('interleaving');
+  }
+
+  get label() {
+    const l = super.label;
+    if (l !== 'Reduce') {
+      return l;
+    }
+    return `${this.reduce[0].toUpperCase()}${this.reduce.slice(1)}(${this.children.map((d) => d.label).join(', ')})`;
   }
 
   getColor(row: IDataRow) {

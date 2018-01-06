@@ -120,7 +120,7 @@
       content: $lu_icon_search;
     }
 
-    &[title='Edit Weights']::before {
+    &[title^='Edit Weights']::before {
       content: $lu_icon_tasks;
     }
 

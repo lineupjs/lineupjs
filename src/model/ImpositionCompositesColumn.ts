@@ -32,6 +32,18 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     this.setDefaultGroupRenderer('numbers');
   }
 
+  get label() {
+    const l = super.label;
+    const c = this._children;
+    if (l !== 'Imposition' || c.length === 0) {
+      return l;
+    }
+    if (c.length === 1) {
+      return c[0].label;
+    }
+    return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
+  }
+
   private get wrapper(): INumbersColumn|null {
     const c = this._children;
     return c.length === 0 ? null : <INumbersColumn>c[0];

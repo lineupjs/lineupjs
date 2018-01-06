@@ -1,11 +1,11 @@
 import {StyleManager} from 'lineupengine/src/style';
-import {round} from '../internal/math';
+import {round} from '../internal';
 import Column from '../model/Column';
 import {IMultiLevelColumn} from '../model/CompositeColumn';
 import {ISummaryRenderer} from '../renderer/interfaces';
 import {gridClass} from '../renderer/MultiLevelCellRenderer';
 import {COLUMN_PADDING} from '../styles';
-import {createHeader} from './header';
+import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import RenderColumn from './RenderColumn';
 
@@ -32,12 +32,17 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     wrapper.classList.add(gridClass(this.c));
     node.appendChild(wrapper);
 
+    this.summaries.splice(0, this.summaries.length);
     this.mc.children.forEach((cc, i) => {
       const n = createHeader(cc, this.ctx);
       n.style.marginLeft = i > 0 ? `${COLUMN_PADDING * 2}px` : null;
       n.classList.add('lu-header');
       (<any>n.style).gridColumnStart = (i + 1).toString();
+      wrapper.appendChild(n);
 
+      if (!this.renderers.summary) {
+        return;
+      }
       const summary = this.ctx.summaryRenderer(cc, false);
       n.insertAdjacentHTML('beforeend', summary.template);
       const summaryNode = <HTMLElement>n.lastElementChild!;
@@ -45,8 +50,9 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       summaryNode.dataset.renderer = cc.getSummaryRenderer();
       this.summaries.push(summary);
       summary.update(summaryNode, this.ctx.statsOf(<any>cc));
-      wrapper.appendChild(n);
     });
+
+    this.updateNested(wrapper);
 
     return node;
   }
@@ -58,6 +64,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     if (!wrapper) {
       return node; // too early
     }
+    node.appendChild(wrapper); // ensure the last one
     this.updateNested(wrapper);
     return node;
   }
@@ -79,18 +86,26 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     const children = <HTMLElement[]>Array.from(wrapper.children);
     sub.forEach((c, i) => {
       const node = children[i];
+      updateHeader(node, c);
       node.classList.toggle('lu-filtered', c.isFiltered());
+
+      if (!this.renderers.summary) {
+        return;
+      }
       let summary = <HTMLElement>node.querySelector('.lu-summary')!;
       const oldRenderer = summary.dataset.renderer;
       const currentRenderer = c.getSummaryRenderer();
       if (oldRenderer !== currentRenderer) {
         const renderer = this.ctx.summaryRenderer(c, false);
+        summary.remove();
         summary.innerHTML = renderer.template;
-        summary = <HTMLElement>node.firstElementChild!;
+        summary = <HTMLElement>summary.firstElementChild!;
+        summary.classList.add('lu-summary');
         summary.dataset.renderer = currentRenderer;
         this.summaries[i] = renderer;
+        node.appendChild(summary);
       }
-      this.summaries[i].update(summary, this.ctx.statsOf(<any>this.c));
+      this.summaries[i].update(summary, this.ctx.statsOf(<any>c));
     });
   }
 }

@@ -2,9 +2,11 @@
 
 [data-agg=group] [data-renderer=categorical],
 .#{$lu_css_prefix}-summary[data-renderer=categorical],
+.#{$lu_css_prefix}-summary[data-renderer=interleaving],
 [data-renderer=histogram] {
   display: flex;
   font-size: x-small;
+  flex-direction: row;
 
   > div {
     flex: 1 1 auto;
@@ -77,6 +79,7 @@
 
 [data-renderer=categorical],
 [data-renderer=histogram],
+[data-renderer=interleaving],
 [data-renderer=heatmap],
 [data-renderer=catheatmap] {
   &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {

@@ -1,3 +1,4 @@
+import {round} from '../internal';
 import {similar} from '../internal/math';
 import {toolbar} from './annotations';
 import Column, {IFlatColumn} from './Column';
@@ -48,6 +49,19 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     if (this.getGroupRenderer() === 'interleaving') {
       this.setGroupRenderer('stack');
     }
+    if (this.getSummaryRenderer() === 'interleaving') {
+      this.setSummaryRenderer('default');
+    }
+  }
+
+  get label() {
+    const l = super.label;
+    const c = this._children;
+    if (l !== 'Weighted Sum' || c.length === 0) {
+      return l;
+    }
+    const weights = this.getWeights();
+    return c.map((c, i) => `${c.label} (${round(100 * weights[i], 1)})%`).join(' + ');
   }
 
   protected createEventList() {
