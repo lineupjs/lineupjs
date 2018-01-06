@@ -1,17 +1,13 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData} from '../internal';
 import {IDataRow, IGroup, isNumberColumn} from '../model';
 import {default as BoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
-import {
-  IBoxPlotColumn, IBoxPlotData, INumberColumn, INumbersColumn, isBoxPlotColumn, isNumbersColumn,
-  LazyBoxPlotData
-} from '../model/INumberColumn';
+import {IBoxPlotColumn, INumberColumn, INumbersColumn, isBoxPlotColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumberColumn from '../model/NumberColumn';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {noRenderer} from './utils';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v == null) {
@@ -25,7 +21,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   readonly title = 'Box Plot';
 
   canRender(col: Column, mode: ERenderMode) {
-    return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode === ERenderMode.GROUP));
+    return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));
   }
 
   create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
@@ -100,9 +96,22 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
-    // TODO when IStatistics provides everything for a boxplot
-    return noRenderer;
+  createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, imposer?: IImposer) {
+    return {
+      template: `<div title="">
+                    <div><div></div><div></div></div>
+                 </div>`,
+      update: (n: HTMLElement, hist: IStatistics | null) => {
+        if (hist == null || hist.count === 0) {
+          n.classList.add('lu-missing');
+          return;
+        }
+        n.classList.remove('lu-missing');
+        const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
+
+        renderDOMBoxPlot(n, hist, hist, sort, colorOf(col, null, imposer));
+      }
+    };
   }
 }
 

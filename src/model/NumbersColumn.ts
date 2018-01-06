@@ -1,10 +1,11 @@
+import {LazyBoxPlotData} from '../internal';
 import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
-  isDummyFilter, LazyBoxPlotData, noNumberFilter, restoreFilter
+  isDummyFilter, noNumberFilter, restoreFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,

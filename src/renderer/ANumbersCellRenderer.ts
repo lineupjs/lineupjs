@@ -1,5 +1,6 @@
+import {LazyBoxPlotData} from '../internal';
 import {IDataRow, IGroup, isMissingValue} from '../model';
-import {INumbersColumn, LazyBoxPlotData} from '../model/INumberColumn';
+import {INumbersColumn} from '../model/INumberColumn';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 

@@ -1,5 +1,6 @@
-import {extent, histogram, mean} from 'd3-array';
-import {ICategory} from '../model';
+import {ascending, histogram, HistogramGenerator, mean, median, quantile} from 'd3-array';
+import {ICategory, isMissingValue} from '../model';
+import {IMappingFunction} from '../model/MappingFunction';
 
 export interface INumberBin {
   x0: number;
@@ -7,10 +8,20 @@ export interface INumberBin {
   length: number;
 }
 
-export interface IStatistics {
+export interface IBoxPlotData {
   readonly min: number;
   readonly max: number;
+  readonly median: number;
+  readonly q1: number;
+  readonly q3: number;
+  readonly outlier?: number[];
+}
+
+export interface IAdvancedBoxPlotData extends IBoxPlotData {
   readonly mean: number;
+}
+
+export interface IStatistics extends IAdvancedBoxPlotData {
   readonly count: number;
   readonly maxBin: number;
   readonly hist: INumberBin[];
@@ -33,6 +44,92 @@ export function getNumberOfBins(length: number) {
   return Math.ceil(Math.log(length) / Math.LN2) + 1;
 }
 
+
+/**
+ * helper class to lazily compute box plotdata out of a given number array
+ */
+export class LazyBoxPlotData implements IStatistics {
+  private readonly values: number[];
+
+  readonly missing: number;
+
+  constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: HistogramGenerator<number, number>) {
+    // filter out NaN
+   this.values = values.filter((d) => !isMissingValue(d));
+  this.missing = values.length - this.values.length;
+  }
+
+  get count() {
+    return this.values.length + this.missing;
+  }
+
+  /**
+   * lazy compute sorted array
+   * @returns {number[]}
+   */
+  private get sorted(): number[] {
+    return replace(this, 'sorted', this.values.slice().sort(ascending));
+  }
+
+  private map(v: number | undefined) {
+    return this.scale && v != null ? this.scale.apply(v!) : v!;
+  }
+
+  get hist() {
+    if (!this.histGen) {
+      return [];
+    }
+    return replace(this, 'hist', this.histGen(this.values));
+  }
+
+  get maxBin() {
+    return replace(this, 'maxBin', Math.max(...this.hist.map((d) => d.length)));
+  }
+
+  get min() {
+    return replace(this, 'min', this.map(Math.min(...this.values)));
+  }
+
+  get max() {
+    return replace(this, 'min', this.map(Math.max(...this.values)));
+  }
+
+  get median() {
+    return replace(this, 'min', this.map(median(this.sorted)));
+  }
+
+  get q1() {
+    return replace(this, 'min', this.map(quantile(this.sorted, 0.25)));
+  }
+
+  get q3() {
+    return replace(this, 'min', this.map(quantile(this.sorted, 0.75)));
+  }
+
+  get mean() {
+    return replace(this, 'min', this.map(mean(this.values)));
+  }
+
+  get outlier() {
+    const q1 = this.q1;
+    const q3 = this.q3;
+    const iqr = q3 - q1;
+    const left = q1 - 1.5 * iqr;
+    const right = q3 + 1.5 * iqr;
+    let outlier = this.sorted.filter((v) => (v < left || v > right) && !isMissingValue(v));
+    if (this.scale) {
+      outlier = outlier.map((v) => this.scale!.apply(v));
+    }
+    return replace(this, 'outlier', outlier);
+  }
+}
+
+function replace<T>(obj: any, attr: string, value: T): T {
+  obj[attr] = value;
+  return value;
+}
+
+
 /**
  * computes the simple statistics of an array using d3 histogram
  * @param arr the data array
@@ -48,27 +145,16 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
       min: NaN,
       max: NaN,
       mean: NaN,
+      q1: NaN,
+      q3: NaN,
+      outlier: [],
+      median: NaN,
       count: 0,
       maxBin: 0,
       hist: [],
       missing: 0
     };
   }
-
-  let missingCount = 0;
-  const vs = arr.map((a) => {
-    if (missing(a)) {
-      return NaN;
-    }
-    return acc(a);
-  }).reduce((acc, act) => {
-    if (isNaN(act)) {
-      missingCount++;
-    } else {
-      acc.push(act);
-    }
-    return acc;
-  }, <number[]>[]);
 
   const hist = histogram();
   if (range) {
@@ -79,18 +165,12 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
   } else {
     hist.thresholds(getNumberOfBins(arr.length));
   }
-  const ex = extent(vs);
-  const histData = hist(vs);
-  return {
-    min: ex[0]!,
-    max: ex[1]!,
-    mean: mean(vs)!,
-    count: arr.length,
-    maxBin: Math.max(...histData.map((d) => d.length)),
-    hist: histData,
-    missing: missingCount
-  };
+
+  const values = arr.map((v) => missing(v) ? NaN : acc(v));
+
+  return new LazyBoxPlotData(values, undefined, hist);
 }
+
 
 /**
  * computes a categorical histogram
@@ -121,7 +201,12 @@ export function computeHist<T>(arr: T[], acc: (row: T) => ICategory|null, catego
   };
 }
 
-
+/**
+ * round to the given commas similar to d3.round
+ * @param {number} v
+ * @param {number} precision
+ * @returns {number}
+ */
 export function round(v: number, precision: number = 0) {
   if (precision === 0) {
     return Math.round(v);
@@ -130,6 +215,13 @@ export function round(v: number, precision: number = 0) {
   return Math.round(v * scale) / scale;
 }
 
+/**
+ * compares two number whether they are similar up to delta
+ * @param {number} a first numbre
+ * @param {number} b second number
+ * @param {number} delta
+ * @returns {boolean} a and b are similar
+ */
 export function similar(a: number, b: number, delta = 0.5) {
   if (a === b) {
     return true;

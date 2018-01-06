@@ -1,10 +1,10 @@
 import {format} from 'd3-format';
-import Column from './Column';
+import {IBoxPlotData} from '../internal';
 import {Category, toolbar} from './annotations';
+import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, IBoxPlotData, INumberFilter, isDummyFilter,
-  noNumberFilter,
+  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, isDummyFilter, noNumberFilter,
   restoreFilter
 } from './INumberColumn';
 import {
@@ -20,8 +20,6 @@ export interface IBoxPlotDesc extends IMapAbleDesc {
 }
 
 export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
-
-export {IBoxPlotData} from './INumberColumn';
 
 @toolbar('sortNumbers', 'filterMapped')
 @Category('array')

@@ -1,11 +1,12 @@
-import {ascending, mean, median, quantile} from 'd3-array';
 import {format} from 'd3-format';
-import {similar} from '../internal/math';
+import {IAdvancedBoxPlotData, IBoxPlotData, LazyBoxPlotData, similar} from '../internal';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {IMapAbleColumn, IMappingFunction} from './MappingFunction';
-import {FIRST_IS_NAN, isMissingValue} from './missing';
+import {FIRST_IS_NAN} from './missing';
+
+export {} from '../internal';
 
 
 export interface INumberColumn extends Column {
@@ -57,15 +58,6 @@ export function isNumberColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<INumberColumn>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
-export interface IBoxPlotData {
-  readonly min: number;
-  readonly max: number;
-  readonly median: number;
-  readonly q1: number;
-  readonly q3: number;
-  readonly outlier?: number[];
-}
-
 export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
   const aVal = col.getBoxPlotData(a);
   const bVal = col.getBoxPlotData(b);
@@ -111,10 +103,6 @@ export function isBoxPlotColumn(col: Column): col is IBoxPlotColumn {
   return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
 }
 
-export interface IAdvancedBoxPlotData extends IBoxPlotData {
-  readonly mean: number;
-}
-
 export enum EAdvancedSortMethod {
   min = 'min',
   max = 'max',
@@ -138,77 +126,6 @@ export interface INumbersColumn extends IAdvancedBoxPlotColumn, IArrayColumn<num
 
 export function isNumbersColumn(col: Column): col is INumbersColumn {
   return isBoxPlotColumn(col) && typeof (<INumbersColumn>col).getNumbers === 'function';
-}
-
-
-/**
- * helper class to lazily compute box plotdata out of a given number array
- */
-export class LazyBoxPlotData implements IAdvancedBoxPlotData {
-  private _sorted: number[];
-  private _outlier: number[] | null = null;
-  private readonly values: number[];
-
-  constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>) {
-    // filter out NaN
-    this.values = values.filter((d) => !isMissingValue(d));
-  }
-
-  /**
-   * lazy compute sorted array
-   * @returns {number[]}
-   */
-  private get sorted(): number[] {
-    if (this._sorted == null) {
-      this._sorted = this.values.slice().sort(ascending);
-    }
-    return this._sorted;
-  }
-
-  private map(v: number | undefined) {
-    return this.scale && v != null ? this.scale.apply(v!) : v!;
-  }
-
-  get min() {
-    return this.map(Math.min(...this.values));
-  }
-
-  get max() {
-    return this.map(Math.max(...this.values));
-  }
-
-  get median() {
-    return this.map(median(this.sorted));
-  }
-
-  get q1() {
-    return this.map(quantile(this.sorted, 0.25));
-  }
-
-  get q3() {
-    return this.map(quantile(this.sorted, 0.75));
-  }
-
-  get mean() {
-    return this.map(mean(this.values));
-  }
-
-  get outlier() {
-    if (this._outlier) {
-      return this._outlier;
-    }
-    const q1 = quantile(this.sorted, 0.25)!;
-    const q3 = quantile(this.sorted, 0.75)!;
-    const iqr = q3 - q1;
-    const left = q1 - 1.5 * iqr;
-    const right = q3 + 1.5 * iqr;
-    this._outlier = this.sorted.filter((v) => (v < left || v > right) && !isMissingValue(v));
-    if (this.scale) {
-      this._outlier = this._outlier.map((v) => this.scale!.apply(v));
-    }
-    return this._outlier;
-
-  }
 }
 
 /**
