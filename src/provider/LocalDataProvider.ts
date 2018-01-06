@@ -67,6 +67,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
   }
 
+  getTotalNumberOfRows() {
+    return this.data.length;
+  }
+
 
   protected getMaxGroupColumns() {
     return this.options.maxGroupColumns;

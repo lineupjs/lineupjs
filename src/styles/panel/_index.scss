@@ -22,6 +22,15 @@
     }
   }
 
+  > aside.#{$lu_css_prefix}-stats {
+    font-size: small;
+    padding: 1em 0.5em;
+
+    span {
+      color: $lu_selected_color;
+    }
+  }
+
   > div {
     flex: 1 1 auto;
     position: relative;

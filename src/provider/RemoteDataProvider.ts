@@ -64,6 +64,11 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     Object.assign(this.options, options);
   }
 
+  getTotalNumberOfRows() {
+    // TODO not correct
+    return this.cache.size;
+  }
+
   sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {
     //use the server side to sort
     return this.server.sort(ranking).then((order) => [Object.assign({order}, defaultGroup)]);

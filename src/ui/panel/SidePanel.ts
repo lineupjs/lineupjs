@@ -61,6 +61,7 @@ export default class SidePanel {
 
   private init() {
     this.node.innerHTML = `
+      <aside class="lu-stats"></aside>
       <div><main></main></div>
     `;
     this.initChooser();
@@ -89,7 +90,7 @@ export default class SidePanel {
     const that = this;
     if (old) {
       old.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
-        DataProvider.EVENT_ADD_DESC, DataProvider.EVENT_CLEAR_DESC), null);
+        DataProvider.EVENT_ADD_DESC, DataProvider.EVENT_CLEAR_DESC, DataProvider.EVENT_ORDER_CHANGED, DataProvider.EVENT_SELECTION_CHANGED), null);
     }
     this.data = data;
     this.descs.forEach((v) => v.destroyVis());
@@ -142,10 +143,16 @@ export default class SidePanel {
       this.updateChooser();
     });
 
+    data.on(suffix('.panel', DataProvider.EVENT_SELECTION_CHANGED, DataProvider.EVENT_ORDER_CHANGED), () => {
+      this.updateStats();
+    });
+
     data.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING), function (this: { type: string }, ranking: Ranking) {
       handleRanking(ranking, this.type === 'addRanking');
       that.updateList();
     });
+
+    this.updateStats();
   }
 
   update(ctx: IRankingHeaderContext) {
@@ -157,6 +164,15 @@ export default class SidePanel {
 
     this.updateChooser();
     this.updateList();
+    this.updateStats();
+  }
+
+  private updateStats() {
+    const stats = <HTMLElement>this.node.querySelector('aside.lu-stats');
+    const s = this.data.getSelection();
+    const r = this.data.getRankings()[0];
+    const visible = r ? r.getGroups().reduce((a,b) => a + b.order.length, 0) : 0;
+    stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; ${s.length} <span>selected</span>`: ''}`;
   }
 
   remove() {

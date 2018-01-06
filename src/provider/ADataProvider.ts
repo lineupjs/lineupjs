@@ -40,6 +40,8 @@ export interface IDataProviderOptions {
 export interface IDataProvider extends AEventDispatcher {
   readonly columnTypes: { [columnType: string]: typeof Column };
 
+  getTotalNumberOfRows(): number;
+
   takeSnapshot(col: Column): void;
 
   selectAllOf(ranking: Ranking): void;
@@ -147,6 +149,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ADataProvider.EVENT_ADD_DESC, ADataProvider.EVENT_CLEAR_DESC,
       ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
   }
+
+  abstract getTotalNumberOfRows(): number;
 
   /**
    * returns a list of all known column descriptions
