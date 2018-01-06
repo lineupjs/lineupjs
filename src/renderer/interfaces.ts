@@ -1,5 +1,5 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {IDataRow, IGroup} from '../model';
+import {ICategoricalColumn, IDataRow, IGroup, INumberColumn} from '../model';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider/ADataProvider';
 
@@ -74,6 +74,8 @@ interface IRenderContext {
   groupRenderer(col: Column, imposer?: IImposer): IGroupCellRenderer;
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
+
+  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 
   /**
    * prefix used for all generated id names

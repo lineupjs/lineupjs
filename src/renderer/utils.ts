@@ -1,7 +1,6 @@
 import {MIN_LABEL_WIDTH} from '../config';
 import Column from '../model/Column';
 import {IArrayColumn} from '../model/IArrayColumn';
-import {ICellRenderer, IGroupCellRenderer} from './interfaces';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -71,53 +70,49 @@ export function forEachChild<T extends Element>(node: T, callback: (d: Element, 
 /**
  * matches the columns and the dom nodes representing them
  * @param {SVGGElement | HTMLElement} node row
- * @param {{column: Column; renderer: IDOMCellRenderer}[]} columns columns to check
- * @param {string} helperType create types of
+ * @param columns columns to check
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: ICellRenderer, groupRenderer: IGroupCellRenderer }[], render: 'group' | 'detail', helperType = 'svg') {
-  const renderer = render === 'detail' ? (col: { column: Column }) => col.column.getRenderer() : (col: { column: Column }) => col.column.getGroupRenderer();
+export function matchColumns(node: HTMLElement, columns: { column: Column, template: string, rendererId: string}[]) {
   if (node.childElementCount === 0) {
     // initial call fast method
-    node.innerHTML = columns.map((c) => (render === 'detail' ? c.renderer : c.groupRenderer).template).join('');
+    node.innerHTML = columns.map((c) => c.template).join('');
     columns.forEach((col, i) => {
       const cnode = <Element>node.childNodes[i];
       // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
       // store current renderer
-      cnode.setAttribute('data-renderer', renderer(col));
+      cnode.setAttribute('data-renderer', col.rendererId);
     });
     return;
   }
 
-  function matches(c: { column: Column }, i: number) {
+  function matches(c: { column: Column, rendererId: string }, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === renderer(c);
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.rendererId;
   }
 
   if (columns.every(matches)) {
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${renderer(c)}`));
+  const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${c.rendererId}`));
   //remove all that are not existing anymore
-  Array.from(node.childNodes).forEach((n: Element) => {
-    const id = n.getAttribute('data-column-id');
-    const renderer = n.getAttribute('data-renderer');
+  Array.from(node.childNodes).forEach((n: HTMLElement) => {
+    const id = n.dataset.columnId;
+    const renderer = n.dataset.rendere;
     const idAndRenderer = `${id}@${renderer}`;
     if (!idsAndRenderer.has(idAndRenderer)) {
       node.removeChild(n);
     }
   });
-  const helper = helperType === 'svg' ? document.createElementNS('http://www.w3.org/2000/svg', 'g') : document.createElement('div');
   columns.forEach((col) => {
-    let cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
+    let cnode = <HTMLElement>node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
-      //create one
-      helper.innerHTML = (render === 'detail' ? col.renderer : col.groupRenderer).template;
-      cnode = <Element>helper.childNodes[0];
-      cnode.setAttribute('data-column-id', col.column.id);
-      cnode.setAttribute('data-renderer', renderer(col));
+      node.insertAdjacentHTML('beforeend', col.template);
+      cnode = <HTMLElement>node.lastElementChild!;
+      cnode.dataset.columnId = col.column.id;
+      cnode.dataset.renderer = col.rendererId;
     }
     node.appendChild(cnode);
   });

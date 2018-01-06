@@ -228,7 +228,7 @@ function createHist(globalHist: IStatistics | null, guessedBins: number, rows: I
   return {bins, max, hist: stats.hist};
 }
 
-function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn, imposer?: IImposer) {
+export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn, imposer?: IImposer) {
   const guessedBins = getNumberOfBins(totalNumberOfRows);
   let bins = '';
   for (let i = 0; i < guessedBins; ++i) {
