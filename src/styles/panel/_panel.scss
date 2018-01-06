@@ -4,78 +4,52 @@
 .#{$lu_css_prefix}-side-panel {
   .#{$lu_css_prefix}-label {
     padding: 0 0 0 0.2em;
+  }
 
+  .#{$lu_css_prefix}-label,
+  .#{$lu_css_prefix}-search-item > span,
+  .#{$lu_css_prefix}-search-group > span {
     &::before {
-      @if $lu_use_font_awesome == true {
-        content: '';
-        display: inline;
-        padding-left: 20px;
-        background-position: left center;
-        background-repeat: no-repeat;
-        background-size: 75%;
-      } @else {
-        @include lu_icons();
-        width: 1.2em;
-        content: '';
-      }
-    }
-  }
+      @include lu_custom_icons();
 
-  .#{$lu_css_prefix}-search [data-type-cat='categorical']::before,
-  [data-type-cat='categorical'] .#{$lu_css_prefix}-label::before {
-    @if $lu_use_font_awesome == true {
-      background-image: url('#{$lu_assets}/icon_categorical.svg');
-    } @else {
-      content: $lu_icon_type_categorical;
-    }
-  }
-
-  .#{$lu_css_prefix}-search [data-type-cat='number']::before,
-  [data-type='number'] .#{$lu_css_prefix}-label::before {
-    @if $lu_use_font_awesome == true {
-      background-image: url('#{$lu_assets}/icon_numerical.svg');
-    } @else {
-      content: $lu_icon_type_numerical;
-    }
-  }
-
-  .#{$lu_css_prefix}-search [data-type-cat='array']::before,
-  [data-type='array'] .#{$lu_css_prefix}-label::before {
-    @if $lu_use_font_awesome == true {
-      background-image: url('#{$lu_assets}/icon_matrix.svg');
-    } @else {
-      content: $lu_icon_type_matrix;
+      color: $lu_toolbar_color_base2;
+      width: 1.2em;
+      content: '';
     }
   }
 
   .#{$lu_css_prefix}-search [data-type-cat='string']::before,
   [data-type-cat='string'] .#{$lu_css_prefix}-label::before {
-    @if $lu_use_font_awesome == true {
-      background-image: url('#{$lu_assets}/icon_string.svg');
-    } @else {
-      content: $lu_icon_type_string;
-    }
+    @include lu_custom_icon($lu_icon_type_string, string);
   }
-}
 
-.#{$lu_css_prefix}-search {
-  .#{$lu_css_prefix}-search-item > span,
-  .#{$lu_css_prefix}-search-group > span {
-    &::before {
-      color: $lu_toolbar_color_base2;
+  .#{$lu_css_prefix}-search [data-type-cat='categorical']::before,
+  [data-type-cat='categorical'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_categorical, categorical);
+  }
 
-      @if $lu_use_font_awesome == true {
-        content: '';
-        display: inline;
-        padding-left: 20px;
-        background-position: left center;
-        background-repeat: no-repeat;
-        background-size: 70%;
-      } @else {
-        @include lu_icons();
-        width: 1.2em;
-        content: '';
-      }
-    }
+  .#{$lu_css_prefix}-search [data-type-cat='number']::before,
+  [data-type='number'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_numerical, numerical);
+  }
+
+  .#{$lu_css_prefix}-search [data-type-cat='date']::before,
+  [data-type='date'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_date, date);
+  }
+
+  .#{$lu_css_prefix}-search [data-type-cat='array']::before,
+  [data-type='array'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_matrix, matrix);
+  }
+
+  .#{$lu_css_prefix}-search [data-type-cat='map']::before,
+  [data-type-cat='map'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_map, map);
+  }
+
+  .#{$lu_css_prefix}-search [data-type-cat='composite']::before,
+  [data-type-cat='composite'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_composite, composite);
   }
 }

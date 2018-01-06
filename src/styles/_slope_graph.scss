@@ -57,15 +57,15 @@ section.#{$lu-css_prefix}-slopegraph-header {
     }
 
     &::before {
-      @include lu_icons();
+      @include lu_custom_icons();
     }
 
     &[title=Item]::before {
-      content: $lu_icon_align_justify;
+      @include lu_custom_icon($lu_icon_slope_item, slope_item);
     }
 
     &[title=Band]::before {
-      content: $lu_icon_bars;
+      @include lu_custom_icon($lu_icon_slope_band, slope_band);
     }
   }
 }

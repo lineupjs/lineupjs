@@ -41,11 +41,20 @@ $lu_icon_sort_asc: '\f0de';
 $lu_icon_sort_desc: '\f0dd';
 $lu_icon_align_justify: '\e812';
 $lu_icon_bars: '\f0c9';
+
+// custom
 $lu_icon_type_matrix: '\e80d';
 $lu_icon_type_ordinal: '\e80e';
 $lu_icon_type_string: '\e80f';
 $lu_icon_type_categorical: '\e810';
 $lu_icon_type_numerical: '\e811';
+
+// TODO
+$lu_icon_type_date: '\e80f';
+$lu_icon_type_map: '\e80f';
+$lu_icon_type_composite: '\e80f';
+$lu_icon_slope_item: '\e80f';
+$lu_icon_slope_band: '\e80f';
 
 @mixin lu_icons() {
   @if $lu_use_font_awesome == true {
@@ -57,6 +66,27 @@ $lu_icon_type_numerical: '\e811';
     text-rendering: auto; // optimizelegibility throws things off #1094
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@mixin lu_custom_icons() {
+  @if $lu_use_font_awesome == true {
+    content: '';
+    display: inline;
+    width: 1em;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: 75%;
+  } @else {
+    @include lu_icons();
+  }
+}
+
+@mixin lu_custom_icon($icon, $name) {
+  @if $lu_use_font_awesome == true {
+    background-image: url('#{$lu_assets}/icon_#{$name}.svg');
+  } @else {
+    content: $icon;
   }
 }
 
