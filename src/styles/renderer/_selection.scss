@@ -19,7 +19,7 @@
   padding-left: 2px;
 }
 
-.#{$lu_css_prefix}-summary[data-renderer=selection] > i {
+.#{$lu_css_prefix}-summary[data-renderer=selection] {
   cursor: pointer;
-  font-size: 150%;
+  font-size: medium;
 }

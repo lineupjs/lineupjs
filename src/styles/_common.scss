@@ -4,7 +4,7 @@
 .#{$lu_css_prefix},
 .#{$lu_css_prefix}-header,
 .#{$lu_css_prefix}-side-panel,
-.#{$lu_css_prefix}-popup2 {
+.#{$lu_css_prefix}-dialog {
   [aria-hidden=true] {
     display: none;
   }
@@ -32,6 +32,6 @@
       }
     }
   }
-}
 
-@import './icons/icon_style';
+  @import './icons/icon_style';
+}

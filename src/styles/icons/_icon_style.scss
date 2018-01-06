@@ -2,35 +2,23 @@
 @import '../vars';
 @import './custom_font';
 
-.#{$lu-css_prefix}-checked::before,
-.#{$lu-css_prefix}-unchecked::before,
-.#{$lu-css_prefix}-sort-asc::before,
-.#{$lu-css_prefix}-sort-desc::before,
-.#{$lu-css_prefix}-caret-down::before,
-.#{$lu-css_prefix}-caret-right::before {
+[data-icon]::before {
   @include lu_icons();
+  text-align: center;;
 }
 
-.#{$lu-css_prefix}-checked::before {
+[data-icon=checked]::before {
   content: $lu_icon_check_square_o;
 }
 
-.#{$lu-css_prefix}-unchecked::before {
+[data-icon=unchecked]::before {
   content: $lu_icon_square_o;
 }
 
-.#{$lu-css_prefix}-sort-asc::before {
-  content: $lu_icon_sort_asc;
-}
-
-.#{$lu-css_prefix}-sort-desc::before {
-  content: $lu_icon_sort_desc;
-}
-
-.#{$lu-css_prefix}-caret-down::before {
+[data-icon=caret-down]::before {
   content: $lu_icon_caret_down;
 }
 
-.#{$lu-css_prefix}-caret-right::before {
+[data-icon=caret-right]::before {
   content: $lu_icon_caret_right;
 }

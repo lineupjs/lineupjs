@@ -63,8 +63,8 @@
   }
 }
 
-.#{$lu_css_prefix}-summary[data-renderer=aggregate] > i {
+.#{$lu_css_prefix}-summary[data-renderer=aggregate] {
   padding-right: $lu_aggregate_square_bracket_width;
   cursor: pointer;
-  font-size: 150%;
+  font-size: medium;
 }
