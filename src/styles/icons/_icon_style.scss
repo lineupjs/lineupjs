@@ -4,7 +4,8 @@
 
 [data-icon]::before {
   @include lu_icons();
-  text-align: center;;
+
+  text-align: center;
 }
 
 [data-icon=checked]::before {
