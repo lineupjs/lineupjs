@@ -5,24 +5,21 @@ import ADialog from './ADialog';
 
 export default class EditPatternDialog extends ADialog {
 
-  private readonly before: string;
-
   constructor(private readonly column: StringColumn | StringsColumn | StringMapColumn, attachment: HTMLElement, private readonly idPrefix: string) {
     super(attachment, {
       fullDialog: true
     });
-    this.before = column.getPattern();
   }
 
   protected build(node: HTMLElement) {
     const templates = this.column.patternTemplates;
-    node.insertAdjacentHTML('beforeend', `<input
+    node.insertAdjacentHTML('beforeend', `<h4>Edit Pattern (access via $\{value}, $\{item})</h4><input
         type="text"
-        size="15"
-        value="${this.before}"
+        size="30"
+        value="${this.column.getPattern()}"
         required
         autofocus
-        placeholder="pattern ($1 as placeholder)"
+        placeholder="pattern (access via $\{value}, $\{item})"
         ${templates.length > 0 ? `list="ui${this.idPrefix}lineupPatternList"` : ''}
       >`);
     if (templates.length > 0) {
@@ -31,8 +28,8 @@ export default class EditPatternDialog extends ADialog {
   }
 
   protected reset() {
-    this.node.querySelector('input')!.value = this.before;
-    this.column.setPattern(this.before);
+    this.node.querySelector('input')!.value = '';
+    this.column.setPattern('');
   }
 
   protected submit() {

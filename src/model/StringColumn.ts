@@ -54,6 +54,7 @@ export default class StringColumn extends ValueColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
+  private patternFunction: Function|null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<IStringColumnDesc>) {
@@ -72,9 +73,10 @@ export default class StringColumn extends ValueColumn<string> {
 
 
   setPattern(pattern: string) {
-    if (pattern === this.pattern) { /*== on purpose*/
+    if (pattern === this.pattern) {
       return;
     }
+    this.patternFunction = null; // reset cache
     this.fire([StringColumn.EVENT_PATTERN_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.pattern, this.pattern = pattern);
   }
 
@@ -88,16 +90,17 @@ export default class StringColumn extends ValueColumn<string> {
 
   getValue(row: IDataRow) {
     const v: any = super.getValue(row);
-    return this.replacePattern(typeof(v) === 'undefined' || v == null ? '' : String(v));
+    if (!this.pattern) {
+      return v == null ? '' : String(v);
+    }
+    if (!this.patternFunction) {
+      this.patternFunction = patternFunction(this.pattern, 'item');
+    }
+    return this.patternFunction.call(this, v, row.v);
   }
 
   getLabel(row: IDataRow) {
-    const v: any = super.getValue(row);
-    return String(v);
-  }
-
-  replacePattern(s: string) {
-    return this.pattern ? this.pattern.replace(/\$1/g, s || '') : s;
+    return this.getValue(row) || '';
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -173,4 +176,8 @@ export default class StringColumn extends ValueColumn<string> {
     }
     return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
   }
+}
+
+export function patternFunction(pattern: string, ... args:string[]) {
+  return new Function('value', ...args, `return \`${pattern}\`;`);
 }

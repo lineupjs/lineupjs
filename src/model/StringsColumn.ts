@@ -6,7 +6,7 @@ import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDataRow} from './interfaces';
-import {default as StringColumn, EAlignment, IStringDesc} from './StringColumn';
+import {default as StringColumn, EAlignment, IStringDesc, patternFunction} from './StringColumn';
 
 export declare type IStringsColumnDesc = IStringDesc & IArrayColumnDesc<string>;
 
@@ -18,6 +18,7 @@ export default class StringsColumn extends ArrayColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
+  private patternFunction: Function|null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<IStringsColumnDesc>) {
@@ -42,7 +43,15 @@ export default class StringsColumn extends ArrayColumn<string> {
   }
 
   getValues(row: IDataRow) {
-    return super.getValues(row).map((v) => StringColumn.prototype.replacePattern.call(this, v));
+    return super.getValues(row).map((v, i) => {
+      if (!this.pattern) {
+        return v == null ? '' : String(v);
+      }
+      if (!this.patternFunction) {
+        this.patternFunction = patternFunction(this.pattern, 'item', 'index');
+      }
+      return this.patternFunction.call(this, v, row.v, i);
+    });
   }
 
   dump(toDescRef: (desc: any) => any): any {

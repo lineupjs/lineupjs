@@ -6,7 +6,7 @@ import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {default as StringColumn, EAlignment, IStringDesc} from './StringColumn';
+import {default as StringColumn, EAlignment, IStringDesc, patternFunction} from './StringColumn';
 
 export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
 
@@ -18,6 +18,7 @@ export default class StringMapColumn extends MapColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
+  private patternFunction: Function|null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<IStringMapColumnDesc>) {
@@ -44,9 +45,19 @@ export default class StringMapColumn extends MapColumn<string> {
 
   getValue(row: IDataRow) {
     return super.getValue(row).map(({key, value}) => ({
-      key,
-      value: StringColumn.prototype.replacePattern.call(this, value)
-    }));
+        key,
+        value: this.replacePattern(value, key, row)
+      }));
+  }
+
+  private replacePattern(s: any, key: string, row: IDataRow) {
+    if (!this.pattern) {
+      return s == null ? '' : String(s);
+    }
+    if (!this.patternFunction) {
+      this.patternFunction = patternFunction(this.pattern, 'item', 'key');
+    }
+    return this.patternFunction.call(this, s, row.v, key);
   }
 
   dump(toDescRef: (desc: any) => any): any {
