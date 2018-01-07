@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/Caleydo/lineupjs",
   "main": "build/LineUpJS.js",
+  "typings": "build/typings/lineupjs/src",
   "files": [
     "build",
     "!build/docs",
