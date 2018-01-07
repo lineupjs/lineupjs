@@ -17,6 +17,7 @@ npm install --save lineupjs
 **Minimal Usage Example**
 
 ```javascript
+// generate some data
 const arr = [];
 const cats = ['c1', 'c2', 'c3'];
 for (let i = 0; i < 100; ++i) {
@@ -27,8 +28,13 @@ for (let i = 0; i < 100; ++i) {
     cat2: cats[Math.floor(Math.random() * 3)]
   })
 }
+```
+```javascript
 const lineup = LineUpJS.asLineUp(document.body, arr);
 ```
+
+![Minimal Result](https://user-images.githubusercontent.com/4129778/34654173-32180ff8-f3f8-11e7-8469-229fa34a65dc.png)
+
 
 **Advanced Usage Example**
 
@@ -57,6 +63,9 @@ builder
 
 const lineup = builder.build(document.body);
 ```
+
+![Advanced Result](https://user-images.githubusercontent.com/4129778/34654174-3235f784-f3f8-11e7-9361-44f5fa068bb9.png)
+
 
 Supported Browsers
 ------------------
