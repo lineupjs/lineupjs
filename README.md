@@ -58,6 +58,25 @@ builder
 const lineup = builder.build(document.body);
 ```
 
+Supported Browsers
+------------------
+
+ * Chrome (best performance)
+ * Firefox Quantum
+ * Edge 16
+ 
+
+API Documentation
+-----------------
+
+see [Develop API documentation] TODO
+
+Demos
+-----
+
+see [Develop Demo] TODO
+
+
 Dependencies
 ------------
 
