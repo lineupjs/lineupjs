@@ -14,18 +14,21 @@ export default class Taggle extends ALineUp {
   private readonly renderer: TaggleRenderer;
   private readonly panel: SidePanel;
 
+  private readonly options = defaultOptions();
+
 
   constructor(node: HTMLElement, data: DataProvider, options: Partial<ITaggleOptions> = {}) {
     super(node, data);
-
-    this.node.classList.add('lu-taggle', 'lu');
-
-    const config = merge(defaultOptions(), options, {
+    merge(this.options, options, {
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     });
 
-    this.renderer = new TaggleRenderer(this.node, data, config);
-    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument);
+    this.node.classList.add('lu-taggle', 'lu');
+
+    this.renderer = new TaggleRenderer(this.node, data, this.options);
+    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
+      collapseable: this.options.panelCollapsed ? 'collapsed' : true
+    });
     this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
     this.node.insertBefore(this.panel.node, this.node.firstChild);
     this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser">
@@ -33,7 +36,7 @@ export default class Taggle extends ALineUp {
           <div></div>
         </div>`);
     {
-      const spaceFilling = spaceFillingRule(config);
+      const spaceFilling = spaceFillingRule(this.options);
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
       this.spaceFilling.addEventListener('click', () => {
         const selected = this.spaceFilling.classList.toggle('chosen');

@@ -14,6 +14,7 @@ import SidePanelEntry from './SidePanelEntry';
 export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
   additionalDescs: IColumnDesc[];
   chooser: boolean;
+  collapseable: boolean|'collapsed';
 }
 
 export default class SidePanel {
@@ -34,7 +35,8 @@ export default class SidePanel {
         node.dataset.type = item.desc.type;
       }
       return item.text;
-    }
+    },
+    collapseable: true
   };
 
   readonly node: HTMLElement;
@@ -60,6 +62,14 @@ export default class SidePanel {
       <aside class="lu-stats"></aside>
       <div><main></main></div>
     `;
+    if (this.options.collapseable) {
+      this.node.insertAdjacentHTML('beforeend', `<div class="lu-collapser" title="Collapse Panel"></div>`);
+      const last = <HTMLElement>this.node.lastElementChild;
+      last.onclick = () => {
+        this.node.classList.toggle('lu-collapsed');
+      };
+      this.collapsed = this.options.collapseable === 'collapsed';
+    }
     this.initChooser();
     this.changeDataStorage(null, this.data);
   }
@@ -151,19 +161,35 @@ export default class SidePanel {
     this.updateStats();
   }
 
+  get collapsed() {
+    return this.node.classList.contains('lu-collapsed');
+  }
+
+  set collapsed(value: boolean) {
+    this.node.classList.toggle('lu-collapsed', value);
+    if (value) {
+      return;
+    }
+    this.updateChooser();
+    this.updateList();
+    this.updateStats();
+  }
+
   update(ctx: IRankingHeaderContext) {
     const bak = this.data;
     this.ctx = ctx;
     if (ctx.provider !== bak) {
       this.changeDataStorage(bak, ctx.provider);
     }
-
     this.updateChooser();
     this.updateList();
     this.updateStats();
   }
 
   private updateStats() {
+    if (this.collapsed) {
+      return;
+    }
     const stats = <HTMLElement>this.node.querySelector('aside.lu-stats');
     const s = this.data.getSelection();
     const r = this.data.getRankings()[0];
@@ -248,6 +274,9 @@ export default class SidePanel {
   }
 
   private updateList() {
+    if (this.collapsed) {
+      return;
+    }
     const node = this.node.querySelector('main')!;
     const columns = this.prepareListData();
 
@@ -293,7 +322,7 @@ export default class SidePanel {
   }
 
   protected updateChooser() {
-    if (!this.options.chooser) {
+    if (!this.options.chooser || this.collapsed) {
       return;
     }
     const groups = SidePanel.groupByType(Array.from(this.descs.values()));

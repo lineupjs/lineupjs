@@ -1,4 +1,5 @@
 @import '../vars';
+@import '../icons/index';
 
 .#{$lu_css_prefix}-side-panel {
   display: flex;
@@ -32,6 +33,43 @@
 
     span {
       color: $lu_selected_color;
+    }
+  }
+
+  .#{$lu_css_prefix}-collapser {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 20;
+    padding: 0.2em;
+    cursor: pointer;
+    border-radius: 50% 0 0 50%;
+    background: white;
+    color: $lu_toolbar_color_base;
+    border: 1px solid $lu_toolbar_color_base;
+
+    &:hover {
+      color: $lu_hover_color;
+    }
+
+    &::before {
+      @include lu_icons();
+
+      content: $lu_icon_caret_right;
+      width: 0.8em;
+      text-align: center;
+    }
+  }
+
+  &.#{$lu_css_prefix}-collapsed {
+    min-width: 0;
+
+    > :not(.#{$lu_css_prefix}-collapser) {
+      display: none;
+    }
+
+    .#{$lu_css_prefix}-collapser::before {
+        transform: scale(-1, 1);
     }
   }
 

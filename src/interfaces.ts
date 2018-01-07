@@ -1,6 +1,6 @@
 import {IGroupData, IGroupItem} from './model';
 import Ranking from './model/Ranking';
-import {IDataProvider} from './provider/ADataProvider';
+import {IDataProvider} from './provider';
 import {ICellRendererFactory} from './renderer';
 import {IToolbarAction} from './ui';
 
@@ -22,6 +22,7 @@ export interface ILineUpOptions {
   animation: boolean;
   wholeHover: boolean;
   panel: boolean;
+  panelCollapsed: boolean;
 
   groupHeight: number;
   groupPadding: number;
