@@ -135,7 +135,7 @@ const collapse = ui('Compress', (col, evt) => {
   i.title = mcol.getCollapsed() ? 'Expand' : 'Compress';
 });
 
-export const icons: { [key: string]: IToolbarAction } = {
+export const toolbarActions: { [key: string]: IToolbarAction } = {
   stratify,
   collapse,
   sort,

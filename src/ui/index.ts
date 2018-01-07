@@ -1,9 +1,8 @@
 export * from './taggle';
-export * from './EngineRenderer';
-export * from './EngineRanking';
-export * from './SlopeGraph';
+export {default as EngineRenderer} from './EngineRenderer';
+export {default as EngineRanking, IEngineRankingContext, IEngineRankingOptions} from './EngineRanking';
+export {default as SlopeGraph, EMode} from './SlopeGraph';
 export * from './dialogs';
 export * from './panel';
 export * from './toolbar';
-export * from './LineUp';
-export {default} from './LineUp';
+export {default as LineUp, ILineUpOptions} from './LineUp';

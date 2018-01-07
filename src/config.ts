@@ -1,6 +1,6 @@
 import {ILineUpOptions} from './interfaces';
 import {renderers} from './renderer';
-import {icons} from './ui';
+import {toolbarActions} from './ui';
 
 /** number of bins before switching to dense mode
  */
@@ -16,7 +16,7 @@ export function defaultOptions(): ILineUpOptions {
   const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
   return {
     idPrefix,
-    toolbar: Object.assign({}, icons),
+    toolbar: Object.assign({}, toolbarActions),
     renderers: Object.assign({}, renderers),
 
     summary: true,

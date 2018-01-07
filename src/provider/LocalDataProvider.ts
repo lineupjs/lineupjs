@@ -1,6 +1,8 @@
-import {computeHist, computeStats} from '../internal/math';
-import Column, {ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn} from '../model';
-import {defaultGroup, IOrderedGroup} from '../model/Group';
+import {computeHist, computeStats} from '../internal';
+import Column, {
+  defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn,
+  IOrderedGroup
+} from '../model';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
