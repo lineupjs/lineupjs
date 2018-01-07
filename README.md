@@ -1,9 +1,62 @@
-LineUp.js: Visual Analysis of Multi-Attribute Rankings [![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url]
+LineUp.js: Visual Analysis of Multi-Attribute Rankings
 ======================================================
+[![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url]
 
 LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. 
-This is a D3-based re-implementation with limited functionality relative to the original stand-alone LineUp, which you can check out at http://lineup.caleydo.org
+This is a web and generalized version of the published LineUp visualization technique by [Gratzl et.al. 2013](http://caleydo.org/publications/2013_infovis_lineup/)
 
+Usage
+-----
+
+**Installation**
+
+```bash
+npm install --save lineupjs
+```
+
+**Minimal Usage Example**
+
+```javascript
+const arr = [];
+const cats = ['c1', 'c2', 'c3'];
+for (let i = 0; i < 100; ++i) {
+  arr.push({
+    a: Math.random() * 10,
+    d: 'Row ' + i,
+    cat: cats[Math.floor(Math.random() * 3)],
+    cat2: cats[Math.floor(Math.random() * 3)]
+  })
+}
+const lineup = LineUpJS.asLineUp(document.body, arr);
+```
+
+**Advanced Usage Example**
+
+```javascript
+// arr from before
+const builder = LineUpJS.builder(arr);
+
+// manually define columns
+builder
+  .column(LineUpJS.buildStringColumn('d').label('Label').width(300))
+  .column(LineUpJS.buildCategoricalColumn('cat', cats).color('green'))
+  .column(LineUpJS.buildCategoricalColumn('cat2', cats).color('blue'))
+  .column(LineUpJS.buildNumberColumn('a', [0, 10]).color('blue'));
+
+// and two rankings
+const ranking = LineUpJS.buildRanking()
+  .supportTypes()
+  .allColumns() // add all columns
+  .groupBy('cat')
+  .sortBy('a', 'desc')
+  .impose('number', 'a', 'cat2'); // create composite column
+
+builder
+  .defaultRanking()
+  .ranking(ranking);
+
+const lineup = builder.build(document.body);
+```
 
 Dependencies
 ------------

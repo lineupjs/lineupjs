@@ -11,11 +11,12 @@ export * from './RankingBuilder';
  * build a new Taggle instance in the given node for the given data
  * @param {HTMLElement} node
  * @param {any[]} data
+ * @param {string[]} columns
  * @returns {Taggle}
  */
-export function asTaggle(node: HTMLElement, data: any[]): Taggle {
+export function asTaggle(node: HTMLElement, data: any[], ...columns: string[]): Taggle {
   return builder(data)
-    .deriveColumns()
+    .deriveColumns(...columns)
     .deriveColors()
     .defaultRanking()
     .buildTaggle(node);
@@ -25,11 +26,12 @@ export function asTaggle(node: HTMLElement, data: any[]): Taggle {
  * build a new LineUp instance in the given node for the given data
  * @param {HTMLElement} node
  * @param {any[]} data
+ * @param {string[]} columns
  * @returns {LineUp}
  */
-export function asLineUp(node: HTMLElement, data: any[]): LineUp {
+export function asLineUp(node: HTMLElement, data: any[], ...columns: string[]): LineUp {
   return builder(data)
-    .deriveColumns()
+    .deriveColumns(...columns)
     .deriveColors()
     .defaultRanking()
     .build(node);

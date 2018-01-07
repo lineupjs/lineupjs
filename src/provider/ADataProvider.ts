@@ -5,7 +5,7 @@ import OrderedSet from '../internal/OrderedSet';
 import {
   Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
   createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
-  ISelectionColumnDesc, isSupportType, IValueColumnDesc, models
+  ISelectionColumnDesc, IValueColumnDesc, models
 } from '../model';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 import {toGroupID, unifyParents} from '../model/internal';
@@ -119,7 +119,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   readonly columnTypes: { [columnType: string]: typeof Column };
 
-  private readonly multiSelections: boolean;
+  protected readonly multiSelections: boolean;
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
@@ -483,23 +483,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   abstract findDesc(ref: string): IColumnDesc | null;
 
-  /**
-   * generates a default ranking by using all column descriptions ones
-   */
-  deriveDefault() {
-    if (this.rankings.length > 0) {
-      //no default if we have a ranking
-      return;
-    }
-    const r = this.pushRanking();
-    this.getColumns().forEach((col) => {
-      const c = this.create(col);
-      if (!c || isSupportType(c)) {
-        return;
-      }
-      r.push(c);
-    });
-  }
+  abstract deriveDefault(addSupporType?: boolean): Ranking;
 
   /**
    * derives a ranking from an old layout bundle format

@@ -58,6 +58,11 @@ section.#{$lu_css_prefix}-header {
     &:empty {
       display: none;
     }
+
+    &[data-renderer=aggregate],
+    &[data-renderer=selection] {
+      display: block; // have just a before element
+    }
   }
 
   > .#{$lu_css_prefix}-nested {

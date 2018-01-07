@@ -10,6 +10,8 @@ export interface IDeriveOptions {
    * maximal percentage of unique values to be treated as a categorical column
    */
   categoricalThreshold: number;
+
+  columns: string[];
 }
 
 
@@ -24,6 +26,10 @@ function deriveType(label: string, value: any, column: number | string, data: an
     base.domain = extent(data, (d) => d[column]);
     return base;
   }
+  if (value && value instanceof Date) {
+    base.type = 'date';
+    return base;
+  }
   if (typeof value === 'boolean') {
     base.type = 'boolean';
     return base;
@@ -33,10 +39,37 @@ function deriveType(label: string, value: any, column: number | string, data: an
     const categories = new Set(data.map((d) => d[column]));
     if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
       base.type = 'categorical';
-      base.categories = categories;
+      base.categories = Array.from(categories).sort();
     }
     return base;
   }
+  if (Array.isArray(value)) {
+    base.type = 'strings';
+    const vs = value[0];
+    if (typeof vs === 'number') {
+      base.type = 'numbers';
+      base.domain = extent((<number[]>[]).concat(...data.map((d) => d[column])));
+      return base;
+    }
+    if (vs && value instanceof Date) {
+      base.type = 'dates';
+      return base;
+    }
+    if (typeof value === 'boolean') {
+      base.type = 'booleans';
+      return base;
+    }
+    if (typeof value === 'string') {
+      //maybe a categorical
+      const categories = new Set((<string[]>[]).concat(...data.map((d) => d[column])));
+      if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
+        base.type = 'categoricals';
+        base.categories = Array.from(categories).sort();
+      }
+      return base;
+    }
+  }
+  console.log('cannot infer type of column:', column);
   //unknown type
   return base;
 }
@@ -44,6 +77,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
 export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOptions> = {}) {
   const config = Object.assign({
     categoricalThreshold: 0.7,
+    columns: []
   }, options);
   const r: IColumnDesc[] = [];
   if (data.length === 0) {
@@ -56,7 +90,8 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
     return first.map((v, i) => deriveType(`Col${i}`, v, i, data, config));
   }
   //objects
-  return Object.keys(first).map((key) => deriveType(key, first[key], key, data, config));
+  const columns = config.columns.length > 0 ? config.columns : Object.keys(first);
+  return columns.map((key) => deriveType(key, first[key], key, data, config));
 }
 
 

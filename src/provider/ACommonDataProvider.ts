@@ -1,4 +1,4 @@
-import {createRankDesc, IColumnDesc, IDataRow} from '../model';
+import {createAggregateDesc, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, isSupportType} from '../model';
 import {IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
@@ -87,8 +87,6 @@ abstract class ACommonDataProvider extends ADataProvider {
       existing.children.forEach((child) => {
         this.push(clone, child.desc);
       });
-    } else {
-      clone.push(this.create(createRankDesc())!);
     }
 
     return clone;
@@ -150,9 +148,33 @@ abstract class ACommonDataProvider extends ADataProvider {
     return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : desc;
   }
 
+  /**
+   * generates a default ranking by using all column descriptions ones
+   */
+  deriveDefault(addSupportType: boolean = true) {
+    const r = this.pushRanking();
+    if (addSupportType) {
+      if (this.getMaxGroupColumns() > 0) {
+        r.push(this.create(createAggregateDesc())!);
+      }
+      r.push(this.create(createRankDesc())!);
+      if (this.multiSelections) {
+        r.push(this.create(createSelectionDesc())!);
+      }
+    }
+    this.getColumns().forEach((col) => {
+      const c = this.create(col);
+      if (!c || isSupportType(c)) {
+        return;
+      }
+      r.push(c);
+    });
+    return r;
+  }
+
   fromDescRef(descRef: any): any {
     if (typeof(descRef) === 'string') {
-      return this.columns.find((d: any) => d.type + '@' + d.column === descRef);
+      return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef);
     }
     const existing = this.columns.find((d) => descRef.column === (<any>d).column && descRef.label === d.label && descRef.type === d.type);
     if (existing) {

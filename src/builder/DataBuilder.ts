@@ -21,6 +21,11 @@ export default class DataBuilder extends LineUpBuilder {
     super();
   }
 
+  singleSelection() {
+    this.providerOptions.multiSelection = false;
+    return this;
+  }
+
   filterGlobally() {
     this.providerOptions.filterGlobally = true;
     return this;
@@ -32,8 +37,8 @@ export default class DataBuilder extends LineUpBuilder {
     return this;
   }
 
-  deriveColumns() {
-    this.columns.push(...deriveColumnDescriptions(this.data));
+  deriveColumns(...columns: string[]) {
+    this.columns.push(...deriveColumnDescriptions(this.data, {columns}));
     return this;
   }
 
@@ -51,18 +56,21 @@ export default class DataBuilder extends LineUpBuilder {
     return this;
   }
 
-  defaultRanking() {
-    this.rankBuilders.push((data) => data.deriveDefault());
+  defaultRanking(addSupportTypes: boolean = true) {
+    this.rankBuilders.push((data) => data.deriveDefault(addSupportTypes));
     return this;
   }
 
   ranking(builder: ((data: ADataProvider)=>void)|RankingBuilder) {
-    this.rankBuilders.push(builder instanceof RankingBuilder ? builder.build : builder);
+    this.rankBuilders.push(builder instanceof RankingBuilder ? builder.build.bind(builder) : builder);
     return this;
   }
 
   buildData() {
     const r = new LocalDataProvider(this.data, this.columns, this.providerOptions);
+    if (this.rankBuilders.length === 0) {
+      this.defaultRanking();
+    }
     this.rankBuilders.forEach((builder) => builder(r));
     return r;
   }

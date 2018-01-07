@@ -18,13 +18,14 @@ import StackColumn from '../model/StackColumn';
 import ADataProvider from '../provider/ADataProvider';
 
 export default class RankingBuilder {
+  private static readonly ALL_MAGIC_FLAG = '__ALL__COLUMNS';
+
   private readonly columns: (string|{desc: IColumnDesc, columns: string[], post?: (col: Column)=>void})[] = [];
   private readonly sort: { column: string, asc: boolean }[] = [];
   private readonly groups: string[] = [];
-  private all = false;
 
-  sortBy(column: string, asc: boolean = true) {
-    this.sort.push({column, asc});
+  sortBy(column: string, asc: boolean|'asc'|'desc' = true) {
+    this.sort.push({column, asc: asc === true || asc === 'asc'});
     return this;
   }
 
@@ -132,91 +133,93 @@ export default class RankingBuilder {
     return this;
   }
 
+  supportTypes() {
+    return this.aggregate().rank().selection();
+  }
 
   allColumns() {
-    this.all = true;
+    this.columns.push(RankingBuilder.ALL_MAGIC_FLAG);
     return this;
   }
 
-  build(): (data: ADataProvider) => Ranking {
-    return (data: ADataProvider) => {
-      const r = data.pushRanking();
-      const cols = data.getColumns();
+  build(data: ADataProvider): Ranking {
+    const r = data.pushRanking();
+    const cols = data.getColumns();
 
-      const findDesc = (c: string) => cols.find((d) => d.label === c || (<any>d).column === c);
+    const findDesc = (c: string) => cols.find((d) => d.label === c || (<any>d).column === c);
 
-      const addColumn = (c: string) => {
-        const desc = findDesc(c);
-        if (desc) {
-          return data.push(r, desc) != null;
-        }
-        console.warn('invalid column: ', c);
-        return false;
-      };
-
-      if (this.all) {
-        cols.forEach((col) => data.push(r, col));
+    const addColumn = (c: string) => {
+      const desc = findDesc(c);
+      if (desc) {
+        return data.push(r, desc) != null;
       }
-      this.columns.forEach((c) => {
-        if (typeof c === 'string') {
-          addColumn(c);
+      console.warn('invalid column: ', c);
+      return false;
+    };
+
+    this.columns.forEach((c) => {
+      if (c === RankingBuilder.ALL_MAGIC_FLAG) {
+        cols.forEach((col) => data.push(r, col));
+        return;
+      }
+      if (typeof c === 'string') {
+        addColumn(c);
+        return;
+      }
+      const col = data.create(c.desc)!;
+      r.push(col);
+      c.columns.forEach((ci) => {
+        const d = findDesc(ci);
+        const child = d ? data.create(d) : null;
+        if (!child) {
+          console.warn('invalid column: ', ci);
           return;
         }
-        const col = data.create(c.desc)!;
-        r.push(col);
-        c.columns.forEach((ci) => {
-          const d = findDesc(ci);
-          const child = d ? data.create(d) : null;
-          if (!child) {
-            console.warn('invalid column: ', ci);
-            return;
-          }
-          (<CompositeColumn>col).push(child);
-        });
-        if (c.post) {
-          c.post(col);
-        }
+        (<CompositeColumn>col).push(child);
       });
+      if (c.post) {
+        c.post(col);
+      }
+    });
 
-      const children = r.children;
-      {
-        const groups: Column[] = [];
-        this.groups.forEach((column) => {
-          const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
-          if (col) {
-            groups.push(col);
-            return;
-          }
-          const desc = findDesc(column);
-          if (desc && data.push(r, desc)) {
-            return;
-          }
-          console.warn('invalid group criteria column: ', column);
-        });
-        if (groups.length > 0) {
-          r.setGroupCriteria(groups);
+    const children = r.children;
+    {
+      const groups: Column[] = [];
+      this.groups.forEach((column) => {
+        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+        if (col) {
+          groups.push(col);
+          return;
         }
-      }
-      {
-        const sorts: ISortCriteria[] = [];
-        this.sort.forEach(({column, asc}) => {
-          const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
-          if (col) {
-            sorts.push({col, asc});
-            return;
-          }
-          const desc = findDesc(column);
-          if (desc && data.push(r, desc)) {
-            return;
-          }
-          console.warn('invalid sort criteria column: ', column);
-        });
-        if (sorts.length > 0) {
-          r.setSortCriteria(sorts);
+        const desc = findDesc(column);
+        if (desc && data.push(r, desc)) {
+          return;
         }
+        console.warn('invalid group criteria column: ', column);
+      });
+      if (groups.length > 0) {
+        r.setGroupCriteria(groups);
       }
-      return r;
-    };
+    }
+    {
+      const sorts: ISortCriteria[] = [];
+      this.sort.forEach(({column, asc}) => {
+        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+        if (col) {
+          sorts.push({col, asc});
+          return;
+        }
+        const desc = findDesc(column);
+        if (desc && data.push(r, desc)) {
+          return;
+        }
+        console.warn('invalid sort criteria column: ', column);
+      });
+      if (sorts.length > 0) {
+        r.setSortCriteria(sorts);
+      }
+    }
+    return r;
   }
 }
 

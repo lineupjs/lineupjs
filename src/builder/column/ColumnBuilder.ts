@@ -47,6 +47,7 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
 
   color(color: string) {
     this.desc.color = color;
+    return this;
   }
 
   asArray(labels?: string[]|number) {
