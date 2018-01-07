@@ -3,14 +3,14 @@
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
   "version": "3.0.0-SNAPSHOT",
   "author": {
-    "name": "Caleydo Team",
-    "email": "contact@caleydo.org",
-    "url": "https://caleydo.org"
+    "name": "Samuel Gratzl",
+    "email": "samuel-gratzl@gmx.at"
   },
   "contributors": [
     {
-      "name": "Samuel Gratzl",
-      "email": "samuel-gratzl@gmx.at"
+      "name": "Caleydo Team",
+      "email": "contact@caleydo.org",
+      "url": "https://caleydo.org"
     },
     {
       "name": "Holger Stitz",
