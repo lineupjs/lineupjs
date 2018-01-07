@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <title>LineUp Test Bench</title>
 
-  <link href="../build/LineUpJS.css" rel="stylesheet">
+  <link href="./LineUpJS.css" rel="stylesheet">
   <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="../build/LineUpJS.js"></script>
+<script src="./LineUpJS.js"></script>
 
 <script>
   window.onload = function () {
@@ -65,7 +65,7 @@
     const lazy = p.create(desc[12]);
     {
       const r = p.pushRanking();
-      r.insert(p.create(LineUpJS.model.createSelectionDesc()), 0);
+      r.insert(p.create(LineUpJS.createSelectionDesc()), 0);
       r.push(p.create(desc[0]));
       r.push(p.create(desc[1]));
       r.push(p.create(desc[8]));
@@ -76,7 +76,7 @@
       r.push(p.create(desc[desc.length-1]));
 
       r.push((function () {
-        const rstack = p.create(LineUpJS.model.createStackDesc('Stack'));
+        const rstack = p.create(LineUpJS.createStackDesc('Stack'));
         rstack.setWidth(400);
         rstack.push(p.create(desc[1]));
         rstack.push(p.create(desc[2]));
@@ -93,7 +93,7 @@
       r.push(p.create(desc[3]));
 
       r.push((function () {
-        const rscript = p.create(LineUpJS.model.createScriptDesc('Script'));
+        const rscript = p.create(LineUpJS.createScriptDesc('Script'));
         rscript.push(p.create(desc[1]));
         rscript.push(p.create(desc[2]));
         rscript.push(p.create(desc[3]));
@@ -101,7 +101,7 @@
       })());
 
       r.push((function () {
-        const rnested = p.create(LineUpJS.model.createNestedDesc('Nested'));
+        const rnested = p.create(LineUpJS.createNestedDesc('Nested'));
         rnested.push(p.create(desc[1]));
         rnested.push(p.create(desc[2]));
         rnested.push(p.create(desc[0]));

@@ -4,6 +4,7 @@ const webpack = require('webpack');
 const fs = require('fs');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const now = new Date();
 const prefix = (n) => n < 10 ? ('0' + n) : n.toString();
@@ -55,7 +56,6 @@ const isWorkspaceContext = fs.existsSync(resolve(__dirname, '..', 'phovea_regist
  */
 function generateWebpack(options) {
   const base = {
-    target: 'node',
     entry: {
       'LineUpJS': './src/index.ts'
     },
@@ -99,6 +99,9 @@ function generateWebpack(options) {
     watchOptions: {
       aggregateTimeout: 500,
       ignored: /node_modules/
+    },
+    devServer: {
+      contentBase: 'demo'
     }
   };
 

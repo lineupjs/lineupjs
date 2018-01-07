@@ -31,6 +31,7 @@
   "files": [
     "build",
     "!build/docs",
+    "!build/demo",
     "src/**/*.ts",
     "src/assets/**/",
     "src/**/*.tsx",
@@ -51,6 +52,7 @@
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
+    "start": "webpack-dev-server",
     "predist": "npm run build && npm run docs",
     "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz --exclude \"docs\" * && cd .."
   },
