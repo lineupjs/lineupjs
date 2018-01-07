@@ -5,7 +5,7 @@ import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
-  isDummyFilter, noNumberFilter, restoreFilter
+  isDummyNumberFilter, noNumberFilter, restoreFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
@@ -21,12 +21,6 @@ export interface INumbersDesc extends IArrayDesc, IMapAbleDesc {
 
 
 export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>;
-
-export interface ISplicer {
-  length: number;
-
-  splice<T>(values: T[]): T[];
-}
 
 @toolbar('sortNumbers', 'filterMapped')
 export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {
@@ -131,7 +125,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = !isDummyFilter(this.currentFilter) ? this.currentFilter : null;
+    r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }

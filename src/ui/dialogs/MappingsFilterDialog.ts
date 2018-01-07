@@ -1,6 +1,6 @@
 import {computeStats, IStatistics, round} from '../../internal';
 import {isMissingValue} from '../../model';
-import {isDummyFilter, noNumberFilter} from '../../model/INumberColumn';
+import {isDummyNumberFilter, noNumberFilter} from '../../model/INumberColumn';
 import {
   IMapAbleColumn, IMappingFunction, ScaleMappingFunction,
   ScriptMappingFunction
@@ -229,7 +229,7 @@ export default class MappingsFilterDialog extends ADialog {
   }
 
   private applyMapping(newScale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) {
-    this.attachment.classList.toggle('lu-filtered', (!newScale.eq(this.original) || !isDummyFilter(filter)));
+    this.attachment.classList.toggle('lu-filtered', (!newScale.eq(this.original) || !isDummyNumberFilter(filter)));
 
     this.column.setMapping(newScale);
     this.column.setFilter(filter);

@@ -8,7 +8,7 @@ import Ranking from './Ranking';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'A') {
+export function createAggregateDesc(label: string = 'A') {
   return {type: 'aggregate', label};
 }
 

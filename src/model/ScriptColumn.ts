@@ -13,7 +13,7 @@ return s / col.length`;
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'script') {
+export function createScriptDesc(label: string = 'script') {
   return {type: 'script', label, script: DEFAULT_SCRIPT};
 }
 

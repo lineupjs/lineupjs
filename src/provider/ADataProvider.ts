@@ -1,18 +1,16 @@
+import {ICategoricalStatistics, IStatistics} from '../internal';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import OrderedSet from '../internal/OrderedSet';
 import {
   Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
-  createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, isSupportType, models
+  createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
+  ISelectionColumnDesc, isSupportType, IValueColumnDesc, models, toGroupID, unifyParents
 } from '../model';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
-import {IOrderedGroup, toGroupID, unifyParents} from '../model/Group';
 import RankColumn from '../model/RankColumn';
 import Ranking from '../model/Ranking';
-import {ISelectionColumnDesc} from '../model/SelectionColumn';
 import StackColumn from '../model/StackColumn';
-import {IValueColumnDesc} from '../model/ValueColumn';
 import {exportRanking, IExportOptions} from './utils';
 
 export {IExportOptions} from './utils';

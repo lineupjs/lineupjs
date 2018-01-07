@@ -23,7 +23,7 @@ export interface IGroupAction {
  * @param groupActions
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label = 'actions', actions: Readonly<IAction>[] = [], groupActions: Readonly<IGroupAction>[] = []) {
+export function createActionDesc(label = 'actions', actions: Readonly<IAction>[] = [], groupActions: Readonly<IGroupAction>[] = []) {
   return {type: 'actions', label, actions, groupActions};
 }
 

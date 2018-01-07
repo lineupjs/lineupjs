@@ -10,7 +10,7 @@ import {EAdvancedSortMethod} from './INumberColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Reduce') {
+export function createReduceDesc(label: string = 'Reduce') {
   return {type: 'reduce', label};
 }
 

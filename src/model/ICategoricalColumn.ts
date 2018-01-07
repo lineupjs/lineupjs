@@ -105,7 +105,7 @@ export interface ICategoricalFilter {
   filterMissing: boolean;
 }
 
-export function isEqualFilter(a: ICategoricalFilter | null, b: ICategoricalFilter | null) {
+export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICategoricalFilter | null) {
   if (a === b) {
     return true;
   }
@@ -133,7 +133,7 @@ function arrayEquals<T>(a: T[], b: T[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
-export function isIncluded(filter: ICategoricalFilter | null, category: ICategory | null) {
+export function isCategoryIncluded(filter: ICategoricalFilter | null, category: ICategory | null) {
   if (!filter) {
     return true;
   }

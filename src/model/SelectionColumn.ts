@@ -7,7 +7,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'S') {
+export function createSelectionDesc(label: string = 'S') {
   return {type: 'selection', label};
 }
 

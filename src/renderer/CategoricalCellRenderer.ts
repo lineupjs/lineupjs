@@ -3,7 +3,7 @@ import {computeHist, ICategoricalBin, ICategoricalStatistics} from '../internal/
 import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {isIncluded} from '../model/ICategoricalColumn';
+import {isCategoryIncluded} from '../model/ICategoricalColumn';
 import OrdinalColumn from '../model/OrdinalColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
@@ -174,7 +174,7 @@ export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HT
     const cats = col.categories;
     const f = col.getFilter();
     bins.forEach((bin, i) => {
-      if (!isIncluded(f, cats[i])) {
+      if (!isCategoryIncluded(f, cats[i])) {
         bin.dataset.filtered = 'filtered';
       } else {
         delete bin.dataset.filtered;

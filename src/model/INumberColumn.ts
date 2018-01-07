@@ -177,15 +177,15 @@ export function noNumberFilter() {
   return ({min: -Infinity, max: Infinity, filterMissing: false});
 }
 
-export function isEqualFilter(a: INumberFilter, b: INumberFilter) {
+export function isEqualNumberFilter(a: INumberFilter, b: INumberFilter) {
   return similar(a.min, b.min, 0.001) && similar(a.max, b.max, 0.001) && a.filterMissing === b.filterMissing;
 }
 
-export function isDummyFilter(filter: INumberFilter) {
+export function isDummyNumberFilter(filter: INumberFilter) {
   return !filter.filterMissing && !isFinite(filter.min) && !isFinite(filter.max);
 }
 
-export function isIncluded(filter: INumberFilter | null, value: number) {
+export function isNumberIncluded(filter: INumberFilter | null, value: number) {
   if (!filter) {
     return true;
   }

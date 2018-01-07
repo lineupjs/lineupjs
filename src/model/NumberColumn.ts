@@ -4,8 +4,8 @@ import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {
-  default as INumberColumn, EAdvancedSortMethod, groupCompare, INumberDesc, INumberFilter, isDummyFilter,
-  isEqualFilter, isIncluded, noNumberFilter, numberCompare, restoreFilter
+  default as INumberColumn, EAdvancedSortMethod, groupCompare, INumberDesc, INumberFilter, isDummyNumberFilter,
+  isEqualNumberFilter, isNumberIncluded, noNumberFilter, numberCompare, restoreFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,
@@ -64,7 +64,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
     r.map = this.mapping.dump();
-    r.filter = isDummyFilter(this.currentFilter) ? null : this.currentFilter;
+    r.filter = isDummyNumberFilter(this.currentFilter) ? null : this.currentFilter;
     r.groupSortMethod = this.groupSortMethod;
     if (this.currentStratifyThresholds) {
       r.stratifyThreshholds = this.currentStratifyThresholds;
@@ -173,7 +173,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   isFiltered() {
-    return isDummyFilter(this.currentFilter);
+    return isDummyNumberFilter(this.currentFilter);
   }
 
   getFilter(): INumberFilter {
@@ -181,7 +181,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
-    if (isEqualFilter(value, this.currentFilter)) {
+    if (isEqualNumberFilter(value, this.currentFilter)) {
       return;
     }
     const bak = this.getFilter();
@@ -197,7 +197,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @returns {boolean}
    */
   filter(row: IDataRow) {
-    return isIncluded(this.currentFilter, this.getRawNumber(row, NaN));
+    return isNumberIncluded(this.currentFilter, this.getRawNumber(row, NaN));
   }
 
   getStratifyThresholds() {

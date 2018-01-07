@@ -6,7 +6,7 @@ import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Nested') {
+export function createNestedDesc(label: string = 'Nested') {
   return {type: 'nested', label};
 }
 

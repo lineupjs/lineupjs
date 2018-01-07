@@ -1,6 +1,6 @@
 import {round} from '../../internal';
 import OrdinalColumn from '../../model/OrdinalColumn';
-import {ICategoricalFilter, isIncluded} from '../../model/ICategoricalColumn';
+import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup} from '../missing';
 import ADialog from './ADialog';
 
@@ -24,7 +24,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
     node.insertAdjacentHTML('beforeend', `<div>
-        ${joint.map(({name, color, label, range}) => `<label><input data-cat="${name}" type="checkbox"${isIncluded(this.before, name) ? 'checked' : ''}>
+        ${joint.map(({name, color, label, range}) => `<label><input data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
         <input type="number" value="${range}" min="0" max="100" size="5"><div><div style="background-color: ${color}; width: ${range}%"></div></div><div>${label}</div></label>`).join('')}
         <label><input type="checkbox" checked><div>Unselect All</div></label>
     </div>`);

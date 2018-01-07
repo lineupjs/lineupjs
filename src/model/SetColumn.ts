@@ -2,7 +2,7 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
-import {ICategoricalDesc, ICategoricalFilter, ICategory, isIncluded, toCategories} from './ICategoricalColumn';
+import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
@@ -136,7 +136,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
       return true;
     }
     for (const s of this.getSet(row)) {
-      if (isIncluded(this.currentFilter, s)) {
+      if (isCategoryIncluded(this.currentFilter, s)) {
         return true;
       }
     }

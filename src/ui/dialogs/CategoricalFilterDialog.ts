@@ -1,5 +1,5 @@
 import CategoricalColumn from '../../model/CategoricalColumn';
-import {ICategoricalFilter, isIncluded} from '../../model/ICategoricalColumn';
+import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
 import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup} from '../missing';
 import {default as ADialog} from './ADialog';
@@ -20,7 +20,7 @@ export default class CategoricalFilterDialog extends ADialog {
     node.classList.add('lu-filter-table');
 
     node.insertAdjacentHTML('beforeend', `<div>
-        ${this.column.categories.map((c) => `<label><input data-cat="${c.name}" type="checkbox"${isIncluded(this.before, c) ? 'checked': ''}><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
+        ${this.column.categories.map((c) => `<label><input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked': ''}><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
         <label><input type="checkbox" checked><span></span><div>Unselect All</div></label>
     </div>`);
     // selectAll

@@ -4,7 +4,7 @@ import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, isDummyFilter, noNumberFilter,
+  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, isDummyNumberFilter, noNumberFilter,
   restoreFilter
 } from './INumberColumn';
 import {
@@ -118,7 +118,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = !isDummyFilter(this.currentFilter) ? this.currentFilter : null;
+    r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }

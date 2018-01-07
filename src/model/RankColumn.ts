@@ -6,7 +6,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Rank') {
+export function createRankDesc(label: string = 'Rank') {
   return {type: 'rank', label};
 }
 

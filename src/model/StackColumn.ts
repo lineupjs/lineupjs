@@ -1,5 +1,4 @@
-import {round} from '../internal';
-import {similar} from '../internal/math';
+import {round, similar} from '../internal';
 import {toolbar} from './annotations';
 import Column, {IFlatColumn} from './Column';
 import {IMultiLevelColumn} from './CompositeColumn';
@@ -12,7 +11,7 @@ import {isNumberColumn} from './INumberColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Weighted Sum') {
+export function createStackDesc(label: string = 'Weighted Sum') {
   return {type: 'stack', label};
 }
 

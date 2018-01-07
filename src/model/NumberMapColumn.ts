@@ -5,7 +5,7 @@ import {IKeyValue} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc,
-  INumberFilter, isDummyFilter, noNumberFilter, restoreFilter
+  INumberFilter, isDummyNumberFilter, noNumberFilter, restoreFilter
 } from './INumberColumn';
 import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
@@ -105,7 +105,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = !isDummyFilter(this.currentFilter) ? this.currentFilter : null;
+    r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }

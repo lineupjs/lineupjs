@@ -14,7 +14,7 @@ import NumbersColumn from './NumbersColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Imposition') {
+export function createImpositionDesc(label: string = 'Imposition') {
   return {type: 'imposition', label};
 }
 

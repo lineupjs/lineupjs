@@ -3,7 +3,7 @@ import Column from './Column';
 import {
   compareCategory,
   ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
-  isEqualFilter, isIncluded, toCategories, toCategory,
+  isEqualCategoricalFilter, isCategoryIncluded, toCategories, toCategory,
 } from './ICategoricalColumn';
 import {IDataRow, IGroup} from './interfaces';
 import {missingGroup} from './missing';
@@ -120,7 +120,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   filter(row: IDataRow): boolean {
-    return isIncluded(this.currentFilter, this.getCategory(row));
+    return isCategoryIncluded(this.currentFilter, this.getCategory(row));
   }
 
   getFilter() {
@@ -128,7 +128,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   setFilter(filter: ICategoricalFilter | null) {
-    if (isEqualFilter(this.currentFilter, filter)) {
+    if (isEqualCategoricalFilter(this.currentFilter, filter)) {
       return;
     }
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
