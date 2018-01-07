@@ -48,7 +48,7 @@ section.#{$lu_css_prefix}-header {
   }
 
   &.#{$lu_css_prefix}-dragover::after {
-    background: $lu_drag_over;
+    // background: $lu_drag_over;
   }
 
   > .#{$lu_css_prefix}-summary {

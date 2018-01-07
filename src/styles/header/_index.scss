@@ -20,9 +20,7 @@
   }
 
   &.#{$lu_css_prefix}-dragover::after {
-    content: '+';
-    font-size: 250%;
-    color: #fff;
+    content: attr(data-draginfo);
     position: absolute;
     top: 0;
     left: 0;
