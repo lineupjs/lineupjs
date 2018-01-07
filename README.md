@@ -1,10 +1,8 @@
-LineUp.js: Visual Analysis of Multi-Attribute Rankings [![NPM version][npm-image]][npm-url] 
+LineUp.js: Visual Analysis of Multi-Attribute Rankings [![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url]
 ======================================================
 
 LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. 
 This is a D3-based re-implementation with limited functionality relative to the original stand-alone LineUp, which you can check out at http://lineup.caleydo.org
-
-
 
 
 Dependencies
@@ -15,10 +13,12 @@ LineUp.js depends on
  * [D3](http://d3js.org) utilities: scales, format, dragging
  * [Popper.js](https://popper.js.org) dialogs
 
+
 Development Dependencies
 ------------------------
 
 [Webpack](https://webpack.github.io) is used as build tool. LineUp itself is written in [TypeScript](https://www.typescriptlang.org) and [SASS](https://sass-lang.com). 
+
 
 Development Environment
 -----------------------
@@ -58,5 +58,10 @@ This repository is created as part of the **[The Caleydo Project](http://caleydo
 
 [npm-image]: https://badge.fury.io/js/lineupjs.svg
 [npm-url]: https://npmjs.org/package/lineupjs
+[bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
+[bsd-url]: https://opensource.org/licenses/BSD-3-Clause
+[ci-image]: https://circleci.com/gh/Caleydo/lineupjs.svg?style=svg
+[ci-url]: https://circleci.com/gh/Caleydo/lineupjs
 
- [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
+ 

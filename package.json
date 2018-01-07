@@ -39,7 +39,7 @@
   "scripts": {
     "compile": "tsc",
     "lint": "tslint --project tsconfig.json -c tslint.json && stylelint src/**/*.scss",
-    "docs": "typedoc --out ./build/docs  src",
+    "docs": "typedoc --out ./build/docs/ src tsd.d.ts",
     "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
     "pretest": "npm run compile",
     "test": "node -e \"require('fs').existsSync('./tests')?0:1\" || karma start",

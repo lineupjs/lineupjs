@@ -1,5 +1,5 @@
 module.export = {
-  name: 'LineUpEngine',
+  name: 'LineUpJS',
   mode: 'modules',
   modules: 'umd',
   theme: 'minimal',
@@ -8,11 +8,12 @@ module.export = {
   ignoreCompilerErrors: false,
   experimentalDecorators: true,
   emitDecoratorMetadata: true,
+  moduleResolution: 'node',
   preserveConstEnums: true,
   stripInternal: true,
   suppressExcessPropertyErrors: true,
   suppressImplicitAnyIndexErrors: true,
-  exclude: 'tests/**/*.ts',
+  exclude: '**/*.(test.ts|scss)',
   excludePrivate: true,
   excludeProtected: true,
   excludeExternals: true
