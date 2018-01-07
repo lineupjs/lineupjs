@@ -1,12 +1,12 @@
-import {IAdvancedBoxPlotData} from '../internal';
+import {IBoxPlotData} from '../internal';
 import {suffix} from '../internal/AEventDispatcher';
 import {toolbar} from './annotations';
+import BoxPlotColumn from './BoxPlotColumn';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {IKeyValue} from './IArrayColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
 import {IDataRow, IGroupData} from './interfaces';
-import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, noNumberFilter} from './INumberColumn';
+import {ESortMethod, IBoxPlotColumn, INumberFilter, isBoxPlotColumn, noNumberFilter} from './INumberColumn';
 import {IMappingFunction, ScaleMappingFunction} from './MappingFunction';
 import NumbersColumn from './NumbersColumn';
 
@@ -16,7 +16,7 @@ import NumbersColumn from './NumbersColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createImpositionsDesc(label: string = 'Imposition') {
+export function createImpositionBoxPlotDesc(label: string = 'Imposition') {
   return {type: 'impositions', label};
 }
 
@@ -24,14 +24,14 @@ export function createImpositionsDesc(label: string = 'Imposition') {
  * implementation of a combine column, standard operations how to select
  */
 @toolbar('sortNumbers', 'filterMapped')
-export default class ImpositionCompositesColumn extends CompositeColumn implements INumbersColumn {
+export default class ImpositionBoxPlotColumn extends CompositeColumn implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumbersColumn.EVENT_MAPPING_CHANGED;
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
 
-    this.setDefaultRenderer('numbers');
-    this.setDefaultGroupRenderer('numbers');
+    this.setDefaultRenderer('boxplot');
+    this.setDefaultGroupRenderer('boxplot');
   }
 
   get label() {
@@ -46,9 +46,9 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
   }
 
-  private get wrapper(): INumbersColumn | null {
+  private get wrapper(): IBoxPlotColumn|null {
     const c = this._children;
-    return c.length === 0 ? null : <INumbersColumn>c[0];
+    return c.length === 0 ? null : <IBoxPlotColumn>c[0];
   }
 
   getLabel(row: IDataRow) {
@@ -72,22 +72,12 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ImpositionCompositesColumn.EVENT_MAPPING_CHANGED]);
-  }
-
-  get labels() {
-    const w = this.wrapper;
-    return w ? w.labels : [];
-  }
-
-  get dataLength() {
-    const w = this.wrapper;
-    return w ? w.dataLength : null;
+    return super.createEventList().concat([ImpositionBoxPlotColumn.EVENT_MAPPING_CHANGED]);
   }
 
   getValue(row: IDataRow) {
     const w = this.wrapper;
-    return w ? w.getValue(row) : [];
+    return w ? w.getValue(row) : null;
   }
 
   getNumber(row: IDataRow) {
@@ -100,22 +90,12 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getRawNumber(row) : NaN;
   }
 
-  getNumbers(row: IDataRow) {
-    const w = this.wrapper;
-    return w ? w.getNumbers(row) : [];
-  }
-
-  getRawNumbers(row: IDataRow) {
-    const w = this.wrapper;
-    return w ? w.getRawNumbers(row) : [];
-  }
-
-  getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
+  getBoxPlotData(row: IDataRow): IBoxPlotData|null {
     const w = this.wrapper;
     return w ? w.getBoxPlotData(row) : null;
   }
 
-  getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
+  getRawBoxPlotData(row: IDataRow): IBoxPlotData|null {
     const w = this.wrapper;
     return w ? w.getRawBoxPlotData(row) : null;
   }
@@ -132,12 +112,12 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
 
   getSortMethod() {
     const w = this.wrapper;
-    return w ? w.getSortMethod() : EAdvancedSortMethod.min;
+    return w ? w.getSortMethod() : ESortMethod.min;
   }
 
-  setSortMethod(value: EAdvancedSortMethod) {
+  setSortMethod(value: ESortMethod) {
     const w = this.wrapper;
-    return w ? w.setSortMethod(value) : undefined;
+    return w ? w.setSortMethod(value): undefined;
   }
 
   isMissing(row: IDataRow) {
@@ -147,58 +127,38 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
 
   setMapping(mapping: IMappingFunction): void {
     const w = this.wrapper;
-    return w ? w.setMapping(mapping) : undefined;
+    return w ? w.setMapping(mapping): undefined;
   }
 
   getFilter() {
     const w = this.wrapper;
-    return w ? w.getFilter() : noNumberFilter();
+    return w ? w.getFilter(): noNumberFilter();
   }
 
   setFilter(value?: INumberFilter): void {
     const w = this.wrapper;
-    return w ? w.setFilter(value) : undefined;
+    return w ? w.setFilter(value): undefined;
   }
 
   getRange(): [string, string] {
     const w = this.wrapper;
-    return w ? w.getRange() : ['0', '1'];
-  }
-
-  getMap(row: IDataRow): IKeyValue<number>[] {
-    const w = this.wrapper;
-    return w ? w.getMap(row) : [];
-  }
-
-  getMapLabel(row: IDataRow) {
-    const w = this.wrapper;
-    return w ? w.getMapLabel(row) : [];
-  }
-
-  getLabels(row: IDataRow): string[] {
-    const w = this.wrapper;
-    return w ? w.getLabels(row) : [];
-  }
-
-  getValues(row: IDataRow) {
-    const w = this.wrapper;
-    return w ? w.getValues(row) : [];
+    return w ? w.getRange(): ['0', '1'];
   }
 
   compare(a: IDataRow, b: IDataRow) {
-    return NumbersColumn.prototype.compare.call(this, a, b);
+    return BoxPlotColumn.prototype.compare.call(this, a, b);
   }
 
   group(row: IDataRow) {
-    return NumbersColumn.prototype.group.call(this, row);
+    return BoxPlotColumn.prototype.group.call(this, row);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
-    return NumbersColumn.prototype.groupCompare.call(this, a, b);
+    return BoxPlotColumn.prototype.groupCompare.call(this, a, b);
   }
 
   insert(col: Column, index: number): Column | null {
-    if (this._children.length === 0 && !isNumbersColumn(col)) {
+    if (this._children.length === 0 && !isBoxPlotColumn(col)) {
       return null;
     }
     if (this._children.length === 1 && !isCategoricalColumn(col)) {
@@ -212,15 +172,15 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   }
 
   protected insertImpl(col: Column, index: number) {
-    if (isNumbersColumn(col)) {
-      this.forward(col, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
+    if (isBoxPlotColumn(col)) {
+      this.forward(col, ...suffix('.impose', BoxPlotColumn.EVENT_MAPPING_CHANGED));
     }
     return super.insertImpl(col, index);
   }
 
   protected removeImpl(child: Column) {
-    if (isNumbersColumn(child)) {
-      this.unforward(child, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
+    if (isBoxPlotColumn(child)) {
+      this.unforward(child, ...suffix('.impose', BoxPlotColumn.EVENT_MAPPING_CHANGED));
     }
     return super.removeImpl(child);
   }

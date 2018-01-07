@@ -30,6 +30,7 @@ import StringColumn from './StringColumn';
 import StringMapColumn from './StringMapColumn';
 import StringsColumn from './StringsColumn';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import ImpositionBoxPlotColumn from './ImpositionBoxPlotColumn';
 
 export {isSupportType, Category, SupportType} from './annotations';
 export {isMissingValue, isUnknown, FIRST_IS_NAN, missingGroup } from './missing';
@@ -57,6 +58,7 @@ export * from './DatesMapColumn';
 export * from './DummyColumn';
 export * from './GroupColumn';
 export * from './HierarchyColumn';
+export * from './ImpositionBoxPlotColumn';
 export * from './ImpositionCompositeColumn';
 export * from './ImpositionCompositesColumn';
 export * from './MapColumn';
@@ -98,6 +100,7 @@ export {default as DatesMapColumn} from './DatesMapColumn';
 export {default as DummyColumn} from './DummyColumn';
 export {default as GroupColumn} from './GroupColumn';
 export {default as HierarchyColumn} from './HierarchyColumn';
+export {default as ImpositionBoxPlotColumn} from './ImpositionBoxPlotColumn';
 export {default as ImpositionCompositeColumn} from './ImpositionCompositeColumn';
 export {default as ImpositionCompositesColumn} from './ImpositionCompositesColumn';
 export {default as MapColumn} from './MapColumn';
@@ -166,6 +169,7 @@ export function models() {
     group: GroupColumn,
     hierarchy: HierarchyColumn,
     imposition: ImpositionCompositeColumn,
+    impositionBoxPlot: ImpositionBoxPlotColumn,
     impositions: ImpositionCompositesColumn,
     reduce: ReduceColumn,
     nested: NestedColumn,

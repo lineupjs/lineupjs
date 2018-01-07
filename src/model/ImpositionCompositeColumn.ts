@@ -6,7 +6,6 @@ import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
 import {IDataRow, IGroupData} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
-import NumbersColumn from './NumbersColumn';
 
 
 /**
@@ -120,12 +119,16 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   }
 
   protected insertImpl(col: Column, index: number) {
-    this.forward(col, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
+    if (isNumberColumn(col)) {
+      this.forward(col, ...suffix('.impose', NumberColumn.EVENT_MAPPING_CHANGED));
+    }
     return super.insertImpl(col, index);
   }
 
   protected removeImpl(child: Column) {
-    this.unforward(child, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
+    if (isNumberColumn(child)) {
+      this.unforward(child, ...suffix('.impose', NumberColumn.EVENT_MAPPING_CHANGED));
+    }
     return super.removeImpl(child);
   }
 }
