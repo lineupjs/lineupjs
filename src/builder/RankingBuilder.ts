@@ -1,6 +1,6 @@
 import {IColumnDesc} from '../model';
 
-export default class ColumnBuilder {
+export default class RankingBuilder {
   private readonly desc: Partial<IColumnDesc> = {};
 
   constructor(type: string, label: string) {
