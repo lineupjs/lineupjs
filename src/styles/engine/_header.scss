@@ -80,14 +80,18 @@ section.#{$lu_css_prefix}-header {
     bottom: -1px;
 
     &.#{$lu_css_prefix}-dragover {
-      transition: width 0.5s linear, right 0.5s linear;
-      background-color: $lu_drag_over;
+      transition: width 0.2s ease, right 0.2s ease;
+      user-select: none;
+      color: $lu_toolbar_color_hover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed $lu_drag_over;
+      background-color: lighten($lu_drag_over, 35%);
       width: 50px;
       right: -25px;
       z-index: 10;
-      display: flex;
       font-size: small;
-      align-items: center;
 
       &:before {
         content: 'Place here';
