@@ -13,7 +13,7 @@ export default class CompositeChildrenDialog extends ADialog {
 
   constructor(private readonly column: CompositeColumn, attachment: HTMLElement, private ctx: IRankingHeaderContext) {
     super(attachment, {
-      hideOnMoveOutside: true
+      hideOnMoveOutside: false
     });
     this.id = `.dialog${Math.random().toString(36).slice(-8).substr(0, 3)}`;
   }
@@ -25,15 +25,24 @@ export default class CompositeChildrenDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     node.classList.add('lu-sub-nested');
-    this.column.children.forEach((c) => {
-      const n = createHeader(c, this.ctx, {
-        mergeDropAble: false,
-        resizeable: false
+    const createChildren = () => {
+      this.column.children.forEach((c) => {
+        const n = createHeader(c, this.ctx, {
+          mergeDropAble: false,
+          resizeable: false
+        });
+        n.className = `lu-header${c.isFiltered() ? ' lu-filtered' : ''}`;
+        updateHeader(n, c);
+        const summary = this.ctx.summaryRenderer(c, false);
+        n.insertAdjacentHTML('beforeend', summary.template);
+        const summaryNode = <HTMLElement>n.lastElementChild!;
+        summaryNode.dataset.renderer = c.getSummaryRenderer();
+        summaryNode.classList.add('lu-summary');
+        summary.update(summaryNode, this.ctx.statsOf(<any>c));
+        node.appendChild(n);
       });
-      n.className = `lu-header${c.isFiltered() ? ' lu-filtered' : ''}`;
-      updateHeader(n, c);
-      node.appendChild(n);
-    });
+    };
+    createChildren();
 
     this.column.on(suffix(this.id, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN), debounce(() => {
       if (!node.parentElement) {
@@ -42,16 +51,7 @@ export default class CompositeChildrenDialog extends ADialog {
         return;
       }
       node.innerHTML = '';
-      this.column.children.forEach((c) => {
-        const n = createHeader(c, this.ctx, {
-          mergeDropAble: false,
-          resizeable: false
-        });
-        n.className = `lu-header${c.isFiltered() ? ' lu-filtered' : ''}`;
-        updateHeader(n, c);
-        // TODO summary
-        node.appendChild(n);
-      });
+      createChildren();
     }));
   }
 }

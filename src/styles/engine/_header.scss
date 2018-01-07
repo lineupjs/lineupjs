@@ -107,14 +107,24 @@ section.#{$lu_css_prefix}-header {
 }
 
 .#{$lu_css_prefix}-sub-nested > section {
-  margin-bottom: $lu_engine_grip_gap;
+  margin-bottom: $lu_engine_grip_gap + 15px;
 
   > .#{$lu_css_prefix}-handle {
     height: $lu_engine_grip_gap;
     width: 100%;
-    bottom: ($lu_engine_grip_gap * -1) - 1px;
+    bottom: ($lu_engine_grip_gap * -1) - 1px - 15px;
     left: 0;
     right: 0;
     cursor: inherit;
+
+
+
+    &.#{$lu_css_prefix}-dragover {
+      transition: bottom 0.2s ease, height 0.2s ease;
+      height: 50px;
+      bottom: ($lu_engine_grip_gap * -1) - 1px - 15px -25px;
+      width: 100%;
+      right: 0;
+    }
   }
 }
