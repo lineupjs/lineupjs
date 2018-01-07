@@ -4,6 +4,7 @@ import {INumbersColumn} from '../model/INumberColumn';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
+/** @internal */
 export abstract class ANumbersCellRenderer {
   abstract readonly title: string;
 

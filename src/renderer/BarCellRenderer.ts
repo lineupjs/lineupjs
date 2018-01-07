@@ -9,9 +9,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 
 
-/**
- * a renderer rendering a bar for numerical columns
- */
+/** @internal */
 export default class BarCellRenderer implements ICellRendererFactory {
   readonly title = 'Bar';
 

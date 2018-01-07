@@ -5,19 +5,19 @@ export interface IItem {
   text: string;
 }
 
-export interface IGroupItem<T extends IItem> {
+export interface IGroupSearchItem<T extends IItem> {
   text: string;
-  children: (T | IGroupItem<T>)[];
+  children: (T | IGroupSearchItem<T>)[];
 }
 
-function isItem<T extends IItem>(v: T | IGroupItem<T>): v is T {
+function isItem<T extends IItem>(v: T | IGroupSearchItem<T>): v is T {
   return (<T>v).id !== undefined;
 }
 
 export interface ISearchBoxOptions<T extends IItem> {
   doc: Document;
 
-  formatItem(item: T | IGroupItem<T>, node: HTMLElement): string;
+  formatItem(item: T | IGroupSearchItem<T>, node: HTMLElement): string;
 
   placeholder: string;
 }
@@ -36,7 +36,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private search: HTMLInputElement;
   private body: HTMLElement;
 
-  private values: (T | IGroupItem<T>)[] = [];
+  private values: (T | IGroupSearchItem<T>)[] = [];
 
   constructor(options: Partial<ISearchBoxOptions<T>> = {}) {
     super();
@@ -59,13 +59,13 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     return this.values;
   }
 
-  set data(data: (T | IGroupItem<T>)[]) {
+  set data(data: (T | IGroupSearchItem<T>)[]) {
     this.values = data;
     this.body.innerHTML = '';
     this.buildDialog(this.body, this.values);
   }
 
-  private buildDialog(node: HTMLElement, values: (T | IGroupItem<T>)[]) {
+  private buildDialog(node: HTMLElement, values: (T | IGroupSearchItem<T>)[]) {
     values.forEach((v) => {
       if (isItem(v)) {
         node.insertAdjacentHTML('beforeend', `<li class="lu-search-item"><span></span></li>`);

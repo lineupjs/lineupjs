@@ -1,6 +1,11 @@
 const TYPE_OBJECT = '[object Object]';
 
 //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
+/**
+ * @internal
+ * @param args
+ * @returns {any}
+ */
 export default function merge(...args: any[]) {
   let result = null;
 

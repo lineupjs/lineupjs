@@ -1,4 +1,4 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {ICategoricalStatistics, IStatistics} from '../internal';
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {
@@ -9,6 +9,7 @@ import {noRenderer} from './utils';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item
+ * @internal
  */
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
   abstract readonly title: string;

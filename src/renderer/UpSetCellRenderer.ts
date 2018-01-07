@@ -6,7 +6,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './in
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
 
-
+/** @internal */
 export default class UpSetCellRenderer implements ICellRendererFactory {
   readonly title = 'Matrix';
 

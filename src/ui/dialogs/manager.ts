@@ -3,7 +3,7 @@ import ADialog from './ADialog';
 
 const visiblePopups: ADialog[] = [];
 
-
+/** @internal */
 export function removePopup(popup: ADialog) {
   const index = visiblePopups.indexOf(popup);
   if (index > -1 && popup) {
@@ -15,6 +15,7 @@ export function removePopup(popup: ADialog) {
   }
 }
 
+/** @internal */
 export function removeAllPopups() {
   if (visiblePopups.length === 0) {
     return;
@@ -26,7 +27,7 @@ export function removeAllPopups() {
   });
 }
 
-
+/** @internal */
 export function registerPopup(popup: ADialog, hideOnClickOutside: boolean, hideOnMoveOutside: boolean) {
   if (visiblePopups.length === 0) {
     popup.node.ownerDocument.addEventListener('keyup', escKeyListener);

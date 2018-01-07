@@ -29,11 +29,12 @@ import StringColumn from './StringColumn';
 import StringMapColumn from './StringMapColumn';
 import StringsColumn from './StringsColumn';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import Column from './Column';
 
-export {default, default as Column, IColumnDesc, IColumnMetaData, IColumnParent, IFlatColumn} from './Column';
+export {IColumnDesc, IFlatColumn, IColumnParent, IColumnMetaData, default, default as Column} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
 export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './MappingFunction';
-export {IDataRow, IGroup, IGroupData, IGroupItem, isGroup, IGroupParent} from './interfaces';
+export * from './interfaces';
 export {isSupportType} from './annotations';
 export {isNumberColumn, INumberColumn} from './INumberColumn';
 export {isCategoricalColumn, ICategoricalColumn, ICategory} from './ICategoricalColumn';
@@ -56,7 +57,7 @@ export {isMissingValue, isUnknown} from './missing';
  * @param functions
  * @returns {CustomColumn}
  */
-export function defineColumn<T>(name: string, functions: any = {}) {
+export function defineColumn<T>(name: string, functions: any = {}): typeof Column {
   class CustomColumn extends ValueColumn<T> {
     constructor(id: string, desc: IValueColumnDesc<T>) {
       super(id, desc);

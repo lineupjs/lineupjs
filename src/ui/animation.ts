@@ -5,6 +5,7 @@ import {
 import {IExceptionContext} from 'lineupengine/src/logic';
 import {IGroupData, IGroupItem, isGroup} from '../model';
 
+/** @internal */
 export interface IGroupLookUp {
   item2groupIndex: Map<number, number>;
   group2firstItemIndex: Map<string, number>;
@@ -30,6 +31,7 @@ function toKey(item: IGroupItem | IGroupData) {
   return (<IGroupItem>item).i.toString();
 }
 
+/** @internal */
 export function lineupAnimation(previous: IExceptionContext, previousData: (IGroupItem | IGroupData)[], currentData: (IGroupItem | IGroupData)[]): IAnimationContext {
 
   const previousKey = (index: number) => toKey(previousData[index]);

@@ -1,6 +1,7 @@
 import BooleanColumn from '../../model/BooleanColumn';
 import ADialog from './ADialog';
 
+/** @internal */
 export default class BooleanFilterDialog extends ADialog {
 
   private readonly before: boolean | null;

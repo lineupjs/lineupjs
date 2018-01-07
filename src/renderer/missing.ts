@@ -2,7 +2,6 @@ import {IDataRow} from '../model';
 import Column from '../model/Column';
 import {CANVAS_HEIGHT, DASH} from '../styles';
 
-
 export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
 
   const dashX = Math.max(0, (width - x - DASH.width) / 2); // center horizontally

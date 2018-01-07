@@ -1,7 +1,9 @@
+import {IAdvancedBoxPlotData} from '../internal';
 import {suffix} from '../internal/AEventDispatcher';
 import {toolbar} from './annotations';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
+import {IKeyValue} from './IArrayColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
 import {IDataRow, IGroupData} from './interfaces';
 import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, noNumberFilter} from './INumberColumn';
@@ -108,12 +110,12 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getRawNumbers(row) : [];
   }
 
-  getBoxPlotData(row: IDataRow) {
+  getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData|null {
     const w = this.wrapper;
     return w ? w.getBoxPlotData(row) : null;
   }
 
-  getRawBoxPlotData(row: IDataRow) {
+  getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData|null {
     const w = this.wrapper;
     return w ? w.getRawBoxPlotData(row) : null;
   }
@@ -163,7 +165,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getRange(): ['0', '1'];
   }
 
-  getMap(row: IDataRow) {
+  getMap(row: IDataRow): IKeyValue<number>[] {
     const w = this.wrapper;
     return w ? w.getMap(row): [];
   }

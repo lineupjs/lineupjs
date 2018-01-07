@@ -38,6 +38,7 @@ import ADialog from './ADialog';
 //       </dl>
 //       </div>`;
 
+/** @internal */
 export default class ScriptEditDialog extends ADialog {
   private readonly before: string;
 

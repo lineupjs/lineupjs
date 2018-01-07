@@ -5,7 +5,7 @@ import {
   ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
   isEqualFilter, isIncluded, toCategories, toCategory,
 } from './ICategoricalColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {missingGroup} from './missing';
 import ValueColumn from './ValueColumn';
 
@@ -138,7 +138,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return compareCategory(this.getCategory(a), this.getCategory(b));
   }
 
-  group(row: IDataRow) {
+  group(row: IDataRow): IGroup {
     const cat = this.getCategory(row);
     if (!cat) {
       return missingGroup;

@@ -9,10 +9,12 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 
+/** @internal */
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
 }
 
+/** @internal */
 export function createData(col: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
   const padding = COLUMN_PADDING;
   let offset = 0;
@@ -55,9 +57,7 @@ export function createData(col: { children: Column[] } & Column, context: IRende
   return {cols, stacked, padding};
 }
 
-/**
- * renders a stacked column using composite pattern
- */
+/** @internal */
 export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMultiLevelColumn & Column> implements ICellRendererFactory {
   readonly title: string;
 

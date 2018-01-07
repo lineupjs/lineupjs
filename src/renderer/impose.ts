@@ -4,7 +4,7 @@ import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
 import {IImposer} from './interfaces';
 
-
+/** @internal */
 export function colorOf(col: Column, row: IDataRow | null, imposer?: IImposer) {
   if (imposer && imposer.color) {
     return imposer.color(row);

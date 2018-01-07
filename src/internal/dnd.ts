@@ -3,6 +3,7 @@
  * @param e
  * @param typesToCheck
  * @returns {any}
+ * @internal
  */
 export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
   const available: any = e.dataTransfer.types;
@@ -39,6 +40,7 @@ function isEdgeDnD(e: DragEvent) {
  * checks whether it is a copy operation
  * @param e
  * @returns {boolean|RegExpMatchArray}
+ * @internal
  */
 export function copyDnD(e: DragEvent) {
   const dT = e.dataTransfer;
@@ -48,6 +50,7 @@ export function copyDnD(e: DragEvent) {
 /**
  * updates the drop effect accoriding to the current copyDnD state
  * @param e
+ * @internal
  */
 export function updateDropEffect(e: DragEvent) {
   const dT = e.dataTransfer;
@@ -77,6 +80,7 @@ let idCounter = 0;
  * @param {HTMLElement} node
  * @param {() => IDragStartResult} onDragStart callback to compute the payload an object of mime types
  * @param {boolean} stopPropagation whether to stop propagation in case of success
+ * @internal
  */
 export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult, stopPropagation: boolean = false) {
   const id = ++idCounter;
@@ -126,6 +130,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
  * @param {(result: IDropResult, e: DragEvent) => boolean} onDrop callback when dropped, returns true if the drop was successful
  * @param {(e: DragEvent) => void} onDragOver optional drag over handler, e.g. for special effects
  * @param {boolean} stopPropagation flag if the event propagation should be stopped in case of success
+ * @internal
  */
 export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result: IDropResult, e: DragEvent) => boolean, onDragOver: null | ((e: DragEvent) => void) = null, stopPropagation: boolean = false) {
   node.addEventListener('dragenter', (e) => {

@@ -8,6 +8,7 @@ interface IDebounceContext {
  * @param {(...args: any[]) => void} callback the callback to call
  * @param {number} timeToDelay delay the call in milliseconds
  * @return {(...args: any[]) => any} a function that can be called with the same interface as the callback but delayed
+ * @internal
  */
 export default function debounce(callback: (...args: any[]) => void, timeToDelay = 100, choose?: (current: IDebounceContext, next: IDebounceContext) => IDebounceContext) {
   let tm = -1;

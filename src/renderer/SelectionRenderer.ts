@@ -4,6 +4,7 @@ import SelectionColumn from '../model/SelectionColumn';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {noop} from './utils';
 
+/** @internal */
 export default class SelectionRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 

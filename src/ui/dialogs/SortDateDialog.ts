@@ -2,6 +2,7 @@ import DatesColumn from '../../model/DatesColumn';
 import ADialog from './ADialog';
 import {sortMethods, sortOrder} from './SortDialog';
 
+/** @internal */
 export default class SortDateDialog extends ADialog {
    constructor(private readonly column: DatesColumn, attachment: HTMLElement) {
     super(attachment, {

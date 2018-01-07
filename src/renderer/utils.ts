@@ -9,6 +9,7 @@ import {IArrayColumn} from '../model/IArrayColumn';
  * @param styles
  * @param text
  * @return {T}
+ * @internal
  */
 export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: { [key: string]: any } = {}, styles: { [key: string]: any } = {}, text?: string): T {
   Object.keys(attrs).forEach((attr) => {
@@ -25,17 +26,17 @@ export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: { [ke
   });
   return setText(node, text);
 }
-
+/** @internal */
 export function noop() {
   // no op
 }
-
+/** @internal */
 export const noRenderer = {
   template: `<div></div>`,
   update: noop,
   render: noop
 };
-
+/** @internal */
 export function setText<T extends Node>(node: T, text?: string): T {
   if (text === undefined) {
     return node;
@@ -58,11 +59,13 @@ export function setText<T extends Node>(node: T, text?: string): T {
  * @param node
  * @param selector
  * @param callback
+ * @internal
  */
 export function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number) => void) {
   Array.from(node.querySelectorAll(selector)).forEach(callback);
 }
 
+/** @internal */
 export function forEachChild<T extends Element>(node: T, callback: (d: Element, i: number) => void) {
   Array.from(node.children).forEach(callback);
 }
@@ -71,6 +74,7 @@ export function forEachChild<T extends Element>(node: T, callback: (d: Element, 
  * matches the columns and the dom nodes representing them
  * @param {SVGGElement | HTMLElement} node row
  * @param columns columns to check
+ * @internal
  */
 export function matchColumns(node: HTMLElement, columns: { column: Column, template: string, rendererId: string}[]) {
   if (node.childElementCount === 0) {
@@ -118,6 +122,7 @@ export function matchColumns(node: HTMLElement, columns: { column: Column, templ
   });
 }
 
+/** @internal */
 export function wideEnough(col: IArrayColumn<any>, length: number = col.labels.length) {
   const w = col.getWidth();
   return w / length > MIN_LABEL_WIDTH; // at least 30 pixel

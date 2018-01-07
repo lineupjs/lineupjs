@@ -5,6 +5,7 @@ import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
 
+/** @internal */
 export default class ImageCellRenderer implements ICellRendererFactory {
   readonly title = 'Image';
 

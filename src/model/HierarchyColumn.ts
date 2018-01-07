@@ -2,7 +2,7 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
 import {colorPool, ICategoricalColumn, ICategory} from './ICategoricalColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
@@ -10,7 +10,7 @@ export interface ICategoryNode extends ICategory {
   children: Readonly<ICategoryNode>[];
 }
 
-interface IPartialCategoryNode extends Partial<ICategory> {
+export interface IPartialCategoryNode extends Partial<ICategory> {
   children: IPartialCategoryNode[];
 }
 
@@ -177,7 +177,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return CategoricalColumn.prototype.compare.call(this, a, b);
   }
 
-  group(row: IDataRow) {
+  group(row: IDataRow): IGroup {
     if (this.isMissing(row)) {
       return missingGroup;
     }

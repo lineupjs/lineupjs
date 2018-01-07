@@ -8,9 +8,7 @@ import {interactiveHist} from './CategoricalCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {forEachChild, noRenderer} from './utils';
 
-/**
- * renders categorical columns as a colored rect with label
- */
+/** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
   readonly title = 'Distribution Bar';
 

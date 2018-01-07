@@ -2,6 +2,7 @@ import Column from '../../model/Column';
 import {IDataProvider} from '../../provider/ADataProvider';
 import ADialog from './ADialog';
 
+/** @internal */
 export default class SearchDialog extends ADialog {
 
   constructor(private readonly column: Column, attachment: HTMLElement, private readonly provider: IDataProvider) {

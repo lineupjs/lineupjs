@@ -1,6 +1,6 @@
 import {ILineUpOptions} from './interfaces';
-import {renderers as defaultRenderers} from './renderer';
-import {icons} from './ui/toolbar';
+import {renderers} from './renderer';
+import {icons} from './ui';
 
 /** number of bins before switching to dense mode
  */
@@ -17,7 +17,7 @@ export function defaultOptions(): ILineUpOptions {
   return {
     idPrefix,
     toolbar: Object.assign({}, icons),
-    renderers: Object.assign({}, defaultRenderers),
+    renderers: Object.assign({}, renderers),
 
     summary: true,
     animation: true,

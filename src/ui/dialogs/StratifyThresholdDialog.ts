@@ -1,6 +1,7 @@
 import NumberColumn from '../../model/NumberColumn';
 import ADialog from './ADialog';
 
+/** @internal */
 export default class StratifyThresholdDialog extends ADialog {
 
   private readonly before: number[];

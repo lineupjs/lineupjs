@@ -33,6 +33,7 @@ export interface IEngineRankingOptions {
 
 const WEIRD_CANVAS_OFFSET = 0.6;
 
+/** @internal */
 class RankingEvents extends AEventDispatcher {
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
   static readonly EVENT_UPDATE_DATA = 'updateData';
@@ -186,7 +187,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return this.data;
   }
 
-  get context() {
+  get context(): ICellRenderContext<RenderColumn> {
     return this._context;
   }
 

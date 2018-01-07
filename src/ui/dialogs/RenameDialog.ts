@@ -2,7 +2,7 @@ import {IColumnMetaData} from '../../model';
 import Column from '../../model/Column';
 import ADialog from './ADialog';
 
-
+/** @internal */
 export default class RenameDialog extends ADialog {
 
   private readonly before: IColumnMetaData;

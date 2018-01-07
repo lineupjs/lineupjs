@@ -1,4 +1,4 @@
-
+/** @internal */
 export function findOption(options: any) {
   return (key: string, defaultValue: any): any => {
     if (key in options) {
@@ -15,7 +15,7 @@ export function findOption(options: any) {
   };
 }
 
-
+/** @internal */
 export function equalArrays<T>(a: T[], b: T[]) {
   if (a.length !== b.length) {
     return false;
@@ -28,6 +28,7 @@ export function equalArrays<T>(a: T[], b: T[]) {
  * converts a given id to css compatible one
  * @param id
  * @return {string|void}
+ * @internal
  */
 export function fixCSS(id: string) {
   return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '_'); //replace non css stuff to _

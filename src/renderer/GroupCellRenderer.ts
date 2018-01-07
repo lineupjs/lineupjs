@@ -4,10 +4,7 @@ import GroupColumn from '../model/GroupColumn';
 import {ICellRendererFactory} from './interfaces';
 import {noop, noRenderer} from './utils';
 
-/**
- * renders a string with additional alignment behavior
- * one instance factory shared among strings
- */
+/** @internal */
 export default class GroupCellRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 

@@ -44,11 +44,11 @@ export interface IDialogClass {
   new(col: any, attachement: HTMLElement, ...args: any[]): ADialog;
 }
 
-export function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
+function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
   return {title, onClick, options};
 }
 
-export function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IRankingHeaderContext) => any[]) = () => [], options: Partial<IUIOptions> = {}): IToolbarAction {
+function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IRankingHeaderContext) => any[]) = () => [], options: Partial<IUIOptions> = {}): IToolbarAction {
   return {
     title,
     onClick: (col, evt, ctx) => {
@@ -99,7 +99,7 @@ const clone: IToolbarAction = {
   }
 };
 
-export const more: IToolbarAction = {
+const more: IToolbarAction = {
   title: 'More &hellip;',
   onClick: (col, evt, ctx) => {
     const dialog = new MoreColumnOptionsDialog(col, <HTMLElement>evt.currentTarget, ctx);
@@ -172,7 +172,6 @@ export const icons: { [key: string]: IToolbarAction } = {
 };
 
 const cache = new Map<string, IToolbarAction[]>();
-
 
 export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   if (cache.has(col.desc.type)) {

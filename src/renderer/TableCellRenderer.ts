@@ -5,6 +5,7 @@ import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
 
+/** @internal */
 export default class TableCellRenderer implements ICellRendererFactory {
   readonly title = 'Table';
 

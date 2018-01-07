@@ -5,9 +5,7 @@ import {IImposer, IRenderContext} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
 import {IToolbarAction} from './toolbar';
 
-export const RENDERER_EVENT_HOVER_CHANGED = 'hoverChanged';
-
-interface IRenderInfo {
+export interface IRenderInfo {
   type: string;
   label: string;
 }

@@ -13,6 +13,7 @@ interface IShift {
   yShift: number;
 }
 
+/** @internal */
 export default class SelectionManager extends AEventDispatcher {
   static readonly EVENT_SELECT_RANGE = 'selectRange';
   private static readonly MIN_DISTANCE = 10;

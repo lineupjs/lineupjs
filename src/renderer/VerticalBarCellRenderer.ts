@@ -8,6 +8,7 @@ import {toHeatMapColor} from './BrightnessCellRenderer';
 import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {attr, forEachChild, noRenderer} from './utils';
 
+/** @internal */
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
   readonly title = 'Bar Chart';
 

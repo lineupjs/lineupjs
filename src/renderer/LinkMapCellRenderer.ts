@@ -6,6 +6,7 @@ import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noop, noRenderer} from './utils';
 
+/** @internal */
 export default class LinkMapCellRenderer implements ICellRendererFactory {
   readonly title = 'Table with Links';
 

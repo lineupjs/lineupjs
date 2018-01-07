@@ -11,9 +11,7 @@ import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough} from './utils';
 
-/**
- * renders categorical columns as a colored rect with label
- */
+/** @internal */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly title = 'Color';
   readonly groupTitle = 'Histogram';

@@ -1,5 +1,6 @@
 import {dispatch, Dispatch} from 'd3-dispatch';
 
+/** @internal */
 export function suffix(suffix: string, ...prefix: string[]) {
   return prefix.map((p) => `${p}${suffix}`);
 }

@@ -4,6 +4,7 @@ import {EAdvancedSortMethod, ESortMethod, IBoxPlotColumn} from '../../model/INum
 import NumberColumn from '../../model/NumberColumn';
 import ADialog from './ADialog';
 
+/** @internal */
 export default class SortDialog extends ADialog {
   constructor(private readonly column: (IBoxPlotColumn | NumberColumn), attachment: HTMLElement) {
     super(attachment, {
@@ -17,6 +18,7 @@ export default class SortDialog extends ADialog {
   }
 }
 
+/** @internal */
 export function sortMethods(node: HTMLElement, column: { setSortMethod(v: string): void, getSortMethod(): string }, methods: string[]) {
 
   const bak = column.getSortMethod();
@@ -27,6 +29,7 @@ export function sortMethods(node: HTMLElement, column: { setSortMethod(v: string
   });
 }
 
+/** @internal */
 export function sortOrder(node: HTMLElement, column: Column, groupSortBy: boolean = false) {
   const order = groupSortBy ? column.isGroupSortedByMe().asc : column.isSortedByMe().asc;
 

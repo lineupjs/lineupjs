@@ -1,1 +1,2 @@
-export {default as default} from './SidePanel';
+export {default, ISidePanelOptions} from './SidePanel';
+export * from './SearchBox';

@@ -1,4 +1,4 @@
-import {computeStats, IStatistics, round} from '../../internal/math';
+import {computeStats, IStatistics, round} from '../../internal';
 import {isMissingValue} from '../../model';
 import {isDummyFilter, noNumberFilter} from '../../model/INumberColumn';
 import {
@@ -10,7 +10,7 @@ import {IRankingHeaderContext} from '../interfaces';
 import ADialog from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 
-
+/** @internal */
 export default class MappingsFilterDialog extends ADialog {
 
   private original: IMappingFunction;

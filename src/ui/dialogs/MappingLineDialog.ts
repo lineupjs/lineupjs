@@ -7,6 +7,7 @@ function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
 }
 
+/** @internal */
 export interface IMappingAdapter {
   destroyed(self: MappingLine): void;
 
@@ -19,7 +20,7 @@ export interface IMappingAdapter {
   unnormalizeRaw(v: number): number;
 }
 
-
+/** @internal */
 export default class MappingLineDialog extends ADialog {
   constructor(private readonly line: { destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void }, attachment: HTMLElement, private readonly adapter: IMappingAdapter) {
     super(attachment, {

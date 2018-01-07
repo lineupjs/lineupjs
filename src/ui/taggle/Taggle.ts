@@ -3,7 +3,6 @@ import {ILineUpOptions} from '../../interfaces';
 import merge from '../../internal/merge';
 import DataProvider from '../../provider/ADataProvider';
 import {ALineUp} from '../ALineUp';
-import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import SidePanel from '../panel/SidePanel';
 import spaceFillingRule from './spaceFillingRule';
 import TaggleRenderer from './TaggleRenderer';
@@ -41,7 +40,7 @@ export default class Taggle extends ALineUp {
         this.renderer.switchRule(selected ? spaceFilling : null);
       });
     }
-    this.forward(this.renderer, `${RENDERER_EVENT_HOVER_CHANGED}.main`);
+    this.forward(this.renderer, `${ALineUp.EVENT_HOVER_CHANGED}.main`);
   }
 
   private setViolation(violation?: string) {

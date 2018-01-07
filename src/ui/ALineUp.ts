@@ -2,14 +2,13 @@ import {ILineUpLike} from '../interfaces';
 import AEventDispatcher from '../internal/AEventDispatcher';
 import Column from '../model/Column';
 import DataProvider from '../provider/ADataProvider';
-import {RENDERER_EVENT_HOVER_CHANGED} from './interfaces';
 
 export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   /**
    * triggered when the mouse is over a specific row
    * @argument data_index:number the selected data index or <0 if no row
    */
-  static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
+  static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
 
   /**
    * triggered when the user click on a row
@@ -62,3 +61,5 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     return col != null;
   }
 }
+
+export default ALineUp;

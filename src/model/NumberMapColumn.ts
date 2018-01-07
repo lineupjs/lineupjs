@@ -1,11 +1,11 @@
 import {LazyBoxPlotData} from '../internal';
 import {toolbar} from './annotations';
 import Column from './Column';
+import {IKeyValue} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc,
-  INumberFilter, isDummyFilter,
-  noNumberFilter, restoreFilter
+  INumberFilter, isDummyFilter, noNumberFilter, restoreFilter
 } from './INumberColumn';
 import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
@@ -77,7 +77,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return values.map(({key, value}) => ({key, value: isMissingValue(value) ? NaN : this.mapping.apply(value)}));
   }
 
-  getRawValue(row: IDataRow) {
+  getRawValue(row: IDataRow): IKeyValue<number>[] {
     const r = super.getValue(row);
     return r == null ? [] : r;
   }

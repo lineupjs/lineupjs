@@ -3,6 +3,7 @@ import StringMapColumn from '../../model/StringMapColumn';
 import StringsColumn from '../../model/StringsColumn';
 import ADialog from './ADialog';
 
+/** @internal */
 export default class EditPatternDialog extends ADialog {
 
   constructor(private readonly column: StringColumn | StringsColumn | StringMapColumn, attachment: HTMLElement, private readonly idPrefix: string) {

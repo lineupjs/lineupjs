@@ -4,6 +4,7 @@ import Column from '../model/Column';
 import StringCellRenderer from './StringCellRenderer';
 import {noop} from './utils';
 
+/** @internal */
 export default class AnnotationRenderer extends StringCellRenderer {
   readonly title = 'Default';
 

@@ -1,6 +1,6 @@
 import {HOVER_DELAY_SHOW_DETAIL, MIN_LABEL_WIDTH} from '../config';
 import {dragAble, dropAble, IDropResult} from '../internal/dnd';
-import {equalArrays} from '../internal/utils';
+import {equalArrays} from '../internal';
 import {createNestedDesc, createStackDesc, isCategoricalColumn, isNumberColumn} from '../model';
 import {categoryOf} from '../model/annotations';
 import Column from '../model/Column';
@@ -8,22 +8,10 @@ import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from 
 import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
 import Ranking from '../model/Ranking';
 import {IRankingHeaderContext} from './interfaces';
-import toolbarActions, {IOnClickHandler, more} from './toolbar';
+import toolbarActions, {IOnClickHandler} from './toolbar';
 import Popper from 'popper.js';
 
-
-/**
- * utility function to generate the tooltip text with description
- * @param col the column
- */
-export function toFullTooltip(col: { label: string, description?: string }) {
-  let base = col.label;
-  if (col.description != null && col.description !== '') {
-    base += `\n${col.description}`;
-  }
-  return base;
-}
-
+/** @internal */
 export interface IHeaderOptions {
   dragAble: boolean;
   mergeDropAble: boolean;
@@ -31,6 +19,7 @@ export interface IHeaderOptions {
   resizeable: boolean;
 }
 
+/** @internal */
 export function createHeader(col: Column, ctx: IRankingHeaderContext, options: Partial<IHeaderOptions> = {}) {
   options = Object.assign({
     dragAble: true,
@@ -67,6 +56,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   return node;
 }
 
+/** @internal */
 export function updateHeader(node: HTMLElement, col: Column) {
   const label = <HTMLElement>node.querySelector('.lu-label')!;
   label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label;
@@ -98,6 +88,7 @@ export function updateHeader(node: HTMLElement, col: Column) {
   }
 }
 
+/** @internal */
 export function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, showLabel: boolean) {
   return (title: string, onClick: IOnClickHandler) => {
     node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
@@ -110,11 +101,12 @@ export function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderCo
   };
 }
 
+/** @internal */
 export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
   return createShortcutMenuItems(<any>addIconDOM(node, col, ctx, false), col, ctx);
 }
 
-interface IAddIcon {
+export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
@@ -127,9 +119,10 @@ export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRa
 export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
   const actions = toolbarActions(col, ctx);
 
-  actions.filter((d) => d !== more).forEach((d) => addIcon(d.title, d.onClick));
+  actions.filter((d) => !d.title.startsWith('More')).forEach((d) => addIcon(d.title, d.onClick));
 }
 
+/** @internal */
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
   const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
   const moreIcon = toolbar.querySelector('[title^=More]')!;
@@ -203,6 +196,7 @@ function addTooltip(node: HTMLElement, col: Column) {
 
 /**
  * allow to change the width of a column using dragging the handle
+ * @internal
  */
 export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
@@ -266,6 +260,7 @@ export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
 /**
  * allow to drag the column away
+ * @internal
  */
 export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dragAble(node, () => {
@@ -288,6 +283,7 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
 
 /**
  * dropper for allowing to rearrange (move, copy) columns
+ * @internal
  */
 export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
@@ -325,6 +321,7 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
 
 /**
  * dropper for allowing to change the order by dropping it at a certain position
+ * @internal
  */
 export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before' | 'after', autoGroup: boolean) {
   dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
@@ -400,6 +397,7 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
 
 /**
  * dropper for merging columns
+ * @internal
  */
 export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   const resolveDrop = (result: IDropResult, numbersOnly: boolean) => {

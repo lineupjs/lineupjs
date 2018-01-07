@@ -1,5 +1,6 @@
 import ADialog from './ADialog';
 
+/** @internal */
 export interface IInputNumberOptions {
   min: number;
   max: number;
@@ -8,6 +9,7 @@ export interface IInputNumberOptions {
   label: string|null;
 }
 
+/** @internal */
 export default class InputNumberDialog extends ADialog {
 
   private readonly ioptions: Readonly<IInputNumberOptions> = {

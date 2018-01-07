@@ -4,7 +4,7 @@ import {IRankingHeaderContext} from '../interfaces';
 import ADialog from './ADialog';
 import {removeAllPopups} from './manager';
 
-
+/** @internal */
 export default class MoreColumnOptionsDialog extends ADialog {
 
   constructor(private readonly column: Column, attachment: HTMLElement, private readonly ctx: IRankingHeaderContext) {

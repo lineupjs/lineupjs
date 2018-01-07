@@ -1,5 +1,6 @@
 import {INumberBin, IStatistics} from '../internal';
-import {Column, IDataRow, IGroup} from '../model';
+import {IDataRow, IGroup} from '../model';
+import Column from '../model/Column';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {getHistDOMRenderer} from './HistogramCellRenderer';
@@ -9,9 +10,7 @@ import {createData} from './MultiLevelCellRenderer';
 import {matchColumns} from './utils';
 
 
-/**
- * a renderer rendering a bar for numerical columns
- */
+/** @internal */
 export default class InterleavingCellRenderer implements ICellRendererFactory {
   readonly title = 'Interleaved';
 

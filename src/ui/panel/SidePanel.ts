@@ -8,7 +8,7 @@ import {default as Column, IColumnDesc} from '../../model/Column';
 import Ranking from '../../model/Ranking';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../interfaces';
-import SearchBox, {IGroupItem, ISearchBoxOptions} from './SearchBox';
+import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelEntry from './SidePanelEntry';
 
 export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
@@ -28,7 +28,7 @@ export default class SidePanel {
     ],
     chooser: true,
     placeholder: 'Add Column...',
-    formatItem: (item: SidePanelEntry|IGroupItem<SidePanelEntry>, node: HTMLElement) => {
+    formatItem: (item: SidePanelEntry|IGroupSearchItem<SidePanelEntry>, node: HTMLElement) => {
       node.dataset.typeCat = item instanceof SidePanelEntry ? item.category.name : (<SidePanelEntry>item.children[0]).category.name;
       if (item instanceof SidePanelEntry) {
         node.dataset.type = item.desc.type;

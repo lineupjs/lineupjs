@@ -4,6 +4,7 @@ import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup} from '../missing';
 import {default as ADialog} from './ADialog';
 
+/** @internal */
 export default class CategoricalFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;

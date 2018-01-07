@@ -2,7 +2,7 @@ import AEventDispatcher from '../internal/AEventDispatcher';
 import {similar} from '../internal/math';
 import {fixCSS} from '../internal/utils';
 import {defaultGroup} from './Group';
-import {IColumnDesc, IDataRow, IGroupData} from './interfaces';
+import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
 import Ranking, {ISortCriteria} from './Ranking';
 
@@ -444,7 +444,7 @@ export default class Column extends AEventDispatcher {
    * @param _row
    * @return {IGroup}
    */
-  group(_row: IDataRow) {
+  group(_row: IDataRow): IGroup {
     return defaultGroup;
   }
 

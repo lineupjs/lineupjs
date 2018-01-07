@@ -1,6 +1,7 @@
 import {IGroupData, IGroupItem, isGroup} from '../../model';
 import {IRule} from './interfaces';
 
+/** @internal */
 export default function spaceFillingRule(config: { groupHeight: number, rowHeight: number, groupPadding: number }) {
   function levelOfDetail(item: IGroupData | IGroupItem, height: number): 'high' | 'low' {
     const group = isGroup(item);

@@ -2,7 +2,7 @@ import Column from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog from './ADialog';
 
-
+/** @internal */
 export default class ChangeRendererDialog extends ADialog {
   constructor(private readonly column: Column, attachment: HTMLElement, private readonly ctx: IRankingHeaderContext) {
     super(attachment, {

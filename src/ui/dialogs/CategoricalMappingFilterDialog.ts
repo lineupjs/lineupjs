@@ -1,10 +1,10 @@
-import {round} from '../../internal/math';
+import {round} from '../../internal';
 import OrdinalColumn from '../../model/OrdinalColumn';
 import {ICategoricalFilter, isIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup} from '../missing';
 import ADialog from './ADialog';
 
-
+/** @internal */
 export default class CategoricalMappingFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;

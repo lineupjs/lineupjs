@@ -4,6 +4,7 @@ import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
+/** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 

@@ -6,6 +6,7 @@ import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog from './ADialog';
 
+/** @internal */
 export default class CompositeChildrenDialog extends ADialog {
 
   private readonly id: string;

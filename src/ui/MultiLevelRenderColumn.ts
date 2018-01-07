@@ -9,7 +9,7 @@ import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import RenderColumn from './RenderColumn';
 
-
+/** @internal */
 export default class MultiLevelRenderColumn extends RenderColumn {
   private readonly summaries: ISummaryRenderer[] = [];
 

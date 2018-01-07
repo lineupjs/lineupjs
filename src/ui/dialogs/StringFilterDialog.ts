@@ -2,7 +2,7 @@ import StringColumn from '../../model/StringColumn';
 import {filterMissingMarkup} from '../missing';
 import ADialog from './ADialog';
 
-
+/** @internal */
 export default class StringFilterDialog extends ADialog {
 
   constructor(private readonly column: StringColumn, attachment: HTMLElement) {

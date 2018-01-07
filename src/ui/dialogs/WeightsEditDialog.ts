@@ -1,8 +1,8 @@
-import {round} from '../../internal/math';
+import {round} from '../../internal';
 import StackColumn from '../../model/StackColumn';
 import ADialog from './ADialog';
 
-
+/** @internal */
 export default class WeightsEditDialog extends ADialog {
 
   private readonly weights: number[];

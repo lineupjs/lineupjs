@@ -2,6 +2,7 @@
 import HierarchyColumn, {ICategoryInternalNode, ICutOffNode, resolveInnerNodes} from '../../model/HierarchyColumn';
 import ADialog from './ADialog';
 
+/** @internal */
 export default class CutOffHierarchyDialog extends ADialog {
 
   private readonly innerNodes: ICategoryInternalNode[];

@@ -3,7 +3,7 @@ import {ISummaryRenderer} from '../../renderer/interfaces';
 import {createToolbar, dragAbleColumn, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 
-
+/** @internal */
 export default class SidePanelEntryVis {
   readonly node: HTMLElement;
   private readonly summary: ISummaryRenderer;

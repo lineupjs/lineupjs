@@ -39,6 +39,11 @@ export interface ICategoricalStatistics {
   readonly missing: number;
 }
 
+/**
+ * @internal
+ * @param {number} length
+ * @returns {number}
+ */
 export function getNumberOfBins(length: number) {
   // as by default used in d3 the Sturges' formula
   return Math.ceil(Math.log(length) / Math.LN2) + 1;
@@ -47,6 +52,7 @@ export function getNumberOfBins(length: number) {
 
 /**
  * helper class to lazily compute box plotdata out of a given number array
+ * @internal
  */
 export class LazyBoxPlotData implements IStatistics {
   private readonly values: number[];
@@ -136,6 +142,7 @@ export class LazyBoxPlotData implements IStatistics {
 
 /**
  * cache the value in a hidden __ variable
+ * @internal
  */
 function cached() {
   return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -162,6 +169,7 @@ function cached() {
  * @param range the total value range
  * @param bins the number of bins
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
+ * @internal
  */
 export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row: T) => boolean, range?: [number, number], bins?: number): IStatistics {
   if (arr.length === 0) {
@@ -202,6 +210,7 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
  * @param acc the accessor
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
+ * @internal
  */
 export function computeHist<T>(arr: T[], acc: (row: T) => ICategory|null, categories: ICategory[]): ICategoricalStatistics {
   const m = new Map<string, number>();
@@ -230,6 +239,7 @@ export function computeHist<T>(arr: T[], acc: (row: T) => ICategory|null, catego
  * @param {number} v
  * @param {number} precision
  * @returns {number}
+ * @internal
  */
 export function round(v: number, precision: number = 0) {
   if (precision === 0) {
@@ -245,6 +255,7 @@ export function round(v: number, precision: number = 0) {
  * @param {number} b second number
  * @param {number} delta
  * @returns {boolean} a and b are similar
+ * @internal
  */
 export function similar(a: number, b: number, delta = 0.5) {
   if (a === b) {

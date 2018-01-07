@@ -5,7 +5,7 @@ import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText} from './utils';
 
-
+/** @internal */
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title = 'Link';
 

@@ -1,9 +1,9 @@
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
-import {equalArrays, fixCSS} from '../internal/utils';
+import {equalArrays, fixCSS} from '../internal';
 import Column, {IColumnParent, IFlatColumn} from './Column';
 import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
 import {isCategoricalColumn} from './ICategoricalColumn';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {isSupportType} from './annotations';
 import StringColumn from './StringColumn';
 
@@ -76,7 +76,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return a.name.localeCompare(b.name);
   };
 
-  readonly grouper = (row: IDataRow) => {
+  readonly grouper = (row: IDataRow): IGroup => {
     const g = this.groupColumns;
     switch (g.length) {
       case 0:

@@ -5,7 +5,7 @@ import {ISummaryRenderer} from '../renderer/interfaces';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 
-
+/** @internal */
 export interface IRenderers {
   singleId: string;
   single: ICellRenderer;
@@ -15,6 +15,7 @@ export interface IRenderers {
   summary: ISummaryRenderer|null;
 }
 
+/** @internal */
 export default class RenderColumn implements IColumn {
   renderers: IRenderers;
 

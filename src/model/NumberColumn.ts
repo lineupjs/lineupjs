@@ -2,7 +2,7 @@ import {format} from 'd3-format';
 import {equalArrays} from '../internal/utils';
 import {Category, toolbar} from './annotations';
 import Column from './Column';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {
   default as INumberColumn, EAdvancedSortMethod, groupCompare, INumberDesc, INumberFilter, isDummyFilter,
   isEqualFilter, isIncluded, noNumberFilter, numberCompare, restoreFilter
@@ -214,7 +214,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
 
-  group(row: IDataRow) {
+  group(row: IDataRow): IGroup {
     if (this.currentStratifyThresholds.length === 0) {
       return super.group(row);
     }

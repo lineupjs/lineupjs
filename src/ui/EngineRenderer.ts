@@ -1,9 +1,9 @@
 import {nonUniformContext} from 'lineupengine/src/logic';
 import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer';
+import GridStyleManager from '../../../lineupengine/src/style/GridStyleManager';
 import {ILineUpOptions} from '../interfaces';
+import {findOption, ICategoricalStatistics, IStatistics, round} from '../internal';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
-import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
-import {findOption} from '../internal/utils';
 import {
   Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup,
   isNumberColumn
@@ -110,7 +110,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.initProvider(data);
   }
 
-  get style() {
+  get style(): GridStyleManager {
     return this.table.style;
   }
 

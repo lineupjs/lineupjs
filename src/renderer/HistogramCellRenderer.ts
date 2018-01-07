@@ -16,9 +16,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} 
 import {renderMissingDOM} from './missing';
 import {noop} from './utils';
 
-/**
- * a renderer rendering a bar for numerical columns
- */
+/** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title = 'Histogram';
 

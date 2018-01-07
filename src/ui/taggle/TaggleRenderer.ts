@@ -4,8 +4,10 @@ import debounce from '../../internal/debounce';
 import {IGroupData, IGroupItem, isGroup} from '../../model';
 import Ranking from '../../model/Ranking';
 import DataProvider from '../../provider/ADataProvider';
+import {IRenderContext} from '../../renderer';
+import {IEngineRankingContext} from '../EngineRanking';
 import EngineRenderer from '../EngineRenderer';
-import {IRankingHeaderContext, RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
+import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
 import {IRule} from './interfaces';
 
 export interface ITaggleOptions {
@@ -19,7 +21,7 @@ export default class TaggleRenderer extends AEventDispatcher {
    * triggered when the mouse is over a specific row
    * @argument data_index:number the selected data index or <0 if no row
    */
-  static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
+  static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
 
   private isDynamicLeafHeight: boolean = false;
 
@@ -61,12 +63,12 @@ export default class TaggleRenderer extends AEventDispatcher {
         this.update();
       }
     });
-    this.forward(this.renderer, `${RENDERER_EVENT_HOVER_CHANGED}.main`);
+    this.forward(this.renderer, `${TaggleRenderer.EVENT_HOVER_CHANGED}.main`);
 
     window.addEventListener('resize', this.resizeListener);
   }
 
-  get ctx() {
+  get ctx(): IRankingHeaderContextContainer & IRenderContext & IEngineRankingContext {
     return this.renderer.ctx;
   }
 

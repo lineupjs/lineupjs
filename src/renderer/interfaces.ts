@@ -60,7 +60,7 @@ export interface ISummaryRenderer {
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */
-interface IRenderContext {
+export interface IRenderContext {
   /**
    * render a column
    * @param col

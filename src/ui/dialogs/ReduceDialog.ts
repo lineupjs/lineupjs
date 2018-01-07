@@ -3,6 +3,7 @@ import ReduceColumn from '../../model/ReduceColumn';
 import ADialog from './ADialog';
 import {sortMethods} from './SortDialog';
 
+/** @internal */
 export default class ReduceDialog extends ADialog {
   constructor(private readonly column: ReduceColumn, attachment: HTMLElement) {
     super(attachment, {

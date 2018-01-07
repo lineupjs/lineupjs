@@ -8,6 +8,7 @@ import IRenderContext, {ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingValue} from './missing';
 import {attr, forEachChild, noop, wideEnough} from './utils';
 
+/** @internal */
 export default class HeatmapCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
   readonly title = 'Heatmap';
 

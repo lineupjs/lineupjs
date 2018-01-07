@@ -10,6 +10,7 @@ import {noop, setText} from './utils';
 /**
  * renders a string with additional alignment behavior
  * one instance factory shared among strings
+ * @internal
  */
 export default class StringCellRenderer implements ICellRendererFactory {
   readonly title = 'Default';

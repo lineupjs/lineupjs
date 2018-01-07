@@ -1,5 +1,5 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {default as INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColumn} from '../model';
+import {ICategoricalStatistics, IStatistics} from '../internal';
+import {INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColumn} from '../model';
 /**
  * a renderer rendering a bar for numerical columns
  */
@@ -11,6 +11,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {attr, forEachChild, noRenderer} from './utils';
 
+/** @internal */
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title = 'Dot';
   readonly groupTitle = 'Dots';
