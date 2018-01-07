@@ -47,10 +47,6 @@ section.#{$lu_css_prefix}-header {
     font-size: $lu_toolbar_font_size;
   }
 
-  &.#{$lu_css_prefix}-dragover::after {
-    // background: $lu_drag_over;
-  }
-
   > .#{$lu_css_prefix}-summary {
     height: 2em;
     margin-right: $lu-engine_grip_gap;
@@ -98,11 +94,10 @@ section.#{$lu_css_prefix}-header {
       z-index: 10;
       font-size: small;
 
-      &:before {
+      &::before {
         content: 'Place here';
         overflow: hidden;
       }
-
     }
 
     &:hover {
@@ -121,8 +116,6 @@ section.#{$lu_css_prefix}-header {
     left: 0;
     right: 0;
     cursor: inherit;
-
-
 
     &.#{$lu_css_prefix}-dragover {
       transition: bottom 0.2s ease, height 0.2s ease;
