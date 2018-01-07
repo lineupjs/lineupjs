@@ -1,10 +1,5 @@
-/**
- * utility for drag-n-drop support
- * @param e
- * @param typesToCheck
- * @returns {any}
- * @internal
- */
+
+
 export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
   const available: any = e.dataTransfer.types;
 
@@ -120,6 +115,12 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
       //clear the id
       dndTransferStorage.delete(id);
     }
+
+    // remove all
+    const over = <HTMLElement>node.ownerDocument.querySelector('.lu-dragover');
+    if (over) {
+      over.classList.remove('lu-dragover');
+    }
   });
 }
 
@@ -135,7 +136,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
 export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result: IDropResult, e: DragEvent) => boolean, onDragOver: null | ((e: DragEvent) => void) = null, stopPropagation: boolean = false) {
   node.addEventListener('dragenter', (e) => {
     //var xy = mouse($node.node());
-    if (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) {
+    if (!node.classList.contains('lu-dragging') && (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e))) {
       node.classList.add('lu-dragover');
       if (stopPropagation) {
         e.stopPropagation();
@@ -148,7 +149,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
     return;
   });
   node.addEventListener('dragover', (e) => {
-    if (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) {
+    if (!node.classList.contains('lu-dragging') && (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e))) {
       e.preventDefault();
       updateDropEffect(e);
       node.classList.add('lu-dragover');
