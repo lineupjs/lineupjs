@@ -1,11 +1,15 @@
 import {IColumnDesc} from '../model';
 import Column from '../model/Column';
-import {deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions} from '../provider';
+import {deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions} from '../provider';
 import ADataProvider from '../provider/ADataProvider';
 import LocalDataProvider from '../provider/LocalDataProvider';
-import ColumnBuilder from './ColumnBuilder';
+import LineUp from '../ui/LineUp';
+import Taggle from '../ui/taggle/Taggle';
+import ColumnBuilder from './column/ColumnBuilder';
+import LineUpBuilder from './LineUpBuilder';
+import RankingBuilder from './RankingBuilder';
 
-export default class DataBuilder {
+export default class DataBuilder extends LineUpBuilder {
   private readonly columns: IColumnDesc[] = [];
   private readonly providerOptions: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {
     columnTypes: {}
@@ -14,7 +18,7 @@ export default class DataBuilder {
   private readonly rankBuilders: ((data: ADataProvider) => void)[] = [];
 
   constructor(private readonly data: object[]) {
-
+    super();
   }
 
   filterGlobally() {
@@ -33,6 +37,11 @@ export default class DataBuilder {
     return this;
   }
 
+  deriveColors() {
+    deriveColors(this.columns);
+    return this;
+  }
+
   registerColumnType(type: string, clazz: typeof Column) {
     this.providerOptions.columnTypes![type] = clazz;
   }
@@ -47,19 +56,27 @@ export default class DataBuilder {
     return this;
   }
 
-  build() {
+  ranking(builder: ((data: ADataProvider)=>void)|RankingBuilder) {
+    this.rankBuilders.push(builder instanceof RankingBuilder ? builder.build : builder);
+    return this;
+  }
+
+  buildData() {
     const r = new LocalDataProvider(this.data, this.columns, this.providerOptions);
     this.rankBuilders.forEach((builder) => builder(r));
     return r;
   }
+
+  build(node: HTMLElement) {
+    return new LineUp(node, this.buildData(), this.options);
+  }
+
+  buildTaggle(node: HTMLElement) {
+    return new Taggle(node, this.buildData(), this.options);
+  }
 }
 
 
-export function data(arr: object[]) {
+export function builder(arr: object[]) {
   return new DataBuilder(arr);
 }
-
-export function derive(arr: object[]) {
-  return data(arr).deriveColumns();
-}
-

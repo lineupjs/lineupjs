@@ -1,14 +1,11 @@
 import {IDynamicHeight, ILineUpOptions} from '../interfaces';
 import {IGroupData, IGroupItem} from '../model';
 import Ranking from '../model/Ranking';
-import ADataProvider from '../provider/ADataProvider';
 import {ICellRendererFactory} from '../renderer';
 import {IToolbarAction} from '../ui';
-import LineUp from '../ui/LineUp';
-import Taggle from '../ui/taggle/Taggle';
 
 export default class LineUpBuilder {
-  private readonly options: Partial<ILineUpOptions> = {
+  protected readonly options: Partial<ILineUpOptions> = {
     renderers: {},
     toolbar: {}
   };
@@ -42,14 +39,6 @@ export default class LineUpBuilder {
   registerToolbarAction(id: string, action: IToolbarAction) {
     this.options.toolbar![id] = action;
     return this;
-  }
-
-  buildLineUp(node: HTMLElement, data: ADataProvider) {
-    return new LineUp(node, data, this.options);
-  }
-
-  buildTaggle(node: HTMLElement, data: ADataProvider) {
-    return new Taggle(node, data, this.options);
   }
 
   rowHeight(rowHeight: number, rowPadding: number) {

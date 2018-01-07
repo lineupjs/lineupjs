@@ -89,3 +89,7 @@ export default class RankingBuilder {
     };
   }
 }
+
+export function buildRanking() {
+  return new RankingBuilder();
+}

@@ -1,11 +1,10 @@
 import LineUp from '../ui/LineUp';
 import Taggle from '../ui/taggle/Taggle';
-import {derive} from './DataBuilder';
-import LineUpBuilder from './LineUpBuilder';
+import {builder} from './DataBuilder';
 
-export {data, derive, default as DataBuilder} from './DataBuilder';
-export {default as ColumnBuilder} from './ColumnBuilder';
-export {default as LineUpBuilder} from './LineUpBuilder';
+export * from './DataBuilder';
+export * from './column';
+export * from './RankingBuilder';
 
 
 /**
@@ -15,7 +14,11 @@ export {default as LineUpBuilder} from './LineUpBuilder';
  * @returns {Taggle}
  */
 export function asTaggle(node: HTMLElement, data: any[]): Taggle {
-  return new LineUpBuilder().buildTaggle(node, derive(data).defaultRanking().build());
+  return builder(data)
+    .deriveColumns()
+    .deriveColors()
+    .defaultRanking()
+    .buildTaggle(node);
 }
 
 /**
@@ -25,5 +28,9 @@ export function asTaggle(node: HTMLElement, data: any[]): Taggle {
  * @returns {LineUp}
  */
 export function asLineUp(node: HTMLElement, data: any[]): LineUp {
-  return new LineUpBuilder().buildLineUp(node, derive(data).defaultRanking().build());
+  return builder(data)
+    .deriveColumns()
+    .deriveColors()
+    .defaultRanking()
+    .build(node);
 }

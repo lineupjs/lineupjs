@@ -1,7 +1,7 @@
 import {extent} from 'd3-array';
-import {schemeCategory10} from 'd3-scale';
 import {isNumberColumn, isSupportType} from '../model';
 import {default as Column, IColumnDesc} from '../model/Column';
+import {colorPool} from '../model/internal';
 import Ranking from '../model/Ranking';
 
 
@@ -66,11 +66,11 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
  * @returns {IColumnDesc[]}
  */
 export function deriveColors(columns: IColumnDesc[]) {
-  const colors = schemeCategory10.slice();
+  const colors = colorPool();
   columns.forEach((col: any) => {
     switch (col.type) {
       case 'number':
-        col.color = colors.shift() || 'gray';
+        col.color = colors() || Column.DEFAULT_COLOR;
         break;
     }
   });

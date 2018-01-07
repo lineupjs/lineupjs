@@ -16,22 +16,22 @@ export interface IStringDesc {
    * column alignment: left, center, right
    * @default left
    */
-  readonly alignment?: EAlignment;
+  alignment?: EAlignment;
 
   /**
    * escape html tags
    */
-  readonly escape?: boolean;
+  escape?: boolean;
 
   /**
    * replacement pattern, use $1 for the input string
    */
-  readonly pattern?: string;
+  pattern?: string;
 
   /**
    * optional list of pattern templates
    */
-  readonly patternTemplates?: string[];
+  patternTemplates?: string[];
 }
 
 
