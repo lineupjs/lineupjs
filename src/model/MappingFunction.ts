@@ -1,5 +1,5 @@
 import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
-import {similar} from '../internal/math';
+import {similar} from '../internal';
 import Column from './Column';
 import INumberColumn, {INumberFilter} from './INumberColumn';
 
@@ -205,7 +205,8 @@ export class ScriptMappingFunction implements IMappingFunction {
   dump(): any {
     return {
       type: 'script',
-      code: this.code
+      code: this.code,
+      domain: this.domain
     };
   }
 
@@ -219,6 +220,7 @@ export class ScriptMappingFunction implements IMappingFunction {
 
   restore(dump: any) {
     this.code = dump.code;
+    this.domain = dump.domain;
   }
 
   clone() {

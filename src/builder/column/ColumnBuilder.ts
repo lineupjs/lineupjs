@@ -1,7 +1,7 @@
-import {IColumnDesc} from '../../model';
+import {IArrayDesc, IColumnDesc} from '../../model';
 
 export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
-  protected readonly desc: Partial<T> = {};
+  protected readonly desc: T;
 
   constructor(type: string, column: string) {
     this.desc = <any>{column, type, label: column[0].toUpperCase() + column.slice(1)};
@@ -47,6 +47,25 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
 
   color(color: string) {
     this.desc.color = color;
+  }
+
+  asArray(labels?: string[]|number) {
+    console.assert(['boolean', 'categorical', 'date', 'number', 'string'].includes(this.desc.type!));
+    this.desc.type += 's';
+    const a = <IArrayDesc>this.desc;
+    if (Array.isArray(labels)) {
+      a.labels = labels;
+      a.dataLength = labels.length;
+    } else if (typeof labels === 'number') {
+      a.dataLength = labels;
+    }
+    return this;
+  }
+
+  asMap() {
+    console.assert(['categorical', 'date', 'number', 'string'].includes(this.desc.type!));
+    this.desc.type += 'Map';
+    return this;
   }
 
   build(): T {

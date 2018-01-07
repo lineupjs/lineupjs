@@ -7,6 +7,11 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
     super('categorical', column);
   }
 
+  asOrdinal() {
+    this.desc.type = 'ordinal';
+    return this;
+  }
+
   categories(categories: (string | Partial<ICategory>)[]) {
     this.desc.categories = categories;
     return this;
@@ -14,6 +19,14 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
 
   missingCategory(missingCategory: (string | Partial<ICategory>)) {
     this.desc.missingCategory = missingCategory;
+    return this;
+  }
+
+  asSet(separator?: string) {
+    if (separator) {
+      (<any>this.desc).separator = separator;
+    }
+    this.desc.type = 'set';
     return this;
   }
 }

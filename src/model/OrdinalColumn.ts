@@ -1,5 +1,5 @@
 import {extent} from 'd3-array';
-import {equalArrays} from '../internal/utils';
+import {equalArrays} from '../internal';
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';

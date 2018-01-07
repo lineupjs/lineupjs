@@ -7,6 +7,11 @@ export default class StringColumnBuilder extends ColumnBuilder<IStringColumnDesc
     super('string', column);
   }
 
+  editable() {
+    this.desc.type = 'annotate';
+    return this;
+  }
+
   html() {
     this.desc.escape = false;
     return this;
