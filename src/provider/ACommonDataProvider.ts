@@ -152,7 +152,11 @@ abstract class ACommonDataProvider extends ADataProvider {
 
   fromDescRef(descRef: any): any {
     if (typeof(descRef) === 'string') {
-      return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef);
+      return this.columns.find((d: any) => d.type + '@' + d.column === descRef);
+    }
+    const existing = this.columns.find((d) => descRef.column === (<any>d).column && descRef.label === d.label && descRef.type === d.type);
+    if (existing) {
+      return existing;
     }
     return descRef;
   }

@@ -98,12 +98,16 @@ export interface ICategoricalFilter {
   filterMissing: boolean;
 }
 
+function isEmptyFilter(f: ICategoricalFilter|null) {
+  return f == null || (!f.filterMissing && (f.filter == null || f.filter === '' || (Array.isArray(f.filter) && f.filter.length === 0)));
+}
+
 export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICategoricalFilter | null) {
   if (a === b) {
     return true;
   }
   if (a == null || b == null) {
-    return false;
+    return isEmptyFilter(a) === isEmptyFilter(b);
   }
   if (a.filterMissing !== b.filterMissing || (typeof a.filter !== typeof b.filter)) {
     return false;
