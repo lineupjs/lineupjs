@@ -1,10 +1,9 @@
 import {computeStats, IStatistics, round} from '../../internal';
-import {isMissingValue} from '../../model';
-import {isDummyNumberFilter, noNumberFilter} from '../../model/INumberColumn';
 import {
-  IMapAbleColumn, IMappingFunction, ScaleMappingFunction,
+  IMapAbleColumn, IMappingFunction, isMissingValue, noNumberFilter, ScaleMappingFunction,
   ScriptMappingFunction
-} from '../../model/MappingFunction';
+} from '../../model';
+import {isDummyNumberFilter} from '../../model/internal';
 import {ISummaryRenderer} from '../../renderer/interfaces';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog from './ADialog';

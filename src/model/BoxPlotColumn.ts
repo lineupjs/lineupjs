@@ -3,9 +3,9 @@ import {IBoxPlotData} from '../internal';
 import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
+import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
-  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, isDummyNumberFilter, noNumberFilter,
-  restoreFilter
+  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,

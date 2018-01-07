@@ -1,5 +1,5 @@
 import {format} from 'd3-format';
-import {IAdvancedBoxPlotData, IBoxPlotData, LazyBoxPlotData, similar} from '../internal';
+import {IAdvancedBoxPlotData, IBoxPlotData, similar} from '../internal';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
@@ -148,25 +148,6 @@ export function numberCompare(a: number | null, b: number | null, aMissing = fal
   return a! - b!;
 }
 
-export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
-  //return the median row
-  const data = rows.map((r, i) => ({i, v: col.getNumber(r), m: col.isMissing(r)}));
-  const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
-  const index = sorted[Math.floor(sorted.length / 2.0)];
-  if (index === undefined) {
-    return 0; //error case
-  }
-  return index.i;
-}
-
-export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
-  const va = new LazyBoxPlotData(a.map((row) => col.getNumber(row)));
-  const vb = new LazyBoxPlotData(b.map((row) => col.getNumber(row)));
-
-  return numberCompare(<number>va[sortMethod], <number>vb[sortMethod]);
-}
-
-
 export interface INumberFilter {
   min: number;
   max: number;
@@ -181,10 +162,6 @@ export function isEqualNumberFilter(a: INumberFilter, b: INumberFilter) {
   return similar(a.min, b.min, 0.001) && similar(a.max, b.max, 0.001) && a.filterMissing === b.filterMissing;
 }
 
-export function isDummyNumberFilter(filter: INumberFilter) {
-  return !filter.filterMissing && !isFinite(filter.min) && !isFinite(filter.max);
-}
-
 export function isNumberIncluded(filter: INumberFilter | null, value: number) {
   if (!filter) {
     return true;
@@ -193,12 +170,4 @@ export function isNumberIncluded(filter: INumberFilter | null, value: number) {
     return !filter.filterMissing;
   }
   return !((isFinite(filter.min) && value < filter.min) || (isFinite(filter.max) && value > filter.max));
-}
-
-export function restoreFilter(v: INumberFilter): INumberFilter {
-  return {
-    min: v.min != null && isFinite(v.min) ? v.min : -Infinity,
-    max: v.max != null && isFinite(v.max) ? v.max : +Infinity,
-    filterMissing: v.filterMissing
-  };
 }

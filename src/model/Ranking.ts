@@ -1,10 +1,11 @@
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {equalArrays, fixCSS} from '../internal';
 import Column, {IColumnParent, IFlatColumn} from './Column';
-import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
+import {defaultGroup, IOrderedGroup} from './Group';
 import {isCategoricalColumn} from './ICategoricalColumn';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {isSupportType} from './annotations';
+import {joinGroups} from './internal';
 import StringColumn from './StringColumn';
 
 export interface ISortCriteria {

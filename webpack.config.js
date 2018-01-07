@@ -143,7 +143,7 @@ function generateWebpack(options) {
       }));
   } else {
     //generate source maps
-    base.devtool = 'cheap-module-eval-source-map';
+    base.devtool = 'inline-source-map';
   }
   return base;
 }

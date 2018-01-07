@@ -40,7 +40,7 @@ export {
 } from './interfaces';
 
 
-export const defaultCellRenderer = new DefaultCellRenderer();
+const defaultCellRenderer = new DefaultCellRenderer();
 /**
  * default render factories
  */

@@ -5,9 +5,10 @@ import OrderedSet from '../internal/OrderedSet';
 import {
   Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
   createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
-  ISelectionColumnDesc, isSupportType, IValueColumnDesc, models, toGroupID, unifyParents
+  ISelectionColumnDesc, isSupportType, IValueColumnDesc, models
 } from '../model';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
+import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';

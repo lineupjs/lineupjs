@@ -8,7 +8,7 @@ import AEventDispatcher, {IEventContext} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
 import {IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
 import Column from '../model/Column';
-import {isMultiLevelColumn} from '../model/CompositeColumn';
+import {isMultiLevelColumn} from '../model';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {IImposer, IRenderContext} from '../renderer';

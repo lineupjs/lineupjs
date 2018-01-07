@@ -1,7 +1,7 @@
-import {schemeCategory10, schemeCategory20} from 'd3-scale';
 import Column from './Column';
 import {IArrayColumn, isArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
+import {colorPool} from './internal';
 import {FIRST_IS_NAN} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
 
@@ -42,14 +42,7 @@ export interface ICategory {
   value: number;
 }
 
-
-export function colorPool() {
-  // dark, bright, and repeat
-  const colors = schemeCategory10.concat(schemeCategory20.filter((_d, i) => i % 2 === 1));
-  let act = 0;
-  return () => colors[(act++) % colors.length];
-}
-
+/** @internal */
 export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: ()=>string = () => Column.DEFAULT_COLOR) {
   if (typeof cat === 'string') {
       //just the category value

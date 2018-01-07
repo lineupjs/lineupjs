@@ -1,8 +1,9 @@
 import {toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
+import {patternFunction} from './internal';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {default as StringColumn, EAlignment, IStringDesc, patternFunction} from './StringColumn';
+import {default as StringColumn, EAlignment, IStringDesc} from './StringColumn';
 
 export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
 

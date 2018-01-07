@@ -1,11 +1,12 @@
 import {format} from 'd3-format';
-import {equalArrays} from '../internal/utils';
+import {equalArrays} from '../internal';
 import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
+import {groupCompare, isDummyNumberFilter, restoreFilter} from './internal';
 import {
-  default as INumberColumn, EAdvancedSortMethod, groupCompare, INumberDesc, INumberFilter, isDummyNumberFilter,
-  isEqualNumberFilter, isNumberIncluded, noNumberFilter, numberCompare, restoreFilter
+  default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
+  isNumberIncluded, noNumberFilter, numberCompare
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,

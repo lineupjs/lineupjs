@@ -1,8 +1,8 @@
-import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
-import {IDataRow, IGroup} from '../model';
+import {ICategoricalStatistics, IStatistics, round} from '../internal';
+import {IDataRow, IGroup, IMultiLevelColumn, isMultiLevelColumn} from '../model';
 import Column from '../model/Column';
-import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import {default as INumberColumn, isNumberColumn, medianIndex} from '../model/INumberColumn';
+import {medianIndex} from '../model/internal';
+import {default as INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';

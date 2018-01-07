@@ -1,6 +1,7 @@
 import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
+import {patternFunction} from './internal';
 import {FIRST_IS_NAN} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
@@ -174,6 +175,3 @@ export default class StringColumn extends ValueColumn<string> {
   }
 }
 
-export function patternFunction(pattern: string, ... args:string[]) {
-  return new Function('value', ...args, `return \`${pattern}\`;`);
-}

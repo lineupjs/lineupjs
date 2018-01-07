@@ -2,7 +2,8 @@ import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDataRow} from './interfaces';
-import {default as StringColumn, EAlignment, IStringDesc, patternFunction} from './StringColumn';
+import {patternFunction} from './internal';
+import {default as StringColumn, EAlignment, IStringDesc} from './StringColumn';
 
 export declare type IStringsColumnDesc = IStringDesc & IArrayColumnDesc<string>;
 

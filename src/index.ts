@@ -14,7 +14,9 @@ export * from './provider';
 export * from './renderer';
 export * from './model';
 export * from './builder';
-export * from './ui';
+export * from './ui/';
+export {default} from './ui/LineUp';
+
 
 declare const __VERSION__: string;
 export const version = __VERSION__;
@@ -26,7 +28,7 @@ export const version = __VERSION__;
  * @param options
  * @returns {LocalDataProvider}
  */
-export function createLocalDataProvider(data: any[], columns: IColumnDesc[], options: Partial<ILocalDataProviderOptions> = {}): LocalDataProvider {
+export function createLocalDataProvider(data: any[], columns: IColumnDesc[], options: Partial<ILocalDataProviderOptions> = {}) {
   return new LocalDataProvider(data, columns, options);
 }
 

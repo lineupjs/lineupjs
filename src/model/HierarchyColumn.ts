@@ -1,8 +1,9 @@
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
-import {colorPool, ICategoricalColumn, ICategory} from './ICategoricalColumn';
+import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {IDataRow, IGroup} from './interfaces';
+import {colorPool} from './internal';
 import {missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 

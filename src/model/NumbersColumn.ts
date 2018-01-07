@@ -3,9 +3,10 @@ import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDataRow} from './interfaces';
+import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
-  isDummyNumberFilter, noNumberFilter, restoreFilter
+  noNumberFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,

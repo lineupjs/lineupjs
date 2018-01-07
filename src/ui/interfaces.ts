@@ -1,4 +1,4 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {ICategoricalStatistics, IStatistics} from '../internal';
 import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn} from '../model';
 import {IDataProvider} from '../provider/ADataProvider';
 import {IImposer, IRenderContext} from '../renderer';
