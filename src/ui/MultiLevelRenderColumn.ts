@@ -34,7 +34,9 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
     this.summaries.splice(0, this.summaries.length);
     this.mc.children.forEach((cc, i) => {
-      const n = createHeader(cc, this.ctx);
+      const n = createHeader(cc, this.ctx, {
+        mergeDropAble: false
+      });
       n.style.marginLeft = i > 0 ? `${COLUMN_PADDING * 2}px` : null;
       n.classList.add('lu-header');
       (<any>n.style).gridColumnStart = (i + 1).toString();
