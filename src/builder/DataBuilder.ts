@@ -1,13 +1,17 @@
 import {IColumnDesc} from '../model';
 import Column from '../model/Column';
 import {deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions} from '../provider';
+import ADataProvider from '../provider/ADataProvider';
 import LocalDataProvider from '../provider/LocalDataProvider';
+import ColumnBuilder from './ColumnBuilder';
 
 export default class DataBuilder {
   private readonly columns: IColumnDesc[] = [];
   private readonly providerOptions: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {
     columnTypes: {}
   };
+
+  private readonly rankBuilders: ((data: ADataProvider) => void)[] = [];
 
   constructor(private readonly data: object[]) {
 
@@ -33,14 +37,20 @@ export default class DataBuilder {
     this.providerOptions.columnTypes![type] = clazz;
   }
 
+  column(column: IColumnDesc | ColumnBuilder) {
+    this.columns.push(column instanceof ColumnBuilder ? column.build() : column);
+    return this;
+  }
 
-  column(column: IColumnDesc) {
-    this.columns.push(column);
+  defaultRanking() {
+    this.rankBuilders.push((data) => data.deriveDefault());
     return this;
   }
 
   build() {
-    return new LocalDataProvider(this.data, this.columns, this.providerOptions);
+    const r = new LocalDataProvider(this.data, this.columns, this.providerOptions);
+    this.rankBuilders.forEach((builder) => builder(r));
+    return r;
   }
 }
 

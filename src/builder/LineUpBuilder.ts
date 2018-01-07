@@ -3,9 +3,9 @@ import {IGroupData, IGroupItem} from '../model';
 import Ranking from '../model/Ranking';
 import ADataProvider from '../provider/ADataProvider';
 import {ICellRendererFactory} from '../renderer';
+import {IToolbarAction} from '../ui';
 import LineUp from '../ui/LineUp';
 import Taggle from '../ui/taggle/Taggle';
-import {IToolbarAction} from '../ui/toolbar';
 
 export default class LineUpBuilder {
   private readonly options: Partial<ILineUpOptions> = {
@@ -18,8 +18,9 @@ export default class LineUpBuilder {
     return this;
   }
 
-  sidePanel(enable: boolean) {
+  sidePanel(enable: boolean, collapsed: boolean = false) {
     this.options.panel = enable;
+    this.options.panelCollapsed = collapsed;
     return this;
   }
 
@@ -32,7 +33,6 @@ export default class LineUpBuilder {
     this.options.wholeHover = enable;
     return this;
   }
-
 
   registerRenderer(id: string, factory: ICellRendererFactory) {
     this.options.renderers![id] = factory;
@@ -66,5 +66,6 @@ export default class LineUpBuilder {
 
   dynamicHeight(callback: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => (IDynamicHeight | null)) {
     this.options.dynamicHeight = callback;
+    return this;
   }
 }

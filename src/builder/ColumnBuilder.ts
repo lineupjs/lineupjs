@@ -14,6 +14,6 @@ export default class ColumnBuilder {
   // TODO
 
   build() {
-    return this.desc;
+    return <IColumnDesc>this.desc;
   }
 }
