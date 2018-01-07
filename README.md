@@ -38,7 +38,7 @@ const builder = LineUpJS.builder(arr);
 
 // manually define columns
 builder
-  .column(LineUpJS.buildStringColumn('d').label('Label').width(300))
+  .column(LineUpJS.buildStringColumn('d').label('Label').width(100))
   .column(LineUpJS.buildCategoricalColumn('cat', cats).color('green'))
   .column(LineUpJS.buildCategoricalColumn('cat2', cats).color('blue'))
   .column(LineUpJS.buildNumberColumn('a', [0, 10]).color('blue'));
