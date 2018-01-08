@@ -56,6 +56,11 @@ export default class DataBuilder extends LineUpBuilder {
     return this;
   }
 
+  restore(dump: any) {
+    this.rankBuilders.push((data) => data.restore(dump));
+    return this;
+  }
+
   defaultRanking(addSupportTypes: boolean = true) {
     this.rankBuilders.push((data) => data.deriveDefault(addSupportTypes));
     return this;
