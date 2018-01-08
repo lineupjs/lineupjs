@@ -10,8 +10,14 @@ Usage
 
 **Installation**
 
+TODO: release
 ```bash
 npm install --save lineupjs
+```
+
+```html
+<link href="https://sgratzl.github.io/lineupjs_docs/develop/LineUpJS.css" rel="stylesheet">
+<script src="https://sgratzl.github.io/lineupjs_docs/develop/LineUpJS.min.js"></script>
 ```
 
 **Minimal Usage Example**
