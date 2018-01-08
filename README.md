@@ -134,7 +134,7 @@ npm run watch
 
 ***
 
-<a href="https://caleydo.org"><img src="http://caleydo.org/assets/images/logos/caleydo.svg" align="left" width="200px" hspace="10" vspace="6"></a>
+<a href="http://caleydo.org"><img src="https://user-images.githubusercontent.com/4129778/34663868-5455cb76-f459-11e7-95db-f80db24026dc.png" align="left" width="200px" hspace="10" vspace="6"></a>
 This repository is created as part of the **[The Caleydo Project](http://caleydo.org/)**.
 
 [npm-image]: https://badge.fury.io/js/lineupjs.svg
