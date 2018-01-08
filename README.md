@@ -10,9 +10,8 @@ Usage
 
 **Installation**
 
-TODO: release
 ```bash
-npm install --save lineupjs
+npm install --save lineupjs@next
 ```
 
 ```html
