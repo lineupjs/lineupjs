@@ -39,6 +39,8 @@ for (let i = 0; i < 100; ++i) {
 const lineup = LineUpJS.asLineUp(document.body, arr);
 ```
 
+[CodePen](https://codepen.io/sgratzl/pen/Ozzbqp)
+
 ![Minimal Result](https://user-images.githubusercontent.com/4129778/34654173-32180ff8-f3f8-11e7-8469-229fa34a65dc.png)
 
 
@@ -69,6 +71,8 @@ builder
 
 const lineup = builder.build(document.body);
 ```
+
+[CodePen](https://codepen.io/sgratzl/pen/vppyML)
 
 ![Advanced Result](https://user-images.githubusercontent.com/4129778/34654174-3235f784-f3f8-11e7-9361-44f5fa068bb9.png)
 
