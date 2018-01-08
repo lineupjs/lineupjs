@@ -25,14 +25,14 @@ const webpackloaders = [
     test: /\.(png|jpg)$/,
     loader: 'url-loader',
     options: {
-      limit: 10000 //inline <= 10kb
+      limit: 20000 //inline <= 10kb
     }
   },
   {
     test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
     loader: 'url-loader',
     options: {
-      limit: 10000, //inline <= 10kb
+      limit: 20000, //inline <= 20kb
       mimetype: 'application/font-woff'
     }
   },
