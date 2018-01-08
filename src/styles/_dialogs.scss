@@ -1,30 +1,29 @@
 /**
   popups, e.g., rename dialogs,...
  */
-@import 'vars';
+@import './vars';
+@import './icons/index';
 
 @at-root {
-  .#{$lu_css_prefix}-popup {
-    position: absolute;
-    dominant-baseline: central;
-    text-anchor: middle;
-
-    .ok {
-      position: absolute;
-      right: 10px;
-    }
-  }
-
-  .#{$lu_css_prefix}-popup,
-  .#{$lu_css_prefix}-popup2 {
+  .#{$lu_css_prefix}-dialog,
+  .#{$lu_css_prefix}-tooltip {
     background-color: white;
     border: 1px solid black;
+    display: flex;
+    flex-direction: column;
     position: absolute;
     padding: 5px;
     z-index: 9;
     font-size: $lu_dialog_font_size;
     clear: right;
 
+    h4 {
+      margin: 0.2em;
+      display: inline-block;
+    }
+  }
+
+  .#{$lu_css_prefix}-dialog {
     &::before {
       content: '';
       top: -$lu_dialog_mouse_region;
@@ -35,10 +34,6 @@
       z-index: -1;
     }
 
-    form {
-      display: block;
-    }
-
     label {
       font-weight: normal;
     }
@@ -47,75 +42,142 @@
       font-size: 8pt;
     }
 
-    .selectionTable {
-      background: white;
-      overflow-x: auto;
-      overflow-y: auto;
-      max-height: 50vh;
+    button {
+      border: none;
+      background: none;
+      color: $lu_toolbar_color_base;
+      transition: all 0.5s ease;
+      cursor: pointer;
 
-      td,
-      th {
-        white-space: nowrap;
-        padding: 1px 5px 1px 3px;
-        cursor: pointer;
+      &:hover,
+      &:active,
+      &:focus {
+        color: $lu_toolbar_color_hover;
       }
 
-      th {
-        border-bottom: #c1c1c1 1px solid;
-      }
-
-      table {
-        width: 95%;
-        border: 0;
-      }
-
-      tr:hover {
-        background-color: lightblue;
+      &::before {
+        @include lu_icons();
       }
     }
 
-    .lu-popup-title {
-      cursor: pointer;
-      cursor: -webkit-grab;
+    button[type=submit],
+    button[type=reset],
+    button[title=cancel] {
+      margin-top: 1em;
+    }
+
+    button[type=submit]::before {
+      content: $lu_icon_check;
+    }
+
+    button[title=cancel]::before {
+      content: $lu_icon_times;
+    }
+
+    button[type=reset]::before {
+      content: $lu_icon_undo;
+    }
+
+    button[type=submit] {
+      float: right;
+    }
+
+    &.#{$lu_css_prefix}-sub-nested {
+      width: 100px;
+    }
+
+    &.#{$lu_css_prefix}-filter-table {
+      > div:first-of-type {
+        overflow-y: auto;
+        max-height: 50vh;
+        display: flex;
+        flex-direction: column;
+
+        * {
+          transition: all 0.5s ease;
+        }
+
+        span {
+          width: 1.2em;
+          margin: 0 0.5em;
+        }
+
+        input[type=number] + div {
+          width: 3em;
+          position: relative;
+
+          > * {
+            height: 100%;
+          }
+        }
+
+        input[type=checkbox]:not(:checked) ~ * {
+          opacity: 0.5;
+        }
+
+        > * {
+          display: flex;
+        }
+      }
+    }
+
+    .#{$lu_css_prefix}_filter_missing {
+      margin-top: 1em;
     }
 
     .script-description {
       font-size: 120%;
       max-width: 50em;
 
+      dd {
+        padding-left: 1em;
+      }
+
       dl {
         padding: 1em 0.2em;
-
-        dd {
-          padding-left: 1em;
-        }
-      }
-    }
-
-    .lu-sub-nested {
-      width: 100px;
-    }
-
-    &.lu-rename-dialog {
-      input {
-        width: 100%;
-        display: block;
       }
     }
   }
 
-  .#{$lu_css_prefix}-popup2 {
-    * {
-      margin: 0;
+  .#{$lu_css_prefix}-tooltip {
+    pointer-events: none;
+    min-width: 15em;
+    max-width: 50em;
+
+    div[x-arrow] {
+      position: absolute;
+      width: 0;
+      height: 0;
     }
 
-    .ok {
-      float: right;
+    $arrow_size: 5px;
+
+    &[x-placement=bottom] div[x-arrow] {
+      border-left: $arrow_size solid transparent;
+      border-right: $arrow_size solid transparent;
+      border-bottom: $arrow_size solid black;
+      top: -$arrow_size;
     }
 
-    div.bar {
-      height: 1em;
-      transition: width 0.5s ease;
+    &[x-placement=left] div[x-arrow] {
+      border-top: $arrow_size solid transparent;
+      border-bottom: $arrow_size solid transparent;
+      border-left: $arrow_size solid black;
+      right: -$arrow_size;
+    }
+
+    &[x-placement=right] div[x-arrow] {
+      border-top: $arrow_size solid transparent;
+      border-bottom: $arrow_size solid transparent;
+      border-right: $arrow_size solid black;
+      left: -$arrow_size;
+    }
+
+    &[x-placement=top] div[x-arrow] {
+      border-left: $arrow_size solid transparent;
+      border-right: $arrow_size solid transparent;
+      border-top: $arrow_size solid black;
+      bottom: -$arrow_size;
     }
   }
 }

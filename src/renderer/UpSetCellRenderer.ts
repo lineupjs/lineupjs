@@ -1,17 +1,18 @@
-import ICellRendererFactory from './ICellRendererFactory';
-import {ICanvasRenderContext} from './RendererContexts';
-import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
-import {attr} from '../utils';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
+import {ICategory, IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import {IGroup} from '../model/Group';
+import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
+import {CANVAS_HEIGHT, UPSET} from '../styles';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {noRenderer} from './utils';
 
-
+/** @internal */
 export default class UpSetCellRenderer implements ICellRendererFactory {
   readonly title = 'Matrix';
+
+  canRender(col: Column, mode: ERenderMode) {
+    return isSetColumn(col) && mode !== ERenderMode.SUMMARY;
+  }
 
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
     const catindexes: number[] = [];
@@ -23,20 +24,18 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {left, right};
   }
 
-  private static createDOMContext(col: ICategoricalColumn & Column) {
-    const dataLength = col.categories.length;
+  private static createDOMContext(col: ISetColumn) {
+    const categories = col.categories;
     let templateRows = '';
-    for (let i = 0; i < dataLength; ++i) {
-      templateRows += `<div></div>`;
+    for (const cat of categories) {
+      templateRows += `<div title="${cat.label}"></div>`;
     }
     return {
       templateRow: templateRows,
       render: (n: HTMLElement, value: boolean[]) => {
         Array.from(n.children).slice(1).forEach((d, i) => {
           const v = value[i];
-          attr(<HTMLElement>d, {
-            'class': v ? 'enabled' : ''
-          });
+          d.classList.toggle('enabled', v);
         });
 
         const line = <HTMLElement>n.firstElementChild;
@@ -54,102 +53,73 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static union(col: ICategoricalColumn, rows: IDataRow[]) {
-    const values = new Set<string>();
-    rows.forEach((d) => {
-      col.getCategories(d.v, d.dataIndex).forEach((cat) => values.add(cat));
-    });
-    return col.categories.map((cat) => values.has(cat));
-  }
-
-  canRender(col: Column) {
-    return isCategoricalColumn(col);
-  }
-
-  createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {
+  create(col: ISetColumn, context: IRenderContext) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
+    const width = context.colWidth(col);
+    const cellDimension = width / col.dataLength!;
+
     return {
       template: `<div><div></div>${templateRow}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        const values = new Set(col.getCategories(d.v, d.dataIndex));
-        const value = col.categories.map((cat) => values.has(cat));
-        render(n, value);
+        render(n, col.getValues(d));
+      },
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
+        if (renderMissingCanvas(ctx, col, d, width)) {
+          return;
+        }
+        // Circle
+        const data = col.getValues(d);
+
+        const hasTrueValues = data.some((d) => d); //some values are true?
+
+        ctx.save();
+        ctx.fillStyle = UPSET.circle;
+        ctx.strokeStyle = UPSET.stroke;
+        if (hasTrueValues) {
+          const {left, right} = UpSetCellRenderer.calculateSetPath(data, cellDimension);
+          ctx.beginPath();
+          ctx.moveTo(left, CANVAS_HEIGHT / 2);
+          ctx.lineTo(right, CANVAS_HEIGHT / 2);
+          ctx.stroke();
+        }
+
+        data.forEach((d, j) => {
+          const posx = (j * cellDimension);
+          ctx.beginPath();
+          ctx.globalAlpha = d ? 1 : UPSET.inactive;
+          ctx.fillRect(posx, 0, cellDimension, CANVAS_HEIGHT);
+          ctx.fill();
+        });
+
+        ctx.restore();
       }
     };
   }
 
-  createGroupDOM(col: ICategoricalColumn & Column): IDOMGroupRenderer {
+  createGroup(col: ISetColumn) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     return {
       template: `<div><div></div>${templateRow}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const value = UpSetCellRenderer.union(col, rows);
+        const value = union(col, rows);
         render(n, value);
       }
     };
   }
 
-  private static createCanvasContext(col: ICategoricalColumn & Column, context: ICanvasRenderContext) {
-    const dataLength = col.categories.length;
-    const cellDimension = context.colWidth(col) / dataLength;
-
-    const upsetCircle = context.option('style.upset.circle', 'black');
-    const upsetInactive = context.option('style.upset.inactiveOpacity', 0.1);
-    const upsetStroke = context.option('style.upset.stroke', 'black');
-
-    return (ctx: CanvasRenderingContext2D, data: boolean[], rowHeight: number) => {
-      const hasTrueValues = data.some((d) => d); //some values are true?
-      const radius = (rowHeight / 3);
-
-      ctx.save();
-      ctx.fillStyle = upsetCircle;
-      ctx.strokeStyle = upsetStroke;
-      if (hasTrueValues) {
-        const {left, right} = UpSetCellRenderer.calculateSetPath(data, cellDimension);
-        ctx.beginPath();
-        ctx.moveTo(left, rowHeight / 2);
-        ctx.lineTo(right, rowHeight / 2);
-        ctx.stroke();
-      }
-
-      data.forEach((d, j) => {
-        const posy = (rowHeight / 2);
-        const posx = (j * cellDimension) + (cellDimension / 2);
-        ctx.beginPath();
-        ctx.globalAlpha = d ? 1 : upsetInactive;
-        ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
-        ctx.fill();
-      });
-
-      ctx.restore();
-    };
+  createSummary() {
+    return noRenderer;
   }
+}
 
-  createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const render = UpSetCellRenderer.createCanvasContext(col, context);
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
-        return;
-      }
-      // Circle
-      const values = new Set(col.getCategories(d.v, d.dataIndex));
-      const data = col.categories.map((cat) => values.has(cat));
-      const rowHeight = context.rowHeight(i);
-      render(ctx, data, rowHeight);
-    };
-  }
 
-  createGroupCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const render = UpSetCellRenderer.createCanvasContext(col, context);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      // Circle
-      const data = UpSetCellRenderer.union(col, rows);
-      const rowHeight = context.groupHeight(group);
-      render(ctx, data, rowHeight);
-    };
-  }
-
+export function union(col: ISetColumn, rows: IDataRow[]) {
+  const values = new Set<ICategory>();
+  rows.forEach((d) => {
+    col.getSet(d).forEach((c) => values.add(c));
+  });
+  return col.categories.map((cat) => values.has(cat));
 }

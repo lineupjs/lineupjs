@@ -1,7 +1,4 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
+import {IDataRow} from './interfaces';
 import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
 
 /**
@@ -9,7 +6,7 @@ import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Nested') {
+export function createNestedDesc(label: string = 'Nested') {
   return {type: 'nested', label};
 }
 
@@ -19,10 +16,10 @@ export function createDesc(label: string = 'Nested') {
  */
 export default class NestedColumn extends MultiLevelCompositeColumn {
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
+  compare(a: IDataRow, b: IDataRow) {
     const c = this.children;
     for (const ci of c) {
-      const ciResult = ci.compare(a, b, aIndex, bIndex);
+      const ciResult = ci.compare(a, b);
       if (ciResult !== 0) {
         return ciResult;
       }
@@ -30,11 +27,11 @@ export default class NestedColumn extends MultiLevelCompositeColumn {
     return 0;
   }
 
-  getLabel(row: any, index: number) {
-    return this.children.map((d) => d.getLabel(row, index)).join(';');
+  getLabel(row: IDataRow) {
+    return this.children.map((d) => d.getLabel(row)).join(';');
   }
 
-  getValue(row: any, index: number) {
-    return this.children.map((d) => d.getValue(row, index)).join(';');
+  getValue(row: IDataRow) {
+    return this.children.map((d) => d.getValue(row)).join(';');
   }
 }

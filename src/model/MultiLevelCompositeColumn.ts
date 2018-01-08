@@ -1,13 +1,12 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './CompositeColumn';
+import {similar} from '../internal/math';
+import {toolbar} from './annotations';
 import Column, {IColumnDesc, IFlatColumn} from './Column';
-import StackColumn from './StackColumn';
+import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './CompositeColumn';
+import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
-import {similar} from '../utils';
+import StackColumn from './StackColumn';
 
+@toolbar('collapse')
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
   static readonly EVENT_MULTI_LEVEL_CHANGED = StackColumn.EVENT_MULTI_LEVEL_CHANGED;
@@ -21,7 +20,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    */
   private collapsed = false;
 
-  constructor(id: string, desc: IColumnDesc) {
+  constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
     const that = this;
     this.adaptChange = function (old, newValue) {
@@ -106,16 +105,16 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     super.setWidth(value);
   }
 
-  getRendererType() {
+  getRenderer() {
     if (this.getCollapsed()) {
       return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
     }
-    return super.getRendererType();
+    return super.getRenderer();
   }
 
-  isMissing(row: any, index: number) {
+  isMissing(row: IDataRow) {
     if (this.getCollapsed()) {
-      return this._children.some((c) => (isNumberColumn(c) || isMultiLevelColumn(c)) && c.isMissing(row, index));
+      return this._children.some((c) => (isNumberColumn(c) || isMultiLevelColumn(c)) && c.isMissing(row));
     }
     return false;
   }

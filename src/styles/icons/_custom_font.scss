@@ -1,0 +1,18 @@
+@import '../vars';
+
+@if $lu_use_font_awesome == false {
+  @at-root {
+    @font-face {
+      font-family: 'lu-font';
+      src: url('#{$lu_assets}/font/lu-font.eot');
+      src:
+        url('#{$lu_assets}/font/lu-font.eot') format('embedded-opentype'),
+        url('#{$lu_assets}/font/lu-font.woff2') format('woff2'),
+        url('#{$lu_assets}/font/lu-font.woff') format('woff'),
+        url('#{$lu_assets}/font/lu-font.ttf') format('truetype'),
+        url('#{$lu_assets}/font/lu-font.svg') format('svg');
+      font-weight: normal;
+      font-style: normal;
+    }
+  }
+}

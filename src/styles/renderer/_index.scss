@@ -1,5 +1,6 @@
+@import '../vars';
 
-%lu-renderer {
+.#{$lu_css_prefix} {
   @import './aggregate';
   @import './bar';
   @import './boxplot';
@@ -16,6 +17,7 @@
   @import './sparkline';
   @import './stack';
   @import './string';
+  @import './table';
   @import './threshold';
   @import './upset';
   @import './verticalbar';

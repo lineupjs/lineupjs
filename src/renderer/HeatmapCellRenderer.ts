@@ -1,58 +1,69 @@
-import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
+import {IDataRow, isMissingValue} from '../model';
 import Column from '../model/Column';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
-import {clipText, setText} from '../utils';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {hsl} from 'd3';
-import ICellRendererFactory from './ICellRendererFactory';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {colorOf, IImposer} from './impose';
+import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
+import {CANVAS_HEIGHT} from '../styles';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
+import {toHeatMapColor} from './BrightnessCellRenderer';
+import IRenderContext, {ICellRendererFactory, IImposer} from './interfaces';
+import {renderMissingValue} from './missing';
+import {attr, forEachChild, noop, wideEnough} from './utils';
 
-export function toHeatMapColor(row: IDataRow, col: INumberColumn & Column, imposer?: IImposer) {
-  let v = col.getNumber(row.v, row.dataIndex);
-  if (isNaN(v)) {
-    v = 1; // max = brightest
-  }
-  //hsl space encoding, encode in lightness
-  const color = hsl(colorOf(col, row, imposer) || Column.DEFAULT_COLOR);
-  color.l = 1 - v; // largest value = darkest color
-  return color.toString();
-}
+/** @internal */
+export default class HeatmapCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
+  readonly title = 'Heatmap';
 
-export default class HeatmapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Brightness';
-
-  canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
+  canRender(col: Column) {
+    return isNumbersColumn(col) && Boolean(col.dataLength);
   }
 
-  createDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
+  protected createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
+    const cellDimension = context.colWidth(col) / col.dataLength!;
+    const labels = col.labels;
+    let templateRows = '';
+    for (let i = 0; i < col.dataLength!; ++i) {
+      templateRows += `<div style="background-color: white" title=""></div>`;
+    }
     return {
-      template: `<div title="">
-        <div style="background-color: ${col.color}"></div><div> </div>
-      </div>`,
-      update: (n: HTMLElement, d: IDataRow) => {
-        const missing = renderMissingDOM(n, col, d);
-        n.title = col.getLabel(d.v, d.dataIndex);
-        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = missing ? null : toHeatMapColor(d, col, imposer);
-        setText(<HTMLSpanElement>n.lastElementChild!, n.title);
+      templateRow: templateRows,
+      update: (row: HTMLElement, data: number[], item: IDataRow) => {
+        forEachChild(row, (d, i) => {
+          const v = data[i];
+          attr(<HTMLDivElement>d, {
+            title: `${labels[i]}: ${DEFAULT_FORMATTER(v)}`,
+            'class': isMissingValue(v) ? 'lu-missing' : ''
+          }, {
+            'background-color': isMissingValue(v) ? null : toHeatMapColor(v, item, col, imposer)
+          });
+        });
+      },
+      render: (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow) => {
+        data.forEach((d: number, j: number) => {
+          const x = j * cellDimension;
+          if (isMissingValue(d)) {
+            renderMissingValue(ctx, cellDimension, CANVAS_HEIGHT, x, 0);
+            return;
+          }
+          ctx.beginPath();
+          ctx.fillStyle = toHeatMapColor(d, item, col, imposer);
+          ctx.fillRect(x, 0, cellDimension, CANVAS_HEIGHT);
+        });
       }
     };
   }
 
-  createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
-    const padding = context.option('rowBarPadding', 1);
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
-        return;
-      }
-      ctx.fillStyle = toHeatMapColor(d, col, imposer);
-      const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
-      ctx.fillRect(0, 0, cell, cell);
-      ctx.fillStyle = context.option('style.text', 'black');
-      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
+  createSummary(col: INumbersColumn) {
+    let labels = col.labels.slice();
+    while (labels.length > 0 && !wideEnough(col, labels.length)) {
+      labels = labels.filter((_, i) => i % 2 === 0); // even
+    }
+    let templateRows = '<div>';
+    for (const label of labels) {
+      templateRows += `<div title="${label}" data-title="${label}"></div>`;
+    }
+    templateRows += '</div>';
+    return {
+      template: templateRows,
+      update: noop
     };
   }
 }

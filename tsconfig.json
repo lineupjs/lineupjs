@@ -13,20 +13,27 @@
       "es2016.array.include",
       "es2017.object"
     ],
+    "declaration": true,
+    "declarationDir": "./build/typings",
+    "removeComments": true,
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
+    "noUnusedLocals": true,
     "noImplicitThis": true,
     "noUnusedParameters": true,
-    "noUnusedLocals": true,
     "strictNullChecks": true,
+    "stripInternal": true,
     "skipLibCheck": true,
     "baseUrl": "../"
   },
+  "compileOnSave": false,
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "demo/**/*.ts",
+    "demo/**/*.tsx",
     "tests/**/*.ts",
     "index.ts",
     "tsd.d.ts"

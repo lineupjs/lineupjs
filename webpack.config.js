@@ -1,9 +1,3 @@
-/* *****************************************************************************
- * Caleydo - Visualization for Molecular Biology - http://caleydo.org
- * Copyright (c) The Caleydo Team. All rights reserved.
- * Licensed under the new BSD license, available at http://caleydo.org/license
- **************************************************************************** */
-
 const resolve = require('path').resolve;
 const pkg = require('./package.json');
 const webpack = require('webpack');
@@ -27,26 +21,25 @@ const banner = '/*! ' + (pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' +
 const webpackloaders = [
   {test: /\.scss$/, loader: 'style-loader!css-loader!sass-loader'},
   {test: /\.tsx?$/, loader: 'awesome-typescript-loader'},
-  {test: /\.json$/, loader: 'json-loader'},
   {
     test: /\.(png|jpg)$/,
     loader: 'url-loader',
-    query: {
-      limit: 10000 //inline <= 10kb
+    options: {
+      limit: 20000 //inline <= 10kb
     }
   },
   {
     test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
     loader: 'url-loader',
-    query: {
-      limit: 10000, //inline <= 10kb
+    options: {
+      limit: 20000, //inline <= 20kb
       mimetype: 'application/font-woff'
     }
   },
   {
     test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
     loader: 'url-loader',
-    query: {
+    options: {
       limit: 10000, //inline <= 10kb
       mimetype: 'image/svg+xml'
     }
@@ -60,15 +53,14 @@ const isWorkspaceContext = fs.existsSync(resolve(__dirname, '..', 'phovea_regist
 /**
  * generate a webpack configuration
  */
-function generateWebpack(bundle, options) {
+function generateWebpack(options) {
   const base = {
     entry: {
-      'LineUpJS': './src/index.ts',
-      'TaggleJS': './src/taggle.ts',
+      'LineUpJS': './src/index.ts'
     },
     output: {
       path: resolve(__dirname, 'build'),
-      filename: `[name]${bundle ? '_bundle' : ''}${options.min && !options.nosuffix ? '.min' : ''}.js`,
+      filename: `[name]${options.min && !options.nosuffix ? '.min' : ''}.js`,
       chunkFilename: '[chunkhash].js',
       publicPath: '', //no public path = relative
       library: 'LineUpJS',
@@ -78,9 +70,7 @@ function generateWebpack(bundle, options) {
     resolve: {
       // Add `.ts` and `.tsx` as a resolvable extension.
       extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
-      alias: {
-        d3: 'd3/d3'
-      },
+      symlinks: false,
       //fallback to the directory above if they are siblings just in the workspace context
       modules: isWorkspaceContext ? [
         resolve(__dirname, '../'),
@@ -105,22 +95,14 @@ function generateWebpack(bundle, options) {
     module: {
       loaders: webpackloaders.slice()
     },
-    devServer: {
-      contentBase: resolve(__dirname, 'build'),
-      watchOptions: {
-        aggregateTimeout: 500,
-        ignored: /node_modules/
-      }
-    },
     watchOptions: {
       aggregateTimeout: 500,
       ignored: /node_modules/
+    },
+    devServer: {
+      contentBase: 'demo'
     }
   };
-  if (!bundle) {
-    //don't bundle d3
-    base.externals.d3 = 'd3';
-  }
 
   if (options.isProduction) {
       base.plugins.unshift(new webpack.BannerPlugin({
@@ -133,9 +115,9 @@ function generateWebpack(bundle, options) {
       new webpack.optimize.AggressiveMergingPlugin());
   }
 
-  if (!options.isTest && !bundle) {
+  if (!options.isTest) {
     //extract the included css file to own file
-    let p = new ExtractTextPlugin({
+    const p = new ExtractTextPlugin({
       filename: `[name]${options.min && !options.nosuffix ? '.min' : ''}.css`,
       allChunks: true // there seems to be a bug in dynamically loaded chunk styles are not loaded, workaround: extract all styles from all chunks
     });
@@ -163,7 +145,7 @@ function generateWebpack(bundle, options) {
       }));
   } else {
     //generate source maps
-    base.devtool = 'source-map';
+    base.devtool = 'inline-source-map';
   }
   return base;
 }
@@ -174,30 +156,20 @@ function generateWebpackConfig(env) {
   const isDev = !isProduction && !isTest;
 
   const base = {
-    isProduction: isProduction,
-    isDev: isDev,
-    isTest: isTest
+    isProduction,
+    isDev,
+    isTest
   };
 
-  if (isTest) {
-    return generateWebpack(false, base);
-  }
-
   //single generation
-  if (isDev) {
-    return generateWebpack(false, base);
+  if (isDev || isTest) {
+    return generateWebpack(base);
   } else { //isProduction
     return [
       //plain
-      generateWebpack(false, base),
+      generateWebpack(base),
       //minified
-      generateWebpack(false, Object.assign({}, base, {
-        min: true
-      })),
-      //plain
-      generateWebpack(true, base),
-      //minified
-      generateWebpack(true, Object.assign({}, base, {
+      generateWebpack(Object.assign({}, base, {
         min: true
       }))
     ];

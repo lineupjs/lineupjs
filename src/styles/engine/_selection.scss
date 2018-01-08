@@ -16,13 +16,13 @@
     -moz-user-select: none;
     user-select: none;
 
-    &.lu-selection-active {
+    &.#{$lu_css_prefix}-selection-active {
       display: block;
       z-index: 1000;
     }
   }
 
-  article.lu-selection-active * {
+  article.#{$lu_css_prefix}-selection-active * {
     -moz-user-select: none;
     user-select: none;
   }

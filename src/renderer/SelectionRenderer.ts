@@ -1,13 +1,10 @@
-import SelectionColumn from '../model/SelectionColumn';
-import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
-import {ICanvasRenderContext} from './RendererContexts';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {clipText} from '../utils';
-import ICellRendererFactory from './ICellRendererFactory';
-import {IGroup} from '../model/Group';
+import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
+import SelectionColumn from '../model/SelectionColumn';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {noop} from './utils';
 
+/** @internal */
 export default class SelectionRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
@@ -15,40 +12,25 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return col instanceof SelectionColumn;
   }
 
-  createDOM(col: SelectionColumn): IDOMCellRenderer {
+  create(col: SelectionColumn) {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          col.toggleValue(d.v, d.dataIndex);
+          col.toggleValue(d);
         };
-      }
+      },
+      render: noop
     };
   }
 
-  createCanvas(col: SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
-      const bak = ctx.font;
-      ctx.font = '10pt FontAwesome';
-      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, context.colWidth(col), context.textHints);
-      ctx.font = bak;
-    };
-  }
-
-  createGroupCanvas(col: SelectionColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
-      clipText(ctx, String(selected), 0, context.groupHeight(group), col.getWidth(), context.textHints);
-    };
-  }
-
-  createGroupDOM(col: SelectionColumn): IDOMGroupRenderer {
+  createGroup(col: SelectionColumn) {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
+        const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
         const all = selected >= rows.length / 2;
         if (all) {
           n.classList.add('lu-group-selected');
@@ -59,7 +41,26 @@ export default class SelectionRenderer implements ICellRendererFactory {
           event.preventDefault();
           event.stopPropagation();
           const value = n.classList.toggle('lu-group-selected');
-          col.setValues(rows.map((d) => d.v), rows.map((d) => d.dataIndex), value);
+          col.setValues(rows, value);
+        };
+      }
+    };
+  }
+
+  createSummary(col: SelectionColumn, context: IRenderContext) {
+    return {
+      template: `<div title="(Un)Select All" data-icon="unchecked"></div>`,
+      update: (node: HTMLElement) => {
+        node.onclick = (evt) => {
+          evt.stopPropagation();
+          const icon = node.dataset.icon;
+          if (icon === 'unchecked') {
+            context.provider.selectAllOf(col.findMyRanker()!);
+            node.dataset.icon = 'checked';
+          } else {
+            context.provider.setSelection([]);
+            node.dataset.icon = 'unchecked';
+          }
         };
       }
     };

@@ -1,0 +1,43 @@
+@import '~font-awesome/scss/variables';
+
+@mixin lu_fontawesome_var_icons() {
+  $lu_icon_pencil_square_o: $fa-var-pencil-square-o !global;
+  $lu_icon_code_fork: $fa-var-code-fork !global;
+  $lu_icon_exchange: $fa-var-exchange !global;
+  $lu_icon_external_link: $fa-var-external-link !global;
+  $lu_icon_gears: $fa-var-gears !global;
+  $lu_icon_window_restore: $fa-var-window-restore !global;
+  $lu_icon_filter: $fa-var-filter !global;
+  $lu_icon_columns: $fa-var-columns !global;
+  $lu_icon_scissors: $fa-var-scissors !global;
+  $lu_icon_search: $fa-var-search !global;
+  $lu_icon_tasks: $fa-var-tasks !global;
+  $lu_icon_toggle_right: $fa-var-toggle-right !global;
+  $lu_icon_toggle_left: $fa-var-toggle-left !global;
+  $lu_icon_expand: $fa-var-expand !global;
+  $lu_icon_compress: $fa-var-compress !global;
+  $lu_icon_trash: $fa-var-trash !global;
+  $lu_icon_ellipsis_h: $fa-var-ellipsis-h !global;
+  $lu_icon_sitemap: $fa-var-sitemap !global;
+  $lu_icon_sort: $fa-var-sort !global;
+  $lu_icon_sort_amount_asc: $fa-var-sort-amount-asc !global;
+  $lu_icon_sort_amount_desc: $fa-var-sort-amount-desc !global;
+  $lu_icon_sort_alpha_asc: $fa-var-sort-alpha-asc !global;
+  $lu_icon_sort_alpha_desc: $fa-var-sort-alpha-desc !global;
+  $lu_icon_sort_numeric_asc: $fa-var-sort-numeric-asc !global;
+  $lu_icon_sort_numeric_desc: $fa-var-sort-numeric-desc !global;
+  $lu_icon_caret_down: $fa-var-caret-down !global;
+  $lu_icon_caret_right: $fa-var-caret-right !global;
+  $lu_icon_square_o: $fa-var-square-o !global;
+  $lu_icon_check_square_o: $fa-var-check-square-o !global;
+  $lu_icon_exclamation_triangle: $fa-var-exclamation-triangle !global;
+  $lu_icon_check: $fa-var-check !global;
+  $lu_icon_times: $fa-var-times !global;
+  $lu_icon_undo: $fa-var-undo !global;
+  $lu_icon_sort_asc: $fa-var-sort-asc !global;
+  $lu_icon_sort_desc: $fa-var-sort-desc !global;
+  $lu_icon_sort_asc: $fa-var-sort-asc !global;
+  $lu_icon_sort_desc: $fa-var-sort-desc !global;
+  $lu_icon_align_justify: $fa-var-align-justify !global;
+  $lu_icon_bars: $fa-var-bars !global;
+}

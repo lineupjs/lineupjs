@@ -1,12 +1,6 @@
 @import '../vars';
-@import '../header/index';
 
-/**
-  needs to be the full path without any super import otherwise the @extend won't work properly
- */
 section.#{$lu_css_prefix}-header {
-  @extend %lu-header;
-
   text-align: center;
   color: black;
   overflow: unset !important;
@@ -23,23 +17,17 @@ section.#{$lu_css_prefix}-header {
     left: 0;
     width: 100%;
     height: 15px;
-    bottom: -15px;
+    bottom: -16px;
     background: white;
     pointer-events: none;
   }
 
   &:hover {
-    background-color: $lu_even_bg;
+    background-color: $lu_hover_header_color !important;
 
     > .#{$lu_css_prefix}-toolbar {
       color: $lu_toolbar_color_base2;
     }
-  }
-
-  &[draggable=true] {
-    cursor: pointer;
-    cursor: -moz-grab;
-    cursor: -webkit-grab; // indicate grab able
   }
 
   > .#{$lu_css_prefix}-toolbar {
@@ -59,13 +47,18 @@ section.#{$lu_css_prefix}-header {
     font-size: $lu_toolbar_font_size;
   }
 
-  &.#{$lu_css_prefix}-dragover::after {
-    background: $lu_drag_over;
-  }
-
   > .#{$lu_css_prefix}-summary {
     height: 2em;
     margin-right: $lu-engine_grip_gap;
+
+    &:empty {
+      display: none;
+    }
+
+    &[data-renderer=aggregate],
+    &[data-renderer=selection] {
+      display: block; // have just a before element
+    }
   }
 
   > .#{$lu_css_prefix}-nested {
@@ -84,10 +77,27 @@ section.#{$lu_css_prefix}-header {
     background-color: white;
     cursor: col-resize;
     border-bottom: 1px solid white;
+    text-align: center;
     bottom: -1px;
 
     &.#{$lu_css_prefix}-dragover {
-      background-color: $lu_drag_over;
+      transition: width 0.2s ease, right 0.2s ease;
+      user-select: none;
+      color: $lu_toolbar_color_hover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed $lu_drag_over;
+      background-color: lighten($lu_drag_over, 35%);
+      width: 50px;
+      right: -25px;
+      z-index: 10;
+      font-size: small;
+
+      &::before {
+        content: 'Place here';
+        overflow: hidden;
+      }
     }
 
     &:hover {
@@ -97,14 +107,22 @@ section.#{$lu_css_prefix}-header {
 }
 
 .#{$lu_css_prefix}-sub-nested > section {
-  margin-bottom: $lu_engine_grip_gap;
+  margin-bottom: $lu_engine_grip_gap + 15px;
 
   > .#{$lu_css_prefix}-handle {
     height: $lu_engine_grip_gap;
     width: 100%;
-    bottom: ($lu_engine_grip_gap * -1) - 1px;
+    bottom: ($lu_engine_grip_gap * -1) - 1px - 15px;
     left: 0;
     right: 0;
     cursor: inherit;
+
+    &.#{$lu_css_prefix}-dragover {
+      transition: bottom 0.2s ease, height 0.2s ease;
+      height: 50px;
+      bottom: ($lu_engine_grip_gap * -1) - 1px - 15px -25px;
+      width: 100%;
+      right: 0;
+    }
   }
 }

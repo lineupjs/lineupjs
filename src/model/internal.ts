@@ -1,0 +1,124 @@
+import {schemeCategory10, schemeCategory20} from 'd3-scale';
+import {LazyBoxPlotData} from '../internal';
+import {IOrderedGroup} from './Group';
+import {IDataRow, IGroup, IGroupParent} from './interfaces';
+/** @internal */
+import {default as INumberColumn, INumberFilter, numberCompare} from './INumberColumn';
+
+
+export function patternFunction(pattern: string, ...args: string[]) {
+  return new Function('value', ...args, `return \`${pattern}\`;`);
+}
+
+/** @internal */
+export function isDummyNumberFilter(filter: INumberFilter) {
+  return !filter.filterMissing && !isFinite(filter.min) && !isFinite(filter.max);
+}
+
+/** @internal */
+export function restoreFilter(v: INumberFilter): INumberFilter {
+  return {
+    min: v.min != null && isFinite(v.min) ? v.min : -Infinity,
+    max: v.max != null && isFinite(v.max) ? v.max : +Infinity,
+    filterMissing: v.filterMissing
+  };
+}
+
+
+/** @internal */
+export function joinGroups(groups: IGroup[]): IGroup {
+  console.assert(groups.length > 0);
+  if (groups.length === 1) {
+    return groups[0];
+  }
+  // create a chain
+  const parents: IGroupParent[] = groups.map((g) => Object.assign({subGroups: []}, g));
+  groups.slice(1).forEach((g, i) => {
+    g.parent = parents[i];
+    parents[i].subGroups.push(g);
+  });
+  const g = {
+    name: groups.map((d) => d.name).join(' ∩ '),
+    color: groups[0].color,
+    parent: parents[parents.length - 1]
+  };
+  g.parent.subGroups.push(g);
+  return g;
+}
+
+/** @internal */
+export function toGroupID(group: IGroup) {
+  let id = group.name;
+  let g = group.parent;
+  while (g) {
+    id = `${g.name}.${id}`;
+    g = g.parent;
+  }
+  return id;
+}
+
+/** @internal */
+export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
+  if (groups.length <= 1) {
+    return;
+  }
+  const lookup = new Map<string, IGroupParent>();
+
+  const resolve = (g: IGroupParent): { g: IGroupParent, id: string } => {
+    let id = g.name;
+    if (g.parent) {
+      const parent = resolve(g.parent);
+      g.parent = parent.g;
+      id = `${parent.id}.$[id}`;
+    }
+    // ensure there is only one instance per id (i.e. share common parents
+    if (lookup.has(id)) {
+      return {g: lookup.get(id)!, id};
+    }
+    if (g.parent) {
+      g.parent.subGroups.push(g);
+    }
+    g.subGroups = []; // clear old children
+    lookup.set(id, g);
+    return {g, id};
+  };
+  // resolve just parents
+  groups.forEach((g) => {
+    if (g.parent) {
+      g.parent = resolve(g.parent).g;
+      g.parent.subGroups.push(g);
+    }
+  });
+}
+
+
+/** @internal */
+export function colorPool() {
+  // dark, bright, and repeat
+  const colors = schemeCategory10.concat(schemeCategory20.filter((_d, i) => i % 2 === 1));
+  let act = 0;
+  return () => colors[(act++) % colors.length];
+}
+
+
+/** @internal */
+export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
+  //return the median row
+  const data = rows.map((r, i) => ({i, v: col.getNumber(r), m: col.isMissing(r)}));
+  const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
+  const index = sorted[Math.floor(sorted.length / 2.0)];
+  if (index === undefined) {
+    return 0; //error case
+  }
+  return index.i;
+}
+
+/** @internal */
+export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
+  const va = new LazyBoxPlotData(a.map((row) => col.getNumber(row)));
+  const vb = new LazyBoxPlotData(b.map((row) => col.getNumber(row)));
+
+  return numberCompare(<number>va[sortMethod], <number>vb[sortMethod]);
+}
+
+

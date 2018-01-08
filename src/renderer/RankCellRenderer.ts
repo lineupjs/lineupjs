@@ -1,25 +1,30 @@
-import {DefaultCellRenderer} from './DefaultCellRenderer';
-import {ICanvasRenderContext} from './RendererContexts';
-import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IDataRow} from '../provider/ADataProvider';
-import {IGroup} from '../model/Group';
-import RankColumn from '../model/RankColumn';
-import {clipText} from '../utils';
-import {IDOMGroupRenderer} from './IDOMCellRenderers';
+import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
+import RankColumn from '../model/RankColumn';
+import {ICellRendererFactory} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {noop, noRenderer, setText} from './utils';
 
-export default class RankCellRenderer extends DefaultCellRenderer {
-  readonly title = 'String';
-
-  constructor() {
-    super('rank', 'right');
-  }
+/** @internal */
+export default class RankCellRenderer implements ICellRendererFactory {
+  readonly title = 'Default';
 
   canRender(col: Column) {
     return col instanceof RankColumn;
   }
 
-  createGroupDOM(col: RankColumn): IDOMGroupRenderer {
+  create(col: Column) {
+    return {
+      template: `<div class="lu-right"> </div>`,
+      update: (n: HTMLDivElement, d: IDataRow) => {
+        renderMissingDOM(n, col, d);
+        setText(n, col.getLabel(d));
+      },
+      render: noop
+    };
+  }
+
+  createGroup(col: Column) {
     return {
       template: `<div><div></div><div></div></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
@@ -30,26 +35,13 @@ export default class RankCellRenderer extends DefaultCellRenderer {
           toTSpan.textContent = '';
           return;
         }
-        fromTSpan.textContent = col.getLabel(rows[0].v, rows[0].dataIndex);
-        toTSpan.textContent = col.getLabel(rows[rows.length - 1].v, rows[rows.length - 1].dataIndex);
+        fromTSpan.textContent = col.getLabel(rows[0]);
+        toTSpan.textContent = col.getLabel(rows[rows.length - 1],);
       }
     };
   }
 
-  createGroupCanvas(col: RankColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      if (rows.length === 0) {
-        return;
-      }
-      const fromRank = col.getLabel(rows[0].v, rows[0].dataIndex);
-      const toRank = col.getLabel(rows[rows.length - 1].v, rows[rows.length - 1].dataIndex);
-      const bak = ctx.textAlign;
-      ctx.textAlign = 'right';
-      const w = col.getWidth();
-      const shift = w;
-      clipText(ctx, fromRank, shift, 0, w, context.textHints);
-      clipText(ctx, toRank, shift, context.groupHeight(group) - context.textHints.spinnerWidth, w, context.textHints);
-      ctx.textAlign = bak;
-    };
+  createSummary() {
+    return noRenderer;
   }
 }
