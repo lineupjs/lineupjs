@@ -70,20 +70,20 @@ const lineup = builder.build(document.body);
 Supported Browsers
 ------------------
 
- * Chrome (best performance)
- * Firefox Quantum
- * Edge 16
+ * Chrome 64+ (best performance)
+ * Firefox 57+
+ * Edge 16+
  
 
 API Documentation
 -----------------
 
-see [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
+See [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
 
 Demos
 -----
 
-see [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop)
+See [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop)
 
 
 Dependencies
