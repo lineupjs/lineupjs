@@ -117,7 +117,7 @@ Development Environment
 **Installation**
 
 ```bash
-git clone https://github.com/Caleydo/lineupjs.git
+git clone https://github.com/sgratzl/lineupjs.git -b develop
 cd lineupjs
 npm install
 ```
@@ -151,8 +151,8 @@ This repository is created as part of the **[The Caleydo Project](http://caleydo
 [npm-url]: https://npmjs.org/package/lineupjs
 [bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
 [bsd-url]: https://opensource.org/licenses/BSD-3-Clause
-[ci-image]: https://circleci.com/gh/Caleydo/lineupjs.svg?style=shield
-[ci-url]: https://circleci.com/gh/Caleydo/lineupjs
+[ci-image]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop.svg?style=shield
+[ci-url]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop
 
 
  

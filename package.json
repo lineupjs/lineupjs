@@ -23,9 +23,9 @@
   ],
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/Caleydo/lineupjs/issues"
+    "url": "https://github.com/sgratzl/lineupjs/issues"
   },
-  "homepage": "https://github.com/Caleydo/lineupjs",
+  "homepage": "https://github.com/sgratzl/lineupjs",
   "main": "build/LineUpJS.js",
   "typings": "build/typings/lineupjs/src",
   "files": [
@@ -58,7 +58,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Caleydo/lineupjs.git"
+    "url": "https://github.com/sgratzl/lineupjs.git"
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.3",
