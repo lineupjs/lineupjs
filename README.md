@@ -78,12 +78,12 @@ Supported Browsers
 API Documentation
 -----------------
 
-see [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/cleanup/docs)
+see [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
 
 Demos
 -----
 
-see [Develop Demos](https://sgratzl.github.io/lineupjs_docs/cleanup)
+see [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop)
 
 
 Dependencies
