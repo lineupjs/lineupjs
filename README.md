@@ -1,38 +1,136 @@
-LineUp.js: Visual Analysis of Multi-Attribute Rankings [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+LineUp.js: Visual Analysis of Multi-Attribute Rankings
 ======================================================
+[![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url]
 
 LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. 
-This is a D3-based re-implementation with limited functionality relative to the original stand-alone LineUp, which you can check out at http://lineup.caleydo.org
+This is a web and generalized version of the published LineUp visualization technique by [Gratzl et.al. 2013](http://caleydo.org/publications/2013_infovis_lineup/)
 
-Dependencies
-------------
-
-LineUp.js depends on [D3](http://d3js.org) for rendering and [FontAwesome](http://fontawesome.io/) for icons in the toolbar. Both dependencies are declared as bower dependencies. 
-
-Development Dependencies
-------------------------
-
-[Webpack](http://webpack.github.io) is used as build tool. LineUp itself is written in [TypeScript](www.typescriptlang.org) and [SASS](http://sass-lang.com). 
-
-### Development Environment
+Usage
+-----
 
 **Installation**
 
 ```bash
-npm install
+npm install --save lineupjs@next
 ```
 
+```html
+<link href="https://sgratzl.github.io/lineupjs_docs/develop/LineUpJS.css" rel="stylesheet">
+<script src="https://sgratzl.github.io/lineupjs_docs/develop/LineUpJS.min.js"></script>
+```
 
-**Test**
+**Minimal Usage Example**
+
+```javascript
+// generate some data
+const arr = [];
+const cats = ['c1', 'c2', 'c3'];
+for (let i = 0; i < 100; ++i) {
+  arr.push({
+    a: Math.random() * 10,
+    d: 'Row ' + i,
+    cat: cats[Math.floor(Math.random() * 3)],
+    cat2: cats[Math.floor(Math.random() * 3)]
+  })
+}
+```
+```javascript
+const lineup = LineUpJS.asLineUp(document.body, arr);
+```
+
+[CodePen](https://codepen.io/sgratzl/pen/Ozzbqp)
+
+![Minimal Result](https://user-images.githubusercontent.com/4129778/34654173-32180ff8-f3f8-11e7-8469-229fa34a65dc.png)
+
+
+**Advanced Usage Example**
+
+```javascript
+// arr from before
+const builder = LineUpJS.builder(arr);
+
+// manually define columns
+builder
+  .column(LineUpJS.buildStringColumn('d').label('Label').width(100))
+  .column(LineUpJS.buildCategoricalColumn('cat', cats).color('green'))
+  .column(LineUpJS.buildCategoricalColumn('cat2', cats).color('blue'))
+  .column(LineUpJS.buildNumberColumn('a', [0, 10]).color('blue'));
+
+// and two rankings
+const ranking = LineUpJS.buildRanking()
+  .supportTypes()
+  .allColumns() // add all columns
+  .groupBy('cat')
+  .sortBy('a', 'desc')
+  .impose('number', 'a', 'cat2'); // create composite column
+
+builder
+  .defaultRanking()
+  .ranking(ranking);
+
+const lineup = builder.build(document.body);
+```
+
+[CodePen](https://codepen.io/sgratzl/pen/vppyML)
+
+![Advanced Result](https://user-images.githubusercontent.com/4129778/34654174-3235f784-f3f8-11e7-9361-44f5fa068bb9.png)
+
+
+Supported Browsers
+------------------
+
+ * Chrome 64+ (best performance)
+ * Firefox 57+
+ * Edge 16+
+ 
+
+API Documentation
+-----------------
+
+See [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
+
+Demos
+-----
+
+See [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop)
+
+
+Dependencies
+------------
+
+LineUp.js depends on 
+ * [LineUpEngine](https://github.com/sgratzl/lineupengine) table rendering engine
+ * [D3](http://d3js.org) utilities: scales, format, dragging
+ * [Popper.js](https://popper.js.org) dialogs
+
+
+Development Dependencies
+------------------------
+
+[Webpack](https://webpack.github.io) is used as build tool. LineUp itself is written in [TypeScript](https://www.typescriptlang.org) and [SASS](https://sass-lang.com). 
+
+
+Development Environment
+-----------------------
+
+**Installation**
 
 ```bash
-npm test
+git clone https://github.com/sgratzl/lineupjs.git -b develop
+cd lineupjs
+npm install
 ```
 
 **Build distribution packages**
 
 ```bash
 npm run build
+```
+
+**Run Linting**
+
+```bash
+npm run lint
 ```
 
 
@@ -42,32 +140,18 @@ npm run build
 npm run watch
 ```
 
-The compiled JavaScript files are located under _build_ and the TypeScript documentation is located under _build_/_docs_.
 
-DOM Structure
--------------
+***
 
-The DOM elements are composed of three parts: header, body, and pool. 
-The header and pool are using HTML5 and the body SVG. However, the body could be rewritten to using HTML, too. 
-The body is using a mix of row and column based approach. Rows are used for the background alteration and for hovering over rows. 
-Column groups are used for efficient use of D3 for rendering individual columns. Individual columns require different rendering strategies. 
-
-Data Model
-----------
-
-![Data Model](media/data_model.png)
-
-Documentation
--------------
-
-[TypeDoc Docu](http://lineup-releases.s3-website.eu-central-1.amazonaws.com/latest/docs/)
-
+<a href="http://caleydo.org"><img src="https://user-images.githubusercontent.com/4129778/34663868-5455cb76-f459-11e7-95db-f80db24026dc.png" align="left" width="200px" hspace="10" vspace="6"></a>
+This repository is created as part of the **[The Caleydo Project](http://caleydo.org/)**.
 
 [npm-image]: https://badge.fury.io/js/lineupjs.svg
 [npm-url]: https://npmjs.org/package/lineupjs
-[travis-image]: https://travis-ci.org/Caleydo/lineupjs.svg?branch=master
-[travis-url]: https://travis-ci.org/Caleydo/lineupjs.svg?branch=master
-[daviddm-image]: https://david-dm.org/Caleydo/lineupjs/status.svg
-[daviddm-url]: https://david-dm.org/Caleydo/lineupjs
+[bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
+[bsd-url]: https://opensource.org/licenses/BSD-3-Clause
+[ci-image]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop.svg?style=shield
+[ci-url]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop
 
 
+ 

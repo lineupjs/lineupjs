@@ -1,0 +1,32 @@
+@import '../vars';
+
+[data-renderer=upset] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+
+  > div:first-child {
+    position: absolute;
+    top: 0;
+    height: 50%;
+    border-bottom: 1px solid $lu_renderer_upset_stroke; // line
+  }
+
+  > div:nth-child(n + 2) { // circles
+    border-radius: 50%;
+    background-color: $lu_renderer_upset_circle_color;
+    opacity: $lu_renderer_upset_inactive_opacity;
+    width: 15px;
+    height: 15px;
+
+    &.enabled {
+      opacity: 1;
+    }
+  }
+
+  path {
+    stroke: $lu_renderer_upset_stroke;
+    fill: none;
+  }
+}

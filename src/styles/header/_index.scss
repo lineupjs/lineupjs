@@ -1,0 +1,58 @@
+@import '../vars';
+
+.#{$lu_css_prefix}-header,
+.#{$lu_css_prefix}-side-panel-entry {
+  position: relative;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background: white;
+
+  .#{$lu_css_prefix}-label {
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &.#{$lu_css_prefix}-dragging {
+    opacity: 0.5;
+  }
+
+  &.#{$lu_css_prefix}-dragover::after {
+    content: attr(data-draginfo);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    pointer-events: none;
+    background: lighten($lu_drag_over, 35%);
+    border: 2px dashed $lu_drag_over;
+  }
+
+  .#{$lu_css_prefix}-spacing {
+    flex: 1;
+  }
+
+  &.#{$lu_css_prefix}-filtered i[title='Filter'] {
+    color: $lu_header_active_filter_color;
+  }
+
+  .#{$lu_css_prefix}-nested {
+    position: relative;
+  }
+
+  .#{$lu_css_prefix}-summary {
+    position: relative;
+    font-size: x-small;
+  }
+}
+
+@import './summary';
+@import './toolbar';

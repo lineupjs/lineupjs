@@ -1,91 +1,99 @@
-/**
- * Created by bikramkawan on 24/11/2016.
- */
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {format} from 'd3-format';
+import {IBoxPlotData} from '../internal';
+import {Category, toolbar} from './annotations';
 import Column from './Column';
-import {format} from 'd3';
-import {numberCompare, FIRST_IS_NAN} from './NumberColumn';
-
-export const SORT_METHOD = {
-  min: 'min',
-  max: 'max',
-  median: 'median',
-  q1: 'q1',
-  q3: 'q3'
-};
-
-// till it can be more specific
-export declare type SortMethod = string;
+import {IDataRow} from './interfaces';
+import {isDummyNumberFilter, restoreFilter} from './internal';
+import {
+  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter
+} from './INumberColumn';
+import {
+  createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
+  ScaleMappingFunction
+} from './MappingFunction';
+import NumberColumn from './NumberColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 
-export interface IBoxPlotColumn {
-  isMissing(row: any, index: number): boolean;
-  getBoxPlotData(row: any, index: number): IBoxPlotData;
-  getDomain(): number[];
-  getSortMethod(): string;
-  setSortMethod(sortMethod: string);
+export interface IBoxPlotDesc extends IMapAbleDesc {
+  sort?: ESortMethod;
 }
 
-export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
-  readonly domain?: number[];
-  readonly sort?: string;
-}
+export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
 
-export interface IBoxPlotData {
-  readonly min: number;
-  readonly max: number;
-  readonly median: number;
-  readonly q1: number;
-  readonly q3: number;
-}
-
-
-export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: number, bIndex: number) {
-  const aVal = (col.getBoxPlotData(a, aIndex));
-  const bVal = (col.getBoxPlotData(b, bIndex));
-  if (aVal === null) {
-    return bVal === null ? 0 : FIRST_IS_NAN;
-  }
-  if (bVal === null) {
-    return FIRST_IS_NAN * -1;
-  }
-  const method = col.getSortMethod();
-  return numberCompare(aVal[method], bVal[method]);
-}
-
-
+@toolbar('sortNumbers', 'filterMapped')
+@Category('array')
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
-  private readonly domain;
-  private sort: SortMethod;
-
+  static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly DEFAULT_FORMATTER = format('.3n');
 
-  constructor(id: string, desc: IBoxPlotColumnDesc) {
+  private sort: ESortMethod;
+
+  private mapping: IMappingFunction;
+
+  private original: Readonly<IMappingFunction>;
+  /**
+   * currently active filter
+   * @type {{min: number, max: number}}
+   * @private
+   */
+  private currentFilter: INumberFilter = noNumberFilter();
+
+
+  constructor(id: string, desc: Readonly<IBoxPlotColumnDesc>) {
     super(id, desc);
-    this.domain = desc.domain || [0, 100];
-    this.sort = desc.sort || SORT_METHOD.min;
+    this.mapping = restoreMapping(desc);
+    this.original = this.mapping.clone();
+
+    this.sort = desc.sort || ESortMethod.min;
 
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number): number {
-    return compareBoxPlot(this, a, b, aIndex, bIndex);
+  compare(a: IDataRow, b: IDataRow): number {
+    return compareBoxPlot(this, a, b);
   }
 
-  getDomain() {
-    return this.domain;
+  getBoxPlotData(row: IDataRow): IBoxPlotData | null {
+    return this.getValue(row);
   }
 
-  isMissing(row: any, index: number) {
-    return this.getValue(row, index) == null;
+  getRange() {
+    return this.mapping.getRange(BoxPlotColumn.DEFAULT_FORMATTER);
   }
 
-  getBoxPlotData(row: any, index: number): IBoxPlotData {
-    return this.getValue(row, index);
+  getRawBoxPlotData(row: IDataRow): IBoxPlotData | null {
+    return this.getRawValue(row);
   }
 
-  getLabel(row: any, index: number): string {
-    const v = this.getValue(row, index);
-    if (v === null) {
+  getRawValue(row: IDataRow) {
+    return super.getValue(row);
+  }
+
+  getValue(row: IDataRow) {
+    const v = this.getRawValue(row);
+    if (v == null) {
+      return v;
+    }
+    return {
+      min: this.mapping.apply(v.min),
+      max: this.mapping.apply(v.max),
+      median: this.mapping.apply(v.median),
+      q1: this.mapping.apply(v.q1),
+      q3: this.mapping.apply(v.q3)
+    };
+  }
+
+  getNumber(row: IDataRow): number {
+    return getBoxPlotNumber(this, row, 'normalized');
+  }
+
+  getRawNumber(row: IDataRow): number {
+    return getBoxPlotNumber(this, row, 'raw');
+  }
+
+  getLabel(row: IDataRow): string {
+    const v = this.getRawValue(row);
+    if (v == null) {
       return '';
     }
     const f = BoxPlotColumn.DEFAULT_FORMATTER;
@@ -96,13 +104,13 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return this.sort;
   }
 
-  setSortMethod(sort: string) {
+  setSortMethod(sort: ESortMethod) {
     if (this.sort === sort) {
       return;
     }
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
+    this.fire(Column.EVENT_SORTMETHOD_CHANGED, this.sort, this.sort = sort);
     // sort by me if not already sorted by me
-    if (this.findMyRanker().getSortCriteria().col !== this) {
+    if (!this.isSortedByMe().asc) {
       this.sortByMe();
     }
   }
@@ -110,14 +118,59 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
+    r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
+    r.map = this.mapping.dump();
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;
     }
+    if (dump.filter) {
+      this.currentFilter = restoreFilter(dump.filter);
+    }
+    if (dump.map) {
+      this.mapping = createMappingFunction(dump.map);
+    } else if (dump.domain) {
+      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    }
+  }
+
+  protected createEventList() {
+    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
+  }
+
+  getOriginalMapping() {
+    return this.original.clone();
+  }
+
+  getMapping() {
+    return this.mapping.clone();
+  }
+
+  setMapping(mapping: IMappingFunction) {
+    if (this.mapping.eq(mapping)) {
+      return;
+    }
+    this.fire([BoxPlotColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+  }
+
+  isFiltered() {
+    return NumberColumn.prototype.isFiltered.call(this);
+  }
+
+  getFilter(): INumberFilter {
+    return NumberColumn.prototype.getFilter.call(this);
+  }
+
+  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+    NumberColumn.prototype.setFilter.call(this, value);
+  }
+
+  filter(row: IDataRow) {
+    return NumberColumn.prototype.filter.call(this, row);
   }
 }
 

@@ -1,0 +1,12 @@
+@import '../vars';
+
+.#{$lu_css_prefix}-missing {
+  background-image: linear-gradient(180deg, $lu_missing_dash_color $lu_missing_dash_height, transparent $lu_missing_dash_height);
+  background-position: center center;
+  background-size: $lu_missing_dash_width $lu_missing_dash_height;
+  background-repeat: no-repeat;
+
+  > * {
+    display: none;
+  }
+}

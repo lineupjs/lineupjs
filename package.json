@@ -1,98 +1,123 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "1.1.2-SNAPSHOT",
+  "version": "3.0.0-alpha2",
   "author": {
-    "name": "Caleydo Team",
-    "email": "contact@caleydo.org",
-    "url": "https://caleydo.org"
+    "name": "Samuel Gratzl",
+    "email": "samuel-gratzl@gmx.at"
   },
   "contributors": [
     {
-      "name": "Samuel Gratzl",
-      "email": "samuel-gratzl@gmx.at"
-    },
-    {
-      "name": "Marc Streit",
-      "email": "marc@streit.com"
+      "name": "Caleydo Team",
+      "email": "contact@caleydo.org",
+      "url": "https://caleydo.org"
     },
     {
       "name": "Holger Stitz",
       "email": "kontakt@holgerstitz.de"
     },
     {
-      "name": "Hendrik Strobelt",
-      "email": "hstrobelt@seas.harvard.edu"
+      "name": "Marc Streit",
+      "email": "marc@streit.com"
     }
   ],
-  "engines": {
-    "npm": ">= 3",
-    "node": ">= 6",
-    "iojs": ">= 3"
-  },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/Caleydo/lineupjs/issues"
+    "url": "https://github.com/sgratzl/lineupjs/issues"
   },
-  "homepage": "https://github.com/Caleydo/lineupjs",
+  "homepage": "https://github.com/sgratzl/lineupjs",
   "main": "build/LineUpJS.js",
+  "typings": "build/typings/lineupjs/src",
   "files": [
     "build",
     "!build/docs",
+    "!build/demo",
     "src/**/*.ts",
-    "src/assets/**/*.png",
-    "src/assets/**/*.jpg",
-    "src/assets/**/*.svg",
+    "src/assets/**/",
     "src/**/*.tsx",
     "src/**/*.scss"
   ],
   "scripts": {
     "compile": "tsc",
-    "lint": "tslint --project tsconfig.json --type-check -c tslint.json && stylelint src/**/*.scss",
-    "docs": "typedoc --options typedoc.json src",
+    "lint": "tslint --project tsconfig.json -c tslint.json && stylelint src/**/*.scss",
+    "docs": "typedoc --out build/docs/ src tsd.d.ts",
+    "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
     "pretest": "npm run compile",
-    "test": "echo 'no tests'",
+    "test": "node -e \"require('fs').existsSync('./tests')?0:1\" || karma start",
     "posttest": "npm run lint",
-    "prebuild": "npm run test",
-    "build": "webpack",
+    "test:watch": "karma start --autoWatch=true --singleRun=false",
+    "build:dev": "webpack",
+    "build": "webpack --env prod",
     "watch": "webpack --watch",
+    "preversion": "npm test && npm run build",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
+    "release:pre": "npm version prerelease && npm publish --tag=next && git push --follow-tags",
+    "start": "webpack-dev-server",
     "predist": "npm run build && npm run docs",
     "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz --exclude \"docs\" * && cd .."
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Caleydo/lineupjs.git"
+    "url": "https://github.com/sgratzl/lineupjs.git"
   },
   "devDependencies": {
-    "awesome-typescript-loader": "^3.1.2",
-    "css-loader": "^0.28.0",
-    "extract-text-webpack-plugin": "^2.1.0",
+    "@types/jasmine": "^2.8.3",
+    "awesome-typescript-loader": "^3.4.1",
+    "css-loader": "^0.28.8",
+    "extract-loader": "^1.0.1",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^1.1.6",
+    "jasmine": "^2.8.0",
+    "jasmine-promises": "^0.4.1",
+    "json-loader": "^0.5.7",
+    "karma": "^2.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.1",
+    "karma-junit-reporter": "^1.2.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^2.0.9",
     "mkdirp": "^0.5.1",
-    "node-sass": "^4.5.2",
-    "sass-loader": "^6.0.3",
-    "style-loader": "^0.16.1",
-    "stylelint": "^7.12.0",
-    "stylelint-config-standard": "^16.0.0",
-    "stylelint-scss": "^1.4.4",
-    "tslint": "^5.0.0",
-    "typedoc": "^0.5.10",
-    "url-loader": "^0.5.7",
-    "typescript": "2.2.2",
-    "webpack": "^2.3.3",
-    "@types/handlebars": "4.0.33"
-  },
-  "optionalDependencies": {
-    "@types/react": "^0.14.55",
-    "@types/react-dom": "^0.14.20",
-    "react": "^15.4.1",
-    "react-dom": "^15.4.1"
+    "node-sass": "^4.7.2",
+    "raw-loader": "^0.5.1",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.19.1",
+    "stylelint": "^8.4.0",
+    "stylelint-config-standard": "^18.0.0",
+    "stylelint-scss": "^2.2.0",
+    "tslint": "^5.8.0",
+    "tslint-consistent-codestyle": "^1.11.0",
+    "tslint-eslint-rules": "^4.1.1",
+    "typedoc": "^0.9.0",
+    "typescript": "^2.6.2",
+    "uglify-es": "^3.3.4",
+    "uglifyjs-webpack-plugin": "^1.1.6",
+    "url-loader": "^0.6.2",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.10.0"
   },
   "dependencies": {
-    "@types/d3": "^3.5.36",
-    "d3": "^3.5.17",
-    "font-awesome": "^4.6.3"
+    "@types/d3-array": "^1.2.1",
+    "@types/d3-color": "^1.0.5",
+    "@types/d3-dispatch": "^1.0.5",
+    "@types/d3-drag": "^1.2.0",
+    "@types/d3-format": "^1.2.1",
+    "@types/d3-scale": "^1.0.11",
+    "@types/d3-selection": "^1.2.0",
+    "@types/d3-time": "^1.0.7",
+    "@types/d3-time-format": "^2.1.0",
+    "d3-array": "^1.2.1",
+    "d3-color": "^1.0.3",
+    "d3-dispatch": "^1.0.3",
+    "d3-drag": "^1.2.1",
+    "d3-format": "^1.2.1",
+    "d3-scale": "^1.0.7",
+    "d3-time": "^1.0.8",
+    "d3-time-format": "^2.1.1",
+    "font-awesome": "^4.7.0",
+    "lineupengine": "github:sgratzl/lineupengine#develop",
+    "popper.js": "^1.12.9",
+    "reflect-metadata": "^0.1.10"
   }
 }

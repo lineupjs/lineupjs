@@ -1,98 +1,32 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import Column, {IStatistics, ICategoricalStatistics, IColumnDesc} from '../model/Column';
-import NumberColumn, {INumberColumn} from '../model/NumberColumn';
+import {computeHist, computeStats} from '../internal';
+import Column, {
+  defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn,
+  IOrderedGroup
+} from '../model';
 import Ranking from '../model/Ranking';
-import {ICategoricalColumn} from '../model/CategoricalColumn';
-import {merge} from '../utils';
-import * as d3 from 'd3';
-import {IStatsBuilder, IDataProviderOptions, IDataRow} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
+import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 
-/**
- * computes the simple statistics of an array using d3 histogram
- * @param arr the data array
- * @param indices array data indices
- * @param acc accessor function
- * @param range the total value range
- * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
- */
-function computeStats(arr: any[], indices: number[], acc: (row: any, index: number) => number, range?: [number, number]): IStatistics {
-  if (arr.length === 0) {
-    return {
-      min: NaN,
-      max: NaN,
-      mean: NaN,
-      count: 0,
-      maxBin: 0,
-      hist: []
-    };
-  }
-  const indexAccessor = (a, i) => acc(a, indices[i]);
-  const hist = d3.layout.histogram().value(indexAccessor);
-  if (range) {
-    hist.range(() => range);
-  }
-  const ex = d3.extent(arr, indexAccessor);
-  const histData = hist(arr);
-  return {
-    min: ex[0],
-    max: ex[1],
-    mean: d3.mean(arr, indexAccessor),
-    count: arr.length,
-    maxBin: d3.max(histData, (d) => d.y),
-    hist: histData
-  };
-}
-
-/**
- * computes a categorical histogram
- * @param arr the data array
- * @param indices the data array data indices
- * @param acc the accessor
- * @param categories the list of known categories
- * @returns {{hist: {cat: string, y: number}[]}}
- */
-function computeHist(arr: number[], indices: number[], acc: (row: any, index: number) => string[], categories: string[]): ICategoricalStatistics {
-  const m = new Map<string,number>();
-  categories.forEach((cat) => m.set(cat, 0));
-
-  arr.forEach((a, i) => {
-    const vs = acc(a, indices[i]);
-    if (vs == null) {
-      return;
-    }
-    vs.forEach((v) => {
-      m.set(v, (m.get(v) || 0) + 1);
-    });
-  });
-  const entries: {cat: string; y: number}[] = [];
-  m.forEach((v, k) => entries.push({cat: k, y: v}));
-  return {
-    maxBin: Math.max(...entries.map((d) => d.y)),
-    hist: entries
-  };
-}
 
 export interface ILocalDataProviderOptions {
   /**
    * whether the filter should be applied to all rankings regardless where they are
    * default: false
    */
-  filterGlobally?: boolean;
+  filterGlobally: boolean;
   /**
    * jump to search results such that they are visible
    * default: false
    */
-  jumpToSearchResult?: boolean;
+  jumpToSearchResult: boolean;
 
   /**
    * the maximum number of nested sorting criteria
    */
-  maxNestedSortingCriteria?: number;
+  maxNestedSortingCriteria: number;
+  maxGroupColumns: number;
 }
+
 /**
  * a data provider based on an local array
  */
@@ -103,18 +37,24 @@ export default class LocalDataProvider extends ACommonDataProvider {
      */
     filterGlobally: false,
 
-    maxNestedSortingCriteria: 1
+    jumpToSearchResult: false,
+
+    maxNestedSortingCriteria: 1,
+    maxGroupColumns: 1
   };
 
-  private readonly reorderAll;
+  private readonly reorderAll: () => void;
 
-  constructor(private _data: any[], columns: IColumnDesc[] = [], options: ILocalDataProviderOptions & IDataProviderOptions = {}) {
+  private _dataRows: IDataRow[];
+
+  constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
-    merge(this.options, options);
+    Object.assign(this.options, options);
+    this._dataRows = toRows(_data);
 
 
     const that = this;
-    this.reorderAll = function () {
+    this.reorderAll = function (this: { source: Ranking }) {
       //fire for all other rankings a dirty order event, too
       const ranking = this.source;
       that.getRankings().forEach((r) => {
@@ -123,6 +63,15 @@ export default class LocalDataProvider extends ACommonDataProvider {
         }
       });
     };
+  }
+
+  getTotalNumberOfRows() {
+    return this.data.length;
+  }
+
+
+  protected getMaxGroupColumns() {
+    return this.options.maxGroupColumns;
   }
 
   protected getMaxNestedSortingCriteria() {
@@ -139,6 +88,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   setData(data: any[]) {
     this._data = data;
+    this._dataRows = toRows(data);
     this.reorderAll();
   }
 
@@ -152,6 +102,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   appendData(data: any[]) {
     this._data.push(...data);
+    this._dataRows.push(...toRows(data));
     this.reorderAll();
   }
 
@@ -159,7 +110,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const clone = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
-      clone.on(Column.EVENT_FILTER_CHANGED + '.reorderAll', this.reorderAll);
+      clone.on(`${Column.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
     }
 
     return clone;
@@ -167,52 +118,90 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   cleanUpRanking(ranking: Ranking) {
     if (this.options.filterGlobally) {
-      ranking.on(Column.EVENT_FILTER_CHANGED + '.reorderAll', null);
+      ranking.on(`${Column.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }
     super.cleanUpRanking(ranking);
   }
 
-  sortImpl(ranking: Ranking): Promise<number[]> {
+  sortImpl(ranking: Ranking): IOrderedGroup[] {
     if (this._data.length === 0) {
-      return Promise.resolve([]);
+      return [];
     }
     //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({row: r, i}));
+    let helper = this._data.map((r, i) => ({v: r, i, group: <IGroup | null>null}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
       const filtered = this.getRankings().filter((d) => d.isFiltered());
       if (filtered.length > 0) {
-        helper = helper.filter((d) => filtered.every((f) => f.filter(d.row, d.i)));
+        helper = helper.filter((d) => filtered.every((f) => f.filter(d)));
       }
     } else if (ranking.isFiltered()) {
-      helper = helper.filter((d) => ranking.filter(d.row, d.i));
+      helper = helper.filter((d) => ranking.filter(d));
     }
 
-    //sort by the ranking column
-    helper.sort((a, b) => ranking.comparator(a.row, b.row, a.i, b.i));
+    if (helper.length === 0) {
+      return [];
+    }
 
-    //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-    return Promise.resolve(helper.map((r) => r.i));
+    //create the groups for each row
+    helper.forEach((r) => r.group = ranking.grouper(r) || defaultGroup);
+    if ((new Set<string>(helper.map((r) => r.group!.name))).size === 1) {
+      const group = helper[0].group;
+      //no need to split
+      //sort by the ranking column
+      helper.sort((a, b) => ranking.comparator(a, b));
+
+      //store the ranking index and create an argsort version, i.e. rank 0 -> index i
+      const order = helper.map((r) => r.i);
+      return [Object.assign({order}, group!)];
+    }
+    //sort by group and within by order
+    helper.sort((a, b) => {
+      const ga = a.group!;
+      const gb = b.group!;
+      if (ga.name !== gb.name) {
+        return ga.name.toLowerCase().localeCompare(gb.name.toLowerCase());
+      }
+      return ranking.comparator(a, b);
+    });
+    //iterate over groups and create within orders
+    const groups: (IOrderedGroup & IGroupData)[] = [Object.assign({order: [], rows: []}, helper[0].group!)];
+    let group = groups[0];
+    helper.forEach((row) => {
+      const rowGroup = row.group!;
+      if (rowGroup.name === group.name) {
+        group.order.push(row.i);
+        group.rows.push(row);
+      } else { // change in groups
+        group = Object.assign({order: [row.i], rows: [row]}, rowGroup);
+        groups.push(group);
+      }
+    });
+
+    // sort groups
+    groups.sort((a, b) => ranking.groupComparator(a, b));
+
+    return groups;
   }
 
 
   viewRaw(indices: number[]) {
     //filter invalid indices
-    const l = this._data.length;
     return indices.map((index) => this._data[index]);
   }
 
-  view(indices: number[]) {
-    return Promise.resolve(this.viewRaw(indices));
+  viewRawRows(indices: number[]) {
+    //filter invalid indices
+    return indices.map((index) => this._dataRows[index]);
   }
 
-  fetch(orders: number[][]): Promise<IDataRow>[][] {
-    const l = this._data.length;
-    return orders.map((order) => order.map((index) => Promise.resolve({
-      v: this._data[index],
-      dataIndex: index
-    })));
+  view(indices: number[]) {
+    return this.viewRaw(indices);
+  }
+
+  fetch(orders: number[][]): IDataRow[][] {
+    return orders.map((order) => order.map((index) => this._dataRows[index]));
   }
 
   /**
@@ -221,26 +210,26 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
   stats(indices: number[]): IStatsBuilder {
-    let d: any[] = null;
+    let d: IDataRow[] | null = null;
     const getD = () => {
-      if (d === null) {
-        d = this.viewRaw(indices);
+      if (d == null) {
+        d = this.viewRawRows(indices);
       }
       return d;
     };
 
     return {
-      stats: (col: INumberColumn) => Promise.resolve(computeStats(getD(), indices, col.getNumber.bind(col), [0, 1])),
-      hist: (col: ICategoricalColumn) => Promise.resolve(computeHist(getD(), indices, col.getCategories.bind(col), col.categories))
+      stats: (col: INumberColumn) => computeStats(getD(), (d) => col.getNumber(d), (d) => col.isMissing(d), [0, 1]),
+      hist: (col: ICategoricalColumn) => computeHist(getD(), (d) => col.getCategory(d), col.categories)
     };
   }
 
 
-  mappingSample(col: NumberColumn): Promise<number[]> {
-    const MAX_SAMPLE = 500; //at most 500 sample lines
-    const l = this._data.length;
+  mappingSample(col: INumberColumn): number[] {
+    const MAX_SAMPLE = 120; //at most 500 sample lines
+    const l = this._dataRows.length;
     if (l <= MAX_SAMPLE) {
-      return Promise.resolve(<number[]>this._data.map(col.getRawValue.bind(col)));
+      return <number[]>this._dataRows.map(col.getRawNumber.bind(col));
     }
     //randomly select 500 elements
     const indices: number[] = [];
@@ -251,16 +240,24 @@ export default class LocalDataProvider extends ACommonDataProvider {
       }
       indices.push(j);
     }
-    return Promise.resolve(indices.map((i) => col.getRawValue(this.data[i], i)));
+    return indices.map((i) => col.getRawNumber(this._dataRows[i]));
   }
 
-  searchAndJump(search: string|RegExp, col: Column) {
+  searchAndJump(search: string | RegExp, col: Column) {
     //case insensitive search
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f = typeof search === 'string' ? (v: string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
-    const indices = d3.range(this._data.length).filter((i) => f(col.getLabel(this._data[i], i)));
-
+    const indices = <number[]>[];
+    for (let i = 0; i < this._dataRows.length; ++i) {
+      if (f(col.getLabel(this._dataRows[i]))) {
+        indices.push(i);
+      }
+    }
     this.jumpToNearest(indices);
   }
 
+}
+
+function toRows(data: any[]) {
+  return data.map((v, i) => ({v, i}));
 }

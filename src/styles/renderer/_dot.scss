@@ -1,0 +1,17 @@
+@import '../vars';
+
+[data-renderer=dot] {
+  position: relative;
+
+  > div {
+    background: $lu_renderer_dot_color;
+    opacity: $lu_renderer_dot_opacity;
+    border-radius: $lu_renderer_dot_size / 2;
+    width: $lu_renderer_dot_size;
+    height: $lu_renderer_dot_size;
+    margin-top: -$lu_renderer_dot_size / 2;
+    margin-left: -$lu_renderer_dot_size / 2;
+    top: 50%;
+    position: absolute;
+  }
+}

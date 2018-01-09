@@ -1,0 +1,28 @@
+
+[data-renderer=table],
+[data-renderer=map],
+[data-renderer=mapbars] {
+  font-size: 60%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-gap: 0.2em;
+
+  > div {
+    overflow: hidden;
+    min-height: 1.2em;
+    text-overflow: ellipsis;
+  }
+}
+
+[data-renderer=mapbars] > div[title] {
+  position: relative;
+
+  > div {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+  }
+}

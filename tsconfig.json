@@ -1,19 +1,39 @@
 {
   "compilerOptions": {
     "module": "es6",
-    "target": "es5",
-    "noImplicitAny": false,
-    "sourceMap": false,
-    "jsx": "react",
+    "target": "es6",
+    "importHelpers": true,
+    "sourceMap": true,
     "moduleResolution": "node",
+    "jsx": "react",
+    "experimentalDecorators": true,
     "lib": [
       "dom",
-      "es2015"
-    ]
+      "es2015",
+      "es2016.array.include",
+      "es2017.object"
+    ],
+    "declaration": true,
+    "declarationDir": "./build/typings",
+    "removeComments": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "strictNullChecks": true,
+    "stripInternal": true,
+    "skipLibCheck": true,
+    "baseUrl": "../"
   },
+  "compileOnSave": false,
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "demo/**/*.ts",
+    "demo/**/*.tsx",
     "tests/**/*.ts",
     "index.ts",
     "tsd.d.ts"

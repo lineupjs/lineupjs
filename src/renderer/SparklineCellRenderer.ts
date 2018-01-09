@@ -1,54 +1,75 @@
-import ICellRendererFactory from './ICellRendererFactory';
-import MultiValueColumn from '../model/MultiValueColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
-import {attr} from '../utils';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {svg as d3svg} from 'd3';
+import {IDataRow, IGroup, isMissingValue} from '../model';
+import Column from '../model/Column';
+import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
+import NumbersColumn from '../model/NumbersColumn';
+import {matchRows} from './ANumbersCellRenderer';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {forEachChild, noop, noRenderer} from './utils';
 
+/** @internal */
+export function line(data: number[]) {
+  if (data.length === 0) {
+    return '';
+  }
+  let p = '';
+  let moveNext = true;
+
+  data.forEach((d, i) => {
+    if (isMissingValue(d)) {
+      moveNext = true;
+    } else if (moveNext) {
+      p += `M${i},${1 - d} `;
+      moveNext = false;
+    } else {
+      p += `L${i},${1 - d} `;
+    }
+  });
+  return p;
+}
+
+/** @internal */
 export default class SparklineCellRenderer implements ICellRendererFactory {
+  readonly title = 'Sparkline';
 
-  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const scales = col.getSparklineScale();
-    const xScale = scales.xScale.range([0, col.getWidth()]);
-    const yScale = scales.yScale;
-    const line = d3svg.line<number>()
-      .x((d, j) => xScale(j))
-      .y(yScale)
-      .interpolate('linear');
+  canRender(col: Column, mode: ERenderMode) {
+    return isNumbersColumn(col) && mode !== ERenderMode.SUMMARY;
+  }
+
+  create(col: INumbersColumn) {
+    const dataLength = col.dataLength!;
+    const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
-      template: `<path class='sparklinecell'></path>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        yScale.range([context.rowHeight(i), 0]);
-        attr(n, {
-          d: line(col.getValue(d.v, d.dataIndex))
-        });
+      template: `<svg viewBox="0 0 ${dataLength - 1} 1" preserveAspectRatio="none meet"><line x1="0" x2="${dataLength - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
+      update: (n: HTMLElement, d: IDataRow) => {
+        if (renderMissingDOM(n, col, d)) {
+          return;
+        }
+        const data = col.getNumbers(d);
+        n.querySelector('path')!.setAttribute('d', line(data));
+      },
+      render: noop
+    };
+  }
+
+  createGroup(col: INumbersColumn) {
+    const dataLength = col.dataLength!;
+    const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
+    return {
+      template: `<svg viewBox="0 0 ${dataLength} 1" preserveAspectRatio="none meet"><line x1="0" x2="${dataLength - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        //overlapping ones
+        matchRows(n, rows, `<path></path>`);
+        forEachChild(n, ((row, i) => {
+          const d = rows[i];
+          row.setAttribute('d', line(col.getNumbers(d)));
+        }));
       }
     };
   }
 
-  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const scales = col.getSparklineScale();
-    const xScale = scales.xScale.range([0, col.getWidth()]);
-    const yScale = scales.yScale;
-
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const data = col.getValue(d.v, d.dataIndex);
-      let xpos: number, ypos: number;
-      yScale.range([context.rowHeight(i), 0]);
-
-      ctx.strokeStyle = 'black';
-      ctx.fillStyle = 'black';
-      data.forEach((d, i) => {
-        ctx.beginPath();
-        ctx.moveTo(xpos, ypos);
-        xpos = xScale(i);
-        ypos = yScale(d);
-        ctx.lineTo(xpos, ypos);
-        ctx.stroke();
-        ctx.fill();
-      });
-    };
+  createSummary() {
+    return noRenderer;
   }
+
 }

@@ -1,12 +1,9 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import {format} from 'd3';
+import {format} from 'd3-format';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import NumberColumn, {INumberColumn, numberCompare, isMissingValue} from './NumberColumn';
-
+import {IDataRow, IGroupData} from './interfaces';
+import {isMissingValue} from './missing';
+import NumberColumn, {INumberColumn} from './NumberColumn';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -21,6 +18,9 @@ export interface ICompositeNumberDesc extends IColumnDesc {
    */
   missingValue?: number;
 }
+
+export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnDesc;
+
 /**
  * implementation of a combine column, standard operations how to select
  */
@@ -29,7 +29,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
   private numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id: string, desc: ICompositeNumberDesc) {
+  constructor(id: string, desc: Readonly<ICompositeNumberColumnDesc>) {
     super(id, desc);
 
     if (desc.numberFormat) {
@@ -39,6 +39,10 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     if (desc.missingValue !== undefined) {
       this.missingValue = desc.missingValue;
     }
+
+    this.setDefaultRenderer('interleaving');
+    this.setDefaultGroupRenderer('interleaving');
+    this.setDefaultSummaryRenderer('interleaving');
   }
 
 
@@ -48,7 +52,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     if (dump.missingValue !== undefined) {
       this.missingValue = dump.missingValue;
     }
@@ -58,48 +62,53 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     super.restore(dump, factory);
   }
 
-  getLabel(row: any, index: number) {
+  getLabel(row: IDataRow) {
     if (!this.isLoaded()) {
       return '';
     }
-    const v = this.getValue(row, index);
+    const v = this.getValue(row);
     //keep non number if it is not a number else convert using formatter
-    return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
+    return String(typeof v === 'number' && !isNaN(v) && isFinite(v) ? this.numberFormat(v) : v);
   }
 
-  getValue(row: any, index: number) {
+  getValue(row: IDataRow) {
     if (!this.isLoaded()) {
       return null;
     }
     //weighted sum
-    const v = this.compute(row, index);
+    const v = this.compute(row);
     if (isMissingValue(v)) {
       return this.missingValue;
     }
     return v;
   }
 
-  protected compute(row: any, index: number) {
+  protected compute(_row: IDataRow) {
     return NaN;
   }
 
-  getNumber(row: any, index: number) {
-    return this.getValue(row, index);
+  getNumber(row: IDataRow) {
+    const r = this.getValue(row);
+    return r == null ? NaN : r;
   }
 
-  getRawNumber(row: any, index: number) {
-    return this.getNumber(row, index);
+  getRawNumber(row: IDataRow) {
+    return this.getNumber(row);
   }
 
-  isMissing(row: any, index: number) {
-    return isMissingValue(this.compute(row, index));
+  isMissing(row: IDataRow) {
+    return isMissingValue(this.compute(row));
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
+  compare(a: IDataRow, b: IDataRow) {
+    return NumberColumn.prototype.compare.call(this, a, b);
   }
 
-  getRendererType(): string {
-    return NumberColumn.prototype.getRendererType.call(this);
+  groupCompare(a: IGroupData, b: IGroupData) {
+    return NumberColumn.prototype.groupCompare.call(this, a, b);
+  }
+
+  getRenderer(): string {
+    return NumberColumn.prototype.getRenderer.call(this);
   }
 }

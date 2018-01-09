@@ -1,0 +1,32 @@
+@import '../vars';
+
+.#{$lu_css_prefix}-summary {
+  label.#{$lu_css_prefix}-disabled {
+    color: gray;
+    user-select: none;
+    cursor: not-allowed;
+  }
+
+  input[type=text],
+  select {
+    border: 1px solid $lu_side_panel_input_border;
+    border-radius: $lu_side_panel_input_border_radius;
+    padding: 3px 5px;
+  }
+
+  select {
+    outline: none;
+    cursor: pointer;
+  }
+
+  label {
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+
+    input[type=checkbox] {
+      margin: 0 5px 0 0;
+    }
+  }
+}

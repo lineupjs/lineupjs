@@ -1,0 +1,24 @@
+@import '../vars';
+
+$engine_assets: '~lineupengine/src/assets';
+
+@import '~lineupengine/src/styles/vars';
+
+[data-renderer=image] {
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+
+  &:not(.#{$lu_css_prefix}-missing)::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: $engine_loading_image;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+    z-index: -1;
+  }
+}

@@ -1,0 +1,30 @@
+
+[data-agg=detail] [data-renderer=categorical],
+[data-agg=detail] [data-renderer=brightness],
+[data-agg=group] [data-renderer=brightness] > div {
+  display: flex;
+  white-space: nowrap;
+
+  :first-child {
+    flex: 0 0 16px;
+    line-height: 100%;
+    margin-right: 0.5em;
+
+    /* border-radius: 8px; */
+  }
+
+  :last-child {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+[data-agg=group] [data-renderer=brightness] {
+  display: flex;
+  align-items: center;
+
+  > div {
+    width: 100%;
+  }
+}

@@ -1,0 +1,223 @@
+@import '../vars';
+@import '../icons/index';
+
+.#{$lu_css_prefix}-toolbar {
+  position: relative;
+  font-size: $lu_toolbar_font_size;
+  display: flex;
+  justify-content: center;
+  padding: 3px;
+
+  > i {
+    padding: 2px 4px;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+
+    &:hover {
+      color: $lu_toolbar_color_hover;
+    }
+
+    &.hidden {
+      display: none;
+    }
+
+    &[title^='Stratify'][data-priority],
+    &[title^='Sort'][data-priority] {
+      padding-left: 10px;
+
+      &::after {
+        content: attr(data-priority) '.';
+        position: absolute;
+        right: 0;
+        z-index: 1;
+        margin-top: 2px;
+        margin-right: 65%;
+        text-align: right;
+        color: $lu_selected_color;
+        font-style: normal;
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 1;
+        pointer-events: none;
+      }
+    }
+
+    &[title^='Stratify'][data-priority] {
+      padding-left: 15px;
+
+      &::after {
+        margin-right: 60%;
+      }
+    }
+  }
+}
+
+.#{$lu_css_prefix}-toolbar,
+.#{$lu_css_prefix}-more-options {
+  i {
+    &::before {
+      @include lu_icons();
+    }
+
+    &[title^='Rename + Color']::before {
+      content: $lu_icon_pencil_square_o;
+    }
+
+    &[title='Clone']::before {
+      content: $lu_icon_code_fork;
+    }
+
+    &[title^='Sort']::before {
+      content: $lu_icon_sort;
+    }
+
+    &[title^='Visualization']::before {
+      content: $lu_icon_exchange;
+    }
+
+    &[title^='Edit Pattern']::before {
+      content: $lu_icon_external_link;
+    }
+
+    &[title^='Reduce by']::before,
+    &[title^='Edit Combine Script']::before {
+      content: $lu_icon_gears;
+    }
+
+    &[title='Split Combined Column']::before {
+      content: $lu_icon_window_restore;
+    }
+
+    &[title^='Filter']::before {
+      content: $lu_icon_filter;
+    }
+
+    &[title^='Stratify']::before {
+      content: $lu_icon_columns;
+      transform: rotate(-90deg);
+      height: 14px;
+    }
+
+    &[title='Sort']::before {
+      content: $lu_icon_sort_amount_asc;
+    }
+
+    &[title='Sort'][data-sort='desc']::before {
+      content: $lu_icon_sort_amount_desc;
+    }
+
+    &[title='Sort'][data-sort$='sc']::before,
+    &[title^='Stratify'][data-stratify='true']::before {
+      color: $lu_selected_color;
+    }
+
+    &[title^='Set Cut Off']::before {
+      content: $lu_icon_scissors;
+    }
+
+    &[title^='Search']::before {
+      content: $lu_icon_search;
+    }
+
+    &[title^='Edit Weights']::before {
+      content: $lu_icon_tasks;
+    }
+
+    &[title='UnCollapse']::before {
+      content: $lu_icon_toggle_right;
+    }
+
+    &[title='Collapse']::before {
+      content: $lu_icon_toggle_left;
+    }
+
+    &[title='Expand']::before {
+      content: $lu_icon_expand;
+    }
+
+    &[title='Compress']::before {
+      content: $lu_icon_compress;
+    }
+
+    &[title='Remove']::before {
+      content: $lu_icon_trash;
+    }
+
+    &[title^='More']::before {
+      content: $lu_icon_ellipsis_h;
+    }
+
+    &[title^='Contained Columns']::before {
+      content: $lu_icon_sitemap;
+    }
+  }
+}
+
+.#{$lu_css_prefix}-header {
+  /* Override alphabetical sort icons */
+  &[data-type='string'],
+  &[data-type='categorical'],
+  &[data-type='link'],
+  &[data-type='annotate'],
+  &[data-type='hierarchy'] {
+    .#{$lu_css_prefix}-toolbar i,
+    .#{$lu_css_prefix}-more-options i {
+      &[title='Sort']::before {
+        content: $lu_icon_sort-alpha-asc;
+      }
+
+      &[title='Sort'][data-sort='desc']::before {
+        content: $lu_icon_sort-alpha-desc;
+      }
+    }
+  }
+
+  /* Override numerical sort icons */
+  &[data-type='rank'],
+  &[data-type='number'],
+  &[data-type='numbers'],
+  &[data-type='ordinal'],
+  &[data-type='boxplot'],
+  &[data-type='script'],
+  &[data-type='min'],
+  &[data-type='max'],
+  &[data-type='stack'] {
+    .#{$lu_css_prefix}-toolbar i,
+    .#{$lu_css_prefix}-more-options i {
+      &[title='Sort']::before {
+        content: $lu_icon_sort-numeric-asc;
+      }
+
+      &[title='Sort'][data-sort='desc']::before {
+        content: $lu_icon_sort-numeric-desc;
+      }
+    }
+  }
+}
+
+.#{$lu_css_prefix}-more-options {
+  font-size: $lu_toolbar_font_size;
+  padding: 0;
+
+  > i {
+    display: flex;
+    padding: 5px 10px 5px 5px;
+    align-items: center;
+    cursor: pointer;
+
+    &:hover {
+      background: $lu_hover_color;
+    }
+
+    &::before {
+      width: 19px;
+      text-align: center;
+    }
+
+    > span {
+      font-style: normal;
+      margin-left: 3px;
+    }
+  }
+}

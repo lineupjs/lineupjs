@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp AIDS Test</title>
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+<script>
+
+  window.onload = function () {
+    d3.csv('./aids.csv', function (data) {
+
+      const desc = [
+        {column: 'AIDS_Countries', 'type': 'string'},
+        {column: 'Sex before 15 (15-24, %, 2015)', type: 'number', domain: [0.5, 29.3]},
+        {column: 'Condom use at last sex (%, 2015)', type: 'number', domain: [0, 72.3]},
+        {column: 'N. ppl on ART (2015)', type: 'number', domain: [9, 3384160]},
+        {column: '% ppl. on ART ( 2015)', type: 'number', domain: [3.0, 90.0]},
+        {column: 'Ppl knowing they have HIV (%, 2015)', type: 'number', domain: [4.0, 95.0]},
+        {column: 'HIV prevention knowledge (age 15-24, %, 2015)', type: 'number', domain: [4.3, 76.4]},
+        {column: 'Discriminatory attitude (%)', type: 'number', domain: [11.9, 80.1]},
+        {
+          column: 'Discriminatory attitude scale', type: 'categorical', categories: [
+            {'color': '#bdc9e1', 'name': 'Unknown'},
+            {'color': '#c51b8a', 'name': 'Predominant'},
+            {'color': '#f768a1', 'name': 'Medium'},
+            {'color': '#fbb4b9', 'name': 'Slight'},
+            {'color': '#feebe2', 'name': 'Low'},
+            {'color': '#7a0177', 'name': 'High'}]
+        },
+        {
+          column: 'Human devel. index', type: 'categorical', categories: [
+            {'color': '#d7191c', 'name': '1 Low human development'},
+            {'color': '#fdae61', 'name': '2 Medium human development'},
+            {'color': '#a6d96a', 'name': '3 High human development'},
+            {'color': '#1a9641', 'name': '4 Very high human development'}]
+        },
+        {
+          column: 'Continent', type: 'categorical', categories: [
+            {'color': '#a6cee3', 'name': 'Asia'},
+            {'color': '#1f78b4', 'name': 'Europe'},
+            {'color': '#b2df8a', 'name': 'Africa'},
+            {'color': '#33a02c', 'name': 'South America'},
+            {'color': '#fb9a99', 'name': 'Oceania'},
+            {'color': '#e31a1c', 'name': 'North America'}]
+        },
+        {
+          column: 'HIV restrictions on entry, stay, or residence', type: 'categorical', categories: [
+            {'color': '#d8daeb', 'name': 'No information provided'},
+            {'color': '#542788', 'name': 'No restriction'},
+            {'color': '#998ec3', 'name': 'Some restriction'},
+            {'color': '#f1a340', 'name': 'Complete bar'},
+            {'color': '#b35806', 'name': 'Deportation'},
+            {'color': '#fee0b6', 'name': 'Require proof'}]
+        },
+        {column: 'Population (2017)', type: 'number', domain: [285744, 1388232693]},
+        {column: 'Yearly change (%)', type: 'number', domain: [-0.74, 4.1]},
+        {column: 'Net change', type: 'number', domain: [-278504, 115711130]},
+        {column: 'Density (P/SqKm)', type: 'number', domain: [2, 8264]},
+        {column: 'Land Area (SqKm)', type: 'number', domain: [300, 16292614]},
+        {column: 'Migrants (net)', type: 'number', domain: [-519644, 1001577]},
+        {column: 'Fert. Rate', type: 'number', domain: [1.23, 7.63]},
+        {column: 'Med. Age', type: 'number', domain: [15, 47]},
+        {column: 'Urban Pop (%)', type: 'number', domain: [8.2, 98.2]},
+        {column: 'World Share (%)', type: 'number', domain: [0, 18.5]}
+      ];
+
+      const p = new LineUpJS.LocalDataProvider(data, desc);
+      p.deriveDefault();
+      p.getLastRanking().insert(p.create(LineUpJS.createSelectionDesc()), 1);
+
+      const lineup = new LineUpJS.Taggle(document.body, p);
+      lineup.update();
+    });
+  };
+
+</script>
+
+</body>
+</html>

@@ -1,56 +1,177 @@
-/**
- * Created by bikramkawan on 24/11/2016.
- */
-import * as d3 from 'd3';
-import Column, {IColumnDesc, IStatistics} from './Column';
-import ValueColumn from './ValueColumn';
-import {IValueColumnDesc} from './ValueColumn';
+import {Category, toolbar} from './annotations';
+import CategoricalColumn from './CategoricalColumn';
+import Column from './Column';
+import {IArrayColumn} from './IArrayColumn';
+import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories} from './ICategoricalColumn';
+import {IDataRow} from './interfaces';
+import {FIRST_IS_NAN} from './missing';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
-
-interface ISetColumnDesc extends IValueColumnDesc <number[]> {
-  readonly dataLength?: number;
-
+export interface ISetDesc extends ICategoricalDesc {
+  separator?: string;
 }
 
+export declare type ISetColumnDesc = ISetDesc & IValueColumnDesc<string[]>;
 
-export default class SetColumn extends ValueColumn<number[]> {
-  static readonly IN_GROUP = 1;
+/**
+ * a string column with optional alignment
+ */
+@toolbar('filterCategorical')
+@Category('categorical')
+export default class SetColumn extends ValueColumn<string[]> implements IArrayColumn<boolean> {
+  readonly categories: ICategory[];
 
-  private readonly dataLength;
+  private readonly separator: RegExp;
 
-  constructor(id: string, desc: ISetColumnDesc) {
+  private readonly lookup = new Map<string, Readonly<ICategory>>();
+  /**
+   * set of categories to show
+   * @type {null}
+   * @private
+   */
+  private currentFilter: ICategoricalFilter | null = null;
+
+  constructor(id: string, desc: Readonly<ISetColumnDesc>) {
     super(id, desc);
-    this.dataLength = (desc.dataLength);
-
+    this.separator = new RegExp(desc.separator || ';');
+    this.categories = toCategories(desc);
+    this.categories.forEach((d) => this.lookup.set(d.name, d));
+    this.setDefaultRenderer('upset');
+    this.setDefaultGroupRenderer('upset');
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
+  get labels() {
+    return this.categories.map((d) => d.label);
+  }
 
-    const aVal = this.getBinaryValue(a, aIndex);
-    const bVal = this.getBinaryValue(b, bIndex);
-    if (aVal === null) {
-      return bVal === null ? 0 : +1;
+  get dataLength() {
+    return this.categories.length;
+  }
+
+  getValue(row: IDataRow): string[] {
+    return this.getCategories(row).map((d) => d.name);
+  }
+
+  getLabel(row: IDataRow) {
+    return `(${this.getCategories(row).map((d) => d.label).join(',')})`;
+  }
+
+  private normalize(v: any) {
+    if (typeof v === 'string') {
+      return v.split(this.separator).map((s) => s.trim());
     }
-    if (bVal === null) {
-      return -1;
+    if (Array.isArray(v)) {
+      return v.map((v) => String(v).trim());
     }
-
-    const aCat = aVal.filter((x) => x).length;
-    const bCat = bVal.filter((x) => x).length;
-    return (aCat - bCat);
+    if (v instanceof Set) {
+      return Array.from(v).map(String);
+    }
+    return [];
   }
 
-
-  cellDimension() {
-    return (this.getWidth() / this.dataLength);
+  getSet(row: IDataRow) {
+    const sv = this.normalize(super.getValue(row));
+    const r = new Set<ICategory>();
+    sv.forEach((n) => {
+      const cat = this.lookup.get(n);
+      if (cat) {
+        r.add(cat);
+      }
+    });
+    return r;
   }
 
-  getBinaryValue(row: any, index: number): boolean[] {
-    return this.getValue(row, index).map((d) => d === SetColumn.IN_GROUP);
+  getCategories(row: IDataRow) {
+    return Array.from(this.getSet(row)).sort((a, b) => a.value === b.value ? a.label.localeCompare(b.label): a.value - b.value);
   }
 
-  getNumber(row: any, index: number) {
-    return this.getValue(row, index);
+  isMissing(row: IDataRow) {
+    const s = this.getSet(row);
+    return s.size === 0;
   }
 
+  getValues(row: IDataRow) {
+    const s = new Set(this.getSet(row));
+    return this.categories.map((d) => s.has(d));
+  }
+
+  getLabels(row: IDataRow) {
+    return this.getValues(row).map(String);
+  }
+
+  getMap(row: IDataRow) {
+    return this.getCategories(row).map((d) => ({key: d.label, value: true}));
+  }
+
+  getMapLabel(row: IDataRow) {
+    return this.getCategories(row).map((d) => ({key: d.label, value: 'true'}));
+  }
+
+  dump(toDescRef: (desc: any) => any): any {
+    const r = super.dump(toDescRef);
+    r.filter = this.currentFilter;
+    return r;
+  }
+
+  restore(dump: any, factory: (dump: any) => Column | null) {
+    super.restore(dump, factory);
+    if (!('filter' in dump)) {
+      this.currentFilter = null;
+      return;
+    }
+    const bak = dump.filter;
+    if (typeof bak === 'string' || Array.isArray(bak)) {
+      this.currentFilter = {filter: bak, filterMissing: false};
+    } else {
+      this.currentFilter = bak;
+    }
+  }
+
+  isFiltered() {
+    return this.currentFilter != null;
+  }
+
+  filter(row: IDataRow): boolean {
+    if (!this.currentFilter) {
+      return true;
+    }
+    for (const s of this.getSet(row)) {
+      if (isCategoryIncluded(this.currentFilter, s)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getFilter() {
+    return CategoricalColumn.prototype.getFilter.call(this);
+  }
+
+  setFilter(filter: ICategoricalFilter | null) {
+    return CategoricalColumn.prototype.setFilter.call(this, filter);
+  }
+
+  compare(a: IDataRow, b: IDataRow) {
+    const av = this.getSet(a);
+    const bv = this.getSet(b);
+    if (av.size === 0) {
+      return bv.size === 0 ? 0 : FIRST_IS_NAN;
+    }
+    if (bv.size === 0) {
+      return - FIRST_IS_NAN;
+    }
+    if (av.size !== bv.size) {
+      return av.size - bv.size;
+    }
+    // first one having a category wins
+    for (const cat of this.categories) {
+      if (av.has(cat)) {
+        return -1;
+      }
+      if (bv.has(cat)) {
+        return +1;
+      }
+    }
+    return 0;
+  }
 }

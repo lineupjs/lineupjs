@@ -1,0 +1,7 @@
+@import '../vars';
+
+[data-agg=group] [data-renderer=string] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}

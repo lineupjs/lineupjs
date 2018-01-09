@@ -1,8 +1,5 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import {IColumnDesc, createRankDesc} from '../model';
+import {createAggregateDesc, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, isSupportType} from '../model';
+import {IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
 
@@ -25,12 +22,12 @@ function resolveComplex(column: string, row: any) {
   return column.split('.').reduce(resolve, row);
 }
 
-function rowGetter(row: any, index: number, id: string, desc: any) {
+function rowGetter(row: IDataRow, _id: string, desc: any) {
   const column = desc.column;
   if (isComplexAccessor(column)) {
-    return resolveComplex(<string>column, row);
+    return resolveComplex(<string>column, row.v);
   }
-  return row[column];
+  return row.v[column];
 }
 
 /**
@@ -43,9 +40,9 @@ abstract class ACommonDataProvider extends ADataProvider {
   /**
    * the local ranking orders
    */
-  private readonly ranks = new Map<string, number[]>();
+  private readonly ranks = new Map<string, IOrderedGroup[]>();
 
-  constructor(private columns: IColumnDesc[] = [], options: IDataProviderOptions = {}) {
+  constructor(private columns: IColumnDesc[] = [], options: Partial<IDataProviderOptions> = {}) {
     super(options);
     //generate the accessor
     columns.forEach((d: any) => {
@@ -54,8 +51,17 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking) {
-    return (this.ranks[ranking.id].indexOf(index)) + 1;
+  protected rankAccessor(row: IDataRow, _id: string, _desc: IColumnDesc, ranking: Ranking) {
+    const groups = this.ranks.get(ranking.id) || [];
+    let acc = 0;
+    for (const group of groups) {
+      const rank = group.order.indexOf(row.i);
+      if (rank >= 0) {
+        return acc + rank + 1; // starting with 1
+      }
+      acc += group.order.length;
+    }
+    return -1;
   }
 
   /**
@@ -66,19 +72,21 @@ abstract class ACommonDataProvider extends ADataProvider {
     return 1;
   }
 
+  protected getMaxGroupColumns() {
+    return 1;
+  }
+
   cloneRanking(existing?: Ranking) {
     const id = this.nextRankingId();
-    const clone = new Ranking(id, this.getMaxNestedSortingCriteria());
+    const clone = new Ranking(id, this.getMaxNestedSortingCriteria(), this.getMaxGroupColumns());
 
     if (existing) { //copy the ranking of the other one
       //copy the ranking
-      this.ranks[id] = this.ranks[existing.id];
+      this.ranks.set(id, this.ranks.get(existing.id)!);
       //TODO better cloning
       existing.children.forEach((child) => {
         this.push(clone, child.desc);
       });
-    } else {
-      clone.push(this.create(createRankDesc()));
     }
 
     return clone;
@@ -86,19 +94,24 @@ abstract class ACommonDataProvider extends ADataProvider {
 
   cleanUpRanking(ranking: Ranking) {
     //delete all stored information
-    delete this.ranks[ranking.id];
+    this.ranks.delete(ranking.id);
   }
 
-  sort(ranking: Ranking): Promise<number[]> {
+  sort(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[] {
     //use the server side to sort
-    return this.sortImpl(ranking).then((argsort) => {
+    const r = this.sortImpl(ranking);
+    if (Array.isArray(r)) {
       //store the result
-      this.ranks[ranking.id] = argsort;
-      return argsort;
+      this.ranks.set(ranking.id, r);
+      return r;
+    }
+    return r.then((r) => {
+      this.ranks.set(ranking.id, r);
+      return r;
     });
   }
 
-  protected abstract sortImpl(ranking: Ranking): Promise<number[]>;
+  protected abstract sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[];
 
   /**
    * adds another column description to this data provider
@@ -115,6 +128,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   clearColumns() {
     this.clearRankings();
     this.columns.splice(0, this.columns.length);
+    this.fire(ADataProvider.EVENT_CLEAR_DESC);
   }
 
   getColumns(): IColumnDesc[] {
@@ -131,12 +145,36 @@ abstract class ACommonDataProvider extends ADataProvider {
    * @returns {string}
    */
   toDescRef(desc: any): any {
-    return typeof desc.column !== 'undefined' ? desc.type + '@' + desc.column : desc;
+    return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : desc;
+  }
+
+  /**
+   * generates a default ranking by using all column descriptions ones
+   */
+  deriveDefault(addSupportType: boolean = true) {
+    const r = this.pushRanking();
+    if (addSupportType) {
+      if (this.getMaxGroupColumns() > 0) {
+        r.push(this.create(createAggregateDesc())!);
+      }
+      r.push(this.create(createRankDesc())!);
+      if (this.multiSelections) {
+        r.push(this.create(createSelectionDesc())!);
+      }
+    }
+    this.getColumns().forEach((col) => {
+      const c = this.create(col);
+      if (!c || isSupportType(c)) {
+        return;
+      }
+      r.push(c);
+    });
+    return r;
   }
 
   fromDescRef(descRef: any): any {
     if (typeof(descRef) === 'string') {
-      return this.columns.find((d: any) => d.type + '@' + d.column === descRef);
+      return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef);
     }
     const existing = this.columns.find((d) => descRef.column === (<any>d).column && descRef.label === d.label && descRef.type === d.type);
     if (existing) {
@@ -151,7 +189,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   }
 
   nextRankingId() {
-    return 'rank' + (this.rankingIndex++);
+    return `rank${this.rankingIndex++}`;
   }
 }
 

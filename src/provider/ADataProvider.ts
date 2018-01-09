@@ -1,95 +1,88 @@
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
+import {ICategoricalStatistics, IStatistics} from '../internal';
+import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
+import debounce from '../internal/debounce';
+import OrderedSet from '../internal/OrderedSet';
 import {
-  isSupportType,
-  IColumnDesc,
-  models,
-  createActionDesc,
-  isNumberColumn,
-  createStackDesc,
-  createRankDesc,
-  createSelectionDesc
+  Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
+  createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
+  ISelectionColumnDesc, IValueColumnDesc, models
 } from '../model';
-import Column from '../model/Column';
-import Ranking from '../model/Ranking';
-import {IStatistics, ICategoricalStatistics} from '../model/Column';
+import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
+import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
+import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
-import {ICategoricalColumn} from '../model/CategoricalColumn';
-import {INumberColumn} from '../model/NumberColumn';
-import {merge, AEventDispatcher, delayedCall} from '../utils';
-import {IValueColumnDesc} from '../model/ValueColumn';
-import {ISelectionColumnDesc} from '../model/SelectionColumn';
+import {exportRanking, IExportOptions} from './utils';
 
-/**
- * a data row for rendering
- */
-export interface IDataRow {
-  /**
-   * the value
-   */
-  v: any;
-  /**
-   * the underlying data index
-   */
-  dataIndex: number;
-}
-
-export interface IExportOptions {
-  /**
-   * export separator, default: '\t'
-   */
-  separator?: string;
-  /**
-   * new line character, default: '\n'
-   */
-  newline?: string;
-  /**
-   * should a header be generated, default: true
-   */
-  header?: boolean;
-  /**
-   * quote strings, default: false
-   */
-  quote?: boolean;
-  /**
-   * quote string to use, default: '"'
-   */
-  quoteChar?: string;
-  /**
-   * filter specific column types, default: exclude all support types (selection, action, rank)
-   * @param col the column description to filter
-   */
-  filter?: (col: IColumnDesc) => boolean; //!isSupportType
-
-  /**
-   * whether the description should be part of the column header
-   */
-  verboseColumnHeaders?: boolean;
-}
+export {IExportOptions} from './utils';
 
 export interface IStatsBuilder {
-  stats(col: INumberColumn): Promise<IStatistics>;
-  hist(col: ICategoricalColumn): Promise<ICategoricalStatistics>;
+  stats(col: INumberColumn): Promise<IStatistics> | IStatistics;
+
+  hist(col: ICategoricalColumn): Promise<ICategoricalStatistics> | ICategoricalStatistics;
 }
 
 export interface IDataProviderOptions {
-  columnTypes?: {[columnType: string]: typeof Column};
+  columnTypes: { [columnType: string]: typeof Column };
 
   /**
    * allow multiple selected rows
    * default: true
    */
-  multiSelection?: boolean;
+  multiSelection: boolean;
+}
+
+export interface IDataProvider extends AEventDispatcher {
+  readonly columnTypes: { [columnType: string]: typeof Column };
+
+  getTotalNumberOfRows(): number;
+
+  takeSnapshot(col: Column): void;
+
+  selectAllOf(ranking: Ranking): void;
+
+  getSelection(): number[];
+
+  setSelection(dataIndices: number[]): void;
+
+  toggleSelection(i: number, additional?: boolean): boolean;
+
+  isSelected(i: number): boolean;
+
+  removeRanking(ranking: Ranking): void;
+
+  ensureOneRanking(): void;
+
+  find(id: string): Column | null;
+
+  clone(col: Column): Column;
+
+  create(desc: IColumnDesc): Column | null;
+
+  toDescRef(desc: IColumnDesc): any;
+
+  fromDescRef(ref: any): IColumnDesc;
+
+  mappingSample(col: Column): Promise<number[]> | number[];
+
+  searchAndJump(search: string | RegExp, col: Column): void;
+
+  getRankings(): Ranking[];
+
+  getLastRanking(): Ranking;
+
+  getColumns(): IColumnDesc[];
+
+  isAggregated(ranking: Ranking, group: IGroup): boolean;
+
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean): void;
 }
 
 
 /**
  * a basic data provider holding the data and rankings
  */
-abstract class ADataProvider extends AEventDispatcher {
+abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_SELECTION_CHANGED = 'selectionChanged';
   static readonly EVENT_ADD_COLUMN = Ranking.EVENT_ADD_COLUMN;
   static readonly EVENT_REMOVE_COLUMN = Ranking.EVENT_REMOVE_COLUMN;
@@ -100,7 +93,9 @@ abstract class ADataProvider extends AEventDispatcher {
   static readonly EVENT_DIRTY_VALUES = Ranking.EVENT_DIRTY_VALUES;
   static readonly EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
   static readonly EVENT_ADD_DESC = 'addDesc';
+  static readonly EVENT_CLEAR_DESC = 'clearDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
+  static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
 
   /**
    * all rankings
@@ -110,22 +105,25 @@ abstract class ADataProvider extends AEventDispatcher {
   private rankings: Ranking[] = [];
   /**
    * the current selected indices
-   * @type {Set}
+   * @type {OrderedSet}
    */
-  private selection = new Set<number>();
+  private readonly selection = new OrderedSet<number>();
+
+  //ranking.id@group.name
+  private aggregations = new Set<string>();
 
   private uid = 0;
 
   /**
    * lookup map of a column type to its column implementation
    */
-  readonly columnTypes: {[columnType: string]: typeof Column};
+  readonly columnTypes: { [columnType: string]: typeof Column };
 
-  private readonly multiSelections;
+  protected readonly multiSelections: boolean;
 
-  constructor(options: IDataProviderOptions = {}) {
+  constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
-    this.columnTypes = merge(models(), options.columnTypes || {});
+    this.columnTypes = Object.assign(models(), options.columnTypes || {});
     this.multiSelections = options.multiSelection !== false;
   }
 
@@ -142,9 +140,12 @@ abstract class ADataProvider extends AEventDispatcher {
       ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
-      ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED, ADataProvider.EVENT_ADD_DESC,
-      ADataProvider.EVENT_JUMP_TO_NEAREST]);
+      ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED,
+      ADataProvider.EVENT_ADD_DESC, ADataProvider.EVENT_CLEAR_DESC,
+      ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
   }
+
+  abstract getTotalNumberOfRows(): number;
 
   /**
    * returns a list of all known column descriptions
@@ -158,7 +159,6 @@ abstract class ADataProvider extends AEventDispatcher {
    * @return the new ranking
    */
   pushRanking(existing?: Ranking): Ranking {
-
     const r = this.cloneRanking(existing);
 
     this.insertRanking(r);
@@ -174,20 +174,23 @@ abstract class ADataProvider extends AEventDispatcher {
 
   insertRanking(r: Ranking, index = this.rankings.length) {
     this.rankings.splice(index, 0, r);
-    this.forward(r, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
-      Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
-      Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
+    this.forward(r, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
+      Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
+      Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
     const that = this;
     //delayed reordering per ranking
-    r.on(Ranking.EVENT_DIRTY_ORDER + '.provider', delayedCall(function () {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: { source: Ranking }) {
       that.triggerReorder(this.source);
-    }, 100, null));
+    }, 100));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
     this.triggerReorder(r);
   }
 
   protected triggerReorder(ranking: Ranking) {
-    this.sort(ranking).then((order) => ranking.setOrder(order));
+    Promise.resolve(this.sort(ranking)).then((order) => {
+      unifyParents(order);
+      ranking.setGroups(order);
+    });
   }
 
   /**
@@ -200,11 +203,11 @@ abstract class ADataProvider extends AEventDispatcher {
     if (i < 0) {
       return false;
     }
-    this.unforward(ranking, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
-      Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
-      Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
+    this.unforward(ranking, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
+      Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
+      Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
     this.rankings.splice(i, 1);
-    ranking.on(Ranking.EVENT_DIRTY_ORDER + '.provider', null);
+    ranking.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, null);
     this.cleanUpRanking(ranking);
     this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, i);
     return true;
@@ -215,10 +218,10 @@ abstract class ADataProvider extends AEventDispatcher {
    */
   clearRankings() {
     this.rankings.forEach((ranking) => {
-      this.unforward(ranking, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
-        Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
-        Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
-      ranking.on(Ranking.EVENT_DIRTY_ORDER + '.provider', null);
+      this.unforward(ranking, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
+        Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
+        Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
+      ranking.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, null);
       this.cleanUpRanking(ranking);
     });
     this.rankings = [];
@@ -241,11 +244,17 @@ abstract class ADataProvider extends AEventDispatcher {
     return this.rankings[this.rankings.length - 1];
   }
 
+  ensureOneRanking() {
+    if (this.rankings.length === 0) {
+      this.pushRanking();
+    }
+  }
+
   /**
    * hook method for cleaning up a ranking
-   * @param ranking
+   * @param _ranking
    */
-  cleanUpRanking(ranking: Ranking) {
+  cleanUpRanking(_ranking: Ranking) {
     //nothing to do
   }
 
@@ -262,7 +271,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param desc the description of the column
    * @return {Column} the newly created column or null
    */
-  push(ranking: Ranking, desc: IColumnDesc): Column {
+  push(ranking: Ranking, desc: IColumnDesc): Column | null {
     const r = this.create(desc);
     if (r) {
       ranking.push(r);
@@ -292,18 +301,22 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {string}
    */
   private nextId() {
-    return 'col' + (this.uid++);
+    return `col${this.uid++}`;
   }
 
-  protected abstract rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking);
+  protected abstract rankAccessor(row: IDataRow, id: string, desc: IColumnDesc, ranking: Ranking): number;
 
   private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
     if (desc.type === 'rank') {
       (<IValueColumnDesc<number>>desc).accessor = this.rankAccessor.bind(this);
     } else if (desc.type === 'selection') {
-      (<ISelectionColumnDesc>desc).accessor = (row: any, index: number) => this.isSelected(index);
-      (<ISelectionColumnDesc>desc).setter = (row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
+      (<ISelectionColumnDesc>desc).accessor = (row: IDataRow) => this.isSelected(row.i);
+      (<ISelectionColumnDesc>desc).setter = (row: IDataRow, value: boolean) => value ? this.select(row.i) : this.deselect(row.i);
+      (<ISelectionColumnDesc>desc).setterAll = (rows: IDataRow[], value: boolean) => value ? this.selectAll(rows.map((d) => d.i)) : this.deselectAll(rows.map((d) => d.i));
+    } else if (desc.type === 'aggregate') {
+      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
+      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);
     }
   }
 
@@ -312,7 +325,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param desc
    * @returns {Column] the new column or null if it can't be created
    */
-  create(desc: IColumnDesc): Column {
+  create(desc: IColumnDesc): Column | null {
     this.fixDesc(desc);
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
@@ -355,9 +368,9 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param idOrFilter by id or by a filter function
    * @returns {Column}
    */
-  find(idOrFilter: string | ((col: Column) => boolean)): Column {
+  find(idOrFilter: string | ((col: Column) => boolean)): Column | null {
     //convert to function
-    const filter = typeof(idOrFilter) === 'string' ? (col) => col.id === idOrFilter : idOrFilter;
+    const filter = typeof(idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
 
     for (const ranking of this.rankings) {
       const r = ranking.find(filter);
@@ -377,6 +390,7 @@ abstract class ADataProvider extends AEventDispatcher {
     return {
       uid: this.uid,
       selection: this.getSelection(),
+      aggregations: Array.from(this.aggregations),
       rankings: this.rankings.map((r) => r.dump(this.toDescRef))
     };
   }
@@ -413,14 +427,14 @@ abstract class ADataProvider extends AEventDispatcher {
       c.restore(d, this.createHelper);
     }
     return c;
-  }
+  };
 
   restoreRanking(dump: any) {
     const ranking = this.cloneRanking();
     ranking.restore(dump, this.createHelper);
     //if no rank column add one
     if (!ranking.children.some((d) => d instanceof RankColumn)) {
-      ranking.insert(this.create(createRankDesc()), 0);
+      ranking.insert(this.create(createRankDesc())!, 0);
     }
     const idGenerator = this.nextId.bind(this);
     ranking.children.forEach((c) => c.assignNewId(idGenerator));
@@ -429,26 +443,28 @@ abstract class ADataProvider extends AEventDispatcher {
   }
 
   restore(dump: any) {
-
-
     //clean old
     this.clearRankings();
 
     //restore selection
     this.uid = dump.uid || 0;
     if (dump.selection) {
-      dump.selection.forEach((s) => this.selection.add(s));
+      dump.selection.forEach((s: number) => this.selection.add(s));
+    }
+    if (dump.aggregations) {
+      this.aggregations.clear();
+      dump.aggregations.forEach((a: string) => this.aggregations.add(a));
     }
 
 
     //restore rankings
     if (dump.rankings) {
-      dump.rankings.forEach((r) => {
+      dump.rankings.forEach((r: any) => {
         const ranking = this.cloneRanking();
         ranking.restore(r, this.createHelper);
         //if no rank column add one
         if (!ranking.children.some((d) => d instanceof RankColumn)) {
-          ranking.insert(this.create(createRankDesc()), 0);
+          ranking.insert(this.create(createRankDesc())!, 0);
         }
         this.insertRanking(ranking);
       });
@@ -465,23 +481,9 @@ abstract class ADataProvider extends AEventDispatcher {
     });
   }
 
-  abstract findDesc(ref: string);
+  abstract findDesc(ref: string): IColumnDesc | null;
 
-  /**
-   * generates a default ranking by using all column descriptions ones
-   */
-  deriveDefault() {
-    if (this.rankings.length > 0) {
-      //no default if we have a ranking
-      return;
-    }
-    const r = this.pushRanking();
-    this.getColumns().forEach((col) => {
-      if (!isSupportType(col)) {
-        this.push(r, col);
-      }
-    });
-  }
+  abstract deriveDefault(addSupporType?: boolean): Ranking;
 
   /**
    * derives a ranking from an old layout bundle format
@@ -490,20 +492,24 @@ abstract class ADataProvider extends AEventDispatcher {
   private deriveRanking(bundle: any[]) {
     const ranking = this.cloneRanking();
     ranking.clear();
-    const toCol = (column) => {
+    const toCol = (column: any) => {
       switch (column.type) {
         case 'rank':
           return this.create(createRankDesc());
         case 'selection':
           return this.create(createSelectionDesc());
+        case 'group':
+          return this.create(createGroupDesc());
+        case 'aggregate':
+          return this.create(createAggregateDesc());
         case 'actions':
-          const actions = this.create(createActionDesc(column.label || 'actions'));
-          actions.restore(column, null);
+          const actions = this.create(createActionDesc(column.label || 'actions'))!;
+          actions.restore(column, this.createHelper);
           return actions;
         case 'stacked':
           //create a stacked one
-          const stacked = <StackColumn>this.create(createStackDesc(column.label || 'Combined'));
-          (column.children || []).forEach((col) => {
+          const stacked = <StackColumn>this.create(createStackDesc(column.label || 'Combined'))!;
+          (column.children || []).forEach((col: any) => {
             const c = toCol(col);
             if (c) {
               stacked.push(c);
@@ -514,8 +520,10 @@ abstract class ADataProvider extends AEventDispatcher {
           const desc = this.findDesc(column.column);
           if (desc) {
             const r = this.create(desc);
-            column.label = column.label || desc.label || desc.column;
-            r.restore(column, null);
+            column.label = column.label || desc.label || (<any>desc).column;
+            if (r) {
+              r.restore(column, this.createHelper);
+            }
             return r;
           }
           return null;
@@ -530,10 +538,48 @@ abstract class ADataProvider extends AEventDispatcher {
     });
     //if no rank column add one
     if (!ranking.children.some((d) => d instanceof RankColumn)) {
-      ranking.insert(this.create(createRankDesc()), 0);
+      ranking.insert(this.create(createRankDesc())!, 0);
     }
     this.insertRanking(ranking);
     return ranking;
+  }
+
+  isAggregated(ranking: Ranking, group: IGroup) {
+    let g: IGroup | undefined | null = group;
+    while (g) {
+      const key = `${ranking.id}@${toGroupID(g)}`;
+      if (this.aggregations.has(key)) {
+        return true;
+      }
+      g = g.parent;
+    }
+    return false;
+  }
+
+  setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+    const key = `${ranking.id}@${toGroupID(group)}`;
+    if (value === this.aggregations.has(key)) {
+      return;
+    }
+    if (value) {
+      this.aggregations.add(key);
+    } else {
+      this.aggregations.delete(key);
+    }
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
+  }
+
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean) {
+    const groups = ranking.getGroups();
+    groups.forEach((group) => {
+      const key = `${ranking.id}@${toGroupID(group)}`;
+      if (aggregateAll) {
+        this.aggregations.add(key);
+      } else {
+        this.aggregations.delete(key);
+      }
+    });
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, aggregateAll);
   }
 
   /**
@@ -541,23 +587,23 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param ranking
    * @return {Promise<any>}
    */
-  abstract sort(ranking: Ranking): Promise<number[]>;
+  abstract sort(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[];
 
   /**
    * returns a view in the order of the given indices
    * @param indices
    * @return {Promise<any>}
    */
-  abstract view(indices: number[]): Promise<any[]>;
+  abstract view(indices: number[]): Promise<any[]> | any[];
 
-  abstract fetch(orders: number[][]): Promise<IDataRow>[][];
+  abstract fetch(orders: number[][]): (Promise<IDataRow> | IDataRow)[][];
 
   /**
    * returns a data sample used for the mapping editor
    * @param col
    * @return {Promise<any>}
    */
-  abstract mappingSample(col: Column): Promise<number[]>;
+  abstract mappingSample(col: Column): Promise<number[]> | number[];
 
   /**
    * helper for computing statistics
@@ -584,7 +630,7 @@ abstract class ADataProvider extends AEventDispatcher {
       return; //no change
     }
     if (!this.multiSelections && this.selection.size > 0) {
-      this.selection = new Set<number>();
+      this.selection.clear();
     }
     this.selection.add(index);
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
@@ -595,7 +641,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param search
    * @param col
    */
-  abstract searchAndJump(search: string|RegExp, col: Column);
+  abstract searchAndJump(search: string | RegExp, col: Column): void;
 
   jumpToNearest(indices: number[]) {
     if (indices.length === 0) {
@@ -613,7 +659,7 @@ abstract class ADataProvider extends AEventDispatcher {
       return; //no change
     }
     if (!this.multiSelections) {
-      this.selection = new Set<number>();
+      this.selection.clear();
       indices = indices.slice(0, 1); //just the first one
     }
     indices.forEach((index) => {
@@ -622,15 +668,22 @@ abstract class ADataProvider extends AEventDispatcher {
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
   }
 
+  selectAllOf(ranking: Ranking) {
+    this.setSelection(ranking.getOrder());
+  }
+
   /**
    * set the selection to the given rows
    * @param indices
    */
   setSelection(indices: number[]) {
+    if (indices.length === 0) {
+      return this.clearSelection();
+    }
     if (this.selection.size === indices.length && indices.every((i) => this.selection.has(i))) {
       return; //no change
     }
-    this.selection = new Set<number>();
+    this.selection.clear();
     this.selectAll(indices);
   }
 
@@ -648,14 +701,13 @@ abstract class ADataProvider extends AEventDispatcher {
         this.clearSelection();
       }
       return false;
-    } else {
-      if (additional) {
-        this.select(index);
-      } else {
-        this.setSelection([index]);
-      }
-      return true;
     }
+    if (additional) {
+      this.select(index);
+    } else {
+      this.setSelection([index]);
+    }
+    return true;
   }
 
   /**
@@ -671,12 +723,26 @@ abstract class ADataProvider extends AEventDispatcher {
   }
 
   /**
+   * also select all the given rows
+   * @param indices
+   */
+  deselectAll(indices: number[]) {
+    if (indices.every((i) => !this.selection.has(i))) {
+      return; //no change
+    }
+    indices.forEach((index) => {
+      this.selection.delete(index);
+    });
+    this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
+  }
+
+  /**
    * returns a promise containing the selected rows
    * @return {Promise<any[]>}
    */
-  selectedRows(): Promise<IDataRow[]> {
+  selectedRows(): Promise<any[]> | any[] {
     if (this.selection.size === 0) {
-      return Promise.resolve([]);
+      return [];
     }
     return this.view(this.getSelection());
   }
@@ -686,10 +752,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {Array}
    */
   getSelection() {
-    const indices = [];
-    this.selection.forEach((s) => indices.push(s));
-    indices.sort();
-    return indices;
+    return Array.from(this.selection);
   }
 
   /**
@@ -699,7 +762,7 @@ abstract class ADataProvider extends AEventDispatcher {
     if (this.selection.size === 0) {
       return; //no change
     }
-    this.selection = new Set<number>();
+    this.selection.clear();
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, [], false);
   }
 
@@ -709,40 +772,9 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: Ranking, options: IExportOptions = {}) {
-    options = merge({
-      separator: '\t',
-      newline: '\n',
-      header: true,
-      quote: false,
-      quoteChar: '"',
-      filter: (c) => !isSupportType(c),
-      verboseColumnHeaders: false
-    }, options);
-    //optionally quote not numbers
-    const escape = new RegExp(`[${options.quoteChar}]`, 'g');
-
-    function quote(l: string, c?: Column) {
-      if ((options.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
-        return `${options.quoteChar}${l.replace(escape, options.quoteChar + options.quoteChar)}${options.quoteChar}`;
-      }
-      return l;
-    }
-
-    const columns = ranking.flatColumns.filter((c) => options.filter(c.desc));
-    const order = ranking.getOrder();
-    return this.view(order).then((data) => {
-      const r = [];
-      if (options.header) {
-        r.push(columns.map((d) => quote(`${d.label}${options.verboseColumnHeaders && d.description ? '\n' + d.description : ''}`)).join(options.separator));
-      }
-      data.forEach((row, i) => {
-        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(options.separator));
-      });
-      return r.join(options.newline);
-    });
+  exportTable(ranking: Ranking, options: Partial<IExportOptions> = {}) {
+    return Promise.resolve(this.view(ranking.getOrder())).then((data) => exportRanking(ranking, data, options));
   }
-
 }
 
 export default ADataProvider;

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Nested Column Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [
+      {a: 10, b: 20, c: 30, d: 'Row1'},
+      {a: 100, b: 100, c: 50, d: 'Row2'},
+      {a: 2, b: 7, c: 100, d: 'Row3'}
+    ];
+    const desc = [
+      {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
+      {label: 'A', type: 'number', column: 'a', 'domain': [0, 100], color: 'red'},
+      {label: 'B', type: 'number', column: 'b', 'domain': [0, 100], color: 'blue'},
+      {label: 'C', type: 'number', column: 'c', 'domain': [0, 100], color: 'green'}
+    ];
+
+    const p =  new LineUpJS.LocalDataProvider(arr, desc);
+    {
+      const r = p.pushRanking();
+      r.insert(p.create(LineUpJS.createSelectionDesc()), 0);
+      r.push(p.create(desc[0]));
+
+      r.push((function () {
+        const rstack = p.create(LineUpJS.createReducerDesc());
+        rstack.push(p.create(desc[1]));
+        rstack.push(p.create(desc[2]));
+        rstack.push(p.create(desc[3]));
+        return rstack;
+      })());
+    }
+
+    const instance = new LineUpJS.LineUp(document.body, p);
+    instance.update();
+  };
+</script>
+
+</body>
+</html>

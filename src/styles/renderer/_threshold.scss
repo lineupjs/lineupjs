@@ -1,0 +1,12 @@
+
+[data-renderer=threshold] {
+  align-items: flex-start;
+
+  > div {
+    height: 50%;
+
+    &.down {
+      align-self: flex-end;
+    }
+  }
+}

@@ -1,12 +1,8 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import {merge} from '../utils';
-import Column, {IColumnDesc} from '../model/Column';
+import Column, {IColumnDesc, IDataRow} from '../model';
+import {defaultGroup, IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
-import {IStatsBuilder, IDataRow, IDataProviderOptions} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
+import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 
 /**
  * interface what the server side has to provide
@@ -14,25 +10,28 @@ import ACommonDataProvider from './ACommonDataProvider';
 export interface IServerData {
   /**
    * sort the dataset by the given description
-   * @param desc
+   * @param ranking
    */
-  sort(desc: any): Promise<number[]>;
+  sort(ranking: Ranking): Promise<number[]>;
+
   /**
    * returns a slice of the data array identified by a list of indices
    * @param indices
    */
   view(indices: number[]): Promise<any[]>;
+
   /**
    * returns a sample of the values for a given column
    * @param column
    */
   mappingSample(column: any): Promise<number[]>;
+
   /**
    * return the matching indices matching the given arguments
    * @param search
    * @param column
    */
-  search(search: string|RegExp, column: any): Promise<number[]>;
+  search(search: string | RegExp, column: any): Promise<number[]>;
 
   stats(indices: number[]): IStatsBuilder;
 }
@@ -42,7 +41,7 @@ export interface IRemoteDataProviderOptions {
   /**
    * maximal cache size (unused at the moment)
    */
-  maxCacheSize?: number;
+  maxCacheSize: number;
 }
 
 /**
@@ -56,16 +55,19 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   private readonly cache = new Map<number, Promise<IDataRow>>();
 
 
-  constructor(private server: IServerData, columns: IColumnDesc[] = [], options: IRemoteDataProviderOptions & IDataProviderOptions = {}) {
+  constructor(private server: IServerData, columns: IColumnDesc[] = [], options: Partial<IRemoteDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
-    merge(this.options, options);
+    Object.assign(this.options, options);
   }
 
-  sortImpl(ranking: Ranking): Promise<number[]> {
-    //generate a description of what to sort
-    const desc = ranking.toSortingDesc((desc) => desc.column);
+  getTotalNumberOfRows() {
+    // TODO not correct
+    return this.cache.size;
+  }
+
+  sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {
     //use the server side to sort
-    return this.server.sort(desc);
+    return this.server.sort(ranking).then((order) => [Object.assign({order}, defaultGroup)]);
   }
 
   private loadFromServer(indices: number[]) {
@@ -93,15 +95,13 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     orders.forEach((order) => order.forEach(unionAdd));
 
     // removed cached
-    this.cache.forEach((v, k) => union.delete(k));
+    this.cache.forEach((_v, k) => union.delete(k));
 
     if ((this.cache.size + union.size) > this.options.maxCacheSize) {
       // clean up cache
     }
     // const maxLength = Math.max(...orders.map((o) => o.length));
-    const r = [];
-    union.forEach(r.push.bind(r));
-    return r;
+    return Array.from(union);
   }
 
   private loadInCache(missing: number[]) {
@@ -110,9 +110,9 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     }
     // load data and map to rows;
     const v = this.loadFromServer(missing);
-    missing.forEach((m, i) => {
+    missing.forEach((_m, i) => {
       const dataIndex = missing[i];
-      this.cache.set(dataIndex, v.then((loaded) => ({v: loaded[i], dataIndex})));
+      this.cache.set(dataIndex, v.then((loaded) => ({v: loaded[i], i: dataIndex})));
     });
   }
 
@@ -121,7 +121,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     this.loadInCache(toLoad);
 
     return orders.map((order) =>
-      order.map((dataIndex) => this.cache.get(dataIndex)));
+      order.map((i) => this.cache.get(i)!));
   }
 
 
@@ -129,7 +129,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.server.mappingSample((<any>col.desc).column);
   }
 
-  searchAndJump(search: string|RegExp, col: Column) {
+  searchAndJump(search: string | RegExp, col: Column) {
     this.server.search(search, (<any>col.desc).column).then((indices) => {
       this.jumpToNearest(indices);
     });

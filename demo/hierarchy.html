@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Hierarchy Test</title>
+
+  <link href="../LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="../LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const hierarchy = {
+      name: '0',
+      color: 'black',
+      children: [{
+        name: 'a1',
+        color: 'blue',
+        children: [{
+          name: 'a2',
+          color: 'blue'
+        }, {
+          name: 'b2',
+          color: 'red',
+          children: [{
+            name: 'a3',
+            color: 'blue'
+          }, {
+            name: 'b3',
+            color: 'red'
+          }, {
+            name: 'c3',
+            color: 'green'
+          }]
+        }]
+      }, {
+        name: 'b1',
+        color: 'red',
+        children: [{
+          name: 'b2',
+          color: 'red'
+        }, {
+          name: 'c2',
+          color: 'green'
+        }]
+      }]
+    };
+    const leaves = [];
+
+    function visit(prefix, node) {
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(function (n) {
+          visit(prefix + node.name + '.', n);
+        });
+      } else {
+        leaves.push(prefix + node.name);
+      }
+    }
+
+    visit('', hierarchy);
+    const data = [];
+    for (let i = 0; i < leaves.length * 3; i++) {
+      data.push({a: 'Row' + i, c: i, b: leaves[i % leaves.length]});
+    }
+
+    const desc = [
+      {label: 'A', type: 'string', column: 'a'},
+      {label: 'C', type: 'number', column: 'c', domain: [0, leaves.length * 3]},
+      {label: 'B', type: 'hierarchy', column: 'b', hierarchy: hierarchy}
+    ];
+
+    const p = new LineUpJS.LocalDataProvider(data, desc);
+    p.deriveDefault();
+
+    const lineup = new LineUpJS.LineUp(document.body, p);
+    lineup.update();
+  };
+</script>
+
+</body>
+</html>

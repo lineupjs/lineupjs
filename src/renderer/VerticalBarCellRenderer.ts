@@ -1,72 +1,71 @@
-import ICellRendererFactory from './ICellRendererFactory';
-import MultiValueColumn from '../model/MultiValueColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {select as d3select} from 'd3';
+import {IDataRow} from '../model';
+import Column from '../model/Column';
+import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
+import NumbersColumn from '../model/NumbersColumn';
+import {CANVAS_HEIGHT} from '../styles';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
+import {toHeatMapColor} from './BrightnessCellRenderer';
+import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {attr, forEachChild, noRenderer} from './utils';
 
+/** @internal */
+export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
+  readonly title = 'Bar Chart';
 
-export default class VerticalBarCellRenderer implements ICellRendererFactory {
-  private static verticalBarScale(domain: number[], threshold: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
-    return (domain[0] < threshold) ? (scale.range([0, rowHeight / 2])) : scale.range([0, rowHeight]);
+  canRender(col: Column, mode: ERenderMode) {
+    return isNumbersColumn(col) && Boolean(col.dataLength) && mode === ERenderMode.CELL;
   }
-  private static verticalBarYpos(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
-    if (domain[0] < threshold) {
-      return (cellData < threshold) ? (rowHeight / 2) : rowHeight / 2 - scale(cellData);   // For positive and negative value
-    } else {
-      return rowHeight - scale(cellData);
+
+  private static compute(v: number, threshold: number, domain: number[]) {
+    if (v < threshold) {
+      //threshold to down
+      return {height: (threshold - v), bottom: (v - domain[0])};
     }
-  }
-  private static verticalBarHeight(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
-    return (domain[0] < threshold) ? (rowHeight / 2 - scale(cellData)) : scale(cellData);
+    //from top to down
+    return {height: (v - threshold), bottom: (threshold - domain[0])};
   }
 
-  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const colorScale = col.getColorScale();
-    const cellDimension = col.calculateCellDimension(col.getWidth());
-    const defaultScale = col.getVerticalBarScale();
-    const threshold = col.getThreshold();
-    const domain = col.getDomain();
-
+  protected createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
+    const cellDimension = context.colWidth(col) / col.dataLength!;
+    const threshold = col.getMapping().apply(NumbersColumn.CENTER);
+    const range = 1;
+    let templateRows = '';
+    for (let i = 0; i < col.dataLength!; ++i) {
+      templateRows += `<div style="background-color: white" title=""></div>`;
+    }
     return {
-      template: `<g class='verticalbarcell'></g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const rowHeight = context.rowHeight(i);
-        const scale = VerticalBarCellRenderer.verticalBarScale(domain, threshold, defaultScale, rowHeight);
-        const rect = d3select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-        rect.enter().append('rect').attr('width', cellDimension);
-        rect.attr({
-          y: (d) => VerticalBarCellRenderer.verticalBarYpos(domain, threshold, d, scale, rowHeight),
-          x: (d, j) => (j * cellDimension),
-          height: (d: number) => VerticalBarCellRenderer.verticalBarHeight(domain, threshold, d, scale, rowHeight),
-          fill: colorScale
+      templateRow: templateRows,
+      update: (row: HTMLElement, data: number[], item: IDataRow) => {
+        const zero = toHeatMapColor(0, item, col, imposer);
+        const one = toHeatMapColor(1, item, col, imposer);
+
+        forEachChild(row, (d, i) => {
+          const v = data[i];
+          const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
+          attr(<HTMLElement>d, {
+            title: DEFAULT_FORMATTER(v)
+          }, {
+            'background-color': v < threshold ? zero : one,
+            bottom: `${Math.round((100 * bottom) / range)}%`,
+            height: `${Math.round((100 * height) / range)}%`
+          });
         });
-        rect.exit().remove();
+      },
+      render: (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow) => {
+        const zero = toHeatMapColor(0, item, col, imposer);
+        const one = toHeatMapColor(1, item, col, imposer);
+        const scale = CANVAS_HEIGHT / range;
+        data.forEach((v, j) => {
+          ctx.fillStyle = v < threshold ? zero : one;
+          const xpos = (j * cellDimension);
+          const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
+          ctx.fillRect(xpos, (range - height - bottom) * scale, cellDimension, height * scale);
+        });
       }
     };
   }
 
-  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-
-    const colorScale = col.getColorScale();
-    const cellDimension = col.calculateCellDimension(col.getWidth());
-    const defaultScale = col.getVerticalBarScale();
-    const threshold = col.getThreshold();
-    const domain = col.getDomain();
-
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const data = col.getValue(d.v, d.dataIndex);
-      const rowHeight = context.rowHeight(i);
-      const scale = VerticalBarCellRenderer.verticalBarScale(domain, threshold, defaultScale, rowHeight);
-
-      data.forEach((d, j) => {
-        const xpos = (j * cellDimension);
-        const ypos = VerticalBarCellRenderer.verticalBarYpos(domain, threshold, d, scale, rowHeight);
-        ctx.fillStyle = String(colorScale(d));
-        ctx.fillRect(xpos, ypos, cellDimension, VerticalBarCellRenderer.verticalBarHeight(domain, threshold, d, scale, rowHeight));
-      });
-    };
+  createSummary() {
+    return noRenderer;
   }
-
 }

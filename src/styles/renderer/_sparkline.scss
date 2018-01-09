@@ -1,0 +1,15 @@
+@import '../vars';
+
+[data-renderer=sparkline] {
+  path {
+    stroke: black;
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+
+  line {
+    stroke: $lu_axis_color;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+}

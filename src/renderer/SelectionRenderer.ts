@@ -1,44 +1,68 @@
+import {IDataRow, IGroup} from '../model';
+import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
-import {ICanvasRenderContext} from './RendererContexts';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {clipText} from '../utils';
-import ICellRendererFactory from './ICellRendererFactory';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {noop} from './utils';
 
+/** @internal */
 export default class SelectionRenderer implements ICellRendererFactory {
-  createSVG(col: SelectionColumn): ISVGCellRenderer {
-    return {
-      template: `<text class='selection fa'><tspan class='selectionOnly'>\uf046</tspan><tspan class='notSelectionOnly'>\uf096</tspan></text>`,
-      update: (n: SVGGElement, d: IDataRow) => {
-        n.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-          col.toggleValue(d.v, d.dataIndex);
-        };
-      }
-    };
+  readonly title = 'Default';
+
+  canRender(col: Column) {
+    return col instanceof SelectionColumn;
   }
 
-  createHTML(col: SelectionColumn): IHTMLCellRenderer {
+  create(col: SelectionColumn) {
     return {
-      template: `<div class='selection fa'></div>`,
+      template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          col.toggleValue(d.v, d.dataIndex);
+          col.toggleValue(d);
+        };
+      },
+      render: noop
+    };
+  }
+
+  createGroup(col: SelectionColumn) {
+    return {
+      template: `<div></div>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
+        const all = selected >= rows.length / 2;
+        if (all) {
+          n.classList.add('lu-group-selected');
+        } else {
+          n.classList.remove('lu-group-selected');
+        }
+        n.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          const value = n.classList.toggle('lu-group-selected');
+          col.setValues(rows, value);
         };
       }
     };
   }
 
-  createCanvas(col: SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
-      const bak = ctx.font;
-      ctx.font = '10pt FontAwesome';
-      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, col.getWidth(), context.textHints);
-      ctx.font = bak;
+  createSummary(col: SelectionColumn, context: IRenderContext) {
+    return {
+      template: `<div title="(Un)Select All" data-icon="unchecked"></div>`,
+      update: (node: HTMLElement) => {
+        node.onclick = (evt) => {
+          evt.stopPropagation();
+          const icon = node.dataset.icon;
+          if (icon === 'unchecked') {
+            context.provider.selectAllOf(col.findMyRanker()!);
+            node.dataset.icon = 'checked';
+          } else {
+            context.provider.setSelection([]);
+            node.dataset.icon = 'unchecked';
+          }
+        };
+      }
     };
   }
 }

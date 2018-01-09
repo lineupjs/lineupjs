@@ -1,0 +1,9 @@
+[data-renderer=interleaving] {
+  display: flex;
+  flex-direction: column;
+
+  > div {
+    flex: 1 1 0;
+    overflow-y: hidden;
+  }
+}

@@ -1,0 +1,10 @@
+
+[data-renderer=rank] {
+  text-align: right;
+}
+
+[data-agg=group] [data-renderer=rank] {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}

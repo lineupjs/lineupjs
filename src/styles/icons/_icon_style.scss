@@ -1,0 +1,25 @@
+@import './index';
+@import '../vars';
+@import './custom_font';
+
+[data-icon]::before {
+  @include lu_icons();
+
+  text-align: center;
+}
+
+[data-icon=checked]::before {
+  content: $lu_icon_check_square_o;
+}
+
+[data-icon=unchecked]::before {
+  content: $lu_icon_square_o;
+}
+
+[data-icon=caret-down]::before {
+  content: $lu_icon_caret_down;
+}
+
+[data-icon=caret-right]::before {
+  content: $lu_icon_caret_right;
+}

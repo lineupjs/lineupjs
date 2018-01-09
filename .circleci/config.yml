@@ -7,16 +7,41 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: deps2-{{ .Branch }}-{{ checksum "package.json" }}
       - run:
           name: install-npm-wee
           command: npm install
+      - run: #remove all resolved github dependencies
+          name: delete-vcs-dependencies
+          command: |
+            (grep -l '._resolved.: .\(git[^:]*\|bitbucket\):' ./node_modules/*/package.json || true) | xargs -r dirname | xargs -r rm -rf
       - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: deps2-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
-            - ./node_modules
+          - ./node_modules
+      - run: #install all dependencies
+          name: install-npm-wee2
+          command: npm install
       - run:
           name: dist
-          command: npm run dist 
+          command: npm run dist
       - store_artifacts:
           path: dist
+      - run: #update build doc and readme
+          name: update api
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "cleanup" ] || [ "${CIRCLE_BRANCH}" == "develop" ] || [ "${CIRCLE_BRANCH}" == "master" ] ; then
+                git clone git@github.com:sgratzl/lineupjs_docs.git
+                cd lineupjs_docs
+                rm -rf "${CIRCLE_BRANCH/cleanup/develop}/"
+                rm README.md
+                cp ../README.md README.md
+                mv ../build "${CIRCLE_BRANCH/cleanup/develop}"
+                cp ../demo/* "${CIRCLE_BRANCH/cleanup/develop}/"
+                git config user.email "samuel_gratzl@gmx.at"
+                git config user.name "Samuel Gratzl"
+                git add -A
+                git commit -m "auto updating ${CIRCLE_BRANCH/cleanup/develop}" -m "trigger: ${CIRCLE_BUILD_URL}"
+                git push origin master
+            fi
+

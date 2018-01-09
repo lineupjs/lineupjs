@@ -1,0 +1,93 @@
+@import '../vars';
+
+[data-renderer=boxplot] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+
+  > div:first-of-type { // whiskers + contains everything
+    position: relative;
+    border-left: 1px solid $lu_renderer_boxplot_stroke;
+    border-right: 1px solid $lu_renderer_boxplot_stroke;
+    height: 90%;
+    max-height: 30px;
+
+    &::before { // whiskers line
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 50%;
+      width: 100%;
+      border-bottom: 1px solid $lu_renderer_boxplot_stroke;
+    }
+
+    > div:first-child { // box
+      position: absolute;
+      top: 10%;
+      height: 80%;
+      background: $lu_renderer_boxplot_box;
+      outline: 1px solid $lu_renderer_boxplot_stroke;
+    }
+
+    > div:last-child { // median
+      position: absolute;
+      top: 10%;
+      height: 80%;
+      width: 1px;
+      background: $lu_renderer_boxplot_stroke;
+    }
+
+    &[data-sort=min] {
+      border-left-color: $lu_renderer_boxplot_sort_indicator;
+    }
+
+    &[data-sort=max] {
+      border-right-color: $lu_renderer_boxplot_sort_indicator;
+    }
+
+    &[data-sort=q1],
+    &[data-sort=q3] {
+      > div:first-child {
+        &::after {
+          content: '';
+          position: absolute;
+          width: 1px;
+          height: 100%;
+        }
+      }
+    }
+
+    &[data-sort=q1] > div:first-child::after {
+      left: -1px;
+      border-left: 1px solid $lu_renderer_boxplot_sort_indicator;
+    }
+
+    &[data-sort=q3] > div:first-child::after {
+      right: -1px;
+      border-right: 1px solid $lu_renderer_boxplot_sort_indicator;
+    }
+
+    &[data-sort=median] > div:last-child {
+      background-color: $lu_renderer_boxplot_sort_indicator;
+    }
+  }
+
+  /**
+  outlier
+   */
+  > div:nth-of-type(n + 2) {
+    position: absolute;
+    top: 50%;
+    width: $lu_renderer_dot_size;
+    height: $lu_renderer_dot_size;
+    margin: -$lu_renderer_dot_size / 2;
+    background: $lu_renderer_boxplot_outlier;
+    border-radius: 50%;
+
+    &[data-sort] {
+      background: $lu_renderer_boxplot_sort_indicator;
+    }
+  }
+}

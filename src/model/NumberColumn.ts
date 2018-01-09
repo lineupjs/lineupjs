@@ -1,297 +1,38 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import {scale, format} from 'd3';
-import Column, {IColumnDesc} from './Column';
+import {format} from 'd3-format';
+import {equalArrays} from '../internal';
+import {Category, toolbar} from './annotations';
+import Column from './Column';
+import {IDataRow, IGroup, IGroupData} from './interfaces';
+import {groupCompare, isDummyNumberFilter, restoreFilter} from './internal';
+import {
+  default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
+  isNumberIncluded, noNumberFilter, numberCompare
+} from './INumberColumn';
+import {
+  createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,
+  ScaleMappingFunction
+} from './MappingFunction';
+import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
-
-/**
- * checks whether the given column or description is a number column, i.e. the value is a number
- * @param col
- * @returns {boolean}
- */
-export function isNumberColumn(col: Column|IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
-}
-
-export function isMissingValue(v: any) {
-  return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
-}
-
-function isUnknown(v?: number|null) {
-  return isNaN(v) || v === null || v === undefined;
-}
-
-export const FIRST_IS_NAN = -1;
-
-/**
- * save number comparison
- * @param a
- * @param b
- * @param aMissing
- * @param bMissing
- * @return {number}
- */
-export function numberCompare(a: number, b: number, aMissing = false, bMissing = false) {
-  if (isNaN(a) || aMissing) { //NaN are smaller
-    return (isNaN(b) || bMissing) ? 0 : FIRST_IS_NAN;
-  }
-  if (isNaN(b) || bMissing) {
-    return FIRST_IS_NAN * -1;
-  }
-  return a - b;
-}
+export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 
 
-export interface INumberColumn {
-  isMissing(row: any, index: number): boolean;
-  getNumber(row: any, index: number): number;
-  getRawNumber(row: any, index: number): number;
-}
-
-/**
- * interface of a d3 scale
- */
-export interface IScale {
-  (v: number): number;
-
-  domain(): number[];
-  domain(domain: number[]);
-
-  range(): number[];
-  range(range: number[]);
-}
-
-export interface IMappingFunction {
-  //new(domain: number[]);
-
-  apply(v: number): number;
-
-  dump(): any;
-  restore(dump: any);
-
-  domain: number[];
-
-  clone(): IMappingFunction;
-
-  eq(other: IMappingFunction): boolean;
-
-}
-
-export interface INumberFilter {
-  min: number;
-  max: number;
-  filterMissing: boolean;
-}
-
-function toScale(type = 'linear'): IScale {
-  switch (type) {
-    case 'log':
-      return scale.log().clamp(true);
-    case 'sqrt':
-      return scale.sqrt().clamp(true);
-    case 'pow1.1':
-      return scale.pow().exponent(1.1).clamp(true);
-    case 'pow2':
-      return scale.pow().exponent(2).clamp(true);
-    case 'pow3':
-      return scale.pow().exponent(3).clamp(true);
-    default:
-      return scale.linear().clamp(true);
-  }
-}
-
-function isSame(a: number[], b: number[]) {
-  if (a.length !== b.length) {
-    return false;
-  }
-  return a.every((ai, i) => ai === b[i]);
-}
+export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
 
-function fixDomain(domain: number[], type: string) {
-  if (type === 'log' && domain[0] === 0) {
-    domain[0] = 0.0000001; //0 is bad
-  }
-  return domain;
-}
-/**
- * a mapping function based on a d3 scale (linear, sqrt, log)
- */
-export class ScaleMappingFunction implements IMappingFunction {
-  private s: IScale;
-
-  constructor(domain: number[] = [0, 1], private type = 'linear', range: number[] = [0, 1]) {
-
-    this.s = toScale(type).domain(fixDomain(domain, this.type)).range(range);
-  }
-
-  get domain() {
-    return this.s.domain();
-  }
-
-  set domain(domain: number[]) {
-    this.s.domain(fixDomain(domain, this.type));
-  }
-
-  get range() {
-    return this.s.range();
-  }
-
-  set range(range: number[]) {
-    this.s.range(range);
-  }
-
-  apply(v: number): number {
-    return this.s(v);
-  }
-
-  get scaleType() {
-    return this.type;
-  }
-
-  dump(): any {
-    return {
-      type: this.type,
-      domain: this.domain,
-      range: this.range
-    };
-  }
-
-  eq(other: IMappingFunction) {
-    if (!(other instanceof ScaleMappingFunction)) {
-      return false;
-    }
-    const that = <ScaleMappingFunction>other;
-    return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
-  }
-
-  restore(dump: any) {
-    this.type = dump.type;
-    this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
-  }
-
-  clone() {
-    return new ScaleMappingFunction(this.domain, this.type, this.range);
-  }
-}
-
-/**
- * a mapping function based on a custom user function using 'value' as the current value
- */
-export class ScriptMappingFunction implements IMappingFunction {
-  private f: Function;
-
-  constructor(public domain: number[] = [0, 1], private _code: string = 'return this.linear(value,this.value_min,this.value_max);') {
-    this.f = new Function('value', _code);
-  }
-
-  get code() {
-    return this._code;
-  }
-
-  set code(code: string) {
-    if (this._code === code) {
-      return;
-    }
-    this._code = code;
-    this.f = new Function('value', code);
-  }
-
-  apply(v: number): number {
-    const min = this.domain[0],
-      max = this.domain[this.domain.length - 1];
-    const r = this.f.call({
-      value_min: min,
-      value_max: max,
-      value_range: max - min,
-      value_domain: this.domain.slice(),
-      linear: (v, mi, ma) => (v - mi) / (ma - mi)
-    }, v);
-
-    if (typeof r === 'number') {
-      return Math.max(Math.min(r, 1), 0);
-    }
-    return NaN;
-  }
-
-  dump(): any {
-    return {
-      type: 'script',
-      code: this.code
-    };
-  }
-
-  eq(other: IMappingFunction) {
-    if (!(other instanceof ScriptMappingFunction)) {
-      return false;
-    }
-    const that = <ScriptMappingFunction>other;
-    return that.code === this.code;
-  }
-
-  restore(dump: any) {
-    this.code = dump.code;
-  }
-
-  clone() {
-    return new ScriptMappingFunction(this.domain, this.code);
-  }
-}
-
-export function createMappingFunction(dump: any): IMappingFunction {
-  if (dump.type === 'script') {
-    const s = new ScriptMappingFunction();
-    s.restore(dump);
-    return s;
-  } else {
-    const l = new ScaleMappingFunction();
-    l.restore(dump);
-    return l;
-  }
-}
-
-export interface INumberColumnDesc extends IValueColumnDesc<number> {
-  /**
-   * dump of mapping function
-   */
-  map?: any;
-  /**
-   * either map or domain should be available
-   */
-  domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  range?: [number, number];
-  /**
-   * d3 formatting option
-   * @default .3n
-   */
-  numberFormat?: string;
-
-  /**
-   * missing value to use
-   * @default 0
-   */
-  missingValue?: number;
-}
 
 /**
  * a number column mapped from an original input scale to an output range
  */
-export default class NumberColumn extends ValueColumn<number> implements INumberColumn {
+@toolbar('stratifyThreshold', 'sortNumbersGroup', 'filterMapped')
+@Category('number')
+export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
-  static readonly COMPRESSED_RENDERER = 'heatmap';
 
-  static readonly noFilter = () => ({min: -Infinity, max: Infinity, filterMissing: false});
-
-  missingValue = 0;
+  private readonly missingValue: number;
 
   private mapping: IMappingFunction;
-
   private original: IMappingFunction;
 
   /**
@@ -299,55 +40,54 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @type {{min: number, max: number}}
    * @private
    */
-  private currentFilter: INumberFilter = NumberColumn.noFilter();
+  private currentFilter: INumberFilter = noNumberFilter();
 
-  private numberFormat: (n: number) => string = format('.3n');
+  private numberFormat: (n: number) => string = format('.2f');
+
+  private currentStratifyThresholds: number[] = [];
+  private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
   constructor(id: string, desc: INumberColumnDesc) {
     super(id, desc);
 
-    if (desc.map) {
-      this.mapping = createMappingFunction(desc.map);
-    } else if (desc.domain) {
-      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
-    }
+    this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
+    this.missingValue = desc.missingValue != null ? desc.missingValue : NaN;
 
-    if (desc.missingValue !== undefined) {
-      this.missingValue = desc.missingValue;
-    }
-
-    const rendererList = [{type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'},
-      {type: 'default', label: 'String'}];
-
-    this.setRendererList(rendererList);
+    this.setGroupRenderer('boxplot');
+    this.setDefaultSummaryRenderer('histogram');
   }
 
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
     r.map = this.mapping.dump();
-    r.filter = this.currentFilter;
-    r.missingValue = this.missingValue;
+    r.filter = isDummyNumberFilter(this.currentFilter) ? null : this.currentFilter;
+    r.groupSortMethod = this.groupSortMethod;
+    if (this.currentStratifyThresholds) {
+      r.stratifyThreshholds = this.currentStratifyThresholds;
+    }
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);
     } else if (dump.domain) {
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
-    if (dump.currentFilter) {
-      this.currentFilter = dump.currentFilter;
+    if (dump.groupSortMethod) {
+      this.groupSortMethod = dump.groupSortMethod;
     }
-    if (dump.missingValue !== undefined) {
-      this.missingValue = dump.missingValue;
+    if (dump.filter) {
+      this.currentFilter = restoreFilter(dump.filter);
+    }
+    if (dump.stratifyThreshholds) {
+      this.currentStratifyThresholds = dump.stratifyThresholds;
     }
     if (dump.numberFormat) {
       this.numberFormat = format(dump.numberFormat);
@@ -358,16 +98,19 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
   }
 
-  getLabel(row: any, index: number) {
+  getLabel(row: IDataRow) {
     if ((<any>this.desc).numberFormat) {
-      const raw = this.getRawValue(row, index);
+      const raw = this.getRawValue(row);
       //if a dedicated format and a number use the formatter in any case
       if (isNaN(raw)) {
         return 'NaN';
       }
+      if (!isFinite(raw)) {
+        return raw.toString();
+      }
       return this.numberFormat(raw);
     }
-    const v = super.getValue(row, index);
+    const v = super.getValue(row);
     //keep non number if it is not a number else convert using formatter
     if (typeof v === 'number') {
       return this.numberFormat(+v);
@@ -375,36 +118,44 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return String(v);
   }
 
-  getRawValue(row: any, index: number) {
-    const v: any = super.getValue(row, index);
+  getRange() {
+    return this.mapping.getRange(this.numberFormat);
+  }
+
+  getRawValue(row: IDataRow, missingValue = this.missingValue) {
+    const v: any = super.getValue(row);
     if (isMissingValue(v)) {
-      return this.missingValue;
+      return missingValue;
     }
     return +v;
   }
 
-  isMissing(row: any, index: number) {
-    return isMissingValue(super.getValue(row, index));
+  isMissing(row: IDataRow) {
+    return isMissingValue(super.getValue(row));
   }
 
-  getValue(row: any, index: number) {
-    const v = this.getRawValue(row, index);
+  getValue(row: IDataRow) {
+    const v = this.getRawValue(row);
     if (isNaN(v)) {
       return v;
     }
     return this.mapping.apply(v);
   }
 
-  getNumber(row: any, index: number) {
-    return this.getValue(row, index);
+  getNumber(row: IDataRow) {
+    return this.getValue(row);
   }
 
-  getRawNumber(row: any, index: number) {
-    return this.getRawValue(row, index);
+  getRawNumber(row: IDataRow, missingValue = this.missingValue) {
+    return this.getRawValue(row, missingValue);
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
+  compare(a: IDataRow, b: IDataRow) {
+    return numberCompare(this.getNumber(a), this.getNumber(b), this.isMissing(a), this.isMissing(b));
+  }
+
+  groupCompare(a: IGroupData, b: IGroupData): number {
+    return groupCompare(a.rows, b.rows, this, <any>this.groupSortMethod);
   }
 
   getOriginalMapping() {
@@ -423,49 +174,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   isFiltered() {
-    return this.currentFilter.filterMissing || isFinite(this.currentFilter.min) || isFinite(this.currentFilter.max);
-  }
-
-  get filterMin() {
-    return this.currentFilter.min;
-  }
-
-  get filterMax() {
-    return this.currentFilter.max;
-  }
-
-  get filterMissing() {
-    return this.currentFilter.filterMissing;
+    return isDummyNumberFilter(this.currentFilter);
   }
 
   getFilter(): INumberFilter {
-    return {
-      min: this.currentFilter.min,
-      max: this.currentFilter.max,
-      filterMissing: this.currentFilter.filterMissing
-    };
-  }
-
-  set filterMin(min: number) {
-    const bak = this.getFilter();
-    this.currentFilter.min = isUnknown(min) ? -Infinity : min;
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
-  }
-
-  set filterMax(max: number) {
-    const bak = this.getFilter();
-    this.currentFilter.max = isUnknown(max) ? Infinity : max;
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
-  }
-
-  set filterMissing(filterMissing: boolean) {
-    const bak = this.getFilter();
-    this.currentFilter.filterMissing = filterMissing;
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
+    return Object.assign({}, this.currentFilter);
   }
 
   setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
-    if (this.currentFilter.min === value.min && this.currentFilter.max === value.max && this.currentFilter.filterMissing === value.filterMissing) {
+    if (isEqualNumberFilter(value, this.currentFilter)) {
       return;
     }
     const bak = this.getFilter();
@@ -478,27 +195,66 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   /**
    * filter the current row if any filter is set
    * @param row
-   * @param index row index
    * @returns {boolean}
    */
-  filter(row: any, index: number) {
-    if (!this.isFiltered()) {
-      return true;
-    }
-    const v: any = super.getValue(row, index);
-    if (isMissingValue(v)) {
-      return !this.filterMissing;
-    }
-    const vn = +v;
-    return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
+  filter(row: IDataRow) {
+    return isNumberIncluded(this.currentFilter, this.getRawNumber(row, NaN));
   }
 
-  getRendererType(): string {
-    if (this.getCompressed()) {
-      return NumberColumn.COMPRESSED_RENDERER;
+  getStratifyThresholds() {
+    return this.currentStratifyThresholds.slice();
+  }
+
+  setStratifyThresholds(value: number[]) {
+    if (equalArrays(this.currentStratifyThresholds, value)) {
+      return;
     }
-    return super.getRendererType();
+    const bak = this.getStratifyThresholds();
+    this.currentStratifyThresholds = value.slice();
+    this.fire([Column.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
 
+  group(row: IDataRow): IGroup {
+    if (this.currentStratifyThresholds.length === 0) {
+      return super.group(row);
+    }
+    if (this.isMissing(row)) {
+      return missingGroup;
+    }
+    const value = this.getRawNumber(row);
+    const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => value <= t);
+    // group by thresholds / bins
+    switch (treshholdIndex) {
+      case -1:
+        //bigger than the last threshold
+        return {
+          name: `${this.label} > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
+          color: 'gray'
+        };
+      case 0:
+        //smallest
+        return {name: `${this.label} <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
+      default:
+        return {
+          name: `${this.currentStratifyThresholds[treshholdIndex - 1]} <= ${this.label} <= ${this.currentStratifyThresholds[treshholdIndex]}`,
+          color: 'gray'
+        };
+    }
+  }
+
+  getSortMethod() {
+    return this.groupSortMethod;
+  }
+
+  setSortMethod(sortMethod: EAdvancedSortMethod) {
+    if (this.groupSortMethod === sortMethod) {
+      return;
+    }
+    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.groupSortMethod, this.groupSortMethod = sortMethod);
+    // sort by me if not already sorted by me
+    if (!this.isGroupSortedByMe().asc) {
+      this.toggleMyGroupSorting();
+    }
+  }
 }

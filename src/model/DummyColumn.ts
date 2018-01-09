@@ -1,26 +1,23 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
 import Column, {IColumnDesc} from './Column';
+
 /**
  * a default column with no values
  */
 export default class DummyColumn extends Column {
 
-  constructor(id: string, desc: IColumnDesc) {
+  constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
   }
 
-  getLabel(row: any) {
+  getLabel() {
     return '';
   }
 
-  getValue(row: any) {
+  getValue() {
     return '';
   }
 
-  compare(a: any, b: any) {
+  compare() {
     return 0; //can't compare
   }
 }

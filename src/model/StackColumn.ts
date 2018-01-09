@@ -1,29 +1,31 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import CompositeNumberColumn,{ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IMultiLevelColumn} from './CompositeColumn';
+import {round, similar} from '../internal';
+import {toolbar} from './annotations';
 import Column, {IFlatColumn} from './Column';
+import {IMultiLevelColumn} from './CompositeColumn';
+import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
+import {IDataRow} from './interfaces';
+import {isNumberColumn} from './INumberColumn';
 
 /**
  * factory for creating a description creating a stacked column
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Weighted Sum') {
+export function createStackDesc(label: string = 'Weighted Sum') {
   return {type: 'stack', label};
 }
 
 /**
  * implementation of the stacked column
  */
+@toolbar('editWeights', 'collapse')
 export default class StackColumn extends CompositeNumberColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = 'collapseChanged';
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
   static readonly COLLAPSED_RENDERER = 'number';
+  static readonly EVENT_MULTI_LEVEL_CHANGED = 'nestedChildRatio';
 
-  private readonly adaptChange;
+  private readonly adaptChange: (old: number, newValue: number) => void;
 
   /**
    * whether this stack column is collapsed i.e. just looks like an ordinary number column
@@ -36,13 +38,33 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super(id, desc);
 
     const that = this;
-    this.adaptChange = function (oldValue, newValue) {
+    this.adaptChange = function (this: { source: Column }, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
+
+    if (this.getRenderer() === 'interleaving') {
+      this.setRenderer('stack');
+    }
+    if (this.getGroupRenderer() === 'interleaving') {
+      this.setGroupRenderer('stack');
+    }
+    if (this.getSummaryRenderer() === 'interleaving') {
+      this.setSummaryRenderer('default');
+    }
+  }
+
+  get label() {
+    const l = super.label;
+    const c = this._children;
+    if (l !== 'Weighted Sum' || c.length === 0) {
+      return l;
+    }
+    const weights = this.getWeights();
+    return c.map((c, i) => `${c.label} (${round(100 * weights[i], 1)})%`).join(' + ');
   }
 
   protected createEventList() {
-    return super.createEventList().concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED]);
+    return super.createEventList().concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED]);
   }
 
   setCollapsed(value: boolean) {
@@ -65,8 +87,8 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => !c.isHidden());
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      let w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
-      if (!this.collapsed && !this.getCompressed()) {
+      let w = this.getWidth();
+      if (!this.collapsed) {
         w += (children.length - 1) * padding;
       }
       r.push(self = {col: this, offset, width: w});
@@ -91,7 +113,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }
@@ -103,7 +125,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     if (!isNaN(weight)) {
       col.setWidth((weight / (1 - weight) * this.getWidth()));
     }
-    col.on(Column.EVENT_WIDTH_CHANGED + '.stack', this.adaptChange);
+    col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
     //increase my width
     super.setWidth(this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
 
@@ -129,7 +151,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
    * @param newValue
    */
   private adaptWidthChange(col: Column, oldValue: number, newValue: number) {
-    if (oldValue === newValue) {
+    if (similar(oldValue, newValue, 0.5)) {
       return;
     }
     const bak = this.getWeights();
@@ -141,17 +163,16 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       if (c === col) {
         //c.weight += change;
         return newValue;
-      } else {
-        const guess = c.getWidth() * factor;
-        const w = isNaN(guess) || guess < 1 ? 0 : guess;
-        c.setWidthImpl(w);
-        return w;
       }
+      const guess = c.getWidth() * factor;
+      const w = isNaN(guess) || guess < 1 ? 0 : guess;
+      c.setWidthImpl(w);
+      return w;
     });
     //adapt width if needed
     super.setWidth(widths.reduce((a, b) => a + b, 0));
 
-    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getWeights());
+    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getWeights());
   }
 
   getWeights() {
@@ -182,12 +203,12 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     this._children.forEach((c, i) => {
       c.setWidthImpl(weights[i]);
     });
-    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, weights);
+    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, weights);
 
   }
 
   removeImpl(child: Column) {
-    child.on(Column.EVENT_WIDTH_CHANGED + '.stack', null);
+    child.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, null);
     super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child);
   }
@@ -201,25 +222,19 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super.setWidth(value);
   }
 
-  protected compute(row: any, index: number) {
+  protected compute(row: IDataRow) {
     const w = this.getWidth();
-    return this._children.reduce((acc, d) => acc + d.getValue(row, index) * (d.getWidth() / w), 0);
+    return this._children.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth() / w), 0);
   }
 
-  getRendererType() {
+  getRenderer() {
     if (this.getCollapsed() && this.isLoaded()) {
       return StackColumn.COLLAPSED_RENDERER;
     }
-    return super.getRendererType();
+    return super.getRenderer();
   }
 
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    const w = this.getWeights();
-    return this._children.map((c, i) => ({weight: w[i], id: c.toSortingDesc(toId)}));
+  isMissing(row: IDataRow) {
+    return this._children.some((c) => isNumberColumn(c) && c.isMissing(row));
   }
 }
