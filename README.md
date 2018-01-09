@@ -1,6 +1,6 @@
 LineUp.js: Visual Analysis of Multi-Attribute Rankings
 ======================================================
-[![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url]
+[![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url] [![CircleCI][ci-image-dev]][ci-url-dev] <sup>(dev)</sup>
 
 LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. 
 This is a web and generalized version of the published LineUp visualization technique by [Gratzl et.al. 2013](http://caleydo.org/publications/2013_infovis_lineup/)
@@ -15,8 +15,8 @@ npm install --save lineupjs@next
 ```
 
 ```html
-<link href="https://sgratzl.github.io/lineupjs_docs/develop/LineUpJS.css" rel="stylesheet">
-<script src="https://sgratzl.github.io/lineupjs_docs/develop/LineUpJS.min.js"></script>
+<link href="https://sgratzl.github.io/lineupjs_docs/master/LineUpJS.css" rel="stylesheet">
+<script src="https://sgratzl.github.io/lineupjs_docs/master/LineUpJS.min.js"></script>
 ```
 
 **Minimal Usage Example**
@@ -87,12 +87,12 @@ Supported Browsers
 API Documentation
 -----------------
 
-See [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
+See [API documentation](https://sgratzl.github.io/lineupjs_docs/master/docs) and [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
 
 Demos
 -----
 
-See [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop)
+See [Latest Demos](https://sgratzl.github.io/lineupjs_docs/master) and [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop)
 
 
 Dependencies
@@ -144,14 +144,16 @@ npm run watch
 ***
 
 <a href="http://caleydo.org"><img src="https://user-images.githubusercontent.com/4129778/34663868-5455cb76-f459-11e7-95db-f80db24026dc.png" align="left" width="200px" hspace="10" vspace="6"></a>
-This repository is created as part of the **[The Caleydo Project](http://caleydo.org/)**.
+This repository was created as part of the **[The Caleydo Project](http://caleydo.org/)**.
 
 [npm-image]: https://badge.fury.io/js/lineupjs.svg
 [npm-url]: https://npmjs.org/package/lineupjs
 [bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
 [bsd-url]: https://opensource.org/licenses/BSD-3-Clause
-[ci-image]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop.svg?style=shield
-[ci-url]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop
+[ci-image]: https://circleci.com/gh/sgratzl/lineupjs.svg?style=shield
+[ci-url]: https://circleci.com/gh/sgratzl/lineupjs
+[ci-image-dev]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop.svg?style=shield
+[ci-url-dev]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop
 
 
  
