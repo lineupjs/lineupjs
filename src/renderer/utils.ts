@@ -1,6 +1,7 @@
 import {MIN_LABEL_WIDTH} from '../config';
 import Column from '../model/Column';
 import {IArrayColumn} from '../model/IArrayColumn';
+import {hsl} from 'd3-color';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -126,4 +127,15 @@ export function matchColumns(node: HTMLElement, columns: { column: Column, templ
 export function wideEnough(col: IArrayColumn<any>, length: number = col.labels.length) {
   const w = col.getWidth();
   return w / length > MIN_LABEL_WIDTH; // at least 30 pixel
+}
+
+
+/**
+ * Adapts the text color for a given background color
+ * @param {string} bgColor as `#ff0000`
+ * @returns {string} returns `black` or `white` for best contrast
+ * @internal
+ */
+export function adaptTextColorToBgColor(bgColor: string): string {
+  return hsl(bgColor).l > 0.5 ? 'black' : 'white';
 }
