@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, Dispatch, select, scale as d3scale} from 'd3';
+import {dispatch, Dispatch, select, scale as d3scale, hsl as d3hsl} from 'd3';
 import Column, {IColumnDesc} from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
@@ -575,4 +575,13 @@ export function deriveColors(columns: IColumnDesc[]) {
     }
   });
   return columns;
+}
+
+/**
+ * Adapts the text color for a given background color
+ * @param {string} bgColor as `#ff0000`
+ * @returns {string} returns `black` or `white` for best contrast
+ */
+export function adaptTextColorToBgColor(bgColor:string):string {
+  return d3hsl(bgColor).l > 0.5 ? 'black' : 'white';
 }

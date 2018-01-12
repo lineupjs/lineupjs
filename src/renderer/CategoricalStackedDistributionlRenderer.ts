@@ -4,7 +4,7 @@ import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {forEachChild} from '../utils';
+import {adaptTextColorToBgColor, forEachChild} from '../utils';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import {computeHist} from '../provider/math';
@@ -22,7 +22,7 @@ export default class CategoricalStackedDistributionlRenderer implements ICellRen
   createGroupDOM(col: ICategoricalColumn & Column): IDOMGroupRenderer {
     const colors = col.categoryColors;
     const labels = col.categoryLabels;
-    const bins = col.categories.map((c, i) => `<div style="background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}">${labels[i]}</div>`).join('');
+    const bins = col.categories.map((c, i) => `<div style="background-color: ${colors[i]}; color: ${adaptTextColorToBgColor(colors[i])}" title="${labels[i]}: 0" data-cat="${c}"><span>${labels[i]}</span></div>`).join('');
 
     return {
       template: `<div>${bins}<div title="Missing Values"></div></div>`,
