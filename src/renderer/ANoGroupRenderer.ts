@@ -12,7 +12,7 @@ export abstract class ANoGroupRenderer implements ICellRendererFactory {
 
   createGroupDOM(): IDOMGroupRenderer {
     return {
-      template: ``,
+      template: `<div></div>`,
       update: () => undefined
     };
   }

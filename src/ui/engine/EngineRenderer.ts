@@ -2,12 +2,14 @@
  * Created by Samuel Gratzl on 18.07.2017.
  */
 import {AEventDispatcher, findOption, round, suffix} from '../../utils';
-import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {createDOM, createDOMGroup, possibleGroupRenderer, possibleRenderer} from '../../renderer';
 import {IGroupData, IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
-import {ILineUpRenderer, ISummaryFunction} from '../interfaces';
+import {
+  ILineUpRenderer, ISummaryFunction, RENDERER_EVENT_HOVER_CHANGED,
+  RENDERER_EVENT_RENDER_FINISHED
+} from '../interfaces';
 import {IRenderingOptions} from '../../interfaces';
 import {ICategoricalColumn, isCategoricalColumn} from '../../model/ICategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
@@ -48,8 +50,8 @@ export interface IEngineRendererOptions {
 }
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
-  static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
-  static readonly EVENT_RENDER_FINISHED = ABodyRenderer.EVENT_RENDER_FINISHED;
+  static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
+  static readonly EVENT_RENDER_FINISHED = RENDERER_EVENT_RENDER_FINISHED;
 
   protected readonly options: Readonly<IEngineRendererOptions>;
 
