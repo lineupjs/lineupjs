@@ -54,7 +54,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   }
 
   get label() {
-    const l = super.label;
+    const l = super.getMetaData().label;
     const c = this._children;
     if (l !== 'Weighted Sum' || c.length === 0) {
       return l;

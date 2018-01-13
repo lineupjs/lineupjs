@@ -35,7 +35,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   }
 
   get label() {
-    const l = super.label;
+    const l = super.getMetaData().label;
     const c = this._children;
     if (l !== 'Imposition' || c.length === 0) {
       return l;

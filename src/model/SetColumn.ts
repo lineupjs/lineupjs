@@ -135,12 +135,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     if (!this.currentFilter) {
       return true;
     }
-    for (const s of this.getSet(row)) {
-      if (isCategoryIncluded(this.currentFilter, s)) {
-        return true;
-      }
-    }
-    return false;
+    return Array.from(this.getSet(row)).some((s) => isCategoryIncluded(this.currentFilter, s));
   }
 
   getFilter() {
