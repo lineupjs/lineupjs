@@ -46,6 +46,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   private readonly reorderAll: () => void;
 
   private _dataRows: IDataRow[];
+  private filter: ((row: IDataRow) => boolean) | null;
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -63,6 +64,19 @@ export default class LocalDataProvider extends ACommonDataProvider {
         }
       });
     };
+  }
+
+  /**
+   * set a globally applied filter to all data without changing the data source itself
+   * @param {((row: IDataRow) => boolean) | null} filter
+   */
+  setFilter(filter: ((row: IDataRow) => boolean) | null) {
+    this.filter = filter;
+    this.reorderAll();
+  }
+
+  getFilter() {
+    return this.filter;
   }
 
   getTotalNumberOfRows() {
@@ -131,13 +145,18 @@ export default class LocalDataProvider extends ACommonDataProvider {
     let helper = this._data.map((r, i) => ({v: r, i, group: <IGroup | null>null}));
 
     //do the optional filtering step
+    let filter: ((d: IDataRow)=>boolean)|null = null;
     if (this.options.filterGlobally) {
       const filtered = this.getRankings().filter((d) => d.isFiltered());
       if (filtered.length > 0) {
-        helper = helper.filter((d) => filtered.every((f) => f.filter(d)));
+        filter = (d: IDataRow) => filtered.every((f) => f.filter(d));
       }
     } else if (ranking.isFiltered()) {
-      helper = helper.filter((d) => ranking.filter(d));
+      filter = (d) => ranking.filter(d);
+    }
+
+    if (filter || this.filter) {
+      helper = helper.filter((d) => (!this.filter || this.filter(d)) && (!filter || filter(d)));
     }
 
     if (helper.length === 0) {
