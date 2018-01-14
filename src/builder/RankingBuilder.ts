@@ -47,7 +47,7 @@ export interface IScriptedBuilder {
 export default class RankingBuilder {
   private static readonly ALL_MAGIC_FLAG = '*';
 
-  private readonly columns: (string | { desc: IColumnDesc|((data: ADataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];
+  private readonly columns: (string | { desc: IColumnDesc | ((data: ADataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];
   private readonly sort: { column: string, asc: boolean }[] = [];
   private readonly groups: string[] = [];
 
@@ -117,17 +117,17 @@ export default class RankingBuilder {
     return this;
   }
 
-  impose(label: string|null, numberColumn: string, categoricalColumn: string) {
+  impose(label: string | null, numberColumn: string, categoricalColumn: string) {
     this.columns.push({
       desc: (data) => {
         const base = data.getColumns().find((d) => d.label === numberColumn || (<any>d).column === numberColumn);
-        switch(base ? base.type : '') {
+        switch (base ? base.type : '') {
           case 'boxplot':
-          return createImpositionBoxPlotDesc(label ? label: undefined);
-        case 'numbers':
-          return createImpositionsDesc(label ? label: undefined);
-        default:
-          return createImpositionDesc(label ? label: undefined);
+            return createImpositionBoxPlotDesc(label ? label : undefined);
+          case 'numbers':
+            return createImpositionsDesc(label ? label : undefined);
+          default:
+            return createImpositionDesc(label ? label : undefined);
         }
       },
       columns: [numberColumn, categoricalColumn]
@@ -135,15 +135,15 @@ export default class RankingBuilder {
     return this;
   }
 
-  nested(label: string|null, column: string, ...columns: string[]) {
+  nested(label: string | null, column: string, ...columns: string[]) {
     this.columns.push({
-      desc: createNestedDesc(label ? label: undefined),
+      desc: createNestedDesc(label ? label : undefined),
       columns: [column].concat(columns)
     });
     return this;
   }
 
-  weightedSum(label: string|null, numberColumn1: string, weight1: number, numberColumn2: string, weight2: number, ...numberColumnAndWeights: (string | number)[]) {
+  weightedSum(label: string | null, numberColumn1: string, weight1: number, numberColumn2: string, weight2: number, ...numberColumnAndWeights: (string | number)[]) {
     const weights = [weight1, weight2].concat(<number[]>numberColumnAndWeights.filter((_, i) => i % 2 === 1));
     this.columns.push({
       desc: createStackDesc(label ? label : undefined),
@@ -155,9 +155,9 @@ export default class RankingBuilder {
     return this;
   }
 
-  reduce(label: string|null, operation: EAdvancedSortMethod, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
+  reduce(label: string | null, operation: EAdvancedSortMethod, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
     this.columns.push({
-      desc: createReduceDesc(label? label: undefined),
+      desc: createReduceDesc(label ? label : undefined),
       columns: [numberColumn1, numberColumn2].concat(numberColumns),
       post: (col) => {
         (<ReduceColumn>col).setReduce(operation);
@@ -166,9 +166,9 @@ export default class RankingBuilder {
     return this;
   }
 
-  scripted(label: string|null, code: string, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
+  scripted(label: string | null, code: string, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
     this.columns.push({
-      desc: createScriptDesc(label? label: undefined),
+      desc: createScriptDesc(label ? label : undefined),
       columns: [numberColumn1, numberColumn2].concat(numberColumns),
       post: (col) => {
         (<ScriptColumn>col).setScript(code);
