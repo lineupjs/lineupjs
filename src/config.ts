@@ -28,7 +28,7 @@ export function defaultOptions(): ILineUpOptions {
     rowHeight: 18,
     groupHeight: 40,
     groupPadding: 5,
-    rowPadding: 2,
+    rowPadding: 0, // as included using padding
 
     levelOfDetail: () => 'high',
     customRowUpdate: () => undefined,
