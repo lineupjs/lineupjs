@@ -65,9 +65,7 @@ export default class SidePanel {
     if (this.options.collapseable) {
       this.node.insertAdjacentHTML('beforeend', `<div class="lu-collapser" title="Collapse Panel"></div>`);
       const last = <HTMLElement>this.node.lastElementChild;
-      last.onclick = () => {
-        this.node.classList.toggle('lu-collapsed');
-      };
+      last.onclick = () => this.collapsed = !this.collapsed;
       this.collapsed = this.options.collapseable === 'collapsed';
     }
     this.initChooser();
