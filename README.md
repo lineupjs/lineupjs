@@ -60,9 +60,10 @@ builder
 const ranking = LineUpJS.buildRanking()
   .supportTypes()
   .allColumns() // add all columns
+  .impose('a+cat', 'a', 'cat2'); // create composite column
   .groupBy('cat')
   .sortBy('a', 'desc')
-  .impose('a+cat', 'number', 'a', 'cat2'); // create composite column
+  
 
 builder
   .defaultRanking()
@@ -84,6 +85,29 @@ Supported Browsers
  * Edge 16+
  
 
+R, RShiny, and R Markdown Support
+---------------------------------
+
+A [HTMLWidget](http://www.htmlwidgets.org/) wrapper for R is located at [lineup_htmlwidget](https://github.com/sgratzl/lineup_htmlwidget). 
+It can be used within standalone [R Shiny](https://shiny.rstudio.com/) apps or [R Markdown](http://rmarkdown.rstudio.com/) files. Integrated plotting does not work due to an outdated integrated Webkit version in RStudio.
+[Crosstalk](https://rstudio.github.io/crosstalk/) is supported for synching selections and filtering among widgets. 
+
+**Installation**
+
+```R
+devtools::install_github("rstudio/crosstalk")
+devtools::install_github("sgratzl/lineup_htmlwidget")
+library(lineup)
+```
+
+**Examples**
+
+```R
+lineup(iris)
+```
+
+ 
+
 API Documentation
 -----------------
 
@@ -92,8 +116,7 @@ See [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/
 Demos
 -----
 
-See [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop)
-
+See [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop) and [R Demos](https://sgratzl.github.io/lineupjs_docs/R)
 
 Dependencies
 ------------
