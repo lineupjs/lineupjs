@@ -2,8 +2,11 @@ LineUp.js: Visual Analysis of Multi-Attribute Rankings
 ======================================================
 [![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url] [![CircleCI][ci-image-dev]][ci-url-dev] <sup>(dev)</sup>
 
-LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. 
-This is a web and generalized version of the published LineUp visualization technique by [Gratzl et.al. 2013](http://caleydo.org/publications/2013_infovis_lineup/)
+LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.
+
+Key Features
+-----------
+
 
 Usage
 -----
@@ -113,10 +116,27 @@ API Documentation
 
 See [API documentation](https://sgratzl.github.io/lineupjs_docs/master/docs) and [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
 
+
 Demos
 -----
 
-See [Latest Demos](https://sgratzl.github.io/lineupjs_docs/master), [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop), and [R Demos](https://sgratzl.github.io/lineupjs_docs/R)
+See [Demos](https://sgratzl.github.io/lineupjs_docs/master), [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop), and [R Demos](https://sgratzl.github.io/lineupjs_docs/R)
+
+
+Related Publications
+---------------------
+
+**LineUp: Visual Analysis of Multi-Attribute Rankings** [Paper](http://data.caleydo.org/papers/2013_infovis_lineup.pdf) [Paper Website](http://caleydo.org/publications/2013_infovis_lineup/)
+
+Samuel Gratzl, Alexander Lex, Nils Gehlenborg, Hanspeter Pfister, and Marc Streit <br>
+IEEE Transactions on Visualization and Computer Graphics (InfoVis '13), 19(12), pp. 2277–2286, doi:10.1109/TVCG.2013.173, 2013.
+
+:trophy: [IEEE VIS](http://ieeevis.org) InfoVis 2013 Best Paper Award 
+
+**Taggle: Scalable Visualization of Tabular Data through Aggregation** [Paper Preprint](http://sci.utah.edu/~vdl/papers/2017_preprint_taggle.pdf) [Paper Website](http://vdl.sci.utah.edu/publications/2017_preprint_taggle/)
+
+Katarina Furmanova, Samuel Gratzl, Holger Stitz, Thomas Zichner, Miroslava Jaresova, Martin Ennemoser, Alexander Lex, and Marc Streit <br>
+arXiv preprint, 2017.
 
 Dependencies
 ------------
@@ -127,8 +147,7 @@ LineUp.js depends on
  * [Popper.js](https://popper.js.org) dialogs
 
 
-Development Dependencies
-------------------------
+**Development Dependencies**
 
 [Webpack](https://webpack.github.io) is used as build tool. LineUp itself is written in [TypeScript](https://www.typescriptlang.org) and [SASS](https://sass-lang.com). 
 
@@ -157,12 +176,20 @@ npm run lint
 ```
 
 
-**Watch file changes**
+**Serve integrated webserver**
 
 ```bash
-npm run watch
+npm run start
 ```
 
+
+Authors
+-------
+
+ * Samuel Gratzl (@sgratzl)
+ * Holger Stitz (@thinkh)
+ * The Caleydo Team (@caleydo)
+ * Datavisyn GmbH (@datavisyn)
 
 ***
 
