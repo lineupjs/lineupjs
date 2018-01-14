@@ -23,6 +23,7 @@ export interface ILineUpOptions {
   wholeHover: boolean;
   panel: boolean;
   panelCollapsed: boolean;
+  defaultSlopeGraphMode: 'item'|'band';
 
   groupHeight: number;
   groupPadding: number;

@@ -17,7 +17,7 @@ import {
 } from '../renderer';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
-import SlopeGraph from './SlopeGraph';
+import SlopeGraph, {EMode} from './SlopeGraph';
 
 
 export default class EngineRenderer extends AEventDispatcher {
@@ -207,7 +207,9 @@ export default class EngineRenderer extends AEventDispatcher {
   private addRanking(ranking: Ranking) {
     if (this.rankings.length > 0) {
       // add slope graph first
-      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body, `${ranking.id}S`, this.ctx));
+      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body, `${ranking.id}S`, this.ctx, {
+        mode: this.options.defaultSlopeGraphMode === 'band' ? EMode.BAND : EMode.ITEM
+      }));
       this.slopeGraphs.push(s);
     }
 

@@ -24,6 +24,7 @@ export function defaultOptions(): ILineUpOptions {
     wholeHover: false,
     panel: true,
     panelCollapsed: false,
+    defaultSlopeGraphMode: 'item',
 
     rowHeight: 18,
     groupHeight: 40,
