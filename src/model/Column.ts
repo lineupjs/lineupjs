@@ -229,11 +229,7 @@ export default class Column extends AEventDispatcher {
   }
 
   getMetaData(): Readonly<IColumnMetaData> {
-    return {
-      label: this.label,
-      color: this.color,
-      description: this.description
-    };
+    return Object.assign({}, this.metadata);
   }
 
   /**
