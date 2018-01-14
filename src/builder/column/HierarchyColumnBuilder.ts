@@ -21,7 +21,7 @@ export default class HierarchyColumnBuilder extends ColumnBuilder<IHierarchyColu
   }
 
   build(data: any[]): IHierarchyColumnDesc {
-    console.assert(Boolean(this.desc.hierarchy))
+    console.assert(Boolean(this.desc.hierarchy));
     return super.build(data);
   }
 }
