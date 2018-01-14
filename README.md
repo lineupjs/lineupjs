@@ -16,6 +16,7 @@ Key Features
  * group aggregations (show a whole group as a single group row)
  * numerous visualizations for summaries, cells, and group aggregations
  * side panel for easy filtering and column management
+ * [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
 
 Usage
 -----
@@ -97,6 +98,8 @@ Supported Browsers
  * Edge 16+
  
 
+<a id="rshiny"></a>
+
 R, RShiny, and R Markdown Support
 ---------------------------------
 
@@ -117,6 +120,8 @@ library(lineup)
 ```R
 lineup(iris)
 ```
+
+<a id="jupyter"></a>
 
 Jupyter Widget (under development)
 --------------
@@ -144,6 +149,8 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 [binder-image]: https://camo.githubusercontent.com/70c5b4d050d4019f4f20b170d75679a9316ac5e5/687474703a2f2f6d7962696e6465722e6f72672f62616467652e737667
 [binder-url]: http://mybinder.org/repo/sgratzl/lineup_widget/examples
 
+
+<a id="powerbi"></a>
 
 PowerBI Custom Visual (under development)
 ----------------------------------------
