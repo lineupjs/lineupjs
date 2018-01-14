@@ -6,7 +6,16 @@ LineUp is an interactive technique designed to create, visualize and explore ran
 
 Key Features
 -----------
-
+ * scalale (~100k rows)
+ * heterogenous attribute types (string, numerical, categorical, boolean, date)
+ * composite column types (weighted sum, min, max, mean, median, impose, nested, ...)
+ * array (multi value) and map column types (strings, stringMap, numbers, numberMap, ...)
+ * filtering capabilities
+ * hierarchical sorting (sort by more than one sorting criteria)
+ * hierarchical grouping (split rows in multiple separate groups)
+ * group aggregations (show a whole group as a single group row)
+ * numerous visualizations for summaries, cells, and group aggregations
+ * side panel for easy filtering and column management
 
 Usage
 -----
