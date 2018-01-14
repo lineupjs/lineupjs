@@ -12,7 +12,7 @@ import StackColumn from '../model/StackColumn';
 import ADataProvider from '../provider/ADataProvider';
 
 export interface IImposeColumnBuilder {
-  type: 'impose' | 'imposedBoxPlot' | 'imposes';
+  type: 'impose';
   column: string;
   label?: string;
   categoricalColumn: string;
@@ -47,7 +47,7 @@ export interface IScriptedBuilder {
 export default class RankingBuilder {
   private static readonly ALL_MAGIC_FLAG = '*';
 
-  private readonly columns: (string | { desc: IColumnDesc, columns: string[], post?: (col: Column) => void })[] = [];
+  private readonly columns: (string | { desc: IColumnDesc|((data: ADataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];
   private readonly sort: { column: string, asc: boolean }[] = [];
   private readonly groups: string[] = [];
 
@@ -90,11 +90,7 @@ export default class RankingBuilder {
     // builder ish
     switch (column.type) {
       case 'impose':
-        return this.impose(label, 'number', column.column, column.categoricalColumn);
-      case 'imposedBoxPlot':
-        return this.impose(label, 'boxplot', column.column, column.categoricalColumn);
-      case 'imposes':
-        return this.impose(label, 'numbers', column.column, column.categoricalColumn);
+        return this.impose(label, column.column, column.categoricalColumn);
       case 'min':
       case 'max':
       case 'median':
@@ -121,21 +117,19 @@ export default class RankingBuilder {
     return this;
   }
 
-  impose(label: string|null, type: 'number' | 'boxplot' | 'numbers', numberColumn: string, categoricalColumn: string) {
-    let desc: IColumnDesc;
-    switch (type) {
-      case 'boxplot':
-        desc = createImpositionBoxPlotDesc(label ? label: undefined);
-        break;
-      case 'numbers':
-        desc = createImpositionsDesc(label ? label: undefined);
-        break;
-      default:
-        desc = createImpositionDesc(label ? label: undefined);
-        break;
-    }
+  impose(label: string|null, numberColumn: string, categoricalColumn: string) {
     this.columns.push({
-      desc,
+      desc: (data) => {
+        const base = data.getColumns().find((d) => d.label === numberColumn || (<any>d).column === numberColumn);
+        switch(base ? base.type : '') {
+          case 'boxplot':
+          return createImpositionBoxPlotDesc(label ? label: undefined);
+        case 'numbers':
+          return createImpositionsDesc(label ? label: undefined);
+        default:
+          return createImpositionDesc(label ? label: undefined);
+        }
+      },
       columns: [numberColumn, categoricalColumn]
     });
     return this;
@@ -248,7 +242,7 @@ export default class RankingBuilder {
         addColumn(c);
         return;
       }
-      const col = data.create(c.desc)!;
+      const col = data.create(typeof c.desc === 'function' ? c.desc(data) : c.desc)!;
       r.push(col);
       c.columns.forEach((ci) => {
         const d = findDesc(ci);
