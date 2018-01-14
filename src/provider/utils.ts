@@ -14,7 +14,6 @@ export interface IDeriveOptions {
   columns: string[];
 }
 
-
 function deriveType(label: string, value: any, column: number | string, data: any[], options: IDeriveOptions): IColumnDesc {
   const base: any = {
     type: 'string',

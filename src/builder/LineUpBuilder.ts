@@ -4,28 +4,57 @@ import Ranking from '../model/Ranking';
 import {ICellRendererFactory} from '../renderer';
 import {IToolbarAction} from '../ui';
 
+/**
+ * builder for LineUp/Taggle instance
+ */
 export default class LineUpBuilder {
   protected readonly options: Partial<ILineUpOptions> = {
     renderers: {},
     toolbar: {}
   };
 
+  /**
+   * option to enable/disable animated transitions
+   * @default true
+   */
   animated(enable: boolean) {
     this.options.animation = enable;
     return this;
   }
 
+  /**
+   * option to enable/disable the side panel
+   * @param {boolean} enable enable flag
+   * @param {boolean} collapsed whether collapsed by default
+   */
   sidePanel(enable: boolean, collapsed: boolean = false) {
     this.options.panel = enable;
     this.options.panelCollapsed = collapsed;
     return this;
   }
 
+  /**
+   * option to specify the default slope graph mode
+   * @default 'item'
+   */
+  defaultSlopeGraphMode(mode: 'item' | 'band') {
+    this.options.defaultSlopeGraphMode = mode;
+    return this;
+  }
+
+  /**
+   * option to enable/disable showing a summary (histogram, ...) in the header
+   * @default true
+   */
   summaryHeader(enable: boolean) {
     this.options.summary = enable;
     return this;
   }
 
+  /**
+   * option to enforce that the whole row is shown upon hover without overflow hidden
+   * @default false
+   */
   expandLineOnHover(enable: boolean) {
     this.options.wholeHover = enable;
     return this;
@@ -41,18 +70,30 @@ export default class LineUpBuilder {
     return this;
   }
 
+  /**
+   * height and padding of a row
+   * @default 18 and 2
+   */
   rowHeight(rowHeight: number, rowPadding: number) {
     this.options.rowHeight = rowHeight;
     this.options.rowPadding = rowPadding;
     return this;
   }
 
+  /**
+   * height and padding of an aggregated group in pixel
+   * @default 40 and 5
+   */
   groupRowHeight(groupHeight: number, groupPadding: number) {
     this.options.groupHeight = groupHeight;
     this.options.groupPadding = groupPadding;
     return this;
   }
 
+  /**
+   * custom function to compute the height of a row (group or item)
+   * @param {(data: (IGroupItem | IGroupData)[], ranking: Ranking) => (IDynamicHeight | null)} callback
+   */
   dynamicHeight(callback: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => (IDynamicHeight | null)) {
     this.options.dynamicHeight = callback;
     return this;

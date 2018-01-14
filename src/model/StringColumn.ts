@@ -24,7 +24,7 @@ export interface IStringDesc {
   escape?: boolean;
 
   /**
-   * replacement pattern, use $1 for the input string
+   * replacement pattern, use use <code>${value}</code> for the current and and <code>${item}</code> for the whole item
    */
   pattern?: string;
 

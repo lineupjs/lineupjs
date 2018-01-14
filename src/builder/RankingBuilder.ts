@@ -44,6 +44,9 @@ export interface IScriptedBuilder {
   label?: string;
 }
 
+/**
+ * builder for a ranking
+ */
 export default class RankingBuilder {
   private static readonly ALL_MAGIC_FLAG = '*';
 
@@ -51,6 +54,11 @@ export default class RankingBuilder {
   private readonly sort: { column: string, asc: boolean }[] = [];
   private readonly groups: string[] = [];
 
+  /**
+   * specify another sorting criteria
+   * @param {string} column the column name optionally with encoded sorting separated by colon, e.g. a:desc
+   * @param {boolean | "asc" | "desc"} asc ascending or descending order
+   */
   sortBy(column: string, asc: boolean | 'asc' | 'desc' = true) {
     if (column.includes(':')) {
       // encoded sorting order
@@ -62,11 +70,28 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * specify grouping criteria
+   * @returns {this}
+   */
   groupBy(...columns: string[]) {
     this.groups.push(...columns);
     return this;
   }
 
+  /**
+   * add another column to this ranking, identified by column name or label. magic names are used for special columns:
+   * <ul>
+   *     <li>'*' = all columns</li>
+   *     <li>'_*' = all support columns</li>
+   *     <li>'_aggregate' = aggregate columns</li>
+   *     <li>'_selection' = selection columns</li>
+   *     <li>'_group' = group columns</li>
+   *     <li>'_rank' = rank column</li>
+   * </ul>
+   * In addition build objects for combined columns are supported.
+   * @param {string | IImposeColumnBuilder | INestedBuilder | IWeightedSumBuilder | IReduceBuilder | IScriptedBuilder} column
+   */
   column(column: string | IImposeColumnBuilder | INestedBuilder | IWeightedSumBuilder | IReduceBuilder | IScriptedBuilder) {
     if (typeof column === 'string') {
       switch (column) {
@@ -117,6 +142,12 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add an imposed column (numerical column colored by categorical column) to this ranking
+   * @param {string | null} label optional label
+   * @param {string} numberColumn numerical column reference
+   * @param {string} categoricalColumn categorical column reference
+   */
   impose(label: string | null, numberColumn: string, categoricalColumn: string) {
     this.columns.push({
       desc: (data) => {
@@ -135,6 +166,12 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add a nested / group composite column
+   * @param {string | null} label optional label
+   * @param {string} column first element of the group enforcing not empty ones
+   * @param {string} columns additional columns
+   */
   nested(label: string | null, column: string, ...columns: string[]) {
     this.columns.push({
       desc: createNestedDesc(label ? label : undefined),
@@ -143,6 +180,15 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add a weighted sum / stack column
+   * @param {string | null} label optional label
+   * @param {string} numberColumn1 the first numerical column
+   * @param {number} weight1 its weight (0..1)
+   * @param {string} numberColumn2 the second numerical column
+   * @param {number} weight2 its weight (0..1)
+   * @param {string | number} numberColumnAndWeights alternating column weight references
+   */
   weightedSum(label: string | null, numberColumn1: string, weight1: number, numberColumn2: string, weight2: number, ...numberColumnAndWeights: (string | number)[]) {
     const weights = [weight1, weight2].concat(<number[]>numberColumnAndWeights.filter((_, i) => i % 2 === 1));
     this.columns.push({
@@ -155,6 +201,14 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add reducing column (min, max, median, mean, ...)
+   * @param {string | null} label optional label
+   * @param {EAdvancedSortMethod} operation operation to apply (min, max, median, mean, ...)
+   * @param {string} numberColumn1 first numerical column
+   * @param {string} numberColumn2 second numerical column
+   * @param {string} numberColumns additional numerical columns
+   */
   reduce(label: string | null, operation: EAdvancedSortMethod, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
     this.columns.push({
       desc: createReduceDesc(label ? label : undefined),
@@ -166,6 +220,14 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add a scripted / formula column
+   * @param {string | null} label optional label
+   * @param {string} code the JS code see ScriptColumn for details
+   * @param {string} numberColumn1 first numerical column
+   * @param {string} numberColumn2 second numerical column
+   * @param {string} numberColumns additional numerical columns
+   */
   scripted(label: string | null, code: string, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
     this.columns.push({
       desc: createScriptDesc(label ? label : undefined),
@@ -177,6 +239,9 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add a selection column for easier multi selections
+   */
   selection() {
     this.columns.push({
       desc: createSelectionDesc(),
@@ -185,6 +250,9 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add a group column to show the current group name
+   */
   group() {
     this.columns.push({
       desc: createGroupDesc(),
@@ -193,6 +261,9 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add an aggregate column to this ranking to collapse/expand groups
+   */
   aggregate() {
     this.columns.push({
       desc: createAggregateDesc(),
@@ -201,6 +272,9 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add a ranking column
+   */
   rank() {
     this.columns.push({
       desc: createRankDesc(),
@@ -209,10 +283,16 @@ export default class RankingBuilder {
     return this;
   }
 
+  /**
+   * add suporttypes (aggregate, rank, selection) to the ranking
+   */
   supportTypes() {
     return this.aggregate().rank().selection();
   }
 
+  /**
+   * add all columns to this ranking
+   */
   allColumns() {
     this.columns.push(RankingBuilder.ALL_MAGIC_FLAG);
     return this;
@@ -299,6 +379,10 @@ export default class RankingBuilder {
   }
 }
 
+/**
+ * createa a new instance of a ranking builder
+ * @returns {RankingBuilder}
+ */
 export function buildRanking() {
   return new RankingBuilder();
 }

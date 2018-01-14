@@ -9,9 +9,9 @@ export * from './RankingBuilder';
 
 /**
  * build a new Taggle instance in the given node for the given data
- * @param {HTMLElement} node
- * @param {any[]} data
- * @param {string[]} columns
+ * @param {HTMLElement} node DOM node to attach to
+ * @param {any[]} data data to visualize
+ * @param {string[]} columns optional enforced column order
  * @returns {Taggle}
  */
 export function asTaggle(node: HTMLElement, data: any[], ...columns: string[]): Taggle {
@@ -24,9 +24,9 @@ export function asTaggle(node: HTMLElement, data: any[], ...columns: string[]): 
 
 /**
  * build a new LineUp instance in the given node for the given data
- * @param {HTMLElement} node
- * @param {any[]} data
- * @param {string[]} columns
+ * @param {HTMLElement} node DOM node to attach to
+ * @param {any[]} data data to visualize
+ * @param {string[]} columns optional enforced column order
  * @returns {LineUp}
  */
 export function asLineUp(node: HTMLElement, data: any[], ...columns: string[]): LineUp {
