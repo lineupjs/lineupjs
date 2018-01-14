@@ -1,4 +1,4 @@
-import {IDynamicHeight, ILineUpOptions} from '../interfaces';
+import {IDynamicHeight, ITaggleOptions} from '../interfaces';
 import {IGroupData, IGroupItem} from '../model';
 import Ranking from '../model/Ranking';
 import {ICellRendererFactory} from '../renderer';
@@ -8,7 +8,7 @@ import {IToolbarAction} from '../ui';
  * builder for LineUp/Taggle instance
  */
 export default class LineUpBuilder {
-  protected readonly options: Partial<ILineUpOptions> = {
+  protected readonly options: Partial<ITaggleOptions> = {
     renderers: {},
     toolbar: {}
   };
@@ -57,6 +57,15 @@ export default class LineUpBuilder {
    */
   expandLineOnHover(enable: boolean) {
     this.options.wholeHover = enable;
+    return this;
+  }
+
+  /**
+   * option to enable overview mode by default, just valid when building a Taggle instance
+   * @returns {this}
+   */
+  overviewMode() {
+    this.options.overviewEnabled = true;
     return this;
   }
 

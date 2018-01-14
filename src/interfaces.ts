@@ -117,6 +117,14 @@ export interface ILineUpOptions {
   renderers: { [type: string]: ICellRendererFactory };
 }
 
+export interface ITaggleOptions extends ILineUpOptions {
+  /**
+   * whether the overview mode is enabled by default
+   * @default false
+   */
+  overviewEnabled: boolean;
+}
+
 export interface ILineUpLike {
   readonly node: HTMLElement;
   readonly data: IDataProvider;

@@ -1,4 +1,4 @@
-import {ILineUpOptions} from './interfaces';
+import {ITaggleOptions} from './interfaces';
 import {renderers} from './renderer';
 import {toolbarActions} from './ui';
 
@@ -12,7 +12,7 @@ export const MIN_LABEL_WIDTH = 30;
  */
 export const HOVER_DELAY_SHOW_DETAIL = 500;
 
-export function defaultOptions(): ILineUpOptions {
+export function defaultOptions(): ITaggleOptions {
   const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
   return {
     idPrefix,
@@ -25,6 +25,7 @@ export function defaultOptions(): ILineUpOptions {
     panel: true,
     panelCollapsed: false,
     defaultSlopeGraphMode: 'item',
+    overviewEnabled: false,
 
     rowHeight: 18,
     groupHeight: 40,
