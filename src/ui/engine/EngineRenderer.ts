@@ -191,7 +191,12 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn & Column) => {
         this.histCache.set(col.id, histo === null ? null : histo.hist(col));
       });
-      r.updateHeaders();
+      if (col) {
+        // single update
+        r.updateHeaderOfColumn(col);
+      } else {
+        r.updateHeaders();
+      }
     });
 
     this.updateAbles.forEach((u) => u(this.ctx));

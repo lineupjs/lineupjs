@@ -31,6 +31,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   static readonly EVENT_DIRTY = Column.EVENT_DIRTY;
   static readonly EVENT_DIRTY_HEADER = Column.EVENT_DIRTY_HEADER;
   static readonly EVENT_DIRTY_VALUES = Column.EVENT_DIRTY_VALUES;
+  static readonly EVENT_COLUMN_VISBILITY_CHANGED = Column.EVENT_VISBILITY_CHANGED;
   static readonly EVENT_SORT_CRITERIA_CHANGED = 'sortCriteriaChanged';
   static readonly EVENT_GROUP_CRITERIA_CHANGED = 'groupCriteriaChanged';
   static readonly EVENT_GROUP_SORT_CRITERIA_CHANGED = 'groupSortCriteriaChanged';
@@ -114,7 +115,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       Ranking.EVENT_LABEL_CHANGED, Ranking.EVENT_GROUPS_CHANGED,
       Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_MOVE_COLUMN,
       Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES,
-      Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED,
+      Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED, Ranking.EVENT_COLUMN_VISBILITY_CHANGED,
       Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIAS_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_ORDER_CHANGED]);
   }
 
@@ -463,7 +464,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   insert(col: Column, index: number = this.columns.length) {
     this.columns.splice(index, 0, col);
     col.parent = this;
-    this.forward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
+    this.forward(col, ...suffix('.ranking', Column.EVENT_VISBILITY_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
     col.on(`${Ranking.EVENT_FILTER_CHANGED}.order`, this.dirtyOrder);
 
 
@@ -543,7 +544,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return false;
     }
 
-    this.unforward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
+    this.unforward(col, ...suffix('.ranking', Column.EVENT_VISBILITY_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
 
     const isSortCriteria = this.sortCriteria.findIndex((d) => d.col === col);
     if (isSortCriteria === 0) {

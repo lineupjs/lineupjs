@@ -165,6 +165,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   updateAll() {
+    const previous = this._context;
+    previous.columns.forEach((c) => this.disableListener(c.c));
     const columns = this.createColumns();
 
     this._context = Object.assign({},this._context,{
@@ -190,6 +192,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column.updateWidthRule(this.style);
     }
     this.updateHeader(node, column);
+  }
+
+  updateHeaderOfColumn(col: Column) {
+    const index = this._context.columns.findIndex((d) => d.c === col);
+    if (index >= 0) {
+      this.updateHeaderOf(index);
+    }
   }
 
   protected createRow(node: HTMLElement, rowIndex: number): void {
@@ -389,6 +398,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     c.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
     c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], () => {
       // replace myself upon renderer type change
+      this.disableListener(c);
       this._context.columns[i] = this.createColumn(c, i);
       this.updateColumn(i);
     });

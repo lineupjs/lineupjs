@@ -145,6 +145,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
+  static readonly EVENT_VISBILITY_CHANGED = 'visibilityChanged';
   static readonly EVENT_DATA_LOADED = 'dataLoaded';
 
   /**
@@ -244,7 +245,7 @@ export default class Column extends AEventDispatcher {
    */
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
-      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED,
+      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISBILITY_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_MOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED, Column.EVENT_DATA_LOADED]);
   }
@@ -283,7 +284,12 @@ export default class Column extends AEventDispatcher {
     if (similar(this.width, value, 0.5)) {
       return;
     }
-    this.fire([Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.width, this.width = value);
+    const events = [Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
+    if ((value <= 0 !== this.width <= 0)) {
+      // width < 0 -> hidden
+      events.splice(1, 0, Column.EVENT_VISBILITY_CHANGED);
+    }
+    this.fire(events, this.width, this.width = value);
   }
 
   setWidthImpl(value: number) {
