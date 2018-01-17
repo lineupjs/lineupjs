@@ -98,7 +98,9 @@ export default class LinkColumn extends StringColumn {
       return v.href;
     }
     if (this.link) {
-      return this.link.replace(/\$1/g, v || '');
+      return this.link
+        .replace(/\$1/g, v || '')
+        .replace(/\$2/g, encodeURIComponent(v || ''));
     }
     return v;
   }
