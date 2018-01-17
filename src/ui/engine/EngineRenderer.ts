@@ -223,7 +223,14 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.update([r]);
   }
 
-  private removeRanking(ranking: Ranking) {
+  private removeRanking(ranking: Ranking|null) {
+    if (!ranking) {
+      // remove all
+      this.rankings.splice(0, this.rankings.length);
+      this.slopeGraphs.splice(0, this.slopeGraphs.length);
+      this.table.clear();
+      return;
+    }
     const index = this.rankings.findIndex((r) => r.ranking === ranking);
     if (index < 0) {
       return; // error
