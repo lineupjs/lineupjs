@@ -1,7 +1,7 @@
 import Column from '../model/Column';
 import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {IDataRow} from '../provider/ADataProvider';
-import {adaptTextColorToBgColor, attr, clipText} from '../utils';
+import {adaptDynamicColorToBgColor, setText, attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 import IDOMCellRenderer from './IDOMCellRenderers';
@@ -50,7 +50,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
           width: missing ? '100%' : `${w}%`,
           'background-color': missing ? null : color
         });
-        attr(<HTMLElement>bar.firstElementChild!, {}, {color: color && w >= 50 ? adaptTextColorToBgColor(color) : null}, title);
+        const item = <HTMLElement>bar.firstElementChild!;
+        setText(item, title);
+        adaptDynamicColorToBgColor(item, color, w / 100);
       }
     };
   }

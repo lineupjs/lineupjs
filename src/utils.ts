@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, Dispatch, select, scale as d3scale, hsl as d3hsl} from 'd3';
+import {dispatch, Dispatch, hsl as d3hsl, scale as d3scale, select} from 'd3';
 import Column, {IColumnDesc} from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
@@ -582,6 +582,31 @@ export function deriveColors(columns: IColumnDesc[]) {
  * @param {string} bgColor as `#ff0000`
  * @returns {string} returns `black` or `white` for best contrast
  */
-export function adaptTextColorToBgColor(bgColor:string):string {
+export function adaptTextColorToBgColor(bgColor: string): string {
   return d3hsl(bgColor).l > 0.5 ? 'black' : 'white';
+}
+
+/**
+ *
+ * Adapts the text color for a given background color
+ * @param {HTMLElement} node the node containing the text
+ * @param {string} bgColor as `#ff0000`
+ * @param {number} width for which percentages of the cell this background applies (0..1)
+ */
+export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, width: number) {
+  const adapt = adaptTextColorToBgColor(bgColor);
+  if ((width <= 0.05 || adapt === 'black') || width > 0.9) { // almost empty or full
+    node.style.color = adapt === 'black' || width <= 0.05 ? null : adapt; // null = black
+    // node.classList.remove('lu-gradient-text');
+    // node.style.backgroundImage = null;
+    return;
+  }
+  // see https://stackoverflow.com/questions/37831837/gradient-text-color#37832318
+
+  // doesn't work yet, choose black
+
+  // gradient text color
+  node.style.color = null;
+  // node.classList.add('lu-gradient-text');
+  // node.style.backgroundImage = `linear-gradient(to right, ${adapt}, ${adapt}, ${width * 100}%, black ${width * 100}%)`;
 }
