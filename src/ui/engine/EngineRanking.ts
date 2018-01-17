@@ -90,7 +90,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
 
     this.delayedUpdateAll = debounce(() => this.updateAll(), 50);
-    this.delayedColumnWidths = debounce(() => this.updateColumnWidths(), 50);
+    this.delayedUpdateColumnWidths = debounce(() => this.updateColumnWidths(), 50);
     ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
     ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, this.delayedUpdate);
     ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`, `${Ranking.EVENT_MOVE_COLUMN}.body`, `${Ranking.EVENT_COLUMN_VISBILITY_CHANGED}.body`], this.delayedUpdateAll);
@@ -115,7 +115,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const columns = this.createColumns();
     this._context = Object.assign({
       columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
+      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding),
+      hasFrozenColumns: columns.some((d) => d.frozen)
     }, uniformContext(0, 20));
   }
 
@@ -171,7 +172,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     this._context = Object.assign({},this._context,{
       columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
+      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding),
+      hasFrozenColumns: columns.some((d) => d.frozen)
     });
 
     super.recreate();
@@ -182,6 +184,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (this.hidden) {
       return;
     }
+    this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
     this.forEachRow((row, rowIndex) => this.updateRow(row, rowIndex));
   }
 
