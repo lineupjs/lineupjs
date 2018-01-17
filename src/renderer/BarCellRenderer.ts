@@ -1,13 +1,13 @@
-import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText, setText} from '../utils';
+import {adaptTextColorToBgColor, attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
+import ICellRendererFactory from './ICellRendererFactory';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {colorOf, IImposer} from './impose';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 
 
 /**
@@ -43,13 +43,14 @@ export default class BarCellRenderer implements ICellRendererFactory {
         n.title = title;
 
         const bar = n.firstElementChild!;
+        const color = colorOf(col, d, imposer);
         attr(<HTMLElement>bar, {
           title
         }, {
           width: missing ? '100%' : `${w}%`,
-          'background-color': missing ? null : colorOf(col, d, imposer)
+          'background-color': missing ? null : color
         });
-        setText(bar.firstElementChild!, title);
+        attr(<HTMLElement>bar.firstElementChild!, {}, {color: color && w >= 50 ? adaptTextColorToBgColor(color) : null}, title);
       }
     };
   }
