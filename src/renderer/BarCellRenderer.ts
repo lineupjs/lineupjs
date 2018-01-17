@@ -52,7 +52,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         });
         const item = <HTMLElement>bar.firstElementChild!;
         setText(item, title);
-        adaptDynamicColorToBgColor(item, color, w / 100);
+        adaptDynamicColorToBgColor(item, color || Column.DEFAULT_COLOR, w / 100);
       }
     };
   }
