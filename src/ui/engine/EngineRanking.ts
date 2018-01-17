@@ -67,6 +67,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   };
 
   private readonly delayedUpdate: (this: {type: string})=>void;
+  private readonly delayedUpdateAll: ()=>void;
+  private readonly delayedUpdateColumnWidths: ()=>void;
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
     super(header, body, tableId, style, PrefetchMixin);
@@ -87,9 +89,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return currentEvent === Ranking.EVENT_ORDER_CHANGED ? current : next;
     });
 
+    this.delayedUpdateAll = debounce(() => this.updateAll(), 50);
+    this.delayedColumnWidths = debounce(() => this.updateColumnWidths(), 50);
     ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
     ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, this.delayedUpdate);
-    ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`, `${Ranking.EVENT_MOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
+    ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`, `${Ranking.EVENT_MOVE_COLUMN}.body`, `${Ranking.EVENT_COLUMN_VISBILITY_CHANGED}.body`], this.delayedUpdateAll);
     ranking.on(`${Ranking.EVENT_ADD_COLUMN}.hist`, (col) => {
       col.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(col));
       this.updateHist(col);
@@ -375,8 +379,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private createColumn(c: Column, i: number) {
     const renderers = this.ctx.createRenderer(c);
 
-    c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
-      this.updateColumnWidths();
+    c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, (oldValue: number, newValue: number) => {
+      if (oldValue <= 0 || newValue <= 0) {
+        // aka visibility changed, handled by a central unit, see constructor
+        return;
+      }
+      this.delayedUpdateColumnWidths();
     });
     c.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
     c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], () => {
