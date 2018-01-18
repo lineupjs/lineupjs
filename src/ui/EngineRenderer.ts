@@ -83,7 +83,7 @@ export default class EngineRenderer extends AEventDispatcher {
         group: possibleGroupRenderer(col, this.options.renderers),
         summary: possibleSummaryRenderer(col, this.options.renderers)
       }),
-      colWidth: (col: Column) => col.isHidden() ? 0 : col.getWidth()
+      colWidth: (col: Column) => !col.getVisible() ? 0 : col.getWidth()
     };
 
     this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);
@@ -192,13 +192,18 @@ export default class EngineRenderer extends AEventDispatcher {
       const order = ranking.getOrder();
       const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
-      cols.filter((d) => isNumberColumn(d) && !d.isHidden()).forEach((col: NumberColumn) => {
+      cols.filter((d) => isNumberColumn(d) && d.isVisible()).forEach((col: NumberColumn) => {
         this.histCache.set(col.id, histo == null ? null : histo.stats(col));
       });
-      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn) => {
+      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: ICategoricalColumn) => {
         this.histCache.set(col.id, histo == null ? null : histo.hist(col));
       });
-      r.updateHeaders();
+      if (col) {
+        // single update
+        r.updateHeaderOf(col);
+      } else {
+        r.updateHeaders();
+      }
     });
 
     this.updateAbles.forEach((u) => u(this.ctx));
@@ -228,7 +233,14 @@ export default class EngineRenderer extends AEventDispatcher {
     this.update([r]);
   }
 
-  private removeRanking(ranking: Ranking) {
+  private removeRanking(ranking: Ranking|null) {
+    if (!ranking) {
+      // remove all
+      this.rankings.splice(0, this.rankings.length);
+      this.slopeGraphs.splice(0, this.slopeGraphs.length);
+      this.table.clear();
+      return;
+    }
     const index = this.rankings.findIndex((r) => r.ranking === ranking);
     if (index < 0) {
       return; // error

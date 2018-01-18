@@ -33,5 +33,11 @@
     }
   }
 
+  .#{$lu_css_prefix}-gradient-text {
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
   @import './icons/icon_style';
 }

@@ -24,7 +24,7 @@ export interface IStringDesc {
   escape?: boolean;
 
   /**
-   * replacement pattern, use use <code>${value}</code> for the current and and <code>${item}</code> for the whole item
+   * replacement pattern, use use <code>${value}</code> for the current value, <code>${escapedValue}</code> for an url safe value and <code>${item}</code> for the whole item
    */
   pattern?: string;
 

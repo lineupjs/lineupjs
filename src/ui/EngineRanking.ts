@@ -6,9 +6,8 @@ import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
+import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn} from '../model';
 import Column from '../model/Column';
-import {isMultiLevelColumn} from '../model';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {IImposer, IRenderContext} from '../renderer';
@@ -70,6 +69,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   };
 
   private readonly delayedUpdate: (this: { type: string }) => void;
+  private readonly delayedUpdateAll: () => void;
+  private readonly delayedUpdateColumnWidths: () => void;
   private readonly columns: RenderColumn[];
 
   private readonly canvasMouseHandler = {
@@ -99,7 +100,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   };
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, roptions: Partial<IEngineRankingOptions> = {}) {
-    super(header, body, tableId, style, { mixins: [PrefetchMixin]});
+    super(header, body, tableId, style, {mixins: [PrefetchMixin]});
     Object.assign(this.roptions, roptions);
     body.classList.add('lu-row-body');
 
@@ -118,17 +119,18 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return currentEvent === Ranking.EVENT_ORDER_CHANGED ? current : next;
     });
 
-    const updateAll = debounce(() => this.updateAll(), 50);
+    this.delayedUpdateAll = debounce(() => this.updateAll(), 50);
+    this.delayedUpdateColumnWidths = debounce(() => this.updateColumnWidths(), 50);
     ranking.on(`${Ranking.EVENT_ADD_COLUMN}.hist`, (col: Column, index: number) => {
       this.columns.splice(index, 0, this.createCol(col, index));
       this.reindex();
-      updateAll();
+      this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_REMOVE_COLUMN}.body`, (col: Column, index: number) => {
       EngineRanking.disableListener(col);
       this.columns.splice(index, 1);
       this.reindex();
-      updateAll();
+      this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_MOVE_COLUMN}.body`, (col: Column, index: number, old: number) => {
       //delete first
@@ -137,7 +139,21 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       // adapt target index based on previous index, i.e shift by one
       this.columns.splice(old < index ? index - 1 : index, 0, c);
       this.reindex();
-      updateAll();
+      this.delayedUpdateAll();
+    });
+    ranking.on(`${Ranking.EVENT_COLUMN_VISIBILITY_CHANGED}.body`, (col: Column, _oldValue: boolean, newValue: boolean) => {
+      if (newValue) {
+        // become visible
+        const index = ranking.children.indexOf(col);
+        this.columns.splice(index, 0, this.createCol(col, index));
+      } else {
+        // hide
+        const index = this.columns.findIndex((d) => d.c === col);
+        EngineRanking.disableListener(col);
+        this.columns.splice(index, 1);
+      }
+      this.reindex();
+      this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
 
@@ -153,7 +169,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }, ctx);
 
     // default context
-    this.columns = ranking.children.filter((c) => !c.isHidden()).map((c, i) => this.createCol(c, i));
+    this.columns = ranking.children.filter((c) => c.isVisible()).map((c, i) => this.createCol(c, i));
     this.updateCanvasRule();
     this._context = Object.assign({
       columns: this.columns,
@@ -274,10 +290,15 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (this.hidden) {
       return;
     }
+    this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
     super.forEachRow((row, rowIndex) => this.updateRow(row, rowIndex));
   }
 
-  updateHeaderOf(i: number) {
+  updateHeaderOf(col: Column) {
+    const i = this._context.columns.findIndex((d) => d.c === col);
+    if (i < 0) {
+      return false;
+    }
     const node = <HTMLElement>this.header.children[i]!;
     const column = this._context.columns[i];
     if (node && column) {
@@ -325,7 +346,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.addEventListener('mouseenter', this.canvasMouseHandler.enter);
   }
 
-  protected updateRow(node: HTMLElement, rowIndex: number, forcedLod?: 'high'|'low'): void {
+  protected updateRow(node: HTMLElement, rowIndex: number, forcedLod?: 'high' | 'low'): void {
     this.roptions.customRowUpdate(node, rowIndex);
 
     const computedLod = this.roptions.levelOfDetail(rowIndex);
@@ -400,7 +421,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return; // good nothing to do
     }
     const index = parseInt(row.dataset.index!, 10);
-    this.updateRow(row, index, hover ? 'high': 'low');
+    this.updateRow(row, index, hover ? 'high' : 'low');
   }
 
   protected forEachRow(callback: (row: HTMLElement, rowIndex: number) => void, inplace: boolean = false) {
@@ -553,7 +574,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const col = (isMultiLevelColumn(c) && !c.getCollapsed()) ? new MultiLevelRenderColumn(c, index, this.renderCtx) : new RenderColumn(c, index, this.renderCtx);
 
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
-      this.updateColumnWidths();
+      this.delayedUpdateColumnWidths();
     });
     c.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
     const debounceUpdate = debounce(() => {
@@ -568,8 +589,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       debounceUpdate();
     });
     const that = this;
-    c.on(`${Column.EVENT_DIRTY_HEADER}.body`, function(this: IEventContext) {
-      const valid = that.updateHeaderOf(col.index);
+    c.on(`${Column.EVENT_DIRTY_HEADER}.body`, function (this: IEventContext) {
+      const valid = that.updateHeaderOf(col.c);
       if (!valid) {
         EngineRanking.disableListener(c); // destroy myself
       }
@@ -581,7 +602,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     c.on(`${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, () => {
       // replace myself upon renderer type change
       col.renderers = this.ctx.createRenderer(c);
-      const valid = this.updateHeaderOf(col.index);
+      const valid = this.updateHeaderOf(col.c);
       if (!valid) {
         EngineRanking.disableListener(c); // destroy myself
       }

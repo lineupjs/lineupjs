@@ -139,3 +139,29 @@ export function wideEnough(col: IArrayColumn<any>, length: number = col.labels.l
 export function adaptTextColorToBgColor(bgColor: string): string {
   return hsl(bgColor).l > 0.5 ? 'black' : 'white';
 }
+
+
+/**
+ *
+ * Adapts the text color for a given background color
+ * @param {HTMLElement} node the node containing the text
+ * @param {string} bgColor as `#ff0000`
+ * @param {number} width for which percentages of the cell this background applies (0..1)
+ */
+export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, width: number) {
+  const adapt = adaptTextColorToBgColor(bgColor);
+  if ((width <= 0.05 || adapt === 'black') || width > 0.9) { // almost empty or full
+    node.style.color = adapt === 'black' || width <= 0.05 ? null : adapt; // null = black
+    // node.classList.remove('lu-gradient-text');
+    // node.style.backgroundImage = null;
+    return;
+  }
+  // see https://stackoverflow.com/questions/37831837/gradient-text-color#37832318
+
+  // doesn't work yet, choose black
+
+  // gradient text color
+  node.style.color = null;
+  // node.classList.add('lu-gradient-text');
+  // node.style.backgroundImage = `linear-gradient(to right, ${adapt}, ${adapt}, ${width * 100}%, black ${width * 100}%)`;
+}

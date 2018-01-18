@@ -143,6 +143,7 @@ export default class SidePanel {
     });
 
     data.on(`${DataProvider.EVENT_CLEAR_DESC}.panel`, () => {
+      that.descs.forEach((v) => v.destroyVis());
       that.descs.clear();
       this.updateChooser();
     });
@@ -152,7 +153,12 @@ export default class SidePanel {
     });
 
     data.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING), function (this: { type: string }, ranking: Ranking) {
-      handleRanking(ranking, this.type === 'addRanking');
+      if (ranking) {
+        handleRanking(ranking, this.type === 'addRanking');
+      } else {
+        that.descs.forEach((v) => v.destroyVis());
+        that.descs.clear();
+      }
       that.updateList();
     });
 
