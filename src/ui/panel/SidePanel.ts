@@ -112,11 +112,11 @@ export default class SidePanel {
       });
 
       if (!added) {
-        ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIAS_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN), null);
+        ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN), null);
         return;
       }
 
-      ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIAS_CHANGED), () => {
+      ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED), () => {
         if (ranking === data.getRankings()[0]) {
           // primary ranking only
           this.updateList();
@@ -207,7 +207,7 @@ export default class SidePanel {
       return;
     }
     this.data.getRankings().forEach((ranking) => {
-      ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIAS_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN), null);
+      ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN), null);
     });
     this.data.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
       DataProvider.EVENT_ADD_DESC), null);
@@ -222,7 +222,7 @@ export default class SidePanel {
     const hierarchy = ranking.getGroupCriteria();
     const used = new Set(hierarchy.map((d) => d.desc));
 
-    ranking.getSortCriterias().forEach(({col}) => {
+    ranking.getSortCriteria().forEach(({col}) => {
       if (used.has(col.desc)) {
         return;
       }

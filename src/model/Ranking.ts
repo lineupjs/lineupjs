@@ -194,7 +194,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     let acc = offset; // + this.getWidth() + padding;
     if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       this.columns.forEach((c) => {
-        if (c.getVisible() || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+        if (c.getVisible() && levelsToGo <= Column.FLAT_ALL_COLUMNS) {
           acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
         }
       });

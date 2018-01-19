@@ -307,7 +307,7 @@ export default class Column extends AEventDispatcher {
   }
 
   isSortedByMe() {
-    return this.isSortedByMeImpl((r) => r.getSortCriterias());
+    return this.isSortedByMeImpl((r) => r.getSortCriteria());
   }
 
   groupSortByMe(ascending = false) {

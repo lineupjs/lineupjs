@@ -83,7 +83,7 @@ export default class EngineRenderer extends AEventDispatcher {
         group: possibleGroupRenderer(col, this.options.renderers),
         summary: possibleSummaryRenderer(col, this.options.renderers)
       }),
-      colWidth: (col: Column) => !col.getVisible() ? 0 : col.getWidth()
+      colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth()
     };
 
     this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);

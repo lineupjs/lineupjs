@@ -84,7 +84,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     let self = null;
-    const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => !c.isHidden());
+    const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => c.isVisible());
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       let w = this.getWidth();
