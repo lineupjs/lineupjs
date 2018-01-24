@@ -107,7 +107,7 @@ export default class Column extends AEventDispatcher {
     this.groupRenderer = this.desc.groupRenderer || this.desc.type;
     this.summaryRenderer = this.desc.summaryRenderer || this.desc.type;
     this.width = this.desc.width != null && this.desc.width > 0 ? this.desc.width : 100;
-    this.visible = Boolean(this.desc.visible);
+    this.visible = this.desc.visible !== false;
 
     this.metadata = {
       label: desc.label || this.id,
