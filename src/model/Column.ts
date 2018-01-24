@@ -74,6 +74,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_SUMMARY_RENDERER_TYPE_CHANGED = 'summaryRendererChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
+  static readonly EVENT_VISIBILITY_CHANGED = 'visibilityChanged';
   static readonly EVENT_DATA_LOADED = 'dataLoaded';
 
   /**
@@ -97,7 +98,7 @@ export default class Column extends AEventDispatcher {
   private renderer: string;
   private groupRenderer: string;
   private summaryRenderer: string;
-
+  private visible: boolean;
 
   constructor(id: string, public readonly desc: Readonly<IColumnDesc>) {
     super();
@@ -105,7 +106,8 @@ export default class Column extends AEventDispatcher {
     this.renderer = this.desc.renderer || this.desc.type;
     this.groupRenderer = this.desc.groupRenderer || this.desc.type;
     this.summaryRenderer = this.desc.summaryRenderer || this.desc.type;
-    this.width = this.desc.width != null && this.desc.width >= 0 ? this.desc.width : 100;
+    this.width = this.desc.width != null && this.desc.width > 0 ? this.desc.width : 100;
+    this.visible = this.desc.visible !== false;
 
     this.metadata = {
       label: desc.label || this.id,
@@ -164,7 +166,7 @@ export default class Column extends AEventDispatcher {
    */
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
-      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_MOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED, Column.EVENT_DATA_LOADED]);
   }
@@ -173,16 +175,27 @@ export default class Column extends AEventDispatcher {
     return this.width;
   }
 
-  /**
-   * a column is hidden if it has no width
-   * @return {boolean} whether the column is hidden
-   */
-  isHidden() {
-    return this.width <= 0;
+  hide() {
+    this.setVisible(false);
   }
 
-  hide() {
-    return this.setWidth(0);
+  show() {
+    this.setVisible(true);
+  }
+
+  isVisible() {
+    return this.visible;
+  }
+
+  getVisible() {
+    return this.isVisible();
+  }
+
+  setVisible(value: boolean) {
+    if (this.visible === value) {
+      return;
+    }
+    this.fire([Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.visible, this.visible = value);
   }
 
   /**
@@ -229,11 +242,7 @@ export default class Column extends AEventDispatcher {
   }
 
   getMetaData(): Readonly<IColumnMetaData> {
-    return {
-      label: this.label,
-      color: this.color,
-      description: this.description
-    };
+    return Object.assign({}, this.metadata);
   }
 
   /**
@@ -298,7 +307,7 @@ export default class Column extends AEventDispatcher {
   }
 
   isSortedByMe() {
-    return this.isSortedByMeImpl((r) => r.getSortCriterias());
+    return this.isSortedByMeImpl((r) => r.getSortCriteria());
   }
 
   groupSortByMe(ascending = false) {

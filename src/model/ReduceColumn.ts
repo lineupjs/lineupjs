@@ -39,7 +39,7 @@ export default class ReduceColumn extends CompositeNumberColumn {
   }
 
   get label() {
-    const l = super.label;
+    const l = super.getMetaData().label;
     if (l !== 'Reduce') {
       return l;
     }

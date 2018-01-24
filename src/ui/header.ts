@@ -370,7 +370,7 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
       return false;
     }
 
-    const criteria = ranking.getSortCriterias();
+    const criteria = ranking.getSortCriteria();
     const groups = ranking.getGroupCriteria();
 
     const removeFromSort = (col: Column) => {

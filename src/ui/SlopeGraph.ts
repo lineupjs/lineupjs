@@ -53,8 +53,12 @@ interface IPos {
 
 /** @internal */
 export enum EMode {
-  ITEM,
-  BAND
+  ITEM = 'item',
+  BAND = 'band'
+}
+
+export interface ISlopeGraphOptions {
+  mode: EMode;
 }
 
 export default class SlopeGraph implements ITableSection {
@@ -77,10 +81,11 @@ export default class SlopeGraph implements ITableSection {
   };
   private _mode: EMode = EMode.ITEM;
 
-  constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer) {
+  constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer, options: Partial<ISlopeGraphOptions> = {}) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add('lu-slopegraph-header');
+    this._mode = options.mode === EMode.BAND ? EMode.BAND : EMode.ITEM;
     this.initHeader(header);
     body.classList.add('lu-slopegraph');
     this.body.style.height = `1px`;
@@ -106,8 +111,8 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private initHeader(header: HTMLElement) {
-    header.innerHTML = `<i title="Item" class="active"><span aria-hidden="true">Item</span></i>
-        <i title="Band"><span aria-hidden="true">Band</span></i>`;
+    header.innerHTML = `<i title="Item" class="${this._mode === EMode.ITEM ? 'active' :''}"><span aria-hidden="true">Item</span></i>
+        <i title="Band" class="${this._mode === EMode.BAND ? 'active' :''}"><span aria-hidden="true">Band</span></i>`;
 
     const icons = <HTMLElement[]>Array.from(header.children);
     icons.forEach((n: HTMLElement, i) => {
@@ -117,7 +122,7 @@ export default class SlopeGraph implements ITableSection {
         if (n.classList.contains('active')) {
           return;
         }
-        this.mode = i;
+        this.mode = i === 0 ? EMode.ITEM : EMode.BAND;
         icons.forEach((d, j) => d.classList.toggle('active', j === i));
       };
     });

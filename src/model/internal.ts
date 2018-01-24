@@ -7,7 +7,10 @@ import {default as INumberColumn, INumberFilter, numberCompare} from './INumberC
 
 
 export function patternFunction(pattern: string, ...args: string[]) {
-  return new Function('value', ...args, `return \`${pattern}\`;`);
+  return new Function('value', ...args, `
+  const escapedValue = encodeURIComponent(String(value));
+  return \`${pattern}\`;
+ `);
 }
 
 /** @internal */

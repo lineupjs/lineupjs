@@ -4,11 +4,19 @@
 
   > * {
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     width: 0;
     display: flex;
     flex-direction: row;
     align-items: center;
+    position: relative;
+
+    > span {
+      position: absolute;
+      left: 5px;
+      right: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 }

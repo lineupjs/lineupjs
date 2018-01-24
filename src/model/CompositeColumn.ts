@@ -42,7 +42,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     }
     //push children
     this._children.forEach((c) => {
-      if (!c.isHidden() || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+      if (c.isVisible() && levelsToGo <= Column.FLAT_ALL_COLUMNS) {
         c.flatten(r, offset, levelsToGo - 1, padding);
       }
     });

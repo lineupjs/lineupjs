@@ -81,8 +81,9 @@ section.#{$lu_css_prefix}-header {
     bottom: -1px;
 
     &.#{$lu_css_prefix}-dragover {
+      @include user_select_none();
+
       transition: width 0.2s ease, right 0.2s ease;
-      user-select: none;
       color: $lu_toolbar_color_hover;
       display: flex;
       align-items: center;

@@ -1,6 +1,6 @@
 import {ICategoricalStatistics, IStatistics} from '../internal';
 import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn} from '../model';
-import {IDataProvider} from '../provider/ADataProvider';
+import {IDataProvider} from '../provider';
 import {IImposer, IRenderContext} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
 import {IToolbarAction} from './toolbar';

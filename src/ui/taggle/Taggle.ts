@@ -1,5 +1,5 @@
 import {defaultOptions} from '../../config';
-import {ILineUpOptions} from '../../interfaces';
+import {ITaggleOptions} from '../../interfaces';
 import merge from '../../internal/merge';
 import DataProvider from '../../provider/ADataProvider';
 import {ALineUp} from '../ALineUp';
@@ -7,7 +7,7 @@ import SidePanel from '../panel/SidePanel';
 import spaceFillingRule from './spaceFillingRule';
 import TaggleRenderer from './TaggleRenderer';
 
-export declare type ITaggleOptions = ILineUpOptions;
+export {ITaggleOptions} from '../../interfaces';
 
 export default class Taggle extends ALineUp {
   private readonly spaceFilling: HTMLElement;
@@ -27,21 +27,25 @@ export default class Taggle extends ALineUp {
 
     this.renderer = new TaggleRenderer(this.node, data, this.options);
     this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
-      collapseable: this.options.panelCollapsed ? 'collapsed' : true
+      collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true
     });
     this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
     this.node.insertBefore(this.panel.node, this.node.firstChild);
-    this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser">
-          <span>Overview</span>
-          <div></div>
-        </div>`);
     {
+      this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser">
+            <span>Overview</span>
+            <div></div>
+          </div>`);
       const spaceFilling = spaceFillingRule(this.options);
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
       this.spaceFilling.addEventListener('click', () => {
         const selected = this.spaceFilling.classList.toggle('chosen');
         this.renderer.switchRule(selected ? spaceFilling : null);
       });
+      if (this.options.overviewMode) {
+        this.spaceFilling.classList.toggle('chosen');
+        this.renderer.switchRule(spaceFilling);
+      }
     }
     this.forward(this.renderer, `${ALineUp.EVENT_HOVER_CHANGED}.main`);
   }

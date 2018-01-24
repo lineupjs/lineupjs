@@ -2,8 +2,21 @@ LineUp.js: Visual Analysis of Multi-Attribute Rankings
 ======================================================
 [![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url] [![CircleCI][ci-image-dev]][ci-url-dev] <sup>(dev)</sup>
 
-LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. 
-This is a web and generalized version of the published LineUp visualization technique by [Gratzl et.al. 2013](http://caleydo.org/publications/2013_infovis_lineup/)
+LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.
+
+Key Features
+-----------
+ * scalable (~100k rows)
+ * heterogenous attribute types (string, numerical, categorical, boolean, date)
+ * composite column types (weighted sum, min, max, mean, median, impose, nested, ...)
+ * array (multi value) and map column types (strings, stringMap, numbers, numberMap, ...)
+ * filtering capabilities
+ * hierarchical sorting (sort by more than one sorting criteria)
+ * hierarchical grouping (split rows in multiple separate groups)
+ * group aggregations (show a whole group as a single group row)
+ * numerous visualizations for summaries, cells, and group aggregations
+ * side panel for easy filtering and column management
+ * [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
 
 Usage
 -----
@@ -60,9 +73,10 @@ builder
 const ranking = LineUpJS.buildRanking()
   .supportTypes()
   .allColumns() // add all columns
+  .impose('a+cat', 'a', 'cat2'); // create composite column
   .groupBy('cat')
   .sortBy('a', 'desc')
-  .impose('number', 'a', 'cat2'); // create composite column
+  
 
 builder
   .defaultRanking()
@@ -84,16 +98,131 @@ Supported Browsers
  * Edge 16+
  
 
+<a id="rshiny"></a>
+
+R, RShiny, and R Markdown Support
+---------------------------------
+
+A [HTMLWidget](http://www.htmlwidgets.org/) wrapper for R is located at [lineup_htmlwidget](https://github.com/sgratzl/lineup_htmlwidget). 
+It can be used within standalone [R Shiny](https://shiny.rstudio.com/) apps or [R Markdown](http://rmarkdown.rstudio.com/) files. Integrated plotting does not work due to an outdated integrated Webkit version in RStudio.
+[Crosstalk](https://rstudio.github.io/crosstalk/) is supported for synching selections and filtering among widgets. 
+
+**Installation**
+
+```R
+devtools::install_github("rstudio/crosstalk")
+devtools::install_github("sgratzl/lineup_htmlwidget")
+library(lineup)
+```
+
+**Examples**
+
+```R
+lineup(iris)
+```
+
+![iris output](https://user-images.githubusercontent.com/4129778/34919941-fec50232-f96a-11e7-95be-9eefb213e3d6.png)
+
+
+<a id="jupyter"></a>
+
+Jupyter Widget (to be released)
+--------------
+
+A [Jupyter Widget](https://jupyter.org/widgets.html) wrapper for Python is located at [lineup_widget](https://github.com/sgratzl/lineup_widget).
+
+**Installation**
+
+```bash
+pip install -e git+https://github.com/sgratzl/lineup_widget.git#egg=lineup_widget
+jupyter nbextension enable --py [--sys-prefix|--user|--system] lineup_widget
+```
+
+Or, if you use jupyterlab:
+
+```bash
+pip install -e git+https://github.com/sgratzl/lineup_widget.git#egg=lineup_widget
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+```
+
+**Examples**
+
+[![Launch Binder][binder-image]][binder-url]
+
+[binder-image]: https://camo.githubusercontent.com/70c5b4d050d4019f4f20b170d75679a9316ac5e5/687474703a2f2f6d7962696e6465722e6f72672f62616467652e737667
+[binder-url]: http://mybinder.org/repo/sgratzl/lineup_widget/examples
+
+
+```python
+import lineup_widget
+import pandas as pd
+import numpy as np
+
+df = pd.DataFrame(np.random.randint(0,100,size=(100, 4)), columns=list('ABCD'))
+
+w = lineup_widget.LineUpWidget(df)
+w.on_selection_changed(lambda selection: print(selection))
+w
+```
+
+![simple usage](https://user-images.githubusercontent.com/4129778/35321859-7925d3a6-00e8-11e8-9884-bcbc76ae51c9.png)
+
+```python
+from __future__ import print_function
+from ipywidgets import interact, interactive, interact_manual
+
+def selection_changed(selection):
+    return df.iloc[selection]
+
+interact(selection_changed, selection=lineup_widget.LineUpWidget(df));
+```
+
+![interact example](https://user-images.githubusercontent.com/4129778/35321846-6c5b07cc-00e8-11e8-9388-0acb65cbb509.png)
+
+
+
+<a id="powerbi"></a>
+
+PowerBI Custom Visual (under development)
+----------------------------------------
+
+A [PowerBI Visual](https://github.com/Microsoft/PowerBI-Visuals) wrapper is located at [lineup_powerbi](https://github.com/sgratzl/lineup_powerbi).
+
+**Installation**
+
+TODO
+
+**Examples**
+
+TODO
+
+
 API Documentation
 -----------------
 
 See [API documentation](https://sgratzl.github.io/lineupjs_docs/master/docs) and [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
 
+
 Demos
 -----
 
-See [Latest Demos](https://sgratzl.github.io/lineupjs_docs/master) and [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop)
+See [Demos](https://sgratzl.github.io/lineupjs_docs/master), [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop), and [R Demos](https://sgratzl.github.io/lineupjs_docs/R)
 
+
+Related Publications
+---------------------
+
+**LineUp: Visual Analysis of Multi-Attribute Rankings** [Paper](http://data.caleydo.org/papers/2013_infovis_lineup.pdf) [Paper Website](http://caleydo.org/publications/2013_infovis_lineup/)
+
+Samuel Gratzl, Alexander Lex, Nils Gehlenborg, Hanspeter Pfister, and Marc Streit <br>
+IEEE Transactions on Visualization and Computer Graphics (InfoVis '13), 19(12), pp. 2277–2286, doi:10.1109/TVCG.2013.173, 2013.
+
+:trophy: [IEEE VIS](http://ieeevis.org) InfoVis 2013 Best Paper Award 
+
+**Taggle: Scalable Visualization of Tabular Data through Aggregation** [Paper Preprint](http://sci.utah.edu/~vdl/papers/2017_preprint_taggle.pdf) [Paper Website](http://vdl.sci.utah.edu/publications/2017_preprint_taggle/)
+
+Katarina Furmanova, Samuel Gratzl, Holger Stitz, Thomas Zichner, Miroslava Jaresova, Martin Ennemoser, Alexander Lex, and Marc Streit <br>
+arXiv preprint, 2017.
 
 Dependencies
 ------------
@@ -104,8 +233,7 @@ LineUp.js depends on
  * [Popper.js](https://popper.js.org) dialogs
 
 
-Development Dependencies
-------------------------
+**Development Dependencies**
 
 [Webpack](https://webpack.github.io) is used as build tool. LineUp itself is written in [TypeScript](https://www.typescriptlang.org) and [SASS](https://sass-lang.com). 
 
@@ -134,12 +262,20 @@ npm run lint
 ```
 
 
-**Watch file changes**
+**Serve integrated webserver**
 
 ```bash
-npm run watch
+npm run start
 ```
 
+
+Authors
+-------
+
+ * Samuel Gratzl (@sgratzl)
+ * Holger Stitz (@thinkh)
+ * The Caleydo Team (@caleydo)
+ * Datavisyn GmbH (@datavisyn)
 
 ***
 

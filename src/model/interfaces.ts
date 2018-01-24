@@ -37,6 +37,8 @@ export interface IColumnDesc {
   summaryRenderer?: string;
 
   width?: number;
+
+  visible?: boolean;
 }
 
 

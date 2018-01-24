@@ -6,7 +6,7 @@ import OrdinalColumn from '../model/OrdinalColumn';
 import {filterMissingNumberMarkup} from '../ui/missing';
 import {interactiveHist} from './CategoricalCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
-import {forEachChild, noRenderer} from './utils';
+import {forEachChild, noRenderer, adaptTextColorToBgColor} from './utils';
 
 /** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
@@ -73,7 +73,7 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
 
 function stackedBar(col: ICategoricalColumn) {
   const cats = col.categories;
-  const bins = cats.map((c) => `<div style="background-color: ${c.color}" title="${c.label}: 0" data-cat="${c.name}">${c.label}</div>`).join('');
+  const bins = cats.map((c) => `<div style="background-color: ${c.color}; color: ${adaptTextColorToBgColor(c.color)}" title="${c.label}: 0" data-cat="${c.name}"><span>${c.label}</span></div>`).join('');
 
   return {
     template: `<div>${bins}<div title="Missing Values"></div>`, // no closing div to be able to append things

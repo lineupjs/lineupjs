@@ -17,7 +17,7 @@ import {
 } from '../renderer';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
-import SlopeGraph from './SlopeGraph';
+import SlopeGraph, {EMode} from './SlopeGraph';
 
 
 export default class EngineRenderer extends AEventDispatcher {
@@ -42,7 +42,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
     this.node.id = this.options.idPrefix;
-    this.node.classList.toggle('lu-whole-hover', options.wholeHover);
+    this.node.classList.toggle('lu-whole-hover', options.expandLineOnHover);
     parent.appendChild(this.node);
 
     const statsOf = (col: Column) => {
@@ -75,7 +75,7 @@ export default class EngineRenderer extends AEventDispatcher {
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
         const group = this.groupRenderer(col, imposer);
-        const summary = options.summary ? this.summaryRenderer(col, false, imposer): null;
+        const summary = options.summaryHeader ? this.summaryRenderer(col, false, imposer): null;
         return {single, group, summary, singleId: col.getRenderer(), groupId: col.getGroupRenderer(), summaryId: col.getSummaryRenderer()};
       },
       getPossibleRenderer: (col: Column) => ({
@@ -83,7 +83,7 @@ export default class EngineRenderer extends AEventDispatcher {
         group: possibleGroupRenderer(col, this.options.renderers),
         summary: possibleSummaryRenderer(col, this.options.renderers)
       }),
-      colWidth: (col: Column) => col.isHidden() ? 0 : col.getWidth()
+      colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth()
     };
 
     this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);
@@ -183,7 +183,7 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   private updateHist(ranking?: EngineRanking, col?: Column) {
-    if (!this.options.summary) {
+    if (!this.options.summaryHeader) {
       return;
     }
     const rankings = ranking ? [ranking] : this.rankings;
@@ -192,13 +192,18 @@ export default class EngineRenderer extends AEventDispatcher {
       const order = ranking.getOrder();
       const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
-      cols.filter((d) => isNumberColumn(d) && !d.isHidden()).forEach((col: NumberColumn) => {
+      cols.filter((d) => isNumberColumn(d) && d.isVisible()).forEach((col: NumberColumn) => {
         this.histCache.set(col.id, histo == null ? null : histo.stats(col));
       });
-      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn) => {
+      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: ICategoricalColumn) => {
         this.histCache.set(col.id, histo == null ? null : histo.hist(col));
       });
-      r.updateHeaders();
+      if (col) {
+        // single update
+        r.updateHeaderOf(col);
+      } else {
+        r.updateHeaders();
+      }
     });
 
     this.updateAbles.forEach((u) => u(this.ctx));
@@ -207,12 +212,14 @@ export default class EngineRenderer extends AEventDispatcher {
   private addRanking(ranking: Ranking) {
     if (this.rankings.length > 0) {
       // add slope graph first
-      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body, `${ranking.id}S`, this.ctx));
+      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body, `${ranking.id}S`, this.ctx, {
+        mode: this.options.defaultSlopeGraphMode === 'band' ? EMode.BAND : EMode.ITEM
+      }));
       this.slopeGraphs.push(s);
     }
 
     const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
-      animation: this.options.animation,
+      animation: this.options.animated,
       customRowUpdate: this.options.customRowUpdate || (() => undefined),
       levelOfDetail: this.options.levelOfDetail || (() => 'high')
     }));
@@ -226,7 +233,14 @@ export default class EngineRenderer extends AEventDispatcher {
     this.update([r]);
   }
 
-  private removeRanking(ranking: Ranking) {
+  private removeRanking(ranking: Ranking|null) {
+    if (!ranking) {
+      // remove all
+      this.rankings.splice(0, this.rankings.length);
+      this.slopeGraphs.splice(0, this.slopeGraphs.length);
+      this.table.clear();
+      return;
+    }
     const index = this.rankings.findIndex((r) => r.ranking === ranking);
     if (index < 0) {
       return; // error

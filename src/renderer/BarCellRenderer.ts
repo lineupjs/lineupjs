@@ -1,12 +1,12 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {ICategoricalStatistics, IStatistics} from '../internal';
 import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
-import {isNumbersColumn} from '../model/INumberColumn';
+import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
+import {isNumbersColumn} from '../model';
 import {CANVAS_HEIGHT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {noRenderer, setText} from './utils';
 
 
 /** @internal */
@@ -42,8 +42,12 @@ export default class BarCellRenderer implements ICellRendererFactory {
 
         const bar = <HTMLElement>n.firstElementChild!;
         bar.style.width = missing ? '100%' : `${w}%`;
-        bar.style.backgroundColor = missing ? null : colorOf(col, d, imposer);
+        const color = colorOf(col, d, imposer);
+        bar.style.backgroundColor = missing ? null : color;
         setText(bar.firstElementChild!, title);
+        const item = <HTMLElement>bar.firstElementChild!;
+        setText(item, title);
+        adaptDynamicColorToBgColor(item, color || Column.DEFAULT_COLOR, title, w / 100);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {

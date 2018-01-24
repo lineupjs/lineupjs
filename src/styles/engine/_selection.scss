@@ -13,8 +13,8 @@
     transform-origin: left center;
     display: none;
     pointer-events: none;
-    -moz-user-select: none;
-    user-select: none;
+
+    @include user_select_none();
 
     &.#{$lu_css_prefix}-selection-active {
       display: block;
@@ -23,7 +23,6 @@
   }
 
   article.#{$lu_css_prefix}-selection-active * {
-    -moz-user-select: none;
-    user-select: none;
+    @include user_select_none();
   }
 }

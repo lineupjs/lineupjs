@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "3.0.0-alpha2",
+  "version": "3.0.0-beta.1",
   "author": {
     "name": "Samuel Gratzl",
     "email": "samuel-gratzl@gmx.at"
@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/sgratzl/lineupjs",
   "main": "build/LineUpJS.js",
-  "typings": "build/typings/lineupjs/src",
+  "types": "build/typings/index.d.ts",
   "files": [
     "build",
     "!build/docs",
@@ -90,6 +90,8 @@
     "tslint-consistent-codestyle": "^1.11.0",
     "tslint-eslint-rules": "^4.1.1",
     "typedoc": "^0.9.0",
+    "npm-run-all": "^4.1.1",
+    "rimraf": "^2.6.2",
     "typescript": "^2.6.2",
     "uglify-es": "^3.3.4",
     "uglifyjs-webpack-plugin": "^1.1.6",
