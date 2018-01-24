@@ -34,9 +34,16 @@
   }
 
   .#{$lu_css_prefix}-gradient-text {
-    color: transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
+    @include user_select_none();
+
+    position: absolute;
+    overflow: hidden;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    pointer-events: none;
+    z-index: 1;
   }
 
   @import './icons/icon_style';

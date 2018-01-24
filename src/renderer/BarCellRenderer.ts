@@ -47,7 +47,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         setText(bar.firstElementChild!, title);
         const item = <HTMLElement>bar.firstElementChild!;
         setText(item, title);
-        adaptDynamicColorToBgColor(item, color || Column.DEFAULT_COLOR, w / 100);
+        adaptDynamicColorToBgColor(item, color || Column.DEFAULT_COLOR, title, w / 100);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
