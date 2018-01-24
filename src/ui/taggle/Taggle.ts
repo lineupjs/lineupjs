@@ -27,7 +27,7 @@ export default class Taggle extends ALineUp {
 
     this.renderer = new TaggleRenderer(this.node, data, this.options);
     this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
-      collapseable: this.options.panelCollapsed ? 'collapsed' : true
+      collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true
     });
     this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
     this.node.insertBefore(this.panel.node, this.node.firstChild);
@@ -42,7 +42,7 @@ export default class Taggle extends ALineUp {
         const selected = this.spaceFilling.classList.toggle('chosen');
         this.renderer.switchRule(selected ? spaceFilling : null);
       });
-      if (this.options.overviewEnabled) {
+      if (this.options.overviewMode) {
         this.spaceFilling.classList.toggle('chosen');
         this.renderer.switchRule(spaceFilling);
       }

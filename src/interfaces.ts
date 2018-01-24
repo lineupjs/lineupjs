@@ -39,27 +39,27 @@ export interface ILineUpOptions {
    * option to enable/disable showing a summary (histogram, ...) in the header
    * @default true
    */
-  summary: boolean;
+  summaryHeader: boolean;
   /**
    * option to enable/disable animated transitions
    * @default true
    */
-  animation: boolean;
+  animated: boolean;
   /**
    * option to enforce that the whole row is shown upon hover without overflow hidden
    * @default false
    */
-  wholeHover: boolean;
+  expandLineOnHover: boolean;
   /**
    * option to enable/disable the panel
    * @default true
    */
-  panel: boolean;
+  sidePanel: boolean;
   /**
    * option to specify whether the panel should be collapsed by default
    * @default false
    */
-  panelCollapsed: boolean;
+  sidePanelCollapsed: boolean;
   /**
    * option to specify the default slope graph mode
    * @default 'item'
@@ -122,7 +122,7 @@ export interface ITaggleOptions extends ILineUpOptions {
    * whether the overview mode is enabled by default
    * @default false
    */
-  overviewEnabled: boolean;
+  overviewMode: boolean;
 }
 
 export interface ILineUpLike {

@@ -42,7 +42,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
     this.node.id = this.options.idPrefix;
-    this.node.classList.toggle('lu-whole-hover', options.wholeHover);
+    this.node.classList.toggle('lu-whole-hover', options.expandLineOnHover);
     parent.appendChild(this.node);
 
     const statsOf = (col: Column) => {
@@ -75,7 +75,7 @@ export default class EngineRenderer extends AEventDispatcher {
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
         const group = this.groupRenderer(col, imposer);
-        const summary = options.summary ? this.summaryRenderer(col, false, imposer): null;
+        const summary = options.summaryHeader ? this.summaryRenderer(col, false, imposer): null;
         return {single, group, summary, singleId: col.getRenderer(), groupId: col.getGroupRenderer(), summaryId: col.getSummaryRenderer()};
       },
       getPossibleRenderer: (col: Column) => ({
@@ -183,7 +183,7 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   private updateHist(ranking?: EngineRanking, col?: Column) {
-    if (!this.options.summary) {
+    if (!this.options.summaryHeader) {
       return;
     }
     const rankings = ranking ? [ranking] : this.rankings;
@@ -219,7 +219,7 @@ export default class EngineRenderer extends AEventDispatcher {
     }
 
     const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
-      animation: this.options.animation,
+      animation: this.options.animated,
       customRowUpdate: this.options.customRowUpdate || (() => undefined),
       levelOfDetail: this.options.levelOfDetail || (() => 'high')
     }));

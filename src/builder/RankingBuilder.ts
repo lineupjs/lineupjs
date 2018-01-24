@@ -380,7 +380,7 @@ export default class RankingBuilder {
 }
 
 /**
- * createa a new instance of a ranking builder
+ * creates a new instance of a ranking builder
  * @returns {RankingBuilder}
  */
 export function buildRanking() {

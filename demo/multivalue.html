@@ -52,7 +52,7 @@
     const p = new LineUpJS.LocalDataProvider(data, desc);
     p.deriveDefault();
 
-    const lineup = new LineUpJS.LineUp(document.body, p, { wholeHover: true});
+    const lineup = new LineUpJS.LineUp(document.body, p, { expandLineOnHover: true});
     lineup.update();
   })
 };

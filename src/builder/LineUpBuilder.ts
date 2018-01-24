@@ -18,7 +18,7 @@ export default class LineUpBuilder {
    * @default true
    */
   animated(enable: boolean) {
-    this.options.animation = enable;
+    this.options.animated = enable;
     return this;
   }
 
@@ -28,8 +28,8 @@ export default class LineUpBuilder {
    * @param {boolean} collapsed whether collapsed by default
    */
   sidePanel(enable: boolean, collapsed: boolean = false) {
-    this.options.panel = enable;
-    this.options.panelCollapsed = collapsed;
+    this.options.sidePanel = enable;
+    this.options.sidePanelCollapsed = collapsed;
     return this;
   }
 
@@ -47,7 +47,7 @@ export default class LineUpBuilder {
    * @default true
    */
   summaryHeader(enable: boolean) {
-    this.options.summary = enable;
+    this.options.summaryHeader = enable;
     return this;
   }
 
@@ -56,7 +56,7 @@ export default class LineUpBuilder {
    * @default false
    */
   expandLineOnHover(enable: boolean) {
-    this.options.wholeHover = enable;
+    this.options.expandLineOnHover = enable;
     return this;
   }
 
@@ -65,7 +65,7 @@ export default class LineUpBuilder {
    * @returns {this}
    */
   overviewMode() {
-    this.options.overviewEnabled = true;
+    this.options.overviewMode = true;
     return this;
   }
 

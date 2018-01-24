@@ -39,8 +39,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     jumpToSearchResult: false,
 
-    maxNestedSortingCriteria: 1,
-    maxGroupColumns: 1
+    maxNestedSortingCriteria: Infinity,
+    maxGroupColumns: Infinity
   };
 
   private readonly reorderAll: () => void;
