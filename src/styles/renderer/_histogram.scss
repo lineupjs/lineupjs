@@ -50,10 +50,11 @@
   }
 
   > span {
+    @include user_select_none();
+
     position: absolute;
     bottom: -15px;
     pointer-events: none;
-    user-select: none;
     line-height: 100%;
 
     /*

@@ -2,8 +2,9 @@
 
 .#{$lu_css_prefix}-summary {
   label.#{$lu_css_prefix}-disabled {
+    @include user_select_none();
+
     color: gray;
-    user-select: none;
     cursor: not-allowed;
   }
 

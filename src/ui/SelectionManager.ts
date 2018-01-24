@@ -11,6 +11,7 @@ interface IPoint {
 interface IShift {
   xShift: number;
   yShift: number;
+  node: HTMLElement;
 }
 
 /** @internal */
@@ -21,8 +22,6 @@ export default class SelectionManager extends AEventDispatcher {
   private readonly hr: HTMLHRElement;
 
   private start: (IPoint & IShift) | null = null;
-  private startNode: HTMLElement | null = null;
-  private endNode: HTMLElement | null = null;
 
   constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement) {
     super();
@@ -35,27 +34,31 @@ export default class SelectionManager extends AEventDispatcher {
     this.hr = hr;
 
     const mouseMove = (evt: MouseEvent) => {
-      this.showHint(this.start!, evt);
+      this.showHint(evt);
     };
-    let enabled = false;
     const mouseUp = (evt: MouseEvent) => {
-      if (!enabled) {
-        return;
-      }
-      this.select(evt.ctrlKey);
-      this.start = this.startNode = this.endNode = null;
-      enabled = false;
-      this.body.classList.remove('lu-selection-active');
-      this.hr.classList.remove('lu-selection-active');
       this.body.removeEventListener('mousemove', mouseMove);
       this.body.removeEventListener('mouseup', mouseUp);
       this.body.removeEventListener('mouseleave', mouseUp);
+
+      if (!this.start) {
+        return;
+      }
+      const startNode = this.start.node.classList.contains('lu-row') ? this.start.node : <HTMLElement>this.start.node.closest('.lu-row');
+      // somehow on firefox the mouseUp will be triggered on the original node
+      // thus search the node explicitly
+      const end = <HTMLElement>this.body.ownerDocument.elementFromPoint(evt.x, evt.y);
+      const endNode = end.classList.contains('lu-row') ? end : <HTMLElement>(end.closest('.lu-row'));
+      this.start = null;
+      this.body.classList.remove('lu-selection-active');
+      this.hr.classList.remove('lu-selection-active');
+
+      this.select(evt.ctrlKey, startNode, endNode);
     };
 
     body.addEventListener('mousedown', (evt) => {
       const r = root.getBoundingClientRect();
-      this.start = {x: evt.x, y: evt.y, xShift: r.left, yShift: r.top};
-      enabled = true;
+      this.start = {x: evt.x, y: evt.y, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
       body.addEventListener('mousemove', mouseMove);
       body.addEventListener('mouseup', mouseUp);
       body.addEventListener('mouseleave', mouseUp);
@@ -66,27 +69,25 @@ export default class SelectionManager extends AEventDispatcher {
     return super.createEventList().concat([SelectionManager.EVENT_SELECT_RANGE]);
   }
 
-  private select(additional: boolean) {
-    if (!this.start || !this.startNode || !this.endNode) {
-      return;
-    }
-    if (this.startNode === this.endNode) {
+  private select(additional: boolean, startNode?: HTMLElement, endNode?: HTMLElement) {
+    if (!startNode || !endNode || startNode === endNode) {
       return; // no single
     }
 
-    const startIndex = parseInt(this.startNode.dataset.index!, 10);
-    const endIndex = parseInt(this.endNode.dataset.index!, 10);
+    const startIndex = parseInt(startNode.dataset.index!, 10);
+    const endIndex = parseInt(endNode.dataset.index!, 10);
 
     const from = Math.min(startIndex, endIndex);
     const end = Math.max(startIndex, endIndex);
     if (from === end) {
       return; // no single
     }
-    this.fire(SelectionManager.EVENT_SELECT_RANGE, from, end, additional);
+    // bounce event end
+    requestAnimationFrame(() => this.fire(SelectionManager.EVENT_SELECT_RANGE, from, end, additional));
   }
 
-  private showHint(start: IPoint & IShift, end: IPoint) {
-    this.start = start;
+  private showHint(end: IPoint) {
+    const start = this.start!;
     const sy = start.y;
     const ey = end.y;
 
@@ -97,21 +98,13 @@ export default class SelectionManager extends AEventDispatcher {
   }
 
   remove(node: HTMLElement) {
-    node.onclick = node.onmousedown = node.onmouseup = <any>undefined;
+    node.onclick = <any>undefined;
   }
 
   add(node: HTMLElement) {
     node.onclick = (evt) => {
       const i = parseInt(node.dataset.i!, 10);
       this.ctx.provider.toggleSelection(i, evt.ctrlKey);
-    };
-    node.onmousedown = () => {
-      this.startNode = node;
-    };
-    node.onmouseup = () => {
-      if (this.start) {
-        this.endNode = node;
-      }
     };
   }
 

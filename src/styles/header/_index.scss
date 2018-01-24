@@ -2,8 +2,9 @@
 
 .#{$lu_css_prefix}-header,
 .#{$lu_css_prefix}-side-panel-entry {
+  @include user_select_none();
+
   position: relative;
-  user-select: none;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -20,6 +21,8 @@
   }
 
   &.#{$lu_css_prefix}-dragover::after {
+    @include user_select_none();
+
     content: attr(data-draginfo);
     position: absolute;
     top: 0;
@@ -30,7 +33,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    user-select: none;
     pointer-events: none;
     background: lighten($lu_drag_over, 35%);
     border: 2px dashed $lu_drag_over;
