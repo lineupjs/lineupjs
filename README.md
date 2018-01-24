@@ -6,7 +6,7 @@ LineUp is an interactive technique designed to create, visualize and explore ran
 
 Key Features
 -----------
- * scalale (~100k rows)
+ * scalable (~100k rows)
  * heterogenous attribute types (string, numerical, categorical, boolean, date)
  * composite column types (weighted sum, min, max, mean, median, impose, nested, ...)
  * array (multi value) and map column types (strings, stringMap, numbers, numberMap, ...)
@@ -134,14 +134,14 @@ A [Jupyter Widget](https://jupyter.org/widgets.html) wrapper for Python is locat
 **Installation**
 
 ```bash
-pip install -e git+https://github.com/sgratzl/lineup_widget.git@develop#egg=lineup_widget
+pip install -e git+https://github.com/sgratzl/lineup_widget.git#egg=lineup_widget
 jupyter nbextension enable --py [--sys-prefix|--user|--system] lineup_widget
 ```
 
 Or, if you use jupyterlab:
 
 ```bash
-pip install -e git+https://github.com/sgratzl/lineup_widget.git@develop#egg=lineup_widget
+pip install -e git+https://github.com/sgratzl/lineup_widget.git#egg=lineup_widget
 jupyter labextension install @jupyter-widgets/jupyterlab-manager
 ```
 
