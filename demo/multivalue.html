@@ -46,7 +46,7 @@
       type: 'booleans',
       column: groups[0],
       dataLength: years.length,
-      accessor: (row) => (row[groups[0]] || []).map((d) => d >= 0)
+      accessor: (row) => (row.v[groups[0]] || []).map((d) => d >= 0)
     });
 
     const p = new LineUpJS.LocalDataProvider(data, desc);
