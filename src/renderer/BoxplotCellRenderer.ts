@@ -97,6 +97,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           renderMissingDOM(n, col, rows[0]); // doesn't matter since all
           return;
         }
+        n.classList.remove('lu-missing');
         let box: IBoxPlotData, label: IBoxPlotData;
 
         if (isNumbersColumn(col)) {
