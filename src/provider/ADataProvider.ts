@@ -545,10 +545,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   isAggregated(ranking: Ranking, group: IGroup) {
-    let g: IGroup | undefined | null = group;
+    let g: IGroup|undefined|null = group;
     while (g) {
       const key = `${ranking.id}@${toGroupID(g)}`;
       if (this.aggregations.has(key)) {
+        // propagate to leaf
+        this.aggregations.add(`${ranking.id}@${toGroupID(group)}`);
         return true;
       }
       g = g.parent;
@@ -556,9 +558,19 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return false;
   }
 
+  private unaggregateParents(ranking: Ranking, group: IGroup) {
+    let g: IGroup|undefined|null = group.parent;
+    while (g) {
+      this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`);
+      g = g.parent;
+    }
+  }
+
   setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+    this.unaggregateParents(ranking, group);
     const key = `${ranking.id}@${toGroupID(group)}`;
-    if (value === this.aggregations.has(key)) {
+    const current = this.isAggregated(ranking, group);
+    if (current === value) {
       return;
     }
     if (value) {
@@ -572,6 +584,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   aggregateAllOf(ranking: Ranking, aggregateAll: boolean) {
     const groups = ranking.getGroups();
     groups.forEach((group) => {
+      this.unaggregateParents(ranking, group);
+      const current = this.isAggregated(ranking, group);
+      if (current === aggregateAll) {
+        return;
+      }
       const key = `${ranking.id}@${toGroupID(group)}`;
       if (aggregateAll) {
         this.aggregations.add(key);
