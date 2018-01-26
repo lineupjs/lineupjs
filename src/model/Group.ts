@@ -28,13 +28,13 @@ export function joinGroups(groups: IGroup[]): IGroup {
   }
   // create a chain
   const parents: IGroupParent[] = groups.map((g) => Object.assign({subGroups: []}, g));
-  groups.slice(1).forEach((g, i) => {
+  parents.slice(1).forEach((g, i) => {
     g.parent = parents[i];
     parents[i].subGroups.push(g);
   });
   const g = {
-    name: groups.map((d) => d.name).join(' ∩ '),
-    color: groups[0].color,
+    name: parents.map((d) => d.name).join(' ∩ '),
+    color: parents[0].color,
     parent: parents[parents.length - 1]
   };
   g.parent.subGroups.push(g);
@@ -42,13 +42,7 @@ export function joinGroups(groups: IGroup[]): IGroup {
 }
 
 export function toGroupID(group: IGroup) {
-  let id = group.name;
-  let g = group.parent;
-  while (g) {
-    id = `${g.name}.${id}`;
-    g = g.parent;
-  }
-  return id;
+  return group.name;
 }
 
 export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
