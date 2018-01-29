@@ -6,7 +6,7 @@ export default class SortDialog extends ADialog {
     super(header, title);
   }
 
-  openDialog() {
+  build():HTMLElement {
     const bak = this.column.getSortMethod();
     const valueString = ['name', 'count'];
 
@@ -29,6 +29,8 @@ export default class SortDialog extends ADialog {
         this.column.groupSortByMe(n.value === 'asc');
       });
     });
+
+    return popup;
   }
 
 }

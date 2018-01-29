@@ -3,8 +3,6 @@ import {IMapAbleColumn, IMappingFunction} from '../model/NumberColumn';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider/ADataProvider';
 import MappingEditor from '../mappingeditor';
-import Popper from 'popper.js';
-import ADialog from './ADialog';
 import {noNumberFilter} from '../model/INumberColumn';
 
 export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn & Column> {
@@ -21,7 +19,7 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
     super(column, header, title);
   }
 
-  openDialog() {
+  build():HTMLElement {
     const original = this.column.getOriginalMapping();
     let bakfilter = this.column.getFilter(),
       bak = this.column.getMapping(),
@@ -70,12 +68,6 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
       }
     });
 
-    const popper = new Popper(this.attachment, popup, {
-      placement: 'bottom-start',
-      removeOnDestroy: true
-    });
-
-    ADialog.registerPopup(popup, popper, false);
-    this.hidePopupOnClickOutside(popup);
+    return popup;
   }
 }

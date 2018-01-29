@@ -9,7 +9,7 @@ export default class SortDialog extends ADialog {
     super(header, title);
   }
 
-  openDialog() {
+  build():HTMLElement {
     const bak = this.column.getSortMethod();
     const valueString = Object.keys(this.column instanceof BoxPlotColumn ? SORT_METHOD: ADVANCED_SORT_METHOD);
 
@@ -36,6 +36,8 @@ export default class SortDialog extends ADialog {
         }
       });
     });
+
+    return popup;
   }
 
 }

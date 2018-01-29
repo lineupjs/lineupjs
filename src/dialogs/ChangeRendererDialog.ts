@@ -4,11 +4,12 @@ import {IRankingHeaderContext} from '../ui/engine/interfaces';
 
 
 export default class ChangeRendererDialog extends ADialog {
+
   constructor(private readonly column: Column, header: HTMLElement, private readonly ctx: IRankingHeaderContext) {
     super(header, 'Visualization');
   }
 
-  openDialog() {
+  build():HTMLElement {
     const current = this.column.getRendererType();
 
     const currentGroup = this.column.getGroupRenderer();
@@ -37,5 +38,8 @@ export default class ChangeRendererDialog extends ADialog {
     Array.from(popup.querySelectorAll('input[name="grouptype"]')).forEach((n: HTMLInputElement) => {
       n.addEventListener('change', () => this.column.setGroupRenderer(n.value));
     });
+
+    return popup;
   }
+
 }

@@ -4,6 +4,18 @@
 @import 'vars';
 
 @at-root {
+  .#{$lu_css_prefix}-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 8;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.1);
+    animation: fade-in 0.2s;
+  }
+
   .#{$lu_css_prefix}-popup {
     position: absolute;
     dominant-baseline: central;
@@ -24,16 +36,6 @@
     z-index: 9;
     font-size: $lu_dialog_font_size;
     clear: right;
-
-    &::before {
-      content: '';
-      top: -$lu_dialog_mouse_region;
-      left: -$lu_dialog_mouse_region;
-      right: -$lu_dialog_mouse_region;
-      bottom: -$lu_dialog_mouse_region;
-      position: absolute;
-      z-index: -1;
-    }
 
     form {
       display: block;

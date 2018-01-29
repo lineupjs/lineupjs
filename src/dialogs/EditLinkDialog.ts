@@ -15,7 +15,7 @@ export default class EditLinkDialog extends ADialog {
     super(header, title);
   }
 
-  openDialog() {
+  build():HTMLElement {
     let t = `<input
         type="text"
         size="15"
@@ -40,5 +40,7 @@ export default class EditLinkDialog extends ADialog {
         return true;
       }
     });
+
+    return popup;
   }
 }

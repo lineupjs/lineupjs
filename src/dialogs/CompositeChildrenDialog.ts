@@ -11,7 +11,7 @@ export default class CompositeChildrenDialog extends ADialog {
     super(header, '');
   }
 
-  openDialog() {
+  build():HTMLElement {
     const popup = this.makePopup(`<div class="lu-sub-nested"></div>`);
 
     const wrapper = <HTMLDivElement>popup.querySelector('.lu-sub-nested')!;
@@ -57,5 +57,7 @@ export default class CompositeChildrenDialog extends ADialog {
         return true;
       }
     });
+
+    return popup;
   }
 }

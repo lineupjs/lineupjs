@@ -17,10 +17,12 @@ export default class MoreColumnOptionsDialog extends ADialog {
     super(header, title);
   }
 
-  openDialog() {
+  build() {
     const popup = this.makeMenuPopup('');
     popup.classList.add('lu-more-options');
 
     createToolbarMenuItems(<any>addIconDOM(popup, this.column, true), this.column, this.ctx);
+
+    return popup;
   }
 }

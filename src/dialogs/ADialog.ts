@@ -1,88 +1,119 @@
 import Popper from 'popper.js';
 
-abstract class ADialog {
+class DialogStack {
 
-  static readonly visiblePopups: HTMLElement[] = [];
+  readonly openDialogs:ADialog[] = [];
 
-  static removePopup(popup: HTMLElement) {
-    const index = ADialog.visiblePopups.indexOf(popup);
-    if(index > -1 && popup) {
-      ADialog.visiblePopups.splice(index, 1);
-      popup.remove();
-    }
-    if(ADialog.visiblePopups.length === 0) {
-      popup.ownerDocument.removeEventListener('keyup', escKeyListener);
-    }
-  }
+  private backdrop:HTMLElement;
 
-  private static removeAllPopups() {
-    if(ADialog.visiblePopups.length === 0) {
+  add(dialog:ADialog) {
+    // add esc listener and backdrop for first dialog
+    if(this.openDialogs.length === 0) {
+      dialog.attachment.ownerDocument.addEventListener('keyup', escKeyListener);
+
+      dialog.attachment.ownerDocument.body.insertAdjacentHTML('beforeend', `<div class="lu-backdrop"></div>`);
+      this.backdrop = <HTMLElement>dialog.attachment.ownerDocument.body.lastElementChild!;
+
+    // check for every further dialog if the same dialog is already open -> if yes, close it == toggle behavior
+    } else if(this.openDialogs[this.openDialogs.length - 1].constructor === dialog.constructor) {
+      this.removeLast();
       return;
     }
 
-    ADialog.visiblePopups.splice(0, ADialog.visiblePopups.length).forEach((d) => {
-      d.ownerDocument.removeEventListener('keyup', escKeyListener);
-      d.remove();
+    this.openDialogs.push(dialog);
+    dialog.open();
+    this.hideOnBackdropClick(dialog.node);
+  }
+
+  remove(dialog:ADialog) {
+    const index = this.openDialogs.indexOf(dialog);
+    if(index > -1 && dialog) {
+      this.openDialogs.splice(index, 1);
+      dialog.close();
+    }
+    if(this.openDialogs.length === 0) {
+      dialog.attachment.ownerDocument.removeEventListener('keyup', escKeyListener);
+      this.backdrop.remove();
+    }
+  }
+
+  removeLast() {
+    const dialog = this.openDialogs[this.openDialogs.length - 1];
+    this.remove(dialog);
+  }
+
+  removeAll() {
+    if(this.openDialogs.length === 0) {
+      return;
+    }
+
+    this.openDialogs.splice(0, this.openDialogs.length).forEach((d) => {
+      d.attachment.ownerDocument.removeEventListener('keyup', escKeyListener);
+      d.close();
     });
+
+    this.backdrop.remove();
   }
 
-  protected static registerPopup(popup: HTMLElement, popper: Popper, replace: boolean, enableCloseOnOutside = true) {
-    if(replace) {
-      ADialog.removeAllPopups();
-    }
-    if(ADialog.visiblePopups.length === 0) {
-      popup.ownerDocument.addEventListener('keyup', escKeyListener);
-    }
-
-    const closePopupOnMouseLeave = () => {
-      if(ADialog.visiblePopups[ADialog.visiblePopups.length - 1] !== popup) {
-        return;
-      }
-      popup.removeEventListener('mouseleave', closePopupOnMouseLeave);
-      popper.destroy();
-      ADialog.removePopup(popup);
+  private hideOnBackdropClick(dialogNode: HTMLElement) {
+    dialogNode.addEventListener('click', (evt) => {
+      // don't bubble up click events within the popup
+      evt.stopPropagation();
+    });
+    const l = () => {
+      this.removeAll();
+      this.backdrop.removeEventListener('click', l);
+      this.backdrop.remove();
     };
+    this.backdrop.addEventListener('click', l);
+  }
+}
 
-    if (enableCloseOnOutside) {
-      popup.addEventListener('mouseleave', closePopupOnMouseLeave);
-    }
+// single instance
+export const dialogStack = new DialogStack();
 
-    ADialog.visiblePopups.push(popup);
+
+abstract class ADialog {
+
+  public node: HTMLElement;
+  protected popper: Popper;
+
+  constructor(public readonly attachment: HTMLElement, private readonly title: string) {
   }
 
-  constructor(readonly attachment: HTMLElement, private readonly title: string) {
-  }
+  protected abstract build():HTMLElement;
 
-  abstract openDialog(): void;
+  open(): void {
+    this.node = this.build();
 
-  /**
-   * creates a simple popup dialog under the given attachment
-   * @param body
-   * @returns {Selection<any>}
-   */
-  protected makeMenuPopup(body: string) {
-    const parent = this.attachment.ownerDocument.body;
-    parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2 lu-popup-menu">${body}</div>`);
-    const popup = <HTMLElement>parent.lastElementChild!;
-
-    const popper = new Popper(this.attachment, popup, {
+    this.popper = new Popper(this.attachment, this.node, {
       placement: 'bottom-start',
       removeOnDestroy: true
     });
+  };
 
-    ADialog.registerPopup(popup, popper, true);
-    this.hidePopupOnClickOutside(popup);
+  close(): void {
+    this.popper.destroy();
+  };
 
-    return popup;
+
+  /**
+   * creates a simple popup dialog under the given attachment
+   * @param body
+   * @returns {HTMLElement}
+   */
+  protected makeMenuPopup(body: string):HTMLElement {
+    const parent = this.attachment.ownerDocument.body;
+    parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2 lu-popup-menu">${body}</div>`);
+    return <HTMLElement>parent.lastElementChild!;
   }
 
   /**
    * creates a simple popup dialog under the given attachment
    * @param body
-   * @param enableCloseOnOutside hide when the user it outside the visible one
-   * @returns {Selection<any>}
+   * @returns {HTMLElement}
    */
-  makePopup(body: string, enableCloseOnOutside= true) {
+  makePopup(body: string):HTMLElement {
     const parent = this.attachment.ownerDocument.body;
     parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2">${this.dialogForm(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
@@ -92,29 +123,13 @@ abstract class ADialog {
       auto.focus();
     }
 
-    const popper = new Popper(this.attachment, popup, {
-      placement: 'bottom-start',
-      removeOnDestroy: true
-    });
-
-    ADialog.registerPopup(popup, popper, false, enableCloseOnOutside);
-    this.hidePopupOnClickOutside(popup);
     return popup;
   }
 
-  makeChoosePopup(body: string) {
+  makeChoosePopup(body: string):HTMLElement {
     const parent = this.attachment.ownerDocument.body;
     parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2 chooser">${this.basicDialog(body)}</div>`);
-    const popup = <HTMLElement>parent.lastElementChild!;
-
-    const popper = new Popper(this.attachment, popup, {
-      placement: 'bottom-start',
-      removeOnDestroy: true
-    });
-
-    ADialog.registerPopup(popup, popper, false);
-    this.hidePopupOnClickOutside(popup);
-    return popup;
+    return <HTMLElement>parent.lastElementChild!;
   }
 
   dialogForm(body: string, addCloseButtons: boolean = true) {
@@ -122,27 +137,27 @@ abstract class ADialog {
             <form onsubmit="return false">
                 ${body}
                 ${addCloseButtons ?
-      '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
-      '<button type = "reset" class="cancel fa fa-times" title="cancel">' +
-      '</button><button type = "button" class="reset fa fa-undo" title="reset"></button></form>' : ''}
+      '<button type = "submit" class="ok fa fa-check" title="Apply"></button>' +
+      '<button type = "reset" class="cancel fa fa-times" title="Cancel">' +
+      '</button><button type = "button" class="reset fa fa-undo" title="Reset to default values"></button></form>' : ''}
             </form>`;
   }
 
-  protected onButton(popup: HTMLElement, handler: { submit: () => boolean, reset: () => void, cancel: () => void }) {
-    popup.querySelector('.cancel')!.addEventListener('click', (evt) => {
+  protected onButton(node:HTMLElement, handler: { submit: () => boolean, reset: () => void, cancel: () => void }) {
+    node.querySelector('.cancel')!.addEventListener('click', (evt) => {
       handler.cancel();
-      ADialog.removePopup(popup);
+      dialogStack.remove(this);
       evt.stopPropagation();
       evt.preventDefault();
     });
-    popup.querySelector('.reset')!.addEventListener('click', (evt) => {
+    node.querySelector('.reset')!.addEventListener('click', (evt) => {
       handler.reset();
       evt.stopPropagation();
       evt.preventDefault();
     });
-    popup.querySelector('.ok')!.addEventListener('click', (evt) => {
+    node.querySelector('.ok')!.addEventListener('click', (evt) => {
       if (handler.submit()) {
-        ADialog.removeAllPopups();
+        dialogStack.removeAll();
       }
       evt.stopPropagation();
       evt.preventDefault();
@@ -155,19 +170,6 @@ abstract class ADialog {
                 ${body}
             </form>`;
   }
-
-  protected hidePopupOnClickOutside(popup: HTMLElement) {
-    const body = this.attachment.ownerDocument.body;
-    popup.addEventListener('click', (evt) => {
-      // don't bubble up click events within the popup
-      evt.stopPropagation();
-    });
-    const l = () => {
-      ADialog.removeAllPopups();
-      body.removeEventListener('click', l);
-    };
-    body.addEventListener('click', l);
-  }
 }
 
 export function sortByProperty(prop: string) {
@@ -178,11 +180,10 @@ export function sortByProperty(prop: string) {
   };
 }
 
-export default ADialog;
-
 function escKeyListener(evt:KeyboardEvent) {
-  if (evt.which === 27 && ADialog.visiblePopups.length > 0) {
-    const popup = ADialog.visiblePopups[ADialog.visiblePopups.length - 1];
-    ADialog.removePopup(popup);
+  if (evt.which === 27 && dialogStack.openDialogs.length > 0) {
+    dialogStack.removeLast();
   }
 }
+
+export default ADialog;

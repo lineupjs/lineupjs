@@ -15,7 +15,7 @@ export default class SearchDialog extends ADialog {
     super(header, title);
   }
 
-  openDialog() {
+  build():HTMLElement {
     const popup = this.makePopup('<input type="text" size="15" value="" required autofocus placeholder="search..."><br><label><input type="checkbox">RegExp</label><br>');
 
     const input = <HTMLInputElement>popup.querySelector('input[type="text"]')!;
@@ -41,7 +41,7 @@ export default class SearchDialog extends ADialog {
         }
         this.provider.searchAndJump(search, this.column);
       }
-      ADialog.removePopup(popup);
+      //ADialog.removePopup(popup);
     };
 
     checkbox.addEventListener('change', updateImpl);
@@ -54,5 +54,7 @@ export default class SearchDialog extends ADialog {
         return true;
       }
     });
+
+    return popup;
   }
 }
