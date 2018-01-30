@@ -9,6 +9,8 @@ export default class CompositeChildrenDialog extends ADialog {
 
   constructor(private readonly column: CompositeColumn, header: HTMLElement, private ctx: IRankingHeaderContext) {
     super(header, '');
+
+    this.isMenuDialog = true;
   }
 
   build():HTMLElement {
