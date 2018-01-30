@@ -15,6 +15,8 @@ export default class MoreColumnOptionsDialog extends ADialog {
    */
   constructor(readonly column: Column, header: HTMLElement, title = 'More', private ctx: IRankingHeaderContext) {
     super(header, title);
+
+    this.isMenuDialog = true;
   }
 
   build() {

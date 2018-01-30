@@ -16,7 +16,7 @@ export default class StratifyThresholdDialog extends ADialog {
     if (this.column.isGroupedBy() >= 0) {
       // disable grouping
       this.column.groupByMe();
-      return;
+      return this.attachment.ownerDocument.createElement('div');
     }
     const domain = this.column.getOriginalMapping().domain;
     const bak = this.column.getStratifyThresholds();

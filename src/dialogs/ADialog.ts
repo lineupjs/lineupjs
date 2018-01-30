@@ -70,10 +70,13 @@ const dialogStack = new DialogStack();
 
 abstract class ADialog {
 
+  public isMenuDialog:boolean = false;
+
   public node: HTMLElement;
-  protected popper: Popper;
+  private popper: Popper;
 
   constructor(public readonly attachment: HTMLElement, private readonly title: string) {
+
   }
 
   protected abstract build():HTMLElement;
@@ -120,7 +123,7 @@ abstract class ADialog {
    * @param body
    * @returns {HTMLElement}
    */
-  makePopup(body: string):HTMLElement {
+  protected makePopup(body: string):HTMLElement {
     const parent = this.attachment.ownerDocument.body;
     parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2">${this.dialogForm(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
@@ -133,13 +136,13 @@ abstract class ADialog {
     return popup;
   }
 
-  makeChoosePopup(body: string):HTMLElement {
+  protected makeChoosePopup(body: string):HTMLElement {
     const parent = this.attachment.ownerDocument.body;
     parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2 chooser">${this.basicDialog(body)}</div>`);
     return <HTMLElement>parent.lastElementChild!;
   }
 
-  dialogForm(body: string, addCloseButtons: boolean = true) {
+  protected dialogForm(body: string, addCloseButtons: boolean = true) {
     return `<span style="font-weight: bold" class="lu-popup-title">${this.title}</span>
             <form onsubmit="return false">
                 ${body}
