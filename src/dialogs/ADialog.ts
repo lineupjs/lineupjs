@@ -27,6 +27,7 @@ class DialogStack {
 
       const mask = dialog.backdropMaskRect();
       if(mask) {
+        // @see http://bennettfeely.com/clippy/ -> select `Frame` example
         (<HTMLElement>this.backdrop.querySelector('.lu-backdrop-mask'))!.style.clipPath = `polygon(
           0% 0%,
           0% 100%,
