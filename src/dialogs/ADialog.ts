@@ -21,10 +21,25 @@ class DialogStack {
     if(this.openDialogs.length === 0) {
       dialog.attachment.ownerDocument.addEventListener('keyup', this.escKeyListener);
 
-      dialog.attachment.ownerDocument.body.insertAdjacentHTML('beforeend', `<div class="lu-backdrop"></div>`);
-      //style="clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 25% 25%, 75% 25%, 75% 75%, 25% 75%, 25% 100%, 100% 100%, 100% 0%);"
+      dialog.attachment.ownerDocument.body.insertAdjacentHTML('beforeend', `<div class="lu-backdrop"><div class="lu-backdrop-mask"></div></div>`);
       this.backdrop = <HTMLElement>dialog.attachment.ownerDocument.body.lastElementChild!;
       this.backdrop.addEventListener('click', this.backdropListener);
+
+      const mask = dialog.backdropMaskRect();
+      if(mask) {
+        (<HTMLElement>this.backdrop.querySelector('.lu-backdrop-mask'))!.style.clipPath = `polygon(
+          0% 0%,
+          0% 100%,
+          ${mask.left}px 100%,
+          ${mask.left}px ${mask.top}px,
+          ${mask.right}px ${mask.top}px,
+          ${mask.right}px ${mask.bottom}px,
+          ${mask.left}px ${mask.bottom}px,
+          ${mask.left}px 100%,
+          100% 100%,
+          100% 0%
+        )`;
+      }
 
     // check for every further dialog if the same dialog is already open -> if yes, close it == toggle behavior
     } else if(this.openDialogs[this.openDialogs.length - 1].constructor === dialog.constructor) {
@@ -72,12 +87,21 @@ class DialogStack {
 // single instance
 const dialogStack = new DialogStack();
 
+export interface IMaskRect {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+}
 
 abstract class ADialog {
 
   public isMenuDialog:boolean = false;
 
+  public backdropMaskRect:() => IMaskRect;
+
   public node: HTMLElement;
+
   private popper: Popper;
 
   constructor(public readonly attachment: HTMLElement, private readonly title: string) {

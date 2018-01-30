@@ -12,8 +12,16 @@
     display: block;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.1);
-    animation: fade-in 0.2s;
+
+    > .#{$lu_css_prefix}-backdrop-mask {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.1);
+      animation: fade-in 0.2s;
+    }
   }
 
   .#{$lu_css_prefix}-popup {

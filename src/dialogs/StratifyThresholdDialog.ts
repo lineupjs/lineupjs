@@ -1,4 +1,4 @@
-import ADialog from './ADialog';
+import ADialog, {IMaskRect} from './ADialog';
 import NumberColumn from '../model/NumberColumn';
 
 export default class StratifyThresholdDialog extends ADialog {
@@ -7,8 +7,9 @@ export default class StratifyThresholdDialog extends ADialog {
    * opens a dialog for editing the link of a column
    * @param column the column to rename
    * @param header the visual header element of this column
+   * @param backdropMaskRect
    */
-  constructor(private readonly column: NumberColumn, header: HTMLElement) {
+  constructor(private readonly column: NumberColumn, header: HTMLElement, public backdropMaskRect:() => IMaskRect) {
     super(header, 'Stratify by Threshold');
   }
 

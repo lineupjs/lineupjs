@@ -9,7 +9,7 @@ import SortDialog from '../../dialogs/SortDialog';
 import RenameDialog from '../../dialogs/RenameDialog';
 import ChangeRendererDialog from '../../dialogs/ChangeRendererDialog';
 import LinkColumn from '../../model/LinkColumn';
-import ADialog from '../../dialogs/ADialog';
+import ADialog, {IMaskRect} from '../../dialogs/ADialog';
 import ScriptColumn from '../../model/ScriptColumn';
 import ScriptEditDialog from '../../dialogs/ScriptEditDialog';
 import EditLinkDialog from '../../dialogs/EditLinkDialog';
@@ -72,7 +72,14 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
     <div class="lu-summary"></div>
     <div class="lu-handle"></div>
   `;
-  createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
+
+  const dialogBackdropMask:() => IMaskRect = () => {
+    const mask = node.getBoundingClientRect();
+    // manipulate bottom to highlight the whole column (and not only the header)
+    return {top: mask.top, left: mask.left, right: mask.right, bottom: document.body.clientHeight};
+  };
+
+  createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx, dialogBackdropMask);
 
   toggleToolbarIcons(node, col);
 
@@ -139,15 +146,15 @@ export function addIconDOM(node: HTMLElement, col: Column, showLabel: boolean) {
   };
 }
 
-export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
-  return createShortcutMenuItems(<any>addIconDOM(node, col, false), col, ctx);
+export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, dialogBackdropMask:() => IMaskRect) {
+  return createShortcutMenuItems(<any>addIconDOM(node, col, false), col, ctx, dialogBackdropMask);
 }
 
 interface IAddIcon {
   (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }) => any };
 }
 
-export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext, dialogBackdropMask:() => IMaskRect) {
 
   if (!isSupportType(col.desc) || col instanceof SelectionColumn) {
     addIcon('Sort').onclick = (evt) => {
@@ -157,7 +164,7 @@ export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRa
   }
 
   if (col instanceof GroupColumn) {
-    addIcon('Sort Group by &hellip;', SortGroupDialog);
+    addIcon('Sort Group by &hellip;', SortGroupDialog, dialogBackdropMask);
   }
 
   //stratify
@@ -169,7 +176,7 @@ export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRa
   }
 
   if (col instanceof NumberColumn) {
-    addIcon('Stratify by Threshold &hellip;', StratifyThresholdDialog);
+    addIcon('Stratify by Threshold &hellip;', StratifyThresholdDialog, dialogBackdropMask);
   }
 
   if (!(col instanceof RankColumn)) {
@@ -184,7 +191,7 @@ export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRa
     };
   }
 
-  addIcon('More &hellip;', MoreColumnOptionsDialog, '', ctx);
+  addIcon('More &hellip;', MoreColumnOptionsDialog, '', ctx, dialogBackdropMask);
 }
 
 export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {

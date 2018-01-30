@@ -1,8 +1,9 @@
-import ADialog from './ADialog';
+import ADialog, {IMaskRect} from './ADialog';
 import GroupColumn from '../model/GroupColumn';
 
 export default class SortDialog extends ADialog {
-  constructor(private readonly column: GroupColumn, header: HTMLElement, title = 'Change Sort Criteria') {
+
+  constructor(private readonly column: GroupColumn, header: HTMLElement, title = 'Change Sort Criteria', public backdropMaskRect:() => IMaskRect) {
     super(header, title);
   }
 
