@@ -22,6 +22,7 @@ class DialogStack {
       dialog.attachment.ownerDocument.addEventListener('keyup', this.escKeyListener);
 
       dialog.attachment.ownerDocument.body.insertAdjacentHTML('beforeend', `<div class="lu-backdrop"></div>`);
+      //style="clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 25% 25%, 75% 25%, 75% 75%, 25% 75%, 25% 100%, 100% 100%, 100% 0%);"
       this.backdrop = <HTMLElement>dialog.attachment.ownerDocument.body.lastElementChild!;
       this.backdrop.addEventListener('click', this.backdropListener);
 
@@ -29,6 +30,10 @@ class DialogStack {
     } else if(this.openDialogs[this.openDialogs.length - 1].constructor === dialog.constructor) {
       this.removeLast();
       return false;
+
+    // if dialogs are not a menu, close previous one before opening the new dialog
+    } else if(!this.openDialogs[this.openDialogs.length - 1].isMenuDialog && !dialog.isMenuDialog) {
+      this.removeLast();
     }
 
     this.openDialogs.push(dialog);
