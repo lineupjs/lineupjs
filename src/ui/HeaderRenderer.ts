@@ -17,7 +17,7 @@ import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import SelectionColumn from '../model/SelectionColumn';
 import {createShortcutMenuItems, MIMETYPE_PREFIX, toFullTooltip} from './engine/header';
 import {defaultConfig, dummyRankingButtonHook} from '../config';
-import ADialog, {dialogStack} from '../dialogs/ADialog';
+import ADialog from '../dialogs/ADialog';
 import {IRankingHeaderContext} from './engine/interfaces';
 import {IHeaderRendererOptions} from './interfaces';
 import NumberColumn from '../model/NumberColumn';
@@ -289,7 +289,7 @@ export default class HeaderRenderer {
         proxy.onclick = (evt: MouseEvent) => {
           evt.stopPropagation();
           const dialog = new dialogClass(col, (<HTMLElement>evt.currentTarget).parentElement!, ...dialogArgs);
-          dialogStack.add(dialog);
+          dialog.open();
         };
         return proxy;
       };

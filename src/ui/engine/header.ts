@@ -9,7 +9,7 @@ import SortDialog from '../../dialogs/SortDialog';
 import RenameDialog from '../../dialogs/RenameDialog';
 import ChangeRendererDialog from '../../dialogs/ChangeRendererDialog';
 import LinkColumn from '../../model/LinkColumn';
-import ADialog, {dialogStack} from '../../dialogs/ADialog';
+import ADialog from '../../dialogs/ADialog';
 import ScriptColumn from '../../model/ScriptColumn';
 import ScriptEditDialog from '../../dialogs/ScriptEditDialog';
 import EditLinkDialog from '../../dialogs/EditLinkDialog';
@@ -133,7 +133,7 @@ export function addIconDOM(node: HTMLElement, col: Column, showLabel: boolean) {
     i.onclick = (evt) => {
       evt.stopPropagation();
       const dialog = new dialogClass(col, i, ...dialogArgs);
-      dialogStack.add(dialog);
+      dialog.open();
     };
     return i;
   };

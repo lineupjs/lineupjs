@@ -6,40 +6,51 @@ class DialogStack {
 
   private backdrop:HTMLElement;
 
-  add(dialog:ADialog) {
+  private backdropListener = () => {
+    this.removeAll();
+  };
+
+  private escKeyListener = (evt:KeyboardEvent) => {
+    if (evt.which === 27 && this.openDialogs.length > 0) {
+      this.removeLast();
+    }
+  };
+
+  add(dialog:ADialog):boolean {
     // add esc listener and backdrop for first dialog
     if(this.openDialogs.length === 0) {
-      dialog.attachment.ownerDocument.addEventListener('keyup', escKeyListener);
+      dialog.attachment.ownerDocument.addEventListener('keyup', this.escKeyListener);
 
       dialog.attachment.ownerDocument.body.insertAdjacentHTML('beforeend', `<div class="lu-backdrop"></div>`);
       this.backdrop = <HTMLElement>dialog.attachment.ownerDocument.body.lastElementChild!;
+      this.backdrop.addEventListener('click', this.backdropListener);
 
     // check for every further dialog if the same dialog is already open -> if yes, close it == toggle behavior
     } else if(this.openDialogs[this.openDialogs.length - 1].constructor === dialog.constructor) {
       this.removeLast();
-      return;
+      return false;
     }
 
     this.openDialogs.push(dialog);
-    dialog.open();
-    this.hideOnBackdropClick(dialog.node);
+    return true;
   }
 
   remove(dialog:ADialog) {
     const index = this.openDialogs.indexOf(dialog);
     if(index > -1 && dialog) {
       this.openDialogs.splice(index, 1);
-      dialog.close();
+      dialog.close(false);
     }
+
     if(this.openDialogs.length === 0) {
-      dialog.attachment.ownerDocument.removeEventListener('keyup', escKeyListener);
+      dialog.attachment.ownerDocument.removeEventListener('keyup', this.escKeyListener);
+      this.backdrop.removeEventListener('click', this.backdropListener);
       this.backdrop.remove();
     }
   }
 
   removeLast() {
-    const dialog = this.openDialogs[this.openDialogs.length - 1];
-    this.remove(dialog);
+    this.remove(this.openDialogs[this.openDialogs.length - 1]);
   }
 
   removeAll() {
@@ -47,30 +58,14 @@ class DialogStack {
       return;
     }
 
-    this.openDialogs.splice(0, this.openDialogs.length).forEach((d) => {
-      d.attachment.ownerDocument.removeEventListener('keyup', escKeyListener);
-      d.close();
-    });
-
-    this.backdrop.remove();
-  }
-
-  private hideOnBackdropClick(dialogNode: HTMLElement) {
-    dialogNode.addEventListener('click', (evt) => {
-      // don't bubble up click events within the popup
-      evt.stopPropagation();
-    });
-    const l = () => {
-      this.removeAll();
-      this.backdrop.removeEventListener('click', l);
-      this.backdrop.remove();
-    };
-    this.backdrop.addEventListener('click', l);
+    this.openDialogs
+      .slice(0) // temporary copy since the original array will be modified
+      .forEach((dialog) => this.remove(dialog));
   }
 }
 
 // single instance
-export const dialogStack = new DialogStack();
+const dialogStack = new DialogStack();
 
 
 abstract class ADialog {
@@ -84,7 +79,15 @@ abstract class ADialog {
   protected abstract build():HTMLElement;
 
   open(): void {
+    if(!dialogStack.add(this)) {
+      return; // not added because of toggle behavior
+    }
+
     this.node = this.build();
+    this.node.addEventListener('click', (evt) => {
+      // prevent bubble up click events within the popup
+      evt.stopPropagation();
+    });
 
     this.popper = new Popper(this.attachment, this.node, {
       placement: 'bottom-start',
@@ -92,8 +95,12 @@ abstract class ADialog {
     });
   };
 
-  close(): void {
+  close(removeFromStack:boolean = true): void {
     this.popper.destroy();
+
+    if(removeFromStack) {
+      dialogStack.remove(this);
+    }
   };
 
 
@@ -178,12 +185,6 @@ export function sortByProperty(prop: string) {
       bv = b[prop];
     return av.toLowerCase().localeCompare(bv.toLowerCase());
   };
-}
-
-function escKeyListener(evt:KeyboardEvent) {
-  if (evt.which === 27 && dialogStack.openDialogs.length > 0) {
-    dialogStack.removeLast();
-  }
 }
 
 export default ADialog;
