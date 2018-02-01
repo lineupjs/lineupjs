@@ -13,7 +13,7 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
     super(column, header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const base = stringFilter(this.column);
     const popup = this.makePopup(base.template);
 

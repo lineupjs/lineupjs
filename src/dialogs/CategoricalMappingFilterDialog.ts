@@ -16,7 +16,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     super(column, header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const bakOri = this.column.getFilter() || {filter: [], filterMissing: false};
     const bak = <string[]>bakOri.filter;
     const bakMissing = bakOri.filterMissing;

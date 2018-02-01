@@ -15,7 +15,7 @@ export default class SearchDialog extends ADialog {
     super(header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const popup = this.makePopup('<input type="text" size="15" value="" required autofocus placeholder="search..."><br><label><input type="checkbox">RegExp</label><br>');
 
     const input = <HTMLInputElement>popup.querySelector('input[type="text"]')!;

@@ -14,7 +14,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     super(column, header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const bakOri = this.column.getFilter() || {filter: this.column.categories.slice(), filterMissing: false};
     const bak = <string[]>bakOri.filter || this.column.categories.slice();
     const bakMissing = bakOri.filterMissing;

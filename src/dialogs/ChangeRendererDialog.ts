@@ -9,7 +9,7 @@ export default class ChangeRendererDialog extends ADialog {
     super(header, 'Visualization');
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const current = this.column.getRendererType();
 
     const currentGroup = this.column.getGroupRenderer();

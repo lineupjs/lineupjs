@@ -13,7 +13,7 @@ export default class StratifyThresholdDialog extends ADialog {
     super(header, 'Stratify by Threshold');
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     if (this.column.isGroupedBy() >= 0) {
       // disable grouping
       this.column.groupByMe();

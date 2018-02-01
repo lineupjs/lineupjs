@@ -13,7 +13,7 @@ export default class CutOffHierarchyDialog extends ADialog {
     super(header, 'Edit Hierarchy Cutoff');
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const bak = this.column.getCutOff();
     const innerNodes = resolveInnerNodes(this.column.hierarchy);
     const innerNodePaths = innerNodes.map((n) => n.path);

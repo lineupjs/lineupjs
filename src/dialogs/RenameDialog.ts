@@ -14,7 +14,7 @@ export default class RenameDialog extends ADialog {
     super(header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const popup = this.makePopup(`
       <input type="text" value="${this.column.label}" required autofocus placeholder="name">
       <input type="color" value="${this.column.color}" required placeholder="color">

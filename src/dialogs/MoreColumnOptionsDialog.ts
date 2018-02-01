@@ -20,7 +20,7 @@ export default class MoreColumnOptionsDialog extends ADialog {
     this.isMenuDialog = true;
   }
 
-  build() {
+  protected build() {
     const popup = this.makeMenuPopup('');
     popup.classList.add('lu-more-options');
 

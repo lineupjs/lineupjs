@@ -13,7 +13,7 @@ export default class CompositeChildrenDialog extends ADialog {
     this.isMenuDialog = true;
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const popup = this.makePopup(`<div class="lu-sub-nested"></div>`);
 
     const wrapper = <HTMLDivElement>popup.querySelector('.lu-sub-nested')!;

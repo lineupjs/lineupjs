@@ -14,7 +14,7 @@ export default class ScriptEditDialog extends ADialog {
     super(header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const bak = this.column.getScript();
     const popup = this.makePopup(`<div class="script-description">
       <p>You can write any valid JavaScript code. It will be embedded in a function. Therefore the last statement has to return a value.

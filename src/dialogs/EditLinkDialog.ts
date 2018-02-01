@@ -15,7 +15,7 @@ export default class EditLinkDialog extends ADialog {
     super(header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     let t = `<input
         type="text"
         size="15"

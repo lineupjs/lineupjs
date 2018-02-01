@@ -7,7 +7,7 @@ export default class SortDialog extends ADialog {
     super(header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const bak = this.column.getSortMethod();
     const valueString = ['name', 'count'];
 

@@ -19,7 +19,7 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
     super(column, header, title);
   }
 
-  build():HTMLElement {
+  protected build():HTMLElement {
     const original = this.column.getOriginalMapping();
     let bakfilter = this.column.getFilter(),
       bak = this.column.getMapping(),
