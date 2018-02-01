@@ -35,13 +35,13 @@ export default class SearchDialog extends ADialog {
     const updateImpl = () => {
       let search: string|RegExp = input.value;
       const isRegex = checkbox.checked;
-      if (search.length > 0) {
-        if (isRegex) {
-          search = new RegExp(search);
-        }
-        this.provider.searchAndJump(search, this.column);
+      if (search.length === 0) {
+        return;
       }
-      //ADialog.removePopup(popup);
+      if (isRegex) {
+        search = new RegExp(search);
+      }
+      this.provider.searchAndJump(search, this.column);
     };
 
     checkbox.addEventListener('change', updateImpl);

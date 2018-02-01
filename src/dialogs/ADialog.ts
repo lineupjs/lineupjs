@@ -63,11 +63,13 @@ class DialogStack {
       dialog.close(false);
     }
 
-    if(this.openDialogs.length === 0) {
-      dialog.attachment.ownerDocument.removeEventListener('keyup', this.escKeyListener);
-      this.backdrop.removeEventListener('click', this.backdropListener);
-      this.backdrop.remove();
+    if(this.openDialogs.length > 0) {
+      return;
     }
+
+    dialog.attachment.ownerDocument.removeEventListener('keyup', this.escKeyListener);
+    this.backdrop.removeEventListener('click', this.backdropListener);
+    this.backdrop.remove();
   }
 
   removeLast() {
@@ -126,7 +128,7 @@ abstract class ADialog {
       placement: 'bottom-start',
       removeOnDestroy: true
     });
-  };
+  }
 
   close(removeFromStack:boolean = true): void {
     this.popper.destroy();
@@ -134,7 +136,7 @@ abstract class ADialog {
     if(removeFromStack) {
       dialogStack.remove(this);
     }
-  };
+  }
 
 
   /**
