@@ -5,4 +5,5 @@ export {default as SlopeGraph, EMode} from './SlopeGraph';
 export * from './dialogs';
 export * from './panel';
 export * from './toolbar';
+export * from './interfaces';
 export {default as LineUp, ILineUpOptions} from './LineUp';

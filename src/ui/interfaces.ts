@@ -5,6 +5,8 @@ import {IImposer, IRenderContext} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
 import {IToolbarAction} from './toolbar';
 
+export const WEIRD_CANVAS_OFFSET = 0.6;
+
 export interface IRenderInfo {
   type: string;
   label: string;
