@@ -157,4 +157,8 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.setDataProvider(data);
     this.update();
   }
+
+  fakeHover(dataIndex: number, scrollIntoView: boolean) {
+    return this.renderer.fakeHover(dataIndex, scrollIntoView);
+  }
 }

@@ -60,6 +60,9 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     }
     return col != null;
   }
+
+  abstract fakeHover(dataIndex: number, scrollIntoView: boolean): boolean;
+
 }
 
 export default ALineUp;

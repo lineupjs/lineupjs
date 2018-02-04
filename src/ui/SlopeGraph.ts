@@ -22,6 +22,7 @@ class ItemSlope implements ISlope {
   }
 
   update(path: SVGPathElement, width: number) {
+    path.setAttribute('data-i', String(this.dataIndices[0]));
     path.setAttribute('class', 'lu-slope');
     path.setAttribute('d', `M0,${this.left}L${width},${this.right}`);
   }
@@ -360,6 +361,22 @@ export default class SlopeGraph implements ITableSection {
     }
     const p = this.body.parentElement!;
     this.onScrolledVertically(p.scrollTop, p.clientHeight);
+  }
+
+
+  fakeHover(dataIndex: number) {
+    const old = this.body.querySelector(`[data-i].lu-hovered`);
+    if (old) {
+      old.classList.remove('lu-hovered');
+    }
+    if (dataIndex < 0) {
+      return;
+    }
+    const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
+    if (item) {
+      item.classList.add('lu-hovered');
+    }
+    return item != null;
   }
 
   private onScrolledVertically(scrollTop: number, clientHeight: number) {

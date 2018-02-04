@@ -48,4 +48,8 @@ export default class LineUp extends ALineUp {
       this.panel.update(this.renderer.ctx);
     }
   }
+
+  fakeHover(dataIndex: number, scrollIntoView: boolean = true) {
+    return this.renderer.fakeHover(dataIndex, scrollIntoView);
+  }
 }

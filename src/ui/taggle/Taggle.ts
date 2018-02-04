@@ -65,6 +65,10 @@ export default class Taggle extends ALineUp {
     this.renderer.update();
   }
 
+  fakeHover(dataIndex: number, scrollIntoView: boolean = true) {
+    return this.renderer.fakeHover(dataIndex, scrollIntoView);
+  }
+
   setDataProvider(data: DataProvider, dump?: any) {
     super.setDataProvider(data, dump);
     this.renderer.setDataProvider(data);

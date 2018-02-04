@@ -13,7 +13,7 @@ import StackColumn from '../model/StackColumn';
 import {IImposer, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING} from '../styles';
 import {lineupAnimation} from './animation';
-import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
+import {IRankingBodyContext, IRankingHeaderContextContainer, WEIRD_CANVAS_OFFSET} from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
@@ -29,8 +29,6 @@ export interface IEngineRankingOptions {
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
 }
 
-
-const WEIRD_CANVAS_OFFSET = 0.6;
 
 /** @internal */
 class RankingEvents extends AEventDispatcher {
@@ -564,10 +562,22 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (old) {
       old.classList.remove('lu-hovered');
     }
+    if (dataIndex < 0) {
+      return;
+    }
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
       item.classList.add('lu-hovered');
     }
+    return item != null;
+  }
+
+  scrollIntoView(dataIndex: number) {
+    const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
+    if (item) {
+      item.scrollIntoView(true);
+    }
+    return item != null;
   }
 
   private createCol(c: Column, index: number) {

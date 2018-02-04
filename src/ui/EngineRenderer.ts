@@ -331,8 +331,15 @@ export default class EngineRenderer extends AEventDispatcher {
     });
   }
 
-  fakeHover(dataIndex: number) {
-    this.rankings.forEach((r) => r.fakeHover(dataIndex));
+  fakeHover(dataIndex: number, scrollIntoView: boolean) {
+    const found = this.rankings.map((r) => r.fakeHover(dataIndex));
+    if (this.rankings.length === 0 || dataIndex < 0) {
+      return false;
+    }
+    if (!scrollIntoView) {
+      return found[0]!;
+    }
+    return this.rankings[0].scrollIntoView(dataIndex);
   }
 
   destroy() {
