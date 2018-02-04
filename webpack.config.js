@@ -141,7 +141,7 @@ function generateWebpack(options) {
       }));
   } else if (options.isDev) {
     //generate source maps
-    base.devtool = 'inline-source-map';
+    base.devtool = 'source-map';
   }
   return base;
 }

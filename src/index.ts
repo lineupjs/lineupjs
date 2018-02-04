@@ -15,6 +15,7 @@ export * from './renderer';
 export * from './model';
 export * from './builder';
 export * from './ui/';
+export * from './interfaces';
 export {default} from './ui/LineUp';
 
 

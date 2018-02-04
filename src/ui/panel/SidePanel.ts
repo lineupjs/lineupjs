@@ -19,7 +19,7 @@ export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEn
 
 export default class SidePanel {
 
-  protected readonly options: ISidePanelOptions = {
+  private readonly options: ISidePanelOptions = {
     additionalDescs: [
       createStackDesc('Weighted Sum'),
       createScriptDesc('Scripted Formula'),
@@ -41,10 +41,10 @@ export default class SidePanel {
 
   readonly node: HTMLElement;
   private readonly search: SearchBox<SidePanelEntry>;
-  protected readonly descs = new Map<IColumnDesc, SidePanelEntry>();
-  protected data: IDataProvider;
+  private readonly descs = new Map<IColumnDesc, SidePanelEntry>();
+  private data: IDataProvider;
 
-  constructor(protected ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
+  constructor(private ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
     Object.assign(this.options, options);
 
     this.node = document.createElement('aside');
@@ -72,7 +72,7 @@ export default class SidePanel {
     this.changeDataStorage(null, this.data);
   }
 
-  protected initChooser() {
+  private initChooser() {
     if (!this.options.chooser) {
       return;
     }
@@ -307,7 +307,7 @@ export default class SidePanel {
   }
 
 
-  protected static groupByType(entries: SidePanelEntry[]): { key: string, values: SidePanelEntry[] }[] {
+  private static groupByType(entries: SidePanelEntry[]): { key: string, values: SidePanelEntry[] }[] {
     const map = new Map<{label: string, order: number}, SidePanelEntry[]>();
     entries.forEach((entry) => {
       if (!map.has(entry.category)) {
@@ -325,7 +325,7 @@ export default class SidePanel {
     }).sort((a, b) => a.order - b.order);
   }
 
-  protected updateChooser() {
+  private updateChooser() {
     if (!this.options.chooser || this.collapsed) {
       return;
     }
