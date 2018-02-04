@@ -105,14 +105,10 @@ function generateWebpack(options) {
   };
 
   if (options.isProduction) {
-      base.plugins.unshift(new webpack.BannerPlugin({
-        banner: banner,
-        raw: true
-      }));
-      base.plugins.push(new webpack.optimize.MinChunkSizePlugin({
-        minChunkSize: 10000 //at least 10.000 characters
-      }),
-      new webpack.optimize.AggressiveMergingPlugin());
+    base.plugins.unshift(new webpack.BannerPlugin({
+      banner: banner,
+      raw: true
+    }));
   }
 
   if (!options.isTest) {
