@@ -16,7 +16,7 @@ Key Features
  * group aggregations (show a whole group as a single group row)
  * numerous visualizations for summaries, cells, and group aggregations
  * side panel for easy filtering and column management
- * [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
+ * [React](#react), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
 
 Usage
 -----
@@ -97,6 +97,45 @@ Supported Browsers
  * Firefox 57+
  * Edge 16+
  
+
+<a id="react"></a>
+
+React Support (LineUp.jsx)
+--------------------------
+
+A [React](https://reactjs.org/) wrapper is located at [lineupjsx](https://github.com/sgratzl/lineupjsx). 
+
+
+**Installation**
+
+```bash
+npm install --save lineupjsx
+```
+
+```html
+<link href="https://sgratzl.github.io/lineupjs_docs/masterx/LineUpJSx.css" rel="stylesheet">
+<script src="https://sgratzl.github.io/lineupjs_docs/masterx/LineUpJSx.min.js"></script>
+```
+
+**Minimal Usage Example**
+
+```javascript
+// generate some data
+const arr = [];
+const cats = ['c1', 'c2', 'c3'];
+for (let i = 0; i < 100; ++i) {
+  arr.push({
+    a: Math.random() * 10,
+    d: 'Row ' + i,
+    cat: cats[Math.floor(Math.random() * 3)],
+    cat2: cats[Math.floor(Math.random() * 3)]
+  })
+}
+```
+```jsx
+<LineUp data={arr}/>
+```
+
 
 <a id="rshiny"></a>
 
