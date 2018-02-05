@@ -1,4 +1,4 @@
-import {schemeCategory10, schemeCategory20} from 'd3-scale';
+import {schemeCategory10, schemeCategory20} from 'd3-scale-chromatic';
 import {LazyBoxPlotData} from '../internal';
 import {IOrderedGroup} from './Group';
 import {IDataRow, IGroup, IGroupParent} from './interfaces';
