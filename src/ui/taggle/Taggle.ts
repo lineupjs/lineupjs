@@ -57,7 +57,9 @@ export default class Taggle extends ALineUp {
   }
 
   destroy() {
+    this.node.classList.remove('lu-taggle', 'lu');
     this.renderer.destroy();
+    this.panel.destroy();
     super.destroy();
   }
 

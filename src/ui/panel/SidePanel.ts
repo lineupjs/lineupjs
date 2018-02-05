@@ -201,7 +201,7 @@ export default class SidePanel {
     stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; ${s.length} <span>selected</span>`: ''}`;
   }
 
-  remove() {
+  destroy() {
     this.node.remove();
     if (!this.data) {
       return;

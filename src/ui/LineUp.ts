@@ -32,7 +32,11 @@ export default class LineUp extends ALineUp {
   }
 
   destroy() {
+    this.node.classList.remove('lu');
     this.renderer.destroy();
+    if (this.panel) {
+      this.panel.destroy();
+    }
     super.destroy();
   }
 
