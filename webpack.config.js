@@ -118,7 +118,7 @@ function generateWebpack(options) {
       allChunks: true // there seems to be a bug in dynamically loaded chunk styles are not loaded, workaround: extract all styles from all chunks
     });
     base.plugins.push(p);
-    base.module.loaders[0].loader = p.extract(['css-loader', 'sass-loader']);
+    base.module.loaders[0] = Object.assign({}, base.module.loaders[0], {loader: p.extract(['css-loader', 'sass-loader'])});
   }
   if (options.min) {
     //use a minifier
