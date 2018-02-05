@@ -13,7 +13,7 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
     super(column, header, title);
   }
 
-  openDialog() {
+  protected build():HTMLElement {
     const base = stringFilter(this.column);
     const popup = this.makePopup(base.template);
 
@@ -38,6 +38,8 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
         return true;
       }
     });
+
+    return popup;
   }
 }
 

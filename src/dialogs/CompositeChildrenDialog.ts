@@ -9,9 +9,11 @@ export default class CompositeChildrenDialog extends ADialog {
 
   constructor(private readonly column: CompositeColumn, header: HTMLElement, private ctx: IRankingHeaderContext) {
     super(header, '');
+
+    this.isMenuDialog = true;
   }
 
-  openDialog() {
+  protected build():HTMLElement {
     const popup = this.makePopup(`<div class="lu-sub-nested"></div>`);
 
     const wrapper = <HTMLDivElement>popup.querySelector('.lu-sub-nested')!;
@@ -57,5 +59,7 @@ export default class CompositeChildrenDialog extends ADialog {
         return true;
       }
     });
+
+    return popup;
   }
 }

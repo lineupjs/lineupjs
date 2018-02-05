@@ -1,4 +1,4 @@
-import ADialog from './ADialog';
+import ADialog, {IMaskRect} from './ADialog';
 import NumberColumn from '../model/NumberColumn';
 
 export default class StratifyThresholdDialog extends ADialog {
@@ -7,16 +7,17 @@ export default class StratifyThresholdDialog extends ADialog {
    * opens a dialog for editing the link of a column
    * @param column the column to rename
    * @param header the visual header element of this column
+   * @param backdropMaskRect
    */
-  constructor(private readonly column: NumberColumn, header: HTMLElement) {
+  constructor(private readonly column: NumberColumn, header: HTMLElement, public backdropMaskRect:() => IMaskRect) {
     super(header, 'Stratify by Threshold');
   }
 
-  openDialog() {
+  protected build():HTMLElement {
     if (this.column.isGroupedBy() >= 0) {
       // disable grouping
       this.column.groupByMe();
-      return;
+      return this.attachment.ownerDocument.createElement('div');
     }
     const domain = this.column.getOriginalMapping().domain;
     const bak = this.column.getStratifyThresholds();
@@ -44,5 +45,7 @@ export default class StratifyThresholdDialog extends ADialog {
         return true;
       }
     });
+
+    return popup;
   }
 }

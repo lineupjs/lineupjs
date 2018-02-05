@@ -14,7 +14,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     super(column, header, title);
   }
 
-  openDialog() {
+  protected build():HTMLElement {
     const bakOri = this.column.getFilter() || {filter: this.column.categories.slice(), filterMissing: false};
     const bak = <string[]>bakOri.filter || this.column.categories.slice();
     const bakMissing = bakOri.filterMissing;
@@ -89,10 +89,12 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
         if (f.length === trData.length) { // all checked = no filter
           f = null;
         }
-        const filterMissing = (<HTMLInputElement>popup.querySelector('input[type="checkbox"].lu_filter_missing')!).checked;
+        const filterMissing = (<HTMLInputElement>this.node.querySelector('input[type="checkbox"].lu_filter_missing')!).checked;
         updateData(f, filterMissing);
         return true;
       }
     });
+
+    return popup;
   }
 }

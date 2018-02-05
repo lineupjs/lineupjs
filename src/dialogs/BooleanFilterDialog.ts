@@ -13,7 +13,7 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
     super(column, header, title);
   }
 
-  openDialog() {
+  protected build():HTMLElement {
     const bak = this.column.getFilter();
 
     const popup = this.makePopup(`<label><input type="radio" name="boolean_check" value="null" ${bak === null ? 'checked="checked"' : ''}>No Filter</label><br>
@@ -48,5 +48,7 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
         return true;
       }
     });
+
+    return popup;
   }
 }

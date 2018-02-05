@@ -13,7 +13,7 @@ export default class CutOffHierarchyDialog extends ADialog {
     super(header, 'Edit Hierarchy Cutoff');
   }
 
-  openDialog() {
+  protected build():HTMLElement {
     const bak = this.column.getCutOff();
     const innerNodes = resolveInnerNodes(this.column.hierarchy);
     const innerNodePaths = innerNodes.map((n) => n.path);
@@ -22,7 +22,7 @@ export default class CutOffHierarchyDialog extends ADialog {
         <input type="number" value="${isFinite(bak.maxDepth) ? bak.maxDepth : ''}" placeholder="max depth (&infin;)"><br>
         <datalist id="ui${this.idPrefix}lineupHierarchyList">${innerNodes.map((node) => `<option value="${node.path}">${node.label}</option>`)}</datalist>`;
 
-    const popup = this.makePopup(t, false);
+    const popup = this.makePopup(t);
 
     //custom validation
     popup.querySelector('input[type="text"]')!.addEventListener('change', function (this: HTMLInputElement) {
@@ -52,5 +52,7 @@ export default class CutOffHierarchyDialog extends ADialog {
         return true;
       }
     });
+
+    return popup;
   }
 }

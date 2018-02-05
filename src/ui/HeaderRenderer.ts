@@ -17,7 +17,7 @@ import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import SelectionColumn from '../model/SelectionColumn';
 import {createShortcutMenuItems, MIMETYPE_PREFIX, toFullTooltip} from './engine/header';
 import {defaultConfig, dummyRankingButtonHook} from '../config';
-import ADialog from '../dialogs/ADialog';
+import ADialog, {IMaskRect} from '../dialogs/ADialog';
 import {IRankingHeaderContext} from './engine/interfaces';
 import {IHeaderRendererOptions} from './interfaces';
 import NumberColumn from '../model/NumberColumn';
@@ -289,11 +289,16 @@ export default class HeaderRenderer {
         proxy.onclick = (evt: MouseEvent) => {
           evt.stopPropagation();
           const dialog = new dialogClass(col, (<HTMLElement>evt.currentTarget).parentElement!, ...dialogArgs);
-          dialog.openDialog();
+          dialog.open();
         };
         return proxy;
       };
-      createShortcutMenuItems(addIcon, col, ctx);
+      const dialogBackdropMask:() => IMaskRect = () => {
+        const mask = this.getBoundingClientRect();
+        // manipulate bottom to highlight the whole column (and not only the header)
+        return {top: mask.top, left: mask.left, right: mask.right, bottom: document.body.clientHeight};
+      };
+      createShortcutMenuItems(addIcon, col, ctx, dialogBackdropMask);
     });
   }
 

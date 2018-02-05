@@ -13,7 +13,7 @@ export default class WeightsEditDialog extends ADialog {
     super(header, title);
   }
 
-  openDialog() {
+  protected build():HTMLElement {
     const weights = this.column.getWeights();
     const children = this.column.children.map((d, i) => ({col: d, weight: Math.round(weights[i] * 100)} ));
 
@@ -56,5 +56,7 @@ export default class WeightsEditDialog extends ADialog {
         return true;
       }
     });
+
+    return popup;
   }
 }
