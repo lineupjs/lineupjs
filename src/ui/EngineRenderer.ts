@@ -10,7 +10,7 @@ import {
 } from '../model';
 import NumberColumn from '../model/NumberColumn';
 import Ranking from '../model/Ranking';
-import DataProvider, {default as ADataProvider} from '../provider/ADataProvider';
+import ADataProvider from '../provider/ADataProvider';
 import {
   chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, IImposer, IRenderContext, possibleGroupRenderer,
   possibleRenderer, possibleSummaryRenderer
@@ -21,7 +21,7 @@ import SlopeGraph, {EMode} from './SlopeGraph';
 
 
 export default class EngineRenderer extends AEventDispatcher {
-  static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
+  static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
   protected readonly options: Readonly<ILineUpOptions>;
 
@@ -37,7 +37,7 @@ export default class EngineRenderer extends AEventDispatcher {
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
 
-  constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
+  constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
@@ -136,10 +136,10 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([EngineRenderer.EVENT_HOVER_CHANGED]);
+    return super.createEventList().concat([EngineRenderer.EVENT_HIGHLIGHT_CHANGED]);
   }
 
-  setDataProvider(data: DataProvider) {
+  setDataProvider(data: ADataProvider) {
     this.takeDownProvider();
 
     this.data = data;
@@ -150,9 +150,9 @@ export default class EngineRenderer extends AEventDispatcher {
 
   private takeDownProvider() {
     this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
-    this.data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, null);
-    this.data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, null);
-    this.data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
+    this.data.on(`${ADataProvider.EVENT_ADD_RANKING}.body`, null);
+    this.data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, null);
+    this.data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
 
     this.rankings.forEach((r) => this.table.remove(r));
     this.rankings.splice(0, this.rankings.length);
@@ -160,15 +160,15 @@ export default class EngineRenderer extends AEventDispatcher {
     this.slopeGraphs.splice(0, this.slopeGraphs.length);
   }
 
-  private initProvider(data: DataProvider) {
+  private initProvider(data: ADataProvider) {
     data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.updateSelection(data.getSelection()));
-    data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, (ranking: Ranking) => {
+    data.on(`${ADataProvider.EVENT_ADD_RANKING}.body`, (ranking: Ranking) => {
       this.addRanking(ranking);
     });
-    data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, (ranking: Ranking) => {
+    data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, (ranking: Ranking) => {
       this.removeRanking(ranking);
     });
-    data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
+    data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
       this.update(this.rankings.filter((r) => r.ranking === ranking));
     });
 
@@ -340,6 +340,16 @@ export default class EngineRenderer extends AEventDispatcher {
       return found[0]!;
     }
     return this.rankings[0].scrollIntoView(dataIndex);
+  }
+
+  getHighlight() {
+    for(const ranking of this.rankings) {
+      const h = ranking.getHighlight();
+      if (h >= 0) {
+        return h;
+      }
+    }
+    return -1;
   }
 
   destroy() {

@@ -17,11 +17,7 @@ export interface ITaggleOptions {
 }
 
 export default class TaggleRenderer extends AEventDispatcher {
-  /**
-   * triggered when the mouse is over a specific row
-   * @argument data_index:number the selected data index or <0 if no row
-   */
-  static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
+  static readonly EVENT_HIGHLIGHT_CHANGED = EngineRenderer.EVENT_HIGHLIGHT_CHANGED;
 
   private isDynamicLeafHeight: boolean = false;
 
@@ -63,7 +59,7 @@ export default class TaggleRenderer extends AEventDispatcher {
         this.update();
       }
     });
-    this.forward(this.renderer, `${TaggleRenderer.EVENT_HOVER_CHANGED}.main`);
+    this.forward(this.renderer, `${TaggleRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
 
     window.addEventListener('resize', this.resizeListener);
   }
@@ -116,7 +112,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([TaggleRenderer.EVENT_HOVER_CHANGED]);
+    return super.createEventList().concat([TaggleRenderer.EVENT_HIGHLIGHT_CHANGED]);
   }
 
   zoomOut() {
@@ -160,5 +156,9 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   highlight(dataIndex: number, scrollIntoView: boolean) {
     return this.renderer.highlight(dataIndex, scrollIntoView);
+  }
+
+  getHighlight() {
+    return this.renderer.getHighlight();
   }
 }

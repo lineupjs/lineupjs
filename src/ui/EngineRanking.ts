@@ -577,7 +577,16 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (item) {
       item.scrollIntoView(true);
     }
+    // TODO fake item position and scroll to that position to trigger a reload
     return item != null;
+  }
+
+  getHighlight() {
+    const item = <HTMLElement>this.body.querySelector(`[data-i]:hover, [data-i].lu-highlighted`);
+    if (item) {
+      return parseInt(item.dataset.i!, 10);
+    }
+    return -1;
   }
 
   private createCol(c: Column, index: number) {

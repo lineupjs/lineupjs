@@ -28,7 +28,7 @@ export default class LineUp extends ALineUp {
       this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
       this.node.insertBefore(this.panel.node, this.node.firstChild);
     }
-    this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
+    this.forward(this.renderer, `${EngineRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
   }
 
   destroy() {
@@ -55,5 +55,9 @@ export default class LineUp extends ALineUp {
 
   highlight(dataIndex: number, scrollIntoView: boolean = true) {
     return this.renderer.highlight(dataIndex, scrollIntoView);
+  }
+
+  getHighlight() {
+    return this.renderer.getHighlight();
   }
 }

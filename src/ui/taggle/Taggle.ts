@@ -71,6 +71,10 @@ export default class Taggle extends ALineUp {
     return this.renderer.highlight(dataIndex, scrollIntoView);
   }
 
+  getHighlight() {
+    return this.renderer.getHighlight();
+  }
+
   setDataProvider(data: DataProvider, dump?: any) {
     super.setDataProvider(data, dump);
     this.renderer.setDataProvider(data);
