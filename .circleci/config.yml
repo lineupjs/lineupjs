@@ -34,8 +34,10 @@ jobs:
                 git clone git@github.com:sgratzl/lineupjs_docs.git
                 cd lineupjs_docs
                 rm -rf "${CIRCLE_BRANCH}/"
-                rm README.md
-                cp ../README.md README.md
+                if [ "${CIRCLE_BRANCH}" == "master" ] ; then
+                  rm README.md
+                  cp ../README.md README.md
+                fi
                 mv ../build "${CIRCLE_BRANCH}"
                 cp ../demo/* "${CIRCLE_BRANCH}/"
                 git config user.email "samuel_gratzl@gmx.at"
