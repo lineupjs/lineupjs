@@ -8,7 +8,7 @@ import Ranking from './Ranking';
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'A') {
-  return {type: 'aggregate', label};
+  return {type: 'aggregate', label, description: 'Aggregate Groups'};
 }
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {

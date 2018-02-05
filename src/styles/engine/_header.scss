@@ -47,7 +47,7 @@ section.#{$lu_css_prefix}-header {
   }
 
   > .#{$lu_css_prefix}-label {
-    padding-left: 0.8em;
+    padding-left: $lu-engine_grip_gap;
     margin-right: $lu-engine_grip_gap;
     font-weight: 500;
   }

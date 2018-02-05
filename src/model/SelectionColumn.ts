@@ -11,7 +11,7 @@ import {IGroup} from './Group';
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'S') {
-  return {type: 'selection', label};
+  return {type: 'selection', label, description: 'Selection'};
 }
 
 export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
