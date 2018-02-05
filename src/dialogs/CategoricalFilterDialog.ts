@@ -56,7 +56,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
 
     let isCheckedAll = true;
 
-    if (!trData.some((d)=>d.isChecked)) {
+    if (!trData.some((d) => d.isChecked)) {
       isCheckedAll = false;
     }
 
