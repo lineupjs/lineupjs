@@ -53,8 +53,8 @@ export default class LineUp extends ALineUp {
     }
   }
 
-  highlight(dataIndex: number, scrollIntoView: boolean = true) {
-    return this.renderer.highlight(dataIndex, scrollIntoView);
+  setHighlight(dataIndex: number, scrollIntoView: boolean = true) {
+    return this.renderer.setHighlight(dataIndex, scrollIntoView);
   }
 
   getHighlight() {

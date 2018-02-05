@@ -226,6 +226,7 @@ export default class EngineRenderer extends AEventDispatcher {
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
     r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
+    this.forward(r, EngineRanking.EVENT_HIGHLIGHT_CHANGED);
 
     ranking.on(suffix('.renderer', Ranking.EVENT_ORDER_CHANGED), () => this.updateHist(r));
 
@@ -331,8 +332,9 @@ export default class EngineRenderer extends AEventDispatcher {
     });
   }
 
-  highlight(dataIndex: number, scrollIntoView: boolean) {
-    const found = this.rankings.map((r) => r.highlight(dataIndex));
+  setHighlight(dataIndex: number, scrollIntoView: boolean) {
+    const found = this.rankings.map((r) => r.setHighlight(dataIndex));
+    this.fire(EngineRenderer.EVENT_HIGHLIGHT_CHANGED, dataIndex);
     if (this.rankings.length === 0 || dataIndex < 0) {
       return false;
     }

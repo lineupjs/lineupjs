@@ -47,7 +47,7 @@ export default class Taggle extends ALineUp {
         this.renderer.switchRule(spaceFilling);
       }
     }
-    this.forward(this.renderer, `${ALineUp.EVENT_HOVER_CHANGED}.main`);
+    this.forward(this.renderer, `${ALineUp.EVENT_HIGHLIGHT_CHANGED}.main`);
   }
 
   private setViolation(violation?: string) {
@@ -67,8 +67,8 @@ export default class Taggle extends ALineUp {
     this.renderer.update();
   }
 
-  highlight(dataIndex: number, scrollIntoView: boolean = true) {
-    return this.renderer.highlight(dataIndex, scrollIntoView);
+  setHighlight(dataIndex: number, scrollIntoView: boolean = true) {
+    return this.renderer.setHighlight(dataIndex, scrollIntoView);
   }
 
   getHighlight() {

@@ -35,13 +35,14 @@ class RankingEvents extends AEventDispatcher {
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
   static readonly EVENT_UPDATE_DATA = 'updateData';
   static readonly EVENT_UPDATE_HIST = 'updateHist';
+  static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
   fire(type: string | string[], ...args: any[]) {
     super.fire(type, ...args);
   }
 
   protected createEventList() {
-    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA, RankingEvents.EVENT_UPDATE_HIST]);
+    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA, RankingEvents.EVENT_UPDATE_HIST, RankingEvents.EVENT_HIGHLIGHT_CHANGED]);
   }
 }
 
@@ -49,12 +50,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   static readonly EVENT_WIDTH_CHANGED = RankingEvents.EVENT_WIDTH_CHANGED;
   static readonly EVENT_UPDATE_DATA = RankingEvents.EVENT_UPDATE_DATA;
   static readonly EVENT_UPDATE_HIST = RankingEvents.EVENT_UPDATE_HIST;
+  static readonly EVENT_HIGHLIGHT_CHANGED = RankingEvents.EVENT_HIGHLIGHT_CHANGED;
 
   private _context: ICellRenderContext<RenderColumn>;
 
   private readonly renderCtx: IRankingBodyContext;
   private data: (IGroupItem | IGroupData)[] = [];
   private readonly selection: SelectionManager;
+  private highlight: number = -1;
   private readonly canvasPool: HTMLCanvasElement[] = [];
 
   private readonly events = new RankingEvents();
@@ -94,6 +97,31 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
       // remove self
       row.removeEventListener('mouseleave', c.leave);
+    }
+  };
+
+  private readonly highlightHandler = {
+    enter: (evt: MouseEvent) => {
+      if (this.highlight >= 0) {
+        const old = this.body.querySelector('.le-highlighted');
+        if (old) {
+          old.classList.remove('le-highlighted');
+        }
+        this.highlight = -1;
+      }
+      const row = <HTMLElement>evt.currentTarget;
+      const dataIndex = parseInt(row.dataset.i || '-1', 10);
+      this.events.fire(EngineRanking.EVENT_HIGHLIGHT_CHANGED, dataIndex);
+    },
+    leave: () => {
+      if (this.highlight >= 0) {
+        const old = this.body.querySelector('.le-highlighted');
+        if (old) {
+          old.classList.remove('le-highlighted');
+        }
+        this.highlight = -1;
+      }
+      this.events.fire(EngineRanking.EVENT_HIGHLIGHT_CHANGED, -1);
     }
   };
 
@@ -180,6 +208,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
       column.renderers = this.ctx.createRenderer(column.c);
     });
+
+    this.body.addEventListener('mouseleave', this.highlightHandler.leave);
   }
 
   get id() {
@@ -308,6 +338,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   protected createRow(node: HTMLElement, rowIndex: number): void {
     node.classList.add('lu-row');
     this.roptions.customRowUpdate(node, rowIndex);
+    node.addEventListener('mouseenter', this.highlightHandler.enter);
 
     const isGroup = this.renderCtx.isGroup(rowIndex);
 
@@ -318,6 +349,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
 
     const {i, meta} = this.renderCtx.getRow(rowIndex);
+    node.classList.toggle('le-highlighted', this.highlight === i);
     node.dataset.i = i.toString();
     node.dataset.agg = 'detail'; //or 'group'
     if (!meta) {
@@ -376,11 +408,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
 
     if (isGroup) {
+      node.classList.remove('le-highlighted');
       super.updateRow(node, rowIndex);
       return;
     }
 
     const {i, meta} = this.renderCtx.getRow(rowIndex);
+    node.classList.toggle('le-highlighted', this.highlight === i);
     node.dataset.i = i.toString();
     if (!meta) {
       delete node.dataset.meta;
@@ -557,17 +591,18 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return super.recreate(this.roptions.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
   }
 
-  highlight(dataIndex: number) {
-    const old = this.body.querySelector(`[data-i].lu-highlighted`);
+  setHighlight(dataIndex: number) {
+    this.highlight = dataIndex;
+    const old = this.body.querySelector(`[data-i].le-highlighted`);
     if (old) {
-      old.classList.remove('lu-highlighted');
+      old.classList.remove('le-highlighted');
     }
     if (dataIndex < 0) {
       return;
     }
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
-      item.classList.add('lu-highlighted');
+      item.classList.add('le-highlighted');
     }
     return item != null;
   }
@@ -576,17 +611,52 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
       item.scrollIntoView(true);
+      return true;
     }
-    // TODO fake item position and scroll to that position to trigger a reload
-    return item != null;
+    const index = this.data.findIndex((d) => !isGroup(d) && d.i === dataIndex);
+    if (index < 0) {
+      return false; // part of a group?
+    }
+
+    const posOf = () => {
+      const c = this._context;
+      if (c.exceptions.length === 0 || index < c.exceptions[0].index) {
+        // fast pass
+        return index * c.defaultRowHeight;
+      }
+      const before = c.exceptions.reverse().find((d) => d.index <= index);
+      if (!before) {
+        return -1;
+      }
+      if (before.index === index) {
+        return before.y;
+      }
+      const regular = index - before.index - 1;
+      return before.y2 + regular * c.defaultRowHeight;
+    };
+    const pos = posOf();
+    if (pos < 0) {
+      return false;
+    }
+    const scroller = this.bodyScroller;
+    const top = scroller.scrollTop;
+    scroller.scrollTop = Math.min(pos, scroller.scrollHeight - scroller.clientHeight);
+    this.onScrolledVertically(scroller.scrollTop, scroller.clientHeight, top < scroller.scrollTop);
+
+    const found = this.body.querySelector(`[data-i="${dataIndex}"]`);
+    if (found) {
+      found.scrollIntoView(true);
+      return true;
+    }
+    return false;
   }
 
   getHighlight() {
-    const item = <HTMLElement>this.body.querySelector(`[data-i]:hover, [data-i].lu-highlighted`);
+    const item = <HTMLElement>this.body.querySelector(`[data-i]:hover, [data-i].le-highlighted`);
     if (item) {
       return parseInt(item.dataset.i!, 10);
     }
-    return -1;
+    return this.highlight;
   }
 
   private createCol(c: Column, index: number) {

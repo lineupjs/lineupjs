@@ -365,16 +365,16 @@ export default class SlopeGraph implements ITableSection {
 
 
   highlight(dataIndex: number) {
-    const old = this.body.querySelector(`[data-i].lu-highlighted`);
+    const old = this.body.querySelector(`[data-i].le-highlighted`);
     if (old) {
-      old.classList.remove('lu-highlighted');
+      old.classList.remove('le-highlighted');
     }
     if (dataIndex < 0) {
       return;
     }
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
-      item.classList.add('lu-highlighted');
+      item.classList.add('le-highlighted');
     }
     return item != null;
   }

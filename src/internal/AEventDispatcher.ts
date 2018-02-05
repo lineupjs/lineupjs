@@ -26,10 +26,16 @@ export interface IEventContext {
   readonly args: any[];
 }
 
+export interface IEventHandler {
+  on(type: string): (...args: any[]) => void;
+  on(type: string | string[], listener: ((...args: any[]) => any) | null): IEventHandler;
+  on(type: string | string[], listener?: ((...args: any[]) => any) | null): any;
+}
+
 /**
  * base class for event dispatching using d3 event mechanism
  */
-export default class AEventDispatcher {
+export default class AEventDispatcher implements IEventHandler {
   private listeners: Dispatch<any>;
   private forwarder: (...args: any[]) => void;
 
@@ -91,19 +97,19 @@ export default class AEventDispatcher {
   /**
    * forwards one or more events from a given dispatcher to the current one
    * i.e. when one of the given events is fired in 'from' it will be forwarded to all my listeners
-   * @param {AEventDispatcher} from the event dispatcher to forward from
+   * @param {IEventHandler} from the event dispatcher to forward from
    * @param {string[]} types the event types to forward
    */
-  protected forward(from: AEventDispatcher, ...types: string[]) {
+  protected forward(from: IEventHandler, ...types: string[]) {
     from.on(types, this.forwarder);
   }
 
   /**
    * removes the forwarding declarations
-   * @param {AEventDispatcher} from the originated dispatcher
+   * @param {IEventHandler} from the originated dispatcher
    * @param {string[]} types event types to forward
    */
-  protected unforward(from: AEventDispatcher, ...types: string[]) {
+  protected unforward(from: IEventHandler, ...types: string[]) {
     from.on(types, null);
   }
 }

@@ -154,8 +154,8 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.update();
   }
 
-  highlight(dataIndex: number, scrollIntoView: boolean) {
-    return this.renderer.highlight(dataIndex, scrollIntoView);
+  setHighlight(dataIndex: number, scrollIntoView: boolean) {
+    return this.renderer.setHighlight(dataIndex, scrollIntoView);
   }
 
   getHighlight() {
