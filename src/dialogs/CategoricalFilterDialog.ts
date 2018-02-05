@@ -18,7 +18,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     const bakOri = this.column.getFilter() || {filter: this.column.categories.slice(), filterMissing: false};
     const bak = <string[]>bakOri.filter || this.column.categories.slice();
     const bakMissing = bakOri.filterMissing;
-    const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Select all</th></thead><tbody></tbody></table></div>
+    const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Select All</th></thead><tbody></tbody></table></div>
         ${filterMissingMarkup(bakMissing)}<br>`);
 
     // list all data rows !
