@@ -56,6 +56,10 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
 
     let isCheckedAll = true;
 
+    if (!trData.some((d) => d.isChecked)) {
+      isCheckedAll = false;
+    }
+
     function redrawSelectAll() {
       (<HTMLElement>popup.querySelector('.selectAll')).innerHTML = `<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`;
     }
