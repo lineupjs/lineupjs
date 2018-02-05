@@ -53,7 +53,7 @@ export default class LineUp extends ALineUp {
     }
   }
 
-  fakeHover(dataIndex: number, scrollIntoView: boolean = true) {
-    return this.renderer.fakeHover(dataIndex, scrollIntoView);
+  highlight(dataIndex: number, scrollIntoView: boolean = true) {
+    return this.renderer.highlight(dataIndex, scrollIntoView);
   }
 }

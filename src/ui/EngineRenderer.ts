@@ -331,8 +331,8 @@ export default class EngineRenderer extends AEventDispatcher {
     });
   }
 
-  fakeHover(dataIndex: number, scrollIntoView: boolean) {
-    const found = this.rankings.map((r) => r.fakeHover(dataIndex));
+  highlight(dataIndex: number, scrollIntoView: boolean) {
+    const found = this.rankings.map((r) => r.highlight(dataIndex));
     if (this.rankings.length === 0 || dataIndex < 0) {
       return false;
     }

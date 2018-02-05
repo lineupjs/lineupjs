@@ -557,17 +557,17 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return super.recreate(this.roptions.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
   }
 
-  fakeHover(dataIndex: number) {
-    const old = this.body.querySelector(`[data-i].lu-hovered`);
+  highlight(dataIndex: number) {
+    const old = this.body.querySelector(`[data-i].lu-highlighted`);
     if (old) {
-      old.classList.remove('lu-hovered');
+      old.classList.remove('lu-highlighted');
     }
     if (dataIndex < 0) {
       return;
     }
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
-      item.classList.add('lu-hovered');
+      item.classList.add('lu-highlighted');
     }
     return item != null;
   }

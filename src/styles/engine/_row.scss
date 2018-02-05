@@ -9,7 +9,7 @@
 
   &:hover,
   &.#{$lu_css_prefix}-selected,
-  &.#{$lu_css_prefix}-hovered {
+  &.#{$lu_css_prefix}-highlighted {
     .#{$lu_css_prefix}-not-hover {
       display: none;
     }
