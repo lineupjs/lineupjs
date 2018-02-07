@@ -14,6 +14,7 @@
   }
 
   :last-child {
+    width: 0; // set 0 width for firefox to have proper ...
     flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
