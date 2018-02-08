@@ -46,7 +46,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
   createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, options.level!, col, ctx);
 
-  toggleToolbarIcons(node, col, options.level);
+  toggleToolbarIcons(node, col);
 
   if (options.dragAble) {
     dragAbleColumn(node, col, ctx);
