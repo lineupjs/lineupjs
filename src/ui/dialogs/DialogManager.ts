@@ -22,7 +22,7 @@ export default class DialogManager {
     };
   }
 
-  setHighlight(mask: { left: number, top: number, right: number, bottom: number }) {
+  setHighlight(mask: { left: number, top: number, width: number, height: number }) {
     const area = <HTMLElement>this.node.firstElementChild;
     // @see http://bennettfeely.com/clippy/ -> select `Frame` example
     area.style.clipPath = `polygon(
@@ -30,9 +30,9 @@ export default class DialogManager {
       0% 100%,
       ${mask.left}px 100%,
       ${mask.left}px ${mask.top}px,
-      ${mask.right}px ${mask.top}px,
-      ${mask.right}px ${mask.bottom}px,
-      ${mask.left}px ${mask.bottom}px,
+      ${mask.left + mask.width}px ${mask.top}px,
+      ${mask.left + mask.width}px ${mask.top + mask.height}px,
+      ${mask.left}px ${mask.top + mask.height}px,
       ${mask.left}px 100%,
       100% 100%,
       100% 0%
@@ -51,11 +51,12 @@ export default class DialogManager {
       return;
     }
     const base = header.getBoundingClientRect();
+    const offset = root.getBoundingClientRect();
     this.setHighlight({
-      left: base.left,
-      top: base.top,
-      right: base.right,
-      bottom: root.clientHeight
+      left: base.left - offset.left,
+      top: base.top - offset.top,
+      width: base.width,
+      height: offset.height
     });
   }
 
