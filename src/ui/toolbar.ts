@@ -117,7 +117,7 @@ const more: IToolbarAction = {
   },
   options: {
     shortcut: true,
-    order: 3
+    order: 100
   }
 };
 
@@ -171,16 +171,16 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
     shortcut: true,
     order: 2
   }),
-  filterMapped: uiDialog('Filter &hellip;', MappingsFilterDialog, (ctx) => [ctx]),
-  filterString: uiDialog('Filter &hellip;', StringFilterDialog),
-  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog),
-  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog),
-  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog),
-  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog),
+  filterMapped: uiDialog('Filter &hellip;', MappingsFilterDialog, (ctx) => [ctx], {shortcut: true}),
+  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {shortcut: true}),
+  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], {shortcut: true}),
+  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {shortcut: true}),
+  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], {shortcut: true}),
+  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {shortcut: true}),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
-  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog),
+  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], {shortcut: true}),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx]),
   splitCombined: ui('Split Combined Column', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level);
