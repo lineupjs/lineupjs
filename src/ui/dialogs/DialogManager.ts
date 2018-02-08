@@ -50,7 +50,7 @@ export default class DialogManager {
     this.remove(this.openDialogs[this.openDialogs.length - 1]);
   }
 
-  private removeAll() {
+  removeAll() {
     if (this.openDialogs.length === 0) {
       return;
     }

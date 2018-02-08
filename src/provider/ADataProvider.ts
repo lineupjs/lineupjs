@@ -13,6 +13,7 @@ import RankColumn from '../model/RankColumn';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {exportRanking, IExportOptions} from './utils';
+import { isSupportType } from 'lineupjs/src/model/annotations';
 
 export {IExportOptions} from './utils';
 
@@ -167,7 +168,26 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   takeSnapshot(col: Column): Ranking {
     const r = this.cloneRanking();
-    r.push(this.clone(col));
+    const ranking = col.findMyRanker();
+    // by convention copy all support types and the first string column
+    let hasString = col.desc.type === 'string';
+    const toClone = !ranking ? [col] : ranking.children.filter((c) => {
+      if (c === col) {
+        return true;
+      }
+      if (!hasString && c.desc.type === 'string') {
+        hasString = true;
+        return true;
+      }
+      return isSupportType(c);
+    });
+    toClone.forEach((c) => {
+      const clone = this.clone(c);
+      r.push(clone);
+      if (c === col) {
+        clone.sortByMe();
+      }
+    });
     this.insertRanking(r);
     return r;
   }
@@ -246,7 +266,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   ensureOneRanking() {
     if (this.rankings.length === 0) {
-      this.pushRanking();
+      const r = this.pushRanking();
+      this.push(r, createRankDesc());
     }
   }
 

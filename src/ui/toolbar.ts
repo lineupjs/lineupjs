@@ -100,8 +100,8 @@ const vis: IToolbarAction = {
 
 const clone: IToolbarAction = {
   title: 'Clone',
-  onClick: (col, _evt, ctx, level) => {
-    ctx.dialogManager.removeAboveLevel(level);
+  onClick: (col, _evt, ctx) => {
+    ctx.dialogManager.removeAll(); // since the column will be removed
     ctx.provider.takeSnapshot(col);
   },
   options: {
@@ -123,14 +123,17 @@ const more: IToolbarAction = {
 
 const remove: IToolbarAction = {
   title: 'Remove',
-  onClick: (col, _evt, ctx, level) => {
-    ctx.dialogManager.removeAboveLevel(level);
-    if (col.desc.type !== 'rank') {
+  onClick: (col, _evt, ctx) => {
+    ctx.dialogManager.removeAll(); // since the column will be removed
+    const ranking = col.findMyRanker()!;
+    const last = ranking.children.every((d) => isSupportType(d) || d === col);
+    if (!last) {
       col.removeMe();
       return;
     }
-    ctx.provider.removeRanking(col.findMyRanker()!);
+    ctx.provider.removeRanking(ranking);
     ctx.provider.ensureOneRanking();
+    return;
   },
   options: {
     order: 90
