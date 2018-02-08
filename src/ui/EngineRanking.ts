@@ -636,7 +636,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (firstBeforePos < 0 && firstBeforePos < 0) {
       return -1; // not found at all
     }
-    const nearestPos = (firstBeforePos >= 0 && (visible.first - firstBeforePos)  < (firstAfterPos - visible.last)) ? firstBeforePos: firstAfterPos;
+    const nearestPos = (firstBeforePos >= 0 && (visible.first - firstBeforePos) < (firstAfterPos - visible.last)) ? firstBeforePos : firstAfterPos;
     return (<IGroupItem>this.data[nearestPos]).i;
   }
 

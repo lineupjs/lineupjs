@@ -55,7 +55,7 @@ abstract class ADialog {
     return this.dialog.level;
   }
 
-  protected abstract build(node: HTMLElement): boolean|void;
+  protected abstract build(node: HTMLElement): boolean | void;
 
   equals(that: ADialog) {
     return this.dialog.level === that.dialog.level && this.dialog.attachment === that.dialog.attachment;
@@ -129,7 +129,7 @@ abstract class ADialog {
     return this.find<HTMLInputElement>(selector);
   }
 
-  protected forEach<T>(selector: string, callback: (d: HTMLElement, i: number)=> T): T[] {
+  protected forEach<T>(selector: string, callback: (d: HTMLElement, i: number) => T): T[] {
     return Array.from(this.node.querySelectorAll(selector)).map(callback);
   }
 

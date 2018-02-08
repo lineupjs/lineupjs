@@ -71,6 +71,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   }
 
   abstract setHighlight(dataIndex: number, scrollIntoView: boolean): boolean;
+
   abstract getHighlight(): number;
 
 }

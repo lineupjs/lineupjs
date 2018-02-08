@@ -48,7 +48,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
         break;
       }
     }
-    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;': ''}`;
+    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
   createGroup(col: StringColumn) {
@@ -140,7 +140,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 }
 
-function toString(filter: null|string|RegExp) {
+function toString(filter: null | string | RegExp) {
   if (filter == null || filter === '' || filter === StringColumn.FILTER_MISSING) {
     return '';
   }

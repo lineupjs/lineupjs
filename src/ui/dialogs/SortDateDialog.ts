@@ -4,7 +4,7 @@ import {sortMethods, sortOrder} from './SortDialog';
 
 /** @internal */
 export default class SortDateDialog extends ADialog {
-   constructor(private readonly column: DatesColumn, dialog: IDialogContext) {
+  constructor(private readonly column: DatesColumn, dialog: IDialogContext) {
     super(dialog);
   }
 

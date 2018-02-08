@@ -8,7 +8,7 @@ import {ISummaryRenderer} from '../../renderer/interfaces';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
-import { updateFilterState } from './utils';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class MappingsFilterDialog extends ADialog {
@@ -201,7 +201,7 @@ export default class MappingsFilterDialog extends ADialog {
       this.summary.update(summary, this.hist);
 
       Array.from(this.loadedData).forEach((v) => {
-        g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v)*100, 2)}" y2="60"></line>`);
+        g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
       });
     });
   }

@@ -1,4 +1,3 @@
-
 import HierarchyColumn, {ICategoryInternalNode, ICutOffNode, resolveInnerNodes} from '../../model/HierarchyColumn';
 import ADialog, {IDialogContext} from './ADialog';
 
@@ -22,7 +21,7 @@ export default class CutOffHierarchyDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.insertAdjacentHTML('beforeend',  `
+    node.insertAdjacentHTML('beforeend', `
         <input type="text" value="${this.before.node.label}" required="required" autofocus="autofocus" list="ui${this.idPrefix}lineupHierarchyList" placeholder="cut off node">
         <input type="number" value="${isFinite(this.before.maxDepth) ? this.before.maxDepth : ''}" placeholder="max depth (&infin;)">
         <datalist id="ui${this.idPrefix}lineupHierarchyList">${this.innerNodes.map((node) => `<option value="${node.path}">${node.label}</option>`)}</datalist>`);
@@ -41,7 +40,7 @@ export default class CutOffHierarchyDialog extends ADialog {
 
   protected reset() {
     this.findInput('input[type="text"]').value = this.before.node.label;
-    this.findInput('input[type="number"]').value = isFinite(this.before.maxDepth) ? String(this.before.maxDepth): '';
+    this.findInput('input[type="number"]').value = isFinite(this.before.maxDepth) ? String(this.before.maxDepth) : '';
     this.column.setCutOff(this.before);
   }
 

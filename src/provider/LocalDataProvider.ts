@@ -145,7 +145,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     let helper = this._data.map((r, i) => ({v: r, i, group: <IGroup | null>null}));
 
     //do the optional filtering step
-    let filter: ((d: IDataRow)=>boolean)|null = null;
+    let filter: ((d: IDataRow) => boolean) | null = null;
     if (this.options.filterGlobally) {
       const filtered = this.getRankings().filter((d) => d.isFiltered());
       if (filtered.length > 0) {

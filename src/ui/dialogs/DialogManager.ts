@@ -22,7 +22,7 @@ export default class DialogManager {
     };
   }
 
-  setHighlight(mask: { left: number, top: number, right: number, bottom: number}) {
+  setHighlight(mask: { left: number, top: number, right: number, bottom: number }) {
     const area = <HTMLElement>this.node.firstElementChild;
     // @see http://bennettfeely.com/clippy/ -> select `Frame` example
     area.style.clipPath = `polygon(

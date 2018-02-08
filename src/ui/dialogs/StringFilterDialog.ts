@@ -1,7 +1,7 @@
 import StringColumn from '../../model/StringColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import { updateFilterState } from './utils';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class StringFilterDialog extends ADialog {
@@ -45,7 +45,7 @@ export default class StringFilterDialog extends ADialog {
     <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
     ${filterMissingMarkup(bakMissing)}`);
 
-    const filterMissing =findFilterMissing(node);
+    const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
 

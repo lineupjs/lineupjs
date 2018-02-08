@@ -28,7 +28,9 @@ export interface IEventContext {
 
 export interface IEventHandler {
   on(type: string): (...args: any[]) => void;
+
   on(type: string | string[], listener: ((...args: any[]) => any) | null): IEventHandler;
+
   on(type: string | string[], listener?: ((...args: any[]) => any) | null): any;
 }
 

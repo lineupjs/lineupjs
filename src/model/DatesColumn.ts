@@ -21,7 +21,7 @@ export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
 
 
 @toolbar('sortDates')
-export default class DatesColumn extends ArrayColumn<Date|null> {
+export default class DatesColumn extends ArrayColumn<Date | null> {
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;
   private sort: EDateSort;
@@ -88,7 +88,7 @@ export default class DatesColumn extends ArrayColumn<Date|null> {
       return bv.length === 0 ? 0 : FIRST_IS_NAN;
     }
     if (bv.length === 0) {
-      return - FIRST_IS_NAN;
+      return -FIRST_IS_NAN;
     }
     const as = compute(av, this.sort);
     const bs = compute(bv, this.sort);
@@ -97,9 +97,12 @@ export default class DatesColumn extends ArrayColumn<Date|null> {
 }
 
 function compute(arr: Date[], sort: EDateSort) {
-  switch(sort) {
-    case EDateSort.min: return min(arr, (d) => d.getTime())!;
-    case EDateSort.max: return max(arr, (d) => d.getTime())!;
-    case EDateSort.median: return median(arr, (d) => d.getTime())!;
+  switch (sort) {
+    case EDateSort.min:
+      return min(arr, (d) => d.getTime())!;
+    case EDateSort.max:
+      return max(arr, (d) => d.getTime())!;
+    case EDateSort.median:
+      return median(arr, (d) => d.getTime())!;
   }
 }

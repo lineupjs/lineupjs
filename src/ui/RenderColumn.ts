@@ -12,7 +12,7 @@ export interface IRenderers {
   groupId: string;
   group: IGroupCellRenderer;
   summaryId: string;
-  summary: ISummaryRenderer|null;
+  summary: ISummaryRenderer | null;
 }
 
 /** @internal */

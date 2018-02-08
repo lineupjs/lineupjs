@@ -112,8 +112,8 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private initHeader(header: HTMLElement) {
-    header.innerHTML = `<i title="Item" class="${this._mode === EMode.ITEM ? 'active' :''}"><span aria-hidden="true">Item</span></i>
-        <i title="Band" class="${this._mode === EMode.BAND ? 'active' :''}"><span aria-hidden="true">Band</span></i>`;
+    header.innerHTML = `<i title="Item" class="${this._mode === EMode.ITEM ? 'active' : ''}"><span aria-hidden="true">Item</span></i>
+        <i title="Band" class="${this._mode === EMode.BAND ? 'active' : ''}"><span aria-hidden="true">Band</span></i>`;
 
     const icons = <HTMLElement[]>Array.from(header.children);
     icons.forEach((n: HTMLElement, i) => {

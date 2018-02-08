@@ -46,7 +46,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
   }
 
-  private get wrapper(): IBoxPlotColumn|null {
+  private get wrapper(): IBoxPlotColumn | null {
     const c = this._children;
     return c.length === 0 ? null : <IBoxPlotColumn>c[0];
   }
@@ -90,12 +90,12 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return w ? w.getRawNumber(row) : NaN;
   }
 
-  getBoxPlotData(row: IDataRow): IBoxPlotData|null {
+  getBoxPlotData(row: IDataRow): IBoxPlotData | null {
     const w = this.wrapper;
     return w ? w.getBoxPlotData(row) : null;
   }
 
-  getRawBoxPlotData(row: IDataRow): IBoxPlotData|null {
+  getRawBoxPlotData(row: IDataRow): IBoxPlotData | null {
     const w = this.wrapper;
     return w ? w.getRawBoxPlotData(row) : null;
   }
@@ -117,7 +117,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
 
   setSortMethod(value: ESortMethod) {
     const w = this.wrapper;
-    return w ? w.setSortMethod(value): undefined;
+    return w ? w.setSortMethod(value) : undefined;
   }
 
   isMissing(row: IDataRow) {
@@ -127,22 +127,22 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
 
   setMapping(mapping: IMappingFunction): void {
     const w = this.wrapper;
-    return w ? w.setMapping(mapping): undefined;
+    return w ? w.setMapping(mapping) : undefined;
   }
 
   getFilter() {
     const w = this.wrapper;
-    return w ? w.getFilter(): noNumberFilter();
+    return w ? w.getFilter() : noNumberFilter();
   }
 
   setFilter(value?: INumberFilter): void {
     const w = this.wrapper;
-    return w ? w.setFilter(value): undefined;
+    return w ? w.setFilter(value) : undefined;
   }
 
   getRange(): [string, string] {
     const w = this.wrapper;
-    return w ? w.getRange(): ['0', '1'];
+    return w ? w.getRange() : ['0', '1'];
   }
 
   compare(a: IDataRow, b: IDataRow) {

@@ -3,14 +3,14 @@ import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalCo
 import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import { updateFilterState } from './utils';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;
 
-  constructor(private readonly column: CategoricalColumn|SetColumn, dialog: IDialogContext) {
+  constructor(private readonly column: CategoricalColumn | SetColumn, dialog: IDialogContext) {
     super(dialog, {
       fullDialog: true
     });
@@ -22,11 +22,11 @@ export default class CategoricalFilterDialog extends ADialog {
 
     node.insertAdjacentHTML('beforeend', `<div>
         <label><input type="checkbox" checked><span></span><div>Un/Select All</div></label>
-        ${this.column.categories.map((c) => `<label><input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked': ''}><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
+        ${this.column.categories.map((c) => `<label><input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
     </div>`);
     // selectAll
-    this.findInput('input:not([data-cat])').onchange = function(this: HTMLInputElement) {
-      Array.from(node.querySelectorAll('input[data-cat]')).forEach( (n: HTMLInputElement) => n.checked = this.checked);
+    this.findInput('input:not([data-cat])').onchange = function (this: HTMLInputElement) {
+      Array.from(node.querySelectorAll('input[data-cat]')).forEach((n: HTMLInputElement) => n.checked = this.checked);
     };
     node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
   }
@@ -43,7 +43,7 @@ export default class CategoricalFilterDialog extends ADialog {
   }
 
   submit() {
-    let f: string[]|null = this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked ? n.dataset.cat! : '').filter(Boolean);
+    let f: string[] | null = this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked ? n.dataset.cat! : '').filter(Boolean);
     if (f.length === this.column.categories.length) { // all checked = no filter
       f = null;
     }

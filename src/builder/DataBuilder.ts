@@ -13,7 +13,7 @@ import RankingBuilder from './RankingBuilder';
  * builder for a LocalDataProvider
  */
 export default class DataBuilder extends LineUpBuilder {
-  private readonly columns: (IColumnDesc|((data: any[])=>IColumnDesc))[] = [];
+  private readonly columns: (IColumnDesc | ((data: any[]) => IColumnDesc))[] = [];
   private readonly providerOptions: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {
     columnTypes: {}
   };
@@ -118,7 +118,7 @@ export default class DataBuilder extends LineUpBuilder {
    * add another ranking to this data provider
    * @param {((data: ADataProvider) => void) | RankingBuilder} builder ranking builder
    */
-  ranking(builder: ((data: ADataProvider)=>void)|RankingBuilder) {
+  ranking(builder: ((data: ADataProvider) => void) | RankingBuilder) {
     this.rankBuilders.push(builder instanceof RankingBuilder ? builder.build.bind(builder) : builder);
     return this;
   }

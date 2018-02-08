@@ -36,7 +36,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   }, options);
   const node = ctx.document.createElement('section');
   node.innerHTML = `
-    <div class="lu-label">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label}</div>
+    <div class="lu-label">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
     <div class="lu-toolbar"></div>
     <div class="lu-spacing"></div>
     <div class="lu-handle"></div>
@@ -67,7 +67,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column) {
   const label = <HTMLElement>node.querySelector('.lu-label')!;
-  label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label;
+  label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label;
   node.title = col.label;
   node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;
@@ -180,7 +180,7 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
 
 function addTooltip(node: HTMLElement, col: Column) {
   let timer = -1;
-  let popper: Popper|null = null;
+  let popper: Popper | null = null;
 
   const showTooltip = () => {
     timer = -1;
@@ -192,7 +192,7 @@ function addTooltip(node: HTMLElement, col: Column) {
     parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
         <div x-arrow></div>
         <h4 class="lu-label">${col.label}</h4>
-        <p>${col.description.replace('\n',`<br/>`)}</p>
+        <p>${col.description.replace('\n', `<br/>`)}</p>
     </div>`);
     popper = new Popper(node, parent.lastElementChild!, {
       removeOnDestroy: true,
@@ -572,7 +572,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
         return;
       }
       if (hasDnDType(e, ...numberish)) {
-        node.dataset.draginfo = e.shiftKey ?  'Min/Max' : 'Sum';
+        node.dataset.draginfo = e.shiftKey ? 'Min/Max' : 'Sum';
       }
     });
   }

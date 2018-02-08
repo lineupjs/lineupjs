@@ -43,7 +43,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
   }
 
-  private get wrapper(): INumberColumn|null {
+  private get wrapper(): INumberColumn | null {
     const c = this._children;
     return c.length === 0 ? null : <INumberColumn>c[0];
   }

@@ -1,5 +1,3 @@
-
-
 export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
   const available: any = e.dataTransfer.types;
 

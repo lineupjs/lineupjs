@@ -82,7 +82,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   getCategories(row: IDataRow) {
-    return Array.from(this.getSet(row)).sort((a, b) => a.value === b.value ? a.label.localeCompare(b.label): a.value - b.value);
+    return Array.from(this.getSet(row)).sort((a, b) => a.value === b.value ? a.label.localeCompare(b.label) : a.value - b.value);
   }
 
   isMissing(row: IDataRow) {
@@ -153,7 +153,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
       return bv.size === 0 ? 0 : FIRST_IS_NAN;
     }
     if (bv.size === 0) {
-      return - FIRST_IS_NAN;
+      return -FIRST_IS_NAN;
     }
     if (av.size !== bv.size) {
       return av.size - bv.size;

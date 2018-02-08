@@ -7,7 +7,7 @@ export default class SidePanelEntry {
   used = 0;
   private vis: SidePanelEntryVis | null = null;
 
-  constructor(public readonly desc: IColumnDesc, public readonly category: {label: string, order: number, name: string}) {
+  constructor(public readonly desc: IColumnDesc, public readonly category: { label: string, order: number, name: string }) {
 
   }
 

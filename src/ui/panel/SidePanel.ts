@@ -1,6 +1,14 @@
 import {suffix} from '../../internal/AEventDispatcher';
 import {
-  createImpositionDesc, createNestedDesc, createReduceDesc, createScriptDesc, createStackDesc, createRankDesc, createGroupDesc, createAggregateDesc, createSelectionDesc,
+  createImpositionDesc,
+  createNestedDesc,
+  createReduceDesc,
+  createScriptDesc,
+  createStackDesc,
+  createRankDesc,
+  createGroupDesc,
+  createAggregateDesc,
+  createSelectionDesc,
   isSupportType
 } from '../../model';
 import {categoryOfDesc} from '../../model/annotations';
@@ -14,7 +22,7 @@ import SidePanelEntry from './SidePanelEntry';
 export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
   additionalDescs: IColumnDesc[];
   chooser: boolean;
-  collapseable: boolean|'collapsed';
+  collapseable: boolean | 'collapsed';
 }
 
 export default class SidePanel {
@@ -33,7 +41,7 @@ export default class SidePanel {
     ],
     chooser: true,
     placeholder: 'Add Column...',
-    formatItem: (item: SidePanelEntry|IGroupSearchItem<SidePanelEntry>, node: HTMLElement) => {
+    formatItem: (item: SidePanelEntry | IGroupSearchItem<SidePanelEntry>, node: HTMLElement) => {
       node.dataset.typeCat = item instanceof SidePanelEntry ? item.category.name : (<SidePanelEntry>item.children[0]).category.name;
       if (item instanceof SidePanelEntry) {
         node.dataset.type = item.desc.type;
@@ -201,8 +209,8 @@ export default class SidePanel {
     const stats = <HTMLElement>this.node.querySelector('aside.lu-stats');
     const s = this.data.getSelection();
     const r = this.data.getRankings()[0];
-    const visible = r ? r.getGroups().reduce((a,b) => a + b.order.length, 0) : 0;
-    stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; ${s.length} <span>selected</span>`: ''}`;
+    const visible = r ? r.getGroups().reduce((a, b) => a + b.order.length, 0) : 0;
+    stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; ${s.length} <span>selected</span>` : ''}`;
   }
 
   destroy() {
@@ -312,7 +320,7 @@ export default class SidePanel {
 
 
   private static groupByType(entries: SidePanelEntry[]): { key: string, values: SidePanelEntry[] }[] {
-    const map = new Map<{label: string, order: number}, SidePanelEntry[]>();
+    const map = new Map<{ label: string, order: number }, SidePanelEntry[]>();
     entries.forEach((entry) => {
       if (!map.has(entry.category)) {
         map.set(entry.category, [entry]);
@@ -320,7 +328,7 @@ export default class SidePanel {
         map.get(entry.category)!.push(entry);
       }
     });
-    return Array.from(map).map(([key,value]) => {
+    return Array.from(map).map(([key, value]) => {
       return {
         key: key.label,
         order: key.order,

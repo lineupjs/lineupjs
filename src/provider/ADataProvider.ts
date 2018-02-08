@@ -13,7 +13,7 @@ import RankColumn from '../model/RankColumn';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {exportRanking, IExportOptions} from './utils';
-import { isSupportType } from 'lineupjs/src/model/annotations';
+import {isSupportType} from '../model/annotations';
 
 export {IExportOptions} from './utils';
 
@@ -566,7 +566,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   isAggregated(ranking: Ranking, group: IGroup) {
-    let g: IGroup|undefined|null = group;
+    let g: IGroup | undefined | null = group;
     while (g) {
       const key = `${ranking.id}@${toGroupID(g)}`;
       if (this.aggregations.has(key)) {
@@ -580,7 +580,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   private unaggregateParents(ranking: Ranking, group: IGroup) {
-    let g: IGroup|undefined|null = group.parent;
+    let g: IGroup | undefined | null = group.parent;
     while (g) {
       this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`);
       g = g.parent;

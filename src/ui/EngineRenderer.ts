@@ -79,8 +79,15 @@ export default class EngineRenderer extends AEventDispatcher {
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
         const group = this.groupRenderer(col, imposer);
-        const summary = options.summaryHeader ? this.summaryRenderer(col, false, imposer): null;
-        return {single, group, summary, singleId: col.getRenderer(), groupId: col.getGroupRenderer(), summaryId: col.getSummaryRenderer()};
+        const summary = options.summaryHeader ? this.summaryRenderer(col, false, imposer) : null;
+        return {
+          single,
+          group,
+          summary,
+          singleId: col.getRenderer(),
+          groupId: col.getGroupRenderer(),
+          summaryId: col.getSummaryRenderer()
+        };
       },
       getPossibleRenderer: (col: Column) => ({
         item: possibleRenderer(col, this.options.renderers),
@@ -242,7 +249,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.update([r]);
   }
 
-  private removeRanking(ranking: Ranking|null) {
+  private removeRanking(ranking: Ranking | null) {
     if (!ranking) {
       // remove all
       this.rankings.splice(0, this.rankings.length);
@@ -364,7 +371,7 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   getHighlight() {
-    for(const ranking of this.rankings) {
+    for (const ranking of this.rankings) {
       const h = ranking.getHighlight();
       if (h >= 0) {
         return h;

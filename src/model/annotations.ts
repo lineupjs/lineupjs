@@ -38,12 +38,12 @@ export function isSupportType(col: Column) {
   return Reflect.hasMetadata(supportType, clazz);
 }
 
-export function categoryOf(col: (typeof Column)|Column) {
+export function categoryOf(col: (typeof Column) | Column) {
   const cat = <keyof Categories>Reflect.getMetadata(category, col instanceof Column ? Object.getPrototypeOf(col).constructor : col) || 'other';
   return categories[cat] || categories.other;
 }
 
-export function categoryOfDesc(col: IColumnDesc|string, models: {[key: string]: typeof Column}) {
+export function categoryOfDesc(col: IColumnDesc | string, models: { [key: string]: typeof Column }) {
   const type = typeof col === 'string' ? col : col.type;
   const clazz = models[type];
   return clazz ? categoryOf(clazz) : categories.other;

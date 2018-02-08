@@ -3,7 +3,7 @@ import OrdinalColumn from '../../model/OrdinalColumn';
 import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import { updateFilterState } from './utils';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class CategoricalMappingFilterDialog extends ADialog {
@@ -20,7 +20,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
   protected build(node: HTMLElement) {
     node.classList.add('lu-filter-table');
     const joint = this.column.categories.map((d) => Object.assign({
-      range: round(d.value*100,2)
+      range: round(d.value * 100, 2)
     }));
     joint.sort((a, b) => a.label.localeCompare(b.label));
 

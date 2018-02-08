@@ -1,6 +1,6 @@
 import BooleanColumn from '../../model/BooleanColumn';
 import ADialog, {IDialogContext} from './ADialog';
-import { updateFilterState } from './utils';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class BooleanFilterDialog extends ADialog {

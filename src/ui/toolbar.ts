@@ -1,7 +1,7 @@
 import {getAllToolbarActions, isSupportType} from '../model/annotations';
 import Column from '../model/Column';
 import {default as CompositeColumn, IMultiLevelColumn} from '../model/CompositeColumn';
-import ADialog, { IDialogContext } from '../ui/dialogs/ADialog';
+import ADialog, {IDialogContext} from '../ui/dialogs/ADialog';
 import ChangeRendererDialog from '../ui/dialogs/ChangeRendererDialog';
 import MoreColumnOptionsDialog from '../ui/dialogs/MoreColumnOptionsDialog';
 import RenameDialog from '../ui/dialogs/RenameDialog';
@@ -48,7 +48,7 @@ function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions
   return {title, onClick, options};
 }
 
-function dialogContext(ctx: IRankingHeaderContext, level: number, evt: { currentTarget: Element}): IDialogContext {
+function dialogContext(ctx: IRankingHeaderContext, level: number, evt: { currentTarget: Element }): IDialogContext {
   return {
     attachment: <HTMLElement>evt.currentTarget,
     level,
@@ -143,7 +143,7 @@ const remove: IToolbarAction = {
 const stratify = ui('Stratify', (col, _evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
   col.groupByMe();
-}, { shortcut: true, order: 2});
+}, {shortcut: true, order: 2});
 
 const collapse = ui('Compress', (col, evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);

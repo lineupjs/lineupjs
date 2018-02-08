@@ -21,7 +21,6 @@ export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
 
-
 /**
  * a number column mapped from an original input scale to an output range
  */

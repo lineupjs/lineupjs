@@ -89,7 +89,7 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
       ${filterMissingNumberMarkup(f.filterMissing, 0)}
     `;
 
-  let updateFilter: (missing: number, col: IMapAbleColumn)=>void;
+  let updateFilter: (missing: number, col: IMapAbleColumn) => void;
 
   return {
     template: `${template}</div>`,

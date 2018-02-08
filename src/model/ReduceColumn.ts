@@ -62,7 +62,7 @@ export default class ReduceColumn extends CompositeNumberColumn {
     if (vs.length === 0) {
       return NaN;
     }
-    switch(this.reduce) {
+    switch (this.reduce) {
       case EAdvancedSortMethod.mean:
         return vs.reduce((a, b) => a + b, 0) / vs.length;
       case EAdvancedSortMethod.max:
@@ -72,9 +72,9 @@ export default class ReduceColumn extends CompositeNumberColumn {
       case EAdvancedSortMethod.median:
         return median(vs)!;
       case EAdvancedSortMethod.q1:
-        return quantile(vs.sort((a,b) => a - b), 0.25)!;
+        return quantile(vs.sort((a, b) => a - b), 0.25)!;
       case EAdvancedSortMethod.q3:
-        return quantile(vs.sort((a,b) => a - b), 0.75)!;
+        return quantile(vs.sort((a, b) => a - b), 0.75)!;
     }
   }
 

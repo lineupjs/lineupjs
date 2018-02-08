@@ -107,7 +107,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   setCutOff(value: ICutOffNode) {
-    const maxDepth = value.maxDepth == null ? Infinity: value.maxDepth;
+    const maxDepth = value.maxDepth == null ? Infinity : value.maxDepth;
     if (this.currentNode === value.node && this.currentMaxDepth === maxDepth) {
       return;
     }
@@ -240,7 +240,13 @@ export function deriveHierarchy(categories: (Partial<ICategory> & { parent: stri
   categories.forEach((c) => {
     const p = c.parent || '';
     // set and fill up proxy
-    const item = Object.assign(<ICategoryNode>{children: [], label: c.name!, name: c.name!, color: Column.DEFAULT_COLOR, value: 0}, lookup.get(c.name!) || {}, c);
+    const item = Object.assign(<ICategoryNode>{
+      children: [],
+      label: c.name!,
+      name: c.name!,
+      color: Column.DEFAULT_COLOR,
+      value: 0
+    }, lookup.get(c.name!) || {}, c);
     lookup.set(c.name!, item);
 
     if (!lookup.has(p)) {
