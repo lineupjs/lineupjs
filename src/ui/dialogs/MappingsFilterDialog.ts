@@ -6,7 +6,7 @@ import {
 import {isDummyNumberFilter} from '../../model/internal';
 import {ISummaryRenderer} from '../../renderer/interfaces';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 
 /** @internal */
@@ -31,11 +31,12 @@ export default class MappingsFilterDialog extends ADialog {
     updated: () => this.updateLines(this.computeScale()),
     domain: () => this.rawDomain,
     normalizeRaw: this.normalizeRaw.bind(this),
-    unnormalizeRaw: this.unnormalizeRaw.bind(this)
+    unnormalizeRaw: this.unnormalizeRaw.bind(this),
+    dialog: this.dialog
   };
 
-  constructor(private readonly column: IMapAbleColumn, attachment: HTMLElement, ctx: IRankingHeaderContext) {
-    super(attachment, {
+  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
+    super(dialog, {
       fullDialog: true
     });
 

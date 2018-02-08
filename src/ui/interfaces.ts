@@ -4,6 +4,7 @@ import {IDataProvider} from '../provider';
 import {IImposer, IRenderContext} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
 import {IToolbarAction} from './toolbar';
+import DialogManager from './dialogs/DialogManager';
 
 export const WEIRD_CANVAS_OFFSET = 0.6;
 
@@ -16,6 +17,8 @@ export interface IRankingHeaderContextContainer {
   readonly idPrefix: string;
   readonly document: Document;
   readonly provider: IDataProvider;
+
+  readonly dialogManager: DialogManager;
 
   toolbar: { [key: string]: IToolbarAction };
 

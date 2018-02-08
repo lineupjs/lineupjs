@@ -1,13 +1,13 @@
 import BooleanColumn from '../../model/BooleanColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class BooleanFilterDialog extends ADialog {
 
   private readonly before: boolean | null;
 
-  constructor(private readonly column: BooleanColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: BooleanColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
     this.before = this.column.getFilter();

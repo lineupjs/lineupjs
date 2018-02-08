@@ -2,15 +2,15 @@ import CategoricalColumn from '../../model/CategoricalColumn';
 import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
 import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup} from '../missing';
-import {default as ADialog} from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;
 
-  constructor(private readonly column: CategoricalColumn|SetColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: CategoricalColumn|SetColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
     this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};

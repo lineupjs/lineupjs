@@ -1,18 +1,18 @@
 import StringColumn from '../../model/StringColumn';
 import {filterMissingMarkup} from '../missing';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class StringFilterDialog extends ADialog {
 
-  constructor(private readonly column: StringColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: StringColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
   }
 
   private updateFilter(filter: string | RegExp | null) {
-    this.attachment.classList.toggle('lu-filtered', filter != null && filter !== '');
+    this.dialog.attachment.classList.toggle('lu-filtered', filter != null && filter !== '');
     this.column.setFilter(filter);
   }
 

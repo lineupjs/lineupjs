@@ -5,6 +5,31 @@
 @import './icons/index';
 
 @at-root {
+  @keyframes #{$lu_css_prefix}-dialogs-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .#{$lu_css_prefix}-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 8;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+
+    > .#{$lu_css_prefix}-backdrop-mask {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.1);
+      animation: #{$lu_css_prefix}-dialogs-fade-in 0.2s;
+    }
+  }
+
   .#{$lu_css_prefix}-dialog,
   .#{$lu_css_prefix}-tooltip {
     background-color: white;
@@ -16,6 +41,7 @@
     z-index: 9;
     font-size: $lu_dialog_font_size;
     clear: right;
+    animation: #{$lu_css_prefix}-dialogs-fade-in 0.4s;
 
     h4 {
       margin: 0.2em;
@@ -24,15 +50,6 @@
   }
 
   .#{$lu_css_prefix}-dialog {
-    &::before {
-      content: '';
-      top: -$lu_dialog_mouse_region;
-      left: -$lu_dialog_mouse_region;
-      right: -$lu_dialog_mouse_region;
-      bottom: -$lu_dialog_mouse_region;
-      position: absolute;
-      z-index: -1;
-    }
 
     label {
       font-weight: normal;

@@ -1,10 +1,8 @@
 import Popper from 'popper.js';
-import {registerPopup} from './manager';
+import DialogManager from './DialogManager';
 
 export interface IDialogOptions {
   title: string;
-  hideOnClickOutside: boolean;
-  hideOnMoveOutside: boolean;
   fullDialog: boolean;
 
   // popper options
@@ -13,12 +11,16 @@ export interface IDialogOptions {
   modifiers?: Popper.Modifiers;
 }
 
+export interface IDialogContext {
+  attachment: HTMLElement;
+  level: number;
+  manager: DialogManager;
+}
+
 abstract class ADialog {
 
   private readonly options: Readonly<IDialogOptions> = {
     title: '',
-    hideOnClickOutside: true,
-    hideOnMoveOutside: false,
     fullDialog: false,
     placement: 'bottom-start'
   };
@@ -26,10 +28,18 @@ abstract class ADialog {
   readonly node: HTMLFormElement;
   private popper: Popper;
 
-  constructor(readonly attachment: HTMLElement, options: Partial<IDialogOptions> = {}) {
+  constructor(protected readonly dialog: IDialogContext, options: Partial<IDialogOptions> = {}) {
     Object.assign(this.options, options);
-    this.node = attachment.ownerDocument.createElement('form');
+    this.node = dialog.attachment.ownerDocument.createElement('form');
     this.node.classList.add('lu-dialog');
+  }
+
+  get attachment() {
+    return this.dialog.attachment;
+  }
+
+  get level() {
+    return this.dialog.level;
   }
 
   protected abstract build(node: HTMLElement): boolean|void;
@@ -45,9 +55,9 @@ abstract class ADialog {
     }
     if (this.options.fullDialog) {
       this.node.insertAdjacentHTML('beforeend', `<div>
-        <button type="submit" title="ok"></button>
-        <button type="button" title="cancel"></button>
-        <button type="reset" title="reset"></button>
+        <button type="submit" title="Apply"></button>
+        <button type="button" title="Cancel"></button>
+        <button type="reset" title="Reset to default values"></button>
       </div>`);
     }
 
@@ -88,7 +98,7 @@ abstract class ADialog {
       };
     }
 
-    registerPopup(this, this.options.hideOnClickOutside, this.options.hideOnMoveOutside);
+    this.dialog.manager.push(this);
   }
 
   protected find<T extends HTMLElement>(selector: string): T {
@@ -113,6 +123,7 @@ abstract class ADialog {
   }
 
   destroy() {
+    this.dialog.manager.remove(this);
     this.popper.destroy();
     this.node.remove();
   }

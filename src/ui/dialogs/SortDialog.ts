@@ -2,14 +2,12 @@ import BoxPlotColumn from '../../model/BoxPlotColumn';
 import Column from '../../model/Column';
 import {EAdvancedSortMethod, ESortMethod, IBoxPlotColumn} from '../../model/INumberColumn';
 import NumberColumn from '../../model/NumberColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class SortDialog extends ADialog {
-  constructor(private readonly column: (IBoxPlotColumn | NumberColumn), attachment: HTMLElement) {
-    super(attachment, {
-      hideOnMoveOutside: true
-    });
+  constructor(private readonly column: (IBoxPlotColumn | NumberColumn), dialog: IDialogContext) {
+    super(dialog);
   }
 
   protected build(node: HTMLElement) {

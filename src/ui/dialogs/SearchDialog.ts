@@ -1,14 +1,12 @@
 import Column from '../../model/Column';
 import {IDataProvider} from '../../provider/ADataProvider';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class SearchDialog extends ADialog {
 
-  constructor(private readonly column: Column, attachment: HTMLElement, private readonly provider: IDataProvider) {
-    super(attachment, {
-      hideOnMoveOutside: true
-    });
+  constructor(private readonly column: Column, dialog: IDialogContext, private readonly provider: IDataProvider) {
+    super(dialog);
   }
 
   protected build(node: HTMLElement) {

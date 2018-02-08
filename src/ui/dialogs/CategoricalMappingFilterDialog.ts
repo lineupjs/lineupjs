@@ -2,15 +2,15 @@ import {round} from '../../internal';
 import OrdinalColumn from '../../model/OrdinalColumn';
 import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup} from '../missing';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class CategoricalMappingFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;
 
-  constructor(private readonly column: OrdinalColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: OrdinalColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
     this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};

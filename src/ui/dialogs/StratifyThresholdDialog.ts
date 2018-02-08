@@ -1,13 +1,13 @@
 import NumberColumn from '../../model/NumberColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class StratifyThresholdDialog extends ADialog {
 
   private readonly before: number[];
 
-  constructor(private readonly column: NumberColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: NumberColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
     this.before = this.column.getStratifyThresholds();

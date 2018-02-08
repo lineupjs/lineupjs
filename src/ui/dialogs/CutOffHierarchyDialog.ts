@@ -1,6 +1,6 @@
 
 import HierarchyColumn, {ICategoryInternalNode, ICutOffNode, resolveInnerNodes} from '../../model/HierarchyColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class CutOffHierarchyDialog extends ADialog {
@@ -11,8 +11,8 @@ export default class CutOffHierarchyDialog extends ADialog {
   private readonly before: ICutOffNode;
 
 
-  constructor(private readonly column: HierarchyColumn, attachment: HTMLElement, private readonly idPrefix: string) {
-    super(attachment, {
+  constructor(private readonly column: HierarchyColumn, dialog: IDialogContext, private readonly idPrefix: string) {
+    super(dialog, {
       fullDialog: true
     });
 

@@ -4,17 +4,15 @@ import Column from '../../model/Column';
 import CompositeColumn from '../../model/CompositeColumn';
 import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class CompositeChildrenDialog extends ADialog {
 
   private readonly id: string;
 
-  constructor(private readonly column: CompositeColumn, attachment: HTMLElement, private ctx: IRankingHeaderContext) {
-    super(attachment, {
-      hideOnMoveOutside: false
-    });
+  constructor(private readonly column: CompositeColumn, dialog: IDialogContext, private ctx: IRankingHeaderContext) {
+    super(dialog);
     this.id = `.dialog${Math.random().toString(36).slice(-8).substr(0, 3)}`;
   }
 
@@ -29,7 +27,8 @@ export default class CompositeChildrenDialog extends ADialog {
       this.column.children.forEach((c) => {
         const n = createHeader(c, this.ctx, {
           mergeDropAble: false,
-          resizeable: false
+          resizeable: false,
+          level: this.dialog.level + 1
         });
         n.className = `lu-header${c.isFiltered() ? ' lu-filtered' : ''}`;
         updateHeader(n, c);

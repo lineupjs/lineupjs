@@ -22,6 +22,7 @@ export interface IHeaderOptions {
   mergeDropAble: boolean;
   rearrangeAble: boolean;
   resizeable: boolean;
+  level: number;
 }
 
 /** @internal */
@@ -30,7 +31,8 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     dragAble: true,
     mergeDropAble: true,
     rearrangeAble: true,
-    resizeable: true
+    resizeable: true,
+    level: 0
   }, options);
   const node = ctx.document.createElement('section');
   node.innerHTML = `
@@ -42,9 +44,9 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
   addTooltip(node, col);
 
-  createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
+  createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, options.level!, col, ctx);
 
-  toggleToolbarIcons(node, col);
+  toggleToolbarIcons(node, col, options.level);
 
   if (options.dragAble) {
     dragAbleColumn(node, col, ctx);
@@ -93,35 +95,36 @@ export function updateHeader(node: HTMLElement, col: Column) {
   }
 }
 
-/** @internal */
-export function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, showLabel: boolean) {
+function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
   return (title: string, onClick: IOnClickHandler) => {
     node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
-      onClick(col, <any>evt, ctx);
+      onClick(col, <any>evt, ctx, level);
     };
     return i;
   };
 }
 
 /** @internal */
-export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
-  return createShortcutMenuItems(<any>addIconDOM(node, col, ctx, false), col, ctx);
+export function createToolbar(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
+  return createShortcutMenuItems(node, level, col, ctx);
 }
 
 export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
-export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
+  const addIcon = addIconDOM(node, col, ctx, level, false);
   const actions = toolbarActions(col, ctx);
 
   actions.filter((d) => d.options.shortcut).forEach((d) => addIcon(d.title, d.onClick));
 }
 
-export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
+  const addIcon = addIconDOM(node, col, ctx, level, true);
   const actions = toolbarActions(col, ctx);
 
   actions.filter((d) => !d.title.startsWith('More')).forEach((d) => addIcon(d.title, d.onClick));

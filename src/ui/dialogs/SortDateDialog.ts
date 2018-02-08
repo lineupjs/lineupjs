@@ -1,13 +1,11 @@
 import DatesColumn from '../../model/DatesColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 import {sortMethods, sortOrder} from './SortDialog';
 
 /** @internal */
 export default class SortDateDialog extends ADialog {
-   constructor(private readonly column: DatesColumn, attachment: HTMLElement) {
-    super(attachment, {
-      hideOnMoveOutside: true
-    });
+   constructor(private readonly column: DatesColumn, dialog: IDialogContext) {
+    super(dialog);
   }
 
   protected build(node: HTMLElement) {

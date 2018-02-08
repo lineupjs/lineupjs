@@ -1,7 +1,7 @@
 import {getAllToolbarActions, isSupportType} from '../model/annotations';
 import Column from '../model/Column';
 import {default as CompositeColumn, IMultiLevelColumn} from '../model/CompositeColumn';
-import ADialog from '../ui/dialogs/ADialog';
+import ADialog, { IDialogContext } from '../ui/dialogs/ADialog';
 import ChangeRendererDialog from '../ui/dialogs/ChangeRendererDialog';
 import MoreColumnOptionsDialog from '../ui/dialogs/MoreColumnOptionsDialog';
 import RenameDialog from '../ui/dialogs/RenameDialog';
@@ -29,7 +29,7 @@ export interface IUIOptions {
 }
 
 export interface IOnClickHandler {
-  (col: Column, evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }, ctx: IRankingHeaderContext): any;
+  (col: Column, evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }, ctx: IRankingHeaderContext, level: number): any;
 }
 
 export interface IToolbarAction {
@@ -41,18 +41,26 @@ export interface IToolbarAction {
 }
 
 export interface IDialogClass {
-  new(col: any, attachement: HTMLElement, ...args: any[]): ADialog;
+  new(col: any, dialog: IDialogContext, ...args: any[]): ADialog;
 }
 
 function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
   return {title, onClick, options};
 }
 
+function dialogContext(ctx: IRankingHeaderContext, level: number, evt: { currentTarget: Element}): IDialogContext {
+  return {
+    attachment: <HTMLElement>evt.currentTarget,
+    level,
+    manager: ctx.dialogManager
+  };
+}
+
 function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IRankingHeaderContext) => any[]) = () => [], options: Partial<IUIOptions> = {}): IToolbarAction {
   return {
     title,
-    onClick: (col, evt, ctx) => {
-      const dialog = new dialogClass(col, <HTMLElement>evt.currentTarget, ... extraArgs(ctx));
+    onClick: (col, evt, ctx, level) => {
+      const dialog = new dialogClass(col, dialogContext(ctx, level, evt), ... extraArgs(ctx));
       dialog.open();
     }, options
   };
@@ -71,8 +79,8 @@ const sort: IToolbarAction = {
 
 const rename: IToolbarAction = {
   title: 'Rename + Color &hellip;',
-  onClick: (col, evt) => {
-    const dialog = new RenameDialog(col, <HTMLElement>evt.currentTarget);
+  onClick: (col, evt, ctx, level) => {
+    const dialog = new RenameDialog(col, dialogContext(ctx, level, evt));
     dialog.open();
   },
   options: {
@@ -82,8 +90,8 @@ const rename: IToolbarAction = {
 
 const vis: IToolbarAction = {
   title: 'Visualization &hellip;',
-  onClick: (col, evt, ctx) => {
-    const dialog = new ChangeRendererDialog(col, <HTMLElement>evt.currentTarget, ctx);
+  onClick: (col, evt, ctx, level) => {
+    const dialog = new ChangeRendererDialog(col, dialogContext(ctx, level, evt), ctx);
     dialog.open();
   },
   options: {}
@@ -101,8 +109,8 @@ const clone: IToolbarAction = {
 
 const more: IToolbarAction = {
   title: 'More &hellip;',
-  onClick: (col, evt, ctx) => {
-    const dialog = new MoreColumnOptionsDialog(col, <HTMLElement>evt.currentTarget, ctx);
+  onClick: (col, evt, ctx, level) => {
+    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, evt), ctx);
     dialog.open();
   },
   options: {

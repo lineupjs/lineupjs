@@ -1,14 +1,14 @@
 import {IColumnMetaData} from '../../model';
 import Column from '../../model/Column';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class RenameDialog extends ADialog {
 
   private readonly before: IColumnMetaData;
 
-  constructor(private readonly column: Column, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: Column, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
     this.before = column.getMetaData();
