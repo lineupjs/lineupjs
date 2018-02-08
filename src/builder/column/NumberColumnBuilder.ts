@@ -14,7 +14,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    * @param {[number , number]} domain input data domain [min, max]
    * @param {[number , number]} range optional output domain [0, 1]
    */
-  mapping(type: 'linear'|'sqrt'|'pow1.1'|'pow2'|'pow3', domain: [number, number], range?: [number, number]) {
+  mapping(type: 'linear' | 'sqrt' | 'pow1.1' | 'pow2' | 'pow3', domain: [number, number], range?: [number, number]) {
     if (type === 'linear') {
       this.desc.domain = domain;
       if (range) {

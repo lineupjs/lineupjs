@@ -36,8 +36,18 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     super(id, desc);
     this.setWidthImpl(30);
     this.categories = [
-      {name: desc.trueMarker || '✓', color: BooleanColumn.GROUP_TRUE.color, label: BooleanColumn.GROUP_TRUE.name, value: 0},
-      {name: desc.trueMarker || '', color: BooleanColumn.GROUP_FALSE.color, label: BooleanColumn.GROUP_FALSE.name, value: 1}
+      {
+        name: desc.trueMarker || '✓',
+        color: BooleanColumn.GROUP_TRUE.color,
+        label: BooleanColumn.GROUP_TRUE.name,
+        value: 0
+      },
+      {
+        name: desc.trueMarker || '',
+        color: BooleanColumn.GROUP_FALSE.color,
+        label: BooleanColumn.GROUP_FALSE.name,
+        value: 1
+      }
     ];
   }
 

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+  <button id="select">Select</button>
+  <button id="highlight">Highlight</button>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const cats = ['c1', 'c2', 'c3'];
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        a: Math.random() * 10,
+        d: 'Row ' + i,
+        cat: cats[Math.floor(Math.random() * 3)],
+        cat2: cats[Math.floor(Math.random() * 3)]
+      })
+    }
+    const lineup = LineUpJS.asTaggle(document.body, arr);
+
+    lineup.on(LineUpJS.LineUp.EVENT_SELECTION_CHANGED, (selection) => {
+      console.log('current selection', selection);
+    });
+    lineup.on(LineUpJS.LineUp.EVENT_HIGHLIGHT_CHANGED, (highlight) => {
+      console.log('current highlight', highlight);
+    });
+
+    document.querySelector('button#select').addEventListener('click', () => {
+      lineup.setSelection([1, 2, 3]);
+    });
+
+    document.querySelector('button#highlight').addEventListener('click', () => {
+      lineup.setHighlight(50);
+    });
+  };
+</script>
+
+</body>
+</html>

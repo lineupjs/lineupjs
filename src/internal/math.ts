@@ -61,8 +61,8 @@ export class LazyBoxPlotData implements IStatistics {
 
   constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: HistogramGenerator<number, number>) {
     // filter out NaN
-   this.values = values.filter((d) => !isMissingValue(d));
-  this.missing = values.length - this.values.length;
+    this.values = values.filter((d) => !isMissingValue(d));
+    this.missing = values.length - this.values.length;
   }
 
   get count() {
@@ -148,7 +148,7 @@ function cached() {
   return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const getter = descriptor.get!;
     const cacheKey = `__${propertyKey}`;
-    descriptor.get = function(this: any) {
+    descriptor.get = function (this: any) {
       if (this.hasOwnProperty(cacheKey)) {
         return this[cacheKey];
       }
@@ -212,7 +212,7 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function computeHist<T>(arr: T[], acc: (row: T) => ICategory|null, categories: ICategory[]): ICategoricalStatistics {
+export function computeHist<T>(arr: T[], acc: (row: T) => ICategory | null, categories: ICategory[]): ICategoricalStatistics {
   const m = new Map<string, number>();
   let missingCount = 0;
   categories.forEach((cat) => m.set(cat.name, 0));

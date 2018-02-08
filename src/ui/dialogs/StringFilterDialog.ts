@@ -1,18 +1,19 @@
 import StringColumn from '../../model/StringColumn';
-import {filterMissingMarkup} from '../missing';
-import ADialog from './ADialog';
+import {filterMissingMarkup, findFilterMissing} from '../missing';
+import ADialog, {IDialogContext} from './ADialog';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class StringFilterDialog extends ADialog {
 
-  constructor(private readonly column: StringColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: StringColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
   }
 
   private updateFilter(filter: string | RegExp | null) {
-    this.attachment.classList.toggle('lu-filtered', filter != null && filter !== '');
+    updateFilterState(this.attachment, this.column, filter != null && filter !== '');
     this.column.setFilter(filter);
   }
 
@@ -23,7 +24,7 @@ export default class StringFilterDialog extends ADialog {
   }
 
   submit() {
-    const filterMissing = this.findInput('input[type="checkbox"].lu_filter_missing').checked;
+    const filterMissing = findFilterMissing(this.node).checked;
     if (filterMissing) {
       this.updateFilter(StringColumn.FILTER_MISSING);
       return true;
@@ -44,7 +45,7 @@ export default class StringFilterDialog extends ADialog {
     <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
     ${filterMissingMarkup(bakMissing)}`);
 
-    const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');
+    const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
 

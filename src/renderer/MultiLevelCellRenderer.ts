@@ -29,7 +29,7 @@ export function createData(col: { children: Column[] } & Column, context: IRende
     const summaryRenderer = mode === ERenderMode.GROUP ? context.summaryRenderer(d, false, imposer) : null;
     let template: string = '';
     let rendererId: string = '';
-    switch(mode) {
+    switch (mode) {
       case ERenderMode.CELL:
         template = renderer!.template;
         rendererId = col.getRenderer();

@@ -51,7 +51,7 @@ export default class StringColumn extends ValueColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
-  private patternFunction: Function|null;
+  private patternFunction: Function | null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<IStringColumnDesc>) {
@@ -169,7 +169,7 @@ export default class StringColumn extends ValueColumn<string> {
       return bValue === '' ? 0 : FIRST_IS_NAN; //same = 0
     }
     if (bValue === '') {
-      return - FIRST_IS_NAN;
+      return -FIRST_IS_NAN;
     }
     return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
   }

@@ -15,7 +15,8 @@ section.#{$lu-css_prefix}-slopegraph svg {
       stroke-linecap: round;
 
       &:hover,
-      &.#{$lu_css_prefix}-selected {
+      &.#{$lu_css_prefix}-selected,
+      &.le-highlighted {
         z-index: 10;
         stroke: $lu_selected_color;
       }
@@ -27,7 +28,8 @@ section.#{$lu-css_prefix}-slopegraph svg {
       stroke-linejoin: round;
 
       &:hover,
-      &.#{$lu_css_prefix}-selected {
+      &.#{$lu_css_prefix}-selected,
+      &.le-highlighted {
         z-index: 10;
         stroke: $lu_selected_color;
         fill: $lu_slope_group_selected_color;

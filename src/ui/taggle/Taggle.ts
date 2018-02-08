@@ -47,7 +47,7 @@ export default class Taggle extends ALineUp {
         this.renderer.switchRule(spaceFilling);
       }
     }
-    this.forward(this.renderer, `${ALineUp.EVENT_HOVER_CHANGED}.main`);
+    this.forward(this.renderer, `${ALineUp.EVENT_HIGHLIGHT_CHANGED}.main`);
   }
 
   private setViolation(violation?: string) {
@@ -57,12 +57,22 @@ export default class Taggle extends ALineUp {
   }
 
   destroy() {
+    this.node.classList.remove('lu-taggle', 'lu');
     this.renderer.destroy();
+    this.panel.destroy();
     super.destroy();
   }
 
   update() {
     this.renderer.update();
+  }
+
+  setHighlight(dataIndex: number, scrollIntoView: boolean = true) {
+    return this.renderer.setHighlight(dataIndex, scrollIntoView);
+  }
+
+  getHighlight() {
+    return this.renderer.getHighlight();
   }
 
   setDataProvider(data: DataProvider, dump?: any) {

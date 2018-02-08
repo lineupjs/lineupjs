@@ -28,11 +28,15 @@ export default class LineUp extends ALineUp {
       this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
       this.node.insertBefore(this.panel.node, this.node.firstChild);
     }
-    this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
+    this.forward(this.renderer, `${EngineRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
   }
 
   destroy() {
+    this.node.classList.remove('lu');
     this.renderer.destroy();
+    if (this.panel) {
+      this.panel.destroy();
+    }
     super.destroy();
   }
 
@@ -47,5 +51,13 @@ export default class LineUp extends ALineUp {
     if (this.panel) {
       this.panel.update(this.renderer.ctx);
     }
+  }
+
+  setHighlight(dataIndex: number, scrollIntoView: boolean = true) {
+    return this.renderer.setHighlight(dataIndex, scrollIntoView);
+  }
+
+  getHighlight() {
+    return this.renderer.getHighlight();
   }
 }

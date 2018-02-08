@@ -2,15 +2,15 @@ import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ICategoricalDesc, ICategory, toCategories, toCategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 
-export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string|null>;
+export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string | null>;
 
 /**
  * a string column with optional alignment
  */
-export default class CategoricalsColumn extends ArrayColumn<string|null> {
+export default class CategoricalsColumn extends ArrayColumn<string | null> {
   readonly categories: ICategory[];
 
-  private readonly missingCategory: ICategory|null;
+  private readonly missingCategory: ICategory | null;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
 

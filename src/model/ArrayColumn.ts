@@ -12,7 +12,7 @@ export interface IArrayDesc {
 }
 
 export interface ISplicer {
-  length: number|null;
+  length: number | null;
 
   splice<T>(values: T[]): T[];
 }
@@ -25,7 +25,7 @@ export interface IArrayColumnDesc<T> extends IArrayDesc, IValueColumnDesc<T[]> {
 export default class ArrayColumn<T> extends ValueColumn<T[]> implements IArrayColumn<T> {
   static readonly EVENT_SPLICE_CHANGED = 'spliceChanged';
 
-  private readonly _dataLength: number|null;
+  private readonly _dataLength: number | null;
 
   private splicer: Readonly<ISplicer>;
 

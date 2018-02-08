@@ -5,13 +5,13 @@
 .#{$lu_css_prefix}-summary[data-renderer=interleaving],
 [data-renderer=histogram] {
   display: flex;
-  font-size: x-small;
   flex-direction: row;
 
   > div {
     flex: 1 1 auto;
     position: relative;
     margin: 0 1px;
+    font-size: x-small;
 
     &[data-filtered=filtered] {
       opacity: 0.2;

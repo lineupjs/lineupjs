@@ -19,7 +19,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   readonly categories: ICategory[];
 
-  private readonly missingCategory: ICategory|null;
+  private readonly missingCategory: ICategory | null;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
   /**

@@ -12,7 +12,7 @@ export interface IRenderers {
   groupId: string;
   group: IGroupCellRenderer;
   summaryId: string;
-  summary: ISummaryRenderer|null;
+  summary: ISummaryRenderer | null;
 }
 
 /** @internal */
@@ -37,7 +37,7 @@ export default class RenderColumn implements IColumn {
 
   createHeader() {
     const node = createHeader(this.c, this.ctx);
-    node.className = `lu-header${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+    node.className = `lu-header`;
     node.classList.toggle('frozen', this.c.frozen);
 
     if (this.renderers.summary) {
@@ -51,7 +51,6 @@ export default class RenderColumn implements IColumn {
   }
 
   updateHeader(node: HTMLElement) {
-    node.classList.toggle('lu-filtered', this.c.isFiltered());
     updateHeader(node, this.c);
     if (!this.renderers.summary) {
       return;

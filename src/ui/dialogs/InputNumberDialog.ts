@@ -1,12 +1,12 @@
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export interface IInputNumberOptions {
   min: number;
   max: number;
-  step: number|'any';
+  step: number | 'any';
   value: number;
-  label: string|null;
+  label: string | null;
 }
 
 /** @internal */
@@ -19,10 +19,9 @@ export default class InputNumberDialog extends ADialog {
     value: NaN,
     label: null
   };
-  constructor(attachment: HTMLElement, private readonly callback: (value: number)=>void, options: Partial<IInputNumberOptions> = {}) {
-    super(attachment, {
-      hideOnMoveOutside: true
-    });
+
+  constructor(dialog: IDialogContext, private readonly callback: (value: number) => void, options: Partial<IInputNumberOptions> = {}) {
+    super(dialog);
     Object.assign(this.ioptions, options);
   }
 

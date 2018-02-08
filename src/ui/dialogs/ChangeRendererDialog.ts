@@ -1,13 +1,11 @@
 import Column from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class ChangeRendererDialog extends ADialog {
-  constructor(private readonly column: Column, attachment: HTMLElement, private readonly ctx: IRankingHeaderContext) {
-    super(attachment, {
-      hideOnMoveOutside: true
-    });
+  constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
+    super(dialog);
   }
 
   protected build(node: HTMLElement) {

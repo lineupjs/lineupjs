@@ -15,7 +15,7 @@ export default class StringMapColumn extends MapColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
-  private patternFunction: Function|null;
+  private patternFunction: Function | null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<IStringMapColumnDesc>) {
@@ -42,9 +42,9 @@ export default class StringMapColumn extends MapColumn<string> {
 
   getValue(row: IDataRow) {
     return super.getValue(row).map(({key, value}) => ({
-        key,
-        value: this.replacePattern(value, key, row)
-      }));
+      key,
+      value: this.replacePattern(value, key, row)
+    }));
   }
 
   private replacePattern(s: any, key: string, row: IDataRow) {

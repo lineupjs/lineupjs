@@ -13,6 +13,7 @@ import RankColumn from '../model/RankColumn';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {exportRanking, IExportOptions} from './utils';
+import {isSupportType} from '../model/annotations';
 
 export {IExportOptions} from './utils';
 
@@ -167,7 +168,26 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   takeSnapshot(col: Column): Ranking {
     const r = this.cloneRanking();
-    r.push(this.clone(col));
+    const ranking = col.findMyRanker();
+    // by convention copy all support types and the first string column
+    let hasString = col.desc.type === 'string';
+    const toClone = !ranking ? [col] : ranking.children.filter((c) => {
+      if (c === col) {
+        return true;
+      }
+      if (!hasString && c.desc.type === 'string') {
+        hasString = true;
+        return true;
+      }
+      return isSupportType(c);
+    });
+    toClone.forEach((c) => {
+      const clone = this.clone(c);
+      r.push(clone);
+      if (c === col) {
+        clone.sortByMe();
+      }
+    });
     this.insertRanking(r);
     return r;
   }
@@ -246,7 +266,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   ensureOneRanking() {
     if (this.rankings.length === 0) {
-      this.pushRanking();
+      const r = this.pushRanking();
+      this.push(r, createRankDesc());
     }
   }
 
@@ -549,6 +570,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     while (g) {
       const key = `${ranking.id}@${toGroupID(g)}`;
       if (this.aggregations.has(key)) {
+        // propagate to leaf
+        this.aggregations.add(`${ranking.id}@${toGroupID(group)}`);
         return true;
       }
       g = g.parent;
@@ -556,9 +579,19 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return false;
   }
 
+  private unaggregateParents(ranking: Ranking, group: IGroup) {
+    let g: IGroup | undefined | null = group.parent;
+    while (g) {
+      this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`);
+      g = g.parent;
+    }
+  }
+
   setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+    this.unaggregateParents(ranking, group);
     const key = `${ranking.id}@${toGroupID(group)}`;
-    if (value === this.aggregations.has(key)) {
+    const current = this.isAggregated(ranking, group);
+    if (current === value) {
       return;
     }
     if (value) {
@@ -572,6 +605,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   aggregateAllOf(ranking: Ranking, aggregateAll: boolean) {
     const groups = ranking.getGroups();
     groups.forEach((group) => {
+      this.unaggregateParents(ranking, group);
+      const current = this.isAggregated(ranking, group);
+      if (current === aggregateAll) {
+        return;
+      }
       const key = `${ranking.id}@${toGroupID(group)}`;
       if (aggregateAll) {
         this.aggregations.add(key);

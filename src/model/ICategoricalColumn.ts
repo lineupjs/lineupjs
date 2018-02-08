@@ -23,7 +23,7 @@ export function isSetColumn(col: Column): col is ISetColumn {
 }
 
 export interface ICategoricalColumn extends ISetColumn {
-  getCategory(row: IDataRow): ICategory|null;
+  getCategory(row: IDataRow): ICategory | null;
 }
 
 export interface ICategory {
@@ -43,21 +43,21 @@ export interface ICategory {
 }
 
 /** @internal */
-export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: ()=>string = () => Column.DEFAULT_COLOR) {
+export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => Column.DEFAULT_COLOR) {
   if (typeof cat === 'string') {
-      //just the category value
-      return {name: cat, label: cat, color: nextColor(), value};
-    }
-    const name = cat.name == null ? String(cat.value) : cat.name;
-    return {
-      name,
-      label: cat.label || name,
-      color: cat.color || nextColor(),
-      value: cat.value != null ? cat.value : value
-    };
+    //just the category value
+    return {name: cat, label: cat, color: nextColor(), value};
+  }
+  const name = cat.name == null ? String(cat.value) : cat.name;
+  return {
+    name,
+    label: cat.label || name,
+    color: cat.color || nextColor(),
+    value: cat.value != null ? cat.value : value
+  };
 }
 
-export function compareCategory(a: ICategory|null, b: ICategory|null) {
+export function compareCategory(a: ICategory | null, b: ICategory | null) {
   const aNull = a == null || isNaN(a.value);
   const bNull = b == null || isNaN(b.value);
   if (aNull || a == null) {
@@ -98,7 +98,7 @@ export interface ICategoricalFilter {
   filterMissing: boolean;
 }
 
-function isEmptyFilter(f: ICategoricalFilter|null) {
+function isEmptyFilter(f: ICategoricalFilter | null) {
   return f == null || (!f.filterMissing && (f.filter == null || f.filter === '' || (Array.isArray(f.filter) && f.filter.length === 0)));
 }
 

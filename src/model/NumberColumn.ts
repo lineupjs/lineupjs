@@ -21,7 +21,6 @@ export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
 
-
 /**
  * a number column mapped from an original input scale to an output range
  */
@@ -174,7 +173,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   isFiltered() {
-    return isDummyNumberFilter(this.currentFilter);
+    return !isDummyNumberFilter(this.currentFilter);
   }
 
   getFilter(): INumberFilter {

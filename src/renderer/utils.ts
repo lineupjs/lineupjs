@@ -27,16 +27,19 @@ export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: { [ke
   });
   return setText(node, text);
 }
+
 /** @internal */
 export function noop() {
   // no op
 }
+
 /** @internal */
 export const noRenderer = {
   template: `<div></div>`,
   update: noop,
   render: noop
 };
+
 /** @internal */
 export function setText<T extends Node>(node: T, text?: string): T {
   if (text === undefined) {
@@ -77,7 +80,7 @@ export function forEachChild<T extends Element>(node: T, callback: (d: Element, 
  * @param columns columns to check
  * @internal
  */
-export function matchColumns(node: HTMLElement, columns: { column: Column, template: string, rendererId: string}[]) {
+export function matchColumns(node: HTMLElement, columns: { column: Column, template: string, rendererId: string }[]) {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.template).join('');

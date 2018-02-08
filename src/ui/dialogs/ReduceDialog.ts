@@ -1,14 +1,12 @@
 import {EAdvancedSortMethod} from '../../model/INumberColumn';
 import ReduceColumn from '../../model/ReduceColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 import {sortMethods} from './SortDialog';
 
 /** @internal */
 export default class ReduceDialog extends ADialog {
-  constructor(private readonly column: ReduceColumn, attachment: HTMLElement) {
-    super(attachment, {
-      hideOnMoveOutside: true
-    });
+  constructor(private readonly column: ReduceColumn, dialog: IDialogContext) {
+    super(dialog);
   }
 
   protected build(node: HTMLElement) {
@@ -16,6 +14,6 @@ export default class ReduceDialog extends ADialog {
       getSortMethod: () => this.column.getReduce(),
       setSortMethod: (s: EAdvancedSortMethod) => this.column.setReduce(s)
     };
-    sortMethods(node,wrapper, Object.keys(EAdvancedSortMethod));
+    sortMethods(node, wrapper, Object.keys(EAdvancedSortMethod));
   }
 }

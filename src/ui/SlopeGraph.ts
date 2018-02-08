@@ -22,6 +22,7 @@ class ItemSlope implements ISlope {
   }
 
   update(path: SVGPathElement, width: number) {
+    path.setAttribute('data-i', String(this.dataIndices[0]));
     path.setAttribute('class', 'lu-slope');
     path.setAttribute('d', `M0,${this.left}L${width},${this.right}`);
   }
@@ -111,8 +112,8 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private initHeader(header: HTMLElement) {
-    header.innerHTML = `<i title="Item" class="${this._mode === EMode.ITEM ? 'active' :''}"><span aria-hidden="true">Item</span></i>
-        <i title="Band" class="${this._mode === EMode.BAND ? 'active' :''}"><span aria-hidden="true">Band</span></i>`;
+    header.innerHTML = `<i title="Item" class="${this._mode === EMode.ITEM ? 'active' : ''}"><span aria-hidden="true">Item</span></i>
+        <i title="Band" class="${this._mode === EMode.BAND ? 'active' : ''}"><span aria-hidden="true">Band</span></i>`;
 
     const icons = <HTMLElement[]>Array.from(header.children);
     icons.forEach((n: HTMLElement, i) => {
@@ -360,6 +361,22 @@ export default class SlopeGraph implements ITableSection {
     }
     const p = this.body.parentElement!;
     this.onScrolledVertically(p.scrollTop, p.clientHeight);
+  }
+
+
+  highlight(dataIndex: number) {
+    const old = this.body.querySelector(`[data-i].le-highlighted`);
+    if (old) {
+      old.classList.remove('le-highlighted');
+    }
+    if (dataIndex < 0) {
+      return;
+    }
+    const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
+    if (item) {
+      item.classList.add('le-highlighted');
+    }
+    return item != null;
   }
 
   private onScrolledVertically(scrollTop: number, clientHeight: number) {

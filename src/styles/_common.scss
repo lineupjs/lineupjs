@@ -33,6 +33,10 @@
     }
   }
 
+  .#{$lu_css_prefix}-filter-missing {
+    font-size: 13px;
+  }
+
   .#{$lu_css_prefix}-gradient-text {
     @include user_select_none();
 

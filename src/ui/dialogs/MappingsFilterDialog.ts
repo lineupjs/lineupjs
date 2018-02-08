@@ -6,13 +6,13 @@ import {
 import {isDummyNumberFilter} from '../../model/internal';
 import {ISummaryRenderer} from '../../renderer/interfaces';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class MappingsFilterDialog extends ADialog {
 
-  private original: IMappingFunction;
   private scale: IMappingFunction;
 
   private readonly mappingLines: MappingLine[] = [];
@@ -31,16 +31,16 @@ export default class MappingsFilterDialog extends ADialog {
     updated: () => this.updateLines(this.computeScale()),
     domain: () => this.rawDomain,
     normalizeRaw: this.normalizeRaw.bind(this),
-    unnormalizeRaw: this.unnormalizeRaw.bind(this)
+    unnormalizeRaw: this.unnormalizeRaw.bind(this),
+    dialog: this.dialog
   };
 
-  constructor(private readonly column: IMapAbleColumn, attachment: HTMLElement, ctx: IRankingHeaderContext) {
-    super(attachment, {
+  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
+    super(dialog, {
       fullDialog: true
     });
 
     this.idPrefix = `me${ctx.idPrefix}`;
-    this.original = this.column.getOriginalMapping();
     this.scale = this.column.getMapping().clone();
     const domain = this.scale.domain;
     this.rawDomain = [domain[0], domain[domain.length - 1]];
@@ -86,7 +86,7 @@ export default class MappingsFilterDialog extends ADialog {
       </label></div>
         ${this.summary.template}
         <h4 data-toggle>Mapping Details</h4>
-        <div class="lu-details"><h4>Domain (min - max): </h4><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" > - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" ></div>
+        <div class="lu-details"><h4>Domain (min - max): </h4><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
         <h4 class="lu-details" style="text-align: center">Input Domain (min - max)</h4>
         <svg class="lu-details" viewBox="0 0 106 66">
            <g transform="translate(3,3)">
@@ -201,7 +201,7 @@ export default class MappingsFilterDialog extends ADialog {
       this.summary.update(summary, this.hist);
 
       Array.from(this.loadedData).forEach((v) => {
-        g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v)*100, 2)}" y2="60"></line>`);
+        g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
       });
     });
   }
@@ -228,7 +228,7 @@ export default class MappingsFilterDialog extends ADialog {
   }
 
   private applyMapping(newScale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) {
-    this.attachment.classList.toggle('lu-filtered', (!newScale.eq(this.original) || !isDummyNumberFilter(filter)));
+    updateFilterState(this.attachment, this.column, !isDummyNumberFilter(filter));
 
     this.column.setMapping(newScale);
     this.column.setFilter(filter);

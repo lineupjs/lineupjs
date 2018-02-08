@@ -19,7 +19,7 @@ const banner = '/*! ' + (pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' +
 
 //list of loaders and their mappings
 const webpackloaders = [
-  {test: /\.scss$/, loader: 'style-loader!css-loader!sass-loader'},
+  {test: /\.s?css$/, loader: 'style-loader!css-loader!sass-loader'},
   {test: /\.tsx?$/, loader: 'awesome-typescript-loader'},
   {
     test: /\.(png|jpg)$/,
@@ -105,14 +105,10 @@ function generateWebpack(options) {
   };
 
   if (options.isProduction) {
-      base.plugins.unshift(new webpack.BannerPlugin({
-        banner: banner,
-        raw: true
-      }));
-      base.plugins.push(new webpack.optimize.MinChunkSizePlugin({
-        minChunkSize: 10000 //at least 10.000 characters
-      }),
-      new webpack.optimize.AggressiveMergingPlugin());
+    base.plugins.unshift(new webpack.BannerPlugin({
+      banner: banner,
+      raw: true
+    }));
   }
 
   if (!options.isTest) {
@@ -122,10 +118,7 @@ function generateWebpack(options) {
       allChunks: true // there seems to be a bug in dynamically loaded chunk styles are not loaded, workaround: extract all styles from all chunks
     });
     base.plugins.push(p);
-    base.module.loaders[0] = {
-      test: /\.scss$/,
-      loader: p.extract(['css-loader', 'sass-loader'])
-    };
+    base.module.loaders[0] = Object.assign({}, base.module.loaders[0], {loader: p.extract(['css-loader', 'sass-loader'])});
   }
   if (options.min) {
     //use a minifier
@@ -145,7 +138,7 @@ function generateWebpack(options) {
       }));
   } else if (options.isDev) {
     //generate source maps
-    base.devtool = 'inline-source-map';
+    base.devtool = 'source-map';
   }
   return base;
 }

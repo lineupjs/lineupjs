@@ -1,13 +1,13 @@
 import StringColumn from '../../model/StringColumn';
 import StringMapColumn from '../../model/StringMapColumn';
 import StringsColumn from '../../model/StringsColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class EditPatternDialog extends ADialog {
 
-  constructor(private readonly column: StringColumn | StringsColumn | StringMapColumn, attachment: HTMLElement, private readonly idPrefix: string) {
-    super(attachment, {
+  constructor(private readonly column: StringColumn | StringsColumn | StringMapColumn, dialog: IDialogContext, private readonly idPrefix: string) {
+    super(dialog, {
       fullDialog: true
     });
   }

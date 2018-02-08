@@ -1,13 +1,14 @@
 import BooleanColumn from '../../model/BooleanColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class BooleanFilterDialog extends ADialog {
 
   private readonly before: boolean | null;
 
-  constructor(private readonly column: BooleanColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: BooleanColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
     this.before = this.column.getFilter();
@@ -22,7 +23,7 @@ export default class BooleanFilterDialog extends ADialog {
   }
 
   private updateFilter(filter: boolean | null) {
-    this.attachment.classList.toggle('lu-filtered', filter != null);
+    updateFilterState(this.attachment, this.column, filter != null);
     this.column.setFilter(filter);
   }
 

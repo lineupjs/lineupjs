@@ -1,40 +1,62 @@
 import Popper from 'popper.js';
-import {registerPopup} from './manager';
+import DialogManager from './DialogManager';
+import merge from '../../internal/merge';
 
 export interface IDialogOptions {
   title: string;
-  hideOnClickOutside: boolean;
-  hideOnMoveOutside: boolean;
   fullDialog: boolean;
 
   // popper options
   placement?: Popper.Placement;
   eventsEnabled?: boolean;
   modifiers?: Popper.Modifiers;
+  toggleDialog: boolean;
+}
+
+export interface IDialogContext {
+  attachment: HTMLElement;
+  level: number;
+  manager: DialogManager;
 }
 
 abstract class ADialog {
 
   private readonly options: Readonly<IDialogOptions> = {
     title: '',
-    hideOnClickOutside: true,
-    hideOnMoveOutside: false,
     fullDialog: false,
-    placement: 'bottom-start'
+    placement: 'bottom-start',
+    toggleDialog: true,
+    modifiers: {
+    }
   };
 
   readonly node: HTMLFormElement;
   private popper: Popper;
 
-  constructor(readonly attachment: HTMLElement, options: Partial<IDialogOptions> = {}) {
+  constructor(protected readonly dialog: IDialogContext, options: Partial<IDialogOptions> = {}) {
     Object.assign(this.options, options);
-    this.node = attachment.ownerDocument.createElement('form');
+    this.node = dialog.attachment.ownerDocument.createElement('form');
     this.node.classList.add('lu-dialog');
   }
 
-  protected abstract build(node: HTMLElement): boolean|void;
+  get attachment() {
+    return this.dialog.attachment;
+  }
+
+  get level() {
+    return this.dialog.level;
+  }
+
+  protected abstract build(node: HTMLElement): boolean | void;
+
+  equals(that: ADialog) {
+    return this.dialog.level === that.dialog.level && this.dialog.attachment === that.dialog.attachment;
+  }
 
   open() {
+    if (this.options.toggleDialog && this.dialog.manager.removeLike(this)) {
+      return;
+    }
     if (this.build(this.node) === false) {
       return;
     }
@@ -45,14 +67,20 @@ abstract class ADialog {
     }
     if (this.options.fullDialog) {
       this.node.insertAdjacentHTML('beforeend', `<div>
-        <button type="submit" title="ok"></button>
-        <button type="button" title="cancel"></button>
-        <button type="reset" title="reset"></button>
+        <button type="submit" title="Apply"></button>
+        <button type="button" title="Cancel"></button>
+        <button type="reset" title="Reset to default values"></button>
       </div>`);
     }
 
     parent.appendChild(this.node);
-    this.popper = new Popper(this.attachment, this.node, this.options);
+    this.popper = new Popper(this.attachment, this.node, merge({
+      modifiers: {
+        preventOverflow: {
+          boundariesElement: parent
+        }
+      }
+    }, this.options));
 
     const auto = this.find<HTMLInputElement>('input[autofocus]');
     if (auto) {
@@ -79,7 +107,7 @@ abstract class ADialog {
       }
       return false;
     };
-    const cancel = this.find<HTMLButtonElement>('button[title=cancel]');
+    const cancel = this.find<HTMLButtonElement>('button[title=Cancel]');
     if (cancel) {
       cancel.onclick = (evt) => {
         evt.stopPropagation();
@@ -88,7 +116,7 @@ abstract class ADialog {
       };
     }
 
-    registerPopup(this, this.options.hideOnClickOutside, this.options.hideOnMoveOutside);
+    this.dialog.manager.push(this);
   }
 
   protected find<T extends HTMLElement>(selector: string): T {
@@ -99,7 +127,7 @@ abstract class ADialog {
     return this.find<HTMLInputElement>(selector);
   }
 
-  protected forEach<T>(selector: string, callback: (d: HTMLElement, i: number)=> T): T[] {
+  protected forEach<T>(selector: string, callback: (d: HTMLElement, i: number) => T): T[] {
     return Array.from(this.node.querySelectorAll(selector)).map(callback);
   }
 
@@ -113,6 +141,7 @@ abstract class ADialog {
   }
 
   destroy() {
+    this.dialog.manager.remove(this);
     this.popper.destroy();
     this.node.remove();
   }

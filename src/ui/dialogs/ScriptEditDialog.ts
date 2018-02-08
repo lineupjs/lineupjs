@@ -1,5 +1,5 @@
 import ScriptColumn from '../../model/ScriptColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 //
 // const help = `<div class="script-description">
 //       <p>You can write any valid JavaScript code. It will be embedded in a function. Therefore the last statement has to return a value.
@@ -42,8 +42,8 @@ import ADialog from './ADialog';
 export default class ScriptEditDialog extends ADialog {
   private readonly before: string;
 
-  constructor(private readonly column: ScriptColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: ScriptColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
     this.before = column.getScript();

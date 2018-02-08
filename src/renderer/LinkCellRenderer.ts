@@ -35,7 +35,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
   private static exampleText(col: Column, rows: IDataRow[]) {
     const numExampleRows = 5;
     const examples = <string[]>[];
-    for(const row of rows) {
+    for (const row of rows) {
       if (col.isMissing(row)) {
         continue;
       }
@@ -44,7 +44,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
         break;
       }
     }
-    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;': ''}`;
+    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
   createGroup(col: StringColumn) {

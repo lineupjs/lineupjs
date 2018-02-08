@@ -23,7 +23,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   readonly categories: ICategory[];
 
-  private missingCategory: ICategory|null;
+  private missingCategory: ICategory | null;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
 

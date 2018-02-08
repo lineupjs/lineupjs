@@ -5,16 +5,16 @@ import DataProvider from '../provider/ADataProvider';
 
 export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   /**
-   * triggered when the mouse is over a specific row
-   * @argument data_index:number the selected data index or <0 if no row
-   */
-  static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
-
-  /**
    * triggered when the user click on a row
-   * @argument data_index:number the selected data index or <0 if no row
+   * @argument dataIndices:number[] the selected data indices
    */
   static readonly EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
+
+  /**
+   * triggered when the user hovers over a row
+   * @argument dataIndex:number the selected data index or <0 if no row
+   */
+  static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
   constructor(public readonly node: HTMLElement, public data: DataProvider) {
     super();
@@ -23,11 +23,12 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ALineUp.EVENT_HOVER_CHANGED, ALineUp.EVENT_SELECTION_CHANGED]);
+    return super.createEventList().concat([ALineUp.EVENT_HIGHLIGHT_CHANGED, ALineUp.EVENT_SELECTION_CHANGED]);
   }
 
   destroy() {
-    this.node.remove();
+    // just clear since we hand in the node itself
+    this.node.innerHTML = '';
   }
 
   dump() {
@@ -47,6 +48,14 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
   }
 
+  getSelection() {
+    return this.data.getSelection();
+  }
+
+  setSelection(dataIndices: number[]) {
+    this.data.setSelection(dataIndices);
+  }
+
   /**
    * sorts LineUp by he given column
    * @param column callback function finding the column to sort
@@ -60,6 +69,11 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     }
     return col != null;
   }
+
+  abstract setHighlight(dataIndex: number, scrollIntoView: boolean): boolean;
+
+  abstract getHighlight(): number;
+
 }
 
 export default ALineUp;

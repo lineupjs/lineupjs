@@ -1,7 +1,7 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
-import {filterMissingMarkup} from '../ui/missing';
+import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, setText} from './utils';
@@ -48,7 +48,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
         break;
       }
     }
-    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;': ''}`;
+    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
   createGroup(col: StringColumn) {
@@ -62,7 +62,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
 
   private static interactiveSummary(col: StringColumn, node: HTMLElement) {
     const form = <HTMLFormElement>node;
-    const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');
+    const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
 
@@ -140,7 +140,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 }
 
-function toString(filter: null|string|RegExp) {
+function toString(filter: null | string | RegExp) {
   if (filter == null || filter === '' || filter === StringColumn.FILTER_MISSING) {
     return '';
   }

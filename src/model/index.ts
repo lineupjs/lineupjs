@@ -33,7 +33,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import ImpositionBoxPlotColumn from './ImpositionBoxPlotColumn';
 
 export {isSupportType, Category, SupportType} from './annotations';
-export {isMissingValue, isUnknown, FIRST_IS_NAN, missingGroup } from './missing';
+export {isMissingValue, isUnknown, FIRST_IS_NAN, missingGroup} from './missing';
 export * from './Group';
 export * from './interfaces';
 export * from './ICategoricalColumn';

@@ -7,8 +7,8 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createSelectionDesc(label: string = 'S') {
-  return {type: 'selection', label};
+export function createSelectionDesc(label: string = 'Selection Checkboxes') {
+  return {type: 'selection', label, fixed: true};
 }
 
 export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {

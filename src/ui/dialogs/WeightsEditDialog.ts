@@ -1,14 +1,14 @@
 import {round} from '../../internal';
 import StackColumn from '../../model/StackColumn';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class WeightsEditDialog extends ADialog {
 
   private readonly weights: number[];
 
-  constructor(private readonly column: StackColumn, attachment: HTMLElement) {
-    super(attachment, {
+  constructor(private readonly column: StackColumn, dialog: IDialogContext) {
+    super(dialog, {
       fullDialog: true
     });
 

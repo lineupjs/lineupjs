@@ -1,7 +1,7 @@
 import {D3DragEvent, drag} from 'd3-drag';
 import {event as d3event, select, Selection} from 'd3-selection';
 import {round, similar} from '../../internal/math';
-import ADialog from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
@@ -18,14 +18,14 @@ export interface IMappingAdapter {
   normalizeRaw(v: number): number;
 
   unnormalizeRaw(v: number): number;
+
+  dialog: IDialogContext;
 }
 
 /** @internal */
 export default class MappingLineDialog extends ADialog {
-  constructor(private readonly line: { destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void }, attachment: HTMLElement, private readonly adapter: IMappingAdapter) {
-    super(attachment, {
-      hideOnMoveOutside: true
-    });
+  constructor(private readonly line: { destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void }, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
+    super(dialog);
   }
 
   build(node: HTMLElement) {
@@ -115,7 +115,12 @@ export class MappingLine {
       if (!evt.shiftKey) {
         return;
       }
-      const dialog = new MappingLineDialog(this, <any>this.node, this.adapter);
+      const ctx = {
+        manager: this.adapter.dialog.manager,
+        level: this.adapter.dialog.level + 1,
+        attachment: <any>this.node
+      };
+      const dialog = new MappingLineDialog(this, ctx, this.adapter);
       dialog.open();
     };
   }

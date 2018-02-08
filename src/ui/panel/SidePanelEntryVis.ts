@@ -11,6 +11,7 @@ export default class SidePanelEntryVis {
   constructor(public readonly column: Column, private ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('article');
     this.node.classList.add('lu-side-panel-entry');
+    this.node.dataset.colId = column.id;
     this.node.dataset.type = column.desc.type;
 
     this.summary = ctx.summaryRenderer(column, true);
@@ -25,7 +26,7 @@ export default class SidePanelEntryVis {
   private init() {
     this.node.innerHTML = `
       <header><div class="lu-label"></div><div class="lu-toolbar"></div></header>${this.summary.template}`;
-    createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
+    createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), 0, this.column, this.ctx);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
 
     const summary = <HTMLElement>this.node.lastElementChild!;

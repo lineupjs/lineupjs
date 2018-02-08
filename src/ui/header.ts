@@ -22,6 +22,7 @@ export interface IHeaderOptions {
   mergeDropAble: boolean;
   rearrangeAble: boolean;
   resizeable: boolean;
+  level: number;
 }
 
 /** @internal */
@@ -30,11 +31,12 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     dragAble: true,
     mergeDropAble: true,
     rearrangeAble: true,
-    resizeable: true
+    resizeable: true,
+    level: 0
   }, options);
   const node = ctx.document.createElement('section');
   node.innerHTML = `
-    <div class="lu-label">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label}</div>
+    <div class="lu-label">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
     <div class="lu-toolbar"></div>
     <div class="lu-spacing"></div>
     <div class="lu-handle"></div>
@@ -42,7 +44,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
   addTooltip(node, col);
 
-  createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
+  createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, options.level!, col, ctx);
 
   toggleToolbarIcons(node, col);
 
@@ -61,14 +63,22 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   return node;
 }
 
+
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column) {
   const label = <HTMLElement>node.querySelector('.lu-label')!;
-  label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label;
+  label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label;
   node.title = col.label;
+  node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;
   node.dataset.typeCat = categoryOf(col).name;
 
+  updateIconState(node, col);
+}
+
+
+/** @internal */
+export function updateIconState(node: HTMLElement, col: Column) {
   const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
   if (sort) {
     const {asc, priority} = col.isSortedByMe();
@@ -81,47 +91,58 @@ export function updateHeader(node: HTMLElement, col: Column) {
   }
 
   const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
-  if (!stratify) {
+  if (stratify) {
+    const groupedBy = col.isGroupedBy();
+    stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
+    if (groupedBy >= 0) {
+      stratify.dataset.priority = (groupedBy + 1).toString();
+    } else {
+      delete stratify.dataset.priority;
+    }
+  }
+
+  const filter = <HTMLElement>node.querySelector(`i[title^='Filter']`)!;
+  if (!filter) {
     return;
   }
-  const groupedBy = col.isGroupedBy();
-  stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
-  if (groupedBy >= 0) {
-    stratify.dataset.priority = (groupedBy + 1).toString();
+  if (col.isFiltered()) {
+    filter.dataset.active = '';
   } else {
-    delete stratify.dataset.priority;
+    delete filter.dataset.active;
   }
 }
 
-/** @internal */
-export function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, showLabel: boolean) {
+function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
   return (title: string, onClick: IOnClickHandler) => {
     node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
-      onClick(col, <any>evt, ctx);
+      ctx.dialogManager.setHighlightColumn(col);
+      onClick(col, <any>evt, ctx, level);
     };
     return i;
   };
 }
 
 /** @internal */
-export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
-  return createShortcutMenuItems(<any>addIconDOM(node, col, ctx, false), col, ctx);
+export function createToolbar(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
+  return createShortcutMenuItems(node, level, col, ctx);
 }
 
 export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
-export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
+  const addIcon = addIconDOM(node, col, ctx, level, false);
   const actions = toolbarActions(col, ctx);
 
   actions.filter((d) => d.options.shortcut).forEach((d) => addIcon(d.title, d.onClick));
 }
 
-export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
+  const addIcon = addIconDOM(node, col, ctx, level, true);
   const actions = toolbarActions(col, ctx);
 
   actions.filter((d) => !d.title.startsWith('More')).forEach((d) => addIcon(d.title, d.onClick));
@@ -130,8 +151,11 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
 /** @internal */
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
   const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
+  if (toolbar.childElementCount === 0) {
+    return;
+  }
   const moreIcon = toolbar.querySelector('[title^=More]')!;
-  const availableWidth = col.getWidth() - (moreIcon.clientWidth || defaultVisibleClientWidth);
+  const availableWidth = col.getWidth() - (moreIcon && moreIcon.clientWidth ? moreIcon.clientWidth : defaultVisibleClientWidth);
   const toggableIcons = Array.from(toolbar.children).filter((d) => d !== moreIcon)
     .reverse(); // start hiding with the last icon
 
@@ -156,7 +180,7 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
 
 function addTooltip(node: HTMLElement, col: Column) {
   let timer = -1;
-  let popper: Popper|null = null;
+  let popper: Popper | null = null;
 
   const showTooltip = () => {
     timer = -1;
@@ -168,7 +192,7 @@ function addTooltip(node: HTMLElement, col: Column) {
     parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
         <div x-arrow></div>
         <h4 class="lu-label">${col.label}</h4>
-        <p>${col.description.replace('\n',`<br/>`)}</p>
+        <p>${col.description.replace('\n', `<br/>`)}</p>
     </div>`);
     popper = new Popper(node, parent.lastElementChild!, {
       removeOnDestroy: true,
@@ -548,7 +572,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
         return;
       }
       if (hasDnDType(e, ...numberish)) {
-        node.dataset.draginfo = e.shiftKey ?  'Min/Max' : 'Sum';
+        node.dataset.draginfo = e.shiftKey ? 'Min/Max' : 'Sum';
       }
     });
   }
