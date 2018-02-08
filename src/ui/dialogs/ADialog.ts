@@ -1,5 +1,6 @@
 import Popper from 'popper.js';
 import DialogManager from './DialogManager';
+import merge from '../../internal/merge';
 
 export interface IDialogOptions {
   title: string;
@@ -26,15 +27,6 @@ abstract class ADialog {
     placement: 'bottom-start',
     toggleDialog: true,
     modifiers: {
-      preventOverflow: {
-        enabled: false
-      },
-      flip: {
-        enabled: false
-      },
-      hide: {
-        enabled: false
-      }
     }
   };
 
@@ -82,7 +74,13 @@ abstract class ADialog {
     }
 
     parent.appendChild(this.node);
-    this.popper = new Popper(this.attachment, this.node, this.options);
+    this.popper = new Popper(this.attachment, this.node, merge({
+      modifiers: {
+        preventOverflow: {
+          boundariesElement: parent
+        }
+      }
+    }, this.options));
 
     const auto = this.find<HTMLInputElement>('input[autofocus]');
     if (auto) {
