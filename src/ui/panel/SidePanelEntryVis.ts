@@ -11,6 +11,7 @@ export default class SidePanelEntryVis {
   constructor(public readonly column: Column, private ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('article');
     this.node.classList.add('lu-side-panel-entry');
+    this.node.dataset.colId = column.id;
     this.node.dataset.type = column.desc.type;
 
     this.summary = ctx.summaryRenderer(column, true);

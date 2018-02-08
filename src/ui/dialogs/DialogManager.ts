@@ -1,4 +1,5 @@
 import ADialog from './ADialog';
+import Column from '../../model';
 
 
 export default class DialogManager {
@@ -36,6 +37,26 @@ export default class DialogManager {
       100% 100%,
       100% 0%
     )`;
+  }
+
+  setHighlightColumn(column: Column) {
+    const root = <HTMLElement>this.node.parentElement!;
+    if (!root) {
+      this.clearHighlight();
+      return;
+    }
+    const header = <HTMLElement>root.querySelector(`.lu-header[data-col-id="${column.id}"]`);
+    if (!header) {
+      this.clearHighlight();
+      return;
+    }
+    const base = header.getBoundingClientRect();
+    this.setHighlight({
+      left: base.left,
+      top: base.top,
+      right: base.right,
+      bottom: root.clientHeight
+    });
   }
 
   clearHighlight() {
@@ -94,6 +115,7 @@ export default class DialogManager {
   }
 
   private takeDown() {
+    this.clearHighlight();
     this.node.ownerDocument.removeEventListener('keyup', this.escKeyListener);
     this.node.style.display = null;
   }

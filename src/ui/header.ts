@@ -68,6 +68,7 @@ export function updateHeader(node: HTMLElement, col: Column) {
   const label = <HTMLElement>node.querySelector('.lu-label')!;
   label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;': col.label;
   node.title = col.label;
+  node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;
   node.dataset.typeCat = categoryOf(col).name;
 
@@ -101,6 +102,7 @@ function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, 
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
+      ctx.dialogManager.setHighlightColumn(col);
       onClick(col, <any>evt, ctx, level);
     };
     return i;
