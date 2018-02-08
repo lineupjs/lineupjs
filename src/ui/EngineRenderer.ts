@@ -157,6 +157,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.data.on(`${ADataProvider.EVENT_ADD_RANKING}.body`, null);
     this.data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, null);
     this.data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
+    this.data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, null);
 
     this.rankings.forEach((r) => this.table.remove(r));
     this.rankings.splice(0, this.rankings.length);
@@ -174,6 +175,9 @@ export default class EngineRenderer extends AEventDispatcher {
     });
     data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
       this.update(this.rankings.filter((r) => r.ranking === ranking));
+    });
+    data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
+      this.setHighlightToNearest(indices, true);
     });
 
     this.data.getRankings().forEach((r) => this.addRanking(r));
@@ -346,6 +350,17 @@ export default class EngineRenderer extends AEventDispatcher {
       return found[0]!;
     }
     return this.rankings[0].scrollIntoView(dataIndex);
+  }
+
+  setHighlightToNearest(dataIndices: number[], scrollIntoView: boolean) {
+    if (this.rankings.length === 0) {
+      return false;
+    }
+    const nearest = this.rankings[0].findNearest(dataIndices);
+    if (nearest >= 0) {
+      return this.setHighlight(nearest, scrollIntoView);
+    }
+    return false;
   }
 
   getHighlight() {

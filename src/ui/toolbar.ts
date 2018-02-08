@@ -162,7 +162,7 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   remove,
   rename,
   vis,
-  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider]),
+  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {shortcut: true, order: 3}),
   sortNumbers: uiDialog('Sort by &hellip;', SortDialog),
   sortDates: uiDialog('Sort by &hellip;', SortDateDialog),
   sortNumbersGroup: uiDialog('Sort Group by &hellip;', SortDialog),

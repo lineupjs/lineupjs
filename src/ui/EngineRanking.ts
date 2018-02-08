@@ -607,6 +607,39 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return item != null;
   }
 
+  findNearest(dataIndices: number[]) {
+    // find the nearest visible data index
+    // first check if already visible
+    const index = dataIndices.find((d) => Boolean(this.body.querySelectorAll(`[data-i="${d}"]`)));
+    if (index != null) {
+      return index; // visible one
+    }
+    const visible = this.visible;
+    const lookFor = new Set(dataIndices);
+    let firstBeforePos = -1;
+    let firstAfterPos = -1;
+    for (let i = visible.first; i >= 0; --i) {
+      const d = this.data[i];
+      if (!isGroup(d) && lookFor.has(d.i)) {
+        firstBeforePos = i;
+        break;
+      }
+    }
+    for (let i = visible.last; i < this.data.length; ++i) {
+      const d = this.data[i];
+      if (!isGroup(d) && lookFor.has(d.i)) {
+        firstAfterPos = i;
+        break;
+      }
+    }
+
+    if (firstBeforePos < 0 && firstBeforePos < 0) {
+      return -1; // not found at all
+    }
+    const nearestPos = (firstBeforePos >= 0 && (visible.first - firstBeforePos)  < (firstAfterPos - visible.last)) ? firstBeforePos: firstAfterPos;
+    return (<IGroupItem>this.data[nearestPos]).i;
+  }
+
   scrollIntoView(dataIndex: number) {
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
