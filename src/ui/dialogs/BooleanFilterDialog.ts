@@ -1,5 +1,6 @@
 import BooleanColumn from '../../model/BooleanColumn';
 import ADialog, {IDialogContext} from './ADialog';
+import { updateFilterState } from './utils';
 
 /** @internal */
 export default class BooleanFilterDialog extends ADialog {
@@ -22,7 +23,7 @@ export default class BooleanFilterDialog extends ADialog {
   }
 
   private updateFilter(filter: boolean | null) {
-    this.attachment.classList.toggle('lu-filtered', filter != null);
+    updateFilterState(this.attachment, this.column, filter != null);
     this.column.setFilter(filter);
   }
 

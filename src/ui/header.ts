@@ -63,6 +63,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   return node;
 }
 
+
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column) {
   const label = <HTMLElement>node.querySelector('.lu-label')!;
@@ -72,6 +73,12 @@ export function updateHeader(node: HTMLElement, col: Column) {
   node.dataset.type = col.desc.type;
   node.dataset.typeCat = categoryOf(col).name;
 
+  updateIconState(node, col);
+}
+
+
+/** @internal */
+export function updateIconState(node: HTMLElement, col: Column) {
   const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
   if (sort) {
     const {asc, priority} = col.isSortedByMe();
@@ -84,15 +91,24 @@ export function updateHeader(node: HTMLElement, col: Column) {
   }
 
   const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
-  if (!stratify) {
+  if (stratify) {
+    const groupedBy = col.isGroupedBy();
+    stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
+    if (groupedBy >= 0) {
+      stratify.dataset.priority = (groupedBy + 1).toString();
+    } else {
+      delete stratify.dataset.priority;
+    }
+  }
+
+  const filter = <HTMLElement>node.querySelector(`i[title^='Filter']`)!;
+  if (!filter) {
     return;
   }
-  const groupedBy = col.isGroupedBy();
-  stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
-  if (groupedBy >= 0) {
-    stratify.dataset.priority = (groupedBy + 1).toString();
+  if (col.isFiltered()) {
+    filter.dataset.active = '';
   } else {
-    delete stratify.dataset.priority;
+    delete filter.dataset.active;
   }
 }
 

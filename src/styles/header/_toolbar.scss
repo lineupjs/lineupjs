@@ -93,6 +93,10 @@
       content: $lu_icon_filter;
     }
 
+    &[title^='Filter'][data-active]::before {
+      color: $lu_selected_color;
+    }
+
     &[title^='Stratify']::before {
       content: $lu_icon_columns;
       transform: rotate(-90deg);

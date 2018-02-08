@@ -30,7 +30,7 @@ export default class CompositeChildrenDialog extends ADialog {
           resizeable: false,
           level: this.dialog.level + 1
         });
-        n.className = `lu-header${c.isFiltered() ? ' lu-filtered' : ''}`;
+        n.className = `lu-header`;
         updateHeader(n, c);
         const summary = this.ctx.summaryRenderer(c, false);
         n.insertAdjacentHTML('beforeend', summary.template);

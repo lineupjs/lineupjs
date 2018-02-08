@@ -1,6 +1,7 @@
 import StringColumn from '../../model/StringColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
+import { updateFilterState } from './utils';
 
 /** @internal */
 export default class StringFilterDialog extends ADialog {
@@ -12,7 +13,7 @@ export default class StringFilterDialog extends ADialog {
   }
 
   private updateFilter(filter: string | RegExp | null) {
-    this.dialog.attachment.classList.toggle('lu-filtered', filter != null && filter !== '');
+    updateFilterState(this.attachment, this.column, filter != null && filter !== '');
     this.column.setFilter(filter);
   }
 

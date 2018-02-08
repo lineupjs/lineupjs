@@ -91,7 +91,6 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     sub.forEach((c, i) => {
       const node = children[i];
       updateHeader(node, c);
-      node.classList.toggle('lu-filtered', c.isFiltered());
 
       if (!this.renderers.summary) {
         return;

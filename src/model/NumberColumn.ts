@@ -174,7 +174,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   isFiltered() {
-    return isDummyNumberFilter(this.currentFilter);
+    return !isDummyNumberFilter(this.currentFilter);
   }
 
   getFilter(): INumberFilter {

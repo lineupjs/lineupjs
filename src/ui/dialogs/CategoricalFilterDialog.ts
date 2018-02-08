@@ -3,6 +3,7 @@ import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalCo
 import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
+import { updateFilterState } from './utils';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {
@@ -32,7 +33,7 @@ export default class CategoricalFilterDialog extends ADialog {
 
   private updateFilter(filter: string[] | null, filterMissing: boolean) {
     const noFilter = filter == null && filterMissing === false;
-    this.attachment.classList.toggle('lu-filtered', !noFilter);
+    updateFilterState(this.attachment, this.column, !noFilter);
     this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
   }
 
