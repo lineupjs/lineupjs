@@ -1,7 +1,7 @@
 import CategoricalColumn from '../../model/CategoricalColumn';
 import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
 import SetColumn from '../../model/SetColumn';
-import {filterMissingMarkup} from '../missing';
+import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
@@ -46,7 +46,7 @@ export default class CategoricalFilterDialog extends ADialog {
     if (f.length === this.column.categories.length) { // all checked = no filter
       f = null;
     }
-    const filterMissing = this.findInput('input[type="checkbox"].lu_filter_missing').checked;
+    const filterMissing = findFilterMissing(this.node).checked;
     this.updateFilter(f, filterMissing);
     return true;
   }
