@@ -136,6 +136,32 @@ for (let i = 0; i < 100; ++i) {
 <LineUp data={arr}/>
 ```
 
+[CodePen](https://codepen.io/sgratzl/pen/mXEpMP)
+
+Result is same as the builder minimal example
+
+**Advanced Usage Example**
+
+```jsx
+// arr from before
+<LineUp data={arr} defaultRanking>
+  <LineUpStringColumnDesc column="d" label="Label" width={100} />
+  <LineUpCategoricalColumnDesc column="cat" categories={cats} color="green" />
+  <LineUpCategoricalColumnDesc column="cat2" categories={cats} color="blue" />
+  <LineUpNumberColumnDesc column="a" domain={[0, 10]} color="blue" />
+
+  <LineUpRanking groupBy="cat" sortBy="a:desc">
+    <LineUpSupportColumn type="*" />
+    <LineUpColumn column="*" />
+    <LineUpImposeColumn label="a+cat" column="a" categeoricalColumn="cat2" />
+  </LineUpRanking>
+</LineUp>;
+```
+
+[CodePen](https://codepen.io/sgratzl/pen/yvJpWQ)
+
+Result is same as the builder advanced example
+
 
 <a id="rshiny"></a>
 
