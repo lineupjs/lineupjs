@@ -25,6 +25,12 @@ export interface IColumnDesc {
   frozen?: boolean;
 
   /**
+   * whether the column can be removed or not
+   * @default false
+   */
+  fixed?: boolean;
+
+  /**
    * default renderer to use
    */
   renderer?: string;

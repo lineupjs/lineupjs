@@ -46,12 +46,11 @@
     @include lu_custom_icon($lu_icon_type_matrix, matrix);
   }
 
-  span[data-type-cat='support']::before,
   [data-type-cat='support'] .#{$lu_css_prefix}-label::before {
     display: none;
   }
 
-  span[data-type-cat='other']::before,
+
   [data-type-cat='other'] .#{$lu_css_prefix}-label::before {
     display: none;
   }

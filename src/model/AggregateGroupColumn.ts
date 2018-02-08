@@ -8,8 +8,8 @@ import Ranking from './Ranking';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createAggregateDesc(label: string = 'A') {
-  return {type: 'aggregate', label};
+export function createAggregateDesc(label: string = 'Aggregate Groups') {
+  return {type: 'aggregate', label, fixed: true};
 }
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {

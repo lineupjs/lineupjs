@@ -126,7 +126,7 @@ const remove: IToolbarAction = {
   onClick: (col, _evt, ctx) => {
     ctx.dialogManager.removeAll(); // since the column will be removed
     const ranking = col.findMyRanker()!;
-    const last = ranking.children.every((d) => isSupportType(d) || d === col);
+    const last = ranking.children.every((d) => isSupportType(d) || d.fixed || d === col);
     if (!last) {
       col.removeMe();
       return;
@@ -198,7 +198,9 @@ export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   }
   const icons = ctx.toolbar;
   const actions = new Set<IToolbarAction>();
-  actions.add(remove);
+  if (!col.fixed) {
+    actions.add(remove);
+  }
   actions.add(more);
 
   {

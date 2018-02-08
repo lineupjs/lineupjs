@@ -1,6 +1,6 @@
 import {suffix} from '../../internal/AEventDispatcher';
 import {
-  createImpositionDesc, createNestedDesc, createReduceDesc, createScriptDesc, createStackDesc,
+  createImpositionDesc, createNestedDesc, createReduceDesc, createScriptDesc, createStackDesc, createRankDesc, createGroupDesc, createAggregateDesc, createSelectionDesc,
   isSupportType
 } from '../../model';
 import {categoryOfDesc} from '../../model/annotations';
@@ -25,7 +25,11 @@ export default class SidePanel {
       createScriptDesc('Scripted Formula'),
       createNestedDesc('Nested'),
       createReduceDesc(),
-      createImpositionDesc()
+      createImpositionDesc(),
+      createRankDesc(),
+      createSelectionDesc(),
+      createGroupDesc(),
+      createAggregateDesc(),
     ],
     chooser: true,
     placeholder: 'Add Column...',

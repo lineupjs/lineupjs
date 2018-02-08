@@ -116,6 +116,10 @@ export default class Column extends AEventDispatcher {
     };
   }
 
+  get fixed() {
+    return Boolean(this.desc.fixed);
+  }
+
   get frozen() {
     return Boolean(this.desc.frozen);
   }
@@ -335,6 +339,9 @@ export default class Column extends AEventDispatcher {
    * @returns {boolean} was successful
    */
   removeMe() {
+    if (this.fixed) {
+      return false;
+    }
     if (this.parent) {
       return this.parent.remove(this);
     }

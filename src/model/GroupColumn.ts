@@ -3,7 +3,7 @@ import Column from './Column';
 import {IGroupData} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
 
-export function createGroupDesc(label = 'Group') {
+export function createGroupDesc(label = 'Group Name') {
   return {type: 'group', label};
 }
 
