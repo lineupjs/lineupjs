@@ -1,5 +1,6 @@
 import NumberColumn from '../../model/NumberColumn';
 import ADialog, {IDialogContext} from './ADialog';
+import {round} from '../../internal/math';
 
 /** @internal */
 export default class StratifyThresholdDialog extends ADialog {
@@ -23,7 +24,7 @@ export default class StratifyThresholdDialog extends ADialog {
     node.insertAdjacentHTML('beforeend', `<h4>Threshold: </h4><input
         type="number"
         size="15"
-        value="${this.before.length > 0 ? this.before[0] : (domain[1] - domain[0]) / 2}"
+        value="${this.before.length > 0 ? this.before[0] : round((domain[1] - domain[0]) / 2, 2)}"
         required
         autofocus
         min="${domain[0]}"
@@ -35,7 +36,7 @@ export default class StratifyThresholdDialog extends ADialog {
 
   reset() {
     const domain = this.column.getOriginalMapping().domain;
-    this.findInput('input[type="number"]').value = `${this.before.length > 0 ? this.before[0] : (domain[1] - domain[0]) / 2}`;
+    this.findInput('input[type="number"]').value = `${this.before.length > 0 ? this.before[0] : round((domain[1] - domain[0]) / 2, 2)}`;
     this.column.setStratifyThresholds(this.before);
   }
 

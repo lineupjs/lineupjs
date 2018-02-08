@@ -31,6 +31,9 @@ abstract class ADialog {
       },
       flip: {
         enabled: false
+      },
+      hide: {
+        enabled: false
       }
     }
   };
