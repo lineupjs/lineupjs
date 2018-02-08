@@ -201,8 +201,6 @@ export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   if (!col.fixed) {
     actions.add(remove);
   }
-  actions.add(more);
-
   {
     const possible = ctx.getPossibleRenderer(col);
     if (possible.item.length > 2 || possible.group.length > 2 || possible.summary.length > 2) { // default always possible
@@ -225,6 +223,10 @@ export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
       console.warn('cannot find: ', col.desc.type, key);
     }
   });
+
+  if (actions.size > 0) {
+    actions.add(more);
+  }
 
   const r = Array.from(actions).sort((a, b) => {
     if (a.options.order === b.options.order) {

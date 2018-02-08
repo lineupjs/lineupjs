@@ -135,8 +135,11 @@ export function createToolbarMenuItems(node: HTMLElement, level: number, col: Co
 /** @internal */
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
   const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
+  if (toolbar.childElementCount === 0) {
+    return;
+  }
   const moreIcon = toolbar.querySelector('[title^=More]')!;
-  const availableWidth = col.getWidth() - (moreIcon.clientWidth || defaultVisibleClientWidth);
+  const availableWidth = col.getWidth() - (moreIcon && moreIcon.clientWidth ? moreIcon.clientWidth : defaultVisibleClientWidth);
   const toggableIcons = Array.from(toolbar.children).filter((d) => d !== moreIcon)
     .reverse(); // start hiding with the last icon
 

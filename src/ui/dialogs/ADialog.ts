@@ -24,7 +24,15 @@ abstract class ADialog {
     title: '',
     fullDialog: false,
     placement: 'bottom-start',
-    toggleDialog: true
+    toggleDialog: true,
+    modifiers: {
+      preventOverflow: {
+        enabled: false
+      },
+      flip: {
+        enabled: false
+      }
+    }
   };
 
   readonly node: HTMLFormElement;
