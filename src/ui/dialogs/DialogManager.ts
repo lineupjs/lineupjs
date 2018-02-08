@@ -64,11 +64,28 @@ export default class DialogManager {
     if (index < 0) {
       return false;
     }
-    this.openDialogs.splice(index, 1);
-    dialog.destroy();
+    // destroy self and all levels below that = after that
+    const destroyed = this.openDialogs.splice(index, this.openDialogs.length - index);
+    destroyed.reverse().forEach((d) => d.destroy());
+
     if (this.openDialogs.length === 0) {
       this.takeDown();
     }
+    return true;
+  }
+
+  removeAboveLevel(level: number) {
+    // hide all dialogs which have a higher or equal level to the newly opened one
+    this.openDialogs.filter((d) => d.level >= level).reverse().forEach((d) => this.remove(d));
+  }
+
+  removeLike(dialog: ADialog) {
+    const similar = this.openDialogs.find((d) => dialog.equals(d));
+    if (!similar) {
+      return false;
+    }
+    this.remove(similar);
+    return true;
   }
 
   private setUp() {
@@ -82,8 +99,7 @@ export default class DialogManager {
   }
 
   push(dialog: ADialog) {
-    // hide all dialogs which have a higher or equal level to the newly opened one
-    this.openDialogs.filter((d) => d.level <= dialog.level).forEach((d) => this.remove(d));
+    this.removeAboveLevel(dialog.level);
 
     if (this.openDialogs.length === 0) {
       this.setUp();

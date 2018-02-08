@@ -25,7 +25,7 @@ export default class SidePanelEntryVis {
   private init() {
     this.node.innerHTML = `
       <header><div class="lu-label"></div><div class="lu-toolbar"></div></header>${this.summary.template}`;
-    createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
+    createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), 0, this.column, this.ctx);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
 
     const summary = <HTMLElement>this.node.lastElementChild!;

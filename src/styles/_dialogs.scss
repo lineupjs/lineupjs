@@ -11,15 +11,15 @@
   }
 
   .#{$lu_css_prefix}-backdrop {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     z-index: 8;
-    display: block;
     width: 100vw;
     height: 100vh;
 
-    > .#{$lu_css_prefix}-backdrop-mask {
+    > * {
       position: absolute;
       top: 0;
       left: 0;
@@ -87,7 +87,7 @@
       content: $lu_icon_check;
     }
 
-    button[title=cancel]::before {
+    button[title=Cancel]::before {
       content: $lu_icon_times;
     }
 

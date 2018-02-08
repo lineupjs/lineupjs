@@ -20,8 +20,8 @@ export default class CategoricalFilterDialog extends ADialog {
     node.classList.add('lu-filter-table');
 
     node.insertAdjacentHTML('beforeend', `<div>
+        <label><input type="checkbox" checked><span></span><div>Un/Select All</div></label>
         ${this.column.categories.map((c) => `<label><input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked': ''}><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
-        <label><input type="checkbox" checked><span></span><div>Unselect All</div></label>
     </div>`);
     // selectAll
     this.findInput('input:not([data-cat])').onchange = function(this: HTMLInputElement) {

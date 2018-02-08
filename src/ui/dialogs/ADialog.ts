@@ -9,6 +9,7 @@ export interface IDialogOptions {
   placement?: Popper.Placement;
   eventsEnabled?: boolean;
   modifiers?: Popper.Modifiers;
+  toggleDialog: boolean;
 }
 
 export interface IDialogContext {
@@ -22,7 +23,8 @@ abstract class ADialog {
   private readonly options: Readonly<IDialogOptions> = {
     title: '',
     fullDialog: false,
-    placement: 'bottom-start'
+    placement: 'bottom-start',
+    toggleDialog: true
   };
 
   readonly node: HTMLFormElement;
@@ -44,7 +46,14 @@ abstract class ADialog {
 
   protected abstract build(node: HTMLElement): boolean|void;
 
+  equals(that: ADialog) {
+    return this.dialog.level === that.dialog.level && this.dialog.attachment === that.dialog.attachment;
+  }
+
   open() {
+    if (this.options.toggleDialog && this.dialog.manager.removeLike(this)) {
+      return;
+    }
     if (this.build(this.node) === false) {
       return;
     }
@@ -89,7 +98,7 @@ abstract class ADialog {
       }
       return false;
     };
-    const cancel = this.find<HTMLButtonElement>('button[title=cancel]');
+    const cancel = this.find<HTMLButtonElement>('button[title=Cancel]');
     if (cancel) {
       cancel.onclick = (evt) => {
         evt.stopPropagation();

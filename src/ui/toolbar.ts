@@ -68,7 +68,8 @@ function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IR
 
 const sort: IToolbarAction = {
   title: 'Sort',
-  onClick: (col) => {
+  onClick: (col, _evt, ctx, level) => {
+    ctx.dialogManager.removeAboveLevel(level);
     col.toggleMySorting();
   },
   options: {
@@ -99,7 +100,8 @@ const vis: IToolbarAction = {
 
 const clone: IToolbarAction = {
   title: 'Clone',
-  onClick: (col, _evt, ctx) => {
+  onClick: (col, _evt, ctx, level) => {
+    ctx.dialogManager.removeAboveLevel(level);
     ctx.provider.takeSnapshot(col);
   },
   options: {
@@ -121,8 +123,9 @@ const more: IToolbarAction = {
 
 const remove: IToolbarAction = {
   title: 'Remove',
-  onClick: (col, _evt, ctx) => {
-    if (!(col.desc.type === 'rank')) {
+  onClick: (col, _evt, ctx, level) => {
+    ctx.dialogManager.removeAboveLevel(level);
+    if (col.desc.type !== 'rank') {
       col.removeMe();
       return;
     }
@@ -134,9 +137,13 @@ const remove: IToolbarAction = {
   }
 };
 
-const stratify = ui('Stratify', (col) => col.groupByMe(), { shortcut: true, order: 2});
+const stratify = ui('Stratify', (col, _evt, ctx, level) => {
+  ctx.dialogManager.removeAboveLevel(level);
+  col.groupByMe();
+}, { shortcut: true, order: 2});
 
-const collapse = ui('Compress', (col, evt) => {
+const collapse = ui('Compress', (col, evt, ctx, level) => {
+  ctx.dialogManager.removeAboveLevel(level);
   const mcol = <IMultiLevelColumn>col;
   mcol.setCollapsed(!mcol.getCollapsed());
   const i = <HTMLElement>evt.currentTarget;
@@ -172,7 +179,8 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
   editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx]),
-  splitCombined: ui('Split Combined Column', (col) => {
+  splitCombined: ui('Split Combined Column', (col, _evt, ctx, level) => {
+    ctx.dialogManager.removeAboveLevel(level);
     // split the combined column into its children
     (<CompositeColumn>col).children.reverse().forEach((c) => col.insertAfterMe(c));
     col.removeMe();

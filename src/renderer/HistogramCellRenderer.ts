@@ -52,7 +52,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     const r = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
 
     const staticHist = !interactive || !isMapAbleColumn(col);
-    return staticHist ? staticSummary(col, r.template, r.render) : interactiveSummary(<IMapAbleColumn>col, r.template, r.render);
+    return staticHist ? staticSummary(col, r.template, r.render) : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render);
   }
 }
 
@@ -79,7 +79,7 @@ function staticSummary(col: INumberColumn, template: string, render: (n: HTMLEle
   };
 }
 
-function interactiveSummary(col: IMapAbleColumn, template: string, render: (n: HTMLElement, stats: { bins: number, max: number, hist: INumberBin[] }) => void) {
+function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: { bins: number, max: number, hist: INumberBin[] }) => void) {
   const f = filter(col);
   template += `
       <div data-handle="min-hint" style="width: ${f.percent(f.filterMin)}%"></div>
@@ -95,7 +95,7 @@ function interactiveSummary(col: IMapAbleColumn, template: string, render: (n: H
     template: `${template}</div>`,
     update: (node: HTMLElement, hist: IStatistics | null) => {
       if (!updateFilter) {
-        updateFilter = initFilter(node, col);
+        updateFilter = initFilter(node, col, context);
       }
       updateFilter(hist ? hist.missing : 0, col);
 
@@ -108,7 +108,7 @@ function interactiveSummary(col: IMapAbleColumn, template: string, render: (n: H
   };
 }
 
-function initFilter(node: HTMLElement, col: IMapAbleColumn) {
+function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderContext) {
   const min = <HTMLElement>node.querySelector('[data-handle=min]');
   const max = <HTMLElement>node.querySelector('[data-handle=max]');
   const minHint = <HTMLElement>node.querySelector('[data-handle=min-hint]');
@@ -136,7 +136,13 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn) {
     const f = filter(col);
     const value = f.unpercent(parseFloat(min.style.left!));
 
-    const dialog = new InputNumberDialog(min, (newValue) => {
+    const dialogCtx = {
+      attachment: min,
+      manager: context.dialogManager,
+      level: 1
+    };
+
+    const dialog = new InputNumberDialog(dialogCtx, (newValue) => {
       minHint.style.width = `${f.percent(newValue)}%`;
       min.dataset.value = round(newValue, 2).toString();
       min.style.left = `${f.percent(newValue)}%`;
@@ -157,7 +163,13 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn) {
     const f = filter(col);
     const value = f.unpercent(100 - parseFloat(max.style.right!));
 
-    const dialog = new InputNumberDialog(max, (newValue) => {
+    const dialogCtx = {
+      attachment: max,
+      manager: context.dialogManager,
+      level: 1
+    };
+
+    const dialog = new InputNumberDialog(dialogCtx, (newValue) => {
       maxHint.style.width = `${100 - f.percent(newValue)}%`;
       max.dataset.value = round(newValue, 2).toString();
       max.style.right = `${100 - f.percent(newValue)}%`;

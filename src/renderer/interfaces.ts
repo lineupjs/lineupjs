@@ -2,6 +2,7 @@ import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {ICategoricalColumn, IDataRow, IGroup, INumberColumn} from '../model';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider/ADataProvider';
+import DialogManager from '../ui/dialogs/DialogManager';
 
 export interface IImposer {
   color?(row: IDataRow | null): string | null;
@@ -94,6 +95,7 @@ export interface IRenderContext {
   colWidth(col: Column): number;
 
   readonly provider: IDataProvider;
+  readonly dialogManager: DialogManager;
 }
 
 export enum ERenderMode {

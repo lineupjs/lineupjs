@@ -24,9 +24,9 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
     node.insertAdjacentHTML('beforeend', `<div>
+        <label><input type="checkbox" checked><div>Un/Select All</div></label>
         ${joint.map(({name, color, label, range}) => `<label><input data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
         <input type="number" value="${range}" min="0" max="100" size="5"><div><div style="background-color: ${color}; width: ${range}%"></div></div><div>${label}</div></label>`).join('')}
-        <label><input type="checkbox" checked><div>Unselect All</div></label>
     </div>`);
     // selectAll
     this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: HTMLInputElement) {

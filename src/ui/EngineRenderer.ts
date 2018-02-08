@@ -18,6 +18,7 @@ import {
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph, {EMode} from './SlopeGraph';
+import DialogManager from './dialogs/DialogManager';
 
 
 export default class EngineRenderer extends AEventDispatcher {
@@ -52,10 +53,13 @@ export default class EngineRenderer extends AEventDispatcher {
       }
       return r;
     };
+    const dialogManager = new DialogManager(parent.ownerDocument);
+    parent.appendChild(dialogManager.node);
     this.ctx = {
       idPrefix: this.options.idPrefix,
       document: parent.ownerDocument,
       provider: data,
+      dialogManager,
       toolbar: this.options.toolbar,
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
