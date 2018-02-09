@@ -26,6 +26,7 @@
     "strictNullChecks": true,
     "stripInternal": true,
     "skipLibCheck": true,
+    "esModuleInterop": true,
     "baseUrl": "../"
   },
   "compileOnSave": false,

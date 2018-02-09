@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/sgratzl/lineupjs",
   "main": "build/LineUpJS.js",
+  "jsnext:main": "build/LineUpJs.js",
+  "module": "build/LineUpJs.js",
   "types": "build/typings/index.d.ts",
   "files": [
     "build",
