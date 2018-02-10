@@ -76,7 +76,7 @@ export interface IAdapter {
   props(): ILineUpProps;
   createInstance(data: LocalDataProvider, options: Partial<ILineUpOptions>): LineUp | Taggle;
   rankingBuilders(): ILineUpRankingProps[];
-  columnDescs(): IColumnDesc[];
+  columnDescs(data: any[]): IColumnDesc[];
 }
 
 export class Adapter {
@@ -92,6 +92,7 @@ export class Adapter {
       this.props.onSelectionChanged(indices);
     }
   }
+
   private readonly onHighlightChanged = (highlight: number) => {
     this.prevHighlight = highlight;
     if (this.props.onHighlightChanged) {
@@ -114,7 +115,7 @@ export class Adapter {
   }
 
   private resolveColumnDescs(data: any[]): IColumnContext {
-    const columns = this.adapter.columnDescs();
+    const columns = this.adapter.columnDescs(data);
     const deriveColumns = columns.length === 0 || Boolean(this.props.deriveColumns);
     const deriveColumnNames = Array.isArray(this.props.deriveColumns) ? this.props.deriveColumns : [];
     const deriveColors = Boolean(this.props.deriveColors);
