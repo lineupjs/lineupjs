@@ -2,12 +2,12 @@ import { ICellRendererFactory } from '../../renderer';
 import { Column, IGroupData, IGroupItem, Ranking, IColumnDesc } from '../../model';
 import { IToolbarAction, Taggle, LineUp } from '../../ui';
 import { IDynamicHeight, ILineUpOptions } from '../../interfaces';
-import { ILineUpRankingProps, buildRanking } from './ranking';
+import { IBuilderAdapterRankingProps, buildRanking } from './ranking';
 import { pick, isSame, equal } from './utils';
 import { LocalDataProvider, deriveColumnDescriptions, deriveColors } from '../../provider';
 
 
-export interface ILineUpDataProps {
+export interface IBuilderAdapterDataProps {
   data: any[];
   selection?: number[] | null;
   highlight?: number | null;
@@ -30,7 +30,7 @@ export interface ILineUpDataProps {
 }
 
 
-export interface ILineUpProps extends ILineUpDataProps {
+export interface IBuilderAdapterProps extends IBuilderAdapterDataProps {
   animated?: boolean;
   sidePanel?: boolean;
   sidePanelCollapsed?: boolean;
@@ -51,11 +51,11 @@ export interface ILineUpProps extends ILineUpDataProps {
   dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => (IDynamicHeight | null);
 }
 
-const providerOptions: (keyof ILineUpDataProps)[] = ['singleSelection', 'filterGlobally', 'noCriteriaLimits', 'maxGroupColumns', 'maxNestedSortingCriteria', 'columnTypes'];
-const lineupOptions: (keyof ILineUpProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderer', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight'];
+const providerOptions: (keyof IBuilderAdapterDataProps)[] = ['singleSelection', 'filterGlobally', 'noCriteriaLimits', 'maxGroupColumns', 'maxNestedSortingCriteria', 'columnTypes'];
+const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderer', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight'];
 
 interface IRankingContext {
-  builders: ILineUpRankingProps[];
+  builders: IBuilderAdapterRankingProps[];
   restore: any;
   derive: boolean;
   supportTypes: boolean;
@@ -69,13 +69,13 @@ interface IColumnContext {
 }
 
 export interface IChangeDetecter {
-  (prop: (keyof ILineUpProps)): boolean;
+  (prop: (keyof IBuilderAdapterProps)): boolean;
 }
 
-export interface IAdapter {
-  props(): ILineUpProps;
+export interface IBuilderAdapter {
+  props(): Readonly<IBuilderAdapterProps>;
   createInstance(data: LocalDataProvider, options: Partial<ILineUpOptions>): LineUp | Taggle;
-  rankingBuilders(): ILineUpRankingProps[];
+  rankingBuilders(): IBuilderAdapterRankingProps[];
   columnDescs(data: any[]): IColumnDesc[];
 }
 
@@ -100,7 +100,7 @@ export class Adapter {
     }
   }
 
-  constructor(private readonly adapter: IAdapter) {
+  constructor(private readonly adapter: IBuilderAdapter) {
 
   }
 

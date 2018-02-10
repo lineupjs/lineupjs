@@ -1,8 +1,15 @@
-import { buildRanking as buildRankingImpl, IImposeColumnBuilder, INestedBuilder, IWeightedSumBuilder, IReduceBuilder, IScriptedBuilder } from '../';
-import { LocalDataProvider } from '../../provider';
-import { Ranking } from '../../model';
+import {
+  buildRanking as buildRankingImpl,
+  IImposeColumnBuilder,
+  INestedBuilder,
+  IReduceBuilder,
+  IScriptedBuilder,
+  IWeightedSumBuilder
+} from '../';
+import {Ranking} from '../../model';
+import {LocalDataProvider} from '../../provider';
 
-export interface ILineUpRankingProps {
+export interface IBuilderAdapterRankingProps {
   sortBy?: (string | { column: string, asc: 'asc' | 'desc' | boolean }) | ((string | { column: string, asc: 'asc' | 'desc' | boolean })[]);
   groupBy?: string[] | string;
   columns?: (string | IImposeColumnBuilder | INestedBuilder | IWeightedSumBuilder | IReduceBuilder | IScriptedBuilder)[];
@@ -11,7 +18,7 @@ export interface ILineUpRankingProps {
 /*
  * build the column description
  */
-export function buildRanking(props: ILineUpRankingProps, data: LocalDataProvider): Ranking {
+export function buildRanking(props: IBuilderAdapterRankingProps, data: LocalDataProvider): Ranking {
   const r = buildRankingImpl();
 
   if (props.sortBy) {
@@ -38,24 +45,24 @@ export function buildGeneric(props: { column: '*' | string }) {
   return props.column;
 }
 
-export interface ILineUpImposeColumnProps {
+export interface IBuilderAdapterImposeColumnProps {
   label?: string;
   column: string;
   categoricalColumn: string;
 }
 
-export function buildImposeRanking(props: ILineUpImposeColumnProps) {
+export function buildImposeRanking(props: IBuilderAdapterImposeColumnProps) {
   return <any>Object.assign({
     type: 'impose'
   }, props);
 }
 
 
-export interface ILineUpNestedColumnProps {
+export interface IBuilderAdapterNestedColumnProps {
   label?: string;
 }
 
-export function buildNestedRanking(props: ILineUpNestedColumnProps, children: string[]) {
+export function buildNestedRanking(props: IBuilderAdapterNestedColumnProps, children: string[]) {
   const r: INestedBuilder = {
     type: 'nested',
     columns: children
@@ -66,11 +73,11 @@ export function buildNestedRanking(props: ILineUpNestedColumnProps, children: st
   return r;
 }
 
-export interface ILineUpWeightedSumColumnProps {
+export interface IBuilderAdapterWeightedSumColumnProps {
   label?: string;
 }
 
-export function buildWeightedSumRanking(props: ILineUpWeightedSumColumnProps, children: { column: string, weight: number }[]) {
+export function buildWeightedSumRanking(props: IBuilderAdapterWeightedSumColumnProps, children: { column: string, weight: number }[]) {
   const r: IWeightedSumBuilder = {
     type: 'weightedSum',
     columns: children.map((d) => d.column),
@@ -82,13 +89,13 @@ export function buildWeightedSumRanking(props: ILineUpWeightedSumColumnProps, ch
   return r;
 }
 
-export interface ILineUpReduceColumnProps {
+export interface IBuilderAdapterReduceColumnProps {
   type: 'min' | 'max' | 'mean' | 'median';
   label?: string;
   children: React.ReactNode;
 }
 
-export function buildReduceRanking(props: ILineUpReduceColumnProps, children: string[]) {
+export function buildReduceRanking(props: IBuilderAdapterReduceColumnProps, children: string[]) {
   const r: IReduceBuilder = {
     type: props.type,
     columns: children
@@ -99,13 +106,13 @@ export function buildReduceRanking(props: ILineUpReduceColumnProps, children: st
   return r;
 }
 
-export interface ILineUpScriptColumnProps {
+export interface IBuilderAdapterScriptColumnProps {
   code: string;
   label?: string;
   children: React.ReactNode;
 }
 
-export function buildScriptRanking(props: ILineUpScriptColumnProps, children: string[]) {
+export function buildScriptRanking(props: IBuilderAdapterScriptColumnProps, children: string[]) {
   const r: IScriptedBuilder = {
     type: 'script',
     code: props.code,
@@ -117,11 +124,11 @@ export function buildScriptRanking(props: ILineUpScriptColumnProps, children: st
   return r;
 }
 
-export interface ILineUpSupportColumnProps {
+export interface IBuilderAdapterSupportColumnProps {
   type: 'rank' | 'selection' | 'group' | 'aggregate' | '*';
 }
 
-export function buildSupportRanking(props: ILineUpSupportColumnProps) {
+export function buildSupportRanking(props: IBuilderAdapterSupportColumnProps) {
   return `_${props.type}`;
 }
 

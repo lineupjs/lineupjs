@@ -1,18 +1,29 @@
-import { IArrayDesc, IStringColumnDesc, IColumnDesc, EAdvancedSortMethod, INumberColumnDesc, ICategory, ICategoricalColumnDesc, IDateColumnDesc, IHierarchyColumnDesc, IPartialCategoryNode } from '../../model';
-import { extent } from 'd3-array';
+import {extent} from 'd3-array';
+import {
+  EAdvancedSortMethod,
+  IArrayDesc,
+  ICategoricalColumnDesc,
+  ICategory,
+  IColumnDesc,
+  IDateColumnDesc,
+  IHierarchyColumnDesc,
+  INumberColumnDesc,
+  IPartialCategoryNode,
+  IStringColumnDesc
+} from '../../model';
 
-export interface ILineUpColumnDescProps extends Partial<IColumnDesc> {
+export interface IBuilderAdapterColumnDescProps extends Partial<IColumnDesc> {
   column: string;
   asMap?: boolean;
   asArray?: string[] | number | boolean;
   custom?: { [key: string]: any };
 }
 
-export function build<T extends ILineUpColumnDescProps>(props: T, _data?: any[]): IColumnDesc {
-  const { column } = props;
-  const desc = <any>{ column, type: props.type, label: column[0].toUpperCase() + column.slice(1) };
+export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?: any[]): IColumnDesc {
+  const {column} = props;
+  const desc = <any>{column, type: props.type, label: column[0].toUpperCase() + column.slice(1)};
 
-  (<(keyof ILineUpColumnDescProps)[]>['label', 'description', 'frozen', 'color', 'width', 'renderer', 'groupRenderer', 'summaryRenderer', 'visible', 'fixed']).forEach((key) => {
+  (<(keyof IBuilderAdapterColumnDescProps)[]>['label', 'description', 'frozen', 'color', 'width', 'renderer', 'groupRenderer', 'summaryRenderer', 'visible', 'fixed']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -40,15 +51,15 @@ export function build<T extends ILineUpColumnDescProps>(props: T, _data?: any[])
 }
 
 
-export interface ILineUpCategoricalColumnDescProps extends ILineUpColumnDescProps {
+export interface IBuilderAdapterCategoricalColumnDescProps extends IBuilderAdapterColumnDescProps {
   asOrdinal?: boolean;
   categories?: (string | Partial<ICategory>)[];
   missingCategory?: (string | Partial<ICategory>);
   asSet?: boolean | string;
 }
 
-export function buildCategorical(props: ILineUpCategoricalColumnDescProps, data: any[]): ICategoricalColumnDesc {
-  const desc: any = build({ ...props, type: 'categorical' });
+export function buildCategorical(props: IBuilderAdapterCategoricalColumnDescProps, data: any[]): ICategoricalColumnDesc {
+  const desc: any = build({...props, type: 'categorical'});
 
   if (props.asOrdinal) {
     desc.type = 'ordinal';
@@ -74,15 +85,15 @@ export function buildCategorical(props: ILineUpCategoricalColumnDescProps, data:
   return desc;
 }
 
-export interface ILineUpDateColumnDescProps extends ILineUpColumnDescProps {
+export interface IBuilderAdapterDateColumnDescProps extends IBuilderAdapterColumnDescProps {
   dateFormat?: string;
   dateParse?: string;
 }
 
-export function buildDate(props: ILineUpDateColumnDescProps): IDateColumnDesc {
-  const desc: any = build({ ...props, type: 'date' });
+export function buildDate(props: IBuilderAdapterDateColumnDescProps): IDateColumnDesc {
+  const desc: any = build({...props, type: 'date'});
 
-  (<(keyof ILineUpDateColumnDescProps)[]>['dateFormat', 'dateParse']).forEach((key) => {
+  (<(keyof IBuilderAdapterDateColumnDescProps)[]>['dateFormat', 'dateParse']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -90,15 +101,15 @@ export function buildDate(props: ILineUpDateColumnDescProps): IDateColumnDesc {
   return desc;
 }
 
-export interface ILineUpHierarchyColumnDescProps extends ILineUpColumnDescProps {
+export interface IBuilderAdapterHierarchyColumnDescProps extends IBuilderAdapterColumnDescProps {
   hierarchy: IPartialCategoryNode;
   hierarchySeparator?: string;
 }
 
-export function buildHierarchy(props: Partial<ILineUpHierarchyColumnDescProps>): IHierarchyColumnDesc {
-  const desc: any = build({ ...(<any>props), type: 'hierarchy' });
+export function buildHierarchy(props: Partial<IBuilderAdapterHierarchyColumnDescProps>): IHierarchyColumnDesc {
+  const desc: any = build({...(<any>props), type: 'hierarchy'});
 
-  (<(keyof ILineUpHierarchyColumnDescProps)[]>['hierarchy', 'hierarchySeparator']).forEach((key) => {
+  (<(keyof IBuilderAdapterHierarchyColumnDescProps)[]>['hierarchy', 'hierarchySeparator']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -106,7 +117,7 @@ export function buildHierarchy(props: Partial<ILineUpHierarchyColumnDescProps>):
   return desc;
 }
 
-export interface ILineUpNumberColumnDescProps extends ILineUpColumnDescProps {
+export interface IBuilderAdapterNumberColumnDescProps extends IBuilderAdapterColumnDescProps {
   domain?: [number, number];
   range?: [number, number];
   mapping?: 'linear' | 'sqrt' | 'pow1.1' | 'pow2' | 'pow3';
@@ -114,18 +125,18 @@ export interface ILineUpNumberColumnDescProps extends ILineUpColumnDescProps {
   sort?: EAdvancedSortMethod;
 }
 
-export function buildNumber(props: ILineUpNumberColumnDescProps, data: any[]): INumberColumnDesc {
-  const desc: any = build({ ...props, type: 'number' });
+export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: any[]): INumberColumnDesc {
+  const desc: any = build({...props, type: 'number'});
 
   const domain = props.domain ? props.domain : <[number, number]>extent(data, (d) => <number>d[(<any>desc).column]);
 
-  (<(keyof ILineUpNumberColumnDescProps)[]>['sort']).forEach((key) => {
+  (<(keyof IBuilderAdapterNumberColumnDescProps)[]>['sort']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
   });
   if (props.scripted) {
-    desc.map = { domain, code: props.scripted, type: 'script' };
+    desc.map = {domain, code: props.scripted, type: 'script'};
   } else if (!props.mapping || props.mapping === 'linear') {
     desc.domain = domain;
     if (props.range) {
@@ -141,17 +152,17 @@ export function buildNumber(props: ILineUpNumberColumnDescProps, data: any[]): I
   return desc;
 }
 
-export interface ILineUpStringColumnDescProps extends ILineUpColumnDescProps {
+export interface IBuilderAdapterStringColumnDescProps extends IBuilderAdapterColumnDescProps {
   editable?: boolean;
   html?: boolean;
   pattern?: string;
   patternTemplates?: string[];
 }
 
-export function buildString(props: ILineUpStringColumnDescProps): IStringColumnDesc {
-  const desc: any = build({ ...props, type: 'string' });
+export function buildString(props: IBuilderAdapterStringColumnDescProps): IStringColumnDesc {
+  const desc: any = build({...props, type: 'string'});
 
-  (<(keyof ILineUpStringColumnDescProps)[]>['pattern', 'patternTemplate']).forEach((key) => {
+  (<(keyof IBuilderAdapterStringColumnDescProps)[]>['pattern', 'patternTemplate']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
