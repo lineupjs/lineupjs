@@ -16,7 +16,7 @@ Key Features
  * group aggregations (show a whole group as a single group row)
  * numerous visualizations for summaries, cells, and group aggregations
  * side panel for easy filtering and column management
- * [React](#react), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
+ * [React](#react), [Polymer](#polymer), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
 
 Usage
 -----
@@ -159,6 +159,71 @@ Result is same as the builder minimal example
 ```
 
 [CodePen](https://codepen.io/sgratzl/pen/yvJpWQ)
+
+Result is same as the builder advanced example
+
+
+<a id="polymer"></a>
+
+Polymer Support (LineUp-Element)
+--------------------------------
+
+A [Polymer 2.0](https://www.polymer-project.org/) web component wrapper is located at [lineup-element](https://github.com/sgratzl/lineup-element). 
+
+
+**Installation**
+
+```bash
+bower install https://github.com/sgratzl/lineup-element
+```
+
+```html
+<link rel="import" href="bower_components/lineup-element/lineup-element.html">
+```
+
+**Minimal Usage Example**
+
+```javascript
+// generate some data
+const arr = [];
+const cats = ['c1', 'c2', 'c3'];
+for (let i = 0; i < 100; ++i) {
+  arr.push({
+    a: Math.random() * 10,
+    d: 'Row ' + i,
+    cat: cats[Math.floor(Math.random() * 3)],
+    cat2: cats[Math.floor(Math.random() * 3)]
+  })
+}
+conat data = { arr, cats };
+```
+```jsx
+<lineup-element data="[[data.arr]]"></lineup-element>
+```
+
+TODO
+[CodePen]()
+
+Result is same as the builder minimal example
+
+**Advanced Usage Example**
+
+```jsx
+// arr from before
+<lineup-element data="[[data.arr]]" side-panel side-panel-collapsed default-ranking="true">
+  <lineup-string-desc column="d" label="Label" width="100" ></lineup-string-desc>
+  <lineup-categorical-desc column="cat" categories="[[cats]]" color="green" ></lineup-categorical-desc>
+  <lineup-categorical-desc column="cat2" categories="[[cats]]" color="blue" ></lineup-categorical-desc>
+  <lineup-number-desc column="a" domain="[0, 10]" color="blue" ></lineup-number-desc>
+  <lineup-ranking group-by="cat" sort-by="a:desc">
+    <lineup-support-column type="*" ></lineup-support-column>
+    <lineup-column column="*" ></lineup-column>
+  </lineup-ranking>
+</lineup-element>
+```
+
+TODO
+[CodePen]()
 
 Result is same as the builder advanced example
 
