@@ -108,7 +108,7 @@ export class Adapter {
     return this.adapter.props();
   }
 
-  componentMouned() {
+  componentDidMount() {
     this.data = this.buildProvider();
     this.instance = this.adapter.createInstance(this.data, pick(this.props, lineupOptions));
     this.instance.on(LineUp.EVENT_HIGHLIGHT_CHANGED, this.onHighlightChanged);

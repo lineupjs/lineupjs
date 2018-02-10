@@ -92,7 +92,6 @@ export function buildWeightedSumRanking(props: IBuilderAdapterWeightedSumColumnP
 export interface IBuilderAdapterReduceColumnProps {
   type: 'min' | 'max' | 'mean' | 'median';
   label?: string;
-  children: React.ReactNode;
 }
 
 export function buildReduceRanking(props: IBuilderAdapterReduceColumnProps, children: string[]) {
@@ -109,7 +108,6 @@ export function buildReduceRanking(props: IBuilderAdapterReduceColumnProps, chil
 export interface IBuilderAdapterScriptColumnProps {
   code: string;
   label?: string;
-  children: React.ReactNode;
 }
 
 export function buildScriptRanking(props: IBuilderAdapterScriptColumnProps, children: string[]) {
