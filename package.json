@@ -122,6 +122,7 @@
     "font-awesome": "^4.7.0",
     "lineupengine": "github:sgratzl/lineupengine#develop",
     "popper.js": "^1.12.9",
-    "reflect-metadata": "^0.1.12"
+    "reflect-metadata": "^0.1.12",
+    "fast-deep-equal": "^1.0.0"
   }
 }
