@@ -1,4 +1,4 @@
-import {StyleManager} from 'lineupengine/src/style';
+import {StyleManager} from 'lineupengine';
 import {round} from '../internal';
 import Column from '../model/Column';
 import {IMultiLevelColumn} from '../model';

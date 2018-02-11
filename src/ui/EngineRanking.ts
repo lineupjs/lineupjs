@@ -1,8 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
-import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
-import GridStyleManager, {setColumn} from 'lineupengine/src/style/GridStyleManager';
-import {ACellTableSection, ICellRenderContext} from 'lineupengine/src/table/ACellTableSection';
-import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, setColumn, ACellTableSection, ITableSection, ICellRenderContext} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';

@@ -1,4 +1,4 @@
-import {IColumn} from 'lineupengine/src';
+import {IColumn} from 'lineupengine';
 import Column from '../model/Column';
 import {ICellRenderer, IGroupCellRenderer} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';

@@ -1,6 +1,4 @@
-import {nonUniformContext} from 'lineupengine/src/logic';
-import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer';
-import GridStyleManager from 'lineupengine/src/style/GridStyleManager';
+import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineupengine';
 import {ILineUpOptions} from '../interfaces';
 import {findOption, ICategoricalStatistics, IStatistics, round} from '../internal';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';

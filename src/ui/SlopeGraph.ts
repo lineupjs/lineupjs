@@ -1,5 +1,4 @@
-import {IExceptionContext, range} from 'lineupengine/src/logic';
-import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
+import {IExceptionContext, range, ITableSection} from 'lineupengine';
 import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../model';
 import {SLOPEGRAPH_WIDTH} from '../styles';
 import {IRankingHeaderContextContainer} from './interfaces';
