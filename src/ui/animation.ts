@@ -1,8 +1,7 @@
 import {
   defaultPhases, EAnimationMode, IAnimationContext, IAnimationItem, IPhase,
-  KeyFinder
-} from 'lineupengine/src/animation';
-import {IExceptionContext} from 'lineupengine/src/logic';
+  KeyFinder, IExceptionContext
+} from 'lineupengine';
 import {IGroupData, IGroupItem, isGroup} from '../model';
 
 /** @internal */

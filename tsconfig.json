@@ -26,16 +26,13 @@
     "strictNullChecks": true,
     "stripInternal": true,
     "skipLibCheck": true,
+    "esModuleInterop": true,
     "baseUrl": "../"
   },
   "compileOnSave": false,
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "demo/**/*.ts",
-    "demo/**/*.tsx",
-    "tests/**/*.ts",
-    "index.ts",
     "tsd.d.ts"
   ]
 }

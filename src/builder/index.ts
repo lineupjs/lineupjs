@@ -1,11 +1,11 @@
 import LineUp from '../ui/LineUp';
 import Taggle from '../ui/taggle/Taggle';
-import {builder} from './DataBuilder';
+import { builder } from './DataBuilder';
 
 export * from './DataBuilder';
 export * from './column';
 export * from './RankingBuilder';
-
+export * from './adapter';
 
 /**
  * build a new Taggle instance in the given node for the given data
