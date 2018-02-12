@@ -18,9 +18,9 @@ export default class ChangeRendererDialog extends ADialog {
 
     node.insertAdjacentHTML('beforeend', `
       ${item.map((d) => `<label><input type="radio" name="renderer" value=${d.type}  ${(current === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
-      <h4>Group Visualization</h4>
+      <strong>Group Visualization</strong>
       ${group.map((d) => `<label><input type="radio" name="group" value=${d.type}  ${(currentGroup === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
-      <h4>Summary Visualization</h4>
+      <strong>Summary Visualization</strong>
       ${summary.map((d) => `<label><input type="radio" name="summary" value=${d.type}  ${(currentSummary === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
     `);
     Array.from(node.querySelectorAll('input[name="renderer"]')).forEach((n: HTMLInputElement) => {

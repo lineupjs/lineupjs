@@ -1,7 +1,7 @@
-import {MIN_LABEL_WIDTH} from '../config';
+import { MIN_LABEL_WIDTH } from '../config';
 import Column from '../model/Column';
-import {IArrayColumn} from '../model/IArrayColumn';
-import {hsl} from 'd3-color';
+import { IArrayColumn } from '../model/IArrayColumn';
+import { hsl } from 'd3-color';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -163,4 +163,9 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
 
   node.style.color = null;
   node.innerHTML = `${title}<span class="lu-gradient-text" style="color: ${adapt}">${title}</span>`;
+}
+
+
+export function randomId(prefix: string) {
+  return `${prefix}${Math.floor(Math.random() * 1000).toString(36)}`;
 }

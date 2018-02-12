@@ -1,9 +1,9 @@
 import CategoricalColumn from '../../model/CategoricalColumn';
-import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
+import { ICategoricalFilter, isCategoryIncluded } from '../../model/ICategoricalColumn';
 import SetColumn from '../../model/SetColumn';
-import {filterMissingMarkup, findFilterMissing} from '../missing';
-import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState} from './utils';
+import { filterMissingMarkup, findFilterMissing } from '../missing';
+import ADialog, { IDialogContext } from './ADialog';
+import { updateFilterState, randomId } from './utils';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {
@@ -14,27 +14,29 @@ export default class CategoricalFilterDialog extends ADialog {
     super(dialog, {
       fullDialog: true
     });
-    this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
+    this.before = this.column.getFilter() || { filter: this.column.categories.map((d) => d.name), filterMissing: false };
   }
 
   protected build(node: HTMLElement) {
     node.classList.add('lu-filter-table');
 
+    const id = randomId(this.dialog.idPrefix);
+
     node.insertAdjacentHTML('beforeend', `<div>
-        <label><input type="checkbox" checked><span></span><div>Un/Select All</div></label>
-        ${this.column.categories.map((c) => `<label><input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
+        <input id="${id}" type="checkbox" checked><label for="${id}"><span></span><div>Un/Select All</div></label>
+        ${this.column.categories.map((c) => `<input for="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><label for="${id}${c.name}"><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
     </div>`);
     // selectAll
     this.findInput('input:not([data-cat])').onchange = function (this: HTMLInputElement) {
       Array.from(node.querySelectorAll('input[data-cat]')).forEach((n: HTMLInputElement) => n.checked = this.checked);
     };
-    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
+    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing, this.dialog.idPrefix));
   }
 
   private updateFilter(filter: string[] | null, filterMissing: boolean) {
     const noFilter = filter == null && filterMissing === false;
     updateFilterState(this.attachment, this.column, !noFilter);
-    this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
+    this.column.setFilter(noFilter ? null : { filter: filter!, filterMissing });
   }
 
   reset() {

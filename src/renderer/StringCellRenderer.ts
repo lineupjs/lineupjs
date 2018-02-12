@@ -1,10 +1,10 @@
-import {IDataRow, IGroup} from '../model';
+import { IDataRow, IGroup } from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
-import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {noop, setText} from './utils';
+import { filterMissingMarkup, findFilterMissing } from '../ui/missing';
+import { default as IRenderContext, ICellRendererFactory } from './interfaces';
+import { renderMissingDOM } from './missing';
+import { noop, setText, randomId } from './utils';
 
 
 /**
@@ -109,7 +109,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: StringColumn, _context: IRenderContext, interactive: boolean) {
+  createSummary(col: StringColumn, context: IRenderContext, interactive: boolean) {
     if (!interactive) {
       return {
         template: `<div></div>`,
@@ -125,11 +125,11 @@ export default class StringCellRenderer implements ICellRendererFactory {
       bak = '';
     }
     let update: (col: StringColumn) => void;
-
+    const id = randomId(context.idPrefix);
     return {
       template: `<form><input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}">
-          <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
-          ${filterMissingMarkup(bakMissing)}</form>`,
+          <input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">RegExp</label>
+          ${filterMissingMarkup(bakMissing, context.idPrefix)}</form>`,
       update: (node: HTMLElement) => {
         if (!update) {
           update = StringCellRenderer.interactiveSummary(col, node);

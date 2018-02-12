@@ -17,6 +17,7 @@ export interface IDialogContext {
   attachment: HTMLElement;
   level: number;
   manager: DialogManager;
+  idPrefix: string;
 }
 
 abstract class ADialog {
@@ -33,7 +34,7 @@ abstract class ADialog {
   readonly node: HTMLFormElement;
   private popper: Popper;
 
-  constructor(protected readonly dialog: IDialogContext, options: Partial<IDialogOptions> = {}) {
+  constructor(protected readonly dialog: Readonly<IDialogContext>, options: Partial<IDialogOptions> = {}) {
     Object.assign(this.options, options);
     this.node = dialog.attachment.ownerDocument.createElement('form');
     this.node.classList.add('lu-dialog');
@@ -63,7 +64,7 @@ abstract class ADialog {
     const parent = <HTMLElement>this.attachment.closest('.lu')!;
 
     if (this.options.title) {
-      this.node.insertAdjacentHTML('afterbegin', `<h4>${this.options.title}</h4>`);
+      this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
     }
     if (this.options.fullDialog) {
       this.node.insertAdjacentHTML('beforeend', `<div>

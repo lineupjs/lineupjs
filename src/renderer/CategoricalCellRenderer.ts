@@ -1,15 +1,15 @@
-import {DENSE_HISTOGRAM} from '../config';
-import {computeHist, ICategoricalBin, ICategoricalStatistics} from '../internal/math';
-import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
+import { DENSE_HISTOGRAM } from '../config';
+import { computeHist, ICategoricalBin, ICategoricalStatistics } from '../internal/math';
+import { ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn } from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {isCategoryIncluded} from '../model/ICategoricalColumn';
+import { isCategoryIncluded } from '../model/ICategoricalColumn';
 import OrdinalColumn from '../model/OrdinalColumn';
-import {CANVAS_HEIGHT} from '../styles';
-import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {setText, wideEnough} from './utils';
+import { CANVAS_HEIGHT } from '../styles';
+import { filterMissingNumberMarkup, updateFilterMissingNumberMarkup } from '../ui/missing';
+import { default as IRenderContext, ICellRendererFactory } from './interfaces';
+import { renderMissingCanvas, renderMissingDOM } from './missing';
+import { setText, wideEnough } from './utils';
 
 /** @internal */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
@@ -44,11 +44,11 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: ICategoricalColumn, _context: IRenderContext, globalHist: ICategoricalStatistics | null) {
-    const {template, update} = hist(col, false);
+    const { template, update } = hist(col, false);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const {maxBin, hist} = computeHist(rows, (r: IDataRow) => col.getCategory(r), col.categories);
+        const { maxBin, hist } = computeHist(rows, (r: IDataRow) => col.getCategory(r), col.categories);
 
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
         update(n, max, hist);
@@ -56,13 +56,13 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: ICategoricalColumn, _context: IRenderContext, interactive: boolean) {
-    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive) : staticSummary(col, interactive);
+  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean) {
+    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive, ctx.idPrefix) : staticSummary(col, interactive);
   }
 }
 
 function staticSummary(col: ICategoricalColumn, interactive: boolean) {
-  const {template, update} = hist(col, interactive);
+  const { template, update } = hist(col, interactive);
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
@@ -75,11 +75,11 @@ function staticSummary(col: ICategoricalColumn, interactive: boolean) {
   };
 }
 
-function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean) {
-  const {template, update} = hist(col, interactive || wideEnough(col));
+function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean, idPrefix: string) {
+  const { template, update } = hist(col, interactive || wideEnough(col));
   let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
   return {
-    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
+    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0, idPrefix) : ''}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
@@ -102,7 +102,7 @@ function hist(col: ICategoricalColumn, showLabels: boolean) {
     template: `<div${col.dataLength! > DENSE_HISTOGRAM ? 'class="lu-dense"' : ''}>${bins}`, // no closing div to be able to append things
     update: (n: HTMLElement, maxBin: number, hist: ICategoricalBin[]) => {
       Array.from(n.querySelectorAll('[data-cat]')).forEach((d: HTMLElement, i) => {
-        const {y} = hist[i];
+        const { y } = hist[i];
         d.title = `${col.categories[i].label}: ${y}`;
         const inner = <HTMLElement>d.firstElementChild!;
         inner.style.height = `${Math.round(y * 100 / maxBin)}%`;
@@ -161,9 +161,9 @@ export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HT
       const v = filterMissing.checked;
       const old = col.getFilter();
       if (old == null) {
-        col.setFilter(v ? {filterMissing: v, filter: col.categories.map((d) => d.name)} : null);
+        col.setFilter(v ? { filterMissing: v, filter: col.categories.map((d) => d.name) } : null);
       } else {
-        col.setFilter({filterMissing: v, filter: old.filter});
+        col.setFilter({ filterMissing: v, filter: old.filter });
       }
     };
   }

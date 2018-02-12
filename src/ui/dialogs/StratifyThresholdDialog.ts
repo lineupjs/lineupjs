@@ -1,6 +1,6 @@
 import NumberColumn from '../../model/NumberColumn';
-import ADialog, {IDialogContext} from './ADialog';
-import {round} from '../../internal/math';
+import ADialog, { IDialogContext } from './ADialog';
+import { round } from '../../internal/math';
 
 /** @internal */
 export default class StratifyThresholdDialog extends ADialog {
@@ -21,7 +21,7 @@ export default class StratifyThresholdDialog extends ADialog {
       return false;
     }
     const domain = this.column.getOriginalMapping().domain;
-    node.insertAdjacentHTML('beforeend', `<h4>Threshold: </h4><input
+    node.insertAdjacentHTML('beforeend', `<strong>Threshold: </strong><input
         type="number"
         size="15"
         value="${this.before.length > 0 ? this.before[0] : round((domain[1] - domain[0]) / 2, 2)}"

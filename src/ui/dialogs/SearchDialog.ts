@@ -1,6 +1,7 @@
 import Column from '../../model/Column';
-import {IDataProvider} from '../../provider/ADataProvider';
-import ADialog, {IDialogContext} from './ADialog';
+import { IDataProvider } from '../../provider/ADataProvider';
+import ADialog, { IDialogContext } from './ADialog';
+import { randomId } from './utils';
 
 /** @internal */
 export default class SearchDialog extends ADialog {
@@ -10,7 +11,8 @@ export default class SearchDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)"><label><input type="checkbox">RegExp</label>`);
+    const id = randomId(this.dialog.idPrefix);
+    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)"><input id="${id}" type="checkbox"><label for="${id}">RegExp</label>`);
 
     const input = <HTMLInputElement>node.querySelector('input[type="text"]')!;
     const checkbox = <HTMLInputElement>node.querySelector('input[type="checkbox"]')!;

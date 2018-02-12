@@ -14,7 +14,7 @@ export default class EditPatternDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     const templates = this.column.patternTemplates;
-    node.insertAdjacentHTML('beforeend', `<h4>Edit Pattern (access via $\{value}, $\{item})</h4><input
+    node.insertAdjacentHTML('beforeend', `<strong>Edit Pattern (access via $\{value}, $\{item})</strong><input
         type="text"
         size="30"
         value="${this.column.getPattern()}"

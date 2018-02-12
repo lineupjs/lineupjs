@@ -191,7 +191,7 @@ function addTooltip(node: HTMLElement, col: Column) {
     const parent = <HTMLElement>node.closest('.lu')!;
     parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
         <div x-arrow></div>
-        <h4 class="lu-label">${col.label}</h4>
+        <strong class="lu-label">${col.label}</strong>
         <p>${col.description.replace('\n', `<br/>`)}</p>
     </div>`);
     popper = new Popper(node, parent.lastElementChild!, {

@@ -1,7 +1,7 @@
-import {getAllToolbarActions, isSupportType} from '../model/annotations';
+import { getAllToolbarActions, isSupportType } from '../model/annotations';
 import Column from '../model/Column';
-import {default as CompositeColumn, IMultiLevelColumn} from '../model/CompositeColumn';
-import ADialog, {IDialogContext} from '../ui/dialogs/ADialog';
+import { default as CompositeColumn, IMultiLevelColumn } from '../model/CompositeColumn';
+import ADialog, { IDialogContext } from '../ui/dialogs/ADialog';
 import ChangeRendererDialog from '../ui/dialogs/ChangeRendererDialog';
 import MoreColumnOptionsDialog from '../ui/dialogs/MoreColumnOptionsDialog';
 import RenameDialog from '../ui/dialogs/RenameDialog';
@@ -21,7 +21,7 @@ import SortGroupDialog from './dialogs/SortGroupDialog';
 import StratifyThresholdDialog from './dialogs/StratifyThresholdDialog';
 import StringFilterDialog from './dialogs/StringFilterDialog';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
-import {IRankingHeaderContext} from './interfaces';
+import { IRankingHeaderContext } from './interfaces';
 
 export interface IUIOptions {
   shortcut: boolean;
@@ -45,14 +45,15 @@ export interface IDialogClass {
 }
 
 function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
-  return {title, onClick, options};
+  return { title, onClick, options };
 }
 
 function dialogContext(ctx: IRankingHeaderContext, level: number, evt: { currentTarget: Element }): IDialogContext {
   return {
     attachment: <HTMLElement>evt.currentTarget,
     level,
-    manager: ctx.dialogManager
+    manager: ctx.dialogManager,
+    idPrefix: ctx.idPrefix
   };
 }
 
@@ -60,7 +61,7 @@ function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IR
   return {
     title,
     onClick: (col, evt, ctx, level) => {
-      const dialog = new dialogClass(col, dialogContext(ctx, level, evt), ... extraArgs(ctx));
+      const dialog = new dialogClass(col, dialogContext(ctx, level, evt), ...extraArgs(ctx));
       dialog.open();
     }, options
   };
@@ -143,7 +144,7 @@ const remove: IToolbarAction = {
 const stratify = ui('Stratify', (col, _evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
   col.groupByMe();
-}, {shortcut: true, order: 2});
+}, { shortcut: true, order: 2 });
 
 const collapse = ui('Compress', (col, evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
@@ -162,25 +163,25 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   remove,
   rename,
   vis,
-  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {shortcut: true, order: 3}),
+  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3 }),
   sortNumbers: uiDialog('Sort by &hellip;', SortDialog),
   sortDates: uiDialog('Sort by &hellip;', SortDateDialog),
   sortNumbersGroup: uiDialog('Sort Group by &hellip;', SortDialog),
-  sortGroup: uiDialog('Sort Group by &hellip;', SortGroupDialog, () => [], {shortcut: true, order: 1}),
+  sortGroup: uiDialog('Sort Group by &hellip;', SortGroupDialog, () => [], { shortcut: true, order: 1 }),
   stratifyThreshold: uiDialog('Stratify by Threshold &hellip;', StratifyThresholdDialog, () => [], {
     shortcut: true,
     order: 2
   }),
-  filterMapped: uiDialog('Filter &hellip;', MappingsFilterDialog, (ctx) => [ctx], {shortcut: true}),
-  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {shortcut: true}),
-  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], {shortcut: true}),
-  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {shortcut: true}),
-  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], {shortcut: true}),
-  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {shortcut: true}),
+  filterMapped: uiDialog('Filter &hellip;', MappingsFilterDialog, (ctx) => [ctx], { shortcut: true }),
+  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], { shortcut: true }),
+  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], { shortcut: true }),
+  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true }),
+  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], { shortcut: true }),
+  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true }),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
-  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], {shortcut: true}),
+  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], { shortcut: true }),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx]),
   splitCombined: ui('Split Combined Column', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level);

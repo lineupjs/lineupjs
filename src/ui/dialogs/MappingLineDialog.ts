@@ -1,7 +1,7 @@
-import {D3DragEvent, drag} from 'd3-drag';
-import {event as d3event, select, Selection} from 'd3-selection';
-import {round, similar} from '../../internal/math';
-import ADialog, {IDialogContext} from './ADialog';
+import { D3DragEvent, drag } from 'd3-drag';
+import { event as d3event, select, Selection } from 'd3-selection';
+import { round, similar } from '../../internal/math';
+import ADialog, { IDialogContext } from './ADialog';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
@@ -31,9 +31,9 @@ export default class MappingLineDialog extends ADialog {
   build(node: HTMLElement) {
     const domain = this.adapter.domain();
     node.insertAdjacentHTML('beforeend', `
-        <h4>Input Domain Value (min ... max)</h4>
+        <strong>Input Domain Value (min ... max)</strong>
         <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
-        <h4>Output Normalized Value (0 ... 1)</h4>
+        <strong>Output Normalized Value (0 ... 1)</strong>
         <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
         <button type="button" ${this.line.frozen ? 'disabled' : ''} >Remove Mapping Line</button>
       `);
@@ -118,7 +118,8 @@ export class MappingLine {
       const ctx = {
         manager: this.adapter.dialog.manager,
         level: this.adapter.dialog.level + 1,
-        attachment: <any>this.node
+        attachment: <any>this.node,
+        idPrefix: this.adapter.dialog.idPrefix
       };
       const dialog = new MappingLineDialog(this, ctx, this.adapter);
       dialog.open();

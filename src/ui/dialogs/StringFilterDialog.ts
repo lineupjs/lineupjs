@@ -1,7 +1,7 @@
 import StringColumn from '../../model/StringColumn';
-import {filterMissingMarkup, findFilterMissing} from '../missing';
-import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState} from './utils';
+import { filterMissingMarkup, findFilterMissing } from '../missing';
+import ADialog, { IDialogContext } from './ADialog';
+import { updateFilterState, randomId } from './utils';
 
 /** @internal */
 export default class StringFilterDialog extends ADialog {
@@ -41,9 +41,10 @@ export default class StringFilterDialog extends ADialog {
     if (bakMissing) {
       bak = '';
     }
+    const id = randomId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
-    <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
-    ${filterMissingMarkup(bakMissing)}`);
+    <input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">RegExp</label>
+    ${filterMissingMarkup(bakMissing, this.dialog.idPrefix)}`);
 
     const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');

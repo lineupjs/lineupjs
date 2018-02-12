@@ -32,7 +32,7 @@ export function sortOrder(node: HTMLElement, column: Column, groupSortBy: boolea
   const order = groupSortBy ? column.isGroupSortedByMe().asc : column.isSortedByMe().asc;
 
   node.insertAdjacentHTML('beforeend', `
-        <h4>Sort Order</h4>
+        <strong>Sort Order</strong>
         <label><input type="radio" name="sortorder" value="asc"  ${(order === 'asc') ? 'checked' : ''} > Ascending</label>
         <label><input type="radio" name="sortorder" value="desc"  ${(order === 'desc') ? 'checked' : ''} > Decending</label>
     `);

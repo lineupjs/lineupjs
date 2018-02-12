@@ -1,14 +1,14 @@
-import {computeStats, IStatistics, round} from '../../internal';
+import { computeStats, IStatistics, round } from '../../internal';
 import {
   IMapAbleColumn, IMappingFunction, isMissingValue, noNumberFilter, ScaleMappingFunction,
   ScriptMappingFunction
 } from '../../model';
-import {isDummyNumberFilter} from '../../model/internal';
-import {ISummaryRenderer} from '../../renderer/interfaces';
-import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {IDialogContext} from './ADialog';
-import {IMappingAdapter, MappingLine} from './MappingLineDialog';
-import {updateFilterState} from './utils';
+import { isDummyNumberFilter } from '../../model/internal';
+import { ISummaryRenderer } from '../../renderer/interfaces';
+import { IRankingHeaderContext } from '../interfaces';
+import ADialog, { IDialogContext } from './ADialog';
+import { IMappingAdapter, MappingLine } from './MappingLineDialog';
+import { updateFilterState } from './utils';
 
 /** @internal */
 export default class MappingsFilterDialog extends ADialog {
@@ -72,7 +72,7 @@ export default class MappingsFilterDialog extends ADialog {
     node.classList.add('lu-dialog-mapper');
 
     node.insertAdjacentHTML('beforeend', `
-        <div><label for="${this.idPrefix}mapping_type"><h4>Mapping / Scaling Type:</h4> <select id="${this.idPrefix}mapping_type">
+        <div><label for="${this.idPrefix}mapping_type"><strong>Mapping / Scaling Type:</strong> <select id="${this.idPrefix}mapping_type">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -85,9 +85,9 @@ export default class MappingsFilterDialog extends ADialog {
       </select>
       </label></div>
         ${this.summary.template}
-        <h4 data-toggle>Mapping Details</h4>
-        <div class="lu-details"><h4>Domain (min - max): </h4><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
-        <h4 class="lu-details" style="text-align: center">Input Domain (min - max)</h4>
+        <strong data-toggle>Mapping Details</strong>
+        <div class="lu-details"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
+        <strong class="lu-details" style="text-align: center">Input Domain (min - max)</strong>
         <svg class="lu-details" viewBox="0 0 106 66">
            <g transform="translate(3,3)">
               <line x2="100"></line>
@@ -96,9 +96,9 @@ export default class MappingsFilterDialog extends ADialog {
               <rect y="36" width="100" height="10"></rect>
            </g>
         </svg>
-        <h4 class="lu-details" style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</h4>
+        <strong class="lu-details" style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
         <div class="lu-script">
-          <h4>Custom Mapping Script</h4>
+          <strong>Custom Mapping Script</strong>
           <textarea></textarea>
         </div>`);
 
