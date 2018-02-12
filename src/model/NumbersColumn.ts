@@ -46,6 +46,7 @@ export declare type INumbersColumnDesc = INumbersDesc & IValueColumnDesc<number[
 
 export interface ISplicer {
   length: number;
+
   splice(values: number[]): number[];
 }
 
@@ -112,7 +113,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   getRawColorScale() {
     const colorScale = d3scale.linear<string, string>();
     const domain = this.mapping.domain;
-    if (domain[0] < 0) {
+    if (domain[0] < 0 && domain[1] > 0) { // diverging
       colorScale
         .domain([domain[0], 0, domain[1]])
         .range([this.colorRange[0], (this.colorRange.length > 2 ? this.colorRange[1] : 'white'), this.colorRange[this.colorRange.length - 1]]);
