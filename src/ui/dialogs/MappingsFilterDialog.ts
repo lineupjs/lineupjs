@@ -72,7 +72,7 @@ export default class MappingsFilterDialog extends ADialog {
     node.classList.add('lu-dialog-mapper');
 
     node.insertAdjacentHTML('beforeend', `
-        <div><label for="${this.idPrefix}mapping_type"><strong>Mapping / Scaling Type:</strong> <select id="${this.idPrefix}mapping_type">
+        <div><label for="${this.idPrefix}mapping_type"><strong>Mapping / Scaling Type:</strong></label><select id="${this.idPrefix}mapping_type" class="browser-default">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -83,7 +83,7 @@ export default class MappingsFilterDialog extends ADialog {
         <option value="sqrt">Sqrt</option>
         <option value="script">Custom Script</option>
       </select>
-      </label></div>
+      </div>
         ${this.summary.template}
         <strong data-toggle>Mapping Details</strong>
         <div class="lu-details"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>

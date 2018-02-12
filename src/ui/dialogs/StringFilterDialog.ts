@@ -30,7 +30,7 @@ export default class StringFilterDialog extends ADialog {
       return true;
     }
     const input = this.findInput('input[type="text"]').value;
-    const isRegex = this.findInput('input[type="checkbox"]:first-of-type').checked;
+    const isRegex = this.findInput('input[type="checkbox"]').checked;
     this.updateFilter(isRegex ? new RegExp(input) : input);
     return true;
   }
@@ -48,7 +48,7 @@ export default class StringFilterDialog extends ADialog {
 
     const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
-    const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
+    const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
 
     const update = () => {
       input.disabled = filterMissing.checked;

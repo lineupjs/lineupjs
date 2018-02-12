@@ -64,7 +64,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const form = <HTMLFormElement>node;
     const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
-    const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
+    const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
 
     const update = () => {
       input.disabled = filterMissing.checked;
