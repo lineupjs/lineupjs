@@ -1,6 +1,6 @@
 import DatesColumn from '../../model/DatesColumn';
-import ADialog, {IDialogContext} from './ADialog';
-import {sortMethods, sortOrder} from './SortDialog';
+import ADialog, { IDialogContext } from './ADialog';
+import { sortMethods, sortOrder } from './SortDialog';
 
 /** @internal */
 export default class SortDateDialog extends ADialog {
@@ -9,7 +9,7 @@ export default class SortDateDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    sortMethods(node, this.column, ['min', 'max', 'median']);
-    sortOrder(node, this.column);
+    sortMethods(node, this.column, ['min', 'max', 'median'], this.dialog.idPrefix);
+    sortOrder(node, this.column, this.dialog.idPrefix);
   }
 }

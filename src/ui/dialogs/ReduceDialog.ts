@@ -1,7 +1,7 @@
-import {EAdvancedSortMethod} from '../../model/INumberColumn';
+import { EAdvancedSortMethod } from '../../model/INumberColumn';
 import ReduceColumn from '../../model/ReduceColumn';
-import ADialog, {IDialogContext} from './ADialog';
-import {sortMethods} from './SortDialog';
+import ADialog, { IDialogContext } from './ADialog';
+import { sortMethods } from './SortDialog';
 
 /** @internal */
 export default class ReduceDialog extends ADialog {
@@ -14,6 +14,6 @@ export default class ReduceDialog extends ADialog {
       getSortMethod: () => this.column.getReduce(),
       setSortMethod: (s: EAdvancedSortMethod) => this.column.setReduce(s)
     };
-    sortMethods(node, wrapper, Object.keys(EAdvancedSortMethod));
+    sortMethods(node, wrapper, Object.keys(EAdvancedSortMethod), this.dialog.idPrefix);
   }
 }

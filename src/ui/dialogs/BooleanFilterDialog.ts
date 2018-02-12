@@ -1,6 +1,6 @@
 import BooleanColumn from '../../model/BooleanColumn';
-import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState} from './utils';
+import ADialog, { IDialogContext } from './ADialog';
+import { updateFilterState, randomId } from './utils';
 
 /** @internal */
 export default class BooleanFilterDialog extends ADialog {
@@ -15,10 +15,11 @@ export default class BooleanFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
+    const id = randomId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `
-     <label><input type="radio" name="boolean_check" value="null" ${this.before == null ? 'checked="checked"' : ''}>No Filter</label>
-     <label><input type="radio" name="boolean_check" value="true" ${this.before === true ? 'checked="checked"' : ''}>True</label>
-     <label><input type="radio" name="boolean_check" value="false" ${this.before === false ? 'checked="checked"' : ''}>False</label>
+     <input id="${id}0" type="radio" name="boolean_check" value="null" ${this.before == null ? 'checked="checked"' : ''}><label id="${id}0">No Filter</label>
+     <input id="${id}1" type="radio" name="boolean_check" value="true" ${this.before === true ? 'checked="checked"' : ''}><label id="${id}1">True</label>
+     <input id="${id}2" type="radio" name="boolean_check" value="false" ${this.before === false ? 'checked="checked"' : ''}><label id="${id}2">False</label>
     `);
   }
 

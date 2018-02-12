@@ -1,6 +1,7 @@
 import Column from '../../model/Column';
-import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {IDialogContext} from './ADialog';
+import { IRankingHeaderContext } from '../interfaces';
+import ADialog, { IDialogContext } from './ADialog';
+import { randomId } from './utils';
 
 /** @internal */
 export default class ChangeRendererDialog extends ADialog {
@@ -12,16 +13,17 @@ export default class ChangeRendererDialog extends ADialog {
     const current = this.column.getRenderer();
     const currentGroup = this.column.getGroupRenderer();
     const currentSummary = this.column.getSummaryRenderer();
-    const {item, group, summary} = this.ctx.getPossibleRenderer(this.column);
+    const { item, group, summary } = this.ctx.getPossibleRenderer(this.column);
 
     console.assert(item.length > 1 || group.length > 1 || summary.length > 1); // otherwise no need to show this
 
+    const id = randomId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `
-      ${item.map((d) => `<label><input type="radio" name="renderer" value=${d.type}  ${(current === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
+      ${item.map((d) => `<input id="${id}0${d.type}" type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><label for="${id}0${d.type}">${d.label}</label>`).join('')}
       <strong>Group Visualization</strong>
-      ${group.map((d) => `<label><input type="radio" name="group" value=${d.type}  ${(currentGroup === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
+      ${group.map((d) => `<input id="${id}1${d.type}" type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><label for="${id}1${d.type}">${d.label}</label>`).join('')}
       <strong>Summary Visualization</strong>
-      ${summary.map((d) => `<label><input type="radio" name="summary" value=${d.type}  ${(currentSummary === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
+      ${summary.map((d) => `<input id="${id}2${d.type}" type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><label for="${id}2${d.type}">${d.label}</label>`).join('')}
     `);
     Array.from(node.querySelectorAll('input[name="renderer"]')).forEach((n: HTMLInputElement) => {
       n.addEventListener('change', () => this.column.setRenderer(n.value));
