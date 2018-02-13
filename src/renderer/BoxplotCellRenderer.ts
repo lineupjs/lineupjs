@@ -39,10 +39,13 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                  </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d.v, d.dataIndex);
-        const missing = !data || renderMissingDOM(n, col, d);
+
+        const missing = renderMissingDOM(n, col, d) || !data;
+
         if (missing) {
           return;
         }
+
         const label = col.getRawBoxPlotData(d.v, d.dataIndex)!;
         renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       }
@@ -74,7 +77,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         q1: data.q1 * width,
         q3: data.q3 * width,
         max: data.max * width,
-        outlier: data.outlier ? data.outlier.map((d) => d * width): undefined
+        outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined
       };
       renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), rowHeight, topPadding, context);
     };
@@ -118,7 +121,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
-       if (rows.every((row) => col.isMissing(row.v, row.dataIndex))) {
+      if (rows.every((row) => col.isMissing(row.v, row.dataIndex))) {
         renderMissingCanvas(ctx, col, rows[0], height); // doesn't matter since all
         return;
       }
@@ -135,36 +138,45 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         q1: box.q1 * width,
         q3: box.q3 * width,
         max: box.max * width,
-        outlier: box.outlier ? box.outlier.map((d) => d * width): undefined
+        outlier: box.outlier ? box.outlier.map((d) => d * width) : undefined
       };
       renderBoxPlot(ctx, scaled, sort, colorOf(col, null, imposer), height, topPadding, context);
     };
   }
 }
 
-function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string|null) {
+function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string | null) {
   n.title = computeLabel(label);
 
   const whiskers = <HTMLElement>n.firstElementChild;
   const box = <HTMLElement>whiskers.firstElementChild;
   const median = <HTMLElement>whiskers.lastElementChild;
 
-  const leftWhisker = Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
-  const rightWhisker = Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
-  whiskers.style.left = `${Math.round(leftWhisker * 100)}%`;
+  let leftWhisker : number;
+  let rightWhisker : number;
+
+  if (data.outlier && data.outlier.length > 0) {
+    leftWhisker = Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
+    rightWhisker = Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
+  } else {
+    leftWhisker = data.min;
+    rightWhisker = data.max;
+  }
+
+  whiskers.style.left = `${leftWhisker * 100}%`;
   const range = rightWhisker - leftWhisker;
-  whiskers.style.width = `${Math.round(range * 100)}%`;
+  whiskers.style.width = `${range * 100}%`;
 
   //relative within the whiskers
-  box.style.left = `${Math.round((data.q1 - leftWhisker) / range * 100)}%`;
-  box.style.width = `${Math.round((data.q3 - data.q1) / range * 100)}%`;
+  box.style.left = `${(data.q1 - leftWhisker) / range * 100}%`;
+  box.style.width = `${(data.q3 - data.q1) / range * 100}%`;
   box.style.backgroundColor = color;
 
   //relative within the whiskers
-  median.style.left = `${Math.round((data.median - leftWhisker) / range * 100)}%`;
+  median.style.left = `${(data.median - leftWhisker) / range * 100}%`;
 
+  whiskers.dataset.sort = sort; // add sort criteria to whiskers by default
   if (!data.outlier || data.outlier.length === 0) {
-    whiskers.dataset.sort = sort;
     if (n.children.length > 1) {
       n.innerHTML = '';
       n.appendChild(whiskers);
@@ -173,37 +185,46 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   }
 
   // match lengths
+  // create outlier elements
   const outliers = <HTMLElement[]>Array.from(n.children).slice(1);
   outliers.slice(data.outlier.length).forEach((v) => v.remove());
-  for(let i = outliers.length; i < data.outlier.length; ++i) {
+  for (let i = outliers.length; i < data.outlier.length; ++i) {
     const p = n.ownerDocument.createElement('div');
     outliers.push(p);
     n.appendChild(p);
   }
 
+  const minOutlier = Math.min(...data.outlier);
+  const maxOutlier = Math.max(...data.outlier);
   data.outlier.forEach((v, i) => {
     delete outliers[i].dataset.sort;
-    outliers[i].style.left = `${Math.round(v * 100)}%`;
-  });
+    outliers[i].style.left = `${v * 100}%`;
 
-  if (sort === 'min') {
-    whiskers.dataset.sort = '';
-    outliers[0].dataset.sort='min';
-  } else if (sort === 'max') {
-    whiskers.dataset.sort = '';
-    outliers[outliers.length - 1].dataset.sort='max';
-  }
+    // apply the sort criteria style if the value is either the minimum or the maximum value
+    if ((v < leftWhisker && v === minOutlier && sort === 'min') || (v > rightWhisker && v === maxOutlier && sort === 'max')) {
+      outliers[i].dataset.sort = sort;
+      whiskers.dataset.sort = '';
+    }
+  });
 }
 
-function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, color: string|null, height: number, topPadding: number, context: ICanvasRenderContext) {
+function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, color: string | null, height: number, topPadding: number, context: ICanvasRenderContext) {
   const boxColor = color || context.option('style.boxplot.box', '#e0e0e0');
   const boxStroke = context.option('style.boxplot.stroke', 'black');
   const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ffa500');
 
   const boxTopPadding = topPadding + ((height - topPadding * 2) * 0.1);
 
-  const left = Math.max((box.q1 - 1.5 * (box.q3 - box.q1)), box.min);
-  const right = Math.min((box.q3 + 1.5 * (box.q3 - box.q1)), box.max);
+  let left : number;
+  let right : number;
+
+  if (box.outlier && box.outlier.length > 0) {
+    left = Math.max(box.q1 - 1.5 * (box.q3 - box.q1), box.min);
+    right = Math.min(box.q3 + 1.5 * (box.q3 - box.q1), box.max);
+  } else {
+    left = box.min;
+    right = box.max;
+  }
 
   ctx.fillStyle = boxColor;
   ctx.strokeStyle = boxStroke;

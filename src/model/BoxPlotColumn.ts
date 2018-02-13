@@ -99,12 +99,16 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (v === null) {
       return v;
     }
+
+    const outliers = v.outlier? v.outlier : [];
+
     return {
       min: this.mapping.apply(v.min),
       max: this.mapping.apply(v.max),
       median: this.mapping.apply(v.median),
       q1: this.mapping.apply(v.q1),
-      q3: this.mapping.apply(v.q3)
+      q3: this.mapping.apply(v.q3),
+      outlier: outliers.map((outlier) => this.mapping.apply(outlier))
     };
   }
 
