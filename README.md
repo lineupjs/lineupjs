@@ -17,6 +17,7 @@ Key Features
  * numerous visualizations for summaries, cells, and group aggregations
  * side panel for easy filtering and column management
  * [React](#react), [Polymer](#polymer), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
+ * [Demo Application](#demo) with CSV Import and Export Capabilities
 
 Usage
 -----
@@ -97,6 +98,18 @@ Supported Browsers
  * Firefox 57+
  * Edge 16+
  
+<a id="demo"></a>
+
+Demo Application
+----------------
+
+A demo application is located at [lineup_app](https://github.com/sgratzl/lineup_app). It support CSV Import, CSV Export, JSON Export, CodePen Export, and Github Gist Export. 
+
+The application is deployed at https://sgratzl.github.io/lineupjs_docs/app
+
+![Screenshot](https://user-images.githubusercontent.com/4129778/36336600-8590a932-1389-11e8-8de0-269079efc37b.png) 
+
+
 
 <a id="react"></a>
 
