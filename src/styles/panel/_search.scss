@@ -3,7 +3,7 @@
 .#{$lu_css_prefix}-search {
   position: relative;
 
-  >input {
+  > input {
     width: 100%;
     border: 1px solid $lu_side_panel_input_border;
     box-sizing: border-box;
@@ -12,7 +12,7 @@
     outline: none;
   }
 
-  >ul {
+  > ul {
     display: none;
     position: absolute;
     overflow: auto;
@@ -38,14 +38,14 @@
       padding: 0;
     }
 
-    li>span {
+    li > span {
       padding: 0.2em;
       display: block;
     }
 
     li.#{$lu_css_prefix}-search-group {
       margin-bottom: 0.2em;
-      >span {
+      > span {
         background: $lu_side_panel_bg_color;
         text-transform: capitalize;
         padding-left: 0.4em;
@@ -53,7 +53,7 @@
       }
     }
 
-    li.#{$lu_css_prefix}-search-item>span {
+    li.#{$lu_css_prefix}-search-item > span {
       cursor: pointer;
       padding-left: 0.4em;
       pointer-events: auto;
@@ -63,17 +63,17 @@
       }
     }
 
-    li.#{$lu_css_prefix}-search-highlighted>span {
+    li.#{$lu_css_prefix}-search-highlighted > span {
       background-color: #f8f8f8;
     }
   }
 
   &.#{$lu_css_prefix}-search-open {
-    >input {
+    > input {
       border-radius: $lu_side_panel_input_border_radius $lu_side_panel_input_border_radius 0 0;
     }
 
-    >ul {
+    > ul {
       display: block;
       max-height: 70vh;
     }
