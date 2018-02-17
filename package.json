@@ -6,8 +6,7 @@
     "name": "Samuel Gratzl",
     "email": "samuel-gratzl@gmx.at"
   },
-  "contributors": [
-    {
+  "contributors": [{
       "name": "Caleydo Team",
       "email": "contact@caleydo.org",
       "url": "https://caleydo.org"
@@ -29,6 +28,7 @@
   "main": "build/LineUpJS.js",
   "jsnext:main": "build/LineUpJs.js",
   "module": "build/LineUpJs.js",
+  "unpkg": "build/LineUpJs.js",
   "types": "build/typings/index.d.ts",
   "files": [
     "build",
