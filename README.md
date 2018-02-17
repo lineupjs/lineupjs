@@ -54,7 +54,7 @@ const lineup = LineUpJS.asLineUp(document.body, arr);
 
 [CodePen](https://codepen.io/sgratzl/pen/Ozzbqp)
 
-![Minimal Result](https://user-images.githubusercontent.com/4129778/34654173-32180ff8-f3f8-11e7-8469-229fa34a65dc.png)
+[![Minimal Result](https://user-images.githubusercontent.com/4129778/34654173-32180ff8-f3f8-11e7-8469-229fa34a65dc.png)](https://codepen.io/sgratzl/pen/Ozzbqp)
 
 
 **Advanced Usage Example**
@@ -88,7 +88,7 @@ const lineup = builder.build(document.body);
 
 [CodePen](https://codepen.io/sgratzl/pen/vppyML)
 
-![Advanced Result](https://user-images.githubusercontent.com/4129778/34654174-3235f784-f3f8-11e7-9361-44f5fa068bb9.png)
+[![Advanced Result](https://user-images.githubusercontent.com/4129778/34654174-3235f784-f3f8-11e7-9361-44f5fa068bb9.png)](https://codepen.io/sgratzl/pen/vppyML)
 
 
 Supported Browsers
@@ -105,9 +105,9 @@ Demo Application
 
 A demo application is located at [lineup_app](https://github.com/sgratzl/lineup_app). It support CSV Import, CSV Export, JSON Export, CodePen Export, and Github Gist Export. 
 
-The application is deployed at https://lineup.js.org/app
+The application is deployed at [https://lineup.js.org/app](https://lineup.js.org/app)
 
-![Screenshot](https://user-images.githubusercontent.com/4129778/36336600-8590a932-1389-11e8-8de0-269079efc37b.png) 
+[![Screenshot](https://user-images.githubusercontent.com/4129778/36336600-8590a932-1389-11e8-8de0-269079efc37b.png)](https://lineup.js.org/app) 
 
 
 
