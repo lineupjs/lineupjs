@@ -5,7 +5,7 @@
   .#{$lu_css_prefix}-dialog-mapper {
     width: 25em;
 
-    >.#{$lu_css_prefix}-summary {
+    > .#{$lu_css_prefix}-summary {
       height: 5em;
       margin: 0.5em 3px 0;
     }
@@ -50,7 +50,7 @@
       display: none;
     }
 
-    [data-toggle=open]~.#{$lu_css_prefix}-details {
+    [data-toggle=open] ~ .#{$lu_css_prefix}-details {
       display: block;
     }
 
@@ -71,6 +71,7 @@
       }
 
       line:not([x1]) {
+
         // the horizontal lines
         stroke-width: 1.25;
       }
@@ -89,7 +90,7 @@
       g.#{$lu_css_prefix}-mapping {
         cursor: ew-resize;
 
-        >line:first-child {
+        > line:first-child {
           stroke-width: 5;
           stroke: transparent !important;
         }
