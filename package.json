@@ -24,11 +24,11 @@
   "bugs": {
     "url": "https://github.com/sgratzl/lineupjs/issues"
   },
-  "homepage": "https://github.com/sgratzl/lineupjs",
+  "homepage": "https://lineup.js.org",
   "main": "build/LineUpJS.js",
   "jsnext:main": "build/LineUpJs.js",
   "module": "build/LineUpJs.js",
-  "unpkg": "build/LineUpJs.js",
+  "unpkg": "build/LineUpJs.min.js",
   "types": "build/typings/index.d.ts",
   "files": [
     "build",

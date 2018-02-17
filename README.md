@@ -29,8 +29,8 @@ npm install --save lineupjs@next
 ```
 
 ```html
-<link href="https://sgratzl.github.io/lineupjs_docs/master/LineUpJS.css" rel="stylesheet">
-<script src="https://sgratzl.github.io/lineupjs_docs/master/LineUpJS.min.js"></script>
+<link href="https://unpkg.com/lineupjs/build/LineUpJS.min.css" rel="stylesheet">
+<script src="https://unpkg.com/lineupjs/build/LineUpJS.min.js"></script>
 ```
 
 **Minimal Usage Example**
@@ -105,7 +105,7 @@ Demo Application
 
 A demo application is located at [lineup_app](https://github.com/sgratzl/lineup_app). It support CSV Import, CSV Export, JSON Export, CodePen Export, and Github Gist Export. 
 
-The application is deployed at https://sgratzl.github.io/lineupjs_docs/app
+The application is deployed at https://lineup.js.org/app
 
 ![Screenshot](https://user-images.githubusercontent.com/4129778/36336600-8590a932-1389-11e8-8de0-269079efc37b.png) 
 
@@ -126,8 +126,8 @@ npm install --save lineupjsx
 ```
 
 ```html
-<link href="https://sgratzl.github.io/lineupjs_docs/masterx/LineUpJSx.css" rel="stylesheet">
-<script src="https://sgratzl.github.io/lineupjs_docs/masterx/LineUpJSx.min.js"></script>
+<link href="https://unpkg.com/lineupjsx/build/LineUpJSx.min.css" rel="stylesheet">
+<script src="https://unpkg.com/lineupjsx/build/LineUpJSx.min.js"></script>
 ```
 
 **Minimal Usage Example**
@@ -343,13 +343,13 @@ TODO
 API Documentation
 -----------------
 
-See [API documentation](https://sgratzl.github.io/lineupjs_docs/master/docs) and [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
+See [API documentation](https://lineup.js.org/master/docs) and [Develop API documentation](https://lineup.js.org/develop/docs)
 
 
 Demos
 -----
 
-See [Demos](https://sgratzl.github.io/lineupjs_docs/master), [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop), and [R Demos](https://sgratzl.github.io/lineupjs_docs/R)
+See [Demos](https://lineup.js.org/master), [Develop Demos](https://lineup.js.org/develop), and [R Demos](https://lineup.js.org/R)
 
 
 Related Publications
