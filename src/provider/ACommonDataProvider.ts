@@ -10,6 +10,9 @@ function isComplexAccessor(column: any) {
 }
 
 function resolveComplex(column: string, row: any) {
+  if (row.hasOwnProperty(column)) { // well complex but a direct hit
+    return row[column];
+  }
   const resolve = (obj: any, col: string) => {
     if (obj === undefined) {
       return obj; // propagate invalid values
@@ -173,7 +176,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   }
 
   fromDescRef(descRef: any): any {
-    if (typeof(descRef) === 'string') {
+    if (typeof (descRef) === 'string') {
       return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef);
     }
     const existing = this.columns.find((d) => descRef.column === (<any>d).column && descRef.label === d.label && descRef.type === d.type);
