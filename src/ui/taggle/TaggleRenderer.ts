@@ -96,18 +96,19 @@ export default class TaggleRenderer extends AEventDispatcher {
       return this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
     };
 
-    const padding = (item: IGroupData | IGroupItem | null) => {
-      if (!item) {
-        item = data[0];
-      }
-      const lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
-      return lod === 'high' ? this.options.rowPadding : 0;
-    };
+    // padding is always 0 since included in height
+    // const padding = (item: IGroupData | IGroupItem | null) => {
+    //   if (!item) {
+    //     item = data[0];
+    //   }
+    //   const lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
+    //   return lod === 'high' ? 0 : 0; // always 0 since
+    // };
 
     return {
       defaultHeight: typeof instance.item === 'number' ? instance.item : NaN,
       height,
-      padding
+      padding: 0
     };
   }
 
