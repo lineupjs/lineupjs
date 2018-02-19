@@ -218,10 +218,10 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return super.insertImpl(col, index);
   }
 
-  protected removeImpl(child: Column) {
+  protected removeImpl(child: Column, index: number) {
     if (isNumbersColumn(child)) {
       this.unforward(child, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
     }
-    return super.removeImpl(child);
+    return super.removeImpl(child, index);
   }
 }

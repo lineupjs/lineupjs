@@ -178,10 +178,10 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return super.insertImpl(col, index);
   }
 
-  protected removeImpl(child: Column) {
+  protected removeImpl(child: Column, index: number) {
     if (isBoxPlotColumn(child)) {
       this.unforward(child, ...suffix('.impose', BoxPlotColumn.EVENT_MAPPING_CHANGED));
     }
-    return super.removeImpl(child);
+    return super.removeImpl(child, index);
   }
 }
