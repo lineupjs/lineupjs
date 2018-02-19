@@ -1,10 +1,10 @@
-import { ICellRendererFactory } from '../../renderer';
-import { Column, IGroupData, IGroupItem, Ranking, IColumnDesc } from '../../model';
-import { IToolbarAction, Taggle, LineUp } from '../../ui';
-import { IDynamicHeight, ILineUpOptions } from '../../interfaces';
-import { IBuilderAdapterRankingProps, buildRanking } from './ranking';
-import { pick, isSame, equal } from './utils';
-import { LocalDataProvider, deriveColumnDescriptions, deriveColors } from '../../provider';
+import {ICellRendererFactory} from '../../renderer';
+import {Column, IGroupData, IGroupItem, Ranking, IColumnDesc} from '../../model';
+import {IToolbarAction, Taggle, LineUp} from '../../ui';
+import {IDynamicHeight, ILineUpOptions} from '../../interfaces';
+import {IBuilderAdapterRankingProps, buildRanking} from './ranking';
+import {pick, isSame, equal} from './utils';
+import {LocalDataProvider, deriveColumnDescriptions, deriveColors} from '../../provider';
 
 
 export interface IBuilderAdapterDataProps {
@@ -20,7 +20,7 @@ export interface IBuilderAdapterDataProps {
   noCriteriaLimits?: boolean;
   maxGroupColumns?: number;
   maxNestedSortingCriteria?: number;
-  columnTypes?: { [type: string]: typeof Column };
+  columnTypes?: {[type: string]: typeof Column};
 
   deriveColumns?: boolean | string[];
   deriveColors?: boolean;
@@ -39,8 +39,8 @@ export interface IBuilderAdapterProps extends IBuilderAdapterDataProps {
   expandLineOnHover?: boolean;
   overviewMode?: boolean;
 
-  renderer?: { [id: string]: ICellRendererFactory };
-  toolbar?: { [id: string]: IToolbarAction };
+  renderer?: {[id: string]: ICellRendererFactory};
+  toolbar?: {[id: string]: IToolbarAction};
 
   rowHeight?: number;
   rowPadding?: number;
@@ -139,11 +139,10 @@ export class Adapter {
   }
 
   private buildColumns(data: any[], ctx: IColumnContext) {
-    console.log('build columns');
     this.prevColumns = ctx;
     const columns = ctx.columns.slice();
     if (ctx.deriveColumns) {
-      columns.push(...deriveColumnDescriptions(data, { columns: ctx.deriveColumnNames }));
+      columns.push(...deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames}));
     }
     if (ctx.deriveColors) {
       deriveColors(columns);
@@ -152,7 +151,6 @@ export class Adapter {
   }
 
   private buildRankings(data: LocalDataProvider, rankings: IRankingContext) {
-    console.log('build rankings');
     data.clearRankings();
     this.prevRankings = rankings;
     if (rankings.derive) {
@@ -165,7 +163,6 @@ export class Adapter {
   }
 
   private buildProvider() {
-    console.log('build provider');
     const columns = this.buildColumns(this.props.data, this.resolveColumnDescs(this.props.data));
     const data = new LocalDataProvider(this.props.data, columns, pick(this.props, providerOptions));
 
@@ -197,7 +194,6 @@ export class Adapter {
     if (this.instance) {
       this.instance.destroy();
     }
-    console.log('build lineup instance');
     this.instance = this.adapter.createInstance(this.data!, changedLineUpOptions);
 
     this.prevHighlight = this.props.highlight == null ? -1 : this.props.highlight;
