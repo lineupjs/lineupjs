@@ -91,7 +91,7 @@ function generateWebpack(options) {
     },
     watchOptions: {
       aggregateTimeout: 500,
-      ignored: /node_modules/
+      //ignored: /node_modules/
     },
     devServer: {
       contentBase: 'demo'

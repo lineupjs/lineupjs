@@ -88,12 +88,16 @@ export class Adapter {
   private prevHighlight: number;
 
   private readonly onSelectionChanged = (indices: number[]) => {
-    if (this.props.onSelectionChanged) {
+    if (this.props.onSelectionChanged && !equal(this.props.selection, indices)) {
       this.props.onSelectionChanged(indices);
     }
   }
 
   private readonly onHighlightChanged = (highlight: number) => {
+    const prev = this.prevHighlight != null ? this.prevHighlight : -1;
+    if (prev === highlight) {
+      return;
+    }
     this.prevHighlight = highlight;
     if (this.props.onHighlightChanged) {
       this.props.onHighlightChanged(highlight);
@@ -187,8 +191,9 @@ export class Adapter {
         this.instance!.on(LineUp.EVENT_HIGHLIGHT_CHANGED, null);
         this.instance!.setHighlight(this.prevHighlight);
         this.instance!.on(LineUp.EVENT_HIGHLIGHT_CHANGED, this.onHighlightChanged);
+        return true;
       }
-      return;
+      return false;
     }
     // recreate lineup
     if (this.instance) {
@@ -199,6 +204,7 @@ export class Adapter {
     this.prevHighlight = this.props.highlight == null ? -1 : this.props.highlight;
     this.instance!.setHighlight(this.prevHighlight);
     this.instance!.on(LineUp.EVENT_HIGHLIGHT_CHANGED, this.onHighlightChanged);
+    return true;
   }
 
   private updateProvider(changeDetector: IChangeDetecter) {
@@ -231,8 +237,7 @@ export class Adapter {
   componentDidUpdate(changeDetector: IChangeDetecter) {
     const providerChanged = this.updateProvider(changeDetector);
     this.updateLineUp(changeDetector, providerChanged);
-
-    this.instance!.update();
+    // this.instance!.update();
   }
 
   componentWillUnmount() {
