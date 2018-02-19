@@ -147,13 +147,13 @@ export default class CompositeColumn extends Column implements IColumnParent {
       return false;
     }
     this._children.splice(i, 1); //remove and deregister listeners
-    return this.removeImpl(child);
+    return this.removeImpl(child, i);
   }
 
-  protected removeImpl(child: Column) {
+  protected removeImpl(child: Column, index: number) {
     child.parent = null;
     this.unforward(child, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
-    this.fire([Column.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], child);
+    this.fire([Column.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], child, index);
     return true;
   }
 
