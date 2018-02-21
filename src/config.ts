@@ -81,7 +81,8 @@ export function defaultConfig(): IFullLineUpConfig {
       meanLine: false,
       actions: [],
 
-      freezeCols: 0
+      freezeCols: 0,
+      striped: false
     },
     manipulative: true,
     pool: false,

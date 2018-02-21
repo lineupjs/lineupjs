@@ -49,6 +49,11 @@ export interface IBodyRendererOptions {
   actions: { name: string, icon: string, action(v: any): void }[];
 
   freezeCols: number;
+
+  /**
+   * striped alterating background
+   */
+  striped: boolean;
 }
 
 

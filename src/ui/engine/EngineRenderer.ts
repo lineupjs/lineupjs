@@ -41,8 +41,13 @@ export interface IEngineRendererOptions {
     groupPadding: number;
     rowPadding: number;
     rowHeight: number;
-    dynamicHeight?: (data: (IGroupItem|IGroupData)[], ranking: Ranking)=>{defaultHeight: number, height: (item: IGroupItem|IGroupData)=>number};
-    customRowUpdate?: (row: HTMLElement, rowIndex: number)=>void;
+    dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => {defaultHeight: number, height: (item: IGroupItem | IGroupData) => number};
+    customRowUpdate?: (row: HTMLElement, rowIndex: number) => void;
+
+    /**
+     * striped alterating background
+     */
+    striped: boolean;
   }>;
 
   renderers: { [key: string]: ICellRendererFactory };
@@ -103,6 +108,9 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
     this.node.id = this.options.idPrefix;
     this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);
+
+    this.node.classList.toggle('lineup-engine-striped', Boolean(this.options.body.striped));
+
 
     this.initProvider(data);
   }
@@ -223,7 +231,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.update([r]);
   }
 
-  private removeRanking(ranking: Ranking|null) {
+  private removeRanking(ranking: Ranking | null) {
     if (!ranking) {
       // remove all
       this.rankings.splice(0, this.rankings.length);
@@ -263,19 +271,19 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const round2 = (v: number) => round(v, 2);
 
 
-    const heightsFor = (ranking: Ranking, data: (IGroupItem|IGroupData)[]) => {
+    const heightsFor = (ranking: Ranking, data: (IGroupItem | IGroupData)[]) => {
       if (this.options.body.dynamicHeight) {
         const impl = this.options.body.dynamicHeight(data, ranking);
         return {
           defaultHeight: round2(this.zoomFactor * impl.defaultHeight),
-          height: (d: IGroupItem|IGroupData) => round2(this.zoomFactor * impl.height(d))
+          height: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * impl.height(d))
         };
       }
       const item = round2(this.zoomFactor * this.options.body.rowHeight!);
       const group = round2(this.zoomFactor * this.options.body.groupHeight!);
       return {
         defaultHeight: item,
-        height: (d: IGroupItem|IGroupData) => isGroup(d) ? group : item
+        height: (d: IGroupItem | IGroupData) => isGroup(d) ? group : item
       };
     };
     const groupPadding = round2(this.zoomFactor * this.options.body.groupPadding!);

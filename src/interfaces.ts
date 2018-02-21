@@ -63,7 +63,7 @@ export interface ILineUpConfig {
   /**
    * the renderer to use for rendering the columns
    */
-  renderers: { [key: string]: ICellRendererFactory };
+  renderers: {[key: string]: ICellRendererFactory};
 }
 
 export interface ILineUpLike {
