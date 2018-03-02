@@ -6,8 +6,7 @@
     "name": "Samuel Gratzl",
     "email": "samuel-gratzl@gmx.at"
   },
-  "contributors": [
-    {
+  "contributors": [{
       "name": "Caleydo Team",
       "email": "contact@caleydo.org",
       "url": "https://caleydo.org"
@@ -29,7 +28,7 @@
   "main": "build/LineUpJS.js",
   "jsnext:main": "build/LineUpJs.js",
   "module": "build/LineUpJs.js",
-  "unpkg": "build/LineUpJs.min.js",
+  "unpkg": "build/LineUpJs.js",
   "types": "build/typings/index.d.ts",
   "files": [
     "build",
@@ -50,16 +49,16 @@
     "test": "node -e \"require('fs').existsSync('./tests')?0:1\" || karma start",
     "posttest": "npm run lint",
     "test:watch": "karma start --autoWatch=true --singleRun=false",
-    "build:dev": "webpack --devtool inline-source-map --output-pathinfo --env dev",
+    "build:dev": "webpack -d --devtool inline-source-map --env dev",
     "build": "webpack -p --env prod",
-    "watch": "webpack --watch --devtool inline-source-map --output-pathinfo --env dev",
+    "watch": "webpack -d --watch --devtool inline-source-map --env dev",
     "preversion": "npm test",
     "prepublishOnly": "npm run build",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "release:pre": "npm version prerelease && npm publish --tag=next && git push --follow-tags",
-    "start": "webpack-dev-server --devtool inline-source-map --output-pathinfo --env dev",
+    "start": "webpack-dev-server -d --devtool inline-source-map --env dev",
     "predist": "npm run build && npm run docs",
     "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz --exclude \"docs\" * && cd .."
   },
