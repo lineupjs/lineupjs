@@ -180,7 +180,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private filterResults(node: HTMLElement, text: string) {
     if (text === '') {
       // show all
-      Array.from(node.querySelectorAll('.hidden')).forEach((d: HTMLElement) => d.classList.remove('hidden'));
+      (<HTMLElement[]>Array.from(node.querySelectorAll('.hidden'))).forEach((d: HTMLElement) => d.classList.remove('hidden'));
       return false;
     }
     const children = Array.from(node.children);

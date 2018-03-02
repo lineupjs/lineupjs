@@ -1,20 +1,20 @@
-import { D3DragEvent, drag } from 'd3-drag';
-import { event as d3event, selectAll } from 'd3-selection';
-import { DENSE_HISTOGRAM } from '../config';
-import { computeStats, getNumberOfBins, INumberBin, IStatistics, round } from '../internal/math';
-import { IDataRow, IGroup, isMissingValue } from '../model';
+import {D3DragEvent, drag} from 'd3-drag';
+import {event as d3event, selectAll} from 'd3-selection';
+import {DENSE_HISTOGRAM} from '../config';
+import {computeStats, getNumberOfBins, INumberBin, IStatistics, round} from '../internal/math';
+import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
 import {
   DEFAULT_FORMATTER, INumberColumn, INumbersColumn, isNumberColumn,
   isNumbersColumn
 } from '../model/INumberColumn';
-import { IMapAbleColumn, isMapAbleColumn } from '../model/MappingFunction';
+import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
-import { filterMissingNumberMarkup, updateFilterMissingNumberMarkup } from '../ui/missing';
-import { colorOf } from './impose';
-import { default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer } from './interfaces';
-import { renderMissingDOM } from './missing';
-import { noop } from './utils';
+import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
+import {colorOf} from './impose';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {noop} from './utils';
 
 /** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
@@ -25,7 +25,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
   }
 
   create(col: INumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
-    const { template, render, guessedBins } = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
+    const {template, render, guessedBins} = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, row: IDataRow) => {
@@ -39,7 +39,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: INumberColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
-    const { template, render, guessedBins } = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
+    const {template, render, guessedBins} = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
@@ -57,7 +57,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
 }
 
 
-function staticSummary(col: INumberColumn, template: string, render: (n: HTMLElement, stats: { bins: number, max: number, hist: INumberBin[] }) => void) {
+function staticSummary(col: INumberColumn, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void) {
   if (isMapAbleColumn(col)) {
     const range = col.getRange();
     template += `<span>${range[0]}</span><span>${range[1]}</span>`;
@@ -74,12 +74,12 @@ function staticSummary(col: INumberColumn, template: string, render: (n: HTMLEle
       if (!hist) {
         return;
       }
-      render(node, { bins: hist.hist.length, max: hist.maxBin, hist: hist.hist });
+      render(node, {bins: hist.hist.length, max: hist.maxBin, hist: hist.hist});
     }
   };
 }
 
-function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: { bins: number, max: number, hist: INumberBin[] }) => void) {
+function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void) {
   const f = filter(col);
   template += `
       <div data-handle="min-hint" style="width: ${f.percent(f.filterMin)}%"></div>
@@ -103,7 +103,7 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
       if (!hist) {
         return;
       }
-      render(node, { bins: hist.hist.length, max: hist.maxBin, hist: hist.hist });
+      render(node, {bins: hist.hist.length, max: hist.maxBin, hist: hist.hist});
     }
   };
 }
@@ -184,7 +184,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
 
   filterMissing.onchange = () => setFilter();
 
-  selectAll([min, max]).call(drag()
+  selectAll([min, max]).call(drag<HTMLElement, {}>()
     .filter(() => d3event.button === 0 && !d3event.shiftKey)
     .on('start', function (this: HTMLElement) {
       this.classList.add('lu-dragging');
@@ -237,7 +237,7 @@ function createHist(globalHist: IStatistics | null, guessedBins: number, rows: I
   }
 
   const max = Math.max(stats.maxBin, globalHist ? globalHist.maxBin : 0);
-  return { bins, max, hist: stats.hist };
+  return {bins, max, hist: stats.hist};
 }
 
 export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn, imposer?: IImposer) {
@@ -247,10 +247,10 @@ export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn
     bins += `<div title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`;
   }
 
-  const render = (n: HTMLElement, stats: { bins: number, max: number, hist: INumberBin[] }) => {
-    const { bins, max, hist } = stats;
+  const render = (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => {
+    const {bins, max, hist} = stats;
     //adapt the number of children
-    let nodes = Array.from(n.querySelectorAll('[data-x]'));
+    let nodes = <HTMLElement[]>Array.from(n.querySelectorAll('[data-x]'));
     if (nodes.length > bins) {
       nodes.splice(bins, nodes.length - bins).forEach((d) => d.remove());
     } else if (nodes.length < bins) {
@@ -261,7 +261,7 @@ export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn
     }
     n.classList.toggle('lu-dense', bins > DENSE_HISTOGRAM);
     nodes.forEach((d: HTMLElement, i) => {
-      const { x0, x1, length } = hist[i];
+      const {x0, x1, length} = hist[i];
       const inner = <HTMLElement>d.firstElementChild!;
       d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length})`;
       d.dataset.x = DEFAULT_FORMATTER(x0);

@@ -83,9 +83,9 @@ export class Adapter {
   private data: LocalDataProvider | null = null;
   private instance: LineUp | Taggle | null = null;
 
-  private prevRankings: IRankingContext;
-  private prevColumns: IColumnContext;
-  private prevHighlight: number;
+  private prevRankings: IRankingContext | null = null;
+  private prevColumns: IColumnContext | null = null;
+  private prevHighlight: number | null = null;
 
   private readonly onSelectionChanged = (indices: number[]) => {
     if (this.props.onSelectionChanged && !equal(this.props.selection, indices)) {

@@ -1,9 +1,9 @@
 import BoxPlotColumn from '../../model/BoxPlotColumn';
 import Column from '../../model/Column';
-import { EAdvancedSortMethod, ESortMethod, IBoxPlotColumn } from '../../model/INumberColumn';
+import {EAdvancedSortMethod, ESortMethod, IBoxPlotColumn} from '../../model/INumberColumn';
 import NumberColumn from '../../model/NumberColumn';
-import ADialog, { IDialogContext } from './ADialog';
-import { randomId } from './utils';
+import ADialog, {IDialogContext} from './ADialog';
+import {randomId, forEach} from './utils';
 
 /** @internal */
 export default class SortDialog extends ADialog {
@@ -18,12 +18,12 @@ export default class SortDialog extends ADialog {
 }
 
 /** @internal */
-export function sortMethods(node: HTMLElement, column: { setSortMethod(v: string): void, getSortMethod(): string }, methods: string[], idPrefix: string) {
+export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string): void, getSortMethod(): string}, methods: string[], idPrefix: string) {
   const id = randomId(idPrefix);
   const bak = column.getSortMethod();
   methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<input id="${id}${d}" type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><label for="${id}${d}">${d.slice(0, 1).toUpperCase() + d.slice(1)}</label>`));
 
-  Array.from(node.querySelectorAll('input[name=multivaluesort]')).forEach((n: HTMLInputElement) => {
+  forEach(node, 'input[name=multivaluesort]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => column.setSortMethod(n.value));
   });
 }
@@ -37,7 +37,7 @@ export function sortOrder(node: HTMLElement, column: Column, idPrefix: string, g
         <input id="${id}A" type="radio" name="sortorder" value="asc"  ${(order === 'asc') ? 'checked' : ''} ><label for="${id}A">Ascending</label>
         <input id="${id}A" type="radio" name="sortorder" value="desc"  ${(order === 'desc') ? 'checked' : ''} ><label for="${id}B">Decending</label>
     `);
-  Array.from(node.querySelectorAll('input[name=sortorder]')).forEach((n: HTMLInputElement) => {
+  forEach(node, 'input[name=sortorder]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => {
       if (groupSortBy) {
         column.groupSortByMe(n.value === 'asc');

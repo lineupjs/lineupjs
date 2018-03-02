@@ -10,7 +10,7 @@ export {ILineUpOptions} from '../interfaces';
 
 export default class LineUp extends ALineUp {
   private readonly renderer: EngineRenderer;
-  private readonly panel: SidePanel;
+  private readonly panel: SidePanel | null;
 
   private readonly options = defaultOptions();
 
@@ -25,8 +25,10 @@ export default class LineUp extends ALineUp {
       this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
         collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true
       });
-      this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
+      this.renderer.pushUpdateAble((ctx) => this.panel!.update(ctx));
       this.node.insertBefore(this.panel.node, this.node.firstChild);
+    } else {
+      this.panel = null;
     }
     this.forward(this.renderer, `${EngineRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
   }

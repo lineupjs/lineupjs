@@ -1,7 +1,7 @@
-import { D3DragEvent, drag } from 'd3-drag';
-import { event as d3event, select, Selection } from 'd3-selection';
-import { round, similar } from '../../internal/math';
-import ADialog, { IDialogContext } from './ADialog';
+import {D3DragEvent, drag} from 'd3-drag';
+import {event as d3event, select, Selection} from 'd3-selection';
+import {round, similar} from '../../internal/math';
+import ADialog, {IDialogContext} from './ADialog';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
@@ -24,7 +24,7 @@ export interface IMappingAdapter {
 
 /** @internal */
 export default class MappingLineDialog extends ADialog {
-  constructor(private readonly line: { destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void }, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
+  constructor(private readonly line: {destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void}, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
     super(dialog);
   }
 
@@ -38,7 +38,7 @@ export default class MappingLineDialog extends ADialog {
         <button type="button" ${this.line.frozen ? 'disabled' : ''} >Remove Mapping Line</button>
       `);
 
-    this.forEach('input', (d) => d.onchange = () => this.submit());
+    this.forEach('input', (d: HTMLInputElement) => d.onchange = () => this.submit());
     this.find('button').addEventListener('click', () => {
       this.destroy();
       this.line.destroy();
@@ -80,7 +80,7 @@ export class MappingLine {
       let beforeRange: number;
       let shiftDomain: number;
       let shiftRange: number;
-      this.$select.selectAll('line:first-of-type, circle').call(drag()
+      this.$select.selectAll<SVGCircleElement, {}>('line:first-of-type, circle').call(drag<SVGCircleElement, {}>()
         .container(function (this: SVGCircleElement) {
           return <any>this.parentNode!.parentNode;
         }).filter(() => d3event.button === 0 && !d3event.shiftKey)

@@ -4,9 +4,8 @@ import {findOption, ICategoricalStatistics, IStatistics, round} from '../interna
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {
   Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup,
-  isNumberColumn
+  isNumberColumn, INumberColumn
 } from '../model';
-import NumberColumn from '../model/NumberColumn';
 import Ranking from '../model/Ranking';
 import ADataProvider from '../provider/ADataProvider';
 import {
@@ -205,11 +204,11 @@ export default class EngineRenderer extends AEventDispatcher {
       const order = ranking.getOrder();
       const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
-      cols.filter((d) => isNumberColumn(d) && d.isVisible()).forEach((col: NumberColumn) => {
-        this.histCache.set(col.id, histo == null ? null : histo.stats(col));
+      cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
+        this.histCache.set(col.id, histo == null ? null : histo.stats(<INumberColumn>col));
       });
-      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: ICategoricalColumn) => {
-        this.histCache.set(col.id, histo == null ? null : histo.hist(col));
+      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: Column) => {
+        this.histCache.set(col.id, histo == null ? null : histo.hist(<ICategoricalColumn>col));
       });
       if (col) {
         // single update

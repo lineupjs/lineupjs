@@ -1,6 +1,7 @@
 import {round} from '../../internal';
 import StackColumn from '../../model/StackColumn';
 import ADialog, {IDialogContext} from './ADialog';
+import {forEach} from './utils';
 
 /** @internal */
 export default class WeightsEditDialog extends ADialog {
@@ -16,7 +17,7 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   protected reset() {
-    Array.from(this.node.querySelectorAll('input[type=number]')).forEach((n: HTMLInputElement) => {
+    forEach(this.node, 'input[type=number]', (n: HTMLInputElement) => {
       const v = round(100 / this.weights.length, 2);
       n.value = String(v);
       (<HTMLElement>n.nextElementSibling!).style.width = `${v}%`;

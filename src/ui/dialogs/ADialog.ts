@@ -32,7 +32,7 @@ abstract class ADialog {
   };
 
   readonly node: HTMLFormElement;
-  private popper: Popper;
+  private popper: Popper | null = null;
 
   constructor(protected readonly dialog: Readonly<IDialogContext>, options: Partial<IDialogOptions> = {}) {
     Object.assign(this.options, options);
@@ -128,8 +128,8 @@ abstract class ADialog {
     return this.find<HTMLInputElement>(selector);
   }
 
-  protected forEach<T>(selector: string, callback: (d: HTMLElement, i: number) => T): T[] {
-    return Array.from(this.node.querySelectorAll(selector)).map(callback);
+  protected forEach<M extends Element, T>(selector: string, callback: (d: M, i: number) => T): T[] {
+    return (<M[]>Array.from(this.node.querySelectorAll(selector))).map(callback);
   }
 
   protected reset() {
@@ -143,7 +143,9 @@ abstract class ADialog {
 
   destroy() {
     this.dialog.manager.remove(this);
-    this.popper.destroy();
+    if (this.popper) {
+      this.popper.destroy();
+    }
     this.node.remove();
   }
 }

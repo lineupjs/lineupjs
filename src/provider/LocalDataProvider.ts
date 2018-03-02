@@ -46,7 +46,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   private readonly reorderAll: () => void;
 
   private _dataRows: IDataRow[];
-  private filter: ((row: IDataRow) => boolean) | null;
+  private filter: ((row: IDataRow) => boolean) | null = null;
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -55,7 +55,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
 
     const that = this;
-    this.reorderAll = function (this: { source: Ranking }) {
+    this.reorderAll = function (this: {source: Ranking}) {
       //fire for all other rankings a dirty order event, too
       const ranking = this.source;
       that.getRankings().forEach((r) => {

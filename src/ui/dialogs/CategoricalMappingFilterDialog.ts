@@ -1,9 +1,9 @@
-import { round } from '../../internal';
+import {round} from '../../internal';
 import OrdinalColumn from '../../model/OrdinalColumn';
-import { ICategoricalFilter, isCategoryIncluded } from '../../model/ICategoricalColumn';
-import { filterMissingMarkup, findFilterMissing } from '../missing';
-import ADialog, { IDialogContext } from './ADialog';
-import { updateFilterState, randomId } from './utils';
+import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
+import {filterMissingMarkup, findFilterMissing} from '../missing';
+import ADialog, {IDialogContext} from './ADialog';
+import {updateFilterState, randomId, forEach} from './utils';
 
 /** @internal */
 export default class CategoricalMappingFilterDialog extends ADialog {
@@ -14,7 +14,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     super(dialog, {
       fullDialog: true
     });
-    this.before = this.column.getFilter() || { filter: this.column.categories.map((d) => d.name), filterMissing: false };
+    this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
   }
 
   protected build(node: HTMLElement) {
@@ -27,12 +27,13 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     const id = randomId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `<div>
         <input id="${id}" type="checkbox" checked><label for="${id}"><div>Un/Select All</div></label>
-        ${joint.map(({ name, color, label, range }) => `<input id="${id}${name}" data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
+        ${joint.map(({name, color, label, range}) => `<input id="${id}${name}" data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
         <input type="number" value="${range}" min="0" max="100" size="5"><label for="${id}${name}"><div><div style="background-color: ${color}; width: ${range}%"></div></div><div>${label}</div></label>`).join('')}
     </div>`);
     // selectAll
-    this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: HTMLInputElement) {
-      Array.from(node.querySelectorAll('[data-cat]')).forEach((n: HTMLInputElement) => n.checked = this.checked);
+    this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: HTMLElement) {
+      const input = <HTMLInputElement>this;
+      forEach(node, '[data-cat]', (n: HTMLInputElement) => n.checked = input.checked);
     };
     this.forEach('input[type=number]', (d: HTMLInputElement) => {
       d.oninput = () => {
@@ -45,7 +46,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
   private updateFilter(filter: string[] | null, filterMissing: boolean) {
     const noFilter = filter == null && filterMissing === false;
     updateFilterState(this.attachment, this.column, !noFilter);
-    this.column.setFilter(noFilter ? null : { filter: filter!, filterMissing });
+    this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
   }
 
   reset() {

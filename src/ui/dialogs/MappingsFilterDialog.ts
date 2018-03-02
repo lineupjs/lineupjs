@@ -1,14 +1,14 @@
-import { computeStats, IStatistics, round } from '../../internal';
+import {computeStats, IStatistics, round} from '../../internal';
 import {
   IMapAbleColumn, IMappingFunction, isMissingValue, noNumberFilter, ScaleMappingFunction,
   ScriptMappingFunction
 } from '../../model';
-import { isDummyNumberFilter } from '../../model/internal';
-import { ISummaryRenderer } from '../../renderer/interfaces';
-import { IRankingHeaderContext } from '../interfaces';
-import ADialog, { IDialogContext } from './ADialog';
-import { IMappingAdapter, MappingLine } from './MappingLineDialog';
-import { updateFilterState } from './utils';
+import {isDummyNumberFilter} from '../../model/internal';
+import {ISummaryRenderer} from '../../renderer/interfaces';
+import {IRankingHeaderContext} from '../interfaces';
+import ADialog, {IDialogContext} from './ADialog';
+import {IMappingAdapter, MappingLine} from './MappingLineDialog';
+import {updateFilterState} from './utils';
 
 /** @internal */
 export default class MappingsFilterDialog extends ADialog {
@@ -21,8 +21,8 @@ export default class MappingsFilterDialog extends ADialog {
   private readonly summary: ISummaryRenderer;
   private readonly data: Promise<number[]>;
   private readonly idPrefix: string;
-  private loadedData: number[];
-  private hist: IStatistics;
+  private loadedData: number[] | null = null;
+  private hist: IStatistics | null = null;
 
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
@@ -118,7 +118,7 @@ export default class MappingsFilterDialog extends ADialog {
 
     const g = <SVGGElement>node.querySelector('.lu-details > g');
 
-    Array.from(node.querySelectorAll('.lu-details rect')).forEach((d: SVGRectElement) => d.onclick = (evt) => {
+    this.forEach('.lu-details rect', (d: SVGRectElement) => d.onclick = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
       const bb = d.getBoundingClientRect();
@@ -220,14 +220,14 @@ export default class MappingsFilterDialog extends ADialog {
   }
 
   private updateLines(scale = this.scale) {
-    Array.from(this.node.querySelectorAll('.lu-details > g > line[x1]')).forEach((d: SVGLineElement) => {
+    this.forEach('.lu-details > g > line[x1]', (d: SVGLineElement) => {
       const v = parseFloat(d.getAttribute('data-v')!);
       d.setAttribute('x1', round(this.normalizeRaw(v), 2).toString());
       d.setAttribute('x2', round(scale.apply(v) * 100, 2).toString());
     });
   }
 
-  private applyMapping(newScale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) {
+  private applyMapping(newScale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean}) {
     updateFilterState(this.attachment, this.column, !isDummyNumberFilter(filter));
 
     this.column.setMapping(newScale);

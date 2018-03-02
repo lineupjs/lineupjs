@@ -17,7 +17,7 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
    * @param desc the description of this column
    * @param ranking the ranking of this column
    */
-  accessor?(row: IDataRow, id: string, desc: any, ranking: Ranking): T;
+  accessor?(row: IDataRow, id: string, desc: any, ranking: Ranking | null): T;
 }
 
 /**
