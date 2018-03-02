@@ -19,7 +19,7 @@ const banner = '/*! ' + (pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' +
 /**
  * generate a webpack configuration
  */
-module.exports = () => {
+module.exports = (env) => {
   return {
     entry: {
       'LineUpJS': './src/index.ts'
@@ -80,6 +80,7 @@ module.exports = () => {
             {
               loader: 'ts-loader',
               options: {
+                configFile: env === 'dev' ? 'tsconfig_dev.json' : 'tsconfig.json',
                 happyPackMode: true // IMPORTANT! use happyPackMode mode to speed-up compilation and reduce errors reported to webpack
               }
             }
@@ -115,7 +116,7 @@ module.exports = () => {
       ]
     },
     watchOptions: {
-      //ignored: /node_modules/
+      ignored: /node_modules/
     },
     devServer: {
       contentBase: 'demo'
