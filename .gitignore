@@ -10,3 +10,4 @@
 src/**/*.js
 src/**/*.css
 /node_modules/
+.cache-loader
