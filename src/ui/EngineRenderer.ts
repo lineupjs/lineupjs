@@ -34,7 +34,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
-  private readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
+  readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
 
 
   constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
@@ -43,6 +43,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.node = parent.ownerDocument.createElement('main');
     this.node.id = this.idPrefix;
     this.node.classList.toggle('lu-whole-hover', options.expandLineOnHover);
+    this.node.classList.toggle('lu-rotated-label', options.labelRotation > 0);
     parent.appendChild(this.node);
 
     const statsOf = (col: Column) => {

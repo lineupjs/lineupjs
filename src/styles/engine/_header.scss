@@ -128,10 +128,15 @@ section.#{$lu_css_prefix}-header {
   }
 }
 
-.lineup-engine .#{$lu_css_prefix}-rotated-header {
+.lineup-engine.#{$lu_css_prefix}-rotated-label {
   section.#{$lu_css_prefix}-header {
     margin-top: 10em;
 
-    > .#{$lu_css_prefix}-label {}
+    > .#{$lu_css_prefix}-label.#{$lu_css_prefix}-rotated {
+      overflow: visible;
+      text-align: left;
+      transform: rotate(-45deg);
+      transform-origin: top left;
+    }
   }
 }

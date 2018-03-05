@@ -12,6 +12,7 @@
 <body>
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <script src="./LineUpJS.js"></script>
+  <div></div>
 
   <script>
     window.onload = function () {
@@ -19,13 +20,20 @@
       const cats = ['c1', 'c2', 'c3'];
       for (let i = 0; i < 100; ++i) {
         arr.push({
-          a: Math.random() * 10,
+          'a adf asdf afadf öadfja sdf': Math.random() * 10,
           d: 'Row ' + i,
           cat: cats[Math.floor(Math.random() * 3)],
           cat2: cats[Math.floor(Math.random() * 3)]
         })
       }
-      const lineup = LineUpJS.asTaggle(document.body, arr);
+      const builder = LineUpJS.builder(arr);
+
+      // manually define columns
+      const lineup = builder
+        .labelRotation(45)
+        .deriveColumns()
+        .defaultRanking()
+        .build(document.querySelector('div'));
     };
 
   </script>
