@@ -3,7 +3,7 @@
 @import '~lineupengine/src/styles/import_once';
 
 @include exports('lineupjs/taggle/switcher') {
-  div.#{$lu_css_prefix}-rule-button-chooser {
+  .#{$lu_css_prefix}-rule-button-chooser {
     padding: 0.5em 0.5em 0 1em;
     flex: 0 0 auto;
     cursor: pointer;
@@ -25,17 +25,6 @@
         visibility: visible;
         transition-delay: 0s, 0.3s;
       }
-    }
-
-    &::before {
-      @include lu_icons();
-
-      margin-top: -1px;
-      content: $lu_icon_square_o;
-    }
-
-    &.chosen::before {
-      content: $lu_icon_check_square_o;
     }
 
     &.violated {

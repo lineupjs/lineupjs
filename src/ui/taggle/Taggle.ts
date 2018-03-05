@@ -32,17 +32,20 @@ export default class Taggle extends ALineUp {
     this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
     this.node.insertBefore(this.panel.node, this.node.firstChild);
     {
-      this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser">
+      this.panel.node.insertAdjacentHTML('afterbegin', `<label class="lu-rule-button-chooser">
+            <input type="checkbox">
             <span>Overview</span>
             <div></div>
-          </div>`);
+          </label>`);
       const spaceFilling = spaceFillingRule(this.options);
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
-      this.spaceFilling.addEventListener('click', () => {
+      const input = <HTMLInputElement>this.spaceFilling.querySelector('input');
+      input.onchange = () => {
         const selected = this.spaceFilling.classList.toggle('chosen');
         this.renderer.switchRule(selected ? spaceFilling : null);
-      });
+      };
       if (this.options.overviewMode) {
+        input.checked = true;
         this.spaceFilling.classList.toggle('chosen');
         this.renderer.switchRule(spaceFilling);
       }
