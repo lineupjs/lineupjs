@@ -34,12 +34,14 @@ export default class EngineRenderer extends AEventDispatcher {
 
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
+  private readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
+
 
   constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
-    this.node.id = this.options.idPrefix;
+    this.node.id = this.idPrefix;
     this.node.classList.toggle('lu-whole-hover', options.expandLineOnHover);
     parent.appendChild(this.node);
 
@@ -53,7 +55,7 @@ export default class EngineRenderer extends AEventDispatcher {
     const dialogManager = new DialogManager(parent.ownerDocument);
     parent.appendChild(dialogManager.node);
     this.ctx = {
-      idPrefix: this.options.idPrefix,
+      idPrefix: this.idPrefix,
       document: parent.ownerDocument,
       provider: data,
       dialogManager,
@@ -94,23 +96,23 @@ export default class EngineRenderer extends AEventDispatcher {
       colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth()
     };
 
-    this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);
+    this.table = new MultiTableRowRenderer(this.node, `#${this.idPrefix}`);
 
     //apply rules
     {
       this.style.addRule('lineup_groupPadding', `
-       #${options.idPrefix} > main > article > [data-agg=group],
-       #${options.idPrefix} > main > article > [data-meta~=last] {
+       #${this.idPrefix} > main > article > [data-agg=group],
+       #${this.idPrefix} > main > article > [data-meta~=last] {
         margin-bottom: ${options.groupPadding}px;
        }`);
 
       this.style.addRule('lineup_rowPadding', `
-       #${options.idPrefix} > main > article > div {
+       #${this.idPrefix} > main > article > div {
          padding-top: ${options.rowPadding}px;
        }`);
 
       this.style.addRule('lineup_rowPadding2', `
-       #${options.idPrefix} > main > article > div[data-lod=low]:not(:hover) {
+       #${this.idPrefix} > main > article > div[data-lod=low]:not(:hover) {
          padding-top: 0;
        }`);
     }

@@ -127,3 +127,11 @@ section.#{$lu_css_prefix}-header {
     }
   }
 }
+
+.lineup-engine .#{$lu_css_prefix}-rotated-header {
+  section.#{$lu_css_prefix}-header {
+    margin-top: 10em;
+
+    > .#{$lu_css_prefix}-label {}
+  }
+}

@@ -41,12 +41,6 @@ export interface IDynamicHeight {
 
 export interface ILineUpOptions {
   /**
-   * id prefix used for all generated html ids
-   * @default randomly generated
-   */
-  idPrefix: string;
-
-  /**
    * option to enable/disable showing a summary (histogram, ...) in the header
    * @default true
    */
@@ -76,6 +70,12 @@ export interface ILineUpOptions {
    * @default 'item'
    */
   defaultSlopeGraphMode: 'item' | 'band';
+
+  /**
+   * how many degrees should a label be rotated in case of narrow columns
+   * @default 0 no rotation
+   */
+  labelRotation: number;
 
   /**
    * height of a row
@@ -121,11 +121,11 @@ export interface ILineUpOptions {
   /**
    * register custom toolbar actions
    */
-  toolbar: { [key: string]: IToolbarAction };
+  toolbar: {[key: string]: IToolbarAction};
   /**
    * register custom renderer factories
    */
-  renderers: { [type: string]: ICellRendererFactory };
+  renderers: {[type: string]: ICellRendererFactory};
 }
 
 export interface ITaggleOptions extends ILineUpOptions {

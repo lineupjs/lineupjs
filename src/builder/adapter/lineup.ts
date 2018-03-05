@@ -1,7 +1,6 @@
-import {ICellRendererFactory} from '../../renderer';
-import {Column, IGroupData, IGroupItem, Ranking, IColumnDesc} from '../../model';
-import {IToolbarAction, Taggle, LineUp} from '../../ui';
-import {IDynamicHeight, ILineUpOptions} from '../../interfaces';
+import {Column, IColumnDesc} from '../../model';
+import {Taggle, LineUp} from '../../ui';
+import {ILineUpOptions, ITaggleOptions} from '../../interfaces';
 import {IBuilderAdapterRankingProps, buildRanking} from './ranking';
 import {pick, isSame, equal} from './utils';
 import {LocalDataProvider, deriveColumnDescriptions, deriveColors} from '../../provider';
@@ -30,29 +29,10 @@ export interface IBuilderAdapterDataProps {
 }
 
 
-export interface IBuilderAdapterProps extends IBuilderAdapterDataProps {
-  animated?: boolean;
-  sidePanel?: boolean;
-  sidePanelCollapsed?: boolean;
-  defaultSlopeGraphMode?: 'item' | 'band';
-  summaryHeader?: boolean;
-  expandLineOnHover?: boolean;
-  overviewMode?: boolean;
-
-  renderer?: {[id: string]: ICellRendererFactory};
-  toolbar?: {[id: string]: IToolbarAction};
-
-  rowHeight?: number;
-  rowPadding?: number;
-
-  groupHeight?: number;
-  groupPadding?: number;
-
-  dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => (IDynamicHeight | null);
-}
+export declare type IBuilderAdapterProps = ITaggleOptions & IBuilderAdapterDataProps;
 
 const providerOptions: (keyof IBuilderAdapterDataProps)[] = ['singleSelection', 'filterGlobally', 'noCriteriaLimits', 'maxGroupColumns', 'maxNestedSortingCriteria', 'columnTypes'];
-const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderer', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight'];
+const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation'];
 
 interface IRankingContext {
   builders: IBuilderAdapterRankingProps[];
