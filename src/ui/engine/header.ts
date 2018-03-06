@@ -42,7 +42,7 @@ import GroupColumn from '../../model/GroupColumn';
  * utility function to generate the tooltip text with description
  * @param col the column
  */
-export function toFullTooltip(col: { label: string, description?: string }) {
+export function toFullTooltip(col: {label: string, description?: string}) {
   let base = col.label;
   if (col.description != null && col.description !== '') {
     base += `\n${col.description}`;
@@ -73,7 +73,7 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
     <div class="lu-handle"></div>
   `;
 
-  const dialogBackdropMask:() => IMaskRect = () => {
+  const dialogBackdropMask: () => IMaskRect = () => {
     const mask = node.getBoundingClientRect();
     // manipulate bottom to highlight the whole column (and not only the header)
     return {top: mask.top, left: mask.left, right: mask.right, bottom: document.body.clientHeight};
@@ -103,10 +103,10 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   node.title = toFullTooltip(col);
 
   const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
-  if(sort) {
+  if (sort) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
-    if(priority !== undefined) {
+    if (priority !== undefined) {
       sort.dataset.priority = (parseInt(priority, 10) + 1).toString();
     } else {
       delete sort.dataset.priority;
@@ -114,10 +114,10 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   }
 
   const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
-  if(stratify) {
+  if (stratify) {
     const groupedBy = col.isGroupedBy();
     stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
-    if(groupedBy >= 0) {
+    if (groupedBy >= 0) {
       stratify.dataset.priority = (groupedBy + 1).toString();
     } else {
       delete stratify.dataset.priority;
@@ -131,8 +131,8 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
 }
 
 export function addIconDOM(node: HTMLElement, col: Column, showLabel: boolean) {
-  return (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"': ''}>${title}</span> </i>`);
+  return (title: string, dialogClass?: {new(col: any, header: HTMLElement, ...args: any[]): ADialog}, ...dialogArgs: any[]) => {
+    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     if (!dialogClass) {
       return i;
@@ -146,15 +146,15 @@ export function addIconDOM(node: HTMLElement, col: Column, showLabel: boolean) {
   };
 }
 
-export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, dialogBackdropMask:() => IMaskRect) {
+export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, dialogBackdropMask: () => IMaskRect) {
   return createShortcutMenuItems(<any>addIconDOM(node, col, false), col, ctx, dialogBackdropMask);
 }
 
 interface IAddIcon {
-  (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }) => any };
+  (title: string, dialogClass?: {new(col: any, header: HTMLElement, ...args: any[]): ADialog}, ...dialogArgs: any[]): {onclick: (evt: {stopPropagation: () => void, currentTarget: Element, [key: string]: any}) => any};
 }
 
-export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext, dialogBackdropMask:() => IMaskRect) {
+export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext, dialogBackdropMask: () => IMaskRect) {
 
   if (!isSupportType(col.desc) || col instanceof SelectionColumn) {
     addIcon('Sort').onclick = (evt) => {
@@ -320,7 +320,18 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
   };
 }
 
+/** @internal */
+function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
+  // rotate header flag if needed
+  const label = <HTMLElement>node.querySelector('.lu-label');
+  const width = label.clientWidth;
+  const rotated = width <= 0 ? (col.label.length * defaultVisibleClientWidth / 3 * 0.6 > col.getWidth()) : (label.scrollWidth * 0.6 > label.clientWidth);
+  label.classList.toggle('lu-rotated', rotated);
+}
+
+/** @internal */
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
+  toggleRotatedHeader(node, col, defaultVisibleClientWidth);
   const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
   const moreIcon = toolbar.querySelector('[title^=More]')!;
   const availableWidth = col.getWidth() - (moreIcon.clientWidth || defaultVisibleClientWidth);

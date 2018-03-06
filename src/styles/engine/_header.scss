@@ -1,9 +1,12 @@
 @import '../vars';
 @import '../header/index';
 
+
+
 /**
   needs to be the full path without any super import otherwise the @extend won't work properly
  */
+
 section.#{$lu_css_prefix}-header {
   @extend %lu-header;
 
@@ -105,7 +108,7 @@ section.#{$lu_css_prefix}-header {
         content: 'Place here';
         overflow: hidden;
       }
-}
+    }
 
     &:hover {
       background-color: $lu_hover_color;
@@ -123,5 +126,15 @@ section.#{$lu_css_prefix}-header {
     left: 0;
     right: 0;
     cursor: inherit;
+  }
+}
+
+.lineup-engine.#{$lu_css_prefix}-rotated-label {
+  section.#{$lu_css_prefix}-header {
+    > .#{$lu_css_prefix}-label.#{$lu_css_prefix}-rotated {
+      overflow: visible;
+      text-align: left;
+      transform-origin: top left;
+    }
   }
 }

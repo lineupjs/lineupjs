@@ -25,10 +25,14 @@ import {IImposer} from '../../renderer/IRenderContext';
 
 export interface IEngineRendererOptions {
   header: Partial<{
-    filters: { [type: string]: IFilterDialog },
-    summaries: { [type: string]: ISummaryFunction};
+    filters: {[type: string]: IFilterDialog},
+    summaries: {[type: string]: ISummaryFunction};
     summary: boolean;
     linkTemplates: string[];
+
+    autoRotateLabels: boolean;
+    rotationHeight: number;
+    rotationDegree: number;
 
     searchAble(col: Column): boolean;
   }>;
@@ -36,7 +40,7 @@ export interface IEngineRendererOptions {
   body: Partial<{
     animation: boolean;
     columnPadding: number;
-    actions: { name: string, icon: string, action(v: any): void }[];
+    actions: {name: string, icon: string, action(v: any): void}[];
     groupHeight: number;
     groupPadding: number;
     rowPadding: number;
@@ -50,7 +54,7 @@ export interface IEngineRendererOptions {
     striped: boolean;
   }>;
 
-  renderers: { [key: string]: ICellRendererFactory };
+  renderers: {[key: string]: ICellRendererFactory};
   idPrefix: string;
 }
 
@@ -111,8 +115,27 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
     this.node.classList.toggle('lineup-engine-striped', Boolean(this.options.body.striped));
 
+    if (this.options.header.autoRotateLabels) {
+      this.table.style.addRule('lineup_rotation', `
+       #${this.options.idPrefix}.lu-rotated-label .lu-label.lu-rotated {
+          transform: rotate(${this.options.header.rotationDegree}deg);
+       }`);
+      this.table.style.addRule('lineup_rotation2', `
+       #${this.options.idPrefix}.lu-rotated-label section.lu-header {
+          padding-top: ${this.options.header.rotationHeight}px;
+       }`);
+    }
+
 
     this.initProvider(data);
+  }
+
+  private updateRotatedHeaderState() {
+    if (!this.options.header.autoRotateLabels) {
+      return;
+    }
+    const l = this.node.querySelector('.lu-label.lu-rotated');
+    this.node.classList.toggle('lu-rotated-label', Boolean(l));
   }
 
   zoomOut() {
@@ -221,7 +244,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       animation: this.options.body.animation,
       customRowUpdate: this.options.body.customRowUpdate || (() => undefined)
     }));
-    r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
+    r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
+      this.updateRotatedHeaderState();
+      this.table.widthChanged();
+    });
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
     r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
 
@@ -305,6 +331,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
     this.updateSlopeGraphs(rankings);
 
+    this.updateRotatedHeaderState();
     this.table.widthChanged();
   }
 
