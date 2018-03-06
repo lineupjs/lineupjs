@@ -135,6 +135,7 @@ section.#{$lu_css_prefix}-header {
       overflow: visible;
       text-align: left;
       transform-origin: top left;
+      z-index: 1;
     }
   }
 }
