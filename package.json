@@ -124,7 +124,7 @@
     "d3-time-format": "^2.1.1",
     "fast-deep-equal": "^1.1.0",
     "font-awesome": "^4.7.0",
-    "lineupengine": "^1.0.0-alpha.3",
+    "lineupengine": "^1.0.0-alpha.4",
     "npm": "^5.7.1",
     "popper.js": "^1.12.9",
     "reflect-metadata": "^0.1.12"
