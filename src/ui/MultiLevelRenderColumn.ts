@@ -42,7 +42,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       (<any>n.style).gridColumnStart = (i + 1).toString();
       wrapper.appendChild(n);
 
-      if (!this.renderers.summary) {
+      if (!this.renderers || !this.renderers.summary) {
         return;
       }
       const summary = this.ctx.summaryRenderer(cc, false);
@@ -92,7 +92,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       const node = children[i];
       updateHeader(node, c);
 
-      if (!this.renderers.summary) {
+      if (!this.renderers || !this.renderers.summary) {
         return;
       }
       let summary = <HTMLElement>node.querySelector('.lu-summary')!;

@@ -21,8 +21,8 @@ export default class MappingsFilterDialog extends ADialog {
   private readonly summary: ISummaryRenderer;
   private readonly data: Promise<number[]>;
   private readonly idPrefix: string;
-  private loadedData: number[];
-  private hist: IStatistics;
+  private loadedData: number[] | null = null;
+  private hist: IStatistics | null = null;
 
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
@@ -72,7 +72,7 @@ export default class MappingsFilterDialog extends ADialog {
     node.classList.add('lu-dialog-mapper');
 
     node.insertAdjacentHTML('beforeend', `
-        <div><label for="${this.idPrefix}mapping_type"><h4>Mapping / Scaling Type:</h4> <select id="${this.idPrefix}mapping_type">
+        <div><label for="${this.idPrefix}mapping_type"><strong>Mapping / Scaling Type:</strong></label><select id="${this.idPrefix}mapping_type" class="browser-default">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -83,11 +83,11 @@ export default class MappingsFilterDialog extends ADialog {
         <option value="sqrt">Sqrt</option>
         <option value="script">Custom Script</option>
       </select>
-      </label></div>
+      </div>
         ${this.summary.template}
-        <h4 data-toggle>Mapping Details</h4>
-        <div class="lu-details"><h4>Domain (min - max): </h4><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
-        <h4 class="lu-details" style="text-align: center">Input Domain (min - max)</h4>
+        <strong data-toggle>Mapping Details</strong>
+        <div class="lu-details"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
+        <strong class="lu-details" style="text-align: center">Input Domain (min - max)</strong>
         <svg class="lu-details" viewBox="0 0 106 66">
            <g transform="translate(3,3)">
               <line x2="100"></line>
@@ -96,9 +96,9 @@ export default class MappingsFilterDialog extends ADialog {
               <rect y="36" width="100" height="10"></rect>
            </g>
         </svg>
-        <h4 class="lu-details" style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</h4>
+        <strong class="lu-details" style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
         <div class="lu-script">
-          <h4>Custom Mapping Script</h4>
+          <strong>Custom Mapping Script</strong>
           <textarea></textarea>
         </div>`);
 
@@ -118,7 +118,7 @@ export default class MappingsFilterDialog extends ADialog {
 
     const g = <SVGGElement>node.querySelector('.lu-details > g');
 
-    Array.from(node.querySelectorAll('.lu-details rect')).forEach((d: SVGRectElement) => d.onclick = (evt) => {
+    this.forEach('.lu-details rect', (d: SVGRectElement) => d.onclick = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
       const bb = d.getBoundingClientRect();
@@ -220,14 +220,14 @@ export default class MappingsFilterDialog extends ADialog {
   }
 
   private updateLines(scale = this.scale) {
-    Array.from(this.node.querySelectorAll('.lu-details > g > line[x1]')).forEach((d: SVGLineElement) => {
+    this.forEach('.lu-details > g > line[x1]', (d: SVGLineElement) => {
       const v = parseFloat(d.getAttribute('data-v')!);
       d.setAttribute('x1', round(this.normalizeRaw(v), 2).toString());
       d.setAttribute('x2', round(scale.apply(v) * 100, 2).toString());
     });
   }
 
-  private applyMapping(newScale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) {
+  private applyMapping(newScale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean}) {
     updateFilterState(this.attachment, this.column, !isDummyNumberFilter(filter));
 
     this.column.setMapping(newScale);

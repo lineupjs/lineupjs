@@ -1,6 +1,7 @@
 import Column from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
+import {randomId} from './utils';
 
 /** @internal */
 export default class ChangeRendererDialog extends ADialog {
@@ -16,20 +17,21 @@ export default class ChangeRendererDialog extends ADialog {
 
     console.assert(item.length > 1 || group.length > 1 || summary.length > 1); // otherwise no need to show this
 
+    const id = randomId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `
-      ${item.map((d) => `<label><input type="radio" name="renderer" value=${d.type}  ${(current === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
-      <h4>Group Visualization</h4>
-      ${group.map((d) => `<label><input type="radio" name="group" value=${d.type}  ${(currentGroup === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
-      <h4>Summary Visualization</h4>
-      ${summary.map((d) => `<label><input type="radio" name="summary" value=${d.type}  ${(currentSummary === d.type) ? 'checked' : ''}> ${d.label}</label>`).join('')}
+      ${item.map((d) => `<input id="${id}0${d.type}" type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><label for="${id}0${d.type}">${d.label}</label>`).join('')}
+      <strong>Group Visualization</strong>
+      ${group.map((d) => `<input id="${id}1${d.type}" type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><label for="${id}1${d.type}">${d.label}</label>`).join('')}
+      <strong>Summary Visualization</strong>
+      ${summary.map((d) => `<input id="${id}2${d.type}" type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><label for="${id}2${d.type}">${d.label}</label>`).join('')}
     `);
-    Array.from(node.querySelectorAll('input[name="renderer"]')).forEach((n: HTMLInputElement) => {
+    this.forEach('input[name="renderer"]', (n: HTMLInputElement) => {
       n.addEventListener('change', () => this.column.setRenderer(n.value));
     });
-    Array.from(node.querySelectorAll('input[name="group"]')).forEach((n: HTMLInputElement) => {
+    this.forEach('input[name="group"]', (n: HTMLInputElement) => {
       n.addEventListener('change', () => this.column.setGroupRenderer(n.value));
     });
-    Array.from(node.querySelectorAll('input[name="summary"]')).forEach((n: HTMLInputElement) => {
+    this.forEach('input[name="summary"]', (n: HTMLInputElement) => {
       n.addEventListener('change', () => this.column.setSummaryRenderer(n.value));
     });
   }

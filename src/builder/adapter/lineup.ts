@@ -1,10 +1,9 @@
-import { ICellRendererFactory } from '../../renderer';
-import { Column, IGroupData, IGroupItem, Ranking, IColumnDesc } from '../../model';
-import { IToolbarAction, Taggle, LineUp } from '../../ui';
-import { IDynamicHeight, ILineUpOptions } from '../../interfaces';
-import { IBuilderAdapterRankingProps, buildRanking } from './ranking';
-import { pick, isSame, equal } from './utils';
-import { LocalDataProvider, deriveColumnDescriptions, deriveColors } from '../../provider';
+import {Column, IColumnDesc} from '../../model';
+import {Taggle, LineUp} from '../../ui';
+import {ILineUpOptions, ITaggleOptions} from '../../interfaces';
+import {IBuilderAdapterRankingProps, buildRanking} from './ranking';
+import {pick, isSame, equal} from './utils';
+import {LocalDataProvider, deriveColumnDescriptions, deriveColors} from '../../provider';
 
 
 export interface IBuilderAdapterDataProps {
@@ -20,7 +19,7 @@ export interface IBuilderAdapterDataProps {
   noCriteriaLimits?: boolean;
   maxGroupColumns?: number;
   maxNestedSortingCriteria?: number;
-  columnTypes?: { [type: string]: typeof Column };
+  columnTypes?: {[type: string]: typeof Column};
 
   deriveColumns?: boolean | string[];
   deriveColors?: boolean;
@@ -30,29 +29,10 @@ export interface IBuilderAdapterDataProps {
 }
 
 
-export interface IBuilderAdapterProps extends IBuilderAdapterDataProps {
-  animated?: boolean;
-  sidePanel?: boolean;
-  sidePanelCollapsed?: boolean;
-  defaultSlopeGraphMode?: 'item' | 'band';
-  summaryHeader?: boolean;
-  expandLineOnHover?: boolean;
-  overviewMode?: boolean;
-
-  renderer?: { [id: string]: ICellRendererFactory };
-  toolbar?: { [id: string]: IToolbarAction };
-
-  rowHeight?: number;
-  rowPadding?: number;
-
-  groupHeight?: number;
-  groupPadding?: number;
-
-  dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => (IDynamicHeight | null);
-}
+export declare type IBuilderAdapterProps = ITaggleOptions & IBuilderAdapterDataProps;
 
 const providerOptions: (keyof IBuilderAdapterDataProps)[] = ['singleSelection', 'filterGlobally', 'noCriteriaLimits', 'maxGroupColumns', 'maxNestedSortingCriteria', 'columnTypes'];
-const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderer', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight'];
+const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation'];
 
 interface IRankingContext {
   builders: IBuilderAdapterRankingProps[];
@@ -83,17 +63,21 @@ export class Adapter {
   private data: LocalDataProvider | null = null;
   private instance: LineUp | Taggle | null = null;
 
-  private prevRankings: IRankingContext;
-  private prevColumns: IColumnContext;
-  private prevHighlight: number;
+  private prevRankings: IRankingContext | null = null;
+  private prevColumns: IColumnContext | null = null;
+  private prevHighlight: number | null = null;
 
   private readonly onSelectionChanged = (indices: number[]) => {
-    if (this.props.onSelectionChanged) {
+    if (this.props.onSelectionChanged && !equal(this.props.selection, indices)) {
       this.props.onSelectionChanged(indices);
     }
   }
 
   private readonly onHighlightChanged = (highlight: number) => {
+    const prev = this.prevHighlight != null ? this.prevHighlight : -1;
+    if (prev === highlight) {
+      return;
+    }
     this.prevHighlight = highlight;
     if (this.props.onHighlightChanged) {
       this.props.onHighlightChanged(highlight);
@@ -139,11 +123,10 @@ export class Adapter {
   }
 
   private buildColumns(data: any[], ctx: IColumnContext) {
-    console.log('build columns');
     this.prevColumns = ctx;
     const columns = ctx.columns.slice();
     if (ctx.deriveColumns) {
-      columns.push(...deriveColumnDescriptions(data, { columns: ctx.deriveColumnNames }));
+      columns.push(...deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames}));
     }
     if (ctx.deriveColors) {
       deriveColors(columns);
@@ -152,7 +135,6 @@ export class Adapter {
   }
 
   private buildRankings(data: LocalDataProvider, rankings: IRankingContext) {
-    console.log('build rankings');
     data.clearRankings();
     this.prevRankings = rankings;
     if (rankings.derive) {
@@ -165,7 +147,6 @@ export class Adapter {
   }
 
   private buildProvider() {
-    console.log('build provider');
     const columns = this.buildColumns(this.props.data, this.resolveColumnDescs(this.props.data));
     const data = new LocalDataProvider(this.props.data, columns, pick(this.props, providerOptions));
 
@@ -190,19 +171,20 @@ export class Adapter {
         this.instance!.on(LineUp.EVENT_HIGHLIGHT_CHANGED, null);
         this.instance!.setHighlight(this.prevHighlight);
         this.instance!.on(LineUp.EVENT_HIGHLIGHT_CHANGED, this.onHighlightChanged);
+        return true;
       }
-      return;
+      return false;
     }
     // recreate lineup
     if (this.instance) {
       this.instance.destroy();
     }
-    console.log('build lineup instance');
     this.instance = this.adapter.createInstance(this.data!, changedLineUpOptions);
 
     this.prevHighlight = this.props.highlight == null ? -1 : this.props.highlight;
     this.instance!.setHighlight(this.prevHighlight);
     this.instance!.on(LineUp.EVENT_HIGHLIGHT_CHANGED, this.onHighlightChanged);
+    return true;
   }
 
   private updateProvider(changeDetector: IChangeDetecter) {
@@ -235,8 +217,7 @@ export class Adapter {
   componentDidUpdate(changeDetector: IChangeDetecter) {
     const providerChanged = this.updateProvider(changeDetector);
     this.updateLineUp(changeDetector, providerChanged);
-
-    this.instance!.update();
+    // this.instance!.update();
   }
 
   componentWillUnmount() {

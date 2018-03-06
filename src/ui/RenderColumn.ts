@@ -17,7 +17,7 @@ export interface IRenderers {
 
 /** @internal */
 export default class RenderColumn implements IColumn {
-  renderers: IRenderers;
+  renderers: IRenderers | null = null;
 
   constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext) {
 
@@ -40,7 +40,7 @@ export default class RenderColumn implements IColumn {
     node.className = `lu-header`;
     node.classList.toggle('frozen', this.c.frozen);
 
-    if (this.renderers.summary) {
+    if (this.renderers && this.renderers.summary) {
       node.insertAdjacentHTML('beforeend', this.renderers.summary.template);
       const summary = <HTMLElement>node.lastElementChild!;
       summary.dataset.renderer = this.renderers.summaryId;
@@ -52,7 +52,7 @@ export default class RenderColumn implements IColumn {
 
   updateHeader(node: HTMLElement) {
     updateHeader(node, this.c);
-    if (!this.renderers.summary) {
+    if (!this.renderers || !this.renderers.summary) {
       return;
     }
     let summary = <HTMLElement>node.querySelector('.lu-summary')!;
@@ -71,8 +71,8 @@ export default class RenderColumn implements IColumn {
 
   createCell(index: number) {
     const isGroup = this.ctx.isGroup(index);
-    const node = asElement(this.ctx.document, isGroup ? this.renderers.group.template : this.renderers.single.template);
-    node.dataset.renderer = isGroup ? this.renderers.groupId : this.renderers.singleId;
+    const node = asElement(this.ctx.document, isGroup ? this.renderers!.group.template : this.renderers!.single.template);
+    node.dataset.renderer = isGroup ? this.renderers!.groupId : this.renderers!.singleId;
     node.dataset.group = isGroup ? 'g' : 'd';
     this.updateCell(node, index);
     return node;
@@ -83,28 +83,28 @@ export default class RenderColumn implements IColumn {
     const isGroup = this.ctx.isGroup(index);
     // assert that we have the template of the right mode
     const oldRenderer = node.dataset.renderer;
-    const currentRenderer = isGroup ? this.renderers.groupId : this.renderers.singleId;
+    const currentRenderer = isGroup ? this.renderers!.groupId : this.renderers!.singleId;
     const oldGroup = node.dataset.group;
     const currentGroup = (isGroup ? 'g' : 'd');
     if (oldRenderer !== currentRenderer || oldGroup !== currentGroup) {
-      node.innerHTML = isGroup ? this.renderers.group.template : this.renderers.single.template;
+      node.innerHTML = isGroup ? this.renderers!.group.template : this.renderers!.single.template;
       node = <HTMLElement>node.firstElementChild!;
       node.dataset.renderer = currentRenderer;
       node.dataset.group = currentGroup;
     }
     if (isGroup) {
       const g = this.ctx.getGroup(index);
-      this.renderers.group.update(node, g, g.rows);
+      this.renderers!.group.update(node, g, g.rows);
     } else {
       const r = this.ctx.getRow(index);
-      this.renderers.single.update(node, r, r.relativeIndex, r.group);
+      this.renderers!.single.update(node, r, r.relativeIndex, r.group);
     }
     return node;
   }
 
   renderCell(ctx: CanvasRenderingContext2D, index: number) {
     const r = this.ctx.getRow(index);
-    this.renderers.single.render(ctx, r, r.relativeIndex, r.group);
+    this.renderers!.single.render(ctx, r, r.relativeIndex, r.group);
   }
 }
 

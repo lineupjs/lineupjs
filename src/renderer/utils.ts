@@ -12,7 +12,7 @@ import {hsl} from 'd3-color';
  * @return {T}
  * @internal
  */
-export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: { [key: string]: any } = {}, styles: { [key: string]: any } = {}, text?: string): T {
+export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: {[key: string]: any} = {}, styles: {[key: string]: any} = {}, text?: string): T {
   Object.keys(attrs).forEach((attr) => {
     const v = String(attrs[attr]);
     if (node.getAttribute(attr) !== v) {
@@ -65,13 +65,13 @@ export function setText<T extends Node>(node: T, text?: string): T {
  * @param callback
  * @internal
  */
-export function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number) => void) {
-  Array.from(node.querySelectorAll(selector)).forEach(callback);
+export function forEach<T extends Element>(node: Element, selector: string, callback: (d: T, i: number) => void) {
+  (<T[]>Array.from(node.querySelectorAll(selector))).forEach(callback);
 }
 
 /** @internal */
-export function forEachChild<T extends Element>(node: T, callback: (d: Element, i: number) => void) {
-  Array.from(node.children).forEach(callback);
+export function forEachChild<T extends Element>(node: Element, callback: (d: T, i: number) => void) {
+  (<T[]>Array.from(node.children)).forEach(callback);
 }
 
 /**
@@ -80,7 +80,7 @@ export function forEachChild<T extends Element>(node: T, callback: (d: Element, 
  * @param columns columns to check
  * @internal
  */
-export function matchColumns(node: HTMLElement, columns: { column: Column, template: string, rendererId: string }[]) {
+export function matchColumns(node: HTMLElement, columns: {column: Column, template: string, rendererId: string}[]) {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.template).join('');
@@ -94,10 +94,10 @@ export function matchColumns(node: HTMLElement, columns: { column: Column, templ
     return;
   }
 
-  function matches(c: { column: Column, rendererId: string }, i: number) {
+  function matches(c: {column: Column, rendererId: string}, i: number) {
     //do both match?
-    const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.rendererId;
+    const n = <HTMLElement>node.children[i];
+    return n != null && n.dataset.columnid === c.column.id && n.dataset.renderer === c.rendererId;
   }
 
   if (columns.every(matches)) {
@@ -106,7 +106,7 @@ export function matchColumns(node: HTMLElement, columns: { column: Column, templ
 
   const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${c.rendererId}`));
   //remove all that are not existing anymore
-  Array.from(node.childNodes).forEach((n: HTMLElement) => {
+  forEachChild(node, (n: HTMLElement) => {
     const id = n.dataset.columnId;
     const renderer = n.dataset.rendere;
     const idAndRenderer = `${id}@${renderer}`;
@@ -163,4 +163,9 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
 
   node.style.color = null;
   node.innerHTML = `${title}<span class="lu-gradient-text" style="color: ${adapt}">${title}</span>`;
+}
+
+
+export function randomId(prefix: string) {
+  return `${prefix}${Math.floor(Math.random() * 1000).toString(36)}`;
 }

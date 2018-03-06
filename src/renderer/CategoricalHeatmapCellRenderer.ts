@@ -5,7 +5,7 @@ import {CANVAS_HEIGHT} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {union} from './UpSetCellRenderer';
-import {noop, wideEnough} from './utils';
+import {noop, wideEnough, forEachChild} from './utils';
 
 /** @internal */
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
@@ -24,7 +24,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     return {
       templateRow: templateRows,
       render: (n: HTMLElement, value: boolean[]) => {
-        Array.from(n.children).forEach((d: HTMLElement, i) => {
+        forEachChild(n, (d: HTMLElement, i) => {
           const v = value[i];
           d.style.visibility = v ? null : 'hidden';
         });

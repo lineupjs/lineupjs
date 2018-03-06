@@ -1,12 +1,12 @@
-import {computeHist, ICategoricalBin, ICategoricalStatistics} from '../internal/math';
-import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
+import { computeHist, ICategoricalBin, ICategoricalStatistics } from '../internal/math';
+import { ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn } from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import OrdinalColumn from '../model/OrdinalColumn';
-import {filterMissingNumberMarkup} from '../ui/missing';
-import {interactiveHist} from './CategoricalCellRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
-import {forEachChild, noRenderer, adaptTextColorToBgColor} from './utils';
+import { filterMissingNumberMarkup } from '../ui/missing';
+import { interactiveHist } from './CategoricalCellRenderer';
+import { default as IRenderContext, ERenderMode, ICellRendererFactory } from './interfaces';
+import { forEachChild, noRenderer, adaptTextColorToBgColor } from './utils';
 
 /** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
@@ -22,23 +22,23 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
 
 
   createGroup(col: ICategoricalColumn) {
-    const {template, update} = stackedBar(col);
+    const { template, update } = stackedBar(col);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const {hist, missing} = computeHist(rows, (r: IDataRow) => col.getCategory(r), col.categories);
+        const { hist, missing } = computeHist(rows, (r: IDataRow) => col.getCategory(r), col.categories);
         update(n, hist, missing);
       }
     };
   }
 
-  createSummary(col: ICategoricalColumn, _context: IRenderContext, interactive: boolean) {
-    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive) : staticSummary(col);
+  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean) {
+    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive, ctx.idPrefix) : staticSummary(col);
   }
 }
 
 function staticSummary(col: ICategoricalColumn) {
-  const {template, update} = stackedBar(col);
+  const { template, update } = stackedBar(col);
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
@@ -51,11 +51,11 @@ function staticSummary(col: ICategoricalColumn) {
   };
 }
 
-function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean) {
-  const {template, update} = stackedBar(col);
+function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean, idPrefix: string) {
+  const { template, update } = stackedBar(col);
   let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
   return {
-    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
+    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0, idPrefix) : ''}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
@@ -78,7 +78,7 @@ function stackedBar(col: ICategoricalColumn) {
   return {
     template: `<div>${bins}<div title="Missing Values"></div>`, // no closing div to be able to append things
     update: (n: HTMLElement, hist: ICategoricalBin[], missing: number) => {
-      const total = hist.reduce((acc, {y}) => acc + y, missing);
+      const total = hist.reduce((acc, { y }) => acc + y, missing);
       forEachChild(n, (d: HTMLElement, i) => {
         let y: number;
         let label: string;

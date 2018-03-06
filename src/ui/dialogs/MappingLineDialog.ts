@@ -24,21 +24,21 @@ export interface IMappingAdapter {
 
 /** @internal */
 export default class MappingLineDialog extends ADialog {
-  constructor(private readonly line: { destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void }, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
+  constructor(private readonly line: {destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void}, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
     super(dialog);
   }
 
   build(node: HTMLElement) {
     const domain = this.adapter.domain();
     node.insertAdjacentHTML('beforeend', `
-        <h4>Input Domain Value (min ... max)</h4>
+        <strong>Input Domain Value (min ... max)</strong>
         <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
-        <h4>Output Normalized Value (0 ... 1)</h4>
+        <strong>Output Normalized Value (0 ... 1)</strong>
         <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
         <button type="button" ${this.line.frozen ? 'disabled' : ''} >Remove Mapping Line</button>
       `);
 
-    this.forEach('input', (d) => d.onchange = () => this.submit());
+    this.forEach('input', (d: HTMLInputElement) => d.onchange = () => this.submit());
     this.find('button').addEventListener('click', () => {
       this.destroy();
       this.line.destroy();
@@ -80,7 +80,7 @@ export class MappingLine {
       let beforeRange: number;
       let shiftDomain: number;
       let shiftRange: number;
-      this.$select.selectAll('line:first-of-type, circle').call(drag()
+      this.$select.selectAll<SVGCircleElement, {}>('line:first-of-type, circle').call(drag<SVGCircleElement, {}>()
         .container(function (this: SVGCircleElement) {
           return <any>this.parentNode!.parentNode;
         }).filter(() => d3event.button === 0 && !d3event.shiftKey)
@@ -118,7 +118,8 @@ export class MappingLine {
       const ctx = {
         manager: this.adapter.dialog.manager,
         level: this.adapter.dialog.level + 1,
-        attachment: <any>this.node
+        attachment: <any>this.node,
+        idPrefix: this.adapter.dialog.idPrefix
       };
       const dialog = new MappingLineDialog(this, ctx, this.adapter);
       dialog.open();

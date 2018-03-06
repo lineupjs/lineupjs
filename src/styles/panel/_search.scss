@@ -6,6 +6,7 @@
   > input {
     width: 100%;
     border: 1px solid $lu_side_panel_input_border;
+    box-sizing: border-box;
     border-radius: 4px;
     padding: 3px 5px;
     outline: none;

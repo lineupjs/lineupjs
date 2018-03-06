@@ -17,6 +17,7 @@ export interface IDialogContext {
   attachment: HTMLElement;
   level: number;
   manager: DialogManager;
+  idPrefix: string;
 }
 
 abstract class ADialog {
@@ -31,9 +32,9 @@ abstract class ADialog {
   };
 
   readonly node: HTMLFormElement;
-  private popper: Popper;
+  private popper: Popper | null = null;
 
-  constructor(protected readonly dialog: IDialogContext, options: Partial<IDialogOptions> = {}) {
+  constructor(protected readonly dialog: Readonly<IDialogContext>, options: Partial<IDialogOptions> = {}) {
     Object.assign(this.options, options);
     this.node = dialog.attachment.ownerDocument.createElement('form');
     this.node.classList.add('lu-dialog');
@@ -63,7 +64,7 @@ abstract class ADialog {
     const parent = <HTMLElement>this.attachment.closest('.lu')!;
 
     if (this.options.title) {
-      this.node.insertAdjacentHTML('afterbegin', `<h4>${this.options.title}</h4>`);
+      this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
     }
     if (this.options.fullDialog) {
       this.node.insertAdjacentHTML('beforeend', `<div>
@@ -127,8 +128,8 @@ abstract class ADialog {
     return this.find<HTMLInputElement>(selector);
   }
 
-  protected forEach<T>(selector: string, callback: (d: HTMLElement, i: number) => T): T[] {
-    return Array.from(this.node.querySelectorAll(selector)).map(callback);
+  protected forEach<M extends Element, T>(selector: string, callback: (d: M, i: number) => T): T[] {
+    return (<M[]>Array.from(this.node.querySelectorAll(selector))).map(callback);
   }
 
   protected reset() {
@@ -142,7 +143,9 @@ abstract class ADialog {
 
   destroy() {
     this.dialog.manager.remove(this);
-    this.popper.destroy();
+    if (this.popper) {
+      this.popper.destroy();
+    }
     this.node.remove();
   }
 }

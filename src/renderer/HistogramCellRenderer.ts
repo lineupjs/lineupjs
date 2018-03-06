@@ -57,7 +57,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
 }
 
 
-function staticSummary(col: INumberColumn, template: string, render: (n: HTMLElement, stats: { bins: number, max: number, hist: INumberBin[] }) => void) {
+function staticSummary(col: INumberColumn, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void) {
   if (isMapAbleColumn(col)) {
     const range = col.getRange();
     template += `<span>${range[0]}</span><span>${range[1]}</span>`;
@@ -79,14 +79,14 @@ function staticSummary(col: INumberColumn, template: string, render: (n: HTMLEle
   };
 }
 
-function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: { bins: number, max: number, hist: INumberBin[] }) => void) {
+function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void) {
   const f = filter(col);
   template += `
       <div data-handle="min-hint" style="width: ${f.percent(f.filterMin)}%"></div>
       <div data-handle="max-hint" style="width: ${100 - f.percent(f.filterMax)}%"></div>
       <div data-handle="min" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or shift click to change"></div>
       <div data-handle='max' data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or shift click to change"></div>
-      ${filterMissingNumberMarkup(f.filterMissing, 0)}
+      ${filterMissingNumberMarkup(f.filterMissing, 0, context.idPrefix)}
     `;
 
   let updateFilter: (missing: number, col: IMapAbleColumn) => void;
@@ -139,7 +139,8 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
     const dialogCtx = {
       attachment: min,
       manager: context.dialogManager,
-      level: 1
+      level: 1,
+      idPrefix: context.idPrefix
     };
 
     const dialog = new InputNumberDialog(dialogCtx, (newValue) => {
@@ -148,8 +149,8 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
       min.style.left = `${f.percent(newValue)}%`;
       setFilter();
     }, {
-      value, min: f.domain[0], max: f.domain[1]
-    });
+        value, min: f.domain[0], max: f.domain[1]
+      });
     dialog.open();
   };
 
@@ -166,7 +167,8 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
     const dialogCtx = {
       attachment: max,
       manager: context.dialogManager,
-      level: 1
+      level: 1,
+      idPrefix: context.idPrefix
     };
 
     const dialog = new InputNumberDialog(dialogCtx, (newValue) => {
@@ -175,14 +177,14 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
       max.style.right = `${100 - f.percent(newValue)}%`;
       setFilter();
     }, {
-      value, min: f.domain[0], max: f.domain[1]
-    });
+        value, min: f.domain[0], max: f.domain[1]
+      });
     dialog.open();
   };
 
   filterMissing.onchange = () => setFilter();
 
-  selectAll([min, max]).call(drag()
+  selectAll([min, max]).call(drag<HTMLElement, {}>()
     .filter(() => d3event.button === 0 && !d3event.shiftKey)
     .on('start', function (this: HTMLElement) {
       this.classList.add('lu-dragging');
@@ -245,10 +247,10 @@ export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn
     bins += `<div title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`;
   }
 
-  const render = (n: HTMLElement, stats: { bins: number, max: number, hist: INumberBin[] }) => {
+  const render = (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => {
     const {bins, max, hist} = stats;
     //adapt the number of children
-    let nodes = Array.from(n.querySelectorAll('[data-x]'));
+    let nodes = <HTMLElement[]>Array.from(n.querySelectorAll('[data-x]'));
     if (nodes.length > bins) {
       nodes.splice(bins, nodes.length - bins).forEach((d) => d.remove());
     } else if (nodes.length < bins) {

@@ -23,6 +23,16 @@ export default class LineUpBuilder {
   }
 
   /**
+   * option to rotate labels on demand in narrow columns
+   * @param rotation rotation in degrees
+   * @default 0 - disabled
+   */
+  labelRotation(rotation: number) {
+    this.options.labelRotation = rotation;
+    return this;
+  }
+
+  /**
    * option to enable/disable the side panel
    * @param {boolean} enable enable flag
    * @param {boolean} collapsed whether collapsed by default

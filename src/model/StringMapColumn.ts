@@ -15,7 +15,7 @@ export default class StringMapColumn extends MapColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
-  private patternFunction: Function | null;
+  private patternFunction: Function | null = null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<IStringMapColumnDesc>) {

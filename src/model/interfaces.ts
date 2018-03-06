@@ -1,4 +1,56 @@
-export interface IColumnDesc {
+export interface IStyleColumn {
+  /**
+   * column description
+   */
+  description: string;
+
+  /**
+   * color of this column
+   */
+  color: string;
+
+  /**
+   * frozen column
+   * @default isSupportType
+   */
+  frozen: boolean;
+
+  /**
+   * whether the column can be removed or not
+   * @default false
+   */
+  fixed: boolean;
+
+  /**
+   * default renderer to use
+   */
+  renderer: string;
+
+  /**
+   * default group renderer to use
+   */
+  groupRenderer: string;
+
+  /**
+   * default summary renderer to use
+   */
+  summaryRenderer: string;
+
+  /**
+   * initial width of the column
+   * @default 100 or 200 for strings
+   */
+  width: number;
+
+  /**
+   * is this column visible by default
+   * @default true
+   */
+  visible: boolean;
+}
+
+
+export interface IColumnDesc extends Partial<IStyleColumn> {
   /**
    * label of the column
    */
@@ -7,44 +59,6 @@ export interface IColumnDesc {
    * the column type
    */
   type: string;
-
-  /**
-   * column description
-   */
-  description?: string;
-
-  /**
-   * color of this column
-   */
-  color?: string;
-
-  /**
-   * frozen column
-   * @default isSupportType
-   */
-  frozen?: boolean;
-
-  /**
-   * whether the column can be removed or not
-   * @default false
-   */
-  fixed?: boolean;
-
-  /**
-   * default renderer to use
-   */
-  renderer?: string;
-
-  /**
-   * default group renderer to use
-   */
-  groupRenderer?: string;
-
-  summaryRenderer?: string;
-
-  width?: number;
-
-  visible?: boolean;
 }
 
 

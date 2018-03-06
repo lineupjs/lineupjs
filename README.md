@@ -17,6 +17,7 @@ Key Features
  * numerous visualizations for summaries, cells, and group aggregations
  * side panel for easy filtering and column management
  * [React](#react), [Polymer](#polymer), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
+ * [Demo Application](#demo) with CSV Import and Export Capabilities
 
 Usage
 -----
@@ -28,8 +29,8 @@ npm install --save lineupjs@next
 ```
 
 ```html
-<link href="https://sgratzl.github.io/lineupjs_docs/master/LineUpJS.css" rel="stylesheet">
-<script src="https://sgratzl.github.io/lineupjs_docs/master/LineUpJS.min.js"></script>
+<link href="https://unpkg.com/lineupjs/build/LineUpJS.min.css" rel="stylesheet">
+<script src="https://unpkg.com/lineupjs/build/LineUpJS.min.js"></script>
 ```
 
 **Minimal Usage Example**
@@ -53,7 +54,7 @@ const lineup = LineUpJS.asLineUp(document.body, arr);
 
 [CodePen](https://codepen.io/sgratzl/pen/Ozzbqp)
 
-![Minimal Result](https://user-images.githubusercontent.com/4129778/34654173-32180ff8-f3f8-11e7-8469-229fa34a65dc.png)
+[![Minimal Result](https://user-images.githubusercontent.com/4129778/34654173-32180ff8-f3f8-11e7-8469-229fa34a65dc.png)](https://codepen.io/sgratzl/pen/Ozzbqp)
 
 
 **Advanced Usage Example**
@@ -87,7 +88,7 @@ const lineup = builder.build(document.body);
 
 [CodePen](https://codepen.io/sgratzl/pen/vppyML)
 
-![Advanced Result](https://user-images.githubusercontent.com/4129778/34654174-3235f784-f3f8-11e7-9361-44f5fa068bb9.png)
+[![Advanced Result](https://user-images.githubusercontent.com/4129778/34654174-3235f784-f3f8-11e7-9361-44f5fa068bb9.png)](https://codepen.io/sgratzl/pen/vppyML)
 
 
 Supported Browsers
@@ -97,6 +98,18 @@ Supported Browsers
  * Firefox 57+
  * Edge 16+
  
+<a id="demo"></a>
+
+Demo Application
+----------------
+
+A demo application is located at [lineup_app](https://github.com/sgratzl/lineup_app). It support CSV Import, CSV Export, JSON Export, CodePen Export, and Github Gist Export. 
+
+The application is deployed at [https://lineup.js.org/app](https://lineup.js.org/app)
+
+[![Screenshot](https://user-images.githubusercontent.com/4129778/36336600-8590a932-1389-11e8-8de0-269079efc37b.png)](https://lineup.js.org/app) 
+
+
 
 <a id="react"></a>
 
@@ -113,8 +126,8 @@ npm install --save lineupjsx
 ```
 
 ```html
-<link href="https://sgratzl.github.io/lineupjs_docs/masterx/LineUpJSx.css" rel="stylesheet">
-<script src="https://sgratzl.github.io/lineupjs_docs/masterx/LineUpJSx.min.js"></script>
+<link href="https://unpkg.com/lineupjsx/build/LineUpJSx.min.css" rel="stylesheet">
+<script src="https://unpkg.com/lineupjsx/build/LineUpJSx.min.js"></script>
 ```
 
 **Minimal Usage Example**
@@ -330,13 +343,13 @@ TODO
 API Documentation
 -----------------
 
-See [API documentation](https://sgratzl.github.io/lineupjs_docs/master/docs) and [Develop API documentation](https://sgratzl.github.io/lineupjs_docs/develop/docs)
+See [API documentation](https://lineup.js.org/master/docs) and [Develop API documentation](https://lineup.js.org/develop/docs)
 
 
 Demos
 -----
 
-See [Demos](https://sgratzl.github.io/lineupjs_docs/master), [Develop Demos](https://sgratzl.github.io/lineupjs_docs/develop), and [R Demos](https://sgratzl.github.io/lineupjs_docs/R)
+See [Demos](https://lineup.js.org/master), [Develop Demos](https://lineup.js.org/develop), and [R Demos](https://lineup.js.org/R)
 
 
 Related Publications

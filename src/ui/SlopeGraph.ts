@@ -4,7 +4,7 @@ import {SLOPEGRAPH_WIDTH} from '../styles';
 import {IRankingHeaderContextContainer} from './interfaces';
 
 interface ISlope {
-  isSelected(selection: { has(dataIndex: number): boolean }): boolean;
+  isSelected(selection: {has(dataIndex: number): boolean}): boolean;
 
   update(path: SVGPathElement, width: number): void;
 
@@ -16,7 +16,7 @@ class ItemSlope implements ISlope {
 
   }
 
-  isSelected(selection: { has(dataIndex: number): boolean }) {
+  isSelected(selection: {has(dataIndex: number): boolean}) {
     return this.dataIndices.length === 1 ? selection.has(this.dataIndices[0]) : this.dataIndices.some((s) => selection.has(s));
   }
 
@@ -32,7 +32,7 @@ class GroupSlope implements ISlope {
 
   }
 
-  isSelected(selection: { has(dataIndex: number): boolean }) {
+  isSelected(selection: {has(dataIndex: number): boolean}) {
     return this.dataIndices.some((s) => selection.has(s));
   }
 
@@ -69,7 +69,7 @@ export default class SlopeGraph implements ITableSection {
   private rightSlopes: ISlope[][] = [];
   private readonly pool: SVGPathElement[] = [];
 
-  private scrollListener: () => void;
+  private scrollListener: (() => void) | null = null;
 
   readonly width = SLOPEGRAPH_WIDTH;
 
@@ -78,7 +78,7 @@ export default class SlopeGraph implements ITableSection {
     leftContext: IExceptionContext;
     right: (IGroupItem | IGroupData)[];
     rightContext: IExceptionContext;
-  };
+  } | null = null;
   private _mode: EMode = EMode.ITEM;
 
   constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer, options: Partial<ISlopeGraphOptions> = {}) {
@@ -165,7 +165,9 @@ export default class SlopeGraph implements ITableSection {
 
   destroy() {
     this.header.remove();
-    this.body.parentElement!.removeEventListener('scroll', this.scrollListener);
+    if (this.scrollListener) {
+      this.body.parentElement!.removeEventListener('scroll', this.scrollListener);
+    }
     this.body.remove();
   }
 

@@ -7,7 +7,7 @@ import {getHistDOMRenderer} from './HistogramCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
-import {matchColumns} from './utils';
+import {matchColumns, forEachChild} from './utils';
 
 
 /** @internal */
@@ -29,7 +29,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
           return;
         }
         matchColumns(n, cols);
-        Array.from(n.children).forEach((ni: HTMLElement, j) => {
+        forEachChild(n, (ni: HTMLElement, j) => {
           cols[j].renderer!.update(ni, d, i, group);
         });
       },
@@ -55,7 +55,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
       update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
         matchColumns(n, cols);
-        Array.from(n.children).forEach((ni: HTMLElement, j) => {
+        forEachChild(n, (ni: HTMLElement, j) => {
           cols[j].groupRenderer!.update(ni, group, rows);
         });
       }

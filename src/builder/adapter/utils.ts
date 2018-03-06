@@ -1,6 +1,6 @@
 import * as equalImpl from 'fast-deep-equal';
 
-export const equal = equalImpl;
+export const equal: (a: any, b: any) => boolean = <any>equalImpl;
 
 export function isTypeInstance(clazz: any, superClass: any) {
   let c = clazz;

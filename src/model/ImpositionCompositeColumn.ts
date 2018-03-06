@@ -125,10 +125,10 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     return super.insertImpl(col, index);
   }
 
-  protected removeImpl(child: Column) {
+  protected removeImpl(child: Column, index: number) {
     if (isNumberColumn(child)) {
       this.unforward(child, ...suffix('.impose', NumberColumn.EVENT_MAPPING_CHANGED));
     }
-    return super.removeImpl(child);
+    return super.removeImpl(child, index);
   }
 }

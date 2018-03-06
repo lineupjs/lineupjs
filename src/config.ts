@@ -6,12 +6,11 @@ export * from './interfaces';
 
 
 export function defaultOptions(): ITaggleOptions {
-  const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
   return {
-    idPrefix,
     toolbar: Object.assign({}, toolbarActions),
     renderers: Object.assign({}, renderers),
 
+    labelRotation: 0,
     summaryHeader: true,
     animated: true,
     expandLineOnHover: false,

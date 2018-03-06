@@ -15,7 +15,7 @@ export default class StringsColumn extends ArrayColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
-  private patternFunction: Function | null;
+  private patternFunction: Function | null = null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<IStringsColumnDesc>) {

@@ -13,6 +13,7 @@
     border: 1px solid $lu_side_panel_input_border;
     border-radius: $lu_side_panel_input_border_radius;
     padding: 3px 5px;
+    box-sizing: border-box;
   }
 
   select {
@@ -25,9 +26,6 @@
     display: flex;
     align-items: center;
     margin: 5px 0;
-
-    input[type=checkbox] {
-      margin: 0 5px 0 0;
-    }
+    font-size: 13px;
   }
 }

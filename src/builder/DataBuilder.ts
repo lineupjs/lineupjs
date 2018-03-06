@@ -19,6 +19,7 @@ export default class DataBuilder extends LineUpBuilder {
   };
 
   private readonly rankBuilders: ((data: ADataProvider) => void)[] = [];
+  private _deriveColors: boolean = false;
 
   constructor(private readonly data: object[]) {
     super();
@@ -74,7 +75,7 @@ export default class DataBuilder extends LineUpBuilder {
    * tirggers to assign colors for the given descriptions
    */
   deriveColors() {
-    deriveColors(<IColumnDesc[]>this.columns.filter((d) => typeof d !== 'function'));
+    this._deriveColors = true;
     return this;
   }
 
@@ -128,7 +129,11 @@ export default class DataBuilder extends LineUpBuilder {
    * @returns {LocalDataProvider}
    */
   buildData() {
-    const r = new LocalDataProvider(this.data, this.columns.map((d) => typeof d === 'function' ? d(this.data) : d), this.providerOptions);
+    const columns = this.columns.map((d) => typeof d === 'function' ? d(this.data) : d);
+    if (this._deriveColors) {
+      deriveColors(columns);
+    }
+    const r = new LocalDataProvider(this.data, columns, this.providerOptions);
     if (this.rankBuilders.length === 0) {
       this.defaultRanking();
     }

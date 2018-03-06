@@ -1,5 +1,5 @@
-import Popper from 'popper.js';
-import {HOVER_DELAY_SHOW_DETAIL, MIN_LABEL_WIDTH} from '../config';
+// import Popper from 'popper.js';
+import {MIN_LABEL_WIDTH} from '../config';
 import {equalArrays} from '../internal';
 import {dragAble, dropAble, hasDnDType, IDropResult} from '../internal/dnd';
 import {
@@ -42,7 +42,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="lu-handle"></div>
   `;
 
-  addTooltip(node, col);
+  // addTooltip(node, col);
 
   createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, options.level!, col, ctx);
 
@@ -149,7 +149,22 @@ export function createToolbarMenuItems(node: HTMLElement, level: number, col: Co
 }
 
 /** @internal */
+function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
+  // rotate header flag if needed
+  const label = <HTMLElement>node.querySelector('.lu-label');
+  if (col.getWidth() < MIN_LABEL_WIDTH) {
+    label.classList.remove('lu-rotated');
+    return;
+  }
+  const width = label.clientWidth;
+  const rotated = width <= 0 ? (col.label.length * defaultVisibleClientWidth / 3 * 0.6 > col.getWidth()) : (label.scrollWidth * 0.6 > label.clientWidth);
+  label.classList.toggle('lu-rotated', rotated);
+}
+
+/** @internal */
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
+  toggleRotatedHeader(node, col, defaultVisibleClientWidth);
+
   const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
   if (toolbar.childElementCount === 0) {
     return;
@@ -178,50 +193,52 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
 }
 
 
-function addTooltip(node: HTMLElement, col: Column) {
-  let timer = -1;
-  let popper: Popper | null = null;
+// function addTooltip(node: HTMLElement, col: Column) {
+//   let timer = -1;
+//   let popper: Popper | null = null;
 
-  const showTooltip = () => {
-    timer = -1;
-    // no tooltip if no description
-    if (col.description.length <= 0) {
-      return;
-    }
-    const parent = <HTMLElement>node.closest('.lu')!;
-    parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
-        <div x-arrow></div>
-        <h4 class="lu-label">${col.label}</h4>
-        <p>${col.description.replace('\n', `<br/>`)}</p>
-    </div>`);
-    popper = new Popper(node, parent.lastElementChild!, {
-      removeOnDestroy: true,
-      placement: 'auto',
-      modifiers: {
-        flip: {
-          enabled: false
-        },
-        preventOverflow: {
-          enabled: false
-        }
-      }
-    });
-  };
+//   const showTooltip = () => {
+//     timer = -1;
+//     // no tooltip if no description
+//     if (col.description.length <= 0) {
+//       return;
+//     }
+//     const parent = <HTMLElement>node.closest('.lu')!;
+//     parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
+//         <div x-arrow></div>
+//         <strong class="lu-label">${col.label}</strong>
+//         <p>${col.description.replace('\n', `<br/>`)}</p>
+//     </div>`);
+//     popper = new Popper(node, parent.lastElementChild!, {
+//       removeOnDestroy: true,
+//       placement: 'auto',
+//       modifiers: {
+//         flip: {
+//           enabled: false
+//         },
+//         preventOverflow: {
+//           enabled: false
+//         }
+//       }
+//     });
+//   };
 
-  node.addEventListener('mouseenter', () => {
-    timer = self.setTimeout(showTooltip, HOVER_DELAY_SHOW_DETAIL);
-  });
-  node.addEventListener('mouseleave', () => {
-    if (timer >= 0) {
-      clearTimeout(timer);
-      timer = -1;
-    }
-    if (popper) {
-      popper.destroy();
-      popper = null;
-    }
-  });
-}
+//   node.addEventListener('mouseenter', () => {
+//     if (col.description.length > 0) {
+//       timer = self.setTimeout(showTooltip, HOVER_DELAY_SHOW_DETAIL);
+//     }
+//   });
+//   node.addEventListener('mouseleave', () => {
+//     if (timer >= 0) {
+//       clearTimeout(timer);
+//       timer = -1;
+//     }
+//     if (popper) {
+//       popper.destroy();
+//       popper = null;
+//     }
+//   });
+// }
 
 /**
  * allow to change the width of a column using dragging the handle
