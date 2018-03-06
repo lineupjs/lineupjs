@@ -1,5 +1,5 @@
-import Popper from 'popper.js';
-import {HOVER_DELAY_SHOW_DETAIL, MIN_LABEL_WIDTH} from '../config';
+// import Popper from 'popper.js';
+import {MIN_LABEL_WIDTH} from '../config';
 import {equalArrays} from '../internal';
 import {dragAble, dropAble, hasDnDType, IDropResult} from '../internal/dnd';
 import {
