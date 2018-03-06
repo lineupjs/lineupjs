@@ -81,6 +81,7 @@ function generateWebpack(bundle, options) {
       alias: {
         d3: 'd3/d3'
       },
+      symlinks: false,
       //fallback to the directory above if they are siblings just in the workspace context
       modules: isWorkspaceContext ? [
         resolve(__dirname, '../'),

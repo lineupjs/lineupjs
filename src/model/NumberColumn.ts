@@ -12,6 +12,7 @@ import {
   default as INumberColumn, INumberDesc, numberCompare, groupCompare,
   SortMethod, ADVANCED_SORT_METHOD, INumberFilter, noNumberFilter, isSameFilter, restoreFilter
 } from './INumberColumn';
+import CompositeNumberColumn from './CompositeNumberColumn';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 /**
@@ -46,7 +47,7 @@ export interface IMappingFunction {
 
   eq(other: IMappingFunction): boolean;
 
-  getRange(formatter: (v: number)=>string): [string, string];
+  getRange(formatter: (v: number) => string): [string, string];
 
 }
 
@@ -109,7 +110,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     this.s.range(range);
   }
 
-  getRange(format: (v: number)=>string): [string, string] {
+  getRange(format: (v: number) => string): [string, string] {
     return [format(this.invert(0)), format(this.invert(1))];
   }
 
@@ -355,6 +356,14 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       return this.numberFormat(+v);
     }
     return String(v);
+  }
+
+  getRendererType(): string {
+    // enforce number renderer in case of stack, min, max, ...
+    if (this.parent instanceof CompositeNumberColumn) {
+      return 'number';
+    }
+    return super.getRendererType();
   }
 
   getRange() {

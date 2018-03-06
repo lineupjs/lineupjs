@@ -25,10 +25,14 @@ import {IImposer} from '../../renderer/IRenderContext';
 
 export interface IEngineRendererOptions {
   header: Partial<{
-    filters: { [type: string]: IFilterDialog },
-    summaries: { [type: string]: ISummaryFunction};
+    filters: {[type: string]: IFilterDialog},
+    summaries: {[type: string]: ISummaryFunction};
     summary: boolean;
     linkTemplates: string[];
+
+    autoRotateLabels: boolean;
+    rotationHeight: number;
+    rotationDegree: number;
 
     searchAble(col: Column): boolean;
   }>;
@@ -36,16 +40,21 @@ export interface IEngineRendererOptions {
   body: Partial<{
     animation: boolean;
     columnPadding: number;
-    actions: { name: string, icon: string, action(v: any): void }[];
+    actions: {name: string, icon: string, action(v: any): void}[];
     groupHeight: number;
     groupPadding: number;
     rowPadding: number;
     rowHeight: number;
-    dynamicHeight?: (data: (IGroupItem|IGroupData)[], ranking: Ranking)=>{defaultHeight: number, height: (item: IGroupItem|IGroupData)=>number};
-    customRowUpdate?: (row: HTMLElement, rowIndex: number)=>void;
+    dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => {defaultHeight: number, height: (item: IGroupItem | IGroupData) => number};
+    customRowUpdate?: (row: HTMLElement, rowIndex: number) => void;
+
+    /**
+     * striped alterating background
+     */
+    striped: boolean;
   }>;
 
-  renderers: { [key: string]: ICellRendererFactory };
+  renderers: {[key: string]: ICellRendererFactory};
   idPrefix: string;
 }
 
@@ -104,7 +113,29 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.node.id = this.options.idPrefix;
     this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);
 
+    this.node.classList.toggle('lineup-engine-striped', Boolean(this.options.body.striped));
+
+    if (this.options.header.autoRotateLabels) {
+      this.table.style.addRule('lineup_rotation', `
+       #${this.options.idPrefix}.lu-rotated-label .lu-label.lu-rotated {
+          transform: rotate(${this.options.header.rotationDegree}deg);
+       }`);
+      this.table.style.addRule('lineup_rotation2', `
+       #${this.options.idPrefix}.lu-rotated-label section.lu-header {
+          padding-top: ${this.options.header.rotationHeight}px;
+       }`);
+    }
+
+
     this.initProvider(data);
+  }
+
+  private updateRotatedHeaderState() {
+    if (!this.options.header.autoRotateLabels) {
+      return;
+    }
+    const l = this.node.querySelector('.lu-label.lu-rotated');
+    this.node.classList.toggle('lu-rotated-label', Boolean(l));
   }
 
   zoomOut() {
@@ -213,7 +244,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       animation: this.options.body.animation,
       customRowUpdate: this.options.body.customRowUpdate || (() => undefined)
     }));
-    r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
+    r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
+      this.updateRotatedHeaderState();
+      this.table.widthChanged();
+    });
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
     r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
 
@@ -223,7 +257,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.update([r]);
   }
 
-  private removeRanking(ranking: Ranking|null) {
+  private removeRanking(ranking: Ranking | null) {
     if (!ranking) {
       // remove all
       this.rankings.splice(0, this.rankings.length);
@@ -263,19 +297,19 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const round2 = (v: number) => round(v, 2);
 
 
-    const heightsFor = (ranking: Ranking, data: (IGroupItem|IGroupData)[]) => {
+    const heightsFor = (ranking: Ranking, data: (IGroupItem | IGroupData)[]) => {
       if (this.options.body.dynamicHeight) {
         const impl = this.options.body.dynamicHeight(data, ranking);
         return {
           defaultHeight: round2(this.zoomFactor * impl.defaultHeight),
-          height: (d: IGroupItem|IGroupData) => round2(this.zoomFactor * impl.height(d))
+          height: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * impl.height(d))
         };
       }
       const item = round2(this.zoomFactor * this.options.body.rowHeight!);
       const group = round2(this.zoomFactor * this.options.body.groupHeight!);
       return {
         defaultHeight: item,
-        height: (d: IGroupItem|IGroupData) => isGroup(d) ? group : item
+        height: (d: IGroupItem | IGroupData) => isGroup(d) ? group : item
       };
     };
     const groupPadding = round2(this.zoomFactor * this.options.body.groupPadding!);
@@ -297,6 +331,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
     this.updateSlopeGraphs(rankings);
 
+    this.updateRotatedHeaderState();
     this.table.widthChanged();
   }
 
