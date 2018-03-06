@@ -149,18 +149,21 @@ export function createToolbarMenuItems(node: HTMLElement, level: number, col: Co
 }
 
 /** @internal */
-function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
-  {
-    const label = <HTMLElement>node.querySelector('.lu-label');
-    const width = label.clientWidth;
-    const rotatedBak = col.label.length * defaultVisibleClientWidth / 3 * 0.6 > col.getWidth();
-    const rotatedReal = label.scrollWidth * 0.6 > label.clientWidth;
-    const rotated = width <= 0 ? rotatedBak : rotatedReal;
-    if (col.label.startsWith('a')) {
-      console.log(rotated, col.label.length * defaultVisibleClientWidth / 3, col.getWidth(), label.clientWidth, label.scrollWidth);
-    }
-    label.classList.toggle('lu-rotated', rotated);
+function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
+  // rotate header flag if needed
+  const label = <HTMLElement>node.querySelector('.lu-label');
+  if (col.getWidth() < MIN_LABEL_WIDTH) {
+    label.classList.remove('lu-rotated');
+    return;
   }
+  const width = label.clientWidth;
+  const rotated = width <= 0 ? (col.label.length * defaultVisibleClientWidth / 3 * 0.6 > col.getWidth()) : (label.scrollWidth * 0.6 > label.clientWidth);
+  label.classList.toggle('lu-rotated', rotated);
+}
+
+/** @internal */
+function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
+  toggleRotatedHeader(node, col, defaultVisibleClientWidth);
 
   const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
   if (toolbar.childElementCount === 0) {

@@ -43,7 +43,6 @@ export default class EngineRenderer extends AEventDispatcher {
     this.node = parent.ownerDocument.createElement('main');
     this.node.id = this.idPrefix;
     this.node.classList.toggle('lu-whole-hover', options.expandLineOnHover);
-    this.node.classList.toggle('lu-rotated-label', options.labelRotation > 0);
     parent.appendChild(this.node);
 
     const statsOf = (col: Column) => {
@@ -115,6 +114,11 @@ export default class EngineRenderer extends AEventDispatcher {
       this.style.addRule('lineup_rowPadding2', `
        #${this.idPrefix} > main > article > div[data-lod=low]:not(:hover) {
          padding-top: 0;
+       }`);
+
+      this.style.addRule('lineup_rotation', `
+       #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated {
+           transform: rotate(${-this.options.labelRotation}deg);
        }`);
     }
 
@@ -238,7 +242,10 @@ export default class EngineRenderer extends AEventDispatcher {
       customRowUpdate: this.options.customRowUpdate || (() => undefined),
       levelOfDetail: this.options.levelOfDetail || (() => 'high')
     }));
-    r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
+    r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
+      this.updateRotatedHeaderState();
+      this.table.widthChanged();
+    });
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
     r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
     this.forward(r, EngineRanking.EVENT_HIGHLIGHT_CHANGED);
@@ -247,6 +254,14 @@ export default class EngineRenderer extends AEventDispatcher {
 
     this.rankings.push(r);
     this.update([r]);
+  }
+
+  private updateRotatedHeaderState() {
+    if (this.options.labelRotation === 0) {
+      return;
+    }
+    const l = this.node.querySelector('.lu-label.lu-rotated');
+    this.node.classList.toggle('lu-rotated-label', Boolean(l));
   }
 
   private removeRanking(ranking: Ranking | null) {
@@ -293,11 +308,12 @@ export default class EngineRenderer extends AEventDispatcher {
     const heightsFor = (ranking: Ranking, data: (IGroupItem | IGroupData)[]) => {
       if (this.options.dynamicHeight) {
         const impl = this.options.dynamicHeight(data, ranking);
+        const f = (v: number | any, d: any) => typeof v === 'number' ? v : v(d);
         if (impl) {
           return {
             defaultHeight: round2(this.zoomFactor * impl.defaultHeight),
-            height: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * impl.height(d)),
-            padding: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * impl.padding(d)),
+            height: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * f(impl.height, d)),
+            padding: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * f(impl.padding, d)),
           };
         }
       }
@@ -327,6 +343,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
     this.updateSlopeGraphs(rankings);
 
+    this.updateRotatedHeaderState();
     this.table.widthChanged();
   }
 
