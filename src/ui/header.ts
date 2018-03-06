@@ -42,7 +42,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="lu-handle"></div>
   `;
 
-  addTooltip(node, col);
+  // addTooltip(node, col);
 
   createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, options.level!, col, ctx);
 
@@ -193,50 +193,52 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
 }
 
 
-function addTooltip(node: HTMLElement, col: Column) {
-  let timer = -1;
-  let popper: Popper | null = null;
+// function addTooltip(node: HTMLElement, col: Column) {
+//   let timer = -1;
+//   let popper: Popper | null = null;
 
-  const showTooltip = () => {
-    timer = -1;
-    // no tooltip if no description
-    if (col.description.length <= 0) {
-      return;
-    }
-    const parent = <HTMLElement>node.closest('.lu')!;
-    parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
-        <div x-arrow></div>
-        <strong class="lu-label">${col.label}</strong>
-        <p>${col.description.replace('\n', `<br/>`)}</p>
-    </div>`);
-    popper = new Popper(node, parent.lastElementChild!, {
-      removeOnDestroy: true,
-      placement: 'auto',
-      modifiers: {
-        flip: {
-          enabled: false
-        },
-        preventOverflow: {
-          enabled: false
-        }
-      }
-    });
-  };
+//   const showTooltip = () => {
+//     timer = -1;
+//     // no tooltip if no description
+//     if (col.description.length <= 0) {
+//       return;
+//     }
+//     const parent = <HTMLElement>node.closest('.lu')!;
+//     parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
+//         <div x-arrow></div>
+//         <strong class="lu-label">${col.label}</strong>
+//         <p>${col.description.replace('\n', `<br/>`)}</p>
+//     </div>`);
+//     popper = new Popper(node, parent.lastElementChild!, {
+//       removeOnDestroy: true,
+//       placement: 'auto',
+//       modifiers: {
+//         flip: {
+//           enabled: false
+//         },
+//         preventOverflow: {
+//           enabled: false
+//         }
+//       }
+//     });
+//   };
 
-  node.addEventListener('mouseenter', () => {
-    timer = self.setTimeout(showTooltip, HOVER_DELAY_SHOW_DETAIL);
-  });
-  node.addEventListener('mouseleave', () => {
-    if (timer >= 0) {
-      clearTimeout(timer);
-      timer = -1;
-    }
-    if (popper) {
-      popper.destroy();
-      popper = null;
-    }
-  });
-}
+//   node.addEventListener('mouseenter', () => {
+//     if (col.description.length > 0) {
+//       timer = self.setTimeout(showTooltip, HOVER_DELAY_SHOW_DETAIL);
+//     }
+//   });
+//   node.addEventListener('mouseleave', () => {
+//     if (timer >= 0) {
+//       clearTimeout(timer);
+//       timer = -1;
+//     }
+//     if (popper) {
+//       popper.destroy();
+//       popper = null;
+//     }
+//   });
+// }
 
 /**
  * allow to change the width of a column using dragging the handle
