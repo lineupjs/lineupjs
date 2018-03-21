@@ -325,7 +325,7 @@ function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClien
   // rotate header flag if needed
   const label = <HTMLElement>node.querySelector('.lu-label');
   const width = label.clientWidth;
-  const rotated = width <= 0 ? (col.label.length * defaultVisibleClientWidth / 3 * 0.6 > col.getWidth()) : (label.scrollWidth * 0.6 > label.clientWidth);
+  const rotated = width <= 0 ? (col.label.length * defaultVisibleClientWidth / 3 * 0.8 > col.getWidth()) : (label.scrollWidth * 0.8 > label.clientWidth);
   label.classList.toggle('lu-rotated', rotated);
 }
 
