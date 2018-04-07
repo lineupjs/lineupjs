@@ -124,7 +124,7 @@ export class Adapter {
 
   private buildColumns(data: any[], ctx: IColumnContext) {
     this.prevColumns = ctx;
-    const columns = ctx.columns.slice();
+    const columns = ctx.columns.map((d) => Object.assign({}, d)); // work on copy
     if (ctx.deriveColumns) {
       columns.push(...deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames}));
     }
