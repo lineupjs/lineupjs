@@ -163,6 +163,10 @@ export default class ScriptColumn extends CompositeNumberColumn {
   constructor(id: string, desc: Readonly<IScriptColumnDesc>) {
     super(id, desc);
     this.script = desc.script || this.script;
+
+    this.setDefaultRenderer('number');
+    this.setDefaultGroupRenderer('number');
+    this.setDefaultSummaryRenderer('number');
   }
 
   protected createEventList() {

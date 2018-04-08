@@ -53,108 +53,105 @@
   }
 }
 
-.#{$lu_css_prefix}-toolbar,
-.#{$lu_css_prefix}-more-options {
-  i {
-    &::before {
-      @include lu_icons();
-    }
+.#{$lu_css_prefix}-action {
+  &::before {
+    @include lu_icons();
+  }
 
-    &[title^='Rename + Color']::before {
-      content: $lu_icon_pencil_square_o;
-    }
+  &[title^='Rename + Color']::before {
+    content: $lu_icon_pencil_square_o;
+  }
 
-    &[title='Clone']::before {
-      content: $lu_icon_code_fork;
-    }
+  &[title='Clone']::before {
+    content: $lu_icon_code_fork;
+  }
 
-    &[title^='Sort']::before {
-      content: $lu_icon_sort;
-    }
+  &[title^='Sort']::before {
+    content: $lu_icon_sort;
+  }
 
-    &[title^='Visualization']::before {
-      content: $lu_icon_exchange;
-    }
+  &[title^='Visualization']::before {
+    content: $lu_icon_exchange;
+  }
 
-    &[title^='Edit Pattern']::before {
-      content: $lu_icon_external_link;
-    }
+  &[title^='Edit Pattern']::before {
+    content: $lu_icon_external_link;
+  }
 
-    &[title^='Reduce by']::before,
-    &[title^='Edit Combine Script']::before {
-      content: $lu_icon_gears;
-    }
+  &[title^='Reduce by']::before,
+  &[title^='Edit Combine Script']::before {
+    content: $lu_icon_gears;
+  }
 
-    &[title='Split Combined Column']::before {
-      content: $lu_icon_window_restore;
-    }
+  &[title='Split Combined Column']::before {
+    content: $lu_icon_window_restore;
+  }
 
-    &[title^='Filter']::before {
-      content: $lu_icon_filter;
-    }
+  &[title^='Filter']::before {
+    content: $lu_icon_filter;
+  }
 
-    &[title^='Filter'][data-active]::before {
-      color: $lu_selected_color;
-    }
+  &[title^='Filter'][data-active]::before {
+    color: $lu_selected_color;
+  }
 
-    &[title^='Stratify']::before {
-      content: $lu_icon_columns;
-      transform: rotate(-90deg);
-      height: 14px;
-    }
+  &[title^='Stratify']::before {
+    content: $lu_icon_columns;
+    transform: rotate(-90deg);
+    height: 14px;
+  }
 
-    &[title='Sort']::before {
-      content: $lu_icon_sort_amount_asc;
-    }
+  &[title='Sort']::before {
+    content: $lu_icon_sort_amount_asc;
+  }
 
-    &[title='Sort'][data-sort='desc']::before {
-      content: $lu_icon_sort_amount_desc;
-    }
+  &[title='Sort'][data-sort='desc']::before {
+    content: $lu_icon_sort_amount_desc;
+  }
 
-    &[title='Sort'][data-sort$='sc']::before,
-    &[title^='Stratify'][data-stratify='true']::before {
-      color: $lu_selected_color;
-    }
+  &[title='Sort'][data-sort$='sc']::before,
+  &[title^='Stratify'][data-stratify='true']::before {
+    color: $lu_selected_color;
+  }
 
-    &[title^='Set Cut Off']::before {
-      content: $lu_icon_scissors;
-    }
+  &[title^='Set Cut Off']::before {
+    content: $lu_icon_scissors;
+  }
 
-    &[title^='Search']::before {
-      content: $lu_icon_search;
-    }
+  &[title^='Search']::before {
+    content: $lu_icon_search;
+  }
 
-    &[title^='Edit Weights']::before {
-      content: $lu_icon_tasks;
-    }
+  &[title^='Edit Weights']::before {
+    content: $lu_icon_tasks;
+  }
 
-    &[title='UnCollapse']::before {
-      content: $lu_icon_toggle_right;
-    }
+  &[title='UnCollapse']::before {
+    content: $lu_icon_toggle_right;
+  }
 
-    &[title='Collapse']::before {
-      content: $lu_icon_toggle_left;
-    }
+  &[title='Collapse']::before {
+    content: $lu_icon_toggle_left;
+  }
 
-    &[title='Expand']::before {
-      content: $lu_icon_expand;
-    }
+  &[title='Expand']::before {
+    content: $lu_icon_expand;
+  }
 
-    &[title='Compress']::before {
-      content: $lu_icon_compress;
-    }
+  &[title='Compress']::before {
+    content: $lu_icon_compress;
+  }
 
-    &[title='Remove']::before {
-      content: $lu_icon_trash;
-    }
+  &[title='Remove']::before {
+    content: $lu_icon_trash;
+  }
 
-    &[title^='More']::before {
-      content: $lu_icon_ellipsis_h;
-    }
+  &[title^='More']::before {
+    content: $lu_icon_ellipsis_h;
+  }
 
-    &[title^='Contained Columns']::before {
-      content: $lu_icon_sitemap;
-    }
+  &[title^='Contained Columns']::before {
+    content: $lu_icon_sitemap;
   }
 }
 
@@ -165,8 +162,7 @@
   &[data-type='link'],
   &[data-type='annotate'],
   &[data-type='hierarchy'] {
-    .#{$lu_css_prefix}-toolbar i,
-    .#{$lu_css_prefix}-more-options i {
+    .#{$lu_css_prefix}-action {
       &[title='Sort']::before {
         content: $lu_icon_sort-alpha-asc;
       }
@@ -184,11 +180,9 @@
   &[data-type='ordinal'],
   &[data-type='boxplot'],
   &[data-type='script'],
-  &[data-type='min'],
-  &[data-type='max'],
+  &[data-type='reduce'],
   &[data-type='stack'] {
-    .#{$lu_css_prefix}-toolbar i,
-    .#{$lu_css_prefix}-more-options i {
+    .#{$lu_css_prefix}-action {
       &[title='Sort']::before {
         content: $lu_icon_sort-numeric-asc;
       }

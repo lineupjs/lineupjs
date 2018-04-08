@@ -42,15 +42,9 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
 
-    if (this.getRenderer() === 'interleaving') {
-      this.setRenderer('stack');
-    }
-    if (this.getGroupRenderer() === 'interleaving') {
-      this.setGroupRenderer('stack');
-    }
-    if (this.getSummaryRenderer() === 'interleaving') {
-      this.setSummaryRenderer('default');
-    }
+    this.setDefaultRenderer('stack');
+    this.setDefaultGroupRenderer('stack');
+    this.setDefaultSummaryRenderer('default');
   }
 
   get label() {

@@ -114,7 +114,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
 
 function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
   return (title: string, onClick: IOnClickHandler) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
+    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="lu-action"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();

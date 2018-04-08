@@ -15,40 +15,40 @@
     cursor: -webkit-grab; // indicate grab able
   }
 
-  .#{$lu_css_prefix}-dragover {
-    pointer-events: all !important;
+  @import './icons/icon_style';
+}
+
+.#{$lu_css_prefix}-dragover {
+  pointer-events: all !important;
+
+  &::before,
+  &::after {
+    pointer-events: none !important;
+  }
+
+  * {
+    pointer-events: none !important;
 
     &::before,
     &::after {
       pointer-events: none !important;
     }
-
-    * {
-      pointer-events: none !important;
-
-      &::before,
-      &::after {
-        pointer-events: none !important;
-      }
-    }
   }
+}
 
-  .#{$lu_css_prefix}-filter-missing {
-    font-size: 13px;
-  }
+.#{$lu_css_prefix}-filter-missing {
+  font-size: 13px;
+}
 
-  .#{$lu_css_prefix}-gradient-text {
-    @include user_select_none();
+.#{$lu_css_prefix}-gradient-text {
+  @include user_select_none();
 
-    position: absolute;
-    overflow: hidden;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  @import './icons/icon_style';
+  position: absolute;
+  overflow: hidden;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
 }
