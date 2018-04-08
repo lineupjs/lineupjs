@@ -2,25 +2,27 @@
 @import '~lineupengine/src/styles/mixins';
 
 .#{$lu-css_prefix}-row {
+  transform: translate(0,0);
+
   .#{$lu_css_prefix}-hover-only,
   .#{$lu_css_prefix}-selection-only {
-    display: none;
+    visibility: hidden;
+    padding-left: 4px;
+
+    > .#{$lu_css_prefix}-gradient-text {
+      left: 4px;
+    }
   }
 
   &:hover,
   &.#{$lu_css_prefix}-selected,
   &.le-highlighted {
     .#{$lu_css_prefix}-not-hover {
-      display: none;
+      visibility: visible;
     }
 
     .#{$lu_css_prefix}-hover-only {
-      display: block;
-      padding-left: 4px;
-
-      > .#{$lu_css_prefix}-gradient-text {
-        left: 4px;
-      }
+      visibility: visible;
     }
   }
 
@@ -34,7 +36,7 @@
     @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
 
     .#{$lu_css_prefix}-selection-only {
-      display: block;
+      visibility: visible;
     }
   }
 
