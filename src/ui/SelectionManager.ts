@@ -59,6 +59,7 @@ export default class SelectionManager extends AEventDispatcher {
     body.addEventListener('mousedown', (evt) => {
       const r = root.getBoundingClientRect();
       this.start = {x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
+      this.body.classList.add('lu-selection-active');
       body.addEventListener('mousemove', mouseMove);
       body.addEventListener('mouseup', mouseUp);
       body.addEventListener('mouseleave', mouseUp);
@@ -86,13 +87,12 @@ export default class SelectionManager extends AEventDispatcher {
     requestAnimationFrame(() => this.fire(SelectionManager.EVENT_SELECT_RANGE, from, end, additional));
   }
 
-  private showHint(end: IPoint) {
+  private showHint(end: MouseEvent) {
     const start = this.start!;
     const sy = start.y;
-    const ey = end.y;
+    const ey = end.clientY;
 
     const visible = Math.abs(sy - ey) > SelectionManager.MIN_DISTANCE;
-    this.body.classList.toggle('lu-selection-active', visible);
     this.hr.classList.toggle('lu-selection-active', visible);
     this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(ey - sy)})rotate(${ey > sy ? 90 : -90}deg)`;
   }
