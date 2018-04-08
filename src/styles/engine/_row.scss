@@ -38,7 +38,8 @@
     }
   }
 
-  [data-renderer] {
+  [data-group=d] {
+    white-space: nowrap;
     overflow-x: hidden;
     text-overflow: ellipsis;
   }
@@ -56,5 +57,6 @@
 .#{$lu-css_prefix}-whole-hover {
   .#{$lu-css_prefix}-row:hover {
     height: auto !important;
+    white-space: unset;
   }
 }
