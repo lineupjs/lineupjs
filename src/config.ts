@@ -19,7 +19,7 @@ export function defaultOptions(): ITaggleOptions {
     defaultSlopeGraphMode: 'item',
     overviewMode: false,
 
-    rowHeight: 18,
+    rowHeight: 20,
     groupHeight: 40,
     groupPadding: 5,
     rowPadding: 2,
