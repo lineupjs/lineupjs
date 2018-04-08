@@ -16,6 +16,8 @@ export interface IRenderers {
   group: IDOMGroupRenderer;
 }
 
+const isOldFirefox = navigator.userAgent.indexOf('Firefox/52') >= 0;
+
 export default class RenderColumn implements IColumn {
   constructor(public readonly c: Column, private readonly renderers: IRenderers, public readonly index: number) {
 
@@ -30,7 +32,7 @@ export default class RenderColumn implements IColumn {
   }
 
   get frozen() {
-    return isSupportType(this.c.desc) || (<any>this.c.desc).frozen === true;
+    return !isOldFirefox && (isSupportType(this.c.desc) || (<any>this.c.desc).frozen === true);
   }
 
   createHeader(document: Document, ctx: IRankingContext) {
