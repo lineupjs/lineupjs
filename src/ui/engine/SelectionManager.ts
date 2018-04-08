@@ -49,7 +49,7 @@ export default class SelectionManager extends AEventDispatcher {
       const startNode = this.start.node.classList.contains('lu-row') ? this.start.node : <HTMLElement>this.start.node.closest('.lu-row');
       // somehow on firefox the mouseUp will be triggered on the original node
       // thus search the node explicitly
-      const end = <HTMLElement>this.body.ownerDocument.elementFromPoint(evt.x, evt.y);
+      const end = <HTMLElement>this.body.ownerDocument.elementFromPoint(evt.clientX, evt.clientY);
       const endNode = end.classList.contains('lu-row') ? end : <HTMLElement>(end.closest('.lu-row'));
       this.start = null;
       this.body.classList.remove('lu-selection-active');
@@ -60,10 +60,11 @@ export default class SelectionManager extends AEventDispatcher {
 
     body.addEventListener('mousedown', (evt) => {
       const r = root.getBoundingClientRect();
-      this.start = {x: evt.x, y: evt.y, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
+      this.start = {x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
       body.addEventListener('mousemove', mouseMove);
       body.addEventListener('mouseup', mouseUp);
       body.addEventListener('mouseleave', mouseUp);
+      this.body.classList.add('lu-selection-active');
     });
   }
 
@@ -88,13 +89,12 @@ export default class SelectionManager extends AEventDispatcher {
     requestAnimationFrame(() => this.fire(SelectionManager.EVENT_SELECT_RANGE, from, end, additional));
   }
 
-  private showHint(end: IPoint) {
+  private showHint(end: MouseEvent) {
     const start = this.start!;
     const sy = start.y;
-    const ey = end.y;
+    const ey = end.clientY;
 
     const visible = Math.abs(sy - ey) > SelectionManager.MIN_DISTANCE;
-    this.body.classList.toggle('lu-selection-active', visible);
     this.hr.classList.toggle('lu-selection-active', visible);
     this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(ey - sy)})rotate(${ey > sy ? 90 : -90}deg)`;
   }
