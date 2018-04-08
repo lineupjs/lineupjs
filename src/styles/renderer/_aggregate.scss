@@ -4,6 +4,7 @@
 .#{$lu_css_prefix}-row-body {
   [data-renderer=aggregate] {
     text-align: center;
+    position: relative;
 
     &::after {
       content: '';
