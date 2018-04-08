@@ -122,7 +122,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   };
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, roptions: Partial<IEngineRankingOptions> = {}) {
-    super(header, body, tableId, style, {mixins: [PrefetchMixin]});
+    super(header, body, tableId, style, {mixins: [PrefetchMixin], batchSize: 10});
     Object.assign(this.roptions, roptions);
     body.classList.add('lu-row-body');
 
