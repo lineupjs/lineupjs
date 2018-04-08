@@ -39,6 +39,10 @@ export interface IDynamicHeight {
   padding(item: IGroupItem | IGroupData | null): number;
 }
 
+export interface ILineUpFlags {
+  disableFrozenColumns: boolean;
+}
+
 export interface ILineUpOptions {
   /**
    * option to enable/disable showing a summary (histogram, ...) in the header
@@ -126,6 +130,11 @@ export interface ILineUpOptions {
    * register custom renderer factories
    */
   renderers: {[type: string]: ICellRendererFactory};
+
+  /**
+   * custom flags for optimization
+   */
+  flags: ILineUpFlags;
 }
 
 export interface ITaggleOptions extends ILineUpOptions {

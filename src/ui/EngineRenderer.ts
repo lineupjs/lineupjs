@@ -240,7 +240,8 @@ export default class EngineRenderer extends AEventDispatcher {
     const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
       animation: this.options.animated,
       customRowUpdate: this.options.customRowUpdate || (() => undefined),
-      levelOfDetail: this.options.levelOfDetail || (() => 'high')
+      levelOfDetail: this.options.levelOfDetail || (() => 'high'),
+      flags: this.options.flags
     }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
       this.updateRotatedHeaderState();

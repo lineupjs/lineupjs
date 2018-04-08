@@ -8,13 +8,14 @@ import {COLUMN_PADDING} from '../styles';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import RenderColumn from './RenderColumn';
+import {ILineUpFlags} from '../interfaces';
 
 /** @internal */
 export default class MultiLevelRenderColumn extends RenderColumn {
   private readonly summaries: ISummaryRenderer[] = [];
 
-  constructor(c: IMultiLevelColumn & Column, index: number, ctx: IRankingContext) {
-    super(c, index, ctx);
+  constructor(c: IMultiLevelColumn & Column, index: number, ctx: IRankingContext, flags: ILineUpFlags) {
+    super(c, index, ctx, flags);
   }
 
   private get mc() {

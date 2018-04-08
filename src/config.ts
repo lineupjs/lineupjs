@@ -26,6 +26,9 @@ export function defaultOptions(): ITaggleOptions {
 
     levelOfDetail: () => 'high',
     customRowUpdate: () => undefined,
-    dynamicHeight: () => null
+    dynamicHeight: () => null,
+    flags: {
+      disableFrozenColumns: navigator.userAgent.includes('Firefox/52') // disable by default in Firefox ESR 52
+    }
   };
 }

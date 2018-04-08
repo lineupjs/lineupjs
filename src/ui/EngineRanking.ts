@@ -23,6 +23,9 @@ export interface IEngineRankingOptions {
   animation: boolean;
   levelOfDetail: (rowIndex: number) => 'high' | 'low';
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
+  flags: {
+    disableFrozenColumns: boolean;
+  }
 }
 
 
@@ -62,7 +65,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private roptions: Readonly<IEngineRankingOptions> = {
     animation: true,
     levelOfDetail: () => 'high',
-    customRowUpdate: () => undefined
+    customRowUpdate: () => undefined,
+    flags: {
+      disableFrozenColumns: false
+    }
   };
 
   private readonly delayedUpdate: (this: { type: string }) => void;
@@ -689,7 +695,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   private createCol(c: Column, index: number) {
-    const col = (isMultiLevelColumn(c) && !c.getCollapsed()) ? new MultiLevelRenderColumn(c, index, this.renderCtx) : new RenderColumn(c, index, this.renderCtx);
+    const col = (isMultiLevelColumn(c) && !c.getCollapsed()) ? new MultiLevelRenderColumn(c, index, this.renderCtx, this.roptions.flags) : new RenderColumn(c, index, this.renderCtx, this.roptions.flags);
 
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
       this.delayedUpdateColumnWidths();

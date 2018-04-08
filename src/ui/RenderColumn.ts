@@ -4,6 +4,7 @@ import {ICellRenderer, IGroupCellRenderer} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
+import {ILineUpFlags} from '../interfaces';
 
 /** @internal */
 export interface IRenderers {
@@ -19,7 +20,7 @@ export interface IRenderers {
 export default class RenderColumn implements IColumn {
   renderers: IRenderers | null = null;
 
-  constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext) {
+  constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext, private readonly flags: ILineUpFlags) {
 
   }
 
@@ -32,13 +33,13 @@ export default class RenderColumn implements IColumn {
   }
 
   get frozen() {
-    return this.c.frozen;
+    return this.flags.disableFrozenColumns ? false : this.c.frozen;
   }
 
   createHeader() {
     const node = createHeader(this.c, this.ctx);
     node.className = `lu-header`;
-    node.classList.toggle('frozen', this.c.frozen);
+    node.classList.toggle('frozen', this.frozen);
 
     if (this.renderers && this.renderers.summary) {
       node.insertAdjacentHTML('beforeend', this.renderers.summary.template);
