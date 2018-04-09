@@ -149,7 +149,7 @@ export default class SelectionManager extends AEventDispatcher {
 function findRow(node: HTMLElement) {
   // use dataset.agg as discriminator
   while(node && !node.dataset.agg) {
-    node = node.parentElement;
+    node = <HTMLElement>node.parentElement;
   }
   return <HTMLElement>node;
 }
