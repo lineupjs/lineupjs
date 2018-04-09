@@ -46,11 +46,11 @@ export default class SelectionManager extends AEventDispatcher {
       if (!this.start) {
         return;
       }
-      const startNode = this.start.node.classList.contains('lu-row') ? this.start.node : <HTMLElement>this.start.node.closest('.lu-row');
+      const startNode = findRow(this.start.node);
       // somehow on firefox the mouseUp will be triggered on the original node
       // thus search the node explicitly
       const end = <HTMLElement>this.body.ownerDocument.elementFromPoint(evt.clientX, evt.clientY);
-      const endNode = end.classList.contains('lu-row') ? end : <HTMLElement>(end.closest('.lu-row'));
+      const endNode = findRow(end);
       this.start = null;
       this.body.classList.remove('lu-selection-active');
       this.hr.classList.remove('lu-selection-active');
@@ -144,4 +144,12 @@ export default class SelectionManager extends AEventDispatcher {
       node.classList.remove('lu-selected');
     }
   }
+}
+
+function findRow(node: HTMLElement) {
+  // use dataset.agg as discriminator
+  while(node && !node.dataset.agg) {
+    node = node.parentElement;
+  }
+  return <HTMLElement>node;
 }
