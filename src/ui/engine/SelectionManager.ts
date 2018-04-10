@@ -105,8 +105,8 @@ export default class SelectionManager extends AEventDispatcher {
 
   add(node: HTMLElement) {
     node.onclick = (evt) => {
-      const i = parseInt(node.dataset.i!, 10);
-      this.ctx.provider.toggleSelection(i, evt.ctrlKey);
+      const dataIndex = parseInt(node.dataset.dataIndex!, 10);
+      this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
     };
   }
 
