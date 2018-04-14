@@ -77,14 +77,17 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
   private derive(data: any[]) {
     const col = (<any>this.desc).column;
 
-    const asArray = (v: any) => {
+    const asArray = (v: any, extra: string) => {
       const vs: number[] = [];
       (Array.isArray(v) ? v : [v]).forEach((vi) => {
         if (typeof vi === 'number' && !isNaN(vi)) {
           vs.push(vi);
         }
-        if (typeof vi.value === 'number' && !isNaN(vi.value)) {
+        if (vi != null && typeof vi.value === 'number' && !isNaN(vi.value)) {
           vs.push(vi.value);
+        }
+        if (vi != null && typeof vi[extra] === 'number' && !isNaN(vi[extra])) {
+          vs.push(vi[extra]);
         }
       });
       return vs;
@@ -92,12 +95,12 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
 
     const minv = min(data, (d) => {
       const v = d[col];
-      const vs: number[] = asArray(v);
+      const vs: number[] = asArray(v, 'min');
       return vs.length === 0 ? Infinity : min(vs);
     });
-    const maxv = min(data, (d) => {
+    const maxv = max(data, (d) => {
       const v = d[col];
-      const vs: number[] = asArray(v);
+      const vs: number[] = asArray(v, 'max');
       return vs.length === 0 ? -Infinity : max(vs);
     });
     return <[number, number]>[minv, maxv];
