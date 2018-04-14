@@ -79,6 +79,17 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     if (!this.desc.map && !this.desc.domain) {
       // derive domain
       this.mapping('linear', <[number, number]>extent(data, (d) => <number>d[(<any>this.desc).column]));
+    } else {
+      const d = this.desc.domain || this.desc.map!.domain;
+      if (isNaN(d[0]) || isNaN(d[1])) {
+        const ext = <[number, number]>extent(data, (d) => <number>d[(<any>this.desc).column]);
+        if (isNaN(d[0])) {
+          d[0] = ext[0];
+        }
+        if (isNaN(d[1])) {
+          d[1] = ext[1];
+        }
+      }
     }
     return super.build(data);
   }
