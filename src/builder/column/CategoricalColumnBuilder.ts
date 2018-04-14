@@ -45,24 +45,37 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
     return this;
   }
 
+  private derive(data: any[]) {
+    // derive categories
+    const categories = new Set<string>();
+    const isSet = this.desc.type === 'set';
+    const separator = (<any>this.desc).separator || ';';
+    const val = (vi: any) => {
+      if (typeof vi === 'string') {
+        return vi;
+      }
+      if (typeof vi.value === 'string') {
+        return vi.value;
+      }
+      return null;
+    };
+    data.forEach((d) => {
+      const v = d[(<any>this.desc).column];
+      if (Array.isArray(v)) {
+        v.forEach((vi) => categories.add(val(vi)));
+      } else if (v != null && v !== '') {
+        const vs: string[] = isSet ? [v.toString()] : v.toString().split(separator);
+        vs.forEach((vi) => categories.add(val(vi)));
+      }
+    });
+    categories.delete(<any>null);
+    categories.delete('');
+    this.categories(Array.from(categories).sort());
+  }
+
   build(data: any[]): ICategoricalColumnDesc {
     if (!this.desc.categories) {
-      // derive categories
-      const categories = new Set<string>();
-      const isSet = this.desc.type === 'set';
-      const separator = (<any>this.desc).separator || ';';
-      data.forEach((d) => {
-        const v = d[(<any>this.desc).column];
-        if (Array.isArray(v)) {
-          v.forEach((vi) => categories.add(vi == null ? null : vi.toString()));
-        } else if (v != null && v !== '') {
-          const vs: string[] = isSet ? [v.toString()] : v.toString().split(separator);
-          vs.forEach((vi) => categories.add(vi == null ? null : vi.toString()));
-        }
-      });
-      categories.delete(null);
-      categories.delete('');
-      this.categories(Array.from(categories).sort());
+      this.derive(data);
     }
     return super.build(data);
   }

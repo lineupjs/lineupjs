@@ -74,31 +74,44 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     return this;
   }
 
+  private derive(data: any[]) {
+    const col = (<any>this.desc).column;
 
-  build(data: any[]): INumberColumnDesc {
-    const ex = () => {
-      const col = (<any>this.desc).column;
-
-      const minv = min(data, (d) => {
-        const v = d[col];
-        const vs: number[] = (Array.isArray(v) ? v : [v]).filter((vi) => typeof vi === 'number' && !isNaN(vi));
-        return vs.length === 0 ? Infinity : min(vs);
+    const asArray = (v: any) => {
+      const vs: number[] = [];
+      (Array.isArray(v) ? v : [v]).forEach((vi) => {
+        if (typeof vi === 'number' && !isNaN(vi)) {
+          vs.push(vi);
+        }
+        if (typeof vi.value === 'number' && !isNaN(vi.value)) {
+          vs.push(vi.value);
+        }
       });
-      const maxv = min(data, (d) => {
-        const v = d[col];
-        const vs: number[] = (Array.isArray(v) ? v : [v]).filter((vi) => typeof vi === 'number' && !isNaN(vi));
-        return vs.length === 0 ? -Infinity : max(vs);
-      });
-      return <[number, number]>[minv, maxv];
+      return vs;
     };
 
+    const minv = min(data, (d) => {
+      const v = d[col];
+      const vs: number[] = asArray(v);
+      return vs.length === 0 ? Infinity : min(vs);
+    });
+    const maxv = min(data, (d) => {
+      const v = d[col];
+      const vs: number[] = asArray(v);
+      return vs.length === 0 ? -Infinity : max(vs);
+    });
+    return <[number, number]>[minv, maxv];
+  }
+
+
+  build(data: any[]): INumberColumnDesc {
     if (!this.desc.map && !this.desc.domain) {
       // derive domain
-      this.mapping('linear', ex());
+      this.mapping('linear', this.derive(data));
     } else {
       const d = this.desc.domain || this.desc.map!.domain;
       if (isNaN(d[0]) || isNaN(d[1])) {
-        const ext = ex();
+        const ext = this.derive(data);
         if (isNaN(d[0])) {
           d[0] = ext[0];
         }

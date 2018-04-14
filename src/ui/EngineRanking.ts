@@ -25,7 +25,7 @@ export interface IEngineRankingOptions {
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
   flags: {
     disableFrozenColumns: boolean;
-  }
+  };
 }
 
 
