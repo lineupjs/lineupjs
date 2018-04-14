@@ -23,8 +23,8 @@ export default class CategoricalFilterDialog extends ADialog {
     const id = randomId(this.dialog.idPrefix);
 
     node.insertAdjacentHTML('beforeend', `<div>
-        <input id="${id}" type="checkbox" checked><label for="${id}"><span></span><div>Un/Select All</div></label>
-        ${this.column.categories.map((c) => `<input for="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><label for="${id}${c.name}"><span style="background-color: ${c.color}"></span><div>${c.label}</div></label>`).join('')}
+        <div class="lu-checkbox"><input id="${id}" type="checkbox" checked><label for="${id}"><span></span><div>Un/Select All</div></label></div>
+        ${this.column.categories.map((c) => `<div class="lu-checkbox"><input for="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><label for="${id}${c.name}"><span style="background-color: ${c.color}"></span><div>${c.label}</div></label></div>`).join('')}
     </div>`);
     // selectAll
     this.findInput('input:not([data-cat])').onchange = function (this: HTMLElement) {

@@ -34,7 +34,7 @@
     cursor: pointer;
   }
 
-  label {
+  .#{$lu_css_prefix}-checkbox {
     position: absolute;
     bottom: -3.5em;
   }
@@ -154,7 +154,7 @@
     }
   }
 
-  label {
+  .#{$lu_css_prefix}-checkbox {
     position: absolute;
     bottom: -3.5em;
   }

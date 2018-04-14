@@ -40,6 +40,20 @@
   font-size: 13px;
 }
 
+.#{$lu_css_prefix}-checkbox {
+  > input {
+    display: inline;
+  }
+
+  > label {
+    display: inline-flex;
+  }
+}
+
+.#{$lu_css_prefix}-summary .#{$lu_css_prefix}-checkbox label {
+  display: inline-flex;
+}
+
 .#{$lu_css_prefix}-gradient-text {
   @include user_select_none();
 
