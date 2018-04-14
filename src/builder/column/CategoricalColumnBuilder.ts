@@ -51,10 +51,10 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
     const isSet = this.desc.type === 'set';
     const separator = (<any>this.desc).separator || ';';
     const val = (vi: any) => {
-      if (typeof vi === 'string') {
+      if (typeof vi === 'string' && vi !== '') {
         return vi;
       }
-      if (typeof vi.value === 'string') {
+      if (vi != null && typeof vi.value === 'string' && vi.value !== '') {
         return vi.value;
       }
       return null;
