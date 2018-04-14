@@ -1,4 +1,4 @@
-import {extent} from 'd3-array';
+import {min, max} from 'd3-array';
 import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
@@ -76,13 +76,29 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
 
 
   build(data: any[]): INumberColumnDesc {
+    const ex = () => {
+      const col = (<any>this.desc).column;
+
+      const minv = min(data, (d) => {
+        const v = d[col];
+        const vs: number[] = (Array.isArray(v) ? v : [v]).filter((vi) => typeof vi === 'number' && !isNaN(vi));
+        return vs.length === 0 ? Infinity : min(vs);
+      });
+      const maxv = min(data, (d) => {
+        const v = d[col];
+        const vs: number[] = (Array.isArray(v) ? v : [v]).filter((vi) => typeof vi === 'number' && !isNaN(vi));
+        return vs.length === 0 ? -Infinity : max(vs);
+      });
+      return <[number, number]>[minv, maxv];
+    };
+
     if (!this.desc.map && !this.desc.domain) {
       // derive domain
-      this.mapping('linear', <[number, number]>extent(data, (d) => <number>d[(<any>this.desc).column]));
+      this.mapping('linear', ex());
     } else {
       const d = this.desc.domain || this.desc.map!.domain;
       if (isNaN(d[0]) || isNaN(d[1])) {
-        const ext = <[number, number]>extent(data, (d) => <number>d[(<any>this.desc).column]);
+        const ext = ex();
         if (isNaN(d[0])) {
           d[0] = ext[0];
         }

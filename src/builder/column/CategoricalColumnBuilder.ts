@@ -48,7 +48,20 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
   build(data: any[]): ICategoricalColumnDesc {
     if (!this.desc.categories) {
       // derive categories
-      const categories = new Set(data.map((d) => <string>d[(<any>this.desc).column]));
+      const categories = new Set<string>();
+      const isSet = this.desc.type === 'set';
+      const separator = (<any>this.desc).separator || ';';
+      data.forEach((d) => {
+        const v = d[(<any>this.desc).column];
+        if (Array.isArray(v)) {
+          v.forEach((vi) => categories.add(vi == null ? null : vi.toString()));
+        } else if (v != null && v !== '') {
+          const vs: string[] = isSet ? [v.toString()] : v.toString().split(separator);
+          vs.forEach((vi) => categories.add(vi == null ? null : vi.toString()));
+        }
+      });
+      categories.delete(null);
+      categories.delete('');
       this.categories(Array.from(categories).sort());
     }
     return super.build(data);
