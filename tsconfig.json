@@ -35,5 +35,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "tsd.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
