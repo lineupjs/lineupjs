@@ -68,8 +68,13 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
         vs.forEach((vi) => categories.add(val(vi)));
       }
     });
+    // remove missing values
     categories.delete(<any>null);
+    categories.delete(<any>undefined);
     categories.delete('');
+    categories.delete('NA');
+    categories.delete('NaN');
+    categories.delete('na');
     this.categories(Array.from(categories).sort());
   }
 
