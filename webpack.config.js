@@ -1,7 +1,6 @@
 const resolve = require('path').resolve;
 const pkg = require('./package.json');
 const webpack = require('webpack');
-const fs = require('fs');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
@@ -19,31 +18,8 @@ const banner = '/*! ' + (pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' +
 /**
  * generate a webpack configuration
  */
-module.exports = (env) => {
-
-  const tsLoader = [{
-      loader: 'cache-loader'
-    },
-    {
-      loader: 'thread-loader',
-      options: {
-        // there should be 1 cpu for the fork-ts-checker-webpack-plugin
-        workers: require('os').cpus().length - 1,
-      },
-    },
-    {
-      loader: 'ts-loader',
-      options: {
-        configFile: env === 'dev' ? 'tsconfig_dev.json' : 'tsconfig.json',
-        happyPackMode: true // IMPORTANT! use happyPackMode mode to speed-up  compilation and reduce errors reported to webpack
-      }
-    }
-  ];
-
-  if (process.env.CI) {
-    tsLoader.splice(0, 2); // just the loader no optimization
-  }
-
+module.exports = (env, options) => {
+  const dev = options.mode.startsWith('d');
   return {
     entry: {
       'LineUpJS': './src/index.ts'
@@ -58,8 +34,7 @@ module.exports = (env) => {
       umdNamedDefine: false //anonymous require module
     },
     resolve: {
-      // Add `.ts` and `.tsx` as a resolvable extension.
-      extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
+      extensions: ['.ts', '.tsx', '.js'],
       symlinks: false
     },
     plugins: [
@@ -91,7 +66,25 @@ module.exports = (env) => {
         },
         {
           test: /\.tsx?$/,
-          use: tsLoader
+          exclude: /node_modules/,
+          use: [{
+              loader: 'cache-loader'
+            },
+            {
+              loader: 'thread-loader',
+              options: {
+                // there should be 1 cpu for the fork-ts-checker-webpack-plugin
+                workers: require('os').cpus().length - 1,
+              },
+            },
+            {
+              loader: 'ts-loader',
+              options: {
+                configFile: dev ? 'tsconfig_dev.json' : 'tsconfig.json',
+                happyPackMode: true // IMPORTANT! use happyPackMode mode to speed-up  compilation and reduce errors reported to webpack
+              }
+            }
+          ].slice(process.env.CI ? 2 : 0) // no optimizations for CIs
         },
         {
           test: /\.(png|jpg)$/,
