@@ -6,6 +6,7 @@
 
   &::before {
     @include lu_icons();
+    display: inline;
 
     content: $lu_icon_square_o;
   }

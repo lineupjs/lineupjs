@@ -86,7 +86,7 @@
   &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
     content: attr(data-title);
     position: absolute;
-    top: 100%;
+    bottom: -15px;
     left: 0;
     width: 100%;
     overflow: hidden;
@@ -113,7 +113,7 @@
     &::before {
       content: attr(data-value);
       position: absolute;
-      top: 100%;
+      bottom: -15px;
       width: 5em;
       overflow: hidden;
       white-space: nowrap;
