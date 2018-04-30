@@ -29,8 +29,8 @@ npm install --save lineupjs@next
 ```
 
 ```html
-<link href="https://unpkg.com/lineupjs/build/LineUpJS.min.css" rel="stylesheet">
-<script src="https://unpkg.com/lineupjs/build/LineUpJS.min.js"></script>
+<link href="https://unpkg.com/lineupjs/build/LineUpJS.css" rel="stylesheet">
+<script src="https://unpkg.com/lineupjs/build/LineUpJS.js"></script>
 ```
 
 **Minimal Usage Example**
@@ -126,8 +126,8 @@ npm install --save lineupjsx
 ```
 
 ```html
-<link href="https://unpkg.com/lineupjsx/build/LineUpJSx.min.css" rel="stylesheet">
-<script src="https://unpkg.com/lineupjsx/build/LineUpJSx.min.js"></script>
+<link href="https://unpkg.com/lineupjsx/build/LineUpJSx.css" rel="stylesheet">
+<script src="https://unpkg.com/lineupjsx/build/LineUpJSx.js"></script>
 ```
 
 **Minimal Usage Example**
