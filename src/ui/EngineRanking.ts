@@ -95,7 +95,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
       const row = <HTMLElement>evt.currentTarget;
       if (!EngineRanking.isCanvasRenderedRow(row)) {
-        setTimeout(() => this.updateHoveredRow(row, false));
+        self.setTimeout(() => this.updateHoveredRow(row, false));
       }
       // remove self
       row.removeEventListener('mouseleave', c.leave);
@@ -721,7 +721,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       if (this.primaryType === Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED || this.primaryType === Column.EVENT_LABEL_CHANGED || this.primaryType === Column.EVENT_METADATA_CHANGED) {
         return;
       }
-      setTimeout(() => that.updateHist(col.c), 50);
+      self.setTimeout(() => that.updateHist(col.c), 50);
     });
     c.on(`${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, () => {
       // replace myself upon renderer type change

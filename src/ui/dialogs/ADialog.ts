@@ -86,7 +86,7 @@ abstract class ADialog {
     const auto = this.find<HTMLInputElement>('input[autofocus]');
     if (auto) {
       // delay such that it works
-      setTimeout(() => auto.focus());
+      self.setTimeout(() => auto.focus());
     }
 
     const reset = this.find<HTMLButtonElement>('button[type=reset]');

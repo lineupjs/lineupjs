@@ -20,7 +20,7 @@ export default function debounce(callback: (...args: any[]) => void, timeToDelay
     }
     const next = {self: this, args};
     ctx = ctx && choose ? choose(ctx, next) : next;
-    tm = <any>setTimeout(() => {
+    tm = self.setTimeout(() => {
       console.assert(ctx != null);
       callback.call(ctx!.self, ...ctx!.args);
       ctx = null;
