@@ -2,7 +2,6 @@
 @import '~lineupengine/src/styles/mixins';
 
 .#{$lu-css_prefix}-row {
-  transform: translate(0, 0);
 
   .#{$lu_css_prefix}-hover-only,
   .#{$lu_css_prefix}-selection-only {
