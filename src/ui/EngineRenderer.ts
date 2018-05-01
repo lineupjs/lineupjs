@@ -101,20 +101,27 @@ export default class EngineRenderer extends AEventDispatcher {
     //apply rules
     {
       this.style.addRule('lineup_groupPadding', `
-       #${this.idPrefix} > main > article > [data-agg=group],
-       #${this.idPrefix} > main > article > [data-meta~=last] {
+       #${this.idPrefix} .lu-row[data-agg=group],
+       #${this.idPrefix} .lu-row[data-meta~=last] {
         margin-bottom: ${options.groupPadding}px;
        }`);
 
-      this.style.addRule('lineup_rowPadding', `
-       #${this.idPrefix} > main > article > div {
-         padding-top: ${options.rowPadding}px;
-       }`);
-
       this.style.addRule('lineup_rowPadding2', `
-       #${this.idPrefix} > main > article > div[data-lod=low]:not(:hover) {
+       #${this.idPrefix} .lu-row[data-lod=low] {
          padding-top: 0;
        }`);
+
+       // padding in general and for hovered low detail rows + their afterwards
+       this.style.addRule('lineup_rowPadding', `
+        #${this.idPrefix} .lu-row,
+        #${this.idPrefix} .lu-row[data-lod]:hover,
+        #${this.idPrefix} .lu-row[data-lod].le-highlighted,
+        #${this.idPrefix} .lu-row[data-lod].lu-selected,
+        #${this.idPrefix} .lu-row[data-lod]:hover + .lu-row,
+        #${this.idPrefix} .lu-row[data-lod].le-highlighted + .lu-row,
+        #${this.idPrefix} .lu-row[data-lod].lu-selected + .lu-row {
+          padding-top: ${options.rowPadding}px;
+        }`);
 
       this.style.addRule('lineup_rotation', `
        #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated {

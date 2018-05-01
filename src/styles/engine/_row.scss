@@ -29,9 +29,6 @@
     selected state extends hover state
    */
   &.#{$lu_css_prefix}-selected {
-    z-index: 10;
-    position: relative;
-
     @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
 
     .#{$lu_css_prefix}-selection-only {
