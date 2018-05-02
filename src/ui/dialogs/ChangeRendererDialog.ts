@@ -19,11 +19,11 @@ export default class ChangeRendererDialog extends ADialog {
 
     const id = randomId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `
-      ${item.map((d) => `<input id="${id}0${d.type}" type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><label for="${id}0${d.type}">${d.label}</label>`).join('')}
+      ${item.map((d) => ` <div class="lu-checkbox"><input id="${id}0${d.type}" type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><label for="${id}0${d.type}">${d.label}</label></div>`).join('')}
       <strong>Group Visualization</strong>
-      ${group.map((d) => `<input id="${id}1${d.type}" type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><label for="${id}1${d.type}">${d.label}</label>`).join('')}
+      ${group.map((d) => ` <div class="lu-checkbox"><input id="${id}1${d.type}" type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><label for="${id}1${d.type}">${d.label}</label></div>`).join('')}
       <strong>Summary Visualization</strong>
-      ${summary.map((d) => `<input id="${id}2${d.type}" type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><label for="${id}2${d.type}">${d.label}</label>`).join('')}
+      ${summary.map((d) => ` <div class="lu-checkbox"><input id="${id}2${d.type}" type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><label for="${id}2${d.type}">${d.label}</label></div>`).join('')}
     `);
     this.forEach('input[name="renderer"]', (n: HTMLInputElement) => {
       n.addEventListener('change', () => this.column.setRenderer(n.value));

@@ -21,7 +21,7 @@ export default class SortDialog extends ADialog {
 export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string): void, getSortMethod(): string}, methods: string[], idPrefix: string) {
   const id = randomId(idPrefix);
   const bak = column.getSortMethod();
-  methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<input id="${id}${d}" type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><label for="${id}${d}">${d.slice(0, 1).toUpperCase() + d.slice(1)}</label>`));
+  methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<div class="checkbox"><input id="${id}${d}" type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><label for="${id}${d}">${d.slice(0, 1).toUpperCase() + d.slice(1)}</label></div>`));
 
   forEach(node, 'input[name=multivaluesort]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => column.setSortMethod(n.value));
@@ -34,8 +34,8 @@ export function sortOrder(node: HTMLElement, column: Column, idPrefix: string, g
   const id = randomId(idPrefix);
   node.insertAdjacentHTML('beforeend', `
         <strong>Sort Order</strong>
-        <input id="${id}A" type="radio" name="sortorder" value="asc"  ${(order === 'asc') ? 'checked' : ''} ><label for="${id}A">Ascending</label>
-        <input id="${id}A" type="radio" name="sortorder" value="desc"  ${(order === 'desc') ? 'checked' : ''} ><label for="${id}B">Decending</label>
+        <div class="lu-checkbox"><input id="${id}A" type="radio" name="sortorder" value="asc"  ${(order === 'asc') ? 'checked' : ''} ><label for="${id}A">Ascending</label></div>
+        <div class="lu-checkbox"><input id="${id}A" type="radio" name="sortorder" value="desc"  ${(order === 'desc') ? 'checked' : ''} ><label for="${id}B">Decending</label></div>
     `);
   forEach(node, 'input[name=sortorder]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => {
