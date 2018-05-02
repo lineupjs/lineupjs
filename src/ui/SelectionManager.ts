@@ -60,9 +60,17 @@ export default class SelectionManager extends AEventDispatcher {
       const r = root.getBoundingClientRect();
       this.start = {x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
       this.body.classList.add('lu-selection-active');
-      body.addEventListener('mousemove', mouseMove);
-      body.addEventListener('mouseup', mouseUp);
-      body.addEventListener('mouseleave', mouseUp);
+      body.addEventListener('mousemove', mouseMove, {
+        passive: true
+      });
+      body.addEventListener('mouseup', mouseUp, {
+        passive: true
+      });
+      body.addEventListener('mouseleave', mouseUp, {
+        passive: true
+      });
+    }, {
+      passive: true
     });
   }
 

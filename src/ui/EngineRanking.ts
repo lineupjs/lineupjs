@@ -84,7 +84,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         self.clearTimeout(c.timer);
       }
       const row = <HTMLElement>evt.currentTarget;
-      row.addEventListener('mouseleave', c.leave);
+      row.addEventListener('mouseleave', c.leave, {
+        passive: true
+      });
       c.timer = self.setTimeout(() => this.updateHoveredRow(row, true), HOVER_DELAY_SHOW_DETAIL);
     },
     leave: (evt: MouseEvent) => {
@@ -211,7 +213,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column.renderers = this.ctx.createRenderer(column.c);
     });
 
-    this.body.addEventListener('mouseleave', this.highlightHandler.leave);
+    this.body.addEventListener('mouseleave', this.highlightHandler.leave, {
+      passive: true
+    });
   }
 
   get id() {
@@ -341,7 +345,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   protected createRow(node: HTMLElement, rowIndex: number): void {
     node.classList.add('lu-row');
     this.roptions.customRowUpdate(node, rowIndex);
-    node.addEventListener('mouseenter', this.highlightHandler.enter);
+    node.addEventListener('mouseenter', this.highlightHandler.enter, {
+      passive: true
+    });
 
     const isGroup = this.renderCtx.isGroup(rowIndex);
 
@@ -380,7 +386,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const canvas = this.selectCanvas();
     node.appendChild(canvas);
     this.renderRow(canvas, rowIndex);
-    node.addEventListener('mouseenter', this.canvasMouseHandler.enter);
+    node.addEventListener('mouseenter', this.canvasMouseHandler.enter, {
+      passive: true
+    });
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number, forcedLod?: 'high' | 'low'): void {
@@ -440,7 +448,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return;
     }
 
-    node.addEventListener('mouseenter', this.canvasMouseHandler.enter);
+    node.addEventListener('mouseenter', this.canvasMouseHandler.enter, {
+      passive: true
+    });
     // use canvas
     if (wasLod !== 'high' && canvas) {
       this.renderRow(canvas, rowIndex);

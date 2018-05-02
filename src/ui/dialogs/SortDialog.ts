@@ -24,7 +24,9 @@ export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string)
   methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<div class="checkbox"><input id="${id}${d}" type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><label for="${id}${d}">${d.slice(0, 1).toUpperCase() + d.slice(1)}</label></div>`));
 
   forEach(node, 'input[name=multivaluesort]', (n: HTMLInputElement) => {
-    n.addEventListener('change', () => column.setSortMethod(n.value));
+    n.addEventListener('change', () => column.setSortMethod(n.value), {
+      passive: true
+    });
   });
 }
 
@@ -44,6 +46,8 @@ export function sortOrder(node: HTMLElement, column: Column, idPrefix: string, g
       } else {
         column.sortByMe(n.value === 'asc');
       }
+    }, {
+      passive: true
     });
   });
 }

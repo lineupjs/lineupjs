@@ -29,7 +29,11 @@ export default class SearchDialog extends ADialog {
       }
       this.provider.searchAndJump(search, this.column);
     };
-    input.addEventListener('input', update);
-    checkbox.addEventListener('change', update);
+    input.addEventListener('input', update, {
+      passive: true
+    });
+    checkbox.addEventListener('change', update, {
+      passive: true
+    });
   }
 }

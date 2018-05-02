@@ -26,13 +26,13 @@ export default class ChangeRendererDialog extends ADialog {
       ${summary.map((d) => ` <div class="lu-checkbox"><input id="${id}2${d.type}" type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><label for="${id}2${d.type}">${d.label}</label></div>`).join('')}
     `);
     this.forEach('input[name="renderer"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setRenderer(n.value));
+      n.addEventListener('change', () => this.column.setRenderer(n.value), { passive: true });
     });
     this.forEach('input[name="group"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setGroupRenderer(n.value));
+      n.addEventListener('change', () => this.column.setGroupRenderer(n.value), { passive: true });
     });
     this.forEach('input[name="summary"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setSummaryRenderer(n.value));
+      n.addEventListener('change', () => this.column.setSummaryRenderer(n.value), { passive: true });
     });
   }
 

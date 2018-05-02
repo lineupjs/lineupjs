@@ -111,7 +111,9 @@ export default class DialogManager {
   }
 
   private setUp() {
-    this.node.ownerDocument.addEventListener('keyup', this.escKeyListener);
+    this.node.ownerDocument.addEventListener('keyup', this.escKeyListener, {
+      passive: true
+    });
     this.node.style.display = 'block';
   }
 

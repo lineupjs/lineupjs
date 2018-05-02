@@ -95,19 +95,17 @@ export default class SlopeGraph implements ITableSection {
   init() {
     this.hide(); // hide by default
 
-    const scroller = this.body.parentElement!;
+    const scroller = <any>this.body.parentElement!;
 
     //sync scrolling of header and body
-    let oldTop = scroller.scrollTop;
-    this.scrollListener = () => {
-      const top = scroller.scrollTop;
-      if (oldTop === top) {
+    // use internals from lineup engine
+    let old: { top: number, height: number} = (<any>scroller).__le_scroller__.push('animation', (act: { top: number, height: number}) => {
+      if (Math.abs(old.top - act.top) < 5) {
         return;
       }
-      oldTop = top;
-      this.onScrolledVertically(top, scroller.clientHeight);
-    };
-    scroller.addEventListener('scroll', this.scrollListener);
+      old = act;
+      this.onScrolledVertically(act.top, act.height);
+    });
   }
 
   private initHeader(header: HTMLElement) {

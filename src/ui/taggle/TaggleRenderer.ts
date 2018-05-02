@@ -62,7 +62,9 @@ export default class TaggleRenderer extends AEventDispatcher {
     });
     this.forward(this.renderer, `${TaggleRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
 
-    window.addEventListener('resize', this.resizeListener);
+    window.addEventListener('resize', this.resizeListener, {
+      passive: true
+    });
   }
 
   get ctx(): IRankingHeaderContextContainer & IRenderContext & IEngineRankingContext {

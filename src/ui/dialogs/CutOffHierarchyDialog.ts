@@ -35,6 +35,8 @@ export default class CutOffHierarchyDialog extends ADialog {
       } else {
         this.setCustomValidity('');
       }
+    }, {
+      passive: true
     });
   }
 

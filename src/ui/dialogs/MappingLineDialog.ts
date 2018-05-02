@@ -42,6 +42,8 @@ export default class MappingLineDialog extends ADialog {
     this.find('button').addEventListener('click', () => {
       this.destroy();
       this.line.destroy();
+    }, {
+      passive: true
     });
   }
 
