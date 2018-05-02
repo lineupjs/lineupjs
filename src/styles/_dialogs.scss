@@ -108,6 +108,25 @@
       width: 150px;
     }
 
+    &.#{$lu_css_prefix}-filter-table.#{$lu_css_prefix}-weights-table {
+      input {
+        width: 6em;
+      }
+
+      div > span {
+        width: 100px !important;
+        position: relative;
+
+        > span {
+          top: 1px;
+          left: 0;
+          bottom: 1px;
+          position: absolute;
+          margin: 0;
+        }
+      }
+    }
+
     &.#{$lu_css_prefix}-filter-table {
       > div:first-of-type {
         overflow-y: auto;
@@ -122,18 +141,6 @@
         span {
           width: 1.2em;
           margin: 0 0.5em;
-        }
-
-        span.#{$lu_css_prefix}-weight {
-          width: 100px;
-          position: relative;
-
-          > span {
-            top: 1px;
-            left: 0;
-            bottom: 1px;
-            position: absolute;
-          }
         }
 
         input[type=number] + div {
