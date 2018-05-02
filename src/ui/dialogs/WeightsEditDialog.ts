@@ -20,7 +20,7 @@ export default class WeightsEditDialog extends ADialog {
     forEach(this.node, 'input[type=number]', (n: HTMLInputElement) => {
       const v = round(100 / this.weights.length, 2);
       n.value = String(v);
-      (<HTMLElement>n.nextElementSibling!).style.width = `${v}%`;
+      (<HTMLElement>n.nextElementSibling!.firstElementChild!).style.width = `${v}%`;
     });
     this.column.setWeights(this.weights.slice().fill(100 / this.weights.length));
   }
@@ -30,11 +30,11 @@ export default class WeightsEditDialog extends ADialog {
 
     const children = this.column.children;
     node.insertAdjacentHTML('beforeend', `<div>
-        ${this.weights.map((weight, i) => `<div><input type="number" value="${round(weight * 100, 2)}" min="0" max="100" size="5"><span style="background-color: ${children[i].color}; width: ${round(weight * 100, 2)}%"></span>${children[i].label}</div>`).join('')}
+        ${this.weights.map((weight, i) => `<div><input type="number" value="${round(weight * 100, 2)}" min="0" max="100" size="5" step="any"><span class="lu-weight"><span style="background-color: ${children[i].color}; width: ${round(weight * 100, 2)}%"></span></span>${children[i].label}</div>`).join('')}
     </div>`);
     this.forEach('input[type=number]', (d: HTMLInputElement) => {
       d.oninput = () => {
-        (<HTMLElement>d.nextElementSibling).style.width = `${d.value}px`;
+        (<HTMLElement>d.nextElementSibling!.firstElementChild!).style.width = `${d.value}%`;
       };
     });
   }
