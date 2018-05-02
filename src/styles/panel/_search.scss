@@ -67,6 +67,10 @@
     li.#{$lu_css_prefix}-search-highlighted > span {
       background-color: #f8f8f8;
     }
+
+    li.hidden {
+      display: none;
+    }
   }
 
   &.#{$lu_css_prefix}-search-open {
