@@ -79,8 +79,6 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     style.updateRule(`stacked-${this.c.id}`, `.lineup-engine .${clazz} {
       display: grid;
       grid-template-columns: ${widths.join(' ')};
-      grid-template-rows: auto;
-      grid-auto-columns: 0;
     }`);
     return clazz;
   }
