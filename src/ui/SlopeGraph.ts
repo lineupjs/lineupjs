@@ -99,13 +99,15 @@ export default class SlopeGraph implements ITableSection {
 
     //sync scrolling of header and body
     // use internals from lineup engine
-    let old: { top: number, height: number} = (<any>scroller).__le_scroller__.push('animation', (act: { top: number, height: number}) => {
+    const scroll = (<any>scroller).__le_scroller__;
+    scroll.push('animation', (act: { top: number, height: number}) => {
       if (Math.abs(old.top - act.top) < 5) {
         return;
       }
       old = act;
       this.onScrolledVertically(act.top, act.height);
     });
+    let old: { top: number, height: number} = scroll.asInfo();
   }
 
   private initHeader(header: HTMLElement) {
