@@ -321,7 +321,6 @@ export default class SidePanel {
     columns.forEach((col) => {
       const entry = this.getDescLike(col.desc);
       if (!entry) {
-        debugger;
         return;
       }
       if (entry.visColumn === col) {
