@@ -43,6 +43,8 @@ export function createData(col: { children: Column[] } & Column, context: IRende
         rendererId = col.getSummaryRenderer();
         break;
     }
+    // inject data attributes
+    template = template.replace(/^<([^ >]+)([ >])/, `<$1 data-column-id="${d.id}" data-renderer="${rendererId}"$2`);
     return {
       column: d,
       shift,

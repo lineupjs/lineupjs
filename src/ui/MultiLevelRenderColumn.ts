@@ -38,7 +38,6 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       const n = createHeader(cc, this.ctx, {
         mergeDropAble: false
       });
-      n.style.marginLeft = i > 0 ? `${COLUMN_PADDING * 2}px` : null;
       n.classList.add('lu-header');
       (<any>n.style).gridColumnStart = (i + 1).toString();
       wrapper.appendChild(n);
@@ -74,8 +73,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
   updateWidthRule(style: StyleManager) {
     const mc = this.mc;
-    const total = this.width;
-    const widths = mc.children.map((c) => `${round(100 * c.getWidth() / total, 2)}%`);
+    const widths = mc.children.map((c) => `${round(c.getWidth())}fr`);
     const clazz = gridClass(this.c);
     style.updateRule(`stacked-${this.c.id}`, `.lineup-engine .${clazz} {
       display: grid;

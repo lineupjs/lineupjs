@@ -76,7 +76,7 @@ export function forEachChild<T extends Element>(node: Element, callback: (d: T, 
 
 /**
  * matches the columns and the dom nodes representing them
- * @param {SVGGElement | HTMLElement} node row
+ * @param {HTMLElement} node row
  * @param columns columns to check
  * @internal
  */
@@ -84,12 +84,13 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.template).join('');
+    const children = Array.from(node.children);
     columns.forEach((col, i) => {
-      const cnode = <Element>node.childNodes[i];
+      const cnode = <HTMLElement>children[i];
       // set attribute for finding again
-      cnode.setAttribute('data-column-id', col.column.id);
+      cnode.dataset.columnId = col.column.id;
       // store current renderer
-      cnode.setAttribute('data-renderer', col.rendererId);
+      cnode.dataset.renderer = col.rendererId;
     });
     return;
   }
@@ -97,7 +98,7 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
   function matches(c: {column: Column, rendererId: string}, i: number) {
     //do both match?
     const n = <HTMLElement>node.children[i];
-    return n != null && n.dataset.columnid === c.column.id && n.dataset.renderer === c.rendererId;
+    return n != null && n.dataset.columnId === c.column.id && n.dataset.renderer === c.rendererId;
   }
 
   if (columns.every(matches)) {
@@ -108,7 +109,7 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
   //remove all that are not existing anymore
   forEachChild(node, (n: HTMLElement) => {
     const id = n.dataset.columnId;
-    const renderer = n.dataset.rendere;
+    const renderer = n.dataset.renderer;
     const idAndRenderer = `${id}@${renderer}`;
     if (!idsAndRenderer.has(idAndRenderer)) {
       node.removeChild(n);
