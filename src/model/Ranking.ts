@@ -220,13 +220,19 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   toggleSorting(col: Column) {
     const categoricals = this.groupColumns.reduce((acc, d) => acc + (isCategoricalColumn(d) ? 1 : 0), 0);
 
-    if (categoricals <= 0) {
-      const primary = this.getPrimarySortCriteria();
-      if (primary && primary.col === col) {
-        return this.sortBy(col, !primary.asc);
+    { // toggle respecting
+      const first = this.sortCriteria[categoricals];
+      if(first && first.col === col) {
+        const newSort = this.sortCriteria.slice();
+        newSort[categoricals] = {col, asc: !first.asc};
+        return this.setSortCriteria(newSort);
       }
+    }
+
+    if (categoricals <= 0) {
       return this.sortBy(col);
     }
+
 
     // need to preserve synced order
     const old = this.sortCriteria.findIndex((d) => d.col === col);
