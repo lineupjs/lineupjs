@@ -2,7 +2,6 @@
 @import '~lineupengine/src/styles/mixins';
 
 .#{$lu-css_prefix}-row {
-
   .#{$lu_css_prefix}-hover-only,
   .#{$lu_css_prefix}-selection-only {
     visibility: hidden;

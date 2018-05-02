@@ -6,8 +6,8 @@
 
   &::before {
     @include lu_icons();
-    display: inline;
 
+    display: inline;
     content: $lu_icon_square_o;
   }
 }
