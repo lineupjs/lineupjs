@@ -73,7 +73,8 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
   updateWidthRule(style: StyleManager) {
     const mc = this.mc;
-    const widths = mc.children.map((c) => `${round(c.getWidth())}fr`);
+    // need this for chrome to work properly
+    const widths = mc.children.map((c) => `minmax(0, ${round(c.getWidth())}fr)`);
     const clazz = gridClass(this.c);
     style.updateRule(`stacked-${this.c.id}`, `.lineup-engine .${clazz} {
       display: grid;
