@@ -366,12 +366,16 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     const lod = this.roptions.levelOfDetail(rowIndex);
 
+    if (lod === 'high') {
+      delete node.dataset.lod;
+    } else {
+      node.dataset.lod = lod;
+    }
+
     if (lod === 'high' || meta || this.ctx.provider.isSelected(i)) {
       super.createRow(node, rowIndex);
       return;
     }
-    // use canvas
-    node.dataset.lod = lod;
 
     const canvas = this.selectCanvas();
     node.appendChild(canvas);
