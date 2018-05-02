@@ -118,8 +118,9 @@ export default class SidePanel {
     const handleRanking = (ranking: Ranking, added: boolean) => {
       const change = added ? +1 : -1;
       ranking.flatColumns.forEach((col) => {
-        if (this.descs.has(col.desc)) {
-          this.descs.get(col.desc)!.used += change;
+        const entry = this.getDescLike(col.desc);
+        if (entry) {
+          entry.used += change;
         }
       });
 
@@ -137,10 +138,10 @@ export default class SidePanel {
       ranking.on(suffix('.panel', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN), function (this: { type: string }, col) {
         const desc = col.desc;
         const added = this.type === 'addColumn';
-        if (!that.descs.has(desc)) {
+        const entry = that.getDescLike(desc);
+        if (!entry) {
           return;
         }
-        const entry = that.descs.get(desc)!;
         entry.used += added ? +1 : -1;
         that.updateList();
       });
@@ -243,7 +244,7 @@ export default class SidePanel {
     });
     // add rest in ranking order
     ranking.flatColumns.forEach((c) => {
-      if (used.has(c.desc)) {
+      if (used.has(c.desc) || isSupportType(c)) {
         return;
       }
       hierarchy.push(c);
@@ -289,6 +290,19 @@ export default class SidePanel {
 
   }
 
+  private getDescLike(desc: IColumnDesc) {
+    const entry = this.descs.get(desc);
+    if (entry) {
+      return entry;
+    }
+    // composite?
+    const generic = this.options.additionalDescs.find((d) => d.type === desc.type);
+    if (generic) {
+      return this.descs.get(generic) || null;
+    }
+    return null;
+  }
+
   private updateList() {
     if (this.collapsed) {
       return;
@@ -296,7 +310,7 @@ export default class SidePanel {
     const node = this.node.querySelector('main')!;
     const columns = this.prepareListData();
 
-    if (columns.length === 0) {
+    if (columns.length === 0 || this.descs.size === 0) {
       node.innerHTML = '';
       this.descs.forEach((d) => d.destroyVis());
       return;
@@ -305,8 +319,9 @@ export default class SidePanel {
     node.innerHTML = ``;
 
     columns.forEach((col) => {
-      const entry = this.descs.get(col.desc);
+      const entry = this.getDescLike(col.desc);
       if (!entry) {
+        debugger;
         return;
       }
       if (entry.visColumn === col) {

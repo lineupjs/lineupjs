@@ -36,8 +36,12 @@ article.#{$lu_css_prefix}-side-panel-entry {
 
   .#{$lu_css_prefix}-summary {
     margin: 0.5em;
-    height: 50px;
     font-size: small;
+    height: 50px;
+
+    &:empty {
+      display: none;
+    }
 
     &[data-renderer=histogram],
     &[data-renderer=categorical] {
