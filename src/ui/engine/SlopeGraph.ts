@@ -394,7 +394,7 @@ export default class SlopeGraph implements ITableSection {
 
   private render(slopes: Set<ISlope>) {
     const g = <SVGGElement>this.node.firstElementChild!;
-    const width = g.ownerSVGElement.clientWidth;
+    const width = g.ownerSVGElement!.clientWidth;
     const paths = this.matchLength(slopes, g);
 
     const p = this.ctx.provider;
