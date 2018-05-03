@@ -42,7 +42,7 @@ export default class Taggle extends ALineUp {
       const input = <HTMLInputElement>this.spaceFilling.querySelector('input');
       input.onchange = () => {
         const selected = this.spaceFilling.classList.toggle('chosen');
-        this.renderer.switchRule(selected ? spaceFilling : null);
+        self.setTimeout(() => this.renderer.switchRule(selected ? spaceFilling : null));
       };
       if (this.options.overviewMode) {
         input.checked = true;
