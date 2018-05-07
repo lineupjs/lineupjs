@@ -2,6 +2,7 @@ import AEventDispatcher from '../internal/AEventDispatcher';
 import OrderedSet from '../internal/OrderedSet';
 import {IGroupData, IGroupItem, isGroup} from '../model';
 import {IDataProvider} from '../provider/ADataProvider';
+import {rangeSelection} from '../renderer/SelectionRenderer';
 
 interface IPoint {
   x: number;
@@ -115,7 +116,7 @@ export default class SelectionManager extends AEventDispatcher {
       if (evt.shiftKey) {
         const relIndex = parseInt(node.dataset.index!, 10);
         const ranking = node.parentElement!.dataset.ranking!;
-        if (this.rangeSelection(ranking, dataIndex, relIndex, evt.ctrlKey)) {
+        if (rangeSelection(this.ctx.provider, ranking, dataIndex, relIndex, evt.ctrlKey)) {
           return;
         }
       }
@@ -123,18 +124,10 @@ export default class SelectionManager extends AEventDispatcher {
     };
   }
 
-  private rangeSelection(rankingId: string, _dataIndex: number, _relIndex: number, _ctrlKey: boolean) {
-    const ranking = this.ctx.provider.getRankings().find((d) => d.id === rankingId);
-    if (!ranking) { // no known reference
-      return false;
-    }
-    const selection = this.ctx.provider.getSelection();
-    if (selection.length === 0) {
-      return false; // no other
-    }
-    // TODO
-    return false;
-  }
+  /**
+   *
+   */
+
 
   selectRange(rows: { forEach: (c: (item: (IGroupItem | IGroupData)) => void) => void }, additional: boolean = false) {
     const current = new OrderedSet<number>(additional ? this.ctx.provider.getSelection() : []);

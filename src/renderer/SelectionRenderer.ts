@@ -3,6 +3,7 @@ import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {noop} from './utils';
+import {IDataProvider} from '../provider/ADataProvider';
 
 /** @internal */
 export default class SelectionRenderer implements ICellRendererFactory {
@@ -12,13 +13,20 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return col instanceof SelectionColumn;
   }
 
-  create(col: SelectionColumn) {
+  create(col: SelectionColumn, ctx: IRenderContext) {
     return {
       template: `<div></div>`,
-      update: (n: HTMLElement, d: IDataRow) => {
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
+          if (event.shiftKey) {
+            const ranking = col.findMyRanker()!.id;
+            if (rangeSelection(ctx.provider, ranking, d.i, i, event.ctrlKey)) {
+              return;
+            }
+          }
+
           col.toggleValue(d);
         };
       },
@@ -65,4 +73,41 @@ export default class SelectionRenderer implements ICellRendererFactory {
       }
     };
   }
+}
+
+/** @internal */
+export function rangeSelection(provider: IDataProvider, rankingId: string, dataIndex: number, relIndex: number, ctrlKey: boolean) {
+  const ranking = provider.getRankings().find((d) => d.id === rankingId);
+  if (!ranking) { // no known reference
+    return false;
+  }
+  const selection = provider.getSelection();
+  if (selection.length === 0 || selection.includes(dataIndex)) {
+    return false; // no other or deselect
+  }
+  const order = ranking.getOrder();
+  const lookup = new Map(ranking.getOrder().map((d, i) => <[number, number]>[d, i]));
+  const distances = selection.map((d) => {
+    const index = (lookup.has(d) ? lookup.get(d)! : Infinity);
+    return {s: d, index, distance: Math.abs(relIndex - index)};
+  });
+  const nearest = distances.sort((a, b) => a.distance - b.distance)[0]!;
+  if (!isFinite(nearest.distance)) {
+    return false; // all outside
+  }
+  if (!ctrlKey) {
+    selection.splice(0, selection.length);
+    selection.push(nearest.s);
+  }
+  if (nearest.index < relIndex) {
+    for(let i = nearest.index + 1; i <= relIndex; ++i) {
+      selection.push(order[i]);
+    }
+  } else {
+    for(let i = relIndex; i <= nearest.index; ++i) {
+      selection.push(order[i]);
+    }
+  }
+  provider.setSelection(selection);
+  return true;
 }
