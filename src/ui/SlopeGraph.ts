@@ -51,7 +51,6 @@ interface IPos {
   group: IGroup;
 }
 
-/** @internal */
 export enum EMode {
   ITEM = 'item',
   BAND = 'band'

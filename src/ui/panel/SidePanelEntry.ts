@@ -2,7 +2,6 @@ import {default as Column, IColumnDesc} from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
 import SidePanelEntryVis from './SidePanelEntryVis';
 
-/** @internal */
 export default class SidePanelEntry {
   used = 0;
   private vis: SidePanelEntryVis | null = null;

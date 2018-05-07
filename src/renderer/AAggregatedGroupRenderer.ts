@@ -36,4 +36,7 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
   }
 }
 
+/**
+ * @internal
+ */
 export default AAggregatedGroupRenderer;

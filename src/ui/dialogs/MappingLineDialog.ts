@@ -58,7 +58,7 @@ export default class MappingLineDialog extends ADialog {
   }
 }
 
-
+/** @internal */
 export class MappingLine {
   readonly node: SVGGElement;
 
