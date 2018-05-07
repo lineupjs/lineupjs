@@ -14,6 +14,7 @@ import {
 } from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn from './NumberColumn';
+import {IAdvancedBoxPlotData} from '../internal/math';
 
 
 export interface INumbersDesc extends IArrayDesc, IMapAbleDesc {
@@ -62,7 +63,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return this.getRawValue(row);
   }
 
-  getBoxPlotData(row: IDataRow) {
+  getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
     const data = this.getRawValue(row);
     if (data == null) {
       return null;
@@ -74,7 +75,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return this.mapping.getRange(DEFAULT_FORMATTER);
   }
 
-  getRawBoxPlotData(row: IDataRow) {
+  getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
     const data = this.getRawValue(row);
     if (data == null) {
       return null;

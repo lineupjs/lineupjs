@@ -12,6 +12,7 @@ import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn from './NumberColumn';
+import {IAdvancedBoxPlotData} from '../internal/math';
 
 export interface INumberMapDesc extends INumberDesc {
   readonly sort?: EAdvancedSortMethod;
@@ -45,7 +46,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return compareBoxPlot(this, a, b);
   }
 
-  getBoxPlotData(row: IDataRow) {
+  getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
     const data = this.getRawValue(row);
     if (data == null) {
       return null;
@@ -57,7 +58,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return this.mapping.getRange(DEFAULT_FORMATTER);
   }
 
-  getRawBoxPlotData(row: IDataRow) {
+  getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
     const data = this.getRawValue(row);
     if (data == null) {
       return null;
