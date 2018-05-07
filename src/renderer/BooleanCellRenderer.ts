@@ -13,7 +13,7 @@ export default class BooleanCellRenderer extends DefaultCellRenderer {
 
   create(col: Column) {
     const r = super.create(col);
-    r.template = `<div class="lu-center"> </div>`;
+    (<any>r).template = `<div class="lu-center"> </div>`;
     return r;
   }
 }
