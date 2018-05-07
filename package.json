@@ -126,7 +126,7 @@
   "dependencies": {
     "@types/d3-format": "^1.2.2",
     "popper.js": "^1.14.3",
-    "lineupengine": "^1.0.0-alpha.5",
+    "lineupengine": "^1.0.0-alpha.6",
     "reflect-metadata": "^0.1.12"
   }
 }

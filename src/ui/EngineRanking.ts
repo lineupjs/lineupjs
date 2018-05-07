@@ -133,6 +133,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     super(header, body, tableId, style, {mixins: [PrefetchMixin], batchSize: 10});
     Object.assign(this.roptions, roptions);
     body.classList.add('lu-row-body');
+    body.dataset.ranking = ranking.id;
 
     const that = this;
     this.delayedUpdate = debounce((function (this: { type: string, primaryType: string }) {

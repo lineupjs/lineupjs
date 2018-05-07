@@ -111,9 +111,29 @@ export default class SelectionManager extends AEventDispatcher {
 
   add(node: HTMLElement) {
     node.onclick = (evt) => {
-      const i = parseInt(node.dataset.i!, 10);
-      this.ctx.provider.toggleSelection(i, evt.ctrlKey);
+      const dataIndex = parseInt(node.dataset.i!, 10);
+      if (evt.shiftKey) {
+        const relIndex = parseInt(node.dataset.index!, 10);
+        const ranking = node.parentElement!.dataset.ranking!;
+        if (this.rangeSelection(ranking, dataIndex, relIndex, evt.ctrlKey)) {
+          return;
+        }
+      }
+      this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
     };
+  }
+
+  private rangeSelection(rankingId: string, _dataIndex: number, _relIndex: number, _ctrlKey: boolean) {
+    const ranking = this.ctx.provider.getRankings().find((d) => d.id === rankingId);
+    if (!ranking) { // no known reference
+      return false;
+    }
+    const selection = this.ctx.provider.getSelection();
+    if (selection.length === 0) {
+      return false; // no other
+    }
+    // TODO
+    return false;
   }
 
   selectRange(rows: { forEach: (c: (item: (IGroupItem | IGroupData)) => void) => void }, additional: boolean = false) {
