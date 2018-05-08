@@ -31,7 +31,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     rowPadding: 2
   };
 
-  constructor(parent: HTMLElement, public data: DataProvider, options: (Partial<ITaggleOptions> & Readonly<ILineUpOptions>)) {
+  constructor(public data: DataProvider, parent: HTMLElement, options: (Partial<ITaggleOptions> & Readonly<ILineUpOptions>)) {
     super();
 
 

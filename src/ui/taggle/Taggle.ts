@@ -25,7 +25,7 @@ export default class Taggle extends ALineUp {
 
     this.node.classList.add('lu-taggle', 'lu');
 
-    this.renderer = new TaggleRenderer(this.node, data, this.options);
+    this.renderer = new TaggleRenderer(data, this.node, this.options);
     this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
       collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true
     });
