@@ -116,7 +116,7 @@ The application is deployed at [https://lineup.js.org/app](https://lineup.js.org
 React Support (LineUp.jsx)
 --------------------------
 
-A [React](https://reactjs.org/) wrapper is located at [lineupjsx](https://github.com/sgratzl/lineupjsx). 
+A [React](https://reactjs.org/) wrapper is located at [lineupjsx](https://github.com/datavisyn/lineupjsx). 
 
 
 **Installation**
@@ -181,13 +181,13 @@ Result is same as the builder advanced example
 Polymer Support (LineUp-Element)
 --------------------------------
 
-A [Polymer 2.0](https://www.polymer-project.org/) web component wrapper is located at [lineup-element](https://github.com/sgratzl/lineup-element). 
+A [Polymer 2.0](https://www.polymer-project.org/) web component wrapper is located at [lineup-element](https://github.com/datavisyn/lineup-element). 
 
 
 **Installation**
 
 ```bash
-bower install https://github.com/sgratzl/lineup-element
+bower install https://github.com/datavisyn/lineup-element
 ```
 
 ```html
@@ -246,7 +246,7 @@ Result is same as the builder advanced example
 R, RShiny, and R Markdown Support
 ---------------------------------
 
-A [HTMLWidget](http://www.htmlwidgets.org/) wrapper for R is located at [lineup_htmlwidget](https://github.com/sgratzl/lineup_htmlwidget). 
+A [HTMLWidget](http://www.htmlwidgets.org/) wrapper for R is located at [lineup_htmlwidget](https://github.com/datavisyn/lineup_htmlwidget). 
 It can be used within standalone [R Shiny](https://shiny.rstudio.com/) apps or [R Markdown](http://rmarkdown.rstudio.com/) files. Integrated plotting does not work due to an outdated integrated Webkit version in RStudio.
 [Crosstalk](https://rstudio.github.io/crosstalk/) is supported for synching selections and filtering among widgets. 
 
@@ -254,7 +254,7 @@ It can be used within standalone [R Shiny](https://shiny.rstudio.com/) apps or [
 
 ```R
 devtools::install_github("rstudio/crosstalk")
-devtools::install_github("sgratzl/lineup_htmlwidget")
+devtools::install_github("datavisyn/lineup_htmlwidget")
 library(lineup)
 ```
 
@@ -272,19 +272,19 @@ lineup(iris)
 Jupyter Widget (to be released)
 --------------
 
-A [Jupyter Widget](https://jupyter.org/widgets.html) wrapper for Python is located at [lineup_widget](https://github.com/sgratzl/lineup_widget).
+A [Jupyter Widget](https://jupyter.org/widgets.html) wrapper for Python is located at [lineup_widget](https://github.com/datavisyn/lineup_widget).
 
 **Installation**
 
 ```bash
-pip install -e git+https://github.com/sgratzl/lineup_widget.git#egg=lineup_widget
+pip install -e git+https://github.com/datavisyn/lineup_widget.git#egg=lineup_widget
 jupyter nbextension enable --py [--sys-prefix|--user|--system] lineup_widget
 ```
 
 Or, if you use jupyterlab:
 
 ```bash
-pip install -e git+https://github.com/sgratzl/lineup_widget.git#egg=lineup_widget
+pip install -e git+https://github.com/datavisyn/lineup_widget.git#egg=lineup_widget
 jupyter labextension install @jupyter-widgets/jupyterlab-manager
 ```
 
@@ -293,7 +293,7 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 [![Launch Binder][binder-image]][binder-url]
 
 [binder-image]: https://camo.githubusercontent.com/70c5b4d050d4019f4f20b170d75679a9316ac5e5/687474703a2f2f6d7962696e6465722e6f72672f62616467652e737667
-[binder-url]: http://mybinder.org/repo/sgratzl/lineup_widget/examples
+[binder-url]: http://mybinder.org/repo/datavisyn/lineup_widget/examples
 
 
 ```python
@@ -329,7 +329,7 @@ interact(selection_changed, selection=lineup_widget.LineUpWidget(df));
 PowerBI Custom Visual (under development)
 ----------------------------------------
 
-A [PowerBI Visual](https://github.com/Microsoft/PowerBI-Visuals) wrapper is located at [lineup_powerbi](https://github.com/sgratzl/lineup_powerbi).
+A [PowerBI Visual](https://github.com/Microsoft/PowerBI-Visuals) wrapper is located at [lineup_powerbi](https://github.com/datavisyn/lineup_powerbi).
 
 **Installation**
 
@@ -387,7 +387,7 @@ Development Environment
 **Installation**
 
 ```bash
-git clone https://github.com/sgratzl/lineupjs.git -b develop
+git clone https://github.com/datavisyn/lineupjs.git -b develop
 cd lineupjs
 npm install
 ```
@@ -429,10 +429,10 @@ This repository was created as part of the **[The Caleydo Project](http://caleyd
 [npm-url]: https://npmjs.org/package/lineupjs
 [bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
 [bsd-url]: https://opensource.org/licenses/BSD-3-Clause
-[ci-image]: https://circleci.com/gh/sgratzl/lineupjs.svg?style=shield
-[ci-url]: https://circleci.com/gh/sgratzl/lineupjs
-[ci-image-dev]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop.svg?style=shield
-[ci-url-dev]: https://circleci.com/gh/sgratzl/lineupjs/tree/develop
+[ci-image]: https://circleci.com/gh/datavisyn/lineupjs.svg?style=shield
+[ci-url]: https://circleci.com/gh/datavisyn/lineupjs
+[ci-image-dev]: https://circleci.com/gh/datavisyn/lineupjs/tree/develop.svg?style=shield
+[ci-url-dev]: https://circleci.com/gh/datavisyn/lineupjs/tree/develop
 
 
  

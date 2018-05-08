@@ -23,7 +23,7 @@
   ],
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/sgratzl/lineupjs/issues"
+    "url": "https://github.com/datavisyn/lineupjs/issues"
   },
   "homepage": "https://lineup.js.org",
   "main": "build/LineUpJS.js",
@@ -65,7 +65,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sgratzl/lineupjs.git"
+    "url": "https://github.com/datavisyn/lineupjs.git"
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.6",
