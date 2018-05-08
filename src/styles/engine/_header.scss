@@ -1,9 +1,7 @@
 @import '../vars';
 
 section.#{$lu_css_prefix}-header {
-  text-align: center;
   color: black;
-  overflow: unset !important;
   margin-right: -$lu_engine_grip_gap;
   margin-bottom: 15px;
   border-bottom: 1px solid black;
@@ -23,7 +21,7 @@ section.#{$lu_css_prefix}-header {
   }
 
   &:hover {
-    background-color: $lu_hover_header_color !important;
+    background-color: $lu_hover_header_color;
 
     > .#{$lu_css_prefix}-toolbar {
       color: $lu_toolbar_color_base2;
@@ -35,6 +33,7 @@ section.#{$lu_css_prefix}-header {
   }
 
   > .#{$lu_css_prefix}-label {
+    text-align: center;
     padding-left: 0.8em;
     margin-right: $lu-engine_grip_gap;
     font-weight: 500;

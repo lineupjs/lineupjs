@@ -64,6 +64,7 @@
 
   &.#{$lu_css_prefix}-collapsed {
     min-width: 0;
+    transform: unset;
 
     > :not(.#{$lu_css_prefix}-collapser) {
       display: none;
