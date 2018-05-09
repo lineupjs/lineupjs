@@ -55,13 +55,21 @@ export default class AEventDispatcher implements IEventHandler {
   on(type: string | string[], listener?: ((...args: any[]) => any) | null): any {
     if (listener !== undefined) {
       if (Array.isArray(type)) {
-        (<string[]>type).forEach((d) => this.listeners.on(d, listener!));
+        (<string[]>type).forEach((d) => {
+          this.listenersChanged(d, Boolean(listener!));
+          this.listeners.on(d, listener!);
+        });
       } else {
+        this.listenersChanged(<string>type, Boolean(listener!));
         this.listeners.on(<string>type, listener!);
       }
       return this;
     }
     return this.listeners.on(<string>type);
+  }
+
+  protected listenersChanged(_type: string, _active: boolean) {
+    // hook
   }
 
   /**

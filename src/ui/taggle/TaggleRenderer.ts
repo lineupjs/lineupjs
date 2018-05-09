@@ -165,4 +165,8 @@ export default class TaggleRenderer extends AEventDispatcher {
   getHighlight() {
     return this.renderer.getHighlight();
   }
+
+  enableHighlightListening(enable: boolean) {
+    this.renderer.enableHighlightListening(enable);
+  }
 }

@@ -36,6 +36,7 @@ export default class EngineRenderer extends AEventDispatcher {
   private zoomFactor = 1;
   readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
 
+  private enabledHighlightListening: boolean = false;
 
   constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
@@ -257,6 +258,9 @@ export default class EngineRenderer extends AEventDispatcher {
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
     r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
     this.forward(r, EngineRanking.EVENT_HIGHLIGHT_CHANGED);
+    if (this.enabledHighlightListening) {
+      r.enableHighlightListening(true);
+    }
 
     ranking.on(suffix('.renderer', Ranking.EVENT_ORDER_CHANGED), () => this.updateHist(r));
 
@@ -403,6 +407,13 @@ export default class EngineRenderer extends AEventDispatcher {
       }
     }
     return -1;
+  }
+
+  enableHighlightListening(enable: boolean) {
+    for (const ranking of this.rankings) {
+        ranking.enableHighlightListening(enable);
+    }
+    this.enabledHighlightListening = enable;
   }
 
   destroy() {

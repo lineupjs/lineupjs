@@ -105,6 +105,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   };
 
   private readonly highlightHandler = {
+    enabled: false,
     enter: (evt: MouseEvent) => {
       if (this.highlight >= 0) {
         const old = this.body.querySelector('.le-highlighted');
@@ -213,10 +214,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
       column.renderers = this.ctx.createRenderer(column.c);
     });
-
-    this.body.addEventListener('mouseleave', this.highlightHandler.leave, {
-      passive: true
-    });
   }
 
   get id() {
@@ -266,6 +263,15 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return this.canvasPool.pop()!;
     }
     return this.body.ownerDocument.createElement('canvas');
+  }
+
+  private rowFlags(row: HTMLElement) {
+    const rowany: any = row;
+    const v = rowany.__lu__;
+    if (v == null) {
+      return rowany.__lu__ = {};
+    }
+    return v;
   }
 
   private renderRow(canvas: HTMLCanvasElement, index: number) {
@@ -346,9 +352,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   protected createRow(node: HTMLElement, rowIndex: number): void {
     node.classList.add('lu-row');
     this.roptions.customRowUpdate(node, rowIndex);
-    node.addEventListener('mouseenter', this.highlightHandler.enter, {
-      passive: true
-    });
+    if (this.highlightHandler.enabled) {
+      node.addEventListener('mouseenter', this.highlightHandler.enter, {
+        passive: true
+      });
+      this.rowFlags(node).highlight = true;
+    }
 
     const isGroup = this.renderCtx.isGroup(rowIndex);
 
@@ -407,6 +416,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       node.dataset.lod = computedLod;
     }
 
+    if (this.highlightHandler.enabled && !this.rowFlags(node).highlight) {
+      node.addEventListener('mouseenter', this.highlightHandler.enter, {
+        passive: true
+      });
+      this.rowFlags(node).highlight = true;
+    }
+
     node.removeEventListener('mouseenter', this.canvasMouseHandler.enter);
 
     if (isGroup !== wasGroup) {
@@ -463,6 +479,34 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const canvas2 = this.selectCanvas();
     node.appendChild(canvas2);
     this.renderRow(canvas2, rowIndex);
+  }
+
+  enableHighlightListening(enable: boolean) {
+    if (this.highlightHandler.enabled === enable) {
+      return;
+    }
+
+    this.highlightHandler.enabled = enable;
+
+    if (enable) {
+      this.body.addEventListener('mouseleave', this.highlightHandler.leave, {
+        passive: true
+      });
+      super.forEachRow((row) => {
+        row.addEventListener('mouseenter', this.highlightHandler.enter, {
+          passive: true
+        });
+        this.rowFlags(row).highlight = true;
+      });
+      return;
+    }
+
+    this.body.removeEventListener('mouseleave', this.highlightHandler.leave);
+
+    super.forEachRow((row) => {
+      row.removeEventListener('mouseenter', this.highlightHandler.enter);
+      this.rowFlags(row).highlight = false;
+    });
   }
 
   private updateHoveredRow(row: HTMLElement, hover: boolean) {

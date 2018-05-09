@@ -78,6 +78,10 @@ export default class Taggle extends ALineUp {
     return this.renderer.getHighlight();
   }
 
+  protected enableHighlightListening(enable: boolean) {
+    this.renderer.enableHighlightListening(enable);
+  }
+
   setDataProvider(data: DataProvider, dump?: any) {
     super.setDataProvider(data, dump);
     this.renderer.setDataProvider(data);

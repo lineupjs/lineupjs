@@ -62,4 +62,8 @@ export default class LineUp extends ALineUp {
   getHighlight() {
     return this.renderer.getHighlight();
   }
+
+  protected enableHighlightListening(enable: boolean) {
+    this.renderer.enableHighlightListening(enable);
+  }
 }
