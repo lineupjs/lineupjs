@@ -276,6 +276,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private renderRow(canvas: HTMLCanvasElement, index: number) {
     canvas.width = this.width;
+    canvas.style.width = `${this.width}px`;
     canvas.height = CANVAS_HEIGHT;
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;

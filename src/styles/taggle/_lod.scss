@@ -4,6 +4,10 @@
   .lineup-engine {
     /* since the row height should be configurable -> dynamic rule, see TaggleRenderer */
 
+    [data-lod=low][data-agg=detail] > * {
+      overflow: hidden;
+    }
+
     [data-lod=low][data-agg=detail]:not(:hover) {
       &[data-meta~=first] {
         /* change rendering of the first row for a group to show the collapse arrow of `[data-renderer=aggregate]` */
@@ -14,16 +18,16 @@
       .lu-hover-only,
       .lu-selection-only,
       [data-renderer] {
-        display: none !important;
+        visibility: hidden;
       }
 
       [data-renderer=heatmap],
       [data-renderer=catheatmap] {
-        display: block !important;
+        visibility: visible !important;
       }
 
       [data-renderer=aggregate] {
-        display: block !important;
+        visibility: visible !important;
         overflow: visible !important;
 
         &::before {
@@ -34,7 +38,7 @@
       }
 
       [data-renderer=group] {
-        display: block !important;
+        visibility: visible !important;
         overflow: visible !important;
 
         > * {
@@ -45,7 +49,7 @@
       }
 
       [data-renderer=number] {
-        display: block !important;
+        visibility: visible !important;
 
         > * {
           top: 0;
@@ -54,7 +58,7 @@
       }
 
       [data-renderer=boxplot] {
-        display: block !important;
+        visibility: visible !important;
 
         > div {
           height: 100%;
@@ -74,7 +78,7 @@
       }
 
       [data-renderer=upset] {
-        display: block !important;
+        visibility: visible !important;
         align-items: stretch;
 
         > div:first-child {
@@ -93,7 +97,7 @@
 
       [data-renderer=categorical],
       [data-renderer=brightness] {
-        display: block !important;
+        visibility: visible !important;
 
         > div:first-of-type {
           margin-right: 0;
@@ -106,7 +110,7 @@
       }
 
       [data-renderer=dot] {
-        display: block !important;
+        visibility: visible !important;
 
         > div {
           top: 0 !important;

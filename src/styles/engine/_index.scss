@@ -4,9 +4,9 @@ $engine_assets: '~lineupengine/src/assets';
 @import '~lineupengine/src/style';
 
 .lineup-engine {
-  > header > article,
-  > main > article > * {
-    grid-column-gap: $lu_engine_grip_gap;
+  > header .#{$lu_css_prefix}-header,
+  .#{$lu_css_prefix}-row > * {
+    margin-right: $lu_engine_grip_gap;
   }
 }
 

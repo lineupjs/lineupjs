@@ -107,13 +107,13 @@ export default class EngineRenderer extends AEventDispatcher {
         margin-bottom: ${options.groupPadding}px;
        }`);
 
-      this.style.addRule('lineup_rowPadding2', `
-       #${this.idPrefix} .lu-row[data-lod=low] {
+      this.style.addRule('lineup_rowPadding', `
+       #${this.idPrefix} .lu-row[data-lod] {
          padding-top: 0;
        }`);
 
        // padding in general and for hovered low detail rows + their afterwards
-       this.style.addRule('lineup_rowPadding', `
+       this.style.addRule('lineup_rowPadding2', `
         #${this.idPrefix} .lu-row,
         #${this.idPrefix} .lu-row[data-lod]:hover,
         #${this.idPrefix} .lu-row[data-lod].le-highlighted,

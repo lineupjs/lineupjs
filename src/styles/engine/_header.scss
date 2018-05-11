@@ -2,7 +2,6 @@
 
 section.#{$lu_css_prefix}-header {
   color: black;
-  margin-right: -$lu_engine_grip_gap;
   margin-bottom: 15px;
   border-bottom: 1px solid black;
 
@@ -48,7 +47,6 @@ section.#{$lu_css_prefix}-header {
 
   > .#{$lu_css_prefix}-summary {
     height: 2em;
-    margin-right: $lu-engine_grip_gap;
 
     &:empty {
       display: none;
@@ -71,7 +69,7 @@ section.#{$lu_css_prefix}-header {
 
   > .#{$lu_css_prefix}-handle {
     position: absolute;
-    right: 0;
+    right: -$lu-engine_grip_gap;
     width: $lu_engine_grip_gap;
     height: 100%;
     background-color: white;
