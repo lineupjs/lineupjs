@@ -56,5 +56,5 @@ export const AGGREGATE = {
   color: getStyle('lu_aggregate_square_bracket_stroke_color', '#000')
 };
 
-export const SLOPEGRAPH_WIDTH = 200;
+export const SLOPEGRAPH_WIDTH = parseInt(getStyle('lu_slopw_width', '200px'), 10);
 export const CANVAS_HEIGHT = 4;

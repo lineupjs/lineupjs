@@ -16,6 +16,8 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
    */
   static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
+  private highlightListeners = 0;
+
   constructor(public readonly node: HTMLElement, public data: DataProvider) {
     super();
 
@@ -74,6 +76,27 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
 
   abstract getHighlight(): number;
 
+  protected listenersChanged(type: string, enabled: boolean) {
+    super.listenersChanged(type, enabled);
+    if (!type.startsWith(ALineUp.EVENT_HIGHLIGHT_CHANGED)) {
+      return;
+    }
+    if (enabled) {
+      this.highlightListeners += 1;
+      if (this.highlightListeners === 1) { // first
+        this.enableHighlightListening(true);
+      }
+    } else {
+      this.highlightListeners -= 1;
+      if (this.highlightListeners === 0) { // last
+        this.enableHighlightListening(false);
+      }
+    }
+  }
+
+  protected enableHighlightListening(_enable: boolean) {
+    // hook
+  }
 }
 
 export default ALineUp;

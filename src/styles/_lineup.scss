@@ -12,18 +12,22 @@
 
 .#{$lu_css_prefix} {
   position: relative;
-  display: flex;
-  flex-direction: row-reverse;
 
   > aside {
-    flex: 0 0 auto;
+    float: right;
     display: flex;
     flex-direction: column;
     border-left: 1px solid $lu_taggle_border_color;
     border-radius: 0;
+    height: 100%;
   }
 
   > main {
-    flex: 1 1 auto;
+    height: 100%;
+  }
+
+  &::after {
+    content: '';
+    clear: both;
   }
 }

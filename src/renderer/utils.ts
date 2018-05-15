@@ -163,7 +163,13 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
   }
 
   node.style.color = null;
-  node.innerHTML = `${title}<span class="lu-gradient-text" style="color: ${adapt}">${title}</span>`;
+  node.innerText = title;
+
+  const span = node.ownerDocument.createElement('span');
+  span.classList.add('lu-gradient-text');
+  span.style.color = adapt;
+  span.innerText = title;
+  node.appendChild(span);
 }
 
 

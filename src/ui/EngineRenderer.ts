@@ -36,6 +36,7 @@ export default class EngineRenderer extends AEventDispatcher {
   private zoomFactor = 1;
   readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
 
+  private enabledHighlightListening: boolean = false;
 
   constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
@@ -104,15 +105,15 @@ export default class EngineRenderer extends AEventDispatcher {
        #${this.idPrefix} .lu-row[data-agg=group],
        #${this.idPrefix} .lu-row[data-meta~=last] {
         margin-bottom: ${options.groupPadding}px;
-       }`);
+       }`, false);
 
-      this.style.addRule('lineup_rowPadding2', `
-       #${this.idPrefix} .lu-row[data-lod=low] {
+      this.style.addRule('lineup_rowPadding', `
+       #${this.idPrefix} .lu-row[data-lod] {
          padding-top: 0;
-       }`);
+       }`, false);
 
        // padding in general and for hovered low detail rows + their afterwards
-       this.style.addRule('lineup_rowPadding', `
+       this.style.addRule('lineup_rowPadding2', `
         #${this.idPrefix} .lu-row,
         #${this.idPrefix} .lu-row[data-lod]:hover,
         #${this.idPrefix} .lu-row[data-lod].le-highlighted,
@@ -121,7 +122,7 @@ export default class EngineRenderer extends AEventDispatcher {
         #${this.idPrefix} .lu-row[data-lod].le-highlighted + .lu-row,
         #${this.idPrefix} .lu-row[data-lod].lu-selected + .lu-row {
           padding-top: ${options.rowPadding}px;
-        }`);
+        }`, false);
 
       this.style.addRule('lineup_rotation', `
        #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated {
@@ -257,6 +258,9 @@ export default class EngineRenderer extends AEventDispatcher {
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
     r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
     this.forward(r, EngineRanking.EVENT_HIGHLIGHT_CHANGED);
+    if (this.enabledHighlightListening) {
+      r.enableHighlightListening(true);
+    }
 
     ranking.on(suffix('.renderer', Ranking.EVENT_ORDER_CHANGED), () => this.updateHist(r));
 
@@ -310,7 +314,7 @@ export default class EngineRenderer extends AEventDispatcher {
     }
 
     const round2 = (v: number) => round(v, 2);
-    const rowPadding = 0; // 0 since incorporated as padding in the height itself
+    const rowPadding = round2(this.zoomFactor * this.options.rowPadding!);
     const groupPadding = round2(this.zoomFactor * this.options.groupPadding!);
 
     const heightsFor = (ranking: Ranking, data: (IGroupItem | IGroupData)[]) => {
@@ -403,6 +407,13 @@ export default class EngineRenderer extends AEventDispatcher {
       }
     }
     return -1;
+  }
+
+  enableHighlightListening(enable: boolean) {
+    for (const ranking of this.rankings) {
+        ranking.enableHighlightListening(enable);
+    }
+    this.enabledHighlightListening = enable;
   }
 
   destroy() {
