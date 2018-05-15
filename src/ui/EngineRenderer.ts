@@ -314,7 +314,7 @@ export default class EngineRenderer extends AEventDispatcher {
     }
 
     const round2 = (v: number) => round(v, 2);
-    const rowPadding = 0; // 0 since incorporated as padding in the height itself
+    const rowPadding = round2(this.zoomFactor * this.options.rowPadding!);
     const groupPadding = round2(this.zoomFactor * this.options.groupPadding!);
 
     const heightsFor = (ranking: Ranking, data: (IGroupItem | IGroupData)[]) => {

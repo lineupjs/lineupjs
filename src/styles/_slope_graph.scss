@@ -1,6 +1,11 @@
 @import './vars';
 @import './icons/index';
 
+section.#{$lu-css_prefix}-slopegraph {
+  width: $lu_slope_width;
+  position: relative;
+}
+
 section.#{$lu-css_prefix}-slopegraph svg {
   shape-rendering: geometricprecision;
   height: 100%;
@@ -42,6 +47,7 @@ section.#{$lu-css_prefix}-slopegraph-header {
   display: flex;
   padding-top: 1.4em;
   justify-content: center;
+  width: $lu_slope_width;
 
   i {
     padding: 2px 4px;

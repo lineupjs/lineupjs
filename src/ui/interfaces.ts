@@ -6,10 +6,6 @@ import {ISummaryRenderer} from '../renderer/interfaces';
 import {IToolbarAction} from './toolbar';
 import DialogManager from './dialogs/DialogManager';
 
-const isChrome = Boolean((<any>window).chrome);
-export const WEIRD_CANVAS_COLUMN_OFFSET = 0; //isChrome ? 0.25 : 0.2;
-export const WEIRD_CANVAS_ROW_OFFSET = 0;
-
 export interface IRenderInfo {
   type: string;
   label: string;

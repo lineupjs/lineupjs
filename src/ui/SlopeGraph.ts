@@ -68,9 +68,10 @@ export default class SlopeGraph implements ITableSection {
   private rightSlopes: ISlope[][] = [];
   private readonly pool: SVGPathElement[] = [];
 
-  private scrollListener: (() => void) | null = null;
+  private scrollListener: ((act: { top: number, height: number}) => void) | null = null;
 
   readonly width = SLOPEGRAPH_WIDTH;
+  readonly height = 0;
 
   private current: {
     left: (IGroupItem | IGroupData)[];
@@ -80,7 +81,7 @@ export default class SlopeGraph implements ITableSection {
   } | null = null;
   private _mode: EMode = EMode.ITEM;
 
-  constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer, options: Partial<ISlopeGraphOptions> = {}) {
+  constructor(public readonly header: HTMLElement, public readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer, options: Partial<ISlopeGraphOptions> = {}) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add('lu-slopegraph-header');
@@ -100,7 +101,7 @@ export default class SlopeGraph implements ITableSection {
     // use internals from lineup engine
     const scroll = (<any>scroller).__le_scroller__;
     let old: { top: number, height: number} = scroll.asInfo();
-    scroll.push('animation', (act: { top: number, height: number}) => {
+    scroll.push('animation', this.scrollListener = (act: { top: number, height: number}) => {
       if (Math.abs(old.top - act.top) < 5) {
         return;
       }
@@ -165,7 +166,10 @@ export default class SlopeGraph implements ITableSection {
   destroy() {
     this.header.remove();
     if (this.scrollListener) {
-      this.body.parentElement!.removeEventListener('scroll', this.scrollListener);
+      //sync scrolling of header and body
+      // use internals from lineup engine
+      const scroll = (<any>this.body.parentElement!).__le_scroller__;
+      scroll.remove(this.scrollListener);
     }
     this.body.remove();
   }
@@ -211,7 +215,7 @@ export default class SlopeGraph implements ITableSection {
     this.leftSlopes = left.map((r, i) => {
 
       let height = (leftContext.exceptionsLookup.get(i) || leftContext.defaultRowHeight);
-      let padded = height - leftContext.padding(i);
+      let padded = height - 0; //leftContext.padding(i);
       const slopes = <ISlope[]>[];
       const start = acc;
 
@@ -303,7 +307,7 @@ export default class SlopeGraph implements ITableSection {
 
     this.rightSlopes = right.map((r, i) => {
       const height = (rightContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight);
-      const padded = height - rightContext.padding(i);
+      const padded = height - 0; //rightContext.padding(i);
       const start = acc;
       acc += height;
       const slopes = <ISlope[]>[];

@@ -9,7 +9,7 @@ import StackColumn from '../model/StackColumn';
 import {IImposer, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING} from '../styles';
 import {lineupAnimation} from './animation';
-import {IRankingBodyContext, IRankingHeaderContextContainer, WEIRD_CANVAS_COLUMN_OFFSET, WEIRD_CANVAS_ROW_OFFSET} from './interfaces';
+import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
@@ -282,10 +282,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
-    ctx.translate(WEIRD_CANVAS_ROW_OFFSET, 0);
     this.columns.forEach((c) => {
       c.renderCell(ctx, index);
-      const shift = c.width + COLUMN_PADDING + WEIRD_CANVAS_COLUMN_OFFSET; // no idea why this magic 0.5;
+      const shift = c.width + COLUMN_PADDING;
       ctx.translate(shift, 0);
     });
     ctx.restore();
@@ -566,9 +565,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (!column) {
       return false;
     }
-    let x = WEIRD_CANVAS_ROW_OFFSET;
+    let x = 0;
     for (let i = 0; i < index; ++i) {
-      x += columns[i].width + COLUMN_PADDING + WEIRD_CANVAS_COLUMN_OFFSET;
+      x += columns[i].width + COLUMN_PADDING;
     }
     super.forEachRow((row, rowIndex) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
