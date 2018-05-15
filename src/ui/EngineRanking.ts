@@ -202,7 +202,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     // default context
     this.columns = ranking.children.filter((c) => c.isVisible()).map((c, i) => this.createCol(c, i));
-    this.updateCanvasRule();
     this._context = Object.assign({
       columns: this.columns,
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
@@ -311,21 +310,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       c.renderers = this.ctx.createRenderer(c.c);
     });
 
-    this.updateCanvasRule();
-
     this._context = Object.assign({}, this._context, {
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     });
 
     super.recreate();
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
-  }
-
-  private updateCanvasRule() {
-    this.style.updateRule(`__canvas_gap${this.tableId}`, `
-      ${this.style.id}_B${this.tableId} > .lu-row > canvas {
-        grid-column-start: span ${this.columns.length};
-      }`);
   }
 
   updateBody() {
