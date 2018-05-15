@@ -105,12 +105,12 @@ export default class EngineRenderer extends AEventDispatcher {
        #${this.idPrefix} .lu-row[data-agg=group],
        #${this.idPrefix} .lu-row[data-meta~=last] {
         margin-bottom: ${options.groupPadding}px;
-       }`);
+       }`, false);
 
       this.style.addRule('lineup_rowPadding', `
        #${this.idPrefix} .lu-row[data-lod] {
          padding-top: 0;
-       }`);
+       }`, false);
 
        // padding in general and for hovered low detail rows + their afterwards
        this.style.addRule('lineup_rowPadding2', `
@@ -122,7 +122,7 @@ export default class EngineRenderer extends AEventDispatcher {
         #${this.idPrefix} .lu-row[data-lod].le-highlighted + .lu-row,
         #${this.idPrefix} .lu-row[data-lod].lu-selected + .lu-row {
           padding-top: ${options.rowPadding}px;
-        }`);
+        }`, false);
 
       this.style.addRule('lineup_rotation', `
        #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated {

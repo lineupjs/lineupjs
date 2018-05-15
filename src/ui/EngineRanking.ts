@@ -156,6 +156,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ranking.on(`${Ranking.EVENT_ADD_COLUMN}.hist`, (col: Column, index: number) => {
       this.columns.splice(index, 0, this.createCol(col, index));
       this.reindex();
+      this.updateHist(col);
       this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_REMOVE_COLUMN}.body`, (col: Column, index: number) => {
@@ -178,6 +179,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         // become visible
         const index = ranking.children.indexOf(col);
         this.columns.splice(index, 0, this.createCol(col, index));
+        this.updateHist(col);
       } else {
         // hide
         const index = this.columns.findIndex((d) => d.c === col);
