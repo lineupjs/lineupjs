@@ -30,7 +30,7 @@ jobs:
       - run: #update build doc and readme
           name: update api
           command: |
-            if [ "${CIRCLE_BRANCH}" == "develop" ] ; then
+            if [ "${CIRCLE_BRANCH}" == "master" ] ; then
                 git clone git@github.com:datavisyn/lineup.js.org.git
                 cd lineup.js.org
                 rm -rf "${CIRCLE_BRANCH}/"
