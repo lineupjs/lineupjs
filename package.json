@@ -27,17 +27,21 @@
   },
   "homepage": "https://lineup.js.org",
   "main": "build/LineUpJS.js",
-  "jsnext:main": "build/LineUpJs.js",
-  "module": "build/LineUpJs.js",
-  "unpkg": "build/LineUpJs.js",
-  "types": "build/typings/index.d.ts",
+  "jsnext:main": "build/LineUpJS.js",
+  "module": "build/LineUpJS.js",
+  "unpkg": "build/LineUpJS.js",
+  "types": "src/index.d.ts",
+  "sideEffects": [
+    "*.scss",
+    "*.css"
+  ],
   "files": [
     "build",
     "!build/docs",
     "!build/demo",
-    "src/**/*.ts",
-    "src/assets/**/",
-    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.d.ts",
+    "src/assets",
     "src/**/*.scss"
   ],
   "scripts": {
