@@ -5,6 +5,7 @@
   [data-renderer=aggregate] {
     text-align: center;
     position: relative;
+	overflow-x: unset;
 
     &::after {
       content: '';
