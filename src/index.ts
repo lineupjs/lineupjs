@@ -18,6 +18,7 @@ export * from './ui/';
 export * from './interfaces';
 export * from './config';
 export {default} from './ui/LineUp';
+export {IBoxPlotData, IAdvancedBoxPlotData, IStatistics, ICategoricalBin, ICategoricalStatistics, INumberBin} from './internal/math';
 
 
 declare const __VERSION__: string;
