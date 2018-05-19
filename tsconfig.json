@@ -26,7 +26,6 @@
     "stripInternal": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
-    "skipLibCheck": true,
     "esModuleInterop": true
   },
   "compileOnSave": false,
