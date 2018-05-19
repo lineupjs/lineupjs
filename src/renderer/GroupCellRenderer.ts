@@ -16,7 +16,14 @@ export default class GroupCellRenderer implements ICellRendererFactory {
     return {
       template: `<div><div></div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IGroup) {
-        (<HTMLElement>node.firstElementChild!).innerText = i === 0 ? group.name : '';
+        const p = (<HTMLElement>node.firstElementChild!);
+        if (i !== 0) {
+          p.innerText = '';
+        } else if (Array.isArray((<any>group).order)) {
+          p.innerText = `${group.name} (${(<any>group).order.length})`;
+        } else {
+          p.innerText = group.name;
+        }
       },
       render: noop
     };
