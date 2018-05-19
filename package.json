@@ -46,7 +46,7 @@
   ],
   "scripts": {
     "clean": "rimraf build dist && npm run clean:compile",
-    "clean:compile": "rimraf src/**/*.map src/**/*.js tests/**/*.js tests/**/*.map",
+    "clean:compile": "rimraf src/**/*.map src/**/*.js src/**/*.d.ts tests/**/*.js tests/**/*.map tests/**/*.d.ts",
     "compile": "tsc",
     "lint": "tslint --project tsconfig.json -c tslint.json && stylelint src/**/*.scss",
     "docs": "npm run clean:compile && typedoc --out ./build/docs/ src tsd.d.ts",
