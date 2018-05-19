@@ -13,7 +13,7 @@ module.export = {
   stripInternal: true,
   suppressExcessPropertyErrors: true,
   suppressImplicitAnyIndexErrors: true,
-  exclude: '**/*.(test.ts|scss)',
+  exclude: '**/*.(d.ts|js|test.ts|scss)',
   excludePrivate: true,
   excludeProtected: true,
   excludeExternals: true

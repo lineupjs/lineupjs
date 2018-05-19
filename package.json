@@ -45,10 +45,11 @@
     "src/**/*.scss"
   ],
   "scripts": {
-    "clean": "rimraf build dist src/**/*.map src/**/*.js tests/**/*.js tests/**/*.map",
+    "clean": "rimraf build dist && npm run clean:compile",
+    "clean:compile": "rimraf src/**/*.map src/**/*.js tests/**/*.js tests/**/*.map",
     "compile": "tsc",
     "lint": "tslint --project tsconfig.json -c tslint.json && stylelint src/**/*.scss",
-    "docs": "typedoc --out ./build/docs/ src tsd.d.ts",
+    "docs": "npm run clean:compile && typedoc --out ./build/docs/ src tsd.d.ts",
     "prebuild": "npm run clean && (node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test)",
     "pretest": "npm run clean && npm run compile",
     "test": "node -e \"require('fs').existsSync('./tests')?0:1\" || karma start",
