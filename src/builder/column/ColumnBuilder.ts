@@ -4,7 +4,7 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
   protected readonly desc: T;
 
   constructor(type: string, column: string) {
-    this.desc = <any>{column, type, label: column[0].toUpperCase() + column.slice(1)};
+    this.desc = <any>{column, type, label: column ? column[0].toUpperCase() + column.slice(1): type};
   }
 
   label(label: string) {
