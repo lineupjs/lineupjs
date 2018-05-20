@@ -184,8 +184,8 @@ export function buildString(props: IBuilderAdapterStringColumnDescProps): IStrin
 }
 
 export interface IBuilderAdapterActionsColumnDescProps extends IBuilderAdapterColumnDescProps {
-  actions: IAction[];
-  groupActions: IGroupAction[];
+  actions?: IAction[];
+  groupActions?: IGroupAction[];
 }
 
 export function buildActions(props: IBuilderAdapterActionsColumnDescProps): IActionColumnDesc {
