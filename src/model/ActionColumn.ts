@@ -4,14 +4,16 @@ import {IDataRow, IGroup} from './interfaces';
 
 export interface IAction {
   name: string;
-  icon: string;
+  icon?: string;
+  className?: string;
 
   action(row: IDataRow): void;
 }
 
 export interface IGroupAction {
   name: string;
-  icon: string;
+  icon?: string;
+  className?: string;
 
   action(group: IGroup, rows: IDataRow[]): void;
 }

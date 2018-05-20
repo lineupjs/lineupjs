@@ -1,6 +1,8 @@
 import {extent} from 'd3-array';
 import {
   EAdvancedSortMethod,
+  IAction,
+  IGroupAction,
   IArrayDesc,
   ICategoricalColumnDesc,
   ICategory,
@@ -9,7 +11,8 @@ import {
   IHierarchyColumnDesc,
   INumberColumnDesc,
   IPartialCategoryNode,
-  IStringColumnDesc
+  IStringColumnDesc,
+  IActionColumnDesc
 } from '../../model';
 
 export interface IBuilderAdapterColumnDescProps extends Partial<IColumnDesc> {
@@ -28,6 +31,10 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
       desc[key] = props[key];
     }
   });
+
+  if (props.custom) { // merge custom attributes
+    Object.assign(desc, props.custom);
+  }
 
   if (props.asMap) {
     console.assert(['categorical', 'date', 'number', 'string'].includes(desc.type!));
@@ -173,6 +180,22 @@ export function buildString(props: IBuilderAdapterStringColumnDescProps): IStrin
   if (props.html) {
     desc.escape = false;
   }
+  return desc;
+}
+
+export interface IBuilderAdapterActionsColumnDescProps extends IBuilderAdapterColumnDescProps {
+  actions: IAction[];
+  groupActions: IGroupAction[];
+}
+
+export function buildActions(props: IBuilderAdapterActionsColumnDescProps): IActionColumnDesc {
+  const desc: any = build({...props, type: 'actions'});
+
+  (<(keyof IBuilderAdapterActionsColumnDescProps)[]>['actions', 'groupActions']).forEach((key) => {
+    if (props.hasOwnProperty(key)) {
+      desc[key] = props[key];
+    }
+  });
   return desc;
 }
 

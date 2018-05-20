@@ -4,3 +4,4 @@ export * from './NumberColumnBuilder';
 export * from './StringColumnBuilder';
 export * from './DateColumnBuilder';
 export * from './HierarchyColumnBuilder';
+export * from './ActionsColumnBuilder';
