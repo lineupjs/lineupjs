@@ -85,7 +85,7 @@ module.exports = (env, options) => {
                 happyPackMode: true // IMPORTANT! use happyPackMode mode to speed-up  compilation and reduce errors reported to webpack
               }
             }
-          ].slice(process.env.CI ? 2 : 0) // no optimizations for CIs
+          ].slice(process.env.CI || !dev ? 2 : 0) // no optimizations for CIs and in production mode
         },
         {
           test: /\.(png|jpg)$/,
