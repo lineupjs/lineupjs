@@ -1,7 +1,8 @@
 import {computeStats, IStatistics, round} from '../../internal';
 import {
   IMapAbleColumn, IMappingFunction, isMissingValue, noNumberFilter, ScaleMappingFunction,
-  ScriptMappingFunction
+  ScriptMappingFunction,
+  isMapAbleColumn
 } from '../../model';
 import {isDummyNumberFilter} from '../../model/internal';
 import {ISummaryRenderer} from '../../renderer/interfaces';
@@ -71,6 +72,9 @@ export default class MappingsFilterDialog extends ADialog {
   build(node: HTMLElement) {
     node.classList.add('lu-dialog-mapper');
 
+    const r = this.column.findMyRanker();
+    const others = !r ? [] : r.flatColumns.filter((d) => isMapAbleColumn(d) && d !== this.column);
+
     node.insertAdjacentHTML('beforeend', `
         <div><label for="${this.idPrefix}mapping_type"><strong>Mapping / Scaling Type:</strong></label><select id="${this.idPrefix}mapping_type" class="browser-default">
         <option value="linear">Linear</option>
@@ -82,6 +86,7 @@ export default class MappingsFilterDialog extends ADialog {
         <option value="pow3">Pow 3</option>
         <option value="sqrt">Sqrt</option>
         <option value="script">Custom Script</option>
+        ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
       </select>
       </div>
         ${this.summary.template}
@@ -154,6 +159,10 @@ export default class MappingsFilterDialog extends ADialog {
             textarea.value = s.code;
             break;
           default:
+            if (select.value.startsWith('copy_')) {
+              this.copyMapping(select.value.slice('copy_'.length));
+              return;
+            }
             this.scale = new ScaleMappingFunction(this.rawDomain.slice(), select.value);
             break;
         }
@@ -237,6 +246,21 @@ export default class MappingsFilterDialog extends ADialog {
   protected reset() {
     this.scale = this.column.getOriginalMapping();
     this.applyMapping(this.scale, noNumberFilter());
+    this.update();
+    if (this.hist) {
+      this.summary.update(this.find('.lu-summary'), this.hist);
+    }
+    this.updateLines();
+  }
+
+  private copyMapping(columnId: string) {
+    const r = this.column.findMyRanker();
+    if (!r) {
+      return;
+    }
+    const ref = <IMapAbleColumn>r.find(columnId)!;
+    this.scale = ref.getMapping().clone();
+    this.applyMapping(this.scale, ref.getFilter());
     this.update();
     if (this.hist) {
       this.summary.update(this.find('.lu-summary'), this.hist);
