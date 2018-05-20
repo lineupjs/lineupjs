@@ -86,7 +86,10 @@ export default class EngineRenderer extends AEventDispatcher {
           summary,
           singleId: col.getRenderer(),
           groupId: col.getGroupRenderer(),
-          summaryId: col.getSummaryRenderer()
+          summaryId: col.getSummaryRenderer(),
+          singleTemplate: null,
+          groupTemplate: null,
+          summaryTemplate: null
         };
       },
       getPossibleRenderer: (col: Column) => ({

@@ -14,6 +14,9 @@ export interface IRenderers {
   group: IGroupCellRenderer;
   summaryId: string;
   summary: ISummaryRenderer | null;
+  singleTemplate: HTMLElement | null;
+  groupTemplate: HTMLElement | null;
+  summaryTemplate: HTMLElement | null;
 }
 
 export default class RenderColumn implements IColumn {
@@ -35,16 +38,58 @@ export default class RenderColumn implements IColumn {
     return this.flags.disableFrozenColumns ? false : this.c.frozen;
   }
 
+  private singleRenderer() {
+    if (!this.renderers || !this.renderers.single) {
+      return null;
+    }
+    if (this.renderers.singleTemplate)  {
+      return <HTMLElement>this.renderers.singleTemplate.cloneNode(true);
+    }
+    const elem = asElement(this.ctx.document, this.renderers.single.template);
+    elem.dataset.renderer = this.renderers.singleId;
+    elem.dataset.group = 'd';
+
+    this.renderers.singleTemplate = <HTMLElement>elem.cloneNode(true);
+    return elem;
+  }
+
+  private groupRenderer() {
+    if (!this.renderers || !this.renderers.group) {
+      return null;
+    }
+    if (this.renderers.groupTemplate)  {
+      return <HTMLElement>this.renderers.groupTemplate.cloneNode(true);
+    }
+    const elem = asElement(this.ctx.document, this.renderers.group.template);
+    elem.dataset.renderer = this.renderers.groupId;
+    elem.dataset.group = 'g';
+
+    this.renderers.groupTemplate = <HTMLElement>elem.cloneNode(true);
+    return elem;
+  }
+
+  private summaryRenderer() {
+    if (!this.renderers || !this.renderers.summary) {
+      return null;
+    }
+    if (this.renderers.summaryTemplate)  {
+      return <HTMLElement>this.renderers.summaryTemplate.cloneNode(true);
+    }
+    const elem = asElement(this.ctx.document, this.renderers.summary.template);
+    elem.dataset.renderer = this.renderers.summaryId;
+    elem.classList.add('lu-summary');
+    this.renderers.summaryTemplate = <HTMLElement>elem.cloneNode(true);
+    return elem;
+  }
+
   createHeader() {
     const node = createHeader(this.c, this.ctx);
     node.className = `lu-header`;
     node.classList.toggle('frozen', this.frozen);
 
     if (this.renderers && this.renderers.summary) {
-      node.insertAdjacentHTML('beforeend', this.renderers.summary.template);
-      const summary = <HTMLElement>node.lastElementChild!;
-      summary.dataset.renderer = this.renderers.summaryId;
-      summary.classList.add('lu-summary');
+      const summary = this.summaryRenderer()!;
+      node.appendChild(summary);
     }
     this.updateHeader(node);
     return node;
@@ -60,10 +105,7 @@ export default class RenderColumn implements IColumn {
     const currentRenderer = this.renderers.summaryId;
     if (oldRenderer !== currentRenderer) {
       summary.remove();
-      summary.innerHTML = this.renderers.summary.template;
-      summary = <HTMLElement>summary.firstElementChild!;
-      summary.classList.add('lu-summary');
-      summary.dataset.renderer = currentRenderer;
+      summary = this.summaryRenderer()!;
       node.appendChild(summary);
     }
     this.renderers.summary.update(summary, this.ctx.statsOf(<any>this.c));
@@ -71,9 +113,7 @@ export default class RenderColumn implements IColumn {
 
   createCell(index: number) {
     const isGroup = this.ctx.isGroup(index);
-    const node = asElement(this.ctx.document, isGroup ? this.renderers!.group.template : this.renderers!.single.template);
-    node.dataset.renderer = isGroup ? this.renderers!.groupId : this.renderers!.singleId;
-    node.dataset.group = isGroup ? 'g' : 'd';
+    const node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
     this.updateCell(node, index);
     return node;
   }
@@ -87,10 +127,7 @@ export default class RenderColumn implements IColumn {
     const oldGroup = node.dataset.group;
     const currentGroup = (isGroup ? 'g' : 'd');
     if (oldRenderer !== currentRenderer || oldGroup !== currentGroup) {
-      node.innerHTML = isGroup ? this.renderers!.group.template : this.renderers!.single.template;
-      node = <HTMLElement>node.firstElementChild!;
-      node.dataset.renderer = currentRenderer;
-      node.dataset.group = currentGroup;
+      node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
     }
     if (isGroup) {
       const g = this.ctx.getGroup(index);
