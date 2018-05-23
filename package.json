@@ -52,7 +52,7 @@
     "docs": "npm run clean:compile && typedoc --out ./build/docs/ src tsd.d.ts",
     "prebuild": "npm run clean && (node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test)",
     "pretest": "npm run clean && npm run compile",
-    "test": "node -e \"require('fs').existsSync('./tests')?0:1\" || karma start",
+    "test": "node -e \"process.exit(require('fs').existsSync('./tests')?1:0)\" || karma start",
     "posttest": "npm run lint",
     "test:watch": "karma start --autoWatch=true --singleRun=false",
     "build:dev": "webpack --mode development --devtool source-map",
