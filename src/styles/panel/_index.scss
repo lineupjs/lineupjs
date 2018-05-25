@@ -33,7 +33,8 @@
     padding: 1em 0.5em;
 
     span {
-      color: $lu_selected_color;
+      padding: 2px;
+      border: 1px solid $lu_selected_color;
     }
   }
 
