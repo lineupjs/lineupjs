@@ -8,8 +8,9 @@ article.#{$lu_css_prefix}-side-panel-entry {
   > header {
     display: flex;
     align-content: space-between;
+    align-items: center;
     background: $lu_side_panel_bg_color;
-    padding: 0.2em 0.5em;
+    padding: 0.4em 0.5em;
     position: relative;
     font-size: $lu_side_panel_font_size;
     font-weight: 500;
