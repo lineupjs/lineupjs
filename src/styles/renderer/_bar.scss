@@ -15,6 +15,13 @@
     > div {
       height: 100%;
     }
+
+    display: flex;
+    align-items: center;
+
+    > span.#{$lu_css_prefix}-hover-only {
+      position: relative; // required to position .lu-gradient-text
+    }
   }
 }
 
