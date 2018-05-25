@@ -141,7 +141,7 @@ const remove: IToolbarAction = {
   }
 };
 
-const stratify = ui('Stratify', (col, _evt, ctx, level) => {
+const stratify = ui('Group by Category', (col, _evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
   col.groupByMe();
 }, { shortcut: true, order: 2 });
@@ -166,9 +166,9 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3 }),
   sortNumbers: uiDialog('Sort by &hellip;', SortDialog),
   sortDates: uiDialog('Sort by &hellip;', SortDateDialog),
-  sortNumbersGroup: uiDialog('Sort Group by &hellip;', SortDialog),
-  sortGroup: uiDialog('Sort Group by &hellip;', SortGroupDialog, () => [], { shortcut: true, order: 1 }),
-  stratifyThreshold: uiDialog('Stratify by Threshold &hellip;', StratifyThresholdDialog, () => [], {
+  sortNumbersGroup: uiDialog('Sort Groups by &hellip;', SortDialog),
+  sortGroup: uiDialog('Sort Groups by &hellip;', SortGroupDialog, () => [], { shortcut: true, order: 1 }),
+  stratifyThreshold: uiDialog('Group by Threshold &hellip;', StratifyThresholdDialog, () => [], {
     shortcut: true,
     order: 2
   }),
