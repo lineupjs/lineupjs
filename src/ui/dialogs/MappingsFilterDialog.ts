@@ -76,7 +76,7 @@ export default class MappingsFilterDialog extends ADialog {
     const others = !r ? [] : r.flatColumns.filter((d) => isMapAbleColumn(d) && d !== this.column);
 
     node.insertAdjacentHTML('beforeend', `
-        <div><label for="${this.idPrefix}mapping_type"><strong>Mapping / Scaling Type:</strong></label><select id="${this.idPrefix}mapping_type" class="browser-default">
+        <div><label for="${this.idPrefix}mapping_type"><strong>Scaling:</strong></label><select id="${this.idPrefix}mapping_type" class="browser-default">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
