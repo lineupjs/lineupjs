@@ -78,7 +78,7 @@ export function toCategories(desc: ICategoricalDesc) {
   }
   const nextColor = colorPool();
   const l = desc.categories.length - 1;
-  const cats = desc.categories.map((cat, i) => toCategory(cat, i / l, nextColor));
+  const cats = desc.categories.filter((cat) => cat !== null).map((cat, i) => toCategory(cat, i / l, nextColor));
   return cats.sort(compareCategory);
 }
 
