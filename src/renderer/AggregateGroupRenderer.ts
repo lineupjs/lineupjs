@@ -1,25 +1,10 @@
+import {IDataRow, IGroup} from '../model';
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
-import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
-import {ICanvasRenderContext} from './RendererContexts';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {clipText} from '../utils';
-import ICellRendererFactory from './ICellRendererFactory';
-import {IGroup} from '../model/Group';
 import Column from '../model/Column';
+import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
-function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroupColumn, context: ICanvasRenderContext) {
-  const width = context.colWidth(col);
-  const bak = ctx.font;
-  const bakAlign = ctx.textAlign;
-  ctx.textAlign = 'center';
-  ctx.font = '10pt FontAwesome';
-  //aggregate
-  clipText(ctx, icon, width / 2, 0, width, context.textHints);
-  ctx.font = bak;
-  ctx.textAlign = bakAlign;
-}
-
+/** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
@@ -27,7 +12,8 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return col instanceof AggregateGroupColumn;
   }
 
-  createDOM(col: AggregateGroupColumn): IDOMCellRenderer {
+  create(col: AggregateGroupColumn, context: IRenderContext) {
+    const width = context.colWidth(col);
     return {
       template: `<div title="Collapse Group"></div>`,
       update(node: HTMLElement, _row: IDataRow, _i: number, group: IGroup) {
@@ -36,11 +22,15 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           event.stopPropagation();
           col.setAggregated(group, true);
         };
+      },
+      render: (ctx: CanvasRenderingContext2D) => {
+        ctx.fillStyle = AGGREGATE.color;
+        ctx.fillRect(width - AGGREGATE.width, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
       }
     };
   }
 
-  createGroupDOM(col: AggregateGroupColumn): IDOMGroupRenderer {
+  createGroup(col: AggregateGroupColumn) {
     return {
       template: `<div title="Expand Group"></div>`,
       update(node: HTMLElement, group: IGroup) {
@@ -53,17 +43,26 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: AggregateGroupColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, _d: IDataRow, i: number) => {
-      if (i === 0) { //just for the first in each group
-        render(ctx, '\uf0d7', col, context); //fa-caret-down
-      }
-    };
-  }
+  createSummary(col: AggregateGroupColumn, context: IRenderContext) {
+    return {
+      template: `<div title="(Un)Aggregate All" data-icon="caret-down"></div>`,
+      update: (node: HTMLElement) => {
+        const ranking = col.findMyRanker();
+        const right = Boolean(ranking && ranking.getGroups().every((g) => col.isAggregated(g)));
 
-  createGroupCanvas(col: AggregateGroupColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    return (ctx: CanvasRenderingContext2D) => {
-      render(ctx, '\uf0da', col, context);  //fa-caret-right
+        node.dataset.icon = right ? 'caret-right' : 'caret-down';
+
+        node.onclick = (evt) => {
+          evt.stopPropagation();
+          const ranking = col.findMyRanker();
+          if (!ranking || !context) {
+            return;
+          }
+          const aggregate = node.dataset.icon === 'caret-down';
+          node.dataset.icon = aggregate ? 'caret-right' : 'caret-down';
+          context.provider.aggregateAllOf(ranking, aggregate);
+        };
+      }
     };
   }
 }

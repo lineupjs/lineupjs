@@ -1,14 +1,21 @@
 @import '../vars';
 
 [data-agg=group] [data-renderer=categorical],
+.#{$lu_css_prefix}-summary[data-renderer=categorical],
+.#{$lu_css_prefix}-summary[data-renderer=interleaving],
 [data-renderer=histogram] {
   display: flex;
-  font-size: x-small;
+  flex-direction: row;
 
-  > * {
+  > div {
     flex: 1 1 auto;
     position: relative;
     margin: 0 1px;
+    font-size: x-small;
+
+    &[data-filtered=filtered] {
+      opacity: 0.2;
+    }
 
     > div {
       position: absolute;
@@ -16,7 +23,6 @@
       bottom: 0;
       height: 0;
       width: 100%;
-      transition: height 0.5s linear;
     }
 
     > .#{$lu_css_prefix}-selected {
@@ -24,7 +30,128 @@
     }
   }
 
-  &.#{$lu_css_prefix}-dense > * {
-    margin: 0;
+  &[data-interactive] > div {
+    cursor: pointer;
+  }
+
+  .#{$lu_css_prefix}-checkbox {
+    position: absolute;
+    bottom: -3.5em;
+  }
+
+  &.#{$lu_css_prefix}-dense {
+    > div {
+      margin: 0;
+    }
+  }
+
+  > span {
+    @include user_select_none();
+
+    position: absolute;
+    bottom: -15px;
+    pointer-events: none;
+    line-height: 100%;
+
+    /*
+     * create axis tick as background image and position it left or right
+     */
+    background-image: linear-gradient(to bottom, #000 3px, transparent);
+    background-repeat: no-repeat;
+    background-size: 1px 3px;
+    padding-top: 5px;
+
+    &:first-of-type {
+      left: 0;
+      background-position: left top;
+    }
+
+    &:last-of-type {
+      right: 0;
+      text-align: right;
+      background-position: right top;
+    }
+  }
+}
+
+[data-renderer=categorical],
+[data-renderer=histogram],
+[data-renderer=interleaving],
+[data-renderer=heatmap],
+[data-renderer=catheatmap] {
+  &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
+    content: attr(data-title);
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+}
+
+[data-interactive][data-renderer=histogram] {
+  margin-bottom: 2.75em;
+  position: relative;
+
+  > [data-handle=min],
+  > [data-handle=max] {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-right: 1px solid black;
+    transition: border-width 0.2s ease;
+    width: 1px;
+    cursor: ew-resize;
+
+    &::before {
+      content: attr(data-value);
+      position: absolute;
+      bottom: -15px;
+      width: 5em;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  > [data-handle=max] {
+    right: 0;
+    border-right: none;
+    border-left: 1px solid black;
+
+    &::before {
+      left: -5em;
+      text-align: right;
+    }
+  }
+
+  &:hover {
+    > [data-handle=min] {
+      border-right-width: 5px;
+    }
+
+    > [data-handle=max] {
+      border-left-width: 5px;
+    }
+  }
+
+  > [data-handle$=hint] {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
+
+    &[data-handle=max-hint] {
+      right: 0;
+    }
+  }
+
+  .#{$lu_css_prefix}-checkbox {
+    position: absolute;
+    bottom: -3.5em;
   }
 }

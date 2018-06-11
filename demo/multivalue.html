@@ -2,34 +2,18 @@
 <html>
 <head lang="en">
   <meta charset="UTF-8">
-  <title>LineUp alpha</title>
+  <title>LineUp MultiValue Test</title>
 
-  <link href="../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
-  <link href="../../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
-
-  <link href="../build/style.css" rel="stylesheet">
-
-  <style>
-    .lu {
-      clear: both;
-      position: absolute;
-      top: 1px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0;
-    }
-
-  </style>
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
-<script src="../node_modules/d3/d3.js"></script>
-<script src="../../node_modules/d3/d3.js"></script>
-<script src="../build/LineUpJS.js"></script>
-<script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
 
-window.onload = function () {
-  d3.json('./multivalue.json', (data) => {
+<script>
+  window.onload = function () {
+  fetch('./multivalue.json' + location.search).then((r) => r.json()).then((data)  => {
 
     const years = [2012, 2013, 2014, 2015];
     const groups = ['pi_score', 'eco_score', 'eo_score', 'health_score', 'ss_score', 'pf_score', 'sk_score'];
@@ -42,15 +26,15 @@ window.onload = function () {
 
     const desc = [
       {label: 'Country', type: 'string', column: 'country'},
-      {label: 'ISO', type: 'string', column: 'iso'},
-      {label: 'Region', type: 'categorical', column: 'region', categories: Array.from(new Set(data.map((d) => d.region)))},
-      {label: 'PI Region', type: 'categorical', column: 'piregion', categories: Array.from(new Set(data.map((d) => d.piregion)))},
-    ].concat(...groups.map((group, i) => {
-      return  ['boxplot', 'threshold', 'sparkline', 'numbers', 'verticalbar'].map((rendererType) => ({
+      // {label: 'ISO', type: 'string', column: 'iso'},
+      // {label: 'Region', type: 'categorical', column: 'region', categories: Array.from(new Set(data.map((d) => d.region)))},
+      // {label: 'PI Region', type: 'categorical', column: 'piregion', categories: Array.from(new Set(data.map((d) => d.piregion)))},
+    ].concat(...groups.slice(0, 1).map((group, i) => {
+      return  ['boxplot', 'threshold', 'sparkline', 'numbers', 'verticalbar', 'table'].map((renderer) => ({
         label: group,
         type: 'numbers',
         dataLength: years.length,
-        rendererType,
+        renderer,
         column: group,
         domain: d3.extent([].concat(...data.map((d) => d[group])))
       }));
@@ -62,17 +46,13 @@ window.onload = function () {
       type: 'booleans',
       column: groups[0],
       dataLength: years.length,
-      accessor: (row) => row[groups[0]].map((d) => d >= 0)
+      accessor: (row) => (row.v[groups[0]] || []).map((d) => d >= 0)
     });
 
-    const p = LineUpJS.createLocalStorage(data, desc);
+    const p = new LineUpJS.LocalDataProvider(data, desc);
     p.deriveDefault();
 
-    const lineup = LineUpJS.create(p, document.body, {
-      body: {
-        renderer: 'engine',
-      },
-    });
+    const lineup = new LineUpJS.LineUp(document.body, p, { expandLineOnHover: true});
     lineup.update();
   })
 };

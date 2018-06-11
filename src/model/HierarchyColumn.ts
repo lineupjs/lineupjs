@@ -1,60 +1,56 @@
-/**
- * Created by Samuel Gratzl on 28.06.2017.
- */
-import {scale} from 'd3';
+import {Category, toolbar} from './annotations';
+import CategoricalColumn from './CategoricalColumn';
 import Column from './Column';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import StringColumn from './StringColumn';
 import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
-import {FIRST_IS_NAN, missingGroup} from './missing';
+import {IDataRow, IGroup} from './interfaces';
+import {colorPool} from './internal';
+import {missingGroup} from './missing';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface ICategoryNode extends ICategory {
-  readonly children: ICategoryNode[];
+  children: Readonly<ICategoryNode>[];
+}
+
+export interface IPartialCategoryNode extends Partial<ICategory> {
+  children: IPartialCategoryNode[];
 }
 
 export interface IHierarchyDesc {
-  /**
-   * separator to split  multi value
-   * @defualt ;
-   */
-  separator?: string;
-  readonly hierarchy: ICategoryNode;
-  readonly hierarchySeparator?: string;
+  hierarchy: IPartialCategoryNode;
+  hierarchySeparator?: string;
 }
 
 export declare type IHierarchyColumnDesc = IHierarchyDesc & IValueColumnDesc<string>;
 
-export interface ICategoryInternalNode {
-  readonly path: string;
-  readonly name: string;
-  readonly label: string;
-  readonly color: string;
-  readonly children: ICategoryInternalNode[];
+export interface ICategoryInternalNode extends ICategory {
+  path: string;
+  children: Readonly<ICategoryInternalNode>[];
+}
+
+export interface ICutOffNode {
+  node: Readonly<ICategoryInternalNode>;
+  maxDepth: number;
 }
 
 /**
  * column for hierarchical categorical values
  */
+@toolbar('cutoff', 'stratify')
+@Category('categorical')
 export default class HierarchyColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_CUTOFF_CHANGED = 'cutOffChanged';
 
   private readonly hierarchySeparator: string;
-  readonly hierarchy: ICategoryInternalNode;
+  readonly hierarchy: Readonly<ICategoryInternalNode>;
 
-  private currentNode: ICategoryInternalNode;
+  private currentNode: Readonly<ICategoryInternalNode>;
   private currentMaxDepth: number = Infinity;
-  private currentLeaves: ICategoryInternalNode[] = [];
-  private readonly currentLeavesNameCache = new Map<string, ICategoryInternalNode>();
-  private readonly currentLeavesPathCache = new Map<string, ICategoryInternalNode>();
-  /**
-   * split multiple categories
-   * @type {string}
-   */
-  private separator = ';';
+  private currentLeaves: Readonly<ICategoryInternalNode>[] = [];
+  private readonly currentLeavesNameCache = new Map<string, Readonly<ICategoryInternalNode>>();
+  private readonly currentLeavesPathCache = new Map<string, Readonly<ICategoryInternalNode>>();
 
-  constructor(id: string, desc: IHierarchyColumnDesc) {
+  constructor(id: string, desc: Readonly<IHierarchyColumnDesc>) {
     super(id, desc);
-    this.separator = desc.separator || this.separator;
     this.hierarchySeparator = desc.hierarchySeparator || '.';
     this.hierarchy = this.initHierarchy(desc.hierarchy);
     this.currentNode = this.hierarchy;
@@ -64,160 +60,133 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.setDefaultRenderer('categorical');
   }
 
-  initHierarchy(root: ICategoryNode) {
-    const colors = scale.category10().range().slice();
+  private initHierarchy(root: IPartialCategoryNode) {
+    const colors = colorPool();
     const s = this.hierarchySeparator;
-    const add = (prefix: string, node: ICategoryNode): ICategoryInternalNode => {
-      const name = node.name === undefined ? node.value : node.name;
-      let lastColorUsed = -1;
-      const children = (node.children || []).map((child: ICategoryNode | string): ICategoryInternalNode => {
+    const add = (prefix: string, node: IPartialCategoryNode): ICategoryInternalNode => {
+      const name = node.name == null ? String(node.value) : node.name;
+      const children = (node.children || []).map((child: IPartialCategoryNode | string): ICategoryInternalNode => {
         if (typeof child === 'string') {
           const path = prefix + child;
           return {
             path,
             name: child,
             label: path,
-            color: colors[(lastColorUsed++) % colors.length]!,
+            color: colors(),
+            value: 0,
             children: []
           };
         }
         const r = add(`${prefix}${name}${s}`, child);
         if (!r.color) {
           //hack to inject the next color
-          (<any>r).color = colors[(lastColorUsed++) % colors.length];
+          (<any>r).color = colors();
         }
         return r;
       });
       const path = prefix + name;
       const label = node.label ? `${node.label}` : path;
-      return {path, name, children, label, color: node.color!};
+      return {path, name, children, label, color: node.color!, value: 0};
     };
     return add('', root);
+  }
+
+  get categories() {
+    return this.currentLeaves;
   }
 
   protected createEventList() {
     return super.createEventList().concat([HierarchyColumn.EVENT_CUTOFF_CHANGED]);
   }
 
-  get categories() {
-    return this.currentLeaves.map((c) => c.name);
-  }
-
-  get categoryLabels() {
-    return this.currentLeaves.map((c) => c.label);
-  }
-
-  get categoryColors() {
-    return this.currentLeaves.map((c) => c.color);
-  }
-
-  getCutOff() {
+  getCutOff(): ICutOffNode {
     return {
       node: this.currentNode,
       maxDepth: this.currentMaxDepth
     };
   }
 
-  setCutOff(node: ICategoryInternalNode, maxDepth: number = Infinity) {
-    if (this.currentNode === node && this.currentMaxDepth === maxDepth) {
+  setCutOff(value: ICutOffNode) {
+    const maxDepth = value.maxDepth == null ? Infinity : value.maxDepth;
+    if (this.currentNode === value.node && this.currentMaxDepth === maxDepth) {
       return;
     }
     const bak = this.getCutOff();
-    this.currentNode = node;
+    this.currentNode = value.node;
     this.currentMaxDepth = maxDepth;
-    this.currentLeaves = computeLeaves(node, maxDepth);
+    this.currentLeaves = computeLeaves(value.node, maxDepth);
     this.updateCaches();
-    this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
+    this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
   }
 
-  private resolveCategories(row: any, index: number): ICategoryInternalNode[] {
-    const base: string = StringColumn.prototype.getValue.call(this, row, index);
-    if (base === null || base === '') {
-      return [];
+  getCategory(row: IDataRow) {
+    let v = super.getValue(row);
+    if (v == null || v === '') {
+      return null;
     }
-    return <ICategoryInternalNode[]>base.split(this.separator).map((v) => {
-      v = v.trim();
-      if (this.currentLeavesNameCache.has(v)) {
-        return this.currentLeavesNameCache.get(v);
-      }
-      if (this.currentLeavesPathCache.has(v)) {
-        return this.currentLeavesPathCache.get(v);
-      }
-      return this.currentLeaves.find((n) => {
-        //direct hit or is a child of it
-        return n.path === v || n.name === v || v.startsWith(n.path + this.hierarchySeparator);
-      });
-    }).filter((v) => Boolean(v));
-  }
-
-  private resolveCategory(row: any, index: number) {
-    const base = this.resolveCategories(row, index);
-    return base.length > 0 ? base[0]: null;
-  }
-
-  getValue(row: any, index: number) {
-    const base = this.getValues(row, index);
-    return base.length > 0 ? base[0]: null;
-  }
-
-  getValues(row: any, index: number) {
-    const base = this.resolveCategories(row, index);
-    return base.map((d) => d.name);
-  }
-
-  getLabel(row: any, index: number) {
-    return this.getLabels(row, index).join(this.separator);
-  }
-
-  getLabels(row: any, index: number) {
-    const base = this.resolveCategories(row, index);
-    return base.map((d) => d.label);
-  }
-
-  getFirstLabel(row: any, index: number) {
-    const l = this.getLabels(row, index);
-    return l.length > 0 ? l[0] : null;
-  }
-
-  getCategories(row: any, index: number) {
-    return this.getValues(row, index);
-  }
-
-  getColor(row: any, index: number) {
-    const base = this.resolveCategory(row, index);
-    return base ? base.color : null;
-  }
-
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const va = this.resolveCategories(a, aIndex);
-    const vb = this.resolveCategories(b, bIndex);
-    if (va.length === 0) {
-      // missing
-      return vb.length === 0 ? 0 : FIRST_IS_NAN;
+    v = v.trim();
+    if (this.currentLeavesNameCache.has(v)) {
+      return this.currentLeavesNameCache.get(v)!;
     }
-    if (vb.length === 0) {
-      return FIRST_IS_NAN * -1;
+    if (this.currentLeavesPathCache.has(v)) {
+      return this.currentLeavesPathCache.get(v)!;
     }
-    //check all categories
-    for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
-      const ci = va[i].path.localeCompare(vb[i].path);
-      if (ci !== 0) {
-        return ci;
-      }
-    }
-    //smaller length wins
-    return va.length - vb.length;
+    return this.currentLeaves.find((n) => {
+      //direct hit or is a child of it
+      return n.path === v || n.name === v || v!.startsWith(n.path + this.hierarchySeparator);
+    }) || null;
   }
 
-  group(row: any, index: number) {
-    if (this.isMissing(row, index)) {
+  get dataLength() {
+    return this.currentLeaves.length;
+  }
+
+  get labels() {
+    return this.currentLeaves.map((d) => d.label);
+  }
+
+  getValue(row: IDataRow) {
+    const v = this.getCategory(row);
+    return v ? v.name : null;
+  }
+
+  getLabel(row: IDataRow) {
+    return CategoricalColumn.prototype.getLabel.call(this, row);
+  }
+
+  getLabels(row: IDataRow) {
+    return CategoricalColumn.prototype.getLabels.call(this, row);
+  }
+
+  getValues(row: IDataRow) {
+    return CategoricalColumn.prototype.getValues.call(this, row);
+  }
+
+  getMap(row: IDataRow) {
+    return CategoricalColumn.prototype.getMap.call(this, row);
+  }
+
+  getMapLabel(row: IDataRow) {
+    return CategoricalColumn.prototype.getMapLabel.call(this, row);
+  }
+
+  getSet(row: IDataRow) {
+    return CategoricalColumn.prototype.getSet.call(this, row);
+  }
+
+  compare(a: IDataRow, b: IDataRow) {
+    return CategoricalColumn.prototype.compare.call(this, a, b);
+  }
+
+  group(row: IDataRow): IGroup {
+    if (this.isMissing(row)) {
       return missingGroup;
     }
-    const base = this.resolveCategory(row, index);
+    const base = this.getCategory(row);
     if (!base) {
-      return super.group(row, index);
+      return super.group(row);
     }
-    return {name: base.name, color: base.color};
+    return {name: base.label, color: base.color};
   }
 
   private updateCaches() {
@@ -258,7 +227,7 @@ export function resolveInnerNodes(node: ICategoryInternalNode) {
   return queue;
 }
 
-export function isHierarchical(categories: (string|ICategory)[]) {
+export function isHierarchical(categories: (string | Partial<ICategory>)[]) {
   if (categories.length === 0 || typeof categories[0] === 'string') {
     return false;
   }
@@ -266,17 +235,23 @@ export function isHierarchical(categories: (string|ICategory)[]) {
   return categories.some((c) => (<any>c).parent != null);
 }
 
-export function deriveHierarchy(categories: (ICategory&{parent: string|null})[]) {
+export function deriveHierarchy(categories: (Partial<ICategory> & { parent: string | null })[]) {
   const lookup = new Map<string, ICategoryNode>();
   categories.forEach((c) => {
     const p = c.parent || '';
     // set and fill up proxy
-    const item = Object.assign({ children: []}, lookup.get(c.name) || {}, c);
-    lookup.set(c.name, item);
+    const item = Object.assign(<ICategoryNode>{
+      children: [],
+      label: c.name!,
+      name: c.name!,
+      color: Column.DEFAULT_COLOR,
+      value: 0
+    }, lookup.get(c.name!) || {}, c);
+    lookup.set(c.name!, item);
 
     if (!lookup.has(p)) {
       // create proxy
-      lookup.set(p, {name: p, children: []});
+      lookup.set(p, {name: p, children: [], label: p, value: 0, color: Column.DEFAULT_COLOR});
     }
     lookup.get(p)!.children.push(item);
   });

@@ -1,21 +1,19 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
+import {Category, SupportType} from './annotations';
 import Column, {IColumnDesc} from './Column';
-import {IGroup} from './Group';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from './interfaces';
 
 export interface IAction {
   name: string;
-  icon: string;
+  icon?: string;
+  className?: string;
 
-  action(v: any, dataIndex: number): void;
+  action(row: IDataRow): void;
 }
 
 export interface IGroupAction {
   name: string;
-  icon: string;
+  icon?: string;
+  className?: string;
 
   action(group: IGroup, rows: IDataRow[]): void;
 }
@@ -27,13 +25,13 @@ export interface IGroupAction {
  * @param groupActions
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label = 'actions', actions: IAction[] = [], groupActions: IGroupAction[] = []) {
-  return {type: 'actions', label, actions, groupActions};
+export function createActionDesc(label = 'actions', actions: Readonly<IAction>[] = [], groupActions: Readonly<IGroupAction>[] = []) {
+  return {type: 'actions', label, actions, groupActions, fixed: true};
 }
 
 export interface IActionDesc {
-  actions?: IAction[];
-  groupActions?: IGroupAction[];
+  actions?: Readonly<IAction>[];
+  groupActions?: Readonly<IGroupAction>[];
 }
 
 export declare type IActionColumnDesc = IColumnDesc & IActionDesc;
@@ -41,12 +39,14 @@ export declare type IActionColumnDesc = IColumnDesc & IActionDesc;
 /**
  * a default column with no values
  */
+@SupportType()
+@Category('support')
 export default class ActionColumn extends Column {
 
   readonly actions: IAction[];
   readonly groupActions: IGroupAction[];
 
-  constructor(id: string, desc: IActionColumnDesc) {
+  constructor(id: string, desc: Readonly<IActionColumnDesc>) {
     super(id, desc);
 
     this.actions = desc.actions || [];

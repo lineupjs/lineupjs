@@ -2,39 +2,22 @@
 <html>
 <head lang="en">
   <meta charset="UTF-8">
-  <title>LineUp alpha</title>
+  <title>LineUp Grouping Test</title>
 
-  <link href="../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
-  <link href="../../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
-
-  <link href="../build/LineUpJS.css" rel="stylesheet">
-
-  <style>
-    .lu {
-      clear: both;
-      position: absolute;
-      top: 1px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0;
-      overflow: auto;
-    }
-
-  </style>
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
-<script src="../node_modules/d3/d3.js"></script>
-<script src="../../node_modules/d3/d3.js"></script>
-<script src="../build/LineUpJS.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
 
 <script>
-  (function () {
+  window.onload = function () {
     const arr = [];
     const cats = ['c1', 'c2', 'c3'];
     for (let i = 0; i < 100; ++i) {
       arr.push({
-        a: Math.random() *10,
+        a: Math.random() * 10,
         d: 'Row ' + i,
         cat: cats[Math.floor(Math.random() * 3)],
         cat2: cats[Math.floor(Math.random() * 3)]
@@ -61,24 +44,17 @@
       }
     ];
 
-    const p = LineUpJS.createLocalStorage(arr, desc, { grouping: true});
+    const p = new LineUpJS.LocalDataProvider(arr, desc, {grouping: true});
     p.deriveDefault();
-    p.getLastRanking().insert(p.create({ type: 'selection', label: 'S'}), 0);
-    p.getLastRanking().insert(p.create({ type: 'aggregate', label: 'A'}), 0);
+    p.getLastRanking().insert(p.create({type: 'selection', label: 'S'}), 0);
+    p.getLastRanking().insert(p.create({type: 'aggregate', label: 'A'}), 0);
     p.getLastRanking().push(p.create(desc[1]));
 
     p.pushRanking(p.getLastRanking());
 
-    const instance = LineUpJS.create(p, document.body, {
-      header: {
-        summary: true
-      },
-      body: {
-        renderer: 'engine'
-      }
-    });
+    const instance = new LineUpJS.LineUp(document.body, p);
     instance.update();
-  })();
+  };
 </script>
 
 </body>

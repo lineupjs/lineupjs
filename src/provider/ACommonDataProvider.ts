@@ -1,11 +1,7 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import {createRankDesc, IColumnDesc} from '../model';
+import {createAggregateDesc, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, isSupportType} from '../model';
+import {IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
-import {IOrderedGroup} from '../model/Group';
 
 
 function isComplexAccessor(column: any) {
@@ -14,6 +10,9 @@ function isComplexAccessor(column: any) {
 }
 
 function resolveComplex(column: string, row: any) {
+  if (row.hasOwnProperty(column)) { // well complex but a direct hit
+    return row[column];
+  }
   const resolve = (obj: any, col: string) => {
     if (obj === undefined) {
       return obj; // propagate invalid values
@@ -26,12 +25,12 @@ function resolveComplex(column: string, row: any) {
   return column.split('.').reduce(resolve, row);
 }
 
-function rowGetter(row: any, _index: number, _id: string, desc: any) {
+function rowGetter(row: IDataRow, _id: string, desc: any) {
   const column = desc.column;
   if (isComplexAccessor(column)) {
-    return resolveComplex(<string>column, row);
+    return resolveComplex(<string>column, row.v);
   }
-  return row[column];
+  return row.v[column];
 }
 
 /**
@@ -55,11 +54,11 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected rankAccessor(_row: any, index: number, _id: string, _desc: IColumnDesc, ranking: Ranking) {
+  protected rankAccessor(row: IDataRow, _id: string, _desc: IColumnDesc, ranking: Ranking) {
     const groups = this.ranks.get(ranking.id) || [];
     let acc = 0;
     for (const group of groups) {
-      const rank = group.order.indexOf(index);
+      const rank = group.order.indexOf(row.i);
       if (rank >= 0) {
         return acc + rank + 1; // starting with 1
       }
@@ -91,8 +90,6 @@ abstract class ACommonDataProvider extends ADataProvider {
       existing.children.forEach((child) => {
         this.push(clone, child.desc);
       });
-    } else {
-      clone.push(this.create(createRankDesc())!);
     }
 
     return clone;
@@ -154,9 +151,37 @@ abstract class ACommonDataProvider extends ADataProvider {
     return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : desc;
   }
 
+  /**
+   * generates a default ranking by using all column descriptions ones
+   */
+  deriveDefault(addSupportType: boolean = true) {
+    const r = this.pushRanking();
+    if (addSupportType) {
+      if (this.getMaxGroupColumns() > 0) {
+        r.push(this.create(createAggregateDesc())!);
+      }
+      r.push(this.create(createRankDesc())!);
+      if (this.multiSelections) {
+        r.push(this.create(createSelectionDesc())!);
+      }
+    }
+    this.getColumns().forEach((col) => {
+      const c = this.create(col);
+      if (!c || isSupportType(c)) {
+        return;
+      }
+      r.push(c);
+    });
+    return r;
+  }
+
   fromDescRef(descRef: any): any {
-    if (typeof(descRef) === 'string') {
+    if (typeof (descRef) === 'string') {
       return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef);
+    }
+    const existing = this.columns.find((d) => descRef.column === (<any>d).column && descRef.label === d.label && descRef.type === d.type);
+    if (existing) {
+      return existing;
     }
     return descRef;
   }

@@ -1,0 +1,57 @@
+@import '../vars';
+
+article.#{$lu_css_prefix}-side-panel-entry {
+  counter-increment: side-panel-counter;
+  background-color: #fff;
+  margin-bottom: 0.8em;
+
+  > header {
+    display: flex;
+    align-content: space-between;
+    background: $lu_side_panel_bg_color;
+    padding: 0.2em 0.5em;
+    position: relative;
+    font-size: $lu_side_panel_font_size;
+    font-weight: 500;
+
+    &::before {
+      color: $lu_toolbar_color_base2;
+      padding-right: 0.2em;
+      content: counter(side-panel-counter);
+    }
+  }
+
+  .#{$lu_css_prefix}-label {
+    margin: 0 1em 0 0;
+    padding: 0 0 0 0.4em;
+    overflow: hidden !important;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .#{$lu_css_prefix}-toolbar {
+    color: $lu_toolbar_color_base2;
+    padding: 0;
+  }
+
+  .#{$lu_css_prefix}-summary {
+    margin: 0.5em;
+    font-size: small;
+    height: 50px;
+
+    &:empty {
+      display: none;
+    }
+
+    &[data-renderer=histogram],
+    &[data-renderer=categorical] {
+      margin-bottom: 3em;
+    }
+
+    &[data-renderer=string] {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+    }
+  }
+}

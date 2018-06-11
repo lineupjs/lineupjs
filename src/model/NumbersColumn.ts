@@ -1,69 +1,37 @@
-/**
- * Created by bikramkawan on 24/11/2016.
- */
-import {scale as d3scale} from 'd3';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {LazyBoxPlotData} from '../internal';
+import {toolbar} from './annotations';
+import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import Column from './Column';
-import NumberColumn, {
-  createMappingFunction,
-  IMapAbleColumn,
-  IMappingFunction,
-  ScaleMappingFunction
-} from './NumberColumn';
-import {isMissingValue} from './missing';
+import {IDataRow} from './interfaces';
+import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
-  compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberFilter, INumbersColumn,
-  isSameFilter,
-  LazyBoxPlotData,
-  noNumberFilter, restoreFilter,
-  SORT_METHOD,
-  SortMethod
+  compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
+  noNumberFilter
 } from './INumberColumn';
+import {
+  createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
+  ScaleMappingFunction
+} from './MappingFunction';
+import {isMissingValue} from './missing';
+import NumberColumn from './NumberColumn';
+import {IAdvancedBoxPlotData} from '../internal/math';
 
 
-export interface INumbersDesc {
-  /**
-   * dump of mapping function
-   */
-  readonly map?: any;
-  /**
-   * either map or domain should be available
-   */
-  readonly domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  readonly range?: [number, number];
-
-  readonly sort?: string;
-  readonly threshold?: number;
-  readonly dataLength: number;
-  readonly colorRange?: string[];
+export interface INumbersDesc extends IArrayDesc, IMapAbleDesc {
+  readonly sort?: EAdvancedSortMethod;
 }
 
 
-export declare type INumbersColumnDesc = INumbersDesc & IValueColumnDesc<number[]>;
+export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>;
 
-export interface ISplicer {
-  length: number;
-
-  splice(values: number[]): number[];
-}
-
-export default class NumbersColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
+@toolbar('sortNumbers', 'filterMapped')
+export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
-  static readonly EVENT_SPLICE_CHANGED = 'spliceChanged';
+  static readonly CENTER = 0;
 
-  private sort: SortMethod;
-  private readonly threshold: number;
-  private readonly dataLength: number;
-  private readonly colorRange: string[];
-
+  private sort: EAdvancedSortMethod;
   private mapping: IMappingFunction;
-
   private original: IMappingFunction;
-
-  private splicer: ISplicer;
   /**
    * currently active filter
    * @type {{min: number, max: number}}
@@ -71,79 +39,33 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  constructor(id: string, desc: INumbersColumnDesc) {
+  constructor(id: string, desc: Readonly<INumbersColumnDesc>) {
     super(id, desc);
-    if (desc.map) {
-      this.mapping = createMappingFunction(desc.map);
-    } else if (desc.domain) {
-      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
-    }
+    this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
 
-    this.dataLength = desc.dataLength || 0;
-    this.threshold = desc.threshold || 0;
-    this.colorRange = desc.colorRange || ['blue', 'red'];
-    this.sort = desc.sort || SORT_METHOD.median;
+    this.sort = desc.sort || EAdvancedSortMethod.median;
 
     // better initialize the default with based on the data length
-    this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
-
-    this.splicer = {
-      length: this.dataLength,
-      splice: (v) => v
-    };
-  }
-
-  setSplicer(splicer: ISplicer) {
-    this.fire([NumbersColumn.EVENT_SPLICE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.splicer, this.splicer = splicer);
-  }
-
-  getSplicer() {
-    return this.splicer;
-  }
-
-  compare(a: any, b: any, aIndex: number, bIndex: number): number {
-    return compareBoxPlot(this, a, b, aIndex, bIndex);
-  }
-
-  getColorRange() {
-    return this.colorRange.slice();
-  }
-
-  getRawColorScale() {
-    const colorScale = d3scale.linear<string, string>();
-    const domain = this.mapping.domain;
-    if (domain[0] < 0 && domain[1] > 0) { // diverging
-      colorScale
-        .domain([domain[0], 0, domain[1]])
-        .range([this.colorRange[0], (this.colorRange.length > 2 ? this.colorRange[1] : 'white'), this.colorRange[this.colorRange.length - 1]]);
-
-    } else {
-      colorScale
-        .domain([domain[0], domain[1]])
-        .range([this.colorRange[0], this.colorRange[this.colorRange.length - 1]]);
+    if (this.dataLength) {
+      this.setDefaultWidth(Math.min(Math.max(100, this.dataLength! * 10), 500));
     }
-    return colorScale;
+    this.setDefaultRenderer('heatmap');
+    this.setDefaultGroupRenderer('heatmap');
+    this.setDefaultSummaryRenderer('histogram');
   }
 
-  getRawNumbers(row: any, index: number) {
-    return this.getRawValue(row, index);
+  compare(a: IDataRow, b: IDataRow): number {
+    return compareBoxPlot(this, a, b);
   }
 
-  getDataLength() {
-    if (this.splicer) {
-      return this.splicer.length;
-    }
-    return this.dataLength;
+  getRawNumbers(row: IDataRow) {
+    return this.getRawValue(row);
   }
 
-  getThreshold() {
-    return this.threshold;
-  }
-
-  getBoxPlotData(row: any, index: number) {
-    const data = this.getRawValue(row, index);
-    if (data === null) {
+  getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
+    const data = this.getRawValue(row);
+    if (data == null) {
       return null;
     }
     return new LazyBoxPlotData(data, this.mapping);
@@ -153,52 +75,45 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return this.mapping.getRange(DEFAULT_FORMATTER);
   }
 
-  getRawBoxPlotData(row: any, index: number) {
-    const data = this.getRawValue(row, index);
-    if (data === null) {
+  getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
+    const data = this.getRawValue(row);
+    if (data == null) {
       return null;
     }
     return new LazyBoxPlotData(data);
   }
 
-  getNumbers(row: any, index: number) {
-    return this.getValue(row, index);
+  getNumbers(row: IDataRow) {
+    return this.getValue(row);
   }
 
-  getNumber(row: any, index: number): number {
-    return getBoxPlotNumber(this, row, index, 'normalized');
+  getNumber(row: IDataRow): number {
+    return getBoxPlotNumber(this, row, 'normalized');
   }
 
-  getRawNumber(row: any, index: number): number {
-    return getBoxPlotNumber(this, row, index, 'raw');
+  getRawNumber(row: IDataRow): number {
+    return getBoxPlotNumber(this, row, 'raw');
   }
 
-  getValue(row: any, index: number) {
-    const values = this.getRawValue(row, index);
+  getValue(row: IDataRow) {
+    const values = this.getRawValue(row);
     return values.map((d) => isMissingValue(d) ? NaN : this.mapping.apply(d));
   }
 
-  getRawValue(row: any, index: number) {
-    let r = super.getValue(row, index);
-    if (this.splicer && r !== null) {
-      r = this.splicer.splice(r);
-    }
-    return r === null ? [] : r;
+  getRawValue(row: IDataRow) {
+    const r = super.getValue(row);
+    return r == null ? [] : r;
   }
 
-  getLabel(row: any, index: number): string {
-    const v = this.getRawValue(row, index);
-    if (v === null) {
-      return '';
-    }
-    return `[${v.map(DEFAULT_FORMATTER).join(', ')}]`;
+  getLabels(row: IDataRow) {
+    return this.getValue(row).map(DEFAULT_FORMATTER);
   }
 
   getSortMethod() {
     return this.sort;
   }
 
-  setSortMethod(sort: string) {
+  setSortMethod(sort: EAdvancedSortMethod) {
     if (this.sort === sort) {
       return;
     }
@@ -212,7 +127,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = !isSameFilter(this.currentFilter, noNumberFilter()) ? this.currentFilter : null;
+    r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }
@@ -233,7 +148,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SPLICE_CHANGED]);
+    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED]);
   }
 
   getOriginalMapping() {
@@ -263,8 +178,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     NumberColumn.prototype.setFilter.call(this, value);
   }
 
-  filter(row: any, index: number) {
-    return NumberColumn.prototype.filter.call(this, row, index);
+  filter(row: IDataRow) {
+    return NumberColumn.prototype.filter.call(this, row);
   }
 }
 

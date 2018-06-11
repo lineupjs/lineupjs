@@ -1,171 +1,115 @@
-/**
-mapping editor
- */
-@import 'vars';
+@import './vars';
+@import './icons/index';
 
-.#{$lu_css_prefix}-mapping-editor {
-  $sample_color: black;
-  $mapping_color: blue;
-  $mapping_color_hover: #0000cf;
+@at-root {
+  .#{$lu_css_prefix}-dialog-mapper {
+    width: 25em;
 
-  margin-bottom: 5px;
-  clear: both;
-
-  div {
-    &.filter_part {
-      margin-top: 15px;
+    > .#{$lu_css_prefix}-summary {
+      height: 5em;
+      margin: 0.5em 3px 0;
     }
 
-    &.filter_part2 {
-      position: relative;
-      top: -25px;
-      height: 0;
+    input[type=number] {
+      width: 5em;
     }
 
-    span.title {
-      font-weight: bold;
-    }
-  }
+    div.#{$lu_css_prefix}-script {
+      margin-top: 1em;
+      display: none;
 
-  .raw_min,
-  .raw_max {
-    width: 3em;
-    display: block;
-  }
-
-  .mapping_area {
-    display: flex;
-    align-items: stretch;
-
-    > div {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 40px;
-
-      &:first-child {
-        text-align: right;
-      }
-
-      > span:first-of-type {
-        flex-grow: 1;
-      }
-    }
-  }
-
-  svg {
-    z-index: 1;
-    position: relative;
-
-    > rect {
-      fill: white;
-      opacity: 0;
-    }
-
-    g.samples {
-      line {
-        stroke: $sample_color;
-        opacity: 0.5;
+      textarea {
+        height: 5em;
+        width: 98%;
+        font-size: 9pt;
+        display: block;
       }
     }
 
-    g.mapping {
-      &:hover {
-        cursor: ew-resize;
+    &[data-scale=script] div.#{$lu_css_prefix}-script {
+      display: block;
+    }
 
-        line {
-          stroke: $mapping_color_hover;
-        }
+    strong[data-toggle] {
+      margin-top: 1em;
+      cursor: pointer;
 
-        circle {
-          fill: $mapping_color_hover;
-        }
+      &::before {
+        @include lu_icons();
+
+        content: $lu_icon_caret_right;
+        width: 0.8em;
+      }
+
+      &[data-toggle=open]::before {
+        content: $lu_icon_caret_down;
+      }
+    }
+
+    .#{$lu_css_prefix}-details {
+      display: none;
+    }
+
+    [data-toggle=open] ~ .#{$lu_css_prefix}-details {
+      display: block;
+    }
+
+    svg {
+      shape-rendering: geometricprecision;
+      height: 25em * 6 / 10;
+
+      rect {
+        fill: transparent;
+        stroke: none;
       }
 
       line {
-        stroke: $mapping_color;
+        stroke: $lu_mapping_bg;
+        stroke-width: 1;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+      }
+
+      line:not([x1]) {
+
+        // the horizontal lines
+        stroke-width: 1.25;
+      }
+
+      line[data-v] {
+        stroke-opacity: 0.5;
+        stroke-width: 0.5;
+        stroke: $lu_toolbar_color_base2;
+        pointer-events: none;
       }
 
       circle {
-        fill: $mapping_color;
-      }
-    }
-
-    g.filter {
-      text {
-        font-size: 8pt;
+        fill: $lu_mapping_circle;
       }
 
-      path {
-        fill: gray;
-      }
+      g.#{$lu_css_prefix}-mapping {
+        cursor: ew-resize;
 
-      rect {
-        fill: white;
-        stroke: gray;
-        stroke-width: 1;
-      }
+        > line:first-child {
+          stroke-width: 5;
+          stroke: transparent !important;
+        }
 
-      > g {
-        cursor: pointer;
-        cursor: -moz-grab;
-        cursor: -webkit-grab; // indicate grab able
+        &.#{$lu_css_prefix}-frozen circle:first-of-type {
+          cursor: not-allowed;
+          fill: $lu_mapping_circle !important;
+        }
 
         &:hover {
-          path {
-            fill: darkgray;
+          circle {
+            fill: $lu_mapping_hover;
           }
 
-          rect {
-            stroke: darkgray;
+          line {
+            stroke: $lu_mapping_hover;
           }
         }
       }
     }
-  }
-
-  div.script {
-    clear: both;
-
-    textarea {
-      height: 4em;
-      width: 98%;
-      font-size: 8pt;
-      display: block;
-    }
-  }
-
-  div[id$='mapping-overlay'] { // id ends with mapping-overlay
-    position: absolute;
-    padding: 10px;
-    background-color: white;
-    border: 1px solid rgb(193, 193, 193);
-    border-radius: 5px;
-    z-index: 10;
-
-    &.hide {
-      opacity: 0.2;
-    }
-
-    div input {
-      display: block;
-    }
-
-    input {
-      width: 75px;
-    }
-
-    div:first-child {
-      margin-bottom: 10px;
-    }
-  }
-
-  div[id$='filter_inputs'] {
-    display: flex;
-    justify-content: space-around;
-    padding: 0 30px 10px;
-  }
-
-  div input[id$='_filter_input'] {
-    width: 75px;
   }
 }

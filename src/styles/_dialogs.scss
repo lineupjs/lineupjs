@@ -1,60 +1,61 @@
 /**
   popups, e.g., rename dialogs,...
  */
-@import 'vars';
+
+@import './vars';
+@import './icons/index';
 
 @at-root {
-  @keyframes dialogs-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  @keyframes #{$lu_css_prefix}-dialogs-fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
   .#{$lu_css_prefix}-backdrop {
-    position: fixed;
+    display: none;
+    position: absolute;
     top: 0;
     left: 0;
     z-index: 8;
-    display: block;
-    width: 100vw;
-    height: 100vh;
+    right: 0;
+    bottom: 0;
 
-    > .#{$lu_css_prefix}-backdrop-mask {
+    > * {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.1);
-      animation: dialogs-fade-in 0.2s;
+      animation: #{$lu_css_prefix}-dialogs-fade-in 0.2s;
     }
   }
 
-  .#{$lu_css_prefix}-popup {
-    position: absolute;
-    dominant-baseline: central;
-    text-anchor: middle;
-
-    .ok {
-      position: absolute;
-      right: 10px;
-    }
-  }
-
-  .#{$lu_css_prefix}-popup,
-  .#{$lu_css_prefix}-popup2 {
+  .#{$lu_css_prefix}-dialog,
+  .#{$lu_css_prefix}-tooltip {
     background-color: white;
     border: 1px solid black;
+    display: flex;
+    flex-direction: column;
     position: absolute;
     padding: 5px;
     z-index: 9;
     font-size: $lu_dialog_font_size;
     clear: right;
-    animation: dialogs-fade-in 0.4s;
+    animation: #{$lu_css_prefix}-dialogs-fade-in 0.4s;
 
-    form {
-      display: block;
+    strong {
+      margin: 0.2em;
+      display: inline-block;
     }
+  }
 
+  .#{$lu_css_prefix}-dialog {
     label {
       font-weight: normal;
     }
@@ -63,75 +64,162 @@
       font-size: 8pt;
     }
 
-    .selectionTable {
-      background: white;
-      overflow-x: auto;
-      overflow-y: auto;
-      max-height: 50vh;
+    button {
+      border: none;
+      background: none;
+      color: $lu_toolbar_color_base;
+      transition: all 0.5s ease;
+      cursor: pointer;
 
-      td,
-      th {
-        white-space: nowrap;
-        padding: 1px 5px 1px 3px;
-        cursor: pointer;
+      &:hover,
+      &:active,
+      &:focus {
+        color: $lu_toolbar_color_hover;
       }
 
-      th {
-        border-bottom: #c1c1c1 1px solid;
-      }
-
-      table {
-        width: 95%;
-        border: 0;
-      }
-
-      tr:hover {
-        background-color: lightblue;
+      &::before {
+        @include lu_icons();
       }
     }
 
-    .lu-popup-title {
-      cursor: pointer;
-      cursor: -webkit-grab;
+    button[type=submit],
+    button[type=reset],
+    button[title=cancel] {
+      margin-top: 1em;
+    }
+
+    button[type=submit]::before {
+      content: $lu_icon_check;
+    }
+
+    button[title=Cancel]::before {
+      content: $lu_icon_times;
+    }
+
+    button[type=reset]::before {
+      content: $lu_icon_undo;
+    }
+
+    button[type=submit] {
+      float: right;
+    }
+
+    &.#{$lu_css_prefix}-sub-nested {
+      width: 150px;
+    }
+
+    &.#{$lu_css_prefix}-filter-table.#{$lu_css_prefix}-weights-table {
+      input {
+        width: 6em;
+      }
+
+      div > span {
+        width: 100px !important;
+        position: relative;
+
+        > span {
+          top: 1px;
+          left: 0;
+          bottom: 1px;
+          position: absolute;
+          margin: 0;
+        }
+      }
+    }
+
+    &.#{$lu_css_prefix}-filter-table {
+      > div:first-of-type {
+        overflow-y: auto;
+        max-height: 50vh;
+        display: flex;
+        flex-direction: column;
+
+        * {
+          transition: all 0.5s ease;
+        }
+
+        span {
+          width: 1.2em;
+          margin: 0 0.5em;
+        }
+
+        input[type=number] + div {
+          width: 3em;
+          position: relative;
+
+          > * {
+            height: 100%;
+          }
+        }
+
+        input[type=checkbox]:not(:checked) ~ * {
+          opacity: 0.5;
+        }
+
+        > * {
+          display: flex;
+          flex: 0 0 auto;
+        }
+      }
+    }
+
+    .#{$lu_css_prefix}_filter_missing {
+      margin-top: 1em;
     }
 
     .script-description {
       font-size: 120%;
       max-width: 50em;
 
+      dd {
+        padding-left: 1em;
+      }
+
       dl {
         padding: 1em 0.2em;
-
-        dd {
-          padding-left: 1em;
-        }
-      }
-    }
-
-    .lu-sub-nested {
-      width: 100px;
-    }
-
-    &.lu-rename-dialog {
-      input {
-        width: 100%;
-        display: block;
       }
     }
   }
 
-  .#{$lu_css_prefix}-popup2 {
-    * {
-      margin: 0;
+  .#{$lu_css_prefix}-tooltip {
+    pointer-events: none;
+    min-width: 15em;
+    max-width: 50em;
+
+    div[x-arrow] {
+      position: absolute;
+      width: 0;
+      height: 0;
     }
 
-    .ok {
-      float: right;
+    $arrow_size: 5px;
+
+    &[x-placement=bottom] div[x-arrow] {
+      border-left: $arrow_size solid transparent;
+      border-right: $arrow_size solid transparent;
+      border-bottom: $arrow_size solid black;
+      top: -$arrow_size;
     }
 
-    div.bar {
-      height: 1em;
-      transition: width 0.5s ease;
+    &[x-placement=left] div[x-arrow] {
+      border-top: $arrow_size solid transparent;
+      border-bottom: $arrow_size solid transparent;
+      border-left: $arrow_size solid black;
+      right: -$arrow_size;
+    }
+
+    &[x-placement=right] div[x-arrow] {
+      border-top: $arrow_size solid transparent;
+      border-bottom: $arrow_size solid transparent;
+      border-right: $arrow_size solid black;
+      left: -$arrow_size;
+    }
+
+    &[x-placement=top] div[x-arrow] {
+      border-left: $arrow_size solid transparent;
+      border-right: $arrow_size solid transparent;
+      border-top: $arrow_size solid black;
+      bottom: -$arrow_size;
     }
   }
 }

@@ -1,0 +1,79 @@
+@import './vars';
+@import './icons/index';
+
+section.#{$lu-css_prefix}-slopegraph {
+  width: $lu_slope_width;
+  position: relative;
+}
+
+section.#{$lu-css_prefix}-slopegraph svg {
+  shape-rendering: geometricprecision;
+  height: 100%;
+  width: 100%;
+  background: white;
+
+  path {
+    &.#{$lu-css_prefix}-slope {
+      fill: none;
+      stroke: $lu_slope_color;
+      stroke-width: $lu_slope_stroke_width;
+      stroke-linecap: round;
+
+      &:hover,
+      &.#{$lu_css_prefix}-selected,
+      &.le-highlighted {
+        z-index: 10;
+        stroke: $lu_selected_color;
+      }
+    }
+
+    &.#{$lu-css_prefix}-group-slope {
+      fill: $lu_slope_group_color;
+      stroke: $lu_slope_color;
+      stroke-linejoin: round;
+
+      &:hover,
+      &.#{$lu_css_prefix}-selected,
+      &.le-highlighted {
+        z-index: 10;
+        stroke: $lu_selected_color;
+        fill: $lu_slope_group_selected_color;
+      }
+    }
+  }
+}
+
+section.#{$lu-css_prefix}-slopegraph-header {
+  display: flex;
+  padding-top: 1.4em;
+  justify-content: center;
+  width: $lu_slope_width;
+
+  i {
+    padding: 2px 4px;
+    transition: all 0.5s ease;
+    cursor: pointer;
+    color: $lu_toolbar_color_base2;
+
+    &:hover {
+      color: $lu_toolbar_color_hover;
+    }
+
+    &.active {
+      color: $lu_selected_color;
+      cursor: not-allowed;
+    }
+
+    &::before {
+      @include lu_custom_icons();
+    }
+
+    &[title=Item]::before {
+      @include lu_custom_icon($lu_icon_slope_item, slope_item);
+    }
+
+    &[title=Band]::before {
+      @include lu_custom_icon($lu_icon_slope_band, slope_band);
+    }
+  }
+}

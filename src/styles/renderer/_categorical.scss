@@ -1,7 +1,7 @@
 
 [data-agg=detail] [data-renderer=categorical],
-[data-agg=detail] [data-renderer=heatmap],
-[data-agg=group] [data-renderer=heatmap] > div {
+[data-agg=detail] [data-renderer=brightness],
+[data-agg=group] [data-renderer=brightness] > div {
   display: flex;
   white-space: nowrap;
 
@@ -21,28 +21,11 @@
   }
 }
 
-[data-agg=group] [data-renderer=heatmap] {
+[data-agg=group] [data-renderer=brightness] {
   display: flex;
   align-items: center;
 
   > div {
     width: 100%;
-  }
-}
-
-[data-agg=group] [data-renderer=catcolor],
-[data-agg=group] [data-renderer=catcolorshifted] {
-  /* center the text for the renderer "Most Frequent Category Color" */
-  display: flex;
-  align-items: flex-start;
-  position: relative;
-
-  > div {
-    position: absolute;
-    height: 100%;
-  }
-
-  > span {
-    z-index: 1;
   }
 }

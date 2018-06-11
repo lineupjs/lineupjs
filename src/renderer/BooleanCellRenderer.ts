@@ -1,15 +1,19 @@
+import BooleanColumn from '../model/BooleanColumn';
 import Column from '../model/Column';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
-import BooleanColumn from '../model/BooleanColumn';
+import {ERenderMode} from './interfaces';
 
+/** @internal */
 export default class BooleanCellRenderer extends DefaultCellRenderer {
   readonly title = 'Default';
 
-  constructor() {
-    super('boolean', 'center');
+  canRender(col: Column, mode: ERenderMode) {
+    return col instanceof BooleanColumn && mode === ERenderMode.CELL;
   }
 
-  canRender(col: Column) {
-    return col instanceof BooleanColumn;
+  create(col: Column) {
+    const r = super.create(col);
+    (<any>r).template = `<div class="lu-center"> </div>`;
+    return r;
   }
 }

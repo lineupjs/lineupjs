@@ -1,6 +1,7 @@
+@import '../vars';
 
-[data-renderer=numbers],
-[data-renderer=threshold],
+[data-renderer=heatmap],
+[data-renderer=catheatmap],
 [data-renderer=verticalbar] {
   display: flex;
   flex-direction: row;
@@ -9,10 +10,24 @@
 
   div {
     flex: 1 1 auto;
+    position: relative;
   }
 
   .#{$lu_css_prefix}-missing {
+
     // transform the dash to a square
     background-size: $lu_missing_dash_height $lu_missing_dash_height;
+  }
+}
+
+[data-renderer=heatmap] &:not(.#{$lu_css_prefix}-dense) > div[data-title] {
+
+  // special alignment of heatmap labels
+  &:first-of-type::before {
+    text-align: left;
+  }
+
+  &:last-of-type::before {
+    text-align: right;
   }
 }

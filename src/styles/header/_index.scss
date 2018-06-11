@@ -1,15 +1,14 @@
 @import '../vars';
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
 
-%lu-header {
+.#{$lu_css_prefix}-header,
+.#{$lu_css_prefix}-side-panel-entry {
+  @include user_select_none();
+
   position: relative;
-  user-select: none;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-
-  @import './toolbar';
+  background: white;
 
   .#{$lu_css_prefix}-label {
     white-space: nowrap;
@@ -22,36 +21,36 @@
   }
 
   &.#{$lu_css_prefix}-dragover::after {
-    content: '+';
-    font-size: 250%;
-    color: #fff;
+    @include user_select_none();
+
+    content: attr(data-draginfo);
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 2;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    user-select: none;
     pointer-events: none;
-    background: $lu_drag_over;
+    background: lighten($lu_drag_over, 35%);
+    border: 2px dashed $lu_drag_over;
   }
 
   .#{$lu_css_prefix}-spacing {
     flex: 1;
   }
 
-  .#{$lu_css_prefix}-summary {
-    position: relative;
-    display: none;
-    font-size: x-small;
-
-    @import './summary';
-  }
-
   .#{$lu_css_prefix}-nested {
     position: relative;
   }
+
+  .#{$lu_css_prefix}-summary {
+    position: relative;
+    font-size: x-small;
+  }
 }
+
+@import './summary';
+@import './toolbar';

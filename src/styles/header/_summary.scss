@@ -1,195 +1,31 @@
 @import '../vars';
 
-&[data-summary$=hist] {
-  display: flex;
+.#{$lu_css_prefix}-summary {
+  label.#{$lu_css_prefix}-disabled {
+    @include user_select_none();
 
-  // only create ::before pseudo-elements if the histogram is not in dense mode
-  &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
-    content: attr(data-title);
-    position: absolute;
-    top: 100%;
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-align: center;
+    color: gray;
+    cursor: not-allowed;
   }
 
-  > div {
-    flex: 1 1 auto;
-    position: relative;
-    margin: 0 1px;
-
-    &[data-filtered=filtered] {
-      opacity: 0.2;
-    }
-
-    > div {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      height: 0;
-      width: 100%;
-      transition: height 0.5s linear;
-    }
-
-    > .#{$lu_css_prefix}-selected {
-      background-color: $lu_selected_color;
-    }
+  input[type=text],
+  select {
+    border: 1px solid $lu_side_panel_input_border;
+    border-radius: $lu_side_panel_input_border_radius;
+    padding: 3px 5px;
+    box-sizing: border-box;
   }
 
-  &.#{$lu_css_prefix}-dense > div {
-    margin: 0;
-  }
-
-  > span {
-    position: absolute;
-    bottom: -15px;
-    pointer-events: none;
-    user-select: none;
-    line-height: 100%;
-
-    // create axis tick as background image and position it left or right
-    background-image: linear-gradient(to bottom, #000 3px, transparent);
-    background-repeat: no-repeat;
-    background-size: 1px 3px;
-    padding-top: 5px;
-
-    &:first-of-type {
-      left: 0;
-      background-position: left top;
-    }
-
-    &:last-of-type {
-      right: 0;
-      text-align: right;
-      background-position: right top;
-    }
-  }
-}
-
-&[data-summary^=interactive] {
-  > div {
+  select {
+    outline: none;
     cursor: pointer;
   }
-}
-
-&[data-summary=interactive-filter-hist] {
-  label {
-    position: absolute;
-    bottom: -3.5em;
-  }
-}
-
-&[data-summary=slider-hist] {
-  margin-bottom: 2.75em;
-  position: relative;
-
-  > [data-handle=min],
-  > [data-handle=max] {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    border-right: 1px solid black;
-    transition: border-width 0.2s ease;
-    width: 1px;
-    cursor: ew-resize;
-
-    &::before {
-      content: attr(data-value);
-      position: absolute;
-      top: 100%;
-      width: 5em;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-  }
-
-  > [data-handle=max] {
-    right: 0;
-    border-right: none;
-    border-left: 1px solid black;
-
-    &::before {
-      left: -5em;
-      text-align: right;
-    }
-  }
-
-  &:hover {
-    > [data-handle=min] {
-      border-right-width: 5px;
-    }
-
-    > [data-handle=max] {
-      border-left-width: 5px;
-    }
-  }
-
-  > [data-handle$=hint] {
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    height: 100%;
-    background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
-
-    &[data-handle=max-hint] {
-      right: 0;
-    }
-  }
 
   label {
-    position: absolute;
-    bottom: -3.5em;
-  }
-}
-
-&[data-summary=selection] > i,
-&[data-summary=aggregation] > i {
-  cursor: pointer;
-  font-size: 150%;
-}
-
-&[data-summary=aggregation] > i {
-  padding-right: $lu_aggregate_square_bracket_width;
-}
-
-&[data-summary=string],
-&[data-summary=selection],
-&[data-summary=aggregation] {
-  display: block;
-}
-
-label.#{$lu_css_prefix}-disabled {
-  color: gray;
-  user-select: none;
-  cursor: not-allowed;
-}
-
-input[type=text] {
-  width: 100%;
-  border: 1px solid $lu_side_panel_input_border;
-  border-radius: $lu_side_panel_input_border_radius;
-  padding: 3px 5px;
-}
-
-select {
-  width: 100%;
-  border: 1px solid $lu_side_panel_input_border;
-  border-radius: $lu_side_panel_input_border_radius;
-  padding: 3px 5px;
-  outline: none;
-  cursor: pointer;
-}
-
-label {
-  font-weight: normal;
-  display: flex;
-  align-items: center;
-  margin: 5px 0;
-
-  input[type=checkbox] {
-    margin: 0 5px 0 0;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    font-size: 13px;
   }
 }

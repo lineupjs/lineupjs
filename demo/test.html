@@ -2,51 +2,18 @@
 <html>
 <head lang="en">
   <meta charset="UTF-8">
-  <title>LineUp alpha</title>
+  <title>LineUp Test Bench</title>
 
-  <link href="../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
-  <link href="../../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
-
-  <link href="../build/style.css" rel="stylesheet">
-
-  <style>
-    div.orange {
-      background-color: orange;
-    }
-
-    rect.bar.orange {
-      fill: orange;
-    }
-
-    div.green {
-      background-color: green;
-    }
-
-    rect.bar.green, .bar.green rect {
-      fill: green;
-    }
-
-    .lu {
-      clear: both;
-      position: absolute;
-      top: 1px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0;
-      overflow: auto;
-    }
-
-  </style>
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
-<script src="../node_modules/d3/d3.js"></script>
-<script src="../../node_modules/d3/d3.js"></script>
-<script src="../build/LineUpJS.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
 
 <script>
-  (function () {
-    const parser = d3.time.format('%d.%m.%Y').parse;
+  window.onload = function () {
+    const parser = d3.timeParse('%d.%m.%Y');
     const arr = [
       {a: 10, b: 20, c: 30, d: 'Row1', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2', date: '12/11/2005', img: 'https://vignette.wikia.nocookie.net/simpsons/images/0/02/Homer_Simpson_2006.png/revision/latest'},
       {a: 100, b: 100, c: 50, d: 'Row2', e: true, l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3', date: parser('12.12.2005'), img: 'https://vignette.wikia.nocookie.net/simpsons/images/1/12/Lisa_Simpson-0.png/revision/latest?cb=20161027220133'},
@@ -68,8 +35,7 @@
       {label: 'A', type: 'number', column: 'a', 'domain': [0, 100], color: 'red'},
       {label: 'B', type: 'number', column: 'b', 'domain': [0, 100], color: 'blue'},
       {label: 'C', type: 'number', column: 'c', 'domain': [0, 100], color: 'green'},
-      {label: 'L', type: 'link', column: 'l'},
-      {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
+      {label: 'L2', type: 'string', column: 'a', pattern: 'https://duckduckgo.com/?q=$1', renderer: 'link'},
       {
         label: 'Cat',
         type: 'categorical',
@@ -92,14 +58,14 @@
       {label: 'L.alt', type: 'string', column: 'l.alt'},
       {label: 'Lazy', type: 'number', column: 'a', 'domain': [0, 10]},
       {label: 'Date', type: 'date', column: 'date'},
-      {label: 'Image', type: 'image', column: 'img', link: '$1'}
+      {label: 'Image', type: 'string', column: 'img', pattern: '$1', renderer: 'image'}
     ];
 
-    const p = LineUpJS.createLocalStorage(arr, desc);
+    const p = new LineUpJS.LocalDataProvider(arr, desc);
     const lazy = p.create(desc[12]);
     {
       const r = p.pushRanking();
-      r.insert(p.create(LineUpJS.model.createSelectionDesc()), 0);
+      r.insert(p.create(LineUpJS.createSelectionDesc()), 0);
       r.push(p.create(desc[0]));
       r.push(p.create(desc[1]));
       r.push(p.create(desc[8]));
@@ -110,7 +76,7 @@
       r.push(p.create(desc[desc.length-1]));
 
       r.push((function () {
-        const rstack = p.create(LineUpJS.model.createStackDesc('Stack'));
+        const rstack = p.create(LineUpJS.createStackDesc('Stack'));
         rstack.setWidth(400);
         rstack.push(p.create(desc[1]));
         rstack.push(p.create(desc[2]));
@@ -127,7 +93,7 @@
       r.push(p.create(desc[3]));
 
       r.push((function () {
-        const rscript = p.create(LineUpJS.model.createScriptDesc('Script'));
+        const rscript = p.create(LineUpJS.createScriptDesc('Script'));
         rscript.push(p.create(desc[1]));
         rscript.push(p.create(desc[2]));
         rscript.push(p.create(desc[3]));
@@ -135,7 +101,7 @@
       })());
 
       r.push((function () {
-        const rnested = p.create(LineUpJS.model.createNestedDesc('Nested'));
+        const rnested = p.create(LineUpJS.createNestedDesc('Nested'));
         rnested.push(p.create(desc[1]));
         rnested.push(p.create(desc[2]));
         rnested.push(p.create(desc[0]));
@@ -151,31 +117,9 @@
       r2.push(p.create(desc[7]));
     }
 
-    const instance = LineUpJS.create(p, document.body, {
-      additionalDesc: [
-        LineUpJS.model.createStackDesc('+ Stack')
-      ],
-      body: {
-        renderer: 'engine',
-        freezeCols: 0
-      },
-      header: {
-        autoRotateLabels: true,
-        rankingButtons: function ($node) {
-          $node.append('button').text('+').on('click', function (d) {
-            console.log(d);
-          });
-        },
-        linkTemplates: ['a/$1', 'b/$1'],
-        summary: true,
-      },
-      renderingOptions: {
-        animation: false,
-        meanLine: true,
-      }
-    });
+    const instance = new LineUpJS.LineUp(document.body, p);
     instance.update();
-  })();
+  };
 </script>
 
 </body>

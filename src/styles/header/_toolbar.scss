@@ -1,6 +1,5 @@
 @import '../vars';
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
+@import '../icons/index';
 
 .#{$lu_css_prefix}-toolbar {
   position: relative;
@@ -54,188 +53,169 @@
   }
 }
 
-&.filtered .#{$lu_css_prefix}-toolbar i[title='Filter'] {
-  color: $lu_header_active_filter_color;
-}
-
-&.grouped .#{$lu_css_prefix}-toolbar i[title='Stratify by'] {
-  color: $lu_header_active_filter_color;
-}
-
-@at-root {
-  .#{$lu_css_prefix}-toolbar,
-  .#{$lu_css_prefix}-more-options {
-    i {
-      &::before {
-        @include fa-icon();
-      }
-
-      &[title^='Rename + Color']::before {
-        content: $fa-var-pencil-square-o;
-      }
-
-      &[title='Generate Snapshot']::before {
-        content: $fa-var-code-fork;
-      }
-
-      &[title^='Sort by']::before {
-        content: $fa-var-sort;
-      }
-
-      &[title^='Visualization']::before {
-        content: $fa-var-exchange;
-      }
-
-      &[title^='Edit Link Pattern']::before {
-        content: $fa-var-external-link;
-      }
-
-      &[title^='Sort Group by']::before {
-        content: $fa-var-sort;
-      }
-
-      &[title^='Edit Combine Script']::before {
-        content: $fa-var-gears;
-      }
-
-      &[title='Split Combined Column']::before {
-        content: $fa-var-window-restore;
-      }
-
-      &[title^='Filter']::before {
-        content: $fa-var-filter;
-      }
-
-      &[title^='Stratify']::before {
-        content: $fa-var-columns;
-        transform: rotate(-90deg);
-        height: 14px;
-      }
-
-      &[title='Sort']::before {
-        content: $fa-var-sort-amount-asc;
-      }
-
-      &[title='Sort'][data-sort='desc']::before {
-        content: $fa-var-sort-amount-desc;
-      }
-
-      &[title='Sort'][data-sort$='sc']::before,
-      &[title^='Stratify'][data-stratify='true']::before {
-        color: $lu_selected_color;
-      }
-
-      &[title^='Set Cut Off']::before {
-        content: $fa-var-scissors;
-      }
-
-      &[title^='Search']::before {
-        content: $fa-var-search;
-      }
-
-      &[title='Edit Weights']::before {
-        content: $fa-var-tasks;
-      }
-
-      &[title='UnCollapse']::before {
-        content: $fa-var-toggle-right;
-      }
-
-      &[title='Collapse']::before {
-        content: $fa-var-toggle-left;
-      }
-
-      &[title='Expand']::before {
-        content: $fa-var-expand;
-      }
-
-      &[title='Compress']::before {
-        content: $fa-var-compress;
-      }
-
-      &[title='Remove']::before {
-        content: $fa-var-trash;
-      }
-
-      &[title^='More']::before {
-        content: $fa-var-ellipsis-h;
-      }
-
-      &[title^='Contained Columns']::before {
-        content: $fa-var-sitemap;
-      }
-    }
+.#{$lu_css_prefix}-action {
+  &::before {
+    @include lu_icons();
   }
 
+  &[title^='Rename + Color']::before {
+    content: $lu_icon_pencil_square_o;
+  }
+
+  &[title='Clone']::before {
+    content: $lu_icon_code_fork;
+  }
+
+  &[title^='Sort']::before {
+    content: $lu_icon_sort;
+  }
+
+  &[title^='Visualization']::before {
+    content: $lu_icon_exchange;
+  }
+
+  &[title^='Edit Pattern']::before {
+    content: $lu_icon_external_link;
+  }
+
+  &[title^='Reduce by']::before,
+  &[title^='Edit Combine Script']::before {
+    content: $lu_icon_gears;
+  }
+
+  &[title='Split Combined Column']::before {
+    content: $lu_icon_window_restore;
+  }
+
+  &[title^='Filter']::before {
+    content: $lu_icon_filter;
+  }
+
+  &[title^='Filter'][data-active]::before {
+    color: $lu_selected_color;
+  }
+
+  &[title^='Stratify']::before {
+    content: $lu_icon_columns;
+    transform: rotate(-90deg);
+    height: 14px;
+  }
+
+  &[title='Sort']::before {
+    content: $lu_icon_sort_amount_asc;
+  }
+
+  &[title='Sort'][data-sort='desc']::before {
+    content: $lu_icon_sort_amount_desc;
+  }
+
+  &[title='Sort'][data-sort$='sc']::before,
+  &[title^='Stratify'][data-stratify='true']::before {
+    color: $lu_selected_color;
+  }
+
+  &[title^='Set Cut Off']::before {
+    content: $lu_icon_scissors;
+  }
+
+  &[title^='Search']::before {
+    content: $lu_icon_search;
+  }
+
+  &[title^='Edit Weights']::before {
+    content: $lu_icon_tasks;
+  }
+
+  &[title='UnCollapse']::before {
+    content: $lu_icon_toggle_right;
+  }
+
+  &[title='Collapse']::before {
+    content: $lu_icon_toggle_left;
+  }
+
+  &[title='Expand']::before {
+    content: $lu_icon_expand;
+  }
+
+  &[title='Compress']::before {
+    content: $lu_icon_compress;
+  }
+
+  &[title='Remove']::before {
+    content: $lu_icon_trash;
+  }
+
+  &[title^='More']::before {
+    content: $lu_icon_ellipsis_h;
+  }
+
+  &[title^='Contained Columns']::before {
+    content: $lu_icon_sitemap;
+  }
+}
+
+.#{$lu_css_prefix}-header {
   /* Override alphabetical sort icons */
-  .categorical,
-  .string,
-  .link,
-  .annotate,
-  .hierarchy,
-  [data-type='string'],
-  [data-type='categorical'],
-  [data-type='link'],
-  [data-type='annotate'],
-  [data-type='hierarchy'] {
-    .#{$lu_css_prefix}-toolbar i,
-    .#{$lu_css_prefix}-more-options i {
+  &[data-type='string'],
+  &[data-type='categorical'],
+  &[data-type='link'],
+  &[data-type='annotate'],
+  &[data-type='hierarchy'] {
+    .#{$lu_css_prefix}-action {
       &[title='Sort']::before {
-        content: $fa-var-sort-alpha-asc;
+        content: $lu_icon_sort-alpha-asc;
       }
 
       &[title='Sort'][data-sort='desc']::before {
-        content: $fa-var-sort-alpha-desc;
+        content: $lu_icon_sort-alpha-desc;
       }
     }
   }
 
   /* Override numerical sort icons */
-  .rank,
-  .number,
-  [data-type='number'],
-  [data-type='numbers'],
-  [data-type='ordinal'],
-  [data-type='boxplot'],
-  [data-type='script'],
-  [data-type='min'],
-  [data-type='max'],
-  [data-type='stack'] {
-    .#{$lu_css_prefix}-toolbar i,
-    .#{$lu_css_prefix}-more-options i {
+  &[data-type='rank'],
+  &[data-type='number'],
+  &[data-type='numbers'],
+  &[data-type='ordinal'],
+  &[data-type='boxplot'],
+  &[data-type='script'],
+  &[data-type='reduce'],
+  &[data-type='stack'] {
+    .#{$lu_css_prefix}-action {
       &[title='Sort']::before {
-        content: $fa-var-sort-numeric-asc;
+        content: $lu_icon_sort-numeric-asc;
       }
 
       &[title='Sort'][data-sort='desc']::before {
-        content: $fa-var-sort-numeric-desc;
+        content: $lu_icon_sort-numeric-desc;
       }
     }
   }
+}
 
-  .#{$lu_css_prefix}-more-options {
-    font-size: $lu_toolbar_font_size;
-    padding: 0;
+.#{$lu_css_prefix}-more-options {
+  font-size: $lu_toolbar_font_size;
+  padding: 0;
 
-    > i {
-      display: flex;
-      padding: 5px 10px 5px 5px;
-      align-items: center;
-      cursor: pointer;
+  > i {
+    display: flex;
+    padding: 5px 10px 5px 5px;
+    align-items: center;
+    cursor: pointer;
 
-      &:hover {
-        background: $lu_hover_color;
-      }
+    &:hover {
+      background: $lu_hover_color;
+    }
 
-      &::before {
-        width: 19px;
-        text-align: center;
-      }
+    &::before {
+      width: 19px;
+      text-align: center;
+    }
 
-      > span {
-        font-style: normal;
-        margin-left: 3px;
-      }
+    > span {
+      font-style: normal;
+      margin-left: 3px;
     }
   }
 }

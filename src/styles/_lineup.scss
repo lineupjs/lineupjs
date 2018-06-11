@@ -1,0 +1,33 @@
+@import './common';
+@import './dialogs';
+@import './mappingeditor';
+@import './header/index';
+@import './engine/index';
+@import './renderer/index';
+@import './slope_graph';
+@import './panel/index';
+@import './datatypes';
+@import './taggle/index';
+@import './vars';
+
+.#{$lu_css_prefix} {
+  position: relative;
+
+  > aside {
+    float: right;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid $lu_taggle_border_color;
+    border-radius: 0;
+    height: 100%;
+  }
+
+  > main {
+    height: 100%;
+  }
+
+  &::after {
+    content: '';
+    clear: both;
+  }
+}

@@ -1,0 +1,56 @@
+@import './vars';
+@import './icons/index';
+
+.#{$lu_css_prefix} {
+  span[data-type-cat]::before,
+  [data-type-cat] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icons();
+
+    color: $lu_toolbar_color_base2;
+    width: 1.2em;
+    content: '';
+  }
+
+  span[data-type-cat='composite']::before,
+  [data-type-cat='composite'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_composite, composite);
+  }
+
+  span[data-type-cat='map']::before,
+  [data-type-cat='map'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_map, map);
+  }
+
+  span[data-type-cat='string']::before,
+  [data-type-cat='string'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_string, string);
+  }
+
+  span[data-type-cat='categorical']::before,
+  [data-type-cat='categorical'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_categorical, categorical);
+  }
+
+  span[data-type-cat='number']::before,
+  [data-type='number'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_numerical, numerical);
+  }
+
+  span[data-type-cat='date']::before,
+  [data-type='date'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_date, date);
+  }
+
+  span[data-type-cat='array']::before,
+  [data-type='array'] .#{$lu_css_prefix}-label::before {
+    @include lu_custom_icon($lu_icon_type_matrix, matrix);
+  }
+
+  [data-type-cat='support'] .#{$lu_css_prefix}-label::before {
+    display: none;
+  }
+
+  [data-type-cat='other'] .#{$lu_css_prefix}-label::before {
+    display: none;
+  }
+}

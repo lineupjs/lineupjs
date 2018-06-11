@@ -2,36 +2,19 @@
 <html>
 <head lang="en">
   <meta charset="UTF-8">
-  <title>LineUp alpha</title>
-
-  <link href="../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
-  <link href="../../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
-
-  <link href="../build/LineUpJS.css" rel="stylesheet">
-
-  <style>
-    .lu {
-      clear: both;
-      position: absolute;
-      top: 1px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0;
-    }
-
-  </style>
+  <title>LineUp AIDS Test</title>
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
-<script src="../node_modules/d3/d3.js"></script>
-<script src="../../node_modules/d3/d3.js"></script>
-<script src="../build/LineUpJS.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
 <script>
 
-window.onload = function () {
-  d3.csv('./aids.csv', function(data) {
+  window.onload = function () {
+    d3.csv('./aids.csv', function (data) {
 
-    const desc = [
+      const desc = [
         {column: 'AIDS_Countries', 'type': 'string'},
         {column: 'Sex before 15 (15-24, %, 2015)', type: 'number', domain: [0.5, 29.3]},
         {column: 'Condom use at last sex (%, 2015)', type: 'number', domain: [0, 72.3]},
@@ -41,7 +24,7 @@ window.onload = function () {
         {column: 'HIV prevention knowledge (age 15-24, %, 2015)', type: 'number', domain: [4.3, 76.4]},
         {column: 'Discriminatory attitude (%)', type: 'number', domain: [11.9, 80.1]},
         {
-            column: 'Discriminatory attitude scale', type: 'categorical', categories: [
+          column: 'Discriminatory attitude scale', type: 'categorical', categories: [
             {'color': '#bdc9e1', 'name': 'Unknown'},
             {'color': '#c51b8a', 'name': 'Predominant'},
             {'color': '#f768a1', 'name': 'Medium'},
@@ -50,14 +33,14 @@ window.onload = function () {
             {'color': '#7a0177', 'name': 'High'}]
         },
         {
-            column: 'Human devel. index', type: 'categorical', categories: [
+          column: 'Human devel. index', type: 'categorical', categories: [
             {'color': '#d7191c', 'name': '1 Low human development'},
             {'color': '#fdae61', 'name': '2 Medium human development'},
             {'color': '#a6d96a', 'name': '3 High human development'},
             {'color': '#1a9641', 'name': '4 Very high human development'}]
         },
         {
-            column: 'Continent', type: 'categorical', categories: [
+          column: 'Continent', type: 'categorical', categories: [
             {'color': '#a6cee3', 'name': 'Asia'},
             {'color': '#1f78b4', 'name': 'Europe'},
             {'color': '#b2df8a', 'name': 'Africa'},
@@ -66,7 +49,7 @@ window.onload = function () {
             {'color': '#e31a1c', 'name': 'North America'}]
         },
         {
-            column: 'HIV restrictions on entry, stay, or residence', type: 'categorical', categories: [
+          column: 'HIV restrictions on entry, stay, or residence', type: 'categorical', categories: [
             {'color': '#d8daeb', 'name': 'No information provided'},
             {'color': '#542788', 'name': 'No restriction'},
             {'color': '#998ec3', 'name': 'Some restriction'},
@@ -84,24 +67,16 @@ window.onload = function () {
         {column: 'Med. Age', type: 'number', domain: [15, 47]},
         {column: 'Urban Pop (%)', type: 'number', domain: [8.2, 98.2]},
         {column: 'World Share (%)', type: 'number', domain: [0, 18.5]}
-        ];
+      ];
 
-    const p = LineUpJS.createLocalStorage(data, desc);
-    p.deriveDefault();
-    p.getLastRanking().insert(p.create(LineUpJS.model.createSelectionDesc()), 1);
+      const p = new LineUpJS.LocalDataProvider(data, desc);
+      p.deriveDefault();
+      p.getLastRanking().insert(p.create(LineUpJS.createSelectionDesc()), 1);
 
-    const lineup = LineUpJS.create(p, document.body, {
-        header: {
-            summary: true,
-            autoRotateLabels: true
-        },
-        body: {
-            renderer: 'engine'
-        }
+      const lineup = new LineUpJS.Taggle(document.body, p);
+      lineup.update();
     });
-    lineup.update();
-  });
-};
+  };
 
 </script>
 

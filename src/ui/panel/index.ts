@@ -1,6 +1,2 @@
-/**
- * Created by Samuel Gratzl on 05.09.2017.
- */
-
-
-export {default as default} from './SidePanel';
+export {default as SidePanel, ISidePanelOptions} from './SidePanel';
+export {default as SearchBox, IGroupSearchItem, IItem, ISearchBoxOptions} from './SearchBox';

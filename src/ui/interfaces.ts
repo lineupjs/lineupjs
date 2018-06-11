@@ -1,94 +1,41 @@
+import {ICategoricalStatistics, IStatistics} from '../internal';
+import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn} from '../model';
+import {IDataProvider} from '../provider';
+import {IImposer, IRenderContext} from '../renderer';
+import {ISummaryRenderer} from '../renderer/interfaces';
+import {IToolbarAction} from './toolbar';
+import DialogManager from './dialogs/DialogManager';
 
-import {IRenderingOptions} from '../interfaces';
-import {AEventDispatcher} from '../utils';
-import ADataProvider from '../provider/ADataProvider';
-import ICellRendererFactory from '../renderer/ICellRendererFactory';
-import {IFilterDialog} from '../dialogs/AFilterDialog';
-import Ranking from '../model/Ranking';
-import Column from '../model/Column';
-import {IRankingHeaderContext} from './engine/interfaces';
-import {Selection} from 'd3';
-
-export interface ILineUpRenderer extends AEventDispatcher {
-  destroy(): void;
-
-  update(): void;
-
-  changeDataStorage(data: ADataProvider): void;
-
-  scrollIntoView(length: number, index: number): void;
-
-  fakeHover(index: number): void;
-
-  setBodyOption(option: keyof IRenderingOptions, value: boolean): void;
+export interface IRenderInfo {
+  type: string;
+  label: string;
 }
 
-export const RENDERER_EVENT_HOVER_CHANGED = 'hoverChanged';
-export const RENDERER_EVENT_RENDER_FINISHED = 'renderFinished';
+export interface IRankingHeaderContextContainer {
+  readonly idPrefix: string;
+  readonly document: Document;
+  readonly provider: IDataProvider;
 
-export interface IBodyRendererOptions {
-  rowHeight: number;
-  textHeight: number;
-  groupHeight: number;
-  groupPadding: number;
-  rowPadding: number;
-  rowBarPadding: number;
-  rowBarTopPadding: number;
-  rowBarBottomPadding: number;
-  idPrefix: string;
-  slopeWidth: number;
-  columnPadding: number;
-  stacked: boolean;
-  animation: boolean;
-  animationDuration: number;
+  readonly dialogManager: DialogManager;
 
-  renderers: { [key: string]: ICellRendererFactory };
+  toolbar: { [key: string]: IToolbarAction };
 
-  meanLine: boolean;
+  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 
-  actions: { name: string, icon: string, action(v: any): void }[];
+  getPossibleRenderer(col: Column): { item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[] };
 
-  freezeCols: number;
-
-  /**
-   * striped alterating background
-   */
-  striped: boolean;
+  summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 }
 
+export interface IRankingBodyContext extends IRankingHeaderContextContainer, IRenderContext {
+  isGroup(index: number): boolean;
 
-export interface IRankingHook {
-  ($node: Selection<Ranking>): void;
+  getGroup(index: number): IGroupData;
+
+  getRow(index: number): IGroupItem;
 }
 
+export declare type IRankingHeaderContext = Readonly<IRankingHeaderContextContainer>;
 
-export declare type ISummaryFunction = ((col: Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext)=>void);
+export declare type IRankingContext = Readonly<IRankingBodyContext>;
 
-export interface IHeaderRendererOptions {
-  idPrefix: string;
-  slopeWidth: number;
-  columnPadding: number;
-  headerHistogramHeight: number;
-  headerHeight: number;
-  manipulative: boolean;
-  summary: boolean;
-
-  filters: { [type: string]: IFilterDialog };
-  summaries: { [type: string]: ISummaryFunction};
-  linkTemplates: string[];
-
-  searchAble(col: Column): boolean;
-
-  sortOnLabel: boolean;
-
-  autoRotateLabels: boolean;
-  rotationHeight: number;
-  rotationDegree: number;
-
-  freezeCols: number;
-
-  /**
-   * @deprecated
-   */
-  rankingButtons: IRankingHook;
-}

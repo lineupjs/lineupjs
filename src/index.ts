@@ -1,34 +1,44 @@
 /**
  * main module of LineUp.js containing the main class and exposes all other modules
- * Created by Samuel Gratzl on 14.08.2015.
  */
 
 import './style.scss';
-import * as model_ from './model';
-import * as provider_ from './provider';
-import * as renderer_ from './renderer/index';
-import * as ui_ from './ui';
-import {Selection} from 'd3';
-import LineUp, {ILineUpConfig} from './lineup';
+import {IColumnDesc} from './model';
+import {ILocalDataProviderOptions} from './provider';
+import ADataProvider from './provider/ADataProvider';
+import LocalDataProvider from './provider/LocalDataProvider';
+import LineUp, {ILineUpOptions} from './ui/LineUp';
+import Taggle, {ITaggleOptions} from './ui/taggle';
 
-export {deriveColors} from './lineup';
-export {deriveColumnDescriptions} from './provider';
+export * from './provider';
+export * from './renderer';
+export * from './model';
+export * from './builder';
+export * from './ui/';
+export * from './interfaces';
+export * from './config';
+export {default} from './ui/LineUp';
+export {IBoxPlotData, IAdvancedBoxPlotData, IStatistics, ICategoricalBin, ICategoricalStatistics, INumberBin} from './internal/math';
+
+
+declare const __VERSION__: string;
+declare const __BUILD_ID__: string;
+declare const __LICENSE__: string;
 /**
- * access to the model module
+ * LineUp version
+ * @type {string}
  */
-export const model = model_;
+export const version = __VERSION__;
 /**
- * access to the provider module
+ * LineUp unique build id
+ * @type {string}
  */
-export const provider = provider_;
+export const buildId = __BUILD_ID__;
 /**
- * access to the renderer module
+ * LineUp license type
+ * @type {string}
  */
-export const renderer = renderer_;
-/**
- * access to the ui module
- */
-export const ui = ui_;
+export const license = __LICENSE__;
 
 /**
  * creates a local storage provider
@@ -37,11 +47,14 @@ export const ui = ui_;
  * @param options
  * @returns {LocalDataProvider}
  */
-export function createLocalStorage(data: any[], columns: model_.IColumnDesc[], options: Partial<provider_.ILocalDataProviderOptions> = {}) {
-  return new provider_.LocalDataProvider(data, columns, options);
+export function createLocalDataProvider(data: any[], columns: IColumnDesc[], options: Partial<ILocalDataProviderOptions> = {}) {
+  return new LocalDataProvider(data, columns, options);
 }
 
-export function create(data: provider_.DataProvider, container: Selection<any> | Element, config: Partial<ILineUpConfig> = {}) {
+export function createLineUp(container: HTMLElement, data: ADataProvider, config: Partial<ILineUpOptions> = {}) {
   return new LineUp(container, data, config);
 }
 
+export function createTaggle(container: HTMLElement, data: ADataProvider, config: Partial<ITaggleOptions> = {}) {
+  return new Taggle(container, data, config);
+}

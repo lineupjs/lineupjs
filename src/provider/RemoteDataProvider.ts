@@ -1,12 +1,8 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import Column, {IColumnDesc} from '../model/Column';
-import Ranking from '../model/Ranking';
-import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
-import ACommonDataProvider from './ACommonDataProvider';
+import Column, {IColumnDesc, IDataRow} from '../model';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
+import Ranking from '../model/Ranking';
+import ACommonDataProvider from './ACommonDataProvider';
+import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 
 /**
  * interface what the server side has to provide
@@ -14,9 +10,9 @@ import {defaultGroup, IOrderedGroup} from '../model/Group';
 export interface IServerData {
   /**
    * sort the dataset by the given description
-   * @param desc
+   * @param ranking
    */
-  sort(desc: any): Promise<number[]>;
+  sort(ranking: Ranking): Promise<number[]>;
 
   /**
    * returns a slice of the data array identified by a list of indices
@@ -64,11 +60,14 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     Object.assign(this.options, options);
   }
 
+  getTotalNumberOfRows() {
+    // TODO not correct
+    return this.cache.size;
+  }
+
   sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {
-    //generate a description of what to sort
-    const desc = ranking.toSortingDesc((desc) => desc.column);
     //use the server side to sort
-    return this.server.sort(desc).then((order) => [Object.assign({order}, defaultGroup)]);
+    return this.server.sort(ranking).then((order) => [Object.assign({order}, defaultGroup)]);
   }
 
   private loadFromServer(indices: number[]) {
@@ -113,7 +112,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     const v = this.loadFromServer(missing);
     missing.forEach((_m, i) => {
       const dataIndex = missing[i];
-      this.cache.set(dataIndex, v.then((loaded) => ({v: loaded[i], dataIndex})));
+      this.cache.set(dataIndex, v.then((loaded) => ({v: loaded[i], i: dataIndex})));
     });
   }
 
@@ -122,7 +121,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     this.loadInCache(toLoad);
 
     return orders.map((order) =>
-      order.map((dataIndex) => this.cache.get(dataIndex)!));
+      order.map((i) => this.cache.get(i)!));
   }
 
 

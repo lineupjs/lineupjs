@@ -1,119 +1,120 @@
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
 import Column from '../model/Column';
-import ICellRendererFactory from './ICellRendererFactory';
-import BarCellRenderer from './BarCellRenderer';
-import {DefaultCellRenderer} from './DefaultCellRenderer';
-import StringCellRenderer from './StringCellRenderer';
-import SelectionRenderer from './SelectionRenderer';
-import LinkCellRenderer from './LinkCellRenderer';
-import AnnotationRenderer from './AnnotationRenderer';
 import ActionRenderer from './ActionRenderer';
-import MultiLevelCellRenderer from './MultiLevelCellRenderer';
-import CategoricalCellRenderer from './CategoricalCellRenderer';
-import NumbersCellRenderer from './NumbersCellRenderer';
-import SparklineCellRenderer from './SparklineCellRenderer';
-import VerticalBarCellRenderer from './VerticalBarCellRenderer';
-import UpSetCellRenderer from './UpSetCellRenderer';
-import CircleCellRenderer from './CircleCellRenderer';
-import BoxplotCellRenderer from './BoxplotCellRenderer';
-import LoadingCellRenderer from './LoadingCellRenderer';
-import HeatmapCellRenderer from './HeatmapCellRenderer';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import {EmptyCellRenderer} from './EmptyCellRenderer';
-import RankCellRenderer from './RankCellRenderer';
-import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
-import HistogramRenderer from './HistogramRenderer';
-import ImageCellRenderer from './ImageCellRenderer';
+import AnnotationRenderer from './AnnotationRenderer';
+import BarCellRenderer from './BarCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
-import InterleavingCellRenderer from './InterleavingCellRenderer';
+import BoxplotCellRenderer from './BoxplotCellRenderer';
+import BrightnessCellRenderer from './BrightnessCellRenderer';
+import CategoricalCellRenderer from './CategoricalCellRenderer';
+import CategoricalHeatmapCellRenderer from './CategoricalHeatmapCellRenderer';
+import CategoricalStackedDistributionlCellRenderer from './CategoricalStackedDistributionlCellRenderer';
+import CircleCellRenderer from './CircleCellRenderer';
+import {DefaultCellRenderer} from './DefaultCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
-import {IImposer} from './IRenderContext';
-import CategoricalStackedDistributionlRenderer from './CategoricalStackedDistributionlRenderer';
 import GroupCellRenderer from './GroupCellRenderer';
+import HeatmapCellRenderer from './HeatmapCellRenderer';
+import HistogramCellRenderer from './HistogramCellRenderer';
+import ImageCellRenderer from './ImageCellRenderer';
+import {ERenderMode, ICellRendererFactory} from './interfaces';
+import InterleavingCellRenderer from './InterleavingCellRenderer';
+import LinkCellRenderer from './LinkCellRenderer';
+import LinkMapCellRenderer from './LinkMapCellRenderer';
+import LoadingCellRenderer from './LoadingCellRenderer';
+import MapBarCellRenderer from './MapBarCellRenderer';
+import MultiLevelCellRenderer from './MultiLevelCellRenderer';
+import RankCellRenderer from './RankCellRenderer';
+import SelectionRenderer from './SelectionRenderer';
+import SparklineCellRenderer from './SparklineCellRenderer';
+import StringCellRenderer from './StringCellRenderer';
+import TableCellRenderer from './TableCellRenderer';
+import UpSetCellRenderer from './UpSetCellRenderer';
+import VerticalBarCellRenderer from './VerticalBarCellRenderer';
+
+export {
+  default as IRenderContext,
+  IImposer,
+  IGroupCellRenderer,
+  ICellRenderer,
+  ICellRendererFactory
+} from './interfaces';
 
 
-
-export const defaultCellRenderer = new DefaultCellRenderer();
+const defaultCellRenderer = new DefaultCellRenderer();
 /**
  * default render factories
  */
 export const renderers: { [key: string]: ICellRendererFactory } = {
-  rank: new RankCellRenderer(),
-  boolean: new BooleanCellRenderer(),
-  number: new BarCellRenderer(),
-  string: new StringCellRenderer(),
-  selection: new SelectionRenderer(),
-  heatmap: new HeatmapCellRenderer(),
-  image: new ImageCellRenderer(),
-  link: new LinkCellRenderer(),
-  annotate: new AnnotationRenderer(),
   actions: new ActionRenderer(),
-  stack: new MultiLevelCellRenderer(),
-  nested: new MultiLevelCellRenderer(false),
-  categorical: new CategoricalCellRenderer(),
-  catcolor: new CategoricalColorCellRenderer(),
-  catdistributionbar: new CategoricalStackedDistributionlRenderer(),
-  numbers: new NumbersCellRenderer(),
-  sparkline: new SparklineCellRenderer(),
-  verticalbar: new VerticalBarCellRenderer(),
-  upset: new UpSetCellRenderer(),
-  circle: new CircleCellRenderer(),
-  boxplot: new BoxplotCellRenderer(),
-  loading: new LoadingCellRenderer(),
-  empty: new EmptyCellRenderer(),
   aggregate: new AggregateGroupRenderer(),
-  histogram: new HistogramRenderer(),
-  interleaving: new InterleavingCellRenderer(),
+  annotate: new AnnotationRenderer(),
+  boolean: new BooleanCellRenderer(),
+  boxplot: new BoxplotCellRenderer(),
+  brightness: new BrightnessCellRenderer(),
+  catdistributionbar: new CategoricalStackedDistributionlCellRenderer(),
+  categorical: new CategoricalCellRenderer(),
+  circle: new CircleCellRenderer(),
+  default: defaultCellRenderer,
   dot: new DotCellRenderer(),
   group: new GroupCellRenderer(),
-  default: defaultCellRenderer
+  heatmap: new HeatmapCellRenderer(),
+  catheatmap: new CategoricalHeatmapCellRenderer(),
+  histogram: new HistogramCellRenderer(),
+  image: new ImageCellRenderer(),
+  interleaving: new InterleavingCellRenderer(),
+  link: new LinkCellRenderer(),
+  linkMap: new LinkMapCellRenderer(),
+  loading: new LoadingCellRenderer(),
+  nested: new MultiLevelCellRenderer(false),
+  number: new BarCellRenderer(),
+  mapbars: new MapBarCellRenderer(),
+  rank: new RankCellRenderer(),
+  selection: new SelectionRenderer(),
+  sparkline: new SparklineCellRenderer(),
+  stack: new MultiLevelCellRenderer(),
+  string: new StringCellRenderer(),
+  table: new TableCellRenderer(),
+  upset: new UpSetCellRenderer(),
+  verticalbar: new VerticalBarCellRenderer()
 };
 
 
-function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
-  const r = renderers[col.getRendererType()];
+export function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
+  const r = renderers[col.getRenderer()];
   return r || defaultCellRenderer;
 }
 
-function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
+export function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getGroupRenderer()];
   return r || defaultCellRenderer;
 }
 
-export function createDOM(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext, imposer?: IImposer) {
-  const r = chooseRenderer(col, renderers);
-  return (r.createDOM ? r.createDOM.bind(r) : defaultCellRenderer.createDOM.bind(defaultCellRenderer))(col, context, imposer);
+export function chooseSummaryRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
+  const r = renderers[col.getSummaryRenderer()];
+  return r || defaultCellRenderer;
 }
 
-export function createCanvas(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext, imposer?: IImposer) {
-  const r = chooseRenderer(col, renderers);
-  return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(defaultCellRenderer))(col, context, imposer);
-}
-
-export function createDOMGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext, imposer?: IImposer) {
-  const r = chooseGroupRenderer(col, renderers);
-  return (r.createGroupDOM ? r.createGroupDOM.bind(r) : defaultCellRenderer.createGroupDOM.bind(defaultCellRenderer))(col, context, imposer);
-}
-
-export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext, imposer?: IImposer) {
-  const r = chooseGroupRenderer(col, renderers);
-  return (r.createGroupCanvas ? r.createGroupCanvas.bind(r) : defaultCellRenderer.createGroupCanvas.bind(defaultCellRenderer))(col, context, imposer);
-}
-
-export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, isGroup: boolean = false): {type: string, label: string}[] {
+export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, mode: ERenderMode = ERenderMode.CELL): { type: string, label: string }[] {
   const valid = Object.keys(renderers).filter((type) => {
     const factory = renderers[type];
-    return factory.canRender(col, isGroup);
+    return factory.canRender(col, mode);
   });
   // TODO some magic to remove and order
 
-  return valid.map((type) => ({type, label: !isGroup ? renderers[type].title : (renderers[type].groupTitle || renderers[type].title)}));
+
+  return valid.map((type) => {
+    const r = renderers[type];
+    return {
+      type,
+      label: mode === ERenderMode.CELL ? r.title : (mode === ERenderMode.GROUP ? r.groupTitle || r.title : r.summaryTitle || r.groupTitle || r.title)
+    };
+  });
 }
 
 export function possibleGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {
-  return possibleRenderer(col, renderers, true);
+  return possibleRenderer(col, renderers, ERenderMode.GROUP);
+}
+
+export function possibleSummaryRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {
+  return possibleRenderer(col, renderers, ERenderMode.SUMMARY);
 }

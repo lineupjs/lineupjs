@@ -1,17 +1,21 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
+import {Category, SupportType, toolbar} from './annotations';
 import Column from './Column';
-import {IGroupData} from '../ui/engine/interfaces';
+import {IGroupData} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
 
-export function createDesc(label = 'Group') {
+export function createGroupDesc(label = 'Group Name') {
   return {type: 'group', label};
 }
 
+@SupportType()
+@toolbar('sortGroup')
+@Category('support')
 export default class GroupColumn extends Column {
-  private groupSortMethod: 'name'|'count' = 'name';
+  private groupSortMethod: 'name' | 'count' = 'name';
+
+  get frozen() {
+    return this.desc.frozen !== false;
+  }
 
   getLabel() {
     return '';
@@ -29,7 +33,7 @@ export default class GroupColumn extends Column {
     return this.groupSortMethod;
   }
 
-  setSortMethod(sortMethod: 'name'|'count') {
+  setSortMethod(sortMethod: 'name' | 'count') {
     if (this.groupSortMethod === sortMethod) {
       return;
     }
@@ -41,7 +45,7 @@ export default class GroupColumn extends Column {
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
-    switch(this.groupSortMethod) {
+    switch (this.groupSortMethod) {
       case 'count':
         return a.rows.length - b.rows.length;
       default:
@@ -49,7 +53,7 @@ export default class GroupColumn extends Column {
           return b.name === missingGroup.name ? 0 : FIRST_IS_NAN;
         }
         if (b.name === missingGroup.name) {
-          return - FIRST_IS_NAN;
+          return -FIRST_IS_NAN;
         }
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     }

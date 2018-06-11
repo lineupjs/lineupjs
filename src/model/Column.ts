@@ -1,21 +1,12 @@
-/**
- * Created by Samuel Gratzl on 06.08.2015.
- */
-
-import {AEventDispatcher, similar} from '../utils';
-import Ranking, {ISortCriteria} from './Ranking';
+import AEventDispatcher from '../internal/AEventDispatcher';
+import {similar} from '../internal/math';
+import {fixCSS} from '../internal/utils';
 import {defaultGroup} from './Group';
+import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
-import {IGroupData} from '../ui/engine/interfaces';
+import Ranking, {ISortCriteria} from './Ranking';
 
-/**
- * converts a given id to css compatible one
- * @param id
- * @return {string|void}
- */
-export function fixCSS(id: string) {
-  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]\^`{|}~]/g, '_'); //replace non css stuff to _
-}
+export {IColumnDesc} from './interfaces';
 
 export interface IFlatColumn {
   readonly col: Column;
@@ -47,74 +38,11 @@ export interface IColumnParent {
 }
 
 
-export interface IColumnDesc {
-  /**
-   * label of the column
-   */
-  readonly label: string;
-  /**
-   * the column type
-   */
-  readonly type: string;
-
-  /**
-   * column description
-   */
-  readonly description?: string;
-
-  /**
-   * color of this column
-   */
-  readonly color?: string;
-  /**
-   * css class to append to elements of this column
-   */
-  readonly cssClass?: string;
-
-  /**
-   * default renderer to use
-   */
-  readonly rendererType?: string;
-
-  /**
-   * default group renderer to use
-   */
-  readonly groupRenderer?: string;
-}
-
-export interface IStatistics {
-  readonly min: number;
-  readonly max: number;
-  readonly mean: number;
-  readonly count: number;
-  readonly maxBin: number;
-  readonly hist: { x: number; dx: number; y: number; }[];
-  readonly missing: number;
-}
-
-export interface ICategoricalStatistics {
-  readonly maxBin: number;
-  readonly hist: { cat: string; y: number }[];
-  readonly missing: number;
-}
-
 export interface IColumnMetaData {
-  readonly label: string;
-  readonly description: string;
-  readonly color: string | null;
+  label: string;
+  description: string;
+  color: string | null;
 }
-
-
-export interface IRendererInfo {
-
-  /*
-   name of the current renderer
-   */
-  renderer: string;
-
-  groupRenderer: string;
-}
-
 
 /**
  * a column in LineUp
@@ -143,9 +71,10 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
   static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
   static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererChanged';
+  static readonly EVENT_SUMMARY_RENDERER_TYPE_CHANGED = 'summaryRendererChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
-  static readonly EVENT_VISBILITY_CHANGED = 'visibilityChanged';
+  static readonly EVENT_VISIBILITY_CHANGED = 'visibilityChanged';
   static readonly EVENT_DATA_LOADED = 'dataLoaded';
 
   /**
@@ -163,32 +92,36 @@ export default class Column extends AEventDispatcher {
   /**
    * parent column of this column, set when added to a ranking or combined column
    */
-  parent: IColumnParent | null = null;
+  parent: Readonly<IColumnParent> | null = null;
 
-  private metadata: IColumnMetaData;
+  private metadata: Readonly<IColumnMetaData>;
+  private renderer: string;
+  private groupRenderer: string;
+  private summaryRenderer: string;
+  private visible: boolean;
 
-  /**
-   * alternative to specifying a color is defining a css class that should be used
-   */
-  readonly cssClass: string;
-
-  private readonly rendererInfo: IRendererInfo;
-
-
-  constructor(id: string, public readonly desc: IColumnDesc) {
+  constructor(id: string, public readonly desc: Readonly<IColumnDesc>) {
     super();
     this.uid = fixCSS(id);
-    this.rendererInfo = {
-      renderer: this.desc.rendererType || this.desc.type,
-      groupRenderer: this.desc.groupRenderer || this.desc.type
-    };
+    this.renderer = this.desc.renderer || this.desc.type;
+    this.groupRenderer = this.desc.groupRenderer || this.desc.type;
+    this.summaryRenderer = this.desc.summaryRenderer || this.desc.type;
+    this.width = this.desc.width != null && this.desc.width > 0 ? this.desc.width : 100;
+    this.visible = this.desc.visible !== false;
 
-    this.cssClass = desc.cssClass || '';
     this.metadata = {
       label: desc.label || this.id,
       description: desc.description || '',
-      color: desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+      color: desc.color || Column.DEFAULT_COLOR
     };
+  }
+
+  get fixed() {
+    return Boolean(this.desc.fixed);
+  }
+
+  get frozen() {
+    return Boolean(this.desc.frozen);
   }
 
   get id() {
@@ -209,14 +142,6 @@ export default class Column extends AEventDispatcher {
 
   get color() {
     return this.metadata.color;
-  }
-
-  /**
-   * return the css class to use for the header
-   * @return {string}
-   */
-  get headerCssClass() {
-    return this.desc.type;
   }
 
   /**
@@ -245,7 +170,7 @@ export default class Column extends AEventDispatcher {
    */
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
-      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISBILITY_CHANGED,
+      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_MOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED, Column.EVENT_DATA_LOADED]);
   }
@@ -254,16 +179,27 @@ export default class Column extends AEventDispatcher {
     return this.width;
   }
 
-  /**
-   * a column is hidden if it has no width
-   * @return {boolean} whether the column is hidden
-   */
-  isHidden() {
-    return this.width <= 0;
+  hide() {
+    this.setVisible(false);
   }
 
-  hide() {
-    return this.setWidth(0);
+  show() {
+    this.setVisible(true);
+  }
+
+  isVisible() {
+    return this.visible;
+  }
+
+  getVisible() {
+    return this.isVisible();
+  }
+
+  setVisible(value: boolean) {
+    if (this.visible === value) {
+      return;
+    }
+    this.fire([Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.visible, this.visible = value);
   }
 
   /**
@@ -284,19 +220,14 @@ export default class Column extends AEventDispatcher {
     if (similar(this.width, value, 0.5)) {
       return;
     }
-    const events = [Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
-    if ((value <= 0 !== this.width <= 0)) {
-      // width < 0 -> hidden
-      events.splice(1, 0, Column.EVENT_VISBILITY_CHANGED);
-    }
-    this.fire(events, this.width, this.width = value);
+    this.fire([Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.width, this.width = value);
   }
 
   setWidthImpl(value: number) {
     this.width = value;
   }
 
-  setMetaData(value: IColumnMetaData) {
+  setMetaData(value: Readonly<IColumnMetaData>) {
     if (value.label === this.label && this.color === value.color && this.description === value.description) {
       return;
     }
@@ -314,12 +245,8 @@ export default class Column extends AEventDispatcher {
     this.fire(events, bak, this.getMetaData());
   }
 
-  getMetaData(): IColumnMetaData {
-    return {
-      label: this.label,
-      color: this.color,
-      description: this.description
-    };
+  getMetaData(): Readonly<IColumnMetaData> {
+    return Object.assign({}, this.metadata);
   }
 
   /**
@@ -335,7 +262,7 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  groupByMe() {
+  groupByMe(): boolean {
     const r = this.findMyRanker();
     if (r) {
       return r.toggleGrouping(this);
@@ -384,7 +311,7 @@ export default class Column extends AEventDispatcher {
   }
 
   isSortedByMe() {
-    return this.isSortedByMeImpl((r) => r.getSortCriterias());
+    return this.isSortedByMeImpl((r) => r.getSortCriteria());
   }
 
   groupSortByMe(ascending = false) {
@@ -412,6 +339,9 @@ export default class Column extends AEventDispatcher {
    * @returns {boolean} was successful
    */
   removeMe() {
+    if (this.fixed) {
+      return false;
+    }
     if (this.parent) {
       return this.parent.remove(this);
     }
@@ -458,8 +388,14 @@ export default class Column extends AEventDispatcher {
     if (this.color !== ((<any>this.desc).color || Column.DEFAULT_COLOR) && this.color) {
       r.color = this.color;
     }
-    if (this.getRendererType() !== this.desc.type) {
-      r.rendererType = this.getRendererType();
+    if (this.getRenderer() !== this.desc.type) {
+      r.renderer = this.getRenderer();
+    }
+    if (this.getGroupRenderer() !== this.desc.type) {
+      r.groupRenderer = this.getGroupRenderer();
+    }
+    if (this.getSummaryRenderer() !== this.desc.type) {
+      r.summaryRenderer = this.getSummaryRenderer();
     }
     return r;
   }
@@ -476,57 +412,55 @@ export default class Column extends AEventDispatcher {
       color: dump.color || this.color,
       description: this.description
     };
-    if (dump.rendererType) {
-      this.rendererInfo.renderer = dump.rendererType;
+    if (dump.renderer || dump.rendererType) {
+      this.renderer = dump.renderer || dump.rendererType;
     }
     if (dump.groupRenderer) {
-      this.rendererInfo.groupRenderer = dump.groupRenderer;
+      this.groupRenderer = dump.groupRenderer;
+    }
+    if (dump.summaryRenderer) {
+      this.summaryRenderer = dump.summaryRenderer;
     }
   }
 
   /**
    * return the label of a given row for the current column
    * @param row the current row
-   * @param index its row index
    * @return {string} the label of this column at the specified row
    */
-  getLabel(row: any, index: number): string {
-    return String(this.getValue(row, index));
+  getLabel(row: IDataRow): string {
+    return String(this.getValue(row));
   }
 
   /**
    * return the value of a given row for the current column
    * @param _row the current row
-   * @param _index its row index
    * @return the value of this column at the specified row
    */
-  getValue(_row: any, _index: number): any {
+  getValue(_row: IDataRow): any {
     return ''; //no value
   }
 
-  isMissing(row: any, index: number) {
-    return isMissingValue(this.getValue(row, index));
+  isMissing(row: IDataRow) {
+    return isMissingValue(this.getValue(row));
   }
 
   /**
    * compare function used to determine the order according to the values of the current column
    * @param _a first element
    * @param _b second element
-   * @param _aIndex index of the first element
-   * @param _bIndex index of the second element
    * @return {number}
    */
-  compare(_a: any, _b: any, _aIndex: number, _bIndex: number) {
+  compare(_a: IDataRow, _b: IDataRow) {
     return 0; //can't compare
   }
 
   /**
    * group the given row into a bin/group
    * @param _row
-   * @param _index
    * @return {IGroup}
    */
-  group(_row: any, _index: number) {
+  group(_row: IDataRow): IGroup {
     return defaultGroup;
   }
 
@@ -551,61 +485,77 @@ export default class Column extends AEventDispatcher {
   /**
    * predicate whether the current row should be included
    * @param row
-   * @param _index the row index
    * @return {boolean}
    */
-  filter(row: any, _index: number) {
-    return row !== null;
+  filter(row: IDataRow) {
+    return row != null;
   }
 
   /**
    * determines the renderer type that should be used to render this column. By default the same type as the column itself
    * @return {string}
    */
-  getRendererType(): string {
-    return this.rendererInfo.renderer;
+  getRenderer(): string {
+    return this.renderer;
   }
 
   getGroupRenderer(): string {
-    return this.rendererInfo.groupRenderer;
+    return this.groupRenderer;
   }
 
-  setRendererType(renderer: string) {
-    if (renderer === this.rendererInfo.renderer) {
+  getSummaryRenderer(): string {
+    return this.summaryRenderer;
+  }
+
+  setRenderer(renderer: string) {
+    if (renderer === this.renderer) {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.renderer, this.rendererInfo.renderer = renderer);
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderer, this.renderer = renderer);
   }
 
   protected setDefaultRenderer(renderer: string) {
-    if (this.rendererInfo.renderer !== this.desc.type) {
+    if (this.renderer !== this.desc.type) {
       return;
     }
-    return this.setRendererType(renderer);
+    return this.setRenderer(renderer);
   }
 
   setGroupRenderer(renderer: string) {
-    if (renderer === this.rendererInfo.groupRenderer) {
+    if (renderer === this.groupRenderer) {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.groupRenderer, this.rendererInfo.groupRenderer = renderer);
+    this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.groupRenderer, this.groupRenderer = renderer);
   }
 
   protected setDefaultGroupRenderer(renderer: string) {
-    if (this.rendererInfo.groupRenderer !== this.desc.type) {
+    if (this.groupRenderer !== this.desc.type) {
       return;
     }
     return this.setGroupRenderer(renderer);
   }
 
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    return toId(this.desc);
+  setSummaryRenderer(renderer: string) {
+    if (renderer === this.summaryRenderer) {
+      // nothing changes
+      return;
+    }
+    this.fire([Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.summaryRenderer, this.summaryRenderer = renderer);
+  }
+
+  protected setDefaultSummaryRenderer(renderer: string) {
+    if (this.summaryRenderer !== this.desc.type) {
+      return;
+    }
+    return this.setSummaryRenderer(renderer);
+  }
+
+  protected setDefaultWidth(width: number) {
+    if (this.width !== 100) {
+      return;
+    }
+    return this.setWidthImpl(width);
   }
 }

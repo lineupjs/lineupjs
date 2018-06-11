@@ -1,5 +1,6 @@
+import {Category, SupportType} from './annotations';
 import Column, {IColumnDesc} from './Column';
-import {IGroup} from './Group';
+import {IGroup} from './interfaces';
 import Ranking from './Ranking';
 
 /**
@@ -7,8 +8,8 @@ import Ranking from './Ranking';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'A') {
-  return {type: 'aggregate', label, description: 'Aggregate Groups'};
+export function createAggregateDesc(label: string = 'Aggregate Groups') {
+  return {type: 'aggregate', label, fixed: true};
 }
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {
@@ -20,12 +21,18 @@ export interface IAggregateGroupColumnDesc extends IColumnDesc {
 /**
  * a checkbox column for selections
  */
+@SupportType()
+@Category('support')
 export default class AggregateGroupColumn extends Column {
   static readonly EVENT_AGGREGATE = 'aggregate';
 
-  constructor(id: string, desc: IAggregateGroupColumnDesc) {
+  constructor(id: string, desc: Readonly<IAggregateGroupColumnDesc>) {
     super(id, desc);
-    this.setWidth(20);
+    this.setDefaultWidth(20);
+  }
+
+  get frozen() {
+    return this.desc.frozen !== false;
   }
 
   protected createEventList() {

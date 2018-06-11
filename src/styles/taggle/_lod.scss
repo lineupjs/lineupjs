@@ -1,109 +1,123 @@
+@import '~lineupengine/src/styles/import_once';
 
-.lineup-engine {
-  [data-lod=low][data-agg=detail]:hover,
-  [data-lod=medium][data-agg=detail]:hover {
-    /* show regular height for hovered rows in low + medium LOD */
-    height: 18px !important;
-  }
+@include exports('lineupjs/taggle/lod') {
+  .lineup-engine {
+    /* since the row height should be configurable -> dynamic rule, see TaggleRenderer */
 
-  [data-lod=low][data-agg=detail]:not(:hover),
-  [data-lod=medium][data-agg=detail]:not(:hover) {
-    /* shrink rows in low + medium LOD that are not hovered */
-    padding-top: 0;
-
-    &[data-meta~=first] {
-      /* change rendering of the first row for a group to show the collapse arrow of `[data-renderer=aggregate]` */
-      z-index: 11; // 11 overrules the `z-index: 10;` of `.lu-selected` in _row.scss
-      position: relative;
+    [data-lod=low][data-agg=detail] > * {
+      overflow: hidden;
     }
 
-    .lu-hover-only,
-    .lu-selection-only,
-    [data-renderer=rank],
-    [data-renderer=string],
-    [data-renderer=circle],
-    [data-renderer=selection],
-    [data-renderer=sparkline],
-    [data-renderer=threshold] {
-      display: none !important;
-    }
-
-    [data-renderer=aggregate] {
-      overflow: visible !important;
-
-      &::before {
-        position: absolute;
-        left: 0;
-        right: 0;
+    [data-lod=low][data-agg=detail]:not(:hover) {
+      &[data-meta~=first] {
+        /* change rendering of the first row for a group to show the collapse arrow of `[data-renderer=aggregate]` */
+        z-index: 11; // 11 overrules the `z-index: 10;` of `.lu-selected` in _row.scss
+        position: relative;
       }
-    }
 
-    [data-renderer=group] {
-      overflow: visible !important;
-
-      > * {
-        position: absolute;
-        left: 0;
-        right: 0;
+      .lu-hover-only,
+      .lu-selection-only,
+      [data-renderer] {
+        visibility: hidden;
       }
-    }
 
-    [data-renderer=number] > * {
-      top: 0;
-      bottom: 0;
-    }
+      [data-renderer=heatmap],
+      [data-renderer=catheatmap] {
+        visibility: visible !important;
+      }
 
-    [data-renderer=boxplot] {
-      > div {
-        height: 100%;
+      [data-renderer=aggregate] {
+        visibility: visible !important;
+        overflow: visible !important;
 
-        &::before,
-        > div:last-child,
-        > div:first-child::after {
+        &::before {
+          position: absolute;
+          left: 0;
+          right: 0;
+        }
+      }
+
+      [data-renderer=group] {
+        visibility: visible !important;
+        overflow: visible !important;
+
+        > * {
+          position: absolute;
+          left: 0;
+          right: 0;
+        }
+      }
+
+      [data-renderer=number] {
+        visibility: visible !important;
+
+        > * {
+          top: 0;
+          bottom: 0;
+        }
+      }
+
+      [data-renderer=boxplot] {
+        visibility: visible !important;
+
+        > div {
+          height: 100%;
+
+          &::before,
+          > div:last-child,
+          > div:first-child::after {
+            display: none;
+          }
+
+          > div:first-child {
+            top: 0;
+            height: 100%;
+            background: #c1c1c1;
+          }
+        }
+      }
+
+      [data-renderer=upset] {
+        visibility: visible !important;
+        align-items: stretch;
+
+        > div:first-child {
           display: none;
         }
 
-        > div:first-child {
-          top: 0;
+        > div:nth-child(n + 2) {
+          border-radius: 0;
           height: 100%;
-          background: #c1c1c1;
+
+          &:not(.enabled) {
+            visibility: hidden;
+          }
         }
       }
-    }
 
-    [data-renderer=upset] {
-      align-items: stretch;
+      [data-renderer=categorical],
+      [data-renderer=brightness] {
+        visibility: visible !important;
 
-      > div:first-child {
-        display: none;
-      }
+        > div:first-of-type {
+          margin-right: 0;
+          flex: 1 1 auto;
+        }
 
-      > div:nth-child(n + 2) {
-        border-radius: 0;
-        height: 100%;
-
-        &:not(.enabled) {
-          visibility: hidden;
+        > div:last-of-type {
+          display: none;
         }
       }
-    }
 
-    [data-renderer=categorical],
-    [data-renderer=heatmap] {
-      > div:first-of-type {
-        margin-right: 0;
-        flex: 1 1 auto;
+      [data-renderer=dot] {
+        visibility: visible !important;
+
+        > div {
+          top: 0 !important;
+          height: 100%;
+          margin-top: 0;
+        }
       }
-
-      > div:last-of-type {
-        display: none;
-      }
-    }
-
-    [data-renderer=dot] > div {
-      top: 0 !important;
-      height: 100%;
-      margin-top: 0;
     }
   }
 }

@@ -1,16 +1,12 @@
-/**
- * Created by Samuel Gratzl on 05.09.2017.
- */
 import {default as Column, IColumnDesc} from '../../model/Column';
+import {IRankingHeaderContext} from '../interfaces';
 import SidePanelEntryVis from './SidePanelEntryVis';
-import {IRankingHeaderContext} from '../engine/interfaces';
-
 
 export default class SidePanelEntry {
   used = 0;
   private vis: SidePanelEntryVis | null = null;
 
-  constructor(public readonly desc: IColumnDesc) {
+  constructor(public readonly desc: IColumnDesc, public readonly category: { label: string, order: number, name: string }) {
 
   }
 

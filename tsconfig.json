@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "es6",
+    "module": "esnext",
     "target": "es5",
     "importHelpers": true,
     "sourceMap": true,
@@ -13,22 +13,25 @@
       "es2016.array.include",
       "es2017.object"
     ],
+    "declaration": true,
+    "removeComments": true,
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
+    "noUnusedLocals": true,
     "noImplicitThis": true,
     "noUnusedParameters": true,
-    "noUnusedLocals": true,
     "strictNullChecks": true,
-    "skipLibCheck": true,
-    "baseUrl": "../"
+    "stripInternal": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "esModuleInterop": true
   },
+  "compileOnSave": false,
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "tests/**/*.ts",
-    "index.ts",
     "tsd.d.ts"
   ]
 }

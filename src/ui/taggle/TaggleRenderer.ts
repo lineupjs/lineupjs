@@ -1,55 +1,73 @@
-import {IGroupData, IGroupItem, isGroup} from '../engine/interfaces';
-import EngineRenderer, {IEngineRendererOptions} from '../engine/EngineRenderer';
-import {IRule, regular} from './LineUpRuleSet';
-import {defaultConfig} from '../../config';
-import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
-import {GROUP_SPACING} from './lod';
+import {ILineUpOptions} from '../../interfaces';
+import AEventDispatcher from '../../internal/AEventDispatcher';
+import debounce from '../../internal/debounce';
+import {IGroupData, IGroupItem, isGroup} from '../../model';
+import Ranking from '../../model/Ranking';
 import DataProvider from '../../provider/ADataProvider';
-import {AEventDispatcher, merge} from '../../utils';
-import {IRankingHeaderContext} from '../engine/interfaces';
+import {IRenderContext} from '../../renderer';
+import {IEngineRankingContext} from '../EngineRanking';
+import EngineRenderer from '../EngineRenderer';
+import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
+import {IRule} from './interfaces';
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
+
+  rowPadding: number;
 }
 
 export default class TaggleRenderer extends AEventDispatcher {
-  /**
-   * triggered when the mouse is over a specific row
-   * @argument data_index:number the selected data index or <0 if no row
-   */
-  static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
+  static readonly EVENT_HIGHLIGHT_CHANGED = EngineRenderer.EVENT_HIGHLIGHT_CHANGED;
 
-  private isDynamicLeafHeight: boolean = true;
+  private isDynamicLeafHeight: boolean = false;
 
-  private rule: IRule = regular;
-  private levelOfDetail: (row: HTMLElement, rowIndex: number) => void;
-  private readonly resizeListener = () => this.update();
+  private rule: IRule | null = null;
+  private levelOfDetail: ((rowIndex: number) => 'high' | 'low') | null = null;
+  private readonly resizeListener = () => debounce(() => this.update(), 100);
   private readonly renderer: EngineRenderer;
 
   private readonly options: Readonly<ITaggleOptions> = {
-    violationChanged: () => undefined
+    violationChanged: () => undefined,
+    rowPadding: 2
   };
 
-  constructor(parent: HTMLElement, public data: DataProvider, options: Partial<ITaggleOptions & IEngineRendererOptions> = {}) {
+  constructor(public data: DataProvider, parent: HTMLElement, options: (Partial<ITaggleOptions> & Readonly<ILineUpOptions>)) {
     super();
 
-    this.options = Object.assign(this.options, options);
 
-    const config = this.createConfig(options);
+    this.renderer = new EngineRenderer(data, parent, Object.assign({}, options, {
+      dynamicHeight: (data: (IGroupData | IGroupItem)[], ranking: Ranking) => {
+        const r = this.dynamicHeight(data);
+        if (r) {
+          return r;
+        }
+        return options.dynamicHeight ? options.dynamicHeight(data, ranking) : null;
+      },
+      levelOfDetail: (rowIndex: number) => this.levelOfDetail ? this.levelOfDetail(rowIndex) : 'high'
+    }));
 
-    this.renderer = new EngineRenderer(data, parent, config);
+    //
+    this.renderer.style.addRule('taggle_lod_rule', `
+      #${this.renderer.idPrefix} [data-lod=low][data-agg=detail]:hover {
+        /* show regular height for hovered rows in low + medium LOD */
+        height: ${options.rowHeight}px !important;
+      }
+    `);
+
 
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, () => {
       if (this.isDynamicLeafHeight) {
         this.update();
       }
     });
-    this.forward(this.renderer, `${RENDERER_EVENT_HOVER_CHANGED}.main`);
+    this.forward(this.renderer, `${TaggleRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
 
-    window.addEventListener('resize', this.resizeListener);
+    window.addEventListener('resize', this.resizeListener, {
+      passive: true
+    });
   }
 
-  get ctx() {
+  get ctx(): IRankingHeaderContextContainer & IRenderContext & IEngineRankingContext {
     return this.renderer.ctx;
   }
 
@@ -57,28 +75,12 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.pushUpdateAble(updateAble);
   }
 
-  private createConfig(options: Partial<IEngineRendererOptions>): IEngineRendererOptions {
-    return merge(defaultConfig(), options, {
-      header: {
-        summary: true
-      },
-      body: {
-        animation: true,
-        rowPadding: 0, //since padding is used
-        groupPadding: GROUP_SPACING,
-        dynamicHeight: this.dynamicHeight.bind(this),
-        customRowUpdate: this.customRowUpdate.bind(this)
-      }
-    });
-  }
-
-  private customRowUpdate(row: HTMLElement, rowIndex: number) {
-    if (this.levelOfDetail) {
-      this.levelOfDetail(row, rowIndex);
-    }
-  }
-
   private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
+    if (!this.rule) {
+      this.levelOfDetail = null;
+      return null;
+    }
+
     const availableHeight = this.renderer ? this.renderer.node.querySelector('main')!.clientHeight : 100;
     const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()));
     this.isDynamicLeafHeight = typeof instance.item === 'function';
@@ -92,19 +94,29 @@ export default class TaggleRenderer extends AEventDispatcher {
       return typeof instance.item === 'number' ? instance.item : instance.item(item);
     };
 
-    this.levelOfDetail = (row: HTMLElement, rowIndex: number) => {
+    this.levelOfDetail = (rowIndex: number) => {
       const item = data[rowIndex];
-      row.dataset.lod = this.rule.levelOfDetail(item, height(item));
+      return this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
     };
+
+    // padding is always 0 since included in height
+    // const padding = (item: IGroupData | IGroupItem | null) => {
+    //   if (!item) {
+    //     item = data[0];
+    //   }
+    //   const lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
+    //   return lod === 'high' ? 0 : 0; // always 0 since
+    // };
 
     return {
       defaultHeight: typeof instance.item === 'number' ? instance.item : NaN,
-      height
+      height,
+      padding: 0
     };
   }
 
   protected createEventList() {
-    return super.createEventList().concat([TaggleRenderer.EVENT_HOVER_CHANGED]);
+    return super.createEventList().concat([TaggleRenderer.EVENT_HIGHLIGHT_CHANGED]);
   }
 
   zoomOut() {
@@ -115,7 +127,10 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.zoomIn();
   }
 
-  switchRule(rule: IRule) {
+  switchRule(rule: IRule | null) {
+    if (this.rule === rule) {
+      return;
+    }
     this.rule = rule;
     this.update();
   }
@@ -129,7 +144,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.update();
   }
 
-  changeDataStorage(data: DataProvider) {
+  setDataProvider(data: DataProvider) {
     if (this.data) {
       this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, null);
     }
@@ -139,7 +154,19 @@ export default class TaggleRenderer extends AEventDispatcher {
         this.update();
       }
     });
-    this.renderer.changeDataStorage(data);
+    this.renderer.setDataProvider(data);
     this.update();
+  }
+
+  setHighlight(dataIndex: number, scrollIntoView: boolean) {
+    return this.renderer.setHighlight(dataIndex, scrollIntoView);
+  }
+
+  getHighlight() {
+    return this.renderer.getHighlight();
+  }
+
+  enableHighlightListening(enable: boolean) {
+    this.renderer.enableHighlightListening(enable);
   }
 }

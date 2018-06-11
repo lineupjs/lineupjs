@@ -1,74 +1,151 @@
-import {DefaultCellRenderer} from './DefaultCellRenderer';
-import StringColumn from '../model/StringColumn';
-import {ICanvasRenderContext} from './RendererContexts';
-import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import ICellRendererFactory from './ICellRendererFactory';
+import { IDataRow, IGroup } from '../model';
 import Column from '../model/Column';
-import {IDataRow} from '../provider/ADataProvider';
-import {IGroup} from '../model/Group';
-import {clipText} from '../utils';
+import StringColumn from '../model/StringColumn';
+import { filterMissingMarkup, findFilterMissing } from '../ui/missing';
+import { default as IRenderContext, ICellRendererFactory } from './interfaces';
+import { renderMissingDOM } from './missing';
+import { noop, setText, randomId } from './utils';
 
 
 /**
  * renders a string with additional alignment behavior
  * one instance factory shared among strings
+ * @internal
  */
 export default class StringCellRenderer implements ICellRendererFactory {
-  private readonly alignments = {
-    left: new DefaultCellRenderer(),
-    right: new DefaultCellRenderer('text_right', 'right'),
-    center: new DefaultCellRenderer('text_center', 'center')
-  };
-  private readonly alignmentsNotEscape = {
-    left: new DefaultCellRenderer('text', 'left', false),
-    right: new DefaultCellRenderer('text_right', 'right', false),
-    center: new DefaultCellRenderer('text_center', 'center', false)
-  };
-
   readonly title = 'Default';
 
   canRender(col: Column) {
     return col instanceof StringColumn;
   }
 
-  createDOM(col: StringColumn): IDOMCellRenderer {
-    return (col.escape ? this.alignments: this.alignmentsNotEscape)[col.alignment || 'left'].createDOM(col);
-  }
-
-  createCanvas(col: StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (col.escape ? this.alignments: this.alignmentsNotEscape)[col.alignment || 'left'].createCanvas(col, context);
+  create(col: StringColumn) {
+    const align = col.alignment || 'left';
+    return {
+      template: `<div${align !== 'left' ? ` class="lu-${align}"` : ''}> </div>`,
+      update: (n: HTMLDivElement, d: IDataRow) => {
+        renderMissingDOM(n, col, d);
+        if (col.escape) {
+          setText(n, col.getLabel(d));
+        } else {
+          n.innerHTML = col.getLabel(d);
+        }
+      },
+      render: noop
+    };
   }
 
   private static exampleText(col: Column, rows: IDataRow[]) {
     const numExampleRows = 5;
-    let examples = rows
-      .slice(0, numExampleRows)
-      .map((r) => col.getLabel(r.v, r.dataIndex))
-      .join(', ');
-
-    if(rows.length > numExampleRows) {
-      examples += ', &hellip;';
+    const examples = <string[]>[];
+    for (const row of rows) {
+      if (col.isMissing(row)) {
+        continue;
+      }
+      const v = col.getLabel(row);
+      examples.push(v);
+      if (examples.length >= numExampleRows) {
+        break;
+      }
     }
-    return examples;
+    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
-  createGroupDOM(col: Column): IDOMGroupRenderer {
+  createGroup(col: StringColumn) {
     return {
-      template: `<div class="text"> </div>`,
+      template: `<div> </div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
         n.innerHTML = `${StringCellRenderer.exampleText(col, rows)}`;
       }
     };
   }
 
-  createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const w = context.colWidth(col);
-    return (ctx: CanvasRenderingContext2D, _group: IGroup, rows: IDataRow[]) => {
-      const bak = ctx.font;
-      ctx.font = '8pt "Helvetica Neue", Helvetica, Arial, sans-serif';
-      clipText(ctx, StringCellRenderer.exampleText(col, rows), 0, 2, w, context.textHints);
-      ctx.font = bak;
+  private static interactiveSummary(col: StringColumn, node: HTMLElement) {
+    const form = <HTMLFormElement>node;
+    const filterMissing = findFilterMissing(node);
+    const input = <HTMLInputElement>node.querySelector('input[type="text"]');
+    const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
+
+    const update = () => {
+      input.disabled = filterMissing.checked;
+      isRegex.disabled = filterMissing.checked;
+
+      if (filterMissing.checked) {
+        col.setFilter(StringColumn.FILTER_MISSING);
+        return;
+      }
+      const valid = input.value.trim();
+      filterMissing.disabled = valid.length > 0;
+      if (valid.length <= 0) {
+        col.setFilter(null);
+        return;
+      }
+      col.setFilter(isRegex.checked ? new RegExp(input.value) : input.value);
+    };
+
+    filterMissing.onchange = update;
+    input.onchange = update;
+    isRegex.onchange = update;
+    form.onsubmit = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      update();
+      return false;
+    };
+
+    return (actCol: StringColumn) => {
+      col = actCol;
+      let bak = col.getFilter() || '';
+      const bakMissing = bak === StringColumn.FILTER_MISSING;
+      if (bakMissing) {
+        bak = '';
+      }
+      filterMissing.checked = bakMissing;
+      input.value = bak instanceof RegExp ? bak.source : bak;
+      isRegex.checked = bak instanceof RegExp;
+      filterMissing.disabled = input.value.trim().length > 0;
+      input.disabled = filterMissing.checked;
+      isRegex.disabled = filterMissing.checked;
     };
   }
+
+  createSummary(col: StringColumn, context: IRenderContext, interactive: boolean) {
+    if (!interactive) {
+      return {
+        template: `<div></div>`,
+        update: (node: HTMLElement) => {
+          const filter = col.getFilter() || '';
+          node.textContent = toString(filter);
+        }
+      };
+    }
+    let bak = col.getFilter() || '';
+    const bakMissing = bak === StringColumn.FILTER_MISSING;
+    if (bakMissing) {
+      bak = '';
+    }
+    let update: (col: StringColumn) => void;
+    const id = randomId(context.idPrefix);
+    return {
+      template: `<form><input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}">
+          <div class="lu-checkbox"><input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">RegExp</label></div>
+          ${filterMissingMarkup(bakMissing, context.idPrefix)}</form>`,
+      update: (node: HTMLElement) => {
+        if (!update) {
+          update = StringCellRenderer.interactiveSummary(col, node);
+        }
+        update(col);
+      }
+    };
+  }
+}
+
+function toString(filter: null | string | RegExp) {
+  if (filter == null || filter === '' || filter === StringColumn.FILTER_MISSING) {
+    return '';
+  }
+  if (filter instanceof RegExp) {
+    return filter.source;
+  }
+  return String(filter);
 }

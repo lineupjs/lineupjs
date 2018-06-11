@@ -1,66 +1,65 @@
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
 @import '../vars';
+@import '../icons/index';
 
-/**
- * Creates a background that displays an opening square bracket using multiple linear gradients.
- */
-@mixin square-bracket-bg($width, $stroke-color, $stroke-width, $top, $bottom) {
-  $vertical-stroke: linear-gradient(to left, transparent $width - $stroke-width, $stroke-color $width - $stroke-width, $stroke-color $width, transparent $width);
-  $top-stroke: linear-gradient(to bottom, $stroke-color $stroke-width, transparent $stroke-width);
-  $bottom-stroke: linear-gradient(to top, $stroke-color $stroke-width, transparent $stroke-width);
+.#{$lu_css_prefix}-row-body {
+  [data-renderer=aggregate] {
+    text-align: center;
+    position: relative;
+    overflow-x: unset;
 
-  @if($top == true and $bottom == true) {
-    background-image: $vertical-stroke, $top-stroke, $bottom-stroke;
-  }
-  @else if($top == true and $bottom == false) {
-    background-image: $vertical-stroke, $top-stroke;
-  }
-  @else if($top == false and $bottom == true) {
-    background-image: $vertical-stroke, $bottom-stroke;
-  }
-  @else {
-    background-image: $vertical-stroke;
+    &::after {
+      content: '';
+      position: absolute;
+      pointer-events: none;
+      top: 0;
+      width: $lu_aggregate_square_bracket_width;
+      right: 0;
+      bottom: 0;
+      border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    }
   }
 
-  background-size: $width 100%;
-  background-repeat: no-repeat;
-  background-position: center right;
-}
+  [data-meta~=first] [data-renderer=aggregate] {
+    cursor: pointer;
 
-[data-renderer=aggregate] {
-  text-align: center;
+    &::before {
+      @include lu_icons();
 
-  @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, false, false);
-}
+      content: $lu_icon_caret_down;
+      padding-right: $lu_aggregate_square_bracket_width;
+    }
 
-[data-meta~=first] [data-renderer=aggregate] {
-  cursor: pointer;
+    &::after {
+      border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    }
+  }
 
-  @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, true, false);
+  [data-meta=last] [data-renderer=aggregate] {
+    &::after {
+      border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    }
+  }
 
-  &::before {
-    @include fa-icon();
-
-    content: $fa-var-caret-down;
+  [data-meta='first last'] [data-renderer=aggregate],
+  [data-agg=group] [data-renderer=aggregate] {
     padding-right: $lu_aggregate_square_bracket_width;
+    cursor: pointer;
+
+    &::after {
+      border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+      border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    }
+  }
+
+  [data-agg=group] [data-renderer=aggregate]::before {
+    @include lu_icons();
+
+    content: $lu_icon_caret_right;
   }
 }
 
-[data-meta=last] [data-renderer=aggregate] {
-  @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, false, true);
-}
-
-[data-meta='first last'] [data-renderer=aggregate],
-[data-agg=group] [data-renderer=aggregate] {
+.#{$lu_css_prefix}-summary[data-renderer=aggregate] {
   padding-right: $lu_aggregate_square_bracket_width;
   cursor: pointer;
-
-  @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, true, true);
-}
-
-[data-agg=group] [data-renderer=aggregate]::before {
-  @include fa-icon();
-
-  content: $fa-var-caret-right;
+  font-size: medium;
 }

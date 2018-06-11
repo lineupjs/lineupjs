@@ -1,25 +1,21 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import Column, {IColumnDesc, IColumnParent, IFlatColumn} from './Column';
+import {suffix} from '../internal/AEventDispatcher';
+import {Category, toolbar} from './annotations';
+import Column, {IColumnParent, IFlatColumn} from './Column';
+import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
-import {suffix} from '../utils';
 
-export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn&Column {
-  return typeof ((<any>col).getCollapsed) === 'function';
+export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {
+  return typeof ((<IMultiLevelColumn>col).getCollapsed) === 'function';
 }
 
 /**
  * implementation of a combine column, standard operations how to select
  */
+@toolbar('compositeContained', 'splitCombined')
+@Category('composite')
 export default class CompositeColumn extends Column implements IColumnParent {
   protected readonly _children: Column[] = [];
-
-  constructor(id: string, desc: IColumnDesc) {
-    super(id, desc);
-  }
 
   assignNewId(idGenerator: () => string) {
     super.assignNewId(idGenerator);
@@ -46,7 +42,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     }
     //push children
     this._children.forEach((c) => {
-      if (!c.isHidden() || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+      if (c.isVisible() && levelsToGo <= Column.FLAT_ALL_COLUMNS) {
         c.flatten(r, offset, levelsToGo - 1, padding);
       }
     });
@@ -96,7 +92,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     //delete first
     this._children.splice(old, 1);
     // adapt target index based on previous index, i.e shift by one
-    this._children.splice(old < index ? index -1 : index, 0, col);
+    this._children.splice(old < index ? index - 1 : index, 0, col);
     //listen and propagate events
     return this.moveImpl(col, index, old);
   }
@@ -141,6 +137,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this.move(col, i + 1);
   }
 
+
   remove(child: Column) {
     const i = this._children.indexOf(child);
     if (i < 0) {
@@ -157,7 +154,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return true;
   }
 
-  getColor(_row: any, _index: number) {
+  getColor(_row: IDataRow) {
     return this.color;
   }
 
@@ -165,21 +162,12 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.some((d) => d.isFiltered());
   }
 
-  filter(row: any, index: number) {
-    return this._children.every((d) => d.filter(row, index));
+  filter(row: IDataRow) {
+    return this._children.every((d) => d.filter(row));
   }
 
   isLoaded(): boolean {
     return this._children.every((c) => !(c instanceof ValueColumn || c instanceof CompositeColumn) || (<ValueColumn<any> | CompositeColumn>c).isLoaded());
-  }
-
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    return this._children.map((c) => c.toSortingDesc(toId));
   }
 
   get canJustAddNumbers() {

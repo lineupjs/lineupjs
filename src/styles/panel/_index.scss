@@ -1,0 +1,90 @@
+@import '../vars';
+@import '../icons/index';
+
+.#{$lu_css_prefix}-side-panel {
+  display: flex;
+  flex-direction: column;
+  max-width: 26em;
+  min-width: 19em;
+  transform: translate3d(0, 0, 1px); // separate layer
+
+  .#{$lu_css_prefix}-label {
+    padding: 0 0 0 0.2em;
+  }
+
+  > header {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 1em 0.5em;
+    border-bottom: 2px solid #dedede;
+
+    form {
+      position: relative;
+
+      select {
+        width: 100%;
+        font-size: 120%;
+      }
+    }
+  }
+
+  > aside.#{$lu_css_prefix}-stats {
+    font-size: small;
+    padding: 1em 0.5em;
+
+    span {
+      color: $lu_selected_color;
+    }
+  }
+
+  .#{$lu_css_prefix}-collapser {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 20;
+    padding: 0.2em;
+    cursor: pointer;
+    border-radius: 50% 0 0 50%;
+    background: white;
+    color: $lu_toolbar_color_base;
+    border: 1px solid $lu_toolbar_color_base;
+
+    &:hover {
+      color: $lu_hover_color;
+    }
+
+    &::before {
+      @include lu_icons();
+
+      content: $lu_icon_caret_right;
+      width: 0.8em;
+      text-align: center;
+    }
+  }
+
+  &.#{$lu_css_prefix}-collapsed {
+    min-width: 0;
+    transform: unset;
+
+    > :not(.#{$lu_css_prefix}-collapser) {
+      display: none;
+    }
+
+    .#{$lu_css_prefix}-collapser::before {
+      transform: scale(-1, 1);
+    }
+  }
+
+  > div {
+    flex: 1 1 auto;
+    position: relative;
+    overflow: auto;
+
+    > main {
+      counter-reset: side-panel-counter;
+    }
+  }
+}
+
+@import './search';
+@import './entry';

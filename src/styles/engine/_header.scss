@@ -1,19 +1,7 @@
 @import '../vars';
-@import '../header/index';
-
-
-
-/**
-  needs to be the full path without any super import otherwise the @extend won't work properly
- */
 
 section.#{$lu_css_prefix}-header {
-  @extend %lu-header;
-
-  text-align: center;
   color: black;
-  overflow: unset !important;
-  margin-right: -$lu_engine_grip_gap;
   margin-bottom: 15px;
   border-bottom: 1px solid black;
 
@@ -26,23 +14,17 @@ section.#{$lu_css_prefix}-header {
     left: 0;
     width: 100%;
     height: 15px;
-    bottom: -15px;
+    bottom: -16px;
     background: white;
     pointer-events: none;
   }
 
   &:hover {
-    background-color: $lu_even_bg;
+    background-color: $lu_hover_header_color;
 
     > .#{$lu_css_prefix}-toolbar {
       color: $lu_toolbar_color_base2;
     }
-  }
-
-  &[draggable=true] {
-    cursor: pointer;
-    cursor: -moz-grab;
-    cursor: -webkit-grab; // indicate grab able
   }
 
   > .#{$lu_css_prefix}-toolbar {
@@ -50,7 +32,8 @@ section.#{$lu_css_prefix}-header {
   }
 
   > .#{$lu_css_prefix}-label {
-    padding-left: $lu-engine_grip_gap;
+    text-align: center;
+    padding-left: 0.8em;
     margin-right: $lu-engine_grip_gap;
     font-weight: 500;
   }
@@ -62,18 +45,20 @@ section.#{$lu_css_prefix}-header {
     font-size: $lu_toolbar_font_size;
   }
 
-  &.#{$lu_css_prefix}-dragover::after {
-    background: $lu_drag_over;
-  }
-
   > .#{$lu_css_prefix}-summary {
     height: 2em;
-    margin-right: $lu-engine_grip_gap;
+
+    &:empty {
+      display: none;
+    }
+
+    &[data-renderer=aggregate],
+    &[data-renderer=selection] {
+      display: block; // have just a before element
+    }
   }
 
   > .#{$lu_css_prefix}-nested {
-    grid-column-gap: 1px;
-
     > section {
       border-bottom: none; // disable header line for stacked bar
     }
@@ -81,17 +66,18 @@ section.#{$lu_css_prefix}-header {
 
   > .#{$lu_css_prefix}-handle {
     position: absolute;
-    right: 0;
+    right: -$lu-engine_grip_gap;
     width: $lu_engine_grip_gap;
     height: 100%;
     background-color: white;
     cursor: col-resize;
     border-bottom: 1px solid white;
+    text-align: center;
     bottom: -1px;
 
     &.#{$lu_css_prefix}-dragover {
-      -moz-user-select: none;
-      user-select: none;
+      @include user_select_none();
+
       transition: width 0.2s ease, right 0.2s ease;
       color: $lu_toolbar_color_hover;
       display: flex;
@@ -117,25 +103,34 @@ section.#{$lu_css_prefix}-header {
 }
 
 .#{$lu_css_prefix}-sub-nested > section {
-  margin-bottom: $lu_engine_grip_gap;
+  margin-bottom: $lu_engine_grip_gap + 15px;
 
   > .#{$lu_css_prefix}-handle {
     height: $lu_engine_grip_gap;
     width: 100%;
-    bottom: ($lu_engine_grip_gap * -1) - 1px;
+    bottom: ($lu_engine_grip_gap * -1) - 1px - 15px;
     left: 0;
     right: 0;
     cursor: inherit;
+
+    &.#{$lu_css_prefix}-dragover {
+      transition: bottom 0.2s ease, height 0.2s ease;
+      height: 50px;
+      bottom: ($lu_engine_grip_gap * -1) - 1px - 15px -25px;
+      width: 100%;
+      right: 0;
+    }
   }
 }
 
 .lineup-engine.#{$lu_css_prefix}-rotated-label {
   section.#{$lu_css_prefix}-header {
+    margin-top: 10em;
+
     > .#{$lu_css_prefix}-label.#{$lu_css_prefix}-rotated {
       overflow: visible;
       text-align: left;
       transform-origin: top left;
-      z-index: 1;
     }
   }
 }

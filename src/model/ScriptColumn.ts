@@ -1,9 +1,7 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
+import {toolbar} from './annotations';
 import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
+import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 
 const DEFAULT_SCRIPT = `let s = 0;
@@ -15,7 +13,7 @@ return s / col.length`;
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'script') {
+export function createScriptDesc(label: string = 'script') {
   return {type: 'script', label, script: DEFAULT_SCRIPT};
 }
 
@@ -60,7 +58,7 @@ function wrapWithContext(code: string) {
  * wrapper class for simpler column accessing
  */
 class ColumnWrapper {
-  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number|null) {
+  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number | null) {
 
   }
 
@@ -82,9 +80,9 @@ class ColumnWrapper {
  */
 class ColumnContext {
   private readonly lookup = new Map<string, ColumnWrapper>();
-  private _all: ColumnContext|null = null;
+  private _all: ColumnContext | null = null;
 
-  constructor(private readonly children: ColumnWrapper[], private readonly allFactory?: ()=>ColumnContext) {
+  constructor(private readonly children: ColumnWrapper[], private readonly allFactory?: () => ColumnContext) {
     children.forEach((c) => {
       this.lookup.set(`ID@${c.id}`, c);
       this.lookup.set(`NAME@${c.name}`, c);
@@ -118,7 +116,7 @@ class ColumnContext {
     return this.children[index];
   }
 
-  forEach(callback: ((c: ColumnWrapper, index: number)=>void)) {
+  forEach(callback: ((c: ColumnWrapper, index: number) => void)) {
     return this.children.forEach(callback);
   }
 
@@ -135,7 +133,7 @@ class ColumnContext {
    * @return {ColumnContext}
    */
   get all() {
-    if (this._all === null) {
+    if (this._all == null) {
       this._all = this.allFactory ? this.allFactory() : null;
     }
     return this._all!;
@@ -154,6 +152,7 @@ export interface IScriptDesc extends ICompositeNumberDesc {
 export declare type IScriptColumnDesc = IScriptDesc & ICompositeNumberDesc;
 
 
+@toolbar('script')
 export default class ScriptColumn extends CompositeNumberColumn {
   static readonly EVENT_SCRIPT_CHANGED = 'scriptChanged';
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
@@ -161,9 +160,13 @@ export default class ScriptColumn extends CompositeNumberColumn {
   private script = ScriptColumn.DEFAULT_SCRIPT;
   private f: Function | null = null;
 
-  constructor(id: string, desc: IScriptColumnDesc) {
+  constructor(id: string, desc: Readonly<IScriptColumnDesc>) {
     super(id, desc);
     this.script = desc.script || this.script;
+
+    this.setDefaultRenderer('number');
+    this.setDefaultGroupRenderer('number');
+    this.setDefaultSummaryRenderer('number');
   }
 
   protected createEventList() {
@@ -193,29 +196,17 @@ export default class ScriptColumn extends CompositeNumberColumn {
     super.restore(dump, factory);
   }
 
-  protected compute(row: any, index: number) {
+  protected compute(row: IDataRow) {
     if (this.f == null) {
       this.f = new Function('children', 'values', 'raws', 'col', 'row', 'index', wrapWithContext(this.script));
     }
     const children = this._children;
-    const values = this._children.map((d) => d.getValue(row, index));
-    const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row, index) : null);
+    const values = this._children.map((d) => d.getValue(row));
+    const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row) : null);
     const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])), () => {
       const cols = this.findMyRanker()!.flatColumns;
-      return new ColumnContext(cols.map((c) =>  new ColumnWrapper(c, c.getValue(row, index), isNumberColumn(c) ? c.getRawNumber(row, index): null)));
+      return new ColumnContext(cols.map((c) => new ColumnWrapper(c, c.getValue(row), isNumberColumn(c) ? c.getRawNumber(row) : null)));
     });
-    return this.f.call(this, children, values, raws, col, row, index);
-  }
-
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    return {
-      code: this.script,
-      operands: this._children.map((c) => c.toSortingDesc(toId))
-    };
+    return this.f.call(this, children, values, raws, col, row.v, row.i);
   }
 }

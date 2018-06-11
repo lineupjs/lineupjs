@@ -1,19 +1,16 @@
-import ICellRendererFactory from './ICellRendererFactory';
-import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {renderMissingDOM, renderMissingCanvas} from './missing';
+import {INumberBin, IStatistics} from '../internal';
+import {IDataRow, IGroup} from '../model';
+import Column from '../model/Column';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
+import {CANVAS_HEIGHT} from '../styles';
+import {getHistDOMRenderer} from './HistogramCellRenderer';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
-import {IDataRow} from '../provider/ADataProvider';
-import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
-import {IGroup} from '../model/Group';
-import {matchColumns} from '../utils';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
+import {matchColumns, forEachChild} from './utils';
 
 
-/**
- * a renderer rendering a bar for numerical columns
- */
+/** @internal */
 export default class InterleavingCellRenderer implements ICellRendererFactory {
   readonly title = 'Interleaved';
 
@@ -21,72 +18,96 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     return col instanceof CompositeNumberColumn;
   }
 
-  createDOM(col: CompositeNumberColumn, context: IDOMRenderContext): IDOMCellRenderer {
-    const {cols} = createData(col, context, false);
+  create(col: CompositeNumberColumn, context: IRenderContext) {
+    const {cols} = createData(col, context, false, ERenderMode.CELL);
+    const width = context.colWidth(col);
     return {
-      template: `<div>${cols.map((r) => r.renderer.template).join('')}</div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup, hist: IStatistics | ICategoricalStatistics | null) => {
+      template: `<div>${cols.map((r) => r.template).join('')}</div>`,
+      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
         const missing = renderMissingDOM(n, col, d);
         if (missing) {
           return;
         }
-        matchColumns(n, cols, 'detail', 'html');
-        Array.from(n.children).forEach((ni: HTMLElement, j) => {
-          cols[j].renderer.update(ni, d, i, group, hist);
+        matchColumns(n, cols);
+        forEachChild(n, (ni: HTMLElement, j) => {
+          cols[j].renderer!.update(ni, d, i, group);
         });
+      },
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, group: IGroup) => {
+        if (renderMissingCanvas(ctx, col, d, width)) {
+          return;
+        }
+
+        ctx.save();
+        ctx.scale(1, 1 / cols.length); // scale since internal use the height, too
+        cols.forEach((r, i) => {
+          r.renderer!.render(ctx, d, i, group);
+          ctx.translate(0, CANVAS_HEIGHT);
+        });
+        ctx.restore();
       }
     };
   }
 
-  createGroupDOM(col: CompositeNumberColumn, context: IDOMRenderContext): IDOMGroupRenderer {
-    const {cols} = createData(col, context, false);
+  createGroup(col: CompositeNumberColumn, context: IRenderContext) {
+    const {cols} = createData(col, context, false, ERenderMode.GROUP);
     return {
-      template: `<div>${cols.map((r) => r.renderer.template).join('')}</div>`,
-      update: (n: HTMLElement, group: IGroup, rows: IDataRow[], hist: IStatistics | ICategoricalStatistics | null) => {
-        matchColumns(n, cols, 'group', 'html');
-        Array.from(n.children).forEach((ni: HTMLElement, j) => {
-          cols[j].groupRenderer.update(ni, group, rows, hist);
+      template: `<div>${cols.map((r) => r.template).join('')}</div>`,
+      update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
+        matchColumns(n, cols);
+        forEachChild(n, (ni: HTMLElement, j) => {
+          cols[j].groupRenderer!.update(ni, group, rows);
         });
       }
     };
   }
 
-  createCanvas(col: CompositeNumberColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const children = col.children;
-    const renderers = children.map((c) => context.renderer(c));
+  createSummary(col: CompositeNumberColumn, context: IRenderContext) {
+    const cols = col.children;
+    let acc = 0;
+    const {template, render} = getHistDOMRenderer(context.totalNumberOfRows, col, {
+      color: () => cols[(acc++) % cols.length].color
+    });
+    return {
+      template,
+      update: (n: HTMLElement) => {
+        const stats = cols.map((c) => <IStatistics | null>context.statsOf(<any>c));
+        if (!stats.some(Boolean)) {
+          n.classList.add('lu-missing');
+          return;
+        }
+        n.classList.remove('lu-missing');
+        const grouped = groupedHist(stats);
+        render(n, grouped);
+      }
+    };
+  }
+}
 
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup, hist: IStatistics | ICategoricalStatistics | null) => {
-      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
+const dummyBin: INumberBin = {
+  length: 0,
+  x0: 0,
+  x1: 0
+};
+
+function groupedHist(stats: (IStatistics | null)[]) {
+  const sample = stats.find(Boolean)!;
+  const bins = sample.hist.length;
+  // assert all have the same bin size
+  const hist = <INumberBin[]>[];
+  let maxBin = 0;
+  for (let i = 0; i < bins; ++i) {
+    stats.forEach((s) => {
+      const bin = s ? s.hist[i] : null;
+      if (!bin) {
+        hist.push(dummyBin);
         return;
       }
-      const rowHeight = context.rowHeight(i);
-      const heightI = rowHeight / children.length;
-
-      ctx.save();
-      ctx.scale(1, 1 / children.length); // scale since internal use the height, too
-      renderers.forEach((r, i) => {
-        r(ctx, d, i, dx, dy + heightI * i, group, hist);
-        ctx.translate(0, rowHeight);
-      });
-      ctx.restore();
-    };
+      if (bin.length > maxBin) {
+        maxBin = bin.length;
+      }
+      hist.push(bin);
+    });
   }
-
-  createGroupCanvas(col: CompositeNumberColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const children = col.children;
-    const renderers = children.map((c) => context.groupRenderer(c));
-
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist: IStatistics | ICategoricalStatistics | null) => {
-      const rowHeight = context.groupHeight(group);
-      const heightI = rowHeight / children.length;
-
-      ctx.save();
-      ctx.scale(1, 1 / children.length); // scale since internal use the height, too
-      renderers.forEach((r, i) => {
-        r(ctx, group, rows, dx, dy + heightI * i, hist);
-        ctx.translate(0, rowHeight);
-      });
-      ctx.restore();
-    };
-  }
+  return {bins, max: maxBin, hist};
 }

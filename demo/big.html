@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Taggle Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const cats = ['c1', 'c2', 'c3'];
+    for (let i = 0; i < 10000; ++i) {
+      arr.push({
+        a: Math.random() *10,
+        d: 'Row ' + i,
+        cat: cats[Math.floor(Math.random() * 3)],
+        cat2: cats[Math.floor(Math.random() * 3)]
+      })
+    }
+    const desc = [
+      {label: 'D', type: 'string', column: 'd'},
+      {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
+      {
+        label: 'Cat',
+        type: 'categorical',
+        column: 'cat',
+        categories: ['c1', 'c2', 'c3']
+      },
+      {
+        label: 'Cat Label',
+        type: 'categorical',
+        column: 'cat2',
+        categories: [{name: 'c1', label: 'C1', color: 'green'}, {name: 'c2', label: 'C2', color: 'blue'}, {
+          name: 'c3',
+          label: 'C3',
+          color: 'red'
+        }]
+      }
+    ];
+
+    const p = new LineUpJS.LocalDataProvider(arr, desc, { grouping: true});
+    p.deriveDefault();
+    p.getLastRanking().insert(p.create({ type: 'selection', label: 'S'}), 0);
+    p.getLastRanking().insert(p.create({ type: 'aggregate', label: 'A'}), 0);
+    p.getLastRanking().push(p.create(desc[1]));
+
+    const instance = new LineUpJS.Taggle(document.body, p);
+    instance.update();
+  };
+</script>
+
+</body>
+</html>

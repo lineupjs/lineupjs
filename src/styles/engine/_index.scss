@@ -1,25 +1,15 @@
 @import '../vars';
-@import '../renderer/index';
+
+$engine_assets: '~lineupengine/src/assets';
+@import '~lineupengine/src/style';
 
 .lineup-engine {
-  > header > article,
-  > main > article > * {
-    grid-column-gap: $lu_engine_grip_gap;
-  }
-
-  > main > article {
-    @extend %lu-renderer;
-
-    > * {
-      @import './row';
-    }
+  > header .#{$lu_css_prefix}-header,
+  .#{$lu_css_prefix}-row > * {
+    margin-right: $lu_engine_grip_gap;
   }
 }
 
 @import './header';
-@import './slope_graph';
 @import './selection';
-
-$engine_assets: '~lineupengine/src/assets';
-
-@import '~lineupengine/src/style';
+@import './row';

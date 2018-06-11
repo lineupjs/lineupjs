@@ -1,42 +1,68 @@
-@import 'vars';
+@import './vars';
 
 .lineup-engine,
 .#{$lu_css_prefix},
 .#{$lu_css_prefix}-header,
-.#{$lu_css_prefix}-pool,
 .#{$lu_css_prefix}-side-panel,
-.#{$lu_css_prefix}-popup2 {
+.#{$lu_css_prefix}-dialog {
   [aria-hidden=true] {
     display: none;
   }
 
-  *[draggable] {
+  [draggable] {
     cursor: pointer;
     cursor: -moz-grab;
     cursor: -webkit-grab; // indicate grab able
   }
 
-  .#{$lu_css_prefix}-dragover {
-    pointer-events: all !important;
+  @import './icons/icon_style';
+}
+
+.#{$lu_css_prefix}-dragover {
+  pointer-events: all !important;
+
+  &::before,
+  &::after {
+    pointer-events: none !important;
+  }
+
+  * {
+    pointer-events: none !important;
 
     &::before,
     &::after {
       pointer-events: none !important;
     }
+  }
+}
 
-    * {
-      pointer-events: none !important;
+.#{$lu_css_prefix}-filter-missing {
+  font-size: 13px;
+}
 
-      &::before,
-      &::after {
-        pointer-events: none !important;
-      }
-    }
+.#{$lu_css_prefix}-checkbox {
+  > input {
+    display: inline;
   }
 
-  .#{$lu_css_prefix}-gradient-text {
-    color: transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
+  > label {
+    display: inline-flex;
   }
+}
+
+.#{$lu_css_prefix}-summary .#{$lu_css_prefix}-checkbox label {
+  display: inline-flex;
+}
+
+.#{$lu_css_prefix}-gradient-text {
+  @include user_select_none();
+
+  position: absolute;
+  overflow: hidden;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
 }

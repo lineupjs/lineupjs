@@ -1,25 +1,24 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IMultiLevelColumn} from './CompositeColumn';
+import {round, similar} from '../internal';
+import {toolbar} from './annotations';
 import Column, {IFlatColumn} from './Column';
+import {IMultiLevelColumn} from './CompositeColumn';
+import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
+import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
-import {similar} from '../utils';
 
 /**
  * factory for creating a description creating a stacked column
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Weighted Sum') {
+export function createStackDesc(label: string = 'Weighted Sum') {
   return {type: 'stack', label};
 }
 
 /**
  * implementation of the stacked column
  */
+@toolbar('editWeights', 'collapse')
 export default class StackColumn extends CompositeNumberColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = 'collapseChanged';
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
@@ -39,16 +38,23 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super(id, desc);
 
     const that = this;
-    this.adaptChange = function (this: { source: Column }, oldValue, newValue) {
+    this.adaptChange = function (this: {source: Column}, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
 
-    if (this.getRendererType() === 'interleaving') {
-      this.setRendererType('stack');
+    this.setDefaultRenderer('stack');
+    this.setDefaultGroupRenderer('stack');
+    this.setDefaultSummaryRenderer('default');
+  }
+
+  get label() {
+    const l = super.getMetaData().label;
+    const c = this._children;
+    if (l !== 'Weighted Sum' || c.length === 0) {
+      return l;
     }
-    if (this.getGroupRenderer() === 'interleaving') {
-      this.setGroupRenderer('stack');
-    }
+    const weights = this.getWeights();
+    return c.map((c, i) => `${c.label} (${round(100 * weights[i], 1)})%`).join(' + ');
   }
 
   protected createEventList() {
@@ -72,7 +78,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     let self = null;
-    const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => !c.isHidden());
+    const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => c.isVisible());
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       let w = this.getWidth();
@@ -210,29 +216,19 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super.setWidth(value);
   }
 
-  protected compute(row: any, index: number) {
+  protected compute(row: IDataRow) {
     const w = this.getWidth();
-    return this._children.reduce((acc, d) => acc + d.getValue(row, index) * (d.getWidth() / w), 0);
+    return this._children.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth() / w), 0);
   }
 
-  getRendererType() {
+  getRenderer() {
     if (this.getCollapsed() && this.isLoaded()) {
       return StackColumn.COLLAPSED_RENDERER;
     }
-    return super.getRendererType();
+    return super.getRenderer();
   }
 
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    const w = this.getWeights();
-    return this._children.map((c, i) => ({weight: w[i], id: c.toSortingDesc(toId)}));
-  }
-
-  isMissing(row: any, index: number) {
-    return this._children.some((c) => isNumberColumn(c) && c.isMissing(row, index));
+  isMissing(row: IDataRow) {
+    return this._children.some((c) => isNumberColumn(c) && c.isMissing(row));
   }
 }

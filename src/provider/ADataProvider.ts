@@ -1,47 +1,21 @@
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
+import {ICategoricalStatistics, IStatistics} from '../internal';
+import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
+import debounce from '../internal/debounce';
+import OrderedSet from '../internal/OrderedSet';
 import {
-  createActionDesc,
-  createRankDesc,
-  createSelectionDesc,
-  createStackDesc,
-  createAggregateDesc,
-  IColumnDesc,
-  createGroupDesc,
-  isSupportType,
-  models
+  Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
+  createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
+  ISelectionColumnDesc, IValueColumnDesc, models
 } from '../model';
-import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
-import Ranking from '../model/Ranking';
-import RankColumn from '../model/RankColumn';
-import StackColumn from '../model/StackColumn';
-import {ICategoricalColumn} from '../model/ICategoricalColumn';
-import {INumberColumn} from '../model/INumberColumn';
-import {AEventDispatcher, debounce, suffix} from '../utils';
-import {IValueColumnDesc} from '../model/ValueColumn';
-import {ISelectionColumnDesc} from '../model/SelectionColumn';
-import {IGroup, IOrderedGroup, toGroupID, unifyParents} from '../model/Group';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
-import OrderedSet from './OrderedSet';
-import {IExportOptions, exportRanking} from './utils';
+import {toGroupID, unifyParents} from '../model/internal';
+import RankColumn from '../model/RankColumn';
+import Ranking from '../model/Ranking';
+import StackColumn from '../model/StackColumn';
+import {exportRanking, IExportOptions} from './utils';
+import {isSupportType} from '../model/annotations';
+
 export {IExportOptions} from './utils';
-
-/**
- * a data row for rendering
- */
-export interface IDataRow {
-  /**
-   * the value
-   */
-  v: any;
-  /**
-   * the underlying data index
-   */
-  dataIndex: number;
-}
-
 
 export interface IStatsBuilder {
   stats(col: INumberColumn): Promise<IStatistics> | IStatistics;
@@ -57,14 +31,13 @@ export interface IDataProviderOptions {
    * default: true
    */
   multiSelection: boolean;
-
-  /**
-   *  enables grouping / stratification features
-   */
-  grouping: boolean;
 }
 
 export interface IDataProvider extends AEventDispatcher {
+  readonly columnTypes: { [columnType: string]: typeof Column };
+
+  getTotalNumberOfRows(): number;
+
   takeSnapshot(col: Column): void;
 
   selectAllOf(ranking: Ranking): void;
@@ -73,9 +46,9 @@ export interface IDataProvider extends AEventDispatcher {
 
   setSelection(dataIndices: number[]): void;
 
-  toggleSelection(dataIndex: number, additional?: boolean): boolean;
+  toggleSelection(i: number, additional?: boolean): boolean;
 
-  isSelected(dataIndex: number): boolean;
+  isSelected(i: number): boolean;
 
   removeRanking(ranking: Ranking): void;
 
@@ -147,14 +120,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   readonly columnTypes: { [columnType: string]: typeof Column };
 
-  private readonly multiSelections: boolean;
-  private readonly groupings: boolean;
+  protected readonly multiSelections: boolean;
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
     this.columnTypes = Object.assign(models(), options.columnTypes || {});
     this.multiSelections = options.multiSelection !== false;
-    this.groupings = options.grouping === true;
   }
 
   /**
@@ -175,6 +146,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
   }
 
+  abstract getTotalNumberOfRows(): number;
+
   /**
    * returns a list of all known column descriptions
    * @returns {Array}
@@ -187,11 +160,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @return the new ranking
    */
   pushRanking(existing?: Ranking): Ranking {
-
     const r = this.cloneRanking(existing);
-    if (!this.groupings) {
-      r.setMaxGroupColumns(0);
-    }
 
     this.insertRanking(r);
     return r;
@@ -199,7 +168,26 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   takeSnapshot(col: Column): Ranking {
     const r = this.cloneRanking();
-    r.push(this.clone(col));
+    const ranking = col.findMyRanker();
+    // by convention copy all support types and the first string column
+    let hasString = col.desc.type === 'string';
+    const toClone = !ranking ? [col] : ranking.children.filter((c) => {
+      if (c === col) {
+        return true;
+      }
+      if (!hasString && c.desc.type === 'string') {
+        hasString = true;
+        return true;
+      }
+      return isSupportType(c);
+    });
+    toClone.forEach((c) => {
+      const clone = this.clone(c);
+      r.push(clone);
+      if (c === col) {
+        clone.sortByMe();
+      }
+    });
     this.insertRanking(r);
     return r;
   }
@@ -278,7 +266,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   ensureOneRanking() {
     if (this.rankings.length === 0) {
-      this.pushRanking();
+      const r = this.pushRanking();
+      this.push(r, createRankDesc());
     }
   }
 
@@ -336,16 +325,16 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return `col${this.uid++}`;
   }
 
-  protected abstract rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking): number;
+  protected abstract rankAccessor(row: IDataRow, id: string, desc: IColumnDesc, ranking: Ranking): number;
 
   private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
     if (desc.type === 'rank') {
       (<IValueColumnDesc<number>>desc).accessor = this.rankAccessor.bind(this);
     } else if (desc.type === 'selection') {
-      (<ISelectionColumnDesc>desc).accessor = (_row: any, index: number) => this.isSelected(index);
-      (<ISelectionColumnDesc>desc).setter = (_row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
-      (<ISelectionColumnDesc>desc).setterAll = (_rows: any[], indices: number[], value: boolean) => value ? this.selectAll(indices) : this.deselectAll(indices);
+      (<ISelectionColumnDesc>desc).accessor = (row: IDataRow) => this.isSelected(row.i);
+      (<ISelectionColumnDesc>desc).setter = (row: IDataRow, value: boolean) => value ? this.select(row.i) : this.deselect(row.i);
+      (<ISelectionColumnDesc>desc).setterAll = (rows: IDataRow[], value: boolean) => value ? this.selectAll(rows.map((d) => d.i)) : this.deselectAll(rows.map((d) => d.i));
     } else if (desc.type === 'aggregate') {
       (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
       (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);
@@ -515,21 +504,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   abstract findDesc(ref: string): IColumnDesc | null;
 
-  /**
-   * generates a default ranking by using all column descriptions ones
-   */
-  deriveDefault() {
-    if (this.rankings.length > 0) {
-      //no default if we have a ranking
-      return;
-    }
-    const r = this.pushRanking();
-    this.getColumns().forEach((col) => {
-      if (!isSupportType(col)) {
-        this.push(r, col);
-      }
-    });
-  }
+  abstract deriveDefault(addSupporType?: boolean): Ranking;
 
   /**
    * derives a ranking from an old layout bundle format
@@ -591,7 +566,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   isAggregated(ranking: Ranking, group: IGroup) {
-    let g: IGroup|undefined|null = group;
+    let g: IGroup | undefined | null = group;
     while (g) {
       const key = `${ranking.id}@${toGroupID(g)}`;
       if (this.aggregations.has(key)) {
@@ -605,7 +580,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   private unaggregateParents(ranking: Ranking, group: IGroup) {
-    let g: IGroup|undefined|null = group.parent;
+    let g: IGroup | undefined | null = group.parent;
     while (g) {
       this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`);
       g = g.parent;
@@ -659,7 +634,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   abstract view(indices: number[]): Promise<any[]> | any[];
 
-  abstract fetch(orders: number[][]): (Promise<IDataRow>|IDataRow)[][];
+  abstract fetch(orders: number[][]): (Promise<IDataRow> | IDataRow)[][];
 
   /**
    * returns a data sample used for the mapping editor
@@ -784,6 +759,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.selection.delete(index);
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
   }
+
   /**
    * also select all the given rows
    * @param indices

@@ -1,9 +1,7 @@
-/**
- * Created by Samuel Gratzl on 15.08.2017.
- */
-import {default as Column, IColumnDesc} from '../model/Column';
-import {extent} from 'd3';
+import {extent} from 'd3-array';
 import {isNumberColumn, isSupportType} from '../model';
+import {default as Column, IColumnDesc} from '../model/Column';
+import {colorPool} from '../model/internal';
 import Ranking from '../model/Ranking';
 
 
@@ -12,8 +10,9 @@ export interface IDeriveOptions {
    * maximal percentage of unique values to be treated as a categorical column
    */
   categoricalThreshold: number;
-}
 
+  columns: string[];
+}
 
 function deriveType(label: string, value: any, column: number | string, data: any[], options: IDeriveOptions): IColumnDesc {
   const base: any = {
@@ -26,6 +25,10 @@ function deriveType(label: string, value: any, column: number | string, data: an
     base.domain = extent(data, (d) => d[column]);
     return base;
   }
+  if (value && value instanceof Date) {
+    base.type = 'date';
+    return base;
+  }
   if (typeof value === 'boolean') {
     base.type = 'boolean';
     return base;
@@ -35,10 +38,37 @@ function deriveType(label: string, value: any, column: number | string, data: an
     const categories = new Set(data.map((d) => d[column]));
     if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
       base.type = 'categorical';
-      base.categories = categories;
+      base.categories = Array.from(categories).sort();
     }
     return base;
   }
+  if (Array.isArray(value)) {
+    base.type = 'strings';
+    const vs = value[0];
+    if (typeof vs === 'number') {
+      base.type = 'numbers';
+      base.domain = extent((<number[]>[]).concat(...data.map((d) => d[column])));
+      return base;
+    }
+    if (vs && value instanceof Date) {
+      base.type = 'dates';
+      return base;
+    }
+    if (typeof value === 'boolean') {
+      base.type = 'booleans';
+      return base;
+    }
+    if (typeof value === 'string') {
+      //maybe a categorical
+      const categories = new Set((<string[]>[]).concat(...data.map((d) => d[column])));
+      if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
+        base.type = 'categoricals';
+        base.categories = Array.from(categories).sort();
+      }
+      return base;
+    }
+  }
+  console.log('cannot infer type of column:', column);
   //unknown type
   return base;
 }
@@ -46,6 +76,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
 export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOptions> = {}) {
   const config = Object.assign({
     categoricalThreshold: 0.7,
+    columns: []
   }, options);
   const r: IColumnDesc[] = [];
   if (data.length === 0) {
@@ -58,7 +89,26 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
     return first.map((v, i) => deriveType(`Col${i}`, v, i, data, config));
   }
   //objects
-  return Object.keys(first).map((key) => deriveType(key, first[key], key, data, config));
+  const columns = config.columns.length > 0 ? config.columns : Object.keys(first);
+  return columns.map((key) => deriveType(key, first[key], key, data, config));
+}
+
+
+/**
+ * assigns colors to columns if they are numbers and not yet defined
+ * @param columns
+ * @returns {IColumnDesc[]}
+ */
+export function deriveColors(columns: IColumnDesc[]) {
+  const colors = colorPool();
+  columns.forEach((col: any) => {
+    switch (col.type) {
+      case 'number':
+        col.color = colors() || Column.DEFAULT_COLOR;
+        break;
+    }
+  });
+  return columns;
 }
 
 
@@ -87,7 +137,7 @@ export interface IExportOptions {
    * filter specific column types, default: exclude all support types (selection, action, rank)
    * @param col the column description to filter
    */
-  filter: (col: IColumnDesc) => boolean; //!isSupportType
+  filter: (col: Column) => boolean; //!isSupportType
 
   /**
    * whether the description should be part of the column header
@@ -109,7 +159,7 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
     header: true,
     quote: false,
     quoteChar: '"',
-    filter: (c: IColumnDesc) => !isSupportType(c),
+    filter: (c: Column) => !isSupportType(c),
     verboseColumnHeaders: false
   }, options);
 
@@ -123,7 +173,7 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
     return l;
   }
 
-  const columns = ranking.flatColumns.filter((c) => opts.filter!(c.desc));
+  const columns = ranking.flatColumns.filter((c) => opts.filter(c));
   const order = ranking.getOrder();
 
   const r: string[] = [];
@@ -131,7 +181,7 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
     r.push(columns.map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`)).join(opts.separator));
   }
   data.forEach((row, i) => {
-    r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(opts.separator));
+    r.push(columns.map((c) => quote(c.getLabel({v: row, i: order[i]}), c)).join(opts.separator));
   });
   return r.join(opts.newline);
 }

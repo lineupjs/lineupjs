@@ -1,40 +1,39 @@
-/**
- * Created by sam on 04.11.2016.
- */
-
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {timeFormat, timeParse} from 'd3-time-format';
+import {Category} from './annotations';
+import {IDataRow} from './interfaces';
 import {FIRST_IS_NAN, isMissingValue} from './missing';
-import {time} from 'd3';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface IDateDesc {
   /**
    * d3 formatting option
    * @default %x
    */
-  readonly dateFormat?: string;
+  dateFormat?: string;
 
   /**
    * d3 formation option
    * @dfeault dateFormat
    */
-  readonly dateParse?: string;
+  dateParse?: string;
 }
 
-export declare type IDateColumnDesc = IValueColumnDesc<Date|string> & IDateDesc;
+export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
 
-export default class DateColumn extends ValueColumn<Date|string> {
-  private readonly format: time.Format;
-  private readonly parse: (date: string)=>Date;
+@Category('date')
+export default class DateColumn extends ValueColumn<Date> {
+  private readonly format: (date: Date) => string;
+  private readonly parse: (date: string) => Date | null;
 
-  constructor(id: string, desc: IDateColumnDesc) {
+  constructor(id: string, desc: Readonly<IDateColumnDesc>) {
     super(id, desc);
-    this.format = time.format(desc.dateFormat || '%x');
-    this.parse = desc.dateParse ? time.format(desc.dateParse).parse : this.format.parse;
+    this.format = timeFormat(desc.dateFormat || '%x');
+    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || '%x');
     this.setDefaultRenderer('default');
   }
 
-  getValue(row: any, index: number): Date|null {
-    const v = super.getValue(row, index);
+  getValue(row: IDataRow): Date | null {
+    const v = super.getValue(row);
     if (isMissingValue(v)) {
       return null;
     }
@@ -44,17 +43,17 @@ export default class DateColumn extends ValueColumn<Date|string> {
     return this.parse(String(v));
   }
 
-  getLabel(row: any, index: number) {
-    const v = this.getValue(row, index);
+  getLabel(row: IDataRow) {
+    const v = this.getValue(row);
     if (!(v instanceof Date)) {
       return '';
     }
     return this.format(v);
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const av = this.getValue(a, aIndex);
-    const bv = this.getValue(b, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    const av = this.getValue(a);
+    const bv = this.getValue(b);
     if (av === bv) {
       return 0;
     }

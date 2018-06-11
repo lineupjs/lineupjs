@@ -17,6 +17,7 @@
       content: '';
       position: absolute;
       top: 0;
+      left: 0;
       height: 50%;
       width: 100%;
       border-bottom: 1px solid $lu_renderer_boxplot_stroke;
@@ -79,9 +80,9 @@
   > div:nth-of-type(n + 2) {
     position: absolute;
     top: 50%;
-    width: 5px;
-    height: 5px;
-    margin: -2.5px;
+    width: $lu_renderer_dot_size;
+    height: $lu_renderer_dot_size;
+    margin: -$lu_renderer_dot_size / 2;
     background: $lu_renderer_boxplot_outlier;
     border-radius: 50%;
 

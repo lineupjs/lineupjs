@@ -1,15 +1,11 @@
-/**
- * Created by Samuel Gratzl on 17.11.2017.
- */
-
-
+import {suffix} from '../internal/AEventDispatcher';
+import {toolbar} from './annotations';
+import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import NumberColumn, {INumberColumn} from './NumberColumn';
-import {IColumnDesc} from './Column';
-import {IGroupData} from '../ui/engine/interfaces';
-import Column from './Column';
-import {isNumberColumn} from './INumberColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
+import {IDataRow, IGroupData} from './interfaces';
+import {isNumberColumn} from './INumberColumn';
+import NumberColumn, {INumberColumn} from './NumberColumn';
 
 
 /**
@@ -17,57 +13,91 @@ import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Imposition') {
+export function createImpositionDesc(label: string = 'Imposition') {
   return {type: 'imposition', label};
 }
 
 /**
  * implementation of a combine column, standard operations how to select
  */
+@toolbar('filterMapped')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
-  constructor(id: string, desc: IColumnDesc) {
+  static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+
+  constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
 
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('boxplot');
   }
 
-  getLabel(row: any, index: number) {
+  get label() {
+    const l = super.getMetaData().label;
+    const c = this._children;
+    if (l !== 'Imposition' || c.length === 0) {
+      return l;
+    }
+    if (c.length === 1) {
+      return c[0].label;
+    }
+    return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
+  }
+
+  private get wrapper(): INumberColumn | null {
+    const c = this._children;
+    return c.length === 0 ? null : <INumberColumn>c[0];
+  }
+
+  protected createEventList() {
+    return super.createEventList().concat([ImpositionCompositeColumn.EVENT_MAPPING_CHANGED]);
+  }
+
+  getLabel(row: IDataRow) {
     const c = this._children;
     if (c.length === 0) {
       return '';
     }
     if (c.length === 1) {
-      return c[0].getLabel(row, index);
+      return c[0].getLabel(row);
     }
-    return `${c[0].getLabel(row, index)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row, index)}`)})`;
+    return `${c[0].getLabel(row)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row)}`).join(', ')})`;
   }
 
-  getValue(row: any, index: number) {
+  getColor(row: IDataRow) {
     const c = this._children;
-    return c.length === 0 ? NaN : c[0].getValue(row, index);
+    if (c.length < 2) {
+      return this.color;
+    }
+    const v = (<ICategoricalColumn><any>c[1]).getCategory(row);
+    return v ? v.color : this.color;
   }
 
-  getColor(row: any, index: number) {
-    const c = this._children;
-    return c.length < 2 ? this.color : (<ICategoricalColumn><any>c[1]).getColor(row, index);
+  getValue(row: IDataRow) {
+    const w = this.wrapper;
+    return w ? w.getValue(row) : [];
   }
 
-  getNumber(row: any, index: number) {
-    const r = this.getValue(row, index);
-    return r === null ? NaN : r;
+  getNumber(row: IDataRow) {
+    const w = this.wrapper;
+    return w ? w.getNumber(row) : NaN;
   }
 
-  getRawNumber(row: any, index: number) {
-    return this.getNumber(row, index);
+  getRawNumber(row: IDataRow) {
+    const w = this.wrapper;
+    return w ? w.getRawNumber(row) : NaN;
   }
 
-  isMissing(row: any, index: number) {
-    return this._children.length === 0 || this._children[0].isMissing(row, index);
+  isMissing(row: IDataRow) {
+    const w = this.wrapper;
+    return w ? w.isMissing(row) : true;
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return NumberColumn.prototype.compare.call(this, a, b, aIndex, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    return NumberColumn.prototype.compare.call(this, a, b);
+  }
+
+  group(row: IDataRow) {
+    return NumberColumn.prototype.group.call(this, row);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
@@ -86,5 +116,19 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
       return null;
     }
     return super.insert(col, index);
+  }
+
+  protected insertImpl(col: Column, index: number) {
+    if (isNumberColumn(col)) {
+      this.forward(col, ...suffix('.impose', NumberColumn.EVENT_MAPPING_CHANGED));
+    }
+    return super.insertImpl(col, index);
+  }
+
+  protected removeImpl(child: Column, index: number) {
+    if (isNumberColumn(child)) {
+      this.unforward(child, ...suffix('.impose', NumberColumn.EVENT_MAPPING_CHANGED));
+    }
+    return super.removeImpl(child, index);
   }
 }
