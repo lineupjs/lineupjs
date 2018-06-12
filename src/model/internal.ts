@@ -89,7 +89,7 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
 
 // based on https://github.com/d3/d3-scale-chromatic#d3-scale-chromatic
 const schemeCategory10 = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
-const set3 = ['8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'];
+const set3 = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'];
 const colors = schemeCategory10.concat(set3);
 
 /** @internal */
