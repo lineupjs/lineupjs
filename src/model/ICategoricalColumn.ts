@@ -2,7 +2,7 @@ import Column from './Column';
 import {IArrayColumn, isArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {colorPool} from './internal';
-import {FIRST_IS_NAN} from './missing';
+import {FIRST_IS_MISSING} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
 
 export interface ICategoricalDesc {
@@ -61,10 +61,10 @@ export function compareCategory(a: ICategory | null, b: ICategory | null) {
   const aNull = a == null || isNaN(a.value);
   const bNull = b == null || isNaN(b.value);
   if (aNull || a == null) {
-    return bNull ? 0 : FIRST_IS_NAN;
+    return bNull ? 0 : FIRST_IS_MISSING;
   }
   if (bNull || b == null) {
-    return -FIRST_IS_NAN;
+    return -FIRST_IS_MISSING;
   }
   if (a.value === b.value) {
     return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
