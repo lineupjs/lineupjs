@@ -66,7 +66,8 @@
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "release:pre": "npm version prerelease && npm publish --tag=next && git push --follow-tags",
     "predist": "npm run build && npm run docs",
-    "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz --exclude \"docs\" * && cd .."
+    "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz --exclude \"docs\" * && cd ..",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
