@@ -1,7 +1,7 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {Category} from './annotations';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_NAN, isMissingValue} from './missing';
+import {FIRST_IS_MISSING, isMissingValue} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface IDateDesc {
@@ -58,10 +58,10 @@ export default class DateColumn extends ValueColumn<Date> {
       return 0;
     }
     if (!(av instanceof Date)) {
-      return (bv instanceof Date) ? FIRST_IS_NAN : 0;
+      return (bv instanceof Date) ? FIRST_IS_MISSING : 0;
     }
     if (!(bv instanceof Date)) {
-      return FIRST_IS_NAN * -1;
+      return FIRST_IS_MISSING * -1;
     }
     return av.getTime() - bv.getTime();
   }
