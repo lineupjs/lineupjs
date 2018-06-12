@@ -2,7 +2,7 @@ import {Category, toolbar} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
-import {FIRST_IS_NAN} from './missing';
+import {FIRST_IS_MISSING} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export enum EAlignment {
@@ -166,10 +166,10 @@ export default class StringColumn extends ValueColumn<string> {
     const aValue = this.getValue(a);
     const bValue = this.getValue(b);
     if (aValue === '') {
-      return bValue === '' ? 0 : FIRST_IS_NAN; //same = 0
+      return bValue === '' ? 0 : FIRST_IS_MISSING; //same = 0
     }
     if (bValue === '') {
-      return -FIRST_IS_NAN;
+      return -FIRST_IS_MISSING;
     }
     return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
   }

@@ -1,7 +1,7 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ISetColumn, toCategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_NAN} from './missing';
+import {FIRST_IS_MISSING} from './missing';
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
 
@@ -24,10 +24,10 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     const aVal = this.getValue(a);
     const bVal = this.getValue(b);
     if (aVal == null) {
-      return bVal == null ? 0 : FIRST_IS_NAN;
+      return bVal == null ? 0 : FIRST_IS_MISSING;
     }
     if (bVal == null) {
-      return FIRST_IS_NAN * -1;
+      return -FIRST_IS_MISSING;
     }
 
     const aCat = aVal.filter((x) => x).length;
