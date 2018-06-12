@@ -205,12 +205,14 @@ export default class MappingsFilterDialog extends ADialog {
     }
 
     this.data.then((values) => {
-      this.loadedData = values.filter((v) => !isMissingValue(v));
-      this.hist = computeStats(this.loadedData, (v) => v, () => false, this.rawDomain);
+      this.loadedData = values;
+      this.hist = computeStats(this.loadedData, (v) => v, (v) => isMissingValue(v), this.rawDomain);
       this.summary.update(summary, this.hist);
 
-      Array.from(this.loadedData).forEach((v) => {
-        g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
+      Array.from(values).forEach((v) => {
+        if (!isMissingValue(v)) {
+          g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
+        }
       });
     });
   }
