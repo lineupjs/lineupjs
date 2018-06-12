@@ -4,7 +4,7 @@ import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_NAN} from './missing';
+import {FIRST_IS_MISSING} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface ISetDesc extends ICategoricalDesc {
@@ -150,10 +150,10 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     const av = this.getSet(a);
     const bv = this.getSet(b);
     if (av.size === 0) {
-      return bv.size === 0 ? 0 : FIRST_IS_NAN;
+      return bv.size === 0 ? 0 : FIRST_IS_MISSING;
     }
     if (bv.size === 0) {
-      return -FIRST_IS_NAN;
+      return -FIRST_IS_MISSING;
     }
     if (av.size !== bv.size) {
       return av.size - bv.size;

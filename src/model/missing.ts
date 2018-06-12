@@ -10,6 +10,7 @@ export function isUnknown(v?: number | null) {
 }
 
 export const FIRST_IS_NAN = -1;
+export const FIRST_IS_MISSING = 1;
 
 
 export const missingGroup: IGroup = {

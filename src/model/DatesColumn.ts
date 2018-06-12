@@ -5,7 +5,7 @@ import {default as ArrayColumn, IArrayColumnDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDateDesc} from './DateColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_NAN, isMissingValue} from './missing';
+import {FIRST_IS_MISSING, isMissingValue} from './missing';
 
 export enum EDateSort {
   min = 'min',
@@ -85,10 +85,10 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
       return 0;
     }
     if (av.length === 0) {
-      return bv.length === 0 ? 0 : FIRST_IS_NAN;
+      return bv.length === 0 ? 0 : FIRST_IS_MISSING;
     }
     if (bv.length === 0) {
-      return -FIRST_IS_NAN;
+      return -FIRST_IS_MISSING;
     }
     const as = compute(av, this.sort);
     const bs = compute(bv, this.sort);
