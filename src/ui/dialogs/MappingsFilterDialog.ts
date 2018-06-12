@@ -19,7 +19,7 @@ export default class MappingsFilterDialog extends ADialog {
   private readonly mappingLines: MappingLine[] = [];
   private rawDomain: [number, number];
 
-  private readonly summary: ISummaryRenderer;
+  private summary: ISummaryRenderer;
   private readonly data: Promise<number[]>;
   private readonly idPrefix: string;
   private loadedData: number[] | null = null;
@@ -36,7 +36,7 @@ export default class MappingsFilterDialog extends ADialog {
     dialog: this.dialog
   };
 
-  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
+  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
       fullDialog: true
     });
@@ -194,20 +194,20 @@ export default class MappingsFilterDialog extends ADialog {
         }
         d.setCustomValidity('');
         this.rawDomain[i] = v;
+        this.scale.domain = this.rawDomain.slice();
 
         if (!this.loadedData) {
           return;
         }
-        this.hist = computeStats(this.loadedData, (v) => v, (v) => isMissingValue(v), this.rawDomain);
-        this.summary.update(summary, this.hist);
+        this.applyMapping(this.scale, this.column.getFilter());
+        this.updateSummary(true);
         this.updateLines();
       });
     }
 
     this.data.then((values) => {
       this.loadedData = values;
-      this.hist = computeStats(this.loadedData, (v) => v, (v) => isMissingValue(v), this.rawDomain);
-      this.summary.update(summary, this.hist);
+      this.updateSummary();
 
       Array.from(values).forEach((v) => {
         if (!isMissingValue(v)) {
@@ -215,6 +215,27 @@ export default class MappingsFilterDialog extends ADialog {
         }
       });
     });
+  }
+
+  private updateSummary(recreate = false) {
+    if (!this.loadedData) {
+      return;
+    }
+    this.hist = computeStats(this.loadedData, (v) => v, (v) => isMissingValue(v), this.rawDomain);
+
+    if (recreate) {
+      // replace the summary
+      const summaryNode = this.find('.lu-summary');
+      this.summary = this.ctx.summaryRenderer(this.column, true);
+      summaryNode.insertAdjacentHTML('afterend', this.summary.template);
+      const summary = <HTMLElement>summaryNode.nextElementSibling!;
+      summaryNode.remove();
+      summary.classList.add('lu-summary');
+      summary.dataset.interactive = '';
+      summary.dataset.renderer = this.column.getSummaryRenderer();
+    }
+
+    this.summary.update(this.find('.lu-summary'), this.hist);
   }
 
   private update() {
@@ -247,11 +268,10 @@ export default class MappingsFilterDialog extends ADialog {
 
   protected reset() {
     this.scale = this.column.getOriginalMapping();
+    this.rawDomain = <[number, number]>this.scale.domain.slice();
     this.applyMapping(this.scale, noNumberFilter());
     this.update();
-    if (this.hist) {
-      this.summary.update(this.find('.lu-summary'), this.hist);
-    }
+    this.updateSummary(true);
     this.updateLines();
   }
 
@@ -262,16 +282,16 @@ export default class MappingsFilterDialog extends ADialog {
     }
     const ref = <IMapAbleColumn>r.find(columnId)!;
     this.scale = ref.getMapping().clone();
+    this.rawDomain = <[number, number]>this.scale.domain.slice();
     this.applyMapping(this.scale, ref.getFilter());
     this.update();
-    if (this.hist) {
-      this.summary.update(this.find('.lu-summary'), this.hist);
-    }
+    this.updateSummary(true);
     this.updateLines();
   }
 
   private normalizeRaw(d: number) {
-    return (d - this.rawDomain[0]) * 100 / (this.rawDomain[1] - this.rawDomain[0]);
+    const v = (d - this.rawDomain[0]) * 100 / (this.rawDomain[1] - this.rawDomain[0]);
+    return Math.max(Math.min(v, 100), 0); // clamp
   }
 
   private unnormalizeRaw(d: number) {
