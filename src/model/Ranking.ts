@@ -53,7 +53,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   readonly comparator = (a: IDataRow, b: IDataRow) => {
     if (this.sortCriteria.length === 0) {
-      return 0;
+      return a.i - b.i;
     }
     for (const sort of this.sortCriteria) {
       const r = sort.col!.compare(a, b);
@@ -149,7 +149,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   dump(toDescRef: (desc: any) => any) {
     const r: any = {};
     r.columns = this.columns.map((d) => d.dump(toDescRef));
-    r.sortCriterias = this.sortCriteria.map((s) => ({asc: s.asc, sortBy: s.col!.id}));
+    r.sortCriteria = this.sortCriteria.map((s) => ({asc: s.asc, sortBy: s.col!.id}));
+    r.groupSortCriteria = this.groupSortCriteria.map((s) => ({asc: s.asc, sortBy: s.col!.id}));
     r.groupColumns = this.groupColumns.map((d) => d.id);
     return r;
   }
@@ -181,12 +182,12 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       }).filter((s: any) => s.col);
     };
 
-    if (dump.sortCriterias) {
-      this.setSortCriteria(restoreSortCriteria(dump.sortCriterias));
+    if (dump.sortCriteria) {
+      this.setSortCriteria(restoreSortCriteria(dump.sortCriteria));
     }
 
-    if (dump.groupSortCriterias) {
-      this.setGroupSortCriteria(restoreSortCriteria(dump.groupSortCriterias));
+    if (dump.groupSortCriteria) {
+      this.setGroupSortCriteria(restoreSortCriteria(dump.groupSortCriteria));
     }
   }
 
@@ -279,7 +280,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.groupBy(columns);
   }
 
-  sortBy(col: Column | null, ascending: boolean = false) {
+  sortBy(col: Column | null, ascending: boolean = false, level: number = 1) {
     if (col != null && col.findMyRanker() !== this) {
       return false; //not one of mine
     }
@@ -384,7 +385,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.setGroupSortCriteria({col, asc});
   }
 
-  groupSortBy(col: Column, asc: boolean) {
+  groupSortBy(col: Column, asc: boolean, level: number = 1) {
     return this.setGroupSortCriteria({col, asc});
   }
 
@@ -437,8 +438,15 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       d.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.groupOrder`, this.dirtyOrder);
     });
     this.groupSortCriteria.splice(0, this.groupSortCriteria.length, ...values.slice());
-    this.triggerResort(this.sortCriteria.slice());
+    this.triggerGroupResort(this.sortCriteria.slice());
     return true;
+  }
+
+  private triggerGroupResort(bak: ISortCriteria | ISortCriteria[] | null) {
+    const sortCriterias = this.getGroupSortCriteria();
+    const bakMulti = Array.isArray(bak) ? bak : sortCriterias;
+    this.fire([Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
+      Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bakMulti, sortCriterias);
   }
 
   private triggerResort(bak: ISortCriteria | ISortCriteria[] | null) {
@@ -465,10 +473,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     col.on(`${Column.EVENT_VISIBILITY_CHANGED}.ranking`, (oldValue, newValue) => this.fire([Ranking.EVENT_COLUMN_VISIBILITY_CHANGED, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, oldValue, newValue));
 
     this.fire([Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index);
-
-    if (this.sortCriteria.length === 0 && !isSupportType(col)) {
-      this.sortBy(col, col instanceof StringColumn);
-    }
     return col;
   }
 
@@ -543,32 +547,37 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.unforward(col, ...suffix('.ranking', Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
 
     const isSortCriteria = this.sortCriteria.findIndex((d) => d.col === col);
-    if (isSortCriteria === 0) {
-      this.sortCriteria.shift();
-      // if multiple ones sort by previous one
-      if (this.sortCriteria.length > 0) {
-        this.sortBy(this.sortCriteria[0].col);
-      } else {
-        const next = this.columns.filter((d) => d !== col && !isSupportType(d))[0];
-        this.sortBy(next ? next : null);
-      }
-    } else if (isSortCriteria > 0) {
-      // just remove and trigger restore
+    const sortCriteriaChanged = isSortCriteria >= 0;
+    if (sortCriteriaChanged) {
       this.sortCriteria.splice(isSortCriteria, 1);
-      this.triggerResort(null);
     }
 
+    const isGroupSortCriteria = this.groupSortCriteria.findIndex((d) => d.col === col);
+    const groupSortCriteriaChanged = isGroupSortCriteria >= 0;
+    if (groupSortCriteriaChanged) {
+      this.groupSortCriteria.splice(isGroupSortCriteria, 1);
+    }
+
+    let newGrouping: Column[]|null = null;
     const isGroupColumn = this.groupColumns.indexOf(col);
     if (isGroupColumn >= 0) { // was my grouping criteria
-      const newGrouping = this.groupColumns.slice();
+      newGrouping = this.groupColumns.slice();
       newGrouping.splice(isGroupColumn, 1);
-      this.groupBy(newGrouping);
     }
 
     col.parent = null;
     this.columns.splice(i, 1);
 
     this.fire([Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, i);
+
+    if (newGrouping) {
+      this.groupBy(newGrouping);
+    } else if (sortCriteriaChanged) {
+      this.triggerResort(null);
+    } else if (groupSortCriteriaChanged) {
+      this.triggerGroupResort(null);
+    }
+
     return true;
   }
 
@@ -577,6 +586,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return;
     }
     this.sortCriteria.splice(0, this.sortCriteria.length);
+    this.groupSortCriteria.splice(0, this.groupSortCriteria.length);
 
     this.groupColumns.forEach((groupColumn) => {
       groupColumn.on(`${Column.EVENT_DIRTY_VALUES}.group`, null);
