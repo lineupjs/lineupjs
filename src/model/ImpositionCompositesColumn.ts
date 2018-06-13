@@ -185,6 +185,14 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getValues(row) : [];
   }
 
+  sortByMe(ascending = false, level = 1) {
+    return super.sortByMe(ascending, level);
+  }
+
+  groupSortByMe(ascending = false, level = 1) {
+    return super.groupSortByMe(ascending, level);
+  }
+
   compare(a: IDataRow, b: IDataRow) {
     return NumbersColumn.prototype.compare.call(this, a, b);
   }

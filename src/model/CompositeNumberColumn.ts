@@ -96,6 +96,14 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return isMissingValue(this.compute(row));
   }
 
+  sortByMe(ascending = false, level = 1) {
+    return super.sortByMe(ascending, level);
+  }
+
+  groupSortByMe(ascending = false, level = 1) {
+    return super.groupSortByMe(ascending, level);
+  }
+
   compare(a: IDataRow, b: IDataRow) {
     return NumberColumn.prototype.compare.call(this, a, b);
   }

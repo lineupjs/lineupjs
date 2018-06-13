@@ -149,6 +149,14 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.getRawValue(row, missingValue);
   }
 
+  sortByMe(ascending = false, level = 1) {
+    return super.sortByMe(ascending, level);
+  }
+
+  groupSortByMe(ascending = false, level = 1) {
+    return super.groupSortByMe(ascending, level);
+  }
+
   compare(a: IDataRow, b: IDataRow) {
     return numberCompare(this.getNumber(a), this.getNumber(b), this.isMissing(a), this.isMissing(b));
   }

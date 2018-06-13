@@ -145,6 +145,14 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return w ? w.getRange() : ['0', '1'];
   }
 
+  sortByMe(ascending = false, level = 1) {
+    return super.sortByMe(ascending, level);
+  }
+
+  groupSortByMe(ascending = false, level = 1) {
+    return super.groupSortByMe(ascending, level);
+  }
+
   compare(a: IDataRow, b: IDataRow) {
     return BoxPlotColumn.prototype.compare.call(this, a, b);
   }

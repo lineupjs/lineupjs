@@ -49,6 +49,14 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   }
 
+  sortByMe(ascending = false, level = 1) {
+    return super.sortByMe(ascending, level);
+  }
+
+  groupSortByMe(ascending = false, level = 1) {
+    return super.groupSortByMe(ascending, level);
+  }
+
   compare(a: IDataRow, b: IDataRow): number {
     return compareBoxPlot(this, a, b);
   }

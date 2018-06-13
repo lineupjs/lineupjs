@@ -92,6 +92,14 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     return w ? w.isMissing(row) : true;
   }
 
+  sortByMe(ascending = false, level = 1) {
+    return super.sortByMe(ascending, level);
+  }
+
+  groupSortByMe(ascending = false, level = 1) {
+    return super.groupSortByMe(ascending, level);
+  }
+
   compare(a: IDataRow, b: IDataRow) {
     return NumberColumn.prototype.compare.call(this, a, b);
   }
