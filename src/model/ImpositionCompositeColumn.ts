@@ -1,5 +1,5 @@
 import {suffix} from '../internal/AEventDispatcher';
-import {toolbar} from './annotations';
+import {toolbar, SortByDefault} from './annotations';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
@@ -21,6 +21,7 @@ export function createImpositionDesc(label: string = 'Imposition') {
  * implementation of a combine column, standard operations how to select
  */
 @toolbar('filterMapped')
+@SortByDefault('descending')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 
@@ -90,14 +91,6 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   isMissing(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.isMissing(row) : true;
-  }
-
-  sortByMe(ascending = false, level = 1) {
-    return super.sortByMe(ascending, level);
-  }
-
-  groupSortByMe(ascending = false, level = 1) {
-    return super.groupSortByMe(ascending, level);
   }
 
   compare(a: IDataRow, b: IDataRow) {

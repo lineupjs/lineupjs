@@ -5,6 +5,7 @@ import {defaultGroup} from './Group';
 import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
 import Ranking, {ISortCriteria} from './Ranking';
+import {isSortingAscByDefault} from './annotations';
 
 export {IColumnDesc} from './interfaces';
 
@@ -255,7 +256,7 @@ export default class Column extends AEventDispatcher {
    * @param level sorting level
    * @returns {boolean} was successful
    */
-  sortByMe(ascending = true, level = 1) {
+  sortByMe(ascending = isSortingAscByDefault(this), level = 0) {
     const r = this.findMyRanker();
     if (r) {
       return r.sortBy(this, ascending, level);
@@ -315,7 +316,7 @@ export default class Column extends AEventDispatcher {
     return this.isSortedByMeImpl((r) => r.getSortCriteria());
   }
 
-  groupSortByMe(ascending = true, level = 1) {
+  groupSortByMe(ascending = isSortingAscByDefault(this), level = 0) {
     const r = this.findMyRanker();
     if (r) {
       return r.groupSortBy(this, ascending, level);

@@ -1,5 +1,5 @@
 import {LazyBoxPlotData} from '../internal';
-import {toolbar} from './annotations';
+import {toolbar, SortByDefault} from './annotations';
 import Column from './Column';
 import {IKeyValue} from './IArrayColumn';
 import {IDataRow} from './interfaces';
@@ -21,6 +21,7 @@ export interface INumberMapDesc extends INumberDesc {
 export declare type INumberMapColumnDesc = INumberMapDesc & IMapColumnDesc<number>;
 
 @toolbar('filterMapped', 'sortNumbers')
+@SortByDefault('descending')
 export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 

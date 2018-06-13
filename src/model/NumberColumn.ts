@@ -1,6 +1,6 @@
 import {format} from 'd3-format';
 import {equalArrays} from '../internal';
-import {Category, toolbar} from './annotations';
+import {Category, toolbar, SortByDefault} from './annotations';
 import Column from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {groupCompare, isDummyNumberFilter, restoreFilter} from './internal';
@@ -26,6 +26,7 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
  */
 @toolbar('stratifyThreshold', 'sortNumbersGroup', 'filterMapped')
 @Category('number')
+@SortByDefault('descending')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
 
@@ -147,14 +148,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   getRawNumber(row: IDataRow, missingValue = this.missingValue) {
     return this.getRawValue(row, missingValue);
-  }
-
-  sortByMe(ascending = false, level = 1) {
-    return super.sortByMe(ascending, level);
-  }
-
-  groupSortByMe(ascending = false, level = 1) {
-    return super.groupSortByMe(ascending, level);
   }
 
   compare(a: IDataRow, b: IDataRow) {

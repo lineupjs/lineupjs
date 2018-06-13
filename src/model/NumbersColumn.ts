@@ -1,5 +1,5 @@
 import {LazyBoxPlotData} from '../internal';
-import {toolbar} from './annotations';
+import {toolbar, SortByDefault} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDataRow} from './interfaces';
@@ -25,6 +25,7 @@ export interface INumbersDesc extends IArrayDesc, IMapAbleDesc {
 export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>;
 
 @toolbar('sortNumbers', 'filterMapped')
+@SortByDefault('descending')
 export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly CENTER = 0;
@@ -53,14 +54,6 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     this.setDefaultRenderer('heatmap');
     this.setDefaultGroupRenderer('heatmap');
     this.setDefaultSummaryRenderer('histogram');
-  }
-
-  sortByMe(ascending = false, level = 1) {
-    return super.sortByMe(ascending, level);
-  }
-
-  groupSortByMe(ascending = false, level = 1) {
-    return super.groupSortByMe(ascending, level);
   }
 
   compare(a: IDataRow, b: IDataRow): number {

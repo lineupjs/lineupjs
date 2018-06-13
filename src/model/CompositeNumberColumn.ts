@@ -4,6 +4,7 @@ import CompositeColumn from './CompositeColumn';
 import {IDataRow, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
 import NumberColumn, {INumberColumn} from './NumberColumn';
+import {SortByDefault} from './annotations';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -24,6 +25,7 @@ export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnD
 /**
  * implementation of a combine column, standard operations how to select
  */
+@SortByDefault('descending')
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
   missingValue = NaN;
 
@@ -94,14 +96,6 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
   isMissing(row: IDataRow) {
     return isMissingValue(this.compute(row));
-  }
-
-  sortByMe(ascending = false, level = 1) {
-    return super.sortByMe(ascending, level);
-  }
-
-  groupSortByMe(ascending = false, level = 1) {
-    return super.groupSortByMe(ascending, level);
   }
 
   compare(a: IDataRow, b: IDataRow) {

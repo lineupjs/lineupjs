@@ -1,6 +1,6 @@
 import {format} from 'd3-format';
 import {IBoxPlotData} from '../internal';
-import {Category, toolbar} from './annotations';
+import {Category, toolbar, SortByDefault} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {isDummyNumberFilter, restoreFilter} from './internal';
@@ -23,6 +23,7 @@ export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlo
 
 @toolbar('sortNumbers', 'filterMapped')
 @Category('array')
+@SortByDefault('descending')
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly DEFAULT_FORMATTER = format('.3n');
@@ -47,14 +48,6 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
     this.sort = desc.sort || ESortMethod.min;
 
-  }
-
-  sortByMe(ascending = false, level = 1) {
-    return super.sortByMe(ascending, level);
-  }
-
-  groupSortByMe(ascending = false, level = 1) {
-    return super.groupSortByMe(ascending, level);
   }
 
   compare(a: IDataRow, b: IDataRow): number {

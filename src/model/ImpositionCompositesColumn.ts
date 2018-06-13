@@ -1,6 +1,6 @@
 import {IAdvancedBoxPlotData} from '../internal';
 import {suffix} from '../internal/AEventDispatcher';
-import {toolbar} from './annotations';
+import {toolbar, SortByDefault} from './annotations';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {IKeyValue} from './IArrayColumn';
@@ -24,6 +24,7 @@ export function createImpositionsDesc(label: string = 'Imposition') {
  * implementation of a combine column, standard operations how to select
  */
 @toolbar('sortNumbers', 'filterMapped')
+@SortByDefault('descending')
 export default class ImpositionCompositesColumn extends CompositeColumn implements INumbersColumn {
   static readonly EVENT_MAPPING_CHANGED = NumbersColumn.EVENT_MAPPING_CHANGED;
 
@@ -183,14 +184,6 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   getValues(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.getValues(row) : [];
-  }
-
-  sortByMe(ascending = false, level = 1) {
-    return super.sortByMe(ascending, level);
-  }
-
-  groupSortByMe(ascending = false, level = 1) {
-    return super.groupSortByMe(ascending, level);
   }
 
   compare(a: IDataRow, b: IDataRow) {

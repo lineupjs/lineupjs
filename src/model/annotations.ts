@@ -9,6 +9,15 @@ export function SupportType() {
   return Reflect.metadata(supportType, true);
 }
 
+export function SortByDefault(order: 'ascending'|'descending' = 'ascending') {
+  return Reflect.metadata(Symbol.for('sortAscendingByDefault'), order === 'ascending');
+}
+
+export function isSortingAscByDefault(col: Column) {
+  const clazz = (<any>col).constructor;
+  return Reflect.hasMetadata(Symbol.for('sortAscendingByDefault'), clazz) === true;
+}
+
 export class Categories {
   readonly string = {label: 'label', order: 1, name: 'string'};
   readonly categorical = {label: 'categorical', order: 2, name: 'categorical'};

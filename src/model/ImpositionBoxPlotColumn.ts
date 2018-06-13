@@ -1,6 +1,6 @@
 import {IBoxPlotData} from '../internal';
 import {suffix} from '../internal/AEventDispatcher';
-import {toolbar} from './annotations';
+import {toolbar, SortByDefault} from './annotations';
 import BoxPlotColumn from './BoxPlotColumn';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
@@ -24,6 +24,7 @@ export function createImpositionBoxPlotDesc(label: string = 'Imposition') {
  * implementation of a combine column, standard operations how to select
  */
 @toolbar('sortNumbers', 'filterMapped')
+@SortByDefault('descending')
 export default class ImpositionBoxPlotColumn extends CompositeColumn implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumbersColumn.EVENT_MAPPING_CHANGED;
 
@@ -143,14 +144,6 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   getRange(): [string, string] {
     const w = this.wrapper;
     return w ? w.getRange() : ['0', '1'];
-  }
-
-  sortByMe(ascending = false, level = 1) {
-    return super.sortByMe(ascending, level);
-  }
-
-  groupSortByMe(ascending = false, level = 1) {
-    return super.groupSortByMe(ascending, level);
   }
 
   compare(a: IDataRow, b: IDataRow) {
