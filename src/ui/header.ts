@@ -84,7 +84,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
     if (priority !== undefined) {
-      sort.dataset.priority = (parseInt(priority, 10) + 1).toString();
+      sort.dataset.priority = (priority + 1).toString();
     } else {
       delete sort.dataset.priority;
     }
@@ -454,7 +454,7 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
     }
 
     if (!equalArrays(groups, ranking.getGroupCriteria())) {
-      ranking.groupBy(groups);
+      ranking.setGroupCriteria(groups);
     }
     ranking.setSortCriteria(criteria);
     return true;

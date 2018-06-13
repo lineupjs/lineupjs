@@ -10,12 +10,15 @@ export function SupportType() {
 }
 
 export function SortByDefault(order: 'ascending'|'descending' = 'ascending') {
-  return Reflect.metadata(Symbol.for('sortAscendingByDefault'), order === 'ascending');
+  if (order === 'descending') {
+    return Reflect.metadata(Symbol.for('sortDescendingByDefault'), true);
+  }
+  return (d: any) => d;
 }
 
 export function isSortingAscByDefault(col: Column) {
   const clazz = (<any>col).constructor;
-  return Reflect.hasMetadata(Symbol.for('sortAscendingByDefault'), clazz) === true;
+  return !Reflect.hasMetadata(Symbol.for('sortDescendingByDefault'), clazz);
 }
 
 export class Categories {
