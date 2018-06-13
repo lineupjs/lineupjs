@@ -60,7 +60,7 @@
     "watch": "webpack --mode development --watch --devtool source-map",
     "start": "webpack-dev-server --mode development --devtool source-map",
     "preversion": "npm test",
-    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
