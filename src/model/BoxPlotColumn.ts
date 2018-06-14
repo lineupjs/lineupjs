@@ -1,6 +1,6 @@
 import {format} from 'd3-format';
 import {IBoxPlotData} from '../internal';
-import {Category, toolbar, SortByDefault} from './annotations';
+import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import {isDummyNumberFilter, restoreFilter} from './internal';
@@ -21,7 +21,8 @@ export interface IBoxPlotDesc extends IMapAbleDesc {
 
 export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
 
-@toolbar('sortNumbers', 'filterMapped')
+@toolbar('filterMapped')
+@dialogAddons('sort', 'sortBoxPlot')
 @Category('array')
 @SortByDefault('descending')
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {

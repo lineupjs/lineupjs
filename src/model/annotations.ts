@@ -43,6 +43,10 @@ export function toolbar(...keys: string[]) {
   return Reflect.metadata(Symbol.for('toolbarIcon'), keys);
 }
 
+export function dialogAddons(key: string, ...keys: string[]) {
+  return Reflect.metadata(Symbol.for(`toolbarDialogAddon${key}`), keys);
+}
+
 const cache = new Map<string, string[]>();
 
 export function isSupportType(col: Column) {
@@ -78,5 +82,27 @@ export function getAllToolbarActions(col: Column) {
     obj = Object.getPrototypeOf(obj);
   } while (obj);
   cache.set(col.desc.type, actions);
+  return actions;
+}
+
+
+export function getAllToolbarDialogAddons(col: Column, key: string) {
+  const cacheKey = `${col.desc.type}@${key}`;
+  if (cache.has(cacheKey)) {
+    return cache.get(cacheKey)!;
+  }
+  const actions = <string[]>[];
+
+  // walk up the prototype chain
+  let obj = <any>col;
+  const symbol = Symbol.for(`toolbarDialogAddon${key}`);
+  do {
+    const m = <string[]>Reflect.getOwnMetadata(symbol, obj.constructor);
+    if (m) {
+      actions.push(...m);
+    }
+    obj = Object.getPrototypeOf(obj);
+  } while (obj);
+  cache.set(cacheKey, actions);
   return actions;
 }

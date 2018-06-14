@@ -1,6 +1,6 @@
 import {format} from 'd3-format';
 import {equalArrays} from '../internal';
-import {Category, toolbar, SortByDefault} from './annotations';
+import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {groupCompare, isDummyNumberFilter, restoreFilter} from './internal';
@@ -24,7 +24,8 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('stratifyThreshold', 'sortNumbersGroup', 'filterMapped')
+@toolbar('stratifyThreshold', 'sortGroupBy', 'filterMapped')
+@dialogAddons('sortGroup', 'sortNumber')
 @Category('number')
 @SortByDefault('descending')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {

@@ -1,5 +1,5 @@
 import {LazyBoxPlotData} from '../internal';
-import {toolbar, SortByDefault} from './annotations';
+import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDataRow} from './interfaces';
@@ -24,7 +24,8 @@ export interface INumbersDesc extends IArrayDesc, IMapAbleDesc {
 
 export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>;
 
-@toolbar('sortNumbers', 'filterMapped')
+@toolbar('filterMapped')
+@dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;

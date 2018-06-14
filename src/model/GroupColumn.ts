@@ -1,4 +1,4 @@
-import {Category, SupportType, toolbar} from './annotations';
+import {Category, SupportType, toolbar, dialogAddons} from './annotations';
 import Column from './Column';
 import {IGroupData} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
@@ -8,7 +8,8 @@ export function createGroupDesc(label = 'Group Name') {
 }
 
 @SupportType()
-@toolbar('sortGroup')
+@toolbar('sortGroupBy')
+@dialogAddons('sortGroup', 'sortGroups')
 @Category('support')
 export default class GroupColumn extends Column {
   private groupSortMethod: 'name' | 'count' = 'name';

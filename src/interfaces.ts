@@ -2,7 +2,7 @@ import {IGroupData, IGroupItem} from './model';
 import Ranking from './model/Ranking';
 import {IDataProvider} from './provider';
 import {ICellRendererFactory} from './renderer';
-import {IToolbarAction} from './ui';
+import {IToolbarAction, IToolbarDialogAddon} from './ui';
 
 
 /** number of bins before switching to dense mode
@@ -125,7 +125,7 @@ export interface ILineUpOptions {
   /**
    * register custom toolbar actions
    */
-  toolbar: {[key: string]: IToolbarAction};
+  toolbar: {[key: string]: IToolbarAction | IToolbarDialogAddon};
   /**
    * register custom renderer factories
    */

@@ -1,53 +1,66 @@
-import BoxPlotColumn from '../../model/BoxPlotColumn';
 import Column from '../../model/Column';
-import {EAdvancedSortMethod, ESortMethod, IBoxPlotColumn} from '../../model/INumberColumn';
-import NumberColumn from '../../model/NumberColumn';
 import ADialog, {IDialogContext} from './ADialog';
 import {randomId, forEach} from './utils';
+import {getToolbarDialogAddons, IToolbarDialogAddon} from '../toolbar';
+import {IRankingHeaderContext} from '../interfaces';
 
 /** @internal */
 export default class SortDialog extends ADialog {
-  constructor(private readonly column: (IBoxPlotColumn | NumberColumn), dialog: IDialogContext) {
+  private readonly addons: IToolbarDialogAddon[];
+
+  constructor(private readonly column: Column, private readonly group: boolean, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog);
+    this.addons = getToolbarDialogAddons(this.column, group ? 'sortGroup' : 'sort', ctx);
   }
 
   protected build(node: HTMLElement) {
-    sortMethods(node, this.column, Object.keys(this.column instanceof BoxPlotColumn ? ESortMethod : EAdvancedSortMethod), this.dialog.idPrefix);
-    sortOrder(node, this.column, this.dialog.idPrefix, this.column instanceof NumberColumn);
+    sortOrder(node, this.column, this.dialog.idPrefix, this.group);
+
+    for(const addon of this.addons) {
+      this.node.insertAdjacentHTML('beforeend', `<strong>${addon.title}</strong>`);
+      addon.append(this.column, this.node, this.dialog, this.ctx);
+    }
   }
-}
-
-/** @internal */
-export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string): void, getSortMethod(): string}, methods: string[], idPrefix: string) {
-  const id = randomId(idPrefix);
-  const bak = column.getSortMethod();
-  methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<div class="checkbox"><input id="${id}${d}" type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><label for="${id}${d}">${d.slice(0, 1).toUpperCase() + d.slice(1)}</label></div>`));
-
-  forEach(node, 'input[name=multivaluesort]', (n: HTMLInputElement) => {
-    n.addEventListener('change', () => column.setSortMethod(n.value), {
-      passive: true
-    });
-  });
 }
 
 /** @internal */
 export function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSortBy: boolean = false) {
-  const order = groupSortBy ? column.isGroupSortedByMe().asc : column.isSortedByMe().asc;
+  const ranking = column.findMyRanker()!;
+  const current = groupSortBy  ? ranking.getGroupSortCriteria() : ranking.getSortCriteria();
+  const order = Object.assign({}, groupSortBy ? column.isGroupSortedByMe() : column.isSortedByMe());
   const id = randomId(idPrefix);
   node.insertAdjacentHTML('beforeend', `
         <strong>Sort Order</strong>
-        <div class="lu-checkbox"><input id="${id}A" type="radio" name="sortorder" value="asc"  ${(order === 'asc') ? 'checked' : ''} ><label for="${id}A">Ascending</label></div>
-        <div class="lu-checkbox"><input id="${id}A" type="radio" name="sortorder" value="desc"  ${(order === 'desc') ? 'checked' : ''} ><label for="${id}B">Decending</label></div>
+        <div class="lu-checkbox"><input id="${id}N" type="radio" name="sortorder" value="none"  ${(order.asc === undefined) ? 'checked' : ''} ><label for="${id}N">None</label></div>
+        <div class="lu-checkbox"><input id="${id}B" type="radio" name="sortorder" value="asc"  ${(order.asc === 'asc') ? 'checked' : ''} ><label for="${id}B">Ascending</label></div>
+        <div class="lu-checkbox"><input id="${id}D" type="radio" name="sortorder" value="desc"  ${(order.asc === 'desc') ? 'checked' : ''} ><label for="${id}D">Decending</label></div>
+        <strong><label for="${id}P">Sort Priority</label></strong>
+        <input type="number" id="${id}P" step="1" min="1" max="${current.length + 1}" value="${order.priority !== undefined ? (order.priority + 1) : (current.length + 1)}">
     `);
+
+  const trigger = () => {
+    if (groupSortBy) {
+      ranking.groupSortBy(column, order.asc === 'asc', order.asc === undefined ? -1 : order.priority);
+    } else {
+      ranking.sortBy(column, order.asc === 'asc', order.asc === undefined ? -1 : order.priority);
+    }
+  };
+
   forEach(node, 'input[name=sortorder]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => {
-      if (groupSortBy) {
-        column.groupSortByMe(n.value === 'asc');
-      } else {
-        column.sortByMe(n.value === 'asc');
-      }
+      order.asc = n.value === 'none' ? undefined : <'asc'|'desc'>n.value;
+      trigger();
     }, {
       passive: true
     });
   });
+  {
+    const priority = (<HTMLInputElement>node.querySelector(`#${id}P`));
+    priority.addEventListener('change', () => {
+      order.priority = parseInt(priority.value, 10) - 1;
+      trigger();
+    }, {
+      passive: true
+    });
+  }
 }

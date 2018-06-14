@@ -1,7 +1,7 @@
-import { EAdvancedSortMethod } from '../../model/INumberColumn';
+import {EAdvancedSortMethod} from '../../model/INumberColumn';
 import ReduceColumn from '../../model/ReduceColumn';
-import ADialog, { IDialogContext } from './ADialog';
-import { sortMethods } from './SortDialog';
+import ADialog, {IDialogContext} from './ADialog';
+import {sortMethods} from './utils';
 
 /** @internal */
 export default class ReduceDialog extends ADialog {

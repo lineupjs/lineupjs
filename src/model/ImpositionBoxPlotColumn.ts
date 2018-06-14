@@ -1,6 +1,6 @@
 import {IBoxPlotData} from '../internal';
 import {suffix} from '../internal/AEventDispatcher';
-import {toolbar, SortByDefault} from './annotations';
+import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import BoxPlotColumn from './BoxPlotColumn';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
@@ -23,7 +23,8 @@ export function createImpositionBoxPlotDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('sortNumbers', 'filterMapped')
+@toolbar('filterMapped')
+@dialogAddons('sort', 'sortBoxPlot')
 @SortByDefault('descending')
 export default class ImpositionBoxPlotColumn extends CompositeColumn implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumbersColumn.EVENT_MAPPING_CHANGED;
