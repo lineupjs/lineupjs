@@ -9,6 +9,18 @@ export function SupportType() {
   return Reflect.metadata(supportType, true);
 }
 
+export function SortByDefault(order: 'ascending'|'descending' = 'ascending') {
+  if (order === 'descending') {
+    return Reflect.metadata(Symbol.for('sortDescendingByDefault'), true);
+  }
+  return (d: any) => d;
+}
+
+export function isSortingAscByDefault(col: Column) {
+  const clazz = (<any>col).constructor;
+  return !Reflect.hasMetadata(Symbol.for('sortDescendingByDefault'), clazz);
+}
+
 export class Categories {
   readonly string = {label: 'label', order: 1, name: 'string'};
   readonly categorical = {label: 'categorical', order: 2, name: 'categorical'};
@@ -29,6 +41,10 @@ export function Category(cat: keyof Categories) {
 
 export function toolbar(...keys: string[]) {
   return Reflect.metadata(Symbol.for('toolbarIcon'), keys);
+}
+
+export function dialogAddons(key: string, ...keys: string[]) {
+  return Reflect.metadata(Symbol.for(`toolbarDialogAddon${key}`), keys);
 }
 
 const cache = new Map<string, string[]>();
@@ -66,5 +82,27 @@ export function getAllToolbarActions(col: Column) {
     obj = Object.getPrototypeOf(obj);
   } while (obj);
   cache.set(col.desc.type, actions);
+  return actions;
+}
+
+
+export function getAllToolbarDialogAddons(col: Column, key: string) {
+  const cacheKey = `${col.desc.type}@${key}`;
+  if (cache.has(cacheKey)) {
+    return cache.get(cacheKey)!;
+  }
+  const actions = <string[]>[];
+
+  // walk up the prototype chain
+  let obj = <any>col;
+  const symbol = Symbol.for(`toolbarDialogAddon${key}`);
+  do {
+    const m = <string[]>Reflect.getOwnMetadata(symbol, obj.constructor);
+    if (m) {
+      actions.push(...m);
+    }
+    obj = Object.getPrototypeOf(obj);
+  } while (obj);
+  cache.set(cacheKey, actions);
   return actions;
 }

@@ -3,7 +3,7 @@ import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn} from 
 import {IDataProvider} from '../provider';
 import {IImposer, IRenderContext} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
-import {IToolbarAction} from './toolbar';
+import {IToolbarAction, IToolbarDialogAddon} from './toolbar';
 import DialogManager from './dialogs/DialogManager';
 
 export interface IRenderInfo {
@@ -18,7 +18,7 @@ export interface IRankingHeaderContextContainer {
 
   readonly dialogManager: DialogManager;
 
-  toolbar: { [key: string]: IToolbarAction };
+  toolbar: { [key: string]: IToolbarAction | IToolbarDialogAddon };
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 

@@ -4,6 +4,7 @@ import CompositeColumn from './CompositeColumn';
 import {IDataRow, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
 import NumberColumn, {INumberColumn} from './NumberColumn';
+import {SortByDefault} from './annotations';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -24,6 +25,7 @@ export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnD
 /**
  * implementation of a combine column, standard operations how to select
  */
+@SortByDefault('descending')
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
   missingValue = NaN;
 

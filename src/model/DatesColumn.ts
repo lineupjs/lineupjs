@@ -1,7 +1,7 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {median, min, max} from 'd3-array';
-import {toolbar} from './annotations';
-import {default as ArrayColumn, IArrayColumnDesc} from './ArrayColumn';
+import {dialogAddons} from './annotations';
+import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column from './Column';
 import {IDateDesc} from './DateColumn';
 import {IDataRow} from './interfaces';
@@ -20,7 +20,7 @@ export interface IDatesDesc extends IDateDesc {
 export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
 
 
-@toolbar('sortDates')
+@dialogAddons('sort', 'sortDates')
 export default class DatesColumn extends ArrayColumn<Date | null> {
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;

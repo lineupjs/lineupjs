@@ -1,5 +1,5 @@
 import {suffix} from '../internal/AEventDispatcher';
-import {toolbar} from './annotations';
+import {toolbar, SortByDefault} from './annotations';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
@@ -21,6 +21,7 @@ export function createImpositionDesc(label: string = 'Imposition') {
  * implementation of a combine column, standard operations how to select
  */
 @toolbar('filterMapped')
+@SortByDefault('descending')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 
