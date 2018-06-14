@@ -14,12 +14,12 @@ export default class SortDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    sortOrder(node, this.column, this.dialog.idPrefix, this.group);
-
     for(const addon of this.addons) {
       this.node.insertAdjacentHTML('beforeend', `<strong>${addon.title}</strong>`);
       addon.append(this.column, this.node, this.dialog, this.ctx);
     }
+
+    sortOrder(node, this.column, this.dialog.idPrefix, this.group);
   }
 }
 
@@ -34,14 +34,21 @@ export function sortOrder(node: HTMLElement, column: Column, idPrefix: string, g
   }
 
   const id = randomId(idPrefix);
-  node.insertAdjacentHTML('beforeend', `
+  node.insertAdjacentHTML('afterbegin', `
         <strong>Sort Order</strong>
-        <div class="lu-checkbox"><input id="${id}N" type="radio" name="sortorder" value="none"  ${(order.asc === undefined) ? 'checked' : ''} ><label for="${id}N">None</label></div>
+        <div class="lu-checkbox"><input id="${id}N" type="radio" name="sortorder" value="none"  ${(order.asc === undefined) ? 'checked' : ''} ><label for="${id}N">Don’t-Care</label></div>
         <div class="lu-checkbox"><input id="${id}B" type="radio" name="sortorder" value="asc"  ${(order.asc === 'asc') ? 'checked' : ''} ><label for="${id}B">Ascending</label></div>
         <div class="lu-checkbox"><input id="${id}D" type="radio" name="sortorder" value="desc"  ${(order.asc === 'desc') ? 'checked' : ''} ><label for="${id}D">Decending</label></div>
         <strong>Sort Priority</strong>
         <input type="number" id="${id}P" step="1" min="1" max="${current.length + 1}" value="${order.priority + 1}">
     `);
+
+  const updateDisabled = (disable: boolean) => {
+    forEach(node, 'input:not([name=sortorder]), select, textarea', (d: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => {
+      d.disabled = disable;
+    });
+  };
+  updateDisabled(order.asc === undefined);
 
   const trigger = () => {
     if (groupSortBy) {
@@ -49,6 +56,8 @@ export function sortOrder(node: HTMLElement, column: Column, idPrefix: string, g
     } else {
       ranking.sortBy(column, order.asc === 'asc', order.asc === undefined ? -1 : order.priority);
     }
+
+    updateDisabled(order.asc === undefined);
   };
 
   forEach(node, 'input[name=sortorder]', (n: HTMLInputElement) => {
