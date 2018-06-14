@@ -218,28 +218,33 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
 
   group(row: IDataRow): IGroup {
-    if (this.currentGroupThresholds.length === 0) {
-      return super.group(row);
-    }
     if (this.isMissing(row)) {
       return missingGroup;
     }
+
+    let threshold = this.currentGroupThresholds;
+    if (threshold.length === 0) {
+      // default threshold
+      const d = this.mapping.domain;
+      threshold = [(d[1] - d[0]) / 2];
+    }
+
     const value = this.getRawNumber(row);
-    const treshholdIndex = this.currentGroupThresholds.findIndex((t) => value <= t);
+    const treshholdIndex = threshold.findIndex((t) => value <= t);
     // group by thresholds / bins
     switch (treshholdIndex) {
       case -1:
         //bigger than the last threshold
         return {
-          name: `${this.label} > ${this.currentGroupThresholds[this.currentGroupThresholds.length - 1]}`,
+          name: `${this.label} > ${threshold[threshold.length - 1]}`,
           color: 'gray'
         };
       case 0:
         //smallest
-        return {name: `${this.label} <= ${this.currentGroupThresholds[0]}`, color: 'gray'};
+        return {name: `${this.label} <= ${threshold[0]}`, color: 'gray'};
       default:
         return {
-          name: `${this.currentGroupThresholds[treshholdIndex - 1]} <= ${this.label} <= ${this.currentGroupThresholds[treshholdIndex]}`,
+          name: `${threshold[treshholdIndex - 1]} <= ${this.label} <= ${threshold[treshholdIndex]}`,
           color: 'gray'
         };
     }

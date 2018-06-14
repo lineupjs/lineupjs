@@ -23,6 +23,7 @@ import {IRankingHeaderContext} from './interfaces';
 import SortDialog from './dialogs/SortDialog';
 import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
 import {EDateSort} from '../model/DatesColumn';
+import appendNumber from './dialogs/groupNumber';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
@@ -119,7 +120,7 @@ const sortGroupBy: IToolbarAction = {
   },
   options: {
     shortcut: false,
-    order: 1
+    order: 3
   }
 };
 
@@ -130,7 +131,7 @@ const rename: IToolbarAction = {
     dialog.open();
   },
   options: {
-    order: 3
+    order: 4
   }
 };
 
@@ -209,15 +210,16 @@ const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
   sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
   sortDates: uiSortMethod(Object.keys(EDateSort)),
   sortGroup: uiSortMethod(['count', 'name']),
-//   group: uiDialog('Group by Threshold &hellip;', GroupThresholdDialog, () => [], {
-//     shortcut: true,
-//     order: 2
-//  }),
-
+  groupNumber: <IToolbarDialogAddon>{
+    title: 'Split',
+    order: 2,
+    append: appendNumber
+  }
 };
 
 export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAddon } = Object.assign({
   group,
+  groupBy,
   collapse,
   sort,
   sortBy,
