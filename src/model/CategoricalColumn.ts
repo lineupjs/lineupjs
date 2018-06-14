@@ -13,7 +13,7 @@ import ValueColumn from './ValueColumn';
 /**
  * column for categorical values
  */
-@toolbar('stratify', 'filterCategorical')
+@toolbar('group', 'filterCategorical')
 @Category('categorical')
 export default class CategoricalColumn extends ValueColumn<string> implements ICategoricalColumn {
 

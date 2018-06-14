@@ -22,7 +22,7 @@
       display: none;
     }
 
-    &[title^='Stratify'][data-priority],
+    &[title^='Group'][data-priority],
     &[title^='Sort'][data-priority] {
       padding-left: 10px;
 
@@ -43,7 +43,7 @@
       }
     }
 
-    &[title^='Stratify'][data-priority] {
+    &[title^='Group'][data-priority] {
       padding-left: 15px;
 
       &::after {
@@ -95,7 +95,7 @@
     color: $lu_selected_color;
   }
 
-  &[title^='Stratify']::before {
+  &[title^='Group']::before {
     content: $lu_icon_columns;
     transform: rotate(-90deg);
     height: 14px;
@@ -110,7 +110,7 @@
   }
 
   &[title='Sort'][data-sort$='sc']::before,
-  &[title^='Stratify'][data-stratify='true']::before {
+  &[title^='Group'][data-group='true']::before {
     color: $lu_selected_color;
   }
 

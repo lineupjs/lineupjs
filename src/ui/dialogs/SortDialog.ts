@@ -23,8 +23,7 @@ export default class SortDialog extends ADialog {
   }
 }
 
-/** @internal */
-export function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSortBy: boolean = false) {
+function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSortBy: boolean = false) {
   const ranking = column.findMyRanker()!;
   const current = groupSortBy  ? ranking.getGroupSortCriteria() : ranking.getSortCriteria();
   const order = Object.assign({}, groupSortBy ? column.isGroupSortedByMe() : column.isSortedByMe());

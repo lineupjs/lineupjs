@@ -23,7 +23,7 @@ export declare type IBooleanColumnDesc = IValueColumnDesc<boolean> & IBooleanDes
 /**
  * a string column with optional alignment
  */
-@toolbar('stratify', 'filterBoolean')
+@toolbar('group', 'filterBoolean')
 @Category('categorical')
 export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
   static readonly GROUP_TRUE = {name: 'True', color: 'black'};

@@ -24,8 +24,8 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('stratifyThreshold', 'sortGroupBy', 'filterMapped')
-@dialogAddons('sortGroup', 'sortNumber')
+@toolbar('group', 'sortGroupBy', 'filterMapped')
+@dialogAddons('sortGroup', 'sortNumber', 'group')
 @Category('number')
 @SortByDefault('descending')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
@@ -45,7 +45,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   private numberFormat: (n: number) => string = format('.2f');
 
-  private currentStratifyThresholds: number[] = [];
+  private currentGroupThresholds: number[] = [];
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
   constructor(id: string, desc: INumberColumnDesc) {
@@ -68,8 +68,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     r.map = this.mapping.dump();
     r.filter = isDummyNumberFilter(this.currentFilter) ? null : this.currentFilter;
     r.groupSortMethod = this.groupSortMethod;
-    if (this.currentStratifyThresholds) {
-      r.stratifyThreshholds = this.currentStratifyThresholds;
+    if (this.currentGroupThresholds) {
+      r.stratifyThreshholds = this.currentGroupThresholds;
     }
     return r;
   }
@@ -88,7 +88,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.currentFilter = restoreFilter(dump.filter);
     }
     if (dump.stratifyThreshholds) {
-      this.currentStratifyThresholds = dump.stratifyThresholds;
+      this.currentGroupThresholds = dump.stratifyThresholds;
     }
     if (dump.numberFormat) {
       this.numberFormat = format(dump.numberFormat);
@@ -202,43 +202,43 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return isNumberIncluded(this.currentFilter, this.getRawNumber(row, NaN));
   }
 
-  getStratifyThresholds() {
-    return this.currentStratifyThresholds.slice();
+  getGroupThresholds() {
+    return this.currentGroupThresholds.slice();
   }
 
-  setStratifyThresholds(value: number[]) {
-    if (equalArrays(this.currentStratifyThresholds, value)) {
+  setGroupThresholds(value: number[]) {
+    if (equalArrays(this.currentGroupThresholds, value)) {
       return;
     }
-    const bak = this.getStratifyThresholds();
-    this.currentStratifyThresholds = value.slice();
+    const bak = this.getGroupThresholds();
+    this.currentGroupThresholds = value.slice();
     this.fire([Column.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
 
   group(row: IDataRow): IGroup {
-    if (this.currentStratifyThresholds.length === 0) {
+    if (this.currentGroupThresholds.length === 0) {
       return super.group(row);
     }
     if (this.isMissing(row)) {
       return missingGroup;
     }
     const value = this.getRawNumber(row);
-    const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => value <= t);
+    const treshholdIndex = this.currentGroupThresholds.findIndex((t) => value <= t);
     // group by thresholds / bins
     switch (treshholdIndex) {
       case -1:
         //bigger than the last threshold
         return {
-          name: `${this.label} > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
+          name: `${this.label} > ${this.currentGroupThresholds[this.currentGroupThresholds.length - 1]}`,
           color: 'gray'
         };
       case 0:
         //smallest
-        return {name: `${this.label} <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
+        return {name: `${this.label} <= ${this.currentGroupThresholds[0]}`, color: 'gray'};
       default:
         return {
-          name: `${this.currentStratifyThresholds[treshholdIndex - 1]} <= ${this.label} <= ${this.currentStratifyThresholds[treshholdIndex]}`,
+          name: `${this.currentGroupThresholds[treshholdIndex - 1]} <= ${this.label} <= ${this.currentGroupThresholds[treshholdIndex]}`,
           color: 'gray'
         };
     }

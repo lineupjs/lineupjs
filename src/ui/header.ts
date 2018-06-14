@@ -90,14 +90,14 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
-  if (stratify) {
+  const group = <HTMLElement>node.querySelector(`i[title^='Group']`)!;
+  if (group) {
     const groupedBy = col.isGroupedBy();
-    stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
+    group.dataset.group = groupedBy >= 0 ? 'true' : 'false';
     if (groupedBy >= 0) {
-      stratify.dataset.priority = (groupedBy + 1).toString();
+      group.dataset.priority = (groupedBy + 1).toString();
     } else {
-      delete stratify.dataset.priority;
+      delete group.dataset.priority;
     }
   }
 

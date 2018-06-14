@@ -17,7 +17,7 @@ import ScriptEditDialog from './dialogs/ScriptEditDialog';
 import SearchDialog from './dialogs/SearchDialog';
 import StringFilterDialog from './dialogs/StringFilterDialog';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
-import StratifyThresholdDialog from './dialogs/StratifyThresholdDialog';
+import GroupDialog from './dialogs/GroupDialog';
 import {sortMethods} from './dialogs/utils';
 import {IRankingHeaderContext} from './interfaces';
 import SortDialog from './dialogs/SortDialog';
@@ -178,18 +178,22 @@ const remove: IToolbarAction = {
     }
     ctx.provider.removeRanking(ranking);
     ctx.provider.ensureOneRanking();
-    return;
   },
   options: {
     order: 90
   }
 };
 
-const stratify = ui('Stratify', (col, _evt, ctx, level) => {
+const group = ui('Group', (col, _evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
   col.groupByMe();
-  return;
-}, { shortcut: true, order: 2 });
+}, { shortcut: 'only', order: 2 });
+
+const groupBy = ui('Group By &hellip;', (col, evt, ctx, level) => {
+  const dialog = new GroupDialog(col, dialogContext(ctx, level, evt), ctx);
+  dialog.open();
+}, { shortcut: false, order: 2 });
+
 
 const collapse = ui('Compress', (col, evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
@@ -204,11 +208,16 @@ const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
   sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
   sortDates: uiSortMethod(Object.keys(EDateSort)),
-  sortGroup: uiSortMethod(['count', 'name'])
+  sortGroup: uiSortMethod(['count', 'name']),
+//   group: uiDialog('Group by Threshold &hellip;', GroupThresholdDialog, () => [], {
+//     shortcut: true,
+//     order: 2
+//  }),
+
 };
 
 export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAddon } = Object.assign({
-  stratify,
+  group,
   collapse,
   sort,
   sortBy,
@@ -217,10 +226,6 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   clone,
   remove,
   rename,
-  stratifyThreshold: uiDialog('Stratify by Threshold &hellip;', StratifyThresholdDialog, () => [], {
-     shortcut: true,
-     order: 2
-  }),
   search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3 }),
   filterMapped: uiDialog('Filter &hellip;', MappingsFilterDialog, (ctx) => [ctx], { shortcut: true }),
   filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], { shortcut: true }),
