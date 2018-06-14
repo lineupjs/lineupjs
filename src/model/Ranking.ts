@@ -256,40 +256,40 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   /**
    * replaces, moves, or remove the given column in the sorting hierarchy
    * @param col {Column}
-   * @param level {number} when level < 0 remove the column only else replace at the given level
+   * @param priority {number} when priority < 0 remove the column only else replace at the given priority
    */
-  sortBy(col: Column, ascending: boolean = false, level: number = 0) {
+  sortBy(col: Column, ascending: boolean = false, priority: number = 0) {
     if (col.findMyRanker() !== this) {
       return false; //not one of mine
     }
-    return this.setSortCriteria(this.hierarchyLogic(this.sortCriteria, this.sortCriteria.findIndex((d) => d.col === col), {col, asc: ascending}, level));
+    return this.setSortCriteria(this.hierarchyLogic(this.sortCriteria, this.sortCriteria.findIndex((d) => d.col === col), {col, asc: ascending}, priority));
   }
 
   /**
    * replaces, moves, or remove the given column in the group sorting hierarchy
    * @param col {Column}
-   * @param level {number} when level < 0 remove the column only else replace at the given level
+   * @param priority {number} when priority < 0 remove the column only else replace at the given priority
    */
-  groupSortBy(col: Column, ascending: boolean = false, level: number = 0) {
+  groupSortBy(col: Column, ascending: boolean = false, priority: number = 0) {
     if (col.findMyRanker() !== this) {
       return false; //not one of mine
     }
-    return this.setGroupSortCriteria(this.hierarchyLogic(this.groupSortCriteria, this.groupSortCriteria.findIndex((d) => d.col === col), {col, asc: ascending}, level));
+    return this.setGroupSortCriteria(this.hierarchyLogic(this.groupSortCriteria, this.groupSortCriteria.findIndex((d) => d.col === col), {col, asc: ascending}, priority));
   }
 
-  private hierarchyLogic<T>(entries: T[], index: number, entry: T, level: number) {
+  private hierarchyLogic<T>(entries: T[], index: number, entry: T, priority: number) {
     entries = entries.slice();
     if (index >= 0) {
       // move at the other position
       entries.splice(index, 1);
-      if (index < level) {
-        level -= 1; // compensate index change
+      if (index < priority) {
+        priority -= 1; // compensate index change
       }
-      if (level >= 0) {
-        entries.splice(Math.min(level, entries.length), 0, entry);
+      if (priority >= 0) {
+        entries.splice(Math.min(priority, entries.length), 0, entry);
       }
-    } else if (level >= 0) {
-      entries[Math.min(level, entries.length)] = entry;
+    } else if (priority >= 0) {
+      entries[Math.min(priority, entries.length)] = entry;
     }
     return entries;
   }
@@ -297,13 +297,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   /**
    * replaces, moves, or remove the given column in the grouping hierarchy
    * @param col {Column}
-   * @param level {number} when level < 0 remove the column only else replace at the given level
+   * @param priority {number} when priority < 0 remove the column only else replace at the given priority
    */
-  groupBy(col: Column, level: number = 0): boolean {
+  groupBy(col: Column, priority: number = 0): boolean {
     if (col.findMyRanker() !== this) {
       return false; //not one of mine
     }
-    return this.setGroupCriteria(this.hierarchyLogic(this.groupColumns, this.groupColumns.indexOf(col), col, level));
+    return this.setGroupCriteria(this.hierarchyLogic(this.groupColumns, this.groupColumns.indexOf(col), col, priority));
   }
 
   setSortCriteria(value: ISortCriteria | ISortCriteria[]) {

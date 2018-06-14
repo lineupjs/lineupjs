@@ -253,13 +253,13 @@ export default class Column extends AEventDispatcher {
   /**
    * triggers that the ranking is sorted by this column
    * @param ascending ascending order?
-   * @param level sorting level
+   * @param priority sorting priority
    * @returns {boolean} was successful
    */
-  sortByMe(ascending = isSortingAscByDefault(this), level = 0) {
+  sortByMe(ascending = isSortingAscByDefault(this), priority = 0) {
     const r = this.findMyRanker();
     if (r) {
-      return r.sortBy(this, ascending, level);
+      return r.sortBy(this, ascending, priority);
     }
     return false;
   }
@@ -316,10 +316,10 @@ export default class Column extends AEventDispatcher {
     return this.isSortedByMeImpl((r) => r.getSortCriteria());
   }
 
-  groupSortByMe(ascending = isSortingAscByDefault(this), level = 0) {
+  groupSortByMe(ascending = isSortingAscByDefault(this), priority = 0) {
     const r = this.findMyRanker();
     if (r) {
-      return r.groupSortBy(this, ascending, level);
+      return r.groupSortBy(this, ascending, priority);
     }
     return false;
   }
