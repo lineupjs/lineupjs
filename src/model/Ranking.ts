@@ -282,9 +282,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (index >= 0) {
       // move at the other position
       entries.splice(index, 1);
-      if (index < priority) {
-        priority -= 1; // compensate index change
-      }
       if (priority >= 0) {
         entries.splice(Math.min(priority, entries.length), 0, entry);
       }

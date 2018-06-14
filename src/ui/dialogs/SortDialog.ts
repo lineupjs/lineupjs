@@ -28,14 +28,19 @@ export function sortOrder(node: HTMLElement, column: Column, idPrefix: string, g
   const ranking = column.findMyRanker()!;
   const current = groupSortBy  ? ranking.getGroupSortCriteria() : ranking.getSortCriteria();
   const order = Object.assign({}, groupSortBy ? column.isGroupSortedByMe() : column.isSortedByMe());
+
+  if (order.priority === undefined) {
+    order.priority = current.length;
+  }
+
   const id = randomId(idPrefix);
   node.insertAdjacentHTML('beforeend', `
         <strong>Sort Order</strong>
         <div class="lu-checkbox"><input id="${id}N" type="radio" name="sortorder" value="none"  ${(order.asc === undefined) ? 'checked' : ''} ><label for="${id}N">None</label></div>
         <div class="lu-checkbox"><input id="${id}B" type="radio" name="sortorder" value="asc"  ${(order.asc === 'asc') ? 'checked' : ''} ><label for="${id}B">Ascending</label></div>
         <div class="lu-checkbox"><input id="${id}D" type="radio" name="sortorder" value="desc"  ${(order.asc === 'desc') ? 'checked' : ''} ><label for="${id}D">Decending</label></div>
-        <strong><label for="${id}P">Sort Priority</label></strong>
-        <input type="number" id="${id}P" step="1" min="1" max="${current.length + 1}" value="${order.priority !== undefined ? (order.priority + 1) : (current.length + 1)}">
+        <strong>Sort Priority</strong>
+        <input type="number" id="${id}P" step="1" min="1" max="${current.length + 1}" value="${order.priority + 1}">
     `);
 
   const trigger = () => {

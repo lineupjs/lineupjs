@@ -145,7 +145,7 @@ export function createToolbarMenuItems(node: HTMLElement, level: number, col: Co
   const addIcon = addIconDOM(node, col, ctx, level, true);
   const actions = toolbarActions(col, ctx);
 
-  actions.filter((d) => !d.title.startsWith('More') && d.options.shortcut === 'only').forEach((d) => addIcon(d.title, d.onClick));
+  actions.filter((d) => !d.title.startsWith('More') && d.options.shortcut !== 'only').forEach((d) => addIcon(d.title, d.onClick));
 }
 
 /** @internal */
