@@ -24,8 +24,9 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('group', 'sortGroupBy', 'filterMapped')
-@dialogAddons('sortGroup', 'sortNumber', 'group')
+@toolbar('groupBy', 'sortGroupBy', 'filterMapped')
+@dialogAddons('sortGroup', 'sortNumber')
+@dialogAddons('group', 'groupNumber')
 @Category('number')
 @SortByDefault('descending')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {

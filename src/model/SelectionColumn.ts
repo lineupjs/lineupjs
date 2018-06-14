@@ -27,7 +27,7 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
  * a checkbox column for selections
  */
 @SupportType()
-@toolbar('sort', 'sortBy', 'group')
+@toolbar('sort', 'sortBy', 'group', 'groupBy')
 @Category('support')
 export default class SelectionColumn extends ValueColumn<boolean> {
   private static SELECTED_GROUP: IGroup = {

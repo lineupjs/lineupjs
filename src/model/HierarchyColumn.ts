@@ -35,7 +35,7 @@ export interface ICutOffNode {
 /**
  * column for hierarchical categorical values
  */
-@toolbar('cutoff', 'group')
+@toolbar('cutoff', 'group', 'groupBy')
 @Category('categorical')
 export default class HierarchyColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_CUTOFF_CHANGED = 'cutOffChanged';
