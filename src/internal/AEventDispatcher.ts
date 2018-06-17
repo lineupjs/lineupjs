@@ -34,15 +34,20 @@ export interface IEventHandler {
   on(type: string | string[], listener: IEventListener | null): this;
 }
 
+declare const __DEBUG__: boolean;
+
 /**
  * base class for event dispatching using d3 event mechanism
  */
 export default class AEventDispatcher implements IEventHandler {
-  private listeners: Dispatch<any>;
-  private forwarder: (...args: any[]) => void;
+  private readonly listeners: Dispatch<any>;
+  private readonly listenerEvents: Set<string>;
+  private readonly forwarder: (...args: any[]) => void;
 
   constructor() {
-    this.listeners = dispatch(...this.createEventList());
+    const events = this.createEventList();
+    this.listenerEvents = new Set(events);
+    this.listeners = dispatch(...events);
 
     const that = this;
     this.forwarder = function (this: IEventContext, ...args: any[]) {
@@ -53,12 +58,18 @@ export default class AEventDispatcher implements IEventHandler {
   on(type: string | string[], listener: IEventListener | null): this {
     if (Array.isArray(type)) {
       type.forEach((d) => {
-        this.listenersChanged(d, Boolean(listener!));
-        this.listeners.on(d, listener!);
+        if (this.listenerEvents.has(d)) {
+          this.listenersChanged(d, Boolean(listener!));
+          this.listeners.on(d, listener!);
+        } else if (__DEBUG__) {
+          console.warn(this, 'invalid event type', d);
+        }
       });
-    } else {
+    } else if (this.listenerEvents.has(<string>type)) {
       this.listenersChanged(<string>type, Boolean(listener!));
       this.listeners.on(<string>type, listener!);
+    } else if (__DEBUG__) {
+      console.warn(this, 'invalid event type', type);
     }
     return this;
   }

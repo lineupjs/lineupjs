@@ -5,6 +5,7 @@ import {defaultGroup} from './Group';
 import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
 import Ranking, {ISortCriteria} from './Ranking';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 export {IColumnDesc} from './interfaces';
 
@@ -44,6 +45,78 @@ export interface IColumnMetaData {
   color: string | null;
 }
 
+
+/**
+ * emitted when the width property changes
+ * @asMemberOf Column
+ * @event
+ */
+export declare function widthChanged(previous: number, current: number): void;
+
+/**
+ * emitted when the label property changes
+ * @asMemberOf Column
+ * @event
+ */
+export declare function labelChanged(previous: string, current: string): void;
+
+/**
+ * emitted when the meta data property changes
+ * @asMemberOf Column
+ * @event
+ */
+export declare function metaDataChanged(previous: IColumnMetaData, current: IColumnMetaData): void;
+
+/**
+ * emitted when state of the column is dirty
+ * @asMemberOf Column
+ * @event
+ */
+export declare function dirty(): void;
+
+/**
+ * emitted when state of the column related to its header is dirty
+ * @asMemberOf Column
+ * @event
+ */
+export declare function dirtyHeader(): void;
+
+/**
+ * emitted when state of the column related to its values is dirty
+ * @asMemberOf Column
+ * @event
+ */
+export declare function dirtyValues(): void;
+
+/**
+ * emitted when the renderer type property changes
+ * @asMemberOf Column
+ * @event
+ */
+export declare function rendererTypeChanged(previous: string, current: string): void;
+
+/**
+ * emitted when the group renderer property changes
+ * @asMemberOf Column
+ * @event
+ */
+export declare function groupRendererChanged(previous: string, current: string): void;
+
+/**
+ * emitted when the pattern property changes
+ * @asMemberOf Column
+ * @event
+ */
+export declare function summaryRendererChanged(previous: string, current: string): void;
+
+/**
+ * emitted when the visibility of this column changes
+ * @asMemberOf Column
+ * @event
+ */
+export declare function visibilityChanged(previous: boolean, current: boolean): void;
+
+
 /**
  * a column in LineUp
  */
@@ -60,22 +133,15 @@ export default class Column extends AEventDispatcher {
   static readonly FLAT_ALL_COLUMNS = -1;
 
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
-  static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_LABEL_CHANGED = 'labelChanged';
   static readonly EVENT_METADATA_CHANGED = 'metaDataChanged';
-  static readonly EVENT_ADD_COLUMN = 'addColumn';
-  static readonly EVENT_MOVE_COLUMN = 'moveColumn';
-  static readonly EVENT_REMOVE_COLUMN = 'removeColumn';
   static readonly EVENT_DIRTY = 'dirty';
   static readonly EVENT_DIRTY_HEADER = 'dirtyHeader';
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
   static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
   static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererChanged';
   static readonly EVENT_SUMMARY_RENDERER_TYPE_CHANGED = 'summaryRendererChanged';
-  static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
-  static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
   static readonly EVENT_VISIBILITY_CHANGED = 'visibilityChanged';
-  static readonly EVENT_DATA_LOADED = 'dataLoaded';
 
   /**
    * the id of this column
@@ -156,23 +222,25 @@ export default class Column extends AEventDispatcher {
     return this.parent ? `${this.parent.fqpath}@${this.parent.indexOf(this)}` : '';
   }
 
-  /**
-   * list of events
-   * fires:
-   *  * widthChanged
-   *  * filterChanged
-   *  * labelChanged
-   *  * metaDataChanged
-   *  * compressChanged
-   *  * addColumn, removeColumn ... for composite pattern
-   *  * dirty, dirtyHeader, dirtyValues
-   * @returns {string[]} the list of events
-   */
   protected createEventList() {
-    return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
+    return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
-      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_MOVE_COLUMN,
-      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED, Column.EVENT_DATA_LOADED]);
+      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
+  }
+
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   getWidth() {
