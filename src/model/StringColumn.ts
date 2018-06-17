@@ -4,6 +4,7 @@ import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
 import {FIRST_IS_MISSING} from './missing';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 export enum EAlignment {
   left = 'left',
@@ -36,6 +37,15 @@ export interface IStringDesc {
 
 
 export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
+
+
+/**
+ * emitted when the pattern property changes
+ * @asMemberOf StringColumn
+ * @event
+ */
+export declare function patternChanged(previous: string, current: string): void;
+
 
 /**
  * a string column with optional alignment
@@ -83,6 +93,11 @@ export default class StringColumn extends ValueColumn<string> {
 
   protected createEventList() {
     return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED]);
+  }
+
+  on(type: typeof StringColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   getValue(row: IDataRow) {

@@ -1,6 +1,7 @@
 import {Category, SupportType, toolbar} from './annotations';
 import {IDataRow, IGroup} from './interfaces';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 /**
  * factory for creating a description creating a rank column
@@ -22,6 +23,17 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
    */
   setterAll(rows: IDataRow[], value: boolean): void;
 }
+
+
+/**
+ * emitted when rows are selected
+ * @asMemberOf SelectionColumn
+ * @param row the (de)seleced row
+ * @param value true if selected else false
+ * @param rows in case of multiple rows are selected
+ * @event
+ */
+export declare function select(row: IDataRow, value: boolean, rows?: IDataRow[]): void;
 
 /**
  * a checkbox column for selections
@@ -52,6 +64,12 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   protected createEventList() {
     return super.createEventList().concat([SelectionColumn.EVENT_SELECT]);
   }
+
+  on(type: typeof SelectionColumn.EVENT_SELECT, listener: typeof select | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
+  }
+
 
   setValue(row: IDataRow, value: boolean) {
     const old = this.getValue(row);

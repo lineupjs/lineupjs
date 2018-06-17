@@ -2,6 +2,7 @@ import {Category, SupportType} from './annotations';
 import Column, {IColumnDesc} from './Column';
 import {IGroup} from './interfaces';
 import Ranking from './Ranking';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 /**
  * factory for creating a description creating a rank column
@@ -17,6 +18,13 @@ export interface IAggregateGroupColumnDesc extends IColumnDesc {
 
   setAggregated(ranking: Ranking, group: IGroup, value: boolean): void;
 }
+
+/**
+ * emitted upon changing of the aggregate attribute
+ * @asMemberOf AggregateGroupColumn
+ * @event
+ */
+export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean): void;
 
 /**
  * a checkbox column for selections
@@ -37,6 +45,11 @@ export default class AggregateGroupColumn extends Column {
 
   protected createEventList() {
     return super.createEventList().concat([AggregateGroupColumn.EVENT_AGGREGATE]);
+  }
+
+  on(type: typeof AggregateGroupColumn.EVENT_AGGREGATE, listener: typeof aggregate | null): this;
+  on(type: string | string[], listener: IEventListener | null) {
+    return super.on(type, listener);
   }
 
   isAggregated(group: IGroup) {

@@ -26,12 +26,12 @@ export interface IEventContext {
   readonly args: any[];
 }
 
+export interface IEventListener {
+  (this: IEventContext, ...args: any[]): any;
+}
+
 export interface IEventHandler {
-  on(type: string): (...args: any[]) => void;
-
-  on(type: string | string[], listener: ((...args: any[]) => any) | null): IEventHandler;
-
-  on(type: string | string[], listener?: ((...args: any[]) => any) | null): any;
+  on(type: string | string[], listener: IEventListener | null): this;
 }
 
 /**
@@ -50,22 +50,17 @@ export default class AEventDispatcher implements IEventHandler {
     };
   }
 
-  on(type: string): (...args: any[]) => void;
-  on(type: string | string[], listener: ((...args: any[]) => any) | null): AEventDispatcher;
-  on(type: string | string[], listener?: ((...args: any[]) => any) | null): any {
-    if (listener !== undefined) {
-      if (Array.isArray(type)) {
-        (<string[]>type).forEach((d) => {
-          this.listenersChanged(d, Boolean(listener!));
-          this.listeners.on(d, listener!);
-        });
-      } else {
-        this.listenersChanged(<string>type, Boolean(listener!));
-        this.listeners.on(<string>type, listener!);
-      }
-      return this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    if (Array.isArray(type)) {
+      type.forEach((d) => {
+        this.listenersChanged(d, Boolean(listener!));
+        this.listeners.on(d, listener!);
+      });
+    } else {
+      this.listenersChanged(<string>type, Boolean(listener!));
+      this.listeners.on(<string>type, listener!);
     }
-    return this.listeners.on(<string>type);
+    return this;
   }
 
   protected listenersChanged(_type: string, _active: boolean) {

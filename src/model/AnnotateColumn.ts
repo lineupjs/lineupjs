@@ -1,6 +1,15 @@
 import Column from './Column';
 import {IDataRow} from './interfaces';
 import StringColumn from './StringColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
+
+
+/**
+ * emitted when the value of a row changes
+ * @asMemberOf AnnotateColumn
+ * @event
+ */
+export declare function valueChanged(dataIndex: number, previous: string, current: string): void;
 
 /**
  * a string column in which the values can be edited locally
@@ -12,6 +21,11 @@ export default class AnnotateColumn extends StringColumn {
 
   protected createEventList() {
     return super.createEventList().concat([AnnotateColumn.EVENT_VALUE_CHANGED]);
+  }
+
+  on(type: typeof AnnotateColumn.EVENT_VALUE_CHANGED, listener: typeof valueChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   getValue(row: IDataRow) {

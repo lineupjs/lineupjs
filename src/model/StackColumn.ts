@@ -5,6 +5,7 @@ import {IMultiLevelColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 /**
  * factory for creating a description creating a stacked column
@@ -15,6 +16,30 @@ export function createStackDesc(label: string = 'Weighted Sum') {
   return {type: 'stack', label};
 }
 
+
+/**
+ * emitted when the collapse property changes
+ * @asMemberOf StackColumn
+ * @event
+ */
+export declare function collapseChanged(previous: boolean, current: boolean): void;
+
+
+/**
+ * emitted when the weights change
+ * @asMemberOf StackColumn
+ * @event
+ */
+export declare function weightsChanged(previous: number[], current: number[]): void;
+
+
+/**
+ * emitted when the ratios between the children changes
+ * @asMemberOf StackColumn
+ * @event
+ */
+export declare function nestedChildRatio(previous: number[], current: number[]): void;
+
 /**
  * implementation of the stacked column
  */
@@ -22,8 +47,9 @@ export function createStackDesc(label: string = 'Weighted Sum') {
 export default class StackColumn extends CompositeNumberColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = 'collapseChanged';
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
-  static readonly COLLAPSED_RENDERER = 'number';
   static readonly EVENT_MULTI_LEVEL_CHANGED = 'nestedChildRatio';
+
+  static readonly COLLAPSED_RENDERER = 'number';
 
   private readonly adaptChange: (old: number, newValue: number) => void;
 
@@ -59,6 +85,13 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   protected createEventList() {
     return super.createEventList().concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED]);
+  }
+
+  on(type: typeof StackColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged | null): this;
+  on(type: typeof StackColumn.EVENT_WEIGHTS_CHANGED, listener: typeof weightsChanged | null): this;
+  on(type: typeof StackColumn.EVENT_MULTI_LEVEL_CHANGED, listener: typeof nestedChildRatio | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   setCollapsed(value: boolean) {
