@@ -7,6 +7,7 @@ import {
   createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
   ISelectionColumnDesc, IValueColumnDesc, models
 } from '../model';
+import {dirty, dirtyHeader, dirtyValues} from '../model/Column';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
@@ -98,21 +99,6 @@ export declare function addRanking(ranking: Ranking, index: number): void;
  * @event
  */
 export declare function removeRanking(ranking: Ranking | null, index: number): void;
-/**
- * @asMemberOf ADataProvider
- * @event
- */
-export declare function dirty(): void;
-/**
- * @asMemberOf ADataProvider
- * @event
- */
-export declare function dirtyHeader(): void;
-/**
- * @asMemberOf ADataProvider
- * @event
- */
-export declare function dirtyValues(): void;
 /**
  * emitted when the selection changes
  * @asMemberOf ADataProvider
@@ -222,6 +208,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   on(type: typeof ADataProvider.EVENT_JUMP_TO_NEAREST, listener: typeof jumpToNearest | null): this;
   on(type: typeof ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, listener: typeof aggregate | null): this;
   on(type: typeof ADataProvider.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this;
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
