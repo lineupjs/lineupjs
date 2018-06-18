@@ -1,6 +1,6 @@
 import {IAdvancedBoxPlotData} from '../internal';
 import {suffix, IEventListener} from '../internal/AEventDispatcher';
-import {toolbar} from './annotations';
+import {toolbar, dialogAddons, SortByDefault} from './annotations';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IKeyValue} from './IArrayColumn';
@@ -23,7 +23,9 @@ export function createImpositionsDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('sortNumbers', 'filterMapped')
+@toolbar('filterMapped')
+@dialogAddons('sort', 'sortNumbers')
+@SortByDefault('descending')
 export default class ImpositionCompositesColumn extends CompositeColumn implements INumbersColumn {
   static readonly EVENT_MAPPING_CHANGED = NumbersColumn.EVENT_MAPPING_CHANGED;
 

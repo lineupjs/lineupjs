@@ -20,7 +20,7 @@ export declare function filterChanged(previous: ICategoricalFilter | null, curre
 /**
  * column for categorical values
  */
-@toolbar('stratify', 'filterCategorical')
+@toolbar('group', 'groupBy', 'filterCategorical')
 @Category('categorical')
 export default class CategoricalColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';

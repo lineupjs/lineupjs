@@ -1,6 +1,6 @@
 import {format} from 'd3-format';
 import {equalArrays} from '../internal';
-import {Category, toolbar} from './annotations';
+import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {groupCompare, isDummyNumberFilter, restoreFilter} from './internal';
@@ -53,8 +53,11 @@ export declare function groupingChanged(previous: number[], current: number[]): 
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('stratifyThreshold', 'sortNumbersGroup', 'filterMapped')
+@toolbar('groupBy', 'sortGroupBy', 'filterMapped')
+@dialogAddons('sortGroup', 'sortNumber')
+@dialogAddons('group', 'groupNumber')
 @Category('number')
+@SortByDefault('descending')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
@@ -75,7 +78,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   private numberFormat: (n: number) => string = format('.2f');
 
-  private currentStratifyThresholds: number[] = [];
+  private currentGroupThresholds: number[] = [];
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
   constructor(id: string, desc: INumberColumnDesc) {
@@ -98,8 +101,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     r.map = this.mapping.dump();
     r.filter = isDummyNumberFilter(this.currentFilter) ? null : this.currentFilter;
     r.groupSortMethod = this.groupSortMethod;
-    if (this.currentStratifyThresholds) {
-      r.stratifyThreshholds = this.currentStratifyThresholds;
+    if (this.currentGroupThresholds) {
+      r.stratifyThreshholds = this.currentGroupThresholds;
     }
     return r;
   }
@@ -118,7 +121,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.currentFilter = restoreFilter(dump.filter);
     }
     if (dump.stratifyThreshholds) {
-      this.currentStratifyThresholds = dump.stratifyThresholds;
+      this.currentGroupThresholds = dump.stratifyThresholds;
     }
     if (dump.numberFormat) {
       this.numberFormat = format(dump.numberFormat);
@@ -251,43 +254,48 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return isNumberIncluded(this.currentFilter, this.getRawNumber(row, NaN));
   }
 
-  getStratifyThresholds() {
-    return this.currentStratifyThresholds.slice();
+  getGroupThresholds() {
+    return this.currentGroupThresholds.slice();
   }
 
-  setStratifyThresholds(value: number[]) {
-    if (equalArrays(this.currentStratifyThresholds, value)) {
+  setGroupThresholds(value: number[]) {
+    if (equalArrays(this.currentGroupThresholds, value)) {
       return;
     }
-    const bak = this.getStratifyThresholds();
-    this.currentStratifyThresholds = value.slice();
+    const bak = this.getGroupThresholds();
+    this.currentGroupThresholds = value.slice();
     this.fire([NumberColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
 
   group(row: IDataRow): IGroup {
-    if (this.currentStratifyThresholds.length === 0) {
-      return super.group(row);
-    }
     if (this.isMissing(row)) {
       return missingGroup;
     }
+
+    let threshold = this.currentGroupThresholds;
+    if (threshold.length === 0) {
+      // default threshold
+      const d = this.mapping.domain;
+      threshold = [(d[1] - d[0]) / 2];
+    }
+
     const value = this.getRawNumber(row);
-    const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => value <= t);
+    const treshholdIndex = threshold.findIndex((t) => value <= t);
     // group by thresholds / bins
     switch (treshholdIndex) {
       case -1:
         //bigger than the last threshold
         return {
-          name: `${this.label} > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
+          name: `${this.label} > ${threshold[threshold.length - 1]}`,
           color: 'gray'
         };
       case 0:
         //smallest
-        return {name: `${this.label} <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
+        return {name: `${this.label} <= ${threshold[0]}`, color: 'gray'};
       default:
         return {
-          name: `${this.currentStratifyThresholds[treshholdIndex - 1]} <= ${this.label} <= ${this.currentStratifyThresholds[treshholdIndex]}`,
+          name: `${threshold[treshholdIndex - 1]} <= ${this.label} <= ${threshold[treshholdIndex]}`,
           color: 'gray'
         };
     }

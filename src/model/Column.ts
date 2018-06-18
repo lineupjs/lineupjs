@@ -6,6 +6,7 @@ import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
 import Ranking, {ISortCriteria} from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {isSortingAscByDefault} from './annotations';
 
 export {IColumnDesc} from './interfaces';
 
@@ -321,12 +322,13 @@ export default class Column extends AEventDispatcher {
   /**
    * triggers that the ranking is sorted by this column
    * @param ascending ascending order?
+   * @param priority sorting priority
    * @returns {boolean} was successful
    */
-  sortByMe(ascending = false) {
+  sortByMe(ascending = isSortingAscByDefault(this), priority = 0) {
     const r = this.findMyRanker();
     if (r) {
-      return r.sortBy(this, ascending);
+      return r.sortBy(this, ascending, priority);
     }
     return false;
   }
@@ -363,7 +365,7 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): { asc: 'asc' | 'desc' | undefined, priority: string | undefined } {
+  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): { asc: 'asc' | 'desc' | undefined, priority: number | undefined } {
     const ranker = this.findMyRanker();
     if (!ranker) {
       return {asc: undefined, priority: undefined};
@@ -375,7 +377,7 @@ export default class Column extends AEventDispatcher {
     }
     return {
       asc: criterias[index].asc ? 'asc' : 'desc',
-      priority: index.toString()
+      priority: index
     };
   }
 
@@ -383,10 +385,10 @@ export default class Column extends AEventDispatcher {
     return this.isSortedByMeImpl((r) => r.getSortCriteria());
   }
 
-  groupSortByMe(ascending = false) {
+  groupSortByMe(ascending = isSortingAscByDefault(this), priority = 0) {
     const r = this.findMyRanker();
     if (r) {
-      return r.groupSortBy(this, ascending);
+      return r.groupSortBy(this, ascending, priority);
     }
     return false;
   }

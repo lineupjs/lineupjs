@@ -1,6 +1,6 @@
 import {format} from 'd3-format';
 import {IBoxPlotData} from '../internal';
-import {Category, toolbar} from './annotations';
+import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
@@ -38,8 +38,10 @@ export declare function sortMethodChanged(previous: ESortMethod, current: ESortM
 export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
 
 
-@toolbar('sortNumbers', 'filterMapped')
+@toolbar('filterMapped')
+@dialogAddons('sort', 'sortBoxPlot')
 @Category('array')
+@SortByDefault('descending')
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';

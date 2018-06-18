@@ -32,7 +32,7 @@ export declare function filterChanged(previous: boolean | null, current: boolean
 /**
  * a string column with optional alignment
  */
-@toolbar('stratify', 'filterBoolean')
+@toolbar('group', 'groupBy', 'filterBoolean')
 @Category('categorical')
 export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';

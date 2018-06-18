@@ -1,6 +1,6 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {median, min, max} from 'd3-array';
-import {toolbar} from './annotations';
+import {dialogAddons} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
@@ -28,7 +28,7 @@ export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
  */
 export declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
 
-@toolbar('sortDates')
+@dialogAddons('sort', 'sortDates')
 export default class DatesColumn extends ArrayColumn<Date | null> {
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
 

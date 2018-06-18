@@ -84,20 +84,20 @@ export function updateIconState(node: HTMLElement, col: Column) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
     if (priority !== undefined) {
-      sort.dataset.priority = (parseInt(priority, 10) + 1).toString();
+      sort.dataset.priority = (priority + 1).toString();
     } else {
       delete sort.dataset.priority;
     }
   }
 
-  const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
-  if (stratify) {
+  const group = <HTMLElement>node.querySelector(`i[title^='Group']`)!;
+  if (group) {
     const groupedBy = col.isGroupedBy();
-    stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
+    group.dataset.group = groupedBy >= 0 ? 'true' : 'false';
     if (groupedBy >= 0) {
-      stratify.dataset.priority = (groupedBy + 1).toString();
+      group.dataset.priority = (groupedBy + 1).toString();
     } else {
-      delete stratify.dataset.priority;
+      delete group.dataset.priority;
     }
   }
 
@@ -119,7 +119,7 @@ function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, 
     i.onclick = (evt) => {
       evt.stopPropagation();
       ctx.dialogManager.setHighlightColumn(col);
-      onClick(col, <any>evt, ctx, level);
+      onClick(col, <any>evt, ctx, level, !showLabel);
     };
     return i;
   };
@@ -145,7 +145,7 @@ export function createToolbarMenuItems(node: HTMLElement, level: number, col: Co
   const addIcon = addIconDOM(node, col, ctx, level, true);
   const actions = toolbarActions(col, ctx);
 
-  actions.filter((d) => !d.title.startsWith('More')).forEach((d) => addIcon(d.title, d.onClick));
+  actions.filter((d) => !d.title.startsWith('More') && d.options.shortcut !== 'only').forEach((d) => addIcon(d.title, d.onClick));
 }
 
 /** @internal */
@@ -454,7 +454,7 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
     }
 
     if (!equalArrays(groups, ranking.getGroupCriteria())) {
-      ranking.groupBy(groups);
+      ranking.setGroupCriteria(groups);
     }
     ranking.setSortCriteria(criteria);
     return true;

@@ -1,5 +1,5 @@
 import {LazyBoxPlotData} from '../internal';
-import {toolbar} from './annotations';
+import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IKeyValue} from './IArrayColumn';
@@ -37,7 +37,9 @@ export declare function mappingChanged(previous: IMappingFunction, current: IMap
 export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 
-@toolbar('filterMapped', 'sortNumbers')
+@toolbar('filterMapped')
+@dialogAddons('sort', 'sortNumbers')
+@SortByDefault('descending')
 export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;

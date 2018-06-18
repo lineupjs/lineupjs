@@ -24,7 +24,7 @@ export declare function mappingChanged(previous: number[], current: number[]): v
 /**
  * similar to a categorical column but the categories are mapped to numbers
  */
-@toolbar('stratify', 'filterOrdinal')
+@toolbar('group', 'filterOrdinal')
 @Category('categorical')
 export default class OrdinalColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;

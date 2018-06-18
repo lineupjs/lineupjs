@@ -43,7 +43,7 @@ export declare function cutOffChanged(previous: ICutOffNode, current: ICutOffNod
 /**
  * column for hierarchical categorical values
  */
-@toolbar('cutoff', 'stratify')
+@toolbar('cutoff', 'group', 'groupBy')
 @Category('categorical')
 export default class HierarchyColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_CUTOFF_CHANGED = 'cutOffChanged';
