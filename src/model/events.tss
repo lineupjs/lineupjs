@@ -6,26 +6,6 @@
  */
 export declare function filterChanged(previous: any, current: any): void;
 
-/**
- * emitted when a column has been added
- * @asMemberOf Column
- * @event
- */
-export declare function addColumn(col: Column, index: number): void;
-
-/**
- * emitted when a column has been moved within this composite columm
- * @asMemberOf Column
- * @event
- */
-export declare function moveColumn(col: Column, index: number, oldIndex: number): void;
-
-/**
- * emitted when a column has been removed
- * @asMemberOf Column
- * @event
- */
-export declare function removeColumn(col: Column, index: number): void;
 
 
 /**
@@ -37,9 +17,6 @@ export declare function groupingChanged(previous: any, current: any): void;
 
 
 static readonly EVENT_FILTER_CHANGED = 'filterChanged';
-static readonly EVENT_ADD_COLUMN = 'addColumn';
-static readonly EVENT_MOVE_COLUMN = 'moveColumn';
-static readonly EVENT_REMOVE_COLUMN = 'removeColumn';
 static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
 static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 

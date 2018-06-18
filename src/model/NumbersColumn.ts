@@ -1,7 +1,8 @@
 import {LazyBoxPlotData} from '../internal';
 import {toolbar} from './annotations';
-import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
-import Column from './Column';
+import ArrayColumn, {IArrayColumnDesc, IArrayDesc, spliceChanged} from './ArrayColumn';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
@@ -15,18 +16,34 @@ import {
 import {isMissingValue} from './missing';
 import NumberColumn from './NumberColumn';
 import {IAdvancedBoxPlotData} from '../internal/math';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 
 export interface INumbersDesc extends IArrayDesc, IMapAbleDesc {
   readonly sort?: EAdvancedSortMethod;
 }
 
-
 export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>;
+
+/**
+ * emitted when the mapping property changes
+ * @asMemberOf NumbersColumn
+ * @event
+ */
+export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+
+/**
+ * emitted when the sort method property changes
+ * @asMemberOf NumbersColumn
+ * @event
+ */
+export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 @toolbar('sortNumbers', 'filterMapped')
 export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;
+
   static readonly CENTER = 0;
 
   private sort: EAdvancedSortMethod;
@@ -117,7 +134,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.sort === sort) {
       return;
     }
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
+    this.fire([NumbersColumn.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
     if (!this.isSortedByMe().asc) {
       this.sortByMe();
@@ -148,7 +165,25 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SORTMETHOD_CHANGED]);
+  }
+
+  on(type: typeof NumbersColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof NumbersColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
+  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(<any>type, listener);
   }
 
   getOriginalMapping() {

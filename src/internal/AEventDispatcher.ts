@@ -61,9 +61,9 @@ export default class AEventDispatcher implements IEventHandler {
         if (this.listenerEvents.has(d)) {
           this.listenersChanged(d, Boolean(listener!));
           this.listeners.on(d, listener!);
-        } else if (__DEBUG__) {
-          console.warn(this, 'invalid event type', d);
-        }
+        } // } else if (__DEBUG__) { // no warning since propably a catch all case
+        //   console.warn(this, 'invalid event type', d);
+        // }
       });
     } else if (this.listenerEvents.has(<string>type)) {
       this.listenersChanged(<string>type, Boolean(listener!));
@@ -93,6 +93,12 @@ export default class AEventDispatcher implements IEventHandler {
 
   private fireImpl(type: string | string[], primaryType: string, origin: AEventDispatcher, ...args: any[]) {
     const fireImpl = (t: string) => {
+      if (!this.listenerEvents.has(t)) {
+        if (__DEBUG__) {
+          console.warn(this, 'invalid event type', t);
+        }
+        return;
+      }
       //local context per event, set a this argument
       const context: IEventContext = {
         source: this, //who is sending this event,

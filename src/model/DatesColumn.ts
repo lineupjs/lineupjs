@@ -1,11 +1,13 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {median, min, max} from 'd3-array';
 import {toolbar} from './annotations';
-import {default as ArrayColumn, IArrayColumnDesc} from './ArrayColumn';
-import Column from './Column';
+import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDateDesc} from './DateColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_MISSING, isMissingValue} from './missing';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 export enum EDateSort {
   min = 'min',
@@ -19,9 +21,17 @@ export interface IDatesDesc extends IDateDesc {
 
 export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
 
+/**
+ * emitted when the sort method property changes
+ * @asMemberOf Column
+ * @event
+ */
+export declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
 
 @toolbar('sortDates')
 export default class DatesColumn extends ArrayColumn<Date | null> {
+  static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
+
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;
   private sort: EDateSort;
@@ -32,6 +42,27 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || '%x');
     this.sort = desc.sort || EDateSort.median;
     this.setDefaultRenderer('default');
+  }
+
+  protected createEventList() {
+    return super.createEventList().concat([ArrayColumn.EVENT_SPLICE_CHANGED]);
+  }
+
+  on(type: typeof DatesColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
+  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(<any>type, listener);
   }
 
   getValue(row: IDataRow): (Date | null)[] {
@@ -58,7 +89,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
     if (this.sort === sort) {
       return;
     }
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
+    this.fire([DatesColumn.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
     if (!this.isSortedByMe().asc) {
       this.sortByMe();

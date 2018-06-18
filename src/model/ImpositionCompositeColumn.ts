@@ -1,11 +1,11 @@
-import {suffix} from '../internal/AEventDispatcher';
+import {suffix, IEventListener} from '../internal/AEventDispatcher';
 import {toolbar} from './annotations';
-import Column, {IColumnDesc} from './Column';
-import CompositeColumn from './CompositeColumn';
+import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
 import {IDataRow, IGroupData} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
-import NumberColumn, {INumberColumn} from './NumberColumn';
+import NumberColumn, {INumberColumn, mappingChanged} from './NumberColumn';
 
 
 /**
@@ -50,6 +50,25 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
 
   protected createEventList() {
     return super.createEventList().concat([ImpositionCompositeColumn.EVENT_MAPPING_CHANGED]);
+  }
+
+  on(type: typeof ImpositionCompositeColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
+  on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   getLabel(row: IDataRow) {

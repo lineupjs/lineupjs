@@ -1,6 +1,6 @@
-import {suffix} from '../internal/AEventDispatcher';
+import {suffix, IEventListener} from '../internal/AEventDispatcher';
+import Column, {IColumnParent, IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {Category, toolbar} from './annotations';
-import Column, {IColumnParent, IFlatColumn} from './Column';
 import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
@@ -10,12 +10,68 @@ export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {
 }
 
 /**
+ * emitted when the filter property changes
+ * @asMemberOf CompositeColumn
+ * @event
+ */
+export declare function filterChanged(previous: any | null, current: any | null): void;
+
+/**
+ * emitted when a column has been added
+ * @asMemberOf CompositeColumn
+ * @event
+ */
+export declare function addColumn(col: Column, index: number): void;
+
+/**
+ * emitted when a column has been moved within this composite columm
+ * @asMemberOf CompositeColumn
+ * @event
+ */
+export declare function moveColumn(col: Column, index: number, oldIndex: number): void;
+
+/**
+ * emitted when a column has been removed
+ * @asMemberOf CompositeColumn
+ * @event
+ */
+export declare function removeColumn(col: Column, index: number): void;
+
+/**
  * implementation of a combine column, standard operations how to select
  */
 @toolbar('compositeContained', 'splitCombined')
 @Category('composite')
 export default class CompositeColumn extends Column implements IColumnParent {
+  static readonly EVENT_FILTER_CHANGED = 'filterChanged';
+  static readonly EVENT_ADD_COLUMN = 'addColumn';
+  static readonly EVENT_MOVE_COLUMN = 'moveColumn';
+  static readonly EVENT_REMOVE_COLUMN = 'removeColumn';
+
   protected readonly _children: Column[] = [];
+
+  protected createEventList() {
+    return super.createEventList().concat([CompositeColumn.EVENT_FILTER_CHANGED, CompositeColumn.EVENT_ADD_COLUMN, CompositeColumn.EVENT_MOVE_COLUMN, CompositeColumn.EVENT_REMOVE_COLUMN]);
+  }
+
+  on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
+  on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
+  }
 
   assignNewId(idGenerator: () => string) {
     super.assignNewId(idGenerator);
@@ -99,13 +155,13 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   protected insertImpl(col: Column, index: number) {
     col.parent = this;
-    this.forward(col, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED));
-    this.fire([Column.EVENT_ADD_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
+    this.forward(col, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, CompositeColumn.EVENT_FILTER_CHANGED, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED));
+    this.fire([CompositeColumn.EVENT_ADD_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
     return col;
   }
 
   protected moveImpl(col: Column, index: number, oldIndex: number) {
-    this.fire([Column.EVENT_MOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED], col, index, oldIndex);
+    this.fire([CompositeColumn.EVENT_MOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED], col, index, oldIndex);
     return col;
   }
 
@@ -149,8 +205,8 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   protected removeImpl(child: Column, index: number) {
     child.parent = null;
-    this.unforward(child, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
-    this.fire([Column.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], child, index);
+    this.unforward(child, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, CompositeColumn.EVENT_FILTER_CHANGED));
+    this.fire([CompositeColumn.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], child, index);
     return true;
   }
 

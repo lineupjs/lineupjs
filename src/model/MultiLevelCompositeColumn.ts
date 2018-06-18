@@ -1,10 +1,27 @@
 import {similar} from '../internal/math';
 import {toolbar} from './annotations';
-import Column, {IColumnDesc, IFlatColumn} from './Column';
-import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './CompositeColumn';
+import Column, {IColumnDesc, IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn, addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import StackColumn from './StackColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
+
+
+/**
+ * emitted when the collapse property changes
+ * @asMemberOf MultiLevelCompositeColumn
+ * @event
+ */
+export declare function collapseChanged(previous: boolean, current: boolean): void;
+
+/**
+ * emitted when the ratios between the children changes
+ * @asMemberOf MultiLevelCompositeColumn
+ * @event
+ */
+export declare function nestedChildRatio(previous: number, current: number): void;
+
 
 @toolbar('collapse')
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
@@ -30,6 +47,26 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
 
   protected createEventList() {
     return super.createEventList().concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED]);
+  }
+
+  on(type: typeof MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged | null): this;
+  on(type: typeof MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, listener: typeof nestedChildRatio | null): this;
+  on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
+  on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   setCollapsed(value: boolean) {
