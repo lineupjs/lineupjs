@@ -35,7 +35,7 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSor
   const id = randomId(idPrefix);
   node.insertAdjacentHTML('afterbegin', `
         <strong>Sort Order</strong>
-        <div class="lu-checkbox"><input id="${id}N" type="radio" name="sortorder" value="none"  ${(order.asc === undefined) ? 'checked' : ''} ><label for="${id}N">Don’t-Care</label></div>
+        <div class="lu-checkbox"><input id="${id}N" type="radio" name="sortorder" value="none"  ${(order.asc === undefined) ? 'checked' : ''} ><label for="${id}N">Implicit</label></div>
         <div class="lu-checkbox"><input id="${id}B" type="radio" name="sortorder" value="asc"  ${(order.asc === 'asc') ? 'checked' : ''} ><label for="${id}B">Ascending</label></div>
         <div class="lu-checkbox"><input id="${id}D" type="radio" name="sortorder" value="desc"  ${(order.asc === 'desc') ? 'checked' : ''} ><label for="${id}D">Decending</label></div>
         <strong>Sort Priority</strong>
