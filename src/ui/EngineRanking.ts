@@ -2,7 +2,7 @@ import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, Gri
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn} from '../model';
+import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, ValueColumn} from '../model';
 import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
@@ -787,7 +787,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
       this.delayedUpdateColumnWidths();
     });
-    c.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
+    c.on(`${ValueColumn.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
     const debounceUpdate = debounce(() => {
       const valid = this.updateColumn(col.index);
       if (!valid) {
@@ -837,7 +837,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private static disableListener(c: Column) {
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-    c.on(`${Column.EVENT_DATA_LOADED}.hist`, null);
+    c.on(`${ValueColumn.EVENT_DATA_LOADED}.hist`, null);
     c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
     c.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, null);
     c.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, null);
