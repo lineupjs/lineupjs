@@ -58,14 +58,14 @@ export default class AEventDispatcher implements IEventHandler {
   on(type: string | string[], listener: IEventListener | null): this {
     if (Array.isArray(type)) {
       type.forEach((d) => {
-        if (this.listenerEvents.has(d)) {
+        if (this.listenerEvents.has(d.split('.')[0])) {
           this.listenersChanged(d, Boolean(listener!));
           this.listeners.on(d, listener!);
-        } else if (__DEBUG__&& !type.includes('.')) {
+        } else if (__DEBUG__ && !d.includes('.')) {
            console.warn(this, 'invalid event type', d);
         }
       });
-    } else if (this.listenerEvents.has(<string>type)) {
+    } else if (this.listenerEvents.has((<string>type).split('.')[0])) {
       this.listenersChanged(<string>type, Boolean(listener!));
       this.listeners.on(<string>type, listener!);
     } else if (__DEBUG__ && !type.includes('.')) {
