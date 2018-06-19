@@ -84,9 +84,9 @@ export default class RankingBuilder {
    * <ul>
    *     <li>'*' = all columns</li>
    *     <li>'_*' = all support columns</li>
-   *     <li>'_aggregate' = aggregate columns</li>
-   *     <li>'_selection' = selection columns</li>
-   *     <li>'_group' = group columns</li>
+   *     <li>'_aggregate' = aggregate column</li>
+   *     <li>'_selection' = selection column</li>
+   *     <li>'_group' = group column</li>
    *     <li>'_rank' = rank column</li>
    * </ul>
    * In addition build objects for combined columns are supported.
