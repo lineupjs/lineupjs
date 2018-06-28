@@ -1,6 +1,6 @@
 import Column from '../../model/Column';
 import ADialog, {IDialogContext} from './ADialog';
-import {randomId, forEach} from './utils';
+import {uniqueId, forEach} from './utils';
 import {getToolbarDialogAddons, IToolbarDialogAddon} from '../toolbar';
 import {IRankingHeaderContext} from '../interfaces';
 
@@ -32,7 +32,7 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSor
     order.priority = current.length;
   }
 
-  const id = randomId(idPrefix);
+  const id = uniqueId(idPrefix);
   node.insertAdjacentHTML('afterbegin', `
         <strong>Sort Order</strong>
         <div class="lu-checkbox"><input id="${id}B" type="radio" name="sortorder" value="asc"  ${(order.asc === 'asc') ? 'checked' : ''} ><label for="${id}B">Ascending</label></div>

@@ -1,7 +1,7 @@
 import Column from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
-import {randomId} from './utils';
+import {uniqueId} from './utils';
 
 /** @internal */
 export default class ChangeRendererDialog extends ADialog {
@@ -17,7 +17,7 @@ export default class ChangeRendererDialog extends ADialog {
 
     console.assert(item.length > 1 || group.length > 1 || summary.length > 1); // otherwise no need to show this
 
-    const id = randomId(this.dialog.idPrefix);
+    const id = uniqueId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `
       ${item.map((d) => ` <div class="lu-checkbox"><input id="${id}0${d.type}" type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><label for="${id}0${d.type}">${d.label}</label></div>`).join('')}
       <strong>Group Visualization</strong>

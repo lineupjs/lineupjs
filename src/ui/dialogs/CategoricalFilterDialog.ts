@@ -3,7 +3,7 @@ import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalCo
 import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, randomId, forEach} from './utils';
+import {updateFilterState, uniqueId, forEach} from './utils';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {
@@ -20,7 +20,7 @@ export default class CategoricalFilterDialog extends ADialog {
   protected build(node: HTMLElement) {
     node.classList.add('lu-filter-table');
 
-    const id = randomId(this.dialog.idPrefix);
+    const id = uniqueId(this.dialog.idPrefix);
 
     node.insertAdjacentHTML('beforeend', `<div>
         <div class="lu-checkbox"><input id="${id}" type="checkbox" checked><label for="${id}"><span></span><div>Un/Select All</div></label></div>
