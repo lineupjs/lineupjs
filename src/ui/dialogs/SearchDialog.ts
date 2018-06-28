@@ -1,7 +1,7 @@
 import Column from '../../model/Column';
-import { IDataProvider } from '../../provider/ADataProvider';
-import ADialog, { IDialogContext } from './ADialog';
-import { randomId } from './utils';
+import {IDataProvider} from '../../provider/ADataProvider';
+import ADialog, { IDialogContext} from './ADialog';
+import {randomId} from './utils';
 
 /** @internal */
 export default class SearchDialog extends ADialog {

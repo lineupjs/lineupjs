@@ -1,4 +1,4 @@
-import { randomId } from './dialogs/utils';
+import {randomId} from './dialogs/utils';
 
 /** @internal */
 export const filterMissingText = 'Filter out rows containing missing values';

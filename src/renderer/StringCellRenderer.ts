@@ -1,10 +1,10 @@
-import { IDataRow, IGroup } from '../model';
+import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
-import { filterMissingMarkup, findFilterMissing } from '../ui/missing';
-import { default as IRenderContext, ICellRendererFactory } from './interfaces';
-import { renderMissingDOM } from './missing';
-import { noop, setText, randomId } from './utils';
+import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {noop, setText, randomId} from './utils';
 
 
 /**

@@ -1,7 +1,7 @@
 import StringColumn from '../../model/StringColumn';
-import { filterMissingMarkup, findFilterMissing } from '../missing';
-import ADialog, { IDialogContext } from './ADialog';
-import { updateFilterState, randomId } from './utils';
+import {filterMissingMarkup, findFilterMissing} from '../missing';
+import ADialog, { IDialogContext} from './ADialog';
+import {updateFilterState, randomId} from './utils';
 
 /** @internal */
 export default class StringFilterDialog extends ADialog {

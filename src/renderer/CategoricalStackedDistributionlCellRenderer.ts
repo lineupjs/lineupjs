@@ -1,12 +1,12 @@
-import { computeHist, ICategoricalBin, ICategoricalStatistics } from '../internal/math';
-import { ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn } from '../model';
+import {computeHist, ICategoricalBin, ICategoricalStatistics} from '../internal/math';
+import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import OrdinalColumn from '../model/OrdinalColumn';
-import { filterMissingNumberMarkup } from '../ui/missing';
-import { interactiveHist } from './CategoricalCellRenderer';
-import { default as IRenderContext, ERenderMode, ICellRendererFactory } from './interfaces';
-import { forEachChild, noRenderer, adaptTextColorToBgColor } from './utils';
+import {filterMissingNumberMarkup} from '../ui/missing';
+import {interactiveHist} from './CategoricalCellRenderer';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {forEachChild, noRenderer, adaptTextColorToBgColor} from './utils';
 
 /** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
