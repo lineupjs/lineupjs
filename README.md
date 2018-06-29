@@ -503,6 +503,17 @@ npm run lint
 npm run start
 ```
 
+**Link develop version**
+
+In order to use the library during development in another repository, one need to build and watch the library and produce development typings. 
+
+```bash
+ln -s . <target_project>/node_modules/lineupjs
+npm run compile:dev
+npm run watch
+```
+
+The development typings are needed cause during production the are located at `/src`. That causes problems cause during compilation of a dependent project the Typescript compiler will first find the original TypeScript file e.g. `config.ts` before looking for `config.d.ts`, will complain that the library owner should deliver JavaScript files and won't compile the file. Thus the typings have to lie at a different location in this scenario.
 
 Authors
 -------
