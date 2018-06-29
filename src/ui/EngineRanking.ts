@@ -1,8 +1,8 @@
 import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, setColumn, ACellTableSection, ITableSection, ICellRenderContext} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
-import AEventDispatcher, {IEventContext} from '../internal/AEventDispatcher';
+import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn} from '../model';
+import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, ValueColumn} from '../model';
 import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
@@ -28,6 +28,33 @@ export interface IEngineRankingOptions {
   };
 }
 
+/**
+ * emitted when the width of the ranking changed
+ * @asMemberOf EngineRanking
+ * @event
+ */
+export declare function widthChanged(): void;
+/**
+ * emitted when the data of the ranking needs to be updated
+ * @asMemberOf EngineRanking
+ * @event
+ */
+export declare function updateData(): void;
+/**
+ * emitted when the histogram of a column needs to be updated
+ * @asMemberOf EngineRanking
+ * @param col the column to update the histogram of
+ * @event
+ */
+export declare function updateHist(col: Column): void;
+/**
+ * emitted when the highlight changes
+ * @asMemberOf EngineRanking
+ * @param dataIndex the highlghted data index or -1 for none
+ * @event
+ */
+export declare function highlightChanged(dataIndex: number): void;
+
 
 /** @internal */
 class RankingEvents extends AEventDispatcher {
@@ -45,7 +72,7 @@ class RankingEvents extends AEventDispatcher {
   }
 }
 
-export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
+export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection, IEventHandler {
   static readonly EVENT_WIDTH_CHANGED = RankingEvents.EVENT_WIDTH_CHANGED;
   static readonly EVENT_UPDATE_DATA = RankingEvents.EVENT_UPDATE_DATA;
   static readonly EVENT_UPDATE_HIST = RankingEvents.EVENT_UPDATE_HIST;
@@ -60,7 +87,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private readonly canvasPool: HTMLCanvasElement[] = [];
 
   private readonly events = new RankingEvents();
-  readonly on = this.events.on.bind(this.events);
 
   private roptions: Readonly<IEngineRankingOptions> = {
     animation: true,
@@ -215,6 +241,15 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
       column.renderers = this.ctx.createRenderer(column.c);
     });
+  }
+
+  on(type: typeof EngineRanking.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof EngineRanking.EVENT_UPDATE_DATA, listener: typeof updateData | null): this;
+  on(type: typeof EngineRanking.EVENT_UPDATE_HIST, listener: typeof updateHist | null): this;
+  on(type: typeof EngineRanking.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    this.events.on(type, listener);
+    return this;
   }
 
   get id() {
@@ -752,7 +787,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
       this.delayedUpdateColumnWidths();
     });
-    c.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
+    c.on(`${ValueColumn.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
     const debounceUpdate = debounce(() => {
       const valid = this.updateColumn(col.index);
       if (!valid) {
@@ -802,7 +837,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private static disableListener(c: Column) {
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-    c.on(`${Column.EVENT_DATA_LOADED}.hist`, null);
+    c.on(`${ValueColumn.EVENT_DATA_LOADED}.hist`, null);
     c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
     c.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, null);
     c.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, null);

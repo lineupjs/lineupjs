@@ -1,7 +1,8 @@
 import {computeHist, computeStats} from '../internal';
 import Column, {
   defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn,
-  IOrderedGroup
+  IOrderedGroup,
+  NumberColumn
 } from '../model';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
@@ -124,7 +125,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const clone = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
-      clone.on(`${Column.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
+      clone.on(`${NumberColumn.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
     }
 
     return clone;
@@ -132,7 +133,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   cleanUpRanking(ranking: Ranking) {
     if (this.options.filterGlobally) {
-      ranking.on(`${Column.EVENT_FILTER_CHANGED}.reorderAll`, null);
+      ranking.on(`${NumberColumn.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }
     super.cleanUpRanking(ranking);
   }

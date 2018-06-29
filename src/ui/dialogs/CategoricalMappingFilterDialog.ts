@@ -3,7 +3,7 @@ import OrdinalColumn from '../../model/OrdinalColumn';
 import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, randomId, forEach} from './utils';
+import {updateFilterState, uniqueId, forEach} from './utils';
 
 /** @internal */
 export default class CategoricalMappingFilterDialog extends ADialog {
@@ -24,7 +24,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     }));
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
-    const id = randomId(this.dialog.idPrefix);
+    const id = uniqueId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `<div>
         <div class="lu-checkbox"><input id="${id}" type="checkbox" checked><label for="${id}"><div>Un/Select All</div></label></div>
         ${joint.map(({name, color, label, range}) => `<input id="${id}${name}" data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>

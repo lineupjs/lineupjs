@@ -26,23 +26,28 @@ export interface IEventContext {
   readonly args: any[];
 }
 
-export interface IEventHandler {
-  on(type: string): (...args: any[]) => void;
-
-  on(type: string | string[], listener: ((...args: any[]) => any) | null): IEventHandler;
-
-  on(type: string | string[], listener?: ((...args: any[]) => any) | null): any;
+export interface IEventListener {
+  (this: IEventContext, ...args: any[]): any;
 }
+
+export interface IEventHandler {
+  on(type: string | string[], listener: IEventListener | null): this;
+}
+
+declare const __DEBUG__: boolean;
 
 /**
  * base class for event dispatching using d3 event mechanism
  */
 export default class AEventDispatcher implements IEventHandler {
-  private listeners: Dispatch<any>;
-  private forwarder: (...args: any[]) => void;
+  private readonly listeners: Dispatch<any>;
+  private readonly listenerEvents: Set<string>;
+  private readonly forwarder: (...args: any[]) => void;
 
   constructor() {
-    this.listeners = dispatch(...this.createEventList());
+    const events = this.createEventList();
+    this.listenerEvents = new Set(events);
+    this.listeners = dispatch(...events);
 
     const that = this;
     this.forwarder = function (this: IEventContext, ...args: any[]) {
@@ -50,22 +55,23 @@ export default class AEventDispatcher implements IEventHandler {
     };
   }
 
-  on(type: string): (...args: any[]) => void;
-  on(type: string | string[], listener: ((...args: any[]) => any) | null): AEventDispatcher;
-  on(type: string | string[], listener?: ((...args: any[]) => any) | null): any {
-    if (listener !== undefined) {
-      if (Array.isArray(type)) {
-        (<string[]>type).forEach((d) => {
+  on(type: string | string[], listener: IEventListener | null): this {
+    if (Array.isArray(type)) {
+      type.forEach((d) => {
+        if (this.listenerEvents.has(d.split('.')[0])) {
           this.listenersChanged(d, Boolean(listener!));
           this.listeners.on(d, listener!);
-        });
-      } else {
-        this.listenersChanged(<string>type, Boolean(listener!));
-        this.listeners.on(<string>type, listener!);
-      }
-      return this;
+        } else if (__DEBUG__ && !d.includes('.')) {
+           console.warn(this, 'invalid event type', d);
+        }
+      });
+    } else if (this.listenerEvents.has((<string>type).split('.')[0])) {
+      this.listenersChanged(<string>type, Boolean(listener!));
+      this.listeners.on(<string>type, listener!);
+    } else if (__DEBUG__ && !type.includes('.')) {
+      console.warn(this, 'invalid event type', type);
     }
-    return this.listeners.on(<string>type);
+    return this;
   }
 
   protected listenersChanged(_type: string, _active: boolean) {
@@ -87,6 +93,12 @@ export default class AEventDispatcher implements IEventHandler {
 
   private fireImpl(type: string | string[], primaryType: string, origin: AEventDispatcher, ...args: any[]) {
     const fireImpl = (t: string) => {
+      if (!this.listenerEvents.has(t)) {
+        if (__DEBUG__) {
+          console.warn(this, 'invalid event type', t);
+        }
+        return;
+      }
       //local context per event, set a this argument
       const context: IEventContext = {
         source: this, //who is sending this event,

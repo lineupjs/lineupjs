@@ -1,7 +1,8 @@
 import {format} from 'd3-format';
 import {IBoxPlotData} from '../internal';
 import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
@@ -12,7 +13,7 @@ import {
   ScaleMappingFunction
 } from './MappingFunction';
 import NumberColumn from './NumberColumn';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 
 export interface IBoxPlotDesc extends IMapAbleDesc {
@@ -21,12 +22,30 @@ export interface IBoxPlotDesc extends IMapAbleDesc {
 
 export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
 
+
+/**
+ * emitted when the sort method property changes
+ * @asMemberOf BoxPlotColumn
+ * @event
+ */
+export declare function sortMethodChanged(previous: ESortMethod, current: ESortMethod): void;
+
+/**
+ * emitted when the mapping property changes
+ * @asMemberOf BoxPlotColumn
+ * @event
+ */
+export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+
+
 @toolbar('filterMapped')
 @dialogAddons('sort', 'sortBoxPlot')
 @Category('array')
 @SortByDefault('descending')
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
+
   static readonly DEFAULT_FORMATTER = format('.3n');
 
   private sort: ESortMethod;
@@ -110,7 +129,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.sort === sort) {
       return;
     }
-    this.fire(Column.EVENT_SORTMETHOD_CHANGED, this.sort, this.sort = sort);
+    this.fire(BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, this.sort, this.sort = sort);
     // sort by me if not already sorted by me
     if (!this.isSortedByMe().asc) {
       this.sortByMe();
@@ -141,7 +160,24 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, BoxPlotColumn.EVENT_MAPPING_CHANGED]);
+  }
+
+  on(type: typeof BoxPlotColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(<any>type, listener);
   }
 
   getOriginalMapping() {

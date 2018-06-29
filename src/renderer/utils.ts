@@ -173,6 +173,9 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
 }
 
 
-export function randomId(prefix: string) {
-  return `${prefix}${Math.floor(Math.random() * 1000).toString(36)}`;
-}
+
+export const uniqueId: (prefix: string)=>string = (function() {
+  // side effect but just within the function itself, so good for the library
+  let idCounter = 0;
+  return (prefix: string) => `${prefix}${(idCounter++).toString(36)}`;
+})();

@@ -1,5 +1,5 @@
 import {ILineUpOptions} from '../../interfaces';
-import AEventDispatcher from '../../internal/AEventDispatcher';
+import AEventDispatcher, {IEventListener} from '../../internal/AEventDispatcher';
 import debounce from '../../internal/debounce';
 import {IGroupData, IGroupItem, isGroup} from '../../model';
 import Ranking from '../../model/Ranking';
@@ -9,6 +9,14 @@ import {IEngineRankingContext} from '../EngineRanking';
 import EngineRenderer from '../EngineRenderer';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
 import {IRule} from './interfaces';
+
+/**
+ * emitted when the highlight changes
+ * @asMemberOf TaggleRenderer
+ * @param dataIndex the highlghted data index or -1 for none
+ * @event
+ */
+export declare function highlightChanged(dataIndex: number): void;
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
@@ -118,6 +126,12 @@ export default class TaggleRenderer extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([TaggleRenderer.EVENT_HIGHLIGHT_CHANGED]);
   }
+
+  on(type: typeof TaggleRenderer.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
+  }
+
 
   zoomOut() {
     this.renderer.zoomOut();

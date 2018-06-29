@@ -1,6 +1,5 @@
 import {suffix} from '../../internal/AEventDispatcher';
 import debounce from '../../internal/debounce';
-import Column from '../../model/Column';
 import CompositeColumn from '../../model/CompositeColumn';
 import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
@@ -17,7 +16,7 @@ export default class CompositeChildrenDialog extends ADialog {
   }
 
   destroy() {
-    this.column.on(suffix(this.id, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN), null);
+    this.column.on(suffix(this.id, CompositeColumn.EVENT_ADD_COLUMN, CompositeColumn.EVENT_REMOVE_COLUMN), null);
     super.destroy();
   }
 
@@ -43,7 +42,7 @@ export default class CompositeChildrenDialog extends ADialog {
     };
     createChildren();
 
-    this.column.on(suffix(this.id, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN), debounce(() => {
+    this.column.on(suffix(this.id, CompositeColumn.EVENT_ADD_COLUMN, CompositeColumn.EVENT_REMOVE_COLUMN), debounce(() => {
       if (!node.parentElement) {
         // already closed
         this.destroy();

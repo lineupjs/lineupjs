@@ -3,6 +3,7 @@ import OrderedSet from '../internal/OrderedSet';
 import {IGroupData, IGroupItem, isGroup} from '../model';
 import {IDataProvider} from '../provider/ADataProvider';
 import {rangeSelection} from '../renderer/SelectionRenderer';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 interface IPoint {
   x: number;
@@ -14,6 +15,12 @@ interface IShift {
   yShift: number;
   node: HTMLElement;
 }
+
+/**
+ * @asMemberOf SelectionManager
+ * @event
+ */
+export declare function selectRange(from: number, to: number, additional: boolean): void;
 
 /** @internal */
 export default class SelectionManager extends AEventDispatcher {
@@ -77,6 +84,11 @@ export default class SelectionManager extends AEventDispatcher {
 
   protected createEventList() {
     return super.createEventList().concat([SelectionManager.EVENT_SELECT_RANGE]);
+  }
+
+  on(type: typeof SelectionManager.EVENT_SELECT_RANGE, listener: typeof selectRange | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   private select(additional: boolean, startNode?: HTMLElement, endNode?: HTMLElement) {
