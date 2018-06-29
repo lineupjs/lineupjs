@@ -1,7 +1,7 @@
 import {format} from 'd3-format';
 import {equalArrays} from '../internal';
 import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {groupCompare, isDummyNumberFilter, restoreFilter} from './internal';
 import {
@@ -13,13 +13,42 @@ import {
   ScaleMappingFunction
 } from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 
 
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
+
+/**
+ * emitted when the mapping property changes
+ * @asMemberOf NumberColumn
+ * @event
+ */
+export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+
+/**
+ * emitted when the filter property changes
+ * @asMemberOf NumberColumn
+ * @event
+ */
+export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+
+/**
+ * emitted when the sort method property changes
+ * @asMemberOf NumberColumn
+ * @event
+ */
+export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
+
+/**
+ * emitted when the grouping property changes
+ * @asMemberOf NumberColumn
+ * @event
+ */
+export declare function groupingChanged(previous: number[], current: number[]): void;
 
 /**
  * a number column mapped from an original input scale to an output range
@@ -31,6 +60,9 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 @SortByDefault('descending')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
+  static readonly EVENT_FILTER_CHANGED = 'filterChanged';
+  static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
+  static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 
   private readonly missingValue: number;
 
@@ -97,7 +129,26 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED, NumberColumn.EVENT_FILTER_CHANGED, NumberColumn.EVENT_SORTMETHOD_CHANGED, NumberColumn.EVENT_GROUPING_CHANGED]);
+  }
+
+  on(type: typeof NumberColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof NumberColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof NumberColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  on(type: typeof NumberColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(<any>type, listener);
   }
 
   getLabel(row: IDataRow) {
@@ -191,7 +242,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.currentFilter.min = isUnknown(value.min) ? -Infinity : value.min;
     this.currentFilter.max = isUnknown(value.max) ? Infinity : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
+    this.fire([NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   /**
@@ -213,7 +264,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     const bak = this.getGroupThresholds();
     this.currentGroupThresholds = value.slice();
-    this.fire([Column.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
+    this.fire([NumberColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
 
@@ -258,7 +309,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (this.groupSortMethod === sortMethod) {
       return;
     }
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.groupSortMethod, this.groupSortMethod = sortMethod);
+    this.fire([NumberColumn.EVENT_SORTMETHOD_CHANGED], this.groupSortMethod, this.groupSortMethod = sortMethod);
     // sort by me if not already sorted by me
     if (!this.isGroupSortedByMe().asc) {
       this.toggleMyGroupSorting();

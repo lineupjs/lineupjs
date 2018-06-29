@@ -7,13 +7,15 @@ import {
   createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
   ISelectionColumnDesc, IValueColumnDesc, models
 } from '../model';
+import {dirty, dirtyHeader, dirtyValues} from '../model/Column';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
-import Ranking from '../model/Ranking';
+import Ranking, {orderChanged, addColumn, removeColumn} from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {exportRanking, IExportOptions} from './utils';
 import {isSupportType} from '../model/annotations';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 export {IExportOptions} from './utils';
 
@@ -79,6 +81,53 @@ export interface IDataProvider extends AEventDispatcher {
   aggregateAllOf(ranking: Ranking, aggregateAll: boolean): void;
 }
 
+/**
+ * emitted when the selection changes
+ * @asMemberOf ADataProvider
+ * @param dataIndices the selected data indices
+ * @event
+ */
+export declare function selectionChanged(dataIndices: number[]): void;
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function addRanking(ranking: Ranking, index: number): void;
+/**
+ * @asMemberOf ADataProvider
+ * @param ranking if null all rankings are removed else just the specific one
+ * @event
+ */
+export declare function removeRanking(ranking: Ranking | null, index: number): void;
+/**
+ * emitted when the selection changes
+ * @asMemberOf ADataProvider
+ * @param dataIndices the selected data indices
+ * @event
+ */
+export declare function orderchanged(dataIndices: number[]): void;
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function addDesc(desc: IColumnDesc): void;
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function clearDesc(): void;
+/**
+ * emitted when the selection changes
+ * @asMemberOf ADataProvider
+ * @param dataIndices the selected data indices
+ * @event
+ */
+export declare function jumpToNearest(dataIndices: number[]): void;
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function aggregate(ranking: Ranking, group: IGroup|IGroup[], value: boolean): void;
 
 /**
  * a basic data provider holding the data and rankings
@@ -144,6 +193,24 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED,
       ADataProvider.EVENT_ADD_DESC, ADataProvider.EVENT_CLEAR_DESC,
       ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
+  }
+
+  on(type: typeof ADataProvider.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  on(type: typeof ADataProvider.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
+  on(type: typeof ADataProvider.EVENT_ADD_RANKING, listener: typeof addRanking | null): this;
+  on(type: typeof ADataProvider.EVENT_REMOVE_RANKING, listener: typeof removeRanking | null): this;
+  on(type: typeof ADataProvider.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof ADataProvider.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof ADataProvider.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof ADataProvider.EVENT_ORDER_CHANGED, listener: typeof orderChanged | null): this;
+  on(type: typeof ADataProvider.EVENT_ADD_DESC, listener: typeof addDesc | null): this;
+  on(type: typeof ADataProvider.EVENT_CLEAR_DESC, listener: typeof clearDesc | null): this;
+  on(type: typeof ADataProvider.EVENT_JUMP_TO_NEAREST, listener: typeof jumpToNearest | null): this;
+  on(type: typeof ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, listener: typeof aggregate | null): this;
+  on(type: typeof ADataProvider.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   abstract getTotalNumberOfRows(): number;
@@ -245,7 +312,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       this.cleanUpRanking(ranking);
     });
     this.rankings = [];
-    this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], null);
+    this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], null, -1);
   }
 
   /**
@@ -344,7 +411,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   /**
    * creates an internal column model out of the given column description
    * @param desc
-   * @returns {Column] the new column or null if it can't be created
+   * @returns {Column} the new column or null if it can't be created
    */
   create(desc: IColumnDesc): Column | null {
     this.fixDesc(desc);
