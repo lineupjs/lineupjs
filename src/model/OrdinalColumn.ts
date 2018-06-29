@@ -2,16 +2,24 @@ import {extent} from 'd3-array';
 import {equalArrays} from '../internal';
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import Column from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {
   ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, toCategories,
   toCategory
 } from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import NumberColumn, {INumberColumn} from './NumberColumn';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 export declare type ICategoricalNumberColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
+
+/**
+ * emitted when the mapping property changes
+ * @asMemberOf OrdinalColumn
+ * @event
+ */
+export declare function mappingChanged(previous: number[], current: number[]): void;
 
 /**
  * similar to a categorical column but the categories are mapped to numbers
@@ -41,6 +49,22 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   protected createEventList() {
     return super.createEventList().concat([OrdinalColumn.EVENT_MAPPING_CHANGED]);
+  }
+
+  on(type: typeof OrdinalColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(<any>type, listener);
   }
 
   get dataLength() {

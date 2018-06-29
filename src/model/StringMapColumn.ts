@@ -1,9 +1,11 @@
 import {toolbar} from './annotations';
-import Column from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {default as StringColumn, EAlignment, IStringDesc} from './StringColumn';
+import {default as StringColumn, EAlignment, IStringDesc, patternChanged} from './StringColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
 
@@ -12,6 +14,8 @@ export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
  */
 @toolbar('search', 'editPattern')
 export default class StringMapColumn extends MapColumn<string> {
+  static readonly EVENT_PATTERN_CHANGED = StringColumn.EVENT_PATTERN_CHANGED;
+
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
@@ -38,6 +42,22 @@ export default class StringMapColumn extends MapColumn<string> {
 
   protected createEventList() {
     return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED]);
+  }
+
+  on(type: typeof StringColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged | null): this;
+  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(<any>type, listener);
   }
 
   getValue(row: IDataRow) {

@@ -18,7 +18,7 @@ export {
   IBuilderAdapterWeightedSumColumnProps
 } from './ranking';
 
-import { build, buildCategorical, buildDate, buildHierarchy, buildNumber, buildString, buildActions } from './column';
+import {build, buildCategorical, buildDate, buildHierarchy, buildNumber, buildString, buildActions} from './column';
 import {Adapter} from './lineup';
 import {
   buildAllColumnsRanking,

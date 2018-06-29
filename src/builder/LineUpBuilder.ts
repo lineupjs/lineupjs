@@ -2,7 +2,7 @@ import {IDynamicHeight, ITaggleOptions} from '../interfaces';
 import {IGroupData, IGroupItem} from '../model';
 import Ranking from '../model/Ranking';
 import {ICellRendererFactory} from '../renderer';
-import {IToolbarAction} from '../ui';
+import {IToolbarAction, IToolbarDialogAddon} from '../ui';
 
 /**
  * builder for LineUp/Taggle instance
@@ -79,13 +79,33 @@ export default class LineUpBuilder {
     return this;
   }
 
+  /**
+   * register a new renderer factory function
+   * @param id the rederer id
+   * @param factory factory class implementing the renderer
+   */
   registerRenderer(id: string, factory: ICellRendererFactory) {
     this.options.renderers![id] = factory;
     return this;
   }
 
+  /**
+   * register another toolbar action which can be used within a model class
+   * @param id toolbar id
+   * @param action
+   */
   registerToolbarAction(id: string, action: IToolbarAction) {
     this.options.toolbar![id] = action;
+    return this;
+  }
+
+  /**
+   * register another toolbar action which can be sued within a model class
+   * @param id  dialog id
+   * @param addon addon description
+   */
+  registerToolbarDialogAddon(id: string, addon: IToolbarDialogAddon) {
+    this.options.toolbar![id] = addon;
     return this;
   }
 

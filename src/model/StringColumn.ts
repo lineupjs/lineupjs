@@ -1,9 +1,10 @@
 import {Category, toolbar} from './annotations';
-import Column from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
 import {FIRST_IS_MISSING} from './missing';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
+import {IEventListener} from '../internal/AEventDispatcher';
 
 export enum EAlignment {
   left = 'left',
@@ -37,6 +38,22 @@ export interface IStringDesc {
 
 export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 
+
+/**
+ * emitted when the pattern property changes
+ * @asMemberOf StringColumn
+ * @event
+ */
+export declare function patternChanged(previous: string, current: string): void;
+
+/**
+ * emitted when the filter property changes
+ * @asMemberOf StringColumn
+ * @event
+ */
+export declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+
+
 /**
  * a string column with optional alignment
  */
@@ -44,6 +61,8 @@ export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 @Category('string')
 export default class StringColumn extends ValueColumn<string> {
   static readonly EVENT_PATTERN_CHANGED = 'patternChanged';
+  static readonly EVENT_FILTER_CHANGED = 'filterChanged';
+
   //magic key for filtering missing ones
   static readonly FILTER_MISSING = '__FILTER_MISSING';
   private currentFilter: string | RegExp | null = null;
@@ -82,7 +101,24 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED]);
+    return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED, StringColumn.EVENT_FILTER_CHANGED]);
+  }
+
+  on(type: typeof StringColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged | null): this;
+  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
+  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
+  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(<any>type, listener);
   }
 
   getValue(row: IDataRow) {
@@ -159,7 +195,7 @@ export default class StringColumn extends ValueColumn<string> {
     if (this.currentFilter === filter) {
       return;
     }
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
   compare(a: IDataRow, b: IDataRow) {

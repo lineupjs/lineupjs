@@ -10,7 +10,7 @@ import LineUpBuilder from './LineUpBuilder';
 import RankingBuilder from './RankingBuilder';
 
 /**
- * builder for a LocalDataProvider
+ * builder for a LocalDataProvider along with LineUp configuration options
  */
 export default class DataBuilder extends LineUpBuilder {
   private readonly columns: (IColumnDesc | ((data: any[]) => IColumnDesc))[] = [];
@@ -108,7 +108,7 @@ export default class DataBuilder extends LineUpBuilder {
 
   /**
    * add the default ranking (all columns) to this data provider
-   * @param {boolean} addSupportTypes add support types, too
+   * @param {boolean} addSupportTypes add support types, too, default: true
    */
   defaultRanking(addSupportTypes: boolean = true) {
     this.rankBuilders.push((data) => data.deriveDefault(addSupportTypes));

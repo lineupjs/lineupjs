@@ -1,6 +1,6 @@
 import LineUp from '../ui/LineUp';
 import Taggle from '../ui/taggle/Taggle';
-import { builder } from './DataBuilder';
+import {builder} from './DataBuilder';
 
 export * from './DataBuilder';
 export * from './column';

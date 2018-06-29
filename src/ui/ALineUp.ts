@@ -2,18 +2,26 @@ import {ILineUpLike} from '../interfaces';
 import AEventDispatcher from '../internal/AEventDispatcher';
 import Column from '../model/Column';
 import DataProvider from '../provider/ADataProvider';
+import {IEventListener} from '../internal/AEventDispatcher';
+
+/**
+ * emitted when the highlight changes
+ * @asMemberOf ALineUp
+ * @param dataIndex the highlghted data index or -1 for none
+ * @event
+ */
+export declare function highlightChanged(dataIndex: number): void;
+
+/**
+ * emitted when the selection changes
+ * @asMemberOf ALineUp
+ * @param dataIndices the selected data indices
+ * @event
+ */
+export declare function selectionChanged(dataIndices: number[]): void;
 
 export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
-  /**
-   * triggered when the user click on a row
-   * @argument dataIndices:number[] the selected data indices
-   */
   static readonly EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
-
-  /**
-   * triggered when the user hovers over a row
-   * @argument dataIndex:number the selected data index or <0 if no row
-   */
   static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
   private highlightListeners = 0;
@@ -26,6 +34,12 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
 
   protected createEventList() {
     return super.createEventList().concat([ALineUp.EVENT_HIGHLIGHT_CHANGED, ALineUp.EVENT_SELECTION_CHANGED]);
+  }
+
+  on(type: typeof ALineUp.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  on(type: typeof ALineUp.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
   }
 
   destroy() {

@@ -40,17 +40,18 @@ export const buildId = __BUILD_ID__;
  */
 export const license = __LICENSE__;
 
-/**
- * creates a local storage provider
- * @param data
- * @param columns
- * @param options
- * @returns {LocalDataProvider}
- */
+
 export function createLocalDataProvider(data: any[], columns: IColumnDesc[], options: Partial<ILocalDataProviderOptions> = {}) {
   return new LocalDataProvider(data, columns, options);
 }
 
+/**
+ *
+ * @param container the html element lineup should be built in
+ * @param data {ADataProvider} the data providier
+ * @param config {Partial<ILineUpOptions>} lineup configuration overrides
+ * @returns {LineUp} the created lineup instance
+ */
 export function createLineUp(container: HTMLElement, data: ADataProvider, config: Partial<ILineUpOptions> = {}) {
   return new LineUp(container, data, config);
 }

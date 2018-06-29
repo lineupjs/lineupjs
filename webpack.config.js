@@ -45,6 +45,7 @@ module.exports = (env, options) => {
       }),
       //define magic constants that are replaced
       new webpack.DefinePlugin({
+        __DEBUG__ : dev,
         __VERSION__: JSON.stringify(pkg.version),
         __LICENSE__: JSON.stringify(pkg.license),
         __BUILD_ID__: JSON.stringify(buildId)

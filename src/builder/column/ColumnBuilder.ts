@@ -7,11 +7,17 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
     this.desc = <any>{column, type, label: column ? column[0].toUpperCase() + column.slice(1): type};
   }
 
+  /**
+   * column label
+   */
   label(label: string) {
     this.desc.label = label;
     return this;
   }
 
+  /**
+   * column description
+   */
   description(description: string) {
     this.desc.description = description;
     return this;
@@ -54,11 +60,17 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
     return this;
   }
 
+  /**
+   * sets the default width of the column
+   */
   width(width: number) {
     this.desc.width = width;
     return this;
   }
 
+  /**
+   * sets the column color in case of numerical columns
+   */
   color(color: string) {
     this.desc.color = color;
     return this;
