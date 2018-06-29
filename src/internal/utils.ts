@@ -1,6 +1,5 @@
 import * as equalImpl from 'fast-deep-equal';
 
-/** @internal */
 export const equal: (a: any, b: any) => boolean = <any>equalImpl;
 
 /** @internal */
