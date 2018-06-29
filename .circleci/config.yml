@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/phovea
+    working_directory: ~/lineup
     docker:
       - image: circleci/node:8-browsers
     steps:
@@ -39,3 +39,19 @@ jobs:
                 git push origin master
             fi
 
+workflows:
+  version: 2
+  build-branch:
+    jobs:
+      - build:
+          filters:
+            tags:
+              ignore: /^v.*/
+  build-tag:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
