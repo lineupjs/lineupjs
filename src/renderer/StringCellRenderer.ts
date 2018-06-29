@@ -1,10 +1,10 @@
-import { IDataRow, IGroup } from '../model';
+import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
-import { filterMissingMarkup, findFilterMissing } from '../ui/missing';
-import { default as IRenderContext, ICellRendererFactory } from './interfaces';
-import { renderMissingDOM } from './missing';
-import { noop, setText, randomId } from './utils';
+import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {noop, setText, uniqueId} from './utils';
 
 
 /**
@@ -125,7 +125,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
       bak = '';
     }
     let update: (col: StringColumn) => void;
-    const id = randomId(context.idPrefix);
+    const id = uniqueId(context.idPrefix);
     return {
       template: `<form><input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}">
           <div class="lu-checkbox"><input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">RegExp</label></div>
