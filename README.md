@@ -273,7 +273,7 @@ Result is same as the builder advanced example
 Angular 6 Support (nglineup)
 --------------------------
 
-A [Angular](https://angular.io/) wrapper is located at [nglineup](https://github.com/datavisyn/nglineup). 
+An [Angular](https://angular.io/) wrapper is located at [nglineup](https://github.com/datavisyn/nglineup). 
 
 
 **Installation**
@@ -370,7 +370,7 @@ Result is same as the builder advanced example
 
 <a id="vue"></a>
 
-Vue.js Support (nglineup)
+Vue.js Support (vue-lineup)
 --------------------------
 
 A [Vue.js](https://vuejs.org) wrapper is located at [vue-lineup](https://github.com/datavisyn/vue-lineup). 
