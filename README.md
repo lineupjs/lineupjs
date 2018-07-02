@@ -16,7 +16,7 @@ Key Features
  * group aggregations (show a whole group as a single group row)
  * numerous visualizations for summaries, cells, and group aggregations
  * side panel for easy filtering and column management
- * [React](#react), [Angular](#angular), [Polymer](#polymer), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
+ * [React](#react), [Angular](#angular), [Vue.js](#vue), [Polymer](#polymer), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
  * [Demo Application](#demo) with CSV import and export capabilities
  * [API Documentation](#api) based on generated TypeDoc documenation
 
@@ -364,6 +364,79 @@ Result is same as the builder minimal example
 
 
 [CodePen](https://codepen.io/sgratzl/pen/BVMdZL)
+
+Result is same as the builder advanced example
+
+
+<a id="vue"></a>
+
+Vue.js Support (nglineup)
+--------------------------
+
+A [Vue.js](https://vuejs.org) wrapper is located at [vue-lineup](https://github.com/datavisyn/vue-lineup). 
+
+
+**Installation**
+
+```bash
+npm install --save vue-lineup@next
+```
+
+**Minimal Usage Example**
+
+```ts
+const cats = ['c1', 'c2', 'c3'];
+const data = [];
+for (let i = 0; i < 100; ++i) {
+  data.push({
+    a: Math.random() * 10,
+    d: 'Row ' + i,
+    cat: cats[Math.floor(Math.random() * 3)],
+    cat2: cats[Math.floor(Math.random() * 3)],
+  });
+}
+
+// enable plugin to register components
+Vue.use(VueLineUp);
+
+const app = new Vue({
+  el: '#app',
+  template: `<LineUp v-bind:data="data" />`,
+  data: {
+    cats,
+    data
+  }
+});
+```
+
+[CodePen](https://codepen.io/sgratzl/pen/pKGmvK)
+
+Result is same as the builder minimal example
+
+
+**Advanced Usage Example**
+
+```ts
+const app = new Vue({
+  el: '#app',
+  template: `<LineUp v-bind:data="data" defaultRanking="true" style="height: 800px">
+    <LineUpStringColumnDesc column="d" label="Label" v-bind:width="100" />
+    <LineUpCategoricalColumnDesc column="cat" v-bind:categories="cats" color="green" />
+    <LineUpCategoricalColumnDesc column="cat2" v-bind:categories="cats" color="blue" />
+    <LineUpNumberColumnDesc column="a" v-bind:domain="[0, 10]" color="blue" />
+    <LineUpRanking groupBy="cat" sortBy="a:desc">
+      <LineUpSupportColumn type="*" />
+      <LineUpColumn column="*" />
+    </LineUpRanking>
+  </LineUp>`,
+  data: {
+    cats,
+    data
+  }
+});
+```
+
+[CodePen](https://codepen.io/sgratzl/pen/vrboWB)
 
 Result is same as the builder advanced example
 
