@@ -16,7 +16,7 @@ Key Features
  * group aggregations (show a whole group as a single group row)
  * numerous visualizations for summaries, cells, and group aggregations
  * side panel for easy filtering and column management
- * [React](#react), [Polymer](#polymer), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
+ * [React](#react), [Angular](#angular), [Vue.js](#vue), [Polymer](#polymer), [RShiny](#rshiny), [Juypter](#jupyter), and [Power BI](#powerbi) wrapper
  * [Demo Application](#demo) with CSV import and export capabilities
  * [API Documentation](#api) based on generated TypeDoc documenation
 
@@ -264,6 +264,179 @@ Result is same as the builder minimal example
 ```
 
 [CodePen](https://codepen.io/sgratzl/pen/yvJpWQ)
+
+Result is same as the builder advanced example
+
+
+<a id="angular"></a>
+
+Angular 6 Support (nglineup)
+--------------------------
+
+An [Angular](https://angular.io/) wrapper is located at [nglineup](https://github.com/datavisyn/nglineup). 
+
+
+**Installation**
+
+```bash
+npm install --save nglineup@next
+```
+
+**Minimal Usage Example**
+
+`app.module.ts`:
+```ts
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { LineUpModule } from '../lib/lineup.module';
+
+import { AppComponent } from './app.component.1';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    LineUpModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+`app.component.ts`:
+```ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html'
+})
+export class AppComponent {
+  readonly data = <any[]>[];
+
+  readonly cats = ['c1', 'c2', 'c3'];
+
+  constructor() {
+    const cats = this.cats;
+    for (let i = 0; i < 100; ++i) {
+      this.data.push({
+        a: Math.random() * 10,
+        d: 'Row ' + i,
+        cat: cats[Math.floor(Math.random() * 3)],
+        cat2: cats[Math.floor(Math.random() * 3)]
+      });
+    }
+  }
+}
+```
+
+`app.component.html`:
+```html
+<lineup-lineup [data]="data"></lineup-lineup>
+```
+
+
+[CodePen](https://codepen.io/sgratzl/pen/QxYgzN)
+
+Result is same as the builder minimal example
+
+
+**Advanced Usage Example**
+
+`app.component.html`:
+```html
+<lineup-lineup [data]="data" [defaultRanking]="true" style="height: 800px">
+  <lineup-string-column-desc column="d" label="Label" [width]="100"></lineup-string-column-desc>
+  <lineup-categorical-column-desc column="cat" [categories]="cats" color="green"></lineup-categorical-column-desc>
+  <lineup-categorical-column-desc column="cat2" [categories]="cats" color="blue"></lineup-categorical-column-desc>
+  <lineup-number-column-desc column="a" [domain]="[0, 10]" color="blue"></lineup-number-column-desc>
+
+  <lineup-ranking groupBy="cat" sortBy="a:desc">
+    <lineup-support-column type="*"></lineup-support-column>
+    <lineup-column column="*"></lineup-column>
+    <lineup-impose-column label="a+cat" column="a" categoricalColumn="cat2"></lineup-impose-column>
+  </lineup-ranking>
+</lineup-lineup>
+```
+
+
+[CodePen](https://codepen.io/sgratzl/pen/BVMdZL)
+
+Result is same as the builder advanced example
+
+
+<a id="vue"></a>
+
+Vue.js Support (vue-lineup)
+--------------------------
+
+A [Vue.js](https://vuejs.org) wrapper is located at [vue-lineup](https://github.com/datavisyn/vue-lineup). 
+
+
+**Installation**
+
+```bash
+npm install --save vue-lineup@next
+```
+
+**Minimal Usage Example**
+
+```ts
+const cats = ['c1', 'c2', 'c3'];
+const data = [];
+for (let i = 0; i < 100; ++i) {
+  data.push({
+    a: Math.random() * 10,
+    d: 'Row ' + i,
+    cat: cats[Math.floor(Math.random() * 3)],
+    cat2: cats[Math.floor(Math.random() * 3)],
+  });
+}
+
+// enable plugin to register components
+Vue.use(VueLineUp);
+
+const app = new Vue({
+  el: '#app',
+  template: `<LineUp v-bind:data="data" />`,
+  data: {
+    cats,
+    data
+  }
+});
+```
+
+[CodePen](https://codepen.io/sgratzl/pen/pKGmvK)
+
+Result is same as the builder minimal example
+
+
+**Advanced Usage Example**
+
+```ts
+const app = new Vue({
+  el: '#app',
+  template: `<LineUp v-bind:data="data" defaultRanking="true" style="height: 800px">
+    <LineUpStringColumnDesc column="d" label="Label" v-bind:width="100" />
+    <LineUpCategoricalColumnDesc column="cat" v-bind:categories="cats" color="green" />
+    <LineUpCategoricalColumnDesc column="cat2" v-bind:categories="cats" color="blue" />
+    <LineUpNumberColumnDesc column="a" v-bind:domain="[0, 10]" color="blue" />
+    <LineUpRanking groupBy="cat" sortBy="a:desc">
+      <LineUpSupportColumn type="*" />
+      <LineUpColumn column="*" />
+    </LineUpRanking>
+  </LineUp>`,
+  data: {
+    cats,
+    data
+  }
+});
+```
+
+[CodePen](https://codepen.io/sgratzl/pen/vrboWB)
 
 Result is same as the builder advanced example
 

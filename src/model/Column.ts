@@ -587,7 +587,7 @@ export default class Column extends AEventDispatcher {
   }
 
   protected setDefaultRenderer(renderer: string) {
-    if (this.renderer !== this.desc.type) {
+    if (this.renderer !== this.desc.type || this.desc.renderer) {
       return;
     }
     return this.setRenderer(renderer);
@@ -602,7 +602,7 @@ export default class Column extends AEventDispatcher {
   }
 
   protected setDefaultGroupRenderer(renderer: string) {
-    if (this.groupRenderer !== this.desc.type) {
+    if (this.groupRenderer !== this.desc.type || this.desc.groupRenderer) {
       return;
     }
     return this.setGroupRenderer(renderer);
@@ -617,14 +617,14 @@ export default class Column extends AEventDispatcher {
   }
 
   protected setDefaultSummaryRenderer(renderer: string) {
-    if (this.summaryRenderer !== this.desc.type) {
+    if (this.summaryRenderer !== this.desc.type || this.desc.summaryRenderer) {
       return;
     }
     return this.setSummaryRenderer(renderer);
   }
 
   protected setDefaultWidth(width: number) {
-    if (this.width !== 100) {
+    if (this.width !== 100 || this.desc.width) {
       return;
     }
     return this.setWidthImpl(width);
