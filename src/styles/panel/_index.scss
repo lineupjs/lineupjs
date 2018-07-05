@@ -15,7 +15,7 @@
   > header {
     flex: 0 0 auto;
     text-align: center;
-    padding: 1em 0.5em;
+    padding: 1em 1.5em 1em 0.5em;
     border-bottom: 2px solid $lu_side_panel_bg_color;
 
     form {
@@ -43,7 +43,7 @@
     right: 0;
     top: 0;
     z-index: 20;
-    padding: 1.5em 0.2em;
+    padding: 0.7em 0.2em;
     cursor: pointer;
     border-radius: 0.4em 0 0 0.4em;
     background: $lu_toolbar_color_base;
