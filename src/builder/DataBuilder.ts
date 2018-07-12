@@ -86,6 +86,7 @@ export default class DataBuilder extends LineUpBuilder {
    */
   registerColumnType(type: string, clazz: typeof Column) {
     this.providerOptions.columnTypes![type] = clazz;
+    return this;
   }
 
   /**
