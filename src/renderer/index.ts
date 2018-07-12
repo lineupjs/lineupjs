@@ -34,6 +34,8 @@ import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 export {
   default as IRenderContext,
   IImposer,
+  ERenderMode,
+  ISummaryRenderer,
   IGroupCellRenderer,
   ICellRenderer,
   ICellRendererFactory
