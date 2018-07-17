@@ -1,4 +1,4 @@
-import {getAllToolbarActions, isSupportType, getAllToolbarDialogAddons} from '../model/annotations';
+import {getAllToolbarActions, isSupportType, getAllToolbarDialogAddons, isSortingAscByDefault} from '../model/annotations';
 import Column from '../model/Column';
 import CompositeColumn, {IMultiLevelColumn} from '../model/CompositeColumn';
 import ADialog, {IDialogContext} from '../ui/dialogs/ADialog';
@@ -30,8 +30,16 @@ export interface IUIOptions {
   order: number;
 }
 
+export interface IMouseEvent {
+  stopPropagation(): void;
+  currentTarget: Element;
+  shiftKey: boolean;
+  altKey: boolean;
+  [key: string]: any;
+}
+
 export interface IOnClickHandler {
-  (col: Column, evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }, ctx: IRankingHeaderContext, level: number, viaShortcut: boolean): any;
+  (col: Column, evt: IMouseEvent, ctx: IRankingHeaderContext, level: number, viaShortcut: boolean): any;
 }
 
 export interface IToolbarAction {
@@ -90,9 +98,29 @@ function uiSortMethod(methods: string[]): IToolbarDialogAddon {
 
 const sort: IToolbarAction = {
   title: 'Sort',
-  onClick: (col, _evt, ctx, level) => {
+  onClick: (col, evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level);
-    col.toggleMySorting();
+    if (!evt.shiftKey) {
+      col.toggleMySorting();
+      return;
+    }
+    const ranking = col.findMyRanker()!;
+    const current = ranking.getSortCriteria();
+    const order = col.isSortedByMe()
+
+    const isAscByDefault = isSortingAscByDefault(col);
+
+    if (order.priority === undefined) {
+      ranking.sortBy(col, isAscByDefault, current.length);
+      return;
+    }
+    let next: string|undefined = undefined;
+    if (isAscByDefault) {
+      next = order.asc ? 'desc' : undefined;
+    } else {
+      next = !order.asc ? 'asc' : undefined;
+    }
+    ranking.sortBy(col, next === 'asc', next ? order.priority : -1);
   },
   options: {
     shortcut: 'only',
@@ -185,9 +213,18 @@ const remove: IToolbarAction = {
   }
 };
 
-const group = ui('Group', (col, _evt, ctx, level) => {
+const group = ui('Group', (col, evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
-  col.groupByMe();
+
+  if (!evt.shiftKey) {
+    col.groupByMe();
+    return;
+  }
+  const ranking = col.findMyRanker()!;
+  const current = ranking.getGroupCriteria();
+  const order = current.indexOf(col);
+
+  ranking.groupBy(col, order >= 0 ? -1 : current.length);
 }, { shortcut: 'only', order: 2 });
 
 const groupBy = ui('Group By &hellip;', (col, evt, ctx, level) => {
