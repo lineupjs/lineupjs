@@ -106,7 +106,7 @@ const sort: IToolbarAction = {
     }
     const ranking = col.findMyRanker()!;
     const current = ranking.getSortCriteria();
-    const order = col.isSortedByMe()
+    const order = col.isSortedByMe();
 
     const isAscByDefault = isSortingAscByDefault(col);
 
