@@ -18,10 +18,12 @@ import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelEntry from './SidePanelEntry';
+import Hierarchy from './Hierarchy';
 
 export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
   additionalDescs: IColumnDesc[];
   chooser: boolean;
+  hierarchy: boolean;
   collapseable: boolean | 'collapsed';
 }
 
@@ -40,6 +42,7 @@ export default class SidePanel {
       createAggregateDesc(),
     ],
     chooser: true,
+    hierarchy: true,
     placeholder: 'Add Column...',
     formatItem: (item: SidePanelEntry | IGroupSearchItem<SidePanelEntry>, node: HTMLElement) => {
       node.dataset.typeCat = item instanceof SidePanelEntry ? item.category.name : (<SidePanelEntry>item.children[0]).category.name;
@@ -52,6 +55,7 @@ export default class SidePanel {
   };
 
   readonly node: HTMLElement;
+  private readonly hierarchy: Hierarchy | null;
   private readonly search: SearchBox<SidePanelEntry>;
   private readonly descs = new Map<IColumnDesc, SidePanelEntry>();
   private data: IDataProvider;
@@ -63,6 +67,7 @@ export default class SidePanel {
     this.node.classList.add('lu-side-panel');
 
     this.search = new SearchBox<SidePanelEntry>(this.options);
+    this.hierarchy = this.options.hierarchy ? new Hierarchy(document) : null;
 
     this.data = ctx.provider;
     this.init();
@@ -79,6 +84,9 @@ export default class SidePanel {
       const last = <HTMLElement>this.node.lastElementChild;
       last.onclick = () => this.collapsed = !this.collapsed;
       this.collapsed = this.options.collapseable === 'collapsed';
+    }
+    if (this.hierarchy) {
+      this.node.insertAdjacentElement('afterbegin', this.hierarchy.node);
     }
     this.initChooser();
     this.changeDataStorage(null, this.data);
@@ -130,9 +138,13 @@ export default class SidePanel {
       }
 
       ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED), () => {
-        if (ranking === data.getRankings()[0]) {
-          // primary ranking only
-          this.updateList();
+        if (ranking !== data.getRankings()[0]) {
+          return;
+        }
+        // primary ranking only
+        this.updateList();
+        if (this.hierarchy) {
+          this.hierarchy.update(ranking);
         }
       });
       ranking.on(suffix('.panel', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN), function (this: { type: string }, col) {
@@ -176,6 +188,7 @@ export default class SidePanel {
     });
 
     this.updateStats();
+    this.updateHierarchy();
   }
 
   get collapsed() {
@@ -190,6 +203,7 @@ export default class SidePanel {
     this.updateChooser();
     this.updateList();
     this.updateStats();
+    this.updateHierarchy();
   }
 
   update(ctx: IRankingHeaderContext) {
@@ -201,6 +215,7 @@ export default class SidePanel {
     this.updateChooser();
     this.updateList();
     this.updateStats();
+    this.updateHierarchy();
   }
 
   private updateStats() {
@@ -212,6 +227,14 @@ export default class SidePanel {
     const r = this.data.getRankings()[0];
     const visible = r ? r.getGroups().reduce((a, b) => a + b.order.length, 0) : 0;
     stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; ${s.length} <span>selected</span>` : ''}`;
+  }
+
+  private updateHierarchy() {
+    if (this.collapsed || !this.hierarchy) {
+      return;
+    }
+    const r = this.data.getRankings()[0];
+    this.hierarchy.update(r ? r : null);
   }
 
   destroy() {

@@ -1,0 +1,26 @@
+@import '../vars';
+
+.#{$lu_css_prefix}-hierarchy {
+  position: relative;
+
+  > section:empty {
+    display: none;
+    counter-reset: hierarchy-counter;
+
+    > div {
+      counter-increment: hierarchy-counter;
+    }
+
+    > div::before {
+      content: counter(hierarchy-counter);
+    }
+  }
+
+  > section:empty + hr {
+    display: none;
+  }
+
+  &:empty::before {
+    content: 'No sort or grouping criteria selected';
+  }
+}
