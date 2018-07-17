@@ -35,6 +35,7 @@ export interface IMouseEvent {
   currentTarget: Element;
   shiftKey: boolean;
   altKey: boolean;
+  ctrlKey: boolean;
   [key: string]: any;
 }
 
@@ -100,7 +101,7 @@ const sort: IToolbarAction = {
   title: 'Sort',
   onClick: (col, evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level);
-    if (!evt.shiftKey) {
+    if (!evt.ctrlKey) {
       col.toggleMySorting();
       return;
     }
@@ -216,7 +217,7 @@ const remove: IToolbarAction = {
 const group = ui('Group', (col, evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
 
-  if (!evt.shiftKey) {
+  if (!evt.ctrlKey) {
     col.groupByMe();
     return;
   }
