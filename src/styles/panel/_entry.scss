@@ -1,7 +1,6 @@
 @import '../vars';
 
 article.#{$lu_css_prefix}-side-panel-entry {
-  counter-increment: side-panel-counter;
   background-color: #fff;
   margin-bottom: 0.8em;
 
@@ -13,12 +12,6 @@ article.#{$lu_css_prefix}-side-panel-entry {
     position: relative;
     font-size: $lu_side_panel_font_size;
     font-weight: 500;
-
-    &::before {
-      color: $lu_toolbar_color_base2;
-      padding-right: 0.2em;
-      content: counter(side-panel-counter);
-    }
   }
 
   .#{$lu_css_prefix}-label {

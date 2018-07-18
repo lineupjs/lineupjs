@@ -79,10 +79,6 @@
     flex: 1 1 auto;
     position: relative;
     overflow: auto;
-
-    > main {
-      counter-reset: side-panel-counter;
-    }
   }
 }
 
