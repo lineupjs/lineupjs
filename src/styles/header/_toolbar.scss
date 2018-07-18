@@ -164,7 +164,7 @@
   }
 }
 
-.#{$lu_css_prefix}-header {
+.#{$lu_css_prefix} [data-col-id] {
   /* Override alphabetical sort icons */
   &[data-type='string'],
   &[data-type='categorical'],
