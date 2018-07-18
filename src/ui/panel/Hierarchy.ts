@@ -172,7 +172,7 @@ export default class Hierarchy {
       return;
     }
 
-    const wrapper = node.ownerDocument.createElement('div');
+    const wrapper = node.ownerDocument.createElement('footer');
     wrapper.appendChild(this.sortAdder.node);
     node.appendChild(wrapper);
   }
@@ -190,7 +190,7 @@ export default class Hierarchy {
       return;
     }
 
-    const wrapper = node.ownerDocument.createElement('div');
+    const wrapper = node.ownerDocument.createElement('footer');
     wrapper.appendChild(this.groupAdder.node);
     node.appendChild(wrapper);
   }
