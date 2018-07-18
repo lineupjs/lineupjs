@@ -51,6 +51,25 @@ export default class Hierarchy {
       <i title="Remove" class="lu-action"><span aria-hidden="true">Remove</span> </i>
       </div>`);
       const last = <HTMLElement>node.lastElementChild!;
+
+      function common(evt: Event) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        return col.isGroupedBy();
+      }
+
+      (<HTMLElement>last.querySelector('i[title=Down]')!).onclick = (evt) => {
+        const current = common(evt);
+        col.findMyRanker()!.groupBy(col, current + 1);
+      };
+      (<HTMLElement>last.querySelector('i[title=Up]')!).onclick = (evt) => {
+        const current = common(evt);
+        col.findMyRanker()!.groupBy(col, current - 1);
+      };
+      (<HTMLElement>last.querySelector('i[title=Remove]')!).onclick = (evt) => {
+        common(evt);
+        col.groupByMe(); // toggle
+      };
       dragAbleColumn(last, col, this.ctx);
       updateHeader(last, col);
     });
@@ -73,30 +92,33 @@ export default class Hierarchy {
         <i title="Down" class="lu-action"><span aria-hidden="true">Down</span> </i>
         <i title="Remove" class="lu-action"><span aria-hidden="true">Remove</span> </i>
         </div>`);
+
+      function common(evt: Event) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        return col.isSortedByMe();
+      }
+
       const last = <HTMLElement>node.lastElementChild!;
       (<HTMLElement>last.querySelector('i[title=Sort]')!).onclick = (evt) => {
-        evt.preventDefault();
-        evt.stopPropagation();
-
-        const current = col.isSortedByMe();
-        col.sortByMe(!current.asc, current.priority);
+        const current = common(evt);
+        col.sortByMe(current.asc === 'desc', current.priority);
       };
       (<HTMLElement>last.querySelector('i[title=Down]')!).onclick = (evt) => {
-        evt.preventDefault();
-        evt.stopPropagation();
-
-        const current = col.isSortedByMe();
+        const current = common(evt);
         col.sortByMe(current.asc === 'asc', current.priority! + 1);
       };
       (<HTMLElement>last.querySelector('i[title=Up]')!).onclick = (evt) => {
-        evt.preventDefault();
-        evt.stopPropagation();
-
-        const current = col.isSortedByMe();
+        const current = common(evt);
         col.sortByMe(current.asc === 'asc', current.priority! - 1);
+      };
+      (<HTMLElement>last.querySelector('i[title=Remove]')!).onclick = (evt) => {
+        const current = common(evt);
+        col.sortByMe(current.asc === 'asc', -1);
       };
       dragAbleColumn(last, col, this.ctx);
       updateHeader(last, col);
     });
   }
 }
+
