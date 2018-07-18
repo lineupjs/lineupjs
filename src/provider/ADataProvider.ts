@@ -72,6 +72,7 @@ export interface IDataProvider extends AEventDispatcher {
 
   getRankings(): Ranking[];
 
+  getFirstRanking(): Ranking | null;
   getLastRanking(): Ranking;
 
   getColumns(): IColumnDesc[];
@@ -321,6 +322,14 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   getRankings() {
     return this.rankings.slice();
+  }
+
+  /**
+   * returns the last ranking for quicker access
+   * @returns {Ranking}
+   */
+  getFirstRanking() {
+    return this.rankings[0] || null;
   }
 
   /**
