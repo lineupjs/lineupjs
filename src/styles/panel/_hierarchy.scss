@@ -3,16 +3,71 @@
 .#{$lu_css_prefix}-hierarchy {
   position: relative;
 
-  > section:empty {
-    display: none;
+  > section {
     counter-reset: hierarchy-counter;
 
-    > div {
-      counter-increment: hierarchy-counter;
+    &:empty {
+      display: none;
     }
 
-    > div::before {
-      content: counter(hierarchy-counter);
+    > div {
+      padding: 0.2em 0.5em;
+      margin: 0.1em 0;
+      display: flex;
+      align-content: space-between;
+      color: $lu_toolbar_color_base2;
+      background: $lu_side_panel_bg_color;
+      font-weight: 500;
+      counter-increment: hierarchy-counter;
+
+      > div {
+        color: inherit;
+        flex: 1 1 0;
+      }
+
+      &::before {
+        color: $lu_toolbar_color_base2;
+        padding-right: 0.2em;
+        content: counter(hierarchy-counter);
+      }
+
+      i {
+        opacity: 0;
+        transition: opacity 0.1s linear;
+      }
+
+      &:hover {
+        i {
+          opacity: 1;
+        }
+      }
+
+      i:first-of-type {
+        padding-left: 4px !important;
+        opacity: 1;
+
+        &::after {
+          display: none;
+        }
+      }
+
+      &:first-of-type i[title=Up],
+      &:last-of-type i[title=Down] {
+        visibility: hidden;
+      }
+    }
+  }
+
+  // groups
+  > section:first-of-type {
+    i[title=Group] {
+      pointer-events: none;
+    }
+
+    > div:last-of-type {
+      padding-bottom: 0.25em;
+      border-bottom: 1px solid #dedede;
+      margin-bottom: 0.5em;
     }
   }
 
@@ -22,5 +77,9 @@
 
   &:empty::before {
     content: 'No sort or grouping criteria selected';
+  }
+
+  > section:last-of-type {
+    margin-bottom: 0.5em;
   }
 }

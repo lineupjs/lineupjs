@@ -153,6 +153,14 @@
   &[title^='Contained Columns']::before {
     content: $lu_icon_sitemap;
   }
+
+  &[title='Up']::before {
+    content: $lu_icon_up_open;
+  }
+
+  &[title='Down']::before {
+    content: $lu_icon_down_open;
+  }
 }
 
 .#{$lu_css_prefix}-header {

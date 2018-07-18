@@ -67,7 +67,7 @@ export default class SidePanel {
     this.node.classList.add('lu-side-panel');
 
     this.search = new SearchBox<SidePanelEntry>(this.options);
-    this.hierarchy = this.options.hierarchy ? new Hierarchy(document) : null;
+    this.hierarchy = this.options.hierarchy ? new Hierarchy(ctx, document) : null;
 
     this.data = ctx.provider;
     this.init();
