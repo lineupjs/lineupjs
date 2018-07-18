@@ -79,7 +79,8 @@
   }
 
   &[title^='Reduce by']::before,
-  &[title^='Edit Combine Script']::before {
+  &[title^='Edit Combine Script']::before,
+  &[title^='Customize']::before {
     content: $lu_icon_gears;
   }
 

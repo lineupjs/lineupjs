@@ -366,10 +366,10 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
 
 export function isSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getToolbar(col, ctx);
-  return toolbar.includes(sort);
+  return toolbar.includes(sortBy);
 }
 
 export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getToolbar(col, ctx);
-  return toolbar.includes(group);
+  return toolbar.includes(groupBy);
 }

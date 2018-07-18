@@ -5,7 +5,8 @@ import {updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {ISearchBoxOptions} from './SearchBox';
 import {isSupportType, categoryOf, isSortingAscByDefault} from '../../model/annotations';
-import {isSortAble, isGroupAble} from '../toolbar';
+import {isSortAble, isGroupAble, getToolbarDialogAddons, IToolbarDialogAddon, dialogContext} from '../toolbar';
+import AddonDialog from '../dialogs/AddonDialog';
 
 interface IColumnItem {
   col: Column;
@@ -55,6 +56,60 @@ export default class Hierarchy {
     this.renderSorting(ranking, <HTMLElement>this.node.lastElementChild!);
   }
 
+  private render<T>(node: HTMLElement, items: T[], toColumn: (item: T)=>Column, extras: (item: T, node: HTMLElement)=>void, addonKey: string, onChange: (item: T, delta: number)=>void) {
+    const cache = new Map((<HTMLElement[]>Array.from(node.children)).map((d) => <[string, HTMLElement]>[d.dataset.id, d]));
+    node.innerHTML = '';
+
+    items.forEach((d) => {
+      const col = toColumn(d);
+      const item = cache.get(col.id);
+      if (item) {
+        node.appendChild(item);
+        updateHeader(item, col);
+        return;
+      }
+      const addons = getToolbarDialogAddons(col, addonKey, this.ctx);
+
+      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="lu-toolbar">
+      <div class="lu-label">${col.label}</div>
+      ${addons.length > 0 ? `<i title="Customize" class="lu-action"><span aria-hidden="true">Customize</span> </i>` : ''}
+      <i title="Move Up" class="lu-action"><span aria-hidden="true">Move Up</span> </i>
+      <i title="Move Down" class="lu-action"><span aria-hidden="true">Move Down</span> </i>
+      <i title="Remove from hierarchy" class="lu-action"><span aria-hidden="true">Remove from hierarchy</span> </i>
+      </div>`);
+      const last = <HTMLElement>node.lastElementChild!;
+
+      function prevent(evt: Event) {
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+
+      (<HTMLElement>last.querySelector('i[title="Move Down"]')!).onclick = (evt) => {
+        prevent(evt);
+        onChange(d, + 1);
+      };
+      (<HTMLElement>last.querySelector('i[title="Move Up"]')!).onclick = (evt) => {
+        prevent(evt);
+        onChange(d, -1);
+      };
+      (<HTMLElement>last.querySelector('i[title^=Remove]')!).onclick = (evt) => {
+        prevent(evt);
+        onChange(d, 0);
+      };
+
+      if (addons.length > 0) {
+        (<HTMLElement>last.querySelector('i[title=Customize]')!).onclick = (evt) => {
+          prevent(evt);
+          this.customize(col, addons, <any>evt);
+        };
+      }
+
+      extras(d, last);
+
+      updateHeader(last, col);
+    });
+  }
+
   private renderGroups(ranking: Ranking, node: HTMLElement) {
     const groups = ranking.getGroupCriteria();
 
@@ -62,46 +117,21 @@ export default class Hierarchy {
       node.innerHTML = '';
       return;
     }
-    const cache = new Map((<HTMLElement[]>Array.from(node.children)).map((d) => <[string, HTMLElement]>[d.dataset.id, d]));
-    node.innerHTML = '';
 
-    groups.forEach((col) => {
-      const item = cache.get(col.id);
-      if (item) {
-        node.appendChild(item);
-        updateHeader(item, col);
+    const click = (col: Column, delta: number) => {
+      if (delta === 0) {
+        col.groupByMe();
         return;
       }
-      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="lu-toolbar">
-      <i title="Group" class="lu-action" data-group="true"><span aria-hidden="true">Group</span> </i>
-      <div class="lu-label">${col.label}</div>
-      <i title="Move Up" class="lu-action"><span aria-hidden="true">Move Up</span> </i>
-      <i title="Move Down" class="lu-action"><span aria-hidden="true">Move Down</span> </i>
-      <i title="Remove from hierarchy" class="lu-action"><span aria-hidden="true">Remove from hierarchy</span> </i>
-      </div>`);
-      const last = <HTMLElement>node.lastElementChild!;
+      const current = col.isGroupedBy();
+      col.findMyRanker()!.groupBy(col, current + delta);
+    };
 
-      function common(evt: Event) {
-        evt.preventDefault();
-        evt.stopPropagation();
-        return col.isGroupedBy();
-      }
+    const addButton = (_: Column, last: HTMLElement) => {
+      last.insertAdjacentHTML('afterbegin', `<i title="Group" class="lu-action" data-group="true"><span aria-hidden="true">Group</span> </i>`);
+    };
 
-      (<HTMLElement>last.querySelector('i[title="Move Down"]')!).onclick = (evt) => {
-        const current = common(evt);
-        col.findMyRanker()!.groupBy(col, current + 1);
-      };
-      (<HTMLElement>last.querySelector('i[title="Move Up"]')!).onclick = (evt) => {
-        const current = common(evt);
-        col.findMyRanker()!.groupBy(col, current - 1);
-      };
-      (<HTMLElement>last.querySelector('i[title^=Remove]')!).onclick = (evt) => {
-        common(evt);
-        col.groupByMe(); // toggle
-      };
-      updateHeader(last, col);
-    });
-
+    this.render(node, groups, (d) => d, addButton, 'group', click);
     this.addGroupAdder(ranking, groups, node);
   }
 
@@ -112,87 +142,73 @@ export default class Hierarchy {
       node.innerHTML = '';
       return;
     }
-    const cache = new Map((<HTMLElement[]>Array.from(node.children)).map((d) => <[string, HTMLElement]>[d.dataset.id, d]));
-    node.innerHTML = '';
-    sortCriterias.forEach(({col, asc}) => {
-      const item = cache.get(col.id);
-      if (item) {
-        node.appendChild(item);
-        updateHeader(item, col);
+
+    const click = ({col}: ISortCriteria, delta: number) => {
+      const current = col.isSortedByMe();
+      if (!isFinite(delta)) {
+        col.sortByMe(current.asc === 'desc', current.priority);
         return;
       }
-      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="lu-toolbar">
-        <i title="Sort" class="lu-action" data-sort="${asc ? 'asc' : 'desc'}"><span aria-hidden="true">Toggle Sorting</span> </i>
-        <div class="lu-label">${col.label}</div>
-        <i title="Move Up" class="lu-action"><span aria-hidden="true">Move Up</span> </i>
-        <i title="Move Down" class="lu-action"><span aria-hidden="true">Move Down</span> </i>
-        <i title="Remove from hierarchy" class="lu-action"><span aria-hidden="true">Remove from hierarchy</span> </i>
-        </div>`);
+      if (delta === 0) {
+        col.sortByMe(current.asc === 'asc', -1);
+        return;
+      }
+      col.sortByMe(current.asc === 'asc', current.priority! + delta);
+    };
 
-      function common(evt: Event) {
+    const addButton = (s: ISortCriteria, last: HTMLElement) => {
+      last.insertAdjacentHTML('afterbegin', `
+      <i title="Sort" class="lu-action" data-sort="${s.asc ? 'asc' : 'desc'}"><span aria-hidden="true">Toggle Sorting</span> </i>`);
+      (<HTMLElement>last.querySelector('i[title=Sort]')!).onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
-        return col.isSortedByMe();
-      }
+        click(s, Infinity);
+      };
+    };
 
-      const last = <HTMLElement>node.lastElementChild!;
-      (<HTMLElement>last.querySelector('i[title=Sort]')!).onclick = (evt) => {
-        const current = common(evt);
-        col.sortByMe(current.asc === 'desc', current.priority);
-      };
-      (<HTMLElement>last.querySelector('i[title="Move Down"]')!).onclick = (evt) => {
-        const current = common(evt);
-        col.sortByMe(current.asc === 'asc', current.priority! + 1);
-      };
-      (<HTMLElement>last.querySelector('i[title="Move Up"]')!).onclick = (evt) => {
-        const current = common(evt);
-        col.sortByMe(current.asc === 'asc', current.priority! - 1);
-      };
-      (<HTMLElement>last.querySelector('i[title^=Remove]')!).onclick = (evt) => {
-        const current = common(evt);
-        col.sortByMe(current.asc === 'asc', -1);
-      };
-      updateHeader(last, col);
-    });
-
+    this.render(node, sortCriterias, (d) => d.col, addButton, 'sort', click);
 
     this.addSortAdder(ranking, sortCriterias, node);
   }
 
-  private addSortAdder(ranking: Ranking, sortCriterias: ISortCriteria[], node: HTMLElement) {
-    const used = new Set(sortCriterias.map((d) => d.col));
+  private addAdder(adder: SearchBox<IColumnItem>, ranking: Ranking, addonKey: string, current: Column[], node: HTMLElement, check: (col: Column)=>boolean, onSelect: (col: Column)=>void) {
+    const used = new Set(current);
 
-    this.sortAdder.data = ranking.children.filter((col) => !isSupportType(col) && !used.has(col) && isSortAble(col, this.ctx)).map((col) => ({col, id: col.id, text: col.label}));
+    adder.data = ranking.children.filter((col) => !isSupportType(col) && !used.has(col) && check(col)).map((col) => ({col, id: col.id, text: col.label}));
 
-    this.sortAdder.on(SearchBox.EVENT_SELECT, (item: IColumnItem) => {
-      ranking.sortBy(item.col, isSortingAscByDefault(item.col), sortCriterias.length);
+    adder.on(SearchBox.EVENT_SELECT, (item: IColumnItem) => {
+      const addons = getToolbarDialogAddons(item.col, addonKey, this.ctx);
+      if (addons.length > 0) {
+        this.customize(item.col, addons, { currentTarget: adder. node}, () => onSelect(item.col));
+      } else {
+        onSelect(item.col);
+      }
     });
 
-    if (this.sortAdder.data.length <= 0) {
+    if (adder.data.length <= 0) {
       return;
     }
 
     const wrapper = node.ownerDocument.createElement('footer');
-    wrapper.appendChild(this.sortAdder.node);
+    wrapper.appendChild(adder.node);
     node.appendChild(wrapper);
   }
 
-  private addGroupAdder(ranking: Ranking, groups: Column[], node: HTMLElement) {
-    const used = new Set(groups);
-
-    this.groupAdder.data = ranking.children.filter((col) => !isSupportType(col) && !used.has(col) && isGroupAble(col, this.ctx)).map((col) => ({col, id: col.id, text: col.label}));
-
-    this.groupAdder.on(SearchBox.EVENT_SELECT, (item: IColumnItem) => {
-      ranking.groupBy(item.col, groups.length);
+  private addSortAdder(ranking: Ranking, sortCriterias: ISortCriteria[], node: HTMLElement) {
+    this.addAdder(this.sortAdder, ranking, 'sort', sortCriterias.map((d) => d.col), node, (d) => isSortAble(d, this.ctx), (col) => {
+      ranking.sortBy(col, isSortingAscByDefault(col), sortCriterias.length);
     });
+  }
 
-    if (this.groupAdder.data.length <= 0) {
-      return;
-    }
+  private addGroupAdder(ranking: Ranking, groups: Column[], node: HTMLElement) {
+    this.addAdder(this.groupAdder, ranking, 'group', groups, node, (d) => isGroupAble(d, this.ctx), (col) => {
+      ranking.groupBy(col, groups.length);
+    });
+  }
 
-    const wrapper = node.ownerDocument.createElement('footer');
-    wrapper.appendChild(this.groupAdder.node);
-    node.appendChild(wrapper);
+  private customize(col: Column, addons: IToolbarDialogAddon[], evt: { currentTarget: Element }, onClick?: ()=>void) {
+    const dialog = new AddonDialog(col, addons, dialogContext(this.ctx, 0, evt), this.ctx, onClick);
+    dialog.open();
   }
 }
 

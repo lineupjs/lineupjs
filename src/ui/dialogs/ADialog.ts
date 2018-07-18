@@ -5,6 +5,7 @@ import merge from '../../internal/merge';
 export interface IDialogOptions {
   title: string;
   fullDialog: boolean;
+  resetPossible: boolean;
 
   // popper options
   placement?: Popper.Placement;
@@ -25,6 +26,7 @@ abstract class ADialog {
   private readonly options: Readonly<IDialogOptions> = {
     title: '',
     fullDialog: false,
+    resetPossible: true,
     placement: 'bottom-start',
     toggleDialog: true,
     modifiers: {
@@ -70,7 +72,7 @@ abstract class ADialog {
       this.node.insertAdjacentHTML('beforeend', `<div>
         <button type="submit" title="Apply"></button>
         <button type="button" title="Cancel"></button>
-        <button type="reset" title="Reset to default values"></button>
+        <button type="reset" title="Reset to default values" ${!this.options.resetPossible ? 'style="visibility: hidden"': ''}></button>
       </div>`);
     }
 
