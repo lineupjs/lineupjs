@@ -6,6 +6,13 @@
   > section {
     counter-reset: hierarchy-counter;
 
+    &::before {
+      content: '';
+      font-size: small;
+      color: $lu_toolbar_color_base2;
+      padding: 0.2em 0.5em;
+    }
+
     &:empty {
       display: none;
     }
@@ -60,6 +67,10 @@
 
   // groups
   > section:first-of-type {
+    &::before {
+      content: 'Grouping hierarchy';
+    }
+
     i[title=Group] {
       pointer-events: none;
     }
@@ -79,5 +90,9 @@
 
   > section:last-of-type {
     margin-bottom: 0.5em;
+
+    &::before {
+      content: 'Sorting hierarchy';
+    }
   }
 }
