@@ -1,5 +1,4 @@
-import AEventDispatcher from '../../internal/AEventDispatcher';
-import {IEventListener} from '../../internal/AEventDispatcher';
+import AEventDispatcher, {IEventListener} from '../../internal/AEventDispatcher';
 
 export interface IItem {
   id: string;
@@ -36,7 +35,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private readonly options: Readonly<ISearchBoxOptions<T>> = {
     formatItem: (item) => item.text,
     doc: document,
-    placeholder: 'Select...'
+    placeholder: 'Select...',
   };
 
   readonly node: HTMLElement;

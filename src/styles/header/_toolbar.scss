@@ -142,7 +142,7 @@
     content: $lu_icon_compress;
   }
 
-  &[title='Remove']::before {
+  &[title^='Remove']::before {
     content: $lu_icon_trash;
   }
 
@@ -154,11 +154,11 @@
     content: $lu_icon_sitemap;
   }
 
-  &[title='Up']::before {
+  &[title='Move Up']::before {
     content: $lu_icon_up_open;
   }
 
-  &[title='Down']::before {
+  &[title='Move Down']::before {
     content: $lu_icon_down_open;
   }
 }

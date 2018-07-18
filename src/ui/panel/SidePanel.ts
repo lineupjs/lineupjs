@@ -156,6 +156,7 @@ export default class SidePanel {
         }
         entry.used += added ? +1 : -1;
         that.updateList();
+        that.updateHierarchy();
       });
     };
     // init data

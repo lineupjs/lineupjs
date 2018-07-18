@@ -95,4 +95,13 @@
       content: 'Sorting hierarchy';
     }
   }
+
+  .#{$lu_css_prefix}-search input {
+    font-size: x-small;
+  }
+
+  ul {
+    color: black;
+    background: white;
+  }
 }
