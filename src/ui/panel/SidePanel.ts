@@ -165,6 +165,7 @@ export default class SidePanel {
 
     data.on(suffix('.panel', DataProvider.EVENT_REMOVE_RANKING), (_: Ranking, index: number) => {
       const r = this.rankings.splice(index, 1)[0];
+      this.node.querySelector('header')!.dataset.count = String(this.rankings.length);
       r.destroy();
       if (r.active) {
         this.makeActive(this.rankings.length === 0 ? -1 : Math.max(index - 1, 0));

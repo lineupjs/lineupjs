@@ -69,7 +69,7 @@
     }
 
     > div {
-      padding: 0.2em;
+      padding: 0.2em 0.5em;
       cursor: pointer;
       border: 1px solid $lu_side_panel_bg_color;
       border-top-left-radius: 5px;
@@ -80,8 +80,20 @@
         background: $lu_side_panel_bg_color;
       }
 
-      &.#{$lu_css_prefix}-active {
-        pointer-events: none;
+      > i {
+        color: $lu_toolbar_color_base2;
+        display: none;
+        padding-left: 4px;
+        cursor: pointer;
+        font-size: $lu_toolbar_font_size;
+
+        &:hover {
+          color: $lu_toolbar_color_hover;
+        }
+      }
+
+      &:hover > i {
+        display: inline-block;
       }
     }
   }
@@ -117,7 +129,7 @@
     }
 
     &::before {
-      content: 'Column Summaries';
+      content: 'Column summaries';
       font-size: small;
       color: $lu_toolbar_color_base2;
       padding: 0.2em 0.5em;

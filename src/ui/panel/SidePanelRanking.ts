@@ -19,6 +19,13 @@ export default class SidePanelRanking {
     this.header = document.createElement('div');
     this.header.innerText = ranking.id; // TODO better label
 
+    this.header.innerHTML = `<span>${ranking.id}</span><i class="lu-action" title="Remove"></i>`;
+    (<HTMLElement>this.header.lastElementChild!).onclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.ctx.provider.removeRanking(ranking);
+    };
+
     this.hierarchy = this.options.hierarchy ? new Hierarchy(ctx, document) : null;
 
     this.init();
