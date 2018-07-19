@@ -223,6 +223,12 @@ export default class SidePanel {
     const active = this.active;
     if (active && this.chooser) {
       active.node.insertAdjacentElement('afterbegin', this.chooser);
+      // scroll to body
+      const parent = <HTMLElement>this.node.closest('.lu')!;
+      const body = parent ? parent.querySelector(`article[data-ranking="${active.ranking.id}"]`) : null;
+      if (body) {
+        body.scrollIntoView();
+      }
     }
     this.updateRanking();
   }
