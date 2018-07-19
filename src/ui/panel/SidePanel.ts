@@ -9,7 +9,6 @@ import {
   createGroupDesc,
   createAggregateDesc,
   createSelectionDesc,
-  isSupportType,
   IColumnDesc
 } from '../../model';
 import {categoryOfDesc} from '../../model/annotations';
@@ -17,8 +16,7 @@ import Ranking from '../../model/Ranking';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
-import Hierarchy from './Hierarchy';
-import SidePanelEntryVis from './SidePanelEntryVis';
+import SidePanelRanking from './SidePanelRanking';
 
 
 interface IColumnDescCategory {
@@ -73,11 +71,11 @@ export default class SidePanel {
   };
 
   readonly node: HTMLElement;
-  private readonly hierarchy: Hierarchy | null;
-  private readonly search: SearchBox<IColumnWrapper>;
+  private readonly search: SearchBox<IColumnWrapper> | null;
+  private chooser: HTMLElement | null = null;
   private readonly descs: IColumnWrapper[] = [];
-  private readonly entries = new Map<string, SidePanelEntryVis>();
   private data: IDataProvider;
+  private readonly rankings: SidePanelRanking[] = [];
 
   constructor(private ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
     Object.assign(this.options, options);
@@ -85,8 +83,7 @@ export default class SidePanel {
     this.node = document.createElement('aside');
     this.node.classList.add('lu-side-panel');
 
-    this.search = new SearchBox<IColumnWrapper>(this.options);
-    this.hierarchy = this.options.hierarchy ? new Hierarchy(ctx, document) : null;
+    this.search = this.options.chooser ? new SearchBox<IColumnWrapper>(this.options) : null;
 
     this.data = ctx.provider;
     this.init();
@@ -96,7 +93,8 @@ export default class SidePanel {
   private init() {
     this.node.innerHTML = `
       <aside class="lu-stats"></aside>
-      <div><main></main></div>
+      <header></header>
+      <main></main>
     `;
     if (this.options.collapseable) {
       this.node.insertAdjacentHTML('beforeend', `<div class="lu-collapser" title="Collapse Panel"></div>`);
@@ -104,29 +102,31 @@ export default class SidePanel {
       last.onclick = () => this.collapsed = !this.collapsed;
       this.collapsed = this.options.collapseable === 'collapsed';
     }
-    if (this.hierarchy) {
-      this.node.insertBefore(this.hierarchy.node, this.node.children[1]);
-    }
     this.initChooser();
     this.changeDataStorage(null, this.data);
   }
 
   private initChooser() {
-    if (!this.options.chooser) {
+    if (!this.search) {
       return;
     }
-    this.node.insertAdjacentHTML('afterbegin', `<header>
-        <form></form>
-      </header>`);
-
-    this.node.querySelector('form')!.appendChild(this.search.node);
+    this.chooser = this.node.ownerDocument.createElement('header');
+    this.chooser.innerHTML = '<form></form>';
+    this.chooser.firstElementChild!.appendChild(this.search.node);
     this.search.on(SearchBox.EVENT_SELECT, (panel: IColumnWrapper) => {
       const col = this.data.create(panel.desc);
       if (!col) {
         return;
       }
-      this.data.getFirstRanking()!.push(col);
+      const a = this.active;
+      if (a) {
+        a.ranking.push(col);
+      }
     });
+  }
+
+  private get active() {
+    return this.rankings.find((d) => d.active);
   }
 
   private changeDataStorage(old: IDataProvider | null, data: IDataProvider) {
@@ -154,63 +154,52 @@ export default class SidePanel {
       this.updateChooser();
     });
 
-    const handleRanking = (ranking: Ranking, added: boolean) => {
-      if (!added) {
-        ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_MOVE_COLUMN), null);
-        return;
-      }
-
-      if (this.hierarchy) {
-        ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED), () => {
-          this.hierarchy!.update(ranking);
-        });
-      }
-      ranking.on(suffix('.panel', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_MOVE_COLUMN), () => {
-        this.updateList();
-        this.updateHierarchy();
-      });
-    };
-
     data.on(suffix('.panel', DataProvider.EVENT_SELECTION_CHANGED, DataProvider.EVENT_ORDER_CHANGED), () => {
       this.updateStats();
     });
 
-    let primary = data.getFirstRanking();
+    data.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING), (ranking: Ranking, index: number) => {
+      this.createEntry(ranking, index);
+      this.makeActive(index);
+    });
 
-    if (primary) {
-      handleRanking(primary, true);
+    data.on(suffix('.panel', DataProvider.EVENT_REMOVE_RANKING), (_: Ranking, index: number) => {
+      const r = this.rankings.splice(index, 1)[0];
+      r.destroy();
+      if (r.active) {
+        this.makeActive(this.rankings.length === 0 ? -1 : Math.max(index - 1, 0));
+      }
+    });
+
+    this.rankings.splice(0, this.rankings.length).forEach((d) => d.destroy());
+    data.getRankings().forEach((d, i) => {
+      this.createEntry(d, i);
+    });
+    if (this.rankings.length > 0) {
+      this.makeActive(0);
     }
 
-    data.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING), (ranking: Ranking) => {
-      const p = data.getFirstRanking();
-      if (p !== ranking) {
-        return;
-      }
-      if (primary) {
-        handleRanking(primary, false);
-      }
-      primary = ranking;
-      handleRanking(primary, true);
-      this.updateList();
-      this.updateHierarchy();
-    });
-
-    data.on(suffix('.panel', DataProvider.EVENT_REMOVE_RANKING), (ranking: Ranking) => {
-      if (ranking !== primary) {
-        return;
-      }
-      handleRanking(primary, false);
-      primary = data.getFirstRanking();
-      if (primary) {
-        handleRanking(primary, true);
-      }
-      this.updateList();
-      this.updateHierarchy();
-    });
-
-    this.updateList();
     this.updateStats();
-    this.updateHierarchy();
+  }
+
+  private createEntry(ranking: Ranking, index: number) {
+    const entry = new SidePanelRanking(ranking, this.ctx, this.node.ownerDocument, this.options);
+
+    const header = this.node.querySelector('header')!;
+    const main = this.node.querySelector('main')!;
+
+    header.insertBefore(entry.header, header.children[index]);
+    header.dataset.count = String(this.rankings.length + 1);
+
+    entry.header.onclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.makeActive(this.rankings.indexOf(entry));
+    };
+
+    main.insertBefore(entry.node, main.children[index]);
+
+    this.rankings.splice(index, 0, entry);
   }
 
   get collapsed() {
@@ -223,9 +212,25 @@ export default class SidePanel {
       return;
     }
     this.updateChooser();
-    this.updateList();
     this.updateStats();
-    this.updateHierarchy();
+    this.updateRanking();
+  }
+
+  private makeActive(index: number) {
+    this.rankings.forEach((d, i) => d.active = index === i);
+
+    const active = this.active;
+    if (active && this.chooser) {
+      active.node.insertAdjacentElement('afterbegin', this.chooser);
+    }
+    this.updateRanking();
+  }
+
+  private updateRanking() {
+    const active = this.active;
+    if (active && !this.collapsed) {
+      active.update(this.ctx);
+    }
   }
 
   update(ctx: IRankingHeaderContext) {
@@ -235,9 +240,12 @@ export default class SidePanel {
       this.changeDataStorage(bak, ctx.provider);
     }
     this.updateChooser();
-    this.updateList();
     this.updateStats();
-    this.updateHierarchy();
+
+    const active = this.active;
+    if (active) {
+      active.update(ctx);
+    }
   }
 
   private updateStats() {
@@ -251,74 +259,16 @@ export default class SidePanel {
     stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; ${s.length} <span>selected</span>` : ''}`;
   }
 
-  private updateHierarchy() {
-    if (this.collapsed || !this.hierarchy) {
-      return;
-    }
-    const r = this.data.getFirstRanking();
-    this.hierarchy.update(r ? r : null);
-  }
-
   destroy() {
     this.node.remove();
     if (!this.data) {
       return;
     }
-    this.data.getRankings().forEach((ranking) => {
-      ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN), null);
-    });
+    this.rankings.forEach((d) => d.destroy());
+    this.rankings.length = 0;
     this.data.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
       DataProvider.EVENT_ADD_DESC), null);
-    this.entries.forEach((d) => d.destroy());
-    this.entries.clear();
   }
-
-  private columnOrder() {
-    // sort column by first ranking order
-    const ranking = this.data.getRankings()[0];
-    if (!ranking) {
-      return [];
-    }
-    return ranking.flatColumns.filter((d) => !isSupportType(d));
-  }
-
-  private updateList() {
-    if (this.collapsed) {
-      return;
-    }
-    const node = this.node.querySelector('main')!;
-    const columns = this.columnOrder();
-
-    if (columns.length === 0) {
-      node.innerHTML = '';
-      this.entries.forEach((d) => d.destroy());
-      this.entries.clear();
-      return;
-    }
-
-    node.innerHTML = ``;
-
-    const copy = new Map(this.entries);
-    this.entries.clear();
-
-    columns.forEach((col) => {
-      const existing = copy.get(col.id);
-      if (existing) {
-        existing.update(this.ctx);
-        node.appendChild(existing.node);
-        this.entries.set(col.id, existing);
-        copy.delete(col.id);
-        return;
-      }
-
-      const entry = new SidePanelEntryVis(col, this.ctx, node.ownerDocument);
-      node.appendChild(entry.node);
-      this.entries.set(col.id, entry);
-    });
-
-    copy.forEach((d) => d.destroy());
-  }
-
 
   private static groupByType(entries: IColumnWrapper[]): { text: string, children: IColumnWrapper[] }[] {
     const map = new Map<IColumnDescCategory, IColumnWrapper[]>();
@@ -339,7 +289,7 @@ export default class SidePanel {
   }
 
   private updateChooser() {
-    if (!this.options.chooser || this.collapsed) {
+    if (!this.search || this.collapsed) {
       return;
     }
     this.search.data = SidePanel.groupByType(this.descs);

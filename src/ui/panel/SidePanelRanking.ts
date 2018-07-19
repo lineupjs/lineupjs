@@ -9,12 +9,15 @@ import SidePanelEntryVis from './SidePanelEntryVis';
 
 export default class SidePanelRanking {
 
+  readonly header: HTMLElement;
   readonly node: HTMLElement;
   private readonly hierarchy: Hierarchy | null;
   private readonly entries = new Map<string, SidePanelEntryVis>();
 
   constructor(public readonly ranking: Ranking, private ctx: IRankingHeaderContext, document: Document, private readonly options: Readonly<ISidePanelOptions>) {
     this.node = document.createElement('section');
+    this.header = document.createElement('div');
+    this.header.innerText = ranking.id; // TODO better label
 
     this.hierarchy = this.options.hierarchy ? new Hierarchy(ctx, document) : null;
 
@@ -46,6 +49,7 @@ export default class SidePanelRanking {
 
   set active(value: boolean) {
     this.node.classList.toggle('lu-active', value);
+    this.header.classList.toggle('lu-active', value);
     if (value) {
       return;
     }
@@ -104,6 +108,7 @@ export default class SidePanelRanking {
   }
 
   destroy() {
+    this.header.remove();
     this.node.remove();
     this.ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_REMOVE_COLUMN), null);
 
