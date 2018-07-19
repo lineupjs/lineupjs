@@ -61,16 +61,17 @@
 
   > header[data-count] {
     display: flex;
-    border-bottom: 2px solid $lu_side_panel_separator_color;
+    border-bottom: 2px solid $lu_side_panel_bg_color;
 
-    &[data-count='2'] {
+    &[data-count='1'],
+    &[data-count='0'] {
       display: none;
     }
 
     > div {
       padding: 0.2em;
       cursor: pointer;
-      border: 1px solid $lu_side_panel_separator_color;
+      border: 1px solid $lu_side_panel_bg_color;
       border-top-left-radius: 5px;
       border-top-right-radius: 5px;
 
@@ -92,14 +93,18 @@
   }
 
   > main > section {
-    display: flex;
+    display: none;
     flex: 1 1 0;
     flex-direction: column;
+
+    &.#{$lu_css_prefix}-active {
+      display: flex;
+    }
 
     > header {
       text-align: center;
       padding: 1em 0.5em;
-      border-bottom: 2px solid $lu_side_panel_separator_color;
+      order: 1;
 
       form {
         position: relative;
@@ -111,7 +116,16 @@
       }
     }
 
+    &::before {
+      content: 'Column Summaries';
+      font-size: small;
+      color: $lu_toolbar_color_base2;
+      padding: 0.2em 0.5em;
+      order: 3;
+    }
+
     > div {
+      order: 4;
       flex: 1 1 0;
       position: relative;
       overflow: auto;

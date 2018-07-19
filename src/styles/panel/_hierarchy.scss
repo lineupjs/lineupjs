@@ -2,6 +2,7 @@
 
 .#{$lu_css_prefix}-hierarchy {
   position: relative;
+  order: 2;
 
   > section {
     counter-reset: hierarchy-counter;
