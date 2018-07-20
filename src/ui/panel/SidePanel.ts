@@ -17,6 +17,8 @@ import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
+import {dialogContext} from '../toolbar';
+import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
 
 
 interface IColumnDescCategory {
@@ -93,9 +95,21 @@ export default class SidePanel {
   private init() {
     this.node.innerHTML = `
       <aside class="lu-stats"></aside>
-      <header></header>
+      <header>
+        <i class="lu-action" title="Choose &hellip;"><span aria-hidden="true">Choose &hellip;</span></i>
+      </header>
       <main></main>
     `;
+
+    {
+      const choose = <HTMLElement>this.node.querySelector('header > i');
+      choose.onclick = (evt) => {
+        evt.stopPropagation();
+        const dialog = new ChooseRankingDialog(this.rankings.map((d) => d.dropdown), dialogContext(this.ctx, 1, <any>evt));
+        dialog.open();
+      };
+    }
+
     if (this.options.collapseable) {
       this.node.insertAdjacentHTML('beforeend', `<div class="lu-collapser" title="Collapse Panel"></div>`);
       const last = <HTMLElement>this.node.lastElementChild;
@@ -189,10 +203,10 @@ export default class SidePanel {
     const header = this.node.querySelector('header')!;
     const main = this.node.querySelector('main')!;
 
-    header.insertBefore(entry.header, header.children[index]);
+    header.insertBefore(entry.header, header.children[index + 1]); // for the action
     header.dataset.count = String(this.rankings.length + 1);
 
-    entry.header.onclick = (evt) => {
+    entry.dropdown.onclick = entry.header.onclick = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
       this.makeActive(this.rankings.indexOf(entry));

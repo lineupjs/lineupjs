@@ -5,11 +5,14 @@ import {IRankingHeaderContext} from '../interfaces';
 import Hierarchy from './Hierarchy';
 import {ISidePanelOptions} from './SidePanel';
 import SidePanelEntryVis from './SidePanelEntryVis';
+import {dialogContext} from '../toolbar';
+import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
 
 
 export default class SidePanelRanking {
 
   readonly header: HTMLElement;
+  readonly dropdown: HTMLElement;
   readonly node: HTMLElement;
   private readonly hierarchy: Hierarchy | null;
   private readonly entries = new Map<string, SidePanelEntryVis>();
@@ -17,13 +20,13 @@ export default class SidePanelRanking {
   constructor(public readonly ranking: Ranking, private ctx: IRankingHeaderContext, document: Document, private readonly options: Readonly<ISidePanelOptions>) {
     this.node = document.createElement('section');
     this.header = document.createElement('div');
-    this.header.innerText = ranking.id; // TODO better label
+    this.dropdown = document.createElement('div');
 
-    this.header.innerHTML = `<span>${ranking.id}</span><i class="lu-action" title="Remove"></i>`;
-    (<HTMLElement>this.header.lastElementChild!).onclick = (evt) => {
-      evt.preventDefault();
+    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="lu-action" title="More &hellip;"><span aria-hidden="true">More &hellip;"></span></i>`;
+    (<HTMLElement>this.header.lastElementChild!).onclick = (<HTMLElement>this.dropdown.lastElementChild!).onclick = (evt) => {
       evt.stopPropagation();
-      this.ctx.provider.removeRanking(ranking);
+      const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, <any>evt), ctx);
+      dialog.open();
     };
 
     this.hierarchy = this.options.hierarchy ? new Hierarchy(ctx, document) : null;
@@ -48,6 +51,9 @@ export default class SidePanelRanking {
       this.updateList();
       this.updateHierarchy();
     });
+    this.ranking.on(suffix('.panel', Ranking.EVENT_LABEL_CHANGED), () => {
+      this.dropdown.firstElementChild!.textContent = this.header.firstElementChild!.textContent = this.ranking.getLabel();
+    });
   }
 
   get active() {
@@ -57,6 +63,7 @@ export default class SidePanelRanking {
   set active(value: boolean) {
     this.node.classList.toggle('lu-active', value);
     this.header.classList.toggle('lu-active', value);
+    this.dropdown.classList.toggle('lu-active', value);
     if (value) {
       return;
     }
@@ -117,7 +124,7 @@ export default class SidePanelRanking {
   destroy() {
     this.header.remove();
     this.node.remove();
-    this.ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_REMOVE_COLUMN), null);
+    this.ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_LABEL_CHANGED), null);
 
     this.entries.forEach((d) => d.destroy());
     this.entries.clear();

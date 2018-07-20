@@ -161,7 +161,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   constructor(public id: string, private maxSortCriteria = 2, private maxGroupColumns = 1) {
     super();
     this.id = fixCSS(id);
-    this.label = `Ranking ${id}`;
+    this.label = `Ranking ${id.startsWith('rank') ? id.slice(4) : id}`;
   }
 
   protected createEventList() {

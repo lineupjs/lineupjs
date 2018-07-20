@@ -4,8 +4,7 @@
 .#{$lu_css_prefix}-side-panel {
   display: flex;
   flex-direction: column;
-  max-width: 26em;
-  min-width: 19em;
+  width: 20em;
   transform: translate3d(0, 0, 1px); // separate layer
 
   .#{$lu_css_prefix}-label {
@@ -58,93 +57,9 @@
       transform: scale(-1, 1);
     }
   }
-
-  > header[data-count] {
-    display: flex;
-    border-bottom: 2px solid $lu_side_panel_bg_color;
-
-    &[data-count='1'],
-    &[data-count='0'] {
-      display: none;
-    }
-
-    > div {
-      padding: 0.2em 0.5em;
-      cursor: pointer;
-      border: 1px solid $lu_side_panel_bg_color;
-      border-top-left-radius: 5px;
-      border-top-right-radius: 5px;
-
-      &:hover,
-      &.#{$lu_css_prefix}-active {
-        background: $lu_side_panel_bg_color;
-      }
-
-      > i {
-        color: $lu_toolbar_color_base2;
-        display: none;
-        padding-left: 4px;
-        cursor: pointer;
-        font-size: $lu_toolbar_font_size;
-
-        &:hover {
-          color: $lu_toolbar_color_hover;
-        }
-      }
-
-      &:hover > i {
-        display: inline-block;
-      }
-    }
-  }
-
-  > main {
-    flex: 1 1 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  > main > section {
-    display: none;
-    flex: 1 1 0;
-    flex-direction: column;
-
-    &.#{$lu_css_prefix}-active {
-      display: flex;
-    }
-
-    > header {
-      text-align: center;
-      padding: 1em 0.5em;
-      order: 1;
-
-      form {
-        position: relative;
-
-        select {
-          width: 100%;
-          font-size: 120%;
-        }
-      }
-    }
-
-    &::before {
-      content: 'Column summaries';
-      font-size: small;
-      color: $lu_toolbar_color_base2;
-      padding: 0.2em 0.5em;
-      order: 3;
-    }
-
-    > div {
-      order: 4;
-      flex: 1 1 0;
-      position: relative;
-      overflow: auto;
-    }
-  }
 }
 
 @import './search';
 @import './entry';
 @import './hierarchy';
+@import './ranking';

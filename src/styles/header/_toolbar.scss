@@ -58,7 +58,7 @@
     @include lu_icons();
   }
 
-  &[title^='Rename + Color']::before {
+  &[title^='Rename']::before {
     content: $lu_icon_pencil_square_o;
   }
 
@@ -145,6 +145,10 @@
 
   &[title^='Remove']::before {
     content: $lu_icon_trash;
+  }
+
+  &[title^='Choose']::before {
+    content: $lu_icon_caret_down;
   }
 
   &[title^='More']::before {
