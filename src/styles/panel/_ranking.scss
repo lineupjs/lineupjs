@@ -9,15 +9,29 @@
     position: relative;
     padding-right: 1em;
 
+    > i {
+      position: absolute;
+      right: 0;
+      top: 0;
+      padding: 0.3em 0.3em 0.25em 0.2em;
+      z-index: 2;
+      background: white;
+      color: $lu_toolbar_color_base2;
+      cursor: pointer;
+      font-size: $lu_toolbar_font_size;
+
+      &:hover {
+        color: $lu_toolbar_color_hover;
+      }
+    }
+
     &[data-count='1'],
     &[data-count='0'] {
       display: none;
     }
 
-    > i {
-      position: absolute;
-      right: 0.2em;
-      top: 0.3em;
+    &[data-count='2'] > i {
+      display: none;
     }
 
     > div {
@@ -75,11 +89,6 @@
   }
 }
 
-.#{$lu_css_prefix}-choose-options {
-  font-size: $lu_toolbar_font_size;
-  padding: 0;
-}
-
 .#{$lu_css_prefix}-side-panel > header[data-count] > div,
 .#{$lu_css_prefix}-choose-options > div {
   padding: 0.2em 0.5em;
@@ -95,23 +104,13 @@
   }
 
   > i {
-    display: flex;
-    padding: 5px 10px 5px 5px;
-    align-items: center;
+    color: $lu_toolbar_color_base2;
+    padding-left: 4px;
     cursor: pointer;
+    font-size: $lu_toolbar_font_size;
 
     &:hover {
-      background: $lu_hover_color;
-    }
-
-    &::before {
-      width: 19px;
-      text-align: center;
-    }
-
-    > span {
-      font-style: normal;
-      margin-left: 3px;
+      color: $lu_toolbar_color_hover;
     }
   }
 }

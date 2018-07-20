@@ -206,9 +206,15 @@ export default class SidePanel {
     header.insertBefore(entry.header, header.children[index + 1]); // for the action
     header.dataset.count = String(this.rankings.length + 1);
 
+    entry.header.onclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.makeActive(this.rankings.indexOf(entry));
+    };
     entry.dropdown.onclick = entry.header.onclick = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
+      this.ctx.dialogManager.removeAboveLevel(0);
       this.makeActive(this.rankings.indexOf(entry));
     };
 
