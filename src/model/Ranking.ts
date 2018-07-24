@@ -92,6 +92,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   static readonly EVENT_GROUPS_CHANGED = 'groupsChanged';
 
 
+  private label: string;
   /**
    * the list of sort criteria
    * @type {Array}
@@ -160,6 +161,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   constructor(public id: string, private maxSortCriteria = 2, private maxGroupColumns = 1) {
     super();
     this.id = fixCSS(id);
+    this.label = `Ranking ${id.startsWith('rank') ? id.slice(4) : id}`;
   }
 
   protected createEventList() {
@@ -196,6 +198,17 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   assignNewId(idGenerator: () => string) {
     this.id = fixCSS(idGenerator());
     this.columns.forEach((c) => c.assignNewId(idGenerator));
+  }
+
+  getLabel() {
+    return this.label;
+  }
+
+  setLabel(value: string) {
+    if (value === this.label) {
+      return;
+    }
+    this.fire(Ranking.EVENT_LABEL_CHANGED, this.label, this.label = value);
   }
 
   setOrder(order: number[]) {

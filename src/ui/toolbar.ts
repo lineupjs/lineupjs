@@ -363,3 +363,13 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
   cacheAddon.set(cacheKey, r);
   return r;
 }
+
+export function isSortAble(col: Column, ctx: IRankingHeaderContext) {
+  const toolbar = getToolbar(col, ctx);
+  return toolbar.includes(sortBy);
+}
+
+export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
+  const toolbar = getToolbar(col, ctx);
+  return toolbar.includes(groupBy);
+}

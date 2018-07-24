@@ -4,28 +4,11 @@
 .#{$lu_css_prefix}-side-panel {
   display: flex;
   flex-direction: column;
-  max-width: 26em;
-  min-width: 19em;
+  width: 20em;
   transform: translate3d(0, 0, 1px); // separate layer
 
   .#{$lu_css_prefix}-label {
     padding: 0 0 0 0.2em;
-  }
-
-  > header {
-    flex: 0 0 auto;
-    text-align: center;
-    padding: 1em 1.5em 1em 0.5em;
-    border-bottom: 2px solid $lu_side_panel_bg_color;
-
-    form {
-      position: relative;
-
-      select {
-        width: 100%;
-        font-size: 120%;
-      }
-    }
   }
 
   > aside.#{$lu_css_prefix}-stats {
@@ -63,7 +46,7 @@
   }
 
   &.#{$lu_css_prefix}-collapsed {
-    min-width: 0;
+    width: 0;
     transform: unset;
 
     > :not(.#{$lu_css_prefix}-collapser) {
@@ -78,17 +61,9 @@
       }
     }
   }
-
-  > div {
-    flex: 1 1 auto;
-    position: relative;
-    overflow: auto;
-
-    > main {
-      counter-reset: side-panel-counter;
-    }
-  }
 }
 
 @import './search';
 @import './entry';
+@import './hierarchy';
+@import './ranking';

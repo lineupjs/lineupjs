@@ -1,0 +1,116 @@
+@import '../vars';
+@import '../icons/index';
+
+.#{$lu_css_prefix}-side-panel {
+  > header[data-count] {
+    border-bottom: 2px solid $lu_side_panel_bg_color;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    padding-right: 1em;
+
+    > i {
+      position: absolute;
+      right: 0;
+      top: 0;
+      padding: 0.3em 0.3em 0.25em 0.2em;
+      z-index: 2;
+      background: white;
+      color: $lu_toolbar_color_base2;
+      cursor: pointer;
+      font-size: $lu_toolbar_font_size;
+
+      &:hover {
+        color: $lu_toolbar_color_hover;
+      }
+    }
+
+    &[data-count='1'],
+    &[data-count='0'] {
+      display: none;
+    }
+
+    &[data-count='2'] > i {
+      display: none;
+    }
+
+    > div {
+      margin-right: 0.1em;
+      border: 1px solid $lu_side_panel_bg_color;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
+    }
+  }
+
+  > main {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+
+    > section {
+      display: none;
+      flex: 1 1 0;
+      flex-direction: column;
+
+      &.#{$lu_css_prefix}-active {
+        display: flex;
+      }
+
+      > header {
+        text-align: center;
+        padding: 1em 0.5em;
+        order: 1;
+
+        form {
+          position: relative;
+
+          select {
+            width: 100%;
+            font-size: 120%;
+          }
+        }
+      }
+
+      &::before {
+        content: 'Column summaries';
+        font-size: small;
+        color: $lu_toolbar_color_base2;
+        padding: 0.2em 0.5em;
+        order: 3;
+      }
+
+      > div {
+        order: 4;
+        flex: 1 1 0;
+        position: relative;
+        overflow: auto;
+      }
+    }
+  }
+}
+
+.#{$lu_css_prefix}-side-panel > header[data-count] > div,
+.#{$lu_css_prefix}-choose-options > div {
+  padding: 0.2em 0.5em;
+  cursor: pointer;
+
+  > span {
+    white-space: nowrap;
+  }
+
+  &:hover,
+  &.#{$lu_css_prefix}-active {
+    background: $lu_side_panel_bg_color;
+  }
+
+  > i {
+    color: $lu_toolbar_color_base2;
+    padding-left: 4px;
+    cursor: pointer;
+    font-size: $lu_toolbar_font_size;
+
+    &:hover {
+      color: $lu_toolbar_color_hover;
+    }
+  }
+}
