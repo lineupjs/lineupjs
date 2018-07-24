@@ -10,9 +10,10 @@
 
     &::before {
       content: '';
+      display: block;
       font-size: small;
       color: $lu_toolbar_color_base2;
-      padding: 0.2em 0.5em;
+      padding: 0.5em;
     }
 
     &:empty {
@@ -21,9 +22,8 @@
 
     > div,
     > footer {
-      padding: 2px 0.5em 0 0.5em;
+      padding: 6px 0.5em 0 0.5em;
       display: flex;
-      align-content: space-between;
       color: $lu_toolbar_color_base2;
       border-top: 1px solid $lu_side_panel_separator_color;
       font-size: $lu_toolbar_font_size;
@@ -55,7 +55,7 @@
       }
 
       i:first-of-type {
-        padding-left: 4px !important;
+        padding: 0 4px !important;
         opacity: 1;
 
         &::after {
