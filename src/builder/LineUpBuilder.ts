@@ -44,6 +44,15 @@ export default class LineUpBuilder {
   }
 
   /**
+   * show the sorting and grouping hierarchy indicator in the side panel
+   * @param {boolean} enable enable flag
+   */
+  hierarchyIndicator(enable: boolean) {
+    this.options.hierarchyIndicator = enable;
+    return this;
+  }
+
+  /**
    * option to specify the default slope graph mode
    * @default 'item'
    */

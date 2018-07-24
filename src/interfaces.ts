@@ -77,6 +77,12 @@ export interface ILineUpOptions {
    */
   sidePanelCollapsed: boolean;
   /**
+   * show the sorting and grouping hierarchy indicators in the side panel
+   * @default true
+   */
+  hierarchyIndicator: boolean;
+
+  /**
    * option to specify the default slope graph mode
    * @default 'item'
    */

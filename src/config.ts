@@ -16,6 +16,7 @@ export function defaultOptions(): ITaggleOptions {
     expandLineOnHover: false,
     sidePanel: true,
     sidePanelCollapsed: false,
+    hierarchyIndicator: true,
     defaultSlopeGraphMode: 'item',
     overviewMode: false,
 
