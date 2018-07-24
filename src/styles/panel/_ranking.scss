@@ -74,8 +74,9 @@
       &::before {
         content: 'Column summaries';
         font-size: small;
+        display: block;
         color: $lu_toolbar_color_base2;
-        padding: 0.2em 0.5em;
+        padding: 0.5em;
         order: 3;
       }
 
