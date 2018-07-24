@@ -1,7 +1,7 @@
 import {uniqueId} from './dialogs/utils';
 
 /** @internal */
-export const filterMissingText = 'Filter out rows containing missing values';
+export const filterMissingText = 'Filter rows containing missing values';
 
 /** @internal */
 export function filterMissingMarkup(bakMissing: boolean, idPrefix: string) {
@@ -12,7 +12,7 @@ export function filterMissingMarkup(bakMissing: boolean, idPrefix: string) {
 /** @internal */
 export function filterMissingNumberMarkup(bakMissing: boolean, count: number, idPrefix: string) {
   const id = uniqueId(idPrefix);
-  return `<div class="lu-checkbox"><input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''} id="${id}"><label for="${id}" class="lu-filter-missing" ${count === 0 ? 'class="lu-disabled"' : ''}>Filter out ${count} missing value rows</label></div>`;
+  return `<div class="lu-checkbox"><input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''} id="${id}"><label for="${id}" class="lu-filter-missing" ${count === 0 ? 'class="lu-disabled"' : ''}>Filter ${count} missing value rows</label></div>`;
 }
 
 export function findFilterMissing(node: HTMLElement) {
@@ -27,6 +27,6 @@ export function updateFilterMissingNumberMarkup(element: HTMLElement, count: num
     checked.disabled = false;
   }
   if (!checked.checked) {
-    element.lastElementChild!.textContent = `Filter out ${count} remaining missing value rows`;
+    element.lastElementChild!.textContent = `Filter ${count} remaining missing value rows`;
   }
 }

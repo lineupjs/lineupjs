@@ -283,7 +283,7 @@ export default class SidePanel {
     const s = this.data.getSelection();
     const r = this.data.getFirstRanking();
     const visible = r ? r.getGroups().reduce((a, b) => a + b.order.length, 0) : 0;
-    stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; ${s.length} <span>selected</span>` : ''}`;
+    stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; <span>${s.length} selected</span>` : ''}`;
   }
 
   destroy() {

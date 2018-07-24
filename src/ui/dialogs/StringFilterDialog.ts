@@ -1,6 +1,6 @@
 import StringColumn from '../../model/StringColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
-import ADialog, { IDialogContext} from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState, uniqueId} from './utils';
 
 /** @internal */
@@ -42,7 +42,7 @@ export default class StringFilterDialog extends ADialog {
       bak = '';
     }
     const id = uniqueId(this.dialog.idPrefix);
-    node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
+    node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
     <span class="lu-checkbox"><input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">RegExp</label></span>
     ${filterMissingMarkup(bakMissing, this.dialog.idPrefix)}`);
 

@@ -50,7 +50,7 @@
     animation: #{$lu_css_prefix}-dialogs-fade-in 0.4s;
 
     strong {
-      margin: 0.2em;
+      margin: 1em 0.2em 0.4em;
       display: inline-block;
     }
   }
@@ -102,6 +102,7 @@
 
     button[type=submit] {
       float: right;
+      color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
     }
 
     &.#{$lu_css_prefix}-sub-nested {

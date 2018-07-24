@@ -2,6 +2,8 @@
 @import '../icons/index';
 
 .#{$lu_css_prefix}-row [data-renderer=selection] {
+  display: flex;
+  align-items: center;
   text-align: center;
 
   &::before {
