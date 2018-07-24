@@ -3,6 +3,12 @@
   text-align: right;
 }
 
+[data-agg=detail] [data-renderer=rank] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 [data-agg=group] [data-renderer=rank] {
   display: flex;
   flex-direction: column;

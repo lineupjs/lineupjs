@@ -1,5 +1,10 @@
 @import '../vars';
 
+[data-agg=detail] [data-renderer=string] {
+  display: flex;
+  align-items: center;
+}
+
 [data-agg=group] [data-renderer=string] {
   overflow: hidden;
   text-overflow: ellipsis;

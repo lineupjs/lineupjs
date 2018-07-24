@@ -15,8 +15,8 @@
   > header {
     flex: 0 0 auto;
     text-align: center;
-    padding: 1em 0.5em;
-    border-bottom: 2px solid #dedede;
+    padding: 1em 1.5em 1em 0.5em;
+    border-bottom: 2px solid $lu_side_panel_bg_color;
 
     form {
       position: relative;
@@ -33,7 +33,8 @@
     padding: 1em 0.5em;
 
     span {
-      color: $lu_selected_color;
+      padding: 2px;
+      border: 1px solid $lu_selected_color;
     }
   }
 
@@ -42,15 +43,14 @@
     right: 0;
     top: 0;
     z-index: 20;
-    padding: 0.2em;
+    padding: 0.7em 0.2em;
     cursor: pointer;
-    border-radius: 50% 0 0 50%;
-    background: white;
-    color: $lu_toolbar_color_base;
-    border: 1px solid $lu_toolbar_color_base;
+    border-radius: 0.4em 0 0 0.4em;
+    background: $lu_toolbar_color_base;
+    color: white;
 
     &:hover {
-      color: $lu_hover_color;
+      background: darken($lu_toolbar_color_base, 10%);
     }
 
     &::before {
@@ -70,8 +70,12 @@
       display: none;
     }
 
-    .#{$lu_css_prefix}-collapser::before {
-      transform: scale(-1, 1);
+    .#{$lu_css_prefix}-collapser {
+      border-right: 1px solid $lu_taggle_border_color;
+
+      &::before {
+        transform: scale(-1, 1);
+      }
     }
   }
 
