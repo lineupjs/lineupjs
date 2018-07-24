@@ -27,6 +27,7 @@ export default class MoreRankingOptionsDialog extends ADialog {
       dialog.open();
     });
     this.addIcon(node, 'Remove', () => {
+      this.destroy();
       this.ctx.provider.removeRanking(this.ranking);
     });
   }
