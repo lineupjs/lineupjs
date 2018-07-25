@@ -1,16 +1,12 @@
+@import '../vars';
 
-[data-renderer=rank] {
+.#{$lu_css_prefix}-renderer[data-renderer=rank] {
   text-align: right;
-}
-
-[data-agg=detail] [data-renderer=rank] {
   display: flex;
-  align-items: center;
   justify-content: flex-end;
 }
 
-[data-agg=group] [data-renderer=rank] {
-  display: flex;
+.#{$engine_css_prefix}-tr[data-agg=group] > .#{$engine_css_prefix}-td[data-renderer=rank] {
   flex-direction: column;
   justify-content: space-between;
 }

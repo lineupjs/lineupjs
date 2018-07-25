@@ -83,6 +83,8 @@ export interface IRenderContext {
    */
   readonly idPrefix: string;
 
+  asElement(html: string): HTMLElement;
+
   /**
    * lookup custom options by key
    * @param key key to lookup

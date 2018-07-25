@@ -3,6 +3,7 @@ import Column from '../model/Column';
 import {IArrayColumn} from '../model/IArrayColumn';
 import {hsl} from 'd3-color';
 import {cssClass} from '../styles';
+import IRenderContext from './interfaces';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -81,7 +82,7 @@ export function forEachChild<T extends Element>(node: Element, callback: (d: T, 
  * @param columns columns to check
  * @internal
  */
-export function matchColumns(node: HTMLElement, columns: {column: Column, template: string, rendererId: string}[]) {
+export function matchColumns(node: HTMLElement, columns: {column: Column, template: string, rendererId: string}[], ctx: IRenderContext) {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.template).join('');
@@ -119,8 +120,8 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
   columns.forEach((col) => {
     let cnode = <HTMLElement>node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
-      node.insertAdjacentHTML('beforeend', col.template);
-      cnode = <HTMLElement>node.lastElementChild!;
+      cnode = ctx.asElement(col.template);
+      cnode.classList.add(cssClass('renderer'));
       cnode.dataset.columnId = col.column.id;
       cnode.dataset.renderer = col.rendererId;
     }

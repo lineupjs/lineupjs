@@ -24,7 +24,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div>
-        <div class="${cssClass('categorical-color')}"></div><div class="${cssClass('categorical-label')}"></div>
+        <div class="${cssClass('cat-color')}"></div><div class="${cssClass('cat-label')}"></div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);

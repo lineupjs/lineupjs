@@ -36,7 +36,7 @@ export default class CompositeChildrenDialog extends ADialog {
         const summary = this.ctx.summaryRenderer(c, false);
         const summaryNode = this.ctx.asElement(summary.template);
         summaryNode.dataset.renderer = c.getSummaryRenderer();
-        summaryNode.classList.add(cssClass('summary'));
+        summaryNode.classList.add(cssClass('summary'), cssClass('renderer'));
         summary.update(summaryNode, this.ctx.statsOf(<any>c));
         n.appendChild(summaryNode);
         node.appendChild(n);

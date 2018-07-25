@@ -32,7 +32,7 @@ export default class BrightnessCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
-        <div class="${cssClass('categorical-color')}" style="background-color: ${col.color}"></div><div class="${cssClass('categorical-label')}"> </div>
+        <div class="${cssClass('cat-color')}" style="background-color: ${col.color}"></div><div class="${cssClass('cat-label')}"> </div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);

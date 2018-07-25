@@ -1,10 +1,6 @@
 @import '../vars';
 
-$engine_assets: '~lineupengine/src/assets';
-
-@import '~lineupengine/src/styles/vars';
-
-[data-renderer=image] {
+.#{$lu_css_prefix}-renderer[data-renderer=image] {
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;

@@ -1,7 +1,7 @@
 @import '../vars';
 @import '../icons/index';
 
-.#{$lu_css_prefix}-row [data-renderer=selection] {
+.#{$engine_css_prefix}-td[data-renderer=selection] {
   display: flex;
   align-items: center;
   text-align: center;
@@ -14,14 +14,13 @@
   }
 }
 
-.#{$lu_css_prefix}-selected [data-renderer=selection]::before,
-.selected [data-renderer=selection]::before,
-.#{$lu_css_prefix}-group-selected[data-renderer=selection]::before {
-  content: $lu_icon_check_square_o;
-  padding-left: 2px;
-}
-
 .#{$lu_css_prefix}-summary[data-renderer=selection] {
   cursor: pointer;
   font-size: medium;
+}
+
+.#{$engine_css_prefix}-tr.#{$lu_css_prefix}-selected > [data-renderer=selection]::before,
+.#{$lu_css_prefix}-group-selected[data-renderer=selection]::before {
+  content: $lu_icon_check_square_o;
+  padding-left: 2px;
 }

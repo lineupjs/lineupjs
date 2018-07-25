@@ -1,6 +1,6 @@
 @import '../vars';
 
-[data-renderer=upset] {
+.#{$lu_css_prefix}-renderer[data-renderer=upset] {
   position: relative;
   display: flex;
   align-items: center;
@@ -23,10 +23,5 @@
     &.enabled {
       opacity: 1;
     }
-  }
-
-  path {
-    stroke: $lu_renderer_upset_stroke;
-    fill: none;
   }
 }

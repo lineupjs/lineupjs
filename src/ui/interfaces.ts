@@ -18,9 +18,9 @@ export interface IRankingHeaderContextContainer {
 
   readonly dialogManager: DialogManager;
 
-  toolbar: { [key: string]: IToolbarAction | IToolbarDialogAddon };
-
   asElement(html: string): HTMLElement;
+
+  toolbar: { [key: string]: IToolbarAction | IToolbarDialogAddon };
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 

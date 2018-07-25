@@ -1,9 +1,6 @@
 @import '../vars';
 
-[data-agg=group] [data-renderer=categorical],
-.#{$lu_css_prefix}-summary[data-renderer=categorical],
-.#{$lu_css_prefix}-summary[data-renderer=interleaving],
-[data-renderer=histogram] {
+.#{$lu_css_prefix}-histogram {
   display: flex;
   flex-direction: row;
 
@@ -74,79 +71,75 @@
   }
 }
 
-[data-renderer=categorical],
-[data-renderer=histogram],
-[data-renderer=interleaving],
-[data-renderer=heatmap],
-[data-renderer=catheatmap] {
-  &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
-    content: attr(data-title);
+.#{$lu_css_prefix}-renderer:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
+  content: attr(data-title);
+  position: absolute;
+  bottom: -15px;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.#{$lu_css_prefix}-histogram-min,
+.#{$lu_css_prefix}-histogram-max {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-right: 1px solid black;
+  transition: border-width 0.2s ease;
+  width: 1px;
+  cursor: ew-resize;
+
+  &::before {
+    content: attr(data-value);
     position: absolute;
     bottom: -15px;
-    left: 0;
-    width: 100%;
+    width: 5em;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    text-align: center;
   }
 }
 
-[data-interactive][data-renderer=histogram] {
+.#{$lu_css_prefix}-histogram-max {
+  right: 0;
+  border-right: none;
+  border-left: 1px solid black;
+
+  &::before {
+    left: -5em;
+    text-align: right;
+  }
+}
+
+
+.#{$lu_css_prefix}-histogram-min-hint,
+.#{$lu_css_prefix}-histogram-max-hint {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
+}
+
+.#{$lu_css_prefix}-histogram-max-hint {
+  right: 0;
+}
+
+.#{$lu_css_prefix}-summary[data-interactive][data-renderer=histogram] {
   margin-bottom: 2.75em;
   position: relative;
 
-  > [data-handle=min],
-  > [data-handle=max] {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    border-right: 1px solid black;
-    transition: border-width 0.2s ease;
-    width: 1px;
-    cursor: ew-resize;
-
-    &::before {
-      content: attr(data-value);
-      position: absolute;
-      bottom: -15px;
-      width: 5em;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-  }
-
-  > [data-handle=max] {
-    right: 0;
-    border-right: none;
-    border-left: 1px solid black;
-
-    &::before {
-      left: -5em;
-      text-align: right;
-    }
-  }
-
   &:hover {
-    > [data-handle=min] {
+    > .#{$lu_css_prefix}-histogram-min {
       border-right-width: 5px;
     }
 
-    > [data-handle=max] {
+    > .#{$lu_css_prefix}-histogram-max {
       border-left-width: 5px;
-    }
-  }
-
-  > [data-handle$=hint] {
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    height: 100%;
-    background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
-
-    &[data-handle=max-hint] {
-      right: 0;
     }
   }
 

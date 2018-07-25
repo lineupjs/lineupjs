@@ -1,32 +1,28 @@
+@import '../vars';
 
-[data-agg=detail] [data-renderer=categorical],
-[data-agg=detail] [data-renderer=brightness],
-[data-agg=group] [data-renderer=brightness] > div {
+.#{$lu_css_prefix}-renderer[data-renderer=categorical],
+.#{$lu_css_prefix}-renderer[data-renderer=brightness],
+.#{$engine_css_prefix}-tr[data-agg=group] > .#{$lu_css_prefix}-td[data-renderer=brightness] > div {
   display: flex;
   white-space: nowrap;
-
-  :first-child {
-    flex: 0 0 16px;
-    line-height: 100%;
-    margin-right: 0.5em;
-
-    /* border-radius: 8px; */
-  }
-
-  :last-child {
-    width: 0; // set 0 width for firefox to have proper ...
-    flex: 1 1 auto;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    align-self: center;
-  }
 }
 
-[data-agg=group] [data-renderer=brightness] {
-  display: flex;
-  align-items: center;
+.#{$engine_css_prefix}-tr[data-agg=group] > .#{$engine_css_prefix}-td[data-renderer=brightness] > div {
+  width: 100%;
+}
 
-  > div {
-    width: 100%;
-  }
+.#{$lu_css_prefix}-cat-color {
+  flex: 0 0 16px;
+  line-height: 100%;
+  margin-right: 0.5em;
+
+  /* border-radius: 8px; */
+}
+
+.#{$lu_css_prefix}-cat-label {
+  width: 0; // set 0 width for firefox to have proper ...
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-self: center;
 }

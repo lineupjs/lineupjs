@@ -18,7 +18,7 @@
       color: $lu_toolbar_color_hover;
     }
 
-    &.hidden {
+    &.#{$lu_css_prefix}-hidden {
       display: none;
     }
 

@@ -1,5 +1,7 @@
-[data-renderer=number],
-[data-renderer=circle] {
+@import '../vars';
+
+.#{$lu_css_prefix}-renderer[data-renderer=number],
+.#{$lu_css_prefix}-renderer[data-renderer=circle] {
   position: relative;
   white-space: nowrap;
 
@@ -11,13 +13,12 @@
   > div {
     top: 0;
     bottom: 0;
+    display: flex;
+    align-items: center;
 
     > div {
       height: 100%;
     }
-
-    display: flex;
-    align-items: center;
 
     > span.#{$lu_css_prefix}-hover-only {
       position: relative; // required to position .lu-gradient-text
@@ -25,16 +26,13 @@
   }
 }
 
-[data-agg=group] {
-  [data-renderer$=number] {
-    > div > div {
-      display: flex;
-      align-items: center;
-    }
-  }
-}
 
-[data-renderer=stack] [data-renderer$=number] > div {
+.#{$lu_css_prefix}-renderer[data-renderer=stack] .#{$lu_css_prefix}-renderer[data-renderer$=number] > div {
   overflow-x: hidden;
   text-overflow: ellipsis;
+}
+
+.#{$engine_css_prefix}-tr[data-agg=group] > .#{$lu_css_prefix}-td[data-renderer$=number] > div > div {
+  display: flex;
+  align-items: center;
 }

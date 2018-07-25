@@ -47,6 +47,7 @@ export default class RenderColumn implements IColumn {
       return <HTMLElement>this.renderers.singleTemplate.cloneNode(true);
     }
     const elem = this.ctx.asElement(this.renderers.single.template);
+    elem.classList.add(cssClass('renderer'));
     elem.dataset.renderer = this.renderers.singleId;
     elem.dataset.group = 'd';
 
@@ -62,6 +63,7 @@ export default class RenderColumn implements IColumn {
       return <HTMLElement>this.renderers.groupTemplate.cloneNode(true);
     }
     const elem = this.ctx.asElement(this.renderers.group.template);
+    elem.classList.add(cssClass('renderer'));
     elem.dataset.renderer = this.renderers.groupId;
     elem.dataset.group = 'g';
 
@@ -78,7 +80,7 @@ export default class RenderColumn implements IColumn {
     }
     const elem = this.ctx.asElement(this.renderers.summary.template);
     elem.dataset.renderer = this.renderers.summaryId;
-    elem.classList.add(cssClass('summary'), cssClass('th-summary'));
+    elem.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass('renderer'));
     this.renderers.summaryTemplate = <HTMLElement>elem.cloneNode(true);
     return elem;
   }

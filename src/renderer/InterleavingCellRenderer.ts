@@ -28,7 +28,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
         if (missing) {
           return;
         }
-        matchColumns(n, cols);
+        matchColumns(n, cols, context);
         forEachChild(n, (ni: HTMLElement, j) => {
           cols[j].renderer!.update(ni, d, i, group);
         });
@@ -54,7 +54,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
       update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
-        matchColumns(n, cols);
+        matchColumns(n, cols, context);
         forEachChild(n, (ni: HTMLElement, j) => {
           cols[j].groupRenderer!.update(ni, group, rows);
         });
