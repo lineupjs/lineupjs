@@ -10,12 +10,6 @@
   justify-content: flex-start;
   background: white;
 
-  .#{$lu_css_prefix}-label {
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-  }
-
   &.#{$lu_css_prefix}-dragging {
     opacity: 0.5;
   }
@@ -37,19 +31,21 @@
     background: lighten($lu_drag_over, 35%);
     border: 2px dashed $lu_drag_over;
   }
+}
 
-  .#{$lu_css_prefix}-spacing {
-    flex: 1;
-  }
+.#{$lu_css_prefix}-label {
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
 
-  .#{$lu_css_prefix}-nested {
-    position: relative;
-  }
+.#{$lu_css_prefix}-spacing {
+  flex: 1;
+}
 
-  .#{$lu_css_prefix}-summary {
-    position: relative;
-    font-size: x-small;
-  }
+.#{$lu_css_prefix}-summary {
+  position: relative;
+  font-size: x-small;
 }
 
 @import './summary';

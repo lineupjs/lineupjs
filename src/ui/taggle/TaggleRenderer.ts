@@ -41,7 +41,7 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   constructor(public data: DataProvider, parent: HTMLElement, options: (Partial<ITaggleOptions> & Readonly<ILineUpOptions>)) {
     super();
-
+    Object.assign(this.options, options);
 
     this.renderer = new EngineRenderer(data, parent, Object.assign({}, options, {
       dynamicHeight: (data: (IGroupData | IGroupItem)[], ranking: Ranking) => {

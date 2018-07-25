@@ -37,10 +37,10 @@ export default class Taggle extends ALineUp {
       this.panel.node.insertAdjacentHTML('afterbegin', `<div class="${cssClass('rule-button-chooser')}"><label>
             <input type="checkbox">
             <span>Overview</span>
-            <div></div>
+            <div class="${cssClass('rule-violation')}"></div>
           </label></div>`);
       const spaceFilling = spaceFillingRule(this.options);
-      this.spaceFilling = <HTMLElement>this.node.querySelector(`.${cssClass('rule-button-chooser')}`)!;
+      this.spaceFilling = <HTMLElement>this.panel.node.querySelector(`.${cssClass('rule-button-chooser')}`)!;
       const input = <HTMLInputElement>this.spaceFilling.querySelector('input');
       input.onchange = () => {
         const selected = this.spaceFilling.classList.toggle(cssClass('chosen'));
@@ -58,7 +58,7 @@ export default class Taggle extends ALineUp {
   private setViolation(violation?: string) {
     violation = violation || '';
     this.spaceFilling.classList.toggle(cssClass('violated'), Boolean(violation));
-    this.spaceFilling.lastElementChild!.innerHTML = violation.replace(/\n/g, '<br>');
+    this.spaceFilling.querySelector(`.${cssClass('rule-violation')}`)!.innerHTML = violation.replace(/\n/g, '<br>');
   }
 
   destroy() {
