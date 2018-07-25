@@ -99,7 +99,7 @@ function hist(col: ICategoricalColumn, showLabels: boolean) {
   const bins = col.categories.map((c) => `<div title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');
 
   return {
-    template: `<div${col.dataLength! > DENSE_HISTOGRAM ? `class="${cssClass('dense')}"`  : ''}>${bins}`, // no closing div to be able to append things
+    template: `<div class="${cssClass('histogram')} ${col.dataLength! > DENSE_HISTOGRAM ? cssClass('dense'): ''}">${bins}`, // no closing div to be able to append things
     update: (n: HTMLElement, maxBin: number, hist: ICategoricalBin[]) => {
       forEach(n, '[data-cat]', (d: HTMLElement, i) => {
         const {y} = hist[i];
