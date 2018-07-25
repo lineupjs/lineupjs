@@ -37,3 +37,14 @@ export function equalArrays<T>(a: T[], b: T[]) {
 export function fixCSS(id: string) {
   return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '_'); //replace non css stuff to _
 }
+
+/**
+ * clear node clearing
+ * @param node
+ * @internal
+ */
+export function clear(node: Node) {
+  while(node.lastChild) {
+    node.removeChild(node.lastChild);
+  }
+}

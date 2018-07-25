@@ -13,6 +13,7 @@ import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces'
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
+import {clear} from '../internal';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -453,7 +454,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     if (isGroup !== wasGroup) {
       // change of mode clear the children to reinitialize them
-      node.innerHTML = '';
+      clear(node);
 
       // adapt body
       node.dataset.agg = isGroup ? 'group' : 'detail';
@@ -500,7 +501,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return;
     }
     // clear old
-    node.innerHTML = '';
+    clear(node);
     node.dataset.agg = 'detail';
     const canvas2 = this.selectCanvas();
     node.appendChild(canvas2);

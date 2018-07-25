@@ -8,6 +8,7 @@ import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {clear} from '../internal';
 
 const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
@@ -143,8 +144,8 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
 
   if (!data.outlier || data.outlier.length === 0) {
     whiskers.dataset.sort = sort;
-    if (n.children.length > 1) {
-      n.innerHTML = '';
+    if (n.childElementCount > 1) {
+      clear(n);
       n.appendChild(whiskers);
     }
     return;

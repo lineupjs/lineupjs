@@ -3,6 +3,7 @@ import AEventDispatcher from '../internal/AEventDispatcher';
 import Column from '../model/Column';
 import DataProvider from '../provider/ADataProvider';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {clear} from '../internal';
 
 /**
  * emitted when the highlight changes
@@ -44,7 +45,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
 
   destroy() {
     // just clear since we hand in the node itself
-    this.node.innerHTML = '';
+    clear(this.node);
   }
 
   dump() {

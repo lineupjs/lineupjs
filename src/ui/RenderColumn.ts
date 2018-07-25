@@ -149,11 +149,3 @@ export default class RenderColumn implements IColumn {
     this.renderers!.single.render(ctx, r, r.relativeIndex, r.group);
   }
 }
-
-// function asElement(doc: Document, html: string): HTMLElement {
-//   const helper = doc.createElement('div');
-//   helper.innerHTML = html;
-//   const s = <HTMLElement>helper.firstElementChild!;
-//   helper.innerHTML = '';
-//   return s;
-// }

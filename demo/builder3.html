@@ -24,7 +24,7 @@
       })
     }
     const builder = LineUpJS.builder(arr);
-    builder.deriveColumns();
+    builder.deriveColumns().animated(false);
     // and two rankings
     const ranking = LineUpJS.buildRanking()
       .supportTypes()

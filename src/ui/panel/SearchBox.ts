@@ -1,5 +1,6 @@
 import AEventDispatcher, {IEventListener} from '../../internal/AEventDispatcher';
 import {cssClass} from '../../styles/index';
+import {clear} from '../../internal';
 
 export interface IItem {
   id: string;
@@ -69,7 +70,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
   set data(data: (T | IGroupSearchItem<T>)[]) {
     this.values = data;
-    this.body.innerHTML = '';
+    clear(this.body);
     this.buildDialog(this.body, this.values);
   }
 

@@ -8,6 +8,7 @@ import SidePanelEntryVis from './SidePanelEntryVis';
 import {dialogContext} from '../toolbar';
 import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
 import {aria, cssClass} from '../../styles';
+import {clear} from '../../internal';
 
 
 export default class SidePanelRanking {
@@ -96,7 +97,7 @@ export default class SidePanelRanking {
     const columns = this.ranking.flatColumns.filter((d) => !isSupportType(d));
 
     if (columns.length === 0) {
-      node.innerHTML = '';
+      clear(node);
       this.entries.forEach((d) => d.destroy());
       this.entries.clear();
       return;

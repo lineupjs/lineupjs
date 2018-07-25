@@ -5,6 +5,7 @@ import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
+import {clear} from '../../internal/utils';
 
 /** @internal */
 export default class CompositeChildrenDialog extends ADialog {
@@ -50,7 +51,7 @@ export default class CompositeChildrenDialog extends ADialog {
         this.destroy();
         return;
       }
-      node.innerHTML = '';
+      clear(node);
       createChildren();
     }));
   }

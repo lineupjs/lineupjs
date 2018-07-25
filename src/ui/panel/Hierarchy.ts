@@ -8,6 +8,7 @@ import {isSupportType, categoryOf, isSortingAscByDefault} from '../../model/anno
 import {isSortAble, isGroupAble, getToolbarDialogAddons, IToolbarDialogAddon, dialogContext} from '../toolbar';
 import AddonDialog from '../dialogs/AddonDialog';
 import {cssClass, aria} from '../../styles';
+import {clear} from '../../internal';
 
 interface IColumnItem {
   col: Column;
@@ -60,7 +61,7 @@ export default class Hierarchy {
 
   private render<T>(node: HTMLElement, items: T[], toColumn: (item: T)=>Column, extras: (item: T, node: HTMLElement)=>void, addonKey: string, onChange: (item: T, delta: number)=>void) {
     const cache = new Map((<HTMLElement[]>Array.from(node.children)).map((d) => <[string, HTMLElement]>[d.dataset.id, d]));
-    node.innerHTML = '';
+    clear(node);
 
     items.forEach((d) => {
       const col = toColumn(d);
@@ -116,7 +117,7 @@ export default class Hierarchy {
     const groups = ranking.getGroupCriteria();
 
     if (groups.length === 0) {
-      node.innerHTML = '';
+      clear(node);
       return;
     }
 
@@ -141,7 +142,7 @@ export default class Hierarchy {
     const sortCriterias = ranking.getSortCriteria();
 
     if (sortCriterias.length === 0) {
-      node.innerHTML = '';
+      clear(node);
       return;
     }
 
