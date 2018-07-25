@@ -7,6 +7,8 @@ import SearchBox, {ISearchBoxOptions} from './SearchBox';
 import {isSupportType, categoryOf, isSortingAscByDefault} from '../../model/annotations';
 import {isSortAble, isGroupAble, getToolbarDialogAddons, IToolbarDialogAddon, dialogContext} from '../toolbar';
 import AddonDialog from '../dialogs/AddonDialog';
+import {cssClass} from '../../styles';
+import {aria} from '../../styles/index';
 
 interface IColumnItem {
   col: Column;
@@ -23,11 +25,11 @@ export default class Hierarchy {
 
   constructor(private readonly ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('aside');
-    this.node.classList.add('lu-hierarchy');
+    this.node.classList.add(cssClass('hierarchy'));
     this.node.innerHTML = `
-      <section>
+      <section class="${cssClass('group-hierarchy')}">
       </section>
-      <section>
+      <section class="${cssClass('sort-hierarchy')}">
       </section>
     `;
     const options = <Partial<ISearchBoxOptions<IColumnItem>>>{
@@ -70,12 +72,12 @@ export default class Hierarchy {
       }
       const addons = getToolbarDialogAddons(col, addonKey, this.ctx);
 
-      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="lu-toolbar">
-      <div class="lu-label">${col.label}</div>
-      ${addons.length > 0 ? `<i title="Customize" class="lu-action"><span aria-hidden="true">Customize</span> </i>` : ''}
-      <i title="Move Up" class="lu-action"><span aria-hidden="true">Move Up</span> </i>
-      <i title="Move Down" class="lu-action"><span aria-hidden="true">Move Down</span> </i>
-      <i title="Remove from hierarchy" class="lu-action"><span aria-hidden="true">Remove from hierarchy</span> </i>
+      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="${cssClass('toolbar')}">
+      <div class="${cssClass('label')}">${col.label}</div>
+      ${addons.length > 0 ? `<i title="Customize" class="${cssClass('action')}">${aria('Customize')}</i>` : ''}
+      <i title="Move Up" class="${cssClass('action')}">${aria('Move Up')}</i>
+      <i title="Move Down" class="${cssClass('action')}">${aria('Move Down')}</i>
+      <i title="Remove from hierarchy" class="${cssClass('action')}">${aria('Remove from hierarchy')}</i>
       </div>`);
       const last = <HTMLElement>node.lastElementChild!;
 
@@ -128,7 +130,7 @@ export default class Hierarchy {
     };
 
     const addButton = (_: Column, last: HTMLElement) => {
-      last.insertAdjacentHTML('afterbegin', `<i title="Group" class="lu-action" data-group="true"><span aria-hidden="true">Group</span> </i>`);
+      last.insertAdjacentHTML('afterbegin', `<i title="Group" class="${cssClass('action')}" data-group="true">${aria('Group')}</i>`);
     };
 
     this.render(node, groups, (d) => d, addButton, 'group', click);
@@ -158,7 +160,7 @@ export default class Hierarchy {
 
     const addButton = (s: ISortCriteria, last: HTMLElement) => {
       last.insertAdjacentHTML('afterbegin', `
-      <i title="Sort" class="lu-action" data-sort="${s.asc ? 'asc' : 'desc'}"><span aria-hidden="true">Toggle Sorting</span> </i>`);
+      <i title="Sort" class="${cssClass('action')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria('Toggle Sorting')}</i>`);
       (<HTMLElement>last.querySelector('i[title=Sort]')!).onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
@@ -191,6 +193,7 @@ export default class Hierarchy {
 
     const wrapper = node.ownerDocument.createElement('footer');
     wrapper.appendChild(adder.node);
+    wrapper.classList.add(cssClass('hierarchy-adder'));
     node.appendChild(wrapper);
   }
 

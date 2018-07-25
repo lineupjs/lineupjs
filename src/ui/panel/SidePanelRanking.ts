@@ -7,6 +7,7 @@ import {ISidePanelOptions} from './SidePanel';
 import SidePanelEntryVis from './SidePanelEntryVis';
 import {dialogContext} from '../toolbar';
 import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
+import {aria, cssClass} from '../../styles';
 
 
 export default class SidePanelRanking {
@@ -22,7 +23,9 @@ export default class SidePanelRanking {
     this.header = document.createElement('div');
     this.dropdown = document.createElement('div');
 
-    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="lu-action" title="More &hellip;"><span aria-hidden="true">More &hellip;"></span></i>`;
+    this.node.classList.add(cssClass('side-panel-ranking'));
+
+    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${cssClass('action')}" title="More &hellip;">${aria('More &hellip;')}</i>`;
     (<HTMLElement>this.header.lastElementChild!).onclick = (<HTMLElement>this.dropdown.lastElementChild!).onclick = (evt) => {
       evt.stopPropagation();
       const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, <any>evt), ctx);
@@ -36,7 +39,7 @@ export default class SidePanelRanking {
 
   private init() {
     this.node.innerHTML = `
-      <div><main></main></div>
+      <div><main class="${cssClass('side-panel-ranking-main')}"></main></div>
     `;
     if (this.hierarchy) {
       this.node.insertBefore(this.hierarchy.node, this.node.firstChild);
@@ -57,13 +60,13 @@ export default class SidePanelRanking {
   }
 
   get active() {
-    return this.node.classList.contains('lu-active');
+    return this.node.classList.contains(cssClass('active'));
   }
 
   set active(value: boolean) {
-    this.node.classList.toggle('lu-active', value);
-    this.header.classList.toggle('lu-active', value);
-    this.dropdown.classList.toggle('lu-active', value);
+    this.node.classList.toggle(cssClass('active'), value);
+    this.header.classList.toggle(cssClass('active'), value);
+    this.dropdown.classList.toggle(cssClass('active'), value);
     if (value) {
       return;
     }

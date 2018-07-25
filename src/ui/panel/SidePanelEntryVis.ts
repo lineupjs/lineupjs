@@ -3,6 +3,7 @@ import {ISummaryRenderer} from '../../renderer/interfaces';
 import {createToolbar, dragAbleColumn, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import {NumberColumn} from '../../model';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class SidePanelEntryVis {
@@ -11,7 +12,7 @@ export default class SidePanelEntryVis {
 
   constructor(public readonly column: Column, private ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('article');
-    this.node.classList.add('lu-side-panel-entry');
+    this.node.classList.add(cssClass('side-panel-entry'));
     this.node.dataset.colId = column.id;
     this.node.dataset.type = column.desc.type;
 
@@ -26,12 +27,12 @@ export default class SidePanelEntryVis {
 
   private init() {
     this.node.innerHTML = `
-      <header><div class="lu-label"></div><div class="lu-toolbar"></div></header>${this.summary.template}`;
-    createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), 0, this.column, this.ctx);
+      <header class="${cssClass('side-panel-entry-header')}"><div class="${cssClass('label')}"></div><div class="${cssClass('toolbar')}"></div></header>${this.summary.template}`;
+    createToolbar(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
 
     const summary = <HTMLElement>this.node.lastElementChild!;
-    summary.classList.add('lu-summary');
+    summary.classList.add(cssClass('summary'));
     summary.dataset.renderer = this.column.getSummaryRenderer();
     summary.dataset.interactive = '';
   }
@@ -39,7 +40,7 @@ export default class SidePanelEntryVis {
   update(ctx: IRankingHeaderContext = this.ctx) {
     this.ctx = ctx;
     updateHeader(this.node, this.column);
-    this.summary.update(<HTMLElement>this.node.querySelector('.lu-summary')!, ctx.statsOf(<any>this.column));
+    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!, ctx.statsOf(<any>this.column));
   }
 
   destroy() {
