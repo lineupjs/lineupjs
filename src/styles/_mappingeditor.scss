@@ -1,115 +1,124 @@
 @import './vars';
 @import './icons/index';
 
-@at-root {
-  .#{$lu_css_prefix}-dialog-mapper {
-    width: 25em;
+.#{$lu_css_prefix}-dialog-mapper {
+  width: 25em;
 
-    > .#{$lu_css_prefix}-summary {
-      height: 5em;
-      margin: 0.5em 3px 0;
+  > .#{$lu_css_prefix}-summary {
+    height: 5em;
+    margin: 0.5em 3px 0;
+  }
+
+  input[type=number] {
+    width: 5em;
+  }
+
+
+  &[data-scale=script] div.#{$lu_css_prefix}-mapper-script {
+    display: block;
+  }
+
+  [data-toggle=open] ~ .#{$lu_css_prefix}-details {
+    display: block;
+  }
+}
+
+div.#{$lu_css_prefix}-mapper-script {
+  margin-top: 1em;
+  display: none;
+
+  textarea {
+    height: 5em;
+    width: 98%;
+    font-size: 9pt;
+    display: block;
+  }
+}
+
+.#{$lu_css_prefix}-mapper-toggle {
+  margin-top: 1em;
+  cursor: pointer;
+
+  &::before {
+    @include lu_icons();
+
+    content: $lu_icon_caret_right;
+    width: 0.8em;
+  }
+
+  &[data-toggle=open]::before {
+    content: $lu_icon_caret_down;
+  }
+}
+
+.#{$lu_css_prefix}-dialog-mapper-details {
+  display: none;
+}
+
+svg.#{$lu_css_prefix}-dialog-mapper-details {
+  shape-rendering: geometricprecision;
+  height: 25em * 6 / 10;
+
+  rect {
+    fill: transparent;
+    stroke: none;
+  }
+
+  line {
+    stroke: $lu_mapping_bg;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+
+    &:not([x1]) {
+      // the horizontal lines
+      stroke-width: 1.25;
     }
 
-    input[type=number] {
-      width: 5em;
+    &[data-v] {
+      stroke-opacity: 0.5;
+      stroke-width: 0.5;
+      stroke: $lu_toolbar_color_base2;
+      pointer-events: none;
+    }
+  }
+
+  circle {
+    fill: $lu_mapping_circle;
+  }
+}
+
+g.#{$lu_css_prefix}-dialog-mapper-mapping {
+  cursor: ew-resize;
+
+  > line:first-child {
+    stroke-width: 5;
+    stroke: transparent !important;
+  }
+
+  &.#{$lu_css_prefix}-frozen circle:first-of-type {
+    cursor: not-allowed;
+    fill: $lu_mapping_circle !important;
+  }
+
+  &:hover {
+    circle {
+      fill: $lu_mapping_hover;
     }
 
-    div.#{$lu_css_prefix}-script {
-      margin-top: 1em;
-      display: none;
-
-      textarea {
-        height: 5em;
-        width: 98%;
-        font-size: 9pt;
-        display: block;
-      }
+    line {
+      stroke: $lu_mapping_hover;
     }
+  }
+}
 
-    &[data-scale=script] div.#{$lu_css_prefix}-script {
-      display: block;
-    }
 
-    strong[data-toggle] {
-      margin-top: 1em;
-      cursor: pointer;
+.#{$lu_css_prefix}-dialog-mapper {
+  &[data-scale=script] div.#{$lu_css_prefix}-mapper-script {
+    display: block;
+  }
 
-      &::before {
-        @include lu_icons();
-
-        content: $lu_icon_caret_right;
-        width: 0.8em;
-      }
-
-      &[data-toggle=open]::before {
-        content: $lu_icon_caret_down;
-      }
-    }
-
-    .#{$lu_css_prefix}-details {
-      display: none;
-    }
-
-    [data-toggle=open] ~ .#{$lu_css_prefix}-details {
-      display: block;
-    }
-
-    svg {
-      shape-rendering: geometricprecision;
-      height: 25em * 6 / 10;
-
-      rect {
-        fill: transparent;
-        stroke: none;
-      }
-
-      line {
-        stroke: $lu_mapping_bg;
-        stroke-width: 1;
-        stroke-linejoin: round;
-        stroke-linecap: round;
-      }
-
-      line:not([x1]) {
-
-        // the horizontal lines
-        stroke-width: 1.25;
-      }
-
-      line[data-v] {
-        stroke-opacity: 0.5;
-        stroke-width: 0.5;
-        stroke: $lu_toolbar_color_base2;
-        pointer-events: none;
-      }
-
-      circle {
-        fill: $lu_mapping_circle;
-      }
-
-      g.#{$lu_css_prefix}-mapping {
-        cursor: ew-resize;
-
-        > line:first-child {
-          stroke-width: 5;
-          stroke: transparent !important;
-        }
-
-        &.#{$lu_css_prefix}-frozen circle:first-of-type {
-          cursor: not-allowed;
-          fill: $lu_mapping_circle !important;
-        }
-
-        &:hover {
-          circle {
-            fill: $lu_mapping_hover;
-          }
-
-          line {
-            stroke: $lu_mapping_hover;
-          }
-        }
-      }
-    }
+  [data-toggle=open] ~ .#{$lu_css_prefix}-details {
+    display: block;
   }
 }

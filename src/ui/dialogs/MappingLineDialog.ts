@@ -66,7 +66,7 @@ export class MappingLine {
   private readonly $select: Selection<SVGGElement, any, any, any>;
 
   constructor(g: SVGGElement, public domain: number, public range: number, private readonly adapter: IMappingAdapter) {
-    g.insertAdjacentHTML('beforeend', `<g class="${cssClass('mapping')}" transform="translate(${domain},0)">
+    g.insertAdjacentHTML('beforeend', `<g class="${cssClass('dialog-mapper-mapping')}" transform="translate(${domain},0)">
       <line x1="0" x2="${range - domain}" y2="60"></line>
       <line x1="0" x2="${range - domain}" y2="60"></line>
       <circle r="3"></circle>

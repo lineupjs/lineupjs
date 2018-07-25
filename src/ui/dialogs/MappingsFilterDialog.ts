@@ -91,7 +91,7 @@ export default class MappingsFilterDialog extends ADialog {
       </select>
       </div>
         ${this.summary.template}
-        <strong data-toggle>Mapping Details</strong>
+        <strong class="${cssClass('dialog-mapper-toggle')}" data-toggle>Mapping Details</strong>
         <div class="${cssClass('dialog-mapper-details')}"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
         <strong class="${cssClass('dialog-mapper-details')}" style="text-align: center">Input Domain (min - max)</strong>
         <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
