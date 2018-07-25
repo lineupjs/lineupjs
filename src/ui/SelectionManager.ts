@@ -38,10 +38,10 @@ export default class SelectionManager extends AEventDispatcher {
     let hr = <HTMLHRElement>root.querySelector('hr');
     if (!hr) {
       hr = root.ownerDocument.createElement('hr');
-      hr.classList.add(cssClass('-hr'));
       root.appendChild(hr);
     }
     this.hr = hr;
+    this.hr.classList.add(cssClass('hr'));
 
     const mouseMove = (evt: MouseEvent) => {
       this.showHint(evt);

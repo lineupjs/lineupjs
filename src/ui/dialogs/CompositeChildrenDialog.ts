@@ -28,7 +28,8 @@ export default class CompositeChildrenDialog extends ADialog {
         const n = createHeader(c, this.ctx, {
           mergeDropAble: false,
           resizeable: false,
-          level: this.dialog.level + 1
+          level: this.dialog.level + 1,
+          extraPrefix: 'sub'
         });
         n.className = cssClass('header');
         updateHeader(n, c);

@@ -22,104 +22,93 @@
   &:hover {
     background-color: $lu_hover_header_color;
 
-    > .#{$lu_css_prefix}-toolbar {
+    > .#{$lu_css_prefix}-th-toolbar {
       color: $lu_toolbar_color_base2;
-    }
-  }
-
-  > .#{$lu_css_prefix}-toolbar {
-    color: $lu_toolbar_color_base;
-  }
-
-  > .#{$lu_css_prefix}-label {
-    text-align: center;
-    padding-left: 0.8em;
-    margin-right: $lu-engine_grip_gap;
-    font-weight: 500;
-  }
-
-  > .#{$lu_css_prefix}-sort {
-    position: absolute;
-    left: 1px;
-    top: 1px;
-    font-size: $lu_toolbar_font_size;
-  }
-
-  > .#{$lu_css_prefix}-summary {
-    height: 2em;
-
-    &:empty {
-      display: none;
-    }
-
-    &[data-renderer=aggregate],
-    &[data-renderer=selection] {
-      display: block; // have just a before element
-    }
-  }
-
-  > .#{$lu_css_prefix}-nested {
-    > section {
-      border-bottom: none; // disable header line for stacked bar
-    }
-  }
-
-  > .#{$lu_css_prefix}-handle {
-    position: absolute;
-    right: -$lu-engine_grip_gap;
-    width: $lu_engine_grip_gap;
-    height: 100%;
-    background-color: white;
-    cursor: col-resize;
-    border-bottom: 1px solid white;
-    text-align: center;
-    bottom: -1px;
-
-    &.#{$lu_css_prefix}-dragover {
-      @include user_select_none();
-
-      transition: width 0.2s ease, right 0.2s ease;
-      color: $lu_toolbar_color_hover;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px dashed $lu_drag_over;
-      background-color: lighten($lu_drag_over, 35%);
-      width: 50px;
-      right: -25px;
-      z-index: 10;
-      font-size: small;
-
-      &::before {
-        content: 'Place here';
-        overflow: hidden;
-      }
-    }
-
-    &:hover {
-      background-color: $lu_hover_color;
     }
   }
 }
 
-.#{$lu_css_prefix}-sub-nested > section {
-  margin-bottom: $lu_engine_grip_gap + 15px;
+.#{$lu_css_prefix}-th-toolbar {
+  color: $lu_toolbar_color_base;
+}
 
-  > .#{$lu_css_prefix}-handle {
-    height: $lu_engine_grip_gap;
-    width: 100%;
-    bottom: ($lu_engine_grip_gap * -1) - 1px - 15px;
-    left: 0;
-    right: 0;
-    cursor: inherit;
+.#{$lu_css_prefix}-th-label {
+  text-align: center;
+  padding-left: 0.8em;
+  margin-right: $lu-engine_grip_gap;
+  font-weight: 500;
+}
 
-    &.#{$lu_css_prefix}-dragover {
-      transition: bottom 0.2s ease, height 0.2s ease;
-      height: 50px;
-      bottom: ($lu_engine_grip_gap * -1) - 1px - 15px -25px;
-      width: 100%;
-      right: 0;
+.#{$lu_css_prefix}-th-summary {
+  height: 2em;
+
+  &:empty {
+    display: none;
+  }
+
+  &[data-renderer=aggregate],
+  &[data-renderer=selection] {
+    display: block; // have just a before element
+  }
+}
+
+
+> .#{$lu_css_prefix}-handle {
+  position: absolute;
+  right: -$lu-engine_grip_gap;
+  width: $lu_engine_grip_gap;
+  height: 100%;
+  background-color: white;
+  cursor: col-resize;
+  border-bottom: 1px solid white;
+  text-align: center;
+  bottom: -1px;
+
+  &.#{$lu_css_prefix}-dragover {
+    @include user_select_none();
+
+    transition: width 0.2s ease, right 0.2s ease;
+    color: $lu_toolbar_color_hover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed $lu_drag_over;
+    background-color: lighten($lu_drag_over, 35%);
+    width: 50px;
+    right: -25px;
+    z-index: 10;
+    font-size: small;
+
+    &::before {
+      content: 'Place here';
+      overflow: hidden;
     }
+  }
+
+  &:hover {
+    background-color: $lu_hover_color;
+  }
+}
+
+// TODO
+.#{$lu_css_prefix}-dialog-sub-nested > section {
+  margin-bottom: $lu_engine_grip_gap + 15px;
+}
+
+> .#{$lu_css_prefix}-sub-handle {
+  height: $lu_engine_grip_gap;
+  width: 100%;
+  bottom: ($lu_engine_grip_gap * -1) - 1px - 15px;
+  left: 0;
+  right: 0;
+  cursor: inherit;
+
+  &.#{$lu_css_prefix}-dragover {
+    transition: bottom 0.2s ease, height 0.2s ease;
+    height: 50px;
+    bottom: ($lu_engine_grip_gap * -1) - 1px - 15px -25px;
+    width: 100%;
+    right: 0;
   }
 }
 

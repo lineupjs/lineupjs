@@ -78,13 +78,15 @@ export default class RenderColumn implements IColumn {
     }
     const elem = this.ctx.asElement(this.renderers.summary.template);
     elem.dataset.renderer = this.renderers.summaryId;
-    elem.classList.add(cssClass('summary'));
+    elem.classList.add(cssClass('summary'), cssClass('th-summary'));
     this.renderers.summaryTemplate = <HTMLElement>elem.cloneNode(true);
     return elem;
   }
 
   createHeader() {
-    const node = createHeader(this.c, this.ctx);
+    const node = createHeader(this.c, this.ctx, {
+      extraPrefix: 'th'
+    });
     node.classList.add(cssClass('header'));
     node.classList.toggle(engineCssClass('frozen'), this.frozen);
 

@@ -24,6 +24,7 @@ export interface IHeaderOptions {
   rearrangeAble: boolean;
   resizeable: boolean;
   level: number;
+  extraPrefix: string;
 }
 
 /** @internal */
@@ -33,14 +34,18 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     mergeDropAble: true,
     rearrangeAble: true,
     resizeable: true,
-    level: 0
+    level: 0,
+    extraPrefix: ''
   }, options);
   const node = ctx.document.createElement('section');
+
+  const extra = options.extraPrefix ? (name: string) => `${cssClass(name)} ${cssClass(`${options.extraPrefix}-${name}`)}` : cssClass;
+
   node.innerHTML = `
-    <div class="${cssClass('label')} ${cssClass('typed-icon')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
-    <div class="${cssClass('toolbar')}"></div>
-    <div class="${cssClass('spacing')}"></div>
-    <div class="${cssClass('handle')}"></div>
+    <div class="${extra('label')} ${cssClass('typed-icon')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
+    <div class="${extra('toolbar')}"></div>
+    <div class="${extra('spacing')}"></div>
+    <div class="${extra('handle')}"></div>
   `;
 
   // addTooltip(node, col);
