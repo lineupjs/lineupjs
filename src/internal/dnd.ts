@@ -79,6 +79,7 @@ let idCounter = 0;
  */
 export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult, stopPropagation: boolean = false) {
   const id = ++idCounter;
+  node.classList.add(cssClass('dragable'));
   node.draggable = true;
   node.addEventListener('dragstart', (e) => {
     node.classList.add(cssClass('dragging'));

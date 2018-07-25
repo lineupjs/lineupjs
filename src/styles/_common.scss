@@ -1,21 +1,13 @@
 @import './vars';
 
-.lineup-engine,
-.#{$lu_css_prefix},
-.#{$lu_css_prefix}-header,
-.#{$lu_css_prefix}-side-panel,
-.#{$lu_css_prefix}-dialog {
-  [aria-hidden=true] {
-    display: none;
-  }
+.#{$lu_css_prefix}-aria {
+  display: none;
+}
 
-  [draggable] {
-    cursor: pointer;
-    cursor: -moz-grab;
-    cursor: -webkit-grab; // indicate grab able
-  }
-
-  @import './icons/icon_style';
+.#{$lu_css_prefix}-dragable {
+  cursor: pointer;
+  cursor: -moz-grab;
+  cursor: -webkit-grab; // indicate grab able
 }
 
 .#{$lu_css_prefix}-dragover {

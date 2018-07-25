@@ -2,24 +2,24 @@
 @import '../vars';
 @import './custom_font';
 
-[data-icon]::before {
+[data-luicon]::before {
   @include lu_icons();
 
   text-align: center;
 }
 
-[data-icon=checked]::before {
+[data-luicon=checked]::before {
   content: $lu_icon_check_square_o;
 }
 
-[data-icon=unchecked]::before {
+[data-luicon=unchecked]::before {
   content: $lu_icon_square_o;
 }
 
-[data-icon=caret-down]::before {
+[data-luicon=caret-down]::before {
   content: $lu_icon_caret_down;
 }
 
-[data-icon=caret-right]::before {
+[data-luicon=caret-right]::before {
   content: $lu_icon_caret_right;
 }

@@ -1,4 +1,7 @@
+@import './vars';
+
 @import './common';
+@import './icons/icon_style';
 @import './dialogs';
 @import './mappingeditor';
 @import './header/index';
@@ -8,7 +11,6 @@
 @import './panel/index';
 @import './datatypes';
 @import './taggle/index';
-@import './vars';
 
 .#{$lu_css_prefix} {
   position: relative;

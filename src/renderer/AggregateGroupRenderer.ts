@@ -45,12 +45,12 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
   createSummary(col: AggregateGroupColumn, context: IRenderContext) {
     return {
-      template: `<div title="(Un)Aggregate All" data-icon="caret-down"></div>`,
+      template: `<div title="(Un)Aggregate All" data-luicon="caret-down"></div>`,
       update: (node: HTMLElement) => {
         const ranking = col.findMyRanker();
         const right = Boolean(ranking && ranking.getGroups().every((g) => col.isAggregated(g)));
 
-        node.dataset.icon = right ? 'caret-right' : 'caret-down';
+        node.dataset.luicon = right ? 'caret-right' : 'caret-down';
 
         node.onclick = (evt) => {
           evt.stopPropagation();
@@ -58,8 +58,8 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           if (!ranking || !context) {
             return;
           }
-          const aggregate = node.dataset.icon === 'caret-down';
-          node.dataset.icon = aggregate ? 'caret-right' : 'caret-down';
+          const aggregate = node.dataset.luicon === 'caret-down';
+          node.dataset.luicon = aggregate ? 'caret-right' : 'caret-down';
           context.provider.aggregateAllOf(ranking, aggregate);
         };
       }
