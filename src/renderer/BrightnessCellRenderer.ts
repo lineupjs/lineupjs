@@ -8,6 +8,7 @@ import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
+import {cssClass} from 'lineupengine/src/styles';
 
 /** @internal */
 export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColumn, imposer?: IImposer) {
@@ -32,7 +33,7 @@ export default class BrightnessCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
-        <div style="background-color: ${col.color}"></div><div> </div>
+        <div class="${cssClass('categorical-color')}" style="background-color: ${col.color}"></div><div class="${cssClass('categorical-label')}"> </div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);

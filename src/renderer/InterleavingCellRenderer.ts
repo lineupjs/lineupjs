@@ -2,7 +2,7 @@ import {INumberBin, IStatistics} from '../internal';
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
-import {CANVAS_HEIGHT} from '../styles';
+import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {getHistDOMRenderer} from './HistogramCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -73,10 +73,10 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement) => {
         const stats = cols.map((c) => <IStatistics | null>context.statsOf(<any>c));
         if (!stats.some(Boolean)) {
-          n.classList.add('lu-missing');
+          n.classList.add(cssClass('missing'));
           return;
         }
-        n.classList.remove('lu-missing');
+        n.classList.remove(cssClass('missing'));
         const grouped = groupedHist(stats);
         render(n, grouped);
       }

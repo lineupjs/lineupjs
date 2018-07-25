@@ -7,6 +7,7 @@ import {filterMissingNumberMarkup} from '../ui/missing';
 import {interactiveHist} from './CategoricalCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {forEachChild, noRenderer, adaptTextColorToBgColor} from './utils';
+import {cssClass} from '../styles';
 
 /** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
@@ -42,7 +43,7 @@ function staticSummary(col: ICategoricalColumn) {
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
-      n.classList.toggle('lu-missing', !hist);
+      n.classList.toggle(cssClass('missing'), !hist);
       if (!hist) {
         return;
       }
@@ -62,7 +63,7 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
       }
       filterUpdate(hist ? hist.missing : 0, col);
 
-      n.classList.toggle('lu-missing', !hist);
+      n.classList.toggle(cssClass('missing'), !hist);
       if (!hist) {
         return;
       }

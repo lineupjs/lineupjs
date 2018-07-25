@@ -1,7 +1,7 @@
 import {IDataRow, isMissingValue} from '../model';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
-import {CANVAS_HEIGHT} from '../styles';
+import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
 import IRenderContext, {ICellRendererFactory, IImposer} from './interfaces';
@@ -30,7 +30,7 @@ export default class HeatmapCellRenderer extends ANumbersCellRenderer implements
           const v = data[i];
           attr(<HTMLDivElement>d, {
             title: `${labels[i]}: ${DEFAULT_FORMATTER(v)}`,
-            'class': isMissingValue(v) ? 'lu-missing' : ''
+            'class': isMissingValue(v) ? cssClass('missing') : ''
           }, {
             'background-color': isMissingValue(v) ? null : toHeatMapColor(v, item, col, imposer)
           });

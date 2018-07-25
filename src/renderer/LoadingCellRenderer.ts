@@ -11,7 +11,7 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
 
   create() {
     return {
-      template: `<div>Loading…</div>`,
+      template: `<div>Loading &hellip;</div>`,
       update: noop,
       render: noop
     };

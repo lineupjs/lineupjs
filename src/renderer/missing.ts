@@ -1,6 +1,6 @@
 import {IDataRow} from '../model';
 import Column from '../model/Column';
-import {CANVAS_HEIGHT, DASH} from '../styles';
+import {CANVAS_HEIGHT, DASH, cssClass} from '../styles';
 
 export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
 
@@ -12,7 +12,7 @@ export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number,
 
 export function renderMissingDOM(node: HTMLElement, col: Column, d: IDataRow) {
   const missing = col.isMissing(d);
-  node.classList.toggle('lu-missing', missing);
+  node.classList.toggle(cssClass('missing'), missing);
   return missing;
 }
 

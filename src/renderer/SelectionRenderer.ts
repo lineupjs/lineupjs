@@ -4,6 +4,7 @@ import SelectionColumn from '../model/SelectionColumn';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {noop} from './utils';
 import {IDataProvider} from '../provider/ADataProvider';
+import {cssClass} from '../styles';
 
 /** @internal */
 export default class SelectionRenderer implements ICellRendererFactory {
@@ -41,14 +42,14 @@ export default class SelectionRenderer implements ICellRendererFactory {
         const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
         const all = selected >= rows.length / 2;
         if (all) {
-          n.classList.add('lu-group-selected');
+          n.classList.add(cssClass('group-selected'));
         } else {
-          n.classList.remove('lu-group-selected');
+          n.classList.remove(cssClass('group-selected'));
         }
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          const value = n.classList.toggle('lu-group-selected');
+          const value = n.classList.toggle(cssClass('group-selected'));
           col.setValues(rows, value);
         };
       }

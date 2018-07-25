@@ -6,6 +6,7 @@ import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {attr, noop, noRenderer, setText} from './utils';
+import {cssClass} from '../styles';
 
 /** @internal */
 export default class CircleCellRenderer implements ICellRendererFactory {
@@ -18,7 +19,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   create(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     return {
       template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
-              <div class="lu-hover-only"></div>
+              <div class="${cssClass('hover-only')}"></div>
           </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const v = col.getNumber(d);

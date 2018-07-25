@@ -5,6 +5,7 @@ import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, setText, uniqueId} from './utils';
+import {cssClass} from '../styles';
 
 
 /**
@@ -22,7 +23,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
   create(col: StringColumn) {
     const align = col.alignment || 'left';
     return {
-      template: `<div${align !== 'left' ? ` class="lu-${align}"` : ''}> </div>`,
+      template: `<div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         if (col.escape) {

@@ -2,6 +2,7 @@ import BooleanColumn from '../model/BooleanColumn';
 import Column from '../model/Column';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import {ERenderMode} from './interfaces';
+import {cssClass} from '../styles';
 
 /** @internal */
 export default class BooleanCellRenderer extends DefaultCellRenderer {
@@ -13,7 +14,7 @@ export default class BooleanCellRenderer extends DefaultCellRenderer {
 
   create(col: Column) {
     const r = super.create(col);
-    (<any>r).template = `<div class="lu-center"> </div>`;
+    (<any>r).template = `<div class="${cssClass('center')}"> </div>`;
     return r;
   }
 }

@@ -15,6 +15,7 @@ import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop} from './utils';
+import {cssClass} from '../styles';
 
 /** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
@@ -70,7 +71,7 @@ function staticSummary(col: INumberColumn, template: string, render: (n: HTMLEle
         Array.from(node.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
       }
 
-      node.classList.toggle('lu-missing', !hist);
+      node.classList.toggle(cssClass('missing'), !hist);
       if (!hist) {
         return;
       }
@@ -99,7 +100,7 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
       }
       updateFilter(hist ? hist.missing : 0, col);
 
-      node.classList.toggle('lu-missing', !hist);
+      node.classList.toggle(cssClass('missing'), !hist);
       if (!hist) {
         return;
       }
@@ -187,7 +188,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
   selectAll([min, max]).call(drag<HTMLElement, {}>()
     .filter(() => d3event.button === 0 && !d3event.shiftKey)
     .on('start', function (this: HTMLElement) {
-      this.classList.add('lu-dragging');
+      this.classList.add(cssClass('hist-dragging'));
     })
     .on('drag', function (this: HTMLElement) {
       const evt = (<D3DragEvent<any, any, any>>d3event);
@@ -207,7 +208,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
       maxHint.style.width = `${100 - percent}%`;
     })
     .on('end', function (this: HTMLElement) {
-      this.classList.remove('lu-dragging');
+      this.classList.remove(cssClass('hist-dragging'));
       setFilter();
     }));
 
@@ -259,7 +260,7 @@ export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn
       }
       nodes = Array.from(n.querySelectorAll('[data-x]'));
     }
-    n.classList.toggle('lu-dense', bins > DENSE_HISTOGRAM);
+    n.classList.toggle(cssClass('dense'), bins > DENSE_HISTOGRAM);
     nodes.forEach((d: HTMLElement, i) => {
       const {x0, x1, length} = hist[i];
       const inner = <HTMLElement>d.firstElementChild!;
@@ -270,7 +271,7 @@ export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn
     });
   };
   return {
-    template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense' : ''}>${bins}`, // no closing div to be able to append things
+    template: `<div${guessedBins > DENSE_HISTOGRAM ? ` class="${cssClass('dense')}"`  : ''}>${bins}`, // no closing div to be able to append things
     render,
     guessedBins
   };

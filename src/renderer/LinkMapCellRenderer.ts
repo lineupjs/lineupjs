@@ -5,6 +5,7 @@ import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noop, noRenderer} from './utils';
+import {cssClass} from '../styles';
 
 /** @internal */
 export default class LinkMapCellRenderer implements ICellRendererFactory {
@@ -23,7 +24,11 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
           return;
         }
         const values = col.getValue(d);
-        node.innerHTML = col.getLabels(d).map(({key, value}, i) => `<div>${key}</div><div${align !== 'left' ? ` class="lu-${align}"` : ''}><a href="${values[i].value}" target="_blank">${value}</a></div>`).join('');
+        node.innerHTML = col.getLabels(d).map(({key, value}, i) => `
+          <div>${key}</div>
+          <div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>
+            <a href="${values[i].value}" target="_blank" rel="noopener">${value}</a>
+          </div>`).join('');
       },
       render: noop
     };
@@ -33,7 +38,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     const numExampleRows = 5;
     const examples = <string[]>[];
     for (const row of arr) {
-      examples.push(`<a target="_blank" href="${row.link}">${row.value}</a>`);
+      examples.push(`<a target="_blank" rel="noopener" href="${row.link}">${row.value}</a>`);
       if (examples.length >= numExampleRows) {
         break;
       }
@@ -54,7 +59,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
 
         const entries = groupByKey(vs);
 
-        node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="lu-${align}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
+        node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
       }
     };
   }

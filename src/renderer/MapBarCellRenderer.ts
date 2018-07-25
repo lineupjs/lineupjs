@@ -8,6 +8,7 @@ import {colorOf} from './impose';
 import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
+import {cssClass} from '../styles';
 
 /** @internal */
 export default class MapBarCellRenderer implements ICellRendererFactory {
@@ -26,10 +27,10 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
         }
         node.innerHTML = col.getMap(d).map(({key, value}) => {
           if (isMissingValue(value)) {
-            return `<div>${key}</div><div class="lu-missing"></div>`;
+            return `<div>${key}</div><div class="${cssClass('missing')}"></div>`;
           }
           const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
-          return `<div>${key}</div><div title="${DEFAULT_FORMATTER(value)}"><div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}"><span class="lu-hover-only">${value}</span></div></div>`;
+          return `<div>${key}</div><div title="${DEFAULT_FORMATTER(value)}"><div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}"><span class="${cssClass('hover-only')}">${value}</span></div></div>`;
         }).join('');
       },
       render: noop

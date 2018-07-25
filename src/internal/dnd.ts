@@ -1,3 +1,5 @@
+import {cssClass} from '../styles';
+
 export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
   const available: any = e.dataTransfer.types;
 
@@ -79,7 +81,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
   const id = ++idCounter;
   node.draggable = true;
   node.addEventListener('dragstart', (e) => {
-    node.classList.add('lu-dragging');
+    node.classList.add(cssClass('dragging'));
     const payload = onDragStart();
     e.dataTransfer.effectAllowed = payload.effectAllowed;
 
@@ -105,7 +107,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     dndTransferStorage.set(id, payload.data);
   });
   node.addEventListener('dragend', (e) => {
-    node.classList.remove('lu-dragging');
+    node.classList.remove(cssClass('dragging'));
     if (stopPropagation) {
       e.stopPropagation();
     }
@@ -115,9 +117,9 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     }
 
     // remove all
-    const over = <HTMLElement>node.ownerDocument.querySelector('.lu-dragover');
+    const over = <HTMLElement>node.ownerDocument.querySelector(`.${cssClass('dragover')}`);
     if (over) {
-      over.classList.remove('lu-dragover');
+      over.classList.remove(cssClass('dragover'));
     }
   });
 }
@@ -134,8 +136,8 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
 export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result: IDropResult, e: DragEvent) => boolean, onDragOver: null | ((e: DragEvent) => void) = null, stopPropagation: boolean = false) {
   node.addEventListener('dragenter', (e) => {
     //var xy = mouse($node.node());
-    if (!node.classList.contains('lu-dragging') && (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e))) {
-      node.classList.add('lu-dragover');
+    if (!node.classList.contains(cssClass('dragging')) && (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e))) {
+      node.classList.add(cssClass('dragover'));
       if (stopPropagation) {
         e.stopPropagation();
       }
@@ -143,14 +145,14 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
       return false;
     }
     //not a valid mime type
-    node.classList.remove('lu-dragover');
+    node.classList.remove(cssClass('dragover'));
     return;
   });
   node.addEventListener('dragover', (e) => {
-    if (!node.classList.contains('lu-dragging') && (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e))) {
+    if (!node.classList.contains(cssClass('dragging')) && (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e))) {
       e.preventDefault();
       updateDropEffect(e);
-      node.classList.add('lu-dragover');
+      node.classList.add(cssClass('dragover'));
 
       if (stopPropagation) {
         e.stopPropagation();
@@ -165,7 +167,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
   });
   node.addEventListener('dragleave', (evt) => {
     // same fix as in phovea
-    (<HTMLElement>evt.target).classList.remove('lu-dragover');
+    (<HTMLElement>evt.target).classList.remove(cssClass('dragover'));
   });
   node.addEventListener('drop', (e) => {
     e.preventDefault();
@@ -175,7 +177,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
     updateDropEffect(e);
     const effect = <IDragEffect>e.dataTransfer.dropEffect;
 
-    node.classList.remove('lu-dragover');
+    node.classList.remove(cssClass('dragover'));
 
     if (isEdgeDnD(e)) {
       const base = e.dataTransfer.getData('text/plain');

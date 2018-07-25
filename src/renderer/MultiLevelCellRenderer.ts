@@ -79,7 +79,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     const useGrid = context.option('useGridLayout', false);
     const width = context.colWidth(col);
     return {
-      template: `<div class='${useGrid ? gridClass(col) : ''}${useGrid && !stacked ? ' lu-grid-space' : ''}'>${cols.map((d) => d.template).join('')}</div>`,
+      template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid && !stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
         if (renderMissingDOM(n, col, d)) {
           return;
@@ -132,7 +132,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     const {cols, padding} = createData(col, context, false, ERenderMode.GROUP, imposer);
     const useGrid = context.option('useGridLayout', false);
     return {
-      template: `<div class='${useGrid ? gridClass(col) : ''}${useGrid ? ' lu-grid-space' : ''}'>${cols.map((d) => d.template).join('')}</div>`,
+      template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
       update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
         matchColumns(n, cols);
 

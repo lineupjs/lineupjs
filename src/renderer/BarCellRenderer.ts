@@ -3,7 +3,7 @@ import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
 import {isNumbersColumn} from '../model';
-import {CANVAS_HEIGHT} from '../styles';
+import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -30,7 +30,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
     return {
       template: `<div title="">
           <div style='background-color: ${col.color}'>
-            <span ${this.renderValue ? '' : 'class="lu-hover-only"'}></span>
+            <span ${this.renderValue ? '' : `class="${cssClass('hover-only')}"`}></span>
           </div>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {

@@ -1,7 +1,7 @@
 import {ICategory, IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
-import {CANVAS_HEIGHT, UPSET} from '../styles';
+import {CANVAS_HEIGHT, UPSET, cssClass} from '../styles';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
@@ -35,7 +35,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
       render: (n: HTMLElement, value: boolean[]) => {
         Array.from(n.children).slice(1).forEach((d, i) => {
           const v = value[i];
-          d.classList.toggle('enabled', v);
+          d.classList.toggle(cssClass('enabled'), v);
         });
 
         const line = <HTMLElement>n.firstElementChild;
