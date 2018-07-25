@@ -11,7 +11,6 @@ import {matchColumns} from './utils';
 import {cssClass} from '../styles';
 
 /** @internal */
-// FIXME
 export function gridClass(idPrefix: string, column: Column) {
   return cssClass(`stacked-${idPrefix}-${column.id}`);
 }

@@ -1,7 +1,8 @@
 @import './vars';
 
-.#{$lu_css_prefix}-aria {
-  display: none;
+.#{$lu_css_prefix}-aria,
+.#{$lu_css_prefix}-hidden {
+  display: none !important;
 }
 
 .#{$lu_css_prefix}-dragable {

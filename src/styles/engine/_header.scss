@@ -53,7 +53,7 @@
 }
 
 
-> .#{$lu_css_prefix}-handle {
+.#{$lu_css_prefix}-handle {
   position: absolute;
   right: -$lu-engine_grip_gap;
   width: $lu_engine_grip_gap;
@@ -95,7 +95,7 @@
   margin-bottom: $lu_engine_grip_gap + 15px;
 }
 
-> .#{$lu_css_prefix}-sub-handle {
+.#{$lu_css_prefix}-sub-handle {
   height: $lu_engine_grip_gap;
   width: 100%;
   bottom: ($lu_engine_grip_gap * -1) - 1px - 15px;
