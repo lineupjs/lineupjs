@@ -1,7 +1,8 @@
 import {IExceptionContext, range, ITableSection} from 'lineupengine';
 import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../model';
-import {SLOPEGRAPH_WIDTH} from '../styles';
+import {SLOPEGRAPH_WIDTH, cssClass, aria} from '../styles';
 import {IRankingHeaderContextContainer} from './interfaces';
+import {engineCssClass} from '../styles/index';
 
 interface ISlope {
   isSelected(selection: {has(dataIndex: number): boolean}): boolean;
@@ -22,7 +23,7 @@ class ItemSlope implements ISlope {
 
   update(path: SVGPathElement, width: number) {
     path.setAttribute('data-i', String(this.dataIndices[0]));
-    path.setAttribute('class', 'lu-slope');
+    path.setAttribute('class', cssClass('slope'));
     path.setAttribute('d', `M0,${this.left}L${width},${this.right}`);
   }
 }
@@ -37,7 +38,7 @@ class GroupSlope implements ISlope {
   }
 
   update(path: SVGPathElement, width: number) {
-    path.setAttribute('class', 'lu-group-slope');
+    path.setAttribute('class', cssClass('group-slope'));
     path.setAttribute('d', `M0,${this.left[0]}L${width},${this.right[0]}L${width},${this.right[1]}L0,${this.left[1]}Z`);
   }
 }
@@ -84,10 +85,10 @@ export default class SlopeGraph implements ITableSection {
   constructor(public readonly header: HTMLElement, public readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer, options: Partial<ISlopeGraphOptions> = {}) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
-    header.classList.add('lu-slopegraph-header');
+    header.classList.add(cssClass('slopegraph-header'));
     this._mode = options.mode === EMode.BAND ? EMode.BAND : EMode.ITEM;
     this.initHeader(header);
-    body.classList.add('lu-slopegraph');
+    body.classList.add(cssClass('slopegraph'));
     this.body.style.height = `1px`;
     body.appendChild(this.node);
   }
@@ -111,19 +112,20 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private initHeader(header: HTMLElement) {
-    header.innerHTML = `<i title="Item" class="${this._mode === EMode.ITEM ? 'active' : ''}"><span aria-hidden="true">Item</span></i>
-        <i title="Band" class="${this._mode === EMode.BAND ? 'active' : ''}"><span aria-hidden="true">Band</span></i>`;
+    const active = cssClass('active');
+    header.innerHTML = `<i title="Item" class="${this._mode === EMode.ITEM ? active : ''}">${aria('Item')}</i>
+        <i title="Band" class="${this._mode === EMode.BAND ? active : ''}">${aria('Band')}</i>`;
 
     const icons = <HTMLElement[]>Array.from(header.children);
     icons.forEach((n: HTMLElement, i) => {
       n.onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
-        if (n.classList.contains('active')) {
+        if (n.classList.contains(active)) {
           return;
         }
         this.mode = i === 0 ? EMode.ITEM : EMode.BAND;
-        icons.forEach((d, j) => d.classList.toggle('active', j === i));
+        icons.forEach((d, j) => d.classList.toggle(active, j === i));
       };
     });
   }
@@ -143,12 +145,12 @@ export default class SlopeGraph implements ITableSection {
   }
 
   get hidden() {
-    return this.header.classList.contains('loading');
+    return this.header.classList.contains(engineCssClass('loading'));
   }
 
   set hidden(value: boolean) {
-    this.header.classList.toggle('loading', value);
-    this.body.classList.toggle('loading', value);
+    this.header.classList.toggle(engineCssClass('loading'), value);
+    this.body.classList.toggle(engineCssClass('loading'), value);
   }
 
   hide() {
@@ -369,16 +371,17 @@ export default class SlopeGraph implements ITableSection {
 
 
   highlight(dataIndex: number) {
-    const old = this.body.querySelector(`[data-i].le-highlighted`);
+    const highlight = engineCssClass('highlighted');
+    const old = this.body.querySelector(`[data-i].${highlight}`);
     if (old) {
-      old.classList.remove('le-highlighted');
+      old.classList.remove(highlight);
     }
     if (dataIndex < 0) {
       return;
     }
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
-      item.classList.add('le-highlighted');
+      item.classList.add(highlight);
     }
     return item != null;
   }
@@ -432,7 +435,7 @@ export default class SlopeGraph implements ITableSection {
       s.update(p, width);
       (<any>p).__data__ = s; // data binding
       const selected = s.isSelected(selectionLookup);
-      p.classList.toggle('lu-selected', selected);
+      p.classList.toggle(cssClass('selected'), selected);
       if (selected) {
         g.appendChild(p); // to put it on top
       }
@@ -481,7 +484,7 @@ export default class SlopeGraph implements ITableSection {
     paths.forEach((p) => {
       const s: ISlope = (<any>p).__data__;
       const selected = s.isSelected(selectedDataIndices);
-      p.classList.toggle('lu-selected', selected);
+      p.classList.toggle(cssClass('selected'), selected);
       if (selected) {
         g.appendChild(p); // to put it on top
       }

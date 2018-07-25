@@ -7,7 +7,7 @@ import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {IImposer, IRenderContext} from '../renderer';
-import {CANVAS_HEIGHT, COLUMN_PADDING} from '../styles';
+import {CANVAS_HEIGHT, COLUMN_PADDING, engineCssClass} from '../styles';
 import {lineupAnimation} from './animation';
 import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
@@ -134,9 +134,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     enabled: false,
     enter: (evt: MouseEvent) => {
       if (this.highlight >= 0) {
-        const old = this.body.querySelector('.le-highlighted');
+        const old = this.body.querySelector(`.${engineCssClass('highlighted')}`);
         if (old) {
-          old.classList.remove('le-highlighted');
+          old.classList.remove(engineCssClass('highlighted'));
         }
         this.highlight = -1;
       }
@@ -146,9 +146,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     },
     leave: () => {
       if (this.highlight >= 0) {
-        const old = this.body.querySelector('.le-highlighted');
+        const old = this.body.querySelector(`.${engineCssClass('highlighted')}`);
         if (old) {
-          old.classList.remove('le-highlighted');
+          old.classList.remove(engineCssClass('highlighted'));
         }
         this.highlight = -1;
       }
@@ -159,7 +159,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, roptions: Partial<IEngineRankingOptions> = {}) {
     super(header, body, tableId, style, {mixins: [PrefetchMixin], batchSize: 10});
     Object.assign(this.roptions, roptions);
-    body.classList.add('lu-row-body');
     body.dataset.ranking = ranking.id;
 
     const that = this;
@@ -377,7 +376,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   protected createRow(node: HTMLElement, rowIndex: number): void {
-    node.classList.add('lu-row');
+    node.classList.add(this.style.cssClasses.tr);
     this.roptions.customRowUpdate(node, rowIndex);
     if (this.highlightHandler.enabled) {
       node.addEventListener('mouseenter', this.highlightHandler.enter, {
@@ -395,7 +394,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
 
     const {i, meta} = this.renderCtx.getRow(rowIndex);
-    node.classList.toggle('le-highlighted', this.highlight === i);
+    node.classList.toggle(engineCssClass('highlighted'), this.highlight === i);
     node.dataset.i = i.toString();
     node.dataset.agg = 'detail'; //or 'group'
     if (!meta) {
@@ -467,13 +466,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
 
     if (isGroup) {
-      node.classList.remove('le-highlighted');
+      node.classList.remove(engineCssClass('highlighted'));
       super.updateRow(node, rowIndex);
       return;
     }
 
     const {i, meta} = this.renderCtx.getRow(rowIndex);
-    node.classList.toggle('le-highlighted', this.highlight === i);
+    node.classList.toggle(engineCssClass('highlighted'), this.highlight === i);
     node.dataset.i = i.toString();
     if (!meta) {
       delete node.dataset.meta;
@@ -682,16 +681,16 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   setHighlight(dataIndex: number) {
     this.highlight = dataIndex;
-    const old = this.body.querySelector(`[data-i].le-highlighted`);
+    const old = this.body.querySelector(`[data-i].${engineCssClass('highlighted')}`);
     if (old) {
-      old.classList.remove('le-highlighted');
+      old.classList.remove(engineCssClass('highlighted'));
     }
     if (dataIndex < 0) {
       return;
     }
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
-      item.classList.add('le-highlighted');
+      item.classList.add(engineCssClass('highlighted'));
     }
     return item != null;
   }
@@ -774,7 +773,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   getHighlight() {
-    const item = <HTMLElement>this.body.querySelector(`[data-i]:hover, [data-i].le-highlighted`);
+    const item = <HTMLElement>this.body.querySelector(`[data-i]:hover, [data-i].${engineCssClass('highlighted')}`);
     if (item) {
       return parseInt(item.dataset.i!, 10);
     }

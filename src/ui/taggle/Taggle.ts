@@ -6,6 +6,7 @@ import {ALineUp} from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
 import spaceFillingRule from './spaceFillingRule';
 import TaggleRenderer from './TaggleRenderer';
+import {cssClass} from '../../styles/index';
 
 export {ITaggleOptions} from '../../interfaces';
 
@@ -23,7 +24,7 @@ export default class Taggle extends ALineUp {
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     });
 
-    this.node.classList.add('lu-taggle', 'lu');
+    this.node.classList.add(cssClass(), cssClass('taggle'));
 
     this.renderer = new TaggleRenderer(data, this.node, this.options);
     this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
@@ -33,21 +34,21 @@ export default class Taggle extends ALineUp {
     this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
     this.node.insertBefore(this.panel.node, this.node.firstChild);
     {
-      this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser"><label>
+      this.panel.node.insertAdjacentHTML('afterbegin', `<div class="${cssClass('rule-button-chooser')}"><label>
             <input type="checkbox">
             <span>Overview</span>
             <div></div>
           </label></div>`);
       const spaceFilling = spaceFillingRule(this.options);
-      this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
+      this.spaceFilling = <HTMLElement>this.node.querySelector(`.${cssClass('rule-button-chooser')}`)!;
       const input = <HTMLInputElement>this.spaceFilling.querySelector('input');
       input.onchange = () => {
-        const selected = this.spaceFilling.classList.toggle('chosen');
+        const selected = this.spaceFilling.classList.toggle(cssClass('chosen'));
         self.setTimeout(() => this.renderer.switchRule(selected ? spaceFilling : null));
       };
       if (this.options.overviewMode) {
         input.checked = true;
-        this.spaceFilling.classList.toggle('chosen');
+        this.spaceFilling.classList.toggle(cssClass('chosen'));
         this.renderer.switchRule(spaceFilling);
       }
     }
@@ -56,12 +57,12 @@ export default class Taggle extends ALineUp {
 
   private setViolation(violation?: string) {
     violation = violation || '';
-    this.spaceFilling.classList.toggle('violated', Boolean(violation));
+    this.spaceFilling.classList.toggle(cssClass('violated'), Boolean(violation));
     this.spaceFilling.lastElementChild!.innerHTML = violation.replace(/\n/g, '<br>');
   }
 
   destroy() {
-    this.node.classList.remove('lu-taggle', 'lu');
+    this.node.classList.remove(cssClass(), cssClass('taggle'));
     this.renderer.destroy();
     this.panel.destroy();
     super.destroy();

@@ -20,6 +20,8 @@ export interface IRankingHeaderContextContainer {
 
   toolbar: { [key: string]: IToolbarAction | IToolbarDialogAddon };
 
+  asElement(html: string): HTMLElement;
+
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 
   getPossibleRenderer(col: Column): { item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[] };

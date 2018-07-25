@@ -1,11 +1,11 @@
 @import '../vars';
 
-section.#{$lu_css_prefix}-header {
+#{$engine_selector}-th {
   color: black;
   margin-bottom: 15px;
   border-bottom: 1px solid black;
 
-  &.frozen::before {
+  &#{$engine_selector}-frozen::before {
     /**
     add a dummy white blocker for the margin-bottom
      */
@@ -123,14 +123,12 @@ section.#{$lu_css_prefix}-header {
   }
 }
 
-.lineup-engine.#{$lu_css_prefix}-rotated-label {
-  section.#{$lu_css_prefix}-header {
-    margin-top: 10em;
+#{$engine_selector}-th.#{$lu_css_prefix}-rotated-label {
+  margin-top: 10em;
 
-    > .#{$lu_css_prefix}-label.#{$lu_css_prefix}-rotated {
-      overflow: visible;
-      text-align: left;
-      transform-origin: top left;
-    }
+  > .#{$lu_css_prefix}-label.#{$lu_css_prefix}-rotated {
+    overflow: visible;
+    text-align: left;
+    transform-origin: top left;
   }
 }

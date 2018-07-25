@@ -22,7 +22,6 @@ export default function getStyle(key: string, defaultValue = '') {
   return defaultValue;
 }
 
-
 export const COLUMN_PADDING = parseInt(getStyle('lu_engine_grip_gap', '5px'), 10);
 
 export const DASH = {
@@ -56,5 +55,20 @@ export const AGGREGATE = {
   color: getStyle('lu_aggregate_square_bracket_stroke_color', '#000')
 };
 
-export const SLOPEGRAPH_WIDTH = parseInt(getStyle('lu_slopw_width', '200px'), 10);
+export const SLOPEGRAPH_WIDTH = parseInt(getStyle('lu_slope_width', '200px'), 10);
 export const CANVAS_HEIGHT = 4;
+
+
+export const CSS_PREFIX = getStyle('lu_css_prefix', 'lu');
+export const ENGINE_CSS_PREFIX = 'le';
+
+export function cssClass(suffix?: string) {
+  return suffix? `${CSS_PREFIX}-${suffix}` : CSS_PREFIX;
+}
+export function engineCssClass(suffix?: string) {
+  return suffix? `${ENGINE_CSS_PREFIX}-${suffix}` : ENGINE_CSS_PREFIX;
+}
+
+export function aria(text: string) {
+  return `<span class="${cssClass('aria')}" aria-hidden="true">${text}</span>`;
+}

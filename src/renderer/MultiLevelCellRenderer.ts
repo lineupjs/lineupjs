@@ -8,10 +8,12 @@ import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
+import {cssClass} from '../styles';
 
 /** @internal */
-export function gridClass(column: Column) {
-  return `lu-stacked-${column.id}`;
+// FIXME
+export function gridClass(idPrefix: string, column: Column) {
+  return cssClass(`stacked-${idPrefix}-${column.id}`);
 }
 
 /** @internal */

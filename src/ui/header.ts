@@ -15,6 +15,7 @@ import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
 import ImpositionCompositesColumn from '../model/ImpositionCompositesColumn';
 import {IRankingHeaderContext} from './interfaces';
 import toolbarActions, {IOnClickHandler} from './toolbar';
+import {cssClass, aria} from '../styles';
 
 /** @internal */
 export interface IHeaderOptions {
@@ -36,15 +37,15 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   }, options);
   const node = ctx.document.createElement('section');
   node.innerHTML = `
-    <div class="lu-label">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
-    <div class="lu-toolbar"></div>
-    <div class="lu-spacing"></div>
-    <div class="lu-handle"></div>
+    <div class="${cssClass('label')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
+    <div class="${cssClass('toolbar')}"></div>
+    <div class="${cssClass('spacing')}"></div>
+    <div class="${cssClass('handle')}"></div>
   `;
 
   // addTooltip(node, col);
 
-  createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, options.level!, col, ctx);
+  createToolbar(<HTMLElement>node.querySelector(`.${cssClass('toolbar')}`)!, options.level!, col, ctx);
 
   toggleToolbarIcons(node, col);
 
@@ -55,7 +56,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     mergeDropAble(node, col, ctx);
   }
   if (options.rearrangeAble) {
-    rearrangeDropAble(<HTMLElement>node.querySelector('.lu-handle')!, col, ctx);
+    rearrangeDropAble(<HTMLElement>node.querySelector(`.${cssClass('handle')}`)!, col, ctx);
   }
   if (options.resizeable) {
     dragWidth(col, node);
@@ -66,7 +67,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column) {
-  const label = <HTMLElement>node.querySelector('.lu-label')!;
+  const label = <HTMLElement>node.querySelector(`.${cssClass('label')}`)!;
   label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label;
   node.title = col.label;
   node.dataset.colId = col.id;
@@ -114,7 +115,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
 
 function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
   return (title: string, onClick: IOnClickHandler) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="lu-action"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
+    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="${cssClass('action')}">${showLabel ? `<span>${title}</span>` : aria(title)}</i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
@@ -151,21 +152,21 @@ export function createToolbarMenuItems(node: HTMLElement, level: number, col: Co
 /** @internal */
 function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
   // rotate header flag if needed
-  const label = <HTMLElement>node.querySelector('.lu-label');
+  const label = <HTMLElement>node.querySelector(`.${cssClass('label')}`);
   if (col.getWidth() < MIN_LABEL_WIDTH) {
-    label.classList.remove('lu-rotated');
+    label.classList.remove(`.${cssClass('rotated')}`);
     return;
   }
   const width = label.clientWidth;
   const rotated = width <= 0 ? (col.label.length * defaultVisibleClientWidth / 3 * 0.6 > col.getWidth()) : (label.scrollWidth * 0.6 > label.clientWidth);
-  label.classList.toggle('lu-rotated', rotated);
+  label.classList.toggle(`.${cssClass('rotated')}`, rotated);
 }
 
 /** @internal */
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
   toggleRotatedHeader(node, col, defaultVisibleClientWidth);
 
-  const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
+  const toolbar = <HTMLElement>node.querySelector(`.${cssClass('toolbar')}`);
   if (toolbar.childElementCount === 0) {
     return;
   }
@@ -175,7 +176,7 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
     .reverse(); // start hiding with the last icon
 
   toggableIcons.forEach((icon) => {
-    icon.classList.remove('hidden'); // first show all icons to calculate the correct `clientWidth`
+    icon.classList.remove(cssClass('hidden')); // first show all icons to calculate the correct `clientWidth`
   });
   toggableIcons.forEach((icon) => {
     const currentWidth = toggableIcons.reduce((a, b) => {
@@ -183,12 +184,12 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
       if (realWidth > 0) {
         return a + realWidth;
       }
-      if (!b.classList.contains('hidden')) { // since it may have not yet been layouted
+      if (!b.classList.contains(cssClass('hidden'))) { // since it may have not yet been layouted
         return a + defaultVisibleClientWidth;
       }
       return a;
     }, 0);
-    icon.classList.toggle('hidden', (currentWidth > availableWidth)); // hide icons if necessary
+    icon.classList.toggle(cssClass('hidden'), (currentWidth > availableWidth)); // hide icons if necessary
   });
 }
 
@@ -246,7 +247,7 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
  */
 export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
-  const handle = <HTMLElement>node.querySelector('.lu-handle');
+  const handle = <HTMLElement>node.querySelector(`.${cssClass('handle')}`);
 
 
   let start = 0;
@@ -269,7 +270,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
-    node.classList.remove('lu-change-width');
+    node.classList.remove(cssClass('change-width'));
 
     ueberElement.removeEventListener('mousemove', mouseMove);
     ueberElement.removeEventListener('mouseup', mouseUp);
@@ -287,7 +288,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
   handle.onmousedown = (evt) => {
     evt.stopPropagation();
     evt.preventDefault();
-    node.classList.add('lu-change-width');
+    node.classList.add(cssClass('change-width'));
 
     start = evt.clientX;
     ueberElement = <HTMLElement>node.closest('header')!;

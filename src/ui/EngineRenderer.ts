@@ -16,6 +16,8 @@ import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph, {EMode} from './SlopeGraph';
 import DialogManager from './dialogs/DialogManager';
+import {cssClass, engineCssClass} from '../styles/index';
+import domElementCache from './domElementCache';
 
 /**
  * emitted when the highlight changes
@@ -50,7 +52,8 @@ export default class EngineRenderer extends AEventDispatcher {
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
     this.node.id = this.idPrefix;
-    this.node.classList.toggle('lu-whole-hover', options.expandLineOnHover);
+    // FIXME inline
+    this.node.classList.toggle(cssClass('whole-hover'), options.expandLineOnHover);
     parent.appendChild(this.node);
 
     const statsOf = (col: Column) => {
@@ -61,6 +64,7 @@ export default class EngineRenderer extends AEventDispatcher {
       return r;
     };
     const dialogManager = new DialogManager(parent.ownerDocument);
+
     parent.appendChild(dialogManager.node);
     this.ctx = {
       idPrefix: this.idPrefix,
@@ -70,6 +74,7 @@ export default class EngineRenderer extends AEventDispatcher {
       toolbar: this.options.toolbar,
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
+      asElement: domElementCache(parent.ownerDocument),
       renderer: (col: Column, imposer?: IImposer) => {
         const r = chooseRenderer(col, this.options.renderers);
         return r.create(col, this.ctx, statsOf(col), imposer);
@@ -107,33 +112,34 @@ export default class EngineRenderer extends AEventDispatcher {
       colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth()
     };
 
-    this.table = new MultiTableRowRenderer(this.node, `#${this.idPrefix}`);
+    this.table = new MultiTableRowRenderer(this.node, this.idPrefix);
 
     //apply rules
     {
       this.style.addRule('lineup_groupPadding', `
-       #${this.idPrefix} .lu-row[data-agg=group],
-       #${this.idPrefix} .lu-row[data-meta~=last]`, {
+       .${this.style.cssClasses.tr}[data-agg=group],
+       .${this.style.cssClasses.tr}[data-meta~=last]`, {
           marginBottom: `${options.groupPadding}px`
         });
 
       this.style.addRule('lineup_rowPadding', `
-       #${this.idPrefix} .lu-row[data-lod]`, {
+      .${this.style.cssClasses.tr}[data-lod]`, {
           paddingTop: '0'
         });
 
       // padding in general and for hovered low detail rows + their afterwards
       this.style.addRule('lineup_rowPadding2', `
-        #${this.idPrefix} .lu-row,
-        #${this.idPrefix} .lu-row[data-lod]:hover,
-        #${this.idPrefix} .lu-row[data-lod].le-highlighted,
-        #${this.idPrefix} .lu-row[data-lod].lu-selected,
-        #${this.idPrefix} .lu-row[data-lod]:hover + .lu-row,
-        #${this.idPrefix} .lu-row[data-lod].le-highlighted + .lu-row,
-        #${this.idPrefix} .lu-row[data-lod].lu-selected + .lu-row`, {
+        .${this.style.cssClasses.tr},
+        .${this.style.cssClasses.tr}[data-lod]:hover,
+        .${this.style.cssClasses.tr}[data-lod].${engineCssClass('highlighted')},
+        .${this.style.cssClasses.tr}[data-lod].${cssClass('selected')},
+        .${this.style.cssClasses.tr}[data-lod]:hover + .${this.style.cssClasses.tr},
+        .${this.style.cssClasses.tr}[data-lod].${engineCssClass('highlighted')} + .${this.style.cssClasses.tr},
+        .${this.style.cssClasses.tr}[data-lod].${cssClass('selected')} + .${this.style.cssClasses.tr}`, {
           paddingTop: `${options.rowPadding}px`
         });
 
+      // FIXME flat
       this.style.addRule('lineup_rotation', `
        #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated`, {
           transform: `rotate(${-this.options.labelRotation}deg)`
@@ -288,8 +294,8 @@ export default class EngineRenderer extends AEventDispatcher {
     if (this.options.labelRotation === 0) {
       return;
     }
-    const l = this.node.querySelector('.lu-label.lu-rotated');
-    this.node.classList.toggle('lu-rotated-label', Boolean(l));
+    const l = this.node.querySelector(`.${cssClass('label')}.${cssClass('rotated')}`);
+    this.node.classList.toggle(cssClass('rotated-label'), Boolean(l));
   }
 
   private removeRanking(ranking: Ranking | null) {
