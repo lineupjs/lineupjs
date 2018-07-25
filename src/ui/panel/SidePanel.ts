@@ -19,8 +19,7 @@ import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
 import {dialogContext} from '../toolbar';
 import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
-import {cssClass} from 'lineupengine/src/styles';
-import {aria} from '../../styles';
+import {aria, cssClass} from '../../styles';
 
 
 interface IColumnDescCategory {
@@ -66,6 +65,7 @@ export default class SidePanel {
     placeholder: 'Add Column...',
     formatItem: (item: IColumnWrapper | IGroupSearchItem<IColumnWrapper>, node: HTMLElement) => {
       node.dataset.typeCat = isWrapper(item) ? item.category.name : (<IColumnWrapper>item.children[0]).category.name;
+      node.classList.add(cssClass('typed-icon'));
       if (isWrapper(item)) {
         node.dataset.type = item.desc.type;
       }

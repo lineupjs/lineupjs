@@ -22,7 +22,7 @@ export default class CompositeChildrenDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add(cssClass('sub-nested'));
+    node.classList.add(cssClass('dialog-sub-nested'));
     const createChildren = () => {
       this.column.children.forEach((c) => {
         const n = createHeader(c, this.ctx, {

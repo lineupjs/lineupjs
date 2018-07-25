@@ -37,7 +37,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   }, options);
   const node = ctx.document.createElement('section');
   node.innerHTML = `
-    <div class="${cssClass('label')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
+    <div class="${cssClass('label')} ${cssClass('typed-icon')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
     <div class="${cssClass('toolbar')}"></div>
     <div class="${cssClass('spacing')}"></div>
     <div class="${cssClass('handle')}"></div>
@@ -72,7 +72,7 @@ export function updateHeader(node: HTMLElement, col: Column) {
   node.title = col.label;
   node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;
-  node.dataset.typeCat = categoryOf(col).name;
+  label.dataset.typeCat = categoryOf(col).name;
 
   updateIconState(node, col);
 }
@@ -193,53 +193,6 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
   });
 }
 
-
-// function addTooltip(node: HTMLElement, col: Column) {
-//   let timer = -1;
-//   let popper: Popper | null = null;
-
-//   const showTooltip = () => {
-//     timer = -1;
-//     // no tooltip if no description
-//     if (col.description.length <= 0) {
-//       return;
-//     }
-//     const parent = <HTMLElement>node.closest('.lu')!;
-//     parent.insertAdjacentHTML('beforeend', `<div class="lu-tooltip" data-type="${col.desc.type}" data-type-cat="${categoryOf(col).name}">
-//         <div x-arrow></div>
-//         <strong class="lu-label">${col.label}</strong>
-//         <p>${col.description.replace('\n', `<br/>`)}</p>
-//     </div>`);
-//     popper = new Popper(node, parent.lastElementChild!, {
-//       removeOnDestroy: true,
-//       placement: 'auto',
-//       modifiers: {
-//         flip: {
-//           enabled: false
-//         },
-//         preventOverflow: {
-//           enabled: false
-//         }
-//       }
-//     });
-//   };
-
-//   node.addEventListener('mouseenter', () => {
-//     if (col.description.length > 0) {
-//       timer = self.setTimeout(showTooltip, HOVER_DELAY_SHOW_DETAIL);
-//     }
-//   });
-//   node.addEventListener('mouseleave', () => {
-//     if (timer >= 0) {
-//       clearTimeout(timer);
-//       timer = -1;
-//     }
-//     if (popper) {
-//       popper.destroy();
-//       popper = null;
-//     }
-//   });
-// }
 
 /**
  * allow to change the width of a column using dragging the handle

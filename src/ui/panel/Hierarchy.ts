@@ -73,7 +73,7 @@ export default class Hierarchy {
       const addons = getToolbarDialogAddons(col, addonKey, this.ctx);
 
       node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="${cssClass('toolbar')}">
-      <div class="${cssClass('label')}">${col.label}</div>
+      <div class="${cssClass('label')} ${cssClass('typed-icon')}">${col.label}</div>
       ${addons.length > 0 ? `<i title="Customize" class="${cssClass('action')}">${aria('Customize')}</i>` : ''}
       <i title="Move Up" class="${cssClass('action')}">${aria('Move Up')}</i>
       <i title="Move Down" class="${cssClass('action')}">${aria('Move Down')}</i>

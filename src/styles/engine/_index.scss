@@ -2,8 +2,8 @@
 
 @import '~lineupengine/src/style';
 
-#{$engine_selector}-th,
-#{$engine_selector}-td {
+.#{$engine_css_prefix}-th,
+.#{$engine_css_prefix}-td {
   margin-right: $lu_engine_grip_gap;
 }
 

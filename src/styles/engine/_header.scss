@@ -1,11 +1,11 @@
 @import '../vars';
 
-#{$engine_selector}-th {
+.#{$engine_css_prefix}-th {
   color: black;
   margin-bottom: 15px;
   border-bottom: 1px solid black;
 
-  &#{$engine_selector}-frozen::before {
+  &.#{$engine_css_prefix}-frozen::before {
     /**
     add a dummy white blocker for the margin-bottom
      */
@@ -123,7 +123,7 @@
   }
 }
 
-#{$engine_selector}-th.#{$lu_css_prefix}-rotated-label {
+.#{$engine_css_prefix}-th.#{$lu_css_prefix}-rotated-label {
   margin-top: 10em;
 
   > .#{$lu_css_prefix}-label.#{$lu_css_prefix}-rotated {

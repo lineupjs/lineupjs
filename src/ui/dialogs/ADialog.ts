@@ -71,9 +71,9 @@ abstract class ADialog {
     }
     if (this.options.fullDialog) {
       this.node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-buttons')}">
-        <button type="submit" title="Apply"></button>
-        <button type="button" title="Cancel"></button>
-        <button type="reset" title="Reset to default values" ${!this.options.resetPossible ? 'style="visibility: hidden"': ''}></button>
+        <button class="${cssClass('dialog-button')}" type="submit" title="Apply"></button>
+        <button class="${cssClass('dialog-button')}" type="button" title="Cancel"></button>
+        <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values" ${!this.options.resetPossible ? 'style="visibility: hidden"': ''}></button>
       </div>`);
     }
 

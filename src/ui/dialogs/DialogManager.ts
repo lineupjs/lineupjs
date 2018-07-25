@@ -17,7 +17,7 @@ export default class DialogManager {
   constructor(doc = document) {
     this.node = doc.createElement('div');
     this.node.classList.add(cssClass('backdrop'));
-    this.node.innerHTML = `<div></div>`;
+    this.node.innerHTML = `<div class="${cssClass('backdrop-bg')}"></div>`;
     this.node.onclick = () => {
       this.removeAll();
     };
