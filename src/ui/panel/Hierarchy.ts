@@ -7,8 +7,7 @@ import SearchBox, {ISearchBoxOptions} from './SearchBox';
 import {isSupportType, categoryOf, isSortingAscByDefault} from '../../model/annotations';
 import {isSortAble, isGroupAble, getToolbarDialogAddons, IToolbarDialogAddon, dialogContext} from '../toolbar';
 import AddonDialog from '../dialogs/AddonDialog';
-import {cssClass} from '../../styles';
-import {aria} from '../../styles/index';
+import {cssClass, aria} from '../../styles';
 
 interface IColumnItem {
   col: Column;
@@ -36,6 +35,7 @@ export default class Hierarchy {
       doc: document,
       placeholder: 'Add Sort Criteria...',
       formatItem: (item: IColumnItem, node: HTMLElement) => {
+        node.classList.add(cssClass('typed-icon'));
         node.dataset.typeCat = categoryOf(item.col).name;
         node.dataset.type = item.col.desc.type;
         return item.text;
@@ -72,7 +72,7 @@ export default class Hierarchy {
       }
       const addons = getToolbarDialogAddons(col, addonKey, this.ctx);
 
-      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="${cssClass('toolbar')}">
+      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="${cssClass('toolbar')} ${cssClass('hierarchy-entry')}">
       <div class="${cssClass('label')} ${cssClass('typed-icon')}">${col.label}</div>
       ${addons.length > 0 ? `<i title="Customize" class="${cssClass('action')}">${aria('Customize')}</i>` : ''}
       <i title="Move Up" class="${cssClass('action')}">${aria('Move Up')}</i>

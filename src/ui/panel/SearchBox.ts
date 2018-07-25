@@ -51,7 +51,8 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
     this.node = this.options.doc.createElement('div');
     this.node.classList.add(cssClass('search'));
-    this.node.innerHTML = `<input type="search" placeholder="${this.options.placeholder}"><ul></ul>`;
+    this.node.innerHTML = `<input class="${cssClass('search-input')}" type="search" placeholder="${this.options.placeholder}">
+    <ul class="${cssClass('search-list')}"></ul>`;
 
     this.search = this.node.querySelector('input')!;
     this.body = this.node.querySelector('ul')!;

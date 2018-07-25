@@ -24,10 +24,13 @@ export default class SidePanelRanking {
     this.dropdown = document.createElement('div');
 
     this.node.classList.add(cssClass('side-panel-ranking'));
+    this.header.classList.add(cssClass('side-panel-ranking-header'));
+    this.dropdown.classList.add(cssClass('side-panel-ranking-dropdown'));
 
     this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${cssClass('action')}" title="More &hellip;">${aria('More &hellip;')}</i>`;
     (<HTMLElement>this.header.lastElementChild!).onclick = (<HTMLElement>this.dropdown.lastElementChild!).onclick = (evt) => {
       evt.stopPropagation();
+      evt.preventDefault();
       const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, <any>evt), ctx);
       dialog.open();
     };
@@ -38,9 +41,7 @@ export default class SidePanelRanking {
   }
 
   private init() {
-    this.node.innerHTML = `
-      <div><main class="${cssClass('side-panel-ranking-main')}"></main></div>
-    `;
+    this.node.innerHTML = `<main class="${cssClass('side-panel-ranking-main')}"></main>`;
     if (this.hierarchy) {
       this.node.insertBefore(this.hierarchy.node, this.node.firstChild);
     }

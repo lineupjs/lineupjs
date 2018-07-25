@@ -28,14 +28,14 @@ export default class SidePanelEntryVis {
   private init() {
     this.node.innerHTML = `
       <header class="${cssClass('side-panel-entry-header')}">
-        <div class="${cssClass('label')} ${cssClass('typed-icon')}"></div>
-        <div class="${cssClass('toolbar')}"></div>
+        <div class="${cssClass('label')} ${cssClass('typed-icon')} ${cssClass('side-panel-label')}"></div>
+        <div class="${cssClass('toolbar')} ${cssClass('side-panel-toolbar')}"></div>
       </header>`;
     createToolbar(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
 
     const summary = this.ctx.asElement(this.summary.template);
-    summary.classList.add(cssClass('summary'));
+    summary.classList.add(cssClass('summary'), cssClass('side-panel-summary'));
     summary.dataset.renderer = this.column.getSummaryRenderer();
     summary.dataset.interactive = '';
     this.node.appendChild(summary);
