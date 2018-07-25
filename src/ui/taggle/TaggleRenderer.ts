@@ -56,11 +56,10 @@ export default class TaggleRenderer extends AEventDispatcher {
 
     //
     this.renderer.style.addRule('taggle_lod_rule', `
-      #${this.renderer.idPrefix} [data-lod=low][data-agg=detail]:hover {
+      #${this.renderer.idPrefix} [data-lod=low][data-agg=detail]:hover`, {
         /* show regular height for hovered rows in low + medium LOD */
-        height: ${options.rowHeight}px !important;
-      }
-    `);
+        height: `${options.rowHeight}px !important`
+      });
 
 
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, () => {
