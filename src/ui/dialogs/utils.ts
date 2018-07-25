@@ -1,5 +1,6 @@
 import Column from '../../model';
 import {forEach, uniqueId} from '../../renderer/utils';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export function updateFilterState(attachment: HTMLElement, column: Column, filtered: boolean) {
@@ -13,7 +14,7 @@ export function updateFilterState(attachment: HTMLElement, column: Column, filte
   };
 
   toggle(attachment);
-  const root = attachment.closest('.lu');
+  const root = attachment.closest(`.${cssClass()}`);
   if (!root) {
     return;
   }
@@ -24,7 +25,7 @@ export function updateFilterState(attachment: HTMLElement, column: Column, filte
 export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string): void, getSortMethod(): string}, methods: string[], idPrefix: string) {
   const id = uniqueId(idPrefix);
   const bak = column.getSortMethod();
-  methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<div class="checkbox"><input id="${id}${d}" type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><label for="${id}${d}">${d.slice(0, 1).toUpperCase() + d.slice(1)}</label></div>`));
+  methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<div class="${cssClass('checkbox')}"><input id="${id}${d}" type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><label for="${id}${d}">${d.slice(0, 1).toUpperCase() + d.slice(1)}</label></div>`));
 
   forEach(node, 'input[name=multivaluesort]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => column.setSortMethod(n.value), {

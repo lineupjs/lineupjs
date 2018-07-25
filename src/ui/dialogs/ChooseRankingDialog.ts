@@ -1,4 +1,5 @@
 import ADialog, {IDialogContext} from './ADialog';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class ChooseRankingDialog extends ADialog {
@@ -9,7 +10,7 @@ export default class ChooseRankingDialog extends ADialog {
 
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-more-options', 'lu-choose-options');
+    node.classList.add(cssClass('more-options'), cssClass('choose-options'));
     for (const item of this.items) {
       node.appendChild(item);
     }

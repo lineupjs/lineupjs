@@ -2,6 +2,7 @@ import {D3DragEvent, drag} from 'd3-drag';
 import {event as d3event, select, Selection} from 'd3-selection';
 import {round, similar} from '../../internal/math';
 import ADialog, {IDialogContext} from './ADialog';
+import {cssClass} from '../../styles';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
@@ -65,7 +66,7 @@ export class MappingLine {
   private readonly $select: Selection<SVGGElement, any, any, any>;
 
   constructor(g: SVGGElement, public domain: number, public range: number, private readonly adapter: IMappingAdapter) {
-    g.insertAdjacentHTML('beforeend', `<g class="lu-mapping" transform="translate(${domain},0)">
+    g.insertAdjacentHTML('beforeend', `<g class="${cssClass('mapping')}" transform="translate(${domain},0)">
       <line x1="0" x2="${range - domain}" y2="60"></line>
       <line x1="0" x2="${range - domain}" y2="60"></line>
       <circle r="3"></circle>
@@ -129,7 +130,7 @@ export class MappingLine {
   }
 
   get frozen() {
-    return this.node.classList.contains('lu-frozen');
+    return this.node.classList.contains(cssClass('frozen'));
   }
 
   destroy() {

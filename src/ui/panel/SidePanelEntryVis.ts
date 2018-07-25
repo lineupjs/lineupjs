@@ -27,14 +27,15 @@ export default class SidePanelEntryVis {
 
   private init() {
     this.node.innerHTML = `
-      <header class="${cssClass('side-panel-entry-header')}"><div class="${cssClass('label')}"></div><div class="${cssClass('toolbar')}"></div></header>${this.summary.template}`;
+      <header class="${cssClass('side-panel-entry-header')}"><div class="${cssClass('label')}"></div><div class="${cssClass('toolbar')}"></div></header>`;
     createToolbar(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
 
-    const summary = <HTMLElement>this.node.lastElementChild!;
+    const summary = this.ctx.asElement(this.summary.template);
     summary.classList.add(cssClass('summary'));
     summary.dataset.renderer = this.column.getSummaryRenderer();
     summary.dataset.interactive = '';
+    this.node.appendChild(summary);
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {

@@ -2,6 +2,7 @@ import Column from '../../model/Column';
 import {IDataProvider} from '../../provider/ADataProvider';
 import ADialog, { IDialogContext} from './ADialog';
 import {uniqueId} from './utils';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class SearchDialog extends ADialog {
@@ -12,7 +13,7 @@ export default class SearchDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     const id = uniqueId(this.dialog.idPrefix);
-    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)"><div class="lu-checkbox"><input id="${id}" type="checkbox"><label for="${id}">RegExp</label></div>`);
+    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)"><div class="${cssClass('checkbox')}"><input id="${id}" type="checkbox"><label for="${id}">RegExp</label></div>`);
 
     const input = <HTMLInputElement>node.querySelector('input[type="text"]')!;
     const checkbox = <HTMLInputElement>node.querySelector('input[type="checkbox"]')!;

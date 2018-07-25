@@ -3,6 +3,7 @@ import {IRankingHeaderContext} from '../interfaces';
 import {dialogContext} from '../toolbar';
 import ADialog, {IDialogContext} from './ADialog';
 import RenameRankingDialog from './RenameRankingDialog';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class MoreRankingOptionsDialog extends ADialog {
@@ -12,7 +13,7 @@ export default class MoreRankingOptionsDialog extends ADialog {
   }
 
   private addIcon(node: HTMLElement, title: string, onClick: (evt: MouseEvent)=>void) {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="lu-action"><span>${title}</span> </i>`);
+    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="${cssClass('action')}"><span>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
@@ -21,7 +22,7 @@ export default class MoreRankingOptionsDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-more-options');
+    node.classList.add(cssClass('more-options'));
     this.addIcon(node, 'Rename', (evt) => {
       const dialog = new RenameRankingDialog(this.ranking, dialogContext(this.ctx, this.level + 1, <any>evt));
       dialog.open();

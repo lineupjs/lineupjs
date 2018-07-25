@@ -2,6 +2,7 @@ import Column from '../../model/Column';
 import {createToolbarMenuItems, updateIconState} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class MoreColumnOptionsDialog extends ADialog {
@@ -11,7 +12,7 @@ export default class MoreColumnOptionsDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-more-options');
+    node.classList.add(cssClass('more-options'));
     createToolbarMenuItems(node, this.dialog.level + 1, this.column, this.ctx);
 
     updateIconState(node, this.column);

@@ -1,5 +1,6 @@
 import Ranking from '../../model/Ranking';
 import ADialog, {IDialogContext} from './ADialog';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class RenameRankingDialog extends ADialog {
@@ -14,7 +15,7 @@ export default class RenameRankingDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-rename-dialog');
+    node.classList.add(cssClass('dialog-rename'));
     node.insertAdjacentHTML('beforeend', `
       <input type="text" value="${this.ranking.getLabel()}" required autofocus placeholder="name">`);
   }

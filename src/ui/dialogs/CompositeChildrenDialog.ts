@@ -4,6 +4,7 @@ import CompositeColumn from '../../model/CompositeColumn';
 import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class CompositeChildrenDialog extends ADialog {
@@ -21,7 +22,7 @@ export default class CompositeChildrenDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-sub-nested');
+    node.classList.add(cssClass('sub-nested'));
     const createChildren = () => {
       this.column.children.forEach((c) => {
         const n = createHeader(c, this.ctx, {
@@ -29,14 +30,14 @@ export default class CompositeChildrenDialog extends ADialog {
           resizeable: false,
           level: this.dialog.level + 1
         });
-        n.className = `lu-header`;
+        n.className = cssClass('header');
         updateHeader(n, c);
         const summary = this.ctx.summaryRenderer(c, false);
-        n.insertAdjacentHTML('beforeend', summary.template);
-        const summaryNode = <HTMLElement>n.lastElementChild!;
+        const summaryNode = this.ctx.asElement(summary.template);
         summaryNode.dataset.renderer = c.getSummaryRenderer();
-        summaryNode.classList.add('lu-summary');
+        summaryNode.classList.add(cssClass('summary'));
         summary.update(summaryNode, this.ctx.statsOf(<any>c));
+        n.appendChild(summaryNode);
         node.appendChild(n);
       });
     };

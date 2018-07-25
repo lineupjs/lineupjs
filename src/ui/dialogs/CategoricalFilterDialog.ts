@@ -4,6 +4,7 @@ import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState, uniqueId, forEach} from './utils';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {
@@ -18,13 +19,13 @@ export default class CategoricalFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-filter-table');
+    node.classList.add(cssClass('dialog-filter-table'));
 
     const id = uniqueId(this.dialog.idPrefix);
 
     node.insertAdjacentHTML('beforeend', `<div>
-        <div class="lu-checkbox"><input id="${id}" type="checkbox" checked><label for="${id}"><span></span><div>Un/Select All</div></label></div>
-        ${this.column.categories.map((c) => `<div class="lu-checkbox"><input id="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><label for="${id}${c.name}"><span style="background-color: ${c.color}"></span><div>${c.label}</div></label></div>`).join('')}
+        <div class="${cssClass('checkbox')}"><input id="${id}" type="checkbox" checked><label for="${id}"><span></span><div>Un/Select All</div></label></div>
+        ${this.column.categories.map((c) => `<div class="${cssClass('checkbox')}"><input id="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><label for="${id}${c.name}"><span style="background-color: ${c.color}"></span><div>${c.label}</div></label></div>`).join('')}
     </div>`);
     // selectAll
     this.findInput('input:not([data-cat])').onchange = function (this: HTMLElement) {

@@ -10,6 +10,7 @@ import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 import {updateFilterState} from './utils';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class MappingsFilterDialog extends ADialog {
@@ -70,7 +71,7 @@ export default class MappingsFilterDialog extends ADialog {
   }
 
   build(node: HTMLElement) {
-    node.classList.add('lu-dialog-mapper');
+    node.classList.add(cssClass('dialog-mapper'));
 
     const r = this.column.findMyRanker();
     const others = !r ? [] : r.flatColumns.filter((d) => isMapAbleColumn(d) && d !== this.column);
@@ -91,9 +92,9 @@ export default class MappingsFilterDialog extends ADialog {
       </div>
         ${this.summary.template}
         <strong data-toggle>Mapping Details</strong>
-        <div class="lu-details"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
-        <strong class="lu-details" style="text-align: center">Input Domain (min - max)</strong>
-        <svg class="lu-details" viewBox="0 0 106 66">
+        <div class="${cssClass('dialog-mapper-details')}"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
+        <strong class="${cssClass('dialog-mapper-details')}" style="text-align: center">Input Domain (min - max)</strong>
+        <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
            <g transform="translate(3,3)">
               <line x2="100"></line>
               <rect y="-3" width="100" height="10"></rect>
@@ -101,15 +102,15 @@ export default class MappingsFilterDialog extends ADialog {
               <rect y="36" width="100" height="10"></rect>
            </g>
         </svg>
-        <strong class="lu-details" style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
-        <div class="lu-script">
+        <strong class="${cssClass('dialog-mapper-details')}" style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
+        <div class="${cssClass('dialog-mapper-script')}">
           <strong>Custom Mapping Script</strong>
           <textarea></textarea>
         </div>`);
 
     // patch in lu-summary and renderer
     const summary = <HTMLElement>node.children[1];
-    summary.classList.add('lu-summary');
+    summary.classList.add(cssClass('summary'));
     summary.dataset.interactive = '';
     summary.dataset.renderer = this.column.getSummaryRenderer();
 
@@ -121,9 +122,9 @@ export default class MappingsFilterDialog extends ADialog {
       elem.toggle = elem.toggle === 'open' ? '' : 'open';
     };
 
-    const g = <SVGGElement>node.querySelector('.lu-details > g');
+    const g = <SVGGElement>node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
 
-    this.forEach('.lu-details rect', (d: SVGRectElement) => d.onclick = (evt) => {
+    this.forEach(`.${cssClass('dialog-mapper-details')} rect`, (d: SVGRectElement) => d.onclick = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
       const bb = d.getBoundingClientRect();
@@ -181,7 +182,7 @@ export default class MappingsFilterDialog extends ADialog {
     }
 
     {
-      this.forEach('.lu-details input[type=number]', (d: HTMLInputElement, i) => d.onchange = () => {
+      this.forEach(`.${cssClass('dialog-mapper-details')} input[type=number]`, (d: HTMLInputElement, i) => d.onchange = () => {
         const v = parseFloat(d.value);
         if (v === this.rawDomain[i]) {
           d.setCustomValidity('');
@@ -225,17 +226,17 @@ export default class MappingsFilterDialog extends ADialog {
 
     if (recreate) {
       // replace the summary
-      const summaryNode = this.find('.lu-summary');
       this.summary = this.ctx.summaryRenderer(this.column, true);
-      summaryNode.insertAdjacentHTML('afterend', this.summary.template);
-      const summary = <HTMLElement>summaryNode.nextElementSibling!;
-      summaryNode.remove();
-      summary.classList.add('lu-summary');
+      const summary = this.ctx.asElement(this.summary.template);
+      summary.classList.add(cssClass('summary'));
       summary.dataset.interactive = '';
       summary.dataset.renderer = this.column.getSummaryRenderer();
+
+      const old = this.find(`.${cssClass('summary')}`);
+      old.parentElement!.replaceChild(summary, old);
     }
 
-    this.summary.update(this.find('.lu-summary'), this.hist);
+    this.summary.update(this.find(`.${cssClass('summary')}`), this.hist);
   }
 
   private update() {
@@ -246,13 +247,13 @@ export default class MappingsFilterDialog extends ADialog {
       (<HTMLTextAreaElement>this.find('textarea')).value = (<ScriptMappingFunction>this.scale).code;
     }
     const domain = this.scale.domain;
-    this.forEach('.lu-details input[type=number]', (d: HTMLInputElement, i) => {
+    this.forEach(`.${cssClass('dialog-mapper-details')} input[type=number]`, (d: HTMLInputElement, i) => {
       d.value = String(domain[i]);
     });
   }
 
   private updateLines(scale = this.scale) {
-    this.forEach('.lu-details > g > line[x1]', (d: SVGLineElement) => {
+    this.forEach(`.${cssClass('dialog-mapper-details')}  > g > line[x1]`, (d: SVGLineElement) => {
       const v = parseFloat(d.getAttribute('data-v')!);
       d.setAttribute('x1', round(this.normalizeRaw(v), 2).toString());
       d.setAttribute('x2', round(scale.apply(v) * 100, 2).toString());

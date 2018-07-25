@@ -1,6 +1,7 @@
 import Popper from 'popper.js';
 import DialogManager from './DialogManager';
 import merge from '../../internal/merge';
+import {cssClass} from '../../styles';
 
 export interface IDialogOptions {
   title: string;
@@ -39,7 +40,7 @@ abstract class ADialog {
   constructor(protected readonly dialog: Readonly<IDialogContext>, options: Partial<IDialogOptions> = {}) {
     Object.assign(this.options, options);
     this.node = dialog.attachment.ownerDocument.createElement('form');
-    this.node.classList.add('lu-dialog');
+    this.node.classList.add(cssClass('dialog'));
   }
 
   get attachment() {
@@ -63,13 +64,13 @@ abstract class ADialog {
     if (this.build(this.node) === false) {
       return;
     }
-    const parent = <HTMLElement>this.attachment.closest('.lu')!;
+    const parent = <HTMLElement>this.attachment.closest(`.${cssClass()}`)!;
 
     if (this.options.title) {
       this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
     }
     if (this.options.fullDialog) {
-      this.node.insertAdjacentHTML('beforeend', `<div>
+      this.node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-buttons')}">
         <button type="submit" title="Apply"></button>
         <button type="button" title="Cancel"></button>
         <button type="reset" title="Reset to default values" ${!this.options.resetPossible ? 'style="visibility: hidden"': ''}></button>

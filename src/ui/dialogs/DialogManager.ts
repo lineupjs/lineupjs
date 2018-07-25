@@ -1,5 +1,6 @@
 import ADialog from './ADialog';
 import Column from '../../model';
+import {cssClass} from '../../styles';
 
 
 export default class DialogManager {
@@ -15,7 +16,7 @@ export default class DialogManager {
 
   constructor(doc = document) {
     this.node = doc.createElement('div');
-    this.node.classList.add('lu-backdrop');
+    this.node.classList.add(cssClass('backdrop'));
     this.node.innerHTML = `<div></div>`;
     this.node.onclick = () => {
       this.removeAll();
@@ -45,7 +46,7 @@ export default class DialogManager {
       this.clearHighlight();
       return;
     }
-    const header = <HTMLElement>root.querySelector(`.lu-header[data-col-id="${column.id}"]`);
+    const header = <HTMLElement>root.querySelector(`.${cssClass('header')}[data-col-id="${column.id}"]`);
     if (!header) {
       this.clearHighlight();
       return;

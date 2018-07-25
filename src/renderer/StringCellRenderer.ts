@@ -128,7 +128,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const id = uniqueId(context.idPrefix);
     return {
       template: `<form><input type="text" placeholder="Filter ${col.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}">
-          <div class="lu-checkbox"><input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">RegExp</label></div>
+          <div class="${cssClass('checkbox')}"><input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">RegExp</label></div>
           ${filterMissingMarkup(bakMissing, context.idPrefix)}</form>`,
       update: (node: HTMLElement) => {
         if (!update) {

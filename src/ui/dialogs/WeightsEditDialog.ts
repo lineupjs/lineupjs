@@ -2,6 +2,7 @@ import {round} from '../../internal';
 import StackColumn from '../../model/StackColumn';
 import ADialog, {IDialogContext} from './ADialog';
 import {forEach} from './utils';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class WeightsEditDialog extends ADialog {
@@ -26,7 +27,7 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-filter-table', 'lu-weights-table');
+    node.classList.add(cssClass('dialog-filter-table'), cssClass('dialog-weights-table'));
 
     const children = this.column.children;
     node.insertAdjacentHTML('beforeend', `<div>

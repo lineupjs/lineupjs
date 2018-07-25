@@ -3,6 +3,7 @@ import ADialog, {IDialogContext} from './ADialog';
 import {uniqueId, forEach} from './utils';
 import {getToolbarDialogAddons, IToolbarDialogAddon} from '../toolbar';
 import {IRankingHeaderContext} from '../interfaces';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class SortDialog extends ADialog {
@@ -35,9 +36,9 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSor
   const id = uniqueId(idPrefix);
   node.insertAdjacentHTML('afterbegin', `
         <strong>Sort Order</strong>
-        <div class="lu-checkbox"><input id="${id}B" type="radio" name="sortorder" value="asc"  ${(order.asc === 'asc') ? 'checked' : ''} ><label for="${id}B">Ascending</label></div>
-        <div class="lu-checkbox"><input id="${id}D" type="radio" name="sortorder" value="desc"  ${(order.asc === 'desc') ? 'checked' : ''} ><label for="${id}D">Decending</label></div>
-        <div class="lu-checkbox"><input id="${id}N" type="radio" name="sortorder" value="none"  ${(order.asc === undefined) ? 'checked' : ''} ><label for="${id}N">Unsorted</label></div>
+        <div class="${cssClass('checkbox')}"><input id="${id}B" type="radio" name="sortorder" value="asc"  ${(order.asc === 'asc') ? 'checked' : ''} ><label for="${id}B">Ascending</label></div>
+        <div class="${cssClass('checkbox')}"><input id="${id}D" type="radio" name="sortorder" value="desc"  ${(order.asc === 'desc') ? 'checked' : ''} ><label for="${id}D">Decending</label></div>
+        <div class="${cssClass('checkbox')}"><input id="${id}N" type="radio" name="sortorder" value="none"  ${(order.asc === undefined) ? 'checked' : ''} ><label for="${id}N">Unsorted</label></div>
         <strong>Sort Priority</strong>
         <input type="number" id="${id}P" step="1" min="1" max="${current.length + 1}" value="${order.priority + 1}">
     `);
