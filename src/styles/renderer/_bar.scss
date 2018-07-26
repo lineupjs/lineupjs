@@ -5,20 +5,13 @@
   position: relative;
   white-space: nowrap;
 
-  div {
+  > div {
     position: absolute;
     width: 100%;
-  }
-
-  > div {
     top: 0;
     bottom: 0;
     display: flex;
     align-items: center;
-
-    > div {
-      height: 100%;
-    }
 
     > span.#{$lu_css_prefix}-hover-only {
       position: relative; // required to position .lu-gradient-text

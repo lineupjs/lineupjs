@@ -19,13 +19,8 @@
     pointer-events: none !important;
   }
 
-  * {
+  > * {
     pointer-events: none !important;
-
-    &::before,
-    &::after {
-      pointer-events: none !important;
-    }
   }
 }
 

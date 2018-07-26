@@ -19,17 +19,30 @@ export default class CategoricalMappingFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add(cssClass('dialog-filter-table'));
     const joint = this.column.categories.map((d) => Object.assign({
       range: round(d.value * 100, 2)
     }));
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
     const id = uniqueId(this.dialog.idPrefix);
-    node.insertAdjacentHTML('beforeend', `<div>
-        <div class="${cssClass('checkbox')}"><input id="${id}" type="checkbox" checked><label for="${id}"><div>Un/Select All</div></label></div>
-        ${joint.map(({name, color, label, range}) => `<input id="${id}${name}" data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
-        <div class="${cssClass('checkbox')}"><input type="number" value="${range}" min="0" max="100" size="5"><label for="${id}${name}"><div><div style="background-color: ${color}; width: ${range}%"></div></div><div>${label}</div></label></div>`).join('')}
+    node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
+        <div class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input id="${id}" type="checkbox" checked>
+          <label for="${id}">
+            <div>Un/Select All</div>
+          </label>
+        </div>
+        ${joint.map(({name, color, label, range}) => `
+          <div class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+            <input id="${id}${name}" data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
+            <label for="${id}${name}">
+              <input type="number" value="${range}" min="0" max="100" size="5">
+              <div class="${cssClass('dialog-filter-color-bar')}">
+                <span style="background-color: ${color}; width: ${range}%"></span>
+              </div>
+              <div>${label}</div>
+            </label>
+          </div>`).join('')}
     </div>`);
     // selectAll
     this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: HTMLElement) {

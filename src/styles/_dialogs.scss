@@ -110,58 +110,41 @@
   width: 150px;
 }
 
-.#{$lu_css_prefix}-dialog-filter-table.#{$lu_css_prefix}-dialog-weights-table {
-  input {
+.#{$lu_css_prefix}-dialog-table {
+  overflow-y: auto;
+  max-height: 50vh;
+
+  input[type=number] {
     width: 6em;
-  }
-
-  div > span {
-    width: 100px !important;
-    position: relative;
-
-    > span {
-      top: 1px;
-      left: 0;
-      bottom: 1px;
-      position: absolute;
-      margin: 0;
-    }
   }
 }
 
-.#{$lu_css_prefix}-dialog-filter-table {
-  > div:first-of-type {
-    overflow-y: auto;
-    max-height: 50vh;
-    display: flex;
-    flex-direction: column;
+.#{$lu_css_prefix}-dialog-filter-table-entry {
+  > input[type=checkbox]:not(:checked) + label {
+    opacity: 0.5;
+  }
 
-    * {
-      transition: all 0.5s ease;
-    }
+  > label {
+    transition: opacity 0.25s ease;
+  }
+}
 
-    span {
-      width: 1.2em;
-      margin: 0 0.5em;
-    }
+.#{$lu_css_prefix}-dialog-filter-table-color {
+  width: 1.2em;
+  margin: 0 0.5em;
+}
 
-    input[type=number] + div {
-      width: 3em;
-      position: relative;
+.#{$lu_css_prefix}-dialog-filter-color-bar {
+  width: 100px;
+  position: relative;
 
-      > * {
-        height: 100%;
-      }
-    }
-
-    input[type=checkbox]:not(:checked) ~ * {
-      opacity: 0.5;
-    }
-
-    > * {
-      display: flex;
-      flex: 0 0 auto;
-    }
+  > span {
+    top: 1px;
+    left: 0;
+    bottom: 1px;
+    position: absolute;
+    margin: 0;
+    transition: background-color 0.25s linear;
   }
 }
 

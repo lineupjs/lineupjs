@@ -19,13 +19,24 @@ export default class CategoricalFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add(cssClass('dialog-filter-table'));
 
     const id = uniqueId(this.dialog.idPrefix);
 
-    node.insertAdjacentHTML('beforeend', `<div>
-        <div class="${cssClass('checkbox')}"><input id="${id}" type="checkbox" checked><label for="${id}"><span></span><div>Un/Select All</div></label></div>
-        ${this.column.categories.map((c) => `<div class="${cssClass('checkbox')}"><input id="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><label for="${id}${c.name}"><span style="background-color: ${c.color}"></span><div>${c.label}</div></label></div>`).join('')}
+    node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
+        <div class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input id="${id}" type="checkbox" checked>
+          <label for="${id}">
+            <span class="${cssClass('dialog-filter-table-color')}"></span>
+            <div>Un/Select All</div>
+          </label>
+        </div>
+        ${this.column.categories.map((c) => `<div class="${cssClass('checkbox')}">
+          <input id="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
+          <label for="${id}${c.name}">
+            <span class="${cssClass('dialog-filter-table-color')}" style="background-color: ${c.color}"></span>
+            <div>${c.label}</div>
+          </label>
+        </div>`).join('')}
     </div>`);
     // selectAll
     this.findInput('input:not([data-cat])').onchange = function (this: HTMLElement) {
