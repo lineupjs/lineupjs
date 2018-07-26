@@ -67,10 +67,12 @@ export default class SelectionRenderer implements ICellRendererFactory {
           const isunchecked = node.classList.contains(unchecked);
           if (isunchecked) {
             context.provider.selectAllOf(col.findMyRanker()!);
-            node.classList.replace(unchecked, checked);
+            node.classList.remove(unchecked);
+            node.classList.add(checked);
           } else {
             context.provider.setSelection([]);
-            node.classList.replace(checked, unchecked);
+            node.classList.remove(checked);
+            node.classList.add(unchecked);
           }
         };
       }
