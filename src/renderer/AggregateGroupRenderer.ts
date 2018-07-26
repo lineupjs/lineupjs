@@ -17,7 +17,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return {
       template: `<div title="Collapse Group"></div>`,
       update(node: HTMLElement, _row: IDataRow, _i: number, group: IGroup) {
-        node.onclick = function (event) {
+        node.onclick = (event) => {
           event.preventDefault();
           event.stopPropagation();
           col.setAggregated(group, true);

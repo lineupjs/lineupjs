@@ -173,8 +173,15 @@ export default class LocalDataProvider extends ACommonDataProvider {
       helper.sort((a, b) => ranking.comparator(a, b));
 
       //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-      const order = helper.map((r) => r.i);
-      return [Object.assign({order}, group!)];
+      const order = <number[]>[];
+      const index2pos = <number[]>[];
+
+      for (let i = 0; i < helper.length; ++i) {
+        const ri = helper[i].i;
+        order.push(ri);
+        index2pos[ri] = i;
+      }
+      return [Object.assign({order, index2pos}, group!)];
     }
     //sort by group and within by order
     helper.sort((a, b) => {
@@ -186,15 +193,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return ranking.comparator(a, b);
     });
     //iterate over groups and create within orders
-    const groups: (IOrderedGroup & IGroupData)[] = [Object.assign({order: [], rows: []}, helper[0].group!)];
+    const groups: (IOrderedGroup & IGroupData)[] = [Object.assign({order: [], index2pos: [], rows: []}, helper[0].group!)];
     let group = groups[0];
-    helper.forEach((row) => {
+    helper.forEach((row, i) => {
       const rowGroup = row.group!;
       if (rowGroup.name === group.name) {
         group.order.push(row.i);
+        group.index2pos[row.i] = i;
         group.rows.push(row);
       } else { // change in groups
-        group = Object.assign({order: [row.i], rows: [row]}, rowGroup);
+        group = Object.assign({order: [row.i], index2pos: [], rows: [row]}, rowGroup);
+        group.index2pos[row.i] = i;
         groups.push(group);
       }
     });

@@ -58,8 +58,8 @@ abstract class ACommonDataProvider extends ADataProvider {
     const groups = this.ranks.get(ranking.id) || [];
     let acc = 0;
     for (const group of groups) {
-      const rank = group.order.indexOf(row.i);
-      if (rank >= 0) {
+      const rank = group.index2pos[row.i];
+      if (typeof rank === 'number') {
         return acc + rank + 1; // starting with 1
       }
       acc += group.order.length;

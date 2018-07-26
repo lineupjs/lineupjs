@@ -91,7 +91,9 @@ export default class RenderColumn implements IColumn {
       extraPrefix: 'th'
     });
     node.classList.add(cssClass('header'));
-    node.classList.toggle(engineCssClass('frozen'), this.frozen);
+    if (!this.flags.disableFrozenColumns) {
+      node.classList.toggle(engineCssClass('frozen'), this.frozen);
+    }
 
     if (this.renderers && this.renderers.summary) {
       const summary = this.summaryRenderer()!;
@@ -125,7 +127,9 @@ export default class RenderColumn implements IColumn {
   }
 
   updateCell(node: HTMLElement, index: number): HTMLElement | void {
-    node.classList.toggle(engineCssClass('frozen'), this.frozen);
+    if (!this.flags.disableFrozenColumns) {
+      node.classList.toggle(engineCssClass('frozen'), this.frozen);
+    }
     const isGroup = this.ctx.isGroup(index);
     // assert that we have the template of the right mode
     // FIXME

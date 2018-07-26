@@ -482,7 +482,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     this.selection.updateState(node, i);
 
-    const canvas = <HTMLCanvasElement>Array.from(node.children).find((d) => d.nodeName.toLowerCase() === 'canvas');
+    const canvas = wasLod === 'high' ? null : <HTMLCanvasElement>Array.from(node.children).find((d) => d.nodeName.toLowerCase() === 'canvas');
     if (lod === 'high' || meta || this.ctx.provider.isSelected(i)) {
       if (canvas) {
         this.canvasPool.push(canvas);
