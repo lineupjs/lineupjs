@@ -35,7 +35,7 @@ export default class SidePanelEntryVis {
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
 
     const summary = this.ctx.asElement(this.summary.template);
-    summary.classList.add(cssClass('summary'), cssClass('side-panel-summary'), cssClass('renderer'));
+    summary.classList.add(cssClass('summary'), cssClass('side-panel-summary'), cssClass('renderer'), cssClass(`renderer-${this.column.getSummaryRenderer()}`));
     summary.dataset.renderer = this.column.getSummaryRenderer();
     summary.dataset.interactive = '';
     this.node.appendChild(summary);

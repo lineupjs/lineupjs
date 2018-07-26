@@ -4,40 +4,17 @@
   display: flex;
   flex-direction: row;
 
-  > div {
-    flex: 1 1 auto;
-    position: relative;
-    margin: 0 1px;
-    font-size: x-small;
-
-    &[data-filtered=filtered] {
-      opacity: 0.2;
-    }
-
-    > div {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      height: 0;
-      width: 100%;
-    }
-
-    > .#{$lu_css_prefix}-selected {
-      background-color: $lu_selected_color;
-    }
-  }
-
-  &[data-interactive] > div {
+  &[data-interactive] > .#{$lu_css_prefix}-histogram-bin {
     cursor: pointer;
   }
 
   .#{$lu_css_prefix}-checkbox {
     position: absolute;
-    bottom: -5em;
+    bottom: -3em;
   }
 
   &.#{$lu_css_prefix}-dense {
-    > div {
+    > .#{$lu_css_prefix}-histogram-bin {
       margin: 0;
     }
   }
@@ -71,7 +48,30 @@
   }
 }
 
-.#{$lu_css_prefix}-renderer:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
+.#{$lu_css_prefix}-histogram-bin {
+  flex: 1 1 auto;
+  position: relative;
+  margin: 0 1px;
+  font-size: x-small;
+
+  &[data-filtered=filtered] {
+    opacity: 0.2;
+  }
+
+  > div {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 0;
+    width: 100%;
+  }
+
+  > .#{$lu_css_prefix}-selected {
+    background-color: $lu_selected_color;
+  }
+}
+
+.#{$lu_css_prefix}-renderer:not(.#{$lu_css_prefix}-dense) > .#{$lu_css_prefix}-histogram-bin[data-title]::before {
   content: attr(data-title);
   position: absolute;
   bottom: -15px;
@@ -129,8 +129,8 @@
   right: 0;
 }
 
-.#{$lu_css_prefix}-renderer-histogram[data-interactive] {
-  margin-bottom: 2.75em;
+.#{$lu_css_prefix}-histogram[data-interactive] {
+  margin-bottom: 3.75em;
   position: relative;
 
   &:hover {
@@ -141,10 +141,5 @@
     > .#{$lu_css_prefix}-histogram-max {
       border-left-width: 5px;
     }
-  }
-
-  .#{$lu_css_prefix}-checkbox {
-    position: absolute;
-    bottom: -5em;
   }
 }

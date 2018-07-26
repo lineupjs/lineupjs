@@ -96,7 +96,7 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
 }
 
 function hist(col: ICategoricalColumn, showLabels: boolean) {
-  const bins = col.categories.map((c) => `<div title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');
+  const bins = col.categories.map((c) => `<div class="${cssClass('histogram-bin')}" title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');
 
   return {
     template: `<div class="${cssClass('histogram')} ${col.dataLength! > DENSE_HISTOGRAM ? cssClass('dense'): ''}">${bins}`, // no closing div to be able to append things
