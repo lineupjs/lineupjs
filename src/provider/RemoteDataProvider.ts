@@ -44,6 +44,14 @@ export interface IRemoteDataProviderOptions {
   maxCacheSize: number;
 }
 
+function createIndex2Pos(order: number[]) {
+  const index2pos = <number[]>[];
+  for (let i = 0; i < order.length; ++i) {
+    index2pos[order[i]] = i;
+  }
+  return index2pos;
+}
+
 /**
  * a remote implementation of the data provider
  */
@@ -67,7 +75,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
 
   sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {
     //use the server side to sort
-    return this.server.sort(ranking).then((order) => [Object.assign({order}, defaultGroup)]);
+    return this.server.sort(ranking).then((order) => [Object.assign({order, index2pos: createIndex2Pos(order)}, defaultGroup)]);
   }
 
   private loadFromServer(indices: number[]) {

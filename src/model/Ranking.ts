@@ -156,7 +156,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * the current ordering as an sorted array of indices
    * @type {Array}
    */
-  private groups: IOrderedGroup[] = [Object.assign({order: <number[]>[]}, defaultGroup)];
+  private groups: IOrderedGroup[] = [Object.assign({order: <number[]>[], index2pos: <number[]>[]}, defaultGroup)];
 
   constructor(public id: string, private maxSortCriteria = 2, private maxGroupColumns = 1) {
     super();
@@ -211,10 +211,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.fire(Ranking.EVENT_LABEL_CHANGED, this.label, this.label = value);
   }
 
-  setOrder(order: number[]) {
-    this.setGroups([Object.assign({order}, defaultGroup)]);
-  }
-
   setGroups(groups: IOrderedGroup[]) {
     const old = this.getOrder();
     const oldGroups = this.groups;
@@ -231,6 +227,10 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       default:
         return (<number[]>[]).concat(...this.groups.map((g) => g.order));
     }
+  }
+
+  getOrderLength() {
+    return this.groups.reduce((a,b) => a + b.order.length, 0);
   }
 
   getGroups() {

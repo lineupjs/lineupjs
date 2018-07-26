@@ -6,12 +6,13 @@ import ADataProvider, {IDataProviderOptions} from './ADataProvider';
 
 function isComplexAccessor(column: any) {
   // something like a.b or a[4]
-  return typeof column === 'string' && column.indexOf('.') >= 0;
+  return typeof column === 'string' && column.includes('.');
 }
 
-function resolveComplex(column: string, row: any) {
+function rowComplexGetter(row: IDataRow, _id: string, desc: any) {
+  const column = desc.column;
   if (row.hasOwnProperty(column)) { // well complex but a direct hit
-    return row[column];
+    return row.v[column];
   }
   const resolve = (obj: any, col: string) => {
     if (obj === undefined) {
@@ -22,15 +23,19 @@ function resolveComplex(column: string, row: any) {
     }
     return obj[col];
   };
-  return column.split('.').reduce(resolve, row);
+  return column.split('.').reduce(resolve, row.v);
 }
 
 function rowGetter(row: IDataRow, _id: string, desc: any) {
+  return row.v[desc.column];
+}
+
+function rowGuessGetter(row: IDataRow, _id: string, desc: any) {
   const column = desc.column;
   if (isComplexAccessor(column)) {
-    return resolveComplex(<string>column, row.v);
+    return rowComplexGetter(row, _id, desc);
   }
-  return row.v[column];
+  return rowGetter(row, _id, desc);
 }
 
 /**
@@ -40,22 +45,17 @@ abstract class ACommonDataProvider extends ADataProvider {
 
   private rankingIndex = 0;
 
-  /**
-   * the local ranking orders
-   */
-  private readonly ranks = new Map<string, IOrderedGroup[]>();
-
   constructor(private columns: IColumnDesc[] = [], options: Partial<IDataProviderOptions> = {}) {
     super(options);
     //generate the accessor
     columns.forEach((d: any) => {
-      d.accessor = d.accessor || rowGetter;
+      d.accessor = d.accessor || (d.column ? (isComplexAccessor(d.column) ? rowComplexGetter : rowGetter) : rowGuessGetter);
       d.label = d.label || d.column;
     });
   }
 
   protected rankAccessor(row: IDataRow, _id: string, _desc: IColumnDesc, ranking: Ranking) {
-    const groups = this.ranks.get(ranking.id) || [];
+    const groups = ranking.getGroups();
     let acc = 0;
     for (const group of groups) {
       const rank = group.index2pos[row.i];
@@ -84,8 +84,6 @@ abstract class ACommonDataProvider extends ADataProvider {
     const clone = new Ranking(id, this.getMaxNestedSortingCriteria(), this.getMaxGroupColumns());
 
     if (existing) { //copy the ranking of the other one
-      //copy the ranking
-      this.ranks.set(id, this.ranks.get(existing.id)!);
       //TODO better cloning
       existing.children.forEach((child) => {
         this.push(clone, child.desc);
@@ -95,23 +93,9 @@ abstract class ACommonDataProvider extends ADataProvider {
     return clone;
   }
 
-  cleanUpRanking(ranking: Ranking) {
-    //delete all stored information
-    this.ranks.delete(ranking.id);
-  }
-
   sort(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[] {
     //use the server side to sort
-    const r = this.sortImpl(ranking);
-    if (Array.isArray(r)) {
-      //store the result
-      this.ranks.set(ranking.id, r);
-      return r;
-    }
-    return r.then((r) => {
-      this.ranks.set(ranking.id, r);
-      return r;
-    });
+    return this.sortImpl(ranking);
   }
 
   protected abstract sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[];

@@ -20,7 +20,7 @@ export default function append(col: NumberColumn, node: HTMLElement, dialog: IDi
     </div>
     <div class="${cssClass('checkbox')}">
       <input type="radio" name="threshold" value="bins" id="${dialog.idPrefix}T2" ${!isThreshold ? 'checked' : ''}>
-      <label for="${dialog.idPrefix}T2"> in&nbsp;<input type="number" size="5" id="${dialog.idPrefix}N2" value="${current.length > 1 ? current.length : getNumberOfBins(ranking.getOrder().length)}"
+      <label for="${dialog.idPrefix}T2"> in&nbsp;<input type="number" size="5" id="${dialog.idPrefix}N2" value="${current.length > 1 ? current.length : getNumberOfBins(ranking.getOrderLength())}"
           required min="2" step="1" ${isThreshold ? 'disabled': ''}>&nbsp;bins
       </label>
     </div>

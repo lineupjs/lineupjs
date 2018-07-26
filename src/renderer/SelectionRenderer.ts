@@ -89,7 +89,7 @@ export function rangeSelection(provider: IDataProvider, rankingId: string, dataI
     return false; // no other or deselect
   }
   const order = ranking.getOrder();
-  const lookup = new Map(ranking.getOrder().map((d, i) => <[number, number]>[d, i]));
+  const lookup = new Map(order.map((d, i) => <[number, number]>[d, i]));
   const distances = selection.map((d) => {
     const index = (lookup.has(d) ? lookup.get(d)! : Infinity);
     return {s: d, index, distance: Math.abs(relIndex - index)};
