@@ -34,10 +34,10 @@
 }
 
 .#{$engine_css_prefix}-tr[data-meta=last] > .#{$lu_css_prefix}-renderer-aggregate {
-    &::after {
-      border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-    }
+  &::after {
+    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }
+}
 
 .#{$engine_css_prefix}-tr[data-meta='first last'] > .#{$lu_css_prefix}-renderer-aggregate,
 .#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-aggregate {

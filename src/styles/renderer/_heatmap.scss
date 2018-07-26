@@ -12,12 +12,14 @@
   position: relative;
 
   &.#{$lu_css_prefix}-missing {
+
     // transform the dash to a square
     background-size: $lu_missing_dash_height $lu_missing_dash_height;
   }
 }
 
 .#{$lu_css_prefix}-heatmap:not(.#{$lu_css_prefix}-dense) > div[data-title] {
+
   // special alignment of heatmap labels
   &:first-of-type::before {
     text-align: left;

@@ -2,7 +2,6 @@
 @import '../vars';
 @import './custom_font';
 
-
 .#{$lu_css_prefix}-icon-checked::before {
   @include lu_icons();
 

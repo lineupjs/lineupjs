@@ -2,7 +2,6 @@
 @import '../vars';
 
 @include exports('lineupjs/taggle/lod') {
-
   .#{$engine_css_prefix}-tr[data-lod=low][data-agg=detail] > * {
     overflow: hidden;
   }
@@ -75,7 +74,6 @@
         }
       }
     }
-
 
     > [data-renderer=upset] {
       visibility: visible !important;
