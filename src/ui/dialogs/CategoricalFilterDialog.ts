@@ -30,7 +30,7 @@ export default class CategoricalFilterDialog extends ADialog {
             <div>Un/Select All</div>
           </label>
         </div>
-        ${this.column.categories.map((c) => `<div class="${cssClass('checkbox')}">
+        ${this.column.categories.map((c) => `<div class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
           <input id="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
           <label for="${id}${c.name}">
             <span class="${cssClass('dialog-filter-table-color')}" style="background-color: ${c.color}"></span>

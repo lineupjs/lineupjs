@@ -14,16 +14,20 @@
   }
 
 
-  &[data-scale=script] div.#{$lu_css_prefix}-mapper-script {
+  &[data-scale=script] .#{$lu_css_prefix}-dialog-mapper-script {
     display: block;
   }
 
-  [data-toggle=open] ~ .#{$lu_css_prefix}-details {
+  [data-toggle=open] ~ .#{$lu_css_prefix}-dialog-details {
     display: block;
+  }
+
+  > .#{$lu_css_prefix}-dialog-mapper-details {
+    display: none;
   }
 }
 
-div.#{$lu_css_prefix}-mapper-script {
+div.#{$lu_css_prefix}-dialog-mapper-script {
   margin-top: 1em;
   display: none;
 
@@ -35,7 +39,7 @@ div.#{$lu_css_prefix}-mapper-script {
   }
 }
 
-.#{$lu_css_prefix}-mapper-toggle {
+.#{$lu_css_prefix}-dialog-mapper-toggle {
   margin-top: 1em;
   cursor: pointer;
 
@@ -51,9 +55,6 @@ div.#{$lu_css_prefix}-mapper-script {
   }
 }
 
-.#{$lu_css_prefix}-dialog-mapper-details {
-  display: none;
-}
 
 svg.#{$lu_css_prefix}-dialog-mapper-details {
   shape-rendering: geometricprecision;
@@ -114,11 +115,11 @@ g.#{$lu_css_prefix}-dialog-mapper-mapping {
 
 
 .#{$lu_css_prefix}-dialog-mapper {
-  &[data-scale=script] div.#{$lu_css_prefix}-mapper-script {
+  &[data-scale=script] div.#{$lu_css_prefix}-dialog-mapper-script {
     display: block;
   }
 
-  [data-toggle=open] ~ .#{$lu_css_prefix}-details {
+  [data-toggle=open] ~ .#{$lu_css_prefix}-dialog-mapper-details {
     display: block;
   }
 }
