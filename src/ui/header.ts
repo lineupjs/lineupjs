@@ -85,7 +85,7 @@ export function updateHeader(node: HTMLElement, col: Column) {
 
 /** @internal */
 export function updateIconState(node: HTMLElement, col: Column) {
-  const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
+  const sort = <HTMLElement>node.querySelector(`.${cssClass('action-sort')}`)!;
   if (sort) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
@@ -96,7 +96,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const group = <HTMLElement>node.querySelector(`i[title^='Group']`)!;
+  const group = <HTMLElement>node.querySelector(`.${cssClass('action-group')}`)!;
   if (group) {
     const groupedBy = col.isGroupedBy();
     group.dataset.group = groupedBy >= 0 ? 'true' : 'false';
@@ -107,7 +107,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const filter = <HTMLElement>node.querySelector(`i[title^='Filter']`)!;
+  const filter = <HTMLElement>node.querySelector(`.${cssClass('action-filter')}`)!;
   if (!filter) {
     return;
   }

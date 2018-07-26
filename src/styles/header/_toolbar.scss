@@ -207,6 +207,7 @@
     padding: 5px 10px 5px 5px;
     align-items: center;
     cursor: pointer;
+    padding-left: 0;
 
     &:hover {
       background: $lu_hover_color;
@@ -220,6 +221,15 @@
     > span {
       font-style: normal;
       margin-left: 3px;
+    }
+  }
+
+  > .#{$lu_css_prefix}-action-sort,
+  > .#{$lu_css_prefix}-action-group {
+    padding-left: 0;
+
+    &::after {
+      display: none;
     }
   }
 }
