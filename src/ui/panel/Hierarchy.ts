@@ -1,7 +1,7 @@
 import Ranking from '../../model/Ranking';
 import Column from '../../model/Column';
 import {ISortCriteria} from '../../model/Ranking';
-import {updateHeader} from '../header';
+import {updateHeader, actionCSSClass} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {ISearchBoxOptions} from './SearchBox';
 import {isSupportType, categoryOf, isSortingAscByDefault} from '../../model/annotations';
@@ -75,10 +75,10 @@ export default class Hierarchy {
 
       node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="${cssClass('toolbar')} ${cssClass('hierarchy-entry')}">
       <div class="${cssClass('label')} ${cssClass('typed-icon')}">${col.label}</div>
-      ${addons.length > 0 ? `<i title="Customize" class="${cssClass('action')}">${aria('Customize')}</i>` : ''}
-      <i title="Move Up" class="${cssClass('action')}">${aria('Move Up')}</i>
-      <i title="Move Down" class="${cssClass('action')}">${aria('Move Down')}</i>
-      <i title="Remove from hierarchy" class="${cssClass('action')}">${aria('Remove from hierarchy')}</i>
+      ${addons.length > 0 ? `<i title="Customize" class="${actionCSSClass('customize')}">${aria('Customize')}</i>` : ''}
+      <i title="Move Up" class="${actionCSSClass('Move Up')}">${aria('Move Up')}</i>
+      <i title="Move Down" class="${actionCSSClass('Move Down')}">${aria('Move Down')}</i>
+      <i title="Remove from hierarchy" class="${actionCSSClass('Remove')}">${aria('Remove from hierarchy')}</i>
       </div>`);
       const last = <HTMLElement>node.lastElementChild!;
 
@@ -131,7 +131,7 @@ export default class Hierarchy {
     };
 
     const addButton = (_: Column, last: HTMLElement) => {
-      last.insertAdjacentHTML('afterbegin', `<i title="Group" class="${cssClass('action')}" data-group="true">${aria('Group')}</i>`);
+      last.insertAdjacentHTML('afterbegin', `<i title="Group" class="${actionCSSClass('group')}" data-group="true">${aria('Group')}</i>`);
     };
 
     this.render(node, groups, (d) => d, addButton, 'group', click);
@@ -161,7 +161,7 @@ export default class Hierarchy {
 
     const addButton = (s: ISortCriteria, last: HTMLElement) => {
       last.insertAdjacentHTML('afterbegin', `
-      <i title="Sort" class="${cssClass('action')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria('Toggle Sorting')}</i>`);
+      <i title="Sort" class="${actionCSSClass('sort')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria('Toggle Sorting')}</i>`);
       (<HTMLElement>last.querySelector('i[title=Sort]')!).onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();

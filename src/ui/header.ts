@@ -118,9 +118,20 @@ export function updateIconState(node: HTMLElement, col: Column) {
   }
 }
 
+export function actionCSSClass(title: string) {
+  if (title.endsWith('&hellip;')) {
+    title = title.slice(0, -'&hellip;'.length - 1);
+  }
+  if (title.endsWith('By')) {
+    title = title.slice(0, -3);
+  }
+  const clean = title.toLowerCase().replace(/[ +-]/mg, '-');
+  return `${cssClass('action')} ${cssClass(`action-${clean}`)}`;
+}
+
 function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
   return (title: string, onClick: IOnClickHandler) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="${cssClass('action')}">${showLabel ? `<span>${title}</span>` : aria(title)}</i>`);
+    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="${actionCSSClass(title)}">${showLabel ? `<span>${title}</span>` : aria(title)}</i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();

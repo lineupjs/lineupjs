@@ -4,6 +4,7 @@ import {dialogContext} from '../toolbar';
 import ADialog, {IDialogContext} from './ADialog';
 import RenameRankingDialog from './RenameRankingDialog';
 import {cssClass} from '../../styles';
+import {actionCSSClass} from '../header';
 
 /** @internal */
 export default class MoreRankingOptionsDialog extends ADialog {
@@ -13,7 +14,7 @@ export default class MoreRankingOptionsDialog extends ADialog {
   }
 
   private addIcon(node: HTMLElement, title: string, onClick: (evt: MouseEvent)=>void) {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="${cssClass('action')}"><span>${title}</span> </i>`);
+    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="${actionCSSClass(title)}"><span>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();

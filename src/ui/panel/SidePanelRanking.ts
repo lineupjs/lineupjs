@@ -9,6 +9,7 @@ import {dialogContext} from '../toolbar';
 import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
 import {aria, cssClass} from '../../styles';
 import {clear} from '../../internal';
+import {actionCSSClass} from '../header';
 
 
 export default class SidePanelRanking {
@@ -28,7 +29,7 @@ export default class SidePanelRanking {
     this.header.classList.add(cssClass('side-panel-ranking-header'));
     this.dropdown.classList.add(cssClass('side-panel-ranking-dropdown'));
 
-    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${cssClass('action')}" title="More &hellip;">${aria('More &hellip;')}</i>`;
+    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${actionCSSClass('more')}" title="More &hellip;">${aria('More &hellip;')}</i>`;
     (<HTMLElement>this.header.lastElementChild!).onclick = (<HTMLElement>this.dropdown.lastElementChild!).onclick = (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
