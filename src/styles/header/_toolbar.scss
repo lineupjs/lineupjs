@@ -24,7 +24,8 @@
   }
 }
 
-.#{$lu_css_prefix}-action-rename::before {
+.#{$lu_css_prefix}-action-rename::before,
+.#{$lu_css_prefix}-action-rename---color::before {
   content: $lu_icon_pencil_square_o;
 }
 

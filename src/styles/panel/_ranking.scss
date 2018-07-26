@@ -84,6 +84,7 @@
 .#{$lu_css_prefix}-side-panel-ranking-dropdown {
   padding: 0.2em 0.5em;
   cursor: pointer;
+  display: flex;
 
   > span {
     white-space: nowrap;
