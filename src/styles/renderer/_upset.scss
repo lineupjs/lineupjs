@@ -21,7 +21,7 @@
   width: 15px;
   height: 15px;
 
-  &.enabled {
+  &.#{$lu_css_prefix}-enabled {
     opacity: 1;
   }
 }

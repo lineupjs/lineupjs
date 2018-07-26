@@ -102,7 +102,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   createGroup(col: ISetColumn) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     return {
-      template: `<div><div></div>${templateRow}</div>`,
+      template: `<div><div class="${cssClass('upset-line')}"></div>${templateRow}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const value = union(col, rows);
         render(n, value);

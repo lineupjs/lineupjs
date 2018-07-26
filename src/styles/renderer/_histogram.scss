@@ -71,7 +71,8 @@
   }
 }
 
-.#{$lu_css_prefix}-renderer:not(.#{$lu_css_prefix}-dense) > .#{$lu_css_prefix}-histogram-bin[data-title]::before {
+.#{$lu_css_prefix}-histogram:not(.#{$lu_css_prefix}-dense) > .#{$lu_css_prefix}-histogram-bin[data-title]::before,
+.#{$lu_css_prefix}-heatmap:not(.#{$lu_css_prefix}-dense) > .#{$lu_css_prefix}-heatmap-cell[data-title]::before {
   content: attr(data-title);
   position: absolute;
   bottom: -15px;

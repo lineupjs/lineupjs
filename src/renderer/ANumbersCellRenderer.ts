@@ -9,6 +9,7 @@ export abstract class ANumbersCellRenderer {
   abstract readonly title: string;
 
   protected abstract createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): {
+    clazz: string,
     templateRow: string,
     update: (row: HTMLElement, data: number[], d: IDataRow) => void,
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
@@ -33,9 +34,9 @@ export abstract class ANumbersCellRenderer {
 
   create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
     const width = context.colWidth(col);
-    const {templateRow, render, update} = this.createContext(col, context, imposer);
+    const {templateRow, render, update, clazz} = this.createContext(col, context, imposer);
     return {
-      template: `<div>${templateRow}</div>`,
+      template: `<div class="${clazz}">${templateRow}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;
@@ -52,9 +53,9 @@ export abstract class ANumbersCellRenderer {
   }
 
   createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
-    const {templateRow, update} = this.createContext(col, context, imposer);
+    const {templateRow, update, clazz} = this.createContext(col, context, imposer);
     return {
-      template: `<div>${templateRow}</div>`,
+      template: `<div class="${clazz}">${templateRow}</div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
         // render a heatmap
         const chosen = ANumbersCellRenderer.choose(col, rows);

@@ -24,8 +24,10 @@ export default class HeatmapCellRenderer extends ANumbersCellRenderer implements
       templateRows += `<div class="${cssClass('heatmap-cell')}" style="background-color: white" title=""></div>`;
     }
     return {
+      clazz: cssClass('heatmap'),
       templateRow: templateRows,
       update: (row: HTMLElement, data: number[], item: IDataRow) => {
+
         forEachChild(row, (d, i) => {
           const v = data[i];
           d.classList.toggle(cssClass('missing'), isMissingValue(v));
@@ -56,7 +58,7 @@ export default class HeatmapCellRenderer extends ANumbersCellRenderer implements
     while (labels.length > 0 && !wideEnough(col, labels.length)) {
       labels = labels.filter((_, i) => i % 2 === 0); // even
     }
-    let templateRows = '<div>';
+    let templateRows = `<div class="${cssClass('heatmap')}">`;
     for (const label of labels) {
       templateRows += `<div title="${label}" data-title="${label}"></div>`;
     }

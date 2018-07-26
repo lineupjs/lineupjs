@@ -603,10 +603,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
       const before = <HTMLElement>row.children[index];
       const after = this.updateCell(before, rowIndex, column);
-      if (before !== after && after) {
-        after.dataset.id = column.id;
-        row.replaceChild(after, before);
+      if (before === after || !after) {
+        return;
       }
+      after.dataset.id = column.id;
+      after.classList.add(engineCssClass('td'), this.style.cssClasses.td, engineCssClass(`td-${this.tableId}`));
+      row.replaceChild(after, before);
     });
     return true;
   }

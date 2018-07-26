@@ -4,6 +4,7 @@
 
 .#{$engine_css_prefix}-th,
 .#{$engine_css_prefix}-td {
+  box-sizing: border-box;
   margin-right: $lu_engine_grip_gap;
 }
 

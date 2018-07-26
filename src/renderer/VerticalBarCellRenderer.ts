@@ -34,6 +34,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
       templateRows += `<div class="${cssClass('heatmap-cell')}" style="background-color: white" title=""></div>`;
     }
     return {
+      clazz: cssClass('heatmap'),
       templateRow: templateRows,
       update: (row: HTMLElement, data: number[], item: IDataRow) => {
         const zero = toHeatMapColor(0, item, col, imposer);
