@@ -57,18 +57,20 @@ export default class SelectionRenderer implements ICellRendererFactory {
   }
 
   createSummary(col: SelectionColumn, context: IRenderContext) {
+    const unchecked = cssClass('icon-unchecked');
+    const checked = cssClass('icon-checked');
     return {
-      template: `<div title="(Un)Select All" data-luicon="unchecked"></div>`,
+      template: `<div title="(Un)Select All" class="${unchecked}"></div>`,
       update: (node: HTMLElement) => {
         node.onclick = (evt) => {
           evt.stopPropagation();
-          const icon = node.dataset.luicon;
-          if (icon === 'unchecked') {
+          const isunchecked = node.classList.contains(unchecked);
+          if (isunchecked) {
             context.provider.selectAllOf(col.findMyRanker()!);
-            node.dataset.luicon = 'checked';
+            node.classList.replace(unchecked, checked);
           } else {
             context.provider.setSelection([]);
-            node.dataset.luicon = 'unchecked';
+            node.classList.replace(checked, unchecked);
           }
         };
       }

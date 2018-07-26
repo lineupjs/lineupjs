@@ -1,7 +1,7 @@
 import {IDataRow, IGroup} from '../model';
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
 import Column from '../model/Column';
-import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
+import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
 /** @internal */
@@ -44,13 +44,16 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
   }
 
   createSummary(col: AggregateGroupColumn, context: IRenderContext) {
+    const cdown = cssClass('icon-caret-down');
+    const cright = cssClass('icon-caret-right');
     return {
-      template: `<div title="(Un)Aggregate All" data-luicon="caret-down"></div>`,
+      template: `<div title="(Un)Aggregate All" class="${cdown}"></div>`,
       update: (node: HTMLElement) => {
         const ranking = col.findMyRanker();
         const right = Boolean(ranking && ranking.getGroups().every((g) => col.isAggregated(g)));
 
-        node.dataset.luicon = right ? 'caret-right' : 'caret-down';
+        node.classList.toggle(cdown, !right);
+        node.classList.toggle(cright, right);
 
         node.onclick = (evt) => {
           evt.stopPropagation();
@@ -58,8 +61,9 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           if (!ranking || !context) {
             return;
           }
-          const aggregate = node.dataset.luicon === 'caret-down';
-          node.dataset.luicon = aggregate ? 'caret-right' : 'caret-down';
+          const aggregate = node.classList.contains(cdown);
+          node.classList.toggle(cdown, !aggregate);
+          node.classList.toggle(cright, aggregate);
           context.provider.aggregateAllOf(ranking, aggregate);
         };
       }
