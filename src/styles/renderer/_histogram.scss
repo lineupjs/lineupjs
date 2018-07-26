@@ -129,7 +129,7 @@
   right: 0;
 }
 
-.#{$lu_css_prefix}-summary[data-interactive][data-renderer=histogram] {
+.#{$lu_css_prefix}-renderer-histogram[data-interactive] {
   margin-bottom: 2.75em;
   position: relative;
 

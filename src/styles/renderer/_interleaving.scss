@@ -1,6 +1,6 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer[data-renderer=interleaving] {
+.#{$lu_css_prefix}-renderer-interleaving {
   display: flex;
   flex-direction: column;
 

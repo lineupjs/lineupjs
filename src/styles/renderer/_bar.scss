@@ -1,7 +1,7 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer[data-renderer=number],
-.#{$lu_css_prefix}-renderer[data-renderer=circle] {
+.#{$lu_css_prefix}-renderer-number,
+.#{$lu_css_prefix}-renderer-circle {
   position: relative;
   white-space: nowrap;
 
@@ -27,12 +27,12 @@
 }
 
 
-.#{$lu_css_prefix}-renderer[data-renderer=stack] .#{$lu_css_prefix}-renderer[data-renderer$=number] > div {
+.#{$lu_css_prefix}-renderer-stack .#{$lu_css_prefix}-renderer[data-renderer$=number] > div {
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
 
-.#{$engine_css_prefix}-tr[data-agg=group] > .#{$lu_css_prefix}-td[data-renderer$=number] > div > div {
+.#{$lu_css_prefix}-group[data-renderer$=number] > div > div {
   display: flex;
   align-items: center;
 }

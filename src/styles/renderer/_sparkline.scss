@@ -1,6 +1,6 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer[data-renderer=sparkline] {
+.#{$lu_css_prefix}-renderer-sparkline {
   > path {
     stroke: black;
     fill: none;

@@ -136,6 +136,8 @@ export function wideEnough(col: IArrayColumn<any>, length: number = col.labels.l
 }
 
 
+
+const adaptColorCache: {[bg: string]: string} = {};
 /**
  * Adapts the text color for a given background color
  * @param {string} bgColor as `#ff0000`
@@ -143,7 +145,11 @@ export function wideEnough(col: IArrayColumn<any>, length: number = col.labels.l
  * @internal
  */
 export function adaptTextColorToBgColor(bgColor: string): string {
-  return hsl(bgColor).l > 0.5 ? 'black' : 'white';
+  const bak = adaptColorCache[bgColor];
+  if (bak) {
+    return bak;
+  }
+  return adaptColorCache[bgColor] = hsl(bgColor).l > 0.5 ? 'black' : 'white';
 }
 
 

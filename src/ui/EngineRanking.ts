@@ -1,4 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, setColumn, ACellTableSection, ITableSection, ICellRenderContext} from 'lineupengine';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
@@ -604,7 +604,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const before = <HTMLElement>row.children[index];
       const after = this.updateCell(before, rowIndex, column);
       if (before !== after && after) {
-        setColumn(after, column);
+        after.dataset.id = column.id;
         row.replaceChild(after, before);
       }
     });

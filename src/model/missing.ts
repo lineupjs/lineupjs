@@ -2,7 +2,18 @@ import {IGroup} from './interfaces';
 
 
 export function isMissingValue(v: any): boolean {
-  return typeof(v) === 'undefined' || v == null || (typeof v === 'number' && isNaN(v)) || v === '' || v === 'NA' || v === 'NaN' || (typeof(v) === 'string' && (v.toLowerCase() === 'na') || (Array.isArray(v) && v.every((v) => isMissingValue(v))));
+  if(v == null || v === undefined || v === '' || v === 'NA' || v === 'na' || v === 'Na' || v === 'nA' || v === 'NaN' || (typeof v === 'number' && isNaN(v))) {
+    return true;
+  }
+  if (!Array.isArray(v)) {
+    return false;
+  }
+  for (const vi of v) {
+    if (!isMissingValue(vi)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isUnknown(v?: number | null) {

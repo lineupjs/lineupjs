@@ -1,7 +1,7 @@
 
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer[data-renderer=catdistributionbar] {
+.#{$lu_css_prefix}-renderer-catdistributionbar {
   display: flex;
 
   > * {

@@ -1,13 +1,14 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer[data-renderer=categorical],
-.#{$lu_css_prefix}-renderer[data-renderer=brightness],
-.#{$engine_css_prefix}-tr[data-agg=group] > .#{$lu_css_prefix}-td[data-renderer=brightness] > div {
+.#{$lu_css_prefix}-renderer-categorical,
+.#{$lu_css_prefix}-renderer-brightness {
   display: flex;
   white-space: nowrap;
 }
 
-.#{$engine_css_prefix}-tr[data-agg=group] > .#{$engine_css_prefix}-td[data-renderer=brightness] > div {
+.#{$engine_css_prefix}-group.#{$lu_css_prefix}-renderer-brightness > div {
+  display: flex;
+  white-space: nowrap;
   width: 100%;
 }
 

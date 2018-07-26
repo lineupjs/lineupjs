@@ -1,7 +1,7 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer[data-renderer=stack],
-.#{$lu_css_prefix}-renderer[data-renderer=nested] {
+.#{$lu_css_prefix}-renderer-stack,
+.#{$lu_css_prefix}-renderer-nested {
   > * {
     height: 100%;
   }

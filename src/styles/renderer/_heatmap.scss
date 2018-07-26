@@ -1,8 +1,8 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer[data-renderer=heatmap],
-.#{$lu_css_prefix}-renderer[data-renderer=catheatmap],
-.#{$lu_css_prefix}-renderer[data-renderer=verticalbar] {
+.#{$lu_css_prefix}-renderer-heatmap,
+.#{$lu_css_prefix}-renderer-catheatmap,
+.#{$lu_css_prefix}-renderer-verticalbar {
   display: flex;
   flex-direction: row;
   align-content: stretch;
@@ -19,7 +19,7 @@
   }
 }
 
-.#{$lu_css_prefix}-renderer[data-renderer=heatmap]:not(.#{$lu_css_prefix}-dense) > div[data-title] {
+.#{$lu_css_prefix}-renderer-heatmap:not(.#{$lu_css_prefix}-dense) > div[data-title] {
   // special alignment of heatmap labels
   &:first-of-type::before {
     text-align: left;

@@ -1,12 +1,12 @@
 @import '../vars';
 
 
-.#{$engine_css_prefix}-td[data-renderer=string] {
+.#{$engine_css_prefix}-td.#{$engine_css_prefix}-renderer-string {
   display: flex;
   align-items: center;
 }
 
-.#{$engine_css_prefix}-row[data-agg=group] > .#{$engine_css_prefix}-td[data-renderer=string] {
+.#{$engine_css_prefix}-group.#{$engine_css_prefix}-renderer-string {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
