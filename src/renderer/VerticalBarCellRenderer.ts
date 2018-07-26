@@ -2,7 +2,7 @@ import {IDataRow} from '../model';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
-import {CANVAS_HEIGHT} from '../styles';
+import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
 import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
@@ -31,7 +31,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     const range = 1;
     let templateRows = '';
     for (let i = 0; i < col.dataLength!; ++i) {
-      templateRows += `<div style="background-color: white" title=""></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}" style="background-color: white" title=""></div>`;
     }
     return {
       templateRow: templateRows,

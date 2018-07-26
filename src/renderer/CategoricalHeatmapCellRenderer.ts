@@ -1,7 +1,7 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
-import {CANVAS_HEIGHT} from '../styles';
+import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {union} from './UpSetCellRenderer';
@@ -19,7 +19,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     const categories = col.categories;
     let templateRows = '';
     for (const cat of categories) {
-      templateRows += `<div title="${cat.label}" style="background-color: ${cat.color}"></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}" style="background-color: ${cat.color}"></div>`;
     }
     return {
       templateRow: templateRows,

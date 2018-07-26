@@ -27,10 +27,15 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
         }
         node.innerHTML = col.getMap(d).map(({key, value}) => {
           if (isMissingValue(value)) {
-            return `<div>${key}</div><div class="${cssClass('missing')}"></div>`;
+            return `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')} ${cssClass('missing')}"></div>`;
           }
           const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
-          return `<div>${key}</div><div title="${DEFAULT_FORMATTER(value)}"><div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}"><span class="${cssClass('hover-only')}">${value}</span></div></div>`;
+          return `<div class="${cssClass('table-cell')}">${key}</div>
+            <div class="${cssClass('table-cell')}" title="${DEFAULT_FORMATTER(value)}">
+              <div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}">
+                <span class="${cssClass('hover-only')}">${value}</span>
+              </div>
+            </div>`;
         }).join('');
       },
       render: noop

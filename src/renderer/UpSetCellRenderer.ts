@@ -28,7 +28,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     const categories = col.categories;
     let templateRows = '';
     for (const cat of categories) {
-      templateRows += `<div title="${cat.label}"></div>`;
+      templateRows += `<div class="${cssClass('upset-dot')}" title="${cat.label}"></div>`;
     }
     return {
       templateRow: templateRows,
@@ -59,7 +59,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     const cellDimension = width / col.dataLength!;
 
     return {
-      template: `<div><div></div>${templateRow}</div>`,
+      template: `<div><div class="${cssClass('upset-line')}"></div>${templateRow}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;

@@ -10,12 +10,12 @@
   display: grid;
   grid-template-columns: auto auto;
   grid-gap: 0.2em;
+}
 
-  > div {
-    overflow: hidden;
-    min-height: 1.2em;
-    text-overflow: ellipsis;
-  }
+.#{$lu_css_prefix}-table-cell {
+  overflow: hidden;
+  min-height: 1.2em;
+  text-overflow: ellipsis;
 }
 
 .#{$lu_css_prefix}-renderer-mapbars > div[title] {

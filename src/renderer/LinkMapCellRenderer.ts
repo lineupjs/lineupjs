@@ -25,8 +25,8 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
         }
         const values = col.getValue(d);
         node.innerHTML = col.getLabels(d).map(({key, value}, i) => `
-          <div>${key}</div>
-          <div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>
+          <div class="${cssClass('table-cell')}">${key}</div>
+          <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align): ''}">
             <a href="${values[i].value}" target="_blank" rel="noopener">${value}</a>
           </div>`).join('');
       },

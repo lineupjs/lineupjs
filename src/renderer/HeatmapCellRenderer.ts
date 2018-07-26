@@ -21,16 +21,16 @@ export default class HeatmapCellRenderer extends ANumbersCellRenderer implements
     const labels = col.labels;
     let templateRows = '';
     for (let i = 0; i < col.dataLength!; ++i) {
-      templateRows += `<div style="background-color: white" title=""></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}" style="background-color: white" title=""></div>`;
     }
     return {
       templateRow: templateRows,
       update: (row: HTMLElement, data: number[], item: IDataRow) => {
         forEachChild(row, (d, i) => {
           const v = data[i];
+          d.classList.toggle(cssClass('missing'), isMissingValue(v));
           attr(<HTMLDivElement>d, {
-            title: `${labels[i]}: ${DEFAULT_FORMATTER(v)}`,
-            'class': isMissingValue(v) ? cssClass('missing') : ''
+            title: `${labels[i]}: ${DEFAULT_FORMATTER(v)}`
           }, {
             'background-color': isMissingValue(v) ? null : toHeatMapColor(v, item, col, imposer)
           });

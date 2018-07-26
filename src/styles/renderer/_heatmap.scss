@@ -7,15 +7,15 @@
   flex-direction: row;
   align-content: stretch;
   align-items: stretch;
+}
 
-  > div {
-    flex: 1 1 auto;
-    position: relative;
+.#{$lu_css_prefix}-heatmap-cell {
+  flex: 1 1 auto;
+  position: relative;
 
-    &.#{$lu_css_prefix}-missing {
-      // transform the dash to a square
-      background-size: $lu_missing_dash_height $lu_missing_dash_height;
-    }
+  &.#{$lu_css_prefix}-missing {
+    // transform the dash to a square
+    background-size: $lu_missing_dash_height $lu_missing_dash_height;
   }
 }
 

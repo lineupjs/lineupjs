@@ -50,7 +50,7 @@
     > [data-renderer=number] {
       visibility: visible !important;
 
-      > * {
+      > div {
         top: 0;
         bottom: 0;
       }
@@ -59,7 +59,7 @@
     > [data-renderer=boxplot] {
       visibility: visible !important;
 
-      > div {
+      > .#{$lu_css_prefix}-boxplot-whisker {
         height: 100%;
 
         &::before,
@@ -68,7 +68,7 @@
           display: none;
         }
 
-        > div:first-child {
+        > .#{$lu_css_prefix}-boxplot-box {
           top: 0;
           height: 100%;
           background: #c1c1c1;
@@ -76,15 +76,16 @@
       }
     }
 
+
     > [data-renderer=upset] {
       visibility: visible !important;
       align-items: stretch;
 
-      > div:first-child {
+      > .#{$lu_css_prefix}-upset-line {
         display: none;
       }
 
-      > div:nth-child(n + 2) {
+      > .#{$lu_css_prefix}-upset-dot {
         border-radius: 0;
         height: 100%;
 

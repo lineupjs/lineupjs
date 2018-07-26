@@ -4,6 +4,7 @@ import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn} from '.
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
+import {cssClass} from '../styles';
 
 /** @internal */
 export default class TableCellRenderer implements ICellRendererFactory {
@@ -24,7 +25,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
-        node.innerHTML = col.getMapLabel(d).map(({key, value}) => `<div>${key}</div><div>${value}</div>`).join('');
+        node.innerHTML = col.getMapLabel(d).map(({key, value}) => `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${value}</div>`).join('');
       },
       render: noop
     };
@@ -32,7 +33,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
 
   private static template(col: IArrayColumn<any>) {
     const labels = col.labels;
-    return `<div>${labels.map((l) => `<div>${l}</div><div data-v></div>`).join('\n')}</div>`;
+    return `<div>${labels.map((l) => `<div class="${cssClass('table-cell')}">${l}</div><div  class="${cssClass('table-cell')}" data-v></div>`).join('\n')}</div>`;
   }
 
   private createFixed(col: IArrayColumn<any>) {
@@ -68,7 +69,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
 
         const entries = groupByKey(vs);
 
-        node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div>${TableCellRenderer.example(values)}</div>`).join('');
+        node.innerHTML = entries.map(({key, values}) => `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${TableCellRenderer.example(values)}</div>`).join('');
       }
     };
   }

@@ -74,7 +74,7 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
 
 function stackedBar(col: ICategoricalColumn) {
   const cats = col.categories;
-  const bins = cats.map((c) => `<div style="background-color: ${c.color}; color: ${adaptTextColorToBgColor(c.color)}" title="${c.label}: 0" data-cat="${c.name}"><span>${c.label}</span></div>`).join('');
+  const bins = cats.map((c) => `<div class="${cssClass('distribution-bar')}" style="background-color: ${c.color}; color: ${adaptTextColorToBgColor(c.color)}" title="${c.label}: 0" data-cat="${c.name}"><span>${c.label}</span></div>`).join('');
 
   return {
     template: `<div>${bins}<div title="Missing Values"></div>`, // no closing div to be able to append things
