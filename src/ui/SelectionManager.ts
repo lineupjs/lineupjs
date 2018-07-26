@@ -5,6 +5,7 @@ import {IDataProvider} from '../provider/ADataProvider';
 import {rangeSelection} from '../renderer/SelectionRenderer';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {engineCssClass, cssClass} from '../styles/index';
+import {StyleManager} from 'lineupengine';
 
 interface IPoint {
   x: number;
@@ -32,7 +33,7 @@ export default class SelectionManager extends AEventDispatcher {
 
   private start: (IPoint & IShift) | null = null;
 
-  constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement) {
+  constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement, style: StyleManager) {
     super();
     const root = body.parentElement!.parentElement!;
     let hr = <HTMLHRElement>root.querySelector('hr');
@@ -42,6 +43,13 @@ export default class SelectionManager extends AEventDispatcher {
     }
     this.hr = hr;
     this.hr.classList.add(cssClass('hr'));
+
+    // add on demand for better selector performance
+    style.addRule(`selection-active-${body.id}`, `#${body.id}.${cssClass('selection-active')} *`, {
+      webkitUserSelect: 'none',
+      msUserSelect: 'none',
+      userSelect: 'none'
+    });
 
     const mouseMove = (evt: MouseEvent) => {
       this.showHint(evt);

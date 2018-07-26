@@ -21,6 +21,7 @@
   }
 }
 
-.#{$lu_css_prefix}-selection-active * {
-  @include user_select_none();
-}
+// created per ranking for better selector performance
+// .#{engine_css_prefix}-tbody.#{$lu_css_prefix}-selection-active * {
+//   @include user_select_none();
+// }
