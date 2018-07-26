@@ -73,6 +73,54 @@
   content: $lu_icon_sort_amount_asc;
 }
 
+.#{$lu_css_prefix}-action-sort {
+  &[data-type='string'],
+  &[data-type='categorical'],
+  &[data-type='link'],
+  &[data-type='annotate'],
+  &[data-type='hierarchy'] {
+    &::before {
+      content: $lu_icon_sort-alpha-asc;
+    }
+
+    &[data-sort='desc']::before {
+      content: $lu_icon_sort-alpha-desc;
+    }
+  }
+
+  &[data-type-cat=string],
+  &[data-type-cat=categorical] {
+    &::before {
+      content: $lu_icon_sort-alpha-asc;
+    }
+
+    &[data-sort='desc']::before {
+      content: $lu_icon_sort-alpha-desc;
+    }
+  }
+
+  &[data-type='rank'],
+  &[data-type='number'],
+  &[data-type='numbers'],
+  &[data-type='ordinal'],
+  &[data-type='boxplot'],
+  &[data-type='script'],
+  &[data-type='reduce'],
+  &[data-type='stack'] {
+    &::before {
+      content: $lu_icon_sort-numeric-asc;
+    }
+
+    &[data-sort='desc']::before {
+      content: $lu_icon_sort-numeric-desc;
+    }
+  }
+}
+
+.#{$lu_css_prefix}-action-sort[data-sort='desc']::before {
+  content: $lu_icon_sort-alpha-desc;
+}
+
 .#{$lu_css_prefix}-action-sort[data-sort='desc']::before {
   content: $lu_icon_sort_amount_desc;
 }
@@ -160,41 +208,6 @@
 
   &::after {
     margin-right: 60%;
-  }
-}
-
-.#{$engine_css_prefix}-th {
-  /* Override alphabetical sort icons */
-  &[data-type='string'],
-  &[data-type='categorical'],
-  &[data-type='link'],
-  &[data-type='annotate'],
-  &[data-type='hierarchy'] {
-    .#{$lu_css_prefix}-action-sort::before {
-      content: $lu_icon_sort-alpha-asc;
-    }
-
-    .#{$lu_css_prefix}-action-sort[data-sort='desc']::before {
-      content: $lu_icon_sort-alpha-desc;
-    }
-  }
-
-  /* Override numerical sort icons */
-  &[data-type='rank'],
-  &[data-type='number'],
-  &[data-type='numbers'],
-  &[data-type='ordinal'],
-  &[data-type='boxplot'],
-  &[data-type='script'],
-  &[data-type='reduce'],
-  &[data-type='stack'] {
-    .#{$lu_css_prefix}-action-sort::before {
-      content: $lu_icon_sort-numeric-asc;
-    }
-
-    .#{$lu_css_prefix}-action-sort[data-sort='desc']::before {
-      content: $lu_icon_sort-numeric-desc;
-    }
   }
 }
 

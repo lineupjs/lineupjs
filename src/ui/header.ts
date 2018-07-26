@@ -89,6 +89,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
   if (sort) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
+    sort.dataset.type = col.desc.type;
     if (priority !== undefined) {
       sort.dataset.priority = (priority + 1).toString();
     } else {
