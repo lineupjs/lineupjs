@@ -112,10 +112,10 @@ g.#{$lu_css_prefix}-dialog-mapper-mapping {
   }
 }
 
-.#{$lu_css_prefix}-dialog-mapper&[data-scale=script] div.#{$lu_css_prefix}-dialog-mapper-script {
+.#{$lu_css_prefix}-dialog-mapper[data-scale=script] div.#{$lu_css_prefix}-dialog-mapper-script {
   display: block;
 }
 
-.#{$lu_css_prefix}-dialog-mapper[data-toggle=open] ~ .#{$lu_css_prefix}-dialog-mapper-details {
+.#{$lu_css_prefix}-dialog-mapper [data-toggle=open] ~ .#{$lu_css_prefix}-dialog-mapper-details {
   display: block;
 }
