@@ -39,6 +39,19 @@ export function Category(cat: keyof Categories) {
   return Reflect.metadata(category, cat);
 }
 
+export function getSortType(col: Column): 'abc'|'num'|undefined {
+  const cat = categoryOf(col);
+  const type = col.desc.type;
+  if (cat === categories.string || cat === categories.categorical) {
+    return 'abc';
+  }
+  if (cat === categories.number || type === 'rank' || isSortingAscByDefault(col)) {
+    return 'num';
+  }
+  const numbers = new Set(['rank', 'number', 'numbers', 'ordinal', 'boxplot', 'script', 'reduce', 'stack']);
+  return numbers.has(type) ? 'num' : undefined;
+}
+
 export function toolbar(...keys: string[]) {
   return Reflect.metadata(Symbol.for('toolbarIcon'), keys);
 }

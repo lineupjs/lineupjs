@@ -7,7 +7,7 @@ import {
   createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn,
   isNumbersColumn
 } from '../model';
-import {categoryOf} from '../model/annotations';
+import {categoryOf, getSortType} from '../model/annotations';
 import Column from '../model/Column';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import ImpositionBoxPlotColumn from '../model/ImpositionBoxPlotColumn';
@@ -89,7 +89,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
   if (sort) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
-    sort.dataset.type = col.desc.type;
+    sort.dataset.type = getSortType(col);
     if (priority !== undefined) {
       sort.dataset.priority = (priority + 1).toString();
     } else {
