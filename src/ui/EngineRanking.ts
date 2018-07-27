@@ -325,16 +325,49 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
+
+    const domColumns = <RenderColumn[]>[];
+
     for (const c of this.columns) {
-      const needDOM = c.renderCell(ctx, index);
+      if (c.renderCell(ctx, index)) {
+        domColumns.push(c);
+      }
       const shift = c.width + COLUMN_PADDING;
       ctx.translate(shift, 0);
-
-      if (!needDOM) {
-        continue;
-      }
     }
     ctx.restore();
+
+    const length = node.childElementCount - 1; // for canvas
+
+    if (domColumns.length === 0) {
+      while (node.lastElementChild !== node.firstElementChild) {
+        node.removeChild(node.lastElementChild!);
+      }
+      return;
+    }
+    if (domColumns.length === 1) {
+      const first = domColumns[0];
+      if (length === 0) {
+        node.appendChild(first.createCell(index));
+        return;
+      }
+      if (length === 1 && (<HTMLElement>node.lastElementChild!).dataset.colId === first.id) {
+        this.updateCellImpl(first, <HTMLElement>node.lastElementChild, index);
+        return;
+      }
+    }
+
+    const existing = new Map((<HTMLElement[]>Array.from(node.children)).slice(1).map((d) => <[string, HTMLElement]>[d.dataset.col, d]));
+    for (const col of domColumns) {
+      const elem = existing.get(col.id);
+      if (elem) {
+        existing.delete(col.id);
+        this.updateCellImpl(col, elem, index);
+      } else {
+        node.appendChild(col.createCell(index));
+      }
+    }
+    existing.forEach((v) => v.remove());
   }
 
   protected updateCanvasCell(canvas: HTMLCanvasElement, node: HTMLElement, index: number, column: RenderColumn, x: number) {
@@ -344,6 +377,20 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ctx.translate(x, 0);
     const needDOM = column.renderCell(ctx, index);
     ctx.restore();
+
+    if (!needDOM && node.childElementCount === 1) { // just canvas
+      return;
+    }
+    const elem = <HTMLElement>node.querySelector(`[data-col-id="${column.id}"]`);
+    if (elem && !needDOM) {
+      elem.remove();
+      return;
+    }
+    if (elem) {
+      this.updateCellImpl(column, elem, index);
+    } else {
+      node.appendChild(column.createCell(index));
+    }
   }
 
   private reindex() {
@@ -605,20 +652,19 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         this.updateCanvasCell(<HTMLCanvasElement>row.firstElementChild!, row, rowIndex, column, x);
         return;
       }
-      this.updateCellImpl(column, index, row, rowIndex);
+      this.updateCellImpl(column, <HTMLElement>row.children[index], rowIndex);
     });
     return true;
   }
 
-  private updateCellImpl(column: RenderColumn, index: number, row: HTMLElement, rowIndex: number) {
-    const before = <HTMLElement>row.children[index];
+  private updateCellImpl(column: RenderColumn, before: HTMLElement, rowIndex: number) {
       const after = this.updateCell(before, rowIndex, column);
       if (before === after || !after) {
         return;
       }
       after.dataset.id = column.id;
       after.classList.add(engineCssClass('td'), this.style.cssClasses.td, engineCssClass(`td-${this.tableId}`));
-      row.replaceChild(after, before);
+      before.parentElement!.replaceChild(after, before);
   }
 
   destroy() {
