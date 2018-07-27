@@ -4,6 +4,8 @@ import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
+const SHIFT = 1;
+
 /** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -26,7 +28,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       },
       render: (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = AGGREGATE.color;
-        ctx.fillRect(width - AGGREGATE.width, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
+        ctx.fillRect(width - AGGREGATE.width - SHIFT, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
       }
     };
   }
