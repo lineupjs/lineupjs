@@ -121,22 +121,25 @@ export default class EngineRenderer extends AEventDispatcher {
        .${this.style.cssClasses.tr}[data-meta~=last]`, {
           marginBottom: `${options.groupPadding}px`
         });
+      this.style.addRule('lineup_rowPadding0', `
+        .${this.style.cssClasses.tr}`, {
+          marginTop: `${options.rowPadding}px`
+        });
 
-      this.style.addRule('lineup_rowPadding', `
-      .${this.style.cssClasses.tr}[data-lod]`, {
-          paddingTop: '0'
+      this.style.addRule('lineup_rowPadding1', `
+      .${this.style.cssClasses.tr}.${cssClass('low')}`, {
+          marginTop: '0'
         });
 
       // padding in general and for hovered low detail rows + their afterwards
       this.style.addRule('lineup_rowPadding2', `
-        .${this.style.cssClasses.tr},
-        .${this.style.cssClasses.tr}[data-lod]:hover,
-        .${this.style.cssClasses.tr}[data-lod].${engineCssClass('highlighted')},
-        .${this.style.cssClasses.tr}[data-lod].${cssClass('selected')},
-        .${this.style.cssClasses.tr}[data-lod]:hover + .${this.style.cssClasses.tr},
-        .${this.style.cssClasses.tr}[data-lod].${engineCssClass('highlighted')} + .${this.style.cssClasses.tr},
-        .${this.style.cssClasses.tr}[data-lod].${cssClass('selected')} + .${this.style.cssClasses.tr}`, {
-          paddingTop: `${options.rowPadding}px`
+        .${this.style.cssClasses.tr}.${cssClass('low')}:hover,
+        .${this.style.cssClasses.tr}.${cssClass('low')}.${engineCssClass('highlighted')},
+        .${this.style.cssClasses.tr}.${cssClass('selected')},
+        .${this.style.cssClasses.tr}.${cssClass('low')}:hover + .${this.style.cssClasses.tr}.${cssClass('low')},
+        .${this.style.cssClasses.tr}.${cssClass('low')}.${engineCssClass('highlighted')} + .${this.style.cssClasses.tr}.${cssClass('low')},
+        .${this.style.cssClasses.tr}.${cssClass('selected')} + .${this.style.cssClasses.tr}.${cssClass('low')}`, {
+          marginTop: `${options.rowPadding}px !important`
         });
 
       // FIXME flat

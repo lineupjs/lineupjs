@@ -7,7 +7,7 @@ import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {IImposer, IRenderContext} from '../renderer';
-import {CANVAS_HEIGHT, COLUMN_PADDING, engineCssClass} from '../styles';
+import {CANVAS_HEIGHT, COLUMN_PADDING, engineCssClass, cssClass} from '../styles';
 import {lineupAnimation} from './animation';
 import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
@@ -407,16 +407,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.selection.updateState(node, i);
     this.selection.add(node);
 
-    const lod = this.roptions.levelOfDetail(rowIndex);
+    const low = this.roptions.levelOfDetail(rowIndex) === 'low';
+    node.classList.toggle(cssClass('low'), low);
 
-    if (lod === 'high') {
-      delete node.dataset.lod;
-    } else {
-      node.dataset.lod = lod;
-    }
-
-    if (lod === 'high' || meta || this.ctx.provider.isSelected(i)) {
+    if (!low || meta || this.ctx.provider.isSelected(i)) {
       super.createRow(node, rowIndex);
+      this.propgateLevelOfDetail(node, low);
       return;
     }
 
@@ -426,22 +422,19 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.addEventListener('mouseenter', this.canvasMouseHandler.enter, {
       passive: true
     });
+    this.propgateLevelOfDetail(node, low);
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number, forcedLod?: 'high' | 'low'): void {
     this.roptions.customRowUpdate(node, rowIndex);
 
     const computedLod = this.roptions.levelOfDetail(rowIndex);
-    const lod = forcedLod ? forcedLod : computedLod;
-    const wasLod = node.dataset.lod || 'high';
+    const low = (forcedLod ? forcedLod : computedLod) === 'low';
+    const wasLow = node.classList.contains(cssClass('low'));
     const isGroup = this.renderCtx.isGroup(rowIndex);
     const wasGroup = node.dataset.agg === 'group';
 
-    if (computedLod === 'high') {
-      delete node.dataset.lod;
-    } else {
-      node.dataset.lod = computedLod;
-    }
+    node.classList.toggle(cssClass('low'), computedLod === 'low');
 
     if (this.highlightHandler.enabled && !this.rowFlags(node).highlight) {
       node.addEventListener('mouseenter', this.highlightHandler.enter, {
@@ -482,13 +475,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     this.selection.updateState(node, i);
 
-    const canvas = wasLod === 'high' ? null : <HTMLCanvasElement>Array.from(node.children).find((d) => d.nodeName.toLowerCase() === 'canvas');
-    if (lod === 'high' || meta || this.ctx.provider.isSelected(i)) {
+    const canvas = !wasLow ? null : <HTMLCanvasElement>Array.from(node.children).find((d) => d.nodeName.toLowerCase() === 'canvas');
+    if (!low || meta || this.ctx.provider.isSelected(i)) {
       if (canvas) {
         this.canvasPool.push(canvas);
         canvas.remove();
       }
       super.updateRow(node, rowIndex);
+      this.propgateLevelOfDetail(node, low);
       return;
     }
 
@@ -496,7 +490,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       passive: true
     });
     // use canvas
-    if (wasLod !== 'high' && canvas) {
+    if (wasLow && canvas) {
       this.renderRow(canvas, rowIndex);
       return;
     }
@@ -506,6 +500,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const canvas2 = this.selectCanvas();
     node.appendChild(canvas2);
     this.renderRow(canvas2, rowIndex);
+  }
+
+  private propgateLevelOfDetail(node: HTMLElement, low: boolean) {
+    const lowC = cssClass('low');
+    for(let f = node.firstElementChild; f; f = f.nextElementSibling) {
+      f.classList.toggle(lowC, low);
+    }
   }
 
   enableHighlightListening(enable: boolean) {

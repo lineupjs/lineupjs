@@ -2,11 +2,11 @@
 @import '../vars';
 
 @include exports('lineupjs/taggle/lod') {
-  .#{$engine_css_prefix}-tr[data-lod=low][data-agg=detail] > * {
+  .#{$lu_css_prefix}-low {
     overflow: hidden;
   }
 
-  .#{$engine_css_prefix}-tr[data-lod=low][data-agg=detail]:not(:hover) {
+  .#{$engine_css_prefix}-tr.#{$lu_css_prefix}-low[data-agg=detail]:not(:hover) {
     &[data-meta~=first] {
       /* change rendering of the first row for a group to show the collapse arrow of `[data-renderer=aggregate]` */
       z-index: 11; // 11 overrules the `z-index: 10;` of `.lu-selected` in _row.scss
@@ -19,12 +19,12 @@
       visibility: hidden;
     }
 
-    > [data-renderer=heatmap],
-    > [data-renderer=catheatmap] {
+    > .#{$lu_css_prefix}-renderer-heatmap,
+    > .#{$lu_css_prefix}-renderer-catheatmap {
       visibility: visible !important;
     }
 
-    > [data-renderer=aggregate] {
+    > .#{$lu_css_prefix}-renderer-aggregate {
       visibility: visible !important;
       overflow: visible !important;
 
@@ -35,7 +35,7 @@
       }
     }
 
-    > [data-renderer=group] {
+    > .#{$lu_css_prefix}-renderer-group {
       visibility: visible !important;
       overflow: visible !important;
 
@@ -46,7 +46,7 @@
       }
     }
 
-    > [data-renderer=number] {
+    > .#{$lu_css_prefix}-renderer-number {
       visibility: visible !important;
 
       > div {
@@ -55,7 +55,7 @@
       }
     }
 
-    > [data-renderer=boxplot] {
+    > .#{$lu_css_prefix}-renderer-boxplot {
       visibility: visible !important;
 
       > .#{$lu_css_prefix}-boxplot-whisker {
@@ -75,7 +75,7 @@
       }
     }
 
-    > [data-renderer=upset] {
+    > .#{$lu_css_prefix}-renderer-upset {
       visibility: visible !important;
       align-items: stretch;
 
@@ -93,8 +93,8 @@
       }
     }
 
-    > [data-renderer=categorical],
-    > [data-renderer=brightness] {
+    > .#{$lu_css_prefix}-renderer-categorical,
+    > .#{$lu_css_prefix}-renderer-brightness {
       visibility: visible !important;
 
       > div:first-of-type {
@@ -107,7 +107,7 @@
       }
     }
 
-    > [data-renderer=dot] {
+    > .#{$lu_css_prefix}-renderer-dot {
       visibility: visible !important;
 
       > div {
