@@ -1,5 +1,5 @@
 import {ICategoricalStatistics, IStatistics} from '../internal';
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IGroup, toGroupMeta} from '../model';
 import Column from '../model/Column';
 import {
   default as IRenderContext, ERenderMode, ICellRenderer, ICellRendererFactory, IGroupCellRenderer,
@@ -26,7 +26,7 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
       template: `<div>${single.template}</div>`,
       update: (node: HTMLElement, group: IGroup, rows: IDataRow[]) => {
         const aggregate = this.aggregatedIndex(rows, col);
-        single.update(<HTMLElement>node.firstElementChild!, rows[aggregate], aggregate, group);
+        single.update(<HTMLElement>node.firstElementChild!, rows[aggregate], aggregate, group, toGroupMeta(aggregate, rows.length));
       }
     };
   }

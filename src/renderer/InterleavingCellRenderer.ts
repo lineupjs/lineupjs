@@ -1,5 +1,5 @@
 import {INumberBin, IStatistics} from '../internal';
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IGroup, IGroupMeta} from '../model';
 import Column from '../model/Column';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
@@ -23,17 +23,17 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
+      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
         const missing = renderMissingDOM(n, col, d);
         if (missing) {
           return;
         }
         matchColumns(n, cols, context);
         forEachChild(n, (ni: HTMLElement, j) => {
-          cols[j].renderer!.update(ni, d, i, group);
+          cols[j].renderer!.update(ni, d, i, group, meta);
         });
       },
-      render: (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, group: IGroup) => {
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, group: IGroup, meta: IGroupMeta) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
@@ -41,7 +41,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
         ctx.save();
         ctx.scale(1, 1 / cols.length); // scale since internal use the height, too
         cols.forEach((r, i) => {
-          r.renderer!.render(ctx, d, i, group);
+          r.renderer!.render(ctx, d, i, group, meta);
           ctx.translate(0, CANVAS_HEIGHT);
         });
         ctx.restore();

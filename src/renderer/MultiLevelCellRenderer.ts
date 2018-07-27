@@ -1,5 +1,5 @@
 import {ICategoricalStatistics, IStatistics, round} from '../internal';
-import {IDataRow, IGroup, IMultiLevelColumn, isMultiLevelColumn} from '../model';
+import {IDataRow, IGroup, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta} from '../model';
 import Column from '../model/Column';
 import {medianIndex} from '../model/internal';
 import {default as INumberColumn, isNumberColumn} from '../model/INumberColumn';
@@ -79,7 +79,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     const width = context.colWidth(col);
     return {
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid && !stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
+      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
@@ -99,13 +99,13 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           } else {
             (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           }
-          col.renderer!.update(cnode, d, i, group);
+          col.renderer!.update(cnode, d, i, group, meta);
           if (stacked) {
             missingWeight += (1 - col.column.getValue(d)) * weight;
           }
         });
       },
-      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup) => {
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
@@ -113,7 +113,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         cols.forEach((col) => {
           const shift = col.shift - stackShift;
           ctx.translate(shift, 0);
-          col.renderer!.render(ctx, d, i, group);
+          col.renderer!.render(ctx, d, i, group, meta);
           ctx.translate(-shift, 0);
           if (stacked) {
             stackShift += col.width * (1 - col.column.getValue(d));

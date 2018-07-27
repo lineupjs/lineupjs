@@ -2,7 +2,7 @@ import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, Gri
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, ValueColumn} from '../model';
+import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, ValueColumn, toGroupMeta} from '../model';
 import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
@@ -622,18 +622,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
-    const toMeta = (relativeIndex: number, length: number): 'first' | 'last' | 'first last' | undefined => {
-      if (length === 1) {
-        return 'first last';
-      }
-      if (relativeIndex === 0) {
-        return 'first';
-      }
-      if (relativeIndex === length - 1) {
-        return 'last';
-      }
-      return undefined;
-    };
     if (groups.length === 1) {
       // simple case
       if (provider.isAggregated(this.ranking, groups[0])) {
@@ -641,7 +629,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         return [Object.assign({rows: data}, groups[0])];
       }
       // simple ungrouped case
-      return data.map((r, i) => Object.assign({group: groups[0], relativeIndex: i, meta: toMeta(i, data.length)}, r));
+      return data.map((r, i) => Object.assign({group: groups[0], relativeIndex: i, meta: toGroupMeta(i, data.length)}, r));
     }
 
     //multiple groups
@@ -659,7 +647,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       r.push(...groupData.map((r, i) => Object.assign({
         group,
         relativeIndex: i,
-        meta: toMeta(i, groupData.length)
+        meta: toGroupMeta(i, groupData.length)
       }, r)));
     });
     return r;

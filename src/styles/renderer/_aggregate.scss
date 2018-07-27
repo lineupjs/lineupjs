@@ -1,16 +1,15 @@
 @import '../vars';
 @import '../icons/index';
 
-.#{$engine_css_prefix}-group.#{$lu_css_prefix}-renderer-aggregate {
+.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate {
   text-align: center;
-  position: relative;
   overflow-x: unset;
 
   &::after {
     content: '';
     position: absolute;
     pointer-events: none;
-    top: 0;
+    top: -2px;  // TODO right padding
     width: $lu_aggregate_square_bracket_width;
     right: 0;
     bottom: 0;
@@ -18,7 +17,7 @@
   }
 }
 
-.#{$engine_css_prefix}-tr[data-meta~=first] > .#{$lu_css_prefix}-renderer-aggregate {
+.#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
   cursor: pointer;
 
   &::before {
@@ -29,22 +28,24 @@
   }
 
   &::after {
+    top: 0;
     border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }
 }
 
-.#{$engine_css_prefix}-tr[data-meta=last] > .#{$lu_css_prefix}-renderer-aggregate {
+.#{$lu_css_prefix}-renderer-aggregate[data-meta=last] {
   &::after {
     border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }
 }
 
-.#{$engine_css_prefix}-tr[data-meta='first last'] > .#{$lu_css_prefix}-renderer-aggregate,
+.#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'],
 .#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-aggregate {
   padding-right: $lu_aggregate_square_bracket_width;
   cursor: pointer;
 
   &::after {
+    top: 0;
     border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
     border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }

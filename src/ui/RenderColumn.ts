@@ -145,13 +145,13 @@ export default class RenderColumn implements IColumn {
       this.renderers!.group.update(node, g, g.rows);
     } else {
       const r = this.ctx.getRow(index);
-      this.renderers!.single.update(node, r, r.relativeIndex, r.group);
+      this.renderers!.single.update(node, r, r.relativeIndex, r.group, r.meta);
     }
     return node;
   }
 
   renderCell(ctx: CanvasRenderingContext2D, index: number) {
     const r = this.ctx.getRow(index);
-    this.renderers!.single.render(ctx, r, r.relativeIndex, r.group);
+    this.renderers!.single.render(ctx, r, r.relativeIndex, r.group, r.meta);
   }
 }

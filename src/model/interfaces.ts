@@ -87,10 +87,12 @@ export interface IGroupParent extends IGroup {
   subGroups: (Readonly<IGroupParent> | Readonly<IGroup>)[];
 }
 
+export declare type IGroupMeta = 'first' | 'last' | 'first last' | null;
+
 export interface IGroupItem extends IDataRow {
-  readonly group: IGroup;
+  readonly group: Readonly<IGroup>;
   readonly relativeIndex: number;
-  readonly meta?: 'first' | 'last' | 'first last';
+  readonly meta: IGroupMeta;
 }
 
 export interface IGroupData extends Readonly<IGroup> {
@@ -99,4 +101,17 @@ export interface IGroupData extends Readonly<IGroup> {
 
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupData>item).name !== undefined; // use .name as separator
+}
+
+export function toGroupMeta(index: number, total: number): IGroupMeta {
+  if (total === 1) {
+    return 'first last';
+  }
+  if (index === 0) {
+    return 'first';
+  }
+  if (index === total -1) {
+    return 'last';
+  }
+  return null;
 }

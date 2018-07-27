@@ -131,7 +131,6 @@
 
 .#{$lu_css_prefix}-histogram[data-interactive] {
   margin-bottom: 3.75em;
-  position: relative;
 
   &:hover {
     > .#{$lu_css_prefix}-histogram-min {

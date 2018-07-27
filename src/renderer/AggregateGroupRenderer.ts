@@ -1,4 +1,4 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IGroup, IGroupMeta} from '../model';
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
 import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
@@ -16,7 +16,8 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div title="Collapse Group"></div>`,
-      update(node: HTMLElement, _row: IDataRow, _i: number, group: IGroup) {
+      update(node: HTMLElement, _row: IDataRow, _i: number, group: IGroup, meta: IGroupMeta) {
+        node.dataset.meta = meta || undefined;
         node.onclick = (event) => {
           event.preventDefault();
           event.stopPropagation();

@@ -2,9 +2,6 @@
 
 .#{$lu_css_prefix}-renderer-number,
 .#{$lu_css_prefix}-renderer-circle {
-  position: relative;
-  white-space: nowrap;
-
   > div {
     position: absolute;
     width: 100%;
