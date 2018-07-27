@@ -823,7 +823,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   private static isCanvasRenderedRow(row: HTMLElement) {
-    return row.dataset.lod === 'low' && row.childElementCount === 1 && row.firstElementChild!.nodeName.toLowerCase() === 'canvas';
+    return row.classList.contains(cssClass('low')) && row.childElementCount === 1 && row.firstElementChild!.nodeName.toLowerCase() === 'canvas';
   }
 
   private static disableListener(c: Column) {
