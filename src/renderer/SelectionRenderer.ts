@@ -2,7 +2,6 @@ import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
-import {noop} from './utils';
 import {IDataProvider} from '../provider/ADataProvider';
 import {cssClass} from '../styles';
 
@@ -30,8 +29,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
 
           col.toggleValue(d);
         };
-      },
-      render: noop
+      }
     };
   }
 

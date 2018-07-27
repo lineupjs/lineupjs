@@ -2,7 +2,7 @@ import {IDataRow, IGroup} from '../model';
 import {default as ActionColumn} from '../model/ActionColumn';
 import Column from '../model/Column';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
-import {forEachChild, noop, noRenderer} from './utils';
+import {forEachChild, noRenderer} from './utils';
 import {cssClass} from '../styles';
 
 /** @internal */
@@ -25,8 +25,7 @@ export default class ActionRenderer implements ICellRendererFactory {
             actions[i].action(d);
           };
         });
-      },
-      render: noop
+      }
     };
   }
 

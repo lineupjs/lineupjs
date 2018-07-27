@@ -111,10 +111,13 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         }
         let stackShift = 0;
         cols.forEach((col) => {
-          const shift = col.shift - stackShift;
-          ctx.translate(shift, 0);
-          col.renderer!.render(ctx, d, i, group, meta);
-          ctx.translate(-shift, 0);
+          const cr = col.renderer!;
+          if (cr.render) {
+            const shift = col.shift - stackShift;
+            ctx.translate(shift, 0);
+            cr.render(ctx, d, i, group, meta);
+            ctx.translate(-shift, 0);
+          }
           if (stacked) {
             stackShift += col.width * (1 - col.column.getValue(d));
           }

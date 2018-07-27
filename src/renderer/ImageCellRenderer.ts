@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer} from './utils';
+import {noRenderer} from './utils';
 
 /** @internal */
 export default class ImageCellRenderer implements ICellRendererFactory {
@@ -20,8 +20,7 @@ export default class ImageCellRenderer implements ICellRendererFactory {
         const missing = renderMissingDOM(n, col, d);
         n.title = col.getLabel(d);
         n.style.backgroundImage = missing ? null : `url('${col.getValue(d)}')`;
-      },
-      render: noop
+      }
     };
   }
 

@@ -26,8 +26,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
           return;
         }
         node.innerHTML = col.getMapLabel(d).map(({key, value}) => `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${value}</div>`).join('');
-      },
-      render: noop
+      }
     };
   }
 
@@ -47,8 +46,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
         forEach(node, '[data-v]', (n: HTMLElement, i) => {
           n.innerHTML = value[i];
         });
-      },
-      render: noop
+      }
     };
   }
 

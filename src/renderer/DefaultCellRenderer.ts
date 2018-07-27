@@ -2,7 +2,7 @@ import {IDataRow} from '../model';
 import Column from '../model/Column';
 import {ERenderMode, ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer, setText} from './utils';
+import {noRenderer, setText} from './utils';
 
 /**
  * default renderer instance rendering the value as a text
@@ -22,8 +22,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         setText(n, col.getLabel(d));
-      },
-      render: noop
+      }
     };
   }
 

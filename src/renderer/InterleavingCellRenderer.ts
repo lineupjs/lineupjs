@@ -41,7 +41,10 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
         ctx.save();
         ctx.scale(1, 1 / cols.length); // scale since internal use the height, too
         cols.forEach((r, i) => {
-          r.renderer!.render(ctx, d, i, group, meta);
+          const rr = r.renderer!;
+          if (rr.render) {
+            rr.render(ctx, d, i, group, meta);
+          }
           ctx.translate(0, CANVAS_HEIGHT);
         });
         ctx.restore();

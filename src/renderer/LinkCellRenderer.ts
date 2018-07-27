@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer, setText} from './utils';
+import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
 
 /** @internal */
@@ -28,8 +28,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
         } else {
           n.innerHTML = col.getLabel(d);
         }
-      },
-      render: noop
+      }
     };
   }
 

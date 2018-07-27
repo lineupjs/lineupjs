@@ -14,7 +14,6 @@ import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop} from './utils';
 import {cssClass} from '../styles';
 
 /** @internal */
@@ -34,8 +33,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
           return;
         }
         render(n, createHist(hist, guessedBins, [row], col));
-      },
-      render: noop
+      }
     };
   }
 

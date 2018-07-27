@@ -5,7 +5,7 @@ import NumbersColumn from '../model/NumbersColumn';
 import {matchRows} from './ANumbersCellRenderer';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {forEachChild, noop, noRenderer} from './utils';
+import {forEachChild, noRenderer} from './utils';
 
 /** @internal */
 export function line(data: number[]) {
@@ -47,8 +47,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
         }
         const data = col.getNumbers(d);
         n.querySelector('path')!.setAttribute('d', line(data));
-      },
-      render: noop
+      }
     };
   }
 

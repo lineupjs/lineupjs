@@ -4,7 +4,7 @@ import StringColumn from '../model/StringColumn';
 import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, setText, uniqueId} from './utils';
+import {setText, uniqueId} from './utils';
 import {cssClass} from '../styles';
 
 
@@ -31,8 +31,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
         } else {
           n.innerHTML = col.getLabel(d);
         }
-      },
-      render: noop
+      }
     };
   }
 

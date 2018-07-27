@@ -152,6 +152,9 @@ export default class RenderColumn implements IColumn {
 
   renderCell(ctx: CanvasRenderingContext2D, index: number) {
     const r = this.ctx.getRow(index);
-    this.renderers!.single.render(ctx, r, r.relativeIndex, r.group, r.meta);
+    const s = this.renderers!.single;
+    if (s.render) {
+      s.render(ctx, r, r.relativeIndex, r.group, r.meta);
+    }
   }
 }

@@ -4,7 +4,7 @@ import StringMapColumn from '../model/StringMapColumn';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
-import {noop, noRenderer} from './utils';
+import {noRenderer} from './utils';
 import {cssClass} from '../styles';
 
 /** @internal */
@@ -29,8 +29,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
           <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align): ''}">
             <a href="${values[i].value}" target="_blank" rel="noopener">${value}</a>
           </div>`).join('');
-      },
-      render: noop
+      }
     };
   }
 

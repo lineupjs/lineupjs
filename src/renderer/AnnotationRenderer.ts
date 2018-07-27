@@ -2,7 +2,6 @@ import {IDataRow} from '../model';
 import AnnotateColumn from '../model/AnnotateColumn';
 import Column from '../model/Column';
 import StringCellRenderer from './StringCellRenderer';
-import {noop} from './utils';
 import {cssClass} from '../styles';
 
 /** @internal */
@@ -28,8 +27,7 @@ export default class AnnotationRenderer extends StringCellRenderer {
           event.stopPropagation();
         };
         n.lastElementChild!.textContent = input.value = col.getLabel(d);
-      },
-      render: noop
+      }
     };
   }
 }

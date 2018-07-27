@@ -38,8 +38,7 @@ export function noop() {
 /** @internal */
 export const noRenderer = {
   template: `<div></div>`,
-  update: noop,
-  render: noop
+  update: noop
 };
 
 /** @internal */

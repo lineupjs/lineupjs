@@ -7,7 +7,7 @@ import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
 import {colorOf} from './impose';
 import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer} from './utils';
+import {noRenderer} from './utils';
 import {cssClass} from '../styles';
 
 /** @internal */
@@ -37,8 +37,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
               </div>
             </div>`;
         }).join('');
-      },
-      render: noop
+      }
     };
   }
 

@@ -2,7 +2,7 @@ import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import GroupColumn from '../model/GroupColumn';
 import {ICellRendererFactory} from './interfaces';
-import {noop, noRenderer} from './utils';
+import {noRenderer} from './utils';
 
 /** @internal */
 export default class GroupCellRenderer implements ICellRendererFactory {
@@ -24,8 +24,7 @@ export default class GroupCellRenderer implements ICellRendererFactory {
         } else {
           p.textContent = group.name;
         }
-      },
-      render: noop
+      }
     };
   }
 
