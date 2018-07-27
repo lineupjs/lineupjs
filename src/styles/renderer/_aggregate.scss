@@ -9,7 +9,7 @@
     content: '';
     position: absolute;
     pointer-events: none;
-    top: -2px;  // TODO right padding
+    top: -2px;  // FIXME right padding
     width: $lu_aggregate_square_bracket_width;
     right: 0;
     bottom: 0;
