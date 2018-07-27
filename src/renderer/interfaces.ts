@@ -30,7 +30,7 @@ export interface ICellRenderer {
   /**
    * render a low detail canvas row
    */
-  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void;
+  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void | boolean;
 }
 
 /**
