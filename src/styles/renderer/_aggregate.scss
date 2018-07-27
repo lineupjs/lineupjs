@@ -17,7 +17,7 @@
   }
 }
 
-.#{$lu_css_prefix}-renderer-aggregate.#{$lu_css_prefix}-low:after {
+.#{$lu_css_prefix}-renderer-aggregate.#{$lu_css_prefix}-low::after {
   border-left: none;
 }
 
