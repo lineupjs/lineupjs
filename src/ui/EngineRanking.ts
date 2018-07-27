@@ -343,6 +343,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const first = domColumns[0];
       if (length === 0) {
         const c = first.createCell(index);
+        c.classList.add(cssClass('low'));
         this.initCellClasses(c, first.id);
         node.appendChild(c);
         return;
@@ -361,6 +362,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         this.updateCellImpl(col, elem, index);
       } else {
         const c = col.createCell(index);
+        c.classList.add(cssClass('low'));
         this.initCellClasses(c, col.id);
         node.appendChild(c);
       }
@@ -390,6 +392,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
 
     const c = column.createCell(index);
+    c.classList.add(cssClass('low'));
     this.initCellClasses(c, column.id);
     node.appendChild(c);
   }

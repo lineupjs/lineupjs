@@ -17,6 +17,10 @@
   }
 }
 
+.#{$lu_css_prefix}-renderer-aggregate.#{$lu_css_prefix}-low:after {
+  border-left: none;
+}
+
 .#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
   cursor: pointer;
 

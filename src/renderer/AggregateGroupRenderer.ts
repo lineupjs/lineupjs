@@ -29,7 +29,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       render(ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup, meta: IGroupMeta) {
         ctx.fillStyle = AGGREGATE.color;
         ctx.fillRect(width - AGGREGATE.width - SHIFT, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
-        return meta === 'first' || meta === 'first last';
+        return Boolean(meta);
       }
     };
   }
