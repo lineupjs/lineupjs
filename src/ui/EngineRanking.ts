@@ -106,13 +106,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private readonly canvasMouseHandler = {
     timer: -1,
     enter: (evt: MouseEvent) => {
-      // on canvas
       const c = this.canvasMouseHandler;
       if (c.timer > 0) {
         self.clearTimeout(c.timer);
       }
-      const canvas = <HTMLElement>evt.currentTarget;
-      const row = <HTMLElement>canvas.parentElement;
+      const row = <HTMLElement>evt.currentTarget;
       row.addEventListener('mouseleave', c.leave, {
         passive: true
       });
@@ -301,11 +299,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (this.canvasPool.length > 0) {
       return this.canvasPool.pop()!;
     }
-    const canvas = this.body.ownerDocument.createElement('canvas');
-    canvas.addEventListener('mouseenter', this.canvasMouseHandler.enter, {
-      passive: true
-    });
-    return canvas;
+    return this.body.ownerDocument.createElement('canvas');
   }
 
   private rowFlags(row: HTMLElement) {
@@ -348,7 +342,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (domColumns.length === 1) {
       const first = domColumns[0];
       if (length === 0) {
-        node.appendChild(first.createCell(index));
+        const c = first.createCell(index);
+        this.initCellClasses(c, first.id);
+        node.appendChild(c);
         return;
       }
       if (length === 1 && (<HTMLElement>node.lastElementChild!).dataset.colId === first.id) {
@@ -364,7 +360,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         existing.delete(col.id);
         this.updateCellImpl(col, elem, index);
       } else {
-        node.appendChild(col.createCell(index));
+        const c = col.createCell(index);
+        this.initCellClasses(c, col.id);
+        node.appendChild(c);
       }
     }
     existing.forEach((v) => v.remove());
@@ -388,9 +386,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     if (elem) {
       this.updateCellImpl(column, elem, index);
-    } else {
-      node.appendChild(column.createCell(index));
+      return;
     }
+
+    const c = column.createCell(index);
+    this.initCellClasses(c, column.id);
+    node.appendChild(c);
   }
 
   private reindex() {
@@ -470,21 +471,22 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     if (!low || this.ctx.provider.isSelected(i)) {
       super.createRow(node, rowIndex);
-      this.propgateLevelOfDetail(node, low);
       return;
     }
 
     const canvas = this.selectCanvas();
     node.appendChild(canvas);
+    node.addEventListener('mouseenter', this.canvasMouseHandler.enter, {
+      passive: true
+    });
     this.renderRow(canvas, node, rowIndex);
-    this.propgateLevelOfDetail(node, low);
   }
 
-  protected updateRow(node: HTMLElement, rowIndex: number, forcedLod?: 'high' | 'low'): void {
+  protected updateRow(node: HTMLElement, rowIndex: number, hoverLod?: 'high' | 'low'): void {
     this.roptions.customRowUpdate(node, rowIndex);
 
     const computedLod = this.roptions.levelOfDetail(rowIndex);
-    const low = (forcedLod ? forcedLod : computedLod) === 'low';
+    const low = (hoverLod ? hoverLod : computedLod) === 'low';
     const wasLow = node.classList.contains(cssClass('low'));
     const isGroup = this.renderCtx.isGroup(rowIndex);
     const wasGroup = node.dataset.agg === 'group';
@@ -512,6 +514,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
     }
 
+    if (wasLow && (!computedLod || isGroup)) {
+      node.removeEventListener('mouseenter', this.canvasMouseHandler.enter);
+    }
+
     if (isGroup) {
       node.classList.remove(engineCssClass('highlighted'));
       super.updateRow(node, rowIndex);
@@ -528,14 +534,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     this.selection.updateState(node, i);
 
-    const canvas = !wasLow ? null : <HTMLCanvasElement>node.firstElementChild!;
+    const canvas = (wasLow && node.firstElementChild!.nodeName.toLowerCase() === 'canvas') ? <HTMLCanvasElement>node.firstElementChild! : null;
     if (!low || this.ctx.provider.isSelected(i)) {
       if (canvas) {
         this.canvasPool.push(canvas);
-        canvas.remove();
+        clear(node);
+        node.removeEventListener('mouseenter', this.canvasMouseHandler.enter);
       }
       super.updateRow(node, rowIndex);
-      this.propgateLevelOfDetail(node, low);
       return;
     }
 
@@ -549,14 +555,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.dataset.agg = 'detail';
     const canvas2 = this.selectCanvas();
     node.appendChild(canvas2);
+    node.addEventListener('mouseenter', this.canvasMouseHandler.enter, {
+      passive: true
+    });
     this.renderRow(canvas2, node, rowIndex);
-  }
-
-  private propgateLevelOfDetail(node: HTMLElement, low: boolean) {
-    const lowC = cssClass('low');
-    for(let f = node.firstElementChild; f; f = f.nextElementSibling) {
-      f.classList.toggle(lowC, low);
-    }
   }
 
   enableHighlightListening(enable: boolean) {
@@ -658,13 +660,17 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   private updateCellImpl(column: RenderColumn, before: HTMLElement, rowIndex: number) {
-      const after = this.updateCell(before, rowIndex, column);
-      if (before === after || !after) {
-        return;
-      }
-      after.dataset.id = column.id;
-      after.classList.add(engineCssClass('td'), this.style.cssClasses.td, engineCssClass(`td-${this.tableId}`));
-      before.parentElement!.replaceChild(after, before);
+    const after = this.updateCell(before, rowIndex, column);
+    if (before === after || !after) {
+      return;
+    }
+    this.initCellClasses(after, column.id);
+    before.parentElement!.replaceChild(after, before);
+  }
+
+  private initCellClasses(node: HTMLElement, id: string) {
+    node.dataset.id = id;
+    node.classList.add(engineCssClass('td'), this.style.cssClasses.td, engineCssClass(`td-${this.tableId}`));
   }
 
   destroy() {
