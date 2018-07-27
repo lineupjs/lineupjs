@@ -1,8 +1,7 @@
 @import '../vars';
 @import '~lineupengine/src/styles/mixins';
 
-.#{$lu_css_prefix}-hover-only,
-.#{$lu_css_prefix}-selection-only {
+.#{$lu_css_prefix}-hover-only {
   visibility: hidden;
   padding-left: 4px;
 
@@ -29,14 +28,9 @@
    */
   &.#{$lu_css_prefix}-selected {
     @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
-
-    .#{$lu_css_prefix}-selection-only {
-      visibility: visible;
-    }
   }
 
   > canvas {
-    width: 100%;
     height: 100%;
   }
 }
