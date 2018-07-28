@@ -57,6 +57,7 @@ function test(outer = 10, inner = 100) {
   console.log('done');
 
   const data = [];
+  let acc = 0;
 
   for (const entry of m.entries()) {
     const [s, times] = entry;
@@ -65,6 +66,7 @@ function test(outer = 10, inner = 100) {
     times.splice(0, 1);
     times.splice(times.length - 1, 1);
     const total = times.reduce((a, b) => a + b, 0);
+    acc += total;
     data.push({
       time: total,
       selector: s,
@@ -73,6 +75,8 @@ function test(outer = 10, inner = 100) {
     });
   }
   data.sort((a, b) => b.time - a.time);
+
+  console.log('total', acc, data.length);
 
   return data;
 }
