@@ -1,18 +1,15 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer-number,
-.#{$lu_css_prefix}-renderer-circle {
-  > div {
-    position: absolute;
-    width: 100%;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
+.#{$lu_css_prefix}-bar-label {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
 
-    > span.#{$lu_css_prefix}-hover-only {
-      position: relative; // required to position .lu-gradient-text
-    }
+  > span.#{$lu_css_prefix}-hover-only {
+    position: relative; // required to position .lu-gradient-text
   }
 }
 

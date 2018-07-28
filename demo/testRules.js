@@ -37,7 +37,7 @@ function verify() {
 function test(outer = 10, inner = 100) {
   const m = new Map();
   for (const rule of rules) {
-    m.set(rule.selectorText, []);
+    m.set(rule.cssText, []);
   }
   console.log('start');
 
@@ -50,7 +50,7 @@ function test(outer = 10, inner = 100) {
         document.querySelectorAll(rule.selectorText).length;
       }
       const time = performance.now() - now;
-      m.get(rule.selectorText).push(time);
+      m.get(rule.cssText).push(time);
     }
   }
 
