@@ -15,18 +15,20 @@ export default class AnnotationRenderer extends StringCellRenderer {
   create(col: AnnotateColumn) {
     return {
       template: `<div>
-        <input class="${cssClass('hover-only')}">
-        <span class="${cssClass('not-hover-only')}"></span>
+        <span></span>
+        <input class="${cssClass('hover-only')} ${cssClass('annotate-input')}">
        </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        const input: HTMLInputElement = <HTMLInputElement>n.firstElementChild!;
+        const label = <HTMLElement>n.firstElementChild!;
+        const input = <HTMLInputElement>n.lastElementChild!;
         input.onchange = () => {
+          label.textContent = input.value;
           col.setValue(d, input.value);
         };
         input.onclick = (event) => {
           event.stopPropagation();
         };
-        n.lastElementChild!.textContent = input.value = col.getLabel(d);
+        label.textContent = input.value = col.getLabel(d);
       }
     };
   }

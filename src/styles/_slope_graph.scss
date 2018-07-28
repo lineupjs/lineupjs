@@ -45,6 +45,7 @@ path {
 
 section.#{$lu-css_prefix}-slopegraph-header {
   display: flex;
+  flex: 0 0 auto;
   padding-top: 1.4em;
   justify-content: center;
   width: $lu_slope_width;

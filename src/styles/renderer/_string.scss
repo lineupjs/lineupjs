@@ -11,3 +11,14 @@
   text-overflow: ellipsis;
   white-space: normal;
 }
+
+.#{$lu_css_prefix}-annotate-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
