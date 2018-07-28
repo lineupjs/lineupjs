@@ -18,7 +18,21 @@ function shuffle(array) {
   return array;
 }
 
-const rules = [].concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules)));
+const rules = [].concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules))).filter((d) => d.selectorText);
+
+function verify() {
+  const m = new Map();
+  for (const rule of rules) {
+    if (rule.styleMap.size === 0) {
+      console.warn('empty rule', rule);
+    }
+
+    if (m.has(rule.selectorText)) {
+      console.warn('duplicate selector detected: ', rule.selectorText, rule, rules.find((d) => d.selectorText === rule.selectorText));
+    }
+    m.set(rule.selectorText, []);
+  }
+}
 
 function test(outer = 10, inner = 100) {
   const m = new Map();
