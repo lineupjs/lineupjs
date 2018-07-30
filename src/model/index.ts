@@ -66,7 +66,7 @@ export {default as DatesMapColumn} from './DatesMapColumn';
 export * from './DummyColumn';
 export {default as DummyColumn} from './DummyColumn';
 export {default as GroupColumn, createGroupDesc, EGroupSortMethod} from './GroupColumn';
-export {default as HierarchyColumn, ICategoryNode, IPartialCategoryNode, IHierarchyColumnDesc, IHierarchyDesc, ICategoryInternalNode, ICutOffNode} from './HierarchyColumn';
+export {default as HierarchyColumn, ICategoryNode, IPartialCategoryNode, IHierarchyColumnDesc, IHierarchyDesc, ICategoryInternalNode, ICutOffNode, resolveInnerNodes, isHierarchical, deriveHierarchy} from './HierarchyColumn';
 export * from './ImpositionBoxPlotColumn';
 export {default as ImpositionBoxPlotColumn} from './ImpositionBoxPlotColumn';
 export * from './ImpositionCompositeColumn';
