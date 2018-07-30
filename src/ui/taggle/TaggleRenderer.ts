@@ -9,7 +9,6 @@ import {IEngineRankingContext} from '../EngineRanking';
 import EngineRenderer from '../EngineRenderer';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
 import {IRule} from './interfaces';
-import {cssClass} from '../../styles';
 
 /**
  * emitted when the highlight changes
@@ -55,14 +54,6 @@ export default class TaggleRenderer extends AEventDispatcher {
       levelOfDetail: (rowIndex: number) => this.levelOfDetail ? this.levelOfDetail(rowIndex) : 'high'
     }));
 
-    //
-    this.renderer.style.addRule('taggle_lod_rule', `
-      .${this.renderer.style.cssClasses.tr}.${cssClass('low')}[data-agg=detail]:hover`, {
-        /* show regular height for hovered rows in low + medium LOD */
-        height: `${options.rowHeight}px !important`
-      });
-
-
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, () => {
       if (this.isDynamicLeafHeight) {
         this.update();
@@ -73,6 +64,10 @@ export default class TaggleRenderer extends AEventDispatcher {
     window.addEventListener('resize', this.resizeListener, {
       passive: true
     });
+  }
+
+  get style() {
+    return this.renderer.style;
   }
 
   get ctx(): IRankingHeaderContextContainer & IRenderContext & IEngineRankingContext {

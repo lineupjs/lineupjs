@@ -5,7 +5,6 @@ import {IDataProvider} from '../provider/ADataProvider';
 import {rangeSelection} from '../renderer/SelectionRenderer';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {engineCssClass, cssClass} from '../styles/index';
-import {StyleManager} from 'lineupengine';
 
 interface IPoint {
   x: number;
@@ -33,7 +32,7 @@ export default class SelectionManager extends AEventDispatcher {
 
   private start: (IPoint & IShift) | null = null;
 
-  constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement, style: StyleManager) {
+  constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement) {
     super();
     const root = body.parentElement!.parentElement!;
     let hr = <HTMLHRElement>root.querySelector('hr');
@@ -44,17 +43,11 @@ export default class SelectionManager extends AEventDispatcher {
     this.hr = hr;
     this.hr.classList.add(cssClass('hr'));
 
-    // add on demand for better selector performance
-    style.addRule(`selection-active-${body.id}`, `#${body.id}.${cssClass('selection-active')} *`, {
-      webkitUserSelect: 'none',
-      msUserSelect: 'none',
-      userSelect: 'none'
-    });
-
     const mouseMove = (evt: MouseEvent) => {
       this.showHint(evt);
     };
     const mouseUp = (evt: MouseEvent) => {
+      console.log(evt.currentTarget, evt.type);
       this.body.removeEventListener('mousemove', mouseMove);
       this.body.removeEventListener('mouseup', mouseUp);
       this.body.removeEventListener('mouseleave', mouseUp);
@@ -69,6 +62,7 @@ export default class SelectionManager extends AEventDispatcher {
       const end = <HTMLElement>this.body.ownerDocument.elementFromPoint(evt.clientX, evt.clientY);
       const endNode = end.classList.contains(row) ? end : <HTMLElement>(end.closest(`.${row}`));
       this.start = null;
+
       this.body.classList.remove(cssClass('selection-active'));
       this.hr.classList.remove(cssClass('selection-active'));
 
@@ -76,8 +70,10 @@ export default class SelectionManager extends AEventDispatcher {
     };
 
     body.addEventListener('mousedown', (evt) => {
+      console.log('down', evt.currentTarget);
       const r = root.getBoundingClientRect();
       this.start = {x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
+
       this.body.classList.add(cssClass('selection-active'));
       body.addEventListener('mousemove', mouseMove, {
         passive: true

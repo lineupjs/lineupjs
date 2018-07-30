@@ -16,7 +16,7 @@ import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph, {EMode} from './SlopeGraph';
 import DialogManager from './dialogs/DialogManager';
-import {cssClass, engineCssClass} from '../styles/index';
+import {cssClass} from '../styles/index';
 import domElementCache from './domElementCache';
 
 /**
@@ -124,22 +124,6 @@ export default class EngineRenderer extends AEventDispatcher {
       this.style.addRule('lineup_rowPadding0', `
         .${this.style.cssClasses.tr}`, {
           marginTop: `${options.rowPadding}px`
-        });
-
-      this.style.addRule('lineup_rowPadding1', `
-      .${this.style.cssClasses.tr}.${cssClass('low')}`, {
-          marginTop: '0'
-        });
-
-      // padding in general and for hovered low detail rows + their afterwards
-      this.style.addRule('lineup_rowPadding2', `
-        .${this.style.cssClasses.tr}.${cssClass('low')}:hover,
-        .${this.style.cssClasses.tr}.${cssClass('low')}.${engineCssClass('highlighted')},
-        .${this.style.cssClasses.tr}.${cssClass('selected')},
-        .${this.style.cssClasses.tr}.${cssClass('low')}:hover + .${this.style.cssClasses.tr}.${cssClass('low')},
-        .${this.style.cssClasses.tr}.${cssClass('low')}.${engineCssClass('highlighted')} + .${this.style.cssClasses.tr}.${cssClass('low')},
-        .${this.style.cssClasses.tr}.${cssClass('selected')} + .${this.style.cssClasses.tr}.${cssClass('low')}`, {
-          marginTop: `${options.rowPadding}px !important`
         });
 
       // FIXME flat

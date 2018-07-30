@@ -6,7 +6,7 @@ import {ALineUp} from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
 import spaceFillingRule from './spaceFillingRule';
 import TaggleRenderer from './TaggleRenderer';
-import {cssClass} from '../../styles/index';
+import {cssClass, engineCssClass} from '../../styles/index';
 
 export {ITaggleOptions} from '../../interfaces';
 
@@ -44,15 +44,52 @@ export default class Taggle extends ALineUp {
       const input = <HTMLInputElement>this.spaceFilling.querySelector('input');
       input.onchange = () => {
         const selected = this.spaceFilling.classList.toggle(cssClass('chosen'));
-        self.setTimeout(() => this.renderer.switchRule(selected ? spaceFilling : null));
+        self.setTimeout(() => {
+          this.updateLodRules(selected);
+          this.renderer.switchRule(selected ? spaceFilling : null);
+        });
       };
       if (this.options.overviewMode) {
         input.checked = true;
         this.spaceFilling.classList.toggle(cssClass('chosen'));
+        this.updateLodRules(true);
         this.renderer.switchRule(spaceFilling);
       }
     }
     this.forward(this.renderer, `${ALineUp.EVENT_HIGHLIGHT_CHANGED}.main`);
+  }
+
+  private updateLodRules(active: boolean) {
+    const style = this.renderer.style;
+    if (!active) {
+      style.deleteRule('taggle_lod_rule');
+      style.deleteRule('lineup_rowPadding1');
+      style.deleteRule('lineup_rowPadding2');
+      return;
+    }
+
+    style.updateRule('taggle_lod_rule', `
+    .${engineCssClass('tr')}.${cssClass('low')}[data-agg=detail]:hover`, {
+      /* show regular height for hovered rows in low + medium LOD */
+      height: `${this.options.rowHeight}px !important`
+    });
+
+    style.updateRule('lineup_rowPadding1', `
+    .${engineCssClass('tr')}.${cssClass('low')}`, {
+        marginTop: '0'
+      });
+
+    // padding in general and for hovered low detail rows + their afterwards
+    style.updateRule('lineup_rowPadding2', `
+    .${engineCssClass('tr')}.${cssClass('low')}:hover,
+    .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')},
+    .${engineCssClass('tr')}.${cssClass('selected')},
+    .${engineCssClass('tr')}.${cssClass('low')}:hover + .${engineCssClass('tr')}.${cssClass('low')},
+    .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')} + .${engineCssClass('tr')}.${cssClass('low')},
+    .${engineCssClass('tr')}.${cssClass('selected')} + .${engineCssClass('tr')}.${cssClass('low')}`, {
+        marginTop: `${this.options.rowPadding}px !important`
+      });
+
   }
 
   private setViolation(violation?: string) {
