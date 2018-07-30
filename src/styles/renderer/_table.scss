@@ -1,8 +1,6 @@
 @import '../vars';
 
-.#{$lu_css_prefix}-renderer-table,
-.#{$lu_css_prefix}-renderer-map,
-.#{$lu_css_prefix}-renderer-mapbars {
+.#{$lu_css_prefix}-rtable {
   font-size: 60%;
   padding: 0;
   margin: 0;

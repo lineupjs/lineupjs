@@ -18,9 +18,8 @@ function shuffle(array) {
   return array;
 }
 
-const rules = [].concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules))).filter((d) => d.selectorText);
-
 function verify() {
+  const rules = [].concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules))).filter((d) => d.selectorText);
   const m = new Map();
   for (const rule of rules) {
     if (rule.styleMap.size === 0) {
@@ -35,6 +34,8 @@ function verify() {
 }
 
 function test(outer = 10, inner = 100) {
+  const rules = [].concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules))).filter((d) => d.selectorText);
+
   const m = new Map();
   for (const rule of rules) {
     m.set(rule.cssText, []);

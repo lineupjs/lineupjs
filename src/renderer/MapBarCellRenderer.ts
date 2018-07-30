@@ -20,7 +20,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
 
   create(col: IMapColumn<number>, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     return {
-      template: `<div></div>`,
+      template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(node, col, d)) {
           return;
@@ -47,7 +47,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
 
   createSummary(col: IMapColumn<number> & IMapAbleColumn) {
     return {
-      template: `<div><div>Key</div><div><span></span><span></span>Value</div></div>`,
+      template: `<div class="${cssClass('rtable')}"><div>Key</div><div><span></span><span></span>Value</div></div>`,
       update: (node: HTMLElement) => {
         const range = col.getRange();
         const value = <HTMLElement>node.lastElementChild!;

@@ -1,4 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext} from 'lineupengine';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
@@ -241,6 +241,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         column.updateWidthRule(this.style);
       }
       column.renderers = this.ctx.createRenderer(column.c);
+    });
+
+    this.style.updateRule(`hoverOnly${this.tableId}`, `
+      #${tableIds(this.tableId).tbody}:hover > .${engineCssClass('tr')}:hover .${cssClass('hover-only')},
+      #${tableIds(this.tableId).tbody}:hover > .${engineCssClass('tr')}.${cssClass('selected')} .${cssClass('hover-only')},
+      #${tableIds(this.tableId).tbody}:hover > .${engineCssClass('tr')}.${engineCssClass('highlighted')} .${cssClass('hover-only')}`, {
+        visibility: 'visible'
     });
   }
 
@@ -678,6 +685,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   destroy() {
     super.destroy();
+    this.style.deleteRule(`hoverOnly${this.tableId}`);
     this.ranking.flatColumns.forEach((c) => EngineRanking.disableListener(c));
   }
 

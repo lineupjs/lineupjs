@@ -69,6 +69,7 @@
   background: none;
   color: $lu_toolbar_color_base;
   transition: all 0.5s ease;
+  margin-top: 1em;
   cursor: pointer;
 
   &:hover,
@@ -79,12 +80,6 @@
 
   &::before {
     @include lu_icons();
-  }
-
-  &[type=submit],
-  &[type=reset],
-  &[title=cancel] {
-    margin-top: 1em;
   }
 
   &[type=submit]::before {

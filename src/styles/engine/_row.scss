@@ -11,13 +11,13 @@
 }
 
 .#{$engine-css_prefix}-tr {
-  &:hover,
-  &.#{$lu_css_prefix}-selected,
-  &.#{$engine_css_prefix}-highlighted {
-    .#{$lu_css_prefix}-hover-only {
-      visibility: visible;
-    }
-  }
+  // &:hover,
+  // &.#{$lu_css_prefix}-selected,
+  // &.#{$engine_css_prefix}-highlighted {
+  //   .#{$lu_css_prefix}-hover-only {
+  //     visibility: visible;
+  //   }
+  // }
 
   &.#{$lu_css_prefix}-selected {
   /**

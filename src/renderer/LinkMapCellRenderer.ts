@@ -18,7 +18,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
   create(col: StringMapColumn) {
     const align = col.alignment || 'left';
     return {
-      template: `<div></div>`,
+      template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(node, col, d)) {
           return;
@@ -48,7 +48,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
   createGroup(col: StringMapColumn) {
     const align = col.alignment || 'left';
     return {
-      template: `<div></div>`,
+      template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const vs = rows.filter((d) => !col.isMissing(d)).map((d) => {
           const labels = col.getLabels(d);

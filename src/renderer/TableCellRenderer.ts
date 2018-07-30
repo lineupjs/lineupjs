@@ -20,7 +20,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
       return this.createFixed(col);
     }
     return {
-      template: `<div></div>`,
+      template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(node, col, d)) {
           return;
@@ -61,7 +61,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
       return this.createFixedGroup(col);
     }
     return {
-      template: `<div></div>`,
+      template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getMapLabel(d));
 
@@ -98,7 +98,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
 
   createSummary() {
     return {
-      template: `<div><div>Key</div><div>Value</div></div>`,
+      template: `<div class="${cssClass('rtable')}"><div>Key</div><div>Value</div></div>`,
       update: noop
     };
   }
