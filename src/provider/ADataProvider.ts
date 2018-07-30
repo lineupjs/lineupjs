@@ -239,8 +239,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     const ranking = col.findMyRanker();
     // by convention copy all support types and the first string column
     let hasString = col.desc.type === 'string';
+    let hasColumn = false;
     const toClone = !ranking ? [col] : ranking.children.filter((c) => {
       if (c === col) {
+        hasColumn = false;
         return true;
       }
       if (!hasString && c.desc.type === 'string') {
@@ -249,6 +251,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       }
       return isSupportType(c);
     });
+
+    if (!hasColumn) {
+      // maybe a nested one thus not in the top level
+      toClone.push(col);
+    }
+
     toClone.forEach((c) => {
       const clone = this.clone(c);
       r.push(clone);
