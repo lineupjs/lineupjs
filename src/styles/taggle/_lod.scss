@@ -40,6 +40,7 @@
       [data-renderer=group] {
         visibility: visible !important;
         overflow: visible !important;
+        position: relative;
 
         > * {
           position: absolute;

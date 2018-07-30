@@ -25,7 +25,8 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       },
       render: (ctx: CanvasRenderingContext2D) => {
         ctx.fillStyle = AGGREGATE.color;
-        ctx.fillRect(width - AGGREGATE.width, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
+        // weird shift of 1
+        ctx.fillRect(width - AGGREGATE.width - 1, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
       }
     };
   }
