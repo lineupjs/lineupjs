@@ -1,57 +1,10 @@
 import ADialog from './ADialog';
 import {IDialogContext} from './ADialog';
-import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel2, schemePastel1, interpolateBlues, interpolateGreens, interpolateGreys, interpolateOranges, interpolatePurples, interpolateReds, interpolateCool, interpolateCubehelixDefault, interpolateWarm, interpolatePlasma, interpolateMagma, interpolateViridis, interpolateInferno, interpolateYlOrRd, interpolateYlOrBr, interpolateBuGn, interpolateBuPu, interpolateGnBu, interpolateOrRd, interpolatePuBuGn, interpolatePuBu, interpolatePuRd, interpolateRdPu, interpolateYlGnBu, interpolateYlGn, interpolateRainbow, interpolateBrBG, interpolatePRGn, interpolatePiYG, interpolatePuOr, interpolateRdBu, interpolateRdGy, interpolateRdYlBu, interpolateRdYlGn, interpolateSpectral} from 'd3-scale-chromatic';
+import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel2, schemePastel1} from 'd3-scale-chromatic';
 import {round, fixCSS} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
-
-
-const byName = new Map<string, (v: number)=>string>();
-const byFunction = new Map<(v: number)=>string, string>();
-{
-  const lookup: { [key: string]: (v: number)=>string } = {
-    interpolateBlues,
-    interpolateGreens,
-    interpolateGreys,
-    interpolateOranges,
-    interpolatePurples,
-    interpolateReds,
-    interpolateCool,
-    interpolateCubehelixDefault,
-    interpolateWarm,
-    interpolatePlasma,
-    interpolateMagma,
-    interpolateViridis,
-    interpolateInferno,
-    interpolateYlOrRd,
-    interpolateYlOrBr,
-    interpolateBuGn,
-    interpolateBuPu,
-    interpolateGnBu,
-    interpolateOrRd,
-    interpolatePuBuGn,
-    interpolatePuBu,
-    interpolatePuRd,
-    interpolateRdPu,
-    interpolateYlGnBu,
-    interpolateYlGn,
-    interpolateRainbow,
-    interpolateBrBG,
-    interpolatePRGn,
-    interpolatePiYG,
-    interpolatePuOr,
-    interpolateRdBu,
-    interpolateRdGy,
-    interpolateRdYlBu,
-    interpolateRdYlGn,
-    interpolateSpectral
-  };
-
-  for (const key of Object.keys(lookup)) {
-    const v = lookup[key];
-    byName.set(key, v);
-    byFunction.set(v, key);
-  }
-}
+import {sequentialColors, divergentColors} from '../../model/ColorMappingFunction';
+import {color} from 'd3-color';
 
 /** @internal */
 export default class ColorPicker extends ADialog {
@@ -86,29 +39,9 @@ export function colors(node: HTMLElement) {
   }
   node.insertAdjacentHTML('beforeend', `<strong>Sequential Color</strong>`);
   {
-    for (const colors of [interpolateBlues, interpolateGreens, interpolateGreys, interpolateOranges, interpolatePurples, interpolateReds]) {
-      const name = byFunction.get(colors)!;
-      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${name}" name="color" type="radio" value="${name}">
-      <label for="${id}${name}" style="${gradient(colors, 4)}"></label>
-    </div>`);
-    }
-    for (const colors of [interpolateViridis, interpolateInferno, interpolateMagma, interpolatePlasma, interpolateWarm, interpolateCool, interpolateCubehelixDefault]) {
-      const name = byFunction.get(colors)!;
-      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${name}" name="color" type="radio" value="${name}">
-      <label for="${id}${name}" style="${gradient(colors, 9)}"></label>
-    </div>`);
-    }
-    for (const colors of [interpolateBuGn, interpolateBuPu, interpolateGnBu, interpolateOrRd, interpolatePuBuGn, interpolatePuBu, interpolatePuRd, interpolateRdPu, interpolateYlGnBu, interpolateYlGn, interpolateYlOrBr, interpolateYlOrRd]) {
-      const name = byFunction.get(colors)!;
-      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${name}" name="color" type="radio" value="${name}">
-      <label for="${id}${name}" style="${gradient(colors, 4)}"></label>
-    </div>`);
-    }
-
-    for (const colors of [interpolateRainbow]) {
-      const name = byFunction.get(colors)!;
-      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${name}" name="color" type="radio" value="${name}">
-      <label for="${id}${name}" style="${gradient(colors, 9)}"></label>
+    for (const colors of sequentialColors) {
+      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
+      <label for="${id}${colors.name}" style="${gradient(colors.apply, 9)}"></label>
     </div>`);
     }
     node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}S" name="color" type="radio" value="solid">
@@ -117,10 +50,9 @@ export function colors(node: HTMLElement) {
   }
   node.insertAdjacentHTML('beforeend', `<strong>Diverging Color</strong>`);
   {
-    for (const colors of [interpolateBrBG, interpolatePRGn, interpolatePiYG, interpolatePuOr, interpolateRdBu, interpolateRdGy, interpolateRdYlBu, interpolateRdYlGn, interpolateSpectral]) {
-      const name = byFunction.get(colors)!;
-      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${name}" name="color" type="radio" value="${name}">
-      <label for="${id}${name}" style="${gradient(colors, 11)}"></label>
+    for (const colors of divergentColors) {
+      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${color.name}" name="color" type="radio" value="${color.name}">
+      <label for="${id}${color.name}" style="${gradient(colors.apply, 11)}"></label>
     </div>`);
     }
     node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}D" name="color" type="radio" value="solid">
@@ -146,7 +78,7 @@ function gradient(interpolate: (v: number)=>string, steps = 2) {
   return r;
 }
 
-function steps(color: (v: number)=>string, count = 2) {
+function _steps(color: (v: number)=>string, count = 2) {
   if (count === 1) {
     return `background: ${color(0)}`;
   }
