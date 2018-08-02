@@ -178,6 +178,13 @@ export default class SidePanel {
     });
 
     data.on(suffix('.panel', DataProvider.EVENT_REMOVE_RANKING), (_: Ranking, index: number) => {
+      if (index < 0) {
+        // remove all
+        this.rankings.splice(0, this.rankings.length).forEach((d) => d.destroy());
+        this.node.querySelector('header')!.dataset.count = '0';
+        this.makeActive(-1);
+        return;
+      }
       const r = this.rankings.splice(index, 1)[0];
       this.node.querySelector('header')!.dataset.count = String(this.rankings.length);
       r.destroy();
