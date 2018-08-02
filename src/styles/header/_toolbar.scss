@@ -75,6 +75,8 @@
   }
 
   &[title^='Color Mapping']::before {
+
+    // TODO switch to https://fontawesome.com/v4.7.0/icon/adjust
     content: $lu_icon_star_half;
   }
 
