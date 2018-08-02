@@ -13,26 +13,15 @@ export default class ColorMappingDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
+    node.classList.add('lu-dialog-color');
     const id = uniqueId('col');
-
-    node.insertAdjacentHTML('beforeend', `<datalist id="${id}L">${schemeCategory10.map((d) => `<option value="${d}"></option>`).join('')}</datalist>`);
-    node.insertAdjacentHTML('beforeend', `<datalist id="${id}LW"><option value="#FFFFFF"></option>${schemeCategory10.slice(0, -1).map((d) => `<option value="${d}"></option>`).join('')}</datalist>`);
-
-    node.insertAdjacentHTML('beforeend', `<strong>Solid Color</strong>`);
-    {
-      for (const colors of [schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3]) {
-        node.insertAdjacentHTML('beforeend', `<div class="lu-color-line">
-          ${colors.map((d) => `<div class="lu-checkbox-color"><input id="${id}${fixCSS(d)}" name="color" type="radio" value="${d}"><label for="${id}${fixCSS(d)}" style="background: ${d}"></label></div>`).join('')}
-        </div>`);
-      }
-      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox"><input id="${id}O" name="color" type="radio" value="custom:solid">
-        <label for="${id}O"><input type="color" name="solid" list="${id}L"></label>
-      </div>`);
-    }
 
     const current = this.column.getColorMapping();
 
-    node.insertAdjacentHTML('beforeend', `<strong>Quantization</strong>
+    let h = `<datalist id="${id}L">${schemeCategory10.map((d) => `<option value="${d}"></option>`).join('')}</datalist>`;
+    h += `<datalist id="${id}LW"><option value="#FFFFFF"></option>${schemeCategory10.slice(0, -1).map((d) => `<option value="${d}"></option>`).join('')}</datalist>`;
+
+    h += `<strong>Quantization</strong>
     <div class="lu-checkbox">
       <input id="${id}KC" name="kind" type="radio" value="continuous" ${current.type !== 'quantized' ? 'checked': ''}>
       <label for="${id}CK">Continuous</label>
@@ -40,36 +29,55 @@ export default class ColorMappingDialog extends ADialog {
     <div class="lu-checkbox">
       <input id="${id}KQ" name="kind" type="radio" value="quantized" ${current.type === 'quantized' ? 'checked': ''}>
       <label for="${id}KQ"><input type="number" id="${id}KQS" min="2" step="1" value="${current.type === 'quantized' ? current.steps : 2}"> steps</label>
-    </div>`);
+    </div>`;
 
+    h += `<strong data-toggle="${current.type === 'solid' ? 'open' : ''}">Solid Color</strong>`;
+    h += `<div>`;
+    {
+      for (const colors of [schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3]) {
+        h += `<div class="lu-color-line">
+          ${colors.map((d) => `<div class="lu-checkbox-color"><input id="${id}${fixCSS(d)}" name="color" type="radio" value="${d}"><label for="${id}${fixCSS(d)}" style="background: ${d}"></label></div>`).join('')}
+        </div>`;
+      }
+      h += `<div class="lu-checkbox"><input id="${id}O" name="color" type="radio" value="custom:solid">
+        <label for="${id}O"><input type="color" name="solid" list="${id}L"></label>
+      </div>`;
+    }
+    h += '</div>';
 
-
-    node.insertAdjacentHTML('beforeend', `<strong>Sequential Color</strong>`);
+    h += `<strong data-toggle="${current.type === 'sequential' ? 'open' : ''}">Sequential Color</strong>`;
+    h += '<div>';
     {
       for (const colors of sequentialColors) {
-        node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
+        h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
         <label for="${id}${colors.name}" data-c="${colors.name}" style="background: ${gradient(colors.apply, 9)}"></label>
-      </div>`);
+      </div>`;
       }
-      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}S" name="color" type="radio" value="custom:sequential">
+      h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}S" name="color" type="radio" value="custom:sequential">
         <label for="${id}S"><input type="color" name="interpolate0" list="${id}LW"><input type="color" name="interpolate1" list="${id}LW"></label>
-      </div>`);
+      </div>`;
     }
-    node.insertAdjacentHTML('beforeend', `<strong>Diverging Color</strong>`);
+    h += '</div>';
+    h += `<strong data-toggle="${current.type === 'divergent' ? 'open' : ''}">Diverging Color</strong>`;
+    h += '<div>';
     {
       for (const colors of divergentColors) {
-        node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
+        h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
         <label for="${id}${colors.name}" data-c="${colors.name}" style="background: ${gradient(colors.apply, 11)}"></label>
-      </div>`);
+      </div>`;
       }
-      node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}D" name="color" type="radio" value="custom:divergent">
+      h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}D" name="color" type="radio" value="custom:divergent">
         <label for="${id}D">
           <input type="color" name="diverging-1" list="${id}L">
           <input type="color" name="diverging0" list="${id}LW">
           <input type="color" name="diverging1" list="${id}L">
           </label>
-      </div>`);
+      </div>`;
     }
+    h += '</div>';
+
+    node.insertAdjacentHTML('beforeend', h);
+
     const continuouos = this.findInput(`#${id}KC`);
     const quantized = this.findInput(`#${id}KQ`);
     const steps = this.findInput(`#${id}KQS`);
@@ -86,6 +94,17 @@ export default class ColorMappingDialog extends ADialog {
         this.updateGradients(parseInt(steps.value, 10));
       }
     };
+
+    const toggles = <HTMLElement[]>Array.from(node.querySelectorAll('strong[data-toggle]'));
+    for (const toggle of toggles) {
+      toggle.onclick = (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        for (const t2 of toggles) {
+          t2.dataset.toggle = t2.dataset.toggle === 'open' || toggle !== t2 ? '' : 'open';
+        }
+      };
+    }
 
     this.forEach('input[name=color]', (d: HTMLInputElement) => {
       d.onchange = () => {
