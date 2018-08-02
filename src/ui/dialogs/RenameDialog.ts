@@ -1,6 +1,10 @@
 import {IColumnMetaData} from '../../model';
 import Column from '../../model/Column';
+import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel1, schemePastel2} from 'd3-scale-chromatic';
 import ADialog, {IDialogContext} from './ADialog';
+import {uniqueId} from '../../renderer/utils';
+import {fixCSS} from '../../internal';
+import {colors} from './ColorPicker';
 
 /** @internal */
 export default class RenameDialog extends ADialog {
@@ -20,6 +24,8 @@ export default class RenameDialog extends ADialog {
       <input type="text" value="${this.column.label}" required autofocus placeholder="name">
       <input type="color" value="${this.column.color}" required placeholder="color">
       <textarea rows="5" placeholder="Description">${this.column.description}</textarea>`);
+
+    colors(node);
   }
 
   protected reset() {
