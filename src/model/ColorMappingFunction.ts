@@ -1,34 +1,48 @@
 import {interpolateBlues, interpolateGreens, interpolateGreys, interpolateOranges, interpolatePurples, interpolateReds, interpolateCool, interpolateCubehelixDefault, interpolateWarm, interpolatePlasma, interpolateMagma, interpolateViridis, interpolateInferno, interpolateYlOrRd, interpolateYlOrBr, interpolateBuGn, interpolateBuPu, interpolateGnBu, interpolateOrRd, interpolatePuBuGn, interpolatePuBu, interpolatePuRd, interpolateRdPu, interpolateYlGnBu, interpolateYlGn, interpolateRainbow, interpolateBrBG, interpolatePRGn, interpolatePiYG, interpolatePuOr, interpolateRdBu, interpolateRdGy, interpolateRdYlBu, interpolateRdYlGn, interpolateSpectral} from 'd3-scale-chromatic';
 import {IMapAbleDesc} from './MappingFunction';
 import Column from './Column';
+import {equal} from '../internal/utils';
 
-export declare type IColorMappingType = 'solid'|'sequential'|'divergent'|'custom'|'quantized';
-
-export interface IColorMappingFunction {
+export interface IColorMappingFunctionBase {
   apply(v: number): string;
 
   dump(): any;
 
-  restore(dump: any): void;
-
   clone(): IColorMappingFunction;
 
   eq(other: IColorMappingFunction): boolean;
-
-  type: IColorMappingType;
 }
 
-export class D3ColorFunction implements IColorMappingFunction {
-  constructor(public readonly name: string, public readonly type: IColorMappingType, public readonly apply: (v: number)=>string) {
+export interface IInterpolateColorMappingFunction extends IColorMappingFunctionBase {
+  type: 'sequential'|'divergent';
+  name: string;
+}
+
+export interface IQuantizedColorMappingFunction extends IColorMappingFunctionBase {
+  type: 'quantized';
+  base: IColorMappingFunction;
+  steps: number;
+}
+
+export interface ISolidColorMappingFunction extends IColorMappingFunctionBase {
+  type: 'solid';
+  color: string;
+}
+
+export interface ICustomColorMappingFunction extends IColorMappingFunctionBase {
+  type: 'custom';
+  entries: {value: number, color: string}[];
+}
+
+export declare type IColorMappingFunction = ISolidColorMappingFunction | ICustomColorMappingFunction | IQuantizedColorMappingFunction | IInterpolateColorMappingFunction;
+
+export class D3ColorFunction implements IInterpolateColorMappingFunction {
+  constructor(public readonly name: string, public readonly type: 'sequential'|'divergent', public readonly apply: (v: number)=>string) {
 
   }
 
   dump() {
     return this.name;
-  }
-
-  restore() {
-    // dummy
   }
 
   clone() {
@@ -40,12 +54,12 @@ export class D3ColorFunction implements IColorMappingFunction {
   }
 }
 
-export class SolidColorFunction implements IColorMappingFunction {
+export class SolidColorFunction implements ISolidColorMappingFunction {
   constructor(public readonly color: string) {
 
   }
 
-  get type(): IColorMappingType {
+  get type(): 'solid' {
     return 'solid';
   }
 
@@ -57,10 +71,6 @@ export class SolidColorFunction implements IColorMappingFunction {
     return this.color;
   }
 
-  restore() {
-    // dummy
-  }
-
   clone() {
     return this; // no clone needed since not parameterized
   }
@@ -68,6 +78,80 @@ export class SolidColorFunction implements IColorMappingFunction {
   eq(other: IColorMappingFunction): boolean {
     return other instanceof SolidColorFunction && other.color === this.color;
   }
+}
+
+export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
+  constructor(public readonly base: IColorMappingFunction, public readonly steps: number) {
+
+  }
+
+  get type(): 'quantized' {
+    return 'quantized';
+  }
+
+  apply(v: number) {
+    return this.base.apply(quantize(v, this.steps));
+  }
+
+  dump() {
+    return {
+      base: this.base.dump(),
+      steps: this.steps
+    };
+  }
+
+  clone(): QuantizedColorFunction {
+    return this; // no clone needed since not parameterized
+  }
+
+  eq(other: IColorMappingFunction): boolean {
+    return other instanceof QuantizedColorFunction && other.base.eq(this.base) && other.steps === this.steps;
+  }
+}
+
+export class CustomColorMappingFunction implements ICustomColorMappingFunction {
+  constructor(public readonly entries: {value: number, color: string}[]) {
+
+  }
+
+  get type(): 'custom' {
+    return 'custom';
+  }
+
+  apply(_v: number) {
+    return this.entries[0].color; // TODO
+  }
+
+  dump() {
+    return this.entries;
+  }
+
+  clone() {
+    return new CustomColorMappingFunction(this.entries);
+  }
+
+  eq(other: IColorMappingFunction): boolean {
+    return other instanceof CustomColorMappingFunction && equal(this.entries, other.entries);
+  }
+}
+
+/**
+ * @internal
+ */
+export function quantize(v: number, steps: number) {
+  const perStep = 1 / steps;
+  if (v <= perStep) {
+    return 0;
+  }
+  if (v >= (1 - perStep)) {
+    return 1;
+  }
+  for (let acc = 0; acc < 1; acc += perStep) {
+    if (v < acc) {
+      return acc - perStep / 2; // center
+    }
+  }
+  return v;
 }
 
 const cache = new Map<string, SolidColorFunction>();
@@ -98,6 +182,12 @@ export const sequentialColors: D3ColorFunction[] = [];
  * @internal
  */
 export const divergentColors: D3ColorFunction[] = [];
+
+/**
+ * @internal
+ */
+export const lookupD3Color = new Map<string, D3ColorFunction>();
+
 {
   const sequential: { [key: string]: (v: number)=>string } = {
     interpolateBlues,
@@ -112,9 +202,7 @@ export const divergentColors: D3ColorFunction[] = [];
     interpolatePlasma,
     interpolateMagma,
     interpolateViridis,
-    interpolateInferno
-  };
-  const divergent: { [key: string]: (v: number)=>string } = {
+    interpolateInferno,
     interpolateYlOrRd,
     interpolateYlOrBr,
     interpolateBuGn,
@@ -127,7 +215,9 @@ export const divergentColors: D3ColorFunction[] = [];
     interpolateRdPu,
     interpolateYlGnBu,
     interpolateYlGn,
-    interpolateRainbow,
+    interpolateRainbow
+  };
+  const divergent: { [key: string]: (v: number)=>string } = {
     interpolateBrBG,
     interpolatePRGn,
     interpolatePiYG,
@@ -144,6 +234,13 @@ export const divergentColors: D3ColorFunction[] = [];
   for (const key of Object.keys(divergent)) {
     divergentColors.push(new D3ColorFunction(key, 'divergent', divergent[key]));
   }
+
+  for (const col of sequentialColors) {
+    lookupD3Color.set(col.name, col);
+  }
+  for (const col of divergentColors) {
+    lookupD3Color.set(col.name, col);
+  }
 }
 
 /**
@@ -154,17 +251,18 @@ export function createColorMappingFunction(color: string | null, dump: any): ICo
     return color ? asColorFunction(color) : DEFAULT_COLOR_FUNCTION;
   }
   if (typeof dump === 'string') {
-    const s = sequentialColors.find((d) => d.name === dump);
+    const s = lookupD3Color.get(dump);
     if (s) {
       return s;
     }
-    const d = divergentColors.find((d) => d.name === dump);
-    if (d) {
-      return d;
-    }
     return asColorFunction(dump);
   }
-  // TODO restore custom stuff
+  if (dump.base && dump.steps) {
+    return new QuantizedColorFunction(createColorMappingFunction(color, dump.base), dump.steps);
+  }
+  if (Array.isArray(dump)) {
+    return new CustomColorMappingFunction(dump);
+  }
   return DEFAULT_COLOR_FUNCTION;
 }
 

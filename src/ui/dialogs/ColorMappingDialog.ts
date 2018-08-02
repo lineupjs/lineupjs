@@ -3,8 +3,7 @@ import {IDialogContext} from './ADialog';
 import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel2, schemePastel1} from 'd3-scale-chromatic';
 import {round, fixCSS} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
-import {sequentialColors, divergentColors, IColorMappingFunction, createColorMappingFunction} from '../../model/ColorMappingFunction';
-import {color} from 'd3-color';
+import {sequentialColors, divergentColors, createColorMappingFunction, lookupD3Color, QuantizedColorFunction} from '../../model/ColorMappingFunction';
 import {IMapAbleColumn} from '../../model';
 
 /** @internal */
@@ -15,8 +14,6 @@ export default class ColorMappingDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     const id = uniqueId('col');
-
-    const current = this.column.getColorMapping();
 
     node.insertAdjacentHTML('beforeend', `<datalist id="${id}L">${schemeCategory10.map((d) => `<option value="${d}"></option>`).join('')}</datalist>`);
     node.insertAdjacentHTML('beforeend', `<datalist id="${id}LW"><option value="#FFFFFF"></option>${schemeCategory10.slice(0, -1).map((d) => `<option value="${d}"></option>`).join('')}</datalist>`);
@@ -32,11 +29,26 @@ export default class ColorMappingDialog extends ADialog {
         <label for="${id}O"><input type="color" name="solid" list="${id}L"></label>
       </div>`);
     }
+
+    const current = this.column.getColorMapping();
+
+    node.insertAdjacentHTML('beforeend', `<strong>Quantization</strong>
+    <div class="lu-checkbox">
+      <input id="${id}KC" name="kind" type="radio" value="continuous" ${current.type !== 'quantized' ? 'checked': ''}>
+      <label for="${id}CK">Continuous</label>
+    </div>
+    <div class="lu-checkbox">
+      <input id="${id}KQ" name="kind" type="radio" value="quantized" ${current.type === 'quantized' ? 'checked': ''}>
+      <label for="${id}KQ"><input type="number" id="${id}KQS" min="2" step="1" value="${current.type === 'quantized' ? current.steps : 2}"> steps</label>
+    </div>`);
+
+
+
     node.insertAdjacentHTML('beforeend', `<strong>Sequential Color</strong>`);
     {
       for (const colors of sequentialColors) {
         node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
-        <label for="${id}${colors.name}" style="${gradient(colors.apply, 9)}"></label>
+        <label for="${id}${colors.name}" data-c="${colors.name}" style="background: ${gradient(colors.apply, 9)}"></label>
       </div>`);
       }
       node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}S" name="color" type="radio" value="custom:sequential">
@@ -46,8 +58,8 @@ export default class ColorMappingDialog extends ADialog {
     node.insertAdjacentHTML('beforeend', `<strong>Diverging Color</strong>`);
     {
       for (const colors of divergentColors) {
-        node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${color.name}" name="color" type="radio" value="${color.name}">
-        <label for="${id}${color.name}" style="${gradient(colors.apply, 11)}"></label>
+        node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
+        <label for="${id}${colors.name}" data-c="${colors.name}" style="background: ${gradient(colors.apply, 11)}"></label>
       </div>`);
       }
       node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}D" name="color" type="radio" value="custom:divergent">
@@ -58,28 +70,56 @@ export default class ColorMappingDialog extends ADialog {
           </label>
       </div>`);
     }
+    const continuouos = this.findInput(`#${id}KC`);
+    const quantized = this.findInput(`#${id}KQ`);
+    const steps = this.findInput(`#${id}KQS`);
 
-    this.forEach('input[type=radio]', (d: HTMLInputElement) => {
+    continuouos.onchange = () => {
+      if (continuouos.checked) {
+        this.updateGradients(-1);
+      }
+    };
+    quantized.onchange = steps.onchange = () => {
+      if (!quantized.checked) {
+        this.updateGradients(-1);
+      } else {
+        this.updateGradients(parseInt(steps.value, 10));
+      }
+    };
+
+    this.forEach('input[name=color]', (d: HTMLInputElement) => {
       d.onchange = () => {
         if (!d.checked) {
           return;
         }
-        if (!d.value.startsWith('custom:')) {
-          this.column.setColorMapping(createColorMappingFunction(this.column.color, d.value));
+        if (d.value.startsWith('custom:')) {
+          // TODO
           return;
         }
-        // TODO
+        const base = createColorMappingFunction(this.column.color, d.value);
+        if (quantized.checked) {
+          this.column.setColorMapping(new QuantizedColorFunction(base, parseInt(steps.value, 10)));
+        } else {
+          this.column.setColorMapping(base);
+        }
       };
-    };
+    });
+  }
+
+  private updateGradients(steps: number) {
+    this.forEach(`label[data-c]`, (d: HTMLElement) => {
+      const f = lookupD3Color.get(d.dataset.c!)!;
+      d.style.background = steps < 0 ? gradient(f.apply, f.type === 'sequential' ? 9 : 11) : steppedGradient(f.apply, steps);
+    });
   }
 }
 
 function gradient(interpolate: (v: number)=>string, steps = 2) {
   if (steps <= 1) {
-    return `background: ${interpolate(0)}`;
+    return `${interpolate(0)}`;
   }
   const stepSize = 1 / (steps - 1);
-  let r = `background: linear-gradient(to right`;
+  let r = `linear-gradient(to right`;
   for (let i = 0; i < steps; ++i) {
     r += `, ${interpolate(i * stepSize)} ${round((i * stepSize) * 100, 2)}%`;
   }
@@ -87,11 +127,11 @@ function gradient(interpolate: (v: number)=>string, steps = 2) {
   return r;
 }
 
-function _steps(color: (v: number)=>string, count = 2) {
+function steppedGradient(color: (v: number)=>string, count = 2) {
   if (count === 1) {
-    return `background: ${color(0)}`;
+    return `${color(0)}`;
   }
-  let r = `background: linear-gradient(to right`;
+  let r = `linear-gradient(to right`;
   const stepSize = 1 / count;
   const half = stepSize / 2;
   for (let i = 0; i < count; ++i) {
