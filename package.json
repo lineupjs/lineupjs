@@ -57,7 +57,7 @@
     "posttest": "npm run lint",
     "prebuild": "npm run clean && (node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test)",
     "build:dev": "webpack --mode development --devtool source-map",
-    "build:prod": "webpack --mode production",
+    "build:prod": "webpack --mode production --devtool source-map",
     "build": "npm run build:prod",
     "watch": "webpack --mode development --watch --devtool source-map",
     "start": "webpack-dev-server --mode development --devtool source-map",
