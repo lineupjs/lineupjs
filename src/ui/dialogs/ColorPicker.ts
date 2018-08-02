@@ -70,7 +70,8 @@ export default class ColorPicker extends ADialog {
 
 export function colors(node: HTMLElement) {
   const id = uniqueId('col');
-  node.insertAdjacentHTML('beforeend', `<datalist id="${id}C">${schemeCategory10.map((d) => `<option value="${d}"></option>`).join('')}</datalist>`);
+  node.insertAdjacentHTML('beforeend', `<datalist id="${id}L">${schemeCategory10.map((d) => `<option value="${d}"></option>`).join('')}</datalist>`);
+  node.insertAdjacentHTML('beforeend', `<datalist id="${id}LW"><option value="#FFFFFF"></option>${schemeCategory10.slice(0, -1).map((d) => `<option value="${d}"></option>`).join('')}</datalist>`);
 
   node.insertAdjacentHTML('beforeend', `<strong>Solid Color</strong>`);
   {
@@ -80,7 +81,7 @@ export function colors(node: HTMLElement) {
       </div>`);
     }
     node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox"><input id="${id}O" name="color" type="radio" value="solid:custom">
-      <label for="${id}O"><input type="color" name="solid" list="${id}C"></label>
+      <label for="${id}O"><input type="color" name="solid" list="${id}L"></label>
     </div>`);
   }
   node.insertAdjacentHTML('beforeend', `<strong>Sequential Color</strong>`);
@@ -110,8 +111,8 @@ export function colors(node: HTMLElement) {
       <label for="${id}${name}" style="${gradient(colors, 9)}"></label>
     </div>`);
     }
-    node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}0C" name="color" type="radio" value="solid">
-      <label for="${id}S"><input type="color" name="interpolate0" list="${id}S"><input type="color" name="interpolate1" list="${id}C"></label>
+    node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}S" name="color" type="radio" value="solid">
+      <label for="${id}S"><input type="color" name="interpolate0" list="${id}LW"><input type="color" name="interpolate1" list="${id}LW"></label>
     </div>`);
   }
   node.insertAdjacentHTML('beforeend', `<strong>Diverging Color</strong>`);
@@ -124,9 +125,9 @@ export function colors(node: HTMLElement) {
     }
     node.insertAdjacentHTML('beforeend', `<div class="lu-checkbox lu-color-gradient"><input id="${id}D" name="color" type="radio" value="solid">
       <label for="${id}D">
-        <input type="color" name="diverging-1" list="${id}C">
-        <input type="color" name="diverging0" list="${id}C">
-        <input type="color" name="diverging1" list="${id}C">
+        <input type="color" name="diverging-1" list="${id}L">
+        <input type="color" name="diverging0" list="${id}LW">
+        <input type="color" name="diverging1" list="${id}L">
         </label>
     </div>`);
   }
