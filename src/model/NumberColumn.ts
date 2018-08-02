@@ -61,7 +61,7 @@ export declare function groupingChanged(previous: number[], current: number[]): 
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('groupBy', 'sortGroupBy', 'filterMapped')
+@toolbar('groupBy', 'sortGroupBy', 'filterMapped', 'colorMapped')
 @dialogAddons('sortGroup', 'sortNumber')
 @dialogAddons('group', 'groupNumber')
 @Category('number')
@@ -258,7 +258,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([NumberColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire([NumberColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
   }
 
   isFiltered() {

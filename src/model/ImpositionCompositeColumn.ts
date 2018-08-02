@@ -20,7 +20,7 @@ export function createImpositionDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterMapped')
+@toolbar('filterMapped', 'colorMapped')
 @SortByDefault('descending')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;

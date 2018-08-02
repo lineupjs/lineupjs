@@ -66,9 +66,9 @@ export interface IMapAbleColumn extends INumberColumn {
 
   setMapping(mapping: IMappingFunction): void;
 
-  getColorMapping(): IColorMappingFunction|string;
+  getColorMapping(): IColorMappingFunction;
 
-  setColorMapping(mapping: IColorMappingFunction|string): void;
+  setColorMapping(mapping: IColorMappingFunction): void;
 
   getFilter(): INumberFilter;
 

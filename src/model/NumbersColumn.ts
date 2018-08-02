@@ -40,7 +40,7 @@ export declare function mappingChanged(previous: IMappingFunction, current: IMap
  */
 export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
-@toolbar('filterMapped')
+@toolbar('filterMapped', 'colorMapped')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {

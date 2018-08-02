@@ -5,7 +5,7 @@ import {IDataProvider} from '../provider/ADataProvider';
 import DialogManager from '../ui/dialogs/DialogManager';
 
 export interface IImposer {
-  color?(row: IDataRow | null): string | null;
+  color?(row: IDataRow | null, valueHint?: number): string | null;
 }
 
 
