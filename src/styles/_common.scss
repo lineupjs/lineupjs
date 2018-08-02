@@ -78,7 +78,12 @@
 .#{$lu_css_prefix}-color-gradient {
   display: flex;
 
+  input:checked + label {
+    outline: 2px solid black;
+  }
+
   > label {
+    margin: 0.1em;
     flex: 1 1 auto;
   }
 }

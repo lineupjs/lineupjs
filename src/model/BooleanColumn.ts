@@ -108,6 +108,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return this.categories[v ? 0 : 1];
   }
 
+  getColor(row: IDataRow) {
+    return CategoricalColumn.prototype.getColor.call(this, row);
+  }
+
   getLabel(row: IDataRow) {
     return CategoricalColumn.prototype.getLabel.call(this, row);
   }

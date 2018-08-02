@@ -1,9 +1,6 @@
 import {IColumnMetaData} from '../../model';
 import Column from '../../model/Column';
-import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel1, schemePastel2} from 'd3-scale-chromatic';
 import ADialog, {IDialogContext} from './ADialog';
-import {uniqueId} from '../../renderer/utils';
-import {fixCSS} from '../../internal';
 import {colors} from './ColorPicker';
 
 /** @internal */
