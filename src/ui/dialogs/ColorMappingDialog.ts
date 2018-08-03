@@ -28,7 +28,7 @@ export default class ColorMappingDialog extends ADialog {
     </div>
     <div class="lu-checkbox">
       <input id="${id}KQ" name="kind" type="radio" value="quantized" ${current.type === 'quantized' ? 'checked': ''}>
-      <label for="${id}KQ"><input type="number" id="${id}KQS" min="2" step="1" value="${current.type === 'quantized' ? current.steps : 2}"> steps</label>
+      <label for="${id}KQ"><input type="number" id="${id}KQS" min="2" step="1" value="${current.type === 'quantized' ? current.steps : 5}"> steps</label>
     </div>`;
 
     h += `<strong data-toggle="${current.type === 'solid' ? 'open' : ''}">Solid Color</strong>`;
@@ -90,6 +90,7 @@ export default class ColorMappingDialog extends ADialog {
     const continuouos = this.findInput(`#${id}KC`);
     const quantized = this.findInput(`#${id}KQ`);
     const steps = this.findInput(`#${id}KQS`);
+    const toggles = <HTMLElement[]>Array.from(node.querySelectorAll('strong[data-toggle]'));
 
     continuouos.onchange = () => {
       if (continuouos.checked) {
@@ -99,12 +100,16 @@ export default class ColorMappingDialog extends ADialog {
     quantized.onchange = steps.onchange = () => {
       if (!quantized.checked) {
         this.updateGradients(-1);
-      } else {
-        this.updateGradients(parseInt(steps.value, 10));
+        return;
       }
+      if (toggles[0].dataset.toggle === 'open') {
+        // auto open sequential
+        toggles[0].dataset.toggle = '';
+        toggles[1].dataset.toggle = 'open';
+      }
+      this.updateGradients(parseInt(steps.value, 10));
     };
 
-    const toggles = <HTMLElement[]>Array.from(node.querySelectorAll('strong[data-toggle]'));
     for (const toggle of toggles) {
       toggle.onclick = (evt) => {
         evt.preventDefault();
