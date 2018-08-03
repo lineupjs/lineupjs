@@ -12,27 +12,28 @@ export function getUnsupportedBrowserError() {
   if (!info) {
     return 'browser cannot be detected';
   }
+  const prefix = `unsupported browser detected:`;
   switch(info.name) {
     case 'firefox':
       const fVersion = parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
       if(fVersion <= SUPPORTED_FIREFOX_VERSION && fVersion !== 52) { // ESR
-        return `unsupported Firefox version detected: ${info.version} (minimal: ${SUPPORTED_FIREFOX_VERSION}`;
+        return `${prefix} Firefox ${info.version} (&lt; ${SUPPORTED_FIREFOX_VERSION})`;
       }
       return null;
     case 'edge':
       const eVersion = parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
       if(eVersion <= SUPPORTED_EDGE_VERSION) {
-        return `unsupported Edge version detected: ${info.version} (minimal: ${SUPPORTED_EDGE_VERSION}`;
+        return `${prefix} Edge ${info.version} (&lt; ${SUPPORTED_EDGE_VERSION})`;
       }
       return null;
     case 'chrome':
       const cVersion = parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
       if(cVersion <= SUPPORTED_CHROME_VERSION) {
-        return `unsupported Chrome version detected: ${info.version} (minimal: ${SUPPORTED_CHROME_VERSION}`;
+        return `${prefix} Chrome ${info.version} (&lt; ${SUPPORTED_CHROME_VERSION})`;
       }
-      return null;
+      return `${prefix} Chrome ${info.version} (&lt; ${SUPPORTED_CHROME_VERSION})`;
     case 'ie':
-      return 'Internet Explorer is not supported by this library';
+      return `${prefix} Internet Explorer`;
   }
   console.warn('unknown browser detected', info, 'assuming fine...');
   return null;
