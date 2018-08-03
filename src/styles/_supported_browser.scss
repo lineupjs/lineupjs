@@ -20,6 +20,7 @@
 
   &::before {
     @include lu_icons();
+
     font-size: 200%;
     transition: font-size 0.25s ease;
     color: lighten(black, 50%);
