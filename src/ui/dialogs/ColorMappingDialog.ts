@@ -3,7 +3,7 @@ import {IDialogContext} from './ADialog';
 import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel2, schemePastel1} from 'd3-scale-chromatic';
 import {round, fixCSS} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
-import {sequentialColors, divergentColors, createColorMappingFunction, lookupD3Color, QuantizedColorFunction} from '../../model/ColorMappingFunction';
+import {sequentialColors, divergentColors, createColorMappingFunction, lookupInterpolatingColor, QuantizedColorFunction} from '../../model/ColorMappingFunction';
 import Column, {IMapAbleColumn} from '../../model';
 
 /** @internal */
@@ -141,7 +141,7 @@ export default class ColorMappingDialog extends ADialog {
 
   private updateGradients(steps: number) {
     this.forEach(`label[data-c]`, (d: HTMLElement) => {
-      const f = lookupD3Color.get(d.dataset.c!)!;
+      const f = lookupInterpolatingColor.get(d.dataset.c!)!;
       d.style.background = steps < 0 ? gradient(f.apply, f.type === 'sequential' ? 9 : 11) : steppedGradient(f.apply, steps);
     });
   }
