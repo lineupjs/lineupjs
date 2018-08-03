@@ -20,8 +20,8 @@ export default class ColorMappingDialog extends ADialog {
     const entries = current.type === 'custom' ? current.entries : [];
 
     let h = '';
-    h += `<datalist id="${id}L">${schemeCategory10.map((d) => `<option value="${d}"></option>`).join('')}</datalist>`;
-    h += `<datalist id="${id}LW"><option value="#FFFFFF"></option>${schemeCategory10.slice(0, -1).map((d) => `<option value="${d}"></option>`).join('')}</datalist>`;
+    h += `<datalist id="${id}L">${schemeCategory10.map((d) => `<option>${d}"</option>`).join('')}</datalist>`;
+    h += `<datalist id="${id}LW"><option>#FFFFFF"</option>${schemeCategory10.slice(0, -1).map((d) => `<option>${d}</option>`).join('')}</datalist>`;
 
     h += `<strong>Quantization</strong>
     <div class="lu-checkbox">
