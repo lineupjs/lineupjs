@@ -200,8 +200,23 @@
       }
     }
 
+    input[disabled] {
+      cursor: not-allowed;
+      opacity: 0.2;
+    }
+
     [data-toggle=""] + div {
       display: none;
+    }
+
+    label.#{$lu_css_prefix}-color-custom {
+      display: inline-flex;
+      justify-content: space-between;
+
+      > input {
+        width: unset;
+        flex: 1 1 0;
+      }
     }
   }
 

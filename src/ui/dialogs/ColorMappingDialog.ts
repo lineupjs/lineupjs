@@ -3,7 +3,7 @@ import {IDialogContext} from './ADialog';
 import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel2, schemePastel1} from 'd3-scale-chromatic';
 import {round, fixCSS} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
-import {sequentialColors, divergentColors, createColorMappingFunction, lookupInterpolatingColor, QuantizedColorFunction} from '../../model/ColorMappingFunction';
+import {sequentialColors, divergentColors, createColorMappingFunction, lookupInterpolatingColor, QuantizedColorFunction, asColorFunction, CustomColorMappingFunction} from '../../model/ColorMappingFunction';
 import Column, {IMapAbleColumn} from '../../model';
 
 /** @internal */
@@ -17,8 +17,10 @@ export default class ColorMappingDialog extends ADialog {
     const id = uniqueId('col');
 
     const current = this.column.getColorMapping();
+    const entries = current.type === 'custom' ? current.entries : [];
 
-    let h = `<datalist id="${id}L">${schemeCategory10.map((d) => `<option value="${d}"></option>`).join('')}</datalist>`;
+    let h = '';
+    h += `<datalist id="${id}L">${schemeCategory10.map((d) => `<option value="${d}"></option>`).join('')}</datalist>`;
     h += `<datalist id="${id}LW"><option value="#FFFFFF"></option>${schemeCategory10.slice(0, -1).map((d) => `<option value="${d}"></option>`).join('')}</datalist>`;
 
     h += `<strong>Quantization</strong>
@@ -28,7 +30,7 @@ export default class ColorMappingDialog extends ADialog {
     </div>
     <div class="lu-checkbox">
       <input id="${id}KQ" name="kind" type="radio" value="quantized" ${current.type === 'quantized' ? 'checked': ''}>
-      <label for="${id}KQ"><input type="number" id="${id}KQS" min="2" step="1" value="${current.type === 'quantized' ? current.steps : 5}"> steps</label>
+      <label for="${id}KQ"><input type="number" id="${id}KQS" min="2" step="1" value="${current.type === 'quantized' ? current.steps : 5}">&nbsp; steps</label>
     </div>`;
 
     h += `<strong data-toggle="${current.type === 'solid' ? 'open' : ''}">Solid Color</strong>`;
@@ -47,12 +49,12 @@ export default class ColorMappingDialog extends ADialog {
         </div>`;
       }
       h += `<div class="lu-checkbox"><input id="${id}O" name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
-        <label for="${id}O"><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : Column.DEFAULT_COLOR}"></label>
+        <label for="${id}O"><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : Column.DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></label>
       </div>`;
     }
     h += '</div>';
 
-    h += `<strong data-toggle="${current.type === 'sequential' ? 'open' : ''}">Sequential Color</strong>`;
+    h += `<strong data-toggle="${current.type === 'sequential' || (current.type === 'custom' && entries.length === 2) ? 'open' : ''}">Sequential Color</strong>`;
     h += '<div>';
     {
       const name = current.type === 'sequential' ? current.name : '';
@@ -61,12 +63,17 @@ export default class ColorMappingDialog extends ADialog {
         <label for="${id}${colors.name}" data-c="${colors.name}" style="background: ${gradient(colors.apply, 9)}"></label>
       </div>`;
       }
-      h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}S" name="color" type="radio" value="custom:sequential">
-        <label for="${id}S"><input type="color" name="interpolate0" list="${id}LW"><input type="color" name="interpolate1" list="${id}LW"></label>
+      const isCustom = entries.length === 2;
+      h += `<div class="lu-checkbox lu-color-gradient">
+        <input id="${id}S" name="color" type="radio" value="custom:sequential" ${isCustom ? 'checked': ''}>
+        <label for="${id}S" class="lu-color-custom">
+          <input type="color" name="interpolate0" list="${id}LW" ${!isCustom ? 'disabled': `value="${entries[0].color}"`}>
+          <input type="color" name="interpolate1" list="${id}LW" ${!isCustom ? 'disabled': `value="${entries[entries.length - 1].color}"`}>
+        </label>
       </div>`;
     }
     h += '</div>';
-    h += `<strong data-toggle="${current.type === 'divergent' ? 'open' : ''}">Diverging Color</strong>`;
+    h += `<strong data-toggle="${current.type === 'divergent' || (current.type === 'custom' && entries.length === 3) ? 'open' : ''}">Diverging Color</strong>`;
     h += '<div>';
     {
       const name = current.type === 'sequential' ? current.name : '';
@@ -75,11 +82,12 @@ export default class ColorMappingDialog extends ADialog {
         <label for="${id}${colors.name}" data-c="${colors.name}" style="background: ${gradient(colors.apply, 11)}"></label>
       </div>`;
       }
-      h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}D" name="color" type="radio" value="custom:divergent">
-        <label for="${id}D">
-          <input type="color" name="diverging-1" list="${id}L">
-          <input type="color" name="diverging0" list="${id}LW">
-          <input type="color" name="diverging1" list="${id}L">
+      const isCustom = entries.length === 3;
+      h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}D" name="color" type="radio" value="custom:divergent" ${isCustom ? 'checked': ''}>
+        <label for="${id}D" class="lu-color-custom">
+          <input type="color" name="divergingm1" list="${id}L" ${!isCustom ? 'disabled': `value="${entries[0].color}"`}>
+          <input type="color" name="diverging0" list="${id}LW" ${!isCustom ? 'disabled': `value="${entries[1].color}"`}>
+          <input type="color" name="diverging1" list="${id}L" ${!isCustom ? 'disabled': `value="${entries[2].color}"`}>
           </label>
       </div>`;
     }
@@ -87,6 +95,10 @@ export default class ColorMappingDialog extends ADialog {
 
     node.insertAdjacentHTML('beforeend', h);
 
+    this.interactive(node, id);
+  }
+
+  private interactive(node: HTMLElement, id: string) {
     const continuouos = this.findInput(`#${id}KC`);
     const quantized = this.findInput(`#${id}KQ`);
     const steps = this.findInput(`#${id}KQS`);
@@ -120,22 +132,51 @@ export default class ColorMappingDialog extends ADialog {
       };
     }
 
+    const customs: HTMLElement[] = [];
+
+    const toColor = (input: HTMLInputElement) => {
+      switch (input.value) {
+        case 'custom:solid':
+          return asColorFunction((<HTMLInputElement>node.querySelector('input[name=solid]')!).value);
+        case 'custom:sequential':
+          const s0 = (<HTMLInputElement>node.querySelector('input[name=interpolate0]')!).value;
+          const s1 = (<HTMLInputElement>node.querySelector('input[name=interpolate1]')!).value;
+          return new CustomColorMappingFunction([{color: s0, value: 0}, {color: s1, value: 1}]);
+          break;
+        case 'custom:diverging':
+          const dm1 = (<HTMLInputElement>node.querySelector('input[name=divergentm1]')!).value;
+          const d0 = (<HTMLInputElement>node.querySelector('input[name=divergent0]')!).value;
+          const d1 = (<HTMLInputElement>node.querySelector('input[name=divergent1]')!).value;
+          return new CustomColorMappingFunction([{color: dm1, value: 0}, {color: d0, value: 0.5}, {color: d1, value: 1}]);
+          break;
+      }
+      return createColorMappingFunction(this.column.color, input.value);
+    };
+
     this.forEach('input[name=color]', (d: HTMLInputElement) => {
+      if (d.value.startsWith('custom:')) {
+        customs.push(d);
+      }
       d.onchange = () => {
         if (!d.checked) {
           return;
         }
-        if (d.value.startsWith('custom:')) {
-          // TODO
-          return;
+        // disable customs
+        for (const custom of customs) {
+          Array.from(custom.nextElementSibling!.querySelectorAll('input')).forEach((s) => s.disabled = custom !== d);
         }
-        const base = createColorMappingFunction(this.column.color, d.value);
-        if (quantized.checked) {
+        const base = toColor(d);
+        if (quantized.checked && base.type !== 'solid') {
           this.column.setColorMapping(new QuantizedColorFunction(base, parseInt(steps.value, 10)));
         } else {
           this.column.setColorMapping(base);
         }
       };
+    });
+
+    // upon changing custom parameter trigger an update
+    this.forEach('label > input[type=color]', (d: HTMLInputElement) => {
+      d.onchange = () => (<HTMLInputElement>d.parentElement!.previousElementSibling!).onchange!(<any>null);
     });
   }
 

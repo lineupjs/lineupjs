@@ -2,6 +2,7 @@ import {interpolateBlues, interpolateGreens, interpolateGreys, interpolateOrange
 import {IMapAbleDesc} from './MappingFunction';
 import Column from './Column';
 import {equal} from '../internal/utils';
+import {scaleLinear} from 'd3-scale';
 
 export interface IColorMappingFunctionBase {
   apply(v: number): string;
@@ -110,16 +111,21 @@ export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
 }
 
 export class CustomColorMappingFunction implements ICustomColorMappingFunction {
-  constructor(public readonly entries: {value: number, color: string}[]) {
+  private readonly scale = scaleLinear<string>();
 
+  constructor(public readonly entries: {value: number, color: string}[]) {
+    this.scale
+      .domain(entries.map((d) => d.value))
+      .range(entries.map((d) => d.color))
+      .clamp(true);
   }
 
   get type(): 'custom' {
     return 'custom';
   }
 
-  apply(_v: number) {
-    return this.entries[0].color; // TODO
+  apply(v: number) {
+    return this.scale(v);
   }
 
   dump() {
