@@ -3,7 +3,7 @@ import AEventDispatcher from '../internal/AEventDispatcher';
 import Column from '../model/Column';
 import DataProvider from '../provider/ADataProvider';
 import {IEventListener} from '../internal/AEventDispatcher';
-import {isBrowserSupported} from '../browser';
+import {getUnsupportedBrowserError} from '../browser';
 
 /**
  * emitted when the highlight changes
@@ -27,16 +27,20 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
 
   private highlightListeners = 0;
 
-  public readonly isBrowserSupported = isBrowserSupported();
+  public readonly isBrowserSupported: boolean;
 
-  constructor(public readonly node: HTMLElement, public data: DataProvider) {
+  constructor(public readonly node: HTMLElement, public data: DataProvider, ignoreIncompatibleBrowser: boolean) {
     super();
+
+    const error = getUnsupportedBrowserError();
+    this.isBrowserSupported = ignoreIncompatibleBrowser || !error;
 
     if (!this.isBrowserSupported) {
       this.node.classList.add('lu-unsupported-browser');
-      this.node.innerHTML = `<div class="lu-unsupported-browser-hint">
+      this.node.innerHTML = `<span>${error}</span>
+      <div class="lu-unsupported-browser-hint">
         <span data-browser="firefox" data-version="57"></span>
-        <span data-browser="chrome" data-version="64"></span>
+        <span data-browser="chrome" data-version="64" title="best support"></span>
         <span data-browser="edge" data-version="16"></span>
       </div>`;
     }

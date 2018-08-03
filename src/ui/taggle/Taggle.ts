@@ -18,7 +18,7 @@ export default class Taggle extends ALineUp {
 
 
   constructor(node: HTMLElement, data: DataProvider, options: Partial<ITaggleOptions> = {}) {
-    super(node, data);
+    super(node, data, options && options.ignoreUnsupportedBrowser === true);
     merge(this.options, options, {
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     });

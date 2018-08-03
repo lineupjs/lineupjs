@@ -148,6 +148,12 @@ export interface ILineUpOptions {
    * custom flags for optimization
    */
   flags: ILineUpFlags;
+
+  /**
+   * ignore incompatible browser and always show (on own risk)
+   * @default false
+   */
+  ignoreUnsupportedBrowser: boolean;
 }
 
 export interface ITaggleOptions extends ILineUpOptions {

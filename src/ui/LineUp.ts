@@ -15,7 +15,7 @@ export default class LineUp extends ALineUp {
   private readonly options = defaultOptions();
 
   constructor(node: HTMLElement, data: DataProvider, options: Partial<ILineUpOptions> = {}) {
-    super(node, data);
+    super(node, data, options && options.ignoreUnsupportedBrowser === true);
 
     merge(this.options, options);
 
