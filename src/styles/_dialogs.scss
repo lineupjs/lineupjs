@@ -182,6 +182,44 @@
     }
   }
 
+  .#{$lu_css_prefix}-dialog-color {
+    width: 15em;
+
+    > strong[data-toggle] {
+      cursor: pointer;
+
+      &::before {
+        @include lu_icons();
+
+        content: $lu_icon_caret_right;
+        width: 0.8em;
+      }
+
+      &[data-toggle=open]::before {
+        content: $lu_icon_caret_down;
+      }
+    }
+
+    input[disabled] {
+      cursor: not-allowed;
+      opacity: 0.2;
+    }
+
+    [data-toggle=""] + div {
+      display: none;
+    }
+
+    label.#{$lu_css_prefix}-color-custom {
+      display: inline-flex;
+      justify-content: space-between;
+
+      > input {
+        width: unset;
+        flex: 1 1 0;
+      }
+    }
+  }
+
   .#{$lu_css_prefix}-tooltip {
     pointer-events: none;
     min-width: 15em;

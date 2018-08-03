@@ -12,8 +12,9 @@ import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
   ScaleMappingFunction
 } from './MappingFunction';
-import NumberColumn from './NumberColumn';
+import NumberColumn, {colorMappingChanged} from './NumberColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 
 
 export interface IBoxPlotDesc extends IMapAbleDesc {
@@ -38,12 +39,13 @@ export declare function sortMethodChanged(previous: ESortMethod, current: ESortM
 export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
 
 
-@toolbar('filterMapped')
+@toolbar('filterMapped', 'colorMapped')
 @dialogAddons('sort', 'sortBoxPlot')
 @Category('array')
 @SortByDefault('descending')
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
 
   static readonly DEFAULT_FORMATTER = format('.3n');
@@ -51,6 +53,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   private sort: ESortMethod;
 
   private mapping: IMappingFunction;
+  private colorMapping: IColorMappingFunction;
 
   private original: Readonly<IMappingFunction>;
   /**
@@ -65,6 +68,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     super(id, desc);
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
+    this.colorMapping = restoreColorMapping(this.color, desc);
 
     this.sort = desc.sort || ESortMethod.min;
 
@@ -141,6 +145,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     r.sortMethod = this.getSortMethod();
     r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
     r.map = this.mapping.dump();
+    r.colorMapping = this.colorMapping.dump();
     return r;
   }
 
@@ -157,12 +162,16 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     } else if (dump.domain) {
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
+    if (dump.colorMapping) {
+      this.colorMapping = createColorMappingFunction(this.color, dump.colorMapping);
+    }
   }
 
   protected createEventList() {
-    return super.createEventList().concat([BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, BoxPlotColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, BoxPlotColumn.EVENT_MAPPING_CHANGED]);
   }
 
+  on(type: typeof BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
   on(type: typeof BoxPlotColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
   on(type: typeof BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
@@ -193,6 +202,21 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
       return;
     }
     this.fire([BoxPlotColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+  }
+
+  getColor(row: IDataRow) {
+    return NumberColumn.prototype.getColor.call(this, row);
+  }
+
+  getColorMapping() {
+    return this.colorMapping.clone();
+  }
+
+  setColorMapping(mapping: IColorMappingFunction) {
+    if (this.colorMapping.eq(mapping)) {
+      return;
+    }
+    this.fire([BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
   }
 
   isFiltered() {

@@ -50,6 +50,43 @@
   }
 }
 
+.#{$lu_css_prefix}-color-line {
+  display: flex;
+}
+
+.#{$lu_css_prefix}-checkbox-color {
+  width: 1.2em;
+  height: 1.2em;
+  margin: 0.1em;
+  line-height: 0;
+  display: flex;
+
+  input:checked + label {
+    outline: 2px solid black;
+  }
+
+  > input {
+    display: none;
+  }
+
+  > label {
+    flex: 1 1 0;
+  }
+}
+
+.#{$lu_css_prefix}-color-gradient {
+  display: flex;
+
+  input:checked + label {
+    outline: 2px solid black;
+  }
+
+  > label {
+    margin: 0.1em;
+    flex: 1 1 auto;
+  }
+}
+
 .#{$lu_css_prefix}-summary .#{$lu_css_prefix}-checkbox label {
   display: inline-flex;
 }

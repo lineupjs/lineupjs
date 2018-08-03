@@ -2,10 +2,10 @@ import {suffix, IEventListener} from '../internal/AEventDispatcher';
 import {toolbar, SortByDefault} from './annotations';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
 import {IDataRow, IGroupData} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
-import NumberColumn, {INumberColumn, mappingChanged} from './NumberColumn';
+import NumberColumn, {INumberColumn, mappingChanged, colorMappingChanged} from './NumberColumn';
+import {isMapAbleColumn} from './MappingFunction';
 
 
 /**
@@ -20,10 +20,11 @@ export function createImpositionDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterMapped')
+@toolbar('filterMapped', 'colorMapped')
 @SortByDefault('descending')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
@@ -50,9 +51,10 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ImpositionCompositeColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([ImpositionCompositeColumn.EVENT_MAPPING_CHANGED, ImpositionCompositeColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
+  on(type: typeof ImpositionCompositeColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
   on(type: typeof ImpositionCompositeColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
@@ -85,11 +87,14 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
 
   getColor(row: IDataRow) {
     const c = this._children;
-    if (c.length < 2) {
-      return this.color;
+    switch(c.length) {
+      case 0:
+        return this.color;
+      case 1:
+        return c[0].getColor(row);
+      default:
+        return c[1].getColor(row);
     }
-    const v = (<ICategoricalColumn><any>c[1]).getCategory(row);
-    return v ? v.color : this.color;
   }
 
   getValue(row: IDataRow) {
@@ -128,9 +133,6 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     if (this._children.length === 0 && !isNumberColumn(col)) {
       return null;
     }
-    if (this._children.length === 1 && !isCategoricalColumn(col)) {
-      return null;
-    }
     if (this._children.length >= 2) {
       // limit to two
       return null;
@@ -142,12 +144,18 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     if (isNumberColumn(col)) {
       this.forward(col, ...suffix('.impose', NumberColumn.EVENT_MAPPING_CHANGED));
     }
+    if (isMapAbleColumn(col)) {
+      this.forward(col, ...suffix('.impose', NumberColumn.EVENT_COLOR_MAPPING_CHANGED));
+    }
     return super.insertImpl(col, index);
   }
 
   protected removeImpl(child: Column, index: number) {
     if (isNumberColumn(child)) {
       this.unforward(child, ...suffix('.impose', NumberColumn.EVENT_MAPPING_CHANGED));
+    }
+    if (isMapAbleColumn(child)) {
+      this.unforward(child, ...suffix('.impose', NumberColumn.EVENT_COLOR_MAPPING_CHANGED));
     }
     return super.removeImpl(child, index);
   }

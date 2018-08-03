@@ -512,6 +512,10 @@ export default class Column extends AEventDispatcher {
     return ''; //no value
   }
 
+  getColor(_row: IDataRow) {
+    return this.color;
+  }
+
   isMissing(row: IDataRow) {
     return isMissingValue(this.getValue(row));
   }

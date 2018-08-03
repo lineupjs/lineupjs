@@ -1,6 +1,8 @@
 import {IColumnMetaData} from '../../model';
 import Column from '../../model/Column';
 import ADialog, {IDialogContext} from './ADialog';
+import {uniqueId} from '../../renderer/utils';
+import {schemeCategory10} from 'd3-scale-chromatic';
 
 /** @internal */
 export default class RenameDialog extends ADialog {
@@ -16,9 +18,11 @@ export default class RenameDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     node.classList.add('lu-rename-dialog');
+    const id = uniqueId('col');
     node.insertAdjacentHTML('beforeend', `
+      <datalist id="${id}L"><option value="${Column.DEFAULT_COLOR}"></option>${schemeCategory10.slice(1).map((d) => `<option>${d}</option>`).join('')}</datalist>
       <input type="text" value="${this.column.label}" required autofocus placeholder="name">
-      <input type="color" value="${this.column.color}" required placeholder="color">
+      <input type="color" value="${this.column.color}" required placeholder="color" list="${id}L">
       <textarea rows="5" placeholder="Description">${this.column.description}</textarea>`);
   }
 

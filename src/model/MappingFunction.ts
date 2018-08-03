@@ -2,6 +2,7 @@ import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
 import {similar} from '../internal';
 import Column from './Column';
 import INumberColumn, {INumberFilter} from './INumberColumn';
+import {IColorMappingFunction} from './ColorMappingFunction';
 
 /**
  * interface of a d3 scale
@@ -39,6 +40,7 @@ export interface IMappingFunction {
 
 }
 
+
 function toScale(type = 'linear'): IScale {
   switch (type) {
     case 'log':
@@ -63,6 +65,10 @@ export interface IMapAbleColumn extends INumberColumn {
   getMapping(): IMappingFunction;
 
   setMapping(mapping: IMappingFunction): void;
+
+  getColorMapping(): IColorMappingFunction;
+
+  setColorMapping(mapping: IColorMappingFunction): void;
 
   getFilter(): INumberFilter;
 
@@ -241,6 +247,8 @@ export interface IMapAbleDesc {
    * @default [0,1]
    */
   range?: [number, number];
+
+  colorMapping?: string | ((v: number)=>string) | any;
 }
 
 export function createMappingFunction(dump: any): IMappingFunction {

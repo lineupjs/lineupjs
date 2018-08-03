@@ -5,7 +5,7 @@ import {
   IReduceBuilder,
   IScriptedBuilder,
   IWeightedSumBuilder
-} from '../';
+} from '..';
 import {Ranking} from '../../model';
 import {LocalDataProvider} from '../../provider';
 
