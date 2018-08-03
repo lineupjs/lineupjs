@@ -8,18 +8,25 @@
   justify-content: center;
 
   > * {
-    margin: 1em;
+    margin: 2em;
   }
 }
 
-.#{$lu_css_prefix}-unsupported-browser-hint > span {
+.#{$lu_css_prefix}-unsupported-browser-hint > a {
+  text-decoration: none !important;
   position: relative;
   padding: 0.5em 1em;
+  color: black;
 
   &::before {
     @include lu_icons();
     font-size: 200%;
+    transition: font-size 0.25s ease;
     color: lighten(black, 50%);
+  }
+
+  &:hover::before {
+    font-size: 250%;
   }
 
   &[data-browser=chrome]::before {
