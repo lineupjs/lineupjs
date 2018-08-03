@@ -142,13 +142,11 @@ export default class ColorMappingDialog extends ADialog {
           const s0 = (<HTMLInputElement>node.querySelector('input[name=interpolate0]')!).value;
           const s1 = (<HTMLInputElement>node.querySelector('input[name=interpolate1]')!).value;
           return new CustomColorMappingFunction([{color: s0, value: 0}, {color: s1, value: 1}]);
-          break;
         case 'custom:diverging':
           const dm1 = (<HTMLInputElement>node.querySelector('input[name=divergentm1]')!).value;
           const d0 = (<HTMLInputElement>node.querySelector('input[name=divergent0]')!).value;
           const d1 = (<HTMLInputElement>node.querySelector('input[name=divergent1]')!).value;
           return new CustomColorMappingFunction([{color: dm1, value: 0}, {color: d0, value: 0.5}, {color: d1, value: 1}]);
-          break;
       }
       return createColorMappingFunction(this.column.color, input.value);
     };
@@ -176,7 +174,10 @@ export default class ColorMappingDialog extends ADialog {
 
     // upon changing custom parameter trigger an update
     this.forEach('label > input[type=color]', (d: HTMLInputElement) => {
-      d.onchange = () => (<HTMLInputElement>d.parentElement!.previousElementSibling!).onchange!(<any>null);
+      d.onchange = () => {
+        const item = (<HTMLInputElement>d.parentElement!.previousElementSibling!);
+        item.onchange!.call(item, null);
+      };
     });
   }
 
