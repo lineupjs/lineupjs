@@ -1,0 +1,24 @@
+@import './vars';
+
+.#{$lu_css_prefix}-unsupported-browser {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.#{$lu_css_prefix}-unsupported-browser-hint > span {
+  position: relative;
+
+  &::before {
+    @include lu_icon();
+  }
+
+  &::after {
+    content: attr(data-version) + '+';
+    position: absolute;
+    top: 100%;
+    text-align: center;
+    left: -1em;
+    right: -1em;
+  }
+}

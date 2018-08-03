@@ -10,9 +10,9 @@ import TaggleRenderer from './TaggleRenderer';
 export {ITaggleOptions} from '../../interfaces';
 
 export default class Taggle extends ALineUp {
-  private readonly spaceFilling: HTMLElement;
-  private readonly renderer: TaggleRenderer;
-  private readonly panel: SidePanel;
+  private readonly spaceFilling: HTMLElement | null;
+  private readonly renderer: TaggleRenderer | null;
+  private readonly panel: SidePanel | null;
 
   private readonly options = defaultOptions();
 
@@ -23,6 +23,13 @@ export default class Taggle extends ALineUp {
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     });
 
+    if (!this.isBrowserSupported) {
+      this.spaceFilling = null;
+      this.renderer = null;
+      this.panel = null;
+      return;
+    }
+
     this.node.classList.add('lu-taggle', 'lu');
 
     this.renderer = new TaggleRenderer(data, this.node, this.options);
@@ -30,7 +37,7 @@ export default class Taggle extends ALineUp {
       collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true,
       hierarchy: this.options.hierarchyIndicator
     });
-    this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
+    this.renderer.pushUpdateAble((ctx) => this.panel!.update(ctx));
     this.node.insertBefore(this.panel.node, this.node.firstChild);
     {
       this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser"><label>
@@ -42,8 +49,8 @@ export default class Taggle extends ALineUp {
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
       const input = <HTMLInputElement>this.spaceFilling.querySelector('input');
       input.onchange = () => {
-        const selected = this.spaceFilling.classList.toggle('chosen');
-        self.setTimeout(() => this.renderer.switchRule(selected ? spaceFilling : null));
+        const selected = this.spaceFilling!.classList.toggle('chosen');
+        self.setTimeout(() => this.renderer!.switchRule(selected ? spaceFilling : null));
       };
       if (this.options.overviewMode) {
         input.checked = true;
@@ -56,37 +63,50 @@ export default class Taggle extends ALineUp {
 
   private setViolation(violation?: string) {
     violation = violation || '';
-    this.spaceFilling.classList.toggle('violated', Boolean(violation));
-    this.spaceFilling.lastElementChild!.innerHTML = violation.replace(/\n/g, '<br>');
+    if (this.spaceFilling) {
+      this.spaceFilling.classList.toggle('violated', Boolean(violation));
+      this.spaceFilling.lastElementChild!.innerHTML = violation.replace(/\n/g, '<br>');
+    }
   }
 
   destroy() {
     this.node.classList.remove('lu-taggle', 'lu');
-    this.renderer.destroy();
-    this.panel.destroy();
+    if (this.renderer) {
+      this.renderer.destroy();
+    }
+    if (this.panel) {
+      this.panel.destroy();
+    }
     super.destroy();
   }
 
   update() {
-    this.renderer.update();
+    if (this.renderer) {
+      this.renderer.update();
+    }
   }
 
   setHighlight(dataIndex: number, scrollIntoView: boolean = true) {
-    return this.renderer.setHighlight(dataIndex, scrollIntoView);
+    return this.renderer != null && this.renderer.setHighlight(dataIndex, scrollIntoView);
   }
 
   getHighlight() {
-    return this.renderer.getHighlight();
+    return this.renderer ? this.renderer.getHighlight() : -1;
   }
 
   protected enableHighlightListening(enable: boolean) {
-    this.renderer.enableHighlightListening(enable);
+    if (this.renderer) {
+      this.renderer.enableHighlightListening(enable);
+    }
   }
 
   setDataProvider(data: DataProvider, dump?: any) {
     super.setDataProvider(data, dump);
+    if (!this.renderer) {
+      return;
+    }
     this.renderer.setDataProvider(data);
     this.update();
-    this.panel.update(this.renderer.ctx);
+    this.panel!.update(this.renderer.ctx);
   }
 }

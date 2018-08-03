@@ -12,3 +12,4 @@ src/**/*.css
 src/**/*.d.ts
 /node_modules/
 .cache-loader
+/build2
