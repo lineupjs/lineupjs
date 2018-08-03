@@ -248,7 +248,7 @@ export interface IMapAbleDesc {
    */
   range?: [number, number];
 
-  colorMapping?: string | ((v: number)=>string);
+  colorMapping?: string | ((v: number)=>string) | any;
 }
 
 export function createMappingFunction(dump: any): IMappingFunction {

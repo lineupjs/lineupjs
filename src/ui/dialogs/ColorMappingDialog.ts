@@ -4,7 +4,7 @@ import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, sche
 import {round, fixCSS} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
 import {sequentialColors, divergentColors, createColorMappingFunction, lookupD3Color, QuantizedColorFunction} from '../../model/ColorMappingFunction';
-import {IMapAbleColumn} from '../../model';
+import Column, {IMapAbleColumn} from '../../model';
 
 /** @internal */
 export default class ColorMappingDialog extends ADialog {
@@ -34,13 +34,20 @@ export default class ColorMappingDialog extends ADialog {
     h += `<strong data-toggle="${current.type === 'solid' ? 'open' : ''}">Solid Color</strong>`;
     h += `<div>`;
     {
-      for (const colors of [schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3]) {
+      const refColor = current.type === 'solid' ? current.color : '';
+      let has = false;
+      const colorsets = [schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3];
+      for (const colors of colorsets) {
+        has = has || colors.includes(refColor);
         h += `<div class="lu-color-line">
-          ${colors.map((d) => `<div class="lu-checkbox-color"><input id="${id}${fixCSS(d)}" name="color" type="radio" value="${d}"><label for="${id}${fixCSS(d)}" style="background: ${d}"></label></div>`).join('')}
+          ${colors.map((d) => `<div class="lu-checkbox-color">
+              <input id="${id}${fixCSS(d)}" name="color" type="radio" value="${d}" ${d === refColor ? 'checked="checked"': ''}>
+              <label for="${id}${fixCSS(d)}" style="background: ${d}"></label>
+            </div>`).join('')}
         </div>`;
       }
-      h += `<div class="lu-checkbox"><input id="${id}O" name="color" type="radio" value="custom:solid">
-        <label for="${id}O"><input type="color" name="solid" list="${id}L"></label>
+      h += `<div class="lu-checkbox"><input id="${id}O" name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
+        <label for="${id}O"><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : Column.DEFAULT_COLOR}"></label>
       </div>`;
     }
     h += '</div>';
@@ -48,8 +55,9 @@ export default class ColorMappingDialog extends ADialog {
     h += `<strong data-toggle="${current.type === 'sequential' ? 'open' : ''}">Sequential Color</strong>`;
     h += '<div>';
     {
+      const name = current.type === 'sequential' ? current.name : '';
       for (const colors of sequentialColors) {
-        h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
+        h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}" ${colors.name === name ? 'checked="checked"' : ''}>
         <label for="${id}${colors.name}" data-c="${colors.name}" style="background: ${gradient(colors.apply, 9)}"></label>
       </div>`;
       }
@@ -61,8 +69,9 @@ export default class ColorMappingDialog extends ADialog {
     h += `<strong data-toggle="${current.type === 'divergent' ? 'open' : ''}">Diverging Color</strong>`;
     h += '<div>';
     {
+      const name = current.type === 'sequential' ? current.name : '';
       for (const colors of divergentColors) {
-        h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}">
+        h += `<div class="lu-checkbox lu-color-gradient"><input id="${id}${colors.name}" name="color" type="radio" value="${colors.name}" ${colors.name === name ? 'checked="checked"' : ''}>
         <label for="${id}${colors.name}" data-c="${colors.name}" style="background: ${gradient(colors.apply, 11)}"></label>
       </div>`;
       }

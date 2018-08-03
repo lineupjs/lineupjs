@@ -130,6 +130,7 @@ export interface IBuilderAdapterNumberColumnDescProps extends IBuilderAdapterCol
   mapping?: 'linear' | 'sqrt' | 'pow1.1' | 'pow2' | 'pow3';
   scripted?: string;
   sort?: EAdvancedSortMethod;
+  colorMapping?: string;
 }
 
 export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: any[]): INumberColumnDesc {
@@ -137,7 +138,7 @@ export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: a
 
   const domain = props.domain ? props.domain : <[number, number]>extent(data, (d) => <number>d[(<any>desc).column]);
 
-  (<(keyof IBuilderAdapterNumberColumnDescProps)[]>['sort']).forEach((key) => {
+  (<(keyof IBuilderAdapterNumberColumnDescProps)[]>['sort', 'colorMapping']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }

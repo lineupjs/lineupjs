@@ -28,6 +28,11 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     return this;
   }
 
+  colorMapping(type: string | ((v: number)=>string) | any) {
+    this.desc.colorMapping = type;
+    return this;
+  }
+
   /**
    * defines a script to normalize the data, see ScriptedMappingFunction for details
    * @param {string} code the code to execute
