@@ -26,7 +26,7 @@ Usage
 **Installation**
 
 ```bash
-npm install --save lineupjs@next
+npm install --save lineupjs
 ```
 
 ```html
@@ -279,7 +279,7 @@ An [Angular](https://angular.io/) wrapper is located at [nglineup](https://githu
 **Installation**
 
 ```bash
-npm install --save nglineup@next
+npm install --save nglineup
 ```
 
 **Minimal Usage Example**
@@ -379,7 +379,7 @@ A [Vue.js](https://vuejs.org) wrapper is located at [vue-lineup](https://github.
 **Installation**
 
 ```bash
-npm install --save vue-lineup@next
+npm install --save vue-lineup
 ```
 
 **Minimal Usage Example**
