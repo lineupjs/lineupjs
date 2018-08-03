@@ -195,8 +195,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
       const px = Math.max(0, Math.min(evt.x, total));
       const percent = Math.round(100 * px / total);
       const domain = col.getMapping().domain;
-      const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
-      this.dataset.value = round(unpercent(percent), 2).toString();
+      this.dataset.value = round(((percent / 100) * (domain[1] - domain[0]) + domain[0]), 2).toString();
 
       if (this.dataset.handle === 'min') {
         this.style.left = `${percent}%`;
