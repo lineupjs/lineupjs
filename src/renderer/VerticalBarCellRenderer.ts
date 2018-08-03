@@ -35,7 +35,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     }
     return {
       templateRow: templateRows,
-      update: (row: HTMLElement, data: number[], item: IDataRow) => {
+      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow) => {
         const zero = toHeatMapColor(0, item, col, imposer);
         const one = toHeatMapColor(1, item, col, imposer);
 
@@ -43,7 +43,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
           const v = data[i];
           const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
           attr(<HTMLElement>d, {
-            title: DEFAULT_FORMATTER(v)
+            title: DEFAULT_FORMATTER(raw[i])
           }, {
             'background-color': v < threshold ? zero : one,
             bottom: `${Math.round((100 * bottom) / range)}%`,

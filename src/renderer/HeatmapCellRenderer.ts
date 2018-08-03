@@ -25,11 +25,11 @@ export default class HeatmapCellRenderer extends ANumbersCellRenderer implements
     }
     return {
       templateRow: templateRows,
-      update: (row: HTMLElement, data: number[], item: IDataRow) => {
+      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow) => {
         forEachChild(row, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {
-            title: `${labels[i]}: ${DEFAULT_FORMATTER(v)}`,
+            title: `${labels[i]}: ${DEFAULT_FORMATTER(raw[i])}`,
             'class': isMissingValue(v) ? 'lu-missing' : ''
           }, {
             'background-color': isMissingValue(v) ? null : toHeatMapColor(v, item, col, imposer)

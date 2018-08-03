@@ -10,25 +10,29 @@ export abstract class ANumbersCellRenderer {
 
   protected abstract createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): {
     templateRow: string,
-    update: (row: HTMLElement, data: number[], d: IDataRow) => void,
+    update: (row: HTMLElement, data: number[], raw: number[], d: IDataRow) => void,
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
   private static choose(col: INumbersColumn, rows: IDataRow[]) {
-    const data = rows.map((r) => col.getNumbers(r));
+    const data = rows.map((r) => ({n: col.getNumbers(r), raw: col.getRawNumbers(r)}));
     const cols = col.dataLength!;
-    const r = <number[]>[];
-    // mean column
+    const normalized = <number[]>[];
+    const raw = <number[]>[];
+    // mean column)
     for (let i = 0; i < cols; ++i) {
-      const vs = data.map((d) => d[i]).filter((d) => !isMissingValue(d));
-      if (!vs) {
-        r.push(NaN);
+      const vs = data.map((d) => ({n: d.n[i], raw: d.raw[i]})).filter((d) => !isMissingValue(d.n));
+      if (vs.length === 0) {
+        normalized.push(NaN);
+        raw.push(NaN);
       } else {
-        const box = <any>new LazyBoxPlotData(vs);
-        r.push(box[col.getSortMethod()]);
+        const box = <any>new LazyBoxPlotData(vs.map((d) => d.n));
+        const boxRaw = <any>new LazyBoxPlotData(vs.map((d) => d.raw));
+        normalized.push(box[col.getSortMethod()]);
+        raw.push(boxRaw[col.getSortMethod()]);
       }
     }
-    return r;
+    return {normalized, raw};
   }
 
   create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
@@ -40,7 +44,7 @@ export abstract class ANumbersCellRenderer {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        update(n, col.getNumbers(d), d);
+        update(n, col.getNumbers(d), col.getRawNumbers(d), d);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
@@ -57,8 +61,8 @@ export abstract class ANumbersCellRenderer {
       template: `<div>${templateRow}</div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
         // render a heatmap
-        const chosen = ANumbersCellRenderer.choose(col, rows);
-        update(n, chosen, rows[0]);
+        const {normalized, raw} = ANumbersCellRenderer.choose(col, rows);
+        update(n, normalized, raw, rows[0]);
       }
     };
   }
