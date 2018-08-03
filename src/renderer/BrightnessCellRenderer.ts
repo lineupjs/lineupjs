@@ -1,6 +1,6 @@
 import {hsl} from 'd3-color';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {IDataRow, INumberColumn, isNumberColumn} from '../model';
+import {IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn} from '../model';
 import Column from '../model/Column';
 import {isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT} from '../styles';
@@ -14,10 +14,22 @@ export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColu
   if (v == null || isNaN(v)) {
     v = 1; // max = brightest
   }
-  //hsl space encoding, encode in lightness
-  const color = hsl(colorOf(col, row, imposer) || Column.DEFAULT_COLOR);
-  color.l = 1 - v; // largest value = darkest color
-  return color.toString();
+  if (imposer || !isMapAbleColumn(col)) {
+    //hsl space encoding, encode in lightness
+    const color = hsl(colorOf(col, row, imposer, v) || Column.DEFAULT_COLOR);
+    color.l = 1 - v; // largest value = darkest color
+    return color.toString();
+  }
+  const map = col.getColorMapping();
+  const valueColor = map.apply(v);
+  if (map.type === 'solid') {
+    //hsl space encoding, encode in lightness
+    const color = hsl(valueColor);
+    color.l = 1 - v; // largest value = darkest color
+    return color.toString();
+  }
+  // some custom logic that maps to another value
+  return valueColor;
 }
 
 /** @internal */

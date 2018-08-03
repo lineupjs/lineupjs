@@ -1,10 +1,10 @@
 import {getAllToolbarActions, isSupportType, getAllToolbarDialogAddons, isSortingAscByDefault} from '../model/annotations';
 import Column from '../model/Column';
 import CompositeColumn, {IMultiLevelColumn} from '../model/CompositeColumn';
-import ADialog, {IDialogContext} from '../ui/dialogs/ADialog';
-import ChangeRendererDialog from '../ui/dialogs/ChangeRendererDialog';
-import MoreColumnOptionsDialog from '../ui/dialogs/MoreColumnOptionsDialog';
-import RenameDialog from '../ui/dialogs/RenameDialog';
+import ADialog, {IDialogContext} from './dialogs/ADialog';
+import ChangeRendererDialog from './dialogs/ChangeRendererDialog';
+import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
+import RenameDialog from './dialogs/RenameDialog';
 import BooleanFilterDialog from './dialogs/BooleanFilterDialog';
 import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
 import CategoricalMappingFilterDialog from './dialogs/CategoricalMappingFilterDialog';
@@ -24,6 +24,7 @@ import SortDialog from './dialogs/SortDialog';
 import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
 import {EDateSort} from '../model/DatesColumn';
 import appendNumber from './dialogs/groupNumber';
+import ColorMappingDialog from './dialogs/ColorMappingDialog';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
@@ -272,6 +273,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], { shortcut: true }),
   filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true }),
   filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], { shortcut: true }),
+  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], { shortcut: false }),
   script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true }),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),

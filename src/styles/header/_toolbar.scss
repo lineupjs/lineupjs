@@ -74,6 +74,10 @@
     content: $lu_icon_exchange;
   }
 
+  &[title^='Color Mapping']::before {
+    content: $lu_icon_brush;
+  }
+
   &[title^='Edit Pattern']::before {
     content: $lu_icon_external_link;
   }

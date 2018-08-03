@@ -14,7 +14,7 @@ export * from './provider';
 export * from './renderer';
 export * from './model';
 export * from './builder';
-export * from './ui/';
+export * from './ui';
 export * from './interfaces';
 export * from './config';
 export {default} from './ui/LineUp';

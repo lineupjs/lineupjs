@@ -15,6 +15,7 @@ import {
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {IColorMappingFunction, createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 
@@ -28,6 +29,13 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
  * @event
  */
 export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+
+/**
+ * emitted when the color mapping property changes
+ * @asMemberOf NumberColumn
+ * @event
+ */
+export declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
@@ -53,13 +61,14 @@ export declare function groupingChanged(previous: number[], current: number[]): 
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('groupBy', 'sortGroupBy', 'filterMapped')
+@toolbar('groupBy', 'sortGroupBy', 'filterMapped', 'colorMapped')
 @dialogAddons('sortGroup', 'sortNumber')
 @dialogAddons('group', 'groupNumber')
 @Category('number')
 @SortByDefault('descending')
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
+  static readonly EVENT_COLOR_MAPPING_CHANGED = 'colorMappingChanged';
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
@@ -67,6 +76,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private readonly missingValue: number;
 
   private mapping: IMappingFunction;
+  private colorMapping: IColorMappingFunction;
   private original: IMappingFunction;
 
   /**
@@ -86,6 +96,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
+    this.colorMapping = restoreColorMapping(this.color, desc);
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
@@ -99,6 +110,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
     r.map = this.mapping.dump();
+    r.colorMapping = this.colorMapping.dump();
     r.filter = isDummyNumberFilter(this.currentFilter) ? null : this.currentFilter;
     r.groupSortMethod = this.groupSortMethod;
     if (this.currentGroupThresholds) {
@@ -113,6 +125,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.mapping = createMappingFunction(dump.map);
     } else if (dump.domain) {
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    }
+    if (dump.colorMapping) {
+      this.colorMapping = createColorMappingFunction(this.color, dump.colorMapping);
     }
     if (dump.groupSortMethod) {
       this.groupSortMethod = dump.groupSortMethod;
@@ -129,10 +144,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED, NumberColumn.EVENT_FILTER_CHANGED, NumberColumn.EVENT_SORTMETHOD_CHANGED, NumberColumn.EVENT_GROUPING_CHANGED]);
+    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED, NumberColumn.EVENT_COLOR_MAPPING_CHANGED, NumberColumn.EVENT_FILTER_CHANGED, NumberColumn.EVENT_SORTMETHOD_CHANGED, NumberColumn.EVENT_GROUPING_CHANGED]);
   }
 
   on(type: typeof NumberColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof NumberColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
   on(type: typeof NumberColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof NumberColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
   on(type: typeof NumberColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
@@ -226,6 +242,25 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
+  getColor(row: IDataRow) {
+    const v = this.getNumber(row);
+    if (isNaN(v)) {
+      return this.color;
+    }
+    return this.colorMapping.apply(v);
+  }
+
+  getColorMapping() {
+    return this.colorMapping.clone();
+  }
+
+  setColorMapping(mapping: IColorMappingFunction) {
+    if (this.colorMapping.eq(mapping)) {
+      return;
+    }
+    this.fire([NumberColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+  }
+
   isFiltered() {
     return !isDummyNumberFilter(this.currentFilter);
   }
@@ -288,15 +323,18 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
         //bigger than the last threshold
         return {
           name: `${this.label} > ${threshold[threshold.length - 1]}`,
-          color: 'gray'
+          color: this.colorMapping.apply(1)
         };
       case 0:
         //smallest
-        return {name: `${this.label} <= ${threshold[0]}`, color: 'gray'};
+        return {
+          name: `${this.label} <= ${threshold[0]}`,
+          color: this.colorMapping.apply(0)
+        };
       default:
         return {
           name: `${threshold[treshholdIndex - 1]} <= ${this.label} <= ${threshold[treshholdIndex]}`,
-          color: 'gray'
+          color: this.colorMapping.apply(this.mapping.apply((threshold[treshholdIndex - 1] + threshold[treshholdIndex]) / 2))
         };
     }
   }
