@@ -31,7 +31,7 @@ export function getUnsupportedBrowserError() {
       if(cVersion <= SUPPORTED_CHROME_VERSION) {
         return `${prefix} Chrome ${info.version} (&lt; ${SUPPORTED_CHROME_VERSION})`;
       }
-      return `${prefix} Chrome ${info.version} (&lt; ${SUPPORTED_CHROME_VERSION})`;
+      return null;
     case 'ie':
       return `${prefix} Internet Explorer`;
   }
