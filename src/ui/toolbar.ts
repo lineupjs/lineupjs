@@ -142,7 +142,7 @@ const sortBy: IToolbarAction = {
 };
 
 const sortGroupBy: IToolbarAction = {
-  title: 'Sort Group By &hellip;',
+  title: 'Sort Groups By &hellip;',
   onClick: (col, evt, ctx, level) => {
     const dialog = new SortDialog(col, true, dialogContext(ctx, level, evt), ctx);
     dialog.open();
