@@ -35,6 +35,12 @@
     "*.scss",
     "*.css"
   ],
+  "browserslist": [
+    "Firefox >= 57",
+    "Firefox ESR",
+    "Edge >= 16",
+    "Chrome >= 64"
+  ],
   "files": [
     "build",
     "!build/docs",
