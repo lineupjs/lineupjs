@@ -285,6 +285,18 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
     // split the combined column into its children
     (<CompositeColumn>col).children.reverse().forEach((c) => col.insertAfterMe(c));
     col.removeMe();
+  }),
+  invertSelection: ui('Invert Selection', (col, _evt, ctx, level) => {
+    ctx.dialogManager.removeAboveLevel(level - 1); // close itself
+    const s = ctx.provider.getSelection();
+    const order = col.findMyRanker()!.getOrder();
+    if (s.length === 0) {
+      ctx.provider.setSelection(order);
+      return;
+    }
+    const ss = new Set(s);
+    const others = order.filter((d) => !ss.has(d));
+    ctx.provider.setSelection(others);
   })
 }, toolbarAddons);
 

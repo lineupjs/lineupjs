@@ -147,6 +147,10 @@
     content: $lu_icon_compress;
   }
 
+  &[title='Invert Selection']::before {
+    content: $lu_icon_check_square_o;
+  }
+
   &[title^='Remove']::before {
     content: $lu_icon_trash;
   }
