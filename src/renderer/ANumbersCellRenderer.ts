@@ -14,7 +14,7 @@ export abstract class ANumbersCellRenderer {
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
-  private static choose(col: INumbersColumn, rows: IDataRow[]) {
+  static choose(col: INumbersColumn, rows: IDataRow[]) {
     const data = rows.map((r) => ({n: col.getNumbers(r), raw: col.getRawNumbers(r)}));
     const cols = col.dataLength!;
     const normalized = <number[]>[];

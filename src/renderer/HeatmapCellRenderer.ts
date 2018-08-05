@@ -5,48 +5,83 @@ import {CANVAS_HEIGHT} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
 import IRenderContext, {ICellRendererFactory, IImposer} from './interfaces';
-import {renderMissingValue} from './missing';
-import {attr, forEachChild, noop, wideEnough} from './utils';
+import {renderMissingValue, renderMissingDOM} from './missing';
+import {noop, wideEnough} from './utils';
+import {IGroup} from '../model/interfaces';
+
+const GUESSED_HEIGHT = 20;
 
 /** @internal */
-export default class HeatmapCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
+export default class HeatmapCellRenderer implements ICellRendererFactory {
   readonly title = 'Heatmap';
 
   canRender(col: Column) {
     return isNumbersColumn(col) && Boolean(col.dataLength);
   }
 
-  protected createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
-    const cellDimension = context.colWidth(col) / col.dataLength!;
+  private createContext(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+    const width = context.colWidth(col);
+    const cellDimension = width / col.dataLength!;
     const labels = col.labels;
-    let templateRows = '';
-    for (let i = 0; i < col.dataLength!; ++i) {
-      templateRows += `<div style="background-color: white" title=""></div>`;
-    }
+    const render = (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow, height: number) => {
+      data.forEach((d: number, j: number) => {
+        const x = j * cellDimension;
+        if (isMissingValue(d)) {
+          renderMissingValue(ctx, cellDimension, height, x, 0);
+          return;
+        }
+        ctx.beginPath();
+        ctx.fillStyle = toHeatMapColor(d, item, col, imposer);
+        ctx.fillRect(x, 0, cellDimension, height);
+      });
+    };
     return {
-      templateRow: templateRows,
-      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow) => {
-        forEachChild(row, (d, i) => {
-          const v = data[i];
-          attr(<HTMLDivElement>d, {
-            title: `${labels[i]}: ${DEFAULT_FORMATTER(raw[i])}`,
-            'class': isMissingValue(v) ? 'lu-missing' : ''
-          }, {
-            'background-color': isMissingValue(v) ? null : toHeatMapColor(v, item, col, imposer)
-          });
-        });
+      template: `<canvas height="${GUESSED_HEIGHT}" title=""></canvas>`,
+      render,
+      width,
+      mover: (n: HTMLElement, values: string[]) => (evt: MouseEvent) => {
+        const percent = evt.offsetX / width;
+        const index = Math.max(0, Math.min(col.dataLength! - 1, Math.floor(percent * (col.dataLength! - 1) + 0.5)));
+        n.title = `${labels[index]}: ${values[index]}`;
+      }
+    };
+  }
+
+  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+    const {template, render, mover, width} = this.createContext(col, context, _hist, imposer);
+    return {
+      template,
+      update: (n: HTMLElement, d: IDataRow) => {
+        const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+        ctx.canvas.width = width;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        if (renderMissingDOM(n, col, d)) {
+          return;
+        }
+        n.onmousemove = mover(n, col.getRawNumbers(d).map(DEFAULT_FORMATTER));
+        n.onmouseleave = () => n.title = '';
+        render(ctx, col.getNumbers(d), d, GUESSED_HEIGHT);
       },
-      render: (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow) => {
-        data.forEach((d: number, j: number) => {
-          const x = j * cellDimension;
-          if (isMissingValue(d)) {
-            renderMissingValue(ctx, cellDimension, CANVAS_HEIGHT, x, 0);
-            return;
-          }
-          ctx.beginPath();
-          ctx.fillStyle = toHeatMapColor(d, item, col, imposer);
-          ctx.fillRect(x, 0, cellDimension, CANVAS_HEIGHT);
-        });
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
+        render(ctx, col.getNumbers(d), d, CANVAS_HEIGHT);
+      }
+    };
+  }
+
+  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+    const {template, render, mover, width} = this.createContext(col, context, _hist, imposer);
+    return {
+      template,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        // render a heatmap
+        const {normalized, raw} = ANumbersCellRenderer.choose(col, rows);
+        const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+        ctx.canvas.width = width;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        n.onmousemove = mover(n, raw.map(DEFAULT_FORMATTER));
+        n.onmouseleave = () => n.title = '';
+        render(ctx, normalized, rows[0], GUESSED_HEIGHT);
       }
     };
   }
