@@ -10,16 +10,24 @@ import {cssClass} from '../styles';
 export {ILineUpOptions} from '../interfaces';
 
 export default class LineUp extends ALineUp {
-  private readonly renderer: EngineRenderer;
+  private readonly renderer: EngineRenderer | null;
   private readonly panel: SidePanel | null;
 
   private readonly options = defaultOptions();
 
   constructor(node: HTMLElement, data: DataProvider, options: Partial<ILineUpOptions> = {}) {
-    super(node, data);
+    super(node, data, options && options.ignoreUnsupportedBrowser === true);
 
     merge(this.options, options);
+
+    if (!this.isBrowserSupported) {
+      this.renderer = null;
+      this.panel = null;
+      return;
+    }
+
     this.node.classList.add(cssClass());
+
 
     this.renderer = new EngineRenderer(data, this.node, this.options);
     if (this.options.sidePanel) {
@@ -37,7 +45,9 @@ export default class LineUp extends ALineUp {
 
   destroy() {
     this.node.classList.remove(cssClass());
-    this.renderer.destroy();
+    if (this.renderer) {
+      this.renderer.destroy();
+    }
     if (this.panel) {
       this.panel.destroy();
     }
@@ -45,11 +55,16 @@ export default class LineUp extends ALineUp {
   }
 
   update() {
-    this.renderer.update();
+    if (this.renderer) {
+      this.renderer.update();
+    }
   }
 
   setDataProvider(data: DataProvider, dump?: any) {
     super.setDataProvider(data, dump);
+    if (!this.renderer) {
+      return;
+    }
     this.renderer.setDataProvider(data);
     this.update();
     if (this.panel) {
@@ -58,14 +73,16 @@ export default class LineUp extends ALineUp {
   }
 
   setHighlight(dataIndex: number, scrollIntoView: boolean = true) {
-    return this.renderer.setHighlight(dataIndex, scrollIntoView);
+    return this.renderer != null && this.renderer.setHighlight(dataIndex, scrollIntoView);
   }
 
   getHighlight() {
-    return this.renderer.getHighlight();
+    return this.renderer ? this.renderer.getHighlight() : -1;
   }
 
   protected enableHighlightListening(enable: boolean) {
-    this.renderer.enableHighlightListening(enable);
+    if (this.renderer) {
+      this.renderer.enableHighlightListening(enable);
+    }
   }
 }

@@ -99,7 +99,7 @@ export interface ICategoricalFilter {
 }
 
 function isEmptyFilter(f: ICategoricalFilter | null) {
-  return f == null || (!f.filterMissing && (f.filter == null || f.filter === '' || (Array.isArray(f.filter) && f.filter.length === 0)));
+  return f == null || (!f.filterMissing && (f.filter == null || f.filter === ''));
 }
 
 export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICategoricalFilter | null) {
@@ -131,7 +131,7 @@ function arrayEquals<T>(a: T[], b: T[]) {
 }
 
 export function isCategoryIncluded(filter: ICategoricalFilter | null, category: ICategory | null) {
-  if (!filter) {
+  if (filter == null) {
     return true;
   }
   if (category == null || isNaN(category.value)) {
@@ -139,10 +139,10 @@ export function isCategoryIncluded(filter: ICategoricalFilter | null, category: 
   }
   const filterObj = filter.filter;
   if (Array.isArray(filterObj)) { //array mode
-    return filterObj.indexOf(category.name) >= 0;
+    return filterObj.includes(category.name);
   }
   if (typeof filterObj === 'string' && filterObj.length > 0) { //search mode
-    return category.name.toLowerCase().indexOf(filterObj.toLowerCase()) >= 0;
+    return category.name.toLowerCase().includes(filterObj.toLowerCase());
   }
   if (filterObj instanceof RegExp) { //regex match mode
     return filterObj.test(category.name);

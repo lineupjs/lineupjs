@@ -32,7 +32,7 @@ export interface IBuilderAdapterDataProps {
 export declare type IBuilderAdapterProps = Partial<ITaggleOptions> & IBuilderAdapterDataProps;
 
 const providerOptions: (keyof IBuilderAdapterDataProps)[] = ['singleSelection', 'filterGlobally', 'noCriteriaLimits', 'maxGroupColumns', 'maxNestedSortingCriteria', 'columnTypes'];
-const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation'];
+const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser'];
 
 interface IRankingContext {
   builders: IBuilderAdapterRankingProps[];

@@ -40,7 +40,7 @@ export declare function select(row: IDataRow, value: boolean, rows?: IDataRow[])
  * a checkbox column for selections
  */
 @SupportType()
-@toolbar('sort', 'sortBy', 'group', 'groupBy')
+@toolbar('sort', 'sortBy', 'group', 'groupBy', 'invertSelection')
 @Category('support')
 export default class SelectionColumn extends ValueColumn<boolean> {
   private static SELECTED_GROUP: IGroup = {

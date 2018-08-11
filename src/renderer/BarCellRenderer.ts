@@ -42,7 +42,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
 
         const bar = <HTMLElement>n.firstElementChild!;
         bar.style.width = missing ? '100%' : `${w}%`;
-        const color = colorOf(col, d, imposer);
+        const color = colorOf(col, d, imposer, value);
         bar.style.backgroundColor = missing ? null : color;
         setText(bar.firstElementChild!, title);
         const item = <HTMLElement>bar.firstElementChild!;
@@ -53,8 +53,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
-        ctx.fillStyle = colorOf(col, d, imposer) || Column.DEFAULT_COLOR;
-        const w = width * col.getNumber(d);
+        const value = col.getNumber(d);
+        ctx.fillStyle = colorOf(col, d, imposer, value) || Column.DEFAULT_COLOR;
+        const w = width * value;
         ctx.fillRect(0, 0, isNaN(w) ? 0 : w, CANVAS_HEIGHT);
 
       }

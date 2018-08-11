@@ -1,0 +1,54 @@
+@import './vars';
+@import './icons/index';
+
+.#{$lu_css_prefix}-unsupported-browser {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  > * {
+    margin: 2em;
+  }
+}
+
+.#{$lu_css_prefix}-unsupported-browser-hint > a {
+  text-decoration: none !important;
+  position: relative;
+  padding: 0.5em 1em;
+  color: black;
+
+  &::before {
+    @include lu_icons();
+
+    font-size: 200%;
+    transition: font-size 0.25s ease;
+    color: lighten(black, 50%);
+  }
+
+  &:hover::before {
+    font-size: 250%;
+  }
+
+  &[data-browser=chrome]::before {
+    content: $lu_icon_chrome;
+    color: black;
+  }
+
+  &[data-browser=firefox]::before {
+    content: $lu_icon_firefox;
+  }
+
+  &[data-browser=edge]::before {
+    content: $lu_icon_edge;
+  }
+
+  &::after {
+    content: attr(data-version) '+';
+    position: absolute;
+    top: 100%;
+    text-align: center;
+    left: -1em;
+    right: -1em;
+  }
+}

@@ -30,6 +30,7 @@ export function defaultOptions(): ITaggleOptions {
     dynamicHeight: () => null,
     flags: {
       disableFrozenColumns: true //disable by default for speed navigator.userAgent.includes('Firefox/52') // disable by default in Firefox ESR 52
-    }
+    },
+    ignoreUnsupportedBrowser: false
   };
 }

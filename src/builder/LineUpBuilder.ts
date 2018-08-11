@@ -89,6 +89,15 @@ export default class LineUpBuilder {
   }
 
   /**
+   * option to ignore unsupported browser check - at own risk
+   * @returns {this}
+   */
+  ignoreUnsupportedBrowser() {
+    this.options.ignoreUnsupportedBrowser = true;
+    return this;
+  }
+
+  /**
    * register a new renderer factory function
    * @param id the rederer id
    * @param factory factory class implementing the renderer

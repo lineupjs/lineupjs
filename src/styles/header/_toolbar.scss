@@ -44,6 +44,10 @@
 .#{$lu_css_prefix}-action-edit-pattern::before {
   content: $lu_icon_external_link;
 }
+.#{$lu_css_prefix}-action-color-mapping::before {
+  content: $lu_icon_brush;
+}
+
 
 .#{$lu_css_prefix}-action-reduce-by::before,
 .#{$lu_css_prefix}-action-edit-combine-script::before,
@@ -122,6 +126,10 @@
 
 .#{$lu_css_prefix}-action-collapse::before {
   content: $lu_icon_toggle_left;
+}
+
+.#{$lu_css_prefix}-action-invert-selection::before {
+  content: $lu_icon_check_square_o;
 }
 
 .#{$lu_css_prefix}-action-expand::before {

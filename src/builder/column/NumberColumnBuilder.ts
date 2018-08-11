@@ -1,5 +1,5 @@
 import {min, max} from 'd3-array';
-import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc} from '../../model';
+import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, IMapAbleDesc} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc> {
@@ -25,6 +25,11 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     this.desc.map = {
       type, domain, range: range || [0, 1]
     };
+    return this;
+  }
+
+  colorMapping(type: string | ((v: number)=>string) | any) {
+    (<IMapAbleDesc>this.desc).colorMapping = type;
     return this;
   }
 

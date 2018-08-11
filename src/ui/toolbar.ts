@@ -1,10 +1,10 @@
 import {getAllToolbarActions, isSupportType, getAllToolbarDialogAddons, isSortingAscByDefault} from '../model/annotations';
 import Column from '../model/Column';
 import CompositeColumn, {IMultiLevelColumn} from '../model/CompositeColumn';
-import ADialog, {IDialogContext} from '../ui/dialogs/ADialog';
-import ChangeRendererDialog from '../ui/dialogs/ChangeRendererDialog';
-import MoreColumnOptionsDialog from '../ui/dialogs/MoreColumnOptionsDialog';
-import RenameDialog from '../ui/dialogs/RenameDialog';
+import ADialog, {IDialogContext} from './dialogs/ADialog';
+import ChangeRendererDialog from './dialogs/ChangeRendererDialog';
+import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
+import RenameDialog from './dialogs/RenameDialog';
 import BooleanFilterDialog from './dialogs/BooleanFilterDialog';
 import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
 import CategoricalMappingFilterDialog from './dialogs/CategoricalMappingFilterDialog';
@@ -24,6 +24,7 @@ import SortDialog from './dialogs/SortDialog';
 import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
 import {EDateSort} from '../model/DatesColumn';
 import appendNumber from './dialogs/groupNumber';
+import ColorMappingDialog from './dialogs/ColorMappingDialog';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
@@ -142,7 +143,7 @@ const sortBy: IToolbarAction = {
 };
 
 const sortGroupBy: IToolbarAction = {
-  title: 'Sort Group By &hellip;',
+  title: 'Sort Groups By &hellip;',
   onClick: (col, evt, ctx, level) => {
     const dialog = new SortDialog(col, true, dialogContext(ctx, level, evt), ctx);
     dialog.open();
@@ -272,6 +273,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], { shortcut: true }),
   filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true }),
   filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], { shortcut: true }),
+  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], { shortcut: false }),
   script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true }),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
@@ -283,6 +285,18 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
     // split the combined column into its children
     (<CompositeColumn>col).children.reverse().forEach((c) => col.insertAfterMe(c));
     col.removeMe();
+  }),
+  invertSelection: ui('Invert Selection', (col, _evt, ctx, level) => {
+    ctx.dialogManager.removeAboveLevel(level - 1); // close itself
+    const s = ctx.provider.getSelection();
+    const order = col.findMyRanker()!.getOrder();
+    if (s.length === 0) {
+      ctx.provider.setSelection(order);
+      return;
+    }
+    const ss = new Set(s);
+    const others = order.filter((d) => !ss.has(d));
+    ctx.provider.setSelection(others);
   })
 }, toolbarAddons);
 

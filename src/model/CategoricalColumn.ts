@@ -91,6 +91,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return v ? v.label : '';
   }
 
+  getColor(row: IDataRow) {
+    const v = this.getCategory(row);
+    return v ? v.color : this.color;
+  }
+
   getValues(row: IDataRow) {
     const v = this.getCategory(row);
     return this.categories.map((d) => d === v);

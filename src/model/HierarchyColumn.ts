@@ -178,6 +178,10 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return CategoricalColumn.prototype.getLabel.call(this, row);
   }
 
+  getColor(row: IDataRow) {
+    return CategoricalColumn.prototype.getColor.call(this, row);
+  }
+
   getLabels(row: IDataRow) {
     return CategoricalColumn.prototype.getLabels.call(this, row);
   }
