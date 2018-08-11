@@ -1,4 +1,4 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IGroup, IGroupMeta} from '../model';
 import Column from '../model/Column';
 import GroupColumn from '../model/GroupColumn';
 import {ICellRendererFactory} from './interfaces';
@@ -24,7 +24,8 @@ export default class GroupCellRenderer implements ICellRendererFactory {
         } else {
           p.textContent = group.name;
         }
-      }
+      },
+      render: (_ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup, meta: IGroupMeta) => Boolean(meta)
     };
   }
 
