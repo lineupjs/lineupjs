@@ -11,19 +11,21 @@
 }
 
 .#{$engine-css_prefix}-tr {
-  // &:hover,
-  // &.#{$lu_css_prefix}-selected,
-  // &.#{$engine_css_prefix}-highlighted {
-  //   .#{$lu_css_prefix}-hover-only {
-  //     visibility: visible;
-  //   }
-  // }
+  /*
+  &:hover,
+  &.#{$lu_css_prefix}-selected,
+  &.#{$engine_css_prefix}-highlighted {
+    .#{$lu_css_prefix}-hover-only {
+      visibility: visible;
+    }
+  }
+  */
 
   &.#{$lu_css_prefix}-selected {
-  /**
+    /**
     selected state extends hover state
-   */
-   @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
+    */
+    @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
   }
 
   > canvas {
