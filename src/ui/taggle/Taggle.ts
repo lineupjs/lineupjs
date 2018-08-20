@@ -67,6 +67,9 @@ export default class Taggle extends ALineUp {
   }
 
   private updateLodRules(active: boolean) {
+    if (!this.renderer) {
+      return;
+    }
     const style = this.renderer.style;
     if (!active) {
       style.deleteRule('taggle_lod_rule');
