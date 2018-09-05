@@ -1,4 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, setColumn, ACellTableSection, ITableSection, ICellRenderContext, EScrollResult} from 'lineupengine';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, setColumn, ACellTableSection, ITableSection, ICellRenderContext} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
