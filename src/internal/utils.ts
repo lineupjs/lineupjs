@@ -35,5 +35,5 @@ export function equalArrays<T>(a: T[], b: T[]) {
  * @internal
  */
 export function fixCSS(id: string) {
-  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '_'); //replace non css stuff to _
+  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]+/g, '_'); //replace non css stuff to _
 }

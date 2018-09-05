@@ -48,7 +48,9 @@
     "src/**/*.js",
     "src/**/*.d.ts",
     "src/assets",
-    "src/**/*.scss"
+    "src/**/*.scss",
+    "!src/**/__tests__",
+    "!src/**/__mocks__"
   ],
   "scripts": {
     "clean": "rimraf build dist && npm run clean:compile",
