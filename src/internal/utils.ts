@@ -1,6 +1,6 @@
 import * as equalImpl from 'fast-deep-equal';
 
-export const equal: (a: any, b: any) => boolean = <any>equalImpl;
+export const equal: (a: any, b: any) => boolean = (typeof equalImpl === 'function' ? equalImpl : (<any>equalImpl).default);
 
 /** @internal */
 export function findOption(options: any) {
