@@ -11,7 +11,7 @@ module.exports = {
   verbose: true,
   globals: {
     'ts-jest': {
-      tsConfigFile: 'tsconfig_test.json',
+      tsConfigFile: 'tsconfig.test.json',
       enableTsDiagnostics: true,
       skipBabel: true
     }
