@@ -1,4 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, setColumn, ACellTableSection, ITableSection, ICellRenderContext} from 'lineupengine';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, setColumn, ACellTableSection, ITableSection, ICellRenderContext, EScrollResult} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
@@ -85,6 +85,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private readonly selection: SelectionManager;
   private highlight: number = -1;
   private readonly canvasPool: HTMLCanvasElement[] = [];
+  private oldLeft: number = 0;
 
   private readonly events = new RankingEvents();
 
@@ -310,19 +311,40 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return v;
   }
 
-  private renderRow(canvas: HTMLCanvasElement, index: number) {
-    canvas.width = this.width;
-    canvas.style.width = `${this.width}px`;
+  private visibleRenderedWidth() {
+    let width = 0;
+    for (const col of this.visibleColumns.frozen) {
+      width += this.columns[col].width + COLUMN_PADDING;
+    }
+    for(let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
+      width += this.columns[col].width + COLUMN_PADDING;
+    }
+    if (width > 0) {
+      width -= COLUMN_PADDING; // for the last one
+    }
+    return width;
+  }
+
+  private renderRow(canvas: HTMLCanvasElement, index: number, width = this.visibleRenderedWidth()) {
+    canvas.width = width;
+    canvas.style.width = `${width}px`;
     canvas.height = CANVAS_HEIGHT;
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
-    this.columns.forEach((c) => {
+    for (const col of this.visibleColumns.frozen) {
+      const c = this.columns[col];
       c.renderCell(ctx, index);
       const shift = c.width + COLUMN_PADDING;
       ctx.translate(shift, 0);
-    });
+    }
+    for(let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
+      const c = this.columns[col];
+      c.renderCell(ctx, index);
+      const shift = c.width + COLUMN_PADDING;
+      ctx.translate(shift, 0);
+    }
     ctx.restore();
   }
 
@@ -508,6 +530,25 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.renderRow(canvas2, rowIndex);
   }
 
+  private updateCanvasBody() {
+    const width = this.visibleRenderedWidth();
+    super.forEachRow((row, index) => {
+      if (EngineRanking.isCanvasRenderedRow(row)) {
+        this.renderRow(row.querySelector('canvas')!, index, width);
+      }
+    });
+  }
+
+  protected updateShifts(top: number, left: number) {
+    super.updateShifts(top, left);
+
+    if (left === this.oldLeft) {
+      return;
+    }
+    this.oldLeft = left;
+    this.updateCanvasBody();
+  }
+
   enableHighlightListening(enable: boolean) {
     if (this.highlightHandler.enabled === enable) {
       return;
@@ -593,7 +634,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return false;
     }
     let x = 0;
-    for (let i = 0; i < index; ++i) {
+    for (let i = this.visibleColumns.first; i < index; ++i) {
       x += columns[i].width + COLUMN_PADDING;
     }
     super.forEachRow((row, rowIndex) => {
