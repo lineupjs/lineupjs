@@ -71,7 +71,7 @@
   }
 
   // groups
-  > section:first-of-type {
+  > section.#{$lu_css_prefix}-hierarchy-group {
     &::before {
       content: 'Grouping hierarchy';
     }
@@ -85,9 +85,15 @@
     display: none;
   }
 
-  > section:last-of-type {
+  > section.#{$lu_css_prefix}-hierarchy-sort {
     &::before {
       content: 'Sorting hierarchy';
+    }
+  }
+
+  > section.#{$lu_css_prefix}-hierarchy-sortgroup {
+    &::before {
+      content: 'Group Sorting hierarchy';
     }
   }
 

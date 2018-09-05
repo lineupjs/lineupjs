@@ -90,6 +90,17 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
+  const sortGroups = <HTMLElement>node.querySelector(`i[title='Sort Group']`)!;
+  if (sortGroups) {
+    const {asc, priority} = col.isGroupSortedByMe();
+    sortGroups.dataset.sort = asc !== undefined ? asc : '';
+    if (priority !== undefined) {
+      sortGroups.dataset.priority = (priority + 1).toString();
+    } else {
+      delete sortGroups.dataset.priority;
+    }
+  }
+
   const group = <HTMLElement>node.querySelector(`i[title^='Group']`)!;
   if (group) {
     const groupedBy = col.isGroupedBy();

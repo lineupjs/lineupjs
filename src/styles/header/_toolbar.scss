@@ -106,15 +106,18 @@
     height: 14px;
   }
 
-  &[title='Sort']::before {
+  &[title='Sort']::before,
+  &[title='Sort Group']::before {
     content: $lu_icon_sort_amount_asc;
   }
 
-  &[title='Sort'][data-sort='desc']::before {
+  &[title='Sort'][data-sort='desc']::before,
+  &[title='Sort Group'][data-sort='desc']::before {
     content: $lu_icon_sort_amount_desc;
   }
 
   &[title='Sort'][data-sort$='sc']::before,
+  &[title='Sort Group'][data-sort$='sc']::before,
   &[title^='Group'][data-group='true']::before {
     color: $lu_selected_color;
   }
@@ -184,11 +187,13 @@
   &[data-type='annotate'],
   &[data-type='hierarchy'] {
     .#{$lu_css_prefix}-action {
-      &[title='Sort']::before {
+      &[title='Sort']::before,
+      &[title='Sort Group']::before {
         content: $lu_icon_sort-alpha-asc;
       }
 
-      &[title='Sort'][data-sort='desc']::before {
+      &[title='Sort'][data-sort='desc']::before,
+      &[title='Sort Group'][data-sort='desc']::before {
         content: $lu_icon_sort-alpha-desc;
       }
     }
@@ -204,11 +209,13 @@
   &[data-type='reduce'],
   &[data-type='stack'] {
     .#{$lu_css_prefix}-action {
-      &[title='Sort']::before {
+      &[title='Sort']::before,
+      &[title='Sort Group']::before {
         content: $lu_icon_sort-numeric-asc;
       }
 
-      &[title='Sort'][data-sort='desc']::before {
+      &[title='Sort'][data-sort='desc']::before,
+      &[title='Sort Group'][data-sort='desc']::before {
         content: $lu_icon_sort-numeric-desc;
       }
     }
