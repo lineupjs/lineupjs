@@ -602,6 +602,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         return;
       }
       const before = <HTMLElement>row.children[index];
+      if (!before) {
+        return; // race condition
+      }
       const after = this.updateCell(before, rowIndex, column);
       if (before !== after && after) {
         setColumn(after, column);
