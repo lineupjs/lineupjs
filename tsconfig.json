@@ -32,8 +32,6 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "tests/**/*.ts",
-    "tests/**/*.tsx",
     "tsd.d.ts"
   ],
   "typedocOptions": {
