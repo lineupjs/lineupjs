@@ -9,6 +9,7 @@ import {IEngineRankingContext} from '../EngineRanking';
 import EngineRenderer from '../EngineRenderer';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
 import {IRule} from './interfaces';
+import {GridStyleManager} from 'lineupengine';
 
 /**
  * emitted when the highlight changes
@@ -66,7 +67,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     });
   }
 
-  get style() {
+  get style(): GridStyleManager {
     return this.renderer.style;
   }
 
