@@ -26,7 +26,7 @@ export default function spaceFillingRule(config: { groupHeight: number, rowHeigh
     }
     const available = visibleHeight - groups * config.groupHeight - groupSeparators * config.groupPadding - selected * config.rowHeight;
 
-    const height = available / unselected;
+    const height = Math.floor(available / unselected); // round to avoid sub pixel issues
     if (height < 1) {
       return {
         height: 1,
