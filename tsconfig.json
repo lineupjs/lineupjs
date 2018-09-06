@@ -34,6 +34,9 @@
     "src/**/*.tsx",
     "tsd.d.ts"
   ],
+  "exclude": [
+    "src/**/*.d.ts"
+  ],
   "typedocOptions": {
     "name": "LineUpJS",
     "mode": "modules",
@@ -41,6 +44,7 @@
     "target": "es6",
     "hideGenerator": true,
     "ignoreCompilerErrors": false,
+    "includeDeclarations": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "moduleResolution": "node",
@@ -48,7 +52,7 @@
     "stripInternal": true,
     "suppressExcessPropertyErrors": true,
     "suppressImplicitAnyIndexErrors": true,
-    "exclude": "**/*.(d.ts|js|test.ts|scss)",
+    "exclude": "**/*.(d.ts|js|spec.ts|scss)",
     "excludePrivate": true,
     "excludeProtected": true,
     "excludeExternals": true,
