@@ -1,6 +1,6 @@
 import * as equalImpl from 'fast-deep-equal';
 
-export const equal: (a: any, b: any) => boolean = <any>equalImpl;
+export const equal: (a: any, b: any) => boolean = (typeof equalImpl === 'function' ? equalImpl : (<any>equalImpl).default);
 
 /** @internal */
 export function findOption(options: any) {
@@ -35,7 +35,7 @@ export function equalArrays<T>(a: T[], b: T[]) {
  * @internal
  */
 export function fixCSS(id: string) {
-  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '_'); //replace non css stuff to _
+  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]+/g, '_'); //replace non css stuff to _
 }
 
 /**

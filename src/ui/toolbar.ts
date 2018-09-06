@@ -387,3 +387,8 @@ export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getToolbar(col, ctx);
   return toolbar.includes(groupBy);
 }
+
+export function isGroupSortAble(col: Column, ctx: IRankingHeaderContext) {
+  const toolbar = getToolbar(col, ctx);
+  return toolbar.includes(sortGroupBy);
+}

@@ -5,7 +5,7 @@ import {updateHeader, actionCSSClass} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {ISearchBoxOptions} from './SearchBox';
 import {isSupportType, categoryOf, isSortingAscByDefault} from '../../model/annotations';
-import {isSortAble, isGroupAble, getToolbarDialogAddons, IToolbarDialogAddon, dialogContext} from '../toolbar';
+import {isSortAble, isGroupAble, getToolbarDialogAddons, IToolbarDialogAddon, dialogContext, isGroupSortAble} from '../toolbar';
 import AddonDialog from '../dialogs/AddonDialog';
 import {cssClass, aria} from '../../styles';
 import {clear} from '../../internal';
@@ -22,6 +22,7 @@ export default class Hierarchy {
   readonly node: HTMLElement;
   readonly groupAdder: SearchBox<IColumnItem>;
   readonly sortAdder: SearchBox<IColumnItem>;
+  readonly groupSortAdder: SearchBox<IColumnItem>;
 
   constructor(private readonly ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('aside');
@@ -30,6 +31,8 @@ export default class Hierarchy {
       <section class="${cssClass('group-hierarchy')}">
       </section>
       <section class="${cssClass('sort-hierarchy')}">
+      </section>
+      <section class="${cssClass('sortgroup-hierarchy')}">
       </section>
     `;
     const options = <Partial<ISearchBoxOptions<IColumnItem>>>{
@@ -46,6 +49,9 @@ export default class Hierarchy {
     this.groupAdder = new SearchBox(Object.assign({}, options, {
       placeholder: 'Add Grouping Criteria...'
     }));
+    this.groupSortAdder = new SearchBox(Object.assign({}, options, {
+      placeholder: 'Add Grouping Sort Criteria...'
+    }));
     this.sortAdder = new SearchBox(options);
   }
 
@@ -56,7 +62,8 @@ export default class Hierarchy {
     }
     this.node.style.display = null;
     this.renderGroups(ranking, <HTMLElement>this.node.firstElementChild!);
-    this.renderSorting(ranking, <HTMLElement>this.node.lastElementChild!);
+    this.renderSorting(ranking, <HTMLElement>this.node.children[1]!);
+    this.renderGroupSorting(ranking, <HTMLElement>this.node.lastElementChild!);
   }
 
   private render<T>(node: HTMLElement, items: T[], toColumn: (item: T)=>Column, extras: (item: T, node: HTMLElement)=>void, addonKey: string, onChange: (item: T, delta: number)=>void) {
@@ -174,6 +181,42 @@ export default class Hierarchy {
     this.addSortAdder(ranking, sortCriterias, node);
   }
 
+  private renderGroupSorting(ranking: Ranking, node: HTMLElement) {
+    const sortCriterias = ranking.getGroupSortCriteria();
+
+    if (sortCriterias.length === 0) {
+      node.innerHTML = '';
+      return;
+    }
+
+    const click = ({col}: ISortCriteria, delta: number) => {
+      const current = col.isGroupSortedByMe();
+      if (!isFinite(delta)) {
+        col.groupSortByMe(current.asc === 'desc', current.priority);
+        return;
+      }
+      if (delta === 0) {
+        col.groupSortByMe(current.asc === 'asc', -1);
+        return;
+      }
+      col.groupSortByMe(current.asc === 'asc', current.priority! + delta);
+    };
+
+    const addButton = (s: ISortCriteria, last: HTMLElement) => {
+      last.insertAdjacentHTML('afterbegin', `
+      <i title="Sort Group" class="${actionCSSClass('sort')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria('Toggle Sorting')}</i>`);
+      (<HTMLElement>last.querySelector('i[title="Sort Group"]')!).onclick = (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        click(s, Infinity);
+      };
+    };
+
+    this.render(node, sortCriterias, (d) => d.col, addButton, 'sortGroup', click);
+
+    this.addGroupSortAdder(ranking, sortCriterias, node);
+  }
+
   private addAdder(adder: SearchBox<IColumnItem>, ranking: Ranking, addonKey: string, current: Column[], node: HTMLElement, check: (col: Column)=>boolean, onSelect: (col: Column)=>void) {
     const used = new Set(current);
 
@@ -182,7 +225,7 @@ export default class Hierarchy {
     adder.on(SearchBox.EVENT_SELECT, (item: IColumnItem) => {
       const addons = getToolbarDialogAddons(item.col, addonKey, this.ctx);
       if (addons.length > 0) {
-        this.customize(item.col, addons, { currentTarget: adder. node}, () => onSelect(item.col));
+        this.customize(item.col, addons, { currentTarget: adder.node}, () => onSelect(item.col));
       } else {
         onSelect(item.col);
       }
@@ -207,6 +250,12 @@ export default class Hierarchy {
   private addGroupAdder(ranking: Ranking, groups: Column[], node: HTMLElement) {
     this.addAdder(this.groupAdder, ranking, 'group', groups, node, (d) => isGroupAble(d, this.ctx), (col) => {
       ranking.groupBy(col, groups.length);
+    });
+  }
+
+  private addGroupSortAdder(ranking: Ranking, sortCriterias: ISortCriteria[], node: HTMLElement) {
+    this.addAdder(this.groupSortAdder, ranking, 'sortGroup', sortCriterias.map((d) => d.col), node, (d) => isGroupSortAble(d, this.ctx), (col) => {
+      ranking.groupSortBy(col, isSortingAscByDefault(col), sortCriterias.length);
     });
   }
 

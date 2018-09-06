@@ -97,6 +97,18 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
+  const sortGroups = <HTMLElement>node.querySelector(`.${cssClass('action-sortgroup')}`)!;
+  if (sortGroups) {
+    const {asc, priority} = col.isGroupSortedByMe();
+    sortGroups.dataset.sort = asc !== undefined ? asc : '';
+    sortGroups.dataset.type = getSortType(col);
+    if (priority !== undefined) {
+      sortGroups.dataset.priority = (priority + 1).toString();
+    } else {
+      delete sortGroups.dataset.priority;
+    }
+  }
+
   const group = <HTMLElement>node.querySelector(`.${cssClass('action-group')}`)!;
   if (group) {
     const groupedBy = col.isGroupedBy();

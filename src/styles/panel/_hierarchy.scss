@@ -6,7 +6,8 @@
 }
 
 .#{$lu_css_prefix}-group-hierarchy,
-.#{$lu_css_prefix}-sort-hierarchy {
+.#{$lu_css_prefix}-sort-hierarchy,
+.#{$lu_css_prefix}-sortgroup-hierarchy {
   counter-reset: hierarchy-counter;
   margin-bottom: 0.5em;
 
