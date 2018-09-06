@@ -3,5 +3,28 @@
   "compilerOptions": {
     "target": "es6",
     "outDir": "build/src"
+  },
+  "typedocOptions": {
+    "name": "LineUpJS",
+    "mode": "modules",
+    "modules": "umd",
+    "target": "es6",
+    "hideGenerator": true,
+    "ignoreCompilerErrors": false,
+    "includeDeclarations": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "moduleResolution": "node",
+    "preserveConstEnums": true,
+    "stripInternal": true,
+    "suppressExcessPropertyErrors": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "exclude": "**/*.(d.ts|js|spec.ts|scss)",
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeExternals": true,
+    "excludeNotExported": true,
+    "listInvalidSymbolLinks": true,
+    "plugin": ["typedoc-plugin-as-member-of"]
   }
 }

@@ -58,7 +58,7 @@
     "compile": "tsc",
     "compile:dev": "tsc -p ./tsconfig.dev.json",
     "lint": "tslint --project tsconfig.json -c tslint.json && stylelint src/**/*.scss",
-    "docs": "npm run clean:compile && typedoc --out ./build/docs/ --plugin typedoc-plugin-as-member-of src tsd.d.ts",
+    "docs": "npm run clean:compile && typedoc --tsconfig tsconfig.dev.json --out ./build/docs/ --plugin typedoc-plugin-as-member-of src tsd.d.ts",
     "pretest": "npm run clean && npm run compile",
     "test": "jest",
     "test:watch": "jest --watch",
