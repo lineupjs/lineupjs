@@ -47,7 +47,6 @@ export default class SelectionManager extends AEventDispatcher {
       this.showHint(evt);
     };
     const mouseUp = (evt: MouseEvent) => {
-      console.log(evt.currentTarget, evt.type);
       this.body.removeEventListener('mousemove', mouseMove);
       this.body.removeEventListener('mouseup', mouseUp);
       this.body.removeEventListener('mouseleave', mouseUp);
@@ -70,7 +69,6 @@ export default class SelectionManager extends AEventDispatcher {
     };
 
     body.addEventListener('mousedown', (evt) => {
-      console.log('down', evt.currentTarget);
       const r = root.getBoundingClientRect();
       this.start = {x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
 

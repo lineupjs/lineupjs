@@ -7,6 +7,7 @@ import SidePanel from '../panel/SidePanel';
 import spaceFillingRule from './spaceFillingRule';
 import TaggleRenderer from './TaggleRenderer';
 import {cssClass, engineCssClass} from '../../styles/index';
+import {GridStyleManager} from 'lineupengine';
 
 export {ITaggleOptions} from '../../interfaces';
 
@@ -66,40 +67,11 @@ export default class Taggle extends ALineUp {
     this.forward(this.renderer, `${ALineUp.EVENT_HIGHLIGHT_CHANGED}.main`);
   }
 
-  private updateLodRules(active: boolean) {
+  private updateLodRules(overviewMode: boolean) {
     if (!this.renderer) {
       return;
     }
-    const style = this.renderer.style;
-    if (!active) {
-      style.deleteRule('taggle_lod_rule');
-      style.deleteRule('lineup_rowPadding1');
-      style.deleteRule('lineup_rowPadding2');
-      return;
-    }
-
-    style.updateRule('taggle_lod_rule', `
-    .${engineCssClass('tr')}.${cssClass('low')}[data-agg=detail]:hover`, {
-      /* show regular height for hovered rows in low + medium LOD */
-      height: `${this.options.rowHeight}px !important`
-    });
-
-    style.updateRule('lineup_rowPadding1', `
-    .${engineCssClass('tr')}.${cssClass('low')}`, {
-        marginTop: '0'
-      });
-
-    // padding in general and for hovered low detail rows + their afterwards
-    style.updateRule('lineup_rowPadding2', `
-    .${engineCssClass('tr')}.${cssClass('low')}:hover,
-    .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')},
-    .${engineCssClass('tr')}.${cssClass('selected')},
-    .${engineCssClass('tr')}.${cssClass('low')}:hover + .${engineCssClass('tr')}.${cssClass('low')},
-    .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')} + .${engineCssClass('tr')}.${cssClass('low')},
-    .${engineCssClass('tr')}.${cssClass('selected')} + .${engineCssClass('tr')}.${cssClass('low')}`, {
-        marginTop: `${this.options.rowPadding}px !important`
-      });
-
+    updateLodRules(this.renderer.style, overviewMode, this.options);
   }
 
   private setViolation(violation?: string) {
@@ -150,4 +122,35 @@ export default class Taggle extends ALineUp {
     this.update();
     this.panel!.update(this.renderer.ctx);
   }
+}
+
+export function updateLodRules(style: GridStyleManager, overviewMode: boolean, options: Readonly<ITaggleOptions>) {
+  if (!overviewMode) {
+    style.deleteRule('taggle_lod_rule');
+    style.deleteRule('lineup_rowPadding1');
+    style.deleteRule('lineup_rowPadding2');
+    return;
+  }
+
+  style.updateRule('taggle_lod_rule', `
+  .${engineCssClass('tr')}.${cssClass('low')}[data-agg=detail]:hover`, {
+    /* show regular height for hovered rows in low + medium LOD */
+    height: `${options.rowHeight}px !important`
+  });
+
+  style.updateRule('lineup_rowPadding1', `
+  .${engineCssClass('tr')}.${cssClass('low')}`, {
+      marginTop: '0'
+    });
+
+  // padding in general and for hovered low detail rows + their afterwards
+  style.updateRule('lineup_rowPadding2', `
+  .${engineCssClass('tr')}.${cssClass('low')}:hover,
+  .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')},
+  .${engineCssClass('tr')}.${cssClass('selected')},
+  .${engineCssClass('tr')}.${cssClass('low')}:hover + .${engineCssClass('tr')}.${cssClass('low')},
+  .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')} + .${engineCssClass('tr')}.${cssClass('low')},
+  .${engineCssClass('tr')}.${cssClass('selected')} + .${engineCssClass('tr')}.${cssClass('low')}`, {
+      marginTop: `${options.rowPadding}px !important`
+    });
 }
