@@ -14,6 +14,7 @@
     right: 0;
     bottom: 0;
     border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    box-sizing: border-box;
   }
 }
 
