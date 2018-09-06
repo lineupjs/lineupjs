@@ -598,7 +598,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const width = this.visibleRenderedWidth();
     super.forEachRow((row, index) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.renderRow(row.querySelector('canvas')!, index, width);
+        this.renderRow(row.querySelector('canvas')!, row, index, width);
       }
     });
   }
