@@ -7,7 +7,7 @@
 
 .#{$lu_css_prefix}-group-hierarchy,
 .#{$lu_css_prefix}-sort-hierarchy,
-.#{$lu_css_prefix}-sortgroup-hierarchy {
+.#{$lu_css_prefix}-sort-groups-hierarchy {
   counter-reset: hierarchy-counter;
   margin-bottom: 0.5em;
 
@@ -37,6 +37,12 @@
 .#{$lu_css_prefix}-sort-hierarchy {
   &::before {
     content: 'Sorting hierarchy';
+  }
+}
+
+.#{$lu_css_prefix}-sort-groups-hierarchy {
+  &::before {
+    content: 'Group Sorting hierarchy';
   }
 }
 

@@ -32,7 +32,7 @@ export default class Hierarchy {
       </section>
       <section class="${cssClass('sort-hierarchy')}">
       </section>
-      <section class="${cssClass('sortgroup-hierarchy')}">
+      <section class="${cssClass('sort-groups-hierarchy')}">
       </section>
     `;
     const options = <Partial<ISearchBoxOptions<IColumnItem>>>{
@@ -204,7 +204,7 @@ export default class Hierarchy {
 
     const addButton = (s: ISortCriteria, last: HTMLElement) => {
       last.insertAdjacentHTML('afterbegin', `
-      <i title="Sort Group" class="${actionCSSClass('sort')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria('Toggle Sorting')}</i>`);
+      <i title="Sort Group" class="${actionCSSClass('sort-groups')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria('Toggle Sorting')}</i>`);
       (<HTMLElement>last.querySelector('i[title="Sort Group"]')!).onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();

@@ -33,7 +33,7 @@
   content: $lu_icon_code_fork;
 }
 
-.#{$lu_css_prefix}-action-sort-group::before {
+.#{$lu_css_prefix}-action-sort-groups::before {
   content: $lu_icon_sort;
 }
 
@@ -104,6 +104,7 @@
 }
 
 .#{$lu_css_prefix}-action-sort[data-sort$='sc']::before,
+.#{$lu_css_prefix}-action-sort-groups[data-sort$='sc']::before,
 .#{$lu_css_prefix}-action-group[data-group='true']::before {
   color: $lu_selected_color;
 }
