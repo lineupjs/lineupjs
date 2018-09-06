@@ -6,7 +6,7 @@
   justify-content: flex-end;
 }
 
-#{$engine_css_prefix}-group.#{$lu_css_prefix}-renderer-rank {
+.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-rank {
   flex-direction: column;
   justify-content: space-between;
 }
