@@ -143,9 +143,11 @@ export function updateLodRules(style: GridStyleManager, overviewMode: boolean, o
       marginTop: '0'
     });
 
+  // no margin for hovered low level row otherwise everything will be shifted down and the hover is gone again
+  // .${engineCssClass('tr')}.${cssClass('low')}:hover,
+
   // padding in general and for hovered low detail rows + their afterwards
   style.updateRule('lineup_rowPadding2', `
-  .${engineCssClass('tr')}.${cssClass('low')}:hover,
   .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')},
   .${engineCssClass('tr')}.${cssClass('selected')},
   .${engineCssClass('tr')}.${cssClass('low')}:hover + .${engineCssClass('tr')}.${cssClass('low')},

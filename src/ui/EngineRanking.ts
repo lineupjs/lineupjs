@@ -73,6 +73,10 @@ class RankingEvents extends AEventDispatcher {
   }
 }
 
+const PASSIVE: AddEventListenerOptions = {
+  passive: false
+};
+
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection, IEventHandler {
   static readonly EVENT_WIDTH_CHANGED = RankingEvents.EVENT_WIDTH_CHANGED;
   static readonly EVENT_UPDATE_DATA = RankingEvents.EVENT_UPDATE_DATA;
@@ -112,9 +116,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         self.clearTimeout(c.timer);
       }
       const row = <HTMLElement>evt.currentTarget;
-      row.addEventListener('mouseleave', c.leave, {
-        passive: true
-      });
+      row.addEventListener('mouseleave', c.leave, PASSIVE);
       c.timer = self.setTimeout(() => this.updateHoveredRow(row, true), HOVER_DELAY_SHOW_DETAIL);
     },
     leave: (evt: MouseEvent) => {
@@ -246,8 +248,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     this.style.updateRule(`hoverOnly${this.tableId}`, `
       #${tableIds(this.tableId).tbody}:hover > .${engineCssClass('tr')}:hover .${cssClass('hover-only')},
-      #${tableIds(this.tableId).tbody}:hover > .${engineCssClass('tr')}.${cssClass('selected')} .${cssClass('hover-only')},
-      #${tableIds(this.tableId).tbody}:hover > .${engineCssClass('tr')}.${engineCssClass('highlighted')} .${cssClass('hover-only')}`, {
+      #${tableIds(this.tableId).tbody} > .${engineCssClass('tr')}.${cssClass('selected')} .${cssClass('hover-only')},
+      #${tableIds(this.tableId).tbody} > .${engineCssClass('tr')}.${engineCssClass('highlighted')} .${cssClass('hover-only')}`, {
         visibility: 'visible'
     });
   }
@@ -472,9 +474,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.classList.add(this.style.cssClasses.tr);
     this.roptions.customRowUpdate(node, rowIndex);
     if (this.highlightHandler.enabled) {
-      node.addEventListener('mouseenter', this.highlightHandler.enter, {
-        passive: true
-      });
+      node.addEventListener('mouseenter', this.highlightHandler.enter, PASSIVE);
       this.rowFlags(node).highlight = true;
     }
 
@@ -509,9 +509,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     const canvas = this.selectCanvas();
     node.appendChild(canvas);
-    node.addEventListener('mouseenter', this.canvasMouseHandler.enter, {
-      passive: true
-    });
+    node.addEventListener('mouseenter', this.canvasMouseHandler.enter, PASSIVE);
     this.renderRow(canvas, node, rowIndex);
   }
 
@@ -527,9 +525,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.classList.toggle(cssClass('low'), computedLod === 'low');
 
     if (this.highlightHandler.enabled && !this.rowFlags(node).highlight) {
-      node.addEventListener('mouseenter', this.highlightHandler.enter, {
-        passive: true
-      });
+      node.addEventListener('mouseenter', this.highlightHandler.enter, PASSIVE);
       this.rowFlags(node).highlight = true;
     }
 
@@ -588,9 +584,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.dataset.agg = 'detail';
     const canvas2 = this.selectCanvas();
     node.appendChild(canvas2);
-    node.addEventListener('mouseenter', this.canvasMouseHandler.enter, {
-      passive: true
-    });
+    node.addEventListener('mouseenter', this.canvasMouseHandler.enter, PASSIVE);
     this.renderRow(canvas2, node, rowIndex);
   }
 
@@ -621,13 +615,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.highlightHandler.enabled = enable;
 
     if (enable) {
-      this.body.addEventListener('mouseleave', this.highlightHandler.leave, {
-        passive: true
-      });
+      this.body.addEventListener('mouseleave', this.highlightHandler.leave, PASSIVE);
       super.forEachRow((row) => {
-        row.addEventListener('mouseenter', this.highlightHandler.enter, {
-          passive: true
-        });
+        row.addEventListener('mouseenter', this.highlightHandler.enter, PASSIVE);
         this.rowFlags(row).highlight = true;
       });
       return;
