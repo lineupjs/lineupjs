@@ -141,7 +141,7 @@
   "dependencies": {
     "@types/d3-format": "^1.3.0",
     "popper.js": "^1.14.3",
-    "lineupengine": "github:sgratzl/lineupengine#sgratzl/optimize",
+    "lineupengine": "^2.0.0-alpha.1",
     "reflect-metadata": "^0.1.12"
   }
 }
