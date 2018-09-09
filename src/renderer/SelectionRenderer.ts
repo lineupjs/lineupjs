@@ -2,7 +2,7 @@ import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
-import {IDataProvider} from '../provider/ADataProvider';
+import {IDataProvider} from '../provider';
 import {cssClass} from '../styles';
 
 /** @internal */

@@ -1,7 +1,7 @@
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {ICategoricalColumn, IDataRow, IGroup, INumberColumn, IGroupMeta} from '../model';
 import Column from '../model/Column';
-import {IDataProvider} from '../provider/ADataProvider';
+import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
 
 export interface IImposer {

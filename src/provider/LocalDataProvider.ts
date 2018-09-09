@@ -6,7 +6,7 @@ import Column, {
 } from '../model';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
-import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
+import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 
 
 export interface ILocalDataProviderOptions {

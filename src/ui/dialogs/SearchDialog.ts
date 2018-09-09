@@ -1,5 +1,5 @@
 import Column from '../../model/Column';
-import {IDataProvider} from '../../provider/ADataProvider';
+import {IDataProvider} from '../../provider';
 import ADialog, { IDialogContext} from './ADialog';
 import {uniqueId} from './utils';
 import {cssClass} from '../../styles';

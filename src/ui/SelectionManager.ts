@@ -1,7 +1,7 @@
 import AEventDispatcher from '../internal/AEventDispatcher';
 import OrderedSet from '../internal/OrderedSet';
 import {IGroupData, IGroupItem, isGroup} from '../model';
-import {IDataProvider} from '../provider/ADataProvider';
+import {IDataProvider} from '../provider';
 import {rangeSelection} from '../renderer/SelectionRenderer';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {engineCssClass, cssClass} from '../styles/index';

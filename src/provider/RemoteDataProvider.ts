@@ -2,7 +2,7 @@ import Column, {IColumnDesc, IDataRow} from '../model';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
-import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
+import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 
 /**
  * interface what the server side has to provide

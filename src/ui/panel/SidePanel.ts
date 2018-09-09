@@ -13,7 +13,7 @@ import {
 } from '../../model';
 import {categoryOfDesc} from '../../model/annotations';
 import Ranking from '../../model/Ranking';
-import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
+import {DataProvider, IDataProvider} from '../../provider';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';

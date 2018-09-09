@@ -1,7 +1,8 @@
 import {createAggregateDesc, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, isSupportType} from '../model';
 import {IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
-import ADataProvider, {IDataProviderOptions} from './ADataProvider';
+import ADataProvider from './ADataProvider';
+import {IDataProviderOptions} from './interfaces';
 
 
 function isComplexAccessor(column: any) {
