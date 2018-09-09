@@ -10,7 +10,7 @@ function isComplexAccessor(column: any) {
   return typeof column === 'string' && column.includes('.');
 }
 
-function rowComplexGetter(row: IDataRow, _id: string, desc: any) {
+function rowComplexGetter(row: IDataRow, desc: any) {
   const column = desc.column;
   if (row.hasOwnProperty(column)) { // well complex but a direct hit
     return row.v[column];
@@ -27,16 +27,16 @@ function rowComplexGetter(row: IDataRow, _id: string, desc: any) {
   return column.split('.').reduce(resolve, row.v);
 }
 
-function rowGetter(row: IDataRow, _id: string, desc: any) {
+function rowGetter(row: IDataRow, desc: any) {
   return row.v[desc.column];
 }
 
-function rowGuessGetter(row: IDataRow, _id: string, desc: any) {
+function rowGuessGetter(row: IDataRow, desc: any) {
   const column = desc.column;
   if (isComplexAccessor(column)) {
-    return rowComplexGetter(row, _id, desc);
+    return rowComplexGetter(row, desc);
   }
-  return rowGetter(row, _id, desc);
+  return rowGetter(row, desc);
 }
 
 /**
@@ -53,17 +53,6 @@ abstract class ACommonDataProvider extends ADataProvider {
       d.accessor = d.accessor || (d.column ? (isComplexAccessor(d.column) ? rowComplexGetter : rowGetter) : rowGuessGetter);
       d.label = d.label || d.column;
     });
-  }
-
-  protected rankAccessor(row: IDataRow, _id: string, _desc: IColumnDesc, ranking: Ranking) {
-    const groups = ranking.getGroups();
-    for (const group of groups) {
-      const rank = group.index2pos[row.i];
-      if (typeof rank === 'number') {
-        return rank + 1; // starting with 1
-      }
-    }
-    return -1;
   }
 
   /**

@@ -1,5 +1,6 @@
+import {IDataRow} from './interfaces';
 import {Category, SupportType} from './annotations';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import Column, {IColumnDesc} from './Column';
 
 /**
  * factory for creating a description creating a rank column
@@ -15,11 +16,34 @@ export function createRankDesc(label: string = 'Rank') {
  */
 @SupportType()
 @Category('support')
-export default class RankColumn extends ValueColumn<number> {
+export default class RankColumn extends Column {
 
-  constructor(id: string, desc: IValueColumnDesc<number>) {
+  constructor(id: string, desc: IColumnDesc) {
     super(id, desc);
     this.setDefaultWidth(50);
+  }
+
+  getLabel(row: IDataRow) {
+    return String(this.getValue(row));
+  }
+
+  getRaw(row: IDataRow) {
+    const ranking = this.findMyRanker();
+    if (!ranking) {
+      return -1;
+    }
+    const groups = ranking.getGroups();
+    for (const group of groups) {
+      const rank = group.index2pos[row.i];
+      if (typeof rank === 'number') {
+        return rank + 1; // starting with 1
+      }
+    }
+    return -1;
+  }
+
+  getValue(row: IDataRow) {
+    return this.getRaw(row);
   }
 
   get frozen() {

@@ -1,6 +1,5 @@
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IColumnDesc, IDataRow} from './interfaces';
-import Ranking from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
 
 
@@ -14,11 +13,9 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
   /**
    * value accessor of this column
    * @param row the current row
-   * @param id the id of this column
    * @param desc the description of this column
-   * @param ranking the ranking of this column
    */
-  accessor?(row: IDataRow, id: string, desc: any, ranking: Ranking | null): T;
+  accessor?(row: IDataRow, desc: Readonly<IValueColumnDesc<T>>): T;
 }
 
 /**
@@ -36,7 +33,7 @@ export default class ValueColumn<T> extends Column {
 
   static readonly RENDERER_LOADING = 'loading';
 
-  private readonly accessor: (row: IDataRow, id: string, desc: any, ranking: Ranking | null) => T;
+  private readonly accessor: (row: IDataRow, desc: Readonly<IValueColumnDesc<T>>) => T;
 
   /**
    * is the data available
@@ -82,7 +79,7 @@ export default class ValueColumn<T> extends Column {
     if (!this.isLoaded()) {
       return null;
     }
-    return this.accessor(row, this.id, this.desc, this.findMyRanker());
+    return this.accessor(row, this.desc);
   }
 
   getValue(row: IDataRow) {

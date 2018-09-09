@@ -5,7 +5,7 @@ import OrderedSet from '../internal/OrderedSet';
 import {
   Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
   createStackDesc, IColumnDesc, IDataRow, IGroup, IOrderedGroup,
-  ISelectionColumnDesc, IValueColumnDesc, models
+  ISelectionColumnDesc, models
 } from '../model';
 import {dirty, dirtyHeader, dirtyValues} from '../model/Column';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
@@ -89,7 +89,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @type {Array}
    * @private
    */
-  private rankings: Ranking[] = [];
+  private readonly rankings: Ranking[] = [];
   /**
    * the current selected indices
    * @type {OrderedSet}
@@ -97,7 +97,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private readonly selection = new OrderedSet<number>();
 
   //ranking.id@group.name
-  private aggregations = new Set<string>();
+  private readonly aggregations = new Set<string>();
 
   private uid = 0;
 
@@ -256,7 +256,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ranking.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, null);
       this.cleanUpRanking(ranking);
     });
-    this.rankings = [];
+    // clear
+    this.rankings.splice(0, this.rankings.length);
     this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], null, -1);
   }
 
@@ -345,13 +346,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return `col${this.uid++}`;
   }
 
-  protected abstract rankAccessor(row: IDataRow, id: string, desc: IColumnDesc, ranking: Ranking): number;
-
   private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
-    if (desc.type === 'rank') {
-      (<IValueColumnDesc<number>>desc).accessor = this.rankAccessor.bind(this);
-    } else if (desc.type === 'selection') {
+    if (desc.type === 'selection') {
       (<ISelectionColumnDesc>desc).accessor = (row: IDataRow) => this.isSelected(row.i);
       (<ISelectionColumnDesc>desc).setter = (row: IDataRow, value: boolean) => value ? this.select(row.i) : this.deselect(row.i);
       (<ISelectionColumnDesc>desc).setterAll = (rows: IDataRow[], value: boolean) => value ? this.selectAll(rows.map((d) => d.i)) : this.deselectAll(rows.map((d) => d.i));
