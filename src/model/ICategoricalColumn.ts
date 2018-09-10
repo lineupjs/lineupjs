@@ -72,6 +72,13 @@ export function compareCategory(a: ICategory | null, b: ICategory | null) {
   return a.value - b.value;
 }
 
+export function toCompareCategoryValue(v: ICategory | null) {
+  if (v == null) {
+    return null;
+  }
+  return [v.value, v.label.toLowerCase()];
+}
+
 export function toCategories(desc: ICategoricalDesc) {
   if (!desc.categories) {
     return [];

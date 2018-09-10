@@ -27,6 +27,11 @@ export default class NestedColumn extends MultiLevelCompositeColumn {
     return 0;
   }
 
+  toCompareValue(row: IDataRow) {
+    const r: (number | string | null)[] = [];
+    return r.concat(...this.children.map((d) => d.toCompareValue(row)));
+  }
+
   getLabel(row: IDataRow) {
     return this.children.map((d) => d.getLabel(row)).join(';');
   }

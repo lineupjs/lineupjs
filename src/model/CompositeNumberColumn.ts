@@ -102,8 +102,16 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return NumberColumn.prototype.compare.call(this, a, b);
   }
 
+  toCompareValue(row: IDataRow) {
+    return NumberColumn.prototype.toCompareValue.call(this, row);
+  }
+
   groupCompare(a: IGroupData, b: IGroupData) {
     return NumberColumn.prototype.groupCompare.call(this, a, b);
+  }
+
+  toCompareGroupValue(group: IGroupData) {
+    return NumberColumn.prototype.toCompareGroupValue.call(this, group);
   }
 
   getRenderer(): string {

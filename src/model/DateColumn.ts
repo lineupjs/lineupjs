@@ -65,4 +65,12 @@ export default class DateColumn extends ValueColumn<Date> {
     }
     return av.getTime() - bv.getTime();
   }
+
+  toCompareValue(row: IDataRow) {
+    const v = this.getValue(row);
+    if (!(v instanceof Date)) {
+      return null;
+    }
+    return v.getTime();
+  }
 }

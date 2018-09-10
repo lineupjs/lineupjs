@@ -3,7 +3,7 @@ import {equalArrays} from '../internal';
 import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
-import {groupCompare, isDummyNumberFilter, restoreFilter} from './internal';
+import {groupCompare, isDummyNumberFilter, restoreFilter, toCompareGroupValue} from './internal';
 import {
   default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
   isNumberIncluded, noNumberFilter, numberCompare
@@ -223,8 +223,16 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return numberCompare(this.getNumber(a), this.getNumber(b), this.isMissing(a), this.isMissing(b));
   }
 
+  toCompareValue(row: IDataRow) {
+    return this.isMissing(row) ? null : this.getNumber(row);
+  }
+
   groupCompare(a: IGroupData, b: IGroupData): number {
     return groupCompare(a.rows, b.rows, this, <any>this.groupSortMethod);
+  }
+
+  toCompareGroupValue(group: IGroupData): number {
+    return toCompareGroupValue(group.rows, this, <any>this.groupSortMethod);
   }
 
   getOriginalMapping() {

@@ -6,7 +6,7 @@ import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
-  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter
+  compareBoxPlot, toCompareBoxPlotValue, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
@@ -76,6 +76,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   compare(a: IDataRow, b: IDataRow): number {
     return compareBoxPlot(this, a, b);
+  }
+
+  toCompareValue(row: IDataRow): number | null {
+    return toCompareBoxPlotValue(this, row);
   }
 
   getBoxPlotData(row: IDataRow): IBoxPlotData | null {

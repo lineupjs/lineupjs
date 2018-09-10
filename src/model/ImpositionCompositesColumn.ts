@@ -226,12 +226,16 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return NumbersColumn.prototype.compare.call(this, a, b);
   }
 
-  group(row: IDataRow) {
-    return NumbersColumn.prototype.group.call(this, row);
+  toCompareValue(row: IDataRow) {
+    return NumbersColumn.prototype.toCompareValue.call(this, row);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
     return NumbersColumn.prototype.groupCompare.call(this, a, b);
+  }
+
+  toCompareGroupValue(group: IGroupData) {
+    return NumbersColumn.prototype.toCompareGroupValue.call(this, group);
   }
 
   insert(col: Column, index: number): Column | null {

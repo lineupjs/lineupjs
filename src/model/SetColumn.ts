@@ -169,4 +169,14 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     }
     return 0;
   }
+
+  toCompareValue(row: IDataRow) {
+    const v = this.getSet(row);
+
+    const vs = [v.size];
+    for (const cat of this.categories) {
+      vs.push(v.has(cat) ? 1 : 0);
+    }
+    return vs;
+  }
 }

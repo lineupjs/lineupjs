@@ -61,10 +61,6 @@ export default class GroupColumn extends Column {
     return '';
   }
 
-  compare() {
-    return 0; //can't compare
-  }
-
   getSortMethod() {
     return this.groupSortMethod;
   }
@@ -93,5 +89,12 @@ export default class GroupColumn extends Column {
         }
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     }
+  }
+
+  toCompareGroupValue(group: IGroupData) {
+    if (this.groupSortMethod === 'count') {
+      return group.rows.length;
+    }
+    return group.name === missingGroup.name ? null : group.name.toLowerCase();
   }
 }

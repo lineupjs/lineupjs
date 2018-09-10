@@ -119,4 +119,8 @@ export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn, s
   return numberCompare(<number>va[sortMethod], <number>vb[sortMethod]);
 }
 
-
+/** @internal */
+export function toCompareGroupValue(rows: IDataRow[], col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
+  const vs = new LazyBoxPlotData(rows.map((row) => col.getNumber(row)));
+  return <number>vs[sortMethod];
+}

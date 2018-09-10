@@ -125,6 +125,14 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
     const bs = compute(bv, this.sort);
     return as - bs;
   }
+
+  toCompareValue(row: IDataRow) {
+    const vs = <Date[]>this.getValue(row).filter(Boolean);
+    if (!vs) {
+      return [0, 0];
+    }
+    return [vs.length, compute(vs, this.sort)];
+  }
 }
 
 function compute(arr: Date[], sort: EDateSort) {

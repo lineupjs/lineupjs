@@ -183,6 +183,14 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return av === bv ? 0 : (av < bv ? -1 : +1);
   }
 
+  toCompareValue(row: IDataRow) {
+    const v = this.getValue(row);
+    if (v == null) {
+      return null;
+    }
+    return v ? 1 : -1;
+  }
+
   group(row: IDataRow) {
     const enabled = this.getValue(row);
     return enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE;

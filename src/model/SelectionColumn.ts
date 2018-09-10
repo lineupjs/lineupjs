@@ -121,6 +121,11 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     return va === vb ? 0 : (va < vb ? -1 : +1);
   }
 
+  toCompareValue(row: IDataRow) {
+    const v = this.getValue(row) === true;
+    return v ? 1 : -1;
+  }
+
   group(row: IDataRow) {
     const isSelected = this.getValue(row);
     return isSelected ? SelectionColumn.SELECTED_GROUP : SelectionColumn.NOT_SELECTED_GROUP;

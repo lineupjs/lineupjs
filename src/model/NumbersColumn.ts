@@ -7,7 +7,8 @@ import {IDataRow} from './interfaces';
 import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
-  noNumberFilter
+  noNumberFilter,
+  toCompareBoxPlotValue
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
@@ -80,6 +81,10 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
 
   compare(a: IDataRow, b: IDataRow): number {
     return compareBoxPlot(this, a, b);
+  }
+
+  toCompareValue(row: IDataRow): number | null {
+    return toCompareBoxPlotValue(this, row);
   }
 
   getRawNumbers(row: IDataRow) {

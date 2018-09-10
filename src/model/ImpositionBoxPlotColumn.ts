@@ -186,12 +186,20 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return BoxPlotColumn.prototype.compare.call(this, a, b);
   }
 
+  toCompareValue(row: IDataRow) {
+    return BoxPlotColumn.prototype.toCompareValue.call(this, row);
+  }
+
   group(row: IDataRow) {
     return BoxPlotColumn.prototype.group.call(this, row);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
     return BoxPlotColumn.prototype.groupCompare.call(this, a, b);
+  }
+
+  toCompareGroupValue(group: IGroupData) {
+    return BoxPlotColumn.prototype.toCompareGroupValue.call(this, group);
   }
 
   insert(col: Column, index: number): Column | null {

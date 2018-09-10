@@ -34,4 +34,12 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     const bCat = bVal.filter((x) => x).length;
     return (aCat - bCat);
   }
+
+  toCompareValue(row: IDataRow) {
+    const v = this.getValue(row);
+    if (v == null) {
+      return null;
+    }
+    return v.filter((x) => x).length;
+  }
 }

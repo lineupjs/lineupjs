@@ -121,12 +121,16 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     return NumberColumn.prototype.compare.call(this, a, b);
   }
 
-  group(row: IDataRow) {
-    return NumberColumn.prototype.group.call(this, row);
+  toCompareValue(row: IDataRow) {
+    return NumberColumn.prototype.toCompareValue.call(this, row);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
     return NumberColumn.prototype.groupCompare.call(this, a, b);
+  }
+
+  toCompareGroupValue(group: IGroupData) {
+    return NumberColumn.prototype.toCompareGroupValue.call(this, group);
   }
 
   insert(col: Column, index: number): Column | null {

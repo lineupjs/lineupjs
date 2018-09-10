@@ -7,7 +7,7 @@ import {IDataRow} from './interfaces';
 import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc,
-  INumberFilter, noNumberFilter
+  INumberFilter, noNumberFilter, toCompareBoxPlotValue
 } from './INumberColumn';
 import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
@@ -69,6 +69,10 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
 
   compare(a: IDataRow, b: IDataRow): number {
     return compareBoxPlot(this, a, b);
+  }
+
+  toCompareValue(row: IDataRow): number | null {
+    return toCompareBoxPlotValue(this, row);
   }
 
   getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {

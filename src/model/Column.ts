@@ -544,6 +544,10 @@ export default class Column extends AEventDispatcher {
     return 0; //can't compare
   }
 
+  toCompareValue(_row: IDataRow): number | string | null | (number | string | null)[] {
+    return 0;
+  }
+
   /**
    * group the given row into a bin/group
    * @param _row
@@ -561,6 +565,10 @@ export default class Column extends AEventDispatcher {
    */
   groupCompare(a: IGroupData, b: IGroupData) {
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+  }
+
+  toCompareGroupValue(group: IGroupData): number | string | null {
+    return group.name.toLowerCase();
   }
 
   /**

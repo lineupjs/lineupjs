@@ -121,7 +121,7 @@ export default class StringColumn extends ValueColumn<string> {
     return super.on(<any>type, listener);
   }
 
-  getValue(row: IDataRow) {
+  getValue(row: IDataRow): string {
     const v: any = super.getValue(row);
     if (!this.pattern) {
       return v == null ? '' : String(v);
@@ -208,6 +208,11 @@ export default class StringColumn extends ValueColumn<string> {
       return -FIRST_IS_MISSING;
     }
     return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+  }
+
+  toCompareValue(row: IDataRow) {
+    const v = this.getValue(row);
+    return v === '' ? null : v.toLowerCase();
   }
 }
 

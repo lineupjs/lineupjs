@@ -71,6 +71,12 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
   return numberCompare(<number>aVal[method], <number>bVal[method]);
 }
 
+export function toCompareBoxPlotValue(col: IBoxPlotColumn, row: IDataRow) {
+  const v = col.getBoxPlotData(row);
+  const method = <keyof IBoxPlotData>col.getSortMethod();
+  return v == null ? null : <number>v[method];
+}
+
 export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw' | 'normalized'): number {
   const data = mode === 'normalized' ? col.getBoxPlotData(row) : col.getRawBoxPlotData(row);
   if (data == null) {
