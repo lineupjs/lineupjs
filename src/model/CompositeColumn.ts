@@ -154,7 +154,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   protected insertImpl(col: Column, index: number) {
-    col.parent = this;
+    col.attach(this);
     this.forward(col, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, CompositeColumn.EVENT_FILTER_CHANGED, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED));
     this.fire([CompositeColumn.EVENT_ADD_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
     return col;
@@ -194,19 +194,19 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
 
-  remove(child: Column) {
-    const i = this._children.indexOf(child);
+  remove(col: Column) {
+    const i = this._children.indexOf(col);
     if (i < 0) {
       return false;
     }
     this._children.splice(i, 1); //remove and deregister listeners
-    return this.removeImpl(child, i);
+    return this.removeImpl(col, i);
   }
 
-  protected removeImpl(child: Column, index: number) {
-    child.parent = null;
-    this.unforward(child, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, CompositeColumn.EVENT_FILTER_CHANGED));
-    this.fire([CompositeColumn.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], child, index);
+  protected removeImpl(col: Column, index: number) {
+    col.detach();
+    this.unforward(col, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, CompositeColumn.EVENT_FILTER_CHANGED));
+    this.fire([CompositeColumn.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
     return true;
   }
 

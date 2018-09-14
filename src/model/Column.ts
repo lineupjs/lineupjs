@@ -420,6 +420,20 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
+   * called when the columns added to a ranking
+   */
+  attach(parent: IColumnParent)  {
+    this.parent = parent;
+  }
+
+  /**
+   * called when the column is removed from the ranking
+   */
+  detach() {
+    this.parent = null;
+  }
+
+  /**
    * inserts the given column after itself
    * @param col the column to insert
    * @returns {boolean} was successful
@@ -632,5 +646,20 @@ export default class Column extends AEventDispatcher {
       return;
     }
     return this.setWidthImpl(width);
+  }
+
+  /**
+   * marks the header, values, or both as dirty such that the values are reevaluated
+   * @param type specify in more detail what is dirty, by default whole column
+   */
+  markDirty(type: 'header' | 'values' | 'all' = 'all') {
+    switch (type) {
+      case 'header':
+        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY]);
+      case 'values':
+        return this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+      default:
+        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+    }
   }
 }

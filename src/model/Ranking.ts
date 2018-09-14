@@ -539,7 +539,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   insert(col: Column, index: number = this.columns.length) {
     this.columns.splice(index, 0, col);
-    col.parent = this;
+    col.attach(this);
     this.forward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, NumberColumn.EVENT_FILTER_CHANGED));
     col.on(`${Ranking.EVENT_FILTER_CHANGED}.order`, this.dirtyOrder);
 
@@ -638,7 +638,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       newGrouping.splice(isGroupColumn, 1);
     }
 
-    col.parent = null;
+    col.detach();
     this.columns.splice(i, 1);
 
     this.fire([Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, i);
@@ -669,7 +669,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
     this.columns.forEach((col) => {
       this.unforward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, NumberColumn.EVENT_FILTER_CHANGED));
-      col.parent = null;
+      col.detach();
     });
     const removed = this.columns.splice(0, this.columns.length);
     this.fire([Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], removed);
@@ -706,6 +706,21 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   get fqid() {
     return this.id;
+  }
+
+  /**
+   * marks the header, values, or both as dirty such that the values are reevaluated
+   * @param type specify in more detail what is dirty, by default whole column
+   */
+  markDirty(type: 'header' | 'values' | 'all' = 'all') {
+    switch (type) {
+      case 'header':
+        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY]);
+      case 'values':
+        return this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+      default:
+        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+    }
   }
 }
 

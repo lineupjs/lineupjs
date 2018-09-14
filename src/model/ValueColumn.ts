@@ -107,7 +107,6 @@ export default class ValueColumn<T> extends Column {
     return super.getRenderer();
   }
 
-
   /**
    * patch the dump such that the loaded attribute is defined (for lazy loading columns)
    * @param toDescRef
