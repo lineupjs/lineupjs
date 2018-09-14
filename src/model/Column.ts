@@ -420,6 +420,20 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
+   * called when the columns added to a ranking
+   */
+  attach(parent: IColumnParent)  {
+    this.parent = parent;
+  }
+
+  /**
+   * called when the column is removed from the ranking
+   */
+  detach() {
+    this.parent = null;
+  }
+
+  /**
    * inserts the given column after itself
    * @param col the column to insert
    * @returns {boolean} was successful
