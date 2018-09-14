@@ -707,6 +707,21 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   get fqid() {
     return this.id;
   }
+
+  /**
+   * marks the header, values, or both as dirty such that the values are reevaluated
+   * @param type specify in more detail what is dirty, by default whole column
+   */
+  markDirty(type: 'header' | 'values' | 'all' = 'all') {
+    switch (type) {
+      case 'header':
+        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY]);
+      case 'values':
+        return this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+      default:
+        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+    }
+  }
 }
 
 function equalCriteria(a: ISortCriteria[], b: ISortCriteria[]) {
