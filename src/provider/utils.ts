@@ -104,7 +104,7 @@ export function deriveColors(columns: IColumnDesc[]) {
   columns.forEach((col: any) => {
     switch (col.type) {
       case 'number':
-        col.color = colors() || Column.DEFAULT_COLOR;
+        col.color = col.color || colors() || Column.DEFAULT_COLOR;
         break;
     }
   });
