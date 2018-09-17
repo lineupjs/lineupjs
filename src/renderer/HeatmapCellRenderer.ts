@@ -30,7 +30,6 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
           renderMissingValue(ctx, cellDimension, height, x, 0);
           return;
         }
-        ctx.beginPath();
         ctx.fillStyle = toHeatMapColor(d, item, col, imposer);
         ctx.fillRect(x, 0, cellDimension, height);
       });
