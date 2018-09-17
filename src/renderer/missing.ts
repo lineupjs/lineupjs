@@ -4,8 +4,8 @@ import {CANVAS_HEIGHT, DASH, cssClass} from '../styles';
 
 export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
 
-  const dashX = Math.max(0, (width - x - DASH.width) / 2); // center horizontally
-  const dashY = Math.max(0, (height - y - DASH.height) / 2); // center vertically
+  const dashX = Math.max(0, x + (width - DASH.width) / 2); // center horizontally
+  const dashY = Math.max(0, y + (height - DASH.height) / 2); // center vertically
   ctx.fillStyle = DASH.color;
   ctx.fillRect(dashX, dashY, Math.min(width, DASH.width), Math.min(height, DASH.height));
 }
