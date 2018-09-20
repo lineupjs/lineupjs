@@ -313,7 +313,8 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   update(rankings: EngineRanking[] = this.rankings) {
-    rankings = rankings.filter((d) => !d.hidden);
+    // visible and has parent = part of dom
+    rankings = rankings.filter((d) => !d.hidden && d.body.parentElement!);
     if (rankings.length === 0) {
       return;
     }
