@@ -773,6 +773,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     }, rowContext);
 
+    if (!this.bodyScroller) { // somehow not part of dom
+      return;
+    }
     return super.recreate(this.roptions.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
   }
 
@@ -857,6 +860,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return false;
     }
     const scroller = this.bodyScroller;
+    if (!scroller) {
+      return false;
+    }
     const top = scroller.scrollTop;
     scroller.scrollTop = Math.min(pos, scroller.scrollHeight - scroller.clientHeight);
     this.onScrolledVertically(scroller.scrollTop, scroller.clientHeight, top < scroller.scrollTop);
