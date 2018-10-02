@@ -1,7 +1,7 @@
 const resolve = require('path').resolve;
 const pkg = require('./package.json');
 const webpack = require('webpack');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 const now = new Date();
@@ -53,8 +53,8 @@ module.exports = (env, options) => {
       new MiniCssExtractPlugin({
         // Options similar to the same options in webpackOptions.output
         // both options are optional
-        filename: dev ? '[name].css' : '[name].[hash].css',
-        chunkFilename: dev ? '[id].css' : '[id].[hash].css',
+        filename: '[name].css',
+        chunkFilename: '[id].css'
       }),
       new ForkTsCheckerWebpackPlugin({
         checkSyntacticErrors: true
