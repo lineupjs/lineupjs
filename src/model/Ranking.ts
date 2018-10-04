@@ -123,9 +123,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   };
 
   readonly toCompareValue = (row: IDataRow) => {
-    if (this.sortCriteria.length === 0) {
-      return row.i;
-    }
     let vs : (number | string | null)[] = [];
     vs = vs.concat(...this.sortCriteria.map((d) => d.col.toCompareValue(row)));
     vs.push(row.i);
@@ -146,9 +143,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   };
 
   readonly toGroupCompareValue = (group: IGroupData) => {
-    if (this.groupSortCriteria.length === 0) {
-      return group.name.toLowerCase();
-    }
     let vs : (number | string | null)[] = [];
     vs = vs.concat(...this.groupSortCriteria.map((d) => d.col.toCompareGroupValue(group)));
     vs.push(group.name.toLowerCase());

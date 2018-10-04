@@ -8,6 +8,13 @@ import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 
+interface ISortHelper {
+  v: any;
+  i: number;
+  group: IGroup;
+  sort: (string | number | null)[];
+}
+
 
 export interface ILocalDataProviderOptions {
   /**
@@ -84,7 +91,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return this.data.length;
   }
 
-
   protected getMaxGroupColumns() {
     return this.options.maxGroupColumns;
   }
@@ -143,7 +149,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return [];
     }
     //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({v: r, i, group: <IGroup | null>null}));
+    let helper: ISortHelper[] = this._data.map((r, i) => ({v: r, i, group: defaultGroup, sort: [], sortGroup: []}));
 
     //do the optional filtering step
     let filter: ((d: IDataRow) => boolean) | null = null;
@@ -165,8 +171,20 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     //create the groups for each row
-    helper.forEach((r) => r.group = ranking.grouper(r) || defaultGroup);
-    if ((new Set<string>(helper.map((r) => r.group!.name))).size === 1) {
+    let firstGroup: IGroup | null = null;
+    let singleGroupOnly = true;
+    for (const r of helper) {
+      r.group = ranking.grouper(r) || defaultGroup;
+      if (singleGroupOnly) {
+        if (firstGroup === null) {
+          firstGroup = r.group;
+        } else if (firstGroup !== r.group) {
+          singleGroupOnly = false;
+        }
+      }
+      r.sort = ranking.toCompareValue(r);
+    }
+    if (singleGroupOnly) {
       const group = helper[0].group;
       //no need to split
       //sort by the ranking column
