@@ -44,6 +44,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
   }
   if (Array.isArray(value)) {
     base.type = 'strings';
+    base.dataLength = value.length;
     const vs = value[0];
     if (typeof vs === 'number') {
       base.type = 'numbers';
