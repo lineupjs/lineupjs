@@ -18,6 +18,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   create(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     return {
       template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
+              <div class="${cssClass('hover-only')} ${cssClass('bar-label')}"></div>
               <div class="lu-hover-only"></div>
           </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
