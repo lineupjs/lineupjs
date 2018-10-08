@@ -1,29 +1,24 @@
-import {computeStats, IStatistics, round} from '../../internal';
+import {round} from '../../internal';
 import {
-  IMapAbleColumn, IMappingFunction, isMissingValue, noNumberFilter, ScaleMappingFunction,
+  IMapAbleColumn, IMappingFunction, isMissingValue, ScaleMappingFunction,
   ScriptMappingFunction,
   isMapAbleColumn
 } from '../../model';
-import {isDummyNumberFilter} from '../../model/internal';
-import {ISummaryRenderer} from '../../renderer/interfaces';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
-import {updateFilterState} from './utils';
 
 /** @internal */
-export default class MappingsFilterDialog extends ADialog {
+export default class MappingDialog extends ADialog {
 
   private scale: IMappingFunction;
 
   private readonly mappingLines: MappingLine[] = [];
   private rawDomain: [number, number];
 
-  private summary: ISummaryRenderer;
   private readonly data: Promise<number[]>;
   private readonly idPrefix: string;
   private loadedData: number[] | null = null;
-  private hist: IStatistics | null = null;
 
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
@@ -45,7 +40,6 @@ export default class MappingsFilterDialog extends ADialog {
     this.scale = this.column.getMapping().clone();
     const domain = this.scale.domain;
     this.rawDomain = [domain[0], domain[domain.length - 1]];
-    this.summary = ctx.summaryRenderer(this.column, true);
 
     this.data = Promise.resolve(ctx.provider.mappingSample(column));
   }
@@ -89,8 +83,7 @@ export default class MappingsFilterDialog extends ADialog {
         ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
       </select>
       </div>
-        ${this.summary.template}
-        <strong data-toggle>Mapping Details</strong>
+        <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
         <div class="lu-details"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
         <strong class="lu-details" style="text-align: center">Input Domain (min - max)</strong>
         <svg class="lu-details" viewBox="0 0 106 66">
@@ -106,20 +99,6 @@ export default class MappingsFilterDialog extends ADialog {
           <strong>Custom Mapping Script</strong>
           <textarea></textarea>
         </div>`);
-
-    // patch in lu-summary and renderer
-    const summary = <HTMLElement>node.children[1];
-    summary.classList.add('lu-summary');
-    summary.dataset.interactive = '';
-    summary.dataset.renderer = this.column.getSummaryRenderer();
-
-
-    this.find('[data-toggle]').onclick = (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-      const elem = (<HTMLElement>evt.currentTarget).dataset;
-      elem.toggle = elem.toggle === 'open' ? '' : 'open';
-    };
 
     const g = <SVGGElement>node.querySelector('.lu-details > g');
 
@@ -199,15 +178,13 @@ export default class MappingsFilterDialog extends ADialog {
         if (!this.loadedData) {
           return;
         }
-        this.applyMapping(this.scale, this.column.getFilter());
-        this.updateSummary(true);
+        this.applyMapping(this.scale);
         this.updateLines();
       });
     }
 
     this.data.then((values) => {
       this.loadedData = values;
-      this.updateSummary();
 
       Array.from(values).forEach((v) => {
         if (!isMissingValue(v)) {
@@ -215,27 +192,6 @@ export default class MappingsFilterDialog extends ADialog {
         }
       });
     });
-  }
-
-  private updateSummary(recreate = false) {
-    if (!this.loadedData) {
-      return;
-    }
-    this.hist = computeStats(this.loadedData, (v) => v, (v) => isMissingValue(v), this.rawDomain);
-
-    if (recreate) {
-      // replace the summary
-      const summaryNode = this.find('.lu-summary');
-      this.summary = this.ctx.summaryRenderer(this.column, true);
-      summaryNode.insertAdjacentHTML('afterend', this.summary.template);
-      const summary = <HTMLElement>summaryNode.nextElementSibling!;
-      summaryNode.remove();
-      summary.classList.add('lu-summary');
-      summary.dataset.interactive = '';
-      summary.dataset.renderer = this.column.getSummaryRenderer();
-    }
-
-    this.summary.update(this.find('.lu-summary'), this.hist);
   }
 
   private update() {
@@ -259,19 +215,15 @@ export default class MappingsFilterDialog extends ADialog {
     });
   }
 
-  private applyMapping(newScale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean}) {
-    updateFilterState(this.attachment, this.column, !isDummyNumberFilter(filter));
-
+  private applyMapping(newScale: IMappingFunction) {
     this.column.setMapping(newScale);
-    this.column.setFilter(filter);
   }
 
   protected reset() {
     this.scale = this.column.getOriginalMapping();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
-    this.applyMapping(this.scale, noNumberFilter());
+    this.applyMapping(this.scale);
     this.update();
-    this.updateSummary(true);
     this.updateLines();
   }
 
@@ -283,9 +235,8 @@ export default class MappingsFilterDialog extends ADialog {
     const ref = <IMapAbleColumn>r.find(columnId)!;
     this.scale = ref.getMapping().clone();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
-    this.applyMapping(this.scale, ref.getFilter());
+    this.applyMapping(this.scale);
     this.update();
-    this.updateSummary(true);
     this.updateLines();
   }
 
@@ -325,7 +276,7 @@ export default class MappingsFilterDialog extends ADialog {
       this.scale.domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
       this.scale.range = this.mappingLines.map((d) => d.range / 100);
     }
-    this.applyMapping(this.scale, this.column.getFilter());
+    this.applyMapping(this.scale);
     return true;
   }
 }
