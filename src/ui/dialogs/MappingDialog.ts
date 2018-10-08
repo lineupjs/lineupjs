@@ -31,7 +31,7 @@ export default class MappingDialog extends ADialog {
     dialog: this.dialog
   };
 
-  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
+  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
     super(dialog, {
       fullDialog: true
     });
