@@ -80,7 +80,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       return l;
     }
     const weights = this.getWeights();
-    return c.map((c, i) => `${c.label} (${round(100 * weights[i], 1)})%`).join(' + ');
+    return c.map((c, i) => `${c.label} (${round(100 * weights[i], 1)}%)`).join(' + ');
   }
 
   protected createEventList() {
