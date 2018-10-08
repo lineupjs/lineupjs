@@ -278,7 +278,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true }),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
-  editMapping: uiDialog('Mapping &hellip;', MappingDialog, (ctx) => [ctx]),
+  editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx]),
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
   editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], { shortcut: true }),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx]),
