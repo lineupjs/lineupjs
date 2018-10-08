@@ -39,7 +39,7 @@ export declare function mappingChanged(previous: IMappingFunction, current: IMap
 export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn {

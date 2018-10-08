@@ -16,14 +16,6 @@
   &[data-scale=script] .#{$lu_css_prefix}-dialog-mapper-script {
     display: block;
   }
-
-  [data-toggle=open] ~ .#{$lu_css_prefix}-dialog-details {
-    display: block;
-  }
-
-  > .#{$lu_css_prefix}-dialog-mapper-details {
-    display: none;
-  }
 }
 
 div.#{$lu_css_prefix}-dialog-mapper-script {
@@ -35,22 +27,6 @@ div.#{$lu_css_prefix}-dialog-mapper-script {
     width: 98%;
     font-size: 9pt;
     display: block;
-  }
-}
-
-.#{$lu_css_prefix}-dialog-mapper-toggle {
-  margin-top: 1em;
-  cursor: pointer;
-
-  &::before {
-    @include lu_icons();
-
-    content: $lu_icon_caret_right;
-    width: 0.8em;
-  }
-
-  &[data-toggle=open]::before {
-    content: $lu_icon_caret_down;
   }
 }
 
@@ -113,9 +89,5 @@ g.#{$lu_css_prefix}-dialog-mapper-mapping {
 }
 
 .#{$lu_css_prefix}-dialog-mapper[data-scale=script] div.#{$lu_css_prefix}-dialog-mapper-script {
-  display: block;
-}
-
-.#{$lu_css_prefix}-dialog-mapper [data-toggle=open] ~ .#{$lu_css_prefix}-dialog-mapper-details {
   display: block;
 }

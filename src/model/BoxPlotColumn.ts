@@ -39,7 +39,7 @@ export declare function sortMethodChanged(previous: ESortMethod, current: ESortM
 export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
 
 
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
 @Category('array')
 @SortByDefault('descending')

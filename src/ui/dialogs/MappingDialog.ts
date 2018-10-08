@@ -1,30 +1,25 @@
-import {computeStats, IStatistics, round} from '../../internal';
+import {round} from '../../internal';
 import {
-  IMapAbleColumn, IMappingFunction, isMissingValue, noNumberFilter, ScaleMappingFunction,
+  IMapAbleColumn, IMappingFunction, isMissingValue, ScaleMappingFunction,
   ScriptMappingFunction,
   isMapAbleColumn
 } from '../../model';
-import {isDummyNumberFilter} from '../../model/internal';
-import {ISummaryRenderer} from '../../renderer/interfaces';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
-import {updateFilterState} from './utils';
 import {cssClass} from '../../styles';
 
 /** @internal */
-export default class MappingsFilterDialog extends ADialog {
+export default class MappingDialog extends ADialog {
 
   private scale: IMappingFunction;
 
   private readonly mappingLines: MappingLine[] = [];
   private rawDomain: [number, number];
 
-  private summary: ISummaryRenderer;
   private readonly data: Promise<number[]>;
   private readonly idPrefix: string;
   private loadedData: number[] | null = null;
-  private hist: IStatistics | null = null;
 
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
@@ -46,7 +41,6 @@ export default class MappingsFilterDialog extends ADialog {
     this.scale = this.column.getMapping().clone();
     const domain = this.scale.domain;
     this.rawDomain = [domain[0], domain[domain.length - 1]];
-    this.summary = ctx.summaryRenderer(this.column, true);
 
     this.data = Promise.resolve(ctx.provider.mappingSample(column));
   }
@@ -90,10 +84,8 @@ export default class MappingsFilterDialog extends ADialog {
         ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
       </select>
       </div>
-        ${this.summary.template}
-        <strong class="${cssClass('dialog-mapper-toggle')}" data-toggle>Mapping Details</strong>
-        <div class="${cssClass('dialog-mapper-details')}"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
-        <strong class="${cssClass('dialog-mapper-details')}" style="text-align: center">Input Domain (min - max)</strong>
+        <div><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
+        <strong style="text-align: center">Input Domain (min - max)</strong>
         <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
            <g transform="translate(3,3)">
               <line x2="100"></line>
@@ -102,25 +94,11 @@ export default class MappingsFilterDialog extends ADialog {
               <rect y="36" width="100" height="10"></rect>
            </g>
         </svg>
-        <strong class="${cssClass('dialog-mapper-details')}" style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
+        <strong style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
         <div class="${cssClass('dialog-mapper-script')}">
           <strong>Custom Mapping Script</strong>
           <textarea></textarea>
         </div>`);
-
-    // patch in lu-summary and renderer
-    const summary = <HTMLElement>node.children[1];
-    summary.classList.add(cssClass('summary'), cssClass('renderer'));
-    summary.dataset.interactive = '';
-    summary.dataset.renderer = this.column.getSummaryRenderer();
-
-
-    this.find('[data-toggle]').onclick = (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-      const elem = (<HTMLElement>evt.currentTarget).dataset;
-      elem.toggle = elem.toggle === 'open' ? '' : 'open';
-    };
 
     const g = <SVGGElement>node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
 
@@ -200,15 +178,13 @@ export default class MappingsFilterDialog extends ADialog {
         if (!this.loadedData) {
           return;
         }
-        this.applyMapping(this.scale, this.column.getFilter());
-        this.updateSummary(true);
+        this.applyMapping(this.scale);
         this.updateLines();
       });
     }
 
     this.data.then((values) => {
       this.loadedData = values;
-      this.updateSummary();
 
       Array.from(values).forEach((v) => {
         if (!isMissingValue(v)) {
@@ -216,27 +192,6 @@ export default class MappingsFilterDialog extends ADialog {
         }
       });
     });
-  }
-
-  private updateSummary(recreate = false) {
-    if (!this.loadedData) {
-      return;
-    }
-    this.hist = computeStats(this.loadedData, (v) => v, (v) => isMissingValue(v), this.rawDomain);
-
-    if (recreate) {
-      // replace the summary
-      this.summary = this.ctx.summaryRenderer(this.column, true);
-      const summary = this.ctx.asElement(this.summary.template);
-      summary.classList.add(cssClass('summary'));
-      summary.dataset.interactive = '';
-      summary.dataset.renderer = this.column.getSummaryRenderer();
-
-      const old = this.find(`.${cssClass('summary')}`);
-      old.parentElement!.replaceChild(summary, old);
-    }
-
-    this.summary.update(this.find(`.${cssClass('summary')}`), this.hist);
   }
 
   private update() {
@@ -260,19 +215,15 @@ export default class MappingsFilterDialog extends ADialog {
     });
   }
 
-  private applyMapping(newScale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean}) {
-    updateFilterState(this.attachment, this.column, !isDummyNumberFilter(filter));
-
+  private applyMapping(newScale: IMappingFunction) {
     this.column.setMapping(newScale);
-    this.column.setFilter(filter);
   }
 
   protected reset() {
     this.scale = this.column.getOriginalMapping();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
-    this.applyMapping(this.scale, noNumberFilter());
+    this.applyMapping(this.scale);
     this.update();
-    this.updateSummary(true);
     this.updateLines();
   }
 
@@ -284,9 +235,8 @@ export default class MappingsFilterDialog extends ADialog {
     const ref = <IMapAbleColumn>r.find(columnId)!;
     this.scale = ref.getMapping().clone();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
-    this.applyMapping(this.scale, ref.getFilter());
+    this.applyMapping(this.scale);
     this.update();
-    this.updateSummary(true);
     this.updateLines();
   }
 
@@ -326,7 +276,7 @@ export default class MappingsFilterDialog extends ADialog {
       this.scale.domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
       this.scale.range = this.mappingLines.map((d) => d.range / 100);
     }
-    this.applyMapping(this.scale, this.column.getFilter());
+    this.applyMapping(this.scale);
     return true;
   }
 }

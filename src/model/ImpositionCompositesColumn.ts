@@ -24,7 +24,7 @@ export function createImpositionsDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class ImpositionCompositesColumn extends CompositeColumn implements INumbersColumn {

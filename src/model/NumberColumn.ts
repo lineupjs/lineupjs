@@ -61,7 +61,7 @@ export declare function groupingChanged(previous: number[], current: number[]): 
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('groupBy', 'sortGroupBy', 'filterMapped', 'colorMapped')
+@toolbar('groupBy', 'sortGroupBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sortGroup', 'sortNumber')
 @dialogAddons('group', 'groupNumber')
 @Category('number')

@@ -24,7 +24,7 @@ export function createImpositionBoxPlotDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
 @SortByDefault('descending')
 export default class ImpositionBoxPlotColumn extends CompositeColumn implements IBoxPlotColumn {
