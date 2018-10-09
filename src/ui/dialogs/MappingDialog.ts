@@ -83,7 +83,6 @@ export default class MappingDialog extends ADialog {
         ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
       </select>
       </div>
-        <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
         <div class="lu-details"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
         <strong class="lu-details" style="text-align: center">Input Domain (min - max)</strong>
         <svg class="lu-details" viewBox="0 0 106 66">

@@ -78,6 +78,10 @@
     content: $lu_icon_brush;
   }
 
+  &[title^='Data Mapping']::before {
+    content: $lu_icon_sliders;
+  }
+
   &[title^='Edit Pattern']::before {
     content: $lu_icon_external_link;
   }
