@@ -30,30 +30,6 @@
       display: block;
     }
 
-    strong[data-toggle] {
-      margin-top: 1em;
-      cursor: pointer;
-
-      &::before {
-        @include lu_icons();
-
-        content: $lu_icon_caret_right;
-        width: 0.8em;
-      }
-
-      &[data-toggle=open]::before {
-        content: $lu_icon_caret_down;
-      }
-    }
-
-    .#{$lu_css_prefix}-details {
-      display: none;
-    }
-
-    [data-toggle=open] ~ .#{$lu_css_prefix}-details {
-      display: block;
-    }
-
     svg {
       shape-rendering: geometricprecision;
       height: 25em * 6 / 10;
