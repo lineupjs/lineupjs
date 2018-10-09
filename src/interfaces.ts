@@ -83,6 +83,12 @@ export interface ILineUpOptions {
   hierarchyIndicator: boolean;
 
   /**
+   * enable selecting rows with the cursor arrows and space key
+   * @default false
+   */
+  cursorNavigation: boolean;
+
+  /**
    * option to specify the default slope graph mode
    * @default 'item'
    */

@@ -19,6 +19,7 @@ export function defaultOptions(): ITaggleOptions {
     hierarchyIndicator: true,
     defaultSlopeGraphMode: 'item',
     overviewMode: false,
+    cursorNavigation: false,
 
     rowHeight: 18,
     groupHeight: 40,

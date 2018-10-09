@@ -33,6 +33,15 @@ export default class LineUpBuilder {
   }
 
   /**
+   * option to enable cursor (arrow keys + space) navigation
+   * @default false
+   */
+  cursorNavigation() {
+    this.options.cursorNavigation = true;
+    return this;
+  }
+
+  /**
    * option to enable/disable the side panel
    * @param {boolean} enable enable flag
    * @param {boolean} collapsed whether collapsed by default
