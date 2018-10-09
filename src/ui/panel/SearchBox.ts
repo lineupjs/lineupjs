@@ -122,7 +122,6 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private select(item: T) {
     this.search.value = ''; // reset
     this.search.blur();
-    this.filterResults(this.body, '');
     this.fire(SearchBox.EVENT_SELECT, item);
   }
 
@@ -175,6 +174,8 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
   private blur() {
     this.search.value = '';
+    // clear filter
+    this.filterResults(this.body, '');
     this.node.classList.remove('lu-search-open');
   }
 
