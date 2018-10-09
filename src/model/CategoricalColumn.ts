@@ -2,11 +2,11 @@ import {Category, toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {
-  compareCategory,
+  compareCategory, groupCompareCategory,
   ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
   isEqualCategoricalFilter, isCategoryIncluded, toCategories, toCategory,
 } from './ICategoricalColumn';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {missingGroup} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
 
@@ -20,7 +20,7 @@ export declare function filterChanged(previous: ICategoricalFilter | null, curre
 /**
  * column for categorical values
  */
-@toolbar('group', 'groupBy', 'filterCategorical')
+@toolbar('group', 'groupBy', 'sortGroupBy', 'filterCategorical')
 @Category('categorical')
 export default class CategoricalColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
@@ -177,6 +177,10 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       return missingGroup;
     }
     return {name: cat.label, color: cat.color};
+  }
+
+  groupCompare(a: IGroupData, b: IGroupData): number {
+    return groupCompareCategory(a.rows, b.rows, this);
   }
 
   getGroupRenderer() {

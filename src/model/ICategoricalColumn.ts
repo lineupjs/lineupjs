@@ -72,6 +72,61 @@ export function compareCategory(a: ICategory | null, b: ICategory | null) {
   return a.value - b.value;
 }
 
+function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICategory | null, count: number} {
+  const hist = new Map<ICategory | null, number>();
+
+  for (const row of rows) {
+    const cat = col.getCategory(row);
+    hist.set(cat, (hist.get(cat) || 0) + 1);
+  }
+
+  if (hist.size === 0) {
+    return {
+      cat: null,
+      count: 0
+    };
+  }
+  let topCat: ICategory | null = null;
+  let topCount = 0;
+  hist.forEach((count, cat) => {
+    if (count > topCount) {
+      topCat = cat;
+      topCount = count;
+    }
+  });
+  return {
+    cat: topCat,
+    count: topCount
+  };
+}
+
+/**
+ * sort group by most frequent category or if same without count desc
+ */
+export function groupCompareCategory(a: IDataRow[], b: IDataRow[], col: ICategoricalColumn) {
+  if (a.length === 0) {
+    return b.length === 0 ? 0 : FIRST_IS_MISSING;
+  }
+  if (b.length === 0) {
+    return -FIRST_IS_MISSING;
+  }
+
+  const aMostFrequent = findMostFrequent(a, col);
+  const bMostFrequent = findMostFrequent(b, col);
+
+  if (aMostFrequent.cat === null) {
+    return bMostFrequent.cat === null ? 0 : FIRST_IS_MISSING;
+  }
+  if (bMostFrequent.cat === null) {
+    return -FIRST_IS_MISSING;
+  }
+
+  if (aMostFrequent.cat === bMostFrequent.cat) {
+    return bMostFrequent.count - aMostFrequent.count; // by count desc
+  }
+  return aMostFrequent.cat.value - bMostFrequent.cat.value;
+}
+
 export function toCategories(desc: ICategoricalDesc) {
   if (!desc.categories) {
     return [];
