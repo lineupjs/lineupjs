@@ -68,7 +68,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 export function updateHeader(node: HTMLElement, col: Column) {
   const label = <HTMLElement>node.querySelector('.lu-label')!;
   label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label;
-  node.title = col.label;
+  node.title = col.description ? `${col.label}\n${col.description}` : col.label;
   node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;
   node.dataset.typeCat = categoryOf(col).name;
