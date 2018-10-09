@@ -133,6 +133,40 @@ export default class EngineRenderer extends AEventDispatcher {
         });
     }
 
+    if (this.options.cursorNavigation) {
+
+      document.addEventListener('keydown', (evt) => {
+        console.log(evt);
+      });
+      const body = (<HTMLElement>this.node.querySelector('.le-body'));
+      body.focus();
+      body.addEventListener('keydown', (evt) => {
+        if (evt.defaultPrevented) {
+          return;
+        }
+        switch (evt.key) {
+          case 'Down': // IE specific value
+          case 'ArrowDown':
+            evt.preventDefault();
+            evt.stopPropagation();
+            this.highlightNextRow();
+            break;
+          case 'Up': // IE specific value
+          case 'ArrowUp':
+            evt.preventDefault();
+            evt.stopPropagation();
+            this.highlightPreviousRow();
+            break;
+          case 'Enter':
+          case ' ':
+            evt.preventDefault();
+            evt.stopPropagation();
+            this.toggleHighlightedRow(evt.ctrlKey);
+            break;
+        }
+      });
+    }
+
     this.initProvider(data);
   }
 
@@ -396,6 +430,56 @@ export default class EngineRenderer extends AEventDispatcher {
       return found[0]!;
     }
     return this.rankings[0].scrollIntoView(dataIndex);
+  }
+
+  private highlightNextRow() {
+    const highlight = this.getHighlight();
+    if (highlight < 0 && this.rankings.length === 0) {
+      return;
+    }
+    const ranking = this.rankings[0].ranking;
+    const order = ranking.getOrder();
+    if (highlight < 0) {
+      return this.setHighlight(order[0], true);
+    }
+    const pos = order.indexOf(highlight);
+    if (pos < 0) {
+      return this.setHighlight(order[0], true);
+    }
+    if (pos === order.length - 1) {
+      // was last one
+      return this.setHighlight(-1, false);
+    }
+    return this.setHighlight(order[pos + 1], false);
+  }
+
+  private highlightPreviousRow() {
+    const highlight = this.getHighlight();
+    if (highlight < 0 && this.rankings.length === 0) {
+      return;
+    }
+    const ranking = this.rankings[0].ranking;
+    const order = ranking.getOrder();
+    if (highlight < 0) {
+      return this.setHighlight(order[order.length - 1], true);
+    }
+    const pos = order.indexOf(highlight);
+    if (pos < 0) {
+      return this.setHighlight(order[order.length - 1], true);
+    }
+    if (pos === 0) {
+      // was last one
+      return this.setHighlight(-1, false);
+    }
+    return this.setHighlight(order[pos - 1], false);
+  }
+
+  private toggleHighlightedRow(additional?: boolean) {
+    const highlight = this.getHighlight();
+    if (highlight < 0) {
+      return;
+    }
+    return this.data.toggleSelection(highlight, additional);
   }
 
   setHighlightToNearest(dataIndices: number[], scrollIntoView: boolean) {
