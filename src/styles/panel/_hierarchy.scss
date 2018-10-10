@@ -26,7 +26,7 @@
 
 .#{$lu_css_prefix}-group-hierarchy {
   &::before {
-    content: 'Grouping hierarchy';
+    content: 'Grouping Hierarchy';
   }
 
   i[title=Group] {
@@ -36,13 +36,13 @@
 
 .#{$lu_css_prefix}-sort-hierarchy {
   &::before {
-    content: 'Sorting hierarchy';
+    content: 'Sorting Hierarchy';
   }
 }
 
 .#{$lu_css_prefix}-sort-groups-hierarchy {
   &::before {
-    content: 'Group Sorting hierarchy';
+    content: 'Group Sorting Hierarchy';
   }
 }
 
