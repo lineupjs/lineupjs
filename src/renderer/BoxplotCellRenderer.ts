@@ -155,7 +155,7 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   const outliers = <HTMLElement[]>Array.from(n.children).slice(1);
   outliers.slice(data.outlier.length).forEach((v) => v.remove());
   for (let i = outliers.length; i < data.outlier.length; ++i) {
-    const p = n.ownerDocument.createElement('div');
+    const p = n.ownerDocument!.createElement('div');
     p.classList.add(cssClass('boxplot-outlier'));
     outliers.push(p);
     n.appendChild(p);

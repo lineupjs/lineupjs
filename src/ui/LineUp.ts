@@ -31,7 +31,7 @@ export default class LineUp extends ALineUp {
 
     this.renderer = new EngineRenderer(data, this.node, this.options);
     if (this.options.sidePanel) {
-      this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
+      this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument!, {
         collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true,
         hierarchy: this.options.hierarchyIndicator
       });

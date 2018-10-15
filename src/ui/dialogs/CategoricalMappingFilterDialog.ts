@@ -45,9 +45,9 @@ export default class CategoricalMappingFilterDialog extends ADialog {
           </div>`).join('')}
     </div>`);
     // selectAll
-    this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: HTMLElement) {
-      const input = <HTMLInputElement>this;
-      forEach(node, '[data-cat]', (n: HTMLInputElement) => n.checked = input.checked);
+    const selectAll = this.findInput('input[type=checkbox]:not([data-cat])');
+    selectAll.onchange = () => {
+      forEach(node, '[data-cat]', (n: HTMLInputElement) => n.checked = selectAll.checked);
     };
     this.forEach('input[type=number]', (d: HTMLInputElement) => {
       d.oninput = () => {

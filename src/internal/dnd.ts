@@ -1,7 +1,7 @@
 import {cssClass} from '../styles';
 
 export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
-  const available: any = e.dataTransfer.types;
+  const available: any = e.dataTransfer!.types;
 
   /*
    * In Chrome datatransfer.types is an Array,
@@ -38,7 +38,7 @@ function isEdgeDnD(e: DragEvent) {
  * @internal
  */
 export function copyDnD(e: DragEvent) {
-  const dT = e.dataTransfer;
+  const dT = e.dataTransfer!;
   return Boolean((e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || (!dT.effectAllowed.match(/move/gi)));
 }
 
@@ -48,7 +48,7 @@ export function copyDnD(e: DragEvent) {
  * @internal
  */
 export function updateDropEffect(e: DragEvent) {
-  const dT = e.dataTransfer;
+  const dT = e.dataTransfer!;
   if (copyDnD(e)) {
     dT.dropEffect = 'copy';
   } else {
@@ -84,7 +84,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
   node.addEventListener('dragstart', (e) => {
     node.classList.add(cssClass('dragging'));
     const payload = onDragStart();
-    e.dataTransfer.effectAllowed = payload.effectAllowed;
+    e.dataTransfer!.effectAllowed = payload.effectAllowed;
 
     if (stopPropagation) {
       e.stopPropagation();
@@ -93,7 +93,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     const keys = Object.keys(payload.data);
     const allSucceded = keys.every((k) => {
       try {
-        e.dataTransfer.setData(k, payload.data[k]);
+        e.dataTransfer!.setData(k, payload.data[k]);
         return true;
       } catch (e) {
         return false;
@@ -104,7 +104,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     }
     //compatibility mode for edge
     const text = payload.data['text/plain'] || '';
-    e.dataTransfer.setData('text/plain', `${id}${text ? `: ${text}` : ''}`);
+    e.dataTransfer!.setData('text/plain', `${id}${text ? `: ${text}` : ''}`);
     dndTransferStorage.set(id, payload.data);
   });
   node.addEventListener('dragend', (e) => {
@@ -118,7 +118,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     }
 
     // remove all
-    const over = <HTMLElement>node.ownerDocument.querySelector(`.${cssClass('dragover')}`);
+    const over = <HTMLElement>node.ownerDocument!.querySelector(`.${cssClass('dragover')}`);
     if (over) {
       over.classList.remove(cssClass('dragover'));
     }
@@ -176,12 +176,12 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
       e.stopPropagation();
     }
     updateDropEffect(e);
-    const effect = <IDragEffect>e.dataTransfer.dropEffect;
+    const effect = <IDragEffect>e.dataTransfer!.dropEffect;
 
     node.classList.remove(cssClass('dragover'));
 
     if (isEdgeDnD(e)) {
-      const base = e.dataTransfer.getData('text/plain');
+      const base = e.dataTransfer!.getData('text/plain');
       const id = parseInt(base.indexOf(':') >= 0 ? base.substring(0, base.indexOf(':')) : base, 10);
       if (dndTransferStorage.has(id)) {
         const data = dndTransferStorage.get(id)!;
@@ -194,7 +194,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
       const data: any = {};
       //selects the data contained in the data transfer
       mimeTypes.forEach((mime) => {
-        const value = e.dataTransfer.getData(mime);
+        const value = e.dataTransfer!.getData(mime);
         if (value !== '') {
           data[mime] = value;
         }

@@ -119,7 +119,7 @@ export default class SidePanelRanking {
         return;
       }
 
-      const entry = new SidePanelEntryVis(col, this.ctx, node.ownerDocument);
+      const entry = new SidePanelEntryVis(col, this.ctx, node.ownerDocument!);
       node.appendChild(entry.node);
       this.entries.set(col.id, entry);
     });

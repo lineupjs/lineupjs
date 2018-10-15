@@ -49,7 +49,7 @@ export default class EngineRenderer extends AEventDispatcher {
   constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
-    this.node = parent.ownerDocument.createElement('main');
+    this.node = parent.ownerDocument!.createElement('main');
     this.node.id = this.idPrefix;
     // FIXME inline
     this.node.classList.toggle(cssClass('whole-hover'), options.expandLineOnHover);
@@ -62,18 +62,18 @@ export default class EngineRenderer extends AEventDispatcher {
       }
       return r;
     };
-    const dialogManager = new DialogManager(parent.ownerDocument);
+    const dialogManager = new DialogManager(parent.ownerDocument!);
 
     parent.appendChild(dialogManager.node);
     this.ctx = {
       idPrefix: this.idPrefix,
-      document: parent.ownerDocument,
+      document: parent.ownerDocument!,
       provider: data,
       dialogManager,
       toolbar: this.options.toolbar,
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
-      asElement: domElementCache(parent.ownerDocument),
+      asElement: domElementCache(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {
         const r = chooseRenderer(col, this.options.renderers);
         return r.create(col, this.ctx, statsOf(col), imposer);

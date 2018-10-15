@@ -83,7 +83,7 @@ export default class SlopeGraph implements ITableSection {
   private _mode: EMode = EMode.ITEM;
 
   constructor(public readonly header: HTMLElement, public readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer, options: Partial<ISlopeGraphOptions> = {}) {
-    this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.node = header.ownerDocument!.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add(cssClass('slopegraph-header'));
     this._mode = options.mode === EMode.BAND ? EMode.BAND : EMode.ITEM;
@@ -456,7 +456,7 @@ export default class SlopeGraph implements ITableSection {
         g.appendChild(elem);
         paths.push(elem);
       } else {
-        const path = g.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const path = g.ownerDocument!.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.onclick = (evt) => {
           // d3 style
           const s: ISlope = (<any>path).__data__;

@@ -39,9 +39,9 @@ export default class CategoricalFilterDialog extends ADialog {
         </div>`).join('')}
     </div>`);
     // selectAll
-    this.findInput('input:not([data-cat])').onchange = function (this: HTMLElement) {
-      const input = <HTMLInputElement>this;
-      forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = input.checked);
+    const selectAll = this.findInput('input:not([data-cat])');
+    selectAll.onchange =  () => {
+      forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = selectAll.checked);
     };
     node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing, this.dialog.idPrefix));
   }

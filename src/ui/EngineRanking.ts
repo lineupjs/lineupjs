@@ -311,7 +311,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (this.canvasPool.length > 0) {
       return this.canvasPool.pop()!;
     }
-    return this.body.ownerDocument.createElement('canvas');
+    return this.body.ownerDocument!.createElement('canvas');
   }
 
   private rowFlags(row: HTMLElement) {

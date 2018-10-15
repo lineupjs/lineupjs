@@ -37,7 +37,7 @@ export default class SelectionManager extends AEventDispatcher {
     const root = body.parentElement!.parentElement!;
     let hr = <HTMLHRElement>root.querySelector('hr');
     if (!hr) {
-      hr = root.ownerDocument.createElement('hr');
+      hr = root.ownerDocument!.createElement('hr');
       root.appendChild(hr);
     }
     this.hr = hr;
@@ -58,7 +58,7 @@ export default class SelectionManager extends AEventDispatcher {
       const startNode = this.start.node.classList.contains(row) ? this.start.node : <HTMLElement>this.start.node.closest(`.${row}`);
       // somehow on firefox the mouseUp will be triggered on the original node
       // thus search the node explicitly
-      const end = <HTMLElement>this.body.ownerDocument.elementFromPoint(evt.clientX, evt.clientY);
+      const end = <HTMLElement>this.body.ownerDocument!.elementFromPoint(evt.clientX, evt.clientY);
       const endNode = end.classList.contains(row) ? end : <HTMLElement>(end.closest(`.${row}`));
       this.start = null;
 

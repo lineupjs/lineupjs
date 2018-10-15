@@ -49,7 +49,7 @@ export function setText<T extends Node>(node: T, text?: string): T {
   //no performance boost if setting the text node directly
   //const textNode = <Text>node.firstChild;
   //if (textNode == null) {
-  //  node.appendChild(node.ownerDocument.createTextNode(text));
+  //  node.appendChild(node.ownerDocument!.createTextNode(text));
   //} else {
   //  textNode.data = text;
   //}
@@ -172,7 +172,7 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
   node.style.color = null;
   node.innerText = title;
 
-  const span = node.ownerDocument.createElement('span');
+  const span = node.ownerDocument!.createElement('span');
   span.classList.add(cssClass('gradient-text'));
   span.style.color = adapt;
   span.innerText = title;

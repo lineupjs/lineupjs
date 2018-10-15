@@ -35,7 +35,7 @@ export default class Taggle extends ALineUp {
     this.node.classList.add(cssClass(), cssClass('taggle'));
 
     this.renderer = new TaggleRenderer(data, this.node, this.options);
-    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
+    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument!, {
       collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true,
       hierarchy: this.options.hierarchyIndicator
     });
