@@ -9,8 +9,7 @@ import {
 import Ranking from '../model/Ranking';
 import ADataProvider from '../provider/ADataProvider';
 import {
-  chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, IImposer, IRenderContext, possibleGroupRenderer,
-  possibleRenderer, possibleSummaryRenderer
+  chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, IImposer, IRenderContext, getPossibleRenderer
 } from '../renderer';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
@@ -104,11 +103,7 @@ export default class EngineRenderer extends AEventDispatcher {
           summaryTemplate: null
         };
       },
-      getPossibleRenderer: (col: Column) => ({
-        item: possibleRenderer(col, this.options.renderers),
-        group: possibleGroupRenderer(col, this.options.renderers),
-        summary: possibleSummaryRenderer(col, this.options.renderers)
-      }),
+      getPossibleRenderer: (col: Column) => getPossibleRenderer(col, this.options.renderers, this.options.canRender),
       colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth()
     };
 

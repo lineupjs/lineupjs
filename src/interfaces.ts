@@ -1,8 +1,9 @@
-import {IGroupData, IGroupItem} from './model';
+import Column, {IGroupData, IGroupItem} from './model';
 import Ranking from './model/Ranking';
 import {IDataProvider} from './provider';
 import {ICellRendererFactory} from './renderer';
 import {IToolbarAction, IToolbarDialogAddon} from './ui';
+import {ERenderMode} from './renderer/interfaces';
 
 
 /**
@@ -143,6 +144,11 @@ export interface ILineUpOptions {
    * register custom renderer factories
    */
   renderers: {[type: string]: ICellRendererFactory};
+
+  /**
+   * custom check whether a given renderer can render the given column in the given mode
+   */
+  canRender: (renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean;
 
   /**
    * custom flags for optimization

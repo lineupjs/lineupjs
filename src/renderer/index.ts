@@ -96,27 +96,22 @@ export function chooseSummaryRenderer(col: Column, renderers: { [key: string]: I
   return r || defaultCellRenderer;
 }
 
-export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, mode: ERenderMode = ERenderMode.CELL): { type: string, label: string }[] {
-  const valid = Object.keys(renderers).filter((type) => {
-    const factory = renderers[type];
-    return factory.canRender(col, mode);
-  });
-  // TODO some magic to remove and order
+/**
+ * determined the list of possible renderers for a given colum
+ * @param col the column to resolve the renderers
+ * @param renderers map of possible renderers
+ * @param canRender optional custom canRender function
+ */
+export function getPossibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, canRender?: (renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
+  const all = Object.keys(renderers).filter(Boolean).map((type) => ({type, factory: renderers[type]}));
 
+  const item = all.filter(({factory}) => factory.canRender(col, ERenderMode.CELL) && (!canRender || canRender(factory, col, ERenderMode.CELL)));
+  const group = all.filter(({factory}) => factory.canRender(col, ERenderMode.GROUP) && (!canRender || canRender(factory, col, ERenderMode.GROUP)));
+  const summary = all.filter(({factory}) => factory.canRender(col, ERenderMode.SUMMARY) && (!canRender || canRender(factory, col, ERenderMode.SUMMARY)));
 
-  return valid.map((type) => {
-    const r = renderers[type];
-    return {
-      type,
-      label: mode === ERenderMode.CELL ? r.title : (mode === ERenderMode.GROUP ? r.groupTitle || r.title : r.summaryTitle || r.groupTitle || r.title)
-    };
-  });
-}
-
-export function possibleGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {
-  return possibleRenderer(col, renderers, ERenderMode.GROUP);
-}
-
-export function possibleSummaryRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {
-  return possibleRenderer(col, renderers, ERenderMode.SUMMARY);
+  return {
+    item: item.map(({type, factory}) => ({type, label: factory.title})),
+    group: group.map(({type, factory}) => ({type, label: factory.groupTitle || factory.title})),
+    summary: summary.map(({type, factory}) => ({type, label: factory.summaryTitle || factory.groupTitle || factory.title}))
+  };
 }

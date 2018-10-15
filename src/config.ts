@@ -9,6 +9,7 @@ export function defaultOptions(): ITaggleOptions {
   return {
     toolbar: Object.assign({}, toolbarActions),
     renderers: Object.assign({}, renderers),
+    canRender: () => true,
 
     labelRotation: 0,
     summaryHeader: true,

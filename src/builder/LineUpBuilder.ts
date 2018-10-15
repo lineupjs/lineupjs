@@ -1,7 +1,7 @@
 import {IDynamicHeight, ITaggleOptions} from '../interfaces';
-import {IGroupData, IGroupItem} from '../model';
+import Column, {IGroupData, IGroupItem} from '../model';
 import Ranking from '../model/Ranking';
-import {ICellRendererFactory} from '../renderer';
+import {ICellRendererFactory, ERenderMode} from '../renderer';
 import {IToolbarAction, IToolbarDialogAddon} from '../ui';
 
 /**
@@ -104,6 +104,14 @@ export default class LineUpBuilder {
    */
   registerRenderer(id: string, factory: ICellRendererFactory) {
     this.options.renderers![id] = factory;
+    return this;
+  }
+
+  /**
+   * custom function whether the given renderer should be allowed to render the give colum in the given mode
+   */
+  canRender(canRender: (renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
+    this.options.canRender = canRender;
     return this;
   }
 
