@@ -110,7 +110,7 @@ export default class LineUpBuilder {
   /**
    * custom function whether the given renderer should be allowed to render the give colum in the given mode
    */
-  canRender(canRender: (renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
+  canRender(canRender: (type: string, renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
     this.options.canRender = canRender;
     return this;
   }

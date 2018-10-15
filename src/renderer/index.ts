@@ -102,12 +102,12 @@ export function chooseSummaryRenderer(col: Column, renderers: { [key: string]: I
  * @param renderers map of possible renderers
  * @param canRender optional custom canRender function
  */
-export function getPossibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, canRender?: (renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
+export function getPossibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, canRender?: (type: string, renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
   const all = Object.keys(renderers).filter(Boolean).map((type) => ({type, factory: renderers[type]}));
 
-  const item = all.filter(({factory}) => factory.canRender(col, ERenderMode.CELL) && (!canRender || canRender(factory, col, ERenderMode.CELL)));
-  const group = all.filter(({factory}) => factory.canRender(col, ERenderMode.GROUP) && (!canRender || canRender(factory, col, ERenderMode.GROUP)));
-  const summary = all.filter(({factory}) => factory.canRender(col, ERenderMode.SUMMARY) && (!canRender || canRender(factory, col, ERenderMode.SUMMARY)));
+  const item = all.filter(({type, factory}) => factory.canRender(col, ERenderMode.CELL) && (!canRender || canRender(type, factory, col, ERenderMode.CELL)));
+  const group = all.filter(({type, factory}) => factory.canRender(col, ERenderMode.GROUP) && (!canRender || canRender(type, factory, col, ERenderMode.GROUP)));
+  const summary = all.filter(({type, factory}) => factory.canRender(col, ERenderMode.SUMMARY) && (!canRender || canRender(type, factory, col, ERenderMode.SUMMARY)));
 
   return {
     item: item.map(({type, factory}) => ({type, label: factory.title})),

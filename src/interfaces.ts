@@ -148,7 +148,7 @@ export interface ILineUpOptions {
   /**
    * custom check whether a given renderer can render the given column in the given mode
    */
-  canRender: (renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean;
+  canRender: (type: string, renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean;
 
   /**
    * custom flags for optimization
