@@ -154,7 +154,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
       return;
     }
     this.categories.forEach((d, i) => d.value = mapping[i] || 0);
-    this.fire([OrdinalColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getMapping());
+    this.fire([OrdinalColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getMapping());
   }
 
   isFiltered() {

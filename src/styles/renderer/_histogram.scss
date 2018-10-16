@@ -18,8 +18,9 @@
       margin: 0;
     }
   }
+}
 
-  > span {
+span.#{$lu_css_prefix}-mapping-hint {
     @include user_select_none();
 
     position: absolute;
@@ -46,7 +47,6 @@
       background-position: right top;
     }
   }
-}
 
 .#{$lu_css_prefix}-histogram-bin {
   flex: 1 1 auto;

@@ -17,6 +17,16 @@ const BOXPLOT = `<div title="">
   </div>
 </div>`;
 
+const MAPPED_BOXPLOT = `<div title="">
+  <div class="${cssClass('boxplot-whisker')}">
+    <div class="${cssClass('boxplot-box')}"></div>
+    <div class="${cssClass('boxplot-median')}"></div>
+  </div>
+  <span class="${cssClass('mapping-hint')}></span><span class="${cssClass('mapping-hint')}></span>
+</div>`;
+
+
+
 /** @internal */
 export function computeLabel(v: IBoxPlotData) {
   if (v == null) {
@@ -106,7 +116,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, imposer?: IImposer) {
     return {
-      template: BOXPLOT,
+      template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement, hist: IStatistics | null) => {
         if (hist == null || hist.count === 0) {
           n.classList.add(cssClass('missing'));
@@ -115,7 +125,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         n.classList.remove(cssClass('missing'));
         const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
 
-        renderDOMBoxPlot(n, hist, hist, sort, colorOf(col, null, imposer));
+        if (isMapAbleColumn(col)) {
+          const range = col.getRange();
+          Array.from(n.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
+        }
+
+        renderDOMBoxPlot(n, hist, hist, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
       }
     };
   }
