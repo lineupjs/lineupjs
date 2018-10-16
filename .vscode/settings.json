@@ -23,5 +23,6 @@
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
   "tsimporter.spaceBetweenBraces": false,
   "tsimporter.noStatusBar": true,
-  "typescriptHero.codeOutline.enabled": false
+  "typescriptHero.codeOutline.enabled": false,
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }
