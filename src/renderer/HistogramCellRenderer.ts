@@ -59,7 +59,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
 function staticSummary(col: INumberColumn, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void) {
   if (isMapAbleColumn(col)) {
     const range = col.getRange();
-    template += `<span class="${cssClass('mapping-hint')}>${range[0]}</span><span class="${cssClass('mapping-hint')}>${range[1]}</span>`;
+    template += `<span class="${cssClass('mapping-hint')}">${range[0]}</span><span class="${cssClass('mapping-hint')}">${range[1]}</span>`;
   }
   return {
     template: `${template}</div>`,

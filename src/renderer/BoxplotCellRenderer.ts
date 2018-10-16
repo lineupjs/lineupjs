@@ -1,14 +1,13 @@
 import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData} from '../internal';
 import {IDataRow, IGroup, isNumberColumn, isMapAbleColumn} from '../model';
-import {default as BoxPlotColumn} from '../model/BoxPlotColumn';
+import BoxPlotColumn from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import {IBoxPlotColumn, INumberColumn, INumbersColumn, isBoxPlotColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumberColumn from '../model/NumberColumn';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {clear} from '../internal';
 
 const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
@@ -22,7 +21,7 @@ const MAPPED_BOXPLOT = `<div title="">
     <div class="${cssClass('boxplot-box')}"></div>
     <div class="${cssClass('boxplot-median')}"></div>
   </div>
-  <span class="${cssClass('mapping-hint')}></span><span class="${cssClass('mapping-hint')}></span>
+  <span class="${cssClass('mapping-hint')}"></span><span class="${cssClass('mapping-hint')}"></span>
 </div>`;
 
 
