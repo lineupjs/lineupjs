@@ -209,7 +209,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumbersColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([NumbersColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   getColor(row: IDataRow) {
@@ -224,7 +224,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
   }
 
   isFiltered() {

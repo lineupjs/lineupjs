@@ -207,7 +207,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([BoxPlotColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([BoxPlotColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   getColor(row: IDataRow) {
@@ -222,7 +222,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire([BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
   }
 
   isFiltered() {
