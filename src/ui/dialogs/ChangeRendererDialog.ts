@@ -19,6 +19,7 @@ export default class ChangeRendererDialog extends ADialog {
 
     const id = uniqueId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `
+      <strong>Item Visualization</strong>
       ${item.sort((a, b) => a.label.localeCompare(b.label)).map((d) => ` <div class="lu-checkbox"><input id="${id}0${d.type}" type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><label for="${id}0${d.type}">${d.label}</label></div>`).join('')}
       <strong>Group Visualization</strong>
       ${group.sort((a, b) => a.label.localeCompare(b.label)).map((d) => ` <div class="lu-checkbox"><input id="${id}1${d.type}" type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><label for="${id}1${d.type}">${d.label}</label></div>`).join('')}
