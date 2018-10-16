@@ -8,6 +8,7 @@ import {BOX_PLOT, CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {isMapAbleColumn} from '../model/MappingFunction';
 
 /** @internal */
 export function computeLabel(v: IBoxPlotData) {
@@ -101,10 +102,16 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   }
 
   createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, imposer?: IImposer) {
+    let template = `<div title="">
+    <div><div></div><div></div></div>`;
+    if (isMapAbleColumn(col)) {
+      const range = col.getRange();
+      template += `<span>${range[0]}</span><span>${range[1]}</span>`;
+    }
+    template += '</div>';
+
     return {
-      template: `<div title="">
-                    <div><div></div><div></div></div>
-                 </div>`,
+      template,
       update: (n: HTMLElement, hist: IStatistics | null) => {
         if (hist == null || hist.count === 0) {
           n.classList.add('lu-missing');
@@ -113,13 +120,18 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         n.classList.remove('lu-missing');
         const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
 
-        renderDOMBoxPlot(n, hist, hist, sort, colorOf(col, null, imposer));
+        if (isMapAbleColumn(col)) {
+          const range = col.getRange();
+          Array.from(n.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
+        }
+
+        renderDOMBoxPlot(n, hist, hist, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
       }
     };
   }
 }
 
-function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string | null) {
+function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string | null, hasRange: boolean = false) {
   n.title = computeLabel(label);
 
   const whiskers = <HTMLElement>n.firstElementChild;
@@ -140,22 +152,19 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   //relative within the whiskers
   median.style.left = `${Math.round((data.median - leftWhisker) / range * 100)}%`;
 
+  // match lengths
+  const outliers = <HTMLElement[]>Array.from(n.children).slice(1, hasRange ? -2 : undefined);
+  outliers.slice(data.outlier ? data.outlier.length : 0).forEach((v) => v.remove());
+
   if (!data.outlier || data.outlier.length === 0) {
     whiskers.dataset.sort = sort;
-    if (n.children.length > 1) {
-      n.innerHTML = '';
-      n.appendChild(whiskers);
-    }
     return;
   }
 
-  // match lengths
-  const outliers = <HTMLElement[]>Array.from(n.children).slice(1);
-  outliers.slice(data.outlier.length).forEach((v) => v.remove());
   for (let i = outliers.length; i < data.outlier.length; ++i) {
     const p = n.ownerDocument.createElement('div');
     outliers.push(p);
-    n.appendChild(p);
+    whiskers.insertAdjacentElement('afterend', p);
   }
 
   data.outlier.forEach((v, i) => {

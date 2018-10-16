@@ -45,6 +45,13 @@
     }
   }
 
+}
+
+[data-agg=group] [data-renderer=categorical],
+.#{$lu_css_prefix}-summary[data-renderer=categorical],
+.#{$lu_css_prefix}-summary[data-renderer=interleaving],
+.#{$lu_css_prefix}-summary[data-renderer=boxplot],
+[data-renderer=histogram] {
   > span {
     @include user_select_none();
 
