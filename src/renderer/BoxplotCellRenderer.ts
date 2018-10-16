@@ -1,5 +1,5 @@
 import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData} from '../internal';
-import {IDataRow, IGroup, isNumberColumn} from '../model';
+import {IDataRow, IGroup, isNumberColumn, isMapAbleColumn} from '../model';
 import {default as BoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import {IBoxPlotColumn, INumberColumn, INumbersColumn, isBoxPlotColumn, isNumbersColumn} from '../model/INumberColumn';
@@ -136,7 +136,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   }
 }
 
-function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string | null) {
+function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string | null, hasRange: boolean = false) {
   n.title = computeLabel(label);
 
   const whiskers = <HTMLElement>n.firstElementChild;
@@ -157,23 +157,20 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   //relative within the whiskers
   median.style.left = `${Math.round((data.median - leftWhisker) / range * 100)}%`;
 
+  // match lengths
+  const outliers = <HTMLElement[]>Array.from(n.children).slice(1, hasRange ? -2 : undefined);
+  outliers.slice(data.outlier ? data.outlier.length : 0).forEach((v) => v.remove());
+
   if (!data.outlier || data.outlier.length === 0) {
     whiskers.dataset.sort = sort;
-    if (n.childElementCount > 1) {
-      clear(n);
-      n.appendChild(whiskers);
-    }
     return;
   }
 
-  // match lengths
-  const outliers = <HTMLElement[]>Array.from(n.children).slice(1);
-  outliers.slice(data.outlier.length).forEach((v) => v.remove());
   for (let i = outliers.length; i < data.outlier.length; ++i) {
     const p = n.ownerDocument!.createElement('div');
     p.classList.add(cssClass('boxplot-outlier'));
     outliers.push(p);
-    n.appendChild(p);
+    whiskers.insertAdjacentElement('afterend', p);
   }
 
   data.outlier.forEach((v, i) => {
