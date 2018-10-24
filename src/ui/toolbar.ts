@@ -24,6 +24,7 @@ import SortDialog from './dialogs/SortDialog';
 import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
 import {EDateSort} from '../model/DatesColumn';
 import appendNumber from './dialogs/groupNumber';
+import appendString from './dialogs/groupString';
 import ColorMappingDialog from './dialogs/ColorMappingDialog';
 import MappingDialog from './dialogs/MappingDialog';
 
@@ -254,6 +255,11 @@ const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
     title: 'Split',
     order: 2,
     append: appendNumber
+  },
+  groupString: <IToolbarDialogAddon>{
+    title: 'Groups',
+    order: 2,
+    append: appendString
   }
 };
 
