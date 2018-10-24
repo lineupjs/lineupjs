@@ -1,4 +1,4 @@
-import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData} from '../internal';
+import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData} from '../internal';
 import {IDataRow, IGroup, isNumberColumn} from '../model';
 import {default as BoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
@@ -11,12 +11,13 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMapAbleColumn} from '../model/MappingFunction';
 
 /** @internal */
-export function computeLabel(v: IBoxPlotData) {
+export function computeLabel(v: IBoxPlotData | IAdvancedBoxPlotData) {
   if (v == null) {
     return '';
   }
   const f = BoxPlotColumn.DEFAULT_FORMATTER;
-  return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\nq3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
+  const mean = (<IAdvancedBoxPlotData>v).mean != null ? `mean = ${f((<IAdvancedBoxPlotData>v).mean)}\n` : '';
+  return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\n${mean}q3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
 
 /** @internal */
@@ -61,7 +62,9 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q1: data.q1 * width,
           q3: data.q3 * width,
           max: data.max * width,
-          outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined
+          outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined,
+          whiskerMin: data.whiskerMin != null ? data.whiskerMin * width : undefined,
+          whiskerMax: data.whiskerMax != null ? data.whiskerMax * width : undefined
         };
         renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), CANVAS_HEIGHT, 0);
       }
@@ -138,8 +141,8 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   const box = <HTMLElement>whiskers.firstElementChild;
   const median = <HTMLElement>whiskers.lastElementChild;
 
-  const leftWhisker = Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
-  const rightWhisker = Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
+  const leftWhisker = data.whiskerMin != null ? data.whiskerMin : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
+  const rightWhisker = data.whiskerMax != null ? data.whiskerMax : Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
   whiskers.style.left = `${Math.round(leftWhisker * 100)}%`;
   const range = rightWhisker - leftWhisker;
   whiskers.style.width = `${Math.round(range * 100)}%`;
