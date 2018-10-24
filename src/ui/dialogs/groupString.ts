@@ -31,7 +31,7 @@ export default function append(col: StringColumn, node: HTMLElement, dialog: IDi
     const invalid = items.length === 0;
     groups.setCustomValidity(invalid ? 'At least one group is required' : '');
     if (invalid) {
-      groups.reportValidity();
+      (<any>groups).reportValidity(); // typedoc not uptodate
       return;
     }
     if (isRegexCheck.checked) {
