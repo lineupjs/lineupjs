@@ -94,6 +94,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return super.getValue(row);
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
+  }
+
   getValue(row: IDataRow) {
     const v = this.getRawValue(row);
     if (v == null) {

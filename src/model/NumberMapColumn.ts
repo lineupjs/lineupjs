@@ -109,6 +109,10 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return r == null ? [] : r;
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
+  }
+
   getLabels(row: IDataRow) {
     const v = this.getValue(row);
     return v.map(({key, value}) => ({key, value: DEFAULT_FORMATTER(value)}));

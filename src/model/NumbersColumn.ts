@@ -128,6 +128,10 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return r == null ? [] : r;
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
+  }
+
   getLabels(row: IDataRow) {
     return this.getValue(row).map(DEFAULT_FORMATTER);
   }
