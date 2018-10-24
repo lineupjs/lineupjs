@@ -1,4 +1,4 @@
-import {IStringColumnDesc} from '../../model';
+import {IStringColumnDesc, EAlignment} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class StringColumnBuilder extends ColumnBuilder<IStringColumnDesc> {
@@ -12,6 +12,14 @@ export default class StringColumnBuilder extends ColumnBuilder<IStringColumnDesc
    */
   editable() {
     this.desc.type = 'annotate';
+    return this;
+  }
+
+  /**
+   * changes the alignment of the column
+   */
+  alignment(align: EAlignment) {
+    this.desc.alignment = align;
     return this;
   }
 

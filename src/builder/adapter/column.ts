@@ -170,7 +170,7 @@ export interface IBuilderAdapterStringColumnDescProps extends IBuilderAdapterCol
 export function buildString(props: IBuilderAdapterStringColumnDescProps): IStringColumnDesc {
   const desc: any = build({...props, type: 'string'});
 
-  (<(keyof IBuilderAdapterStringColumnDescProps)[]>['pattern', 'patternTemplate']).forEach((key) => {
+  (<(keyof IBuilderAdapterStringColumnDescProps)[]>['pattern', 'patternTemplate', 'alignment']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
