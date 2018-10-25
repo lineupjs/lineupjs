@@ -1,7 +1,6 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IDataRow, IGroup} from './interfaces';
-import {patternFunction} from './internal';
 import {FIRST_IS_MISSING, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
@@ -25,28 +24,10 @@ export interface IStringDesc {
    * escape html tags
    */
   escape?: boolean;
-
-  /**
-   * replacement pattern, use use <code>${value}</code> for the current value, <code>${escapedValue}</code> for an url safe value and <code>${item}</code> for the whole item
-   */
-  pattern?: string;
-
-  /**
-   * optional list of pattern templates
-   */
-  patternTemplates?: string[];
 }
 
 
 export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
-
-
-/**
- * emitted when the pattern property changes
- * @asMemberOf StringColumn
- * @event
- */
-export declare function patternChanged(previous: string, current: string): void;
 
 /**
  * emitted when the filter property changes
@@ -66,11 +47,10 @@ export declare function groupingChanged(previous: (RegExp | string)[][], current
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'groupBy', 'filterString', 'editPattern')
+@toolbar('search', 'groupBy', 'filterString')
 @dialogAddons('group', 'groupString')
 @Category('string')
 export default class StringColumn extends ValueColumn<string> {
-  static readonly EVENT_PATTERN_CHANGED = 'patternChanged';
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 
@@ -80,9 +60,6 @@ export default class StringColumn extends ValueColumn<string> {
 
   readonly alignment: EAlignment;
   readonly escape: boolean;
-  private pattern: string;
-  private patternFunction: Function | null = null;
-  readonly patternTemplates: string[];
 
   private currentGroupCriteria: (RegExp | string)[] = [];
 
@@ -91,33 +68,13 @@ export default class StringColumn extends ValueColumn<string> {
     this.setDefaultWidth(200); //by default 200
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
-    this.pattern = desc.pattern || '';
-    this.patternTemplates = desc.patternTemplates || [];
-
-    if (this.pattern) {
-      this.setDefaultRenderer('link');
-      this.setDefaultGroupRenderer('link');
-    }
   }
 
-
-  setPattern(pattern: string) {
-    if (pattern === this.pattern) {
-      return;
-    }
-    this.patternFunction = null; // reset cache
-    this.fire([StringColumn.EVENT_PATTERN_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.pattern, this.pattern = pattern);
-  }
-
-  getPattern() {
-    return this.pattern;
-  }
 
   protected createEventList() {
-    return super.createEventList().concat([StringColumn.EVENT_PATTERN_CHANGED, StringColumn.EVENT_GROUPING_CHANGED, StringColumn.EVENT_FILTER_CHANGED]);
+    return super.createEventList().concat([StringColumn.EVENT_GROUPING_CHANGED, StringColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof StringColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged | null): this;
   on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
@@ -137,13 +94,7 @@ export default class StringColumn extends ValueColumn<string> {
 
   getValue(row: IDataRow) {
     const v: any = super.getValue(row);
-    if (!this.pattern) {
-      return v == null ? '' : String(v);
-    }
-    if (!this.patternFunction) {
-      this.patternFunction = patternFunction(this.pattern, 'item');
-    }
-    return this.patternFunction.call(this, v, row.v);
+    return v == null ? '' : String(v);
   }
 
   getLabel(row: IDataRow) {
@@ -157,9 +108,6 @@ export default class StringColumn extends ValueColumn<string> {
     } else {
       r.filter = this.currentFilter;
     }
-    if (this.pattern !== (<any>this.desc).pattern) {
-      r.pattern = this.pattern;
-    }
     if (this.currentGroupCriteria) {
       r.groupCriteria = this.currentGroupCriteria.map((d) => typeof d === 'string' ? d : `REGEX:${d.source}`);
     }
@@ -172,9 +120,6 @@ export default class StringColumn extends ValueColumn<string> {
       this.currentFilter = new RegExp(dump.filter.slice(6), 'gm');
     } else {
       this.currentFilter = dump.filter || null;
-    }
-    if (dump.pattern) {
-      this.pattern = dump.pattern;
     }
     if (dump.groupCriteria) {
       this.currentGroupCriteria = dump.groupCriteria.map((d: string) => d.startsWith('REGEX:') ? new RegExp(d.slice(6), 'gm') : d);
@@ -232,8 +177,8 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   compare(a: IDataRow, b: IDataRow) {
-    const aValue = this.getValue(a);
-    const bValue = this.getValue(b);
+    const aValue = this.getLabel(a);
+    const bValue = this.getLabel(b);
     if (aValue === '') {
       return bValue === '' ? 0 : FIRST_IS_MISSING; //same = 0
     }
@@ -251,7 +196,7 @@ export default class StringColumn extends ValueColumn<string> {
     if (this.currentGroupCriteria.length === 0) {
       return defaultGroup;
     }
-    const value = this.getValue(row);
+    const value = this.getLabel(row);
 
     if (!value) {
       return defaultGroup;

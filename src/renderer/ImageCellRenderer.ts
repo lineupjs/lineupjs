@@ -1,25 +1,26 @@
 import {IDataRow} from '../model';
 import Column from '../model/Column';
-import StringColumn from '../model/StringColumn';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
+import LinkColumn from '../model/LinkColumn';
 
 /** @internal */
 export default class ImageCellRenderer implements ICellRendererFactory {
   readonly title = 'Image';
 
   canRender(col: Column, mode: ERenderMode) {
-    return col instanceof StringColumn && mode === ERenderMode.CELL;
+    return col instanceof LinkColumn && mode === ERenderMode.CELL;
   }
 
-  create(col: StringColumn) {
+  create(col: LinkColumn) {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);
-        n.title = col.getLabel(d);
-        n.style.backgroundImage = missing ? null : `url('${col.getValue(d)}')`;
+        const v = col.getLink(d);
+        n.title = v ? v.alt : '';
+        n.style.backgroundImage = missing || !v ? null : `url('${v.href}')`;
       },
       render: noop
     };
