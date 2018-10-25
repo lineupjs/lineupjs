@@ -11,7 +11,7 @@ export declare type IStringsColumnDesc = IStringDesc & IArrayColumnDesc<string>;
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'editPattern')
+@toolbar('search')
 export default class StringsColumn extends ArrayColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
@@ -40,7 +40,7 @@ export default class StringsColumn extends ArrayColumn<string> {
   }
 
   getValues(row: IDataRow) {
-    return super.getValues(row).map((v, i) => {
+    return super.getValues(row).map((v) => {
       return v == null ? '' : String(v);
     });
   }

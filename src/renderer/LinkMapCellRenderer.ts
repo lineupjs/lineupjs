@@ -24,7 +24,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
-        node.innerHTML = col.getLinkMap(d).map(({key, value}, i) => `<div>${key}</div><div${align !== 'left' ? ` class="lu-${align}"` : ''}><a href="${value.href}" target="_blank">${value.alt}</a></div>`).join('');
+        node.innerHTML = col.getLinkMap(d).map(({key, value}) => `<div>${key}</div><div${align !== 'left' ? ` class="lu-${align}"` : ''}><a href="${value.href}" target="_blank">${value.alt}</a></div>`).join('');
       },
       render: noop
     };
