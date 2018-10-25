@@ -111,14 +111,6 @@ export default class MappingDialog extends ADialog {
     });
 
     {
-      const createMappings = () => {
-        if (!(this.scale instanceof ScaleMappingFunction)) {
-          return;
-        }
-        const domain = this.scale.domain;
-        const range = this.scale.range;
-        this.mappingLines.push(...domain.map((d, i) => new MappingLine(g, this.normalizeRaw(d), range[i] * 100, this.mappingAdapter)));
-      };
 
       const select = <HTMLSelectElement>this.find('select');
       const textarea = <HTMLTextAreaElement>this.find('textarea');
@@ -144,8 +136,7 @@ export default class MappingDialog extends ADialog {
             this.scale = new ScaleMappingFunction(this.rawDomain.slice(), select.value);
             break;
         }
-        this.mappingLines.splice(0, this.mappingLines.length).forEach((d) => d.destroy());
-        createMappings();
+        this.createMappings();
         node.dataset.scale = select.value;
         this.updateLines();
       };
@@ -155,7 +146,7 @@ export default class MappingDialog extends ADialog {
       if (scaleType === 'script') {
         textarea.value = (<ScriptMappingFunction>this.scale).code;
       }
-      createMappings();
+      this.createMappings();
     }
 
     {
@@ -193,6 +184,17 @@ export default class MappingDialog extends ADialog {
     });
   }
 
+  private createMappings() {
+    this.mappingLines.splice(0, this.mappingLines.length).forEach((d) => d.destroy());
+    if (!(this.scale instanceof ScaleMappingFunction)) {
+      return;
+    }
+    const g = <SVGGElement>this.node.querySelector('.lu-details > g');
+    const domain = this.scale.domain;
+    const range = this.scale.range;
+    this.mappingLines.push(...domain.map((d, i) => new MappingLine(g, this.normalizeRaw(d), range[i] * 100, this.mappingAdapter)));
+  }
+
   private update() {
     const scaleType = this.node.dataset.scale = this.scaleType;
     const select = <HTMLSelectElement>this.find('select');
@@ -224,6 +226,7 @@ export default class MappingDialog extends ADialog {
     this.applyMapping(this.scale);
     this.update();
     this.updateLines();
+    this.createMappings();
   }
 
   private copyMapping(columnId: string) {
