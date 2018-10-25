@@ -94,6 +94,16 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return this.getNumber(row);
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      return {
+        value: this.getRawNumber(row),
+        children: this.children.map((d) => d.getExportValue(row, format))
+      };
+    }
+    return super.getExportValue(row, format);
+  }
+
   isMissing(row: IDataRow) {
     return isMissingValue(this.compute(row));
   }

@@ -1,4 +1,4 @@
-import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData} from '../internal';
+import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
 import {IDataRow, IGroup, isNumberColumn, isMapAbleColumn} from '../model';
 import BoxPlotColumn from '../model/BoxPlotColumn';
 import Column from '../model/Column';
@@ -27,12 +27,13 @@ const MAPPED_BOXPLOT = `<div title="">
 
 
 /** @internal */
-export function computeLabel(v: IBoxPlotData) {
+export function computeLabel(v: IBoxPlotData | IAdvancedBoxPlotData) {
   if (v == null) {
     return '';
   }
   const f = BoxPlotColumn.DEFAULT_FORMATTER;
-  return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\nq3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
+  const mean = (<IAdvancedBoxPlotData>v).mean != null ? `mean = ${f((<IAdvancedBoxPlotData>v).mean)}\n` : '';
+  return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\n${mean}q3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
 
 /** @internal */
@@ -51,10 +52,11 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       template: BOXPLOT,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d);
-        const missing = !data || renderMissingDOM(n, col, d);
-        if (missing) {
+        if (!data || col.isMissing(d)) {
+          n.classList.add('lu-missing');
           return;
         }
+        n.classList.remove('lu-missing');
         const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       },
@@ -75,7 +77,9 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q1: data.q1 * width,
           q3: data.q3 * width,
           max: data.max * width,
-          outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined
+          outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined,
+          whiskerLow: data.whiskerLow != null ? data.whiskerLow * width : undefined,
+          whiskerHigh: data.whiskerHigh != null ? data.whiskerHigh * width : undefined
         };
         renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), CANVAS_HEIGHT, 0);
       }
@@ -142,53 +146,61 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   const box = <HTMLElement>whiskers.firstElementChild;
   const median = <HTMLElement>whiskers.lastElementChild;
 
-  const leftWhisker = Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
-  const rightWhisker = Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
-  whiskers.style.left = `${Math.round(leftWhisker * 100)}%`;
+  const leftWhisker = data.whiskerLow != null ? data.whiskerLow : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
+  const rightWhisker = data.whiskerHigh != null ? data.whiskerHigh : Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
+  whiskers.style.left = `${round(leftWhisker * 100, 2)}%`;
   const range = rightWhisker - leftWhisker;
-  whiskers.style.width = `${Math.round(range * 100)}%`;
+  whiskers.style.width = `${round(range * 100, 2)}%`;
 
   //relative within the whiskers
-  box.style.left = `${Math.round((data.q1 - leftWhisker) / range * 100)}%`;
-  box.style.width = `${Math.round((data.q3 - data.q1) / range * 100)}%`;
+  box.style.left = `${round((data.q1 - leftWhisker) / range * 100, 2)}%`;
+  box.style.width = `${round((data.q3 - data.q1) / range * 100, 2)}%`;
   box.style.backgroundColor = color;
 
   //relative within the whiskers
-  median.style.left = `${Math.round((data.median - leftWhisker) / range * 100)}%`;
+  median.style.left = `${round((data.median - leftWhisker) / range * 100, 2)}%`;
 
   // match lengths
   const outliers = <HTMLElement[]>Array.from(n.children).slice(1, hasRange ? -2 : undefined);
-  outliers.slice(data.outlier ? data.outlier.length : 0).forEach((v) => v.remove());
+  const numOutliers = data.outlier ? data.outlier.length : 0;
+  outliers.splice(numOutliers, outliers.length - numOutliers).forEach((v) => v.remove());
 
-  if (!data.outlier || data.outlier.length === 0) {
-    whiskers.dataset.sort = sort;
+  whiskers.dataset.sort = sort;
+
+  if (!data.outlier || numOutliers === 0) {
     return;
   }
 
-  for (let i = outliers.length; i < data.outlier.length; ++i) {
+  for (let i = outliers.length; i < numOutliers; ++i) {
     const p = n.ownerDocument!.createElement('div');
     p.classList.add(cssClass('boxplot-outlier'));
-    outliers.push(p);
+    outliers.unshift(p);
     whiskers.insertAdjacentElement('afterend', p);
   }
 
   data.outlier.forEach((v, i) => {
     delete outliers[i].dataset.sort;
-    outliers[i].style.left = `${Math.round(v * 100)}%`;
+    outliers[i].style.left = `${round(v * 100, 2)}%`;
   });
 
-  if (sort === 'min') {
+  if (sort === 'min' && data.outlier[0] <= leftWhisker) {
+    // first outliers is the min
     whiskers.dataset.sort = '';
     outliers[0].dataset.sort = 'min';
-  } else if (sort === 'max') {
+    if (outliers.length > 1) {
+      // append at the end of the DOM to be on top
+      outliers[outliers.length - 1].insertAdjacentElement('afterend', outliers[0]);
+    }
+  } else if (sort === 'max' && data.outlier[outliers.length - 1] >= rightWhisker) {
+    // last outlier is the max
     whiskers.dataset.sort = '';
     outliers[outliers.length - 1].dataset.sort = 'max';
   }
 }
 
 function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, color: string | null, height: number, topPadding: number) {
-  const left = Math.max((box.q1 - 1.5 * (box.q3 - box.q1)), box.min);
-  const right = Math.min((box.q3 + 1.5 * (box.q3 - box.q1)), box.max);
+  const left = box.whiskerLow != null ? box.whiskerLow : Math.max((box.q1 - 1.5 * (box.q3 - box.q1)), box.min);
+  const right = box.whiskerHigh != null ? box.whiskerHigh : Math.min((box.q3 + 1.5 * (box.q3 - box.q1)), box.max);
 
   ctx.fillStyle = color || BOX_PLOT.box;
   ctx.strokeStyle = BOX_PLOT.stroke;

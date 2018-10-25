@@ -127,6 +127,20 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getRawNumber(row) : NaN;
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      if (this.isMissing(row)) {
+        return null;
+      }
+      return {
+        label: this.getLabels(row),
+        color: this.getColor(row),
+        value: this.getRawNumbers(row)
+      };
+    }
+    return super.getExportValue(row, format);
+  }
+
   getNumbers(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.getNumbers(row) : [];

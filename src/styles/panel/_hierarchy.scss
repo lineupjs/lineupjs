@@ -100,7 +100,12 @@
   flex: 1 1 0;
 
   > input {
+    height: 19px;
     font-size: x-small;
+
+    > ul {
+      top: 19px;
+    }
   }
 
   > ul {

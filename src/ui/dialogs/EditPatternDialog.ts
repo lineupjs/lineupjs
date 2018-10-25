@@ -1,12 +1,12 @@
-import StringColumn from '../../model/StringColumn';
-import StringMapColumn from '../../model/StringMapColumn';
-import StringsColumn from '../../model/StringsColumn';
+import LinkColumn from '../../model/LinkColumn';
+import LinkMapColumn from '../../model/LinkMapColumn';
+import LinksColumn from '../../model/LinksColumn';
 import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class EditPatternDialog extends ADialog {
 
-  constructor(private readonly column: StringColumn | StringsColumn | StringMapColumn, dialog: IDialogContext, private readonly idPrefix: string) {
+  constructor(private readonly column: LinkColumn | LinksColumn | LinkMapColumn, dialog: IDialogContext, private readonly idPrefix: string) {
     super(dialog, {
       fullDialog: true
     });

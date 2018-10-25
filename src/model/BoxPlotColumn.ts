@@ -94,6 +94,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return super.getValue(row);
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
+  }
+
   getValue(row: IDataRow) {
     const v = this.getRawValue(row);
     if (v == null) {
@@ -109,6 +113,16 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (v.outlier) {
       Object.assign(r, {
         outlier: v.outlier.map((d) => this.mapping.apply(d))
+      });
+    }
+    if (v.whiskerLow != null) {
+      Object.assign(r, {
+        whiskerLow: this.mapping.apply(v.whiskerLow)
+      });
+    }
+    if (v.whiskerHigh != null) {
+      Object.assign(r, {
+        whiskerHigh: this.mapping.apply(v.whiskerHigh)
       });
     }
     return r;

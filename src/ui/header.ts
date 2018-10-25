@@ -237,13 +237,15 @@ export function dragWidth(col: Column, node: HTMLElement) {
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
+    const delta = end - start;
+    const width = Math.max(0, col.getWidth() + delta);
+
     if (Math.abs(start - end) < 2) {
       //ignore
       return;
     }
-    const delta = end - start;
     start = end;
-    const width = Math.max(0, col.getWidth() + delta);
+    node.style.width = `${width}px`;
     col.setWidth(width);
     toggleToolbarIcons(node, col);
   };
@@ -257,6 +259,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.removeEventListener('mousemove', mouseMove);
     ueberElement.removeEventListener('mouseup', mouseUp);
     ueberElement.removeEventListener('mouseleave', mouseUp);
+    node.style.width = null;
 
     if (Math.abs(start - end) < 2) {
       //ignore

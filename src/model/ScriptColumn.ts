@@ -237,4 +237,14 @@ export default class ScriptColumn extends CompositeNumberColumn {
     });
     return this.f.call(this, children, values, raws, col, row.v, row.i);
   }
+
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      return {
+        value: this.getRawNumber(row),
+        children: this.children.map((d) => d.getExportValue(row, format))
+      };
+    }
+    return super.getExportValue(row, format);
+  }
 }

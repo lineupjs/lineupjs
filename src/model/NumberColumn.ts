@@ -199,6 +199,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return +v;
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
+  }
+
   isMissing(row: IDataRow) {
     return isMissingValue(super.getValue(row));
   }

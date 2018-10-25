@@ -14,6 +14,21 @@ export interface IDeriveOptions {
   columns: string[];
 }
 
+/**
+ * @internal
+ */
+export function cleanCategories(categories: Set<string>) {
+  // remove missing values
+  categories.delete(<any>null);
+  categories.delete(<any>undefined);
+  categories.delete('');
+  categories.delete('NA');
+  categories.delete('NaN');
+  categories.delete('na');
+
+  return Array.from(categories).map(String).sort();
+}
+
 function deriveType(label: string, value: any, column: number | string, data: any[], options: IDeriveOptions): IColumnDesc {
   const base: any = {
     type: 'string',
@@ -38,7 +53,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
     const categories = new Set(data.map((d) => d[column]));
     if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
       base.type = 'categorical';
-      base.categories = Array.from(categories).sort();
+      base.categories = cleanCategories(categories);
     }
     return base;
   }
@@ -64,7 +79,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
       const categories = new Set((<string[]>[]).concat(...data.map((d) => d[column])));
       if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
         base.type = 'categoricals';
-        base.categories = Array.from(categories).sort();
+        base.categories = cleanCategories(categories);
       }
       return base;
     }
@@ -167,7 +182,8 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
   //optionally quote not numbers
   const escape = new RegExp(`[${opts.quoteChar}]`, 'g');
 
-  function quote(l: string, c?: Column) {
+  function quote(v: any, c?: Column) {
+    const l = String(v);
     if ((opts.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
       return `${opts.quoteChar}${l.replace(escape, opts.quoteChar + opts.quoteChar)}${opts.quoteChar}`;
     }
@@ -182,7 +198,7 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
     r.push(columns.map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`)).join(opts.separator));
   }
   data.forEach((row, i) => {
-    r.push(columns.map((c) => quote(c.getLabel({v: row, i: order[i]}), c)).join(opts.separator));
+    r.push(columns.map((c) => quote(c.getExportValue({v: row, i: order[i]}, 'text'), c)).join(opts.separator));
   });
   return r.join(opts.newline);
 }

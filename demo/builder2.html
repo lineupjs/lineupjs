@@ -28,7 +28,7 @@
     // manually define columns
     builder
       .sidePanel(true, true)
-      .column(LineUpJS.buildStringColumn('d').label('Label').width(100))
+      .column(LineUpJS.buildStringColumn('d').label('Label').alignment('right').width(100))
       .column(LineUpJS.buildCategoricalColumn('cat', cats).color('green'))
       .column(LineUpJS.buildCategoricalColumn('cat2', cats).color('blue'))
       .column(LineUpJS.buildNumberColumn('a', [0, 10]).color('blue'));

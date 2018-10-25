@@ -1,5 +1,3 @@
-import {D3DragEvent, drag} from 'd3-drag';
-import {event as d3event, selectAll} from 'd3-selection';
 import {DENSE_HISTOGRAM} from '../config';
 import {computeStats, getNumberOfBins, INumberBin, IStatistics, round} from '../internal/math';
 import {IDataRow, IGroup, isMissingValue} from '../model';
@@ -15,6 +13,7 @@ import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {cssClass} from '../styles';
+import {dragHandle, IDragHandleOptions} from '../internal/drag';
 
 /** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
@@ -183,31 +182,32 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
 
   filterMissing.onchange = () => setFilter();
 
-  selectAll([min, max]).call(drag<HTMLElement, {}>()
-    .filter(() => d3event.button === 0 && !d3event.shiftKey && !d3event.ctrlKey)
-    .on('start', function (this: HTMLElement) {
-      this.classList.add(cssClass('hist-dragging'));
-    })
-    .on('drag', function (this: HTMLElement) {
-      const evt = (<D3DragEvent<any, any, any>>d3event);
+  const options: Partial<IDragHandleOptions> = {
+    minDelta: 0,
+    filter: (evt) => evt.button === 0 && !evt.shiftKey && !evt.ctrlKey,
+    onStart: (handle) => handle.classList.add(cssClass('hist-dragging')),
+    onDrag: (handle, x) => {
       const total = node.clientWidth;
-      const px = Math.max(0, Math.min(evt.x, total));
+      const px = Math.max(0, Math.min(x, total));
       const percent = Math.round(100 * px / total);
       const domain = col.getMapping().domain;
-      this.dataset.value = round(((percent / 100) * (domain[1] - domain[0]) + domain[0]), 2).toString();
+      (<HTMLElement>handle).dataset.value = round(((percent / 100) * (domain[1] - domain[0]) + domain[0]), 2).toString();
 
-      if (this.classList.contains(cssClass('histogram-min'))) {
-        this.style.left = `${percent}%`;
+      if ((<HTMLElement>handle).classList.contains(cssClass('histogram-min'))) {
+        handle.style.left = `${percent}%`;
         minHint.style.width = `${percent}%`;
         return;
       }
-      this.style.right = `${100 - percent}%`;
+      handle.style.right = `${100 - percent}%`;
       maxHint.style.width = `${100 - percent}%`;
-    })
-    .on('end', function (this: HTMLElement) {
-      this.classList.remove(cssClass('hist-dragging'));
+    },
+    onEnd: (handle) => {
+      handle.classList.remove(cssClass('hist-dragging'));
       setFilter();
-    }));
+    }
+  };
+  dragHandle(min, options);
+  dragHandle(max, options);
 
   return (missing: number, actCol: IMapAbleColumn) => {
     col = actCol;

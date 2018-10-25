@@ -526,6 +526,14 @@ export default class Column extends AEventDispatcher {
     return ''; //no value
   }
 
+  /**
+   * returns the value to be used when exporting
+   * @param format format hint
+   */
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'text' ? this.getLabel(row) : this.getValue(row);
+  }
+
   getColor(_row: IDataRow) {
     return this.color;
   }

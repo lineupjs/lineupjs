@@ -129,6 +129,19 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return this.getNumber(row);
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      if (this.isMissing(row)) {
+        return null;
+      }
+      return {
+        name: this.getLabel(row),
+        value: this.getValue(row)
+      };
+    }
+    return super.getExportValue(row, format);
+  }
+
   dump(toDescRef: (desc: any) => any): any {
     const r = CategoricalColumn.prototype.dump.call(this, toDescRef);
     r.mapping = this.getMapping();

@@ -11,8 +11,8 @@ import {
   IHierarchyColumnDesc,
   INumberColumnDesc,
   IPartialCategoryNode,
-  IStringColumnDesc,
-  IActionColumnDesc
+  IActionColumnDesc,
+  ILinkColumnDesc
 } from '../../model';
 
 export interface IBuilderAdapterColumnDescProps extends Partial<IColumnDesc> {
@@ -37,12 +37,12 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
   }
 
   if (props.asMap) {
-    console.assert(['categorical', 'date', 'number', 'string'].includes(desc.type!));
+    console.assert(['categorical', 'date', 'number', 'string', 'link'].includes(desc.type!));
     desc.type += 'Map';
   }
 
   if (props.asArray != null) {
-    console.assert(['boolean', 'categorical', 'date', 'number', 'string'].includes(desc.type!));
+    console.assert(['boolean', 'categorical', 'date', 'number', 'string', 'link'].includes(desc.type!));
     desc.type += 's';
     const a = <IArrayDesc>desc;
     const labels = props.asArray;
@@ -167,16 +167,19 @@ export interface IBuilderAdapterStringColumnDescProps extends IBuilderAdapterCol
   patternTemplates?: string[];
 }
 
-export function buildString(props: IBuilderAdapterStringColumnDescProps): IStringColumnDesc {
+export function buildString(props: IBuilderAdapterStringColumnDescProps): ILinkColumnDesc {
   const desc: any = build({...props, type: 'string'});
 
-  (<(keyof IBuilderAdapterStringColumnDescProps)[]>['pattern', 'patternTemplate']).forEach((key) => {
+  (<(keyof IBuilderAdapterStringColumnDescProps)[]>['pattern', 'patternTemplate', 'alignment']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
   });
   if (props.editable) {
     desc.type = 'annotate';
+  }
+  if (props.pattern) {
+    desc.type = 'link';
   }
   if (props.html) {
     desc.escape = false;
