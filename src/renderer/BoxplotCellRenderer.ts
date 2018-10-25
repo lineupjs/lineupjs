@@ -38,10 +38,11 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                  </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d);
-        const missing = !data || renderMissingDOM(n, col, d);
-        if (missing) {
+        if (!data || col.isMissing(d)) {
+          n.classList.add('lu-missing');
           return;
         }
+        n.classList.remove('lu-missing');
         const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       },
@@ -160,8 +161,9 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   const numOutliers = data.outlier ? data.outlier.length : 0;
   outliers.splice(numOutliers, outliers.length - numOutliers).forEach((v) => v.remove());
 
+  whiskers.dataset.sort = sort;
+
   if (!data.outlier || numOutliers === 0) {
-    whiskers.dataset.sort = sort;
     return;
   }
 
@@ -176,14 +178,16 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
     outliers[i].style.left = `${round(v * 100, 2)}%`;
   });
 
-  if (sort === 'min') {
+  if (sort === 'min' && data.outlier[0] <= leftWhisker) {
+    // first outliers is the min
     whiskers.dataset.sort = '';
     outliers[0].dataset.sort = 'min';
     if (outliers.length > 1) {
       // append at the end of the DOM to be on top
       outliers[outliers.length - 1].insertAdjacentElement('afterend', outliers[0]);
     }
-  } else if (sort === 'max') {
+  } else if (sort === 'max' && data.outlier[outliers.length - 1] >= rightWhisker) {
+    // last outlier is the max
     whiskers.dataset.sort = '';
     outliers[outliers.length - 1].dataset.sort = 'max';
   }
