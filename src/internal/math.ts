@@ -15,8 +15,8 @@ export interface IBoxPlotData {
   readonly q1: number;
   readonly q3: number;
   readonly outlier?: number[];
-  readonly whiskerMin?: number;
-  readonly whiskerMax?: number;
+  readonly whiskerLow?: number;
+  readonly whiskerHigh?: number;
 }
 
 export interface IAdvancedBoxPlotData extends IBoxPlotData {
@@ -133,44 +133,44 @@ export class LazyBoxPlotData implements IStatistics {
   }
 
   @cached()
-  get whiskerMin() {
+  get whiskerLow() {
     const q1 = this.q1;
     const q3 = this.q3;
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     // look for the closests value which is bigger than the computed left
-    let whiskerMin = left;
+    let whiskerLow = left;
     for (const v of this.sortedMapped) {
       if (left < v) {
-        whiskerMin = v;
+        whiskerLow = v;
         break;
       }
     }
-    return whiskerMin;
+    return whiskerLow;
   }
 
   @cached()
-  get whiskerMax() {
+  get whiskerHigh() {
     const q1 = this.q1;
     const q3 = this.q3;
     const iqr = q3 - q1;
     const right = q3 + 1.5 * iqr;
     // look for the closests value which is smaller than the computed right
-    let whiskerMax = right;
+    let whiskerHigh = right;
     for (const v of this.sortedMapped.slice().reverse()) {
       if (v < right) {
-        whiskerMax = v;
+        whiskerHigh = v;
         break;
       }
     }
-    return whiskerMax;
+    return whiskerHigh;
 
   }
 
   @cached()
   get outlier() {
-    const left = this.whiskerMin;
-    const right = this.whiskerMax;
+    const left = this.whiskerLow;
+    const right = this.whiskerHigh;
     return this.sortedMapped.filter((v) => (v < left || v > right) && !isMissingValue(v));
   }
 }
