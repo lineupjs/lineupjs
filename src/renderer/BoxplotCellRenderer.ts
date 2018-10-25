@@ -157,16 +157,17 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
 
   // match lengths
   const outliers = <HTMLElement[]>Array.from(n.children).slice(1, hasRange ? -2 : undefined);
-  outliers.slice(data.outlier ? data.outlier.length : 0).forEach((v) => v.remove());
+  const numOutliers = data.outlier ? data.outlier.length : 0;
+  outliers.splice(numOutliers, outliers.length - numOutliers).forEach((v) => v.remove());
 
-  if (!data.outlier || data.outlier.length === 0) {
+  if (!data.outlier || numOutliers === 0) {
     whiskers.dataset.sort = sort;
     return;
   }
 
-  for (let i = outliers.length; i < data.outlier.length; ++i) {
+  for (let i = outliers.length; i < numOutliers; ++i) {
     const p = n.ownerDocument.createElement('div');
-    outliers.push(p);
+    outliers.unshift(p);
     whiskers.insertAdjacentElement('afterend', p);
   }
 
@@ -178,6 +179,10 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   if (sort === 'min') {
     whiskers.dataset.sort = '';
     outliers[0].dataset.sort = 'min';
+    if (outliers.length > 1) {
+      // append at the end of the DOM to be on top
+      outliers[outliers.length - 1].insertAdjacentElement('afterend', outliers[0]);
+    }
   } else if (sort === 'max') {
     whiskers.dataset.sort = '';
     outliers[outliers.length - 1].dataset.sort = 'max';
