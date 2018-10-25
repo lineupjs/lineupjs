@@ -1,7 +1,6 @@
-import {D3DragEvent, drag} from 'd3-drag';
-import {event as d3event, select, Selection} from 'd3-selection';
 import {round, similar} from '../../internal/math';
 import ADialog, {IDialogContext} from './ADialog';
+import {dragHandle, IDragHandleOptions} from '../../internal/drag';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
@@ -62,8 +61,6 @@ export default class MappingLineDialog extends ADialog {
 export class MappingLine {
   readonly node: SVGGElement;
 
-  private readonly $select: Selection<SVGGElement, any, any, any>;
-
   constructor(g: SVGGElement, public domain: number, public range: number, private readonly adapter: IMappingAdapter) {
     g.insertAdjacentHTML('beforeend', `<g class="lu-mapping" transform="translate(${domain},0)">
       <line x1="0" x2="${range - domain}" y2="60"></line>
@@ -76,41 +73,56 @@ export class MappingLine {
 
     // freeze 0 and 100 domain = raw domain ones
     this.node.classList.toggle('lu-frozen', similar(0, domain) || similar(domain, 100));
-    this.$select = select(this.node);
     {
       let beforeDomain: number;
       let beforeRange: number;
       let shiftDomain: number;
       let shiftRange: number;
-      this.$select.selectAll<SVGCircleElement, {}>('line:first-of-type, circle').call(drag<SVGCircleElement, {}>()
-        .container(function (this: SVGCircleElement) {
-          return <any>this.parentNode!.parentNode;
-        }).filter(() => d3event.button === 0 && !d3event.shiftKey)
-        .on('start', () => {
+
+      const normalize = (x: number) => x * 100 / g.getBoundingClientRect().width;
+
+      const common: Partial<IDragHandleOptions> =  {
+        container: g.parentElement!,
+        filter: (evt) => evt.button === 0 && !evt.shiftKey,
+        onStart: (_, x) => {
           beforeDomain = this.domain;
           beforeRange = this.range;
-          const evt = (<D3DragEvent<any, any, any>>d3event);
-          shiftDomain = this.domain - evt.x;
-          shiftRange = this.range - evt.x;
-        }).on('drag', (_, i) => {
-          const evt = (<D3DragEvent<any, any, any>>d3event);
-          switch (i) {
-            case 0: // line
-              this.update(clamp(evt.x + shiftDomain), clamp(evt.x + shiftRange));
-              break;
-            case 1: // domain circle
-              this.update(clamp(evt.x), this.range);
-              break;
-            case 2: // range circle
-              this.update(this.domain, clamp(evt.x));
-              break;
-          }
-        }).on('end', () => {
+          const normalized = normalize(x);
+          shiftDomain = this.domain - normalized;
+          shiftRange = this.range - normalized;
+        } ,
+        onEnd: () => {
           if (!similar(beforeDomain, this.domain) || !similar(beforeRange, this.range)) {
             this.adapter.updated(this);
           }
-        })
-      );
+        }
+      };
+
+      const line = this.node.querySelector<SVGLineElement>('line:first-of-type')!;
+      dragHandle(line, { // line
+        ...common,
+        onDrag: (_, x) => {
+          const normalized = normalize(x);
+          this.update(clamp(normalized + shiftDomain), clamp(normalized + shiftRange));
+        },
+      });
+
+      const domainCircle = this.node.querySelector<SVGLineElement>('circle:first-of-type')!;
+      dragHandle(domainCircle, {
+        ...common,
+        onDrag: (_, x) => {
+          const normalized = normalize(x);
+          this.update(clamp(normalized), this.range);
+        },
+      });
+      const rangeCircle = this.node.querySelector<SVGLineElement>('circle:last-of-type')!;
+      dragHandle(rangeCircle, {
+        ...common,
+        onDrag: (_, x) => {
+          const normalized = normalize(x);
+          this.update(this.domain, clamp(normalized));
+        },
+      });
     }
 
     this.node.onclick = (evt) => {
@@ -148,7 +160,7 @@ export class MappingLine {
     this.range = range;
     this.node.setAttribute('transform', `translate(${domain},0)`);
     const shift = range - domain;
-    this.$select.selectAll('line')!.attr('x2', String(shift));
-    this.$select.select('circle[cx]').attr('cx', String(shift));
+    Array.from(this.node.querySelectorAll<SVGLineElement>('line')).forEach((d) => d.setAttribute('x2', String(shift)));
+    this.node.querySelector<SVGCircleElement>('circle[cx]')!.setAttribute('cx', String(shift));
   }
 }
