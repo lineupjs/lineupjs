@@ -155,4 +155,13 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     }
     return false;
   }
+
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      return {
+        children: this.children.map((d) => d.getExportValue(row, format))
+      };
+    }
+    return super.getExportValue(row, format);
+  }
 }

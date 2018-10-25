@@ -128,7 +128,17 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   }
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
-    return format === 'json' ? this.getRawNumber(row) : super.getExportValue(row, format);
+    if (format === 'json') {
+      if (this.isMissing(row)) {
+        return null;
+      }
+      return {
+        label: this.getLabels(row),
+        color: this.getColor(row),
+        value: this.getRawNumbers(row)
+      };
+    }
+    return super.getExportValue(row, format);
   }
 
   getNumbers(row: IDataRow) {
