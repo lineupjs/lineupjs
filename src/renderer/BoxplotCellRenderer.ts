@@ -63,8 +63,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: data.q3 * width,
           max: data.max * width,
           outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined,
-          whiskerMin: data.whiskerMin != null ? data.whiskerMin * width : undefined,
-          whiskerMax: data.whiskerMax != null ? data.whiskerMax * width : undefined
+          whiskerLow: data.whiskerLow != null ? data.whiskerLow * width : undefined,
+          whiskerHigh: data.whiskerHigh != null ? data.whiskerHigh * width : undefined
         };
         renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), CANVAS_HEIGHT, 0);
       }
@@ -141,8 +141,8 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   const box = <HTMLElement>whiskers.firstElementChild;
   const median = <HTMLElement>whiskers.lastElementChild;
 
-  const leftWhisker = data.whiskerMin != null ? data.whiskerMin : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
-  const rightWhisker = data.whiskerMax != null ? data.whiskerMax : Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
+  const leftWhisker = data.whiskerLow != null ? data.whiskerLow : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
+  const rightWhisker = data.whiskerHigh != null ? data.whiskerHigh : Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
   whiskers.style.left = `${Math.round(leftWhisker * 100)}%`;
   const range = rightWhisker - leftWhisker;
   whiskers.style.width = `${Math.round(range * 100)}%`;

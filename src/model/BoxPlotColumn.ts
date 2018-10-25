@@ -115,14 +115,14 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
         outlier: v.outlier.map((d) => this.mapping.apply(d))
       });
     }
-    if (v.whiskerMin) {
+    if (v.whiskerLow) {
       Object.assign(r, {
-        whiskerMin: this.mapping.apply(v.whiskerMin)
+        whiskerLow: this.mapping.apply(v.whiskerLow)
       });
     }
-    if (v.whiskerMax) {
+    if (v.whiskerHigh) {
       Object.assign(r, {
-        whiskerMax: this.mapping.apply(v.whiskerMax)
+        whiskerHigh: this.mapping.apply(v.whiskerHigh)
       });
     }
     return r;
