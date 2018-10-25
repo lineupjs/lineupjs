@@ -79,6 +79,8 @@ export class MappingLine {
       let shiftDomain: number;
       let shiftRange: number;
 
+      const normalize = (x: number) => x * 100 / g.getBoundingClientRect().width;
+
       const common: Partial<IDragHandleOptions> =  {
         container: g.parentElement!,
         filter: (evt) => evt.button === 0 && !evt.shiftKey,
@@ -95,8 +97,6 @@ export class MappingLine {
           }
         }
       };
-
-      const normalize = (x: number) => x * 100 / g.getBoundingClientRect().width;
 
       const line = this.node.querySelector<SVGLineElement>('line:first-of-type')!;
       dragHandle(line, { // line
