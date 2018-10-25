@@ -97,8 +97,15 @@
     }
   }
 
-  .#{$lu_css_prefix}-search input {
-    font-size: x-small;
+  .#{$lu_css_prefix}-search {
+    > input {
+      height: 19px;
+      font-size: x-small;
+    }
+
+    > ul {
+      top: 19px;
+    }
   }
 
   ul {

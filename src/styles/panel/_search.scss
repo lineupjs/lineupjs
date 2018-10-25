@@ -2,12 +2,24 @@
 
 .#{$lu_css_prefix}-search {
   position: relative;
+  display: flex;
 
-  > input {
-    width: 100%;
+  &::before {
+    content: '+';
+    border-radius: 4px 0 0 4px;
+    width: 1.2em;
+    text-align: center;
     border: 1px solid $lu_side_panel_input_border;
     box-sizing: border-box;
-    border-radius: 4px;
+    border-right: none;
+  }
+
+  > input {
+    flex: 1 1 0;
+    height: 22px;
+    border: 1px solid $lu_side_panel_input_border;
+    box-sizing: border-box;
+    border-radius: 0 4px 4px 0;
     padding: 3px 5px;
     outline: none;
   }
@@ -17,6 +29,8 @@
     position: absolute;
     overflow: auto;
     z-index: 1000;
+    left: 1.2em;
+    top: 22px;
     max-height: 0;
     background: white;
     text-align: left;
@@ -24,6 +38,7 @@
     margin-top: -1px;
     transition: all linear 0.5s;
     list-style: none;
+    box-sizing: border-box;
     border: 1px solid $lu_side_panel_input_border;
     border-radius: 0 0 $lu_side_panel_input_border_radius $lu_side_panel_input_border_radius;
 
