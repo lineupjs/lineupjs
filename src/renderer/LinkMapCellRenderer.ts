@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
-import {noRenderer} from './utils';
+import {noRenderer, noop} from './utils';
 import {cssClass} from '../styles';
 import LinkMapColumn from '../model/LinkMapColumn';
 import {ILink} from '../model/LinkColumn';
@@ -25,13 +25,13 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
-      render: noop
         node.innerHTML = col.getLinkMap(d).map(({key, value}) => `
           <div class="${cssClass('table-cell')}">${key}</div>
           <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align): ''}">
             <a href="${value.href}" target="_blank" rel="noopener">${value.alt}</a>
           </div>`).join('');
-      }
+      },
+      render: noop
     };
   }
 
