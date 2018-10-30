@@ -163,7 +163,7 @@ export interface ILineUpOptions {
   /**
    * custom flags for optimization
    */
-  flags: ILineUpFlags;
+  flags: Partial<ILineUpFlags>;
 
   /**
    * ignore incompatible browser and always show (on own risk)

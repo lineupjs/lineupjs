@@ -22,7 +22,7 @@ export interface IRenderers {
 export default class RenderColumn implements IColumn {
   renderers: IRenderers | null = null;
 
-  constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext, private readonly flags: ILineUpFlags) {
+  constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext, protected readonly flags: ILineUpFlags) {
 
   }
 
@@ -83,7 +83,12 @@ export default class RenderColumn implements IColumn {
   }
 
   createHeader() {
-    const node = createHeader(this.c, this.ctx);
+    const node = createHeader(this.c, this.ctx, {
+      dragAble: this.flags.advancedUIFeatures,
+      mergeDropAble: this.flags.advancedModelFeatures,
+      rearrangeAble: this.flags.advancedUIFeatures,
+      resizeable: this.flags.advancedUIFeatures
+    });
     node.className = `lu-header`;
     node.classList.toggle('frozen', this.frozen);
 
