@@ -204,6 +204,10 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return BoxPlotColumn.prototype.toCompareValue.call(this, row);
   }
 
+  toCompareValueType() {
+    return BoxPlotColumn.prototype.toCompareValueType.call(this);
+  }
+
   group(row: IDataRow) {
     return BoxPlotColumn.prototype.group.call(this, row);
   }

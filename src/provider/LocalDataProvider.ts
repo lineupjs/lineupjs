@@ -1,18 +1,19 @@
 import {computeHist, computeStats} from '../internal';
 import Column, {
   defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn,
-  IOrderedGroup,
+  IOrderedGroup, ICompareValue,
   NumberColumn
 } from '../model';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
+import {sortComplex} from './sort';
 
 interface ISortHelper {
   v: any;
   i: number;
   group: IGroup;
-  sort: (string | number | null)[];
+  sort: ICompareValue[];
 }
 
 
@@ -188,7 +189,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const group = helper[0].group;
       //no need to split
       //sort by the ranking column
-      helper.sort((a, b) => ranking.comparator(a, b));
+      console.time('sort');
+      sortComplex(helper, ranking.toCompareValueType());
+      // helper.sort((a, b) => ranking.comparator(a, b));
+      console.timeEnd('sort');
 
       //store the ranking index and create an argsort version, i.e. rank 0 -> index i
       const order = <number[]>[];

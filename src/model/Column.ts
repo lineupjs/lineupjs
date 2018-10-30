@@ -46,6 +46,12 @@ export interface IColumnMetaData {
   color: string | null;
 }
 
+export declare type ICompareValue = string | number | null;
+
+export enum ECompareValueType {
+  NUMBER,
+  STRING
+}
 
 /**
  * emitted when the width property changes
@@ -552,8 +558,12 @@ export default class Column extends AEventDispatcher {
     return 0; //can't compare
   }
 
-  toCompareValue(_row: IDataRow): number | string | null | (number | string | null)[] {
+  toCompareValue(_row: IDataRow): ICompareValue | ICompareValue[] {
     return 0;
+  }
+
+  toCompareValueType(): ECompareValueType | ECompareValueType[] {
+    return ECompareValueType.NUMBER;
   }
 
   /**
@@ -575,7 +585,7 @@ export default class Column extends AEventDispatcher {
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
   }
 
-  toCompareGroupValue(group: IGroupData): number | string | null {
+  toCompareGroupValue(group: IGroupData): ICompareValue | ICompareValue[] {
     return group.name.toLowerCase();
   }
 

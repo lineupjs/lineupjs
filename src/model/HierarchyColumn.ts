@@ -210,6 +210,10 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return CategoricalColumn.prototype.toCompareValue.call(this, row);
   }
 
+  toCompareValueType() {
+    return CategoricalColumn.prototype.toCompareValueType.call(this);
+  }
+
   group(row: IDataRow): IGroup {
     if (this.isMissing(row)) {
       return missingGroup;

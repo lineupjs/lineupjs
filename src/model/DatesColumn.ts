@@ -2,7 +2,7 @@ import {timeFormat, timeParse} from 'd3-time-format';
 import {median, min, max} from 'd3-array';
 import {dialogAddons} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDateDesc} from './DateColumn';
 import {IDataRow} from './interfaces';
@@ -132,6 +132,10 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
       return [0, 0];
     }
     return [vs.length, compute(vs, this.sort)];
+  }
+
+  toCompareValueType() {
+    return [ECompareValueType.NUMBER, ECompareValueType.NUMBER];
   }
 }
 

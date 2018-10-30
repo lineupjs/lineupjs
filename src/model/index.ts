@@ -58,7 +58,7 @@ export * from './CategoricalMapColumn';
 export {default as CategoricalMapColumn} from './CategoricalMapColumn';
 export * from './CategoricalsColumn';
 export {default as CategoricalsColumn} from './CategoricalsColumn';
-export {default, default as Column, IFlatColumn, IColumnParent, IColumnMetaData, IColumnDesc} from './Column';
+export {default, default as Column, IFlatColumn, IColumnParent, IColumnMetaData, IColumnDesc, ICompareValue} from './Column';
 export {default as CompositeColumn, isMultiLevelColumn, IMultiLevelColumn} from './CompositeColumn';
 export * from './CompositeNumberColumn';
 export {default as CompositeNumberColumn} from './CompositeNumberColumn';

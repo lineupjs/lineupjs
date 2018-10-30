@@ -1,5 +1,6 @@
 import {IDataRow} from './interfaces';
 import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
+import {ICompareValue, ECompareValueType} from './Column';
 
 /**
  * factory for creating a description creating a mean column
@@ -28,8 +29,13 @@ export default class NestedColumn extends MultiLevelCompositeColumn {
   }
 
   toCompareValue(row: IDataRow) {
-    const r: (number | string | null)[] = [];
+    const r: ICompareValue[] = [];
     return r.concat(...this.children.map((d) => d.toCompareValue(row)));
+  }
+
+  toCompareValueType() {
+    const r: ECompareValueType[] = [];
+    return r.concat(...this.children.map((d) => d.toCompareValueType()));
   }
 
   getLabel(row: IDataRow) {

@@ -1,4 +1,4 @@
-import Column from './Column';
+import Column, {ECompareValueType} from './Column';
 import {IArrayColumn, isArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {colorPool} from './internal';
@@ -80,6 +80,8 @@ export function toCompareCategoryValue(v: ICategory | null) {
   }
   return [v.value, v.label.toLowerCase()];
 }
+
+export const COMPARE_CATEGORY_VALUE_TYPES = [ECompareValueType.NUMBER, ECompareValueType.STRING];
 
 function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICategory | null, count: number} {
   const hist = new Map<ICategory | null, number>();

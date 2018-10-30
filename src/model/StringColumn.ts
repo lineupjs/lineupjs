@@ -1,5 +1,5 @@
 import {Category, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import {IDataRow, IGroup} from './interfaces';
 import {FIRST_IS_MISSING, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
@@ -218,6 +218,10 @@ export default class StringColumn extends ValueColumn<string> {
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
     return v === '' ? null : v.toLowerCase();
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.STRING;
   }
 }
 

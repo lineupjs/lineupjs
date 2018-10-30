@@ -244,6 +244,10 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return NumbersColumn.prototype.toCompareValue.call(this, row);
   }
 
+  toCompareValueType() {
+    return NumbersColumn.prototype.toCompareValueType.call(this);
+  }
+
   groupCompare(a: IGroupData, b: IGroupData) {
     return NumbersColumn.prototype.groupCompare.call(this, a, b);
   }

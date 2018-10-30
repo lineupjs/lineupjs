@@ -2,9 +2,9 @@ import {Category, toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {
-  compareCategory, toCompareCategoryValue, groupCompareCategory, 
+  compareCategory, toCompareCategoryValue, groupCompareCategory,
   ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
-  isEqualCategoricalFilter, isCategoryIncluded, toCategories, toCategory,
+  isEqualCategoricalFilter, isCategoryIncluded, toCategories, toCategory, COMPARE_CATEGORY_VALUE_TYPES,
 } from './ICategoricalColumn';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {missingGroup} from './missing';
@@ -173,6 +173,10 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   toCompareValue(row: IDataRow) {
     return toCompareCategoryValue(this.getCategory(row));
+  }
+
+  toCompareValueType() {
+    return COMPARE_CATEGORY_VALUE_TYPES;
   }
 
   group(row: IDataRow): IGroup {

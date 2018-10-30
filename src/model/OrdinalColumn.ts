@@ -198,6 +198,10 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return CategoricalColumn.prototype.toCompareValue.call(this, row);
   }
 
+  toCompareValueType() {
+    return CategoricalColumn.prototype.toCompareValueType.call(this);
+  }
+
   getRenderer(): string {
     return NumberColumn.prototype.getRenderer.call(this);
   }

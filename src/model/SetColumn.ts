@@ -1,6 +1,6 @@
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import Column from './Column';
+import Column, {ECompareValueType} from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
@@ -178,5 +178,9 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
       vs.push(v.has(cat) ? 1 : 0);
     }
     return vs;
+  }
+
+  toCompareValueType() {
+    return [ECompareValueType.NUMBER].concat(this.categories.map(() => ECompareValueType.NUMBER));
   }
 }

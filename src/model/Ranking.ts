@@ -1,7 +1,7 @@
 import {equalArrays, fixCSS} from '../internal';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';
-import Column, {IColumnParent, IFlatColumn, visibilityChanged, dirtyValues, dirtyHeader, labelChanged, widthChanged, dirty} from './Column';
+import Column, {IColumnParent, IFlatColumn, visibilityChanged, dirtyValues, dirtyHeader, labelChanged, widthChanged, dirty, ICompareValue, ECompareValueType} from './Column';
 import {defaultGroup, IOrderedGroup} from './Group';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {joinGroups} from './internal';
@@ -122,13 +122,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return a.i - b.i; //to have a deterministic order
   };
 
-  readonly toCompareValue = (row: IDataRow) => {
-    let vs : (number | string | null)[] = [];
-    vs = vs.concat(...this.sortCriteria.map((d) => d.col.toCompareValue(row)));
-    vs.push(row.i);
-    return vs;
-  };
-
   readonly groupComparator = (a: IGroupData, b: IGroupData) => {
     if (this.groupSortCriteria.length === 0) {
       return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
@@ -142,12 +135,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return a.name.localeCompare(b.name);
   };
 
-  readonly toGroupCompareValue = (group: IGroupData) => {
-    let vs : (number | string | null)[] = [];
-    vs = vs.concat(...this.groupSortCriteria.map((d) => d.col.toCompareGroupValue(group)));
-    vs.push(group.name.toLowerCase());
-    return vs;
-  };
 
   readonly grouper = (row: IDataRow): IGroup => {
     const g = this.groupColumns;
@@ -297,6 +284,38 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       this.setGroupSortCriteria(restoreSortCriteria(dump.groupSortCriteria));
     }
   }
+
+
+  toCompareValue(row: IDataRow) {
+    let vs : ICompareValue[] = [];
+    vs = vs.concat(...this.sortCriteria.map((d) => d.col.toCompareValue(row)));
+    vs.push(row.i);
+    return vs;
+  }
+
+  toCompareValueType() {
+    const vs : {asc: boolean, v: ECompareValueType}[] = [];
+    for (const s of this.sortCriteria) {
+      const types = s.col.toCompareValueType();
+      if (Array.isArray(types)) {
+        for (const v of types) {
+          vs.push({asc: s.asc, v});
+        }
+      } else {
+        vs.push({asc: s.asc, v: types});
+      }
+    }
+    vs.push({asc: true, v: ECompareValueType.NUMBER});
+    return vs;
+  }
+
+  toGroupCompareValue(group: IGroupData) {
+    let vs : (number | string | null)[] = [];
+    vs = vs.concat(...this.groupSortCriteria.map((d) => d.col.toCompareGroupValue(group)));
+    vs.push(group.name.toLowerCase());
+    return vs;
+  }
+
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     let acc = offset; // + this.getWidth() + padding;
