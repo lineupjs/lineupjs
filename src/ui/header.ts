@@ -16,7 +16,6 @@ import ImpositionCompositesColumn from '../model/ImpositionCompositesColumn';
 import {IRankingHeaderContext} from './interfaces';
 import toolbarActions, {IOnClickHandler} from './toolbar';
 import {IToolbarAction} from './toolbar';
-import {ILineUpFlags} from '../interfaces';
 
 /** @internal */
 export interface IHeaderOptions {

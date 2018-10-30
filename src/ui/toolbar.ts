@@ -27,7 +27,6 @@ import appendNumber from './dialogs/groupNumber';
 import appendString from './dialogs/groupString';
 import ColorMappingDialog from './dialogs/ColorMappingDialog';
 import MappingDialog from './dialogs/MappingDialog';
-import {ILineUpFlags} from '../interfaces';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
