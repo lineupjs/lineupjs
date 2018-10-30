@@ -112,7 +112,7 @@ export default class DialogManager {
   }
 
   private setUp() {
-    this.node.ownerDocument.addEventListener('keyup', this.escKeyListener, {
+    this.node.ownerDocument!.addEventListener('keyup', this.escKeyListener, {
       passive: true
     });
     this.node.style.display = 'block';
@@ -120,7 +120,7 @@ export default class DialogManager {
 
   private takeDown() {
     this.clearHighlight();
-    this.node.ownerDocument.removeEventListener('keyup', this.escKeyListener);
+    this.node.ownerDocument!.removeEventListener('keyup', this.escKeyListener);
     this.node.style.display = null;
   }
 

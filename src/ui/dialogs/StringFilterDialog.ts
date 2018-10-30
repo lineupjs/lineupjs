@@ -65,7 +65,7 @@ export default class StringFilterDialog extends ADialog {
         this.updateFilter(null);
         return;
       }
-      this.updateFilter(isRegex.checked ? new RegExp(input.value) : input.value);
+      this.updateFilter(isRegex.checked ? new RegExp(input.value, 'gm') : input.value);
     };
 
     filterMissing.onchange = update;

@@ -126,7 +126,7 @@ export default class SidePanel {
     if (!this.search) {
       return;
     }
-    this.chooser = this.node.ownerDocument.createElement('header');
+    this.chooser = this.node.ownerDocument!.createElement('header');
     this.chooser.innerHTML = '<form></form>';
     this.chooser.classList.add(cssClass('side-panel-chooser'));
     this.chooser.firstElementChild!.appendChild(this.search.node);
@@ -208,7 +208,7 @@ export default class SidePanel {
   }
 
   private createEntry(ranking: Ranking, index: number) {
-    const entry = new SidePanelRanking(ranking, this.ctx, this.node.ownerDocument, this.options);
+    const entry = new SidePanelRanking(ranking, this.ctx, this.node.ownerDocument!, this.options);
 
     const header = this.node.querySelector('header')!;
     const main = this.node.querySelector('main')!;

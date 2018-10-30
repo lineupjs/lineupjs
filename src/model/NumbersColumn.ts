@@ -41,7 +41,7 @@ export declare function mappingChanged(previous: IMappingFunction, current: IMap
  */
 export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {
@@ -133,6 +133,10 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return r == null ? [] : r;
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
+  }
+
   getLabels(row: IDataRow) {
     return this.getValue(row).map(DEFAULT_FORMATTER);
   }
@@ -214,7 +218,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumbersColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([NumbersColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   getColor(row: IDataRow) {
@@ -229,7 +233,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
   }
 
   isFiltered() {

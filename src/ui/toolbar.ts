@@ -11,7 +11,7 @@ import CategoricalMappingFilterDialog from './dialogs/CategoricalMappingFilterDi
 import CompositeChildrenDialog from './dialogs/CompositeChildrenDialog';
 import CutOffHierarchyDialog from './dialogs/CutOffHierarchyDialog';
 import EditPatternDialog from './dialogs/EditPatternDialog';
-import MappingsFilterDialog from './dialogs/MappingsFilterDialog';
+import NumberFilterDialog from './dialogs/NumberFilterDialog';
 import ReduceDialog from './dialogs/ReduceDialog';
 import ScriptEditDialog from './dialogs/ScriptEditDialog';
 import SearchDialog from './dialogs/SearchDialog';
@@ -24,7 +24,9 @@ import SortDialog from './dialogs/SortDialog';
 import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
 import {EDateSort} from '../model/DatesColumn';
 import appendNumber from './dialogs/groupNumber';
+import appendString from './dialogs/groupString';
 import ColorMappingDialog from './dialogs/ColorMappingDialog';
+import MappingDialog from './dialogs/MappingDialog';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
@@ -253,6 +255,11 @@ const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
     title: 'Split',
     order: 2,
     append: appendNumber
+  },
+  groupString: <IToolbarDialogAddon>{
+    title: 'Groups',
+    order: 2,
+    append: appendString
   }
 };
 
@@ -268,7 +275,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   remove,
   rename,
   search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3 }),
-  filterMapped: uiDialog('Filter &hellip;', MappingsFilterDialog, (ctx) => [ctx], { shortcut: true }),
+  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], { shortcut: true }),
   filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], { shortcut: true }),
   filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], { shortcut: true }),
   filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true }),
@@ -277,6 +284,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true }),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
+  editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx]),
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
   editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], { shortcut: true }),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx]),

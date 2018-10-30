@@ -235,7 +235,7 @@ export default class Hierarchy {
       return;
     }
 
-    const wrapper = node.ownerDocument.createElement('footer');
+    const wrapper = node.ownerDocument!.createElement('footer');
     wrapper.appendChild(adder.node);
     wrapper.classList.add(cssClass('hierarchy-adder'));
     node.appendChild(wrapper);

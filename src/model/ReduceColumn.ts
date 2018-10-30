@@ -135,4 +135,14 @@ export default class ReduceColumn extends CompositeNumberColumn {
   get canJustAddNumbers() {
     return true;
   }
+
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      return {
+        value: this.getRawNumber(row),
+        children: this.children.map((d) => d.getExportValue(row, format))
+      };
+    }
+    return super.getExportValue(row, format);
+  }
 }

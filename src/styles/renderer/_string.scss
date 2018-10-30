@@ -22,3 +22,13 @@
   margin: 0;
   box-sizing: border-box;
 }
+
+.#{$lu_css_prefix}-right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.#{$lu_css_prefix}-center {
+  justify-content: center;
+  text-align: left;
+}

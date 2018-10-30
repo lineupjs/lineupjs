@@ -24,7 +24,7 @@ export function createImpositionsDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class ImpositionCompositesColumn extends CompositeColumn implements INumbersColumn {
@@ -125,6 +125,20 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   getRawNumber(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.getRawNumber(row) : NaN;
+  }
+
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      if (this.isMissing(row)) {
+        return null;
+      }
+      return {
+        label: this.getLabels(row),
+        color: this.getColor(row),
+        value: this.getRawNumbers(row)
+      };
+    }
+    return super.getExportValue(row, format);
   }
 
   getNumbers(row: IDataRow) {

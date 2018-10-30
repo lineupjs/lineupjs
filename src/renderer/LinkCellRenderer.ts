@@ -1,20 +1,20 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import StringColumn from '../model/StringColumn';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
+import LinkColumn from '../model/LinkColumn';
 
 /** @internal */
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title = 'Link';
 
   canRender(col: Column, mode: ERenderMode) {
-    return col instanceof StringColumn && mode !== ERenderMode.SUMMARY;
+    return col instanceof LinkColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: StringColumn) {
+  create(col: LinkColumn) {
     const align = col.alignment || 'left';
     return {
       template: `<a${align !== 'left' ? ` class="${cssClass(align)}"` : ''} target="_blank" rel="noopener" href=""></a>`,
@@ -22,24 +22,26 @@ export default class LinkCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        n.href = col.getValue(d);
+        const v = col.getLink(d);
+        n.href = v ? v.href : '';
         if (col.escape) {
-          setText(n, col.getLabel(d));
+          setText(n, v ? v.alt : '');
         } else {
-          n.innerHTML = col.getLabel(d);
+          n.innerHTML = v ? v.alt : '';
         }
       }
     };
   }
 
-  private static exampleText(col: Column, rows: IDataRow[]) {
+  private static exampleText(col: LinkColumn, rows: IDataRow[]) {
     const numExampleRows = 5;
     const examples = <string[]>[];
     for (const row of rows) {
       if (col.isMissing(row)) {
         continue;
       }
-      examples.push(`<a target="_blank" rel="noopener" href="${col.getValue(row)}">${col.getLabel(row)}</a>`);
+      const v = col.getLink(row);
+      examples.push(`<a target="_blank" rel="noopener"  href="${v ? v.href : ''}">${v ? v.alt : ''}</a>`);
       if (examples.length >= numExampleRows) {
         break;
       }
@@ -47,7 +49,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
-  createGroup(col: StringColumn) {
+  createGroup(col: LinkColumn) {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {

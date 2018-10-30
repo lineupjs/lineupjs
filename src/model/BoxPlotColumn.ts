@@ -39,7 +39,7 @@ export declare function sortMethodChanged(previous: ESortMethod, current: ESortM
 export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
 
 
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
 @Category('array')
 @SortByDefault('descending')
@@ -98,18 +98,38 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return super.getValue(row);
   }
 
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
+  }
+
   getValue(row: IDataRow) {
     const v = this.getRawValue(row);
     if (v == null) {
       return v;
     }
-    return {
+    const r: IBoxPlotData = {
       min: this.mapping.apply(v.min),
       max: this.mapping.apply(v.max),
       median: this.mapping.apply(v.median),
       q1: this.mapping.apply(v.q1),
       q3: this.mapping.apply(v.q3)
     };
+    if (v.outlier) {
+      Object.assign(r, {
+        outlier: v.outlier.map((d) => this.mapping.apply(d))
+      });
+    }
+    if (v.whiskerLow != null) {
+      Object.assign(r, {
+        whiskerLow: this.mapping.apply(v.whiskerLow)
+      });
+    }
+    if (v.whiskerHigh != null) {
+      Object.assign(r, {
+        whiskerHigh: this.mapping.apply(v.whiskerHigh)
+      });
+    }
+    return r;
   }
 
   getNumber(row: IDataRow): number {
@@ -205,7 +225,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([BoxPlotColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([BoxPlotColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   getColor(row: IDataRow) {
@@ -220,7 +240,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire([BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
   }
 
   isFiltered() {

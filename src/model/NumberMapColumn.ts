@@ -39,7 +39,7 @@ export declare function mappingChanged(previous: IMappingFunction, current: IMap
 export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn {
@@ -111,6 +111,10 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   getRawValue(row: IDataRow): IKeyValue<number>[] {
     const r = super.getValue(row);
     return r == null ? [] : r;
+  }
+
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
   }
 
   getLabels(row: IDataRow) {

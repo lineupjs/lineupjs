@@ -74,7 +74,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 export function updateHeader(node: HTMLElement, col: Column) {
   const label = <HTMLElement>node.querySelector(`.${cssClass('label')}`)!;
   label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label;
-  node.title = col.label;
+  node.title = col.description ? `${col.label}\n${col.description}` : col.label;
   node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;
   label.dataset.typeCat = categoryOf(col).name;
@@ -237,13 +237,15 @@ export function dragWidth(col: Column, node: HTMLElement) {
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
+    const delta = end - start;
+    const width = Math.max(0, col.getWidth() + delta);
+
     if (Math.abs(start - end) < 2) {
       //ignore
       return;
     }
-    const delta = end - start;
     start = end;
-    const width = Math.max(0, col.getWidth() + delta);
+    node.style.width = `${width}px`;
     col.setWidth(width);
     toggleToolbarIcons(node, col);
   };
@@ -257,6 +259,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.removeEventListener('mousemove', mouseMove);
     ueberElement.removeEventListener('mouseup', mouseUp);
     ueberElement.removeEventListener('mouseleave', mouseUp);
+    node.style.width = null;
 
     if (Math.abs(start - end) < 2) {
       //ignore

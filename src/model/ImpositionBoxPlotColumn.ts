@@ -24,7 +24,7 @@ export function createImpositionBoxPlotDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
 @SortByDefault('descending')
 export default class ImpositionBoxPlotColumn extends CompositeColumn implements IBoxPlotColumn {
@@ -115,6 +115,20 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   getRawNumber(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.getRawNumber(row) : NaN;
+  }
+
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      if (this.isMissing(row)) {
+        return null;
+      }
+      return {
+        label: this.getLabel(row),
+        color: this.getColor(row),
+        value: this.getRawNumber(row)
+      };
+    }
+    return super.getExportValue(row, format);
   }
 
   getBoxPlotData(row: IDataRow): IBoxPlotData | null {

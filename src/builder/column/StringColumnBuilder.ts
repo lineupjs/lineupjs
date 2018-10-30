@@ -1,7 +1,7 @@
-import {IStringColumnDesc} from '../../model';
+import {EAlignment, ILinkColumnDesc} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
-export default class StringColumnBuilder extends ColumnBuilder<IStringColumnDesc> {
+export default class StringColumnBuilder extends ColumnBuilder<ILinkColumnDesc> {
 
   constructor(column: string) {
     super('string', column);
@@ -12,6 +12,14 @@ export default class StringColumnBuilder extends ColumnBuilder<IStringColumnDesc
    */
   editable() {
     this.desc.type = 'annotate';
+    return this;
+  }
+
+  /**
+   * changes the alignment of the column
+   */
+  alignment(align: EAlignment) {
+    this.desc.alignment = align;
     return this;
   }
 
@@ -29,6 +37,7 @@ export default class StringColumnBuilder extends ColumnBuilder<IStringColumnDesc
    * @param {string[]} templates optional templates for patterns to provide in the edit pattern dialog
    */
   pattern(pattern: string, templates?: string[]) {
+    this.desc.type = 'link';
     this.desc.pattern = pattern;
     if (templates) {
       this.desc.patternTemplates = templates;

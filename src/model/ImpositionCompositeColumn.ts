@@ -20,7 +20,7 @@ export function createImpositionDesc(label: string = 'Imposition') {
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterMapped', 'colorMapped')
+@toolbar('filterNumber', 'colorMapped', 'editMapping')
 @SortByDefault('descending')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
@@ -99,7 +99,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
 
   getValue(row: IDataRow) {
     const w = this.wrapper;
-    return w ? w.getValue(row) : [];
+    return w ? w.getValue(row) : NaN;
   }
 
   getNumber(row: IDataRow) {
@@ -110,6 +110,20 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   getRawNumber(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.getRawNumber(row) : NaN;
+  }
+
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      if (this.isMissing(row)) {
+        return null;
+      }
+      return {
+        label: this.getLabel(row),
+        color: this.getColor(row),
+        value: this.getRawNumber(row)
+      };
+    }
+    return super.getExportValue(row, format);
   }
 
   isMissing(row: IDataRow) {

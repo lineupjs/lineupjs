@@ -1,6 +1,6 @@
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IDataRow} from './interfaces';
-import StringColumn, {patternChanged, filterChanged} from './StringColumn';
+import StringColumn, {filterChanged, groupingChanged} from './StringColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 
@@ -25,8 +25,8 @@ export default class AnnotateColumn extends StringColumn {
   }
 
   on(type: typeof AnnotateColumn.EVENT_VALUE_CHANGED, listener: typeof valueChanged | null): this;
-  on(type: typeof StringColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged | null): this;
   on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

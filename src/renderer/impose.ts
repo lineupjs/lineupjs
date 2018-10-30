@@ -3,7 +3,6 @@ import Column from '../model/Column';
 import {IImposer} from './interfaces';
 import {isMapAbleColumn} from '../model/MappingFunction';
 
-/** @internal */
 export function colorOf(col: Column, row: IDataRow | null, imposer?: IImposer, valueHint?: number) {
   if (imposer && imposer.color) {
     return imposer.color(row, valueHint);

@@ -1,4 +1,4 @@
-import {ascending, histogram, HistogramGenerator, mean, median, quantile} from 'd3-array';
+import {ascending, histogram, mean, median, quantile} from 'd3-array';
 import {ICategory, isMissingValue} from '../model';
 import {IMappingFunction} from '../model/MappingFunction';
 
@@ -15,6 +15,8 @@ export interface IBoxPlotData {
   readonly q1: number;
   readonly q3: number;
   readonly outlier?: number[];
+  readonly whiskerLow?: number;
+  readonly whiskerHigh?: number;
 }
 
 export interface IAdvancedBoxPlotData extends IBoxPlotData {
@@ -59,7 +61,7 @@ export class LazyBoxPlotData implements IStatistics {
 
   readonly missing: number;
 
-  constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: HistogramGenerator<number, number>) {
+  constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: (data: number[]) => INumberBin[]) {
     // filter out NaN
     this.values = values.filter((d) => !isMissingValue(d));
     this.missing = values.length - this.values.length;
@@ -76,6 +78,11 @@ export class LazyBoxPlotData implements IStatistics {
   @cached()
   private get sorted(): number[] {
     return this.values.slice().sort(ascending);
+  }
+
+  @cached()
+  private get sortedMapped(): number[] {
+    return this.scale ? this.sorted.map((v) => this.scale!.apply(v)) : this.sorted;
   }
 
   private map(v: number | undefined) {
@@ -126,17 +133,45 @@ export class LazyBoxPlotData implements IStatistics {
   }
 
   @cached()
-  get outlier() {
+  get whiskerLow() {
     const q1 = this.q1;
     const q3 = this.q3;
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
-    const right = q3 + 1.5 * iqr;
-    let outlier = this.sorted.filter((v) => (v < left || v > right) && !isMissingValue(v));
-    if (this.scale) {
-      outlier = outlier.map((v) => this.scale!.apply(v));
+    // look for the closests value which is bigger than the computed left
+    let whiskerLow = left;
+    for (const v of this.sortedMapped) {
+      if (left < v) {
+        whiskerLow = v;
+        break;
+      }
     }
-    return outlier;
+    return whiskerLow;
+  }
+
+  @cached()
+  get whiskerHigh() {
+    const q1 = this.q1;
+    const q3 = this.q3;
+    const iqr = q3 - q1;
+    const right = q3 + 1.5 * iqr;
+    // look for the closests value which is smaller than the computed right
+    let whiskerHigh = right;
+    for (const v of this.sortedMapped.slice().reverse()) {
+      if (v < right) {
+        whiskerHigh = v;
+        break;
+      }
+    }
+    return whiskerHigh;
+
+  }
+
+  @cached()
+  get outlier() {
+    const left = this.whiskerLow;
+    const right = this.whiskerHigh;
+    return this.sortedMapped.filter((v) => (v < left || v > right) && !isMissingValue(v));
   }
 }
 
@@ -200,7 +235,7 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
 
   const values = arr.map((v) => missing(v) ? NaN : acc(v));
 
-  return new LazyBoxPlotData(values, undefined, hist);
+  return new LazyBoxPlotData(values, undefined, <(data: number[]) => INumberBin[]>hist);
 }
 
 

@@ -80,7 +80,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       return l;
     }
     const weights = this.getWeights();
-    return c.map((c, i) => `${c.label} (${round(100 * weights[i], 1)})%`).join(' + ');
+    return c.map((c, i) => `${c.label} (${round(100 * weights[i], 1)}%)`).join(' + ');
   }
 
   protected createEventList() {
@@ -277,5 +277,15 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   isMissing(row: IDataRow) {
     return this._children.some((c) => isNumberColumn(c) && c.isMissing(row));
+  }
+
+  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+    if (format === 'json') {
+      return {
+        value: this.getRawNumber(row),
+        children: this.children.map((d) => d.getExportValue(row, format))
+      };
+    }
+    return super.getExportValue(row, format);
   }
 }
