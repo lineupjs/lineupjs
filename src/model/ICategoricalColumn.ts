@@ -57,6 +57,7 @@ export function toCategory(cat: (string | Partial<ICategory>), value: number, ne
   };
 }
 
+/** @internal */
 export function compareCategory(a: ICategory | null, b: ICategory | null) {
   const aNull = a == null || isNaN(a.value);
   const bNull = b == null || isNaN(b.value);
@@ -72,6 +73,7 @@ export function compareCategory(a: ICategory | null, b: ICategory | null) {
   return a.value - b.value;
 }
 
+/** @internal */
 export function toCompareCategoryValue(v: ICategory | null) {
   if (v == null) {
     return null;
@@ -79,7 +81,6 @@ export function toCompareCategoryValue(v: ICategory | null) {
   return [v.value, v.label.toLowerCase()];
 }
 
-export function toCategories(desc: ICategoricalDesc) {
 function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICategory | null, count: number} {
   const hist = new Map<ICategory | null, number>();
 
@@ -135,6 +136,7 @@ export function groupCompareCategory(a: IDataRow[], b: IDataRow[], col: ICategor
   return aMostFrequent.cat.value - bMostFrequent.cat.value;
 }
 
+/** @internal */
 export function toCategories(desc: ICategoricalDesc) {
   if (!desc.categories) {
     return [];
@@ -165,6 +167,7 @@ function isEmptyFilter(f: ICategoricalFilter | null) {
   return f == null || (!f.filterMissing && (f.filter == null || f.filter === ''));
 }
 
+/** @internal */
 export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICategoricalFilter | null) {
   if (a === b) {
     return true;
@@ -193,6 +196,7 @@ function arrayEquals<T>(a: T[], b: T[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
+/** @internal */
 export function isCategoryIncluded(filter: ICategoricalFilter | null, category: ICategory | null) {
   if (filter == null) {
     return true;
