@@ -22,15 +22,15 @@ export function isSortingAscByDefault(col: Column) {
 }
 
 export class Categories {
-  readonly string = {label: 'label', order: 1, name: 'string'};
-  readonly categorical = {label: 'categorical', order: 2, name: 'categorical'};
-  readonly number = {label: 'numerical', order: 3, name: 'number'};
-  readonly date = {label: 'date', order: 4, name: 'date'};
-  readonly array = {label: 'matrix', order: 5, name: 'array'};
-  readonly map = {label: 'map', order: 6, name: 'map'};
-  readonly composite = {label: 'combined', order: 7, name: 'composite'};
-  readonly support = {label: 'support', order: 8, name: 'support'};
-  readonly other = {label: 'others', order: 9, name: 'other'};
+  readonly string = {label: 'label', order: 1, name: 'string', featureLevel: 'basic'};
+  readonly categorical = {label: 'categorical', order: 2, name: 'categorical', featureLevel: 'basic'};
+  readonly number = {label: 'numerical', order: 3, name: 'number', featureLevel: 'basic'};
+  readonly date = {label: 'date', order: 4, name: 'date', featureLevel: 'basic'};
+  readonly array = {label: 'matrix', order: 5, name: 'array', featureLevel: 'advanced'};
+  readonly map = {label: 'map', order: 6, name: 'map', featureLevel: 'advanced'};
+  readonly composite = {label: 'combined', order: 7, name: 'composite', featureLevel: 'advanced'};
+  readonly support = {label: 'support', order: 8, name: 'support', featureLevel: 'advanced'};
+  readonly other = {label: 'others', order: 9, name: 'other', featureLevel: 'advanced'};
 }
 
 export const categories = new Categories();
@@ -54,15 +54,22 @@ export function isSupportType(col: Column) {
   return Reflect.hasMetadata(supportType, clazz);
 }
 
-export function categoryOf(col: (typeof Column) | Column) {
-  const cat = <keyof Categories>Reflect.getMetadata(category, col instanceof Column ? Object.getPrototypeOf(col).constructor : col) || 'other';
-  return categories[cat] || categories.other;
+export interface IColumnCategory {
+  label: string;
+  name: string;
+  order: number;
+  featureLevel: 'basic' | 'advanced';
 }
 
-export function categoryOfDesc(col: IColumnDesc | string, models: { [key: string]: typeof Column }) {
+export function categoryOf(col: (typeof Column) | Column): IColumnCategory {
+  const cat = <keyof Categories>Reflect.getMetadata(category, col instanceof Column ? Object.getPrototypeOf(col).constructor : col) || 'other';
+  return <IColumnCategory>categories[cat] || categories.other;
+}
+
+export function categoryOfDesc(col: IColumnDesc | string, models: { [key: string]: typeof Column }): IColumnCategory {
   const type = typeof col === 'string' ? col : col.type;
   const clazz = models[type];
-  return clazz ? categoryOf(clazz) : categories.other;
+  return clazz ? categoryOf(clazz) : <IColumnCategory>categories.other;
 }
 
 export function getAllToolbarActions(col: Column) {

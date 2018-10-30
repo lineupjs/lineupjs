@@ -31,6 +31,8 @@ import MappingDialog from './dialogs/MappingDialog';
 export interface IUIOptions {
   shortcut: boolean|'only';
   order: number;
+  featureLevel: 'basic' | 'advanced';
+  featureCategory: 'ranking' | 'model' | 'ui';
 }
 
 export interface IMouseEvent {
@@ -101,7 +103,7 @@ function uiSortMethod(methods: string[]): IToolbarDialogAddon {
 }
 
 const sort: IToolbarAction = {
-  title: 'Sort',
+  title: 'Sort', // basic ranking
   onClick: (col, evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level);
     if (!evt.ctrlKey) {
@@ -128,62 +130,75 @@ const sort: IToolbarAction = {
   },
   options: {
     shortcut: 'only',
-    order: 1
+    order: 1,
+    featureCategory: 'ranking',
+    featureLevel: 'basic'
   }
 };
 
 const sortBy: IToolbarAction = {
-  title: 'Sort By &hellip;',
+  title: 'Sort By &hellip;', // advanced ranking
   onClick: (col, evt, ctx, level) => {
     const dialog = new SortDialog(col, false, dialogContext(ctx, level, evt), ctx);
     dialog.open();
   },
   options: {
     shortcut: false,
-    order: 1
+    order: 1,
+    featureCategory: 'ranking',
+    featureLevel: 'advanced'
   }
 };
 
 const sortGroupBy: IToolbarAction = {
-  title: 'Sort Groups By &hellip;',
+  title: 'Sort Groups By &hellip;', // advanced ranking
   onClick: (col, evt, ctx, level) => {
     const dialog = new SortDialog(col, true, dialogContext(ctx, level, evt), ctx);
     dialog.open();
   },
   options: {
     shortcut: false,
-    order: 3
+    order: 3,
+    featureCategory: 'ranking',
+    featureLevel: 'advanced'
   }
 };
 
 const rename: IToolbarAction = {
-  title: 'Rename + Color &hellip;',
+  title: 'Rename &hellip;', // advanced
   onClick: (col, evt, ctx, level) => {
     const dialog = new RenameDialog(col, dialogContext(ctx, level, evt));
     dialog.open();
   },
   options: {
-    order: 4
+    order: 4,
+    featureCategory: 'ui',
+    featureLevel: 'advanced'
   }
 };
 
 const vis: IToolbarAction = {
-  title: 'Visualization &hellip;',
+  title: 'Visualization &hellip;', // advanced view
   onClick: (col, evt, ctx, level) => {
     const dialog = new ChangeRendererDialog(col, dialogContext(ctx, level, evt), ctx);
     dialog.open();
   },
-  options: {}
+  options: {
+    featureCategory: 'ui',
+    featureLevel: 'advanced'
+  }
 };
 
 const clone: IToolbarAction = {
-  title: 'Clone',
+  title: 'Clone', // advanced model
   onClick: (col, _evt, ctx) => {
     ctx.dialogManager.removeAll(); // since the column will be removed
     ctx.provider.takeSnapshot(col);
   },
   options: {
-    order: 80
+    order: 80,
+    featureCategory: 'model',
+    featureLevel: 'advanced'
   }
 };
 
@@ -195,12 +210,13 @@ const more: IToolbarAction = {
   },
   options: {
     shortcut: true,
-    order: 100
+    order: 100,
+    featureLevel: 'advanced'
   }
 };
 
 const remove: IToolbarAction = {
-  title: 'Remove',
+  title: 'Remove', // advanced model
   onClick: (col, _evt, ctx) => {
     ctx.dialogManager.removeAll(); // since the column will be removed
     const ranking = col.findMyRanker()!;
@@ -213,10 +229,13 @@ const remove: IToolbarAction = {
     ctx.provider.ensureOneRanking();
   },
   options: {
-    order: 90
+    order: 90,
+    featureCategory: 'model',
+    featureLevel: 'advanced'
   }
 };
 
+// basic ranking
 const group = ui('Group', (col, evt, ctx, level) => {
   ctx.dialogManager.removeAboveLevel(level);
 
@@ -229,12 +248,14 @@ const group = ui('Group', (col, evt, ctx, level) => {
   const order = current.indexOf(col);
 
   ranking.groupBy(col, order >= 0 ? -1 : current.length);
-}, { shortcut: 'only', order: 2 });
+}, { shortcut: 'only', order: 2, featureCategory: 'ranking', featureLevel: 'basic' });
 
+// advanced ranking
 const groupBy = ui('Group By &hellip;', (col, evt, ctx, level) => {
   const dialog = new GroupDialog(col, dialogContext(ctx, level, evt), ctx);
   dialog.open();
-}, { shortcut: false, order: 2 });
+}, { shortcut: false, order: 2, featureCategory: 'ranking', featureLevel: 'advanced' });
+
 
 
 const collapse = ui('Compress', (col, evt, ctx, level) => {
@@ -243,7 +264,7 @@ const collapse = ui('Compress', (col, evt, ctx, level) => {
   mcol.setCollapsed(!mcol.getCollapsed());
   const i = <HTMLElement>evt.currentTarget;
   i.title = mcol.getCollapsed() ? 'Expand' : 'Compress';
-});
+}, { featureCategory: 'model', featureLevel: 'advanced' });
 
 const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
   sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
@@ -274,26 +295,26 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   clone,
   remove,
   rename,
-  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3 }),
-  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], { shortcut: true }),
-  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], { shortcut: true }),
-  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], { shortcut: true }),
-  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true }),
-  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], { shortcut: true }),
-  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], { shortcut: false }),
-  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true }),
-  reduce: uiDialog('Reduce by &hellip;', ReduceDialog),
-  cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix]),
-  editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx]),
-  editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix]),
-  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], { shortcut: true }),
-  compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx]),
+  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3, featureCategory: 'ranking', featureLevel: 'basic' }),
+  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
+  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
+  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
+  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
+  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
+  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], { shortcut: false, featureCategory: 'ui', featureLevel: 'advanced' }),
+  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true, featureCategory: 'model', featureLevel: 'advanced' }),
+  reduce: uiDialog('Reduce by &hellip;', ReduceDialog, () => [], { featureCategory: 'model', featureLevel: 'advanced' }),
+  cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix], { featureCategory: 'model', featureLevel: 'advanced' }),
+  editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx], { featureCategory: 'model', featureLevel: 'advanced' }),
+  editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix], { featureCategory: 'model', featureLevel: 'advanced' }),
+  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], { shortcut: true, featureCategory: 'model', featureLevel: 'advanced' }),
+  compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx], { featureCategory: 'model', featureLevel: 'advanced' }),
   splitCombined: ui('Split Combined Column', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level);
     // split the combined column into its children
     (<CompositeColumn>col).children.reverse().forEach((c) => col.insertAfterMe(c));
     col.removeMe();
-  }),
+  }, { featureCategory: 'model', featureLevel: 'advanced' }),
   invertSelection: ui('Invert Selection', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level - 1); // close itself
     const s = ctx.provider.getSelection();
@@ -305,7 +326,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
     const ss = new Set(s);
     const others = order.filter((d) => !ss.has(d));
     ctx.provider.setSelection(others);
-  })
+  }, { featureCategory: 'model', featureLevel: 'advanced' })
 }, toolbarAddons);
 
 const cache = new Map<string, IToolbarAction[]>();

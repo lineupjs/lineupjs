@@ -40,7 +40,7 @@ export default class Taggle extends ALineUp {
     this.renderer.pushUpdateAble((ctx) => this.panel!.update(ctx));
     this.node.insertBefore(this.panel.node, this.node.firstChild);
     {
-      this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser"><label>
+      this.panel.node.insertAdjacentHTML('afterbegin', `<div class="lu-rule-button-chooser lu-feature-advanced lu-feature-ui"><label>
             <input type="checkbox">
             <span>Overview</span>
             <div></div>

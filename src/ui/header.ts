@@ -15,6 +15,7 @@ import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
 import ImpositionCompositesColumn from '../model/ImpositionCompositesColumn';
 import {IRankingHeaderContext} from './interfaces';
 import toolbarActions, {IOnClickHandler} from './toolbar';
+import {IToolbarAction} from './toolbar';
 
 /** @internal */
 export interface IHeaderOptions {
@@ -124,13 +125,13 @@ export function updateIconState(node: HTMLElement, col: Column) {
 }
 
 function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
-  return (title: string, onClick: IOnClickHandler) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="lu-action"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
+  return (action: IToolbarAction) => {
+    node.insertAdjacentHTML('beforeend', `<i title="${action.title}" class="lu-action lu-feature-${action.options.featureLevel || 'basic'} lu-feature-${action.options.featureCategory || 'others'}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${action.title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
       ctx.dialogManager.setHighlightColumn(col);
-      onClick(col, <any>evt, ctx, level, !showLabel);
+      action.onClick(col, <any>evt, ctx, level, !showLabel);
     };
     return i;
   };
@@ -149,14 +150,14 @@ export function createShortcutMenuItems(node: HTMLElement, level: number, col: C
   const addIcon = addIconDOM(node, col, ctx, level, false);
   const actions = toolbarActions(col, ctx);
 
-  actions.filter((d) => d.options.shortcut).forEach((d) => addIcon(d.title, d.onClick));
+  actions.filter((d) => d.options.shortcut).forEach(addIcon);
 }
 
 export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
   const addIcon = addIconDOM(node, col, ctx, level, true);
   const actions = toolbarActions(col, ctx);
 
-  actions.filter((d) => !d.title.startsWith('More') && d.options.shortcut !== 'only').forEach((d) => addIcon(d.title, d.onClick));
+  actions.filter((d) => !d.title.startsWith('More') && d.options.shortcut !== 'only').forEach(addIcon);
 }
 
 /** @internal */
