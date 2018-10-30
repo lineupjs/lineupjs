@@ -27,6 +27,7 @@ import appendNumber from './dialogs/groupNumber';
 import appendString from './dialogs/groupString';
 import ColorMappingDialog from './dialogs/ColorMappingDialog';
 import MappingDialog from './dialogs/MappingDialog';
+import {ILineUpFlags} from '../interfaces';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
@@ -332,7 +333,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
 const cache = new Map<string, IToolbarAction[]>();
 const cacheAddon = new Map<string, IToolbarDialogAddon[]>();
 
-export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
+function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
   if (cache.has(col.desc.type)) {
     return cache.get(col.desc.type)!;
   }
@@ -365,7 +366,7 @@ export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
     }
   });
 
-  if (actions.size > 0) {
+  if (Array.from(actions).some((d) => d.options.shortcut !== 'only')) {
     actions.add(more);
   }
 
@@ -377,6 +378,17 @@ export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   });
   cache.set(col.desc.type, r);
   return r;
+}
+
+
+export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
+  const toolbar = getFullToolbar(col, ctx);
+  const flags = ctx.flags;
+
+  return toolbar.filter((a) => {
+    // level is basic or not one of disabled features
+    return a.options.featureLevel === 'basic' || !((flags.advancedModelFeatures === false && a.options.featureCategory === 'model') || (flags.advancedRankingFeatures === false && a.options.featureCategory === 'ranking') || (flags.advancedUIFeatures === false && a.options.featureCategory === 'ui'));
+  });
 }
 
 export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHeaderContext) {
@@ -408,16 +420,16 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
 }
 
 export function isSortAble(col: Column, ctx: IRankingHeaderContext) {
-  const toolbar = getToolbar(col, ctx);
+  const toolbar = getFullToolbar(col, ctx);
   return toolbar.includes(sortBy);
 }
 
 export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
-  const toolbar = getToolbar(col, ctx);
+  const toolbar = getFullToolbar(col, ctx);
   return toolbar.includes(groupBy);
 }
 
 export function isGroupSortAble(col: Column, ctx: IRankingHeaderContext) {
-  const toolbar = getToolbar(col, ctx);
+  const toolbar = getFullToolbar(col, ctx);
   return toolbar.includes(sortGroupBy);
 }

@@ -1,5 +1,5 @@
 import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineupengine';
-import {ILineUpOptions} from '../interfaces';
+import {ILineUpOptions, ILineUpFlags} from '../interfaces';
 import {findOption, ICategoricalStatistics, IStatistics, round} from '../internal';
 import AEventDispatcher, {suffix, IEventListener} from '../internal/AEventDispatcher';
 import {
@@ -68,6 +68,7 @@ export default class EngineRenderer extends AEventDispatcher {
       provider: data,
       dialogManager,
       toolbar: this.options.toolbar,
+      flags: <ILineUpFlags>this.options.flags,
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
       renderer: (col: Column, imposer?: IImposer) => {
@@ -282,7 +283,7 @@ export default class EngineRenderer extends AEventDispatcher {
       animation: this.options.animated,
       customRowUpdate: this.options.customRowUpdate || (() => undefined),
       levelOfDetail: this.options.levelOfDetail || (() => 'high'),
-      flags: this.options.flags
+      flags: <ILineUpFlags>this.options.flags
     }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
       this.updateRotatedHeaderState();
