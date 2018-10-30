@@ -46,8 +46,24 @@ export interface IDynamicHeight {
 export interface ILineUpFlags {
   /**
    * optimization flag to disable frozen columns for optimizing rendering performance
+   * @default true
    */
   disableFrozenColumns: boolean;
+  /**
+   * flag whether advanced ranking features are enabled
+   * @default true
+   */
+  advancedRankingFeatures: boolean;
+  /**
+   * flag whether advanced model features are enabled
+   * @default true
+   */
+  advancedModelFeatures: boolean;
+  /**
+   * flag whether advanced UI features are enabled
+   * @default true
+   */
+  advancedUIFeatures: boolean;
 }
 
 export interface ILineUpOptions {

@@ -138,6 +138,23 @@ export default class EngineRenderer extends AEventDispatcher {
        #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated {
            transform: rotate(${-this.options.labelRotation}deg);
        }`);
+
+      const toDisable: string[] = [];
+      if (!this.options.flags.advancedRankingFeatures) {
+        toDisable.push('ranking');
+      }
+       if (!this.options.flags.advancedModelFeatures) {
+        toDisable.push('model');
+      }
+      if (!this.options.flags.advancedUIFeatures) {
+        toDisable.push('ui');
+      }
+      if (toDisable.length > 0) {
+        this.style.addRule('lineup_feature_disable', `
+        ${toDisable.map((d) => `.lu-feature-${d}.lu-feature-advanced`).join(', ')} {
+            display: none; !important
+        }`);
+      }
     }
 
     this.initProvider(data);
