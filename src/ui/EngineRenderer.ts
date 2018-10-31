@@ -153,7 +153,7 @@ export default class EngineRenderer extends AEventDispatcher {
       if (toDisable.length > 0) {
         this.style.addRule('lineup_feature_disable', `
         ${toDisable.map((d) => `.lu-feature-${d}.lu-feature-advanced`).join(', ')} {
-            display: none; !important
+            display: none !important;
         }`);
       }
     }

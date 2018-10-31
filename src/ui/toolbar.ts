@@ -209,7 +209,7 @@ const more: IToolbarAction = {
     dialog.open();
   },
   options: {
-    shortcut: true,
+    shortcut: 'only',
     order: 100,
     featureLevel: 'advanced'
   }
@@ -384,10 +384,19 @@ export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
   const flags = ctx.flags;
 
-  return toolbar.filter((a) => {
+  const filtered = toolbar.filter((a) => {
     // level is basic or not one of disabled features
     return a.options.featureLevel === 'basic' || !((flags.advancedModelFeatures === false && a.options.featureCategory === 'model') || (flags.advancedRankingFeatures === false && a.options.featureCategory === 'ranking') || (flags.advancedUIFeatures === false && a.options.featureCategory === 'ui'));
   });
+
+  if (Array.from(filtered).every((d) => d.options.shortcut === 'only')) {
+    // no "more" needed
+    const index = filtered.indexOf(more);
+    if (index >= 0) {
+      filtered.splice(index, 1);
+    }
+  }
+  return filtered;
 }
 
 export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHeaderContext) {
