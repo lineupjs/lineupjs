@@ -40,7 +40,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="lu-label">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
     <div class="lu-toolbar"></div>
     <div class="lu-spacing"></div>
-    <div class="lu-handle"></div>
+    <div class="lu-handle lu-feature-advanced lu-feature-model"></div>
   `;
 
   // addTooltip(node, col);

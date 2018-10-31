@@ -38,6 +38,10 @@ section.#{$lu_css_prefix}-header {
     font-weight: 500;
   }
 
+  &[data-type=rank] > .#{$lu_css_prefix}-label {
+    padding-left: 0;
+  }
+
   > .#{$lu_css_prefix}-sort {
     position: absolute;
     left: 1px;
