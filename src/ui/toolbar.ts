@@ -3,7 +3,6 @@ import Column from '../model/Column';
 import CompositeColumn, {IMultiLevelColumn} from '../model/CompositeColumn';
 import ADialog, {IDialogContext} from './dialogs/ADialog';
 import ChangeRendererDialog from './dialogs/ChangeRendererDialog';
-import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
 import RenameDialog from './dialogs/RenameDialog';
 import BooleanFilterDialog from './dialogs/BooleanFilterDialog';
 import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
@@ -202,19 +201,6 @@ const clone: IToolbarAction = {
   }
 };
 
-const more: IToolbarAction = {
-  title: 'More &hellip;',
-  onClick: (col, evt, ctx, level) => {
-    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, evt), ctx);
-    dialog.open();
-  },
-  options: {
-    shortcut: 'only',
-    order: 100,
-    featureLevel: 'advanced'
-  }
-};
-
 const remove: IToolbarAction = {
   title: 'Remove', // advanced model
   onClick: (col, _evt, ctx) => {
@@ -291,7 +277,6 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   sort,
   sortBy,
   sortGroupBy,
-  more,
   clone,
   remove,
   rename,
@@ -329,6 +314,13 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   }, { featureCategory: 'model', featureLevel: 'advanced' })
 }, toolbarAddons);
 
+function sortActions(a: IToolbarAction, b: IToolbarAction) {
+  if (a.options.order === b.options.order) {
+    return a.title.localeCompare(b.title);
+  }
+  return (a.options.order || 50) - (b.options.order || 50);
+}
+
 const cache = new Map<string, IToolbarAction[]>();
 const cacheAddon = new Map<string, IToolbarDialogAddon[]>();
 
@@ -365,38 +357,20 @@ function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
     }
   });
 
-  if (Array.from(actions).some((d) => d.options.shortcut !== 'only')) {
-    actions.add(more);
-  }
-
-  const r = Array.from(actions).sort((a, b) => {
-    if (a.options.order === b.options.order) {
-      return a.title.localeCompare(b.title);
-    }
-    return (a.options.order || 50) - (b.options.order || 50);
-  });
+  const r = Array.from(actions).sort(sortActions);
   cache.set(col.desc.type, r);
   return r;
 }
 
 
-export default function getToolbar(col: Column, ctx: IRankingHeaderContext) {
+export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
   const flags = ctx.flags;
 
-  const filtered = toolbar.filter((a) => {
+  return toolbar.filter((a) => {
     // level is basic or not one of disabled features
     return a.options.featureLevel === 'basic' || !((flags.advancedModelFeatures === false && a.options.featureCategory === 'model') || (flags.advancedRankingFeatures === false && a.options.featureCategory === 'ranking') || (flags.advancedUIFeatures === false && a.options.featureCategory === 'ui'));
   });
-
-  if (Array.from(filtered).every((d) => d.options.shortcut === 'only')) {
-    // no "more" needed
-    const index = filtered.indexOf(more);
-    if (index >= 0) {
-      filtered.splice(index, 1);
-    }
-  }
-  return filtered;
 }
 
 export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHeaderContext) {
