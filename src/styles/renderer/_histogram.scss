@@ -127,7 +127,10 @@
     right: 0;
     border-right: none;
     border-left: 1px solid black;
+  }
 
+  > [data-handle=min].#{$lu_css_prefix}-swap-hint,
+  > [data-handle=max]:not(.#{$lu_css_prefix}-swap-hint) {
     &::before {
       left: -5em;
       text-align: right;
