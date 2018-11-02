@@ -1,4 +1,4 @@
-import {ascending, histogram, HistogramGenerator, mean, median, quantile} from 'd3-array';
+import {ascending, histogram, mean, median, quantile} from 'd3-array';
 import {ICategory, isMissingValue} from '../model';
 import {IMappingFunction} from '../model/MappingFunction';
 
