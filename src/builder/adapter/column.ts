@@ -26,7 +26,7 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
   const {column} = props;
   const desc = <any>{column, type: props.type, label: column ? column[0].toUpperCase() + column.slice(1) : props.type};
 
-  (<(keyof IBuilderAdapterColumnDescProps)[]>['label', 'description', 'frozen', 'color', 'width', 'renderer', 'groupRenderer', 'summaryRenderer', 'visible', 'fixed']).forEach((key) => {
+  (<(keyof IBuilderAdapterColumnDescProps)[]>['label', 'description', 'frozen', 'width', 'renderer', 'groupRenderer', 'summaryRenderer', 'visible', 'fixed']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -138,6 +138,9 @@ export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: a
 
   const domain = props.domain ? props.domain : <[number, number]>extent(data, (d) => <number>d[(<any>desc).column]);
 
+  if (props.hasOwnProperty('color')) {
+    desc.colorMapping = props.color;
+  }
   (<(keyof IBuilderAdapterNumberColumnDescProps)[]>['sort', 'colorMapping']).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];

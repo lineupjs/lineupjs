@@ -62,7 +62,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     super(id, desc);
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(this.color, desc);
+    this.colorMapping = restoreColorMapping(desc);
     this.sort = desc.sort || EAdvancedSortMethod.median;
     this.setDefaultRenderer('mapbars');
   }
@@ -156,7 +156,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(this.color, dump.colorMapping);
+      this.colorMapping = createColorMappingFunction(dump.colorMapping);
     }
   }
 

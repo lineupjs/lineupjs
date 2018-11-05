@@ -1,7 +1,7 @@
 import {round} from '../../internal';
 import StackColumn from '../../model/StackColumn';
 import ADialog, {IDialogContext} from './ADialog';
-import {forEach} from './utils';
+import {forEach, colorOf} from './utils';
 
 /** @internal */
 export default class WeightsEditDialog extends ADialog {
@@ -30,7 +30,7 @@ export default class WeightsEditDialog extends ADialog {
 
     const children = this.column.children;
     node.insertAdjacentHTML('beforeend', `<div>
-        ${this.weights.map((weight, i) => `<div><input type="number" value="${round(weight * 100, 2)}" min="0" max="100" step="any"><span><span style="background-color: ${children[i].color}; width: ${round(weight * 100, 2)}%"></span></span>${children[i].label}</div>`).join('')}
+        ${this.weights.map((weight, i) => `<div><input type="number" value="${round(weight * 100, 2)}" min="0" max="100" step="any"><span><span style="background-color: ${colorOf(children[i])}; width: ${round(weight * 100, 2)}%"></span></span>${children[i].label}</div>`).join('')}
     </div>`);
     this.forEach('input[type=number]', (d: HTMLInputElement) => {
       d.oninput = () => {

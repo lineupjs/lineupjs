@@ -1,5 +1,6 @@
 import Column from '../../model';
 import {forEach, uniqueId} from '../../renderer/utils';
+import {isMapAbleColumn} from '../../model/MappingFunction';
 
 /** @internal */
 export function updateFilterState(attachment: HTMLElement, column: Column, filtered: boolean) {
@@ -31,6 +32,14 @@ export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string)
       passive: true
     });
   });
+}
+
+/** @internal */
+export function colorOf(col: Column) {
+  if (isMapAbleColumn(col)) {
+    return col.getColorMapping().apply(0);
+  }
+  return Column.DEFAULT_COLOR;
 }
 
 

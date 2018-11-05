@@ -248,6 +248,10 @@ export interface IMapAbleDesc {
    */
   range?: [number, number];
 
+  /**
+   * @deprecated use colorMapping instead
+   */
+  color?: string;
   colorMapping?: string | ((v: number)=>string) | any;
 }
 

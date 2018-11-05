@@ -8,10 +8,10 @@ export function colorOf(col: Column, row: IDataRow | null, imposer?: IImposer, v
     return imposer.color(row, valueHint);
   }
   if (!row) {
-    if (isMapAbleColumn(col) && valueHint != null) {
-      return col.getColorMapping().apply(valueHint);
+    if (isMapAbleColumn(col)) {
+      return col.getColorMapping().apply(valueHint != null ? valueHint : 0);
     }
-    return col.color;
+    return Column.DEFAULT_COLOR;
   }
   return col.getColor(row);
 }
