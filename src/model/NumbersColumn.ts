@@ -4,10 +4,9 @@ import ArrayColumn, {IArrayColumnDesc, IArrayDesc, spliceChanged} from './ArrayC
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
-import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
-  noNumberFilter
+  noNumberFilter, isDummyNumberFilter, restoreNumberFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
@@ -175,7 +174,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
       this.sort = dump.sortMethod;
     }
     if (dump.filter) {
-      this.currentFilter = restoreFilter(dump.filter);
+      this.currentFilter = restoreNumberFilter(dump.filter);
     }
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);

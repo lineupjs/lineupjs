@@ -1,5 +1,5 @@
 import {timeFormat, timeParse} from 'd3-time-format';
-import {IDateDesc} from './DateColumn';
+import {IDateDesc} from './IDateColumn';
 import {IKeyValue} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';

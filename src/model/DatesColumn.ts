@@ -4,7 +4,7 @@ import {dialogAddons} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDateDesc} from './DateColumn';
+import {IDateDesc} from './IDateColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_MISSING, isMissingValue} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';

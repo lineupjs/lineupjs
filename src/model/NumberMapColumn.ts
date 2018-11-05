@@ -4,10 +4,9 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IKeyValue} from './IArrayColumn';
 import {IDataRow} from './interfaces';
-import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc,
-  INumberFilter, noNumberFilter
+  INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter
 } from './INumberColumn';
 import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
@@ -155,7 +154,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
       this.sort = dump.sortMethod;
     }
     if (dump.filter) {
-      this.currentFilter = restoreFilter(dump.filter);
+      this.currentFilter = restoreNumberFilter(dump.filter);
     }
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);

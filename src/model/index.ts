@@ -41,6 +41,7 @@ export * from './Group';
 export * from './interfaces';
 export * from './ICategoricalColumn';
 export * from './INumberColumn';
+export * from './IDateColumn';
 export * from './IArrayColumn';
 export * from './MappingFunction';
 
@@ -91,8 +92,7 @@ export {default as Ranking, ISortCriteria} from './Ranking';
 export {default as ReduceColumn, createReduceDesc, IReduceDesc, IReduceColumnDesc} from './ReduceColumn';
 export {default as ScriptColumn, createScriptDesc, IScriptDesc, IScriptColumnDesc} from './ScriptColumn';
 export {default as SelectionColumn, createSelectionDesc, ISelectionColumnDesc} from './SelectionColumn';
-export * from './SetColumn';
-export {default as SetColumn} from './SetColumn';
+export {default as SetColumn, ISetColumnDesc, ISetDesc} from './SetColumn';
 export {default as StackColumn, createStackDesc} from './StackColumn';
 export {default as StringColumn, EAlignment, IStringDesc, IStringColumnDesc} from './StringColumn';
 export * from './StringMapColumn';
