@@ -42,7 +42,6 @@
 
   [data-meta='first last'] [data-renderer=aggregate],
   [data-agg=group] [data-renderer=aggregate] {
-    padding-right: $lu_aggregate_square_bracket_width;
     cursor: pointer;
 
     &::after {
