@@ -51,7 +51,6 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     super(id, desc);
     this.format = timeFormat(desc.dateFormat || '%x');
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || '%x');
-    this.setDefaultRenderer('default');
   }
 
   dump(toDescRef: (desc: any) => any) {

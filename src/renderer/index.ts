@@ -30,6 +30,7 @@ import StringCellRenderer from './StringCellRenderer';
 import TableCellRenderer from './TableCellRenderer';
 import UpSetCellRenderer from './UpSetCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
+import DateCellRenderer from './DateCellRenderer';
 
 export {
   default as IRenderContext,
@@ -59,6 +60,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   catdistributionbar: new CategoricalStackedDistributionlCellRenderer(),
   categorical: new CategoricalCellRenderer(),
   circle: new CircleCellRenderer(),
+  date: new DateCellRenderer(),
   default: defaultCellRenderer,
   dot: new DotCellRenderer(),
   group: new GroupCellRenderer(),
