@@ -1,14 +1,15 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {Category, toolbar, dialogAddons} from './annotations';
 import {IDataRow, IGroupData} from './interfaces';
-import {FIRST_IS_MISSING, isMissingValue, missingGroup} from './missing';
+import {FIRST_IS_MISSING, isMissingValue, missingGroup, isUnknown} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
 import Column from './Column';
-import {IDateFilter, IDateDesc, noDateFilter, isDummyDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup} from './IDateColumn';
-import {min, median} from 'd3-array';
+import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter, isEqualDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup} from './IDateColumn';
+import {median} from 'd3-array';
 import {defaultGroup} from './Group';
+import {equal} from '../internal/utils';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
@@ -116,6 +117,34 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return this.format(v);
   }
 
+  isFiltered() {
+    return !isDummyDateFilter(this.currentFilter);
+  }
+
+  getFilter(): IDateFilter {
+    return Object.assign({}, this.currentFilter);
+  }
+
+  setFilter(value: IDateFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+    if (isEqualDateFilter(value, this.currentFilter)) {
+      return;
+    }
+    const bak = this.getFilter();
+    this.currentFilter.min = isUnknown(value.min) ? -Infinity : value.min;
+    this.currentFilter.max = isUnknown(value.max) ? Infinity : value.max;
+    this.currentFilter.filterMissing = value.filterMissing;
+    this.fire([DateColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
+  }
+
+  /**
+   * filter the current row if any filter is set
+   * @param row
+   * @returns {boolean}
+   */
+  filter(row: IDataRow) {
+    return isDateIncluded(this.currentFilter, this.getDate(row));
+  }
+
   compare(a: IDataRow, b: IDataRow) {
     const av = this.getDate(a);
     const bv = this.getDate(b);
@@ -129,6 +158,19 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
       return FIRST_IS_MISSING * -1;
     }
     return av.getTime() - bv.getTime();
+  }
+
+  getDateGrouper() {
+    return Object.assign({}, this.currentGrouper);
+  }
+
+  setDateGrouper(value: IDateGrouper) {
+    if (equal(this.currentGrouper, value)) {
+      return;
+    }
+    const bak = this.getDateGrouper();
+    this.currentGrouper = Object.assign({}, value);
+    this.fire([DateColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
   group(row: IDataRow) {
