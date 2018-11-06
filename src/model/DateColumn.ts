@@ -1,12 +1,14 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {Category, toolbar, dialogAddons} from './annotations';
-import {IDataRow} from './interfaces';
-import {FIRST_IS_MISSING, isMissingValue} from './missing';
+import {IDataRow, IGroupData} from './interfaces';
+import {FIRST_IS_MISSING, isMissingValue, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
 import Column from './Column';
-import {IDateFilter, IDateDesc, noDateFilter, isDummyDateFilter, IDateGrouper, restoreDateFilter, IDateColumn} from './IDateColumn';
+import {IDateFilter, IDateDesc, noDateFilter, isDummyDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup} from './IDateColumn';
+import {min, median} from 'd3-array';
+import {defaultGroup} from './Group';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
@@ -127,5 +129,41 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
       return FIRST_IS_MISSING * -1;
     }
     return av.getTime() - bv.getTime();
+  }
+
+  group(row: IDataRow) {
+    const v = this.getDate(row);
+    if (!v || !(v instanceof Date)) {
+      return missingGroup;
+    }
+    if (!this.currentGrouper) {
+      return defaultGroup;
+    }
+    const g = toDateGroup(this.currentGrouper, v);
+    return {
+      name: g.name,
+      color: Column.DEFAULT_COLOR
+    };
+  }
+
+  groupCompare(a: IGroupData, b: IGroupData) {
+    const as = <Date[]>a.rows.map((d) => this.getDate(d)).filter((d) => d instanceof Date);
+    const bs = <Date[]>b.rows.map((d) => this.getDate(d)).filter((d) => d instanceof Date);
+    if (as.length === 0) {
+      return bs.length === 0 ? 0 : FIRST_IS_MISSING;
+    }
+    if (bs.length === 0) {
+      return FIRST_IS_MISSING * -1;
+    }
+    const amin = median(as, (d) => d.getTime())!;
+    const bmin = median(bs, (d) => d.getTime())!;
+
+    if (!this.currentGrouper) {
+      return amin - bmin;
+    }
+    const {value: aValue} = toDateGroup(this.currentGrouper, new Date(amin));
+    const {value: bValue} = toDateGroup(this.currentGrouper, new Date(bmin));
+
+    return aValue - bValue;
   }
 }
