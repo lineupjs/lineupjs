@@ -16,14 +16,14 @@ export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
 
 /**
  * emitted when the filter property changes
- * @asMemberOf NumberColumn
+ * @asMemberOf DateColumn
  * @event
  */
 export declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 /**
  * emitted when the grouping property changes
- * @asMemberOf NumberColumn
+ * @asMemberOf DateColumn
  * @event
  */
 export declare function groupingChanged(previous: IDateGrouper | null, current: IDateGrouper | null): void;

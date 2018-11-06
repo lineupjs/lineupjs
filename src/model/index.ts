@@ -63,10 +63,9 @@ export {default, default as Column, IFlatColumn, IColumnParent, IColumnMetaData,
 export {default as CompositeColumn, isMultiLevelColumn, IMultiLevelColumn} from './CompositeColumn';
 export * from './CompositeNumberColumn';
 export {default as CompositeNumberColumn} from './CompositeNumberColumn';
-export * from './DateColumn';
-export {default as DateColumn} from './DateColumn';
-export * from './DatesMapColumn';
-export {default as DatesMapColumn} from './DatesMapColumn';
+export {default as DateColumn, IDateColumnDesc} from './DateColumn';
+export {default as DatesMapColumn, IDateMapColumnDesc} from './DatesMapColumn';
+export {default as DatesColumn, IDatesDesc, IDatesColumnDesc} from './DatesColumn';
 export * from './DummyColumn';
 export {default as DummyColumn} from './DummyColumn';
 export {default as GroupColumn, createGroupDesc, EGroupSortMethod} from './GroupColumn';
