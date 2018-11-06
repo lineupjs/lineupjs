@@ -3,6 +3,7 @@ import Column from './Column';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {isNumberIncluded, INumberFilter} from './INumberColumn';
 import {timeDay, timeMonth, timeWeek, timeMinute, timeSecond, timeHour} from 'd3-time';
+import {equal} from '../internal/utils';
 
 export {INumberFilter as IDateFilter, restoreNumberFilter as restoreDateFilter,
   noNumberFilter as noDateFilter, isEqualNumberFilter as isEqualDateFilter,
@@ -65,6 +66,20 @@ export interface IDateGrouper {
    * not circular: 01.2018 != 01.2017
    */
   circular: boolean;
+}
+
+/**
+ * @internal
+ */
+export function defaultDateGrouper(): IDateGrouper {
+  return { granularity: 'month', circular: false};
+}
+
+/**
+ * @internal
+ */
+export function isDefaultDateGrouper(grouper: IDateGrouper) {
+  return equal(defaultDateGrouper(), grouper);
 }
 
 /**

@@ -6,7 +6,7 @@ import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
 import Column from './Column';
-import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter, isEqualDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup} from './IDateColumn';
+import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter, isEqualDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup, isDefaultDateGrouper, defaultDateGrouper} from './IDateColumn';
 import {median} from 'd3-array';
 import {defaultGroup} from './Group';
 import {equal} from '../internal/utils';
@@ -45,7 +45,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
    * @private
    */
   private currentFilter: IDateFilter = noDateFilter();
-  private currentGrouper: IDateGrouper | null = null;
+  private currentGrouper: IDateGrouper = defaultDateGrouper();
 
   constructor(id: string, desc: Readonly<IDateColumnDesc>) {
     super(id, desc);
@@ -57,7 +57,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
     r.filter = isDummyDateFilter(this.currentFilter) ? null : this.currentFilter;
-    if (this.currentGrouper) {
+    if (this.currentGrouper && !isDefaultDateGrouper(this.currentGrouper)) {
       r.grouper = this.currentGrouper;
     }
     return r;
@@ -197,8 +197,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     if (bs.length === 0) {
       return FIRST_IS_MISSING * -1;
     }
-    const amin = median(as, (d) => d.getTime())!;
-    const bmin = median(bs, (d) => d.getTime())!;
+    const amin = trueMedian(as, (d) => d.getTime())!;
+    const bmin = trueMedian(bs, (d) => d.getTime())!;
 
     if (!this.currentGrouper) {
       return amin - bmin;
@@ -208,4 +208,13 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
 
     return aValue - bValue;
   }
+}
+
+function trueMedian(dates: Date[], acc: (d: Date) => number) {
+  if (dates.length % 2 === 1) {
+    return median(dates, acc);
+  }
+  // to avoid interpolating between the centers do it manually
+  const s = dates.slice().sort((a, b) => a.getTime() - b.getTime());
+  return s[Math.floor(s.length / 2)].getTime();
 }

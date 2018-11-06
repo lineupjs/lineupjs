@@ -6,7 +6,7 @@ import {IDateGranularity} from '../../model';
 
 /** @internal */
 export default function appendDate(col: DateColumn, node: HTMLElement, dialog: IDialogContext) {
-  const current = col.getDateGrouper() || { granularity: 'month', circular: false};
+  const current = col.getDateGrouper();
 
   let granularity = current.granularity;
   let circular = current.circular;
@@ -34,6 +34,7 @@ export default function appendDate(col: DateColumn, node: HTMLElement, dialog: I
 
   node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}DC`)!.addEventListener('change', (evt) => {
     circular = (<HTMLInputElement>evt.currentTarget).checked;
+    update();
   }, { passive: true });
 
   forEach(node, 'input[name=granularity]', (d: HTMLInputElement) => {
