@@ -23,7 +23,7 @@ export declare function mappingChanged(previous: number[], current: number[]): v
 
 /**
  * emitted when the filter property changes
- * @asMemberOf SetColumn
+ * @asMemberOf OrdinalColumn
  * @event
  */
 export declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
