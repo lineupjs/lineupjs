@@ -5,7 +5,8 @@
   align-items: center;
 }
 
-[data-agg=group] [data-renderer=string] {
+[data-agg=group] [data-renderer=string],
+[data-agg=group] [data-renderer=date] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;

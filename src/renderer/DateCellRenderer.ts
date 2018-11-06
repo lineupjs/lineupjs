@@ -1,9 +1,9 @@
-import {IDataRow} from '../model';
+import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer, setText} from './utils';
-import DateColumn from '../model/DateColumn';
+import {noop, noRenderer, setText, exampleText} from './utils';
+import DateColumn, {choose} from '../model/DateColumn';
 
 export default class DateCellRenderer implements ICellRendererFactory {
   title = 'Date';
@@ -25,8 +25,20 @@ export default class DateCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(_col: DateColumn): IGroupCellRenderer {
-    return noRenderer;
+  createGroup(col: DateColumn): IGroupCellRenderer {
+    const isGrouped = col.isGroupedBy() >= 0;
+    const grouper = col.getDateGrouper();
+    return {
+      template: `<div> </div>`,
+      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
+        if (isGrouped) {
+          const chosen = choose(rows, grouper, col);
+          setText(n, chosen.name);
+          return;
+        }
+        setText(n, exampleText(col, rows));
+      }
+    };
   }
 
   createSummary(): ISummaryRenderer {

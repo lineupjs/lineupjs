@@ -10,6 +10,7 @@ import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter,
 import {median} from 'd3-array';
 import {defaultGroup} from './Group';
 import {equal} from '../internal/utils';
+import {numberCompare} from './INumberColumn';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
@@ -187,26 +188,26 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     };
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
-    const as = <Date[]>a.rows.map((d) => this.getDate(d)).filter((d) => d instanceof Date);
-    const bs = <Date[]>b.rows.map((d) => this.getDate(d)).filter((d) => d instanceof Date);
-    if (as.length === 0) {
-      return bs.length === 0 ? 0 : FIRST_IS_MISSING;
-    }
-    if (bs.length === 0) {
-      return FIRST_IS_MISSING * -1;
-    }
-    const amin = trueMedian(as, (d) => d.getTime())!;
-    const bmin = trueMedian(bs, (d) => d.getTime())!;
-
-    if (!this.currentGrouper) {
-      return amin - bmin;
-    }
-    const {value: aValue} = toDateGroup(this.currentGrouper, new Date(amin));
-    const {value: bValue} = toDateGroup(this.currentGrouper, new Date(bmin));
-
-    return aValue - bValue;
+  groupCompare(a: IGroupData, b: IGroupData): number {
+    const av = choose(a.rows, this.currentGrouper, this).value;
+    const bv = choose(b.rows, this.currentGrouper, this).value;
+    return numberCompare(av, bv, false, false);
   }
+}
+
+/**
+ * @internal
+ */
+export function choose(rows: IDataRow[], grouper: IDateGrouper | null, col: IDateColumn): { value: number | null, name: string } {
+  const vs = <Date[]>rows.map((d) => col.getDate(d)).filter((d) => d instanceof Date);
+  if (vs.length === 0) {
+    return {value: null, name: ''};
+  }
+  const median = trueMedian(vs, (d) => d.getTime())!;
+  if (!grouper) {
+    return {value: median, name: (new Date(median)).toString()};
+  }
+  return toDateGroup(grouper, new Date(median));
 }
 
 function trueMedian(dates: Date[], acc: (d: Date) => number) {

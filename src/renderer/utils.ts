@@ -2,6 +2,7 @@ import {MIN_LABEL_WIDTH} from '../config';
 import Column from '../model/Column';
 import {IArrayColumn} from '../model/IArrayColumn';
 import {hsl} from 'd3-color';
+import {IDataRow} from '../model/interfaces';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -179,3 +180,22 @@ export const uniqueId: (prefix: string)=>string = (function() {
   let idCounter = 0;
   return (prefix: string) => `${prefix}${(idCounter++).toString(36)}`;
 })();
+
+
+const NUM_EXAMPLE_VALUES = 5;
+
+/** @internal */
+export function exampleText(col: Column, rows: IDataRow[]) {
+  const examples = <string[]>[];
+  for (const row of rows) {
+    if (col.isMissing(row)) {
+      continue;
+    }
+    const v = col.getLabel(row);
+    examples.push(v);
+    if (examples.length >= NUM_EXAMPLE_VALUES) {
+      break;
+    }
+  }
+  return `${examples.join(', ')}${examples.length < rows.length ? ', ...' : ''}`;
+}
