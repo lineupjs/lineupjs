@@ -59,11 +59,11 @@ export default class ReduceColumn extends CompositeNumberColumn {
     //compute the index of the maximal one
     const c = this._children;
     if (c.length === 0 || this.reduce === EAdvancedSortMethod.q1 || this.reduce === EAdvancedSortMethod.q3 || this.reduce === EAdvancedSortMethod.mean) {
-      return this.color;
+      return Column.DEFAULT_COLOR;
     }
     const v = this.compute(row);
     const selected = c.find((c) => c.getValue(row) === v);
-    return selected ? selected.color : this.color;
+    return selected ? selected.getColor(row) : Column.DEFAULT_COLOR;
   }
 
   protected compute(row: IDataRow) {

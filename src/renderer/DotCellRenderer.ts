@@ -24,7 +24,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     const dots = isNumbersColumn(col) ? col.dataLength! : 1;
     let tmp = '';
     for (let i = 0; i < dots; ++i) {
-      tmp += `<div style='background-color: ${col.color}' title=''></div>`;
+      tmp += `<div style='background-color: ${Column.DEFAULT_COLOR}' title=''></div>`;
     }
 
     const update = (n: HTMLElement, vs: number[], labels: string[], colors: (string | null)[]) => {

@@ -13,6 +13,7 @@ import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces'
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
+import {ILineUpFlags} from '../interfaces';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -23,9 +24,7 @@ export interface IEngineRankingOptions {
   animation: boolean;
   levelOfDetail: (rowIndex: number) => 'high' | 'low';
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
-  flags: {
-    disableFrozenColumns: boolean;
-  };
+  flags: ILineUpFlags;
 }
 
 /**
@@ -94,7 +93,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     levelOfDetail: () => 'high',
     customRowUpdate: () => undefined,
     flags: {
-      disableFrozenColumns: false
+      disableFrozenColumns: false,
+      advancedModelFeatures: true,
+      advancedRankingFeatures: true,
+      advancedUIFeatures: true
     }
   };
 

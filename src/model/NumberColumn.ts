@@ -96,7 +96,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(this.color, desc);
+    this.colorMapping = restoreColorMapping(desc);
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
@@ -127,7 +127,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(this.color, dump.colorMapping);
+      this.colorMapping = createColorMappingFunction(dump.colorMapping);
     }
     if (dump.groupSortMethod) {
       this.groupSortMethod = dump.groupSortMethod;
@@ -249,7 +249,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   getColor(row: IDataRow) {
     const v = this.getNumber(row);
     if (isNaN(v)) {
-      return this.color;
+      return Column.DEFAULT_COLOR;
     }
     return this.colorMapping.apply(v);
   }

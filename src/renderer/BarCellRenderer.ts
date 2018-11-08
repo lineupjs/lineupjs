@@ -29,7 +29,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
-          <div style='background-color: ${col.color}'>
+          <div style='background-color: ${Column.DEFAULT_COLOR}'>
             <span ${this.renderValue ? '' : 'class="lu-hover-only"'}></span>
           </div>
         </div>`,

@@ -35,7 +35,7 @@ import LinkColumn from './LinkColumn';
 import LinkMapColumn from './LinkMapColumn';
 import LinksColumn from './LinksColumn';
 
-export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons} from './annotations';
+export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons, categoryOfDesc, categoryOf, IColumnCategory} from './annotations';
 export {isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup} from './missing';
 export * from './Group';
 export * from './interfaces';

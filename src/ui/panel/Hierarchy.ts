@@ -24,7 +24,7 @@ export default class Hierarchy {
 
   constructor(private readonly ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('aside');
-    this.node.classList.add('lu-hierarchy');
+    this.node.classList.add('lu-hierarchy', 'lu-feature-advanced', 'lu-feature-ranking');
     this.node.innerHTML = `
       <section class="lu-hierarchy-group">
       </section>

@@ -8,6 +8,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './in
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
 import {matchColumns, forEachChild} from './utils';
+import {colorOf} from '../ui/dialogs/utils';
 
 
 /** @internal */
@@ -66,7 +67,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     const cols = col.children;
     let acc = 0;
     const {template, render} = getHistDOMRenderer(context.totalNumberOfRows, col, {
-      color: () => cols[(acc++) % cols.length].color
+      color: () => colorOf(cols[(acc++) % cols.length])
     });
     return {
       template,

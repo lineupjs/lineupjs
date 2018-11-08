@@ -1,5 +1,5 @@
 import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineupengine';
-import {ILineUpOptions} from '../interfaces';
+import {ILineUpOptions, ILineUpFlags} from '../interfaces';
 import {findOption, ICategoricalStatistics, IStatistics, round} from '../internal';
 import AEventDispatcher, {suffix, IEventListener} from '../internal/AEventDispatcher';
 import {
@@ -68,6 +68,7 @@ export default class EngineRenderer extends AEventDispatcher {
       provider: data,
       dialogManager,
       toolbar: this.options.toolbar,
+      flags: <ILineUpFlags>this.options.flags,
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
       renderer: (col: Column, imposer?: IImposer) => {
@@ -138,6 +139,23 @@ export default class EngineRenderer extends AEventDispatcher {
        #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated {
            transform: rotate(${-this.options.labelRotation}deg);
        }`);
+
+      const toDisable: string[] = [];
+      if (!this.options.flags.advancedRankingFeatures) {
+        toDisable.push('ranking');
+      }
+       if (!this.options.flags.advancedModelFeatures) {
+        toDisable.push('model');
+      }
+      if (!this.options.flags.advancedUIFeatures) {
+        toDisable.push('ui');
+      }
+      if (toDisable.length > 0) {
+        this.style.addRule('lineup_feature_disable', `
+        ${toDisable.map((d) => `.lu-feature-${d}.lu-feature-advanced`).join(', ')} {
+            display: none !important;
+        }`);
+      }
     }
 
     this.initProvider(data);
@@ -265,7 +283,7 @@ export default class EngineRenderer extends AEventDispatcher {
       animation: this.options.animated,
       customRowUpdate: this.options.customRowUpdate || (() => undefined),
       levelOfDetail: this.options.levelOfDetail || (() => 'high'),
-      flags: this.options.flags
+      flags: <ILineUpFlags>this.options.flags
     }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
       this.updateRotatedHeaderState();

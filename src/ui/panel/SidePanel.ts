@@ -11,7 +11,7 @@ import {
   createSelectionDesc,
   IColumnDesc
 } from '../../model';
-import {categoryOfDesc} from '../../model/annotations';
+import {categoryOfDesc, IColumnCategory} from '../../model/annotations';
 import Ranking from '../../model/Ranking';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../interfaces';
@@ -21,15 +21,9 @@ import {dialogContext} from '../toolbar';
 import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
 
 
-interface IColumnDescCategory {
-  label: string;
-  name: string;
-  order: number;
-}
-
 interface IColumnWrapper {
   desc: IColumnDesc;
-  category: IColumnDescCategory;
+  category: IColumnCategory;
   id: string;
   text: string;
 }
@@ -63,9 +57,15 @@ export default class SidePanel {
     hierarchy: true,
     placeholder: 'Add Column...',
     formatItem: (item: IColumnWrapper | IGroupSearchItem<IColumnWrapper>, node: HTMLElement) => {
-      node.dataset.typeCat = isWrapper(item) ? item.category.name : (<IColumnWrapper>item.children[0]).category.name;
+      const w: IColumnWrapper = isWrapper(item) ? item : (<IColumnWrapper>item.children[0]);
+      node.dataset.typeCat = w.category.name;
       if (isWrapper(item)) {
-        node.dataset.type = item.desc.type;
+        node.dataset.type = w.desc.type;
+      }
+      if (node.parentElement) {
+        node.parentElement.classList.add('lu-feature-model');
+        node.parentElement.classList.toggle('lu-feature-advanced', w.category.featureLevel === 'advanced');
+        node.parentElement.classList.toggle('lu-feature-basic', w.category.featureLevel === 'basic');
       }
       return item.text;
     },
@@ -305,7 +305,7 @@ export default class SidePanel {
   }
 
   private static groupByType(entries: IColumnWrapper[]): { text: string, children: IColumnWrapper[] }[] {
-    const map = new Map<IColumnDescCategory, IColumnWrapper[]>();
+    const map = new Map<IColumnCategory, IColumnWrapper[]>();
     entries.forEach((entry) => {
       if (!map.has(entry.category)) {
         map.set(entry.category, [entry]);

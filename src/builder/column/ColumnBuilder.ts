@@ -70,9 +70,9 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
 
   /**
    * sets the column color in case of numerical columns
+   * @deprecated use colorMapping in the number case instead
    */
-  color(color: string) {
-    this.desc.color = color;
+  color(_color: string) {
     return this;
   }
 
