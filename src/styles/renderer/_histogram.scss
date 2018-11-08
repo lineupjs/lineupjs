@@ -109,7 +109,10 @@ span.#{$lu_css_prefix}-mapping-hint {
   right: 0;
   border-right: none;
   border-left: 1px solid black;
+}
 
+.#{$lu_css_prefix}-histogram-min.#{$lu_css_prefix}-swap-hint,
+.#{$lu_css_prefix}-histogram-max:not(.#{$lu_css_prefix}-swap-hint) {
   &::before {
     left: -5em;
     text-align: right;
