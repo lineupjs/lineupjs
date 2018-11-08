@@ -1,13 +1,14 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {median, min, max} from 'd3-array';
-import {dialogAddons} from './annotations';
+import {dialogAddons, toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDateDesc} from './DateColumn';
+import {IDateDesc, IDateColumn, IDateFilter, noDateFilter, restoreDateFilter, isDummyDateFilter} from './IDateColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_MISSING, isMissingValue} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
+import DateColumn from './DateColumn';
 
 export enum EDateSort {
   min = 'min',
@@ -23,18 +24,28 @@ export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
 
 /**
  * emitted when the sort method property changes
- * @asMemberOf Column
+ * @asMemberOf DatesColumn
  * @event
  */
 export declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
 
+/**
+ * emitted when the filter property changes
+ * @asMemberOf DatesColumn
+ * @event
+ */
+export declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
+
+@toolbar('filterDate')
 @dialogAddons('sort', 'sortDates')
-export default class DatesColumn extends ArrayColumn<Date | null> {
+export default class DatesColumn extends ArrayColumn<Date | null> implements IDateColumn {
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
+  static readonly EVENT_FILTER_CHANGED = DateColumn.EVENT_FILTER_CHANGED;
 
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;
   private sort: EDateSort;
+  private currentFilter: IDateFilter = noDateFilter();
 
   constructor(id: string, desc: Readonly<IDatesColumnDesc>) {
     super(id, desc);
@@ -45,10 +56,11 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ArrayColumn.EVENT_SPLICE_CHANGED]);
+    return super.createEventList().concat([DatesColumn.EVENT_SORTMETHOD_CHANGED, DatesColumn.EVENT_FILTER_CHANGED]);
   }
 
   on(type: typeof DatesColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  on(type: typeof DatesColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -66,6 +78,14 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
   }
 
   getValue(row: IDataRow): (Date | null)[] {
+    return this.getDates(row);
+  }
+
+  getLabels(row: IDataRow) {
+    return this.getValue(row).map((v) => (v instanceof Date) ? this.format(v) : '');
+  }
+
+  getDates(row: IDataRow): (Date | null)[] {
     return super.getValue(row).map((v) => {
       if (isMissingValue(v)) {
         return null;
@@ -77,8 +97,12 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
     });
   }
 
-  getLabels(row: IDataRow) {
-    return this.getValue(row).map((v) => (v instanceof Date) ? this.format(v) : '');
+  getDate(row: IDataRow) {
+    const av = <Date[]>this.getDates(row).filter(Boolean);
+    if (av.length === 0) {
+      return null;
+    }
+    return new Date(compute(av, this.sort));
   }
 
   getSortMethod() {
@@ -99,6 +123,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
+    r.filter = !isDummyDateFilter(this.currentFilter) ? this.currentFilter : null;
     return r;
   }
 
@@ -106,6 +131,9 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;
+    }
+    if (dump.filter) {
+      this.currentFilter = restoreDateFilter(dump.filter);
     }
   }
 
@@ -124,6 +152,22 @@ export default class DatesColumn extends ArrayColumn<Date | null> {
     const as = compute(av, this.sort);
     const bs = compute(bv, this.sort);
     return as - bs;
+  }
+
+  isFiltered() {
+    return DateColumn.prototype.isFiltered.call(this);
+  }
+
+  getFilter(): IDateFilter {
+    return DateColumn.prototype.getFilter.call(this);
+  }
+
+  setFilter(value: IDateFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+    DateColumn.prototype.setFilter.call(this, value);
+  }
+
+  filter(row: IDataRow) {
+    return DateColumn.prototype.filter.call(this, row);
   }
 }
 

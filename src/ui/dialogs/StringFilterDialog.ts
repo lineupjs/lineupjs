@@ -20,7 +20,7 @@ export default class StringFilterDialog extends ADialog {
 
   reset() {
     this.findInput('input[type="text"]').value = '';
-    this.forEach('input[type=checkbox', (n: HTMLInputElement) => n.checked = false);
+    this.forEach('input[type=checkbox]', (n: HTMLInputElement) => n.checked = false);
     this.updateFilter(null);
   }
 

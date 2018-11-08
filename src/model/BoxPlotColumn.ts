@@ -4,9 +4,8 @@ import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
-import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
-  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter
+  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
@@ -38,6 +37,13 @@ export declare function sortMethodChanged(previous: ESortMethod, current: ESortM
  */
 export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
 
+/**
+ * emitted when the filter property changes
+ * @asMemberOf BoxPlotColumn
+ * @event
+ */
+export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+
 
 @toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
@@ -46,7 +52,8 @@ export declare function mappingChanged(previous: IMappingFunction, current: IMap
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
-  static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
+  static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;
+  static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
 
   static readonly DEFAULT_FORMATTER = format('.3n');
 
@@ -68,7 +75,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     super(id, desc);
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(this.color, desc);
+    this.colorMapping = restoreColorMapping(desc);
 
     this.sort = desc.sort || ESortMethod.min;
 
@@ -175,7 +182,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
       this.sort = dump.sortMethod;
     }
     if (dump.filter) {
-      this.currentFilter = restoreFilter(dump.filter);
+      this.currentFilter = restoreNumberFilter(dump.filter);
     }
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);
@@ -183,17 +190,18 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(this.color, dump.colorMapping);
+      this.colorMapping = createColorMappingFunction(dump.colorMapping);
     }
   }
 
   protected createEventList() {
-    return super.createEventList().concat([BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, BoxPlotColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, BoxPlotColumn.EVENT_MAPPING_CHANGED, BoxPlotColumn.EVENT_FILTER_CHANGED]);
   }
 
   on(type: typeof BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
   on(type: typeof BoxPlotColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
   on(type: typeof BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  on(type: typeof BoxPlotColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

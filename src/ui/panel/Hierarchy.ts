@@ -26,7 +26,7 @@ export default class Hierarchy {
 
   constructor(private readonly ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('aside');
-    this.node.classList.add(cssClass('hierarchy'));
+    this.node.classList.add(cssClass('hierarchy'), cssClass('feature-advanced'), cssClass('feature-ranking'));
     this.node.innerHTML = `
       <section class="${cssClass('group-hierarchy')}">
       </section>

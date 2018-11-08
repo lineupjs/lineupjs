@@ -1,0 +1,6 @@
+@import '../vars';
+
+[data-agg=detail] [data-renderer=date] {
+  display: flex;
+  align-items: center;
+}

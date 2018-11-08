@@ -1,6 +1,6 @@
 import Column from '../../model/Column';
 import {ISummaryRenderer} from '../../renderer/interfaces';
-import {createToolbar, dragAbleColumn, updateHeader} from '../header';
+import {dragAbleColumn, updateHeader, createShortcutMenuItems} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import {NumberColumn} from '../../model';
 import {cssClass} from '../../styles';
@@ -31,7 +31,7 @@ export default class SidePanelEntryVis {
         <div class="${cssClass('label')} ${cssClass('typed-icon')} ${cssClass('side-panel-label')}"></div>
         <div class="${cssClass('toolbar')} ${cssClass('side-panel-toolbar')}"></div>
       </header>`;
-    createToolbar(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx);
+    createShortcutMenuItems(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx, false);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
 
     const summary = this.ctx.asElement(this.summary.template);

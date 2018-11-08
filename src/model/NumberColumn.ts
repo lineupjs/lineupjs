@@ -3,10 +3,10 @@ import {equalArrays} from '../internal';
 import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
-import {groupCompare, isDummyNumberFilter, restoreFilter} from './internal';
+import {groupCompare} from './internal';
 import {
   default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
-  isNumberIncluded, noNumberFilter, numberCompare
+  isNumberIncluded, noNumberFilter, numberCompare, isDummyNumberFilter, restoreNumberFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,
@@ -96,7 +96,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(this.color, desc);
+    this.colorMapping = restoreColorMapping(desc);
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
@@ -127,13 +127,13 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(this.color, dump.colorMapping);
+      this.colorMapping = createColorMappingFunction(dump.colorMapping);
     }
     if (dump.groupSortMethod) {
       this.groupSortMethod = dump.groupSortMethod;
     }
     if (dump.filter) {
-      this.currentFilter = restoreFilter(dump.filter);
+      this.currentFilter = restoreNumberFilter(dump.filter);
     }
     if (dump.stratifyThreshholds) {
       this.currentGroupThresholds = dump.stratifyThresholds;
@@ -249,7 +249,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   getColor(row: IDataRow) {
     const v = this.getNumber(row);
     if (isNaN(v)) {
-      return this.color;
+      return Column.DEFAULT_COLOR;
     }
     return this.colorMapping.apply(v);
   }

@@ -5,6 +5,7 @@ import {IImposer, IRenderContext} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
 import {IToolbarAction, IToolbarDialogAddon} from './toolbar';
 import DialogManager from './dialogs/DialogManager';
+import {ILineUpFlags} from '../interfaces';
 
 export interface IRenderInfo {
   type: string;
@@ -21,6 +22,8 @@ export interface IRankingHeaderContextContainer {
   asElement(html: string): HTMLElement;
 
   toolbar: { [key: string]: IToolbarAction | IToolbarDialogAddon };
+
+  flags: ILineUpFlags;
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 

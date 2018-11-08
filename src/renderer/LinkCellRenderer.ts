@@ -53,7 +53,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
-        n.innerHTML = `${LinkCellRenderer.exampleText(col, rows)}`;
+        n.innerHTML = LinkCellRenderer.exampleText(col, rows);
       }
     };
   }

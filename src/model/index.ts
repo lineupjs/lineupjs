@@ -35,12 +35,13 @@ import LinkColumn from './LinkColumn';
 import LinkMapColumn from './LinkMapColumn';
 import LinksColumn from './LinksColumn';
 
-export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons} from './annotations';
+export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons, categoryOfDesc, categoryOf, IColumnCategory} from './annotations';
 export {isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup} from './missing';
 export * from './Group';
 export * from './interfaces';
 export * from './ICategoricalColumn';
 export * from './INumberColumn';
+export * from './IDateColumn';
 export * from './IArrayColumn';
 export * from './MappingFunction';
 
@@ -62,10 +63,9 @@ export {default, default as Column, IFlatColumn, IColumnParent, IColumnMetaData,
 export {default as CompositeColumn, isMultiLevelColumn, IMultiLevelColumn} from './CompositeColumn';
 export * from './CompositeNumberColumn';
 export {default as CompositeNumberColumn} from './CompositeNumberColumn';
-export * from './DateColumn';
-export {default as DateColumn} from './DateColumn';
-export * from './DatesMapColumn';
-export {default as DatesMapColumn} from './DatesMapColumn';
+export {default as DateColumn, IDateColumnDesc} from './DateColumn';
+export {default as DatesMapColumn, IDateMapColumnDesc} from './DatesMapColumn';
+export {default as DatesColumn, IDatesDesc, IDatesColumnDesc} from './DatesColumn';
 export * from './DummyColumn';
 export {default as DummyColumn} from './DummyColumn';
 export {default as GroupColumn, createGroupDesc, EGroupSortMethod} from './GroupColumn';
@@ -91,8 +91,7 @@ export {default as Ranking, ISortCriteria} from './Ranking';
 export {default as ReduceColumn, createReduceDesc, IReduceDesc, IReduceColumnDesc} from './ReduceColumn';
 export {default as ScriptColumn, createScriptDesc, IScriptDesc, IScriptColumnDesc} from './ScriptColumn';
 export {default as SelectionColumn, createSelectionDesc, ISelectionColumnDesc} from './SelectionColumn';
-export * from './SetColumn';
-export {default as SetColumn} from './SetColumn';
+export {default as SetColumn, ISetColumnDesc, ISetDesc} from './SetColumn';
 export {default as StackColumn, createStackDesc} from './StackColumn';
 export {default as StringColumn, EAlignment, IStringDesc, IStringColumnDesc} from './StringColumn';
 export * from './StringMapColumn';

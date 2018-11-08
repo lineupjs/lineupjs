@@ -6,6 +6,7 @@ export interface IStyleColumn {
 
   /**
    * color of this column
+   * @deprecated not used anymore
    */
   color: string;
 

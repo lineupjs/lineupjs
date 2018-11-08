@@ -1,7 +1,7 @@
 import {round} from '../../internal';
 import StackColumn from '../../model/StackColumn';
 import ADialog, {IDialogContext} from './ADialog';
-import {forEach} from './utils';
+import {forEach, colorOf} from './utils';
 import {cssClass} from '../../styles';
 
 /** @internal */
@@ -33,7 +33,7 @@ export default class WeightsEditDialog extends ADialog {
         ${this.weights.map((weight, i) => `<div class="${cssClass('dialog-weights-table-entry')}>
           <input type="number" value="${round(weight * 100, 2)}" min="0" max="100" step="any">
           <span class="${cssClass('dialog-filter-color-bar')}">
-            <span style="background-color: ${children[i].color}; width: ${round(weight * 100, 2)}%"></span>
+            <span style="background-color: ${colorOf(children[i])}; width: ${round(weight * 100, 2)}%"></span>
           </span>
           ${children[i].label}
         </div>`).join('')}
