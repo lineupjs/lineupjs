@@ -145,7 +145,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
       minHint.style.width = `${f.percent(newValue)}%`;
       min.dataset.value = round(newValue, 2).toString();
       min.style.left = `${f.percent(newValue)}%`;
-      min.classList.toggle('lu-swap-hint', f.percent(newValue) > 15);
+      min.classList.toggle(cssClass('swap-hint'), f.percent(newValue) > 15);
       setFilter();
     }, {
         value, min: f.domain[0], max: f.domain[1]
@@ -174,7 +174,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
       maxHint.style.width = `${100 - f.percent(newValue)}%`;
       max.dataset.value = round(newValue, 2).toString();
       max.style.right = `${100 - f.percent(newValue)}%`;
-      min.classList.toggle('lu-swap-hint', f.percent(newValue) < 85);
+      min.classList.toggle(cssClass('swap-hint'), f.percent(newValue) < 85);
       setFilter();
     }, {
         value, min: f.domain[0], max: f.domain[1]
@@ -197,12 +197,12 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
 
       if ((<HTMLElement>handle).classList.contains(cssClass('histogram-min'))) {
         handle.style.left = `${percent}%`;
-        handle.classList.toggle('lu-swap-hint', percent > 15);
+        handle.classList.toggle(cssClass('swap-hint'), percent > 15);
         minHint.style.width = `${percent}%`;
         return;
       }
       handle.style.right = `${100 - percent}%`;
-      handle.classList.toggle('lu-swap-hint', percent < 85);
+      handle.classList.toggle(cssClass('swap-hint'), percent < 85);
       maxHint.style.width = `${100 - percent}%`;
     },
     onEnd: (handle) => {

@@ -53,10 +53,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d);
         if (!data || col.isMissing(d)) {
-          n.classList.add('lu-missing');
+          n.classList.add(cssClass('missing'));
           return;
         }
-        n.classList.remove('lu-missing');
+        n.classList.remove(cssClass('missing'));
         const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       },

@@ -146,7 +146,7 @@ export function actionCSSClass(title: string) {
 
 function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
   return (action: IToolbarAction) => {
-    node.insertAdjacentHTML('beforeend', `<i data-a="${action.options.shortcut === 'only' ? 'o' : action.options.shortcut ? 's' : 'r'}" title="${action.title}" class="${actionCSSClass(title)} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${action.title}</span> </i>`);
+    node.insertAdjacentHTML('beforeend', `<i data-a="${action.options.shortcut === 'only' ? 'o' : action.options.shortcut ? 's' : 'r'}" title="${action.title}" class="${actionCSSClass(action.title)} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${action.title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
@@ -176,7 +176,7 @@ export function createShortcutMenuItems(node: HTMLElement, level: number, col: C
   }
 
   // need a more entry
-  node.insertAdjacentHTML('beforeend', `<i data-a="m" data-m="${moreEntries}" title="More &hellip;" class="lu-action"><span aria-hidden="true">More &hellip;</span></i>`);
+  node.insertAdjacentHTML('beforeend', `<i data-a="m" data-m="${moreEntries}" title="More &hellip;" class="${actionCSSClass('More')}"><span aria-hidden="true">More &hellip;</span></i>`);
   const i = <HTMLElement>node.lastElementChild;
   i.onclick = (evt) => {
     evt.stopPropagation();

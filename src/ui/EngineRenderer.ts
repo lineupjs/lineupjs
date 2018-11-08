@@ -124,7 +124,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
       // FIXME flat
       this.style.addRule('lineup_rotation', `
-       #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated`, {
+       #${this.idPrefix}.${cssClass('rotated-label')} .${cssClass('label')}.${cssClass('rotated')}`, {
           transform: `rotate(${-this.options.labelRotation}deg)`
         });
 
@@ -140,9 +140,9 @@ export default class EngineRenderer extends AEventDispatcher {
       }
       if (toDisable.length > 0) {
         this.style.addRule('lineup_feature_disable', `
-        ${toDisable.map((d) => `.lu-feature-${d}.lu-feature-advanced`).join(', ')} {
-            display: none !important;
-        }`);
+        ${toDisable.map((d) => `.${cssClass('feature')}-${d}.${cssClass('feature-advanced')}`).join(', ')}`, {
+            display: 'none !important'
+        });
       }
     }
 

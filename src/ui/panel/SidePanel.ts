@@ -65,9 +65,9 @@ export default class SidePanel {
         node.dataset.type = w.desc.type;
       }
       if (node.parentElement) {
-        node.parentElement.classList.add('lu-feature-model');
-        node.parentElement.classList.toggle('lu-feature-advanced', w.category.featureLevel === 'advanced');
-        node.parentElement.classList.toggle('lu-feature-basic', w.category.featureLevel === 'basic');
+        node.parentElement.classList.add(cssClass('feature-model'));
+        node.parentElement.classList.toggle(cssClass('feature-advanced'), w.category.featureLevel === 'advanced');
+        node.parentElement.classList.toggle(cssClass('feature-basic'), w.category.featureLevel === 'basic');
       }
       return item.text;
     },

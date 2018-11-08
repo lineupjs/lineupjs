@@ -4,6 +4,7 @@ import Column from '../model/Column';
 import DataProvider from '../provider/ADataProvider';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {clear} from '../internal';
+import {cssClass} from '../styles';
 
 import {getUnsupportedBrowserError, SUPPORTED_FIREFOX_VERSION, SUPPORTED_CHROME_VERSION, SUPPORTED_EDGE_VERSION} from '../browser';
 
@@ -38,9 +39,9 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     this.isBrowserSupported = ignoreIncompatibleBrowser || !error;
 
     if (!this.isBrowserSupported) {
-      this.node.classList.add('lu-unsupported-browser');
+      this.node.classList.add(cssClass('unsupported-browser'));
       this.node.innerHTML = `<span>${error}</span>
-      <div class="lu-unsupported-browser-hint">
+      <div class="${cssClass('unsupported-browser')}">
         <a href="https://www.mozilla.org/en-US/firefox/" rel="noopener" target="_blank" data-browser="firefox" data-version="${SUPPORTED_FIREFOX_VERSION}"></a>
         <a href="https://www.google.com/chrome/index.html" rel="noopener" target="_blank" data-browser="chrome" data-version="${SUPPORTED_CHROME_VERSION}" title="best support"></a>
         <a href="https://www.microsoft.com/en-us/windows/microsoft-edge" rel="noopener" target="_blank" data-browser="edge" data-version="${SUPPORTED_EDGE_VERSION}"></a>
