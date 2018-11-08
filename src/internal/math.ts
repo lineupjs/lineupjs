@@ -1,4 +1,4 @@
-import {ascending, histogram, HistogramGenerator, mean, median, quantile} from 'd3-array';
+import {ascending, histogram, mean, median, quantile} from 'd3-array';
 import {ICategory, isMissingValue} from '../model';
 import {IMappingFunction} from '../model/MappingFunction';
 
@@ -61,7 +61,7 @@ export class LazyBoxPlotData implements IStatistics {
 
   readonly missing: number;
 
-  constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: HistogramGenerator<number, number>) {
+  constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: (data: number[]) => INumberBin[]) {
     // filter out NaN
     this.values = values.filter((d) => !isMissingValue(d));
     this.missing = values.length - this.values.length;
@@ -235,7 +235,7 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
 
   const values = arr.map((v) => missing(v) ? NaN : acc(v));
 
-  return new LazyBoxPlotData(values, undefined, hist);
+  return new LazyBoxPlotData(values, undefined, <(data: number[]) => INumberBin[]>hist);
 }
 
 
