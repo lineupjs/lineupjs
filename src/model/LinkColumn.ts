@@ -28,7 +28,7 @@ export declare type ILinkColumnDesc = ILinkDesc & IValueColumnDesc<string | ILin
 
 /**
  * emitted when the filter property changes
- * @asMemberOf StringColumn
+ * @asMemberOf LinkColumn
  * @event
  */
 export declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
@@ -36,14 +36,14 @@ export declare function filterChanged(previous: string | RegExp | null, current:
 
 /**
  * emitted when the grouping property changes
- * @asMemberOf StringColumn
+ * @asMemberOf LinkColumn
  * @event
  */
 export declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * emitted when the pattern property changes
- * @asMemberOf StringColumn
+ * @asMemberOf LinkColumn
  * @event
  */
 export declare function patternChanged(previous: string, current: string): void;

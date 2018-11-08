@@ -171,3 +171,17 @@ export function isNumberIncluded(filter: INumberFilter | null, value: number) {
   }
   return !((isFinite(filter.min) && value < filter.min) || (isFinite(filter.max) && value > filter.max));
 }
+
+/** @internal */
+export function isDummyNumberFilter(filter: INumberFilter) {
+  return !filter.filterMissing && !isFinite(filter.min) && !isFinite(filter.max);
+}
+
+/** @internal */
+export function restoreNumberFilter(v: INumberFilter): INumberFilter {
+  return {
+    min: v.min != null && isFinite(v.min) ? v.min : -Infinity,
+    max: v.max != null && isFinite(v.max) ? v.max : +Infinity,
+    filterMissing: v.filterMissing
+  };
+}

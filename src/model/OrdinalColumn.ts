@@ -22,12 +22,20 @@ export declare type ICategoricalNumberColumnDesc = ICategoricalDesc & IValueColu
 export declare function mappingChanged(previous: number[], current: number[]): void;
 
 /**
+ * emitted when the filter property changes
+ * @asMemberOf OrdinalColumn
+ * @event
+ */
+export declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+
+/**
  * similar to a categorical column but the categories are mapped to numbers
  */
 @toolbar('group', 'filterOrdinal')
 @Category('categorical')
 export default class OrdinalColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_FILTER_CHANGED = CategoricalColumn.EVENT_FILTER_CHANGED;
 
   readonly categories: ICategory[];
 
@@ -48,10 +56,11 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   }
 
   protected createEventList() {
-    return super.createEventList().concat([OrdinalColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([OrdinalColumn.EVENT_MAPPING_CHANGED, OrdinalColumn.EVENT_FILTER_CHANGED]);
   }
 
   on(type: typeof OrdinalColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof OrdinalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

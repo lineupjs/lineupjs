@@ -4,10 +4,9 @@ import ArrayColumn, {IArrayColumnDesc, IArrayDesc, spliceChanged} from './ArrayC
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
-import {isDummyNumberFilter, restoreFilter} from './internal';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
-  noNumberFilter
+  noNumberFilter, isDummyNumberFilter, restoreNumberFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
@@ -40,6 +39,13 @@ export declare function mappingChanged(previous: IMappingFunction, current: IMap
  */
 export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
+/**
+ * emitted when the filter property changes
+ * @asMemberOf NumbersColumn
+ * @event
+ */
+export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+
 @toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
@@ -47,6 +53,8 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
   static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;
+  static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
+
 
   static readonly CENTER = 0;
 
@@ -166,7 +174,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
       this.sort = dump.sortMethod;
     }
     if (dump.filter) {
-      this.currentFilter = restoreFilter(dump.filter);
+      this.currentFilter = restoreNumberFilter(dump.filter);
     }
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);
@@ -179,12 +187,13 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SORTMETHOD_CHANGED]);
+    return super.createEventList().concat([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SORTMETHOD_CHANGED, NumbersColumn.EVENT_FILTER_CHANGED]);
   }
 
   on(type: typeof NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
   on(type: typeof NumbersColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
   on(type: typeof NumbersColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  on(type: typeof NumbersColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;

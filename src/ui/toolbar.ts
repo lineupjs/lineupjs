@@ -24,8 +24,10 @@ import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
 import {EDateSort} from '../model/DatesColumn';
 import appendNumber from './dialogs/groupNumber';
 import appendString from './dialogs/groupString';
+import appendDate from './dialogs/groupDate';
 import ColorMappingDialog from './dialogs/ColorMappingDialog';
 import MappingDialog from './dialogs/MappingDialog';
+import DateFilterDialog from './dialogs/DateFilterDialog';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
@@ -267,7 +269,12 @@ const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
     title: 'Groups',
     order: 2,
     append: appendString
-  }
+  },
+  groupDate: <IToolbarDialogAddon>{
+    title: 'Granularity',
+    order: 2,
+    append: appendDate
+  },
 };
 
 export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAddon } = Object.assign({
@@ -282,6 +289,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   rename,
   search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3, featureCategory: 'ranking', featureLevel: 'basic' }),
   filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
+  filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
   filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
   filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
   filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
