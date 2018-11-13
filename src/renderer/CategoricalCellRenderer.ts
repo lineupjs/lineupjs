@@ -85,7 +85,7 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
       }
-      filterUpdate(hist ? hist.missing : 0, col);
+      filterUpdate((interactive && unfilteredHist) ? unfilteredHist.missing : (hist ? hist.missing : 0), col);
 
       n.classList.toggle(cssClass('missing'), !hist);
       if (!hist) {
@@ -119,8 +119,8 @@ function hist(col: ICategoricalColumn, showLabels: boolean, unfilteredHist: ICat
           const {y: gY} = gHist[i];
           d.title = `${cat.label}: ${y} of ${gY}`;
           inner.style.height = `${round(gY * 100 / maxBin, 2)}%`;
-          const relY = round(y * 100 / gY, 2);
-          inner.style.background = relY === 100 ? cat.color : (relY === 0 ? selected[i] : `linear-gradient(${selected[i]} ${relY}%, ${cat.color} ${relY}%, ${cat.color} 100%)`);
+          const relY = 100 - round(y * 100 / gY, 2);
+          inner.style.background = relY === 0 ? cat.color : (relY === 100 ? selected[i] : `linear-gradient(${selected[i]} ${relY}%, ${cat.color} ${relY}%, ${cat.color} 100%)`);
         } else {
           d.title = `${col.categories[i].label}: ${y}`;
           const inner = <HTMLElement>d.firstElementChild!;

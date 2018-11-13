@@ -102,7 +102,7 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
       if (!updateFilter) {
         updateFilter = initFilter(node, col, context);
       }
-      updateFilter(hist ? hist.missing : 0, col);
+      updateFilter(unfilteredHist ? unfilteredHist.missing : (hist ? hist.missing : 0), col);
 
       node.classList.toggle(cssClass('missing'), !hist);
       if (!hist) {
@@ -286,8 +286,8 @@ export function getHistDOMRenderer(globalHist: IStatistics | ICategoricalStatist
         const gLength = unfiltered.hist[i].length;
         d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length} of ${gLength})`;
         inner.style.height = `${round(gLength * 100 / unfiltered.maxBin, 2)}%`;
-        const relY = round(length * 100 / gLength, 2);
-        inner.style.background = relY === 100 ? color : (relY === 0 ? filterColor(color) : `linear-gradient(${filterColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`);
+        const relY = 100 - round(length * 100 / gLength, 2);
+        inner.style.background = relY === 0 ? color : (relY === 100 ? filterColor(color) : `linear-gradient(${filterColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`);
       } else {
         d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length})`;
         inner.style.height = `${round(length * 100 / maxBin, 2)}%`;
