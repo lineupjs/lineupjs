@@ -55,8 +55,8 @@ export default class EngineRenderer extends AEventDispatcher {
     this.node.classList.toggle(cssClass('whole-hover'), options.expandLineOnHover);
     parent.appendChild(this.node);
 
-    const statsOf = (col: Column) => {
-      const r = this.histCache.get(col.id);
+    const statsOf = (col: Column, unfiltered: boolean = false) => {
+      const r = this.histCache.get(unfiltered ? `-${col.id}` : col.id);
       if (r == null || r instanceof Promise) {
         return null;
       }
@@ -85,7 +85,7 @@ export default class EngineRenderer extends AEventDispatcher {
       },
       summaryRenderer: (col: Column, interactive: boolean, imposer?: IImposer) => {
         const r = chooseSummaryRenderer(col, this.options.renderers);
-        return r.createSummary(col, this.ctx, interactive, imposer);
+        return r.createSummary(col, this.ctx, interactive, interactive ? statsOf(col, true): null, imposer);
       },
       totalNumberOfRows: 0,
       createRenderer(col: Column, imposer?: IImposer) {
@@ -288,6 +288,18 @@ export default class EngineRenderer extends AEventDispatcher {
 
     this.rankings.push(r);
     this.update([r]);
+
+    // compute unfiltered hist
+    {
+      const histo = this.data.stats();
+      const cols = ranking.flatColumns;
+      cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
+        this.histCache.set(`-${col.id}`, histo == null ? null : histo.stats(<INumberColumn>col));
+      });
+      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: Column) => {
+        this.histCache.set(`-${col.id}`, histo == null ? null : histo.hist(<ICategoricalColumn>col));
+      });
+    }
   }
 
   private updateRotatedHeaderState() {

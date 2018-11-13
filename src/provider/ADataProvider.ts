@@ -732,7 +732,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param indices
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
-  abstract stats(indices: number[]): IStatsBuilder;
+  abstract stats(indices?: number[]): IStatsBuilder;
 
   /**
    * is the given row selected

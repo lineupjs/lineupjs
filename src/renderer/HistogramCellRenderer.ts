@@ -46,11 +46,11 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer) {
+  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, unfilteredHist: IStatistics | null, imposer?: IImposer) {
     const r = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
 
     const staticHist = !interactive || !isMapAbleColumn(col);
-    return staticHist ? staticSummary(col, r.template, r.render) : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render);
+    return staticHist ? staticSummary(col, r.template, r.render) : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render, unfilteredHist);
   }
 }
 
@@ -77,7 +77,7 @@ function staticSummary(col: INumberColumn, template: string, render: (n: HTMLEle
   };
 }
 
-function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void) {
+function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void, unfilteredHist: IStatistics | nul) {
   const f = filter(col);
   template += `
       <div class="${cssClass('histogram-min-hint')}" style="width: ${f.percent(f.filterMin)}%"></div>

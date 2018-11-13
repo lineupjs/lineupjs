@@ -238,11 +238,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param indices
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
-  stats(indices: number[]): IStatsBuilder {
+  stats(indices?: number[]): IStatsBuilder {
     let d: IDataRow[] | null = null;
     const getD = () => {
       if (d == null) {
-        d = this.viewRawRows(indices);
+        d = indices ? this.viewRawRows(indices) : this._dataRows;
       }
       return d;
     };

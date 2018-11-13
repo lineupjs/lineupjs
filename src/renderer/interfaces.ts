@@ -119,7 +119,7 @@ export interface ICellRendererFactory {
 
   createGroup(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer;
 
-  createSummary(col: Column, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
+  createSummary(col: Column, context: IRenderContext, interactive: boolean, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ISummaryRenderer;
 }
 
 

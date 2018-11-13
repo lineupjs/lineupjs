@@ -44,7 +44,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));
   }
 
-  create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | null, imposer?: IImposer) {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
@@ -92,7 +92,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return new LazyBoxPlotData(vs);
   }
 
-  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | null, imposer?: IImposer) {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: BOXPLOT,
@@ -117,7 +117,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, imposer?: IImposer) {
+  createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, unfilteredHist: IStatistics | null, imposer?: IImposer) {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement, hist: IStatistics | null) => {

@@ -56,8 +56,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean) {
-    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive, ctx.idPrefix) : staticSummary(col, interactive);
+  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean, unfilteredHist: ICategoricalStatistics | null) {
+    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive, unfilteredHist, ctx.idPrefix) : staticSummary(col, interactive);
   }
 }
 
@@ -75,7 +75,7 @@ function staticSummary(col: ICategoricalColumn, interactive: boolean) {
   };
 }
 
-function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean, idPrefix: string) {
+function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean, unfilteredHist: ICategoricalStatistics | null, idPrefix: string) {
   const {template, update} = hist(col, interactive || wideEnough(col));
   let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
   return {
