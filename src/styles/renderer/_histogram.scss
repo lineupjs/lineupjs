@@ -54,8 +54,8 @@ span.#{$lu_css_prefix}-mapping-hint {
   margin: 0 1px 0 0;
   font-size: x-small;
 
-  &[data-filtered=filtered] {
-    opacity: 0.2;
+  &[data-filtered] {
+    opacity: $lu_filtered_opacity;
   }
 
   > div {

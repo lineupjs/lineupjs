@@ -23,6 +23,7 @@ export default function getStyle(key: string, defaultValue = '') {
 }
 
 export const COLUMN_PADDING = parseInt(getStyle('lu_engine_grip_gap', '5px'), 10);
+export const FILTERED_OPACITY = parseFloat(getStyle('lu_filtered_opacity', '0.2'));
 
 export const DASH = {
   width: parseInt(getStyle('lu_missing_dash_width', '3px'), 10),
