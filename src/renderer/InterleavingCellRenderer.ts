@@ -66,10 +66,10 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: CompositeNumberColumn, context: IRenderContext) {
+  createSummary(col: CompositeNumberColumn, context: IRenderContext, _interactive: boolean, globalHist: IStatistics | null) {
     const cols = col.children;
     let acc = 0;
-    const {template, render} = getHistDOMRenderer(context.totalNumberOfRows, col, {
+    const {template, render} = getHistDOMRenderer(globalHist, col, {
       color: () => colorOf(cols[(acc++) % cols.length])
     });
     return {
@@ -113,5 +113,5 @@ function groupedHist(stats: (IStatistics | null)[]) {
       hist.push(bin);
     });
   }
-  return {bins, max: maxBin, hist};
+  return {maxBin, hist};
 }

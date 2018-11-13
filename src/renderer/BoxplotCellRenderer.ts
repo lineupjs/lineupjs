@@ -1,4 +1,4 @@
-import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
+import {IBoxPlotData, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
 import {IDataRow, IGroup, isNumberColumn, isMapAbleColumn} from '../model';
 import BoxPlotColumn from '../model/BoxPlotColumn';
 import Column from '../model/Column';

@@ -87,7 +87,6 @@ export default class EngineRenderer extends AEventDispatcher {
         const r = chooseSummaryRenderer(col, this.options.renderers);
         return r.createSummary(col, this.ctx, interactive, interactive ? statsOf(col, true): null, imposer);
       },
-      totalNumberOfRows: 0,
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
         const group = this.groupRenderer(col, imposer);
@@ -242,7 +241,7 @@ export default class EngineRenderer extends AEventDispatcher {
       const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
       cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
-        this.histCache.set(col.id, histo == null ? null : histo.stats(<INumberColumn>col));
+        this.histCache.set(col.id, histo == null ? null : histo.stats(<INumberColumn>col, this.histCache.has(`-${col.id}`) ? (<IStatistics>this.histCache.get(`-${col.id}`)!).hist.length : undefined));
       });
       cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: Column) => {
         this.histCache.set(col.id, histo == null ? null : histo.hist(<ICategoricalColumn>col));
@@ -338,8 +337,6 @@ export default class EngineRenderer extends AEventDispatcher {
     }
     const orders = rankings.map((r) => r.ranking.getOrder());
     const data = this.data.fetch(orders);
-
-    (<any>this.ctx).totalNumberOfRows = Math.max(...data.map((d) => d.length));
 
     // TODO support async
     const localData = data.map((d) => d.map((d) => <IDataRow>d));

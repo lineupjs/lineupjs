@@ -25,7 +25,7 @@ export interface IRankingHeaderContextContainer {
 
   flags: ILineUpFlags;
 
-  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
+  statsOf(col: (INumberColumn | ICategoricalColumn) & Column, unfiltered?: boolean): ICategoricalStatistics | IStatistics | null;
 
   getPossibleRenderer(col: Column): { item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[] };
 

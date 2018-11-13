@@ -766,7 +766,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const previous = this._context;
     const previousData = this.data;
     this.data = data;
-    (<any>this.renderCtx).totalNumberOfRows = data.length;
 
     this.columns.forEach((c, i) => {
       c.index = i;
