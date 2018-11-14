@@ -117,7 +117,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, unfilteredHist: IStatistics | null, imposer?: IImposer) {
+  createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, _unfilteredHist: IStatistics | null, imposer?: IImposer) {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement, hist: IStatistics | null) => {
