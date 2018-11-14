@@ -1,6 +1,6 @@
 import {extent} from 'd3-array';
-import {isNumberColumn, isSupportType, isMapAbleColumn, IMapAbleDesc} from '../model';
-import {default as Column, IColumnDesc} from '../model/Column';
+import {isNumberColumn, isSupportType, isMapAbleColumn} from '../model';
+import Column, {IColumnDesc} from '../model/Column';
 import {colorPool} from '../model/internal';
 import Ranking from '../model/Ranking';
 
