@@ -160,6 +160,7 @@ export function adaptTextColorToBgColor(bgColor: string): string {
  * @param {string} bgColor as `#ff0000`
  * @param {string} title the title to render
  * @param {number} width for which percentages of the cell this background applies (0..1)
+ * @internal
  */
 export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, title: string, width: number) {
   const adapt = adaptTextColorToBgColor(bgColor);
@@ -181,7 +182,7 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
 }
 
 
-
+/** @internal */
 export const uniqueId: (prefix: string)=>string = (function() {
   // side effect but just within the function itself, so good for the library
   let idCounter = 0;

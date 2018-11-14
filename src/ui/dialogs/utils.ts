@@ -43,5 +43,5 @@ export function colorOf(col: Column) {
   return Column.DEFAULT_COLOR;
 }
 
-
+/** @internal */
 export {uniqueId, forEach, forEachChild} from '../../renderer/utils';

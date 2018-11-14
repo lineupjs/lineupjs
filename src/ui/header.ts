@@ -133,6 +133,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
   }
 }
 
+/** @internal */
 export function actionCSSClass(title: string) {
   if (title.endsWith('&hellip;')) {
     title = title.slice(0, -'&hellip;'.length - 1);
@@ -157,10 +158,12 @@ function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, 
   };
 }
 
+/** @internal */
 export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
+/** @internal */
 export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, willAutoHide: boolean = true) {
   const addIcon = addIconDOM(node, col, ctx, level, false);
   const toolbar = getToolbar(col, ctx);
@@ -186,6 +189,7 @@ export function createShortcutMenuItems(node: HTMLElement, level: number, col: C
   };
 }
 
+/** @internal */
 export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
   const addIcon = addIconDOM(node, col, ctx, level, true);
   getToolbar(col, ctx).filter((d) => d.options.shortcut !== 'only').forEach(addIcon);

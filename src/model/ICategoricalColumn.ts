@@ -57,6 +57,7 @@ export function toCategory(cat: (string | Partial<ICategory>), value: number, ne
   };
 }
 
+/** @internal */
 export function compareCategory(a: ICategory | null, b: ICategory | null) {
   const aNull = a == null || isNaN(a.value);
   const bNull = b == null || isNaN(b.value);
@@ -102,6 +103,7 @@ function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICat
 
 /**
  * sort group by most frequent category or if same without count desc
+ * @internal
  */
 export function groupCompareCategory(a: IDataRow[], b: IDataRow[], col: ICategoricalColumn) {
   if (a.length === 0) {
@@ -153,10 +155,12 @@ export interface ICategoricalFilter {
   filterMissing: boolean;
 }
 
+/** @internal */
 function isEmptyFilter(f: ICategoricalFilter | null) {
   return f == null || (!f.filterMissing && (f.filter == null || f.filter === ''));
 }
 
+/** @internal */
 export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICategoricalFilter | null) {
   if (a === b) {
     return true;
@@ -185,6 +189,7 @@ function arrayEquals<T>(a: T[], b: T[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
+/** @internal */
 export function isCategoryIncluded(filter: ICategoricalFilter | null, category: ICategory | null) {
   if (filter == null) {
     return true;

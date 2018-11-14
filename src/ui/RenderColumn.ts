@@ -7,7 +7,7 @@ import {IRankingContext} from './interfaces';
 import {ILineUpFlags} from '../interfaces';
 import {cssClass, engineCssClass} from '../styles/index';
 
-
+/** @internal */
 export interface IRenderers {
   singleId: string;
   single: ICellRenderer;
@@ -20,6 +20,7 @@ export interface IRenderers {
   summaryTemplate: HTMLElement | null;
 }
 
+/** @internal */
 export default class RenderColumn implements IColumn {
   renderers: IRenderers | null = null;
 

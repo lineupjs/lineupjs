@@ -105,6 +105,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
 
 }
 
+/** @internal */
 export function groupByKey<T extends { key: string }>(arr: T[][]) {
   const m = new Map<string, T[]>();
   arr.forEach((a) => a.forEach((d) => {

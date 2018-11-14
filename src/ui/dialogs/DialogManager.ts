@@ -2,7 +2,7 @@ import ADialog from './ADialog';
 import Column from '../../model';
 import {cssClass} from '../../styles';
 
-
+/** @internal */
 export default class DialogManager {
 
   private readonly escKeyListener = (evt: KeyboardEvent) => {

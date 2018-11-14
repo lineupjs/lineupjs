@@ -131,6 +131,7 @@ function hist(col: ICategoricalColumn, showLabels: boolean, unfilteredHist: ICat
   };
 }
 
+/** @internal */
 export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HTMLElement) {
   const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
 

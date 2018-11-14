@@ -5,6 +5,7 @@ import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText, exampleText} from './utils';
 import DateColumn, {choose} from '../model/DateColumn';
 
+/** @internal */
 export default class DateCellRenderer implements ICellRendererFactory {
   title = 'Date';
   groupTitle = 'Date';

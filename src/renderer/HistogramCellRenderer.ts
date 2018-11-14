@@ -255,6 +255,7 @@ function filterColor(input: string) {
   return c.toString();
 }
 
+/** @internal */
 export function getHistDOMRenderer(globalHist: IStatistics | ICategoricalStatistics | null, col: INumberColumn, imposer?: IImposer) {
   const guessedBins = globalHist ? globalHist.hist.length : getNumberOfBins(100);
   let bins = '';

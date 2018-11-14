@@ -6,8 +6,6 @@ import {IColumnDesc, IDataRow} from './interfaces';
 import {IMapAbleColumn, IMappingFunction} from './MappingFunction';
 import {FIRST_IS_NAN} from './missing';
 
-export {} from '../internal';
-
 
 export interface INumberColumn extends Column {
   getNumber(row: IDataRow): number;
@@ -16,6 +14,7 @@ export interface INumberColumn extends Column {
 }
 
 
+/** @internal */
 export const DEFAULT_FORMATTER = format('.3n');
 
 export default INumberColumn;
@@ -58,6 +57,7 @@ export function isNumberColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<INumberColumn>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
+/** @internal */
 export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
   const aVal = col.getBoxPlotData(a);
   const bVal = col.getBoxPlotData(b);
@@ -154,14 +154,17 @@ export interface INumberFilter {
   filterMissing: boolean;
 }
 
+/** @internal */
 export function noNumberFilter() {
   return ({min: -Infinity, max: Infinity, filterMissing: false});
 }
 
+/** @internal */
 export function isEqualNumberFilter(a: INumberFilter, b: INumberFilter) {
   return similar(a.min, b.min, 0.001) && similar(a.max, b.max, 0.001) && a.filterMissing === b.filterMissing;
 }
 
+/** @internal */
 export function isNumberIncluded(filter: INumberFilter | null, value: number) {
   if (!filter) {
     return true;

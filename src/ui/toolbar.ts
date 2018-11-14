@@ -36,17 +36,8 @@ export interface IUIOptions {
   featureCategory: 'ranking' | 'model' | 'ui';
 }
 
-export interface IMouseEvent {
-  stopPropagation(): void;
-  currentTarget: Element;
-  shiftKey: boolean;
-  altKey: boolean;
-  ctrlKey: boolean;
-  [key: string]: any;
-}
-
 export interface IOnClickHandler {
-  (col: Column, evt: IMouseEvent, ctx: IRankingHeaderContext, level: number, viaShortcut: boolean): any;
+  (col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number, viaShortcut: boolean): any;
 }
 
 export interface IToolbarAction {
@@ -65,6 +56,7 @@ export interface IToolbarDialogAddon {
   append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): void;
 }
 
+/** @internal */
 export interface IDialogClass {
   new(col: any, dialog: IDialogContext, ...args: any[]): ADialog;
 }
@@ -370,7 +362,7 @@ function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
   return r;
 }
 
-
+/** @internal */
 export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
   const flags = ctx.flags;
@@ -381,6 +373,7 @@ export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   });
 }
 
+/** @internal */
 export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHeaderContext) {
   const cacheKey = `${col.desc.type}@${key}`;
   if (cacheAddon.has(cacheKey)) {
@@ -409,16 +402,19 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
   return r;
 }
 
+/** @internal */
 export function isSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
   return toolbar.includes(sortBy);
 }
 
+/** @internal */
 export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
   return toolbar.includes(groupBy);
 }
 
+/** @internal */
 export function isGroupSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
   return toolbar.includes(sortGroupBy);
