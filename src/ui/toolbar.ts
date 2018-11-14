@@ -65,7 +65,7 @@ function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions
   return { title, onClick, options };
 }
 
-export function dialogContext(ctx: IRankingHeaderContext, level: number, evt: { currentTarget: Element }): IDialogContext {
+export function dialogContext(ctx: IRankingHeaderContext, level: number, evt: MouseEvent): IDialogContext {
   return {
     attachment: <HTMLElement>evt.currentTarget,
     level,

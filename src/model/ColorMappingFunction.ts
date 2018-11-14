@@ -37,6 +37,7 @@ export interface ICustomColorMappingFunction extends IColorMappingFunctionBase {
 
 export declare type IColorMappingFunction = ISolidColorMappingFunction | ICustomColorMappingFunction | IQuantizedColorMappingFunction | IInterpolateColorMappingFunction;
 
+/** @internal */
 export class InterpolatingColorFunction implements IInterpolateColorMappingFunction {
   constructor(public readonly name: string, public readonly type: 'sequential'|'divergent', public readonly apply: (v: number)=>string) {
 
@@ -55,6 +56,7 @@ export class InterpolatingColorFunction implements IInterpolateColorMappingFunct
   }
 }
 
+/** @internal */
 export class SolidColorFunction implements ISolidColorMappingFunction {
   constructor(public readonly color: string) {
 
@@ -81,6 +83,7 @@ export class SolidColorFunction implements ISolidColorMappingFunction {
   }
 }
 
+/** @internal */
 export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
   constructor(public readonly base: IColorMappingFunction, public readonly steps: number) {
 
@@ -110,6 +113,7 @@ export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
   }
 }
 
+/** @internal */
 export class CustomColorMappingFunction implements ICustomColorMappingFunction {
   private readonly scale = scaleLinear<string>();
 

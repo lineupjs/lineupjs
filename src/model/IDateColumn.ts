@@ -5,7 +5,8 @@ import {isNumberIncluded, INumberFilter} from './INumberColumn';
 import {timeDay, timeMonth, timeWeek, timeMinute, timeSecond, timeHour} from 'd3-time';
 import {equal} from '../internal/utils';
 
-export {INumberFilter as IDateFilter, restoreNumberFilter as restoreDateFilter,
+/** @internal */
+export {restoreNumberFilter as restoreDateFilter,
   noNumberFilter as noDateFilter, isEqualNumberFilter as isEqualDateFilter,
   isDummyNumberFilter as isDummyDateFilter} from './INumberColumn';
 
@@ -42,6 +43,9 @@ export function isDateColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<IDateColumn>col).getDate === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.startsWith('date')));
 }
 
+export declare type IDateFilter = INumberFilter;
+
+/** @internal */
 export function isDateIncluded(filter: INumberFilter | null, value: Date | null) {
   if (!filter) {
     return true;

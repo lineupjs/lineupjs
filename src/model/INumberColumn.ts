@@ -135,6 +135,7 @@ export function isNumbersColumn(col: Column): col is INumbersColumn {
  * @param aMissing
  * @param bMissing
  * @return {number}
+ * @internal
  */
 export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
   aMissing = aMissing || a == null || isNaN(a);

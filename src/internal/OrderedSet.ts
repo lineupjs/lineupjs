@@ -1,5 +1,6 @@
 /**
  * a set that preserves the insertion order
+ * @internal
  */
 export default class OrderedSet<T> implements Iterable<T> {
   readonly [Symbol.toStringTag] = Symbol('OrderedSet');
