@@ -118,14 +118,8 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
 export function deriveColors(columns: IColumnDesc[]) {
   const colors = colorPool();
   columns.forEach((col: IColumnDesc) => {
-    switch (col.type) {
-      case 'number':
-      case 'numbers':
-      case 'boxplot':
-      case 'numberMap':
-        const d = <IMapAbleDesc>col;
-        d.colorMapping = d.colorMapping || d.color || colors() || Column.DEFAULT_COLOR;
-        break;
+    if (isMapAbleColumn(col)) {
+      col.colorMapping = col.colorMapping || col.color || colors() || Column.DEFAULT_COLOR;
     }
   });
   return columns;
