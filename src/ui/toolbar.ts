@@ -65,9 +65,9 @@ function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions
   return { title, onClick, options };
 }
 
-export function dialogContext(ctx: IRankingHeaderContext, level: number, evt: MouseEvent): IDialogContext {
+export function dialogContext(ctx: IRankingHeaderContext, level: number, attachment: HTMLElement | MouseEvent): IDialogContext {
   return {
-    attachment: <HTMLElement>evt.currentTarget,
+    attachment: (<MouseEvent>attachment).currentTarget != null ? <HTMLElement>(<MouseEvent>attachment).currentTarget : <HTMLElement>attachment,
     level,
     manager: ctx.dialogManager,
     idPrefix: ctx.idPrefix
