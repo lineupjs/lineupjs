@@ -145,12 +145,12 @@ export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HT
       const old = col.getFilter();
       if (old == null || !Array.isArray(old.filter)) {
         // deselect
-        const without = col.categories.slice();
+        const included = col.categories.slice();
         bin.dataset.filtered = '';
-        without.splice(i, 1);
+        included.splice(i, 1);
         col.setFilter({
           filterMissing: old ? old.filterMissing : false,
-          filter: without.map((d) => d.name)
+          filter: included.map((d) => d.name)
         });
         return;
       }
@@ -164,6 +164,11 @@ export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HT
         // readd
         delete bin.dataset.filtered;
         filter.push(cat.name);
+      }
+      if (!old.filterMissing && filter.length === col.categories.length) {
+        // dummy filter
+        col.setFilter(null);
+        return;
       }
       col.setFilter({
         filterMissing: old.filterMissing,
@@ -182,6 +187,9 @@ export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HT
       const old = col.getFilter();
       if (old == null) {
         col.setFilter(v ? {filterMissing: v, filter: col.categories.map((d) => d.name)} : null);
+      } else if (!v && Array.isArray(old.filter) && old.filter.length === col.categories.length) {
+        // dummy
+        col.setFilter(null);
       } else {
         col.setFilter({filterMissing: v, filter: old.filter});
       }
