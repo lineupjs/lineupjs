@@ -1,5 +1,5 @@
 import {extent} from 'd3-array';
-import {isNumberColumn, isSupportType} from '../model';
+import {isNumberColumn, isSupportType, isMapAbleColumn, IMapAbleDesc} from '../model';
 import {default as Column, IColumnDesc} from '../model/Column';
 import {colorPool} from '../model/internal';
 import Ranking from '../model/Ranking';
@@ -117,10 +117,14 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
  */
 export function deriveColors(columns: IColumnDesc[]) {
   const colors = colorPool();
-  columns.forEach((col: any) => {
+  columns.forEach((col: IColumnDesc) => {
     switch (col.type) {
       case 'number':
-        col.color = col.color || colors() || Column.DEFAULT_COLOR;
+      case 'numbers':
+      case 'boxplot':
+      case 'numberMap':
+        const d = <IMapAbleDesc>col;
+        d.colorMapping = d.colorMapping || d.color || colors() || Column.DEFAULT_COLOR;
         break;
     }
   });

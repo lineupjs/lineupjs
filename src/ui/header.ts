@@ -318,6 +318,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
   };
 }
 
+/** @internal */
 export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
 /**
