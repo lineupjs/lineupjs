@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const l = new Array(10).fill(0);
+    const cats = ['c1', 'c2', 'c3'];
+    const isMissing = () => Math.random() < 0.1; // 10% missing values
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        a: i >= 2 && isMissing() ? NaN : Math.random() * 10,
+        d: i >= 2 && isMissing() ? null : 'Row ' + i,
+        cat: i >= 2 && isMissing() ? null : cats[Math.floor(Math.random() * 3)],
+        cat2: i >= 2 && isMissing() ? null : cats[Math.floor(Math.random() * 3)],
+        as: i >= 2 && isMissing() ? null : l.map((d) => Math.random() * 10),
+        date: i >= 2 && isMissing() ? null : new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
+      })
+    }
+    const builder = LineUpJS.builder(arr);
+    builder.deriveColumns();
+
+    builder.buildTaggle(document.body);
+  };
+</script>
+
+</body>
+</html>
