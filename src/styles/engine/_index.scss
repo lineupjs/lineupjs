@@ -2,7 +2,8 @@
 
 @import '~lineupengine/src/style';
 
-.#{$engine_css_prefix}-th {
+.#{$engine_css_prefix}-th,
+.#{$lu_css_prefix}-nested-th {
   box-sizing: border-box;
   margin-right: $lu_engine_grip_gap;
 }

@@ -142,6 +142,10 @@
   }
 }
 
+.#{$lu_css_prefix}-dialog-weights-table-entry {
+  display: flex;
+}
+
 .#{$lu_css_prefix}-dialog-color {
   width: 15em;
 
