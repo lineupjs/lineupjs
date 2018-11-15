@@ -48,8 +48,7 @@ export default class WeightsEditDialog extends ADialog {
         } else {
           d.setCustomValidity('');
         }
-        const bar = (<HTMLElement>d.nextElementSibling!.firstElementChild!);
-        bar.style.width = `${d.value}%`;
+        this.updateBar(d);
 
         if (inputs.length !== 2) {
           return;
@@ -66,23 +65,81 @@ export default class WeightsEditDialog extends ADialog {
 
         const other = inputs[1 - i]!;
         other.value = round(rest, 2).toString();
-        (<HTMLElement>other.nextElementSibling!.firstElementChild!).style.width = `${other.value}%`;
+        this.updateBar(other);
       };
     });
   }
 
+  private updateBar(input: HTMLInputElement) {
+    (<HTMLElement>input.nextElementSibling!.firstElementChild!).style.width = `${input.value}%`;
+  }
+
+  private distributeWeights() {
+    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({input: d, weight: d.value ? parseFloat(d.value) : NaN}));
+    const hasMissing = inputs.some((d) => isNaN(d.weight));
+    if (hasMissing) {
+      // compute missing ones
+      const missingIndices = inputs.filter((d) => isNaN(d.weight));
+      const correct = inputs.filter((d) => !isNaN(d.weight));
+      const sum = correct.reduce((a, b) => a + b.weight, 0);
+
+      if (sum < 100) {
+        // compute rest
+        const rest = (100 - sum) / missingIndices.length;
+        for (const input of missingIndices) {
+          input.input.value = round(rest, 2).toString();
+          this.updateBar(input.input);
+        }
+        return;
+      }
+      // already above 100, set missing to 0 and do a regular normalization (user has to deal with it)
+      for (const input of missingIndices) {
+        input.input.value = '0';
+        this.updateBar(input.input);
+      }
+    }
+
+    const weights = inputs.map((d) => d.weight);
+    if (validWeights(weights)) {
+      return; // nothing to do
+    }
+
+    // pure distribute the sum
+    const sum = weights.reduce((a, b) => a + b, 0);
+    for (const input of inputs) {
+      input.input.value = round(input.weight * 100 / sum, 2).toString();
+      this.updateBar(input.input);
+    }
+  }
+
+  protected appendDialogButtons() {
+    super.appendDialogButtons();
+    const buttons = this.node.querySelector<HTMLElement>(`.${cssClass('dialog-buttons')}`)!;
+    buttons.insertAdjacentHTML('beforeend', `<button class="${cssClass('dialog-button')} ${cssClass('dialog-weights-distribute-button')}" type="button" title="distribute weights"></button>`);
+
+    const last = <HTMLElement>buttons.lastElementChild!;
+    last.onclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.distributeWeights();
+    };
+  }
+
   submit() {
-    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]'));
-    const weights = inputs.map((n: HTMLInputElement) => parseFloat(n.value));
+    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({input: d, weight: parseFloat(d.value)}));
     let invalid = false;
-    for (let i = 0; i < inputs.length; ++i) {
-      const weight = weights[i];
-      if (weight <= 0) {
-        inputs[i].setCustomValidity('weight cannot be zero');
+    for (const input of inputs) {
+      if (input.weight <= 0) {
+        input.input.setCustomValidity('weight cannot be zero');
         invalid = true;
       } else {
-        inputs[i].setCustomValidity('');
+        input.input.setCustomValidity('');
       }
+    }
+    const weights = inputs.map((d) => d.weight);
+    if (!invalid && !validWeights(weights)) {
+      inputs[inputs.length - 1].input.setCustomValidity('sum of weights has to be 100, change weights or use the redistribute button to fix');
+      invalid = true;
     }
     if (invalid) {
       if (typeof (<any>this.node).reportValidity === 'function') {
@@ -94,4 +151,8 @@ export default class WeightsEditDialog extends ADialog {
     this.column.setWeights(weights.map((d) => d / 100));
     return true;
   }
+}
+
+function validWeights(weights: number[]) {
+  return Math.abs(weights.reduce((a, b) => a + b, 0) - 100) < 3;
 }

@@ -57,6 +57,14 @@ abstract class ADialog {
     return this.dialog.level === that.dialog.level && this.dialog.attachment === that.dialog.attachment;
   }
 
+  protected appendDialogButtons() {
+    this.node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-buttons')}">
+      <button class="${cssClass('dialog-button')}" type="submit" title="Apply"></button>
+      <button class="${cssClass('dialog-button')}" type="button" title="Cancel"></button>
+      <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values" ${!this.options.resetPossible ? 'style="visibility: hidden"': ''}></button>
+    </div>`);
+  }
+
   open() {
     if (this.options.toggleDialog && this.dialog.manager.removeLike(this)) {
       return;
@@ -70,11 +78,7 @@ abstract class ADialog {
       this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
     }
     if (this.options.fullDialog) {
-      this.node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-buttons')}">
-        <button class="${cssClass('dialog-button')}" type="submit" title="Apply"></button>
-        <button class="${cssClass('dialog-button')}" type="button" title="Cancel"></button>
-        <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values" ${!this.options.resetPossible ? 'style="visibility: hidden"': ''}></button>
-      </div>`);
+      this.appendDialogButtons();
     }
 
     parent.appendChild(this.node);
