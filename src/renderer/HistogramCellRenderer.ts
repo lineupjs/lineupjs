@@ -104,6 +104,7 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
       }
       updateFilter(unfilteredHist ? unfilteredHist.missing : (hist ? hist.missing : 0), col);
 
+      node.classList.add(cssClass('histogram-i'));
       node.classList.toggle(cssClass('missing'), !hist);
       if (!hist) {
         return;

@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: row;
 
-  &[data-interactive] > .#{$lu_css_prefix}-histogram-bin {
+  &.#{$lu_css_prefix}-histogram-i > .#{$lu_css_prefix}-histogram-bin {
     cursor: pointer;
   }
 
@@ -132,7 +132,7 @@ span.#{$lu_css_prefix}-mapping-hint {
   right: 0;
 }
 
-.#{$lu_css_prefix}-histogram[data-interactive] {
+.#{$lu_css_prefix}-histogram.#{$lu_css_prefix}-histogram-i {
   margin-bottom: 3.75em;
 
   &:hover {

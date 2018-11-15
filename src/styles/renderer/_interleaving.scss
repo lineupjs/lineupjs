@@ -4,6 +4,10 @@
   display: flex;
   flex-direction: column;
 
+  &.#{$lu_css_prefix}-histogram {
+    flex-direction: row;
+  }
+
   > div {
     flex: 1 1 0;
     overflow-y: hidden;
