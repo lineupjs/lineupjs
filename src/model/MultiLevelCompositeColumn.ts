@@ -23,7 +23,7 @@ export declare function collapseChanged(previous: boolean, current: boolean): vo
 export declare function nestedChildRatio(previous: number, current: number): void;
 
 
-@toolbar('collapse')
+@toolbar('compress', 'expand')
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
   static readonly EVENT_MULTI_LEVEL_CHANGED = StackColumn.EVENT_MULTI_LEVEL_CHANGED;

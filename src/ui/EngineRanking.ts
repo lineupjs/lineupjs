@@ -925,12 +925,23 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
     c.on(`${Column.EVENT_DIRTY_VALUES}.body`, debounceUpdate);
 
-    if (isMultiLevelColumn(c) && !c.getCollapsed()) {
-      (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
-        (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
+    if (isMultiLevelColumn(c)) {
+      c.on(`${StackColumn.EVENT_COLLAPSE_CHANGED}.body`, () => {
+        // rebuild myself from scratch
+        EngineRanking.disableListener(c); // destroy myself
+        const index = col.index;
+        const replacement = this.createCol(c, index);
+        replacement.index = index;
+        this.columns.splice(index, 1, replacement);
+        this.delayedUpdateAll();
       });
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounceUpdate);
+      if (!c.getCollapsed()) {
+        (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
+        c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
+          (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
+        });
+        c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounceUpdate);
+      }
     }
 
     return col;
@@ -950,6 +961,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (!(isMultiLevelColumn(c))) {
       return;
     }
+    c.on(`${StackColumn.EVENT_COLLAPSE_CHANGED}.body`, null);
     c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
     c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
   }

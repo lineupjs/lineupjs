@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import Column from './Column';
 import {IColumnDesc} from './interfaces';
+import OrderedSet from '../internal/OrderedSet';
 
 const supportType = Symbol.for('SupportType');
 const category = Symbol.for('Category');
@@ -89,7 +90,7 @@ export function getAllToolbarActions(col: Column) {
   if (cache.has(col.desc.type)) {
     return cache.get(col.desc.type)!;
   }
-  const actions = <string[]>[];
+  const actions = new OrderedSet<string>();
 
   // walk up the prototype chain
   let obj = <any>col;
@@ -97,12 +98,15 @@ export function getAllToolbarActions(col: Column) {
   do {
     const m = <string[]>Reflect.getOwnMetadata(toolbarIcon, obj.constructor);
     if (m) {
-      actions.push(...m);
+      for (const mi of m) {
+        actions.add(mi);
+      }
     }
     obj = Object.getPrototypeOf(obj);
   } while (obj);
-  cache.set(col.desc.type, actions);
-  return actions;
+  const arr = Array.from(actions);
+  cache.set(col.desc.type, arr);
+  return arr;
 }
 
 
@@ -111,7 +115,7 @@ export function getAllToolbarDialogAddons(col: Column, key: string) {
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey)!;
   }
-  const actions = <string[]>[];
+  const actions = new OrderedSet<string>();
 
   // walk up the prototype chain
   let obj = <any>col;
@@ -119,10 +123,14 @@ export function getAllToolbarDialogAddons(col: Column, key: string) {
   do {
     const m = <string[]>Reflect.getOwnMetadata(symbol, obj.constructor);
     if (m) {
-      actions.push(...m);
+      for (const mi of m) {
+        actions.add(mi);
+      }
     }
     obj = Object.getPrototypeOf(obj);
   } while (obj);
-  cache.set(cacheKey, actions);
-  return actions;
+  cache.set(cacheKey, Array.from(actions));
+  const arr = Array.from(actions);
+  cache.set(cacheKey, arr);
+  return arr;
 }

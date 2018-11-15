@@ -28,6 +28,7 @@ import appendDate from './dialogs/groupDate';
 import ColorMappingDialog from './dialogs/ColorMappingDialog';
 import MappingDialog from './dialogs/MappingDialog';
 import DateFilterDialog from './dialogs/DateFilterDialog';
+import {cssClass} from '../styles';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
@@ -42,6 +43,8 @@ export interface IOnClickHandler {
 
 export interface IToolbarAction {
   title: string;
+
+  enabled?(col: Column): boolean;
 
   onClick: IOnClickHandler;
 
@@ -236,15 +239,35 @@ const groupBy = ui('Group By &hellip;', (col, evt, ctx, level) => {
   dialog.open();
 }, { shortcut: false, order: 2, featureCategory: 'ranking', featureLevel: 'advanced' });
 
-
-
-const collapse = ui('Compress', (col, evt, ctx, level) => {
+function toggleCompressExpand(col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number) {
   ctx.dialogManager.removeAboveLevel(level);
   const mcol = <IMultiLevelColumn>col;
   mcol.setCollapsed(!mcol.getCollapsed());
+
+  const collapsed = mcol.getCollapsed();
   const i = <HTMLElement>evt.currentTarget;
-  i.title = mcol.getCollapsed() ? 'Expand' : 'Compress';
-}, { featureCategory: 'model', featureLevel: 'advanced' });
+  i.title = collapsed ? 'Expand' : 'Compress';
+  i.classList.toggle(cssClass('action-compress'), !collapsed);
+  i.classList.toggle(cssClass('action-expand'), collapsed);
+  const inner = i.querySelector('span')!;
+  if (inner) {
+    inner.textContent = i.title;
+  }
+}
+
+const compress = {
+  title: 'Compress',
+  enabled: (col: IMultiLevelColumn) => !col.getCollapsed(),
+  onClick: toggleCompressExpand,
+  options: { featureCategory: 'model', featureLevel: 'advanced' }
+};
+
+const expand = {
+  title: 'Expand',
+  enabled: (col: IMultiLevelColumn) => col.getCollapsed(),
+  onClick: toggleCompressExpand,
+  options: { featureCategory: 'model', featureLevel: 'advanced' }
+};
 
 const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
   sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
@@ -272,7 +295,8 @@ const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
 export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAddon } = Object.assign({
   group,
   groupBy,
-  collapse,
+  compress,
+  expand,
   sort,
   sortBy,
   sortGroupBy,
@@ -316,7 +340,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
 
 function sortActions(a: IToolbarAction, b: IToolbarAction) {
   if (a.options.order === b.options.order) {
-    return a.title.localeCompare(b.title);
+    return a.title.toString().localeCompare(b.title.toString());
   }
   return (a.options.order || 50) - (b.options.order || 50);
 }
@@ -368,6 +392,9 @@ export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   const flags = ctx.flags;
 
   return toolbar.filter((a) => {
+    if (a.enabled && !a.enabled(col)) {
+      return false;
+    }
     // level is basic or not one of disabled features
     return a.options.featureLevel === 'basic' || !((flags.advancedModelFeatures === false && a.options.featureCategory === 'model') || (flags.advancedRankingFeatures === false && a.options.featureCategory === 'ranking') || (flags.advancedUIFeatures === false && a.options.featureCategory === 'ui'));
   });
