@@ -510,6 +510,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   dump(): IDataProviderDump {
     return {
+      '$schema': 'http://lineup.js.org/schema.4.0.0.json',
       uid: this.uid,
       selection: this.getSelection(),
       aggregations: Array.from(this.aggregations),

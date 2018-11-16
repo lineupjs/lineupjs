@@ -45,8 +45,9 @@ export interface IRankingDump {
 }
 
 export interface IDataProviderDump {
+  '$schema'? : string;
   /**
-   * base for genering new uids
+   * base for generating new uids
    */
   uid?: number;
 
