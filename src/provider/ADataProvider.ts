@@ -3,8 +3,7 @@ import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
 import OrderedSet from '../internal/OrderedSet';
 import {
-  Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
-  createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
+  Column, createRankDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, IOrderedGroup,
   ISelectionColumnDesc, IValueColumnDesc, models
 } from '../model';
 import {dirty, dirtyHeader, dirtyValues} from '../model/Column';
@@ -12,7 +11,6 @@ import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/Aggregat
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
 import Ranking, {orderChanged, addColumn, removeColumn} from '../model/Ranking';
-import StackColumn from '../model/StackColumn';
 import {exportRanking, IExportOptions} from './utils';
 import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
