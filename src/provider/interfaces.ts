@@ -1,3 +1,6 @@
+import '!file-loader?name=schema.4.0.0.json!./schema.json';
+
+export const SCHEMA_REF = `https://lineup.js.org/develop/schema.4.0.0.json`;
 
 export interface IColumnDump {
   id: string;

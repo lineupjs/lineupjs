@@ -4,3 +4,4 @@ export {default as RemoteDataProvider} from './RemoteDataProvider';
 export * from './LocalDataProvider';
 export * from './RemoteDataProvider';
 export * from './utils';
+export {SCHEMA_REF} from './interfaces';

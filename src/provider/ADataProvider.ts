@@ -14,7 +14,7 @@ import Ranking, {orderChanged, addColumn, removeColumn} from '../model/Ranking';
 import {exportRanking, IExportOptions} from './utils';
 import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
-import {IDataProviderDump, IColumnDump, IRankingDump} from './interfaces';
+import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
 
 export {IExportOptions} from './utils';
 
@@ -508,7 +508,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   dump(): IDataProviderDump {
     return {
-      '$schema': 'https://lineup.js.org/schema.4.0.0.json',
+      '$schema': SCHEMA_REF,
       uid: this.uid,
       selection: this.getSelection(),
       aggregations: Array.from(this.aggregations),

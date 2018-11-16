@@ -1,7 +1,7 @@
 {
   "definitions": {},
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://lineup.js.org/schema.4.0.0.json",
+  "$id": "https://lineup.js.org/develop/schema.4.0.0.json",
   "type": "object",
   "title": "LineUp Dump Schema",
   "properties": {
@@ -47,7 +47,12 @@
                   "title": "column id"
                 },
                 "desc": {
-                  "title": "column desc"
+                  "title": "column desc",
+                  "examples": [
+                    "rank",
+                    "string",
+                    "number"
+                  ]
                 },
                 "width": {
                   "type": "integer",
