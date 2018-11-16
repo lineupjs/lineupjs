@@ -118,6 +118,11 @@ module.exports = (env, options) => {
         {
           test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
           loader: 'file-loader'
+        },
+        {
+          test: /schema\.json$/,
+          type: 'javascript/auto',
+          loader: 'file-loader'
         }
       ]
     },
