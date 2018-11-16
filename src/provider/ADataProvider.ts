@@ -423,6 +423,22 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
       (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);
     }
+    return desc;
+  }
+
+  protected cleanDesc(desc: IColumnDesc) {
+    //hacks for provider dependent descriptors
+    if (desc.type === 'rank') {
+      delete (<IValueColumnDesc<number>>desc).accessor;
+    } else if (desc.type === 'selection') {
+      delete (<ISelectionColumnDesc>desc).accessor;
+      delete (<ISelectionColumnDesc>desc).setter;
+      delete (<ISelectionColumnDesc>desc).setterAll;
+    } else if (desc.type === 'aggregate') {
+      delete (<IAggregateGroupColumnDesc>desc).isAggregated;
+      delete (<IAggregateGroupColumnDesc>desc).setAggregated;
+    }
+    return desc;
   }
 
   /**

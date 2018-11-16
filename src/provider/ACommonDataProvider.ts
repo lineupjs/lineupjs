@@ -130,7 +130,7 @@ abstract class ACommonDataProvider extends ADataProvider {
    * @returns {string}
    */
   toDescRef(desc: any): any {
-    return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : desc;
+    return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : this.cleanDesc(desc);
   }
 
   /**
@@ -159,7 +159,7 @@ abstract class ACommonDataProvider extends ADataProvider {
 
   fromDescRef(descRef: any): any {
     if (typeof (descRef) === 'string') {
-      return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef);
+      return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef || d.type === descRef);
     }
     const existing = this.columns.find((d) => descRef.column === (<any>d).column && descRef.label === d.label && descRef.type === d.type);
     if (existing) {
