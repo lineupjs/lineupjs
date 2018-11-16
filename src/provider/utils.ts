@@ -9,7 +9,7 @@ export interface IDeriveOptions {
   /**
    * maximal percentage of unique values to be treated as a categorical column
    */
-  categoricalThreshold: number;
+  categoricalThreshold: number | ((size: number) => number);
 
   columns: string[];
 }
@@ -48,10 +48,11 @@ function deriveType(label: string, value: any, column: number | string, data: an
     base.type = 'boolean';
     return base;
   }
+  const threshold = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold(data.length) : options.categoricalThreshold;
   if (typeof value === 'string') {
     //maybe a categorical
     const categories = new Set(data.map((d) => d[column]));
-    if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
+    if (categories.size < data.length * threshold) { // 70% unique guess categorical
       base.type = 'categorical';
       base.categories = cleanCategories(categories);
     }
@@ -77,7 +78,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
     if (typeof value === 'string') {
       //maybe a categorical
       const categories = new Set((<string[]>[]).concat(...data.map((d) => d[column])));
-      if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
+      if (categories.size < data.length * threshold) { // 70% unique guess categorical
         base.type = 'categoricals';
         base.categories = cleanCategories(categories);
       }
