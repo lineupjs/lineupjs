@@ -2,6 +2,7 @@ import {createAggregateDesc, createRankDesc, createSelectionDesc, IColumnDesc, I
 import {IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
+import {IDataProviderDump} from './interfaces';
 
 
 function isComplexAccessor(column: any) {
@@ -130,7 +131,7 @@ abstract class ACommonDataProvider extends ADataProvider {
    * @returns {string}
    */
   toDescRef(desc: any): any {
-    return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : this.cleanDesc(desc);
+    return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : this.cleanDesc(Object.assign(desc));
   }
 
   /**
@@ -168,7 +169,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     return descRef;
   }
 
-  restore(dump: any) {
+  restore(dump: IDataProviderDump) {
     super.restore(dump);
     this.rankingIndex = 1 + Math.max(...this.getRankings().map((r) => +r.id.substring(4)));
   }

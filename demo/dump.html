@@ -25,7 +25,17 @@
     }
     const lineup = LineUpJS.asTaggle(document.body, arr);
 
-    const d = lineup.dump();
+    setTimeout(() => {
+      const d = lineup.dump();
+
+      console.log(d);
+
+      // same serialized
+      console.assert(LineUpJS.builderAdapter.equal(d, JSON.parse(JSON.stringify(d))));
+
+      setTimeout(() => lineup.restore(d), 5000);
+    }, 1000);
+
   };
 </script>
 

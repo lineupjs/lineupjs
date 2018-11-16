@@ -63,9 +63,4 @@ export interface IDataProviderDump {
    * ranking dumps
    */
   rankings?: IRankingDump[];
-  /**
-   * deprecated old layout dump format
-   * @deprecated
-   */
-  layout?: any;
 }
