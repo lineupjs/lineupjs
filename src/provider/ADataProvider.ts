@@ -16,6 +16,7 @@ import StackColumn from '../model/StackColumn';
 import {exportRanking, IExportOptions} from './utils';
 import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {IDataProviderDump, IColumnDump, IRankingDump} from './interfaces';
 
 export {IExportOptions} from './utils';
 
@@ -507,7 +508,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * dumps this whole provider including selection and the rankings
    * @returns {{uid: number, selection: number[], rankings: *[]}}
    */
-  dump(): any {
+  dump(): IDataProviderDump {
     return {
       uid: this.uid,
       selection: this.getSelection(),
@@ -519,7 +520,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   /**
    * dumps a specific column
    */
-  dumpColumn(col: Column) {
+  dumpColumn(col: Column): IColumnDump {
     return col.dump(this.toDescRef);
   }
 
@@ -537,33 +538,28 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return descRef;
   }
 
-  private createHelper = (d: any) => {
+  private createHelper = (d: IColumnDump) => {
     //factory method for restoring a column
     const desc = this.fromDescRef(d.desc);
     let c = null;
     if (desc && desc.type) {
       this.fixDesc(d.desc);
-      const type = this.columnTypes[desc.type];
+      const type = this.columnTypes[desc.type] || this.columnTypes.dummy;
       c = new type(d.id, desc);
       c.restore(d, this.createHelper);
     }
     return c;
   };
 
-  restoreRanking(dump: any) {
+  restoreRanking(dump: IRankingDump) {
     const ranking = this.cloneRanking();
     ranking.restore(dump, this.createHelper);
-    //if no rank column add one
-    if (!ranking.children.some((d) => d instanceof RankColumn)) {
-      ranking.insert(this.create(createRankDesc())!, 0);
-    }
     const idGenerator = this.nextId.bind(this);
     ranking.children.forEach((c) => c.assignNewId(idGenerator));
-
     return ranking;
   }
 
-  restore(dump: any) {
+  restore(dump: IDataProviderDump) {
     //clean old
     this.clearRankings();
 

@@ -7,6 +7,7 @@ import {isMissingValue} from './missing';
 import Ranking, {ISortCriteria} from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';
+import {IColumnDump} from '../provider/interfaces';
 
 export {IColumnDesc} from './interfaces';
 
@@ -452,7 +453,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any} dump of this column
    */
   dump(toDescRef: (desc: any) => any): any {
-    const r: any = {
+    const r: IColumnDump = {
       id: this.id,
       desc: toDescRef(this.desc),
       width: this.width
@@ -477,14 +478,14 @@ export default class Column extends AEventDispatcher {
    * @param dump column dump
    * @param _factory helper for creating columns
    */
-  restore(dump: any, _factory: (dump: any) => Column | null) {
+  restore(dump: IColumnDump, _factory: (dump: IColumnDump) => Column | null) {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
       description: this.description
     };
     if (dump.renderer || dump.rendererType) {
-      this.renderer = dump.renderer || dump.rendererType;
+      this.renderer = dump.renderer || dump.rendererType || this.renderer;
     }
     if (dump.groupRenderer) {
       this.groupRenderer = dump.groupRenderer;

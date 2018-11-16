@@ -7,6 +7,7 @@ import {clear} from '../internal';
 import {cssClass} from '../styles';
 
 import {getUnsupportedBrowserError, SUPPORTED_FIREFOX_VERSION, SUPPORTED_CHROME_VERSION, SUPPORTED_EDGE_VERSION} from '../browser';
+import {IDataProviderDump} from '../provider/interfaces';
 
 /**
  * emitted when the highlight changes
@@ -70,9 +71,13 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     return this.data.dump();
   }
 
+  restore(dump: IDataProviderDump) {
+    this.data.restore(dump);
+  }
+
   abstract update(): void;
 
-  setDataProvider(data: DataProvider, dump?: any) {
+  setDataProvider(data: DataProvider, dump?: IDataProviderDump) {
     if (this.data) {
       this.unforward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
     }

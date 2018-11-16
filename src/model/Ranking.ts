@@ -8,6 +8,7 @@ import {joinGroups} from './internal';
 import NumberColumn, {filterChanged} from './NumberColumn';
 import CompositeColumn from './CompositeColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {IRankingDump} from '../provider/interfaces';
 
 export interface ISortCriteria {
   readonly col: Column;
@@ -237,8 +238,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.groups.slice();
   }
 
-  dump(toDescRef: (desc: any) => any) {
-    const r: any = {};
+  dump(toDescRef: (desc: any) => any): IRankingDump {
+    const r: IRankingDump = {};
     r.columns = this.columns.map((d) => d.dump(toDescRef));
     r.sortCriteria = this.sortCriteria.map((s) => ({asc: s.asc, sortBy: s.col!.id}));
     r.groupSortCriteria = this.groupSortCriteria.map((s) => ({asc: s.asc, sortBy: s.col!.id}));
@@ -246,9 +247,9 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: IRankingDump, factory: (dump: any) => Column | null) {
     this.clear();
-    dump.columns.map((child: any) => {
+    (dump.columns || []).map((child: any) => {
       const c = factory(child);
       if (c) {
         this.push(c);
@@ -256,14 +257,14 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     });
     // compatibility case
     if (dump.sortColumn && dump.sortColumn.sortBy) {
-      const help = this.columns.find((d) => d.id === dump.sortColumn.sortBy);
+      const help = this.columns.find((d) => d.id === dump.sortColumn!.sortBy);
       if (help) {
         this.sortBy(help, dump.sortColumn.asc);
       }
     }
     if (dump.groupColumns) {
-      const groupColumns = dump.groupColumns.map((id: string) => this.columns.find((d) => d.id === id));
-      this.groupBy(groupColumns);
+      const groupColumns = <Column[]>dump.groupColumns.map((id: string) => this.columns.find((d) => d.id === id)).filter((d) => d != null);
+      this.setGroupCriteria(groupColumns);
     }
 
     const restoreSortCriteria = (dumped: any) => {
