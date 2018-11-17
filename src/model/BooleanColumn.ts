@@ -182,7 +182,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     if (v == null) {
       return NaN;
     }
-    return v ? 1 : -1;
+    return v ? 1 : 0;
   }
 
   group(row: IDataRow) {

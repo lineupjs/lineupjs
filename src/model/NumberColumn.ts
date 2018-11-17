@@ -224,7 +224,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   toCompareValue(row: IDataRow) {
-    return this.isMissing(row) ? null : this.getNumber(row);
+    return this.isMissing(row) ? NaN : this.getNumber(row);
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.FLOAT;
   }
 
   groupCompare(a: IGroupData, b: IGroupData): number {
@@ -236,7 +240,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   toCompareGroupValueType() {
-    return ECompareValueType.NUMBER;
+    return ECompareValueType.FLOAT;
   }
 
   getOriginalMapping() {

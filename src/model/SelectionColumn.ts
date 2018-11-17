@@ -117,7 +117,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
 
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row) === true;
-    return v ? 1 : -1;
+    return v ? 1 : 0;
   }
 
   group(row: IDataRow) {

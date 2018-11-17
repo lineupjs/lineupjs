@@ -187,6 +187,6 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   toCompareValueType() {
-    return [ECompareValueType.NUMBER].concat(this.categories.map(() => ECompareValueType.NUMBER));
+    return [ECompareValueType.UINT].concat(this.categories.map(() => ECompareValueType.UINT));
   }
 }

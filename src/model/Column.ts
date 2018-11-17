@@ -49,7 +49,8 @@ export interface IColumnMetaData {
 export declare type ICompareValue = string | number | null;
 
 export enum ECompareValueType {
-  NUMBER,
+  FLOAT,
+  UINT,
   STRING
 }
 
@@ -540,7 +541,7 @@ export default class Column extends AEventDispatcher {
   }
 
   toCompareValueType(): ECompareValueType | ECompareValueType[] {
-    return ECompareValueType.NUMBER;
+    return ECompareValueType.UINT;
   }
 
   /**

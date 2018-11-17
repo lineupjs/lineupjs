@@ -1,7 +1,7 @@
 import {format} from 'd3-format';
 import {IBoxPlotData} from '../internal';
 import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {
@@ -83,6 +83,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   toCompareValue(row: IDataRow): number {
     return toCompareBoxPlotValue(this, row);
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.FLOAT;
   }
 
   getBoxPlotData(row: IDataRow): IBoxPlotData | null {

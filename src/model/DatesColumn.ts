@@ -146,7 +146,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   }
 
   toCompareValueType() {
-    return [ECompareValueType.NUMBER, ECompareValueType.NUMBER];
+    return [ECompareValueType.UINT, ECompareValueType.UINT];
   }
 
   isFiltered() {
