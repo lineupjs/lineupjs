@@ -218,6 +218,7 @@ export default class EngineRenderer extends AEventDispatcher {
     data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
       this.setHighlightToNearest(indices, true);
     });
+    data.on(`${ADataProvider.EVENT_DATA_CHANGED}.body`, () => this.updateUnfilterdHists());
 
     this.data.getRankings().forEach((r) => this.addRanking(r));
   }
@@ -287,10 +288,14 @@ export default class EngineRenderer extends AEventDispatcher {
     this.rankings.push(r);
     this.update([r]);
 
-    // compute unfiltered hist
-    {
+    this.updateUnfilterdHists([r]);
+  }
+
+  private updateUnfilterdHists(rankings = this.rankings) {
+    for (const ranking of rankings) {
+      // compute unfiltered hist
       const histo = this.data.stats();
-      const cols = ranking.flatColumns;
+      const cols = ranking.ranking.flatColumns;
       cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
         this.histCache.set(`-${col.id}`, histo == null ? null : histo.stats(<INumberColumn>col));
       });

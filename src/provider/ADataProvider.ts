@@ -18,6 +18,13 @@ import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interf
 
 export {IExportOptions} from './utils';
 
+/**
+ * emitted when the data changes
+ * @asMemberOf ADataProvider
+ * @param rows the new data rows
+ * @event
+ */
+export declare function dataChanged(rows: IDataRow[]): void;
 
 /**
  * emitted when the selection changes
@@ -72,6 +79,7 @@ export declare function aggregate(ranking: Ranking, group: IGroup|IGroup[], valu
  */
 abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_SELECTION_CHANGED = 'selectionChanged';
+  static readonly EVENT_DATA_CHANGED = 'dataChanged';
   static readonly EVENT_ADD_COLUMN = Ranking.EVENT_ADD_COLUMN;
   static readonly EVENT_REMOVE_COLUMN = Ranking.EVENT_REMOVE_COLUMN;
   static readonly EVENT_ADD_RANKING = 'addRanking';
@@ -125,6 +133,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   protected createEventList() {
     return super.createEventList().concat([
+      ADataProvider.EVENT_DATA_CHANGED,
       ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
@@ -133,6 +142,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
   }
 
+  on(type: typeof ADataProvider.EVENT_DATA_CHANGED, listener: typeof dataChanged | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof ADataProvider.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_RANKING, listener: typeof addRanking | null): this;

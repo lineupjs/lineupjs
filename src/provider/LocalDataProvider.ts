@@ -12,6 +12,7 @@ import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 import {sortComplex} from './sort';
 import {range} from 'd3-array';
+import ADataProvider from './ADataProvider';
 
 
 export interface ILocalDataProviderOptions {
@@ -89,14 +90,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param data
    */
   setData(data: any[]) {
-    // TODO fire event that data has changed
     this._data = data;
     this._dataRows = toRows(data);
+    this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll();
   }
 
   clearData() {
-    // TODO fire event that data has changed
     this.setData([]);
   }
 
@@ -109,7 +109,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       this._data.push(d);
       this._dataRows.push({v: d, i: this._dataRows.length});
     }
-    // TODO fire event that data has changed
+    this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll();
   }
 
