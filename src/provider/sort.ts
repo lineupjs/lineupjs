@@ -1,6 +1,7 @@
 import {ICompareValue, ECompareValueType} from '../model/Column';
 import {FIRST_IS_NAN, FIRST_IS_MISSING} from '../model/missing';
-import {chooseByLength} from '../model';
+import {chooseByLength, IndicesArray} from '../model';
+
 
 const missingFloat = FIRST_IS_NAN > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 const missingInt = FIRST_IS_MISSING > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
@@ -86,10 +87,9 @@ export function sortComplex<T extends {sort: ICompareValue[]}>(arr: T[], compara
         return 0;
       });
   }
-  return arr;
 }
 
-export function sort2indices(arr: {i: number}[], rawLength: number) {
+function sort2indices(arr: {i: number}[], rawLength: number) {
   //store the ranking index and create an argsort version, i.e. rank 0 -> index i
   const order = chooseByLength(arr.length);
   const index2pos = chooseByLength(rawLength);
@@ -101,3 +101,20 @@ export function sort2indices(arr: {i: number}[], rawLength: number) {
   }
   return {order, index2pos};
 }
+
+function sort(rawLength: number, arr: {i: number, sort: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]) {
+  const a = comparators ? sortComplex(arr, comparators) : arr;
+  const r = sort2indices(a, rawLength);
+
+  return Promise.resolve(r);
+}
+
+export interface ISortWorker {
+  sort(rawLength: number, arr: {i: number, sort: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]): Promise<{order: IndicesArray, index2pos: IndicesArray}>;
+  terminate(): void;
+}
+
+export const local: ISortWorker = {
+  sort,
+  terminate: () => undefined
+};

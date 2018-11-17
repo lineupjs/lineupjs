@@ -10,7 +10,7 @@ import Column, {
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {sortComplex, sort2indices} from './sort';
+import {local, ISortWorker, sortComplex} from './sort';
 import {range} from 'd3-array';
 import ADataProvider from './ADataProvider';
 
@@ -50,6 +50,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
+  private sortWorker: ISortWorker = local;
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -188,15 +189,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return [];
     }
 
-    const types = ranking.toCompareValueType();
+    const types = isSortedBy ?ranking.toCompareValueType() : undefined;
 
     return Promise.all(Array.from(groups.values()).map((g) => {
       const group = g.group;
-      return Promise.resolve(g.rows)
-        // sort -> worker
-        .then((rows) => !isSortedBy ? rows : sortComplex(rows, types))
-        // to indices -> worker
-        .then((rows) => sort2indices(rows, this._data.length))
+      return this.sortWorker.sort(this._data.length, g.rows, types)
         // to group info
         .then(({order, index2pos}) => {
         const o: IOrderedGroup = Object.assign({order, index2pos}, group);
