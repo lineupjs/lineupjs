@@ -56,21 +56,9 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  /**
-   * returns the maximal number of nested/hierarchical sorting criteria
-   * @return {number}
-   */
-  protected getMaxNestedSortingCriteria() {
-    return 1;
-  }
-
-  protected getMaxGroupColumns() {
-    return 1;
-  }
-
   cloneRanking(existing?: Ranking) {
     const id = this.nextRankingId();
-    const clone = new Ranking(id, this.getMaxNestedSortingCriteria(), this.getMaxGroupColumns());
+    const clone = new Ranking(id);
 
     if (existing) { //copy the ranking of the other one
       //TODO better cloning
@@ -130,9 +118,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   deriveDefault(addSupportType: boolean = true) {
     const r = this.pushRanking();
     if (addSupportType) {
-      if (this.getMaxGroupColumns() > 0) {
-        r.push(this.create(createAggregateDesc())!);
-      }
+      r.push(this.create(createAggregateDesc())!);
       r.push(this.create(createRankDesc())!);
       if (this.multiSelections) {
         r.push(this.create(createSelectionDesc())!);

@@ -134,7 +134,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   private groups: IOrderedGroup[] = [Object.assign({order: <number[]>[], index2pos: <number[]>[]}, defaultGroup)];
   private order: IndicesArray = [];
 
-  constructor(public id: string, private maxSortCriteria = 2, private maxGroupColumns = 1) {
+  constructor(public id: string) {
     super();
     this.id = fixCSS(id);
     this.label = `Ranking ${id.startsWith('rank') ? id.slice(4) : id}`;
@@ -436,10 +436,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   setSortCriteria(value: ISortCriteria | ISortCriteria[]) {
     const values = Array.isArray(value) ? value.slice() : [value];
-    // trim
-    if (values.length > this.maxSortCriteria) {
-      values.splice(this.maxSortCriteria, values.length - this.maxSortCriteria);
-    }
     const bak = this.sortCriteria.slice();
 
     if (equalCriteria(values, bak)) {
@@ -462,12 +458,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   setGroupCriteria(column: Column[]|Column) {
-    let cols = Array.isArray(column) ? column : [column];
-
-    // trim
-    if (cols.length > this.maxGroupColumns) {
-      cols = cols.slice(0, this.maxGroupColumns);
-    }
+    const cols = Array.isArray(column) ? column : [column];
 
     if (equalArrays(this.groupColumns, cols)) {
       return true; //same
@@ -492,47 +483,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.setGroupSortCriteria(this.toggleSortingLogic(col, this.groupSortCriteria));
   }
 
-  setMaxSortCriteria(maxSortCriteria: number) {
-    const old = this.maxSortCriteria;
-    if (old === maxSortCriteria) {
-      return;
-    }
-    this.maxSortCriteria = maxSortCriteria;
-    if (old < maxSortCriteria || this.sortCriteria.length < maxSortCriteria) {
-      return;
-    }
-    // check if we have to slice
-    this.setSortCriteria(this.sortCriteria.slice(0, maxSortCriteria));
-  }
-
-  getMaxSortCriteria() {
-    return this.maxSortCriteria;
-  }
-
-  setMaxGroupColumns(maxGroupColumns: number) {
-    const old = this.maxGroupColumns;
-    if (old === maxGroupColumns) {
-      return;
-    }
-    this.maxGroupColumns = maxGroupColumns;
-    if (old < maxGroupColumns || this.groupColumns.length < maxGroupColumns) {
-      return;
-    }
-    // check if we have to slice
-    this.setGroupCriteria(this.groupColumns.slice(0, maxGroupColumns));
-  }
-
-  getMaxGroupColumns() {
-    return this.maxGroupColumns;
-  }
-
   setGroupSortCriteria(value: ISortCriteria | ISortCriteria[]) {
     const values = Array.isArray(value) ? value.slice() : [value];
-    // trim
-    if (values.length > this.maxSortCriteria) {
-      values.splice(this.maxSortCriteria, values.length - this.maxSortCriteria);
-    }
-
     const bak = this.groupSortCriteria.slice();
 
     if (equalCriteria(values, bak)) {

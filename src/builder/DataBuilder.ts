@@ -42,27 +42,6 @@ export default class DataBuilder extends LineUpBuilder {
   }
 
   /**
-   * no limits for the number of sorting and grouping criteria
-   */
-  noCriteriaLimits() {
-    this.providerOptions.maxGroupColumns = Infinity;
-    this.providerOptions.maxNestedSortingCriteria = Infinity;
-    return this;
-  }
-
-  /**
-   * limit the number of sort and grouping criterias i.e the nesting level
-   * @param {number} sortingCritera
-   * @param {number} groupingCriteria
-   * @returns {this}
-   */
-  limitCriteria(sortingCritera: number, groupingCriteria: number) {
-    this.providerOptions.maxGroupColumns = sortingCritera;
-    this.providerOptions.maxNestedSortingCriteria = groupingCriteria;
-    return this;
-  }
-
-  /**
    * triggers to derive the column descriptions for the given data
    * @param {string} columns optional enforced order of columns
    */

@@ -25,12 +25,6 @@ export interface ILocalDataProviderOptions {
    * default: false
    */
   jumpToSearchResult: boolean;
-
-  /**
-   * the maximum number of nested sorting criteria
-   */
-  maxNestedSortingCriteria: number;
-  maxGroupColumns: number;
 }
 
 /**
@@ -43,10 +37,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
      */
     filterGlobally: false,
 
-    jumpToSearchResult: false,
-
-    maxNestedSortingCriteria: Infinity,
-    maxGroupColumns: Infinity
+    jumpToSearchResult: false
   };
 
   private readonly reorderAll: () => void;
@@ -87,14 +78,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   getTotalNumberOfRows() {
     return this.data.length;
-  }
-
-  protected getMaxGroupColumns() {
-    return this.options.maxGroupColumns;
-  }
-
-  protected getMaxNestedSortingCriteria() {
-    return this.options.maxNestedSortingCriteria;
   }
 
   get data() {

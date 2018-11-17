@@ -450,11 +450,6 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
       removeFromSort(column);
       if (isCategoricalColumn(col)) { // we can group by it
         groups.splice(groupIndex + (where === 'after' ? 1 : 0), 0, col);
-        if (groups.length > ranking.getMaxGroupColumns()) {
-          // move the rest to sorting
-          const removed = groups.splice(0, groups.length - ranking.getMaxGroupColumns());
-          criteria.unshift(...removed.reverse().map((d) => ({asc: false, col: d}))); // now a first sorting criteria
-        }
       } else {
         // remove all before and shift to sorting + sorting
         const removed = groups.splice(0, groups.length - groupIndex);
