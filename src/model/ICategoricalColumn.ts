@@ -56,21 +56,6 @@ export function toCategory(cat: (string | Partial<ICategory>), value: number, ne
   };
 }
 
-/** @internal */
-function compareCategory(a: ICategory | null, b: ICategory | null) {
-  const aNull = a == null || isNaN(a.value);
-  const bNull = b == null || isNaN(b.value);
-  if (aNull || a == null) {
-    return bNull ? 0 : FIRST_IS_MISSING;
-  }
-  if (bNull || b == null) {
-    return -FIRST_IS_MISSING;
-  }
-  if (a.value === b.value) {
-    return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
-  }
-  return a.value - b.value;
-}
 
 /** @internal */
 export function toCompareCategoryValue(v: ICategory | null) {

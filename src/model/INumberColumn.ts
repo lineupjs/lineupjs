@@ -55,13 +55,13 @@ export function isNumberColumn(col: Column | IColumnDesc) {
 export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
   const aVal = col.getBoxPlotData(a);
   const bVal = col.getBoxPlotData(b);
+  const method = <keyof IBoxPlotData>col.getSortMethod();
   if (aVal == null) {
     return bVal == null ? 0 : FIRST_IS_NAN;
   }
   if (bVal == null) {
     return FIRST_IS_NAN * -1;
   }
-  const method = <keyof IBoxPlotData>col.getSortMethod();
   return numberCompare(<number>aVal[method], <number>bVal[method]);
 }
 

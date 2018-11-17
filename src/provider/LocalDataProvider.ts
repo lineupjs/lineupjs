@@ -185,9 +185,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const types = ranking.toCompareValueType();
 
     const ordered = Array.from(groups.values()).map((g) => {
-      console.time('sort');
+      // console.time('sort');
       sortComplex(g.rows, types);
-      console.timeEnd('sort');
+      // console.timeEnd('sort');
 
       //store the ranking index and create an argsort version, i.e. rank 0 -> index i
       const order = chooseByLength(g.rows.length);
