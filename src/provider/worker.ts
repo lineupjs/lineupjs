@@ -19,15 +19,15 @@ function workerMain(self: IPoorManWorkerScope) {
   });
 }
 
-function toFunctionBody(f: Function) {
+export function toFunctionBody(f: Function) {
   const source = f.toString();
   return source.slice(source.indexOf('{') + 1, source.lastIndexOf('}'));
 }
 
-export function createWorker(fs: Function[]) {
-  const sources: string[] = fs.map(toFunctionBody);
+export function createWorker(fs: (string | Function)[]) {
+  const sources = fs.map((d) => d.toString()).join('\n\n');
 
-  const blob = new Blob(sources, {type: 'application/javascript'});
+  const blob = new Blob([sources], {type: 'application/javascript'});
 
   return new Worker(URL.createObjectURL(blob));
 }

@@ -3,14 +3,13 @@ import Column, {
   defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn,
   IOrderedGroup, ICompareValue,
   NumberColumn,
-  chooseByLength,
   IndicesArray,
   mapIndices
 } from '../model';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {local, ISortWorker, sortComplex} from './sort';
+import {local, ISortWorker, sortComplex, chooseByLength, WorkerSortWorker} from './sort';
 import {range} from 'd3-array';
 import ADataProvider from './ADataProvider';
 
@@ -50,7 +49,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private sortWorker: ISortWorker = local;
+  private sortWorker: ISortWorker = new WorkerSortWorker();
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -89,6 +88,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   get data() {
     return this._data;
+  }
+
+  destroy() {
+    super.destroy();
+    this.sortWorker.terminate();
   }
 
   /**

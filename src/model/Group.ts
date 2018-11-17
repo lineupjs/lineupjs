@@ -12,19 +12,6 @@ export const defaultGroup: IGroup = {
   color: 'gray'
 };
 
-/**
- * @internal
- */
-export function chooseByLength(length: number) {
-  if (length <= 255) {
-    return new Uint8Array(length);
-  }
-  if (length <= 65535) {
-    return new Uint16Array(length);
-  }
-  return new Uint32Array(length);
-}
-
 
 /**
  * @internal

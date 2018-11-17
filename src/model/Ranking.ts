@@ -2,7 +2,7 @@ import {equalArrays, fixCSS} from '../internal';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';
 import Column, {IColumnParent, IFlatColumn, visibilityChanged, dirtyValues, dirtyHeader, labelChanged, widthChanged, dirty, ICompareValue, ECompareValueType} from './Column';
-import {defaultGroup, IOrderedGroup, IndicesArray, chooseByLength} from './Group';
+import {defaultGroup, IOrderedGroup, IndicesArray} from './Group';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {joinGroups} from './internal';
 import NumberColumn, {filterChanged} from './NumberColumn';

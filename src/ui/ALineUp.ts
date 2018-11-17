@@ -65,6 +65,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   destroy() {
     // just clear since we hand in the node itself
     clear(this.node);
+    this.data.destroy();
   }
 
   dump() {

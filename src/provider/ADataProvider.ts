@@ -303,6 +303,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }
   }
 
+  destroy() {
+    // dummy
+  }
+
   /**
    * hook method for cleaning up a ranking
    * @param _ranking

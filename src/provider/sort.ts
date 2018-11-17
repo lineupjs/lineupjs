@@ -1,6 +1,21 @@
 import {ICompareValue, ECompareValueType} from '../model/Column';
 import {FIRST_IS_NAN, FIRST_IS_MISSING} from '../model/missing';
-import {chooseByLength, IndicesArray} from '../model';
+import {IndicesArray} from '../model';
+import {createWorker, IPoorManWorkerScope, toFunctionBody} from './worker';
+
+
+/**
+ * @internal
+ */
+export function chooseByLength(length: number) {
+  if (length <= 255) {
+    return new Uint8Array(length);
+  }
+  if (length <= 65535) {
+    return new Uint16Array(length);
+  }
+  return new Uint32Array(length);
+}
 
 
 const missingFloat = FIRST_IS_NAN > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
@@ -118,3 +133,85 @@ export const local: ISortWorker = {
   sort,
   terminate: () => undefined
 };
+
+interface ISortMessageRequest {
+  uid: number;
+
+  rawLength: number;
+  arr: {i: number, sort: ICompareValue[]}[];
+  comparators?: {asc: boolean, v: ECompareValueType}[];
+}
+
+interface ISortMessageResponse {
+  uid: number;
+
+  order: IndicesArray;
+  index2pos: IndicesArray;
+}
+
+
+function sortWorkerMain(self: IPoorManWorkerScope) {
+  self.addEventListener('message', (evt) => {
+    const r = <ISortMessageRequest>evt.data;
+    if (typeof r.uid !== 'number') {
+      return;
+    }
+
+    const arr = r.comparators ? sortComplex(r.arr, r.comparators) : r.arr;
+    const res = sort2indices(arr, r.rawLength);
+
+    self.postMessage(<ISortMessageResponse>{
+      uid: r.uid,
+      order: res.order,
+      index2pos: res.index2pos
+    }, [res.order.buffer, res.index2pos.buffer]);
+  });
+}
+
+
+export class WorkerSortWorker implements ISortWorker {
+  private readonly worker: Worker;
+
+  constructor() {
+    this.worker = createWorker([
+      chooseByLength.toString(),
+      `var missingFloat = ${missingFloat};`,
+      `var missingInt = ${missingInt};`,
+      `var missingString = '${missingString}';`,
+      `var compare = new Intl.Collator();`,
+      floatCompare,
+      uintCompare,
+      stringCompare,
+      floatCompareDesc,
+      uintCompareDesc,
+      stringCompareDesc,
+      toFunction.toString(),
+      sortComplex.toString(),
+      sort2indices.toString(),
+      toFunctionBody(sortWorkerMain)
+    ]);
+  }
+
+  sort(rawLength: number, arr: {i: number, sort: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]) {
+    return new Promise<{order: IndicesArray, index2pos: IndicesArray}>((resolve) => {
+      const uid = Math.random();
+
+      const receiver = (msg: MessageEvent) => {
+        const r = <ISortMessageResponse>msg.data;
+        if (r.uid !== uid) {
+          return;
+        }
+        this.worker.removeEventListener('message', receiver);
+        resolve({order: r.order, index2pos: r.index2pos});
+      };
+
+      this.worker.postMessage(<ISortMessageRequest>{
+        arr, comparators, rawLength, uid
+      });
+    });
+  }
+
+  terminate() {
+    this.worker.terminate();
+  }
+}
