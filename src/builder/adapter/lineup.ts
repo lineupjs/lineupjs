@@ -126,7 +126,14 @@ export class Adapter {
     this.prevColumns = ctx;
     const columns = ctx.columns.map((d) => Object.assign({}, d)); // work on copy
     if (ctx.deriveColumns) {
-      columns.push(...deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames}));
+      const labels = new Set(columns.map((d) => d.label));
+      const derived = deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames});
+      for (const derive of derived) {
+        if (labels.has(derive.label)) { // skip same name
+          continue;
+        }
+        columns.push(derive);
+      }
     }
     if (ctx.deriveColors) {
       deriveColors(columns);

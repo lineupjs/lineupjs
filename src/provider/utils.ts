@@ -89,6 +89,16 @@ function deriveType(label: string, value: any, column: number | string, data: an
   return base;
 }
 
+function selectColumns(existing: string[], columns: string[]) {
+  const allNots = columns.every((d) => d.startsWith('-'));
+  if (!allNots) {
+    return columns;
+  }
+  // negate case, exclude columns that are given using -notation
+  const exclude = new Set(columns);
+  return existing.filter((d) => !exclude.has(`-${d}`));
+}
+
 export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOptions> = {}) {
   const config = Object.assign({
     categoricalThreshold: 0.7,
@@ -105,7 +115,8 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
     return first.map((v, i) => deriveType(`Col${i}`, v, i, data, config));
   }
   //objects
-  const columns = config.columns.length > 0 ? config.columns : Object.keys(first);
+  const existing = Object.keys(first);
+  const columns = config.columns.length > 0 ? selectColumns(existing, config.columns) : existing;
   return columns.map((key) => deriveType(key, first[key], key, data, config));
 }
 
