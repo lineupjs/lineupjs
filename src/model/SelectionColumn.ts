@@ -1,6 +1,6 @@
 import {Category, SupportType, toolbar} from './annotations';
 import {IDataRow, IGroup} from './interfaces';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 
@@ -118,6 +118,10 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row) === true;
     return v ? 1 : 0;
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.BINARY;
   }
 
   group(row: IDataRow) {

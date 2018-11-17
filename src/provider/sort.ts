@@ -40,7 +40,7 @@ function negate(asc: boolean, v: (a: any, b: any)=>number) {
 }
 
 export function sortComplex(arr: {sort: ICompareValue[]}[], comparators: {asc: boolean, v: ECompareValueType}[]) {
-  const functions: ((a: any, b: any)=>number)[] = comparators.map((d) => negate(d.asc, d.v === ECompareValueType.NUMBER ? numberCompare : stringCompare));
+  const functions: ((a: any, b: any)=>number)[] = comparators.map((d) => negate(d.asc, d.v === ECompareValueType.STRING ? stringCompare : numberCompare));
 
   switch(functions.length) {
     case 0: return arr;

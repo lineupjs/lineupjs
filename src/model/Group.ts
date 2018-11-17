@@ -2,8 +2,8 @@ import {IGroup} from './interfaces';
 
 
 export interface IOrderedGroup extends IGroup {
-  order: number[];
-  index2pos: number[];
+  order: Uint32Array;
+  index2pos: Uint32Array;
 }
 
 export const defaultGroup: IGroup = {

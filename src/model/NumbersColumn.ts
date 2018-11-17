@@ -5,7 +5,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
+  DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
   noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue
 } from './INumberColumn';
 import {

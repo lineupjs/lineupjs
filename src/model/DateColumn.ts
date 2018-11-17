@@ -187,7 +187,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   }
 
   toCompareGroupValueType() {
-    return ECompareValueType.NUMBER;
+    return ECompareValueType.UINT;
   }
 }
 

@@ -8,6 +8,7 @@ import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 import {sortComplex} from './sort';
+import {strict} from 'assert';
 
 interface ISortHelper {
   v: any;
@@ -149,9 +150,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (this._data.length === 0) {
       return [];
     }
-    //wrap in a helper and store the initial index
-    let helper: ISortHelper[] = this._data.map((r, i) => ({v: r, i, group: defaultGroup, sort: [], sortGroup: []}));
-
     //do the optional filtering step
     let filter: ((d: IDataRow) => boolean) | null = null;
     if (this.options.filterGlobally) {
@@ -163,77 +161,62 @@ export default class LocalDataProvider extends ACommonDataProvider {
       filter = (d) => ranking.filter(d);
     }
 
-    if (filter || this.filter) {
-      helper = helper.filter((d) => (!this.filter || this.filter(d)) && (!filter || filter(d)));
+    if (this.filter) {
+      // insert the extra filter
+      const bak = filter;
+      filter = !filter ? this.filter : (d) => this.filter!(d) && bak!(d);
     }
 
-    if (helper.length === 0) {
+    const groups = new Map<string, {group: IGroup, rows: {r: IDataRow, sort: ICompareValue[]}[]}>();
+
+    for (const r of this._dataRows) {
+      if (filter && !filter(r)) {
+        continue;
+      }
+      const group = ranking.grouper(r) || defaultGroup;
+      const groupKey = group.name.toLowerCase();
+      const sort = ranking.toCompareValue(r);
+      if (groups.has(groupKey)) {
+        groups.get(groupKey)!.rows.push({r, sort});
+      } else {
+        groups.set(groupKey, {group, rows: [{r, sort}]});
+      }
+    }
+
+    if (groups.size === 0) {
       return [];
     }
 
-    //create the groups for each row
-    let firstGroup: IGroup | null = null;
-    let singleGroupOnly = true;
-    for (const r of helper) {
-      r.group = ranking.grouper(r) || defaultGroup;
-      if (singleGroupOnly) {
-        if (firstGroup === null) {
-          firstGroup = r.group;
-        } else if (firstGroup !== r.group) {
-          singleGroupOnly = false;
-        }
-      }
-      r.sort = ranking.toCompareValue(r);
-    }
-    if (singleGroupOnly) {
-      const group = helper[0].group;
-      //no need to split
-      //sort by the ranking column
+    const types = ranking.toCompareValueType();
+
+    const ordered = Array.from(groups.values()).map((g) => {
       console.time('sort');
-      sortComplex(helper, ranking.toCompareValueType());
-      // helper.sort((a, b) => ranking.comparator(a, b));
+      sortComplex(g.rows, types);
       console.timeEnd('sort');
 
       //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-      const order = <number[]>[];
-      const index2pos = <number[]>[];
+      const order = new Uint32Array(g.rows.length);
+      const index2pos = new Uint32Array(this._data.length);
 
-      for (let i = 0; i < helper.length; ++i) {
-        const ri = helper[i].i;
-        order.push(ri);
+      for (let i = 0; i < g.rows.length; ++i) {
+        const ri = g.rows[i].r.i;
+        order[i] = ri;
         index2pos[ri] = i;
       }
-      return [Object.assign({order, index2pos}, group!)];
+      const groupData = Object.assign({rows: g.rows.map((d) => d.r)}, g.group);
+      const orderedGroup = Object.assign({order, index2pos}, g.group);
+
+      return {o: orderedGroup, sort: ranking.toGroupCompareValue(groupData)};
+    });
+
+    if (ordered.length === 1) {
+      return [ordered[0].o];
     }
-    //sort by group and within by order
-    helper.sort((a, b) => {
-      const ga = a.group!;
-      const gb = b.group!;
-      if (ga.name !== gb.name) {
-        return ga.name.toLowerCase().localeCompare(gb.name.toLowerCase());
-      }
-      return ranking.comparator(a, b);
-    });
-    //iterate over groups and create within orders
-    const groups: (IOrderedGroup & IGroupData)[] = [Object.assign({order: [], index2pos: [], rows: []}, helper[0].group!)];
-    let group = groups[0];
-    helper.forEach((row, i) => {
-      const rowGroup = row.group!;
-      if (rowGroup.name === group.name) {
-        group.order.push(row.i);
-        group.index2pos[row.i] = i;
-        group.rows.push(row);
-      } else { // change in groups
-        group = Object.assign({order: [row.i], index2pos: [], rows: [row]}, rowGroup);
-        group.index2pos[row.i] = i;
-        groups.push(group);
-      }
-    });
 
     // sort groups
-    groups.sort((a, b) => ranking.groupComparator(a, b));
+    sortComplex(ordered, ranking.toGroupCompareValueType());
 
-    return groups;
+    return ordered.map((d) => d.o);
   }
 
 

@@ -110,33 +110,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    */
   private readonly columns: Column[] = [];
 
-  readonly comparator = (a: IDataRow, b: IDataRow) => {
-    if (this.sortCriteria.length === 0) {
-      return a.i - b.i;
-    }
-    for (const sort of this.sortCriteria) {
-      const r = sort.col!.compare(a, b);
-      if (r !== 0) {
-        return sort.asc ? r : -r;
-      }
-    }
-    return a.i - b.i; //to have a deterministic order
-  };
-
-  readonly groupComparator = (a: IGroupData, b: IGroupData) => {
-    if (this.groupSortCriteria.length === 0) {
-      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-    }
-    for (const sort of this.groupSortCriteria) {
-      const r = sort.col!.groupCompare(a, b);
-      if (r !== 0) {
-        return sort.asc ? r : -r;
-      }
-    }
-    return a.name.localeCompare(b.name);
-  };
-
-
   readonly grouper = (row: IDataRow): IGroup => {
     const g = this.groupColumns;
     switch (g.length) {
@@ -158,7 +131,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * the current ordering as an sorted array of indices
    * @type {Array}
    */
-  private groups: IOrderedGroup[] = [Object.assign({order: <number[]>[], index2pos: <number[]>[]}, defaultGroup)];
+  private groups: IOrderedGroup[] = [Object.assign({order: new Uint32Array(0), index2pos: new Uint32Array(0)}, defaultGroup)];
+  private order = new Uint32Array(0);
 
   constructor(public id: string, private maxSortCriteria = 2, private maxGroupColumns = 1) {
     super();
@@ -214,25 +188,19 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   setGroups(groups: IOrderedGroup[]) {
-    const old = this.getOrder();
+    const old = this.order;
     const oldGroups = this.groups;
     this.groups = groups;
-    this.fire([Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_GROUPS_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], old, this.getOrder(), oldGroups, groups);
+    this.order = toOrder(groups);
+    this.fire([Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_GROUPS_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], old, this.order, oldGroups, groups);
   }
 
   getOrder() {
-    switch (this.groups.length) {
-      case 0:
-        return [];
-      case 1:
-        return this.groups[0].order;
-      default:
-        return (<number[]>[]).concat(...this.groups.map((g) => g.order));
-    }
+    return this.order;
   }
 
   getOrderLength() {
-    return this.groups.reduce((a,b) => a + b.order.length, 0);
+    return this.order.length;
   }
 
   getGroups() {
@@ -288,8 +256,18 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
 
   toCompareValue(row: IDataRow) {
-    let vs : ICompareValue[] = [];
-    vs = vs.concat(...this.sortCriteria.map((d) => d.col.toCompareValue(row)));
+    if (this.sortCriteria.length === 0) {
+      return [row.i];
+    }
+    const vs : ICompareValue[] = [];
+    for (const s of this.sortCriteria) {
+      const r = s.col.toCompareValue(row);
+      if (Array.isArray(r)) {
+        vs.push(...r);
+      } else {
+        vs.push(r);
+      }
+    }
     vs.push(row.i);
     return vs;
   }
@@ -298,22 +276,48 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     const vs : {asc: boolean, v: ECompareValueType}[] = [];
     for (const s of this.sortCriteria) {
       const types = s.col.toCompareValueType();
-      if (Array.isArray(types)) {
-        for (const v of types) {
-          vs.push({asc: s.asc, v});
-        }
-      } else {
+      if (!Array.isArray(types)) {
         vs.push({asc: s.asc, v: types});
+        continue;
+      }
+      for (const v of types) {
+        vs.push({asc: s.asc, v});
       }
     }
-    vs.push({asc: true, v: ECompareValueType.NUMBER});
+    vs.push({asc: true, v: ECompareValueType.UINT});
     return vs;
   }
 
   toGroupCompareValue(group: IGroupData) {
-    let vs : (number | string | null)[] = [];
-    vs = vs.concat(...this.groupSortCriteria.map((d) => d.col.toCompareGroupValue(group)));
+    if (this.groupSortCriteria.length === 0) {
+      return [group.name.toLowerCase()];
+    }
+    const vs : ICompareValue[] = [];
+    for (const s of this.groupSortCriteria) {
+      const r = s.col.toCompareGroupValue(group);
+      if (Array.isArray(r)) {
+        vs.push(...r);
+      } else {
+        vs.push(r);
+      }
+    }
     vs.push(group.name.toLowerCase());
+    return vs;
+  }
+
+  toGroupCompareValueType() {
+    const vs : {asc: boolean, v: ECompareValueType}[] = [];
+    for (const s of this.groupSortCriteria) {
+      const types = s.col.toCompareGroupValueType();
+      if (!Array.isArray(types)) {
+        vs.push({asc: s.asc, v: types});
+        continue;
+      }
+      for (const v of types) {
+        vs.push({asc: s.asc, v});
+      }
+    }
+    vs.push({asc: true, v: ECompareValueType.STRING});
     return vs;
   }
 
@@ -766,4 +770,22 @@ function equalCriteria(a: ISortCriteria[], b: ISortCriteria[]) {
     const bi = b[i];
     return ai.col === bi.col && ai.asc === bi.asc;
   });
+}
+
+function toOrder(groups: IOrderedGroup[]) {
+  switch (groups.length) {
+    case 0:
+      return new Uint32Array(0);
+    case 1:
+      return groups[0].order;
+    default:
+      const total = groups.reduce((a, b) => a + b.order.length, 0);
+      const r = new Uint32Array(total);
+      let shift = 0;
+      for (const g of groups) {
+        r.set(g.order, shift);
+        shift += g.order.length;
+      }
+      return r;
+    }
 }

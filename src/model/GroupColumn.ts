@@ -84,6 +84,6 @@ export default class GroupColumn extends Column {
   }
 
   toCompareGroupValueType() {
-    return this.groupSortMethod === 'count' ? ECompareValueType.NUMBER : ECompareValueType.STRING;
+    return this.groupSortMethod === 'count' ? ECompareValueType.UINT : ECompareValueType.STRING;
   }
 }

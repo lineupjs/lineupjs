@@ -50,6 +50,7 @@ export declare type ICompareValue = string | number | null;
 
 export enum ECompareValueType {
   FLOAT,
+  BINARY,
   UINT,
   STRING
 }

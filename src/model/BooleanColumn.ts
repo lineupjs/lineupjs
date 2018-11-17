@@ -1,6 +1,6 @@
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
@@ -183,6 +183,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
       return NaN;
     }
     return v ? 1 : 0;
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.BINARY;
   }
 
   group(row: IDataRow) {
