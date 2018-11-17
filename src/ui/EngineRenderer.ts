@@ -1,6 +1,6 @@
 import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineupengine';
 import {ILineUpOptions, ILineUpFlags} from '../interfaces';
-import {findOption, ICategoricalStatistics, IStatistics, round} from '../internal';
+import {ICategoricalStatistics, IStatistics, round} from '../internal';
 import AEventDispatcher, {suffix, IEventListener} from '../internal/AEventDispatcher';
 import {
   Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup,
@@ -72,7 +72,6 @@ export default class EngineRenderer extends AEventDispatcher {
       dialogManager,
       toolbar: this.options.toolbar,
       flags: <ILineUpFlags>this.options.flags,
-      option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
       asElement: domElementCache(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {

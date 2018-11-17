@@ -88,13 +88,6 @@ export interface IRenderContext {
 
   asElement(html: string): HTMLElement;
 
-  /**
-   * lookup custom options by key
-   * @param key key to lookup
-   * @param defaultValue default value
-   */
-  option<T>(key: string, defaultValue: T): T;
-
   colWidth(col: Column): number;
 
   readonly provider: IDataProvider;

@@ -75,7 +75,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
 
   create(col: IMultiLevelColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     const {cols, stacked, padding} = createData(col, context, this.stacked, ERenderMode.CELL, imposer);
-    const useGrid = context.option('useGridLayout', false);
+    const useGrid = true;
     const width = context.colWidth(col);
     return {
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid && !stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
@@ -133,7 +133,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     }
 
     const {cols, padding} = createData(col, context, false, ERenderMode.GROUP, imposer);
-    const useGrid = context.option('useGridLayout', false);
+    const useGrid = true;
     return {
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
       update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
