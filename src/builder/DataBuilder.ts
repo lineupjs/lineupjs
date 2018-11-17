@@ -130,7 +130,20 @@ export default class DataBuilder extends LineUpBuilder {
    * @returns {LocalDataProvider}
    */
   buildData() {
-    const columns = this.columns.map((d) => typeof d === 'function' ? d(this.data) : d);
+    // last come survived separted by label to be able to override columns
+    const columns: IColumnDesc[] = [];
+    const contained = new Set<string>();
+    for (const col of this.columns) {
+      const c = typeof col === 'function' ? col(this.data) : col;
+      const key = `${c.type}@${c.label}`;
+      if (!contained.has(key)) {
+        columns.push(c);
+        contained.add(key);
+        continue;
+      }
+      const oldPos = columns.findIndex((d) => key === `${d.type}@${d.label}`);
+      columns.splice(oldPos, 1, c); // replace with new one
+    }
     if (this._deriveColors) {
       deriveColors(columns);
     }

@@ -126,10 +126,10 @@ export class Adapter {
     this.prevColumns = ctx;
     const columns = ctx.columns.map((d) => Object.assign({}, d)); // work on copy
     if (ctx.deriveColumns) {
-      const labels = new Set(columns.map((d) => d.label));
+      const labels = new Set(columns.map((d) => `${d.type}@${d.label}`));
       const derived = deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames});
       for (const derive of derived) {
-        if (labels.has(derive.label)) { // skip same name
+        if (labels.has(`${derive.type}@${derive.label}`)) { // skip same name
           continue;
         }
         columns.push(derive);
