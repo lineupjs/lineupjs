@@ -4,7 +4,7 @@ import StringColumn from '../model/StringColumn';
 import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {setText, uniqueId} from './utils';
+import {setText, uniqueId, exampleText} from './utils';
 import {cssClass} from '../styles';
 
 
@@ -35,27 +35,17 @@ export default class StringCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static exampleText(col: Column, rows: IDataRow[]) {
-    const numExampleRows = 5;
-    const examples = <string[]>[];
-    for (const row of rows) {
-      if (col.isMissing(row)) {
-        continue;
-      }
-      const v = col.getLabel(row);
-      examples.push(v);
-      if (examples.length >= numExampleRows) {
-        break;
-      }
-    }
-    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
-  }
 
   createGroup(col: StringColumn) {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
-        n.innerHTML = `${StringCellRenderer.exampleText(col, rows)}`;
+        const v = exampleText(col, rows);
+        if (col.escape) {
+          setText(n, v);
+        } else {
+          n.innerHTML = v;
+        }
       }
     };
   }

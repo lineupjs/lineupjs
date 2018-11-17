@@ -30,7 +30,10 @@ export function defaultOptions(): ITaggleOptions {
     customRowUpdate: () => undefined,
     dynamicHeight: () => null,
     flags: {
-      disableFrozenColumns: true //disable by default for speed navigator.userAgent.includes('Firefox/52') // disable by default in Firefox ESR 52
+      disableFrozenColumns: true, //disable by default for speed navigator.userAgent.includes('Firefox/52') // disable by default in Firefox ESR 52
+      advancedRankingFeatures: true,
+      advancedModelFeatures: true,
+      advancedUIFeatures: true
     },
     ignoreUnsupportedBrowser: false
   };

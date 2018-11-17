@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: row;
 
-  &[data-interactive] > .#{$lu_css_prefix}-histogram-bin {
+  &.#{$lu_css_prefix}-histogram-i > .#{$lu_css_prefix}-histogram-bin {
     cursor: pointer;
   }
 
@@ -54,8 +54,8 @@ span.#{$lu_css_prefix}-mapping-hint {
   margin: 0 1px 0 0;
   font-size: x-small;
 
-  &[data-filtered=filtered] {
-    opacity: 0.2;
+  &[data-filtered] {
+    opacity: $lu_filtered_opacity;
   }
 
   > div {
@@ -109,7 +109,10 @@ span.#{$lu_css_prefix}-mapping-hint {
   right: 0;
   border-right: none;
   border-left: 1px solid black;
+}
 
+.#{$lu_css_prefix}-histogram-min.#{$lu_css_prefix}-swap-hint,
+.#{$lu_css_prefix}-histogram-max:not(.#{$lu_css_prefix}-swap-hint) {
   &::before {
     left: -5em;
     text-align: right;
@@ -129,7 +132,7 @@ span.#{$lu_css_prefix}-mapping-hint {
   right: 0;
 }
 
-.#{$lu_css_prefix}-histogram[data-interactive] {
+.#{$lu_css_prefix}-histogram.#{$lu_css_prefix}-histogram-i {
   margin-bottom: 3.75em;
 
   &:hover {

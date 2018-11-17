@@ -1,5 +1,5 @@
 import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineupengine';
-import {ILineUpOptions} from '../interfaces';
+import {ILineUpOptions, ILineUpFlags} from '../interfaces';
 import {findOption, ICategoricalStatistics, IStatistics, round} from '../internal';
 import AEventDispatcher, {suffix, IEventListener} from '../internal/AEventDispatcher';
 import {
@@ -55,8 +55,8 @@ export default class EngineRenderer extends AEventDispatcher {
     this.node.classList.toggle(cssClass('whole-hover'), options.expandLineOnHover);
     parent.appendChild(this.node);
 
-    const statsOf = (col: Column) => {
-      const r = this.histCache.get(col.id);
+    const statsOf = (col: Column, unfiltered: boolean = false) => {
+      const r = this.histCache.get(unfiltered ? `-${col.id}` : col.id);
       if (r == null || r instanceof Promise) {
         return null;
       }
@@ -71,6 +71,7 @@ export default class EngineRenderer extends AEventDispatcher {
       provider: data,
       dialogManager,
       toolbar: this.options.toolbar,
+      flags: <ILineUpFlags>this.options.flags,
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf,
       asElement: domElementCache(parent.ownerDocument!),
@@ -84,9 +85,8 @@ export default class EngineRenderer extends AEventDispatcher {
       },
       summaryRenderer: (col: Column, interactive: boolean, imposer?: IImposer) => {
         const r = chooseSummaryRenderer(col, this.options.renderers);
-        return r.createSummary(col, this.ctx, interactive, imposer);
+        return r.createSummary(col, this.ctx, interactive, interactive ? statsOf(col, true): null, imposer);
       },
-      totalNumberOfRows: 0,
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
         const group = this.groupRenderer(col, imposer);
@@ -123,9 +123,26 @@ export default class EngineRenderer extends AEventDispatcher {
 
       // FIXME flat
       this.style.addRule('lineup_rotation', `
-       #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated`, {
+       #${this.idPrefix}.${cssClass('rotated-label')} .${cssClass('label')}.${cssClass('rotated')}`, {
           transform: `rotate(${-this.options.labelRotation}deg)`
         });
+
+      const toDisable: string[] = [];
+      if (!this.options.flags.advancedRankingFeatures) {
+        toDisable.push('ranking');
+      }
+       if (!this.options.flags.advancedModelFeatures) {
+        toDisable.push('model');
+      }
+      if (!this.options.flags.advancedUIFeatures) {
+        toDisable.push('ui');
+      }
+      if (toDisable.length > 0) {
+        this.style.addRule('lineup_feature_disable', `
+        ${toDisable.map((d) => `.${cssClass('feature')}-${d}.${cssClass('feature-advanced')}`).join(', ')}`, {
+            display: 'none !important'
+        });
+      }
     }
 
     this.initProvider(data);
@@ -224,7 +241,7 @@ export default class EngineRenderer extends AEventDispatcher {
       const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
       cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
-        this.histCache.set(col.id, histo == null ? null : histo.stats(<INumberColumn>col));
+        this.histCache.set(col.id, histo == null ? null : histo.stats(<INumberColumn>col, this.histCache.has(`-${col.id}`) ? (<IStatistics>this.histCache.get(`-${col.id}`)!).hist.length : undefined));
       });
       cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: Column) => {
         this.histCache.set(col.id, histo == null ? null : histo.hist(<ICategoricalColumn>col));
@@ -253,7 +270,7 @@ export default class EngineRenderer extends AEventDispatcher {
       animation: this.options.animated,
       customRowUpdate: this.options.customRowUpdate || (() => undefined),
       levelOfDetail: this.options.levelOfDetail || (() => 'high'),
-      flags: this.options.flags
+      flags: <ILineUpFlags>this.options.flags
     }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
       this.updateRotatedHeaderState();
@@ -270,6 +287,18 @@ export default class EngineRenderer extends AEventDispatcher {
 
     this.rankings.push(r);
     this.update([r]);
+
+    // compute unfiltered hist
+    {
+      const histo = this.data.stats();
+      const cols = ranking.flatColumns;
+      cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
+        this.histCache.set(`-${col.id}`, histo == null ? null : histo.stats(<INumberColumn>col));
+      });
+      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: Column) => {
+        this.histCache.set(`-${col.id}`, histo == null ? null : histo.hist(<ICategoricalColumn>col));
+      });
+    }
   }
 
   private updateRotatedHeaderState() {
@@ -308,8 +337,6 @@ export default class EngineRenderer extends AEventDispatcher {
     }
     const orders = rankings.map((r) => r.ranking.getOrder());
     const data = this.data.fetch(orders);
-
-    (<any>this.ctx).totalNumberOfRows = Math.max(...data.map((d) => d.length));
 
     // TODO support async
     const localData = data.map((d) => d.map((d) => <IDataRow>d));

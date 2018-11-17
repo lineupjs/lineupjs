@@ -36,9 +36,13 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     this.summaries.splice(0, this.summaries.length);
     this.mc.children.forEach((cc, i) => {
       const n = createHeader(cc, this.ctx, {
-        mergeDropAble: false
+        extraPrefix: 'th',
+        mergeDropAble: false,
+        dragAble: this.flags.advancedModelFeatures,
+        rearrangeAble: this.flags.advancedModelFeatures,
+        resizeable: this.flags.advancedModelFeatures
       });
-      n.classList.add(cssClass('header'));
+      n.classList.add(cssClass('header'), cssClass('nested-th'));
       (<any>n.style).gridColumnStart = (i + 1).toString();
       wrapper.appendChild(n);
 

@@ -28,6 +28,14 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     return this;
   }
 
+  /**
+   * sets the column color in case of numerical columns
+   * @deprecated use colorMapping instead
+   */
+  color(color: string) {
+    return this.colorMapping(color);
+  }
+
   colorMapping(type: string | ((v: number)=>string) | any) {
     (<IMapAbleDesc>this.desc).colorMapping = type;
     return this;

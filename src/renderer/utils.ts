@@ -4,6 +4,7 @@ import {IArrayColumn} from '../model/IArrayColumn';
 import {hsl} from 'd3-color';
 import {cssClass} from '../styles';
 import IRenderContext from './interfaces';
+import {IDataRow} from '../model/interfaces';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -159,6 +160,7 @@ export function adaptTextColorToBgColor(bgColor: string): string {
  * @param {string} bgColor as `#ff0000`
  * @param {string} title the title to render
  * @param {number} width for which percentages of the cell this background applies (0..1)
+ * @internal
  */
 export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, title: string, width: number) {
   const adapt = adaptTextColorToBgColor(bgColor);
@@ -180,9 +182,28 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
 }
 
 
-
+/** @internal */
 export const uniqueId: (prefix: string)=>string = (function() {
   // side effect but just within the function itself, so good for the library
   let idCounter = 0;
   return (prefix: string) => `${prefix}${(idCounter++).toString(36)}`;
 })();
+
+
+const NUM_EXAMPLE_VALUES = 5;
+
+/** @internal */
+export function exampleText(col: Column, rows: IDataRow[]) {
+  const examples = <string[]>[];
+  for (const row of rows) {
+    if (col.isMissing(row)) {
+      continue;
+    }
+    const v = col.getLabel(row);
+    examples.push(v);
+    if (examples.length >= NUM_EXAMPLE_VALUES) {
+      break;
+    }
+  }
+  return `${examples.join(', ')}${examples.length < rows.length ? ', ...' : ''}`;
+}

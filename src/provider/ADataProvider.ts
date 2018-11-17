@@ -12,10 +12,10 @@ import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/Aggregat
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
 import Ranking, {orderChanged, addColumn, removeColumn} from '../model/Ranking';
-import StackColumn from '../model/StackColumn';
 import {exportRanking, IExportOptions} from './utils';
 import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
 
 export {IExportOptions} from './utils';
 /**
@@ -356,6 +356,22 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
       (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);
     }
+    return desc;
+  }
+
+  protected cleanDesc(desc: IColumnDesc) {
+    //hacks for provider dependent descriptors
+    if (desc.type === 'rank') {
+      delete (<IValueColumnDesc<number>>desc).accessor;
+    } else if (desc.type === 'selection') {
+      delete (<ISelectionColumnDesc>desc).accessor;
+      delete (<ISelectionColumnDesc>desc).setter;
+      delete (<ISelectionColumnDesc>desc).setterAll;
+    } else if (desc.type === 'aggregate') {
+      delete (<IAggregateGroupColumnDesc>desc).isAggregated;
+      delete (<IAggregateGroupColumnDesc>desc).setAggregated;
+    }
+    return desc;
   }
 
   /**
@@ -391,8 +407,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   restoreColumn(dump: any): Column {
     const create = (d: any) => {
       const desc = this.fromDescRef(d.desc);
-      const type = this.columnTypes[desc.type];
       this.fixDesc(desc);
+      const type = this.columnTypes[desc.type];
       const c = new type('', desc);
       c.restore(d, create);
       c.assignNewId(this.nextId.bind(this));
@@ -424,20 +440,21 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * dumps this whole provider including selection and the rankings
    * @returns {{uid: number, selection: number[], rankings: *[]}}
    */
-  dump(): any {
+  dump(): IDataProviderDump {
     return {
+      '$schema': SCHEMA_REF,
       uid: this.uid,
       selection: this.getSelection(),
       aggregations: Array.from(this.aggregations),
-      rankings: this.rankings.map((r) => r.dump(this.toDescRef))
+      rankings: this.rankings.map((r) => r.dump(this.toDescRef.bind(this)))
     };
   }
 
   /**
    * dumps a specific column
    */
-  dumpColumn(col: Column) {
-    return col.dump(this.toDescRef);
+  dumpColumn(col: Column): IColumnDump {
+    return col.dump(this.toDescRef.bind(this));
   }
 
   /**
@@ -454,33 +471,35 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return descRef;
   }
 
-  private createHelper = (d: any) => {
+  private createHelper = (d: IColumnDump) => {
     //factory method for restoring a column
     const desc = this.fromDescRef(d.desc);
-    let c = null;
-    if (desc && desc.type) {
-      this.fixDesc(d.desc);
-      const type = this.columnTypes[desc.type];
-      c = new type(d.id, desc);
-      c.restore(d, this.createHelper);
+
+    if (!desc || !desc.type) {
+      console.warn('cannot restore column dump', d);
+      return null;
     }
+
+    this.fixDesc(desc);
+    let type = this.columnTypes[desc.type];
+    if (type == null) {
+      console.warn('invalid column type in column dump using dummy column', d);
+      type = this.columnTypes.dummy;
+    }
+    const c = new type(d.id, desc);
+    c.restore(d, this.createHelper);
     return c;
   };
 
-  restoreRanking(dump: any) {
+  restoreRanking(dump: IRankingDump) {
     const ranking = this.cloneRanking();
     ranking.restore(dump, this.createHelper);
-    //if no rank column add one
-    if (!ranking.children.some((d) => d instanceof RankColumn)) {
-      ranking.insert(this.create(createRankDesc())!, 0);
-    }
     const idGenerator = this.nextId.bind(this);
     ranking.children.forEach((c) => c.assignNewId(idGenerator));
-
     return ranking;
   }
 
-  restore(dump: any) {
+  restore(dump: IDataProviderDump) {
     //clean old
     this.clearRankings();
 
@@ -507,11 +526,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
         this.insertRanking(ranking);
       });
     }
-    if (dump.layout) { //we have the old format try to create it
-      Object.keys(dump.layout).forEach((key) => {
-        this.deriveRanking(dump.layout[key]);
-      });
-    }
+
     //assign new ids
     const idGenerator = this.nextId.bind(this);
     this.rankings.forEach((r) => {
@@ -522,65 +537,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   abstract findDesc(ref: string): IColumnDesc | null;
 
   abstract deriveDefault(addSupporType?: boolean): Ranking;
-
-  /**
-   * derives a ranking from an old layout bundle format
-   * @param bundle
-   */
-  private deriveRanking(bundle: any[]) {
-    const ranking = this.cloneRanking();
-    ranking.clear();
-    const toCol = (column: any) => {
-      switch (column.type) {
-        case 'rank':
-          return this.create(createRankDesc());
-        case 'selection':
-          return this.create(createSelectionDesc());
-        case 'group':
-          return this.create(createGroupDesc());
-        case 'aggregate':
-          return this.create(createAggregateDesc());
-        case 'actions':
-          const actions = this.create(createActionDesc(column.label || 'actions'))!;
-          actions.restore(column, this.createHelper);
-          return actions;
-        case 'stacked':
-          //create a stacked one
-          const stacked = <StackColumn>this.create(createStackDesc(column.label || 'Combined'))!;
-          (column.children || []).forEach((col: any) => {
-            const c = toCol(col);
-            if (c) {
-              stacked.push(c);
-            }
-          });
-          return stacked;
-        default: {
-          const desc = this.findDesc(column.column);
-          if (desc) {
-            const r = this.create(desc);
-            column.label = column.label || desc.label || (<any>desc).column;
-            if (r) {
-              r.restore(column, this.createHelper);
-            }
-            return r;
-          }
-          return null;
-        }
-      }
-    };
-    bundle.forEach((column) => {
-      const col = toCol(column);
-      if (col) {
-        ranking.push(col);
-      }
-    });
-    //if no rank column add one
-    if (!ranking.children.some((d) => d instanceof RankColumn)) {
-      ranking.insert(this.create(createRankDesc())!, 0);
-    }
-    this.insertRanking(ranking);
-    return ranking;
-  }
 
   isAggregated(ranking: Ranking, group: IGroup) {
     let g: IGroup | undefined | null = group;
@@ -665,7 +621,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param indices
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
-  abstract stats(indices: number[]): IStatsBuilder;
+  abstract stats(indices?: number[]): IStatsBuilder;
 
   /**
    * is the given row selected

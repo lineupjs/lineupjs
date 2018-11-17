@@ -94,6 +94,10 @@
     content: $lu_icon_undo;
   }
 
+  &.#{$lu_css_prefix}-dialog-weights-distribute-button::before {
+    content: $lu_icon_sliders;
+  }
+
   &[type=submit] {
     float: right;
     color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
@@ -140,6 +144,10 @@
     margin: 0;
     transition: background-color 0.25s linear;
   }
+}
+
+.#{$lu_css_prefix}-dialog-weights-table-entry {
+  display: flex;
 }
 
 .#{$lu_css_prefix}-dialog-color {

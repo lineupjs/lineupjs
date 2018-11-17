@@ -115,7 +115,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 }
 
-
+/** @internal */
 export function union(col: ISetColumn, rows: IDataRow[]) {
   const values = new Set<ICategory>();
   rows.forEach((d) => {

@@ -11,7 +11,7 @@ import {aria, cssClass} from '../../styles';
 import {clear} from '../../internal';
 import {actionCSSClass} from '../header';
 
-
+/** @internal */
 export default class SidePanelRanking {
 
   readonly header: HTMLElement;

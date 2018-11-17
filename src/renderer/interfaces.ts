@@ -79,7 +79,7 @@ export interface IRenderContext {
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 
-  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
+  statsOf(col: (INumberColumn | ICategoricalColumn) & Column, unfiltered?: boolean): ICategoricalStatistics | IStatistics | null;
 
   /**
    * prefix used for all generated id names
@@ -94,8 +94,6 @@ export interface IRenderContext {
    * @param defaultValue default value
    */
   option<T>(key: string, defaultValue: T): T;
-
-  readonly totalNumberOfRows: number;
 
   colWidth(col: Column): number;
 
@@ -119,7 +117,7 @@ export interface ICellRendererFactory {
 
   createGroup(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer;
 
-  createSummary(col: Column, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
+  createSummary(col: Column, context: IRenderContext, interactive: boolean, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ISummaryRenderer;
 }
 
 

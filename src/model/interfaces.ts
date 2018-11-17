@@ -6,6 +6,7 @@ export interface IStyleColumn {
 
   /**
    * color of this column
+   * @deprecated not used anymore
    */
   color: string;
 
@@ -99,10 +100,12 @@ export interface IGroupData extends Readonly<IGroup> {
   readonly rows: IDataRow[];
 }
 
+/** @internal */
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupData>item).name !== undefined; // use .name as separator
 }
 
+/** @internal */
 export function toGroupMeta(index: number, total: number): IGroupMeta {
   if (total === 1) {
     return 'first last';

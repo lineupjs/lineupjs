@@ -37,6 +37,7 @@ export interface ICustomColorMappingFunction extends IColorMappingFunctionBase {
 
 export declare type IColorMappingFunction = ISolidColorMappingFunction | ICustomColorMappingFunction | IQuantizedColorMappingFunction | IInterpolateColorMappingFunction;
 
+/** @internal */
 export class InterpolatingColorFunction implements IInterpolateColorMappingFunction {
   constructor(public readonly name: string, public readonly type: 'sequential'|'divergent', public readonly apply: (v: number)=>string) {
 
@@ -55,6 +56,7 @@ export class InterpolatingColorFunction implements IInterpolateColorMappingFunct
   }
 }
 
+/** @internal */
 export class SolidColorFunction implements ISolidColorMappingFunction {
   constructor(public readonly color: string) {
 
@@ -81,6 +83,7 @@ export class SolidColorFunction implements ISolidColorMappingFunction {
   }
 }
 
+/** @internal */
 export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
   constructor(public readonly base: IColorMappingFunction, public readonly steps: number) {
 
@@ -110,6 +113,7 @@ export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
   }
 }
 
+/** @internal */
 export class CustomColorMappingFunction implements ICustomColorMappingFunction {
   private readonly scale = scaleLinear<string>();
 
@@ -252,9 +256,9 @@ export const lookupInterpolatingColor = new Map<string, InterpolatingColorFuncti
 /**
  * @internal
  */
-export function createColorMappingFunction(color: string | null, dump: any): IColorMappingFunction {
+export function createColorMappingFunction(dump: any): IColorMappingFunction {
   if (!dump) {
-    return color ? asColorFunction(color) : DEFAULT_COLOR_FUNCTION;
+    return DEFAULT_COLOR_FUNCTION;
   }
   if (typeof dump === 'string') {
     const s = lookupInterpolatingColor.get(dump);
@@ -267,7 +271,7 @@ export function createColorMappingFunction(color: string | null, dump: any): ICo
     return new InterpolatingColorFunction('custom', 'sequential', dump);
   }
   if (dump.base && dump.steps) {
-    return new QuantizedColorFunction(createColorMappingFunction(color, dump.base), dump.steps);
+    return new QuantizedColorFunction(createColorMappingFunction(dump.base), dump.steps);
   }
   if (Array.isArray(dump)) {
     return new CustomColorMappingFunction(dump);
@@ -278,9 +282,9 @@ export function createColorMappingFunction(color: string | null, dump: any): ICo
 /**
  * @internal
  */
-export function restoreColorMapping(color: string | null, desc: IMapAbleDesc): IColorMappingFunction {
+export function restoreColorMapping(desc: IMapAbleDesc): IColorMappingFunction {
   if (desc.colorMapping) {
-    return createColorMappingFunction(color, desc.colorMapping);
+    return createColorMappingFunction(desc.colorMapping);
   }
-  return color ? asColorFunction(color) : DEFAULT_COLOR_FUNCTION;
+  return DEFAULT_COLOR_FUNCTION;
 }

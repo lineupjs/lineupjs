@@ -1,4 +1,5 @@
 
+/** @internal */
 export interface IDragHandleOptions {
   container: HTMLElement|SVGElement;
   filter(evt: MouseEvent): boolean;

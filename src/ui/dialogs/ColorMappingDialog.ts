@@ -149,7 +149,7 @@ export default class ColorMappingDialog extends ADialog {
           const d1 = (<HTMLInputElement>node.querySelector('input[name=divergent1]')!).value;
           return new CustomColorMappingFunction([{color: dm1, value: 0}, {color: d0, value: 0.5}, {color: d1, value: 1}]);
       }
-      return createColorMappingFunction(this.column.color, input.value);
+      return createColorMappingFunction(input.value);
     };
 
     this.forEach('input[name=color]', (d: HTMLInputElement) => {

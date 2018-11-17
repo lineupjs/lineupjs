@@ -69,7 +69,7 @@ export abstract class ANumbersCellRenderer {
   }
 }
 
-
+/** @internal */
 export function matchRows(n: HTMLElement | SVGElement, rows: IDataRow[], template: string) {
   // first match the number of rows
   const children = <(HTMLElement | SVGElement)[]>Array.from(n.children);

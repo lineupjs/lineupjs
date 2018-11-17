@@ -70,7 +70,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     const c = this._children;
     switch(c.length) {
       case 0:
-        return this.color;
+        return Column.DEFAULT_COLOR;
       case 1:
         return c[0].getColor(row);
       default:

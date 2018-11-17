@@ -40,8 +40,12 @@
 }
 
 .#{$lu_css_prefix}-header {
-  > .#{$lu_css_prefix}-typed-icon[data-type-cat='support']::before,
-  > .#{$lu_css_prefix}-typed-icon[data-type-cat='other']::before {
-    display: none;
+  > .#{$lu_css_prefix}-typed-icon[data-type-cat='support'],
+  > .#{$lu_css_prefix}-typed-icon[data-type-cat='other'] {
+    padding: 0;
+
+    &::before {
+      display: none;
+    }
   }
 }

@@ -22,7 +22,8 @@
         d: 'Row ' + i,
         cat: cats[Math.floor(Math.random() * 3)],
         cat2: cats[Math.floor(Math.random() * 3)],
-        as: l.map(() => Math.random() * 10)
+        as: l.map((d) => Math.random() * 10),
+        date: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
       })
     }
     const builder = LineUpJS.builder(arr);
@@ -36,6 +37,7 @@
       .sortBy('d', 'asc')
 
     builder
+      .defaultRanking()
       .ranking(ranking);
 
 

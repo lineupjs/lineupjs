@@ -1,5 +1,7 @@
 import Column from './Column';
-import {IDataRow} from './interfaces';
+import {IDataRow, IColumnDesc} from './interfaces';
+import {IArrayDesc} from './ArrayColumn';
+import {IMapColumnDesc} from './MapColumn';
 
 
 export interface IKeyValue<T> {
@@ -13,8 +15,10 @@ export interface IMapColumn<T> extends Column {
   getMapLabel(row: IDataRow): IKeyValue<string>[];
 }
 
-export function isMapColumn(col: Column): col is IMapColumn<any> {
-  return typeof (<IMapColumn<any>>col).getMap === 'function' && typeof (<IMapColumn<any>>col).getMapLabel === 'function';
+export function isMapColumn(col: Column): col is IMapColumn<any>;
+export function isMapColumn(col: IColumnDesc): col is IMapColumnDesc<any> & IColumnDesc;
+export function isMapColumn(col: Column | IColumnDesc) {
+  return (col instanceof Column && typeof (<IMapColumn<any>>col).getMap === 'function' && typeof (<IMapColumn<any>>col).getMapLabel === 'function') || (!(col instanceof Column) && (<IColumnDesc>col).type.endsWith('Map'));
 }
 
 export interface IArrayColumn<T> extends IMapColumn<T> {
@@ -26,6 +30,8 @@ export interface IArrayColumn<T> extends IMapColumn<T> {
   getValues(row: IDataRow): T[];
 }
 
-export function isArrayColumn(col: Column): col is IArrayColumn<any> {
-  return typeof (<IArrayColumn<any>>col).getLabels === 'function' && typeof (<IArrayColumn<any>>col).getValues === 'function' && isMapColumn(col);
+export function isArrayColumn(col: Column): col is IArrayColumn<any>;
+export function isArrayColumn(col: IColumnDesc): col is IArrayDesc & IColumnDesc;
+export function isArrayColumn(col: Column | IColumnDesc) {
+  return (col instanceof Column && typeof (<IArrayColumn<any>>col).getLabels === 'function' && typeof (<IArrayColumn<any>>col).getValues === 'function' && isMapColumn(col) || (!(col instanceof Column) && (<IColumnDesc>col).type.endsWith('s') && (<IColumnDesc>col).type !== 'actions'));
 }

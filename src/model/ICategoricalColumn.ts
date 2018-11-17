@@ -113,6 +113,7 @@ function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICat
 
 /**
  * sort group by most frequent category or if same without count desc
+ * @internal
  */
 export function groupCompareCategory(a: IDataRow[], b: IDataRow[], col: ICategoricalColumn) {
   if (a.length === 0) {
@@ -165,6 +166,7 @@ export interface ICategoricalFilter {
   filterMissing: boolean;
 }
 
+/** @internal */
 function isEmptyFilter(f: ICategoricalFilter | null) {
   return f == null || (!f.filterMissing && (f.filter == null || f.filter === ''));
 }

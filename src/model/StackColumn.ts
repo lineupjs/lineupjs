@@ -43,7 +43,7 @@ export declare function nestedChildRatio(previous: number[], current: number[]):
 /**
  * implementation of the stacked column
  */
-@toolbar('editWeights', 'collapse')
+@toolbar('editWeights', 'compress', 'expand')
 export default class StackColumn extends CompositeNumberColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = 'collapseChanged';
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';

@@ -1,8 +1,9 @@
 import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
 import {similar} from '../internal';
 import Column from './Column';
-import INumberColumn, {INumberFilter} from './INumberColumn';
+import INumberColumn, {INumberFilter, isNumberColumn} from './INumberColumn';
 import {IColorMappingFunction} from './ColorMappingFunction';
+import {IColumnDesc} from './interfaces';
 
 /**
  * interface of a d3 scale
@@ -77,8 +78,10 @@ export interface IMapAbleColumn extends INumberColumn {
   getRange(): [string, string];
 }
 
-export function isMapAbleColumn(col: Column): col is IMapAbleColumn {
-  return typeof (<IMapAbleColumn>col).getMapping === 'function';
+export function isMapAbleColumn(col: Column): col is IMapAbleColumn;
+export function isMapAbleColumn(col: IColumnDesc): col is IMapAbleDesc & IColumnDesc;
+export function isMapAbleColumn(col: Column | IColumnDesc) {
+  return (col instanceof Column && typeof (<IMapAbleColumn>col).getMapping === 'function' || (!(col instanceof Column) && isNumberColumn(col) && ((<IColumnDesc>col).type.startsWith('number') || (<IColumnDesc>col).type.startsWith('boxplot'))));
 }
 
 function isSame(a: number[], b: number[]) {
@@ -248,9 +251,14 @@ export interface IMapAbleDesc {
    */
   range?: [number, number];
 
+  /**
+   * @deprecated use colorMapping instead
+   */
+  color?: string;
   colorMapping?: string | ((v: number)=>string) | any;
 }
 
+/** @internal */
 export function createMappingFunction(dump: any): IMappingFunction {
   if (dump.type === 'script') {
     const s = new ScriptMappingFunction();
@@ -262,6 +270,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
   return l;
 }
 
+/** @internal */
 export function restoreMapping(desc: IMapAbleDesc): IMappingFunction {
   if (desc.map) {
     return createMappingFunction(desc.map);

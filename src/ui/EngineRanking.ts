@@ -14,6 +14,7 @@ import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
 import {clear} from '../internal';
+import {ILineUpFlags} from '../interfaces';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -24,9 +25,7 @@ export interface IEngineRankingOptions {
   animation: boolean;
   levelOfDetail: (rowIndex: number) => 'high' | 'low';
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
-  flags: {
-    disableFrozenColumns: boolean;
-  };
+  flags: ILineUpFlags;
 }
 
 /**
@@ -99,7 +98,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     levelOfDetail: () => 'high',
     customRowUpdate: () => undefined,
     flags: {
-      disableFrozenColumns: false
+      disableFrozenColumns: false,
+      advancedModelFeatures: true,
+      advancedRankingFeatures: true,
+      advancedUIFeatures: true
     }
   };
 
@@ -764,7 +766,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const previous = this._context;
     const previousData = this.data;
     this.data = data;
-    (<any>this.renderCtx).totalNumberOfRows = data.length;
 
     this.columns.forEach((c, i) => {
       c.index = i;
@@ -924,12 +925,23 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
     c.on(`${Column.EVENT_DIRTY_VALUES}.body`, debounceUpdate);
 
-    if (isMultiLevelColumn(c) && !c.getCollapsed()) {
-      (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
-        (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
+    if (isMultiLevelColumn(c)) {
+      c.on(`${StackColumn.EVENT_COLLAPSE_CHANGED}.body`, () => {
+        // rebuild myself from scratch
+        EngineRanking.disableListener(c); // destroy myself
+        const index = col.index;
+        const replacement = this.createCol(c, index);
+        replacement.index = index;
+        this.columns.splice(index, 1, replacement);
+        this.delayedUpdateAll();
       });
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounceUpdate);
+      if (!c.getCollapsed()) {
+        (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
+        c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
+          (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
+        });
+        c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounceUpdate);
+      }
     }
 
     return col;
@@ -949,6 +961,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (!(isMultiLevelColumn(c))) {
       return;
     }
+    c.on(`${StackColumn.EVENT_COLLAPSE_CHANGED}.body`, null);
     c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
     c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
   }

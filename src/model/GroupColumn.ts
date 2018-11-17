@@ -15,7 +15,7 @@ export enum EGroupSortMethod {
 
 /**
  * emitted when the sort method property changes
- * @asMemberOf Column
+ * @asMemberOf GroupColumn
  * @event
  */
 export declare function sortMethodChanged(previous: EGroupSortMethod, current: EGroupSortMethod): void;

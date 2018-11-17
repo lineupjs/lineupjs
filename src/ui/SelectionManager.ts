@@ -19,6 +19,7 @@ interface IShift {
 
 /**
  * @asMemberOf SelectionManager
+ * @internal
  * @event
  */
 export declare function selectRange(from: number, to: number, additional: boolean): void;

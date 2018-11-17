@@ -1,0 +1,137 @@
+{
+  "definitions": {},
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://lineup.js.org/develop/schema.4.0.0.json",
+  "type": "object",
+  "title": "LineUp Dump Schema",
+  "properties": {
+    "uid": {
+      "type": "integer",
+      "title": "base for genrating new uids"
+    },
+    "selection": {
+      "type": "array",
+      "title": "list of selected data indices",
+      "items": {
+        "type": "number"
+      }
+    },
+    "aggregations": {
+      "type": "array",
+      "title": "list of aggregated group paths",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rankings": {
+      "type": "array",
+      "title": "list of rankings",
+      "items": {
+        "type": "object",
+        "title": "one ranking",
+        "properties": {
+          "columns": {
+            "type": "array",
+            "title": "column dumps",
+            "items": {
+              "type": "object",
+              "title": "a column dump",
+              "required": [
+                "id",
+                "desc"
+              ],
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "title": "column id"
+                },
+                "desc": {
+                  "title": "column desc",
+                  "examples": [
+                    "rank",
+                    "string",
+                    "number"
+                  ]
+                },
+                "width": {
+                  "type": "integer",
+                  "title": "column width",
+                  "examples": [
+                    100
+                  ]
+                },
+                "label": {
+                  "type": "string",
+                  "title": "column label"
+                },
+                "renderer": {
+                  "type": "string",
+                  "title": "column item renderer"
+                },
+                "groupRenderer": {
+                  "type": "string",
+                  "title": "column group renderer"
+                },
+                "summaryRenderer": {
+                  "type": "string",
+                  "title": "column summary renderer"
+                }
+              }
+            }
+          },
+          "sortCriteria": {
+            "type": "array",
+            "title": "list of columns the ranking is sorted by",
+            "items": {
+              "type": "object",
+              "title": "sort criteria",
+              "required": [
+                "sortBy",
+                "asc"
+              ],
+              "properties": {
+                "sortBy": {
+                  "type": "string",
+                  "title": "column id"
+                },
+                "asc": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "groupSortCriteria": {
+            "type": "array",
+            "title": "list of columns the ranking is group sorted by",
+            "items": {
+              "type": "object",
+              "title": "sort criteria",
+              "required": [
+                "sortBy",
+                "asc"
+              ],
+              "properties": {
+                "sortBy": {
+                  "type": "string",
+                  "title": "column id"
+                },
+                "asc": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "groupColumns": {
+            "type": "array",
+            "title": "list of columns the ranking is grouped by",
+            "items": {
+              "type": "string",
+              "title": "column id"
+            }
+          }
+        }
+      }
+    }
+  }
+}

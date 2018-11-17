@@ -73,7 +73,7 @@ export class MappingLine {
     this.node = <SVGGElement>g.lastElementChild!;
 
     // freeze 0 and 100 domain = raw domain ones
-    this.node.classList.toggle('lu-frozen', similar(0, domain) || similar(domain, 100));
+    this.node.classList.toggle(cssClass('frozen'), similar(0, domain) || similar(domain, 100));
     {
       let beforeDomain: number;
       let beforeRange: number;

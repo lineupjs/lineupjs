@@ -260,17 +260,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param indices
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
-  stats(indices: number[]): IStatsBuilder {
+  stats(indices?: number[]): IStatsBuilder {
     let d: IDataRow[] | null = null;
     const getD = () => {
       if (d == null) {
-        d = this.viewRawRows(indices);
+        d = indices ? this.viewRawRows(indices) : this._dataRows;
       }
       return d;
     };
 
     return {
-      stats: (col: INumberColumn) => computeStats(getD(), (d) => col.getNumber(d), (d) => col.isMissing(d), [0, 1]),
+      stats: (col: INumberColumn, numbrerOfBins?: number) => computeStats(getD(), (d) => col.getNumber(d), (d) => col.isMissing(d), [0, 1], numbrerOfBins),
       hist: (col: ICategoricalColumn) => computeHist(getD(), (d) => col.getCategory(d), col.categories)
     };
   }

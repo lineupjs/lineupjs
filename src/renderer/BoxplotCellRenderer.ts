@@ -1,4 +1,4 @@
-import {IBoxPlotData, ICategoricalStatistics, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
+import {IBoxPlotData, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
 import {IDataRow, IGroup, isNumberColumn, isMapAbleColumn} from '../model';
 import BoxPlotColumn from '../model/BoxPlotColumn';
 import Column from '../model/Column';
@@ -44,7 +44,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));
   }
 
-  create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | null, imposer?: IImposer) {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
@@ -53,10 +53,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d);
         if (!data || col.isMissing(d)) {
-          n.classList.add('lu-missing');
+          n.classList.add(cssClass('missing'));
           return;
         }
-        n.classList.remove('lu-missing');
+        n.classList.remove(cssClass('missing'));
         const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       },
@@ -92,7 +92,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return new LazyBoxPlotData(vs);
   }
 
-  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | null, imposer?: IImposer) {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: BOXPLOT,
@@ -117,7 +117,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, imposer?: IImposer) {
+  createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, _unfilteredHist: IStatistics | null, imposer?: IImposer) {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement, hist: IStatistics | null) => {

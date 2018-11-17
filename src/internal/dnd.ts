@@ -1,5 +1,6 @@
 import {cssClass} from '../styles';
 
+/** @internal */
 export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
   const available: any = e.dataTransfer!.types;
 
@@ -56,13 +57,16 @@ export function updateDropEffect(e: DragEvent) {
   }
 }
 
+/** @internal */
 export type IDragEffect = 'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | 'linkMove' | 'move' | 'all';
 
+/** @internal */
 export interface IDragStartResult {
   effectAllowed: IDragEffect;
   data: { [mimeType: string]: string };
 }
 
+/** @internal */
 export interface IDropResult {
   effect: IDragEffect;
   data: { [mimeType: string]: string };

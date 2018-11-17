@@ -22,6 +22,7 @@ export function filterMissingNumberMarkup(bakMissing: boolean, count: number, id
   </div>`;
 }
 
+/** @internal */
 export function findFilterMissing(node: HTMLElement) {
   return <HTMLInputElement>(<HTMLElement>node.querySelector(`.${cssClass('filter-missing')}`)!).previousElementSibling!;
 }
@@ -29,11 +30,7 @@ export function findFilterMissing(node: HTMLElement) {
 /** @internal */
 export function updateFilterMissingNumberMarkup(element: HTMLElement, count: number) {
   const checked = element.querySelector('input')!;
-  if (count > 0) {
-    element.classList.remove(cssClass('disabled'));
-    checked.disabled = false;
-  }
-  if (!checked.checked) {
-    element.lastElementChild!.textContent = `Filter ${count} remaining missing value rows`;
-  }
+  checked.disabled = count === 0;
+  element.lastElementChild!.classList.toggle(cssClass('disabled'), count === 0);
+  element.lastElementChild!.textContent = `Filter ${count} missing value rows`;
 }

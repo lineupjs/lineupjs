@@ -1,29 +1,15 @@
 import {LazyBoxPlotData} from '../internal';
 import {IOrderedGroup} from './Group';
 import {IDataRow, IGroup, IGroupParent} from './interfaces';
+import INumberColumn, {numberCompare} from './INumberColumn';
+
+
 /** @internal */
-import {default as INumberColumn, INumberFilter, numberCompare} from './INumberColumn';
-
-
 export function patternFunction(pattern: string, ...args: string[]) {
   return new Function('value', ...args, `
   const escapedValue = encodeURIComponent(String(value));
   return \`${pattern}\`;
  `);
-}
-
-/** @internal */
-export function isDummyNumberFilter(filter: INumberFilter) {
-  return !filter.filterMissing && !isFinite(filter.min) && !isFinite(filter.max);
-}
-
-/** @internal */
-export function restoreFilter(v: INumberFilter): INumberFilter {
-  return {
-    min: v.min != null && isFinite(v.min) ? v.min : -Infinity,
-    max: v.max != null && isFinite(v.max) ? v.max : +Infinity,
-    filterMissing: v.filterMissing
-  };
 }
 
 

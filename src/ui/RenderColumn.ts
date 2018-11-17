@@ -7,7 +7,6 @@ import {IRankingContext} from './interfaces';
 import {ILineUpFlags} from '../interfaces';
 import {cssClass, engineCssClass} from '../styles/index';
 
-
 export interface IRenderers {
   singleId: string;
   single: ICellRenderer;
@@ -23,7 +22,7 @@ export interface IRenderers {
 export default class RenderColumn implements IColumn {
   renderers: IRenderers | null = null;
 
-  constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext, private readonly flags: ILineUpFlags) {
+  constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext, protected readonly flags: ILineUpFlags) {
 
   }
 
@@ -88,7 +87,11 @@ export default class RenderColumn implements IColumn {
 
   createHeader() {
     const node = createHeader(this.c, this.ctx, {
-      extraPrefix: 'th'
+      extraPrefix: 'th',
+      dragAble: this.flags.advancedUIFeatures,
+      mergeDropAble: this.flags.advancedModelFeatures,
+      rearrangeAble: this.flags.advancedUIFeatures,
+      resizeable: this.flags.advancedUIFeatures
     });
     node.classList.add(cssClass('header'));
     if (!this.flags.disableFrozenColumns) {

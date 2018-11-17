@@ -26,7 +26,7 @@ export default class Hierarchy {
 
   constructor(private readonly ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('aside');
-    this.node.classList.add(cssClass('hierarchy'));
+    this.node.classList.add(cssClass('hierarchy'), cssClass('feature-advanced'), cssClass('feature-ranking'));
     this.node.innerHTML = `
       <section class="${cssClass('group-hierarchy')}">
       </section>
@@ -225,7 +225,7 @@ export default class Hierarchy {
     adder.on(SearchBox.EVENT_SELECT, (item: IColumnItem) => {
       const addons = getToolbarDialogAddons(item.col, addonKey, this.ctx);
       if (addons.length > 0) {
-        this.customize(item.col, addons, { currentTarget: adder.node}, () => onSelect(item.col));
+        this.customize(item.col, addons, adder.node, () => onSelect(item.col));
       } else {
         onSelect(item.col);
       }
@@ -259,8 +259,8 @@ export default class Hierarchy {
     });
   }
 
-  private customize(col: Column, addons: IToolbarDialogAddon[], evt: { currentTarget: Element }, onClick?: ()=>void) {
-    const dialog = new AddonDialog(col, addons, dialogContext(this.ctx, 0, evt), this.ctx, onClick);
+  private customize(col: Column, addons: IToolbarDialogAddon[], attachment: HTMLElement, onClick?: ()=>void) {
+    const dialog = new AddonDialog(col, addons, dialogContext(this.ctx, 0, attachment), this.ctx, onClick);
     dialog.open();
   }
 }

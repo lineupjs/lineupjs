@@ -14,7 +14,9 @@ import ImpositionBoxPlotColumn from '../model/ImpositionBoxPlotColumn';
 import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
 import ImpositionCompositesColumn from '../model/ImpositionCompositesColumn';
 import {IRankingHeaderContext} from './interfaces';
-import toolbarActions, {IOnClickHandler} from './toolbar';
+import {IOnClickHandler, getToolbar, dialogContext} from './toolbar';
+import {IToolbarAction} from './toolbar';
+import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
 import {cssClass, aria} from '../styles';
 
 /** @internal */
@@ -45,12 +47,12 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="${extra('label')} ${cssClass('typed-icon')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
     <div class="${extra('toolbar')}"></div>
     <div class="${extra('spacing')}"></div>
-    <div class="${extra('handle')}"></div>
+    <div class="${extra('handle')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"></div>
   `;
 
   // addTooltip(node, col);
 
-  createToolbar(<HTMLElement>node.querySelector(`.${cssClass('toolbar')}`)!, options.level!, col, ctx);
+  createShortcutMenuItems(<HTMLElement>node.querySelector(`.${cssClass('toolbar')}`)!, options.level!, col, ctx);
 
   toggleToolbarIcons(node, col);
 
@@ -131,6 +133,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
   }
 }
 
+/** @internal */
 export function actionCSSClass(title: string) {
   if (title.endsWith('&hellip;')) {
     title = title.slice(0, -'&hellip;'.length - 1);
@@ -143,43 +146,57 @@ export function actionCSSClass(title: string) {
 }
 
 function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
-  return (title: string, onClick: IOnClickHandler) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}" class="${actionCSSClass(title)}">${showLabel ? `<span>${title}</span>` : aria(title)}</i>`);
+  return (action: IToolbarAction) => {
+    node.insertAdjacentHTML('beforeend', `<i data-a="${action.options.shortcut === 'only' ? 'o' : action.options.shortcut ? 's' : 'r'}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''}>${action.title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
       ctx.dialogManager.setHighlightColumn(col);
-      onClick(col, <any>evt, ctx, level, !showLabel);
+      action.onClick(col, <any>evt, ctx, level, !showLabel);
     };
     return i;
   };
 }
 
 /** @internal */
-export function createToolbar(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
-  return createShortcutMenuItems(node, level, col, ctx);
-}
-
 export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
-export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
+/** @internal */
+export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, willAutoHide: boolean = true) {
   const addIcon = addIconDOM(node, col, ctx, level, false);
-  const actions = toolbarActions(col, ctx);
+  const toolbar = getToolbar(col, ctx);
+  const shortcuts = toolbar.filter((d) => d.options.shortcut);
+  const hybrids = shortcuts.reduce((a, b) => a + (b.options.shortcut === true ? 1 : 0), 0);
 
-  actions.filter((d) => d.options.shortcut).forEach((d) => addIcon(d.title, d.onClick));
-}
+  shortcuts.forEach(addIcon);
+  const moreEntries = toolbar.length - shortcuts.length + hybrids;
 
-export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
-  const addIcon = addIconDOM(node, col, ctx, level, true);
-  const actions = toolbarActions(col, ctx);
+  if (shortcuts.length === toolbar.length || (moreEntries === hybrids && !willAutoHide)) {
+    // all visible or just hybrids that will always be visible
+    return;
+  }
 
-  actions.filter((d) => !d.title.startsWith('More') && d.options.shortcut !== 'only').forEach((d) => addIcon(d.title, d.onClick));
+  // need a more entry
+  node.insertAdjacentHTML('beforeend', `<i data-a="m" data-m="${moreEntries}" title="More &hellip;" class="${actionCSSClass('More')}">${aria('More &hellip;')}</i>`);
+  const i = <HTMLElement>node.lastElementChild;
+  i.onclick = (evt) => {
+    evt.stopPropagation();
+    ctx.dialogManager.setHighlightColumn(col);
+    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, <any>evt), ctx);
+    dialog.open();
+  };
 }
 
 /** @internal */
-function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
+export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
+  const addIcon = addIconDOM(node, col, ctx, level, true);
+  getToolbar(col, ctx).filter((d) => d.options.shortcut !== 'only').forEach(addIcon);
+}
+
+/** @internal */
+function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClientWidth: number) {
   // rotate header flag if needed
   const label = <HTMLElement>node.querySelector(`.${cssClass('label')}`);
   if (col.getWidth() < MIN_LABEL_WIDTH) {
@@ -199,27 +216,40 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
   if (toolbar.childElementCount === 0) {
     return;
   }
-  const moreIcon = toolbar.querySelector('[title^=More]')!;
-  const availableWidth = col.getWidth() - (moreIcon && moreIcon.clientWidth ? moreIcon.clientWidth : defaultVisibleClientWidth);
-  const toggableIcons = Array.from(toolbar.children).filter((d) => d !== moreIcon)
-    .reverse(); // start hiding with the last icon
+  const availableWidth = col.getWidth();
+  const actions = Array.from(toolbar.children).map((d) => ({node: <HTMLElement>d, width: d.clientWidth > 0 ? d.clientWidth : defaultVisibleClientWidth}));
 
-  toggableIcons.forEach((icon) => {
-    icon.classList.remove(cssClass('hidden')); // first show all icons to calculate the correct `clientWidth`
-  });
-  toggableIcons.forEach((icon) => {
-    const currentWidth = toggableIcons.reduce((a, b) => {
-      const realWidth = b.clientWidth;
-      if (realWidth > 0) {
-        return a + realWidth;
-      }
-      if (!b.classList.contains(cssClass('hidden'))) { // since it may have not yet been layouted
-        return a + defaultVisibleClientWidth;
-      }
-      return a;
-    }, 0);
-    icon.classList.toggle(cssClass('hidden'), (currentWidth > availableWidth)); // hide icons if necessary
-  });
+  const shortCuts =  actions.filter((d) => d.node.dataset.a === 'o');
+  const hybrids = actions.filter((d) => d.node.dataset.a === 's');
+  const moreIcon = actions.find((d) => d.node.dataset.a === 'm');
+  const moreEntries = moreIcon ? parseInt(moreIcon.node.dataset.m!, 10) : 0;
+  const needMore = moreEntries > hybrids.length;
+
+  let total = actions.reduce((a, b) => a + b.width, 0);
+
+  for (const action of actions) {
+    // maybe hide not needed "more"
+    action.node.classList.remove(cssClass('hidden'));
+  }
+
+  // all visible
+  if (total < availableWidth) {
+    return;
+  }
+  if (moreIcon && !needMore && (total - moreIcon.width) < availableWidth) {
+    // available space is enougth we can skip the "more" and then it fits
+    moreIcon.node.classList.add(cssClass('hidden'));
+    return;
+  }
+
+  for (const action of hybrids.reverse().concat(shortCuts.reverse())) { // back to forth and hybrids earlier than pure shortcuts
+    // hide and check if enough
+    action.node.classList.add(cssClass('hidden'));
+    total -= action.width;
+    if (total < availableWidth) {
+      return;
+    }
+  }
 }
 
 
@@ -288,6 +318,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
   };
 }
 
+/** @internal */
 export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
 /**

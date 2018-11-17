@@ -210,10 +210,6 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return true;
   }
 
-  getColor(_row: IDataRow) {
-    return this.color;
-  }
-
   isFiltered() {
     return this._children.some((d) => d.isFiltered());
   }

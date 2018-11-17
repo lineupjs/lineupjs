@@ -7,6 +7,7 @@ import {isMissingValue} from './missing';
 import Ranking, {ISortCriteria} from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';
+import {IColumnDump} from '../provider/interfaces';
 
 export {IColumnDesc} from './interfaces';
 
@@ -43,7 +44,6 @@ export interface IColumnParent {
 export interface IColumnMetaData {
   label: string;
   description: string;
-  color: string | null;
 }
 
 export declare type ICompareValue = string | number | null;
@@ -184,8 +184,7 @@ export default class Column extends AEventDispatcher {
 
     this.metadata = {
       label: desc.label || this.id,
-      description: desc.description || '',
-      color: desc.color || Column.DEFAULT_COLOR
+      description: desc.description || ''
     };
   }
 
@@ -211,10 +210,6 @@ export default class Column extends AEventDispatcher {
 
   get description() {
     return this.metadata.description;
-  }
-
-  get color() {
-    return this.metadata.color;
   }
 
   /**
@@ -304,21 +299,17 @@ export default class Column extends AEventDispatcher {
   }
 
   setMetaData(value: Readonly<IColumnMetaData>) {
-    if (value.label === this.label && this.color === value.color && this.description === value.description) {
+    if (value.label === this.label && this.description === value.description) {
       return;
     }
-    const events = this.color === value.color ?
-      [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY] :
-      [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
     const bak = this.getMetaData();
     //copy to avoid reference
     this.metadata = {
       label: value.label,
-      color: value.color,
       description: value.description
     };
 
-    this.fire(events, bak, this.getMetaData());
+    this.fire([Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], bak, this.getMetaData());
   }
 
   getMetaData(): Readonly<IColumnMetaData> {
@@ -468,16 +459,13 @@ export default class Column extends AEventDispatcher {
    * @returns {any} dump of this column
    */
   dump(toDescRef: (desc: any) => any): any {
-    const r: any = {
+    const r: IColumnDump = {
       id: this.id,
       desc: toDescRef(this.desc),
       width: this.width
     };
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
-    }
-    if (this.color !== ((<any>this.desc).color || Column.DEFAULT_COLOR) && this.color) {
-      r.color = this.color;
     }
     if (this.getRenderer() !== this.desc.type) {
       r.renderer = this.getRenderer();
@@ -496,15 +484,14 @@ export default class Column extends AEventDispatcher {
    * @param dump column dump
    * @param _factory helper for creating columns
    */
-  restore(dump: any, _factory: (dump: any) => Column | null) {
+  restore(dump: IColumnDump, _factory: (dump: IColumnDump) => Column | null) {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
-      color: dump.color || this.color,
       description: this.description
     };
     if (dump.renderer || dump.rendererType) {
-      this.renderer = dump.renderer || dump.rendererType;
+      this.renderer = dump.renderer || dump.rendererType || this.renderer;
     }
     if (dump.groupRenderer) {
       this.groupRenderer = dump.groupRenderer;
@@ -541,7 +528,7 @@ export default class Column extends AEventDispatcher {
   }
 
   getColor(_row: IDataRow) {
-    return this.color;
+    return Column.DEFAULT_COLOR;
   }
 
   isMissing(row: IDataRow) {

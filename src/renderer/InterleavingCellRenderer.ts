@@ -8,6 +8,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './in
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
 import {matchColumns, forEachChild} from './utils';
+import {colorOf} from '../ui/dialogs/utils';
 
 
 /** @internal */
@@ -65,11 +66,11 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: CompositeNumberColumn, context: IRenderContext) {
+  createSummary(col: CompositeNumberColumn, context: IRenderContext, _interactive: boolean, globalHist: IStatistics | null) {
     const cols = col.children;
     let acc = 0;
-    const {template, render} = getHistDOMRenderer(context.totalNumberOfRows, col, {
-      color: () => cols[(acc++) % cols.length].color
+    const {template, render} = getHistDOMRenderer(globalHist, col, {
+      color: () => colorOf(cols[(acc++) % cols.length])
     });
     return {
       template,
@@ -112,5 +113,5 @@ function groupedHist(stats: (IStatistics | null)[]) {
       hist.push(bin);
     });
   }
-  return {bins, max: maxBin, hist};
+  return {maxBin, hist};
 }
