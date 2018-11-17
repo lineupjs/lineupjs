@@ -3,7 +3,9 @@ import Column, {
   defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn,
   IOrderedGroup, ICompareValue,
   NumberColumn,
-  chooseByLength
+  chooseByLength,
+  IndicesArray,
+  mapIndices
 } from '../model';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
@@ -213,22 +215,22 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
 
-  viewRaw(indices: number[]) {
+  viewRaw(indices: IndicesArray) {
     //filter invalid indices
-    return indices.map((index) => this._data[index]);
+    return mapIndices(indices, (i) => this._data[i]);
   }
 
-  viewRawRows(indices: number[]) {
+  viewRawRows(indices: IndicesArray) {
     //filter invalid indices
-    return indices.map((index) => this._dataRows[index]);
+    return mapIndices(indices, (i) => this._dataRows[i]);
   }
 
-  view(indices: number[]) {
+  view(indices: IndicesArray) {
     return this.viewRaw(indices);
   }
 
-  fetch(orders: number[][]): IDataRow[][] {
-    return orders.map((order) => order.map((index) => this._dataRows[index]));
+  fetch(orders: IndicesArray[]): IDataRow[][] {
+    return orders.map((order) => this.viewRawRows(order));
   }
 
   /**
@@ -236,11 +238,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param indices
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
-  stats(indices?: number[]): IStatsBuilder {
+  stats(indices?: IndicesArray): IStatsBuilder {
     let d: IDataRow[] | null = null;
     const getD = () => {
       if (d == null) {
-        d = indices ? this.viewRawRows(indices) : this._dataRows;
+        return d = indices && indices.length < this._dataRows.length ? this.viewRawRows(indices) : this._dataRows;
       }
       return d;
     };
