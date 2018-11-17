@@ -55,6 +55,10 @@ function toFunction(f:  {asc: boolean, v: ECompareValueType}): (a: any, b: any)=
 }
 
 export function sortComplex(arr: {sort: ICompareValue[]}[], comparators: {asc: boolean, v: ECompareValueType}[]) {
+  if (arr.length < 2) {
+    return arr;
+  }
+
   const functions = comparators.map(toFunction);
 
   switch(functions.length) {

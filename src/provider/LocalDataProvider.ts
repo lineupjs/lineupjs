@@ -166,7 +166,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const isGroupedBy = ranking.getGroupCriteria().length > 0;
     const isSortedBy = ranking.getSortCriteria().length > 0;
 
-    if (!isGroupedBy && isSortedBy && !filter) {
+    if (!isGroupedBy && !isSortedBy && !filter) {
       // initial no sorting required just index mapping
       const order = chooseByLength(this._data.length);
       order.set(range(this._data.length));
@@ -196,11 +196,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     const types = ranking.toCompareValueType();
 
-    const ordered = Array.from(groups.values()).map((g) => {
-      // console.time('sort');
+    const groupHelper = Array.from(groups.values()).map((g) => {
       sortComplex(g.rows, types);
-      // console.timeEnd('sort');
+      const groupData = Object.assign({rows: g.rows.map((d) => d.r)}, g.group);
+      return {g, sort: ranking.toGroupCompareValue(groupData)};
+    });
 
+    // sort groups
+    sortComplex(groupHelper, ranking.toGroupCompareValueType());
+
+    let offset = 0;
+    return groupHelper.map(({g}) => {
       //store the ranking index and create an argsort version, i.e. rank 0 -> index i
       const order = chooseByLength(g.rows.length);
       const index2pos = chooseByLength(this._data.length);
@@ -208,22 +214,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
       for (let i = 0; i < g.rows.length; ++i) {
         const ri = g.rows[i].r.i;
         order[i] = ri;
-        index2pos[ri] = i;
+        index2pos[ri] = offset + i;
       }
-      const groupData = Object.assign({rows: g.rows.map((d) => d.r)}, g.group);
-      const orderedGroup = Object.assign({order, index2pos}, g.group);
-
-      return {o: orderedGroup, sort: ranking.toGroupCompareValue(groupData)};
+      offset += g.rows.length;
+      return Object.assign({order, index2pos}, g.group);
     });
-
-    if (ordered.length === 1) {
-      return [ordered[0].o];
-    }
-
-    // sort groups
-    sortComplex(ordered, ranking.toGroupCompareValueType());
-
-    return ordered.map((d) => d.o);
   }
 
 
