@@ -5,7 +5,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue
+  ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,

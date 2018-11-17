@@ -1,7 +1,7 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {Category, toolbar, dialogAddons} from './annotations';
 import {IDataRow, IGroupData} from './interfaces';
-import {FIRST_IS_MISSING, isMissingValue, missingGroup, isUnknown} from './missing';
+import {isMissingValue, missingGroup, isUnknown} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
@@ -10,7 +10,6 @@ import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter,
 import {median} from 'd3-array';
 import {defaultGroup} from './Group';
 import {equal} from '../internal/utils';
-import {numberCompare} from './INumberColumn';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;

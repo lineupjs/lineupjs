@@ -327,7 +327,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   invertSelection: ui('Invert Selection', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level - 1); // close itself
     const s = ctx.provider.getSelection();
-    const order = col.findMyRanker()!.getOrder();
+    const order = Array.from(col.findMyRanker()!.getOrder());
     if (s.length === 0) {
       ctx.provider.setSelection(order);
       return;

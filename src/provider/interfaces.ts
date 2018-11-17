@@ -1,12 +1,12 @@
 import {ICategoricalStatistics, IStatistics} from '../internal';
 import AEventDispatcher from '../internal/AEventDispatcher';
-import {Column, ICategoricalColumn, IColumnDesc, IGroup, INumberColumn} from '../model';
+import {Column, ICategoricalColumn, IColumnDesc, IGroup, INumberColumn, IndicesArray} from '../model';
 import Ranking from '../model/Ranking';
 import '!file-loader?name=schema.4.0.0.json!./schema.json';
 
 
 export interface IStatsBuilder {
-  stats(col: INumberColumn): Promise<IStatistics> | IStatistics;
+  stats(col: INumberColumn, bins?: number): Promise<IStatistics> | IStatistics;
 
   hist(col: ICategoricalColumn): Promise<ICategoricalStatistics> | ICategoricalStatistics;
 }
@@ -32,7 +32,7 @@ export interface IDataProvider extends AEventDispatcher {
 
   getSelection(): number[];
 
-  setSelection(dataIndices: number[]): void;
+  setSelection(dataIndices: IndicesArray): void;
 
   toggleSelection(i: number, additional?: boolean): boolean;
 

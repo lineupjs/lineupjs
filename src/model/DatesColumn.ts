@@ -6,7 +6,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDateDesc, IDateColumn, IDateFilter, noDateFilter, restoreDateFilter, isDummyDateFilter} from './IDateColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_MISSING, isMissingValue} from './missing';
+import {isMissingValue} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
 import DateColumn from './DateColumn';
 

@@ -3,9 +3,8 @@ import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
 import OrderedSet from '../internal/OrderedSet';
 import {
-  Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
-  createStackDesc, IColumnDesc, IDataRow, IGroup, IOrderedGroup,
-  ISelectionColumnDesc, models
+  Column, createRankDesc, IColumnDesc, IDataRow, IGroup, IOrderedGroup,
+  ISelectionColumnDesc, models, IValueColumnDesc
 } from '../model';
 import {dirty, dirtyHeader, dirtyValues} from '../model/Column';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
@@ -18,6 +17,8 @@ import {IEventListener} from '../internal/AEventDispatcher';
 import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
 
 export {IExportOptions} from './utils';
+
+
 /**
  * emitted when the selection changes
  * @asMemberOf ADataProvider
@@ -605,9 +606,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param indices
    * @return {Promise<any>}
    */
-  abstract view(indices: number[]): Promise<any[]> | any[];
+  abstract view(indices: ArrayLike<number>): Promise<any[]> | any[];
 
-  abstract fetch(orders: number[][]): (Promise<IDataRow> | IDataRow)[][];
+  abstract fetch(orders: ArrayLike<number>[]): (Promise<IDataRow> | IDataRow)[][];
 
   /**
    * returns a data sample used for the mapping editor
@@ -621,7 +622,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param indices
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
-  abstract stats(indices?: number[]): IStatsBuilder;
+  abstract stats(indices?: ArrayLike<number>): IStatsBuilder;
 
   /**
    * is the given row selected
@@ -680,7 +681,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   selectAllOf(ranking: Ranking) {
-    this.setSelection(ranking.getOrder());
+    this.setSelection(Array.from(ranking.getOrder()));
   }
 
   /**

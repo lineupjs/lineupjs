@@ -2,7 +2,7 @@ import {equalArrays, fixCSS} from '../internal';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';
 import Column, {IColumnParent, IFlatColumn, visibilityChanged, dirtyValues, dirtyHeader, labelChanged, widthChanged, dirty, ICompareValue, ECompareValueType} from './Column';
-import {defaultGroup, IOrderedGroup} from './Group';
+import {defaultGroup, IOrderedGroup, IndicesArray, chooseByLength} from './Group';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {joinGroups} from './internal';
 import NumberColumn, {filterChanged} from './NumberColumn';
@@ -131,8 +131,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * the current ordering as an sorted array of indices
    * @type {Array}
    */
-  private groups: IOrderedGroup[] = [Object.assign({order: new Uint32Array(0), index2pos: new Uint32Array(0)}, defaultGroup)];
-  private order = new Uint32Array(0);
+  private groups: IOrderedGroup[] = [Object.assign({order: <number[]>[], index2pos: <number[]>[]}, defaultGroup)];
+  private order: IndicesArray = [];
 
   constructor(public id: string, private maxSortCriteria = 2, private maxGroupColumns = 1) {
     super();
@@ -775,12 +775,12 @@ function equalCriteria(a: ISortCriteria[], b: ISortCriteria[]) {
 function toOrder(groups: IOrderedGroup[]) {
   switch (groups.length) {
     case 0:
-      return new Uint32Array(0);
+      return [];
     case 1:
       return groups[0].order;
     default:
       const total = groups.reduce((a, b) => a + b.order.length, 0);
-      const r = new Uint32Array(total);
+      const r = chooseByLength(total);
       let shift = 0;
       for (const g of groups) {
         r.set(g.order, shift);

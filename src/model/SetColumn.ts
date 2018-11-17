@@ -4,7 +4,6 @@ import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader,
 import {IArrayColumn} from './IArrayColumn';
 import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_MISSING} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 

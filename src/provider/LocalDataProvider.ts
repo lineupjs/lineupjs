@@ -1,21 +1,14 @@
 import {computeHist, computeStats} from '../internal';
 import Column, {
-  defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn,
+  defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn,
   IOrderedGroup, ICompareValue,
-  NumberColumn
+  NumberColumn,
+  chooseByLength
 } from '../model';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 import {sortComplex} from './sort';
-import {strict} from 'assert';
-
-interface ISortHelper {
-  v: any;
-  i: number;
-  group: IGroup;
-  sort: ICompareValue[];
-}
 
 
 export interface ILocalDataProviderOptions {
@@ -195,8 +188,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
       console.timeEnd('sort');
 
       //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-      const order = new Uint32Array(g.rows.length);
-      const index2pos = new Uint32Array(this._data.length);
+      const order = chooseByLength(g.rows.length);
+      const index2pos = chooseByLength(this._data.length);
 
       for (let i = 0; i < g.rows.length; ++i) {
         const ri = g.rows[i].r.i;

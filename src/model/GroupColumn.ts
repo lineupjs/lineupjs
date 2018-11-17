@@ -1,7 +1,7 @@
 import {Category, SupportType, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import {IGroupData} from './interfaces';
-import {FIRST_IS_NAN, missingGroup} from './missing';
+import {missingGroup} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
 
 export function createGroupDesc(label = 'Group Name') {
