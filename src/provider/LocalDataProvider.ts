@@ -9,7 +9,7 @@ import Column, {
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {local, ISortWorker, sortComplex, chooseByLength, WorkerSortWorker} from './sort';
+import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker} from './sort';
 import {range} from 'd3-array';
 import ADataProvider from './ADataProvider';
 

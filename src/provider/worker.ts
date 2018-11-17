@@ -13,11 +13,11 @@ export interface IPoorManWorkerScope {
   removeEventListener<K extends keyof IPoorManWorkerScopeEventMap>(type: K, listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
 }
 
-function workerMain(self: IPoorManWorkerScope) {
-  self.addEventListener('message', (evt) => {
-    self.postMessage(`Worker: ${evt.data} - Polo`);
-  });
-}
+// function workerMain(self: IPoorManWorkerScope) {
+//   self.addEventListener('message', (evt) => {
+//     self.postMessage(`Worker: ${evt.data} - Polo`);
+//   });
+// }
 
 export function toFunctionBody(f: Function) {
   const source = f.toString();

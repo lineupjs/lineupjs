@@ -1,8 +1,14 @@
-import {ICompareValue, ECompareValueType} from '../model/Column';
+import {ICompareValue} from '../model/Column';
 import {FIRST_IS_NAN, FIRST_IS_MISSING} from '../model/missing';
 import {IndicesArray} from '../model';
 import {createWorker, IPoorManWorkerScope, toFunctionBody} from './worker';
 
+export enum ECompareValueType {
+  FLOAT = 0,
+  BINARY = 1,
+  UINT = 2,
+  STRING = 3
+}
 
 /**
  * @internal
@@ -60,13 +66,14 @@ function stringCompare(a: string | null, b: string | null) {
 }
 
 function toFunction(f:  {asc: boolean, v: ECompareValueType}): (a: any, b: any)=>number {
-  switch(f.v) {
-  case ECompareValueType.BINARY:
-  case ECompareValueType.UINT:
+  switch(<number>f.v) { // to avoid having the type in the function
+  case 1: // ECompareValueType.BINARY:
+  case 2: // ECompareValueType.UINT:
     return f.asc ? uintCompare : uintCompareDesc;
-  case ECompareValueType.FLOAT:
+  case 0: //ECompareValueType.FLOAT:
     return f.asc ? floatCompare : floatCompareDesc;
-  case ECompareValueType.STRING:
+  case 3: // ECompareValueType.STRING:
+  default:
     return f.asc ? stringCompare : stringCompareDesc;
   }
 }
@@ -205,6 +212,7 @@ export class WorkerSortWorker implements ISortWorker {
         resolve({order: r.order, index2pos: r.index2pos});
       };
 
+      this.worker.addEventListener('message', receiver);
       this.worker.postMessage(<ISortMessageRequest>{
         arr, comparators, rawLength, uid
       });

@@ -9,6 +9,7 @@ import NumberColumn, {filterChanged} from './NumberColumn';
 import CompositeColumn from './CompositeColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IRankingDump} from '../provider/interfaces';
+import {chooseByLength} from '../provider/sort';
 
 export interface ISortCriteria {
   readonly col: Column;

@@ -7,8 +7,10 @@ import Ranking, {ISortCriteria} from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';
 import {IColumnDump} from '../provider/interfaces';
+import {ECompareValueType} from '../provider/sort';
 
 export {IColumnDesc} from './interfaces';
+export {ECompareValueType} from '../provider/sort';
 
 export interface IFlatColumn {
   readonly col: Column;
@@ -46,13 +48,6 @@ export interface IColumnMetaData {
 }
 
 export declare type ICompareValue = string | number | null;
-
-export enum ECompareValueType {
-  FLOAT,
-  BINARY,
-  UINT,
-  STRING
-}
 
 /**
  * emitted when the width property changes
