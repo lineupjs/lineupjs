@@ -42,14 +42,6 @@ function stringCompare(a: string | null, b: string | null) {
   return compare.compare(av, bv);
 }
 
-export function sortNumber(arr: (number | null)[]) {
-  return arr.sort(floatCompare);
-}
-
-export function sortString(arr: (string | null)[]) {
-  return arr.sort(stringCompare);
-}
-
 function toFunction(f:  {asc: boolean, v: ECompareValueType}): (a: any, b: any)=>number {
   switch(f.v) {
   case ECompareValueType.BINARY:

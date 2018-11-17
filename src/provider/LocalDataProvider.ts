@@ -11,6 +11,7 @@ import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 import {sortComplex} from './sort';
+import {range} from 'd3-array';
 
 
 export interface ILocalDataProviderOptions {
@@ -160,6 +161,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
       // insert the extra filter
       const bak = filter;
       filter = !filter ? this.filter : (d) => this.filter!(d) && bak!(d);
+    }
+
+    const isGroupedBy = ranking.getGroupCriteria().length > 0;
+    const isSortedBy = ranking.getSortCriteria().length > 0;
+
+    if (!isGroupedBy && isSortedBy && !filter) {
+      // initial no sorting required just index mapping
+      const order = chooseByLength(this._data.length);
+      order.set(range(this._data.length));
+      const index2pos = order.slice();
+      return [Object.assign({order, index2pos}, defaultGroup)];
     }
 
     const groups = new Map<string, {group: IGroup, rows: {r: IDataRow, sort: ICompareValue[]}[]}>();
