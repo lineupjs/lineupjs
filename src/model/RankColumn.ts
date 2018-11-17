@@ -33,11 +33,13 @@ export default class RankColumn extends Column {
       return -1;
     }
     const groups = ranking.getGroups();
+    let offset = 0;
     for (const group of groups) {
       const rank = group.index2pos[row.i];
-      if (typeof rank === 'number') {
-        return rank + 1; // starting with 1
+      if (typeof rank === 'number' && !isNaN(rank)) {
+        return rank + 1 + offset; // starting with 1
       }
+      offset += group.order.length;
     }
     return -1;
   }

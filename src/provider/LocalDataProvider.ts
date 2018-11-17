@@ -10,7 +10,7 @@ import Column, {
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {sortComplex} from './sort';
+import {sortComplex, sort2indices} from './sort';
 import {range} from 'd3-array';
 import ADataProvider from './ADataProvider';
 
@@ -26,6 +26,11 @@ export interface ILocalDataProviderOptions {
    * default: false
    */
   jumpToSearchResult: boolean;
+}
+
+interface ISortHelper {
+  group: IGroup;
+  rows: {i: number, sort: ICompareValue[]}[];
 }
 
 /**
@@ -130,7 +135,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     super.cleanUpRanking(ranking);
   }
 
-  sortImpl(ranking: Ranking): IOrderedGroup[] {
+  sortImpl(ranking: Ranking): IOrderedGroup[] | Promise<IOrderedGroup[]> {
     if (this._data.length === 0) {
       return [];
     }
@@ -163,7 +168,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return [Object.assign({order, index2pos}, defaultGroup)];
     }
 
-    const groups = new Map<string, {group: IGroup, rows: {r: IDataRow, sort: ICompareValue[]}[]}>();
+    const groups = new Map<string, ISortHelper>();
 
     for (const r of this._dataRows) {
       if (filter && !filter(r)) {
@@ -173,9 +178,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const groupKey = group.name.toLowerCase();
       const sort = ranking.toCompareValue(r);
       if (groups.has(groupKey)) {
-        groups.get(groupKey)!.rows.push({r, sort});
+        groups.get(groupKey)!.rows.push({i: r.i, sort});
       } else {
-        groups.set(groupKey, {group, rows: [{r, sort}]});
+        groups.set(groupKey, {group, rows: [{i: r.i, sort}]});
       }
     }
 
@@ -185,37 +190,35 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     const types = ranking.toCompareValueType();
 
-    const groupHelper = Array.from(groups.values()).map((g) => {
-      if (isSortedBy) {
-        sortComplex(g.rows, types);
-      }
+    return Promise.all(Array.from(groups.values()).map((g) => {
+      const group = g.group;
+      return Promise.resolve(g.rows)
+        // sort -> worker
+        .then((rows) => !isSortedBy ? rows : sortComplex(rows, types))
+        // to indices -> worker
+        .then((rows) => sort2indices(rows, this._data.length))
+        // to group info
+        .then(({order, index2pos}) => {
+        const o: IOrderedGroup = Object.assign({order, index2pos}, group);
+
+        // compute sort group value
+        let sort: ICompareValue[] | null = null;
+        if (isGroupedSortedBy) {
+          const groupData = Object.assign({rows: Array.from(order).map((d) => this._data[d])}, group);
+          sort = ranking.toGroupCompareValue(groupData);
+        }
+        return {o, sort};
+      });
+    })).then((groupHelper) => {
+
+      // sort groups
       if (isGroupedSortedBy) {
-        const groupData = Object.assign({rows: g.rows.map((d) => d.r)}, g.group);
-        return {g, sort: ranking.toGroupCompareValue(groupData)};
+        sortComplex(<{sort: ICompareValue[]}[]>groupHelper, ranking.toGroupCompareValueType());
+      } else {
+        groupHelper.sort((a, b) => a.o.name.toLowerCase().localeCompare(b.o.name.toLowerCase()));
       }
-      return {g, sort: null};
-    });
 
-    // sort groups
-    if (isGroupedSortedBy) {
-      sortComplex(<{sort: ICompareValue[]}[]>groupHelper, ranking.toGroupCompareValueType());
-    } else {
-      groupHelper.sort((a, b) => a.g.group.name.toLowerCase().localeCompare(b.g.group.name.toLowerCase()));
-    }
-
-    let offset = 0;
-    return groupHelper.map(({g}) => {
-      //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-      const order = chooseByLength(g.rows.length);
-      const index2pos = chooseByLength(this._data.length);
-
-      for (let i = 0; i < g.rows.length; ++i) {
-        const ri = g.rows[i].r.i;
-        order[i] = ri;
-        index2pos[ri] = offset + i;
-      }
-      offset += g.rows.length;
-      return Object.assign({order, index2pos}, g.group);
+      return groupHelper.map((d) => d.o);
     });
   }
 

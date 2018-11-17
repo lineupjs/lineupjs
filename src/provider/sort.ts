@@ -1,5 +1,6 @@
 import {ICompareValue, ECompareValueType} from '../model/Column';
 import {FIRST_IS_NAN, FIRST_IS_MISSING} from '../model/missing';
+import {chooseByLength} from '../model';
 
 const missingFloat = FIRST_IS_NAN > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 const missingInt = FIRST_IS_MISSING > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
@@ -54,7 +55,7 @@ function toFunction(f:  {asc: boolean, v: ECompareValueType}): (a: any, b: any)=
   }
 }
 
-export function sortComplex(arr: {sort: ICompareValue[]}[], comparators: {asc: boolean, v: ECompareValueType}[]) {
+export function sortComplex<T extends {sort: ICompareValue[]}>(arr: T[], comparators: {asc: boolean, v: ECompareValueType}[]) {
   if (arr.length < 2) {
     return arr;
   }
@@ -85,4 +86,18 @@ export function sortComplex(arr: {sort: ICompareValue[]}[], comparators: {asc: b
         return 0;
       });
   }
+  return arr;
+}
+
+export function sort2indices(arr: {i: number}[], rawLength: number) {
+  //store the ranking index and create an argsort version, i.e. rank 0 -> index i
+  const order = chooseByLength(arr.length);
+  const index2pos = chooseByLength(rawLength);
+
+  for (let i = 0; i < arr.length; ++i) {
+    const ri = arr[i].i;
+    order[i] = ri;
+    index2pos[ri] = i;
+  }
+  return {order, index2pos};
 }
