@@ -103,7 +103,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data, this.mapping);
+    return new LazyBoxPlotData(data, false, this.mapping);
   }
 
   getRange() {

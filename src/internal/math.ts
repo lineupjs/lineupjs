@@ -61,9 +61,9 @@ export class LazyBoxPlotData implements IStatistics {
 
   readonly missing: number;
 
-  constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: (data: number[]) => INumberBin[]) {
+  constructor(values: number[], noMissingValues: boolean = false, private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: (data: number[]) => INumberBin[]) {
     // filter out NaN
-    this.values = Float32Array.from(values.filter((d) => !isMissingValue(d)));
+    this.values = Float32Array.from(noMissingValues ? values : values.filter((d) => !isMissingValue(d)));
     this.missing = values.length - this.values.length;
   }
 
@@ -202,7 +202,7 @@ function cached() {
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeStats<T>(arr: T[], acc: (row: T) => number, range?: [number, number], bins?: number): IStatistics {
+export function computeStats(arr: number[], range?: [number, number], bins?: number): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -229,9 +229,7 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, range?: [numb
     hist.thresholds(getNumberOfBins(arr.length));
   }
 
-  const values = arr.map(acc);
-
-  return new LazyBoxPlotData(values, undefined, <(data: number[]) => INumberBin[]>hist);
+  return new LazyBoxPlotData(arr, false, undefined, <(data: number[]) => INumberBin[]>hist);
 }
 
 
@@ -248,14 +246,14 @@ export function computeHist<T>(arr: T[], acc: (row: T) => ICategory | null, cate
   let missingCount = 0;
   categories.forEach((cat) => m.set(cat.name, 0));
 
-  arr.forEach((a) => {
+  for (const a of arr) {
     const v = acc(a);
     if (v == null) {
       missingCount += 1;
-      return;
+      continue;
     }
     m.set(v.name, (m.get(v.name) || 0) + 1);
-  });
+  }
   const entries: { cat: string; y: number }[] = categories.map((d) => ({cat: d.name, y: m.get(d.name)!}));
   return {
     maxBin: Math.max(...entries.map((d) => d.y)),

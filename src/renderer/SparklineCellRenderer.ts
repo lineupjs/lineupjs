@@ -1,4 +1,4 @@
-import {IDataRow, IGroup, isMissingValue} from '../model';
+import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
@@ -16,7 +16,7 @@ export function line(data: number[]) {
   let moveNext = true;
 
   data.forEach((d, i) => {
-    if (isMissingValue(d)) {
+    if (isNaN(d)) {
       moveNext = true;
     } else if (moveNext) {
       p += `M${i},${1 - d} `;

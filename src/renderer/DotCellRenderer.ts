@@ -1,5 +1,5 @@
-import {ICategoricalStatistics, IStatistics} from '../internal';
-import {INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColumn} from '../model';
+import {ICategoricalStatistics, IStatistics, round} from '../internal';
+import {INumberColumn, IDataRow, IGroup, isNumberColumn} from '../model';
 /**
  * a renderer rendering a bar for numerical columns
  */
@@ -41,10 +41,10 @@ export default class DotCellRenderer implements ICellRendererFactory {
         attr(<HTMLElement>d, {
           title: labels[i]
         }, {
-          display: isMissingValue(v) ? 'none' : null,
-          left: `${Math.round(v * 100)}%`,
+          display: isNaN(v) ? 'none' : null,
+          left: `${round(v * 100, 2)}%`,
           // jitter
-          top: vs.length > 1 ? `${Math.round(Math.random() * 80 + 10)}%` : null,
+          top: vs.length > 1 ? `${round(Math.random() * 80 + 10, 2)}%` : null,
           'background-color': colors[i]
         });
       });
@@ -73,11 +73,11 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return;
         }
         const color = colorOf(col, d, imposer);
-        const v = col.getValue(d);
         if (!isNumbersColumn(col)) {
+          const v = col.getNumber(d);
           return update(n, [v], [col.getLabel(d)], [color]);
         }
-        const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
+        const vs: number[] = col.getNumbers(d).filter((vi: number) => !isNaN(vi));
         return update(n, vs, vs.map(DEFAULT_FORMATTER), vs.map((_: any) => color));
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
@@ -85,11 +85,11 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return;
         }
         const color = colorOf(col, d, imposer);
-        const v = col.getValue(d);
         if (!isNumbersColumn(col)) {
+          const v = col.getNumber(d);
           return render(ctx, [v], [color], width);
         }
-        const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
+        const vs: number[] = col.getNumbers(d).filter((vi: number) => !isNaN(vi));
         return render(ctx, vs, vs.map((_: any) => color), width);
       }
     };
@@ -107,7 +107,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return update(n, vs, rows.map((r) => col.getLabel(r)), colors);
         }
         // concatenate all columns
-        const all = (<number[]>[]).concat(...vs.filter((vi: number) => !isMissingValue(vi)));
+        const all = (<number[]>[]).concat(...vs.filter((vi: number) => !isNaN(vi)));
         return update(n, all, all.map(DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
       }
     };

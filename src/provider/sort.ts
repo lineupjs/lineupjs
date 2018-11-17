@@ -50,10 +50,6 @@ export function sortString(arr: (string | null)[]) {
   return arr.sort(stringCompare);
 }
 
-function negate(asc: boolean, v: (a: any, b: any)=>number) {
-  return asc ? v : (a: any, b: any) => -v(a, b);
-}
-
 function toFunction(f:  {asc: boolean, v: ECompareValueType}): (a: any, b: any)=>number {
   switch(f.v) {
   case ECompareValueType.BINARY:

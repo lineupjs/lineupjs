@@ -1,5 +1,5 @@
 import {LazyBoxPlotData} from '../internal';
-import {IDataRow, IGroup, isMissingValue} from '../model';
+import {IDataRow, IGroup} from '../model';
 import {INumbersColumn} from '../model/INumberColumn';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -22,13 +22,13 @@ export abstract class ANumbersCellRenderer {
     const raw = <number[]>[];
     // mean column)
     for (let i = 0; i < cols; ++i) {
-      const vs = data.map((d) => ({n: d.n[i], raw: d.raw[i]})).filter((d) => !isMissingValue(d.n));
+      const vs = data.map((d) => ({n: d.n[i], raw: d.raw[i]})).filter((d) => !isNaN(d.n));
       if (vs.length === 0) {
         normalized.push(NaN);
         raw.push(NaN);
       } else {
-        const box = <any>new LazyBoxPlotData(vs.map((d) => d.n));
-        const boxRaw = <any>new LazyBoxPlotData(vs.map((d) => d.raw));
+        const box = <any>new LazyBoxPlotData(vs.map((d) => d.n), false);
+        const boxRaw = <any>new LazyBoxPlotData(vs.map((d) => d.raw), false);
         normalized.push(box[col.getSortMethod()]);
         raw.push(boxRaw[col.getSortMethod()]);
       }

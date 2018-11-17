@@ -240,7 +240,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   stats(indices?: IndicesArray): IStatsBuilder {
     let d: IDataRow[] | null = null;
-    const getD = () => {
+    const getData = () => {
       if (d == null) {
         return d = indices && indices.length < this._dataRows.length ? this.viewRawRows(indices) : this._dataRows;
       }
@@ -248,8 +248,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
 
     return {
-      stats: (col: INumberColumn, numbrerOfBins?: number) => computeStats(getD(), (d) => col.getNumber(d), [0, 1], numbrerOfBins),
-      hist: (col: ICategoricalColumn) => computeHist(getD(), (d) => col.getCategory(d), col.categories)
+      stats: (col: INumberColumn, numberOfBins?: number) => computeStats(getData().map((d) => col.getNumber(d)), [0, 1], numberOfBins),
+      hist: (col: ICategoricalColumn) => computeHist(getData(), (d) => col.getCategory(d), col.categories)
     };
   }
 

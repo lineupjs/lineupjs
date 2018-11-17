@@ -1,4 +1,4 @@
-import {IDataRow, isMissingValue} from '../model';
+import {IDataRow} from '../model';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
@@ -26,7 +26,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     const render = (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow, height: number) => {
       data.forEach((d: number, j: number) => {
         const x = j * cellDimension;
-        if (isMissingValue(d)) {
+        if (isNaN(d)) {
           renderMissingValue(ctx, cellDimension, height, x, 0);
           return;
         }

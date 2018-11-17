@@ -97,11 +97,11 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = stacked ? null : `${padding}px`;
           } else {
-            (<any>cnode.style).gridColumnStart = (ci + 1).toString();
+            cnode.style.gridColumnStart = (ci + 1).toString();
           }
           col.renderer!.update(cnode, d, i, group, meta);
           if (stacked) {
-            missingWeight += (1 - col.column.getValue(d)) * weight;
+            missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
           }
         });
       },
@@ -119,7 +119,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             ctx.translate(-shift, 0);
           }
           if (stacked) {
-            stackShift += col.width * (1 - col.column.getValue(d));
+            stackShift += col.width * (1 - (<INumberColumn>col.column).getNumber(d));
           }
         });
       }
@@ -148,7 +148,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = `${padding}px`;
           } else {
-            (<any>cnode.style).gridColumnStart = (ci + 1).toString();
+            cnode.style.gridColumnStart = (ci + 1).toString();
           }
           col.groupRenderer!.update(cnode, group, rows);
         });

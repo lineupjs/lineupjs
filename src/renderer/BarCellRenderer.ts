@@ -1,4 +1,4 @@
-import {ICategoricalStatistics, IStatistics} from '../internal';
+import {ICategoricalStatistics, IStatistics, round} from '../internal';
 import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
@@ -36,7 +36,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow) => {
         const value = col.getNumber(d);
         const missing = renderMissingDOM(n, col, d);
-        const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
+        const w = isNaN(value) ? 0 : round(value * 100, 2);
         const title = col.getLabel(d);
         n.title = title;
 
