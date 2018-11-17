@@ -49,7 +49,7 @@ export {default as ActionColumn} from './ActionColumn';
 export * from './ActionColumn';
 export {default as AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc} from './AggregateGroupColumn';
 export {default as AnnotateColumn} from './AnnotateColumn';
-export {default as ArrayColumn, IArrayColumnDesc, IArrayDesc, ISplicer} from './ArrayColumn';
+export {default as ArrayColumn, IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 export {default as BooleanColumn, IBooleanColumnDesc, IBooleanDesc} from './BooleanColumn';
 export * from './BooleansColumn';
 export {default as BooleansColumn} from './BooleansColumn';

@@ -111,7 +111,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
 
   getValue(row: IDataRow) {
     const values = this.getRawValue(row);
-    return values.map(({key, value}) => ({key, value: isMissingValue(value) ? NaN : this.mapping.apply(value)}));
+    return values.length === 0 ? null : values.map(({key, value}) => ({key, value: isMissingValue(value) ? NaN : this.mapping.apply(value)}));
   }
 
   getRawValue(row: IDataRow): IKeyValue<number>[] {
@@ -124,7 +124,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   }
 
   getLabels(row: IDataRow) {
-    const v = this.getValue(row);
+    const v = this.getRawValue(row);
     return v.map(({key, value}) => ({key, value: DEFAULT_FORMATTER(value)}));
   }
 

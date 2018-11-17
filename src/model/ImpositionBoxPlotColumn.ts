@@ -119,13 +119,14 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
-      if (this.isMissing(row)) {
+      const value = this.getRawNumber(row);
+      if (isNaN(value)) {
         return null;
       }
       return {
         label: this.getLabel(row),
         color: this.getColor(row),
-        value: this.getRawNumber(row)
+        value
       };
     }
     return super.getExportValue(row, format);
@@ -159,11 +160,6 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   setSortMethod(value: ESortMethod) {
     const w = this.wrapper;
     return w ? w.setSortMethod(value) : undefined;
-  }
-
-  isMissing(row: IDataRow) {
-    const w = this.wrapper;
-    return w ? w.isMissing(row) : true;
   }
 
   setMapping(mapping: IMappingFunction): void {

@@ -73,8 +73,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 
-  private readonly missingValue: number;
-
   private mapping: IMappingFunction;
   private colorMapping: IColorMappingFunction;
   private original: IMappingFunction;
@@ -86,7 +84,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  private numberFormat: (n: number) => string = format('.2f');
+  private readonly numberFormat: (n: number) => string = format('.2f');
 
   private currentGroupThresholds: number[] = [];
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
@@ -101,7 +99,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-    this.missingValue = desc.missingValue != null ? desc.missingValue : NaN;
 
     this.setGroupRenderer('boxplot');
     this.setDefaultSummaryRenderer('histogram');
@@ -137,9 +134,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     if (dump.stratifyThreshholds) {
       this.currentGroupThresholds = dump.stratifyThresholds;
-    }
-    if (dump.numberFormat) {
-      this.numberFormat = format(dump.numberFormat);
     }
   }
 
@@ -191,10 +185,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.mapping.getRange(this.numberFormat);
   }
 
-  getRawValue(row: IDataRow, missingValue = this.missingValue) {
+  getRawValue(row: IDataRow) {
     const v: any = super.getValue(row);
     if (isMissingValue(v)) {
-      return missingValue;
+      return NaN;
     }
     return +v;
   }
@@ -203,28 +197,28 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
   }
 
-  isMissing(row: IDataRow) {
-    return isMissingValue(super.getValue(row));
+  getValue(row: IDataRow) {
+    const v = this.getNumber(row);
+    if (isNaN(v)) {
+      return null;
+    }
+    return v;
   }
 
-  getValue(row: IDataRow) {
+  getNumber(row: IDataRow) {
     const v = this.getRawValue(row);
     if (isNaN(v)) {
-      return v;
+      return NaN;
     }
     return this.mapping.apply(v);
   }
 
-  getNumber(row: IDataRow) {
-    return this.getValue(row);
-  }
-
-  getRawNumber(row: IDataRow, missingValue = this.missingValue) {
-    return this.getRawValue(row, missingValue);
+  getRawNumber(row: IDataRow) {
+    return this.getRawValue(row);
   }
 
   toCompareValue(row: IDataRow) {
-    return this.isMissing(row) ? NaN : this.getNumber(row);
+    return this.getNumber(row);
   }
 
   toCompareValueType() {
@@ -302,7 +296,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @returns {boolean}
    */
   filter(row: IDataRow) {
-    return isNumberIncluded(this.currentFilter, this.getRawNumber(row, NaN));
+    return isNumberIncluded(this.currentFilter, this.getRawNumber(row));
   }
 
   getGroupThresholds() {
@@ -320,7 +314,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
 
   group(row: IDataRow): IGroup {
-    if (this.isMissing(row)) {
+    const value = this.getRawNumber(row);
+    if (isNaN(value)) {
       return missingGroup;
     }
 
@@ -331,7 +326,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       threshold = [(d[1] - d[0]) / 2];
     }
 
-    const value = this.getRawNumber(row);
     const treshholdIndex = threshold.findIndex((t) => value <= t);
     // group by thresholds / bins
     switch (treshholdIndex) {

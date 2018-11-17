@@ -1,4 +1,4 @@
-import {ascending, histogram, mean, median, quantile} from 'd3-array';
+import {histogram, quantile} from 'd3-array';
 import {ICategory, isMissingValue} from '../model';
 import {IMappingFunction} from '../model/MappingFunction';
 
@@ -57,13 +57,13 @@ export function getNumberOfBins(length: number) {
  * @internal
  */
 export class LazyBoxPlotData implements IStatistics {
-  private readonly values: number[];
+  private readonly values: Float32Array;
 
   readonly missing: number;
 
   constructor(values: number[], private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: (data: number[]) => INumberBin[]) {
     // filter out NaN
-    this.values = values.filter((d) => !isMissingValue(d));
+    this.values = Float32Array.from(values.filter((d) => !isMissingValue(d)));
     this.missing = values.length - this.values.length;
   }
 
@@ -76,17 +76,17 @@ export class LazyBoxPlotData implements IStatistics {
    * @returns {number[]}
    */
   @cached()
-  private get sorted(): number[] {
-    return this.values.slice().sort(ascending);
+  private get sorted() {
+    return this.values.sort();
   }
 
   @cached()
-  private get sortedMapped(): number[] {
+  private get sortedMapped() {
     return this.scale ? this.sorted.map((v) => this.scale!.apply(v)) : this.sorted;
   }
 
   private map(v: number | undefined) {
-    return this.scale && v != null ? this.scale.apply(v!) : v!;
+    return this.scale && v != null && !isNaN(v) ? this.scale.apply(v!) : v!;
   }
 
   @cached()
@@ -94,27 +94,27 @@ export class LazyBoxPlotData implements IStatistics {
     if (!this.histGen) {
       return [];
     }
-    return this.histGen(this.values);
+    return this.histGen(Array.from(this.values));
   }
 
   @cached()
   get maxBin() {
-    return Math.max(...this.hist.map((d) => d.length));
+    return this.hist.reduce((a, b) => Math.max(a, b.length), 0);
   }
 
   @cached()
   get min() {
-    return this.map(Math.min(...this.values));
+    return this.map(this.values.reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY));
   }
 
   @cached()
   get max() {
-    return this.map(Math.max(...this.values));
+    return this.map(this.values.reduce((a, b) => Math.max(a, b), Number.NEGATIVE_INFINITY));
   }
 
   @cached()
   get median() {
-    return this.map(median(this.sorted));
+    return this.map(quantile(this.sorted, 0.5));
   }
 
   @cached()
@@ -128,8 +128,13 @@ export class LazyBoxPlotData implements IStatistics {
   }
 
   @cached()
+  get sum() {
+    return this.map(this.values.reduce((a, b) => a + b, 0));
+  }
+
+  @cached()
   get mean() {
-    return this.map(mean(this.values));
+    return this.sum / this.values.length;
   }
 
   @cached()
@@ -139,14 +144,8 @@ export class LazyBoxPlotData implements IStatistics {
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     // look for the closests value which is bigger than the computed left
-    let whiskerLow = left;
-    for (const v of this.sortedMapped) {
-      if (left < v) {
-        whiskerLow = v;
-        break;
-      }
-    }
-    return whiskerLow;
+    const whiskerLow = this.sortedMapped.find((v) => left < v);
+    return whiskerLow == null ? left : whiskerLow;
   }
 
   @cached()
@@ -156,22 +155,20 @@ export class LazyBoxPlotData implements IStatistics {
     const iqr = q3 - q1;
     const right = q3 + 1.5 * iqr;
     // look for the closests value which is smaller than the computed right
-    let whiskerHigh = right;
-    for (const v of this.sortedMapped.slice().reverse()) {
-      if (v < right) {
-        whiskerHigh = v;
-        break;
+    const s = this.sortedMapped;
+    for (let i = s.length - 1; i >= 0; --i) {
+      if (s[i] < right) {
+        return s[i];
       }
     }
-    return whiskerHigh;
-
+    return right;
   }
 
   @cached()
   get outlier() {
     const left = this.whiskerLow;
     const right = this.whiskerHigh;
-    return this.sortedMapped.filter((v) => (v < left || v > right) && !isMissingValue(v));
+    return Array.from(this.sortedMapped.filter((v) => (v < left || v > right)));
   }
 }
 
@@ -200,13 +197,12 @@ function cached() {
  * computes the simple statistics of an array using d3 histogram
  * @param arr the data array
  * @param acc accessor function
- * @param missing accessor if the value is missing
  * @param range the total value range
  * @param bins the number of bins
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row: T) => boolean, range?: [number, number], bins?: number): IStatistics {
+export function computeStats<T>(arr: T[], acc: (row: T) => number, range?: [number, number], bins?: number): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -233,7 +229,7 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
     hist.thresholds(getNumberOfBins(arr.length));
   }
 
-  const values = arr.map((v) => missing(v) ? NaN : acc(v));
+  const values = arr.map(acc);
 
   return new LazyBoxPlotData(values, undefined, <(data: number[]) => INumberBin[]>hist);
 }
@@ -260,8 +256,7 @@ export function computeHist<T>(arr: T[], acc: (row: T) => ICategory | null, cate
     }
     m.set(v.name, (m.get(v.name) || 0) + 1);
   });
-  const entries: { cat: string; y: number }[] = [];
-  m.forEach((v, k) => entries.push({cat: k, y: v}));
+  const entries: { cat: string; y: number }[] = categories.map((d) => ({cat: d.name, y: m.get(d.name)!}));
   return {
     maxBin: Math.max(...entries.map((d) => d.y)),
     hist: entries,

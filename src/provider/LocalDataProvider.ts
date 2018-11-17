@@ -248,7 +248,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
 
     return {
-      stats: (col: INumberColumn, numbrerOfBins?: number) => computeStats(getD(), (d) => col.getNumber(d), (d) => col.isMissing(d), [0, 1], numbrerOfBins),
+      stats: (col: INumberColumn, numbrerOfBins?: number) => computeStats(getD(), (d) => col.getNumber(d), [0, 1], numbrerOfBins),
       hist: (col: ICategoricalColumn) => computeHist(getD(), (d) => col.getCategory(d), col.categories)
     };
   }

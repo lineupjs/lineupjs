@@ -4,7 +4,6 @@ import Column, {IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty,
 import CompositeColumn, {IMultiLevelColumn, addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
-import {isNumberColumn} from './INumberColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 
 /**
@@ -273,10 +272,6 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       return StackColumn.COLLAPSED_RENDERER;
     }
     return super.getRenderer();
-  }
-
-  isMissing(row: IDataRow) {
-    return this._children.some((c) => isNumberColumn(c) && c.isMissing(row));
   }
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {

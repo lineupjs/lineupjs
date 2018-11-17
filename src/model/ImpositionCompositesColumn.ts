@@ -129,13 +129,13 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
-      if (this.isMissing(row)) {
+      const value = this.getRawNumber(row);
+      if (isNaN(value)) {
         return null;
       }
       return {
         label: this.getLabels(row),
-        color: this.getColor(row),
-        value: this.getRawNumbers(row)
+        color: this.getColor(row)
       };
     }
     return super.getExportValue(row, format);
@@ -179,11 +179,6 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   setSortMethod(value: EAdvancedSortMethod) {
     const w = this.wrapper;
     return w ? w.setSortMethod(value) : undefined;
-  }
-
-  isMissing(row: IDataRow) {
-    const w = this.wrapper;
-    return w ? w.isMissing(row) : true;
   }
 
   setMapping(mapping: IMappingFunction): void {

@@ -120,7 +120,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
 
   getValue(row: IDataRow) {
     const l = this.getLink(row);
-    return l == null ? '' : l.href;
+    return l == null ? null : l.href;
   }
 
   getLink(row: IDataRow): ILink | null {

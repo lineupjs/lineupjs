@@ -43,7 +43,8 @@ export default class RankColumn extends Column {
   }
 
   getValue(row: IDataRow) {
-    return this.getRaw(row);
+    const r = this.getRaw(row);
+    return r === -1 ? null : r;
   }
 
   get frozen() {

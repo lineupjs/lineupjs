@@ -7,7 +7,6 @@ import {IValueColumnDesc} from './ValueColumn';
 
 export interface ICategoricalDesc {
   categories: (string | Partial<ICategory>)[];
-  missingCategory: (string | Partial<ICategory>);
 }
 
 export declare type ICategoricalColumnDesc = IValueColumnDesc<string> & ICategoricalDesc;

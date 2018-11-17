@@ -64,7 +64,8 @@ export default class LinkMapColumn extends MapColumn<string> {
   }
 
   getValue(row: IDataRow) {
-    return this.getLinkMap(row).map(({key, value}) => ({
+    const r = this.getLinkMap(row);
+    return r.every((d) => d.value == null) ? null : r.map(({key, value}) => ({
       key,
       value: value ? value.href : ''
     }));
@@ -78,7 +79,7 @@ export default class LinkMapColumn extends MapColumn<string> {
   }
 
   getLinkMap(row: IDataRow): IKeyValue<ILink>[] {
-    return super.getValue(row).map(({key, value}) => ({
+    return super.getMap(row).map(({key, value}) => ({
       key,
       value: this.transformValue(value, row, key)
     }));

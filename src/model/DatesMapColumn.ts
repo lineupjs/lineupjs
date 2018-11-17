@@ -78,22 +78,28 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
     return this.parse(String(v));
   }
 
-  getValue(row: IDataRow) {
-    return super.getValue(row).map(({key, value}) => ({
+  getDateMap(row: IDataRow) {
+    return super.getMap(row).map(({key, value}) => ({
       key,
       value: this.parseValue(value)
     }));
   }
 
+  getValue(row: IDataRow) {
+    const r = this.getDateMap(row);
+
+    return r.every((d) => d == null) ? null : r;
+  }
+
   getLabels(row: IDataRow): IKeyValue<string>[] {
-    return this.getValue(row).map(({key, value}) => ({
+    return this.getDateMap(row).map(({key, value}) => ({
       key,
       value: (value instanceof Date) ? this.format(value) : ''
     }));
   }
 
   getDates(row: IDataRow): (Date | null)[] {
-    return this.getValue(row).map((v) => v.value);
+    return this.getDateMap(row).map((v) => v.value);
   }
 
   getDate(row: IDataRow) {

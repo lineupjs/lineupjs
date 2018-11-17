@@ -1,5 +1,5 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {ICategoricalDesc, ICategory, toCategories, toCategory} from './ICategoricalColumn';
+import {ICategoricalDesc, ICategory, toCategories} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 
 export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string | null>;
@@ -10,31 +10,26 @@ export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDes
 export default class CategoricalsColumn extends ArrayColumn<string | null> {
   readonly categories: ICategory[];
 
-  private readonly missingCategory: ICategory | null;
-
   private readonly lookup = new Map<string, Readonly<ICategory>>();
 
   constructor(id: string, desc: Readonly<ICategoricalsColumnDesc>) {
     super(id, desc);
     this.categories = toCategories(desc);
-    this.missingCategory = desc.missingCategory ? toCategory(desc.missingCategory, NaN) : null;
     this.categories.forEach((d) => this.lookup.set(d.name, d));
   }
 
   getCategories(row: IDataRow) {
     return super.getValues(row).map((v) => {
       if (!v) {
-        return this.missingCategory;
+        return null;
       }
       const vs = String(v);
-      return this.lookup.has(vs) ? this.lookup.get(vs)! : this.missingCategory;
+      return this.lookup.has(vs) ? this.lookup.get(vs)! : null;
     });
   }
 
   getSet(row: IDataRow) {
-    const r = new Set(this.getCategories(row));
-    r.delete(this.missingCategory);
-    return r;
+    return new Set(this.getCategories(row));
   }
 
   getValues(row: IDataRow) {

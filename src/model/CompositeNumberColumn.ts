@@ -1,5 +1,5 @@
 import {format} from 'd3-format';
-import Column, {IColumnDesc} from './Column';
+import {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {IDataRow, IGroupData} from './interfaces';
 import {isMissingValue} from './missing';
@@ -12,12 +12,6 @@ export interface ICompositeNumberDesc extends IColumnDesc {
    * @default 0.3n
    */
   numberFormat?: string;
-
-  /**
-   * missing value to use
-   * @default 0
-   */
-  missingValue?: number;
 }
 
 export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnDesc;
@@ -27,9 +21,7 @@ export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnD
  */
 @SortByDefault('descending')
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
-  missingValue = NaN;
-
-  private numberFormat: (n: number) => string = format('.3n');
+  private readonly numberFormat: (n: number) => string = format('.3n');
 
   constructor(id: string, desc: Readonly<ICompositeNumberColumnDesc>) {
     super(id, desc);
@@ -37,27 +29,6 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-
-    if (desc.missingValue !== undefined) {
-      this.missingValue = desc.missingValue;
-    }
-  }
-
-
-  dump(toDescRef: (desc: any) => any) {
-    const r = super.dump(toDescRef);
-    r.missingValue = this.missingValue;
-    return r;
-  }
-
-  restore(dump: any, factory: (dump: any) => Column | null) {
-    if (dump.missingValue !== undefined) {
-      this.missingValue = dump.missingValue;
-    }
-    if (dump.numberFormat) {
-      this.numberFormat = format(dump.numberFormat);
-    }
-    super.restore(dump, factory);
   }
 
   getLabel(row: IDataRow) {
@@ -76,7 +47,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     //weighted sum
     const v = this.compute(row);
     if (isMissingValue(v)) {
-      return this.missingValue;
+      return null;
     }
     return v;
   }
@@ -102,10 +73,6 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
       };
     }
     return super.getExportValue(row, format);
-  }
-
-  isMissing(row: IDataRow) {
-    return isMissingValue(this.compute(row));
   }
 
   toCompareValue(row: IDataRow) {

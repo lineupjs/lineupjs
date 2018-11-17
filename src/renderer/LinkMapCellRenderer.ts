@@ -52,7 +52,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getLinkMap(d));
+        const vs = rows.map((d) => col.getLinkMap(d));
 
         const entries = groupByKey(vs);
 

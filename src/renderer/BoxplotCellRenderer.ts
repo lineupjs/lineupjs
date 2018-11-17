@@ -52,7 +52,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       template: BOXPLOT,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d);
-        if (!data || col.isMissing(d)) {
+        if (!data) {
           n.classList.add(cssClass('missing'));
           return;
         }
@@ -88,7 +88,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   private static createAggregatedBoxPlot(col: INumbersColumn, rows: IDataRow[], raw = false): IBoxPlotData {
     // concat all values
-    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumber(r))));
+    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumbers(r))));
     return new LazyBoxPlotData(vs);
   }
 
@@ -97,7 +97,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
       template: BOXPLOT,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        if (rows.every((row) => col.isMissing(row))) {
+        if (rows.every((row) => col.getValue(row) == null)) {
           renderMissingDOM(n, col, rows[0]); // doesn't matter since all
           return;
         }

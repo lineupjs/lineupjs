@@ -3,7 +3,6 @@ import {similar} from '../internal/math';
 import {fixCSS} from '../internal/utils';
 import {defaultGroup} from './Group';
 import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
-import {isMissingValue} from './missing';
 import Ranking, {ISortCriteria} from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';
@@ -509,7 +508,8 @@ export default class Column extends AEventDispatcher {
    * @return {string} the label of this column at the specified row
    */
   getLabel(row: IDataRow): string {
-    return String(this.getValue(row));
+    const v = this.getValue(row);
+    return v == null ? '' : String(v);
   }
 
   /**
@@ -517,7 +517,7 @@ export default class Column extends AEventDispatcher {
    * @param _row the current row
    * @return the value of this column at the specified row
    */
-  getValue(_row: IDataRow): any {
+  getValue(_row: IDataRow): any | null {
     return ''; //no value
   }
 
@@ -531,10 +531,6 @@ export default class Column extends AEventDispatcher {
 
   getColor(_row: IDataRow) {
     return Column.DEFAULT_COLOR;
-  }
-
-  isMissing(row: IDataRow) {
-    return isMissingValue(this.getValue(row));
   }
 
   toCompareValue(_row: IDataRow): ICompareValue | ICompareValue[] {

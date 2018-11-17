@@ -1,7 +1,7 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {median, min, max} from 'd3-array';
 import {dialogAddons, toolbar} from './annotations';
-import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
+import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDateDesc, IDateColumn, IDateFilter, noDateFilter, restoreDateFilter, isDummyDateFilter} from './IDateColumn';
@@ -61,7 +61,6 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
 
   on(type: typeof DatesColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
   on(type: typeof DatesColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -77,16 +76,17 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     return super.on(<any>type, listener);
   }
 
-  getValue(row: IDataRow): (Date | null)[] {
-    return this.getDates(row);
+  getValue(row: IDataRow): (Date | null)[] | null {
+    const r = this.getDates(row);
+    return r.every((d) => d == null) ? null : r;
   }
 
   getLabels(row: IDataRow) {
-    return this.getValue(row).map((v) => (v instanceof Date) ? this.format(v) : '');
+    return this.getDates(row).map((v) => (v instanceof Date) ? this.format(v) : '');
   }
 
   getDates(row: IDataRow): (Date | null)[] {
-    return super.getValue(row).map((v) => {
+    return super.getValues(row).map((v) => {
       if (isMissingValue(v)) {
         return null;
       }
@@ -138,7 +138,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   }
 
   toCompareValue(row: IDataRow) {
-    const vs = <Date[]>this.getValue(row).filter(Boolean);
+    const vs = <Date[]>this.getDates(row).filter(Boolean);
     if (!vs) {
       return [0, 0];
     }

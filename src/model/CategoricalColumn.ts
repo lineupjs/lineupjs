@@ -4,7 +4,7 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
 import {
   toCompareCategoryValue,
   ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
-  isEqualCategoricalFilter, isCategoryIncluded, toCategories, toCategory, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES,
+  isEqualCategoricalFilter, isCategoryIncluded, toCategories, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES,
 } from './ICategoricalColumn';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {missingGroup} from './missing';
@@ -27,8 +27,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   readonly categories: ICategory[];
 
-  private readonly missingCategory: ICategory | null;
-
   private readonly lookup = new Map<string, Readonly<ICategory>>();
   /**
    * set of categories to show
@@ -40,7 +38,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   constructor(id: string, desc: Readonly<ICategoricalColumnDesc>) {
     super(id, desc);
     this.categories = toCategories(desc);
-    this.missingCategory = desc.missingCategory ? toCategory(desc.missingCategory, NaN) : null;
     this.categories.forEach((d) => this.lookup.set(d.name, d));
   }
 
@@ -72,10 +69,10 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   getCategory(row: IDataRow) {
     const v = super.getValue(row);
     if (!v) {
-      return this.missingCategory;
+      return null;
     }
     const vs = String(v);
-    return this.lookup.has(vs) ? this.lookup.get(vs)! : this.missingCategory;
+    return this.lookup.has(vs) ? this.lookup.get(vs)! : null;
   }
 
   get dataLength() {
@@ -118,14 +115,10 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   getSet(row: IDataRow) {
     const cat = this.getCategory(row);
     const r = new Set<ICategory>();
-    if (cat && cat !== this.missingCategory) {
+    if (cat) {
       r.add(cat);
     }
     return r;
-  }
-
-  isMissing(row: IDataRow) {
-    return this.getCategory(row) === this.missingCategory;
   }
 
   dump(toDescRef: (desc: any) => any): any {

@@ -243,7 +243,7 @@ function createHist(globalHist: IStatistics | null, guessedBins: number, rows: I
     const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r)));
     stats = computeStats(values, (v: number) => v, isMissingValue, [0, 1], bins);
   } else {
-    stats = computeStats(rows, (r: IDataRow) => col.getNumber(r), (r: IDataRow) => col.isMissing(r), [0, 1], bins);
+    stats = computeStats(rows, (r: IDataRow) => col.getNumber(r), [0, 1], bins);
   }
 
   const maxBin = Math.max(stats.maxBin, globalHist ? globalHist.maxBin : 0);

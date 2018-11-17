@@ -196,7 +196,7 @@ const NUM_EXAMPLE_VALUES = 5;
 export function exampleText(col: Column, rows: IDataRow[]) {
   const examples = <string[]>[];
   for (const row of rows) {
-    if (col.isMissing(row)) {
+    if (col.getValue(row) == null) {
       continue;
     }
     const v = col.getLabel(row);

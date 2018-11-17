@@ -5,6 +5,7 @@ import {IDataRow} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import {EAlignment, IStringDesc} from './StringColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {isMissingValue} from './missing';
 
 export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
 
@@ -40,9 +41,14 @@ export default class StringMapColumn extends MapColumn<string> {
   }
 
   getValue(row: IDataRow) {
-    return super.getValue(row).map(({key, value}) => ({
+    const r = this.getMapValue(row);
+    return r.every((d) => d.value === '') ? null : r;
+  }
+
+  getMapValue(row: IDataRow) {
+    return super.getMap(row).map(({key, value}) => ({
       key,
-      value: value == null ? '' : String(value)
+      value: isMissingValue(value) ? '' : String(value)
     }));
   }
 }

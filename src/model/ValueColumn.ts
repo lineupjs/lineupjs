@@ -72,17 +72,18 @@ export default class ValueColumn<T> extends Column {
     if (!this.isLoaded()) {
       return '';
     }
-    return String(this.getValue(row));
+    const v = this.getValue(row);
+    return v == null ? '' : String(v);
   }
 
-  getRaw(row: IDataRow) {
+  getRaw(row: IDataRow): T | null {
     if (!this.isLoaded()) {
       return null;
     }
     return this.accessor(row, this.desc);
   }
 
-  getValue(row: IDataRow) {
+  getValue(row: IDataRow): T | null {
     return this.getRaw(row);
   }
 

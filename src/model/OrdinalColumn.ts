@@ -4,8 +4,7 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {
-  ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, toCategories,
-  toCategory
+  ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, toCategories
 } from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import NumberColumn, {INumberColumn} from './NumberColumn';
@@ -39,8 +38,6 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   readonly categories: ICategory[];
 
-  private missingCategory: ICategory | null;
-
   private readonly lookup = new Map<string, Readonly<ICategory>>();
 
   private currentFilter: ICategoricalFilter | null = null;
@@ -49,7 +46,6 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   constructor(id: string, desc: Readonly<ICategoricalNumberColumnDesc>) {
     super(id, desc);
     this.categories = toCategories(desc);
-    this.missingCategory = desc.missingCategory ? toCategory(desc.missingCategory, NaN) : null;
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('boxplot');
@@ -85,17 +81,17 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   }
 
   getValue(row: IDataRow) {
-    const v = this.getCategory(row);
-    return v ? v.value : NaN;
+    const v = this.getNumber(row);
+    return isNaN(v) ? null : v;
   }
 
   getCategory(row: IDataRow) {
     const v = super.getValue(row);
     if (!v) {
-      return this.missingCategory;
+      return null;
     }
     const vs = String(v);
-    return this.lookup.has(vs) ? this.lookup.get(vs)! : this.missingCategory;
+    return this.lookup.has(vs) ? this.lookup.get(vs)! : null;
   }
 
   getColor(row: IDataRow) {
@@ -127,11 +123,8 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   }
 
   getNumber(row: IDataRow) {
-    return this.getValue(row);
-  }
-
-  isMissing(row: IDataRow) {
-    return CategoricalColumn.prototype.isMissing.call(this, row);
+    const v = this.getCategory(row);
+    return v ? v.value : NaN;
   }
 
   getRawNumber(row: IDataRow) {
@@ -140,12 +133,13 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
-      if (this.isMissing(row)) {
+      const value = this.getNumber(row);
+      if (isNaN(value)) {
         return null;
       }
       return {
         name: this.getLabel(row),
-        value: this.getValue(row)
+        value
       };
     }
     return super.getExportValue(row, format);

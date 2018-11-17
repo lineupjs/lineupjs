@@ -88,8 +88,8 @@ export function colorPool() {
 /** @internal */
 export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
   //return the median row
-  const data = rows.map((r, i) => ({i, v: col.getNumber(r), m: col.isMissing(r)}));
-  const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
+  const data = rows.map((r, i) => ({i, v: col.getNumber(r)}));
+  const sorted = data.filter((r) => !isNaN(r.v)).sort((a, b) => numberCompare(a.v, b.v));
   const index = sorted[Math.floor(sorted.length / 2.0)];
   if (index === undefined) {
     return 0; //error case

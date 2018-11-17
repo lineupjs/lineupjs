@@ -1,7 +1,7 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import {IDataRow, IGroup} from './interfaces';
-import {missingGroup} from './missing';
+import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {equal} from '../internal';
@@ -92,9 +92,9 @@ export default class StringColumn extends ValueColumn<string> {
     return super.on(<any>type, listener);
   }
 
-  getValue(row: IDataRow): string {
+  getValue(row: IDataRow): string | null {
     const v: any = super.getValue(row);
-    return v == null ? '' : String(v);
+    return isMissingValue(v) ? null : String(v);
   }
 
   getLabel(row: IDataRow) {
@@ -177,7 +177,7 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   group(row: IDataRow): IGroup {
-    if (this.isMissing(row)) {
+    if (this.getValue(row) == null) {
       return missingGroup;
     }
 
@@ -205,7 +205,7 @@ export default class StringColumn extends ValueColumn<string> {
 
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
-    return v === '' ? null : v.toLowerCase();
+    return v === '' || v == null ? null : v.toLowerCase();
   }
 
   toCompareValueType() {

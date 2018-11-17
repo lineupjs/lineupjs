@@ -38,12 +38,6 @@ export interface INumberDesc {
    * @default .3n
    */
   numberFormat?: string;
-
-  /**
-   * missing value to use
-   * @default 0
-   */
-  missingValue?: number;
 }
 
 /**

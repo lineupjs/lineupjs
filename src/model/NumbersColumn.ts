@@ -1,6 +1,6 @@
 import {LazyBoxPlotData} from '../internal';
 import {toolbar, SortByDefault, dialogAddons} from './annotations';
-import ArrayColumn, {IArrayColumnDesc, IArrayDesc, spliceChanged} from './ArrayColumn';
+import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
@@ -119,7 +119,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   getNumbers(row: IDataRow) {
-    return this.getValue(row);
+    return this.getValues(row);
   }
 
   getNumber(row: IDataRow): number {
@@ -131,13 +131,17 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   getValue(row: IDataRow) {
-    const values = this.getRawValue(row);
-    return values.map((d) => isMissingValue(d) ? NaN : this.mapping.apply(d));
+    const v = this.getValues(row);
+    return v.every(isNaN) ? null : v;
+  }
+
+  getValues(row: IDataRow) {
+    return this.getRawValue(row).map((d) => isNaN(d) ? NaN : this.mapping.apply(d));
   }
 
   getRawValue(row: IDataRow) {
     const r = super.getValue(row);
-    return r == null ? [] : r;
+    return r == null ? [] : r.map((d) => isMissingValue(d) ? NaN : +d);
   }
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
@@ -145,7 +149,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   getLabels(row: IDataRow) {
-    return this.getValue(row).map(DEFAULT_FORMATTER);
+    return this.getValues(row).map(DEFAULT_FORMATTER);
   }
 
   getSortMethod() {
@@ -198,7 +202,6 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   on(type: typeof NumbersColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
   on(type: typeof NumbersColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
   on(type: typeof NumbersColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

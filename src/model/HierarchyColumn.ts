@@ -211,12 +211,9 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   group(row: IDataRow): IGroup {
-    if (this.isMissing(row)) {
-      return missingGroup;
-    }
     const base = this.getCategory(row);
     if (!base) {
-      return super.group(row);
+      return missingGroup;
     }
     return {name: base.label, color: base.color};
   }

@@ -37,11 +37,11 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     const numExampleRows = 5;
     const examples = <string[]>[];
     for (const row of rows) {
-      if (col.isMissing(row)) {
+      const v = col.getLink(row);
+      if (!v) {
         continue;
       }
-      const v = col.getLink(row);
-      examples.push(`<a target="_blank" rel="noopener"  href="${v ? v.href : ''}">${v ? v.alt : ''}</a>`);
+      examples.push(`<a target="_blank" rel="noopener"  href="${v.href}">${v.alt}</a>`);
       if (examples.length >= numExampleRows) {
         break;
       }

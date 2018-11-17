@@ -112,7 +112,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   getValue(row: IDataRow) {
     const v = this.getRawValue(row);
     if (v == null) {
-      return v;
+      return null;
     }
     const r: IBoxPlotData = {
       min: this.mapping.apply(v.min),

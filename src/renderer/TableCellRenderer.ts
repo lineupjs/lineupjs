@@ -63,7 +63,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getMapLabel(d));
+        const vs = rows.map((d) => col.getMapLabel(d));
 
         const entries = groupByKey(vs);
 
@@ -77,7 +77,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
       template: TableCellRenderer.template(col),
       update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const numExampleRows = 5;
-        const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getLabels(d));
+        const vs = rows.map((d) => col.getLabels(d));
         forEach(node, '[data-v]', (n: HTMLElement, i) => {
           const values = <string[]>[];
           for (const v of vs) {

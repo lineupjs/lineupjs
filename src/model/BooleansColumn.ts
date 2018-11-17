@@ -24,6 +24,6 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     if (v == null) {
       return NaN;
     }
-    return v.reduce((a, b) => a +(b ? 1 : 0), 0);
+    return v.reduce((a, b) => a + (b ? 1 : 0), 0);
   }
 }
