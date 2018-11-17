@@ -75,9 +75,9 @@ export default class ReduceColumn extends CompositeNumberColumn {
       case EAdvancedSortMethod.mean:
         return vs.reduce((a, b) => a + b, 0) / vs.length;
       case EAdvancedSortMethod.max:
-        return Math.max(...vs);
+        return vs.reduce((a, b) => Math.max(a, b), Number.NEGATIVE_INFINITY);
       case EAdvancedSortMethod.min:
-        return Math.min(...vs);
+        return vs.reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY);
       case EAdvancedSortMethod.median:
         return median(vs)!;
       case EAdvancedSortMethod.q1:
