@@ -256,7 +256,7 @@ export function computeHist<T>(arr: T[], acc: (row: T) => ICategory | null, cate
   }
   const entries: { cat: string; y: number }[] = categories.map((d) => ({cat: d.name, y: m.get(d.name)!}));
   return {
-    maxBin: Math.max(...entries.map((d) => d.y)),
+    maxBin: entries.reduce((a, b) => Math.max(a, b.y), Number.NEGATIVE_INFINITY),
     hist: entries,
     missing: missingCount
   };

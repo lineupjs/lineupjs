@@ -66,8 +66,11 @@ export default class DataBuilder extends LineUpBuilder {
    * triggers to derive the column descriptions for the given data
    * @param {string} columns optional enforced order of columns
    */
-  deriveColumns(...columns: string[]) {
-    this.columns.push(...deriveColumnDescriptions(this.data, {columns}));
+  deriveColumns(...columns: (string | string[])[]) {
+    const cols = (<string[]>[]).concat(...columns);
+    for (const c of deriveColumnDescriptions(this.data, {columns: cols})) {
+      this.columns.push(c);
+    }
     return this;
   }
 

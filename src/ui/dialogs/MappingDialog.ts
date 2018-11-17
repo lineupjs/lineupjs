@@ -193,7 +193,9 @@ export default class MappingDialog extends ADialog {
     const g = <SVGGElement>this.node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
     const domain = this.scale.domain;
     const range = this.scale.range;
-    this.mappingLines.push(...domain.map((d, i) => new MappingLine(g, this.normalizeRaw(d), range[i] * 100, this.mappingAdapter)));
+    for (let i = 0; i < domain.length; ++i) {
+      this.mappingLines.push(new MappingLine(g, this.normalizeRaw(domain[i]), range[i] * 100, this.mappingAdapter));
+    }
   }
 
   private update() {

@@ -3,6 +3,7 @@ import {isNumberColumn, isSupportType, isMapAbleColumn} from '../model';
 import Column, {IColumnDesc} from '../model/Column';
 import {colorPool} from '../model/internal';
 import Ranking from '../model/Ranking';
+import {concat} from '../internal';
 
 
 export interface IDeriveOptions {
@@ -63,7 +64,8 @@ function deriveType(label: string, value: any, column: number | string, data: an
     const vs = value[0];
     if (typeof vs === 'number') {
       base.type = 'numbers';
-      base.domain = extent((<number[]>[]).concat(...data.map((d) => d[column])));
+      const arrs = concat(data.map((d) => d[column]));
+      base.domain = extent(arrs);
       return base;
     }
     if (vs && value instanceof Date) {
@@ -76,7 +78,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
     }
     if (typeof value === 'string') {
       //maybe a categorical
-      const categories = new Set((<string[]>[]).concat(...data.map((d) => d[column])));
+      const categories = new Set(concat(data.map((d) => d[column])));
       if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
         base.type = 'categoricals';
         base.categories = cleanCategories(categories);

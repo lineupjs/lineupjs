@@ -15,6 +15,7 @@ import {renderMissingDOM} from './missing';
 import {cssClass, FILTERED_OPACITY} from '../styles';
 import {dragHandle, IDragHandleOptions} from '../internal/drag';
 import {color} from 'd3-color';
+import {concat} from '../internal';
 
 interface IHistData {
   maxBin: number;
@@ -240,7 +241,7 @@ function createHist(globalHist: IStatistics | null, guessedBins: number, rows: I
   let stats: IStatistics;
   if (isNumbersColumn(col)) {
     //multiple values
-    const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r)));
+    const values = concat(rows.map((r) => col.getNumbers(r)));
     stats = computeStats(values, [0, 1], bins);
   } else {
     stats = computeStats(rows.map((r) => col.getNumber(r)), [0, 1], bins);

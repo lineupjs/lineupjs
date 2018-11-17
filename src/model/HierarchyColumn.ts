@@ -251,7 +251,9 @@ export function resolveInnerNodes(node: ICategoryInternalNode) {
   let index = 0;
   while (index < queue.length) {
     const next = queue[index++];
-    queue.push(...next.children);
+    for (const n of next.children) {
+      queue.push(n);
+    }
   }
   return queue;
 }

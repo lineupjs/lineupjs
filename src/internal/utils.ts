@@ -48,3 +48,22 @@ export function clear(node: Node) {
     node.removeChild(node.lastChild);
   }
 }
+
+/**
+ * @internal
+ * to avoid [].concat(...) which doesn't work for large arrays
+ * @param arrs
+ */
+export function concat<T>(arrs: (T[] | T)[]): T[] {
+  const r: T[] = [];
+  for (const a of arrs) {
+    if (Array.isArray(a)) {
+      for (const ai of a) {
+        r.push(ai);
+      }
+    } else {
+      r.push(a);
+    }
+  }
+  return r;
+}

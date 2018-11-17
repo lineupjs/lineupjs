@@ -106,12 +106,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param data
    */
   setData(data: any[]) {
+    // TODO fire event that data has changed
     this._data = data;
     this._dataRows = toRows(data);
     this.reorderAll();
   }
 
   clearData() {
+    // TODO fire event that data has changed
     this.setData([]);
   }
 
@@ -120,8 +122,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param data
    */
   appendData(data: any[]) {
-    this._data.push(...data);
-    this._dataRows.push(...toRows(data));
+    for (const d of data) {
+      this._data.push(d);
+      this._dataRows.push({v: d, i: this._dataRows.length});
+    }
+    // TODO fire event that data has changed
     this.reorderAll();
   }
 
@@ -197,7 +202,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const types = ranking.toCompareValueType();
 
     const groupHelper = Array.from(groups.values()).map((g) => {
-      sortComplex(g.rows, types);
+      if (isSortedBy) {
+        sortComplex(g.rows, types);
+      }
       const groupData = Object.assign({rows: g.rows.map((d) => d.r)}, g.group);
       return {g, sort: ranking.toGroupCompareValue(groupData)};
     });

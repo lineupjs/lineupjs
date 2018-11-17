@@ -753,11 +753,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         r.push(Object.assign({rows: groupData}, group));
         return;
       }
-      r.push(...groupData.map((r, i) => Object.assign({
-        group,
-        relativeIndex: i,
-        meta: toGroupMeta(i, groupData.length)
-      }, r)));
+      for (let i = 0; i < groupData.length; ++i) {
+        r.push(Object.assign({
+          group,
+          relativeIndex: i,
+          meta: toGroupMeta(i, groupData.length)
+        }, groupData[i]));
+      }
     });
     return r;
   }

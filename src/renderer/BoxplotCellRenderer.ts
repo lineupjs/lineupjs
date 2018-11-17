@@ -1,4 +1,4 @@
-import {IBoxPlotData, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
+import {IBoxPlotData, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData, round, concat} from '../internal';
 import {IDataRow, IGroup, isNumberColumn, isMapAbleColumn} from '../model';
 import BoxPlotColumn from '../model/BoxPlotColumn';
 import Column from '../model/Column';
@@ -88,7 +88,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   private static createAggregatedBoxPlot(col: INumbersColumn, rows: IDataRow[], raw = false): IBoxPlotData {
     // concat all values
-    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumbers(r))));
+    const vs = concat(rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumbers(r))));
     return new LazyBoxPlotData(vs);
   }
 

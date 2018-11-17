@@ -1,4 +1,4 @@
-import {ICategoricalStatistics, IStatistics, round} from '../internal';
+import {ICategoricalStatistics, IStatistics, round, concat} from '../internal';
 import {INumberColumn, IDataRow, IGroup, isNumberColumn} from '../model';
 /**
  * a renderer rendering a bar for numerical columns
@@ -107,7 +107,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return update(n, vs, rows.map((r) => col.getLabel(r)), colors);
         }
         // concatenate all columns
-        const all = (<number[]>[]).concat(...vs.filter((vi: number) => !isNaN(vi)));
+        const all = concat(vs.filter((vi: number) => !isNaN(vi)));
         return update(n, all, all.map(DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
       }
     };
