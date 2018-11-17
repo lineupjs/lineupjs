@@ -137,23 +137,6 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     }
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const av = <Date[]>this.getValue(a).filter(Boolean);
-    const bv = <Date[]>this.getValue(b).filter(Boolean);
-    if (av === bv) {
-      return 0;
-    }
-    if (av.length === 0) {
-      return bv.length === 0 ? 0 : FIRST_IS_MISSING;
-    }
-    if (bv.length === 0) {
-      return -FIRST_IS_MISSING;
-    }
-    const as = compute(av, this.sort);
-    const bs = compute(bv, this.sort);
-    return as - bs;
-  }
-
   toCompareValue(row: IDataRow) {
     const vs = <Date[]>this.getValue(row).filter(Boolean);
     if (!vs) {

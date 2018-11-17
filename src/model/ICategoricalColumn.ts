@@ -1,4 +1,4 @@
-import Column, {ECompareValueType} from './Column';
+import Column, {ECompareValueType, ICompareValue} from './Column';
 import {IArrayColumn, isArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {colorPool} from './internal';
@@ -58,7 +58,7 @@ export function toCategory(cat: (string | Partial<ICategory>), value: number, ne
 }
 
 /** @internal */
-export function compareCategory(a: ICategory | null, b: ICategory | null) {
+function compareCategory(a: ICategory | null, b: ICategory | null) {
   const aNull = a == null || isNaN(a.value);
   const bNull = b == null || isNaN(b.value);
   if (aNull || a == null) {
@@ -76,7 +76,7 @@ export function compareCategory(a: ICategory | null, b: ICategory | null) {
 /** @internal */
 export function toCompareCategoryValue(v: ICategory | null) {
   if (v == null) {
-    return null;
+    return [NaN, null];
   }
   return [v.value, v.label.toLowerCase()];
 }
@@ -138,6 +138,21 @@ export function groupCompareCategory(a: IDataRow[], b: IDataRow[], col: ICategor
   }
   return aMostFrequent.cat.value - bMostFrequent.cat.value;
 }
+
+/** @internal */
+export function toGroupCompareCategoryValue(rows: IDataRow[], col: ICategoricalColumn): ICompareValue[] {
+  if (rows.length === 0) {
+    return [NaN, null, 0];
+  }
+  const mostFrequent = findMostFrequent(rows, col);
+  if (mostFrequent.cat == null) {
+    return [NaN, null, 0];
+  }
+  return [mostFrequent.cat.value, mostFrequent.cat.label.toLowerCase(), mostFrequent.count];
+}
+
+export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.NUMBER, ECompareValueType.STRING, ECompareValueType.NUMBER];
+
 
 /** @internal */
 export function toCategories(desc: ICategoricalDesc) {

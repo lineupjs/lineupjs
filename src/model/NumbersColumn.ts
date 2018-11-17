@@ -86,11 +86,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     this.setDefaultSummaryRenderer('histogram');
   }
 
-  compare(a: IDataRow, b: IDataRow): number {
-    return compareBoxPlot(this, a, b);
-  }
-
-  toCompareValue(row: IDataRow): number | null {
+  toCompareValue(row: IDataRow): number {
     return toCompareBoxPlotValue(this, row);
   }
 

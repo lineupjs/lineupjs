@@ -3,7 +3,7 @@ import {Category, toolbar, dialogAddons} from './annotations';
 import {IDataRow, IGroupData} from './interfaces';
 import {FIRST_IS_MISSING, isMissingValue, missingGroup, isUnknown} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
 import Column from './Column';
 import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter, isEqualDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup, isDefaultDateGrouper, defaultDateGrouper} from './IDateColumn';
@@ -145,25 +145,10 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return isDateIncluded(this.currentFilter, this.getDate(row));
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const av = this.getDate(a);
-    const bv = this.getDate(b);
-    if (av === bv) {
-      return 0;
-    }
-    if (!(av instanceof Date)) {
-      return (bv instanceof Date) ? FIRST_IS_MISSING : 0;
-    }
-    if (!(bv instanceof Date)) {
-      return FIRST_IS_MISSING * -1;
-    }
-    return av.getTime() - bv.getTime();
-  }
-
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
     if (!(v instanceof Date)) {
-      return null;
+      return NaN;
     }
     return v.getTime();
   }
@@ -196,10 +181,13 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     };
   }
 
-  groupCompare(a: IGroupData, b: IGroupData): number {
-    const av = choose(a.rows, this.currentGrouper, this).value;
-    const bv = choose(b.rows, this.currentGrouper, this).value;
-    return numberCompare(av, bv, false, false);
+  toCompareGroupValue(g: IGroupData): number {
+    const v = choose(g.rows, this.currentGrouper, this).value;
+    return v == null ? NaN : v;
+  }
+
+  toCompareGroupValueType() {
+    return ECompareValueType.NUMBER;
   }
 }
 

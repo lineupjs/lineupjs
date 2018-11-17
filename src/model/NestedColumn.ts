@@ -17,17 +17,6 @@ export function createNestedDesc(label: string = 'Nested') {
  */
 export default class NestedColumn extends MultiLevelCompositeColumn {
 
-  compare(a: IDataRow, b: IDataRow) {
-    const c = this.children;
-    for (const ci of c) {
-      const ciResult = ci.compare(a, b);
-      if (ciResult !== 0) {
-        return ciResult;
-      }
-    }
-    return 0;
-  }
-
   toCompareValue(row: IDataRow) {
     const r: ICompareValue[] = [];
     return r.concat(...this.children.map((d) => d.toCompareValue(row)));

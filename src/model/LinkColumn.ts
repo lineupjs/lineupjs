@@ -1,6 +1,6 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {patternFunction} from './internal';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
@@ -194,8 +194,20 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return StringColumn.prototype.setGroupCriteria.call(this, value);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return StringColumn.prototype.compare.call(this, a, b);
+  toCompareValue(a: IDataRow) {
+    return StringColumn.prototype.toCompareValue.call(this, a);
+  }
+
+  toCompareValueType() {
+    return StringColumn.prototype.toCompareValueType.call(this);
+  }
+
+  toCompareGroupValue(group: IGroupData) {
+    return StringColumn.prototype.toCompareGroupValue.call(this, group);
+  }
+
+  toCompareGroupValueType() {
+    return StringColumn.prototype.toCompareGroupValueType.call(this);
   }
 
   group(row: IDataRow): IGroup {

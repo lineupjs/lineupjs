@@ -196,10 +196,6 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return w ? w.getRange() : ['0', '1'];
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return BoxPlotColumn.prototype.compare.call(this, a, b);
-  }
-
   toCompareValue(row: IDataRow) {
     return BoxPlotColumn.prototype.toCompareValue.call(this, row);
   }
@@ -212,12 +208,12 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return BoxPlotColumn.prototype.group.call(this, row);
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return BoxPlotColumn.prototype.groupCompare.call(this, a, b);
-  }
-
   toCompareGroupValue(group: IGroupData) {
     return BoxPlotColumn.prototype.toCompareGroupValue.call(this, group);
+  }
+
+  toCompareGroupValueType() {
+    return BoxPlotColumn.prototype.toCompareGroupValueType.call(this);
   }
 
   insert(col: Column, index: number): Column | null {

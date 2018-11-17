@@ -176,30 +176,6 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const av = this.getSet(a);
-    const bv = this.getSet(b);
-    if (av.size === 0) {
-      return bv.size === 0 ? 0 : FIRST_IS_MISSING;
-    }
-    if (bv.size === 0) {
-      return -FIRST_IS_MISSING;
-    }
-    if (av.size !== bv.size) {
-      return av.size - bv.size;
-    }
-    // first one having a category wins
-    for (const cat of this.categories) {
-      if (av.has(cat)) {
-        return -1;
-      }
-      if (bv.has(cat)) {
-        return +1;
-      }
-    }
-    return 0;
-  }
-
   toCompareValue(row: IDataRow) {
     const v = this.getSet(row);
 

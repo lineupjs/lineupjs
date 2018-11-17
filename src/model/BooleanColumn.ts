@@ -177,16 +177,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     this.fire([BooleanColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const av = this.getValue(a);
-    const bv = this.getValue(b);
-    return av === bv ? 0 : (av < bv ? -1 : +1);
-  }
-
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
     if (v == null) {
-      return null;
+      return NaN;
     }
     return v ? 1 : -1;
   }

@@ -1,10 +1,10 @@
 import {Category, toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ICompareValue} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {
-  compareCategory, toCompareCategoryValue, groupCompareCategory,
+  toCompareCategoryValue,
   ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
-  isEqualCategoricalFilter, isCategoryIncluded, toCategories, toCategory, COMPARE_CATEGORY_VALUE_TYPES,
+  isEqualCategoricalFilter, isCategoryIncluded, toCategories, toCategory, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES,
 } from './ICategoricalColumn';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
 import {missingGroup} from './missing';
@@ -167,10 +167,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return compareCategory(this.getCategory(a), this.getCategory(b));
-  }
-
   toCompareValue(row: IDataRow) {
     return toCompareCategoryValue(this.getCategory(row));
   }
@@ -187,8 +183,12 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return {name: cat.label, color: cat.color};
   }
 
-  groupCompare(a: IGroupData, b: IGroupData): number {
-    return groupCompareCategory(a.rows, b.rows, this);
+  toCompareGroupValue(g: IGroupData): ICompareValue[] {
+    return toGroupCompareCategoryValue(g.rows, this);
+  }
+
+  toCompareGroupValueType() {
+    return COMPARE_GROUP_CATEGORY_VALUE_TYPES;
   }
 
   getGroupRenderer() {

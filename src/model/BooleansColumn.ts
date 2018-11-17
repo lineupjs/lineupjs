@@ -1,7 +1,6 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ISetColumn, toCategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_MISSING} from './missing';
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
 
@@ -20,26 +19,11 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     return new Set(this.categories.filter((_, i) => vs[i]));
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const aVal = this.getValue(a);
-    const bVal = this.getValue(b);
-    if (aVal == null) {
-      return bVal == null ? 0 : FIRST_IS_MISSING;
-    }
-    if (bVal == null) {
-      return -FIRST_IS_MISSING;
-    }
-
-    const aCat = aVal.filter((x) => x).length;
-    const bCat = bVal.filter((x) => x).length;
-    return (aCat - bCat);
-  }
-
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
     if (v == null) {
-      return null;
+      return NaN;
     }
-    return v.filter((x) => x).length;
+    return v.reduce((a, b) => a +(b ? 1 : 0), 0);
   }
 }

@@ -1,12 +1,12 @@
 import {format} from 'd3-format';
 import {equalArrays} from '../internal';
 import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import {IDataRow, IGroup, IGroupData} from './interfaces';
-import {groupCompare, isDummyNumberFilter, restoreFilter, toCompareGroupValue} from './internal';
+import {groupCompare, toCompareGroupValue} from './internal';
 import {
   default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
-  isNumberIncluded, noNumberFilter, numberCompare, isDummyNumberFilter, restoreNumberFilter
+  isNumberIncluded, noNumberFilter, isDummyNumberFilter, restoreNumberFilter
 } from './INumberColumn';
 import {
   createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,
@@ -223,10 +223,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.getRawValue(row, missingValue);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return numberCompare(this.getNumber(a), this.getNumber(b), this.isMissing(a), this.isMissing(b));
-  }
-
   toCompareValue(row: IDataRow) {
     return this.isMissing(row) ? null : this.getNumber(row);
   }
@@ -237,6 +233,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   toCompareGroupValue(group: IGroupData): number {
     return toCompareGroupValue(group.rows, this, <any>this.groupSortMethod);
+  }
+
+  toCompareGroupValueType() {
+    return ECompareValueType.NUMBER;
   }
 
   getOriginalMapping() {

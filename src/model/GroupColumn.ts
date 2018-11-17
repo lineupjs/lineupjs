@@ -1,5 +1,5 @@
 import {Category, SupportType, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType} from './Column';
 import {IGroupData} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
@@ -76,25 +76,14 @@ export default class GroupColumn extends Column {
     }
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
-    switch (this.groupSortMethod) {
-      case 'count':
-        return a.rows.length - b.rows.length;
-      default:
-        if (a.name === missingGroup.name) {
-          return b.name === missingGroup.name ? 0 : FIRST_IS_NAN;
-        }
-        if (b.name === missingGroup.name) {
-          return -FIRST_IS_NAN;
-        }
-        return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-    }
-  }
-
   toCompareGroupValue(group: IGroupData) {
     if (this.groupSortMethod === 'count') {
       return group.rows.length;
     }
     return group.name === missingGroup.name ? null : group.name.toLowerCase();
+  }
+
+  toCompareGroupValueType() {
+    return this.groupSortMethod === 'count' ? ECompareValueType.NUMBER : ECompareValueType.STRING;
   }
 }

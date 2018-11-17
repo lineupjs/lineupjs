@@ -74,7 +74,7 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
 export function toCompareBoxPlotValue(col: IBoxPlotColumn, row: IDataRow) {
   const v = col.getBoxPlotData(row);
   const method = <keyof IBoxPlotData>col.getSortMethod();
-  return v == null ? null : <number>v[method];
+  return v == null ? NaN : <number>v[method];
 }
 
 export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw' | 'normalized'): number {

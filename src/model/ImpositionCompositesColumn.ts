@@ -236,10 +236,6 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getValues(row) : [];
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return NumbersColumn.prototype.compare.call(this, a, b);
-  }
-
   toCompareValue(row: IDataRow) {
     return NumbersColumn.prototype.toCompareValue.call(this, row);
   }
@@ -248,12 +244,12 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return NumbersColumn.prototype.toCompareValueType.call(this);
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return NumbersColumn.prototype.groupCompare.call(this, a, b);
-  }
-
   toCompareGroupValue(group: IGroupData) {
     return NumbersColumn.prototype.toCompareGroupValue.call(this, group);
+  }
+
+  toCompareGroupValueType() {
+    return NumbersColumn.prototype.toCompareGroupValueType.call(this);
   }
 
   insert(col: Column, index: number): Column | null {

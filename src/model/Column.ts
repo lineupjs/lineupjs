@@ -535,16 +535,6 @@ export default class Column extends AEventDispatcher {
     return isMissingValue(this.getValue(row));
   }
 
-  /**
-   * compare function used to determine the order according to the values of the current column
-   * @param _a first element
-   * @param _b second element
-   * @return {number}
-   */
-  compare(_a: IDataRow, _b: IDataRow) {
-    return 0; //can't compare
-  }
-
   toCompareValue(_row: IDataRow): ICompareValue | ICompareValue[] {
     return 0;
   }
@@ -562,18 +552,12 @@ export default class Column extends AEventDispatcher {
     return defaultGroup;
   }
 
-  /**
-   * compares groups
-   * @param {IGroupData} a
-   * @param {IGroupData} b
-   * @return {number}
-   */
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-  }
-
   toCompareGroupValue(group: IGroupData): ICompareValue | ICompareValue[] {
     return group.name.toLowerCase();
+  }
+
+  toCompareGroupValueType(): ECompareValueType | ECompareValueType[] {
+    return ECompareValueType.STRING;
   }
 
   /**

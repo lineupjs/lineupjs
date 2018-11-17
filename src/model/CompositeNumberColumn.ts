@@ -108,20 +108,20 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return isMissingValue(this.compute(row));
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return NumberColumn.prototype.compare.call(this, a, b);
-  }
-
   toCompareValue(row: IDataRow) {
     return NumberColumn.prototype.toCompareValue.call(this, row);
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return NumberColumn.prototype.groupCompare.call(this, a, b);
+  toCompareValueType() {
+    return NumberColumn.prototype.toCompareValueType.call(this);
   }
 
   toCompareGroupValue(group: IGroupData) {
     return NumberColumn.prototype.toCompareGroupValue.call(this, group);
+  }
+
+  toCompareGroupValueType() {
+    return NumberColumn.prototype.toCompareGroupValueType.call(this);
   }
 
   getRenderer(): string {

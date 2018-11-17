@@ -176,18 +176,6 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([StringColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const aValue = this.getLabel(a);
-    const bValue = this.getLabel(b);
-    if (aValue === '') {
-      return bValue === '' ? 0 : FIRST_IS_MISSING; //same = 0
-    }
-    if (bValue === '') {
-      return -FIRST_IS_MISSING;
-    }
-    return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
-  }
-
   group(row: IDataRow): IGroup {
     if (this.isMissing(row)) {
       return missingGroup;

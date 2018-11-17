@@ -115,12 +115,6 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     return !old;
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const va = this.getValue(a) === true;
-    const vb = this.getValue(b) === true;
-    return va === vb ? 0 : (va < vb ? -1 : +1);
-  }
-
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row) === true;
     return v ? 1 : -1;
