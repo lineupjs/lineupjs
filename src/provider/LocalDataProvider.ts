@@ -170,6 +170,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     const isGroupedBy = ranking.getGroupCriteria().length > 0;
     const isSortedBy = ranking.getSortCriteria().length > 0;
+    const isGroupedSortedBy = ranking.getGroupSortCriteria().length > 0;
 
     if (!isGroupedBy && !isSortedBy && !filter) {
       // initial no sorting required just index mapping
@@ -205,12 +206,19 @@ export default class LocalDataProvider extends ACommonDataProvider {
       if (isSortedBy) {
         sortComplex(g.rows, types);
       }
-      const groupData = Object.assign({rows: g.rows.map((d) => d.r)}, g.group);
-      return {g, sort: ranking.toGroupCompareValue(groupData)};
+      if (isGroupedSortedBy) {
+        const groupData = Object.assign({rows: g.rows.map((d) => d.r)}, g.group);
+        return {g, sort: ranking.toGroupCompareValue(groupData)};
+      }
+      return {g, sort: null};
     });
 
     // sort groups
-    sortComplex(groupHelper, ranking.toGroupCompareValueType());
+    if (isGroupedSortedBy) {
+      sortComplex(<{sort: ICompareValue[]}[]>groupHelper, ranking.toGroupCompareValueType());
+    } else {
+      groupHelper.sort((a, b) => a.g.group.name.toLowerCase().localeCompare(b.g.group.name.toLowerCase()));
+    }
 
     let offset = 0;
     return groupHelper.map(({g}) => {
