@@ -27,81 +27,48 @@ export function chooseByLength(length: number) {
 const missingFloat = FIRST_IS_NAN > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 const missingInt = FIRST_IS_MISSING > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 const missingString = FIRST_IS_MISSING > 0 ? '\uffff' : '\u0000'; // first or last character
-const compare = new Intl.Collator();
 
-function floatCompare(a: number | null, b: number | null) {
-  const av = a == null || isNaN(a) ? missingFloat : a;
-  const bv = b == null || isNaN(b) ? missingFloat : b;
-  return av - bv;
-}
-
-function uintCompare(a: number | null, b: number | null) {
-  const av = a == null || isNaN(a) ? missingInt : a;
-  const bv = b == null || isNaN(b) ? missingInt : b;
-  return av - bv;
-}
-
-function stringCompareDesc(a: string | null, b: string | null) {
-  const av = a == null || a === '' ? missingString : a;
-  const bv = b == null || b === '' ? missingString : b;
-  return compare.compare(bv, av);
-}
-
-function floatCompareDesc(a: number | null, b: number | null) {
-  const av = a == null || isNaN(a) ? missingFloat : a;
-  const bv = b == null || isNaN(b) ? missingFloat : b;
-  return bv - av;
-}
-
-function uintCompareDesc(a: number | null, b: number | null) {
-  const av = a == null || isNaN(a) ? missingInt : a;
-  const bv = b == null || isNaN(b) ? missingInt : b;
-  return bv - av;
-}
-
-function stringCompare(a: string | null, b: string | null) {
-  const av = a == null || a === '' ? missingString : a;
-  const bv = b == null || b === '' ? missingString : b;
-  return compare.compare(av, bv);
-}
-
-function toFunction(f:  {asc: boolean, v: ECompareValueType}): (a: any, b: any)=>number {
-  switch(<number>f.v) { // to avoid having the type in the function
-  case 1: // ECompareValueType.BINARY:
-  case 2: // ECompareValueType.UINT:
-    return f.asc ? uintCompare : uintCompareDesc;
-  case 0: //ECompareValueType.FLOAT:
-    return f.asc ? floatCompare : floatCompareDesc;
-  case 3: // ECompareValueType.STRING:
-  default:
-    return f.asc ? stringCompare : stringCompareDesc;
-  }
+export function normalizeCompareValues(vs: ICompareValue[], comparators: {asc: boolean, v: ECompareValueType}[]) {
+  return comparators.map((d, i) => {
+    const v = vs[i];
+    switch(d.v) {
+      case ECompareValueType.BINARY:
+      case ECompareValueType.UINT:
+        return v == null || isNaN(<number>v) ? missingInt : v;
+      case ECompareValueType.STRING:
+        return v == null || v === '' ? missingString : v;
+      case ECompareValueType.FLOAT:
+        return v == null || isNaN(<number>v) ? missingFloat : v;
+    }
+  });
 }
 
 export function sortComplex<T extends {sort: ICompareValue[]}>(arr: T[], comparators: {asc: boolean, v: ECompareValueType}[]) {
-  if (arr.length < 2) {
+  if (arr.length < 2 || comparators.length === 0) {
     return arr;
   }
 
-  const functions = comparators.map(toFunction);
+  const comp = (asc: boolean, a: any, b: any) => {
+    const smaller = asc ? 1 : -1;
+    return a < b ? smaller : ((a > b) ? -smaller : 0);
+  };
 
-  switch(functions.length) {
-    case 0: return arr;
+  switch(comparators.length) {
     case 1:
-      const f = functions[0]!;
-      return arr.sort((a, b) => f(a.sort[0], b.sort[0]));
+      const f = comparators[0]!.asc;
+      return arr.sort((a, b) => comp(f, a.sort[0], b.sort[0]));
     case 2:
-      const f1 = functions[0]!;
-      const f2 = functions[0]!;
+      const f1 = comparators[0]!.asc;
+      const f2 = comparators[0]!.asc;
       return arr.sort((a, b) => {
-        const r = f1(a.sort[0], b.sort[0]);
-        return r !== 0 ? r : f2(a.sort[1], b.sort[1]);
+        const r = comp(f1, a.sort[0], b.sort[0]);
+        return r !== 0 ? r : comp(f2, a.sort[1], b.sort[1]);
       });
     default:
-      const l = functions.length;
+      const l = comparators.length;
       return arr.sort((a, b) => {
         for (let i = 0; i < l; ++i) {
-          const r = functions[i](a.sort[i], b.sort[i]);
+          const r = comp(comparators[i].asc, a.sort[i], b.sort[i]);
           if (r !== 0) {
             return r;
           }
@@ -124,15 +91,15 @@ function sort2indices(arr: {i: number}[], rawLength: number) {
   return {order, index2pos};
 }
 
-function sort(rawLength: number, arr: {i: number, sort: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]) {
-  const a = comparators ? sortComplex(arr, comparators) : arr;
+function sort(rawLength: number, arr: {i: number, sort?: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]) {
+  const a = comparators ? sortComplex(<{i: number, sort: ICompareValue[]}[]>arr, comparators) : arr;
   const r = sort2indices(a, rawLength);
 
   return Promise.resolve(r);
 }
 
 export interface ISortWorker {
-  sort(rawLength: number, arr: {i: number, sort: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]): Promise<{order: IndicesArray, index2pos: IndicesArray}>;
+  sort(rawLength: number, arr: {i: number, sort?: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]): Promise<{order: IndicesArray, index2pos: IndicesArray}>;
   terminate(): void;
 }
 
@@ -145,7 +112,7 @@ interface ISortMessageRequest {
   uid: number;
 
   rawLength: number;
-  arr: {i: number, sort: ICompareValue[]}[];
+  arr: {i: number, sort?: ICompareValue[]}[];
   comparators?: {asc: boolean, v: ECompareValueType}[];
 }
 
@@ -164,7 +131,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
       return;
     }
 
-    const arr = r.comparators ? sortComplex(r.arr, r.comparators) : r.arr;
+    const arr = r.comparators ? sortComplex(<{i: number, sort: ICompareValue[]}[]>r.arr, r.comparators) : r.arr;
     const res = sort2indices(arr, r.rawLength);
 
     self.postMessage(<ISortMessageResponse>{
@@ -182,24 +149,13 @@ export class WorkerSortWorker implements ISortWorker {
   constructor() {
     this.worker = createWorker([
       chooseByLength.toString(),
-      `var missingFloat = ${missingFloat};`,
-      `var missingInt = ${missingInt};`,
-      `var missingString = '${missingString}';`,
-      `var compare = new Intl.Collator();`,
-      floatCompare,
-      uintCompare,
-      stringCompare,
-      floatCompareDesc,
-      uintCompareDesc,
-      stringCompareDesc,
-      toFunction.toString(),
       sortComplex.toString(),
       sort2indices.toString(),
       toFunctionBody(sortWorkerMain)
     ]);
   }
 
-  sort(rawLength: number, arr: {i: number, sort: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]) {
+  sort(rawLength: number, arr: {i: number, sort?: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]) {
     return new Promise<{order: IndicesArray, index2pos: IndicesArray}>((resolve) => {
       const uid = Math.random();
 

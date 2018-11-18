@@ -9,7 +9,7 @@ import Column, {
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker} from './sort';
+import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker, normalizeCompareValues} from './sort';
 import {range} from 'd3-array';
 import ADataProvider from './ADataProvider';
 
@@ -29,7 +29,7 @@ export interface ILocalDataProviderOptions {
 
 interface ISortHelper {
   group: IGroup;
-  rows: {i: number, sort: ICompareValue[]}[];
+  rows: {i: number, sort?: ICompareValue[]}[];
 }
 
 /**
@@ -175,13 +175,15 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     const groups = new Map<string, ISortHelper>();
 
+    const types = isSortedBy ? ranking.toCompareValueType() : undefined;
+
     for (const r of this._dataRows) {
       if (filter && !filter(r)) {
         continue;
       }
       const group = ranking.grouper(r) || defaultGroup;
       const groupKey = group.name.toLowerCase();
-      const sort = ranking.toCompareValue(r);
+      const sort = isSortedBy ? normalizeCompareValues(ranking.toCompareValue(r), types!) : undefined;
       if (groups.has(groupKey)) {
         groups.get(groupKey)!.rows.push({i: r.i, sort});
       } else {
@@ -193,7 +195,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return [];
     }
 
-    const types = isSortedBy ?ranking.toCompareValueType() : undefined;
 
     return Promise.all(Array.from(groups.values()).map((g) => {
       const group = g.group;
