@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "4.0.0-alpha.7",
+  "version": "4.0.0-alpha.8",
   "author": {
     "name": "Samuel Gratzl",
     "email": "sam@sgratzl.com",
