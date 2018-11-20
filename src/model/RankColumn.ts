@@ -43,8 +43,8 @@ export default class RankColumn extends Column {
     let offset = 0;
     for (const group of groups) {
       const rank = group.index2pos[row.i];
-      if (typeof rank === 'number' && !isNaN(rank)) {
-        return rank + 1 + offset; // starting with 1
+      if (typeof rank === 'number' && !isNaN(rank) && rank > 0) {
+        return rank + offset;
       }
       offset += group.order.length;
     }

@@ -173,7 +173,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
       // initial no sorting required just index mapping
       const order = chooseByLength(this._data.length);
       order.set(range(this._data.length));
-      const index2pos = order.slice();
+      const index2pos = chooseByLength(this._data.length);
+      index2pos.set(range(1, this._data.length + 1));
       return [Object.assign({order, index2pos}, defaultGroup)];
     }
 

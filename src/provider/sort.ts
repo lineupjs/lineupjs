@@ -86,7 +86,7 @@ function sort2indices(arr: {i: number}[], rawLength: number) {
   for (let i = 0; i < arr.length; ++i) {
     const ri = arr[i].i;
     order[i] = ri;
-    index2pos[ri] = i;
+    index2pos[ri] = i + 1; // shift by one
   }
   return {order, index2pos};
 }
