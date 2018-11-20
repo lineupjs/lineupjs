@@ -40,12 +40,12 @@ export function clear(node: Node) {
 export function concat<T>(arrs: (T[] | T)[]): T[] {
   const r: T[] = [];
   for (const a of arrs) {
-    if (Array.isArray(a)) {
-      for (const ai of a) {
-        r.push(ai);
-      }
-    } else {
+    if (!Array.isArray(a)) {
       r.push(a);
+      continue;
+    }
+    for (const ai of a) {
+      r.push(ai);
     }
   }
   return r;
