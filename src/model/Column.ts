@@ -571,23 +571,6 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
-   * flag whether any filter is applied after sorting
-   * @return {boolean}
-   */
-  isFilteredRank() {
-    return false;
-  }
-
-  /**
-   * predicate whether the current row should be included
-   * @param row
-   * @return {boolean}
-   */
-  filterRank(row: IDataRow, _relativeRank: number, _rank: number, _group: IGroup) {
-    return row != null;
-  }
-
-  /**
    * determines the renderer type that should be used to render this column. By default the same type as the column itself
    * @return {string}
    */

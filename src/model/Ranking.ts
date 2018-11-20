@@ -691,14 +691,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.columns.every((d) => d.filter(row));
   }
 
-  isFilteredRank() {
-    return this.columns.some((d) => d.isFilteredRank());
-  }
-
-  filterRank(row: IDataRow, rank: number, relativeRank: number, group: IGroup) {
-    return this.columns.every((d) => d.filterRank(row, rank, relativeRank, group));
-  }
-
   findMyRanker() {
     return this;
   }

@@ -4,7 +4,8 @@ import Column, {
   IOrderedGroup, ICompareValue,
   NumberColumn,
   IndicesArray,
-  mapIndices
+  mapIndices,
+  IGroupMeta
 } from '../model';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
@@ -146,28 +147,16 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
     //do the optional filtering step
     let filter: ((d: IDataRow) => boolean) | null = null;
-    let rankFilter: ((d: IDataRow, rank: number, relativeRank: number, group: IGroup) => boolean) | null = null;
 
     if (this.options.filterGlobally) {
       const filtered = this.getRankings().filter((d) => d.isFiltered());
       if (filtered.length === 1) {
-        rankFilter = filtered[0].filter.bind(filtered[0]);
+        filter = filtered[0].filter.bind(filtered[0]);
       } else if (filtered.length > 1) {
         filter = (d: IDataRow) => filtered.every((f) => f.filter(d));
       }
-      const filteredRank = this.getRankings().filter((d) => d.isFilteredRank());
-      if (filteredRank.length === 1) {
-        rankFilter = filteredRank[0].filterRank.bind(filteredRank[0]);
-      } else if (filteredRank.length > 1) {
-        rankFilter = (d: IDataRow, rank: number, relativeRank: number, group: IGroup) => filteredRank.every((f) => f.filterRank(d, rank, relativeRank, group));
-      }
-    } else {
-      if (ranking.isFiltered()) {
-        filter = ranking.filter.bind(ranking);
-      }
-      if (ranking.isFilteredRank()) {
-        rankFilter = ranking.filterRank.bind(ranking);
-      }
+    } else if (ranking.isFiltered()) {
+      filter = ranking.filter.bind(ranking);
     }
 
     if (this.filter) {
@@ -185,7 +174,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const order = chooseByLength(this._data.length);
       order.set(range(this._data.length));
       const index2pos = order.slice();
-      // TODO rank filter
       return [Object.assign({order, index2pos}, defaultGroup)];
     }
 
@@ -222,7 +210,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         // compute sort group value
         let sort: ICompareValue[] | null = null;
         if (isGroupedSortedBy) {
-          const groupData = Object.assign({rows: Array.from(order).map((d) => this._data[d])}, group);
+          const groupData = Object.assign({rows: Array.from(order).map((d) => this._data[d]), meta: <IGroupMeta>'first last'}, group);
           sort = ranking.toGroupCompareValue(groupData);
         }
         return {o, sort};
@@ -235,9 +223,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
       } else {
         groupHelper.sort((a, b) => a.o.name.toLowerCase().localeCompare(b.o.name.toLowerCase()));
       }
-
-      // TODO rank fiter
-
       return groupHelper.map((d) => d.o);
     });
   }
