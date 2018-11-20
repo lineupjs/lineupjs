@@ -98,6 +98,7 @@ export interface IGroupItem extends IDataRow {
 
 export interface IGroupData extends Readonly<IGroup> {
   readonly rows: IDataRow[];
+  readonly meta: IGroupMeta;
 }
 
 /** @internal */

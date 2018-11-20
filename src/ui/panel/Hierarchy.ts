@@ -75,7 +75,7 @@ export default class Hierarchy {
       const item = cache.get(col.id);
       if (item) {
         node.appendChild(item);
-        updateHeader(item, col);
+        updateHeader(item, col, 0);
         return;
       }
       const addons = getToolbarDialogAddons(col, addonKey, this.ctx);
@@ -116,7 +116,7 @@ export default class Hierarchy {
 
       extras(d, last);
 
-      updateHeader(last, col);
+      updateHeader(last, col, 0);
     });
   }
 

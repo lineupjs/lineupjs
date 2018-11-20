@@ -11,7 +11,7 @@ import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/Aggregat
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
 import Ranking, {orderChanged, addColumn, removeColumn} from '../model/Ranking';
-import {exportRanking, IExportOptions} from './utils';
+import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
 import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
@@ -72,7 +72,7 @@ export declare function jumpToNearest(dataIndices: number[]): void;
  * @asMemberOf ADataProvider
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup|IGroup[], value: boolean): void;
+export declare function aggregate(ranking: Ranking, group: IGroup|IGroup[], value: boolean, showTopN: number): void;
 
 /**
  * a basic data provider holding the data and rankings
@@ -105,8 +105,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   private readonly selection = new OrderedSet<number>();
 
-  //ranking.id@group.name
-  private readonly aggregations = new Set<string>();
+  //Map<ranking.id@group.name, showTopN>
+  private readonly aggregations = new Map<string, number>();
 
   private uid = 0;
 
@@ -368,8 +368,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       (<ISelectionColumnDesc>desc).setter = (row: IDataRow, value: boolean) => value ? this.select(row.i) : this.deselect(row.i);
       (<ISelectionColumnDesc>desc).setterAll = (rows: IDataRow[], value: boolean) => value ? this.selectAll(rows.map((d) => d.i)) : this.deselectAll(rows.map((d) => d.i));
     } else if (desc.type === 'aggregate') {
-      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
-      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);
+      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.getTopNAggregated(ranking, group);
+      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: number) => this.setTopNAggregated(ranking, group, value);
     }
     return desc;
   }
@@ -460,7 +460,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       '$schema': SCHEMA_REF,
       uid: this.uid,
       selection: this.getSelection(),
-      aggregations: Array.from(this.aggregations),
+      aggregations: map2Object(this.aggregations),
       rankings: this.rankings.map((r) => r.dump(this.toDescRef.bind(this)))
     };
   }
@@ -525,7 +525,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }
     if (dump.aggregations) {
       this.aggregations.clear();
-      dump.aggregations.forEach((a: string) => this.aggregations.add(a));
+      if (Array.isArray(dump.aggregations)) {
+        dump.aggregations.forEach((a: string) => this.aggregations.set(a, 0));
+      } else {
+        object2Map(dump.aggregations).forEach((v, k) => this.aggregations.set(k, v));
+      }
     }
 
 
@@ -554,17 +558,22 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   abstract deriveDefault(addSupporType?: boolean): Ranking;
 
   isAggregated(ranking: Ranking, group: IGroup) {
+    return this.getTopNAggregated(ranking, group) >= 0;
+  }
+
+  getTopNAggregated(ranking: Ranking, group: IGroup) {
     let g: IGroup | undefined | null = group;
     while (g) {
       const key = `${ranking.id}@${toGroupID(g)}`;
       if (this.aggregations.has(key)) {
         // propagate to leaf
-        this.aggregations.add(`${ranking.id}@${toGroupID(group)}`);
-        return true;
+        const v = this.aggregations.get(key)!;
+        this.aggregations.set(`${ranking.id}@${toGroupID(group)}`, v);
+        return v;
       }
       g = g.parent;
     }
-    return false;
+    return -1;
   }
 
   private unaggregateParents(ranking: Ranking, group: IGroup) {
@@ -576,36 +585,41 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+    return this.setTopNAggregated(ranking, group, value ? 0 : -1);
+  }
+
+  setTopNAggregated(ranking: Ranking, group: IGroup, value: number) {
     this.unaggregateParents(ranking, group);
     const key = `${ranking.id}@${toGroupID(group)}`;
-    const current = this.isAggregated(ranking, group);
+    const current = this.getTopNAggregated(ranking, group);
     if (current === value) {
       return;
     }
-    if (value) {
-      this.aggregations.add(key);
+    if (value >= 0) {
+      this.aggregations.set(key, value);
     } else {
       this.aggregations.delete(key);
     }
     this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
   }
 
-  aggregateAllOf(ranking: Ranking, aggregateAll: boolean) {
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number) {
+    const v = typeof aggregateAll === 'boolean' ? (aggregateAll ? 0 : -1) : aggregateAll;
     const groups = ranking.getGroups();
     groups.forEach((group) => {
       this.unaggregateParents(ranking, group);
-      const current = this.isAggregated(ranking, group);
-      if (current === aggregateAll) {
+      const current = this.getTopNAggregated(ranking, group);
+      if (current === v) {
         return;
       }
       const key = `${ranking.id}@${toGroupID(group)}`;
-      if (aggregateAll) {
-        this.aggregations.add(key);
+      if (v >= 0) {
+        this.aggregations.set(key, v);
       } else {
         this.aggregations.delete(key);
       }
     });
-    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, aggregateAll);
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, v >= 0, v);
   }
 
   /**

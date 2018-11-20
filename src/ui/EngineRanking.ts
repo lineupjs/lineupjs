@@ -553,6 +553,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     if (isGroup) {
       node.classList.remove(engineCssClass('highlighted'));
+      const {meta} = this.renderCtx.getGroup(rowIndex);
+      if (!meta) {
+        delete node.dataset.meta;
+      } else {
+        node.dataset.meta = meta;
+      }
       super.updateRow(node, rowIndex);
       return;
     }
@@ -731,33 +737,27 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
-    if (groups.length === 1) {
-      // simple case
-      if (provider.isAggregated(this.ranking, groups[0])) {
-        // just a single row
-        return [Object.assign({rows: data}, groups[0])];
-      }
-      // simple ungrouped case
-      return data.map((r, i) => Object.assign({group: groups[0], relativeIndex: i, meta: toGroupMeta(i, data.length)}, r));
-    }
+    const r = <(IGroupItem | IGroupData)[]>[];
 
     //multiple groups
     let offset = 0;
-    const r = <(IGroupItem | IGroupData)[]>[];
     groups.forEach((group) => {
       const length = group.order.length;
-      const groupData = data.slice(offset, offset + length);
+      // avoid copy
+      const groupData = groups.length === 1 ? data : data.slice(offset, offset + length);
       offset += length;
 
-      if (provider.isAggregated(this.ranking, group)) {
-        r.push(Object.assign({rows: groupData}, group));
-        return;
+      const n = provider.getTopNAggregated(this.ranking, groups[0]);
+      if (n >= 0) {
+        r.push(Object.assign({rows: groupData, meta: toGroupMeta(0, n)}, group));
       }
-      for (let i = 0; i < groupData.length; ++i) {
+      const slice = Math.min(n > 0 ? n : Number.POSITIVE_INFINITY, groupData.length);
+      const metaShift = n > 0 ? 1 : 0; // shift by one to avoid having a start
+      for (let i = 0; i < slice; ++i) {
         r.push(Object.assign({
           group,
           relativeIndex: i,
-          meta: toGroupMeta(i, groupData.length)
+          meta: toGroupMeta(i + metaShift, slice + metaShift)
         }, groupData[i]));
       }
     });

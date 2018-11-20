@@ -65,7 +65,11 @@ export interface IDataProvider extends AEventDispatcher {
 
   isAggregated(ranking: Ranking, group: IGroup): boolean;
 
-  aggregateAllOf(ranking: Ranking, aggregateAll: boolean): void;
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number): void;
+
+  getTopNAggregated(ranking: Ranking, group: IGroup): number;
+
+  setTopNAggregated(ranking: Ranking, group: IGroup, value: number): void;
 }
 
 
@@ -132,7 +136,7 @@ export interface IDataProviderDump {
   /**
    * list of aggregated group paths
    */
-  aggregations?: string[];
+  aggregations?: string[] | { [key: string]: number};
   /**
    * ranking dumps
    */

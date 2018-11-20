@@ -44,8 +44,7 @@
   }
 }
 
-.#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'],
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-aggregate {
+.#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'] {
   padding-right: $lu_aggregate_square_bracket_width;
   cursor: pointer;
 
@@ -57,8 +56,6 @@
 }
 
 .#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-aggregate::before {
-  @include lu_icons();
-
   content: $lu_icon_caret_right;
 }
 

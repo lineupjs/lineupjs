@@ -48,7 +48,7 @@ export interface IGroupCellRenderer {
    * @param group the group to render
    * @param rows the data items
    */
-  update(node: HTMLElement, group: IGroup, rows: IDataRow[]): void;
+  update(node: HTMLElement, group: IGroup, rows: IDataRow[], meta: IGroupMeta): void;
 }
 
 export interface ISummaryRenderer {

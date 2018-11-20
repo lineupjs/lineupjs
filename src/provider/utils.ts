@@ -213,3 +213,20 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
   });
   return r.join(opts.newline);
 }
+
+
+/** @internal */
+export function map2Object<T>(map: Map<string, T>) {
+  const r : { [key: string]: T} = {};
+  map.forEach((v, k) => r[k] = v);
+  return r;
+}
+
+/** @internal */
+export function object2Map<T>(obj: { [key: string]: T}) {
+  const r = new Map<string, T>();
+  for (const k of Object.keys(obj)) {
+    r.set(k, obj[k]);
+  }
+  return r;
+}

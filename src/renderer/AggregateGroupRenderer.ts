@@ -4,6 +4,8 @@ import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
+const AGGREGATE_TO_TOP = 5;
+
 const SHIFT = 0;
 
 /** @internal */
@@ -19,11 +21,15 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return {
       template: `<div title="Collapse Group"></div>`,
       update(node: HTMLElement, _row: IDataRow, _i: number, group: IGroup, meta: IGroupMeta) {
-        node.dataset.meta = meta || undefined;
+        if (!meta) {
+          delete node.dataset.meta;
+        } else {
+          node.dataset.meta = meta;
+        }
         node.onclick = (event) => {
           event.preventDefault();
           event.stopPropagation();
-          col.setAggregated(group, true);
+          col.setAggregated(group, AGGREGATE_TO_TOP);
         };
       },
       render(ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup, meta: IGroupMeta) {
@@ -37,7 +43,12 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
   createGroup(col: AggregateGroupColumn) {
     return {
       template: `<div title="Expand Group"></div>`,
-      update(node: HTMLElement, group: IGroup) {
+      update(node: HTMLElement, group: IGroup, _rows: IDataRow[], meta: IGroupMeta) {
+        if (!meta) {
+          delete node.dataset.meta;
+        } else {
+          node.dataset.meta = meta;
+        }
         node.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
@@ -54,7 +65,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       template: `<div title="(Un)Aggregate All" class="${cdown}"></div>`,
       update: (node: HTMLElement) => {
         const ranking = col.findMyRanker();
-        const right = Boolean(ranking && ranking.getGroups().every((g) => col.isAggregated(g)));
+        const right = Boolean(ranking && ranking.getGroups().every((g) => col.isAggregated(g) >= 0));
 
         node.classList.toggle(cdown, !right);
         node.classList.toggle(cright, right);
@@ -68,7 +79,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           const aggregate = node.classList.contains(cdown);
           node.classList.toggle(cdown, !aggregate);
           node.classList.toggle(cright, aggregate);
-          context.provider.aggregateAllOf(ranking, aggregate);
+          context.provider.aggregateAllOf(ranking, aggregate ? AGGREGATE_TO_TOP : -1);
         };
       }
     };

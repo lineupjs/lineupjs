@@ -73,9 +73,9 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
 
 /** @internal */
-export function updateHeader(node: HTMLElement, col: Column) {
+export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
   const label = <HTMLElement>node.querySelector(`.${cssClass('label')}`)!;
-  label.innerHTML = col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label;
+  label.innerHTML = col.getWidth() < minWidth ? '&nbsp;' : col.label;
   node.title = col.description ? `${col.label}\n${col.description}` : col.label;
   node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;

@@ -57,10 +57,10 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     const {cols} = createData(col, context, false, ERenderMode.GROUP);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
-      update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, group: IGroup, rows: IDataRow[], meta: IGroupMeta) => {
         matchColumns(n, cols, context);
         forEachChild(n, (ni: HTMLElement, j) => {
-          cols[j].groupRenderer!.update(ni, group, rows);
+          cols[j].groupRenderer!.update(ni, group, rows, meta);
         });
       }
     };

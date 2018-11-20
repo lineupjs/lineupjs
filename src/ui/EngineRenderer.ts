@@ -111,7 +111,6 @@ export default class EngineRenderer extends AEventDispatcher {
     //apply rules
     {
       this.style.addRule('lineup_groupPadding', `
-       .${this.style.cssClasses.tr}[data-agg=group],
        .${this.style.cssClasses.tr}[data-meta~=last]`, {
           marginBottom: `${options.groupPadding}px`
         });

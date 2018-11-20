@@ -136,7 +136,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     const useGrid = true;
     return {
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
-      update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, group: IGroup, rows: IDataRow[], meta: IGroupMeta) => {
         matchColumns(n, cols, context);
 
         const children = <HTMLElement[]>Array.from(n.children);
@@ -150,7 +150,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           } else {
             cnode.style.gridColumnStart = (ci + 1).toString();
           }
-          col.groupRenderer!.update(cnode, group, rows);
+          col.groupRenderer!.update(cnode, group, rows, meta);
         });
       }
     };

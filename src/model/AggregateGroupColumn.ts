@@ -14,17 +14,19 @@ export function createAggregateDesc(label: string = 'Aggregate Groups') {
 }
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {
-  isAggregated(ranking: Ranking, group: IGroup): boolean;
+  // -1 = no, 0 = fully aggregated, N = show top N
+  isAggregated(ranking: Ranking, group: IGroup): number;
 
-  setAggregated(ranking: Ranking, group: IGroup, value: boolean): void;
+  setAggregated(ranking: Ranking, group: IGroup, value: number): void;
 }
 
 /**
  * emitted upon changing of the aggregate attribute
+ * @aparam value -1 = no, 0 = fully aggregated, N = show top N
  * @asMemberOf AggregateGroupColumn
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean): void;
+export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean, showTop: number): void;
 
 /**
  * a checkbox column for selections
@@ -70,17 +72,18 @@ export default class AggregateGroupColumn extends Column {
     return false;
   }
 
-  setAggregated(group: IGroup, value: boolean) {
+  setAggregated(group: IGroup, value: boolean | number) {
+    const n = typeof value === 'boolean' ? (value ? 0 : -1): value;
     const ranking = this.findMyRanker()!;
     const current = ((<IAggregateGroupColumnDesc>this.desc).isAggregated) && (<IAggregateGroupColumnDesc>this.desc).isAggregated(ranking, group);
-    if (current === value) {
+    if (current === n) {
       return true;
     }
 
     if ((<IAggregateGroupColumnDesc>this.desc).setAggregated) {
-      (<IAggregateGroupColumnDesc>this.desc).setAggregated(ranking, group, value);
+      (<IAggregateGroupColumnDesc>this.desc).setAggregated(ranking, group, n);
     }
-    this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, value);
+    this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, n >= 0, n);
     return false;
   }
 }

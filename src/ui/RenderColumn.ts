@@ -145,7 +145,7 @@ export default class RenderColumn implements IColumn {
     }
     if (isGroup) {
       const g = this.ctx.getGroup(index);
-      this.renderers!.group.update(node, g, g.rows);
+      this.renderers!.group.update(node, g, g.rows, g.meta);
     } else {
       const r = this.ctx.getRow(index);
       this.renderers!.single.update(node, r, r.relativeIndex, r.group, r.meta);
