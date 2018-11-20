@@ -9,7 +9,7 @@ import Column, {
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker, normalizeCompareValues} from './sort';
+import {ISortWorker, sortComplex, chooseByLength, local, normalizeCompareValues} from './sort';
 import {range} from 'd3-array';
 import ADataProvider from './ADataProvider';
 
@@ -49,7 +49,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private sortWorker: ISortWorker = new WorkerSortWorker();
+  private sortWorker: ISortWorker = local; // new WorkerSortWorker();
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -146,13 +146,28 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
     //do the optional filtering step
     let filter: ((d: IDataRow) => boolean) | null = null;
+    let rankFilter: ((d: IDataRow, rank: number, relativeRank: number, group: IGroup) => boolean) | null = null;
+
     if (this.options.filterGlobally) {
       const filtered = this.getRankings().filter((d) => d.isFiltered());
-      if (filtered.length > 0) {
+      if (filtered.length === 1) {
+        rankFilter = filtered[0].filter.bind(filtered[0]);
+      } else if (filtered.length > 1) {
         filter = (d: IDataRow) => filtered.every((f) => f.filter(d));
       }
-    } else if (ranking.isFiltered()) {
-      filter = (d) => ranking.filter(d);
+      const filteredRank = this.getRankings().filter((d) => d.isFilteredRank());
+      if (filteredRank.length === 1) {
+        rankFilter = filteredRank[0].filterRank.bind(filteredRank[0]);
+      } else if (filteredRank.length > 1) {
+        rankFilter = (d: IDataRow, rank: number, relativeRank: number, group: IGroup) => filteredRank.every((f) => f.filterRank(d, rank, relativeRank, group));
+      }
+    } else {
+      if (ranking.isFiltered()) {
+        filter = ranking.filter.bind(ranking);
+      }
+      if (ranking.isFilteredRank()) {
+        rankFilter = ranking.filterRank.bind(ranking);
+      }
     }
 
     if (this.filter) {
@@ -170,6 +185,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const order = chooseByLength(this._data.length);
       order.set(range(this._data.length));
       const index2pos = order.slice();
+      // TODO rank filter
       return [Object.assign({order, index2pos}, defaultGroup)];
     }
 
@@ -219,6 +235,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
       } else {
         groupHelper.sort((a, b) => a.o.name.toLowerCase().localeCompare(b.o.name.toLowerCase()));
       }
+
+      // TODO rank fiter
 
       return groupHelper.map((d) => d.o);
     });
