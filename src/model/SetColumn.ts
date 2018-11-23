@@ -2,17 +2,26 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IArrayColumn} from './IArrayColumn';
-import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories} from './ICategoricalColumn';
+import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories, ISetColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {FIRST_IS_MISSING} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
 
 export interface ISetDesc extends ICategoricalDesc {
   separator?: string;
 }
 
 export declare type ISetColumnDesc = ISetDesc & IValueColumnDesc<string[]>;
+
+/**
+ * emitted when the color mapping property changes
+ * @asMemberOf SetColumn
+ * @event
+ */
+export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+
 
 /**
  * emitted when the filter property changes
@@ -24,16 +33,19 @@ export declare function filterChanged(previous: ICategoricalFilter | null, curre
 /**
  * a string column with optional alignment
  */
-@toolbar('filterCategorical')
+@toolbar('filterCategorical', 'colorMappedCategorical')
 @Category('categorical')
-export default class SetColumn extends ValueColumn<string[]> implements IArrayColumn<boolean> {
+export default class SetColumn extends ValueColumn<string[]> implements IArrayColumn<boolean>, ISetColumn {
   static readonly EVENT_FILTER_CHANGED = CategoricalColumn.EVENT_FILTER_CHANGED;
+  static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   readonly categories: ICategory[];
 
   private readonly separator: RegExp;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
+
+  private colorMapping: ICategoricalColorMappingFunction;
   /**
    * set of categories to show
    * @type {null}
@@ -48,13 +60,15 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.setDefaultRenderer('upset');
     this.setDefaultGroupRenderer('upset');
+    this.colorMapping = DEFAULT_COLOR_FUNCTION;
   }
 
   protected createEventList() {
-    return super.createEventList().concat([SetColumn.EVENT_FILTER_CHANGED]);
+    return super.createEventList().concat([SetColumn.EVENT_COLOR_MAPPING_CHANGED, SetColumn.EVENT_FILTER_CHANGED]);
   }
 
   on(type: typeof SetColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof SetColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -115,6 +129,18 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return Array.from(this.getSet(row)).sort((a, b) => a.value === b.value ? a.label.localeCompare(b.label) : a.value - b.value);
   }
 
+  getColors(row: IDataRow) {
+    return this.getCategories(row).map((d) => this.colorMapping.apply(d));
+  }
+
+  getColorMapping() {
+    return this.colorMapping.clone();
+  }
+
+  setColorMapping(mapping: ICategoricalColorMappingFunction) {
+    return CategoricalColumn.prototype.setColorMapping.call(this, mapping);
+  }
+
   isMissing(row: IDataRow) {
     const s = this.getSet(row);
     return s.size === 0;
@@ -140,11 +166,13 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.filter = this.currentFilter;
+    r.colorMapping = this.colorMapping.dump();
     return r;
   }
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
+    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
     if (!('filter' in dump)) {
       this.currentFilter = null;
       return;

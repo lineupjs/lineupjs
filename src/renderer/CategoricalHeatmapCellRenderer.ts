@@ -17,9 +17,10 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
 
   private static createDOMContext(col: ISetColumn) {
     const categories = col.categories;
+    const mapping = col.getColorMapping();
     let templateRows = '';
     for (const cat of categories) {
-      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}" style="background-color: ${cat.color}"></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}" style="background-color: ${mapping.apply(cat)}"></div>`;
     }
     return {
       templateRow: templateRows,
@@ -37,6 +38,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     const width = context.colWidth(col);
     const cellDimension = width / col.dataLength!;
     const cats = col.categories;
+    const mapping = col.getColorMapping();
 
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
@@ -59,7 +61,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
             return;
           }
           const posx = (j * cellDimension);
-          ctx.fillStyle = d.color;
+          ctx.fillStyle = mapping.apply(d);
           ctx.fillRect(posx, 0, cellDimension, CANVAS_HEIGHT);
         });
 
@@ -81,10 +83,11 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
 
   createSummary(col: ISetColumn) {
     const categories = col.categories;
+    const mapping = col.getColorMapping();
     let templateRows = `<div class="${cssClass('heatmap')}">`;
     const labels = wideEnough(col);
     for (const cat of categories) {
-      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}"${labels ? ` data-title="${cat.label}"` : ''} style="background-color: ${cat.color}"></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}"${labels ? ` data-title="${cat.label}"` : ''} style="background-color: ${mapping.apply(cat)}"></div>`;
     }
     templateRows += '</div>';
     return {
