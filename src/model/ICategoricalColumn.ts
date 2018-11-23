@@ -4,6 +4,7 @@ import {IColumnDesc, IDataRow} from './interfaces';
 import {colorPool} from './internal';
 import {FIRST_IS_MISSING} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
+import {ICategoricalColorMappingFunction} from './CategoricalColorMappingFunction';
 
 export interface ICategoricalDesc {
   categories: (string | Partial<ICategory>)[];
@@ -16,6 +17,9 @@ export interface ISetColumn extends IArrayColumn<boolean> {
   readonly categories: ICategory[];
 
   getSet(row: IDataRow): Set<ICategory>;
+
+  getColorMapping(): ICategoricalColorMappingFunction;
+  setColorMapping(mapping: ICategoricalColorMappingFunction): void;
 }
 
 export function isSetColumn(col: Column): col is ISetColumn {

@@ -81,14 +81,16 @@ function selectedCol(value: string) {
 }
 
 function stackedBar(col: ICategoricalColumn, unfilteredHist?: ICategoricalStatistics | null) {
+  const mapping = col.getColorMapping();
   const cats = col.categories.map((c) => ({
     label: c.label,
-    color: c.color,
-    selected: selectedCol(c.color)
+    name: c.name,
+    color: mapping.apply(c),
+    selected: selectedCol(mapping.apply(c))
   }));
-  cats.push({label: 'Missing Values', color: Column.DEFAULT_COLOR, selected: 'transparent'});
+  cats.push({label: 'Missing Values', name: 'missing', color: Column.DEFAULT_COLOR, selected: 'transparent'});
 
-  const bins = col.categories.map((c) => `<div class="${cssClass('distribution-bar')}" style="background-color: ${c.color}; color: ${adaptTextColorToBgColor(c.color)}" title="${c.label}: 0" data-cat="${c.name}"><span>${c.label}</span></div>`).join('');
+  const bins = cats.map((c) => `<div class="${cssClass('distribution-bar')}" style="background-color: ${c.color}; color: ${adaptTextColorToBgColor(c.color)}" title="${c.label}: 0" data-cat="${c.name}"><span>${c.label}</span></div>`).join('');
 
   const updateSingle = (n: HTMLElement, hist: ICategoricalBin[], missing: number) => {
     const total = hist.reduce((acc, { y }) => acc + y, missing);

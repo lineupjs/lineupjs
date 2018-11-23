@@ -11,6 +11,7 @@ import {IDataRow} from './interfaces';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
 export declare type ICategoricalNumberColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
 
@@ -22,6 +23,13 @@ export declare type ICategoricalNumberColumnDesc = ICategoricalDesc & IValueColu
 export declare function mappingChanged(previous: number[], current: number[]): void;
 
 /**
+ * emitted when the color mapping property changes
+ * @asMemberOf OrdinalColumn
+ * @event
+ */
+export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+
+/**
  * emitted when the filter property changes
  * @asMemberOf OrdinalColumn
  * @event
@@ -31,15 +39,18 @@ export declare function filterChanged(previous: ICategoricalFilter | null, curre
 /**
  * similar to a categorical column but the categories are mapped to numbers
  */
-@toolbar('group', 'filterOrdinal')
+@toolbar('group', 'filterOrdinal', 'colorMappedCategorical')
 @Category('categorical')
 export default class OrdinalColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_FILTER_CHANGED = CategoricalColumn.EVENT_FILTER_CHANGED;
+  static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   readonly categories: ICategory[];
 
   private missingCategory: ICategory | null;
+
+  private colorMapping: ICategoricalColorMappingFunction;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
 
@@ -53,13 +64,15 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('boxplot');
+    this.colorMapping = DEFAULT_COLOR_FUNCTION;
   }
 
   protected createEventList() {
-    return super.createEventList().concat([OrdinalColumn.EVENT_MAPPING_CHANGED, OrdinalColumn.EVENT_FILTER_CHANGED]);
+    return super.createEventList().concat([OrdinalColumn.EVENT_COLOR_MAPPING_CHANGED, OrdinalColumn.EVENT_MAPPING_CHANGED, OrdinalColumn.EVENT_FILTER_CHANGED]);
   }
 
   on(type: typeof OrdinalColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof OrdinalColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
   on(type: typeof OrdinalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -177,6 +190,14 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     }
     this.categories.forEach((d, i) => d.value = mapping[i] || 0);
     this.fire([OrdinalColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getMapping());
+  }
+
+  getColorMapping() {
+    return this.colorMapping.clone();
+  }
+
+  setColorMapping(mapping: ICategoricalColorMappingFunction) {
+    return CategoricalColumn.prototype.setColorMapping.call(this, mapping);
   }
 
   isFiltered() {

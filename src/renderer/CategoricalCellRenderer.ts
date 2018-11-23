@@ -30,7 +30,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         const v = col.getCategory(d);
-        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = v ? v.color : null;
+        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = v ? col.getColor(d) : null;
         setText(<HTMLSpanElement>n.lastElementChild!, col.getLabel(d));
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
@@ -38,7 +38,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
           return;
         }
         const v = col.getCategory(d);
-        ctx.fillStyle = v ? v.color : '';
+        ctx.fillStyle = v ? col.getColor(d) : '';
         ctx.fillRect(0, 0, width, CANVAS_HEIGHT);
       }
     };
@@ -97,11 +97,12 @@ function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive:
 }
 
 function hist(col: ICategoricalColumn, showLabels: boolean, unfilteredHist: ICategoricalStatistics | null) {
-  const bins = col.categories.map((c) => `<div class="${cssClass('histogram-bin')}" title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${c.color}"></div></div>`).join('');
+  const mapping = col.getColorMapping();
+  const bins = col.categories.map((c) => `<div class="${cssClass('histogram-bin')}" title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${mapping.apply(c)}"></div></div>`).join('');
   const template = `<div class="${cssClass('histogram')} ${col.dataLength! > DENSE_HISTOGRAM ? cssClass('dense'): ''}">${bins}`; // no closing div to be able to append things
 
   const selected = col.categories.map((d) => {
-    const c = color(d.color)!;
+    const c = color(mapping.apply(d))!;
     c.opacity = FILTERED_OPACITY;
     return c.toString();
   });
@@ -120,7 +121,7 @@ function hist(col: ICategoricalColumn, showLabels: boolean, unfilteredHist: ICat
           d.title = `${cat.label}: ${y} of ${gY}`;
           inner.style.height = `${round(gY * 100 / maxBin, 2)}%`;
           const relY = 100 - round(y * 100 / gY, 2);
-          inner.style.background = relY === 0 ? cat.color : (relY === 100 ? selected[i] : `linear-gradient(${selected[i]} ${relY}%, ${cat.color} ${relY}%, ${cat.color} 100%)`);
+          inner.style.background = relY === 0 ? cat.color : (relY === 100 ? selected[i] : `linear-gradient(${selected[i]} ${relY}%, ${cat.color} ${relY}%, ${mapping.apply(cat)} 100%)`);
         } else {
           d.title = `${col.categories[i].label}: ${y}`;
           const inner = <HTMLElement>d.firstElementChild!;
