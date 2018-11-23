@@ -4,7 +4,7 @@ import debounce from '../internal/debounce';
 import OrderedSet from '../internal/OrderedSet';
 import {
   Column, createRankDesc, IColumnDesc, IDataRow, IGroup, IOrderedGroup,
-  ISelectionColumnDesc, models, IValueColumnDesc
+  ISelectionColumnDesc, models, IndicesArray
 } from '../model';
 import {dirty, dirtyHeader, dirtyValues} from '../model/Column';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
@@ -15,6 +15,7 @@ import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
 import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
+import {ISequence} from '../internal/interable';
 
 export {IExportOptions} from './utils';
 
@@ -376,9 +377,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   protected cleanDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
-    if (desc.type === 'rank') {
-      delete (<IValueColumnDesc<number>>desc).accessor;
-    } else if (desc.type === 'selection') {
+    if (desc.type === 'selection') {
       delete (<ISelectionColumnDesc>desc).accessor;
       delete (<ISelectionColumnDesc>desc).setter;
       delete (<ISelectionColumnDesc>desc).setterAll;
@@ -643,14 +642,14 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param col
    * @return {Promise<any>}
    */
-  abstract mappingSample(col: Column): Promise<number[]> | number[];
+  abstract mappingSample(col: Column): Promise<ISequence<number>> | ISequence<number>;
 
   /**
    * helper for computing statistics
    * @param indices
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
-  abstract stats(indices?: ArrayLike<number>): IStatsBuilder;
+  abstract stats(indices?: IndicesArray): IStatsBuilder;
 
   /**
    * is the given row selected

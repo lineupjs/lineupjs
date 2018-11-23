@@ -202,7 +202,7 @@ class LazyMap3<T1, T2, T3, T4> implements ISequence<T4> {
   }
 }
 
-export function lazy<T>(it: Iterable<T>): ISequence<T> {
+export function lazySeq<T>(it: Iterable<T>): ISequence<T> {
   let v: ReadonlyArray<T> | null = null;
   const asArr = () => {
     if (v) {

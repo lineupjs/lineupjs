@@ -13,6 +13,7 @@ import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 import {ISortWorker, sortComplex, chooseByLength, local, normalizeCompareValues} from './sort';
 import {range} from 'd3-array';
 import ADataProvider from './ADataProvider';
+import {ISequence, lazySeq} from '../internal/interable';
 
 
 export interface ILocalDataProviderOptions {
@@ -211,7 +212,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         // compute sort group value
         let sort: ICompareValue[] | null = null;
         if (isGroupedSortedBy) {
-          const groupData = Object.assign({rows: Array.from(order).map((d) => this._data[d]), meta: <IGroupMeta>'first last'}, group);
+          const groupData = Object.assign({rows: lazySeq(order).map((d) => this._dataRows[d]), meta: <IGroupMeta>'first last'}, group);
           sort = ranking.toGroupCompareValue(groupData);
         }
         return {o, sort};
@@ -230,13 +231,18 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
 
   viewRaw(indices: IndicesArray) {
-    //filter invalid indices
+    // what about invalid indices
     return mapIndices(indices, (i) => this._data[i]);
   }
 
   viewRawRows(indices: IndicesArray) {
-    //filter invalid indices
+    // what about filter invalid indices
     return mapIndices(indices, (i) => this._dataRows[i]);
+  }
+
+  private seqRawRows(indices: IndicesArray) {
+    // what about filter invalid indices
+    return lazySeq(indices).map((i) => this._dataRows[i]);
   }
 
   view(indices: IndicesArray) {
@@ -253,26 +259,26 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
   stats(indices?: IndicesArray): IStatsBuilder {
-    let d: IDataRow[] | null = null;
+    let d: ISequence<IDataRow> | null = null;
     const getData = () => {
       if (d == null) {
-        return d = indices && indices.length < this._dataRows.length ? this.viewRawRows(indices) : this._dataRows;
+        return d = indices && indices.length < this._dataRows.length ? this.seqRawRows(indices) : lazySeq(this._dataRows);
       }
       return d;
     };
 
     return {
       stats: (col: INumberColumn, numberOfBins?: number) => computeStats(getData().map((d) => col.getNumber(d)), [0, 1], numberOfBins),
-      hist: (col: ICategoricalColumn) => computeHist(getData(), (d) => col.getCategory(d), col.categories)
+      hist: (col: ICategoricalColumn) => computeHist(getData().map((d) => col.getCategory(d)), col.categories)
     };
   }
 
 
-  mappingSample(col: INumberColumn): number[] {
+  mappingSample(col: INumberColumn): ISequence<number> {
     const MAX_SAMPLE = 120; //at most 500 sample lines
     const l = this._dataRows.length;
     if (l <= MAX_SAMPLE) {
-      return <number[]>this._dataRows.map(col.getRawNumber.bind(col));
+      return lazySeq(this._dataRows).map((v) => col.getRawNumber(v));
     }
     //randomly select 500 elements
     const indices: number[] = [];
@@ -283,7 +289,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       }
       indices.push(j);
     }
-    return indices.map((i) => col.getRawNumber(this._dataRows[i]));
+    return lazySeq(indices).map((i) => col.getRawNumber(this._dataRows[i]));
   }
 
   searchAndJump(search: string | RegExp, col: Column) {

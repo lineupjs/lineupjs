@@ -1,3 +1,5 @@
+import {ISequence} from '../internal/interable';
+
 export interface IStyleColumn {
   /**
    * column description
@@ -97,7 +99,7 @@ export interface IGroupItem extends IDataRow {
 }
 
 export interface IGroupData extends Readonly<IGroup> {
-  readonly rows: IDataRow[];
+  readonly rows: ISequence<IDataRow>;
   readonly meta: IGroupMeta;
 }
 

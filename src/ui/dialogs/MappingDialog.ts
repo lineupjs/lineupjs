@@ -8,6 +8,7 @@ import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 import {cssClass} from '../../styles';
+import {ISequence} from '../../internal/interable';
 
 /** @internal */
 export default class MappingDialog extends ADialog {
@@ -17,9 +18,8 @@ export default class MappingDialog extends ADialog {
   private readonly mappingLines: MappingLine[] = [];
   private rawDomain: [number, number];
 
-  private readonly data: Promise<number[]>;
+  private readonly data: Promise<ISequence<number>>;
   private readonly idPrefix: string;
-  private loadedData: number[] | null = null;
 
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
@@ -165,19 +165,13 @@ export default class MappingDialog extends ADialog {
         d.setCustomValidity('');
         this.rawDomain[i] = v;
         this.scale.domain = this.rawDomain.slice();
-
-        if (!this.loadedData) {
-          return;
-        }
         this.applyMapping(this.scale);
         this.updateLines();
       });
     }
 
     this.data.then((values) => {
-      this.loadedData = values;
-
-      Array.from(values).forEach((v) => {
+      values.forEach((v) => {
         if (!isMissingValue(v)) {
           g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
         }

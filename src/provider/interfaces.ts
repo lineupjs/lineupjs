@@ -3,6 +3,7 @@ import AEventDispatcher from '../internal/AEventDispatcher';
 import {Column, ICategoricalColumn, IColumnDesc, IGroup, INumberColumn, IndicesArray} from '../model';
 import Ranking from '../model/Ranking';
 import '!file-loader?name=schema.4.0.0.json!./schema.json';
+import {ISequence} from '../internal/interable';
 
 
 export interface IStatsBuilder {
@@ -52,7 +53,7 @@ export interface IDataProvider extends AEventDispatcher {
 
   fromDescRef(ref: any): IColumnDesc;
 
-  mappingSample(col: Column): Promise<number[]> | number[];
+  mappingSample(col: Column): Promise<ISequence<number>> | ISequence<number>;
 
   searchAndJump(search: string | RegExp, col: Column): void;
 
