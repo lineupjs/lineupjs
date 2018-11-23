@@ -1,18 +1,25 @@
-import {extent} from 'd3-array';
+import {extent, range} from 'd3-array';
 import {isNumberColumn, isSupportType, isMapAbleColumn} from '../model';
 import Column, {IColumnDesc} from '../model/Column';
-import {colorPool} from '../model/internal';
+import {colorPool, MAX_COLORS} from '../model/internal';
 import Ranking from '../model/Ranking';
 import {concat} from '../internal';
+import {timeParse} from 'd3-time-format';
 
 
 export interface IDeriveOptions {
   /**
    * maximal percentage of unique values to be treated as a categorical column
    */
-  categoricalThreshold: number | ((size: number) => number);
+  categoricalThreshold: number | ((unique: number, total: number) => boolean);
 
   columns: string[];
+
+  /**
+   * date pattern to check for string matching them
+   * @default %x
+   */
+  datePattern: string;
 }
 
 /**
@@ -30,30 +37,47 @@ export function cleanCategories(categories: Set<string>) {
   return Array.from(categories).map(String).sort();
 }
 
-function deriveType(label: string, value: any, column: number | string, data: any[], options: IDeriveOptions): IColumnDesc {
+function hasDifferentSizes(data: any[][]) {
+  if (data.length === 0) {
+    return false;
+  }
+  const base = data[0].length;
+
+  return data.some((d) => d != null && base !== (Array.isArray(d) ? d.length : -1));
+}
+
+function deriveType(label: string, value: any, column: number | string, all: ()=>any[], options: IDeriveOptions): IColumnDesc {
   const base: any = {
     type: 'string',
     label,
-    column,
+    column
   };
-  if (typeof value === 'number') {
-    base.type = 'number';
-    base.domain = extent(data, (d) => d[column]);
+  if (value == null) {
+    console.warn('cannot derive from null value for column: ', column);
     return base;
   }
-  if (value && value instanceof Date) {
-    base.type = 'date';
+  if (typeof value === 'number') {
+    base.type = 'number';
+    base.domain = extent(all());
     return base;
   }
   if (typeof value === 'boolean') {
     base.type = 'boolean';
     return base;
   }
-  const threshold = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold(data.length) : options.categoricalThreshold;
+
+  const dateParse = timeParse(options.datePattern);
+  if (value instanceof Date || dateParse(value) != null) {
+    base.type = 'date';
+    return base;
+  }
+  const treatAsCategorical = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold : (u: number, t: number) => u < t * (<number>options.categoricalThreshold);
+
   if (typeof value === 'string') {
     //maybe a categorical
-    const categories = new Set(data.map((d) => d[column]));
-    if (categories.size < data.length * threshold) { // 70% unique guess categorical
+    const values = all();
+    const categories = new Set(values);
+    if (treatAsCategorical(categories.size, values.length)) {
       base.type = 'categorical';
       base.categories = cleanCategories(categories);
     }
@@ -61,27 +85,29 @@ function deriveType(label: string, value: any, column: number | string, data: an
   }
   if (Array.isArray(value)) {
     base.type = 'strings';
-    base.dataLength = value.length;
-    const vs = value[0];
-    if (typeof vs === 'number') {
+    const values = all();
+    if (!hasDifferentSizes(values)) {
+      base.dataLength = value.length;
+    }
+    const first = value[0];
+    if (typeof first === 'number') {
       base.type = 'numbers';
-      const arrs = concat(data.map((d) => d[column]));
-      base.domain = extent(arrs);
+      base.domain = extent(concat(values));
       return base;
     }
-    if (vs && value instanceof Date) {
-      base.type = 'dates';
-      return base;
-    }
-    if (typeof value === 'boolean') {
+    if (typeof first === 'boolean') {
       base.type = 'booleans';
       return base;
     }
-    if (typeof value === 'string') {
+    if (first && (first instanceof Date || dateParse(String(first)) != null)) {
+      base.type = 'dates';
+      return base;
+    }
+    if (typeof first === 'string') {
       //maybe a categorical
-      const categories = new Set(concat(data.map((d) => d[column])));
-      if (categories.size < data.length * threshold) { // 70% unique guess categorical
-        base.type = 'categoricals';
+      const categories = new Set(concat(<string[][]>values));
+      if (treatAsCategorical(categories.size, values.length)) {
+        base.type = hasDifferentSizes(values) ? 'set' : 'categoricals';
         base.categories = cleanCategories(categories);
       }
       return base;
@@ -102,10 +128,22 @@ function selectColumns(existing: string[], columns: string[]) {
   return existing.filter((d) => !exclude.has(`-${d}`));
 }
 
+function toLabel(key: string | number) {
+  if (typeof(key) === 'number') {
+    return `Col ${key + 1}`;
+  }
+  key = key.trim();
+  if (key.length === 0) {
+    return 'Unknown';
+  }
+  return key.split(/[\s]+/gm).map((k) => k.length === 0 ? k : `${k[0]!.toUpperCase()}${k.slice(1)}`).join(' ');
+}
+
 export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOptions> = {}) {
   const config = Object.assign({
-    categoricalThreshold: 0.7,
-    columns: []
+    categoricalThreshold: (u: number, n: number) => u <= MAX_COLORS && u < n * 0.7, //70% unique and less equal to 22 categories
+    columns: [],
+    datePattern: '%x'
   }, options);
   const r: IColumnDesc[] = [];
   if (data.length === 0) {
@@ -113,14 +151,16 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
     return r;
   }
   const first = data[0];
-  if (Array.isArray(first)) {
-    //array of arrays
-    return first.map((v, i) => deriveType(`Col${i}`, v, i, data, config));
-  }
-  //objects
-  const existing = Object.keys(first);
-  const columns = config.columns.length > 0 ? selectColumns(existing, config.columns) : existing;
-  return columns.map((key) => deriveType(key, first[key], key, data, config));
+  const columns: (number|string)[] = Array.isArray(first) ? range(first.length) : (config.columns.length > 0 ? selectColumns(Object.keys(first), config.columns) : Object.keys(first));
+  return columns.map((key) => {
+    let v = first[key];
+    if (v == null) {
+      // cannot derive something from null try other rows
+      const foundRow = data.find((row) => row[key] != null);
+      v = foundRow ? foundRow[key] : null;
+    }
+    return deriveType(toLabel(key), v, key, () => data.map((d) => d[key]), config);
+  });
 }
 
 
