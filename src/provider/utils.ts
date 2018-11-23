@@ -3,6 +3,7 @@ import {isNumberColumn, isSupportType, isMapAbleColumn} from '../model';
 import Column, {IColumnDesc} from '../model/Column';
 import {colorPool, MAX_COLORS} from '../model/internal';
 import Ranking from '../model/Ranking';
+import {timeParse} from 'd3-time-format';
 
 
 export interface IDeriveOptions {
@@ -12,6 +13,12 @@ export interface IDeriveOptions {
   categoricalThreshold: number | ((unique: number, total: number) => boolean);
 
   columns: string[];
+
+  /**
+   * date pattern to check for string matching them
+   * @default %x
+   */
+  datePattern: string;
 }
 
 /**
@@ -49,12 +56,14 @@ function deriveType(label: string, value: any, column: number | string, data: an
     base.domain = extent(data, (d) => d[column]);
     return base;
   }
-  if (value && value instanceof Date) {
-    base.type = 'date';
-    return base;
-  }
   if (typeof value === 'boolean') {
     base.type = 'boolean';
+    return base;
+  }
+
+  const dateParse = timeParse(options.datePattern);
+  if (value && (value instanceof Date || dateParse(value) != null)) {
+    base.type = 'date';
     return base;
   }
   const treatAsCategorical = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold : (u: number, t: number) => u < t * (<number>options.categoricalThreshold);
@@ -80,22 +89,18 @@ function deriveType(label: string, value: any, column: number | string, data: an
       base.domain = extent((<number[]>[]).concat(...data.map((d) => d[column])));
       return base;
     }
-    if (vs && value instanceof Date) {
-      base.type = 'dates';
-      return base;
-    }
-    if (typeof value === 'boolean') {
+    if (typeof vs === 'boolean') {
       base.type = 'booleans';
       return base;
     }
-    if (typeof value === 'string') {
-      //maybe a date string
-      // TODO
-
+    if (vs && (vs instanceof Date || dateParse(String(vs)) != null)) {
+      base.type = 'dates';
+      return base;
+    }
+    if (typeof vs === 'string') {
       //maybe a categorical
       const categories = new Set((<string[]>[]).concat(...data.map((d) => d[column])));
       if (treatAsCategorical(categories.size, data.length)) {
-        //
         base.type = hasDifferentSizes(data) ? 'set' : 'categoricals';
         base.categories = cleanCategories(categories);
       }
@@ -110,7 +115,8 @@ function deriveType(label: string, value: any, column: number | string, data: an
 export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOptions> = {}) {
   const config = Object.assign({
     categoricalThreshold: (u: number, n: number) => u <= MAX_COLORS && u < n * 0.7, //70% unique and less equal to 22 categories
-    columns: []
+    columns: [],
+    datePattern: '%x'
   }, options);
   const r: IColumnDesc[] = [];
   if (data.length === 0) {
