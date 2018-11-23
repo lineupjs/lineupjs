@@ -1,15 +1,15 @@
 
 
-export interface IIterable<T> extends Iterable<T> {
+export interface ISequence<T> extends Iterable<T> {
   readonly length: number;
-  filter(callback: (v: T, i: number) =>  boolean): IIterable<T>;
-  map<U>(callback: (v: T, i: number) => U): IIterable<U>;
+  filter(callback: (v: T, i: number) =>  boolean): ISequence<T>;
+  map<U>(callback: (v: T, i: number) => U): ISequence<U>;
   forEach(callback: (v: T, i: number) => void): void;
 }
 
-class LazyFilter<T> implements IIterable<T> {
+class LazyFilter<T> implements ISequence<T> {
   private _length = -1;
-  constructor(private readonly it: IIterable<T>, private readonly filters: ((v: T, i: number) => boolean)[]) {
+  constructor(private readonly it: ISequence<T>, private readonly filters: ((v: T, i: number) => boolean)[]) {
 
   }
 
@@ -23,11 +23,11 @@ class LazyFilter<T> implements IIterable<T> {
     return l;
   }
 
-  filter(callback: (v: T, i: number) =>  boolean): IIterable<T> {
+  filter(callback: (v: T, i: number) =>  boolean): ISequence<T> {
     return new LazyFilter(this.it, this.filters.concat(callback));
   }
 
-  map<U>(callback: (v: T, i: number) => U): IIterable<U> {
+  map<U>(callback: (v: T, i: number) => U): ISequence<U> {
     return new LazyMap1(this, callback);
   }
 
@@ -65,8 +65,8 @@ class LazyFilter<T> implements IIterable<T> {
   }
 }
 
-class LazyMap1<T1, T2> implements IIterable<T2> {
-  constructor(private readonly it: IIterable<T1>, private readonly map12: (v: T1, i: number) => T2) {
+class LazyMap1<T1, T2> implements ISequence<T2> {
+  constructor(private readonly it: ISequence<T1>, private readonly map12: (v: T1, i: number) => T2) {
 
   }
 
@@ -74,11 +74,11 @@ class LazyMap1<T1, T2> implements IIterable<T2> {
     return this.it.length;
   }
 
-  filter(callback: (v: T2, i: number) =>  boolean): IIterable<T2> {
+  filter(callback: (v: T2, i: number) =>  boolean): ISequence<T2> {
     return new LazyFilter(this, [callback]);
   }
 
-  map<U>(callback: (v: T2, i: number) => U): IIterable<U> {
+  map<U>(callback: (v: T2, i: number) => U): ISequence<U> {
     return new LazyMap2(this.it, this.map12, callback);
   }
 
@@ -110,8 +110,8 @@ class LazyMap1<T1, T2> implements IIterable<T2> {
   }
 }
 
-class LazyMap2<T, T2, T3> implements IIterable<T3> {
-  constructor(private readonly it: IIterable<T>, private readonly map12: (v: T, i: number) => T2, private readonly map23: (v: T2, i: number) => T3) {
+class LazyMap2<T, T2, T3> implements ISequence<T3> {
+  constructor(private readonly it: ISequence<T>, private readonly map12: (v: T, i: number) => T2, private readonly map23: (v: T2, i: number) => T3) {
 
   }
 
@@ -119,11 +119,11 @@ class LazyMap2<T, T2, T3> implements IIterable<T3> {
     return this.it.length;
   }
 
-  filter(callback: (v: T3, i: number) =>  boolean): IIterable<T3> {
+  filter(callback: (v: T3, i: number) =>  boolean): ISequence<T3> {
     return new LazyFilter(this, [callback]);
   }
 
-  map<U>(callback: (v: T3, i: number) => U): IIterable<U> {
+  map<U>(callback: (v: T3, i: number) => U): ISequence<U> {
     return new LazyMap3(this.it, this.map12, this.map23, callback);
   }
 
@@ -156,8 +156,8 @@ class LazyMap2<T, T2, T3> implements IIterable<T3> {
 }
 
 
-class LazyMap3<T1, T2, T3, T4> implements IIterable<T4> {
-  constructor(private readonly it: IIterable<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3, private readonly map34: (v: T3, i: number) => T4) {
+class LazyMap3<T1, T2, T3, T4> implements ISequence<T4> {
+  constructor(private readonly it: ISequence<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3, private readonly map34: (v: T3, i: number) => T4) {
 
   }
 
@@ -165,11 +165,11 @@ class LazyMap3<T1, T2, T3, T4> implements IIterable<T4> {
     return this.it.length;
   }
 
-  filter(callback: (v: T4, i: number) =>  boolean): IIterable<T4> {
+  filter(callback: (v: T4, i: number) =>  boolean): ISequence<T4> {
     return new LazyFilter(this, [callback]);
   }
 
-  map<U>(callback: (v: T4, i: number) => U): IIterable<U> {
+  map<U>(callback: (v: T4, i: number) => U): ISequence<U> {
     const map1U = (v: T1, i: number) => callback(this.map34(this.map23(this.map12(v, i), i), i), i);
     return new LazyMap1(this.it, map1U);
   }
@@ -202,7 +202,7 @@ class LazyMap3<T1, T2, T3, T4> implements IIterable<T4> {
   }
 }
 
-export function lazy<T>(it: Iterable<T>): IIterable<T> {
+export function lazy<T>(it: Iterable<T>): ISequence<T> {
   let v: ReadonlyArray<T> | null = null;
   const asArr = () => {
     if (v) {
@@ -242,5 +242,5 @@ export function lazy<T>(it: Iterable<T>): IIterable<T> {
     }
   });
 
-  return <IIterable<T>><any>r;
+  return <ISequence<T>><any>r;
 }

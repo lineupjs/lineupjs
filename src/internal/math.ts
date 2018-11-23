@@ -1,6 +1,6 @@
 import {histogram, quantile} from 'd3-array';
 import {ICategory, isMissingValue} from '../model';
-import {IIterable} from './interable';
+import {ISequence} from './interable';
 
 export interface INumberBin {
   x0: number;
@@ -68,7 +68,7 @@ export class LazyBoxPlotData implements IStatistics {
 
   private readonly histGen: (data: number[]) => INumberBin[];
 
-  constructor(values: IIterable<number>, histGen?: (data: number[]) => INumberBin[]) {
+  constructor(values: ISequence<number>, histGen?: (data: number[]) => INumberBin[]) {
     // filter out NaN
     let min = Number.POSITIVE_INFINITY;
     let max = Number.NEGATIVE_INFINITY;
@@ -211,7 +211,7 @@ function cached() {
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeStats(arr: IIterable<number>, range?: [number, number], bins?: number): IStatistics {
+export function computeStats(arr: ISequence<number>, range?: [number, number], bins?: number): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -249,7 +249,7 @@ export function computeStats(arr: IIterable<number>, range?: [number, number], b
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function computeHist(arr: IIterable<ICategory | null>, categories: ICategory[]): ICategoricalStatistics {
+export function computeHist(arr: ISequence<ICategory | null>, categories: ICategory[]): ICategoricalStatistics {
   const m = new Map<string, number>();
   let missingCount = 0;
   categories.forEach((cat) => m.set(cat.name, 0));
