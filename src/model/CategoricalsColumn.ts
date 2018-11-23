@@ -1,4 +1,4 @@
-import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
+import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ICategoricalDesc, ICategory, toCategories} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {toolbar} from './annotations';
@@ -42,7 +42,6 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> {
   }
 
   on(type: typeof CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

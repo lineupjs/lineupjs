@@ -1,4 +1,4 @@
-import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
+import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ISetColumn, toCategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import CategoricalColumn from './CategoricalColumn';
@@ -43,6 +43,9 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     if (v == null) {
       return NaN;
     }
+    return v.reduce((a, b) => a + (b ? 1 : 0), 0);
+  }
+
   getCategories(row: IDataRow) {
     const categories = this.categories;
     return super.getValues(row).map((v, i) => {
@@ -60,7 +63,6 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   }
 
   on(type: typeof BooleansColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -93,14 +95,5 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
-  }
-
-  compare(a: IDataRow, b: IDataRow) {
-    const aVal = this.getValue(a);
-    const bVal = this.getValue(b);
-    if (aVal == null) {
-      return bVal == null ? 0 : FIRST_IS_MISSING;
-    }
-    return v.reduce((a, b) => a + (b ? 1 : 0), 0);
   }
 }
