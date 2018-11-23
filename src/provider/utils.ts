@@ -1,7 +1,7 @@
 import {extent} from 'd3-array';
 import {isNumberColumn, isSupportType, isMapAbleColumn} from '../model';
 import Column, {IColumnDesc} from '../model/Column';
-import {colorPool} from '../model/internal';
+import {colorPool, MAX_COLORS} from '../model/internal';
 import Ranking from '../model/Ranking';
 
 
@@ -9,7 +9,7 @@ export interface IDeriveOptions {
   /**
    * maximal percentage of unique values to be treated as a categorical column
    */
-  categoricalThreshold: number | ((size: number) => number);
+  categoricalThreshold: number | ((unique: number, total: number) => boolean);
 
   columns: string[];
 }
@@ -27,6 +27,15 @@ export function cleanCategories(categories: Set<string>) {
   categories.delete('na');
 
   return Array.from(categories).map(String).sort();
+}
+
+function hasDifferentSizes(data: any[][]) {
+  if (data.length === 0) {
+    return false;
+  }
+  const base = data[0].length;
+
+  return data.some((d) => d != null && base !== (Array.isArray(d) ? d.length : -1));
 }
 
 function deriveType(label: string, value: any, column: number | string, data: any[], options: IDeriveOptions): IColumnDesc {
@@ -48,11 +57,15 @@ function deriveType(label: string, value: any, column: number | string, data: an
     base.type = 'boolean';
     return base;
   }
-  const threshold = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold(data.length) : options.categoricalThreshold;
+  const treatAsCategorical = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold : (u: number, t: number) => u < t * (<number>options.categoricalThreshold);
+
   if (typeof value === 'string') {
+    //maybe a date string
+    // TODO
+
     //maybe a categorical
     const categories = new Set(data.map((d) => d[column]));
-    if (categories.size < data.length * threshold) { // 70% unique guess categorical
+    if (treatAsCategorical(categories.size, data.length)) {
       base.type = 'categorical';
       base.categories = cleanCategories(categories);
     }
@@ -76,10 +89,14 @@ function deriveType(label: string, value: any, column: number | string, data: an
       return base;
     }
     if (typeof value === 'string') {
+      //maybe a date string
+      // TODO
+
       //maybe a categorical
       const categories = new Set((<string[]>[]).concat(...data.map((d) => d[column])));
-      if (categories.size < data.length * threshold) { // 70% unique guess categorical
-        base.type = 'categoricals';
+      if (treatAsCategorical(categories.size, data.length)) {
+        //
+        base.type = hasDifferentSizes(data) ? 'set' : 'categoricals';
         base.categories = cleanCategories(categories);
       }
       return base;
@@ -92,7 +109,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
 
 export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOptions> = {}) {
   const config = Object.assign({
-    categoricalThreshold: 0.7,
+    categoricalThreshold: (u: number, n: number) => u <= MAX_COLORS && u < n * 0.7, //70% unique and less equal to 22 categories
     columns: []
   }, options);
   const r: IColumnDesc[] = [];
