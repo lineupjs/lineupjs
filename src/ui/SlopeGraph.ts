@@ -1,5 +1,5 @@
 import {IExceptionContext, range, ITableSection} from 'lineupengine';
-import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../model';
+import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup, forEachIndices, filterIndices} from '../model';
 import {SLOPEGRAPH_WIDTH, cssClass, aria} from '../styles';
 import {IRankingHeaderContextContainer} from './interfaces';
 import {engineCssClass} from '../styles/index';
@@ -207,7 +207,8 @@ export default class SlopeGraph implements ITableSection {
       const padded = height - leftContext.padding(first + count - 1);
 
       const gr = <IGroupData>Object.assign({
-        rows
+        rows,
+        meta: 'first-last'
       }, group);
 
       return {gr, padded, height};
@@ -229,7 +230,7 @@ export default class SlopeGraph implements ITableSection {
       const push = (s: ISlope, right: IPos, common = 1, heightPerRow = 0) => {
         // store slope in both
         slopes.push(s);
-        right.ref.forEach((r) => this.rightSlopes[r].push(s));
+        forEachIndices(right.ref, (r) => this.rightSlopes[r].push(s));
 
         // update the offset of myself and of the right side
         right.offset += common * right.heightPerRow;
@@ -281,7 +282,7 @@ export default class SlopeGraph implements ITableSection {
           return; // no matching
         }
         // find all of this group
-        const intersection = right.rows.filter((r) => free.delete(r));
+        const intersection = filterIndices(right.rows, (r) => free.delete(r));
         intersection.push(d.i); //self
 
         const common = intersection.length;
@@ -321,7 +322,7 @@ export default class SlopeGraph implements ITableSection {
       };
       if (isGroup(r)) {
         const p = Object.assign(base, {
-          rows: r.rows.map((d) => d.i),
+          rows: Array.from(r.rows.map((d) => d.i)),
           heightPerRow: padded / r.rows.length,
           group: r
         });

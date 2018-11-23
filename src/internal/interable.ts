@@ -5,6 +5,14 @@ export interface ISequence<T> extends Iterable<T> {
   filter(callback: (v: T, i: number) =>  boolean): ISequence<T>;
   map<U>(callback: (v: T, i: number) => U): ISequence<U>;
   forEach(callback: (v: T, i: number) => void): void;
+
+  some(callback: (v: T, i: number) => boolean): boolean;
+  every(callback: (v: T, i: number) => boolean): boolean;
+  reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U): U;
+}
+
+export function isSeqEmpty(seq: ISequence<any>) {
+  return seq.every(() => false); // more efficent than counting length
 }
 
 class LazyFilter<T> implements ISequence<T> {
@@ -32,14 +40,14 @@ class LazyFilter<T> implements ISequence<T> {
   }
 
   forEach(callback: (v: T, i: number) => void) {
-    let i = 0;
-    this.it.forEach((v) => {
+    let valid = 0;
+    this.it.forEach((v, i) => {
       for (const f of this.filters) {
         if (!f(v, i)) {
           return;
         }
       }
-      callback(v, i++);
+      callback(v, valid++);
     });
   }
 
@@ -47,15 +55,15 @@ class LazyFilter<T> implements ISequence<T> {
     const it = this.it[Symbol.iterator]();
     const next = () => {
       let v = it.next();
-      let i = 0;
+      let i = -1;
       outer: while (!v.done) {
+        i++;
         for (const f of this.filters) {
           if (f(v.value, i)) {
             continue;
           }
           // invalid go to next
           v = it.next();
-          i++;
           continue outer;
         }
       }
@@ -63,10 +71,46 @@ class LazyFilter<T> implements ISequence<T> {
     };
     return { next };
   }
+
+  some(callback: (v: T, i: number) => boolean) {
+    let valid = 0;
+    return this.it.some((v, i) => {
+      for (const f of this.filters) {
+        if (!f(v, i)) {
+          return false;
+        }
+      }
+      return callback(v, valid++);
+    });
+  }
+
+  every(callback: (v: T, i: number) => boolean) {
+    let valid = 0;
+    return this.it.every((v, i) => {
+      for (const f of this.filters) {
+        if (!f(v, i)) {
+          return false;
+        }
+      }
+      return callback(v, valid++);
+    });
+  }
+
+  reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U) {
+    let valid = 0;
+    return this.it.reduce((acc, v, i) => {
+      for (const f of this.filters) {
+        if (!f(v, i)) {
+          return acc;
+        }
+      }
+      return callback(acc, v, valid++);
+    }, initial);
+  }
 }
 
-class LazyMap1<T1, T2> implements ISequence<T2> {
-  constructor(private readonly it: ISequence<T1>, private readonly map12: (v: T1, i: number) => T2) {
+abstract class ALazyMap<T, T2> implements ISequence<T2> {
+  constructor(protected readonly it: ISequence<T>) {
 
   }
 
@@ -78,13 +122,13 @@ class LazyMap1<T1, T2> implements ISequence<T2> {
     return new LazyFilter(this, [callback]);
   }
 
-  map<U>(callback: (v: T2, i: number) => U): ISequence<U> {
-    return new LazyMap2(this.it, this.map12, callback);
-  }
+  abstract map<U>(callback: (v: T2, i: number) => U): ISequence<U>;
+  protected abstract mapV(v: T, i: number): T2;
+
 
   forEach(callback: (v: T2, i: number) => void) {
     this.it.forEach((v, i) => {
-      callback(this.map12(v, i), i);
+      callback(this.mapV(v, i), i);
     });
   }
 
@@ -99,7 +143,7 @@ class LazyMap1<T1, T2> implements ISequence<T2> {
           done: true
         };
       }
-      const value = this.map12(v.value, ++i);
+      const value = this.mapV(v.value, ++i);
       i++;
       return {
         value,
@@ -108,65 +152,48 @@ class LazyMap1<T1, T2> implements ISequence<T2> {
     };
     return { next };
   }
+
+  some(callback: (v: T2, i: number) => boolean) {
+    return this.it.some((v, i) => callback(this.mapV(v, i), i));
+  }
+
+  every(callback: (v: T2, i: number) => boolean) {
+    return this.it.every((v, i) => callback(this.mapV(v, i), i));
+  }
+
+  reduce<U>(callback: (acc: U, v: T2, i: number) => U, initial: U) {
+    return this.it.reduce((acc, v, i) => callback(acc, this.mapV(v, i), i), initial);
+  }
 }
 
-class LazyMap2<T, T2, T3> implements ISequence<T3> {
-  constructor(private readonly it: ISequence<T>, private readonly map12: (v: T, i: number) => T2, private readonly map23: (v: T2, i: number) => T3) {
-
+class LazyMap1<T1, T2> extends ALazyMap<T1, T2> implements ISequence<T2> {
+  constructor(it: ISequence<T1>, protected readonly mapV: (v: T1, i: number) => T2) {
+    super(it);
   }
 
-  get length() {
-    return this.it.length;
+  map<U>(callback: (v: T2, i: number) => U): ISequence<U> {
+    return new LazyMap2(this.it, this.mapV, callback);
   }
+}
 
-  filter(callback: (v: T3, i: number) =>  boolean): ISequence<T3> {
-    return new LazyFilter(this, [callback]);
+class LazyMap2<T1, T2, T3> extends ALazyMap<T1, T3> implements ISequence<T3> {
+  constructor(it: ISequence<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3) {
+    super(it);
   }
 
   map<U>(callback: (v: T3, i: number) => U): ISequence<U> {
     return new LazyMap3(this.it, this.map12, this.map23, callback);
   }
 
-  forEach(callback: (v: T3, i: number) => void) {
-    this.it.forEach((v, i) => {
-      callback(this.map23(this.map12(v, i), i), i);
-    });
-  }
-
-  [Symbol.iterator]() {
-    const it = this.it[Symbol.iterator]();
-    let i = 0;
-    const next = () => {
-      const v = it.next();
-      if (v.done) {
-        return {
-          value: <T3><any>undefined,
-          done: true
-        };
-      }
-      const value = this.map23(this.map12(v.value, i), i);
-      i++;
-      return {
-        value,
-        done: false
-      };
-    };
-    return { next };
+  protected mapV(v: T1, i: number) {
+    return this.map23(this.map12(v, i), i);
   }
 }
 
 
-class LazyMap3<T1, T2, T3, T4> implements ISequence<T4> {
-  constructor(private readonly it: ISequence<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3, private readonly map34: (v: T3, i: number) => T4) {
-
-  }
-
-  get length() {
-    return this.it.length;
-  }
-
-  filter(callback: (v: T4, i: number) =>  boolean): ISequence<T4> {
-    return new LazyFilter(this, [callback]);
+class LazyMap3<T1, T2, T3, T4> extends ALazyMap<T1, T4> implements ISequence<T4> {
+  constructor(it: ISequence<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3, private readonly map34: (v: T3, i: number) => T4) {
+    super(it);
   }
 
   map<U>(callback: (v: T4, i: number) => U): ISequence<U> {
@@ -174,31 +201,8 @@ class LazyMap3<T1, T2, T3, T4> implements ISequence<T4> {
     return new LazyMap1(this.it, map1U);
   }
 
-  forEach(callback: (v: T4, i: number) => void) {
-    this.it.forEach((v, i) => {
-      callback(this.map34(this.map23(this.map12(v, i), i), i), i);
-    });
-  }
-
-  [Symbol.iterator]() {
-    const it = this.it[Symbol.iterator]();
-    let i = 0;
-    const next = () => {
-      const v = it.next();
-      if (v.done) {
-        return {
-          value: <T4><any>undefined,
-          done: true
-        };
-      }
-      i++;
-      const value = this.map34(this.map23(this.map12(v.value, i), i), i);
-      return {
-        value,
-        done: false
-      };
-    };
-    return { next };
+  protected mapV(v: T1, i: number) {
+    return this.map34(this.map23(this.map12(v, i), i), i);
   }
 }
 
@@ -213,7 +217,7 @@ export function lazySeq<T>(it: Iterable<T>): ISequence<T> {
     } else {
       v = Array.from(it);
     }
-    return v;
+    return v!;
   };
 
   const r: any = {
@@ -231,7 +235,16 @@ export function lazySeq<T>(it: Iterable<T>): ISequence<T> {
       for (const v of asArr()) {
         cb(v, i++);
       }
-    }
+    },
+    some(callback: (v: T, i: number) => boolean) {
+      return asArr().some(callback);
+    },
+    every(callback: (v: T, i: number) => boolean) {
+      return asArr().every(callback);
+    },
+    reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U) {
+      return asArr().reduce(callback, initial);
+    },
   };
 
   Object.defineProperty(r, 'length', {

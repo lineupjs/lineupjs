@@ -9,6 +9,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './in
 import {forEachChild, noRenderer, adaptTextColorToBgColor} from './utils';
 import {cssClass, FILTERED_OPACITY} from '../styles';
 import {color} from 'd3-color';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
@@ -27,8 +28,8 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
     const { template, update } = stackedBar(col);
     return {
       template: `${template}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const { hist, missing } = computeHist(rows, (r: IDataRow) => col.getCategory(r), col.categories);
+      update: (n: HTMLElement, _group: IGroup, rows: ISequence<IDataRow>) => {
+        const { hist, missing } = computeHist(rows.map((r: IDataRow) => col.getCategory(r)), col.categories);
         update(n, hist, missing);
       }
     };

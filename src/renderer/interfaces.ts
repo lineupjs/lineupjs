@@ -3,6 +3,7 @@ import {ICategoricalColumn, IDataRow, IGroup, INumberColumn, IGroupMeta} from '.
 import Column from '../model/Column';
 import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
+import {ISequence} from '../internal/interable';
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
@@ -48,7 +49,7 @@ export interface IGroupCellRenderer {
    * @param group the group to render
    * @param rows the data items
    */
-  update(node: HTMLElement, group: IGroup, rows: IDataRow[], meta: IGroupMeta): void;
+  update(node: HTMLElement, group: IGroup, rows: ISequence<IDataRow>, meta: IGroupMeta): void;
 }
 
 export interface ISummaryRenderer {

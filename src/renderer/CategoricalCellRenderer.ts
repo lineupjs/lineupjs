@@ -11,6 +11,7 @@ import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough, forEach} from './utils';
 import {color} from 'd3-color';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
@@ -48,8 +49,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     const {template, update} = hist(col, false, null);
     return {
       template: `${template}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const {maxBin, hist} = computeHist(rows, (r: IDataRow) => col.getCategory(r), col.categories);
+      update: (n: HTMLElement, _group: IGroup, rows: ISequence<IDataRow>) => {
+        const {maxBin, hist} = computeHist(rows.map((r: IDataRow) => col.getCategory(r)), col.categories);
 
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
         update(n, max, hist);

@@ -5,6 +5,7 @@ import {colorPool} from './internal';
 import {FIRST_IS_MISSING} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColorMappingFunction} from './CategoricalColorMappingFunction';
+import {ISequence, isSeqEmpty} from '../internal/interable';
 
 export interface ICategoricalDesc {
   categories: (string | Partial<ICategory>)[];
@@ -71,13 +72,13 @@ export function toCompareCategoryValue(v: ICategory | null) {
 
 export const COMPARE_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.STRING];
 
-function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICategory | null, count: number} {
+function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn): {cat: ICategory | null, count: number} {
   const hist = new Map<ICategory | null, number>();
 
-  for (const row of rows) {
+  rows.forEach((row) => {
     const cat = col.getCategory(row);
     hist.set(cat, (hist.get(cat) || 0) + 1);
-  }
+  });
 
   if (hist.size === 0) {
     return {
@@ -103,11 +104,11 @@ function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICat
  * sort group by most frequent category or if same without count desc
  * @internal
  */
-export function groupCompareCategory(a: IDataRow[], b: IDataRow[], col: ICategoricalColumn) {
-  if (a.length === 0) {
-    return b.length === 0 ? 0 : FIRST_IS_MISSING;
+export function groupCompareCategory(a: ISequence<IDataRow>, b: ISequence<IDataRow>, col: ICategoricalColumn) {
+  if (isSeqEmpty(a)) {
+    return isSeqEmpty(b) ? 0 : FIRST_IS_MISSING;
   }
-  if (b.length === 0) {
+  if (isSeqEmpty(b)) {
     return -FIRST_IS_MISSING;
   }
 
@@ -128,8 +129,8 @@ export function groupCompareCategory(a: IDataRow[], b: IDataRow[], col: ICategor
 }
 
 /** @internal */
-export function toGroupCompareCategoryValue(rows: IDataRow[], col: ICategoricalColumn): ICompareValue[] {
-  if (rows.length === 0) {
+export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn): ICompareValue[] {
+  if (isSeqEmpty(rows)) {
     return [NaN, null, 0];
   }
   const mostFrequent = findMostFrequent(rows, col);

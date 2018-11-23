@@ -3,6 +3,7 @@ import {IOrderedGroup} from './Group';
 import {IDataRow, IGroup, IGroupParent} from './interfaces';
 import INumberColumn, {numberCompare} from './INumberColumn';
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
+import {ISequence} from '../internal/interable';
 
 
 /** @internal */
@@ -88,10 +89,10 @@ export function colorPool() {
 
 
 /** @internal */
-export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
+export function medianIndex(rows: ISequence<IDataRow>, col: INumberColumn): number {
   //return the median row
   const data = rows.map((r, i) => ({i, v: col.getNumber(r)}));
-  const sorted = data.filter((r) => !isNaN(r.v)).sort((a, b) => numberCompare(a.v, b.v));
+  const sorted = Array.from(data.filter((r) => !isNaN(r.v))).sort((a, b) => numberCompare(a.v, b.v));
   const index = sorted[Math.floor(sorted.length / 2.0)];
   if (index === undefined) {
     return 0; //error case
@@ -100,7 +101,7 @@ export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
 }
 
 /** @internal */
-export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
+export function groupCompare(a: ISequence<IDataRow>, b: ISequence<IDataRow>, col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
   const va = new LazyBoxPlotData(a.map((row) => col.getNumber(row)));
   const vb = new LazyBoxPlotData(b.map((row) => col.getNumber(row)));
 
@@ -108,7 +109,7 @@ export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn, s
 }
 
 /** @internal */
-export function toCompareGroupValue(rows: IDataRow[], col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
+export function toCompareGroupValue(rows: ISequence<IDataRow>, col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
   const vs = new LazyBoxPlotData(rows.map((row) => col.getNumber(row)));
   return <number>vs[sortMethod];
 }

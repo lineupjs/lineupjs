@@ -7,9 +7,9 @@ import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyVa
 import {IEventListener} from '../internal/AEventDispatcher';
 import Column from './Column';
 import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter, isEqualDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup, isDefaultDateGrouper, defaultDateGrouper} from './IDateColumn';
-import {median} from 'd3-array';
 import {defaultGroup} from './Group';
 import {equal} from '../internal/utils';
+import {ISequence, isSeqEmpty} from '../internal/interable';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
@@ -193,23 +193,20 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
 /**
  * @internal
  */
-export function choose(rows: IDataRow[], grouper: IDateGrouper | null, col: IDateColumn): { value: number | null, name: string } {
-  const vs = <Date[]>rows.map((d) => col.getDate(d)).filter((d) => d instanceof Date);
-  if (vs.length === 0) {
+export function choose(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn): { value: number | null, name: string } {
+  const vs = <ISequence<Date>>rows.map((d) => col.getDate(d)).filter((d) => d instanceof Date);
+  if (isSeqEmpty(vs)) {
     return {value: null, name: ''};
   }
-  const median = trueMedian(vs, (d) => d.getTime())!;
+  const median = trueMedian(vs.map((d) => d.getTime()))!;
   if (!grouper) {
     return {value: median, name: (new Date(median)).toString()};
   }
   return toDateGroup(grouper, new Date(median));
 }
 
-function trueMedian(dates: Date[], acc: (d: Date) => number) {
-  if (dates.length % 2 === 1) {
-    return median(dates, acc);
-  }
+function trueMedian(dates: ISequence<number>) {
   // to avoid interpolating between the centers do it manually
-  const s = dates.slice().sort((a, b) => a.getTime() - b.getTime());
-  return s[Math.floor(s.length / 2)].getTime();
+  const s = Uint32Array.from(dates).sort();
+  return s[Math.floor(s.length / 2)];
 }

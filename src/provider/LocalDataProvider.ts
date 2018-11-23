@@ -241,6 +241,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private seqRawRows(indices: IndicesArray) {
+    if (indices.length < 10000) { // small copy
+      return  mapIndices(indices, (i) => this._dataRows[i]);
+    }
     // what about filter invalid indices
     return lazySeq(indices).map((i) => this._dataRows[i]);
   }
