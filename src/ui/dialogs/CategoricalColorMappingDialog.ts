@@ -5,6 +5,7 @@ import {cssClass} from '../../styles';
 import { DEFAULT_COLOR_FUNCTION, ReplacmentColorMappingFunction} from '../../model/CategoricalColorMappingFunction';
 import CategoricalsColumn from '../../model/CategoricalsColumn';
 import CategoricalMapColumn from '../../model/CategoricalMapColumn';
+import {color} from 'd3-color';
 
 /** @internal */
 export default class CategoricalColorMappingDialog extends ADialog {
@@ -21,7 +22,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
     node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
         ${this.column.categories.map((d) => `
           <div class="${cssClass('dialog-color-table-entry')}">
-            <input id="${id}${d.name}" data-cat="${d.name}" type="color" value="${mapping.apply(d)}>
+            <input id="${id}${d.name}" data-cat="${d.name}" type="color" value="${color(mapping.apply(d))!.hex()}">
             <label for="${id}${d.name}">${d.label}</label>
           </div>`).join('')}
     </div>`);
@@ -30,7 +31,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
   reset() {
     const cats = this.column.categories;
     this.forEach('[data-cat]', (n: HTMLInputElement, i) => {
-      n.value = cats[i]!.color;
+      n.value = color(cats[i]!.color)!.hex();
     });
     this.column.setColorMapping(DEFAULT_COLOR_FUNCTION);
   }
@@ -40,7 +41,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
     const map = new Map<ICategory, string>();
     this.forEach('input[data-cat]', (n: HTMLInputElement, i) => {
       const cat = cats[i];
-      if (cat.color !== n.value) {
+      if (color(cat.color)!.hex() !== n.value) {
         map.set(cat, n.value);
       }
     });

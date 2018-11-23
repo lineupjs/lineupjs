@@ -127,6 +127,14 @@
   }
 }
 
+.#{$lu_css_prefix}-dialog-color-table-entry {
+  min-width: 10em;
+
+  > input {
+    width: 3em;
+  }
+}
+
 .#{$lu_css_prefix}-dialog-filter-table-color {
   width: 1.2em;
   margin: 0 0.5em;
