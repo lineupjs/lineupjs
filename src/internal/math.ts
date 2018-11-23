@@ -1,6 +1,6 @@
 import {histogram, quantile} from 'd3-array';
 import {ICategory, isMissingValue} from '../model';
-import {IMappingFunction} from '../model/MappingFunction';
+import {IIterable} from './interable';
 
 export interface INumberBin {
   x0: number;
@@ -68,12 +68,14 @@ export class LazyBoxPlotData implements IStatistics {
 
   private readonly histGen: (data: number[]) => INumberBin[];
 
-  constructor(values: number[], histGen?: (data: number[]) => INumberBin[]) {
+  constructor(values: IIterable<number>, histGen?: (data: number[]) => INumberBin[]) {
     // filter out NaN
     let min = Number.POSITIVE_INFINITY;
     let max = Number.NEGATIVE_INFINITY;
     let sum = 0;
+    let length = 0;
     this.values = Float32Array.from(values.filter((v) => {
+      length += 1;
       if (isMissingValue(v)) {
         return false;
       }
@@ -82,7 +84,7 @@ export class LazyBoxPlotData implements IStatistics {
       sum += v;
       return true;
     }));
-    this.missing = values.length - this.values.length;
+    this.missing = length - this.values.length;
 
     if (this.values.length === 0) {
       this.max = this.min = this.mean = NaN;
@@ -99,7 +101,7 @@ export class LazyBoxPlotData implements IStatistics {
       return;
     }
     const hist = histogram();
-    hist.thresholds(getNumberOfBins(values.length));
+    hist.thresholds(getNumberOfBins(length));
     this.histGen = <any>hist;
   }
 
@@ -209,7 +211,7 @@ function cached() {
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeStats(arr: number[], range?: [number, number], bins?: number): IStatistics {
+export function computeStats(arr: IIterable<number>, range?: [number, number], bins?: number): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -243,25 +245,25 @@ export function computeStats(arr: number[], range?: [number, number], bins?: num
 /**
  * computes a categorical histogram
  * @param arr the data array
- * @param acc the accessor
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function computeHist<T>(arr: T[], acc: (row: T) => ICategory | null, categories: ICategory[]): ICategoricalStatistics {
+export function computeHist(arr: IIterable<ICategory | null>, categories: ICategory[]): ICategoricalStatistics {
   const m = new Map<string, number>();
   let missingCount = 0;
   categories.forEach((cat) => m.set(cat.name, 0));
 
-  for (const a of arr) {
-    const v = acc(a);
+  arr.forEach((v) => {
     if (v == null) {
       missingCount += 1;
-      continue;
+      return;
     }
     m.set(v.name, (m.get(v.name) || 0) + 1);
-  }
+  });
+
   const entries: { cat: string; y: number }[] = categories.map((d) => ({cat: d.name, y: m.get(d.name)!}));
+
   return {
     maxBin: entries.reduce((a, b) => Math.max(a, b.y), Number.NEGATIVE_INFINITY),
     hist: entries,
