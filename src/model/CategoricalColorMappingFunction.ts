@@ -23,17 +23,18 @@ export const DEFAULT_COLOR_FUNCTION: ICategoricalColorMappingFunction = {
 };
 
 export class ReplacmentColorMappingFunction implements ICategoricalColorMappingFunction {
-  constructor(private readonly map: Map<ICategory, string>) {
-    // nothing to do
+  public readonly map: ReadonlyMap<string, string>;
+  constructor(map: Map<ICategory | string, string>) {
+    this.map = new Map(Array.from(map.entries()).map(([k, v]) => <[string, string]>[typeof k === 'string' ? k : k.name, v]));
   }
 
   apply(v: ICategory) {
-    return this.map.has(v) ? this.map.get(v)! : DEFAULT_COLOR_FUNCTION.apply(v);
+    return this.map.has(v.name) ? this.map.get(v.name)! : DEFAULT_COLOR_FUNCTION.apply(v);
   }
 
   dump() {
     const r: any = {};
-    this.map.forEach((v, k) => r[k.name] = v);
+    this.map.forEach((v, k) => r[k] = v);
     return r;
   }
 
