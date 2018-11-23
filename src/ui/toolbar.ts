@@ -29,6 +29,7 @@ import ColorMappingDialog from './dialogs/ColorMappingDialog';
 import MappingDialog from './dialogs/MappingDialog';
 import DateFilterDialog from './dialogs/DateFilterDialog';
 import {cssClass} from '../styles';
+import CategoricalColorMappingDialog from './dialogs/CategoricalColorMappingDialog';
 
 export interface IUIOptions {
   shortcut: boolean|'only';

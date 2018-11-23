@@ -3,7 +3,6 @@ import {IMapAbleDesc} from './MappingFunction';
 import Column from './Column';
 import {equal} from '../internal/utils';
 import {scaleLinear} from 'd3-scale';
-import {ICategory} from './ICategoricalColumn';
 
 export interface IColorMappingFunctionBase {
   apply(v: number): string;
