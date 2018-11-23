@@ -133,6 +133,11 @@
   > input {
     width: 3em;
   }
+
+  > select {
+    width: 100%;
+    margin: 1em 0;
+  }
 }
 
 .#{$lu_css_prefix}-dialog-filter-table-color {
