@@ -27,8 +27,8 @@ export abstract class ANumbersCellRenderer {
         normalized.push(NaN);
         raw.push(NaN);
       } else {
-        const box = <any>new LazyBoxPlotData(vs.map((d) => d.n), false);
-        const boxRaw = <any>new LazyBoxPlotData(vs.map((d) => d.raw), false);
+        const box = <any>new LazyBoxPlotData(vs.map((d) => d.n));
+        const boxRaw = <any>new LazyBoxPlotData(vs.map((d) => d.raw));
         normalized.push(box[col.getSortMethod()]);
         raw.push(boxRaw[col.getSortMethod()]);
       }

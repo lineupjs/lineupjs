@@ -61,10 +61,46 @@ export class LazyBoxPlotData implements IStatistics {
 
   readonly missing: number;
 
-  constructor(values: number[], noMissingValues: boolean = false, private readonly scale?: Readonly<IMappingFunction>, private readonly histGen?: (data: number[]) => INumberBin[]) {
+  readonly max: number;
+  readonly min: number;
+  readonly sum: number;
+  readonly mean: number;
+
+  private readonly histGen: (data: number[]) => INumberBin[];
+
+  constructor(values: number[], histGen?: (data: number[]) => INumberBin[]) {
     // filter out NaN
-    this.values = Float32Array.from(noMissingValues ? values : values.filter((d) => !isMissingValue(d)));
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+    let sum = 0;
+    this.values = Float32Array.from(values.filter((v) => {
+      if (isMissingValue(v)) {
+        return false;
+      }
+      min = Math.min(min, v);
+      max = Math.min(max, v);
+      sum += v;
+      return true;
+    }));
     this.missing = values.length - this.values.length;
+
+    if (this.values.length === 0) {
+      this.max = this.min = this.mean = NaN;
+      this.sum = 0;
+    } else {
+      this.max = max;
+      this.min = min;
+      this.sum = sum;
+      this.mean = sum / this.values.length;
+    }
+
+    if (histGen) {
+      this.histGen = histGen;
+      return;
+    }
+    const hist = histogram();
+    hist.thresholds(getNumberOfBins(values.length));
+    this.histGen = <any>hist;
   }
 
   get count() {
@@ -81,15 +117,6 @@ export class LazyBoxPlotData implements IStatistics {
   }
 
   @cached()
-  private get sortedMapped() {
-    return this.scale ? this.sorted.map((v) => this.scale!.apply(v)) : this.sorted;
-  }
-
-  private map(v: number | undefined) {
-    return this.scale && v != null && !isNaN(v) ? this.scale.apply(v!) : v!;
-  }
-
-  @cached()
   get hist() {
     if (!this.histGen) {
       return [];
@@ -103,38 +130,18 @@ export class LazyBoxPlotData implements IStatistics {
   }
 
   @cached()
-  get min() {
-    return this.map(this.values.reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY));
-  }
-
-  @cached()
-  get max() {
-    return this.map(this.values.reduce((a, b) => Math.max(a, b), Number.NEGATIVE_INFINITY));
-  }
-
-  @cached()
   get median() {
-    return this.map(quantile(this.sorted, 0.5));
+    return quantile(this.sorted, 0.5)!;
   }
 
   @cached()
   get q1() {
-    return this.map(quantile(this.sorted, 0.25));
+    return quantile(this.sorted, 0.25)!;
   }
 
   @cached()
   get q3() {
-    return this.map(quantile(this.sorted, 0.75));
-  }
-
-  @cached()
-  get sum() {
-    return this.map(this.values.reduce((a, b) => a + b, 0));
-  }
-
-  @cached()
-  get mean() {
-    return this.sum / this.values.length;
+    return quantile(this.sorted, 0.75)!;
   }
 
   @cached()
@@ -144,7 +151,7 @@ export class LazyBoxPlotData implements IStatistics {
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     // look for the closests value which is bigger than the computed left
-    const whiskerLow = this.sortedMapped.find((v) => left < v);
+    const whiskerLow = this.sorted.find((v) => left < v);
     return whiskerLow == null ? left : whiskerLow;
   }
 
@@ -155,7 +162,7 @@ export class LazyBoxPlotData implements IStatistics {
     const iqr = q3 - q1;
     const right = q3 + 1.5 * iqr;
     // look for the closests value which is smaller than the computed right
-    const s = this.sortedMapped;
+    const s = this.sorted;
     for (let i = s.length - 1; i >= 0; --i) {
       if (s[i] < right) {
         return s[i];
@@ -168,7 +175,7 @@ export class LazyBoxPlotData implements IStatistics {
   get outlier() {
     const left = this.whiskerLow;
     const right = this.whiskerHigh;
-    return Array.from(this.sortedMapped.filter((v) => (v < left || v > right)));
+    return Array.from(this.sorted.filter((v) => (v < left || v > right)));
   }
 }
 
@@ -229,7 +236,7 @@ export function computeStats(arr: number[], range?: [number, number], bins?: num
     hist.thresholds(getNumberOfBins(arr.length));
   }
 
-  return new LazyBoxPlotData(arr, false, undefined, <(data: number[]) => INumberBin[]>hist);
+  return new LazyBoxPlotData(arr, <(data: number[]) => INumberBin[]>hist);
 }
 
 

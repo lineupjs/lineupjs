@@ -86,7 +86,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data.map((d) => d.value), false, this.mapping);
+    return new LazyBoxPlotData(data.map((d) => isMissingValue(d.value) ? NaN : this.mapping.apply(d.value)));
   }
 
   getRange() {
