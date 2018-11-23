@@ -91,7 +91,7 @@ function deriveType(label: string, value: any, column: number | string, all: ()=
     const first = value[0];
     if (typeof first === 'number') {
       base.type = 'numbers';
-      base.domain = extent((<number[]>[]).concat(...values);
+      base.domain = extent((<number[]>[]).concat(...values));
       return base;
     }
     if (typeof first === 'boolean') {
