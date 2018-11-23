@@ -311,6 +311,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
   filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
   colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], { shortcut: false, featureCategory: 'ui', featureLevel: 'advanced' }),
+  colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], { shortcut: false, featureCategory: 'ui', featureLevel: 'advanced' }),
   script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true, featureCategory: 'model', featureLevel: 'advanced' }),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog, () => [], { featureCategory: 'model', featureLevel: 'advanced' }),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix], { featureCategory: 'model', featureLevel: 'advanced' }),
