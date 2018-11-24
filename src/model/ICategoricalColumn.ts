@@ -65,12 +65,12 @@ export function toCategory(cat: (string | Partial<ICategory>), value: number, ne
 /** @internal */
 export function toCompareCategoryValue(v: ICategory | null) {
   if (v == null) {
-    return [NaN, null];
+    return NaN;
   }
-  return [v.value, v.label.toLowerCase()];
+  return v.value;
 }
 
-export const COMPARE_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.STRING];
+export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT;
 
 function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn): {cat: ICategory | null, count: number} {
   const hist = new Map<ICategory | null, number>();
@@ -131,16 +131,16 @@ export function groupCompareCategory(a: ISequence<IDataRow>, b: ISequence<IDataR
 /** @internal */
 export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn): ICompareValue[] {
   if (isSeqEmpty(rows)) {
-    return [NaN, null, 0];
+    return [NaN, 0];
   }
   const mostFrequent = findMostFrequent(rows, col);
   if (mostFrequent.cat == null) {
-    return [NaN, null, 0];
+    return [NaN, 0];
   }
-  return [mostFrequent.cat.value, mostFrequent.cat.label.toLowerCase(), mostFrequent.count];
+  return [mostFrequent.cat.value, mostFrequent.count];
 }
 
-export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.STRING, ECompareValueType.UINT];
+export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.UINT];
 
 /** @internal */
 function compareCategory(a: ICategory | null, b: ICategory | null) {
