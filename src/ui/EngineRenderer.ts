@@ -234,26 +234,33 @@ export default class EngineRenderer extends AEventDispatcher {
       return;
     }
     const rankings = ranking ? [ranking] : this.rankings;
-    rankings.forEach((r) => {
+
+    for (const r of rankings) {
       const ranking = r.ranking;
       const order = ranking.getOrder();
       const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
-      cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
-        this.histCache.set(col.id, histo == null ? null : histo.stats(<INumberColumn>col, this.histCache.has(`-${col.id}`) ? (<IStatistics>this.histCache.get(`-${col.id}`)!).hist.length : undefined));
-      });
-      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: Column) => {
-        this.histCache.set(col.id, histo == null ? null : histo.hist(<ICategoricalColumn>col));
-      });
+      for (const col of cols) {
+        if (!col.isVisible()) {
+          continue;
+        }
+        if (isNumberColumn(col)) {
+          this.histCache.set(col.id, histo == null ? null : histo.stats(col, this.histCache.has(`-${col.id}`) ? (<IStatistics>this.histCache.get(`-${col.id}`)!).hist.length : undefined));
+        } else if (isCategoricalColumn(col)) {
+          this.histCache.set(col.id, histo == null ? null : histo.hist(<ICategoricalColumn>col));
+        }
+      }
       if (col) {
         // single update
         r.updateHeaderOf(col);
       } else {
         r.updateHeaders();
       }
-    });
+    }
 
-    this.updateAbles.forEach((u) => u(this.ctx));
+    for (const u of this.updateAbles) {
+      u(this.ctx);
+    }
   }
 
   private addRanking(ranking: Ranking) {
@@ -342,7 +349,7 @@ export default class EngineRenderer extends AEventDispatcher {
     const data = this.data.fetch(orders);
 
     // TODO support async
-    const localData = data.map((d) => d.map((d) => <IDataRow>d));
+    const localData = <IDataRow[][]>data;
 
     if (this.histCache.size === 0) {
       this.updateHist();
@@ -373,7 +380,8 @@ export default class EngineRenderer extends AEventDispatcher {
       };
     };
 
-    rankings.forEach((r, i) => {
+    for (let i = 0; i < rankings.length; ++i) {
+      const r = rankings[i];
       const grouped = r.groupData(localData[i]);
 
       const {height, defaultHeight, padding} = heightsFor(r.ranking, grouped);
@@ -386,7 +394,7 @@ export default class EngineRenderer extends AEventDispatcher {
         return pad;
       });
       r.render(grouped, rowContext);
-    });
+    }
 
     this.updateSlopeGraphs(rankings);
 
@@ -396,7 +404,9 @@ export default class EngineRenderer extends AEventDispatcher {
 
   private updateSlopeGraphs(rankings: EngineRanking[] = this.rankings) {
     const indices = new Set(rankings.map((d) => this.rankings.indexOf(d)));
-    this.slopeGraphs.forEach((s, i) => {
+
+    for (let i = 0; i < this.slopeGraphs.length; ++i) {
+      const s = this.slopeGraphs[i];
       if (s.hidden) {
         return;
       }
@@ -408,7 +418,7 @@ export default class EngineRenderer extends AEventDispatcher {
       const leftRanking = this.rankings[left];
       const rightRanking = this.rankings[right];
       s.rebuild(leftRanking.currentData, leftRanking.context, rightRanking.currentData, rightRanking.context);
-    });
+    }
   }
 
   setHighlight(dataIndex: number, scrollIntoView: boolean) {

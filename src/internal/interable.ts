@@ -66,6 +66,7 @@ class LazyFilter<T> implements ISequence<T> {
           v = it.next();
           continue outer;
         }
+        return v;
       }
       return v;
     };
@@ -143,7 +144,7 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
           done: true
         };
       }
-      const value = this.mapV(v.value, ++i);
+      const value = this.mapV(v.value, i);
       i++;
       return {
         value,
@@ -249,7 +250,6 @@ export function lazySeq<T>(it: Iterable<T>): ISequence<T> {
 
   Object.defineProperty(r, 'length', {
     enumerable: true,
-    writable: false,
     get() {
       return asArr().length;
     }
