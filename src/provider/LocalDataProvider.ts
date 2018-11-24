@@ -265,7 +265,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     let d: ISequence<IDataRow> | null = null;
     const getData = () => {
       if (d == null) {
-        return d = indices && indices.length < this._dataRows.length ? this.viewRawRows(indices) : this._dataRows;
+        return d = indices && indices.length < this._dataRows.length ? this.seqRawRows(indices) : lazySeq(this._dataRows);
       }
       return d;
     };

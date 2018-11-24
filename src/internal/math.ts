@@ -76,11 +76,15 @@ export class LazyBoxPlotData implements IStatistics {
     let length = 0;
     this.values = Float32Array.from(values.filter((v) => {
       length += 1;
-      if (isMissingValue(v)) {
+      if (v == null || isNaN(v)) {
         return false;
       }
-      min = Math.min(min, v);
-      max = Math.min(max, v);
+      if (v < min) {
+        min = v;
+      }
+      if (v > max) {
+        max = v;
+      }
       sum += v;
       return true;
     }));
