@@ -44,9 +44,10 @@ export declare function updateData(): void;
  * emitted when the histogram of a column needs to be updated
  * @asMemberOf EngineRanking
  * @param col the column to update the histogram of
+ * @param removeHist whether not to update but clean the stats
  * @event
  */
-export declare function updateHist(col: Column): void;
+export declare function updateHist(col: Column, removeHist?: boolean): void;
 /**
  * emitted when the highlight changes
  * @asMemberOf EngineRanking
@@ -197,6 +198,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       EngineRanking.disableListener(col);
       this.columns.splice(index, 1);
       this.reindex();
+      this.removeHist(col);
       this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_MOVE_COLUMN}.body`, (col: Column, index: number, old: number) => {
@@ -219,11 +221,25 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         const index = this.columns.findIndex((d) => d.c === col);
         EngineRanking.disableListener(col);
         this.columns.splice(index, 1);
+        this.removeHist(col);
       }
       this.reindex();
       this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
+
+    ranking.on(`${Ranking.EVENT_DIRTY_CACHES}.body`, function(this: IEventContext) {
+      if (!(this.origin instanceof Column)) {
+        return;
+      }
+      // update hists up to the ranking
+      let col = this.origin;
+      that.updateHist(col);
+      while (col.parent instanceof Column) {
+        col = col.parent;
+        that.updateHist(col);
+      }
+    });
 
     this.selection = new SelectionManager(this.ctx, body);
     this.selection.on(SelectionManager.EVENT_SELECT_RANGE, (from: number, to: number, additional: boolean) => {
@@ -690,6 +706,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private updateHist(col: Column) {
     this.events.fire(EngineRanking.EVENT_UPDATE_HIST, col);
   }
+  private removeHist(col: Column) {
+    this.events.fire(EngineRanking.EVENT_UPDATE_HIST, col, false);
+  }
 
   private updateColumn(index: number) {
     const columns = this.context.columns;
@@ -894,7 +913,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
       this.delayedUpdateColumnWidths();
     });
-    c.on(`${ValueColumn.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
     const debounceUpdate = debounce(() => {
       const valid = this.updateColumn(col.index);
       if (!valid) {
@@ -912,10 +930,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       if (!valid) {
         EngineRanking.disableListener(c); // destroy myself
       }
-      if (this.primaryType === Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED || this.primaryType === Column.EVENT_LABEL_CHANGED || this.primaryType === Column.EVENT_METADATA_CHANGED) {
-        return;
-      }
-      self.setTimeout(() => that.updateHist(col.c), 50);
     });
     c.on(`${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, () => {
       // replace myself upon renderer type change
@@ -955,7 +969,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private static disableListener(c: Column) {
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-    c.on(`${ValueColumn.EVENT_DATA_LOADED}.hist`, null);
     c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
     c.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, null);
     c.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, null);

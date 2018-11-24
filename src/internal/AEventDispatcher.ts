@@ -11,6 +11,9 @@ export interface IEventContext {
    */
   readonly source: AEventDispatcher;
 
+  /**
+   * who was sending this event in case of forwarding
+   */
   readonly origin: AEventDispatcher;
   /**
    * the event type

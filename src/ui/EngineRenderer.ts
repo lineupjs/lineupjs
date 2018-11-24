@@ -229,7 +229,12 @@ export default class EngineRenderer extends AEventDispatcher {
     this.slopeGraphs.forEach((r) => r.updateSelection(s));
   }
 
-  private updateHist(ranking?: EngineRanking, col?: Column) {
+  private updateHist(ranking?: EngineRanking, col?: Column, removeHist?: boolean) {
+    if (removeHist) {
+      this.histCache.delete(col!.id);
+      return;
+    }
+
     if (!this.options.summaryHeader) {
       return;
     }
@@ -283,7 +288,7 @@ export default class EngineRenderer extends AEventDispatcher {
       this.table.widthChanged();
     });
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
-    r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
+    r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column, removeHist) => this.updateHist(r, col, removeHist));
     this.forward(r, EngineRanking.EVENT_HIGHLIGHT_CHANGED);
     if (this.enabledHighlightListening) {
       r.enableHighlightListening(true);
