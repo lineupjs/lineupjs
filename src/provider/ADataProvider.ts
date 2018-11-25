@@ -6,7 +6,7 @@ import {
   Column, createRankDesc, IColumnDesc, IDataRow, IGroup, IOrderedGroup,
   ISelectionColumnDesc, models, IndicesArray
 } from '../model';
-import {dirty, dirtyHeader, dirtyValues} from '../model/Column';
+import {dirty, dirtyHeader, dirtyValues, dirtyCaches} from '../model/Column';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
@@ -89,6 +89,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_DIRTY = Ranking.EVENT_DIRTY;
   static readonly EVENT_DIRTY_HEADER = Ranking.EVENT_DIRTY_HEADER;
   static readonly EVENT_DIRTY_VALUES = Ranking.EVENT_DIRTY_VALUES;
+  static readonly EVENT_DIRTY_CACHES = Ranking.EVENT_DIRTY_CACHES;
   static readonly EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
   static readonly EVENT_ADD_DESC = 'addDesc';
   static readonly EVENT_CLEAR_DESC = 'clearDesc';
@@ -103,12 +104,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private readonly rankings: Ranking[] = [];
 
   /**
-   * stats caches Map<column id, stats>
+   * stats caches Map<column id, stats> for the whole dataset
    */
   private readonly dataStats = new Map<string, IStatistics | ICategoricalStatistics>();
 
   /**
-   * stats caches Map<column id, stats>
+   * stats caches Map<column id, stats> for a column in a ranking
    */
   private readonly rankingStats = new Map<string, IStatistics | ICategoricalStatistics>();
   /**
@@ -148,7 +149,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ADataProvider.EVENT_DATA_CHANGED,
       ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
-      ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
+      ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY_CACHES,
       ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED,
       ADataProvider.EVENT_ADD_DESC, ADataProvider.EVENT_CLEAR_DESC,
       ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
@@ -162,6 +163,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   on(type: typeof ADataProvider.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof ADataProvider.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof ADataProvider.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof ADataProvider.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof ADataProvider.EVENT_ORDER_CHANGED, listener: typeof orderChanged | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_DESC, listener: typeof addDesc | null): this;
   on(type: typeof ADataProvider.EVENT_CLEAR_DESC, listener: typeof clearDesc | null): this;
