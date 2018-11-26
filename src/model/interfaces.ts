@@ -100,7 +100,6 @@ export interface IGroupData extends Readonly<IGroup> {
   readonly rows: IDataRow[];
 }
 
-/** @internal */
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupData>item).name !== undefined; // use .name as separator
 }
