@@ -258,7 +258,6 @@ export interface IMapAbleDesc {
   colorMapping?: string | ((v: number)=>string) | any;
 }
 
-/** @internal */
 export function createMappingFunction(dump: any): IMappingFunction {
   if (dump.type === 'script') {
     const s = new ScriptMappingFunction();
