@@ -77,15 +77,15 @@ export default class EngineRenderer extends AEventDispatcher {
       asElement: domElementCache(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {
         const r = chooseRenderer(col, this.options.renderers);
-        return r.create(col, this.ctx, statsOf(col), imposer);
+        return r.create!(col, this.ctx, statsOf(col), imposer);
       },
       groupRenderer: (col: Column, imposer?: IImposer) => {
         const r = chooseGroupRenderer(col, this.options.renderers);
-        return r.createGroup(col, this.ctx, statsOf(col), imposer);
+        return r.createGroup!(col, this.ctx, statsOf(col), imposer);
       },
       summaryRenderer: (col: Column, interactive: boolean, imposer?: IImposer) => {
         const r = chooseSummaryRenderer(col, this.options.renderers);
-        return r.createSummary(col, this.ctx, interactive, interactive ? statsOf(col, true): null, imposer);
+        return r.createSummary!(col, this.ctx, interactive, interactive ? statsOf(col, true): null, imposer);
       },
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
