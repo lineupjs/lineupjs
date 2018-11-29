@@ -2,7 +2,7 @@ import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, Gri
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, ValueColumn, toGroupMeta} from '../model';
+import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, toGroupMeta} from '../model';
 import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';

@@ -1,5 +1,5 @@
 import {histogram, quantile} from 'd3-array';
-import {ICategory, isMissingValue} from '../model';
+import {ICategory} from '../model';
 import {ISequence} from './interable';
 
 export interface INumberBin {
