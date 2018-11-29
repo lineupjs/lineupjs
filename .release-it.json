@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run dist",
+  "src": {
+    "tagName": "v%s"
+  },
+  "npm": {
+    "publish": false
+  },
+  "github": {
+    "release": true,
+    "assets": ["dist/*.zip"]
+  }
+}

@@ -117,8 +117,8 @@ export default class ValueColumn<T> extends Column {
     const r = super.dump(toDescRef);
     r.loaded = this.loaded;
 
-    if (!this.loaded && r.rendererType === ValueColumn.RENDERER_LOADING) {
-      delete r.rendererType;
+    if (!this.loaded && r.renderer === ValueColumn.RENDERER_LOADING) {
+      delete r.renderer;
     }
     return r;
   }
