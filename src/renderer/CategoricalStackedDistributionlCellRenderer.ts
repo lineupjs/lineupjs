@@ -120,7 +120,7 @@ function stackedBar(col: ICategoricalColumn, unfilteredHist?: ICategoricalStatis
   };
 
   return {
-    template: `<div>${bins}<div title="Missing Values"></div>`, // no closing div to be able to append things
+    template: `<div>${bins}`, // no closing div to be able to append things
     update: unfilteredHist ? updateUnfiltered : updateSingle
   };
 }
