@@ -47,17 +47,19 @@ export function normalizeCompareValues(vs: ICompareValue[], comparators: {asc: b
   return comparators.length === 1 ? r[0] : r;
 }
 
+
+function asc(a: any, b: any) {
+  return a < b ? -1 : ((a > b) ? 1 : 0);
+}
+
+function desc(a: any, b: any) {
+  return a < b ? 1 : ((a > b) ? -1 : 0);
+}
+
 export function sortComplex<T extends {sort: ICompareValue[] | ICompareValue, i: number}>(arr: T[], comparators: {asc: boolean, v: ECompareValueType}[]) {
   if (arr.length < 2 || comparators.length === 0) {
     return arr;
   }
-
-  const asc = (a: any, b: any) => {
-    return a < b ? -1 : ((a > b) ? 1 : 0);
-  };
-  const desc = (a: any, b: any) => {
-    return a < b ? 1 : ((a > b) ? -1 : 0);
-  };
 
   switch (comparators.length) {
     case 1:
@@ -110,7 +112,7 @@ function sort(rawLength: number, arr: {i: number, sort?: ICompareValue[]}[], com
 }
 
 export interface ISortWorker {
-  sort(rawLength: number, arr: {i: number, sort?: ICompareValue[]}[], comparators?: {asc: boolean, v: ECompareValueType}[]): Promise<{order: IndicesArray, index2pos: IndicesArray}>;
+  sort(rawLength: number, arr: {i: number, sort?: ICompareValue[] | ICompareValue}[], comparators?: {asc: boolean, v: ECompareValueType}[]): Promise<{order: IndicesArray, index2pos: IndicesArray}>;
   terminate(): void;
 }
 
