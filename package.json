@@ -72,7 +72,7 @@
     "start": "webpack-dev-server --mode development --devtool source-map",
     "predist": "npm run build",
     "dist": "mkdirp dist && cross-zip ./build ./dist/lineupjs.zip",
-    "postdist": "npm run docs && cross-zip ./build/docs ./dist/lineupjs_docs.zip",
+    "postdist": "npm run docs && cross-zip ./build/docs ../dist/lineupjs_docs.zip",
     "preversion": "npm test",
     "prepare": "echo 'dummy prepare since prepack has no dev dependencies'",
     "prepack": "npm run clean && npm run compile && npm run build:prod",
