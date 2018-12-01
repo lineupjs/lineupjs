@@ -84,7 +84,7 @@ export default class EngineRenderer extends AEventDispatcher {
       },
       summaryRenderer: (col: Column, interactive: boolean, imposer?: IImposer) => {
         const r = chooseSummaryRenderer(col, this.options.renderers);
-        return r.createSummary!(col, this.ctx, interactive, interactive ? statsOf(col, true): null, imposer);
+        return r.createSummary!(col, this.ctx, interactive, interactive ? statsOf(col, true) : null, imposer);
       },
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
@@ -129,7 +129,7 @@ export default class EngineRenderer extends AEventDispatcher {
       if (!this.options.flags.advancedRankingFeatures) {
         toDisable.push('ranking');
       }
-       if (!this.options.flags.advancedModelFeatures) {
+      if (!this.options.flags.advancedModelFeatures) {
         toDisable.push('model');
       }
       if (!this.options.flags.advancedUIFeatures) {
@@ -139,7 +139,7 @@ export default class EngineRenderer extends AEventDispatcher {
         this.style.addRule('lineup_feature_disable', `
         ${toDisable.map((d) => `.${cssClass('feature')}-${d}.${cssClass('feature-advanced')}`).join(', ')}`, {
             display: 'none !important'
-        });
+          });
       }
     }
 
@@ -197,6 +197,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, null);
     this.data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
     this.data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, null);
+    this.data.on(`${ADataProvider.EVENT_BUSY}.body`, null);
 
     this.rankings.forEach((r) => this.table.remove(r));
     this.rankings.splice(0, this.rankings.length);
@@ -219,6 +220,9 @@ export default class EngineRenderer extends AEventDispatcher {
       this.setHighlightToNearest(indices, true);
     });
     data.on(`${ADataProvider.EVENT_DATA_CHANGED}.body`, () => this.updateUnfilterdHists());
+    data.on(`${ADataProvider.EVENT_BUSY}.body`, (busy) => this.node.classList.toggle(cssClass('busy'), busy));
+
+    (<any>this.ctx).provider = data;
 
     this.data.getRankings().forEach((r) => this.addRanking(r));
   }
@@ -462,7 +466,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
   enableHighlightListening(enable: boolean) {
     for (const ranking of this.rankings) {
-        ranking.enableHighlightListening(enable);
+      ranking.enableHighlightListening(enable);
     }
     this.enabledHighlightListening = enable;
   }

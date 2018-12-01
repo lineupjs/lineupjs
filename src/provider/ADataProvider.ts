@@ -73,7 +73,15 @@ export declare function jumpToNearest(dataIndices: number[]): void;
  * @asMemberOf ADataProvider
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup|IGroup[], value: boolean, showTopN: number): void;
+export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, showTopN: number): void;
+
+
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function busy(busy: boolean): void;
+
 
 /**
  * a basic data provider holding the data and rankings
@@ -94,6 +102,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_CLEAR_DESC = 'clearDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
   static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
+  static readonly EVENT_BUSY = 'busy';
 
   /**
    * all rankings
@@ -126,7 +135,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   /**
    * lookup map of a column type to its column implementation
    */
-  readonly columnTypes: { [columnType: string]: typeof Column };
+  readonly columnTypes: {[columnType: string]: typeof Column};
 
   protected readonly multiSelections: boolean;
 
@@ -146,7 +155,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   protected createEventList() {
     return super.createEventList().concat([
-      ADataProvider.EVENT_DATA_CHANGED,
+      ADataProvider.EVENT_DATA_CHANGED, ADataProvider.EVENT_BUSY,
       ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY_CACHES,
@@ -155,6 +164,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
   }
 
+  on(type: typeof ADataProvider.EVENT_BUSY, listener: typeof busy | null): this;
   on(type: typeof ADataProvider.EVENT_DATA_CHANGED, listener: typeof dataChanged | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof ADataProvider.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
@@ -195,7 +205,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return r;
   }
 
+  protected fireBusy(busy: boolean) {
+    this.fire(ADataProvider.EVENT_BUSY, busy);
+  }
+
   takeSnapshot(col: Column): Ranking {
+    this.fireBusy(true);
     const r = this.cloneRanking();
     const ranking = col.findMyRanker();
     // by convention copy all support types and the first string column
@@ -226,6 +241,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       }
     });
     this.insertRanking(r);
+    this.fireBusy(false);
     return r;
   }
 
@@ -236,7 +252,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
     const that = this;
     //delayed reordering per ranking
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: { source: Ranking }) {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: {source: Ranking}) {
       that.triggerReorder(this.source);
     }, 100));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
@@ -244,9 +260,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   protected triggerReorder(ranking: Ranking) {
+    this.fireBusy(true);
     Promise.resolve(this.sort(ranking)).then((order) => {
       unifyParents(order);
       ranking.setGroups(order);
+      this.fireBusy(false);
     });
   }
 
@@ -451,7 +469,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   find(idOrFilter: string | ((col: Column) => boolean)): Column | null {
     //convert to function
-    const filter = typeof(idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
+    const filter = typeof (idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
 
     for (const ranking of this.rankings) {
       const r = ranking.find(filter);
