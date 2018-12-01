@@ -1,6 +1,7 @@
 import {IGroup} from './interfaces';
 
-export declare type IndicesArray = ReadonlyArray<number> | Uint32Array | Uint16Array | Uint8Array;
+export declare type UIntTypedArray = Uint8Array | Uint16Array | Uint32Array;
+export declare type IndicesArray = ReadonlyArray<number> | UIntTypedArray;
 
 export interface IOrderedGroup extends IGroup {
   order: IndicesArray;

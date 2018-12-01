@@ -1,7 +1,7 @@
 import {computeHist, computeNormalizedStats} from '../internal';
 import Column, {
   defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn,
-  IOrderedGroup, ICompareValue,
+  IOrderedGroup,
   NumberColumn,
   IndicesArray,
   mapIndices,
@@ -10,7 +10,7 @@ import Column, {
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {ISortWorker, sortComplex, chooseByLength, local, WorkerSortWorker, normalizeCompareValues} from './sort';
+import {ISortWorker, sortComplex, chooseByLength, local, WorkerSortWorker, CompareLookup} from './sort';
 import ADataProvider from './ADataProvider';
 import {ISequence, lazySeq} from '../internal/interable';
 
@@ -30,7 +30,7 @@ export interface ILocalDataProviderOptions {
 
 interface ISortHelper {
   group: IGroup;
-  rows: {i: number, sort?: ICompareValue[] | ICompareValue}[];
+  rows: number[];
 }
 
 /**
@@ -50,7 +50,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private sortWorker: ISortWorker = new WorkerSortWorker(); // local
+  private sortWorker: ISortWorker = local; // new WorkerSortWorker(); //
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -182,8 +182,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     const groups = new Map<string, ISortHelper>();
-
-    const types = isSortedBy ? ranking.toCompareValueType() : undefined;
+    const lookups = isSortedBy ? new CompareLookup(this._data.length, ranking.toCompareValueType()) : undefined;
 
     for (const r of this._dataRows) {
       if (filter && !filter(r)) {
@@ -191,11 +190,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
       }
       const group = ranking.grouper(r) || defaultGroup;
       const groupKey = group.name.toLowerCase();
-      const sort = isSortedBy ? normalizeCompareValues(ranking.toCompareValue(r), types!) : undefined;
+      if (lookups) {
+        lookups.push(r.i, ranking.toCompareValue(r));
+      }
       if (groups.has(groupKey)) {
-        groups.get(groupKey)!.rows.push({i: r.i, sort});
+        groups.get(groupKey)!.rows.push(r.i);
       } else {
-        groups.set(groupKey, {group, rows: [{i: r.i, sort}]});
+        groups.set(groupKey, {group, rows: [r.i]});
       }
     }
 
@@ -203,31 +204,30 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return [];
     }
 
+    const groupLookup = isGroupedSortedBy ? new CompareLookup(groups.size, ranking.toGroupCompareValueType()) : undefined;
 
     return Promise.all(Array.from(groups.values()).map((g, i) => {
       const group = g.group;
-      return this.sortWorker.sort(this._data.length, g.rows, types)
+      return this.sortWorker.sort(this._data.length, g.rows, groups.size === 1, lookups)
         // to group info
         .then(({order, index2pos}) => {
           const o: IOrderedGroup = Object.assign({order, index2pos}, group);
 
           // compute sort group value
-          let sort: ICompareValue[] | null = null;
-          if (isGroupedSortedBy) {
+          if (groupLookup) {
             const groupData = Object.assign({rows: lazySeq(order).map((d) => this._dataRows[d]), meta: <IGroupMeta>'first last'}, group);
-            sort = ranking.toGroupCompareValue(groupData);
+            groupLookup.push(i, ranking.toGroupCompareValue(groupData));
           }
-          return {o, sort, i};
+          return o;
         });
-    })).then((groupHelper) => {
-
+    })).then((groups) => {
       // sort groups
-      if (isGroupedSortedBy) {
-        sortComplex(<{sort: ICompareValue[], i: number}[]>groupHelper, ranking.toGroupCompareValueType());
-      } else {
-        groupHelper.sort((a, b) => a.o.name.toLowerCase().localeCompare(b.o.name.toLowerCase()));
+      if (!groupLookup) {
+        return groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
       }
-      return groupHelper.map((d) => d.o);
+      const groupIndices = groups.map((_, i) => i);
+      sortComplex(groupIndices, groupLookup.sortOrders);
+      return groupIndices.map((i) => groups[i]);
     });
   }
 
