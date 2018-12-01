@@ -16,38 +16,46 @@ export function gridClass(idPrefix: string, column: Column) {
 }
 
 /** @internal */
-export function createData(col: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
+export function createData(parent: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
   const padding = COLUMN_PADDING;
   let offset = 0;
-  const cols = col.children.map((d) => {
+  const cols = parent.children.map((column) => {
     const shift = offset;
-    const width = d.getWidth();
+    const width = column.getWidth();
     offset += width;
     offset += (!stacked ? padding : 0);
 
-    const renderer = mode === ERenderMode.CELL ? context.renderer(d, imposer) : null;
-    const groupRenderer = mode === ERenderMode.GROUP ? context.groupRenderer(d, imposer) : null;
-    const summaryRenderer = mode === ERenderMode.GROUP ? context.summaryRenderer(d, false, imposer) : null;
+    const renderer = mode === ERenderMode.CELL ? context.renderer(column, imposer) : null;
+    const groupRenderer = mode === ERenderMode.GROUP ? context.groupRenderer(column, imposer) : null;
+    const summaryRenderer = mode === ERenderMode.GROUP ? context.summaryRenderer(column, false, imposer) : null;
     let template: string = '';
     let rendererId: string = '';
     switch (mode) {
       case ERenderMode.CELL:
         template = renderer!.template;
-        rendererId = col.getRenderer();
+        rendererId = column.getRenderer();
         break;
       case ERenderMode.GROUP:
         template = groupRenderer!.template;
-        rendererId = col.getGroupRenderer();
+        rendererId = column.getGroupRenderer();
         break;
       case ERenderMode.SUMMARY:
         template = summaryRenderer!.template;
-        rendererId = col.getSummaryRenderer();
+        rendererId = column.getSummaryRenderer();
         break;
     }
     // inject data attributes
-    template = template.replace(/^<([^ >]+)([ >])/, `<$1 data-column-id="${d.id}" data-renderer="${rendererId}"$2`);
+    template = template.replace(/^<([^ >]+)([ >])/, `<$1 data-column-id="${column.id}" data-renderer="${rendererId}"$2`);
+    // inject classes
+    if (/^<([^ >]+)class="([ >])/.test(template)) {
+      // has class attribute
+      template = template.replace(/^<([^ >]+)class="([ >])/, `<$1 class="${cssClass(`renderer-${rendererId}`)} $2`);
+    } else {
+      // inject as the others
+      template = template.replace(/^<([^ >]+)([ >])/, `<$1 class="${cssClass(`renderer-${rendererId}`)}"$2`);
+    }
     return {
-      column: d,
+      column,
       shift,
       width,
       template,
@@ -91,7 +99,8 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         cols.forEach((col, ci) => {
           const weight = col.column.getWidth() / total;
           const cnode = children[ci];
-          cnode.classList.add(cssClass('stack-sub'));
+          cnode.classList.add(cssClass('stack-sub'), cssClass('detail'));
+          cnode.dataset.group = 'd';
           cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
           if (!useGrid) {
             cnode.style.width = `${round(weight * 100, 2)}%`;
@@ -144,6 +153,8 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         cols.forEach((col, ci) => {
           const weight = col.column.getWidth() / total;
           const cnode = children[ci];
+          cnode.classList.add(cssClass('stack-sub'), cssClass('group'));
+          cnode.dataset.group = 'g';
           if (!useGrid) {
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = `${padding}px`;

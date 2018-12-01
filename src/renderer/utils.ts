@@ -93,6 +93,7 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
       cnode.dataset.columnId = col.column.id;
       // store current renderer
       cnode.dataset.renderer = col.rendererId;
+      cnode.classList.add(cssClass(`renderer-${col.rendererId}`));
     });
     return;
   }
@@ -121,9 +122,9 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
     let cnode = <HTMLElement>node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
       cnode = ctx.asElement(col.template);
-      cnode.classList.add(cssClass('renderer'));
       cnode.dataset.columnId = col.column.id;
       cnode.dataset.renderer = col.rendererId;
+      cnode.classList.add(cssClass(`renderer-${col.rendererId}`));
     }
     node.appendChild(cnode);
   });
