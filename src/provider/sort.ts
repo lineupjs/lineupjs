@@ -162,6 +162,8 @@ export class WorkerSortWorker implements ISortWorker {
   constructor() {
     this.worker = createWorker([
       chooseByLength.toString(),
+      asc.toString(),
+      desc.toString(),
       sortComplex.toString(),
       sort2indices.toString(),
       toFunctionBody(sortWorkerMain)

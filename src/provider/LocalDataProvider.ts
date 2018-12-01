@@ -10,7 +10,7 @@ import Column, {
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {ISortWorker, sortComplex, chooseByLength, local, normalizeCompareValues} from './sort';
+import {ISortWorker, sortComplex, chooseByLength, local, WorkerSortWorker, normalizeCompareValues} from './sort';
 import ADataProvider from './ADataProvider';
 import {ISequence, lazySeq} from '../internal/interable';
 
@@ -50,7 +50,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private sortWorker: ISortWorker = local; // new WorkerSortWorker();
+  private sortWorker: ISortWorker = new WorkerSortWorker(); // local
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
