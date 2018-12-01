@@ -4,7 +4,7 @@
     "tagName": "v%s"
   },
   "npm": {
-    "publish": false
+    "publish": true
   },
   "github": {
     "release": true,
