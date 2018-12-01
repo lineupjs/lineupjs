@@ -891,6 +891,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const col = (isMultiLevelColumn(c) && !c.getCollapsed()) ? new MultiLevelRenderColumn(c, index, this.renderCtx, this.roptions.flags) : new RenderColumn(c, index, this.renderCtx, this.roptions.flags);
 
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
+      // replace myself upon width change since we renderers are allowed to
+      col.renderers = this.ctx.createRenderer(c);
       this.delayedUpdateColumnWidths();
     });
     c.on(`${ValueColumn.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
