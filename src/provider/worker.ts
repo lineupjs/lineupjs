@@ -24,10 +24,13 @@ export function toFunctionBody(f: Function) {
   return source.slice(source.indexOf('{') + 1, source.lastIndexOf('}'));
 }
 
-export function createWorker(fs: (string | Function)[]) {
+export function createWorkerCodeBlob(fs: (string | Function)[]) {
   const sources = fs.map((d) => d.toString()).join('\n\n');
 
   const blob = new Blob([sources], {type: 'application/javascript'});
+  return URL.createObjectURL(blob);
+}
 
-  return new Worker(URL.createObjectURL(blob));
+export function createWorker(fs: (string | Function)[]) {
+  return new Worker(createWorkerCodeBlob(fs));
 }

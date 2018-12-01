@@ -1,7 +1,7 @@
 import {ICompareValue} from '../model/Column';
 import {FIRST_IS_NAN, FIRST_IS_MISSING} from '../model/missing';
 import {IndicesArray, UIntTypedArray} from '../model';
-import {createWorker, IPoorManWorkerScope, toFunctionBody} from './worker';
+import {createWorker, IPoorManWorkerScope, toFunctionBody, createWorkerCodeBlob} from './worker';
 import {ISequence} from '../internal/interable';
 
 export enum ECompareValueType {
@@ -239,37 +239,79 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   });
 }
 
+const SHOULD_USE_WORKER = 50000;
+const MAX_WORKER_THREADS = 10;
+const MIN_WORKER_THREADS = 2;
+const THREAD_CLEANUP_TIME = 2;
+
 
 export class WorkerSortWorker implements ISortWorker {
-  private readonly worker: Worker;
+  private readonly workerPool: Worker[] = [];
+  private cleanUpWorkerTimer: number = -1;
+
+  private readonly workerBlob = createWorkerCodeBlob([
+    chooseByLength.toString(),
+    asc.toString(),
+    desc.toString(),
+    sortComplex.toString(),
+    order2pos.toString(),
+    toFunctionBody(sortWorkerMain)
+  ]);
 
   constructor() {
-    this.worker = createWorker([
-      chooseByLength.toString(),
-      asc.toString(),
-      desc.toString(),
-      sortComplex.toString(),
-      order2pos.toString(),
-      toFunctionBody(sortWorkerMain)
-    ]);
+    // start with two worker
+    for (let i = 0; i < MIN_WORKER_THREADS; ++i) {
+      this.workerPool.push(new Worker(this.workerBlob));
+      this.workerPool.push(new Worker(this.workerBlob));
+    }
+  }
+
+  private readonly cleanUp = () => {
+    this.workerPool.splice(0, MIN_WORKER_THREADS).forEach((w) => w.terminate());
+  }
+
+  private checkOut() {
+    if (this.cleanUpWorkerTimer >= 0) {
+      clearTimeout(this.cleanUpWorkerTimer);
+      this.cleanUpWorkerTimer = -1;
+    }
+
+    if (this.workerPool.length > 0) {
+      return this.workerPool.shift()!;
+    }
+    return new Worker(this.workerBlob);
+  }
+
+  private checkIn(worker: Worker) {
+    this.workerPool.push(worker);
+
+    if (this.workerPool.length >= MAX_WORKER_THREADS) {
+      this.workerPool.splice(0, MAX_WORKER_THREADS).forEach((w) => w.terminate());
+    }
+    if (this.cleanUpWorkerTimer === -1) {
+      this.cleanUpWorkerTimer = self.setTimeout(this.cleanUp, THREAD_CLEANUP_TIME);
+    }
   }
 
   sort(rawLength: number, indices: number[], singleCall: boolean, lookups?: CompareLookup) {
 
-    if (!lookups) {
+    if (!lookups || indices.length < SHOULD_USE_WORKER) {
       // no thread needed
-      return sort(rawLength, indices, singleCall);
+      return sort(rawLength, indices, singleCall, lookups);
     }
 
     return new Promise<{order: IndicesArray, index2pos: IndicesArray}>((resolve) => {
       const uid = Math.random();
+
+      const worker = this.checkOut();
 
       const receiver = (msg: MessageEvent) => {
         const r = <ISortMessageResponse>msg.data;
         if (r.uid !== uid) {
           return;
         }
-        this.worker.removeEventListener('message', receiver);
+        worker.removeEventListener('message', receiver);
+        this.checkIn(worker);
         resolve({order: r.order, index2pos: r.index2pos});
       };
 
@@ -282,8 +324,8 @@ export class WorkerSortWorker implements ISortWorker {
         toTransfer.push(...lookups.transferAbles);
       }
 
-      this.worker.addEventListener('message', receiver);
-      this.worker.postMessage(<ISortMessageRequest>{
+      worker.addEventListener('message', receiver);
+      worker.postMessage(<ISortMessageRequest>{
         uid,
         rawLength,
         indices: indexArray,
@@ -293,6 +335,6 @@ export class WorkerSortWorker implements ISortWorker {
   }
 
   terminate() {
-    this.worker.terminate();
+    this.workerPool.splice(0, this.workerPool.length).forEach((w) => w.terminate());
   }
 }
