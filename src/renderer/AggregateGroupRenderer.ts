@@ -4,7 +4,7 @@ import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
-const AGGREGATE_TO_TOP = 5;
+const AGGREGATE_TO_TOP = 0;
 
 const SHIFT = 0;
 
