@@ -50,7 +50,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private sortWorker: ISortWorker = local; // new WorkerSortWorker(); //
+  private sortWorker: ISortWorker = new WorkerSortWorker(); //
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
