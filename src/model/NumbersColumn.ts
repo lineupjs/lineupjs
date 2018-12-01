@@ -140,7 +140,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   getRawValue(row: IDataRow) {
-    const r = super.getValue(row);
+    const r = super.getRaw(row);
     return r == null ? [] : r.map((d) => isMissingValue(d) ? NaN : +d);
   }
 

@@ -70,7 +70,7 @@ export function toCompareCategoryValue(v: ICategory | null) {
   return v.value;
 }
 
-export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT;
+export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT_ASC;
 
 function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn): {cat: ICategory | null, count: number} {
   const hist = new Map<ICategory | null, number>();

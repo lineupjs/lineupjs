@@ -7,7 +7,8 @@ export enum ECompareValueType {
   FLOAT = 0,
   BINARY = 1,
   UINT = 2,
-  STRING = 3
+  STRING = 3,
+  FLOAT_ASC = 4,
 }
 
 /**
@@ -34,6 +35,7 @@ export function normalizeCompareValues(vs: ICompareValue[], comparators: {asc: b
     switch (d.v) {
       case ECompareValueType.BINARY:
       case ECompareValueType.UINT:
+      case ECompareValueType.FLOAT_ASC:
         return v == null || isNaN(<number>v) ? missingInt : v;
       case ECompareValueType.STRING:
         return v == null || v === '' ? missingString : v;
@@ -49,10 +51,10 @@ export function sortComplex<T extends {sort: ICompareValue[], i: number}>(arr: T
   }
 
   const asc = (a: any, b: any) => {
-    return a < b ? 1 : ((a > b) ? -1 : 0);
+    return a < b ? -1 : ((a > b) ? 1 : 0);
   };
   const desc = (a: any, b: any) => {
-    return a < b ? -1 : ((a > b) ? 1 : 0);
+    return a < b ? 1 : ((a > b) ? -1 : 0);
   };
 
   switch (comparators.length) {
