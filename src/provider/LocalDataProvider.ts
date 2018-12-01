@@ -31,7 +31,7 @@ export interface ILocalDataProviderOptions {
 
 interface ISortHelper {
   group: IGroup;
-  rows: {i: number, sort?: ICompareValue[]}[];
+  rows: {i: number, sort?: ICompareValue[] | ICompareValue}[];
 }
 
 /**
