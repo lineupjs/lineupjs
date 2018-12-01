@@ -11,7 +11,6 @@ import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 import {ISortWorker, sortComplex, chooseByLength, local, normalizeCompareValues} from './sort';
-import {range} from 'd3-array';
 import ADataProvider from './ADataProvider';
 import {ISequence, lazySeq} from '../internal/interable';
 
@@ -172,10 +171,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     if (!isGroupedBy && !isSortedBy && !filter) {
       // initial no sorting required just index mapping
-      const order = chooseByLength(this._data.length);
-      order.set(range(this._data.length));
-      const index2pos = chooseByLength(this._data.length);
-      index2pos.set(range(1, this._data.length + 1));
+      const l = this._data.length;
+      const order = chooseByLength(l);
+      const index2pos = order.slice();
+      for (let i = 0; i < l; ++i) {
+        order[i] = i;
+        index2pos[i] = i + 1; // shift since default is 0
+      }
       return [Object.assign({order, index2pos}, defaultGroup)];
     }
 

@@ -150,38 +150,57 @@ export class LazyBoxPlotData implements IStatistics {
     return quantile(this.sorted, 0.75)!;
   }
 
+
   @cached()
-  get whiskerLow() {
+  private get whiskers() {
     const q1 = this.q1;
     const q3 = this.q3;
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
-    // look for the closests value which is bigger than the computed left
-    const whiskerLow = this.sorted.find((v) => left < v);
-    return whiskerLow == null ? left : whiskerLow;
-  }
-
-  @cached()
-  get whiskerHigh() {
-    const q1 = this.q1;
-    const q3 = this.q3;
-    const iqr = q3 - q1;
     const right = q3 + 1.5 * iqr;
-    // look for the closests value which is smaller than the computed right
+
     const s = this.sorted;
-    for (let i = s.length - 1; i >= 0; --i) {
-      if (s[i] < right) {
-        return s[i];
+    let outliers: number[] = [];
+    // look for the closests value which is bigger than the computed left
+    let whiskerLow = left;
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < s.length; ++i) {
+      const v = s[i];
+      if (left < v) {
+        whiskerLow = v;
+        break;
       }
+      // outlier
+      outliers.push(v);
     }
-    return right;
+    // look for the closests value which is smaller than the computed right
+    let whiskerHigh = right;
+    const reversedOutliers: number[] = [];
+    for (let i = s.length - 1; i >= 0; --i) {
+      const v = s[i];
+      if (v < right) {
+        whiskerHigh = v;
+        break;
+      }
+      // outlier
+      reversedOutliers.push(v);
+    }
+
+    outliers = outliers.concat(reversedOutliers.reverse());
+
+    return {whiskerHigh, whiskerLow, outliers};
   }
 
-  @cached()
+  get whiskerLow() {
+    return this.whiskers.whiskerLow;
+  }
+
+  get whiskerHigh() {
+    return this.whiskers.whiskerHigh;
+  }
+
   get outlier() {
-    const left = this.whiskerLow;
-    const right = this.whiskerHigh;
-    return Array.from(this.sorted.filter((v) => (v < left || v > right)));
+    return this.whiskers.outliers;
   }
 }
 

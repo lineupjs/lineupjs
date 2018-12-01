@@ -106,7 +106,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
   };
 
-  private readonly delayedUpdate: (this: { type: string }) => void;
+  private readonly delayedUpdate: (this: {type: string}) => void;
   private readonly delayedUpdateAll: () => void;
   private readonly delayedUpdateColumnWidths: () => void;
   private readonly columns: RenderColumn[];
@@ -172,7 +172,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     body.dataset.ranking = ranking.id;
 
     const that = this;
-    this.delayedUpdate = debounce((function (this: { type: string, primaryType: string }) {
+    this.delayedUpdate = debounce((function (this: {type: string, primaryType: string}) {
       if (this.type !== Ranking.EVENT_DIRTY_VALUES) {
         that.events.fire(EngineRanking.EVENT_UPDATE_DATA);
         return;
@@ -228,7 +228,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
 
-    ranking.on(`${Ranking.EVENT_DIRTY_CACHES}.body`, function(this: IEventContext) {
+    ranking.on(`${Ranking.EVENT_DIRTY_CACHES}.body`, function (this: IEventContext) {
       if (!(this.origin instanceof Column)) {
         return;
       }
@@ -271,7 +271,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       #${tableIds(this.tableId).tbody} > .${engineCssClass('tr')}.${cssClass('selected')} .${cssClass('hover-only')},
       #${tableIds(this.tableId).tbody} > .${engineCssClass('tr')}.${engineCssClass('highlighted')} .${cssClass('hover-only')}`, {
         visibility: 'visible'
-    });
+      });
   }
 
   on(type: typeof EngineRanking.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -347,7 +347,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     for (const col of this.visibleColumns.frozen) {
       width += this.columns[col].width + COLUMN_PADDING;
     }
-    for(let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
+    for (let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
       width += this.columns[col].width + COLUMN_PADDING;
     }
     if (width > 0) {
@@ -374,7 +374,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const shift = c.width + COLUMN_PADDING;
       ctx.translate(shift, 0);
     }
-    for(let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
+    for (let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
       const c = this.columns[col];
       if (c.renderCell(ctx, index)) {
         domColumns.push(c);
@@ -678,7 +678,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return super.forEachRow(adapter, inplace);
   }
 
-  updateSelection(selectedDataIndices: { has(i: number): boolean }) {
+  updateSelection(selectedDataIndices: {has(i: number): boolean}) {
     super.forEachRow((node: HTMLElement, rowIndex: number) => {
       if (this.renderCtx.isGroup(rowIndex)) {
         this.updateRow(node, rowIndex);
@@ -761,7 +761,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     //multiple groups
     let offset = 0;
-    groups.forEach((group) => {
+    for (const group of groups) {
       const length = group.order.length;
       // avoid copy
       const groupData = groups.length === 1 ? data : data.slice(offset, offset + length);
@@ -780,7 +780,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
           meta: toGroupMeta(i + metaShift, slice + metaShift)
         }, groupData[i]));
       }
-    });
+    }
     return r;
   }
 
