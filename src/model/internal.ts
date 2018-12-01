@@ -48,7 +48,7 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
   }
   const lookup = new Map<string, IGroupParent>();
 
-  const resolve = (g: IGroupParent): { g: IGroupParent, id: string } => {
+  const resolve = (g: IGroupParent): {g: IGroupParent, id: string} => {
     let id = g.name;
     if (g.parent) {
       const parent = resolve(g.parent);

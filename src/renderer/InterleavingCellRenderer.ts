@@ -89,7 +89,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
 }
 
 const dummyBin: INumberBin = {
-  length: 0,
+  count: 0,
   x0: 0,
   x1: 0
 };
@@ -107,8 +107,8 @@ function groupedHist(stats: (IStatistics | null)[]) {
         hist.push(dummyBin);
         return;
       }
-      if (bin.length > maxBin) {
-        maxBin = bin.length;
+      if (bin.count > maxBin) {
+        maxBin = bin.count;
       }
       hist.push(bin);
     });

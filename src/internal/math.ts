@@ -1,11 +1,10 @@
-import {histogram, quantile} from 'd3-array';
 import {ICategory} from '../model';
 import {ISequence} from './interable';
 
 export interface INumberBin {
   x0: number;
   x1: number;
-  length: number;
+  count: number;
 }
 
 export interface IBoxPlotData {
@@ -32,7 +31,7 @@ export interface IStatistics extends IAdvancedBoxPlotData {
 
 export interface ICategoricalBin {
   cat: string;
-  y: number;
+  count: number;
 }
 
 export interface ICategoricalStatistics {
@@ -47,10 +46,31 @@ export interface ICategoricalStatistics {
  * @returns {number}
  */
 export function getNumberOfBins(length: number) {
+  if (length === 0) {
+    return 1;
+  }
   // as by default used in d3 the Sturges' formula
   return Math.ceil(Math.log(length) / Math.LN2) + 1;
 }
 
+export interface IHistGenerator {
+  bins: INumberBin[];
+  toBin(value: number): number;
+}
+
+function quantile(values: Float32Array, quantile: number) {
+  if (values.length === 0) {
+    return NaN;
+  }
+  const target = (values.length - 1) * quantile;
+  const index = Math.floor(target);
+  if (index === target) {
+    return values[index];
+  }
+  const v = values[index];
+  const vAfter = values[index + 1];
+  return v + (vAfter - v) * (target - index); // shift by change
+}
 
 /**
  * helper class to lazily compute box plotdata out of a given number array
@@ -66,14 +86,17 @@ export class LazyBoxPlotData implements IStatistics {
   readonly sum: number;
   readonly mean: number;
 
-  private readonly histGen: (data: number[]) => INumberBin[];
+  readonly hist: INumberBin[];
 
-  constructor(values: ISequence<number>, histGen?: (data: number[]) => INumberBin[]) {
+  constructor(values: ISequence<number>, histGen?: IHistGenerator) {
     // filter out NaN
     let min = Number.POSITIVE_INFINITY;
     let max = Number.NEGATIVE_INFINITY;
     let sum = 0;
     let length = 0;
+
+    this.hist = histGen ? histGen.bins : [];
+
     this.values = Float32Array.from(values.filter((v) => {
       length += 1;
       if (v == null || isNaN(v)) {
@@ -86,6 +109,11 @@ export class LazyBoxPlotData implements IStatistics {
         max = v;
       }
       sum += v;
+
+      if (histGen) {
+        this.hist[histGen.toBin(v)].count++;
+      }
+
       return true;
     }));
     this.missing = length - this.values.length;
@@ -99,14 +127,6 @@ export class LazyBoxPlotData implements IStatistics {
       this.sum = sum;
       this.mean = sum / this.values.length;
     }
-
-    if (histGen) {
-      this.histGen = histGen;
-      return;
-    }
-    const hist = histogram();
-    hist.thresholds(getNumberOfBins(length));
-    this.histGen = <any>hist;
   }
 
   get count() {
@@ -123,16 +143,8 @@ export class LazyBoxPlotData implements IStatistics {
   }
 
   @cached()
-  get hist() {
-    if (!this.histGen) {
-      return [];
-    }
-    return this.histGen(Array.from(this.values));
-  }
-
-  @cached()
   get maxBin() {
-    return this.hist.reduce((a, b) => Math.max(a, b.length), 0);
+    return this.hist.reduce((a, b) => Math.max(a, b.count), 0);
   }
 
   @cached()
@@ -153,13 +165,16 @@ export class LazyBoxPlotData implements IStatistics {
 
   @cached()
   private get whiskers() {
+    const s = this.sorted;
+    if (s.length === 0) {
+      return {whiskerHigh: NaN, whiskerLow: NaN, outliers: []};
+    }
     const q1 = this.q1;
     const q3 = this.q3;
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     const right = q3 + 1.5 * iqr;
 
-    const s = this.sorted;
     let outliers: number[] = [];
     // look for the closests value which is bigger than the computed left
     let whiskerLow = left;
@@ -229,39 +244,38 @@ function cached() {
  * computes the simple statistics of an array using d3 histogram
  * @param arr the data array
  * @param acc accessor function
- * @param range the total value range
- * @param bins the number of bins
+ * @param numberOfBins the number of bins
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeStats(arr: ISequence<number>, range?: [number, number], bins?: number): IStatistics {
-  if (arr.length === 0) {
-    return {
-      min: NaN,
-      max: NaN,
-      mean: NaN,
-      q1: NaN,
-      q3: NaN,
-      outlier: [],
-      median: NaN,
-      count: 0,
-      maxBin: 0,
-      hist: [],
-      missing: 0
-    };
+export function computeNormalizedStats(arr: ISequence<number>, numberOfBins?: number): IStatistics {
+
+  const bins: INumberBin[] = [];
+
+  const count = numberOfBins ? numberOfBins : getNumberOfBins(arr.length);
+  let x0 = 0;
+  const binWidth = 1. / count;
+  for (let i = 0; i < count; ++i, x0 += binWidth) {
+    bins.push({
+      x0,
+      x1: x0 + binWidth,
+      count: 0
+    });
   }
 
-  const hist = histogram();
-  if (range) {
-    hist.domain(range);
-  }
-  if (bins) {
-    hist.thresholds(bins);
-  } else {
-    hist.thresholds(getNumberOfBins(arr.length));
-  }
+  const bin1 = 0 + binWidth;
+  const binN = 1 - binWidth;
 
-  return new LazyBoxPlotData(arr, <(data: number[]) => INumberBin[]>hist);
+  const toBin = (v: number) => {
+    if (v < bin1) {
+      return 0;
+    }
+    if (v >= binN) {
+      return count - 1;
+    }
+    return Math.max(Math.min(Math.round(v * (count - 1)), count - 1), 0);
+  };
+  return new LazyBoxPlotData(arr, {bins, toBin});
 }
 
 
@@ -285,10 +299,10 @@ export function computeHist(arr: ISequence<ICategory | null>, categories: ICateg
     m.set(v.name, (m.get(v.name) || 0) + 1);
   });
 
-  const entries: {cat: string; y: number}[] = categories.map((d) => ({cat: d.name, y: m.get(d.name)!}));
+  const entries: {cat: string; count: number}[] = categories.map((d) => ({cat: d.name, count: m.get(d.name)!}));
 
   return {
-    maxBin: entries.reduce((a, b) => Math.max(a, b.y), Number.NEGATIVE_INFINITY),
+    maxBin: entries.reduce((a, b) => Math.max(a, b.count), Number.NEGATIVE_INFINITY),
     hist: entries,
     missing: missingCount
   };

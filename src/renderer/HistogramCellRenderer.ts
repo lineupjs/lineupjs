@@ -1,5 +1,5 @@
 import {DENSE_HISTOGRAM} from '../config';
-import {computeStats, getNumberOfBins, INumberBin, IStatistics, round, ICategoricalStatistics} from '../internal/math';
+import {computeNormalizedStats, getNumberOfBins, INumberBin, IStatistics, round, ICategoricalStatistics} from '../internal/math';
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {
@@ -242,9 +242,9 @@ function createHist(globalHist: IStatistics | null, guessedBins: number, rows: I
   if (isNumbersColumn(col)) {
     //multiple values
     const values = concat(rows.map((r) => col.getNumbers(r)));
-    stats = computeStats(values, [0, 1], bins);
+    stats = computeNormalizedStats(values, bins);
   } else {
-    stats = computeStats(rows.map((r) => col.getNumber(r)), [0, 1], bins);
+    stats = computeNormalizedStats(rows.map((r) => col.getNumber(r)), bins);
   }
 
   const maxBin = Math.max(stats.maxBin, globalHist ? globalHist.maxBin : 0);
@@ -281,25 +281,25 @@ export function getHistDOMRenderer(globalHist: IStatistics | ICategoricalStatist
     }
     n.classList.toggle(cssClass('dense'), bins > DENSE_HISTOGRAM);
     nodes.forEach((d: HTMLElement, i) => {
-      const {x0, x1, length} = hist[i];
+      const {x0, x1, count} = hist[i];
       const inner = <HTMLElement>d.firstElementChild!;
       const color = colorOf(col, null, imposer, (x1 + x0) / 2)!;
       d.dataset.x = DEFAULT_FORMATTER(x0);
       if (unfiltered) {
-        const gLength = unfiltered.hist[i].length;
-        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length} of ${gLength})`;
-        inner.style.height = `${round(gLength * 100 / unfiltered.maxBin, 2)}%`;
-        const relY = 100 - round(length * 100 / gLength, 2);
+        const gCount = unfiltered.hist[i].count;
+        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${count} of ${gCount})`;
+        inner.style.height = `${round(gCount * 100 / unfiltered.maxBin, 2)}%`;
+        const relY = 100 - round(count * 100 / gCount, 2);
         inner.style.background = relY === 0 ? color : (relY === 100 ? filterColor(color) : `linear-gradient(${filterColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`);
       } else {
-        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length})`;
-        inner.style.height = `${round(length * 100 / maxBin, 2)}%`;
+        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${count})`;
+        inner.style.height = `${round(count * 100 / maxBin, 2)}%`;
         inner.style.backgroundColor = color;
       }
     });
   };
   return {
-    template: `<div class="${cssClass('histogram')} ${guessedBins > DENSE_HISTOGRAM ? cssClass('dense'): ''}">${bins}`, // no closing div to be able to append things
+    template: `<div class="${cssClass('histogram')} ${guessedBins > DENSE_HISTOGRAM ? cssClass('dense') : ''}">${bins}`, // no closing div to be able to append things
     render,
     guessedBins
   };

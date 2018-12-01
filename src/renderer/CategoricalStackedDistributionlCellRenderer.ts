@@ -25,11 +25,11 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
 
 
   createGroup(col: ICategoricalColumn) {
-    const { template, update } = stackedBar(col);
+    const {template, update} = stackedBar(col);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: ISequence<IDataRow>) => {
-        const { hist, missing } = computeHist(rows.map((r: IDataRow) => col.getCategory(r)), col.categories);
+        const {hist, missing} = computeHist(rows.map((r: IDataRow) => col.getCategory(r)), col.categories);
         update(n, hist, missing);
       }
     };
@@ -41,7 +41,7 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
 }
 
 function staticSummary(col: ICategoricalColumn) {
-  const { template, update } = stackedBar(col);
+  const {template, update} = stackedBar(col);
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
@@ -55,7 +55,7 @@ function staticSummary(col: ICategoricalColumn) {
 }
 
 function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean, unfilteredHist: ICategoricalStatistics | null, idPrefix: string) {
-  const { template, update } = stackedBar(col, unfilteredHist);
+  const {template, update} = stackedBar(col, unfilteredHist);
   let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
   return {
     template: `${template}${interactive ? filterMissingNumberMarkup(false, 0, idPrefix) : ''}</div>`,
@@ -94,28 +94,28 @@ function stackedBar(col: ICategoricalColumn, unfilteredHist?: ICategoricalStatis
   const bins = cats.map((c) => `<div class="${cssClass('distribution-bar')}" style="background-color: ${c.color}; color: ${adaptTextColorToBgColor(c.color)}" title="${c.label}: 0" data-cat="${c.name}"><span>${c.label}</span></div>`).join('');
 
   const updateSingle = (n: HTMLElement, hist: ICategoricalBin[], missing: number) => {
-    const total = hist.reduce((acc, { y }) => acc + y, missing);
+    const total = hist.reduce((acc, {count}) => acc + count, missing);
 
     forEachChild(n, (d: HTMLElement, i) => {
-      const y = i >= hist.length ? missing : hist[i].y;
+      const count = i >= hist.length ? missing : hist[i].count;
       const label = i >= cats.length ? 'Missing Values' : cats[i].label;
-      d.style.flexGrow = `${round(total === 0 ? 0 : y, 2)}`;
-      d.title = `${label}: ${y}`;
+      d.style.flexGrow = `${round(total === 0 ? 0 : count, 2)}`;
+      d.title = `${label}: ${count}`;
     });
   };
 
   const updateUnfiltered = (n: HTMLElement, hist: ICategoricalBin[], missing: number) => {
     const uf = unfilteredHist!;
-    const total = uf.hist.reduce((acc, { y }) => acc + y, uf.missing);
+    const total = uf.hist.reduce((acc, {count}) => acc + count, uf.missing);
 
     forEachChild(n, (d: HTMLElement, i) => {
-      const y = i >= hist.length ? missing : hist[i].y;
+      const count = i >= hist.length ? missing : hist[i].count;
       const label = cats[i].label;
-      const gY = i >= hist.length ? uf.missing : uf.hist[i].y;
+      const gCount = i >= hist.length ? uf.missing : uf.hist[i].count;
 
-      d.style.flexGrow = `${round(total === 0 ? 0 : gY, 2)}`;
-      d.title = `${label}: ${y} of ${gY}`;
-      const relY = 100 - round(y * 100 / gY, 2);
+      d.style.flexGrow = `${round(total === 0 ? 0 : gCount, 2)}`;
+      d.title = `${label}: ${count} of ${gCount}`;
+      const relY = 100 - round(count * 100 / gCount, 2);
       d.style.background = relY === 0 ? cats[i].color : (relY === 100 ? cats[i].selected : `linear-gradient(${cats[i].selected} ${relY}%, ${cats[i].color} ${relY}%, ${cats[i].color} 100%)`);
     });
   };

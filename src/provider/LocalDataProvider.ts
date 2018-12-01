@@ -1,4 +1,4 @@
-import {computeHist, computeStats} from '../internal';
+import {computeHist, computeNormalizedStats} from '../internal';
 import Column, {
   defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn,
   IOrderedGroup, ICompareValue,
@@ -273,7 +273,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
 
     return {
-      stats: (col: INumberColumn, numberOfBins?: number) => computeStats(getData().map((d) => col.getNumber(d)), [0, 1], numberOfBins),
+      stats: (col: INumberColumn, numberOfBins?: number) => computeNormalizedStats(getData().map((d) => col.getNumber(d)), numberOfBins),
       hist: (col: ICategoricalColumn) => computeHist(getData().map((d) => col.getCategory(d)), col.categories)
     };
   }
