@@ -245,7 +245,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     }
 
     const restoreSortCriteria = (dumped: any) => {
-      return dumped.map((s: { asc: boolean, sortBy: string }) => {
+      return dumped.map((s: {asc: boolean, sortBy: string}) => {
         return {
           asc: s.asc,
           col: this.columns.find((d) => d.id === s.sortBy) || null
@@ -265,9 +265,9 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   toCompareValue(row: IDataRow) {
     if (this.sortCriteria.length === 0) {
-      return [row.i];
+      return [];
     }
-    const vs : ICompareValue[] = [];
+    const vs: ICompareValue[] = [];
     for (const s of this.sortCriteria) {
       const r = s.col.toCompareValue(row);
       if (Array.isArray(r)) {
@@ -276,12 +276,11 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         vs.push(r);
       }
     }
-    vs.push(row.i);
     return vs;
   }
 
   toCompareValueType() {
-    const vs : {asc: boolean, v: ECompareValueType}[] = [];
+    const vs: {asc: boolean, v: ECompareValueType}[] = [];
     for (const s of this.sortCriteria) {
       const types = s.col.toCompareValueType();
       if (!Array.isArray(types)) {
@@ -292,7 +291,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         vs.push({asc: s.asc, v});
       }
     }
-    vs.push({asc: true, v: ECompareValueType.UINT});
     return vs;
   }
 
@@ -300,7 +298,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (this.groupSortCriteria.length === 0) {
       return [group.name.toLowerCase()];
     }
-    const vs : ICompareValue[] = [];
+    const vs: ICompareValue[] = [];
     for (const s of this.groupSortCriteria) {
       const r = s.col.toCompareGroupValue(group);
       if (Array.isArray(r)) {
@@ -314,7 +312,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   toGroupCompareValueType() {
-    const vs : {asc: boolean, v: ECompareValueType}[] = [];
+    const vs: {asc: boolean, v: ECompareValueType}[] = [];
     for (const s of this.groupSortCriteria) {
       const types = s.col.toCompareGroupValueType();
       if (!Array.isArray(types)) {
@@ -463,7 +461,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return true;
   }
 
-  setGroupCriteria(column: Column[]|Column) {
+  setGroupCriteria(column: Column[] | Column) {
     const cols = Array.isArray(column) ? column : [column];
 
     if (equalArrays(this.groupColumns, cols)) {
@@ -481,7 +479,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     });
 
     this.fire([Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
-      Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY_CACHES, Ranking.EVENT_DIRTY], bak, this.getGroupCriteria());
+    Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY_CACHES, Ranking.EVENT_DIRTY], bak, this.getGroupCriteria());
     return true;
   }
 
@@ -513,14 +511,14 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     const sortCriterias = this.getGroupSortCriteria();
     const bakMulti = Array.isArray(bak) ? bak : sortCriterias;
     this.fire([Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
-      Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bakMulti, sortCriterias);
+    Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bakMulti, sortCriterias);
   }
 
   private triggerResort(bak: ISortCriteria | ISortCriteria[] | null) {
     const sortCriterias = this.getSortCriteria();
     const bakMulti = Array.isArray(bak) ? bak : sortCriterias;
     this.fire([Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
-      Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bakMulti, sortCriterias);
+    Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bakMulti, sortCriterias);
   }
 
   get children() {
@@ -624,7 +622,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       this.groupSortCriteria.splice(isGroupSortCriteria, 1);
     }
 
-    let newGrouping: Column[]|null = null;
+    let newGrouping: Column[] | null = null;
     const isGroupColumn = this.groupColumns.indexOf(col);
     if (isGroupColumn >= 0) { // was my grouping criteria
       newGrouping = this.groupColumns.slice();
@@ -680,7 +678,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   find(idOrFilter: string | ((col: Column) => boolean)) {
-    const filter = typeof(idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
+    const filter = typeof (idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
     const r = this.flatColumns;
     for (const v of r) {
       if (filter(v)) {
@@ -747,5 +745,5 @@ function toOrder(groups: IOrderedGroup[]) {
         shift += g.order.length;
       }
       return r;
-    }
+  }
 }

@@ -31,7 +31,7 @@ const missingString = FIRST_IS_MISSING > 0 ? '\uffff' : '\u0000'; // first or la
 export function normalizeCompareValues(vs: ICompareValue[], comparators: {asc: boolean, v: ECompareValueType}[]) {
   return comparators.map((d, i) => {
     const v = vs[i];
-    switch(d.v) {
+    switch (d.v) {
       case ECompareValueType.BINARY:
       case ECompareValueType.UINT:
         return v == null || isNaN(<number>v) ? missingInt : v;
@@ -43,37 +43,44 @@ export function normalizeCompareValues(vs: ICompareValue[], comparators: {asc: b
   });
 }
 
-export function sortComplex<T extends {sort: ICompareValue[]}>(arr: T[], comparators: {asc: boolean, v: ECompareValueType}[]) {
+export function sortComplex<T extends {sort: ICompareValue[], i: number}>(arr: T[], comparators: {asc: boolean, v: ECompareValueType}[]) {
   if (arr.length < 2 || comparators.length === 0) {
     return arr;
   }
 
-  const comp = (asc: boolean, a: any, b: any) => {
-    const smaller = asc ? 1 : -1;
-    return a < b ? smaller : ((a > b) ? -smaller : 0);
+  const asc = (a: any, b: any) => {
+    return a < b ? 1 : ((a > b) ? -1 : 0);
+  };
+  const desc = (a: any, b: any) => {
+    return a < b ? -1 : ((a > b) ? 1 : 0);
   };
 
-  switch(comparators.length) {
+  switch (comparators.length) {
     case 1:
-      const f = comparators[0]!.asc;
-      return arr.sort((a, b) => comp(f, a.sort[0], b.sort[0]));
-    case 2:
-      const f1 = comparators[0]!.asc;
-      const f2 = comparators[0]!.asc;
+      const f = comparators[0]!.asc ? asc : desc;
       return arr.sort((a, b) => {
-        const r = comp(f1, a.sort[0], b.sort[0]);
-        return r !== 0 ? r : comp(f2, a.sort[1], b.sort[1]);
+        const r = f(a.sort[0], b.sort[0]);
+        return r !== 0 ? r : a.i - b.i;
+      });
+    case 2:
+      const f1 = comparators[0]!.asc ? asc : desc;
+      const f2 = comparators[0]!.asc ? asc : desc;
+      return arr.sort((a, b) => {
+        let r = f1(a.sort[0], b.sort[0]);
+        r = r !== 0 ? r : f2(a.sort[1], b.sort[1]);
+        return r !== 0 ? r : a.i - b.i;
       });
     default:
       const l = comparators.length;
+      const fs = comparators.map((d) => d.asc ? asc : desc);
       return arr.sort((a, b) => {
         for (let i = 0; i < l; ++i) {
-          const r = comp(comparators[i].asc, a.sort[i], b.sort[i]);
+          const r = fs[i](a.sort[i], b.sort[i]);
           if (r !== 0) {
             return r;
           }
         }
-        return 0;
+        return a.i - b.i;
       });
   }
 }

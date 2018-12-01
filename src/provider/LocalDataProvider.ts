@@ -202,26 +202,26 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
 
-    return Promise.all(Array.from(groups.values()).map((g) => {
+    return Promise.all(Array.from(groups.values()).map((g, i) => {
       const group = g.group;
       return this.sortWorker.sort(this._data.length, g.rows, types)
         // to group info
         .then(({order, index2pos}) => {
-        const o: IOrderedGroup = Object.assign({order, index2pos}, group);
+          const o: IOrderedGroup = Object.assign({order, index2pos}, group);
 
-        // compute sort group value
-        let sort: ICompareValue[] | null = null;
-        if (isGroupedSortedBy) {
-          const groupData = Object.assign({rows: lazySeq(order).map((d) => this._dataRows[d]), meta: <IGroupMeta>'first last'}, group);
-          sort = ranking.toGroupCompareValue(groupData);
-        }
-        return {o, sort};
-      });
+          // compute sort group value
+          let sort: ICompareValue[] | null = null;
+          if (isGroupedSortedBy) {
+            const groupData = Object.assign({rows: lazySeq(order).map((d) => this._dataRows[d]), meta: <IGroupMeta>'first last'}, group);
+            sort = ranking.toGroupCompareValue(groupData);
+          }
+          return {o, sort, i};
+        });
     })).then((groupHelper) => {
 
       // sort groups
       if (isGroupedSortedBy) {
-        sortComplex(<{sort: ICompareValue[]}[]>groupHelper, ranking.toGroupCompareValueType());
+        sortComplex(<{sort: ICompareValue[], i: number}[]>groupHelper, ranking.toGroupCompareValueType());
       } else {
         groupHelper.sort((a, b) => a.o.name.toLowerCase().localeCompare(b.o.name.toLowerCase()));
       }
@@ -242,7 +242,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private seqRawRows(indices: IndicesArray) {
     if (indices.length < 10000) { // small copy
-      return  mapIndices(indices, (i) => this._dataRows[i]);
+      return mapIndices(indices, (i) => this._dataRows[i]);
     }
     // what about filter invalid indices
     return lazySeq(indices).map((i) => this._dataRows[i]);
