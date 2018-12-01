@@ -6,8 +6,6 @@ import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
 const AGGREGATE_TO_TOP = 0;
 
-const SHIFT = 0;
-
 /** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -34,7 +32,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       },
       render(ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup, meta: IGroupMeta) {
         ctx.fillStyle = AGGREGATE.color;
-        ctx.fillRect(width - AGGREGATE.width - SHIFT, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
+        ctx.fillRect(width - AGGREGATE.width, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
         return Boolean(meta);
       }
     };
