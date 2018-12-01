@@ -10,7 +10,7 @@
       "**/*.map": true,
       ".cache-loader": true
   },
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "beautify.options": {
       "end_with_newline": true,
       "preserve_newlines": true,
@@ -23,5 +23,7 @@
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
   "tsimporter.spaceBetweenBraces": false,
   "tsimporter.noStatusBar": true,
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+"typescript.tsdk": "node_modules\\typescript\\lib",
+"editor.formatOnPaste": true,
+"editor.formatOnType": true
 }
