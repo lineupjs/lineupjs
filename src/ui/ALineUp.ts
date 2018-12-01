@@ -58,6 +58,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
 
   on(type: typeof ALineUp.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
   on(type: typeof ALineUp.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }

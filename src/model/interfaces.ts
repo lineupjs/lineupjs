@@ -103,7 +103,6 @@ export interface IGroupData extends Readonly<IGroup> {
   readonly meta: IGroupMeta;
 }
 
-/** @internal */
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupItem>item).group == null; // use .group as separator
 }

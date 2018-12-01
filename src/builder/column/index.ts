@@ -5,3 +5,4 @@ export * from './StringColumnBuilder';
 export * from './DateColumnBuilder';
 export * from './HierarchyColumnBuilder';
 export * from './ActionsColumnBuilder';
+export * from './BooleanColumnBuilder';

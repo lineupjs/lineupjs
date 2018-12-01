@@ -278,6 +278,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   on(type: typeof EngineRanking.EVENT_UPDATE_DATA, listener: typeof updateData | null): this;
   on(type: typeof EngineRanking.EVENT_UPDATE_HIST, listener: typeof updateHist | null): this;
   on(type: typeof EngineRanking.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     this.events.on(type, listener);
     return this;
@@ -911,6 +912,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const col = (isMultiLevelColumn(c) && !c.getCollapsed()) ? new MultiLevelRenderColumn(c, index, this.renderCtx, this.roptions.flags) : new RenderColumn(c, index, this.renderCtx, this.roptions.flags);
 
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
+      // replace myself upon width change since we renderers are allowed to
+      col.renderers = this.ctx.createRenderer(c);
       this.delayedUpdateColumnWidths();
     });
     const debounceUpdate = debounce(() => {

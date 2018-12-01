@@ -542,7 +542,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
       if (hasDnDType(e, ...numberish)) {
         node.dataset.draginfo = 'Wrap';
       }
-    });
+    }, false, () => column.children.length < 2);
   }
   if (column instanceof ImpositionBoxPlotColumn) {
     return dropAble(node, categorical.concat(boxplot), pushChild, (e) => {
@@ -553,7 +553,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
       if (hasDnDType(e, ...boxplot)) {
         node.dataset.draginfo = 'Wrap';
       }
-    });
+    }, false, () => column.children.length < 2);
   }
   if (column instanceof ImpositionCompositesColumn) {
     return dropAble(node, categorical.concat(numbers), pushChild, (e) => {
@@ -564,7 +564,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
       if (hasDnDType(e, ...numbers)) {
         node.dataset.draginfo = 'Wrap';
       }
-    });
+    }, false, () => column.children.length < 2);
   }
   if (isMultiLevelColumn(column)) {
     // stack column or nested

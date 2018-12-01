@@ -136,39 +136,41 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
  * @param {(result: IDropResult, e: DragEvent) => boolean} onDrop callback when dropped, returns true if the drop was successful
  * @param {(e: DragEvent) => void} onDragOver optional drag over handler, e.g. for special effects
  * @param {boolean} stopPropagation flag if the event propagation should be stopped in case of success
+ * @param {() => boolean} optional whether to enable dropping at all
  * @internal
  */
-export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result: IDropResult, e: DragEvent) => boolean, onDragOver: null | ((e: DragEvent) => void) = null, stopPropagation: boolean = false) {
+export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result: IDropResult, e: DragEvent) => boolean, onDragOver: null | ((e: DragEvent) => void) = null, stopPropagation: boolean = false, canDrop: () => boolean = (() => true)) {
   node.addEventListener('dragenter', (e) => {
     //var xy = mouse($node.node());
-    if (!node.classList.contains(cssClass('dragging')) && (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e))) {
-      node.classList.add(cssClass('dragover'));
-      if (stopPropagation) {
-        e.stopPropagation();
-      }
-      //sounds good
-      return false;
+    if (node.classList.contains(cssClass('dragging')) || !(hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) || !canDrop()) {
+      //not a valid mime type
+      node.classList.remove(cssClass('dragover'));
+      return;
     }
-    //not a valid mime type
-    node.classList.remove(cssClass('dragover'));
-    return;
+    node.classList.add(cssClass('dragover'));
+    if (stopPropagation) {
+      e.stopPropagation();
+    }
+    //sounds good
+    return false;
   });
   node.addEventListener('dragover', (e) => {
-    if (!node.classList.contains(cssClass('dragging')) && (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e))) {
-      e.preventDefault();
-      updateDropEffect(e);
-      node.classList.add(cssClass('dragover'));
-
-      if (stopPropagation) {
-        e.stopPropagation();
-      }
-      if (onDragOver) {
-        onDragOver(e);
-      }
-      //sound good
-      return false;
+    if (node.classList.contains(cssClass('dragging')) || !(hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) || !canDrop()) {
+      return;
     }
-    return;
+
+    e.preventDefault();
+    updateDropEffect(e);
+    node.classList.add(cssClass('dragover'));
+
+    if (stopPropagation) {
+      e.stopPropagation();
+    }
+    if (onDragOver) {
+      onDragOver(e);
+    }
+    //sound good
+    return false;
   });
   node.addEventListener('dragleave', (evt) => {
     // same fix as in phovea

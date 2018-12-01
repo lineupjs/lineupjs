@@ -51,7 +51,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       }
       const summary = this.ctx.summaryRenderer(cc, false);
       const summaryNode = this.ctx.asElement(summary.template);
-      summaryNode.classList.add(cssClass('summary'), cssClass('renderer'));
+      summaryNode.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass(`renderer-${cc.getSummaryRenderer()}`));
       summaryNode.dataset.renderer = cc.getSummaryRenderer();
       n.appendChild(summaryNode);
       this.summaries.push(summary);
@@ -104,7 +104,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
         const renderer = this.ctx.summaryRenderer(c, false);
         summary.remove();
         summary = this.ctx.asElement(renderer.template);
-        summary.classList.add(cssClass('summary'));
+        summary.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass(`renderer-${currentRenderer}`));
         summary.dataset.renderer = currentRenderer;
         this.summaries[i] = renderer;
         node.appendChild(summary);

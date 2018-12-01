@@ -88,17 +88,17 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
 
 export function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getRenderer()];
-  return r || defaultCellRenderer;
+  return r && typeof r.create === 'function' ? r : defaultCellRenderer;
 }
 
 export function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getGroupRenderer()];
-  return r || defaultCellRenderer;
+  return r && typeof r.createGroup === 'function' ? r : defaultCellRenderer;
 }
 
 export function chooseSummaryRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getSummaryRenderer()];
-  return r || defaultCellRenderer;
+  return r && typeof r.createSummary === 'function' ? r : defaultCellRenderer;
 }
 
 /**
@@ -110,9 +110,9 @@ export function chooseSummaryRenderer(col: Column, renderers: { [key: string]: I
 export function getPossibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, canRender?: (type: string, renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
   const all = Object.keys(renderers).filter(Boolean).map((type) => ({type, factory: renderers[type]}));
 
-  const item = all.filter(({type, factory}) => factory.canRender(col, ERenderMode.CELL) && (!canRender || canRender(type, factory, col, ERenderMode.CELL)));
-  const group = all.filter(({type, factory}) => factory.canRender(col, ERenderMode.GROUP) && (!canRender || canRender(type, factory, col, ERenderMode.GROUP)));
-  const summary = all.filter(({type, factory}) => factory.canRender(col, ERenderMode.SUMMARY) && (!canRender || canRender(type, factory, col, ERenderMode.SUMMARY)));
+  const item = all.filter(({type, factory}) => typeof factory.create === 'function' && factory.canRender(col, ERenderMode.CELL) && (!canRender || canRender(type, factory, col, ERenderMode.CELL)));
+  const group = all.filter(({type, factory}) => typeof factory.createGroup === 'function' && factory.canRender(col, ERenderMode.GROUP) && (!canRender || canRender(type, factory, col, ERenderMode.GROUP)));
+  const summary = all.filter(({type, factory}) => typeof factory.createSummary === 'function' && factory.canRender(col, ERenderMode.SUMMARY) && (!canRender || canRender(type, factory, col, ERenderMode.SUMMARY)));
 
   return {
     item: item.map(({type, factory}) => ({type, label: factory.title})),

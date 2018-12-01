@@ -107,11 +107,11 @@ export interface ICellRendererFactory {
 
   canRender(col: Column, mode: ERenderMode): boolean;
 
-  create(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer;
+  create?(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer;
 
-  createGroup(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer;
+  createGroup?(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer;
 
-  createSummary(col: Column, context: IRenderContext, interactive: boolean, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ISummaryRenderer;
+  createSummary?(col: Column, context: IRenderContext, interactive: boolean, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ISummaryRenderer;
 }
 
 

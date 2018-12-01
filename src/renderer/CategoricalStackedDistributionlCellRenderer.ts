@@ -98,7 +98,7 @@ function stackedBar(col: ICategoricalColumn, unfilteredHist?: ICategoricalStatis
 
     forEachChild(n, (d: HTMLElement, i) => {
       const y = i >= hist.length ? missing : hist[i].y;
-      const label = cats[i].label;
+      const label = i >= cats.length ? 'Missing Values' : cats[i].label;
       d.style.flexGrow = `${round(total === 0 ? 0 : y, 2)}`;
       d.title = `${label}: ${y}`;
     });

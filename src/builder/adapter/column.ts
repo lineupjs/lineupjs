@@ -12,7 +12,8 @@ import {
   INumberColumnDesc,
   IPartialCategoryNode,
   IActionColumnDesc,
-  ILinkColumnDesc
+  ILinkColumnDesc,
+  IBooleanColumnDesc
 } from '../../model';
 
 export interface IBuilderAdapterColumnDescProps extends Partial<IColumnDesc> {
@@ -187,6 +188,22 @@ export function buildString(props: IBuilderAdapterStringColumnDescProps): ILinkC
   if (props.html) {
     desc.escape = false;
   }
+  return desc;
+}
+
+export interface IBuilderAdapterBooleanColumnDescProps extends IBuilderAdapterColumnDescProps {
+  trueMarker?: string;
+  falseMarker?: string;
+}
+
+export function buildBoolean(props: IBuilderAdapterBooleanColumnDescProps): IBooleanColumnDesc {
+  const desc: any = build({...props, type: 'boolean'});
+
+  (<(keyof IBuilderAdapterBooleanColumnDescProps)[]>['trueMarker', 'falseMarker']).forEach((key) => {
+    if (props.hasOwnProperty(key)) {
+      desc[key] = props[key];
+    }
+  });
   return desc;
 }
 

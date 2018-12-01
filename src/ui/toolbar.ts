@@ -321,7 +321,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], { shortcut: true, featureCategory: 'model', featureLevel: 'advanced' }),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx], { featureCategory: 'model', featureLevel: 'advanced' }),
   splitCombined: ui('Split Combined Column', (col, _evt, ctx, level) => {
-    ctx.dialogManager.removeAboveLevel(level);
+    ctx.dialogManager.removeAboveLevel(level - 1); // close itself
     // split the combined column into its children
     (<CompositeColumn>col).children.reverse().forEach((c) => col.insertAfterMe(c));
     col.removeMe();
