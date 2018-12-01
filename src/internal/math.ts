@@ -1,5 +1,6 @@
 import {ICategory} from '../model';
 import {ISequence} from './interable';
+import {bisectLeft} from 'd3-array';
 
 export interface INumberBin {
   x0: number;
@@ -265,6 +266,7 @@ export function computeNormalizedStats(arr: ISequence<number>, numberOfBins?: nu
 
   const bin1 = 0 + binWidth;
   const binN = 1 - binWidth;
+  const binEnds = bins.map((d) => d.x1);
 
   const toBin = (v: number) => {
     if (v < bin1) {
@@ -273,7 +275,7 @@ export function computeNormalizedStats(arr: ISequence<number>, numberOfBins?: nu
     if (v >= binN) {
       return count - 1;
     }
-    return Math.max(Math.min(Math.round(v * (count - 1)), count - 1), 0);
+    return bisectLeft(binEnds, v);
   };
   return new LazyBoxPlotData(arr, {bins, toBin});
 }
