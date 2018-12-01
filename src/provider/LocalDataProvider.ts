@@ -10,7 +10,7 @@ import Column, {
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
-import {ISortWorker, sortComplex, chooseByLength, local, WorkerSortWorker, CompareLookup} from './sort';
+import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker, CompareLookup} from './sort';
 import ADataProvider from './ADataProvider';
 import {ISequence, lazySeq} from '../internal/interable';
 

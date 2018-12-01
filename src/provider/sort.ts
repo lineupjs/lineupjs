@@ -1,7 +1,7 @@
 import {ICompareValue} from '../model/Column';
 import {FIRST_IS_NAN, FIRST_IS_MISSING} from '../model/missing';
 import {IndicesArray, UIntTypedArray} from '../model';
-import {createWorker, IPoorManWorkerScope, toFunctionBody, createWorkerCodeBlob} from './worker';
+import {IPoorManWorkerScope, toFunctionBody, createWorkerCodeBlob} from './worker';
 import {ISequence} from '../internal/interable';
 
 export enum ECompareValueType {

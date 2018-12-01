@@ -78,8 +78,9 @@ function quantile(values: Float32Array, quantile: number) {
  * @internal
  */
 export class LazyBoxPlotData implements IStatistics {
-  private readonly values: Float32Array;
+  private values: Float32Array | null = null;
 
+  readonly count: number;
   readonly missing: number;
 
   readonly max: number;
@@ -118,6 +119,7 @@ export class LazyBoxPlotData implements IStatistics {
       return true;
     }));
     this.missing = length - this.values.length;
+    this.count = length;
 
     if (this.values.length === 0) {
       this.max = this.min = this.mean = NaN;
@@ -130,48 +132,23 @@ export class LazyBoxPlotData implements IStatistics {
     }
   }
 
-  get count() {
-    return this.values.length + this.missing;
-  }
-
-  /**
-   * lazy compute sorted array
-   * @returns {number[]}
-   */
-  @cached()
-  private get sorted() {
-    return this.values.sort();
-  }
-
-  @cached()
   get maxBin() {
     return this.hist.reduce((a, b) => Math.max(a, b.count), 0);
   }
 
   @cached()
-  get median() {
-    return quantile(this.sorted, 0.5)!;
-  }
+  private get boxplotData() {
+    const s = this.values!.sort();
+    this.values = null; // not needed anymore
 
-  @cached()
-  get q1() {
-    return quantile(this.sorted, 0.25)!;
-  }
-
-  @cached()
-  get q3() {
-    return quantile(this.sorted, 0.75)!;
-  }
-
-
-  @cached()
-  private get whiskers() {
-    const s = this.sorted;
     if (s.length === 0) {
-      return {whiskerHigh: NaN, whiskerLow: NaN, outliers: []};
+      return {whiskerHigh: NaN, whiskerLow: NaN, outliers: [], median: NaN, q1: NaN, q3: NaN};
     }
-    const q1 = this.q1;
-    const q3 = this.q3;
+
+    const median = quantile(s, 0.5)!;
+    const q1 = quantile(s, 0.25)!;
+    const q3 = quantile(s, 0.75)!;
+
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     const right = q3 + 1.5 * iqr;
@@ -204,19 +181,32 @@ export class LazyBoxPlotData implements IStatistics {
 
     outliers = outliers.concat(reversedOutliers.reverse());
 
-    return {whiskerHigh, whiskerLow, outliers};
+
+    return {whiskerHigh, whiskerLow, outliers, median, q1, q3};
+  }
+
+  get median() {
+    return this.boxplotData.median;
+  }
+
+  get q1() {
+    return this.boxplotData.q1;
+  }
+
+  get q3() {
+    return this.boxplotData.q3;
   }
 
   get whiskerLow() {
-    return this.whiskers.whiskerLow;
+    return this.boxplotData.whiskerLow;
   }
 
   get whiskerHigh() {
-    return this.whiskers.whiskerHigh;
+    return this.boxplotData.whiskerHigh;
   }
 
   get outlier() {
-    return this.whiskers.outliers;
+    return this.boxplotData.outliers;
   }
 }
 
