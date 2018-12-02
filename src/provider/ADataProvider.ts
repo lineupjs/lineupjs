@@ -104,6 +104,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
   static readonly EVENT_BUSY = 'busy';
 
+  private static readonly FORWARD_RANKING_EVENTS = suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
+    Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
+    Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES);
+
   /**
    * all rankings
    * @type {Array}
@@ -247,13 +251,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   insertRanking(r: Ranking, index = this.rankings.length) {
     this.rankings.splice(index, 0, r);
-    this.forward(r, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
-      Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
-      Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
-    const that = this;
+    this.forward(r, ...ADataProvider.FORWARD_RANKING_EVENTS);
     //delayed reordering per ranking
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: {source: Ranking}) {
-      that.triggerReorder(this.source);
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(() => {
+      this.triggerReorder(r);
     }, 100));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
     this.triggerReorder(r);
@@ -278,9 +279,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (i < 0) {
       return false;
     }
-    this.unforward(ranking, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
-      Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
-      Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
+    this.unforward(ranking, ...ADataProvider.FORWARD_RANKING_EVENTS);
     this.rankings.splice(i, 1);
     ranking.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, null);
     this.cleanUpRanking(ranking);
@@ -293,9 +292,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   clearRankings() {
     this.rankings.forEach((ranking) => {
-      this.unforward(ranking, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
-        Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
-        Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
+      this.unforward(ranking, ...ADataProvider.FORWARD_RANKING_EVENTS);
       ranking.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, null);
       this.cleanUpRanking(ranking);
     });
