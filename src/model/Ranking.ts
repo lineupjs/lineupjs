@@ -16,6 +16,13 @@ export interface ISortCriteria {
   readonly asc: boolean;
 }
 
+export enum EDirtyReason {
+  FILTER_CHANGED,
+  SORT_CRITERIA_CHANGED,
+  GROUP_CRITERIA_CHANGED,
+  GROUP_SORT_CRITERIA_CHANGED
+}
+
 
 /**
  * emitted when a column has been added
@@ -60,7 +67,7 @@ export declare function groupSortCriteriaChanged(previous: ISortCriteria[], curr
  * @asMemberOf Ranking
  * @event
  */
-export declare function dirtyOrder(): void;
+export declare function dirtyOrder(reason?: EDirtyReason): void;
 /**
  * @asMemberOf Ranking
  * @event
@@ -130,8 +137,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     }
   };
 
-  readonly dirtyOrder = () => {
-    this.fire([Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], this.getSortCriteria(), this.getGroupSortCriteria(), this.getGroupCriteria());
+  readonly dirtyOrder = (reason?: EDirtyReason) => {
+    this.fire([Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], reason);
   };
 
   /**
@@ -537,6 +544,10 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     col.on(`${Column.EVENT_VISIBILITY_CHANGED}.ranking`, (oldValue, newValue) => this.fire([Ranking.EVENT_COLUMN_VISIBILITY_CHANGED, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, oldValue, newValue));
 
     this.fire([Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index);
+
+    if (col.isFiltered()) {
+      this.dirtyOrder();
+    }
     return col;
   }
 
@@ -640,6 +651,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       this.triggerResort(null);
     } else if (groupSortCriteriaChanged) {
       this.triggerGroupResort(null);
+    } else if (col.isFiltered()) {
+      this.dirtyOrder();
     }
 
     return true;
@@ -668,7 +681,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       col.detach();
     });
     const removed = this.columns.splice(0, this.columns.length);
-    this.fire([Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], removed);
+    this.fire([Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], removed);
   }
 
   get flatColumns(): Column[] {
