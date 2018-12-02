@@ -1,4 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds} from 'lineupengine';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
@@ -356,99 +356,98 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return width;
   }
 
-  private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number, width = this.visibleRenderedWidth()) {
-    canvas.width = width;
-    canvas.style.width = `${width}px`;
-    canvas.height = CANVAS_HEIGHT;
-    const ctx = canvas.getContext('2d')!;
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
-    const domColumns = <RenderColumn[]>[];
+  // private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number, width = this.visibleRenderedWidth()) {
+  //   canvas.width = width;
+  //   canvas.style.width = `${width}px`;
+  //   canvas.height = CANVAS_HEIGHT;
+  //   const ctx = canvas.getContext('2d')!;
+  //   ctx.imageSmoothingEnabled = false;
+  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //   ctx.save();
+  //   const domColumns = <RenderColumn[]>[];
 
-    for (const col of this.visibleColumns.frozen) {
-      const c = this.columns[col];
-      if (c.renderCell(ctx, index)) {
-        domColumns.push(c);
-      }
-      const shift = c.width + COLUMN_PADDING;
-      ctx.translate(shift, 0);
-    }
-    for (let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
-      const c = this.columns[col];
-      if (c.renderCell(ctx, index)) {
-        domColumns.push(c);
-      }
-      const shift = c.width + COLUMN_PADDING;
-      ctx.translate(shift, 0);
-    }
-    ctx.restore();
+  //   for (const col of this.visibleColumns.frozen) {
+  //     const c = this.columns[col];
+  //     if (c.renderCell(ctx, index)) {
+  //       domColumns.push(c);
+  //     }
+  //     const shift = c.width + COLUMN_PADDING;
+  //     ctx.translate(shift, 0);
+  //   }
+  //   for (let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
+  //     const c = this.columns[col];
+  //     if (c.renderCell(ctx, index)) {
+  //       domColumns.push(c);
+  //     }
+  //     const shift = c.width + COLUMN_PADDING;
+  //     ctx.translate(shift, 0);
+  //   }
+  //   ctx.restore();
 
-    const length = node.childElementCount - 1; // for canvas
+  //   const length = node.childElementCount - 1; // for canvas
 
-    if (domColumns.length === 0) {
-      while (node.lastElementChild !== node.firstElementChild) {
-        node.removeChild(node.lastElementChild!);
-      }
-      return;
-    }
-    if (domColumns.length === 1) {
-      const first = domColumns[0];
-      if (length === 0) {
-        const c = first.createCell(index);
-        c.classList.add(cssClass('low'));
-        this.initCellClasses(c, first.id);
-        node.appendChild(c);
-        return;
-      }
-      if (length === 1 && (<HTMLElement>node.lastElementChild!).dataset.colId === first.id) {
-        this.updateCellImpl(first, <HTMLElement>node.lastElementChild, index);
-        return;
-      }
-    }
+  //   if (domColumns.length === 0) {
+  //     while (node.lastElementChild !== node.firstElementChild) {
+  //       node.removeChild(node.lastElementChild!);
+  //     }
+  //     return;
+  //   }
+  //   if (domColumns.length === 1) {
+  //     const first = domColumns[0];
+  //     if (length === 0) {
+  //       const c = first.createCell(index);
+  //       c.classList.add(cssClass('low'));
+  //       this.initCellClasses(c, first.id);
+  //       node.appendChild(c);
+  //       return;
+  //     }
+  //     if (length === 1 && (<HTMLElement>node.lastElementChild!).dataset.colId === first.id) {
+  //       this.updateCellImpl(first, <HTMLElement>node.lastElementChild, index);
+  //       return;
+  //     }
+  //   }
 
-    const existing = new Map((<HTMLElement[]>Array.from(node.children)).slice(1).map((d) => <[string, HTMLElement]>[d.dataset.col, d]));
-    for (const col of domColumns) {
-      const elem = existing.get(col.id);
-      if (elem) {
-        existing.delete(col.id);
-        this.updateCellImpl(col, elem, index);
-      } else {
-        const c = col.createCell(index);
-        c.classList.add(cssClass('low'));
-        this.initCellClasses(c, col.id);
-        node.appendChild(c);
-      }
-    }
-    existing.forEach((v) => v.remove());
-  }
+  //   const existing = new Map((<HTMLElement[]>Array.from(node.children)).slice(1).map((d) => <[string, HTMLElement]>[d.dataset.col, d]));
+  //   for (const col of domColumns) {
+  //     const elem = existing.get(col.id);
+  //     if (elem) {
+  //       existing.delete(col.id);
+  //       this.updateCellImpl(col, elem, index);
+  //     } else {
+  //       const c = col.createCell(index);
+  //       c.classList.add(cssClass('low'));
+  //       this.initCellClasses(c, col.id);
+  //       node.appendChild(c);
+  //     }
+  //   }
+  //   existing.forEach((v) => v.remove());
+  // }
 
-  protected updateCanvasCell(canvas: HTMLCanvasElement, node: HTMLElement, index: number, column: RenderColumn, x: number) {
-    const ctx = canvas.getContext('2d')!;
-    ctx.clearRect(x - 1, 0, column.width + 2, canvas.height);
-    ctx.save();
-    ctx.translate(x, 0);
-    const needDOM = column.renderCell(ctx, index);
-    ctx.restore();
+  // protected updateCanvasCell(canvas: HTMLCanvasElement, node: HTMLElement, index: number, column: RenderColumn, x: number) {
+  //   const ctx = canvas.getContext('2d')!;
+  //   ctx.clearRect(x - 1, 0, column.width + 2, canvas.height);
+  //   ctx.save();
+  //   ctx.translate(x, 0);
+  //   const needDOM = column.renderCell(ctx, index);
+  //   ctx.restore();
 
-    if (!needDOM && node.childElementCount === 1) { // just canvas
-      return;
-    }
-    const elem = <HTMLElement>node.querySelector(`[data-col-id="${column.id}"]`);
-    if (elem && !needDOM) {
-      elem.remove();
-      return;
-    }
-    if (elem) {
-      this.updateCellImpl(column, elem, index);
-      return;
-    }
+  //   if (!needDOM && node.childElementCount === 1) { // just canvas
+  //     return;
+  //   }
+  //   const elem = <HTMLElement>node.querySelector(`[data-col-id="${column.id}"]`);
+  //   if (elem && !needDOM) {
+  //     elem.remove();
+  //     return;
+  //   }
+  //   if (elem) {
+  //     return this.updateCellImpl(column, elem, index);
+  //   }
 
-    const c = column.createCell(index);
-    c.classList.add(cssClass('low'));
-    this.initCellClasses(c, column.id);
-    node.appendChild(c);
-  }
+  //   const c = column.createCell(index);
+  //   c.classList.add(cssClass('low'));
+  //   this.initCellClasses(c, column.id);
+  //   node.appendChild(c);
+  // }
 
   private reindex() {
     this.columns.forEach((c, i) => {
@@ -531,7 +530,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const canvas = this.selectCanvas();
     node.appendChild(canvas);
     node.addEventListener('mouseenter', this.canvasMouseHandler.enter, PASSIVE);
-    this.renderRow(canvas, node, rowIndex);
+    // this.renderRow(canvas, node, rowIndex);
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number, hoverLod?: 'high' | 'low'): void {
@@ -603,7 +602,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     // use canvas
     if (wasLow && canvas) {
-      this.renderRow(canvas, node, rowIndex);
+      // FIXME this.renderRow(canvas, node, rowIndex);
       return;
     }
     // clear old
@@ -612,14 +611,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const canvas2 = this.selectCanvas();
     node.appendChild(canvas2);
     node.addEventListener('mouseenter', this.canvasMouseHandler.enter, PASSIVE);
-    this.renderRow(canvas2, node, rowIndex);
+    // FIXME this.renderRow(canvas2, node, rowIndex);
   }
 
   private updateCanvasBody() {
     const width = this.visibleRenderedWidth();
     super.forEachRow((row, index) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.renderRow(row.querySelector('canvas')!, row, index, width);
+        // FIXME this.renderRow(row.querySelector('canvas')!, row, index, width);
       }
     });
   }
@@ -723,7 +722,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     super.forEachRow((row, rowIndex) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.updateCanvasCell(<HTMLCanvasElement>row.firstElementChild!, row, rowIndex, column, x);
+        // FIXME this.updateCanvasCell(<HTMLCanvasElement>row.firstElementChild!, row, rowIndex, column, x);
         return;
       }
       this.updateCellImpl(column, <HTMLElement>row.children[index], rowIndex);
@@ -735,7 +734,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (!before) {
       return; // race condition
     }
-    const after = this.updateCell(before, rowIndex, column);
+    const r = this.updateCell(before, rowIndex, column);
+    let after: HTMLElement;
+    if (isAsyncUpdate(r)) {
+      after = r.item;
+      // FIXME async
+    } else {
+      after = r;
+    }
     if (before === after || !after) {
       return;
     }

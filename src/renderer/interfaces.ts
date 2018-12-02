@@ -4,6 +4,7 @@ import Column from '../model/Column';
 import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
 import {ISequence} from '../internal/interable';
+import {IAbortAblePromise} from 'lineupengine';
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
@@ -26,12 +27,12 @@ export interface ICellRenderer {
    * @param i the order relative index
    * @param group the group this row is part of
    */
-  update(node: HTMLElement, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void;
+  update(node: HTMLElement, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void | IAbortAblePromise<void> | null;
 
   /**
    * render a low detail canvas row
    */
-  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void | boolean;
+  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void | IAbortAblePromise<void> | boolean | null;
 }
 
 /**
@@ -49,7 +50,7 @@ export interface IGroupCellRenderer {
    * @param group the group to render
    * @param rows the data items
    */
-  update(node: HTMLElement, group: IGroup, rows: ISequence<IDataRow>, meta: IGroupMeta): void;
+  update(node: HTMLElement, group: IGroup, rows: ISequence<IDataRow>, meta: IGroupMeta): void | IAbortAblePromise<void> | null;
 }
 
 export interface ISummaryRenderer {
@@ -58,7 +59,7 @@ export interface ISummaryRenderer {
    */
   readonly template: string;
 
-  update(node: HTMLElement, hist: IStatistics | ICategoricalStatistics | null): void;
+  update(node: HTMLElement, hist: IStatistics | ICategoricalStatistics | null): void | IAbortAblePromise<void> | null;
 }
 
 

@@ -1,4 +1,4 @@
-import {IColumn} from 'lineupengine';
+import {IColumn, IAbortAblePromise, IAsyncUpdate} from 'lineupengine';
 import Column from '../model/Column';
 import {ICellRenderer, IGroupCellRenderer} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
@@ -42,7 +42,7 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers || !this.renderers.single) {
       return null;
     }
-    if (this.renderers.singleTemplate)  {
+    if (this.renderers.singleTemplate) {
       return <HTMLElement>this.renderers.singleTemplate.cloneNode(true);
     }
     const elem = this.ctx.asElement(this.renderers.single.template);
@@ -58,7 +58,7 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers || !this.renderers.group) {
       return null;
     }
-    if (this.renderers.groupTemplate)  {
+    if (this.renderers.groupTemplate) {
       return <HTMLElement>this.renderers.groupTemplate.cloneNode(true);
     }
     const elem = this.ctx.asElement(this.renderers.group.template);
@@ -74,7 +74,7 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers || !this.renderers.summary) {
       return null;
     }
-    if (this.renderers.summaryTemplate)  {
+    if (this.renderers.summaryTemplate) {
       return <HTMLElement>this.renderers.summaryTemplate.cloneNode(true);
     }
     const elem = this.ctx.asElement(this.renderers.summary.template);
@@ -85,7 +85,7 @@ export default class RenderColumn implements IColumn {
     return elem;
   }
 
-  createHeader() {
+  createHeader(): HTMLElement | IAsyncUpdate<HTMLElement> {
     const node = createHeader(this.c, this.ctx, {
       extraPrefix: 'th',
       dragAble: this.flags.advancedUIFeatures,
@@ -102,14 +102,13 @@ export default class RenderColumn implements IColumn {
       const summary = this.summaryRenderer()!;
       node.appendChild(summary);
     }
-    this.updateHeader(node);
-    return node;
+    return this.updateHeader(node);
   }
 
-  updateHeader(node: HTMLElement) {
+  updateHeader(node: HTMLElement): HTMLElement | IAsyncUpdate<HTMLElement> {
     updateHeader(node, this.c);
     if (!this.renderers || !this.renderers.summary) {
-      return;
+      return node;
     }
     let summary = <HTMLElement>node.querySelector(`.${cssClass('summary')}`)!;
     const oldRenderer = summary.dataset.renderer;
@@ -119,17 +118,20 @@ export default class RenderColumn implements IColumn {
       summary = this.summaryRenderer()!;
       node.appendChild(summary);
     }
-    this.renderers.summary.update(summary, this.ctx.statsOf(<any>this.c));
-  }
-
-  createCell(index: number) {
-    const isGroup = this.ctx.isGroup(index);
-    const node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
-    this.updateCell(node, index);
+    const ready = this.renderers.summary.update(summary, this.ctx.statsOf(<any>this.c));
+    if (ready) {
+      return {item: node, ready};
+    }
     return node;
   }
 
-  updateCell(node: HTMLElement, index: number): HTMLElement | void {
+  createCell(index: number): HTMLElement | IAsyncUpdate<HTMLElement> {
+    const isGroup = this.ctx.isGroup(index);
+    const node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
+    return this.updateCell(node, index);
+  }
+
+  updateCell(node: HTMLElement, index: number): HTMLElement | IAsyncUpdate<HTMLElement> {
     if (!this.flags.disableFrozenColumns) {
       node.classList.toggle(engineCssClass('frozen'), this.frozen);
     }
@@ -143,19 +145,26 @@ export default class RenderColumn implements IColumn {
     if (oldRenderer !== currentRenderer || oldGroup !== currentGroup) {
       node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
     }
+    let ready: IAbortAblePromise<void> | void | null;
     if (isGroup) {
       const g = this.ctx.getGroup(index);
-      this.renderers!.group.update(node, g, g.rows, g.meta);
+      ready = this.renderers!.group.update(node, g, g.rows, g.meta);
     } else {
       const r = this.ctx.getRow(index);
-      this.renderers!.single.update(node, r, r.relativeIndex, r.group, r.meta);
+      ready = this.renderers!.single.update(node, r, r.relativeIndex, r.group, r.meta);
+    }
+    if (ready) {
+      return {item: node, ready};
     }
     return node;
   }
 
-  renderCell(ctx: CanvasRenderingContext2D, index: number) {
+  renderCell(ctx: CanvasRenderingContext2D, index: number): boolean | IAbortAblePromise<void> {
     const r = this.ctx.getRow(index);
     const s = this.renderers!.single;
-    return s.render && s.render(ctx, r, r.relativeIndex, r.group, r.meta);
+    if (!s.render) {
+      return false;
+    }
+    return s.render(ctx, r, r.relativeIndex, r.group, r.meta) || false;
   }
 }

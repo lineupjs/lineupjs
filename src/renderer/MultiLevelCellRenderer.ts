@@ -9,6 +9,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 import {cssClass} from '../styles';
+import {IAbortAblePromise, allAbortAble} from 'lineupengine';
 
 /** @internal */
 export function gridClass(idPrefix: string, column: Column) {
@@ -16,7 +17,7 @@ export function gridClass(idPrefix: string, column: Column) {
 }
 
 /** @internal */
-export function createData(parent: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
+export function createData(parent: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
   const padding = COLUMN_PADDING;
   let offset = 0;
   const cols = parent.children.map((column) => {
@@ -89,10 +90,11 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid && !stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
         if (renderMissingDOM(n, col, d)) {
-          return;
+          return null;
         }
         matchColumns(n, cols, context);
 
+        const toWait: IAbortAblePromise<void>[] = [];
         const children = <HTMLElement[]>Array.from(n.children);
         const total = col.getWidth();
         let missingWeight = 0;
@@ -108,29 +110,46 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           } else {
             cnode.style.gridColumnStart = (ci + 1).toString();
           }
-          col.renderer!.update(cnode, d, i, group, meta);
+          const r = col.renderer!.update(cnode, d, i, group, meta);
           if (stacked) {
             missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
           }
+          if (r) {
+            toWait.push(r);
+          }
         });
+
+        if (toWait.length > 0) {
+          return <IAbortAblePromise<void>>allAbortAble(toWait);
+        }
+        return null;
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
-          return;
+          return null;
         }
+        const toWait: IAbortAblePromise<void>[] = [];
         let stackShift = 0;
         cols.forEach((col) => {
           const cr = col.renderer!;
           if (cr.render) {
             const shift = col.shift - stackShift;
             ctx.translate(shift, 0);
-            cr.render(ctx, d, i, group, meta);
+            const r = cr.render(ctx, d, i, group, meta);
+            if (typeof r !== 'boolean' && r) {
+              toWait.push(r);
+            }
             ctx.translate(-shift, 0);
           }
           if (stacked) {
             stackShift += col.width * (1 - (<INumberColumn>col.column).getNumber(d));
           }
         });
+
+        if (toWait.length > 0) {
+          return <IAbortAblePromise<void>>allAbortAble(toWait);
+        }
+        return null;
       }
     };
   }
@@ -148,6 +167,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
       update: (n: HTMLElement, group: IGroup, rows: IDataRow[], meta: IGroupMeta) => {
         matchColumns(n, cols, context);
 
+        const toWait: IAbortAblePromise<void>[] = [];
         const children = <HTMLElement[]>Array.from(n.children);
         const total = col.getWidth();
         cols.forEach((col, ci) => {
@@ -161,8 +181,16 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           } else {
             cnode.style.gridColumnStart = (ci + 1).toString();
           }
-          col.groupRenderer!.update(cnode, group, rows, meta);
+          const r = col.groupRenderer!.update(cnode, group, rows, meta);
+          if (r) {
+            toWait.push(r);
+          }
         });
+
+        if (toWait.length > 0) {
+          return <IAbortAblePromise<void>>allAbortAble(toWait);
+        }
+        return null;
       }
     };
   }
