@@ -247,23 +247,27 @@ export default class LocalDataProvider extends ACommonDataProvider {
     });
   }
 
+  private readonly mapToDataRow = (i: number) => {
+    if (i < 0 || i >= this._dataRows.length) {
+      return {i, v: {}};
+    }
+    return this._dataRows[i];
+  }
+
 
   viewRaw(indices: IndicesArray) {
-    // what about invalid indices
-    return mapIndices(indices, (i) => this._data[i]);
+    return mapIndices(indices, (i) => this._data[i] || {});
   }
 
   viewRawRows(indices: IndicesArray) {
-    // what about filter invalid indices
-    return mapIndices(indices, (i) => this._dataRows[i]);
+    return mapIndices(indices, this.mapToDataRow);
   }
 
   private seqRawRows(indices: IndicesArray) {
     if (indices.length < 10000) { // small copy
-      return mapIndices(indices, (i) => this._dataRows[i]);
+      return mapIndices(indices, this.mapToDataRow);
     }
-    // what about filter invalid indices
-    return lazySeq(indices).map((i) => this._dataRows[i]);
+    return lazySeq(indices).map(this.mapToDataRow);
   }
 
   view(indices: IndicesArray) {
@@ -302,15 +306,16 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return lazySeq(this._dataRows).map((v) => col.getRawNumber(v));
     }
     //randomly select 500 elements
-    const indices: number[] = [];
+    const indices = new Set<number>();
+
     for (let i = 0; i < MAX_SAMPLE; ++i) {
       let j = Math.floor(Math.random() * (l - 1));
-      while (indices.indexOf(j) >= 0) {
+      while (indices.has(j)) {
         j = Math.floor(Math.random() * (l - 1));
       }
-      indices.push(j);
+      indices.add(j);
     }
-    return lazySeq(indices).map((i) => col.getRawNumber(this._dataRows[i]));
+    return lazySeq(Array.from(indices)).map((i) => col.getRawNumber(this._dataRows[i]));
   }
 
   searchAndJump(search: string | RegExp, col: Column) {
