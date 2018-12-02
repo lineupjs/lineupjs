@@ -16,7 +16,7 @@ import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
 import {ISequence} from '../internal/interable';
-import {IStatistics, ICategoricalStatistics} from '../internal';
+import {IStatistics, ICategoricalStatistics, IDateStatistics} from '../internal';
 
 export {IExportOptions} from './utils';
 
@@ -119,12 +119,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   /**
    * stats caches Map<column id, stats> for the whole dataset
    */
-  private readonly dataStats = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
+  private readonly dataStats = new Map<string, Promise<IStatistics | ICategoricalStatistics | IDateStatistics>>();
 
   /**
    * stats caches Map<column id, stats> for a column in a ranking
    */
-  private readonly rankingStats = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
+  private readonly rankingStats = new Map<string, Promise<IStatistics | ICategoricalStatistics | IDateStatistics>>();
 
   /**
    * the current selected indices

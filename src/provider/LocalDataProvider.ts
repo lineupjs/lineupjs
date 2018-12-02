@@ -1,11 +1,12 @@
-import {computeHist, computeNormalizedStats} from '../internal';
+import {computeHist, computeNormalizedStats, computeDateState, IDateStatistics} from '../internal';
 import Column, {
   defaultGroup, IColumnDesc, IDataRow, IGroup, INumberColumn,
   IOrderedGroup,
   IndicesArray,
   mapIndices,
   IGroupMeta,
-  ISetColumn
+  ISetColumn,
+  IDateColumn
 } from '../model';
 import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
@@ -295,7 +296,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     return {
       stats: (col: INumberColumn, numberOfBins?: number) => computeNormalizedStats(getData().map((d) => col.getNumber(d)), numberOfBins),
-      hist: (col: ISetColumn) => computeHist(getData().map((d) => col.getSet(d)), col.categories)
+      hist: (col: ISetColumn) => computeHist(getData().map((d) => col.getSet(d)), col.categories),
+      dateStats: (col: IDateColumn, template?: IDateStatistics) => computeDateState(getData().map((d) => col.getDate(d)), template)
     };
   }
 

@@ -342,7 +342,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
-export function computeDateState(arr: ISequence<Date | null>): IDateStatistics {
+export function computeDateState(arr: ISequence<Date | null>, template?: IDateStatistics): IDateStatistics {
   // filter out NaN
   let min: Date | null = null;
   let max: Date | null = null;
@@ -368,7 +368,9 @@ export function computeDateState(arr: ISequence<Date | null>): IDateStatistics {
     byDay.set(key, (byDay.get(key) || 0) + 1);
   });
 
-  const {histGranularity, hist} = computeGranularity(min, max);
+  const {histGranularity, hist} = template ? {
+    histGranularity: template.histGranularity, hist: template.hist.map((d) => Object.assign({}, d, {count: 0}))
+  } : computeGranularity(min, max);
 
   return {
     min,
