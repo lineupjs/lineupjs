@@ -4,10 +4,10 @@ import debounce from '../internal/debounce';
 import OrderedSet from '../internal/OrderedSet';
 import {
   Column, createRankDesc, IColumnDesc, IDataRow, IGroup, IOrderedGroup,
-  ISelectionColumnDesc, models, IndicesArray
+  ISelectionColumnDesc, models, IndicesArray, createSelectionDesc
 } from '../model';
 import {dirty, dirtyHeader, dirtyValues, dirtyCaches} from '../model/Column';
-import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
+import AggregateGroupColumn, {IAggregateGroupColumnDesc, createAggregateDesc} from '../model/AggregateGroupColumn';
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
 import Ranking, {orderChanged, addColumn, removeColumn} from '../model/Ranking';
@@ -582,7 +582,27 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   abstract findDesc(ref: string): IColumnDesc | null;
 
-  abstract deriveDefault(addSupporType?: boolean): Ranking;
+  /**
+   * generates a default ranking by using all column descriptions ones
+   */
+  deriveDefault(addSupportType: boolean = true) {
+    const r = this.pushRanking();
+    if (addSupportType) {
+      r.push(this.create(createAggregateDesc())!);
+      r.push(this.create(createRankDesc())!);
+      if (this.multiSelections) {
+        r.push(this.create(createSelectionDesc())!);
+      }
+    }
+    this.getColumns().forEach((col) => {
+      const c = this.create(col);
+      if (!c || isSupportType(c)) {
+        return;
+      }
+      r.push(c);
+    });
+    return r;
+  }
 
   isAggregated(ranking: Ranking, group: IGroup) {
     return this.getTopNAggregated(ranking, group) >= 0;

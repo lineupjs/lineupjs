@@ -1,42 +1,15 @@
-import {createAggregateDesc, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, isSupportType} from '../model';
+import {IColumnDesc} from '../model';
 import Ranking from '../model/Ranking';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {IDataProviderDump} from './interfaces';
+import {isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter} from './accessor';
 
 
-function isComplexAccessor(column: any) {
-  // something like a.b or a[4]
-  return typeof column === 'string' && column.includes('.');
-}
-
-function rowComplexGetter(row: IDataRow, desc: any) {
-  const column = desc.column;
-  if (row.hasOwnProperty(column)) { // well complex but a direct hit
-    return row.v[column];
-  }
-  const resolve = (obj: any, col: string) => {
-    if (obj === undefined) {
-      return obj; // propagate invalid values
-    }
-    if (/\d+/.test(col)) { // index
-      return obj[+col];
-    }
-    return obj[col];
-  };
-  return column.split('.').reduce(resolve, row.v);
-}
-
-function rowGetter(row: IDataRow, desc: any) {
-  return row.v[desc.column];
-}
-
-function rowGuessGetter(row: IDataRow, desc: any) {
-  const column = desc.column;
-  if (isComplexAccessor(column)) {
-    return rowComplexGetter(row, desc);
-  }
-  return rowGetter(row, desc);
+function injectAccessor(d: any) {
+  d.accessor = d.accessor || (d.column ? (isComplexAccessor(d.column) ? rowComplexGetter : rowGetter) : rowGuessGetter);
+  d.label = d.label || d.column;
+  return d;
 }
 
 /**
@@ -49,10 +22,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   constructor(private columns: IColumnDesc[] = [], options: Partial<IDataProviderOptions> = {}) {
     super(options);
     //generate the accessor
-    columns.forEach((d: any) => {
-      d.accessor = d.accessor || (d.column ? (isComplexAccessor(d.column) ? rowComplexGetter : rowGetter) : rowGuessGetter);
-      d.label = d.label || d.column;
-    });
+    columns.forEach(injectAccessor);
   }
 
   cloneRanking(existing?: Ranking) {
@@ -74,11 +44,9 @@ abstract class ACommonDataProvider extends ADataProvider {
    * @param column
    */
   pushDesc(column: IColumnDesc) {
-    const d: any = column;
-    d.accessor = d.accessor || rowGetter;
-    d.label = column.label || d.column;
+    injectAccessor(column);
     this.columns.push(column);
-    this.fire(ADataProvider.EVENT_ADD_DESC, d);
+    this.fire(ADataProvider.EVENT_ADD_DESC, column);
   }
 
   clearColumns() {
@@ -102,28 +70,6 @@ abstract class ACommonDataProvider extends ADataProvider {
    */
   toDescRef(desc: any): any {
     return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : this.cleanDesc(Object.assign(desc));
-  }
-
-  /**
-   * generates a default ranking by using all column descriptions ones
-   */
-  deriveDefault(addSupportType: boolean = true) {
-    const r = this.pushRanking();
-    if (addSupportType) {
-      r.push(this.create(createAggregateDesc())!);
-      r.push(this.create(createRankDesc())!);
-      if (this.multiSelections) {
-        r.push(this.create(createSelectionDesc())!);
-      }
-    }
-    this.getColumns().forEach((col) => {
-      const c = this.create(col);
-      if (!c || isSupportType(c)) {
-        return;
-      }
-      r.push(c);
-    });
-    return r;
   }
 
   fromDescRef(descRef: any): any {
