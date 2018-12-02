@@ -5,7 +5,6 @@ export declare type IndicesArray = ReadonlyArray<number> | UIntTypedArray;
 
 export interface IOrderedGroup extends IGroup {
   order: IndicesArray;
-  index2pos: IndicesArray;
 }
 
 export const defaultGroup: IGroup = {

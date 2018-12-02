@@ -1,5 +1,5 @@
 import Column, {IColumnDesc, IDataRow} from '../model';
-import {defaultGroup, IOrderedGroup} from '../model/Group';
+import {defaultGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
@@ -47,7 +47,7 @@ export interface IRemoteDataProviderOptions {
 function createIndex2Pos(order: number[]) {
   const index2pos = <number[]>[];
   for (let i = 0; i < order.length; ++i) {
-    index2pos[order[i]] = i;
+    index2pos[order[i]] = i + 1;
   }
   return index2pos;
 }
@@ -73,9 +73,9 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.cache.size;
   }
 
-  sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {
+  sort(ranking: Ranking) {
     //use the server side to sort
-    return this.server.sort(ranking).then((order) => [Object.assign({order, index2pos: createIndex2Pos(order)}, defaultGroup)]);
+    return this.server.sort(ranking).then((order) => ({groups: [Object.assign({order}, defaultGroup)], index2pos: createIndex2Pos(order)}));
   }
 
   private loadFromServer(indices: number[]) {

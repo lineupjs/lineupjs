@@ -141,9 +141,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     super.cleanUpRanking(ranking);
   }
 
-  sortImpl(ranking: Ranking): IOrderedGroup[] | Promise<IOrderedGroup[]> {
+  sort(ranking: Ranking) {
     if (this._data.length === 0) {
-      return [];
+      return {groups: [], index2pos: []};
     }
     //do the optional filtering step
     let filter: ((d: IDataRow) => boolean) | null = null;
@@ -178,11 +178,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
         order[i] = i;
         index2pos[i] = i + 1; // shift since default is 0
       }
-      return [Object.assign({order, index2pos}, defaultGroup)];
+      return {groups: [Object.assign({order}, defaultGroup)], index2pos};
     }
 
     const groups = new Map<string, ISortHelper>();
     const lookups = isSortedBy ? new CompareLookup(this._data.length, ranking.toCompareValueType()) : undefined;
+    let maxDataIndex = -1;
 
     for (const r of this._dataRows) {
       if (filter && !filter(r)) {
@@ -198,20 +199,23 @@ export default class LocalDataProvider extends ACommonDataProvider {
       } else {
         groups.set(groupKey, {group, rows: [r.i]});
       }
+      if (maxDataIndex < r.i) {
+        maxDataIndex = r.i;
+      }
     }
 
     if (groups.size === 0) {
-      return [];
+      return {groups: [], index2pos: []};
     }
 
     const groupLookup = isGroupedSortedBy ? new CompareLookup(groups.size, ranking.toGroupCompareValueType()) : undefined;
 
     return Promise.all(Array.from(groups.values()).map((g, i) => {
       const group = g.group;
-      return this.sortWorker.sort(this._data.length, g.rows, groups.size === 1, lookups)
+      return this.sortWorker.sort(g.rows, groups.size === 1, lookups)
         // to group info
-        .then(({order, index2pos}) => {
-          const o: IOrderedGroup = Object.assign({order, index2pos}, group);
+        .then((order) => {
+          const o: IOrderedGroup = Object.assign({order}, group);
 
           // compute sort group value
           if (groupLookup) {
@@ -223,11 +227,23 @@ export default class LocalDataProvider extends ACommonDataProvider {
     })).then((groups) => {
       // sort groups
       if (!groupLookup) {
-        return groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+        groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      } else {
+        const groupIndices = groups.map((_, i) => i);
+        sortComplex(groupIndices, groupLookup.sortOrders);
+        groups = groupIndices.map((i) => groups[i]);
       }
-      const groupIndices = groups.map((_, i) => i);
-      sortComplex(groupIndices, groupLookup.sortOrders);
-      return groupIndices.map((i) => groups[i]);
+
+      const index2pos = chooseByLength(maxDataIndex + 1);
+      let offset = 1;
+      for (const g of groups) {
+        // tslint:disable-next-line
+        for (let i = 0; i < g.order.length; i++ , offset++) {
+          index2pos[g.order[i]] = offset;
+        }
+      }
+
+      return {groups, index2pos};
     });
   }
 

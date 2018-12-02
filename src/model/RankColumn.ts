@@ -39,16 +39,7 @@ export default class RankColumn extends Column {
     if (!ranking) {
       return -1;
     }
-    const groups = ranking.getGroups();
-    let offset = 0;
-    for (const group of groups) {
-      const rank = group.index2pos[row.i];
-      if (typeof rank === 'number' && !isNaN(rank) && rank > 0) {
-        return rank + offset;
-      }
-      offset += group.order.length;
-    }
-    return -1;
+    return ranking.getRank(row);
   }
 
   getValue(row: IDataRow) {

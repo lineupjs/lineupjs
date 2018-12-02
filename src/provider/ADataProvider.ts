@@ -261,9 +261,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   protected triggerReorder(ranking: Ranking) {
     this.fireBusy(true);
-    Promise.resolve(this.sort(ranking)).then((order) => {
-      unifyParents(order);
-      ranking.setGroups(order);
+    Promise.resolve(this.sort(ranking)).then(({groups, index2pos}) => {
+      unifyParents(groups);
+      ranking.setGroups(groups, index2pos);
       this.fireBusy(false);
     });
   }
@@ -657,7 +657,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param ranking
    * @return {Promise<any>}
    */
-  abstract sort(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[];
+  abstract sort(ranking: Ranking): Promise<{groups: IOrderedGroup[], index2pos: IndicesArray}> | {groups: IOrderedGroup[], index2pos: IndicesArray};
 
   /**
    * returns a view in the order of the given indices

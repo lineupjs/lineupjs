@@ -174,27 +174,16 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: {as
 }
 
 
-function order2pos(rawLength: number, order: UIntTypedArray) {
-  const index2pos = chooseByLength(rawLength);
-  for (let i = 0; i < order.length; ++i) {
-    const dataIndex = order[i];
-    index2pos[dataIndex] = i + 1; // shift by one
-  }
-  return index2pos;
-}
-
-function sort(rawLength: number, indices: number[], _singleCall: boolean, lookups?: CompareLookup) {
+function sort(indices: number[], _singleCall: boolean, lookups?: CompareLookup) {
   const order = fromByLength(indices);
   if (lookups) {
     sortComplex(order, lookups.sortOrders);
   }
-  const index2pos = order2pos(rawLength, order);
-
-  return Promise.resolve({order, index2pos});
+  return Promise.resolve(order);
 }
 
 export interface ISortWorker {
-  sort(rawLength: number, indices: number[], singleCall: boolean, lookups?: CompareLookup): Promise<{order: IndicesArray, index2pos: IndicesArray}>;
+  sort(indices: number[], singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
   terminate(): void;
 }
 
@@ -206,7 +195,6 @@ export const local: ISortWorker = {
 interface ISortMessageRequest {
   uid: number;
 
-  rawLength: number;
   indices: UIntTypedArray;
   sortOrders?: {asc: boolean, lookup: ILookUpArray}[];
 }
@@ -215,7 +203,6 @@ interface ISortMessageResponse {
   uid: number;
 
   order: IndicesArray;
-  index2pos: IndicesArray;
 }
 
 
@@ -229,13 +216,10 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     if (r.sortOrders) {
       sortComplex(r.indices, r.sortOrders);
     }
-    // since inplace sorting
-    const index2pos = order2pos(r.rawLength, r.indices);
     self.postMessage(<ISortMessageResponse>{
       uid: r.uid,
-      order: r.indices,
-      index2pos,
-    }, [r.indices.buffer, index2pos.buffer]);
+      order: r.indices
+    }, [r.indices.buffer]);
   });
 }
 
@@ -254,7 +238,6 @@ export class WorkerSortWorker implements ISortWorker {
     asc.toString(),
     desc.toString(),
     sortComplex.toString(),
-    order2pos.toString(),
     toFunctionBody(sortWorkerMain)
   ]);
 
@@ -293,14 +276,14 @@ export class WorkerSortWorker implements ISortWorker {
     }
   }
 
-  sort(rawLength: number, indices: number[], singleCall: boolean, lookups?: CompareLookup) {
+  sort(indices: number[], singleCall: boolean, lookups?: CompareLookup) {
 
     if (!lookups || indices.length < SHOULD_USE_WORKER) {
       // no thread needed
-      return sort(rawLength, indices, singleCall, lookups);
+      return sort(indices, singleCall, lookups);
     }
 
-    return new Promise<{order: IndicesArray, index2pos: IndicesArray}>((resolve) => {
+    return new Promise<IndicesArray>((resolve) => {
       const uid = Math.random();
 
       const worker = this.checkOut();
@@ -312,7 +295,7 @@ export class WorkerSortWorker implements ISortWorker {
         }
         worker.removeEventListener('message', receiver);
         this.checkIn(worker);
-        resolve({order: r.order, index2pos: r.index2pos});
+        resolve(r.order);
       };
 
       const indexArray = fromByLength(indices);
@@ -327,7 +310,6 @@ export class WorkerSortWorker implements ISortWorker {
       worker.addEventListener('message', receiver);
       worker.postMessage(<ISortMessageRequest>{
         uid,
-        rawLength,
         indices: indexArray,
         sortOrders: lookups.sortOrders
       }, toTransfer);

@@ -1,5 +1,4 @@
 import {createAggregateDesc, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, isSupportType} from '../model';
-import {IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
@@ -69,13 +68,6 @@ abstract class ACommonDataProvider extends ADataProvider {
 
     return clone;
   }
-
-  sort(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[] {
-    //use the server side to sort
-    return this.sortImpl(ranking);
-  }
-
-  protected abstract sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[];
 
   /**
    * adds another column description to this data provider
