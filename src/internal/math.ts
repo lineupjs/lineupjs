@@ -47,13 +47,18 @@ export interface ICategoricalStatistics {
   readonly missing: number;
 }
 
-export declare type EDateHistogramGranularity = 'year' | 'month' | 'day';
+export enum EDateHistogramGranularity {
+  YEAR = 'year',
+  MONTH = 'month',
+  DAY = 'day'
+}
 
 export interface IDateStatistics {
-  readonly min: Date;
-  readonly max: Date;
+  readonly min: Date | null;
+  readonly max: Date | null;
   readonly count: number;
   readonly maxBin: number;
+  readonly histGranularity: EDateHistogramGranularity;
   readonly hist: IDateBin[];
   readonly missing: number;
 }
@@ -287,6 +292,94 @@ export function computeNormalizedStats(arr: ISequence<number>, numberOfBins?: nu
   return new LazyBoxPlotData(arr, {bins, toBin});
 }
 
+function computeGranularity(min: Date | null, max: Date | null) {
+  if (min == null || max == null) {
+    return {histGranularity: EDateHistogramGranularity.YEAR, hist: []};
+  }
+  const hist: IDateBin[] = [];
+
+  if (max.getFullYear() - min.getFullYear() >= 2) {
+    // years
+    const minYear = min.getFullYear();
+    const maxYear = max.getFullYear();
+    for (let i = minYear; i <= maxYear; ++i) {
+      hist.push({
+        x0: new Date(i, 0, 1),
+        x1: new Date(i + 1, 0, 1),
+        count: 0
+      });
+    }
+    return {hist, histGranularity: EDateHistogramGranularity.YEAR};
+  }
+
+  if ((max.getTime() - min.getTime()) <= 1000 * 60 * 60 * 24 * 31) {
+    // less than a month use day
+    let x0 = new Date(min.getFullYear(), min.getMonth(), min.getDay());
+    while (x0 <= max) {
+      const x1 = new Date(x0);
+      x1.setDate(x1.getDate() + 1);
+      hist.push({
+        x0,
+        x1,
+        count: 0
+      });
+      x0 = x1;
+    }
+    return {hist, histGranularity: EDateHistogramGranularity.DAY};
+  }
+
+  let x0 = new Date(min.getFullYear(), min.getMonth(), 1);
+  while (x0 <= max) {
+    const x1 = new Date(x0);
+    x1.setMonth(x1.getMonth() + 1);
+    hist.push({
+      x0,
+      x1,
+      count: 0
+    });
+    x0 = x1;
+  }
+  return {hist, histGranularity: EDateHistogramGranularity.MONTH};
+}
+
+export function computeDateState(arr: ISequence<Date | null>): IDateStatistics {
+  // filter out NaN
+  let min: Date | null = null;
+  let max: Date | null = null;
+  let count = 0;
+  let missing = 0;
+
+  // yyyymmdd, count
+  const byDay = new Map<number, number>();
+  arr.forEach((v) => {
+    count += 1;
+    if (!v) {
+      missing += 1;
+      return;
+    }
+
+    if (min == null || v < min) {
+      min = v;
+    }
+    if (max == null || v > max) {
+      max = v;
+    }
+    const key = v.getFullYear() * 10000 + v.getMonth() * 100 + v.getDate();
+    byDay.set(key, (byDay.get(key) || 0) + 1);
+  });
+
+  const {histGranularity, hist} = computeGranularity(min, max);
+
+  return {
+    min,
+    max,
+    missing,
+    count,
+    maxBin: hist.reduce((acc, h) => Math.max(acc, h.count), 0),
+    hist,
+    histGranularity
+  };
+}
 
 /**
  * computes a categorical histogram
