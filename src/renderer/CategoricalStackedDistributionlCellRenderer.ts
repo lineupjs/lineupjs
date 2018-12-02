@@ -29,7 +29,7 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: ISequence<IDataRow>) => {
-        const {hist, missing} = computeHist(rows.map((r: IDataRow) => col.getCategory(r)), col.categories);
+        const {hist, missing} = computeHist(rows.map((r: IDataRow) => col.getSet(r)), col.categories);
         update(n, hist, missing);
       }
     };

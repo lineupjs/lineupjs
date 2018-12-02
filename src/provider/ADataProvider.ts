@@ -10,12 +10,13 @@ import {dirty, dirtyHeader, dirtyValues, dirtyCaches} from '../model/Column';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc, createAggregateDesc} from '../model/AggregateGroupColumn';
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
-import Ranking, {orderChanged, addColumn, removeColumn} from '../model/Ranking';
+import Ranking, {orderChanged, addColumn, removeColumn, EDirtyReason} from '../model/Ranking';
 import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
 import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
 import {ISequence} from '../internal/interable';
+import {IStatistics, ICategoricalStatistics} from '../internal';
 
 export {IExportOptions} from './utils';
 
@@ -115,16 +116,16 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   private readonly rankings: Ranking[] = [];
 
-  // TODO
-  // /**
-  //  * stats caches Map<column id, stats> for the whole dataset
-  //  */
-  // private readonly dataStats = new Map<string, IStatistics | ICategoricalStatistics>();
+  /**
+   * stats caches Map<column id, stats> for the whole dataset
+   */
+  private readonly dataStats = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
 
-  // /**
-  //  * stats caches Map<column id, stats> for a column in a ranking
-  //  */
-  // private readonly rankingStats = new Map<string, IStatistics | ICategoricalStatistics>();
+  /**
+   * stats caches Map<column id, stats> for a column in a ranking
+   */
+  private readonly rankingStats = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
+
   /**
    * the current selected indices
    * @type {OrderedSet}
@@ -253,18 +254,23 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.rankings.splice(index, 0, r);
     this.forward(r, ...ADataProvider.FORWARD_RANKING_EVENTS);
     //delayed reordering per ranking
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(() => {
-      this.triggerReorder(r);
-    }, 100));
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce((reason?: EDirtyReason) => {
+      this.triggerReorder(r, reason);
+    }, 100, (current, next) => {
+      // EDirtyReason is ordered the more important the smaller
+      return Object.assign(next, {
+        args: [Math.min(current.args[0], next.args[0])]
+      });
+    }));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
     this.triggerReorder(r);
   }
 
-  protected triggerReorder(ranking: Ranking) {
+  private triggerReorder(ranking: Ranking, dirtyReason?: EDirtyReason) {
     this.fireBusy(true);
-    Promise.resolve(this.sort(ranking)).then(({groups, index2pos}) => {
+    Promise.resolve(this.sort(ranking, dirtyReason)).then(({groups, index2pos}) => {
       unifyParents(groups);
-      ranking.setGroups(groups, index2pos);
+      ranking.setGroups(groups, index2pos, dirtyReason);
       this.fireBusy(false);
     });
   }
@@ -340,8 +346,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * hook method for cleaning up a ranking
    * @param _ranking
    */
-  cleanUpRanking(_ranking: Ranking) {
-    //nothing to do
+  cleanUpRanking(ranking: Ranking) {
+    // delete caches
+    for (const col of ranking.flatColumns) {
+      this.dataStats.delete(col.id);
+      this.rankingStats.delete(col.id);
+    }
   }
 
   /**
@@ -674,7 +684,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param ranking
    * @return {Promise<any>}
    */
-  abstract sort(ranking: Ranking): Promise<{groups: IOrderedGroup[], index2pos: IndicesArray}> | {groups: IOrderedGroup[], index2pos: IndicesArray};
+  abstract sort(ranking: Ranking, dirtyReason?: EDirtyReason): Promise<{groups: IOrderedGroup[], index2pos: IndicesArray}> | {groups: IOrderedGroup[], index2pos: IndicesArray};
 
   /**
    * returns a view in the order of the given indices

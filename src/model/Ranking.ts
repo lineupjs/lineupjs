@@ -17,6 +17,7 @@ export interface ISortCriteria {
 }
 
 export enum EDirtyReason {
+  DIRTY_SORT_CACHES,
   FILTER_CHANGED,
   SORT_CRITERIA_CHANGED,
   GROUP_CRITERIA_CHANGED,
@@ -72,7 +73,7 @@ export declare function dirtyOrder(reason?: EDirtyReason): void;
  * @asMemberOf Ranking
  * @event
  */
-export declare function orderChanged(previous: number[], current: number[], previousGroups: IOrderedGroup[], currentGroups: IOrderedGroup[]): void;
+export declare function orderChanged(previous: number[], current: number[], previousGroups: IOrderedGroup[], currentGroups: IOrderedGroup[], dirtyReason?: EDirtyReason): void;
 /**
  * @asMemberOf Ranking
  * @event
@@ -203,13 +204,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.fire(Ranking.EVENT_LABEL_CHANGED, this.label, this.label = value);
   }
 
-  setGroups(groups: IOrderedGroup[], index2pos: IndicesArray) {
+  setGroups(groups: IOrderedGroup[], index2pos: IndicesArray, dirtyReason?: EDirtyReason) {
     const old = this.order;
     const oldGroups = this.groups;
     this.groups = groups;
     this.index2pos = index2pos;
     this.order = toOrder(groups);
-    this.fire([Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_GROUPS_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], old, this.order, oldGroups, groups);
+    this.fire([Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_GROUPS_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], old, this.order, oldGroups, groups, dirtyReason);
   }
 
   getRank(row: IDataRow) {

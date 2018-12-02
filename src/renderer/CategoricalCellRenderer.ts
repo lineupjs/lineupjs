@@ -50,7 +50,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: ISequence<IDataRow>) => {
-        const {maxBin, hist} = computeHist(rows.map((r: IDataRow) => col.getCategory(r)), col.categories);
+        const {maxBin, hist} = computeHist(rows.map((r: IDataRow) => col.getSet(r)), col.categories);
 
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
         update(n, max, hist);

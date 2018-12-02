@@ -35,9 +35,26 @@ export interface ICategoricalBin {
   count: number;
 }
 
+export interface IDateBin {
+  x0: Date;
+  x1: Date;
+  count: number;
+}
+
 export interface ICategoricalStatistics {
   readonly maxBin: number;
   readonly hist: ICategoricalBin[];
+  readonly missing: number;
+}
+
+export declare type EDateHistogramGranularity = 'year' | 'month' | 'day';
+
+export interface IDateStatistics {
+  readonly min: Date;
+  readonly max: Date;
+  readonly count: number;
+  readonly maxBin: number;
+  readonly hist: IDateBin[];
   readonly missing: number;
 }
 
@@ -278,17 +295,23 @@ export function computeNormalizedStats(arr: ISequence<number>, numberOfBins?: nu
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function computeHist(arr: ISequence<ICategory | null>, categories: ICategory[]): ICategoricalStatistics {
+export function computeHist(arr: ISequence<Set<ICategory> | null | ICategory>, categories: ICategory[]): ICategoricalStatistics {
   const m = new Map<string, number>();
   let missingCount = 0;
   categories.forEach((cat) => m.set(cat.name, 0));
 
-  arr.forEach((v) => {
-    if (v == null) {
+  arr.forEach((vs) => {
+    if (vs == null || (vs instanceof Set && vs.size === 0)) {
       missingCount += 1;
       return;
     }
-    m.set(v.name, (m.get(v.name) || 0) + 1);
+    if (!(vs instanceof Set)) {
+      m.set(vs.name, (m.get(vs.name) || 0) + 1);
+      return;
+    }
+    vs.forEach((v) => {
+      m.set(v.name, (m.get(v.name) || 0) + 1);
+    });
   });
 
   const entries: {cat: string; count: number}[] = categories.map((d) => ({cat: d.name, count: m.get(d.name)!}));

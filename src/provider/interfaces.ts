@@ -1,6 +1,6 @@
 import {ICategoricalStatistics, IStatistics} from '../internal';
 import AEventDispatcher from '../internal/AEventDispatcher';
-import {Column, ICategoricalColumn, IColumnDesc, IGroup, INumberColumn, IndicesArray} from '../model';
+import {Column, IColumnDesc, IGroup, INumberColumn, IndicesArray, ISetColumn} from '../model';
 import Ranking from '../model/Ranking';
 import '!file-loader?name=schema.4.0.0.json!./schema.json';
 import {ISequence} from '../internal/interable';
@@ -9,11 +9,11 @@ import {ISequence} from '../internal/interable';
 export interface IStatsBuilder {
   stats(col: INumberColumn, bins?: number): Promise<IStatistics> | IStatistics;
 
-  hist(col: ICategoricalColumn): Promise<ICategoricalStatistics> | ICategoricalStatistics;
+  hist(col: ISetColumn): Promise<ICategoricalStatistics> | ICategoricalStatistics;
 }
 
 export interface IDataProviderOptions {
-  columnTypes: { [columnType: string]: typeof Column };
+  columnTypes: {[columnType: string]: typeof Column};
 
   /**
    * allow multiple selected rows
@@ -23,7 +23,7 @@ export interface IDataProviderOptions {
 }
 
 export interface IDataProvider extends AEventDispatcher {
-  readonly columnTypes: { [columnType: string]: typeof Column };
+  readonly columnTypes: {[columnType: string]: typeof Column};
 
   getTotalNumberOfRows(): number;
 
@@ -123,7 +123,7 @@ export interface IRankingDump {
 }
 
 export interface IDataProviderDump {
-  '$schema'? : string;
+  '$schema'?: string;
   /**
    * base for generating new uids
    */
@@ -137,7 +137,7 @@ export interface IDataProviderDump {
   /**
    * list of aggregated group paths
    */
-  aggregations?: string[] | { [key: string]: number};
+  aggregations?: string[] | {[key: string]: number};
   /**
    * ranking dumps
    */

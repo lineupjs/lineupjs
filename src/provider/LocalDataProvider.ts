@@ -1,13 +1,13 @@
 import {computeHist, computeNormalizedStats} from '../internal';
 import Column, {
-  defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn,
+  defaultGroup, IColumnDesc, IDataRow, IGroup, INumberColumn,
   IOrderedGroup,
-  NumberColumn,
   IndicesArray,
   mapIndices,
-  IGroupMeta
+  IGroupMeta,
+  ISetColumn
 } from '../model';
-import Ranking from '../model/Ranking';
+import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions, IStatsBuilder} from './interfaces';
 import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker, CompareLookup} from './sort';
@@ -59,14 +59,15 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
 
     const that = this;
-    this.reorderAll = function (this: {source: Ranking}) {
+    this.reorderAll = function (this: {source?: Ranking, type: string}) {
       //fire for all other rankings a dirty order event, too
       const ranking = this.source;
-      that.getRankings().forEach((r) => {
+      const type = this.type;
+      for (const r of that.getRankings()) {
         if (r !== ranking) {
-          r.dirtyOrder();
+          r.dirtyOrder(type === Ranking.EVENT_FILTER_CHANGED ? EDirtyReason.FILTER_CHANGED : undefined);
         }
-      });
+      }
     };
   }
 
@@ -76,7 +77,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   setFilter(filter: ((row: IDataRow) => boolean) | null) {
     this.filter = filter;
-    this.reorderAll();
+    this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
   }
 
   getFilter() {
@@ -104,7 +105,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     this._data = data;
     this._dataRows = toRows(data);
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
-    this.reorderAll();
+    this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
   }
 
   clearData() {
@@ -121,14 +122,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
       this._dataRows.push({v: d, i: this._dataRows.length});
     }
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
-    this.reorderAll();
+    this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
   }
 
   cloneRanking(existing?: Ranking) {
     const clone = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
-      clone.on(`${NumberColumn.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
+      clone.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
     }
 
     return clone;
@@ -136,12 +137,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   cleanUpRanking(ranking: Ranking) {
     if (this.options.filterGlobally) {
-      ranking.on(`${NumberColumn.EVENT_FILTER_CHANGED}.reorderAll`, null);
+      ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }
     super.cleanUpRanking(ranking);
   }
 
-  sort(ranking: Ranking) {
+  sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
     if (this._data.length === 0) {
       return {groups: [], index2pos: []};
     }
@@ -252,7 +253,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return {i, v: {}};
     }
     return this._dataRows[i];
-  }
+  };
 
 
   viewRaw(indices: IndicesArray) {
@@ -294,7 +295,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     return {
       stats: (col: INumberColumn, numberOfBins?: number) => computeNormalizedStats(getData().map((d) => col.getNumber(d)), numberOfBins),
-      hist: (col: ICategoricalColumn) => computeHist(getData().map((d) => col.getCategory(d)), col.categories)
+      hist: (col: ISetColumn) => computeHist(getData().map((d) => col.getSet(d)), col.categories)
     };
   }
 
