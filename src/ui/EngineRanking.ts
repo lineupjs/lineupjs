@@ -1,4 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate, IAbortAblePromise, isAbortAble, isLoadingCell} from 'lineupengine';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate, IAbortAblePromise, isAbortAble, isLoadingCell, allAbortAble, ABORTED} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
@@ -15,6 +15,7 @@ import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
 import {clear} from '../internal';
 import {ILineUpFlags} from '../interfaces';
+import {IRendderCallback} from '../renderer/interfaces';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -84,6 +85,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   static readonly EVENT_HIGHLIGHT_CHANGED = RankingEvents.EVENT_HIGHLIGHT_CHANGED;
 
   private _context: ICellRenderContext<RenderColumn>;
+
+  private readonly loadingCanvas = new WeakMap<HTMLCanvasElement, {col: number, render: IAbortAblePromise<IRendderCallback>}[]>();
 
   private readonly renderCtx: IRankingBodyContext;
   private data: (IGroupItem | IGroupData)[] = [];
@@ -368,7 +371,47 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return width;
   }
 
+  private pushLazyRedraw(canvas: HTMLCanvasElement, x: number, column: RenderColumn, render: IAbortAblePromise<IRendderCallback>) {
+    render.then((r) => {
+      const l = (this.loadingCanvas.get(canvas) || []);
+      const pos = l.findIndex((d) => d.render === render && d.col === column.index);
+      if (pos < 0) { // not part anymore ignore
+        return;
+      }
+      l.splice(pos, 1);
+      if (typeof r === 'function') { // i.e not aborted
+        const ctx = canvas.getContext('2d')!;
+        ctx.clearRect(x - 1, 0, column.width + 2, canvas.height);
+        ctx.save();
+        ctx.translate(x, 0);
+        r(ctx);
+        ctx.restore();
+      }
+
+      if (l.length > 0) {
+        return;
+      }
+      this.loadingCanvas.delete(canvas);
+      canvas.classList.remove(cssClass('loading-c'));
+    });
+
+    if (!this.loadingCanvas.has(canvas)) {
+      canvas.classList.add(cssClass('loading-c'));
+      this.loadingCanvas.set(canvas, [{col: column.index, render}]);
+    } else {
+      this.loadingCanvas.get(canvas)!.push({col: column.index, render});
+    }
+  }
+
   private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number, width = this.visibleRenderedWidth()) {
+    if (this.loadingCanvas.has(canvas)) {
+      for (const a of this.loadingCanvas.get(canvas)!) {
+        a.render.abort();
+      }
+      this.loadingCanvas.delete(canvas);
+    }
+    canvas.classList.remove(cssClass('loading-c'));
+
     canvas.width = width;
     canvas.style.width = `${width}px`;
     canvas.height = CANVAS_HEIGHT;
@@ -378,17 +421,17 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ctx.save();
     const domColumns = <RenderColumn[]>[];
 
-    const toWait: IAbortAblePromise<void>[] = []; // FIXME
-
+    let x = 0;
     const renderCellImpl = (col: number) => {
       const c = this.columns[col];
       const r = c.renderCell(ctx, index);
       if (r === true) {
         domColumns.push(c);
       } else if (r !== false && isAbortAble(r)) {
-        toWait.push(r);
+        this.pushLazyRedraw(canvas, x, c, r);
       }
       const shift = c.width + COLUMN_PADDING;
+      x += shift;
       ctx.translate(shift, 0);
     };
 
@@ -452,6 +495,19 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
 
   protected updateCanvasCell(canvas: HTMLCanvasElement, node: HTMLElement, index: number, column: RenderColumn, x: number) {
+
+    // delete lazy that would render the same thing
+    if (this.loadingCanvas.has(canvas)) {
+      const l = this.loadingCanvas.get(canvas)!;
+      const me = l.filter((d) => d.col === column.index);
+      if (me.length > 0) {
+        this.loadingCanvas.set(canvas, l.filter((d) => d.col !== column.index));
+        for (const a of me) {
+          a.render.abort();
+        }
+      }
+    }
+
     const ctx = canvas.getContext('2d')!;
     ctx.clearRect(x - 1, 0, column.width + 2, canvas.height);
     ctx.save();
@@ -460,7 +516,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ctx.restore();
 
     if (typeof needDOM !== 'boolean' && isAbortAble(needDOM)) {
-      // FIXME
+      this.pushLazyRedraw(canvas, x, column, needDOM);
     }
 
     if (needDOM !== true && node.childElementCount === 1) { // just canvas
@@ -624,7 +680,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const canvas = (wasLow && node.firstElementChild!.nodeName.toLowerCase() === 'canvas') ? <HTMLCanvasElement>node.firstElementChild! : null;
     if (!low || this.ctx.provider.isSelected(i)) {
       if (canvas) {
-        this.canvasPool.push(canvas);
+        this.recycleCanvas(canvas);
         clear(node);
         node.removeEventListener('mouseenter', this.canvasMouseHandler.enter);
       }
@@ -663,6 +719,17 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     this.oldLeft = left;
     this.updateCanvasBody();
+  }
+
+  private recycleCanvas(canvas: HTMLCanvasElement) {
+    if (this.loadingCanvas.has(canvas)) {
+      for (const a of this.loadingCanvas.get(canvas)!) {
+        a.render.abort();
+      }
+      this.loadingCanvas.delete(canvas);
+    } else if (!canvas.classList.contains(cssClass('loading-c'))) {
+      this.canvasPool.push(canvas);
+    }
   }
 
   enableHighlightListening(enable: boolean) {

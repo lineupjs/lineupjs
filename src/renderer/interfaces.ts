@@ -10,6 +10,7 @@ export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
 }
 
+export declare type IRendderCallback = (ctx: CanvasRenderingContext2D) => void;
 
 export declare type IColumnStats = null | IValueStatistics | PromiseLike<IValueStatistics>;
 
@@ -33,8 +34,9 @@ export interface ICellRenderer {
 
   /**
    * render a low detail canvas row
+   * @return true if a dom element is needed
    */
-  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void | IAbortAblePromise<void> | boolean | null;
+  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void | IAbortAblePromise<IRenderCallback> | boolean | null;
 }
 
 /**
