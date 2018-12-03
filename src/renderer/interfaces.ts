@@ -1,5 +1,5 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {ICategoricalColumn, IDataRow, IGroup, INumberColumn, IGroupMeta} from '../model';
+import {IValueStatistics} from '../internal/math';
+import {ICategoricalColumn, IDataRow, IGroup, INumberColumn, IGroupMeta, IDateColumn} from '../model';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
@@ -10,6 +10,8 @@ export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
 }
 
+
+export declare type IColumnStats = null | IValueStatistics | PromiseLike<IValueStatistics>;
 
 /**
  * a cell renderer for rendering a cell of specific column
@@ -59,7 +61,7 @@ export interface ISummaryRenderer {
    */
   readonly template: string;
 
-  update(node: HTMLElement, hist: IStatistics | ICategoricalStatistics | null): void | IAbortAblePromise<void> | null;
+  update(node: HTMLElement, stats: IColumnStats): void | IAbortAblePromise<void> | null;
 }
 
 
@@ -81,7 +83,7 @@ export interface IRenderContext {
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 
-  statsOf(col: (INumberColumn | ICategoricalColumn) & Column, unfiltered?: boolean): ICategoricalStatistics | IStatistics | null;
+  statsOf(col: (INumberColumn | ICategoricalColumn | IDateColumn) & Column, unfiltered?: boolean): IColumnStats;
 
   /**
    * prefix used for all generated id names
@@ -108,11 +110,11 @@ export interface ICellRendererFactory {
 
   canRender(col: Column, mode: ERenderMode): boolean;
 
-  create?(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer;
+  create?(col: Column, context: IRenderContext, stats: IColumnStats, imposer?: IImposer): ICellRenderer;
 
-  createGroup?(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer;
+  createGroup?(col: Column, context: IRenderContext, stats: IColumnStats, imposer?: IImposer): IGroupCellRenderer;
 
-  createSummary?(col: Column, context: IRenderContext, interactive: boolean, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ISummaryRenderer;
+  createSummary?(col: Column, context: IRenderContext, interactive: boolean, stats: IColumnStats, imposer?: IImposer): ISummaryRenderer;
 }
 
 

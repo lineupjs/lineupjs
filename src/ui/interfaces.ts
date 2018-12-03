@@ -1,8 +1,7 @@
-import {ICategoricalStatistics, IStatistics} from '../internal';
-import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn} from '../model';
+import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn, IDateColumn} from '../model';
 import {IDataProvider} from '../provider';
 import {IImposer, IRenderContext} from '../renderer';
-import {ISummaryRenderer} from '../renderer/interfaces';
+import {ISummaryRenderer, IColumnStats} from '../renderer/interfaces';
 import {IToolbarAction, IToolbarDialogAddon} from './toolbar';
 import DialogManager from './dialogs/DialogManager';
 import {ILineUpFlags} from '../interfaces';
@@ -21,13 +20,13 @@ export interface IRankingHeaderContextContainer {
 
   asElement(html: string): HTMLElement;
 
-  toolbar: { [key: string]: IToolbarAction | IToolbarDialogAddon };
+  readonly toolbar: {[key: string]: IToolbarAction | IToolbarDialogAddon};
 
-  flags: ILineUpFlags;
+  readonly flags: ILineUpFlags;
 
-  statsOf(col: (INumberColumn | ICategoricalColumn) & Column, unfiltered?: boolean): ICategoricalStatistics | IStatistics | null;
+  statsOf(col: (INumberColumn | ICategoricalColumn | IDateColumn) & Column, unfiltered?: boolean): IColumnStats;
 
-  getPossibleRenderer(col: Column): { item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[] };
+  getPossibleRenderer(col: Column): {item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[]};
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 }

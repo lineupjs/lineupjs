@@ -1,4 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate} from 'lineupengine';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate, IAbortAblePromise, isAbortAble, isLoadingCell} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
@@ -322,6 +322,18 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return column.createCell(index);
   }
 
+  private createCellHandled(col: RenderColumn, index: number) {
+    const r = col.createCell(index);
+    let item: HTMLElement;
+    if (isAsyncUpdate(r)) {
+      item = this.handleCellReady(r.item, r.ready, col.index);
+    } else {
+      item = r;
+    }
+    this.initCellClasses(item, col.id);
+    return item;
+  }
+
   protected updateCell(node: HTMLElement, index: number, column: RenderColumn) {
     return column.updateCell(node, index);
   }
@@ -356,98 +368,118 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return width;
   }
 
-  // private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number, width = this.visibleRenderedWidth()) {
-  //   canvas.width = width;
-  //   canvas.style.width = `${width}px`;
-  //   canvas.height = CANVAS_HEIGHT;
-  //   const ctx = canvas.getContext('2d')!;
-  //   ctx.imageSmoothingEnabled = false;
-  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //   ctx.save();
-  //   const domColumns = <RenderColumn[]>[];
+  private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number, width = this.visibleRenderedWidth()) {
+    canvas.width = width;
+    canvas.style.width = `${width}px`;
+    canvas.height = CANVAS_HEIGHT;
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    const domColumns = <RenderColumn[]>[];
 
-  //   for (const col of this.visibleColumns.frozen) {
-  //     const c = this.columns[col];
-  //     if (c.renderCell(ctx, index)) {
-  //       domColumns.push(c);
-  //     }
-  //     const shift = c.width + COLUMN_PADDING;
-  //     ctx.translate(shift, 0);
-  //   }
-  //   for (let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
-  //     const c = this.columns[col];
-  //     if (c.renderCell(ctx, index)) {
-  //       domColumns.push(c);
-  //     }
-  //     const shift = c.width + COLUMN_PADDING;
-  //     ctx.translate(shift, 0);
-  //   }
-  //   ctx.restore();
+    const toWait: IAbortAblePromise<void>[] = []; // FIXME
 
-  //   const length = node.childElementCount - 1; // for canvas
+    const renderCellImpl = (col: number) => {
+      const c = this.columns[col];
+      const r = c.renderCell(ctx, index);
+      if (r === true) {
+        domColumns.push(c);
+      } else if (r !== false && isAbortAble(r)) {
+        toWait.push(r);
+      }
+      const shift = c.width + COLUMN_PADDING;
+      ctx.translate(shift, 0);
+    };
 
-  //   if (domColumns.length === 0) {
-  //     while (node.lastElementChild !== node.firstElementChild) {
-  //       node.removeChild(node.lastElementChild!);
-  //     }
-  //     return;
-  //   }
-  //   if (domColumns.length === 1) {
-  //     const first = domColumns[0];
-  //     if (length === 0) {
-  //       const c = first.createCell(index);
-  //       c.classList.add(cssClass('low'));
-  //       this.initCellClasses(c, first.id);
-  //       node.appendChild(c);
-  //       return;
-  //     }
-  //     if (length === 1 && (<HTMLElement>node.lastElementChild!).dataset.colId === first.id) {
-  //       this.updateCellImpl(first, <HTMLElement>node.lastElementChild, index);
-  //       return;
-  //     }
-  //   }
+    for (const col of this.visibleColumns.frozen) {
+      renderCellImpl(col);
+    }
+    for (let col = this.visibleColumns.first; col <= this.visibleColumns.last; ++col) {
+      renderCellImpl(col);
+    }
+    ctx.restore();
 
-  //   const existing = new Map((<HTMLElement[]>Array.from(node.children)).slice(1).map((d) => <[string, HTMLElement]>[d.dataset.col, d]));
-  //   for (const col of domColumns) {
-  //     const elem = existing.get(col.id);
-  //     if (elem) {
-  //       existing.delete(col.id);
-  //       this.updateCellImpl(col, elem, index);
-  //     } else {
-  //       const c = col.createCell(index);
-  //       c.classList.add(cssClass('low'));
-  //       this.initCellClasses(c, col.id);
-  //       node.appendChild(c);
-  //     }
-  //   }
-  //   existing.forEach((v) => v.remove());
-  // }
+    const visibleElements = node.childElementCount - 1; // for canvas
 
-  // protected updateCanvasCell(canvas: HTMLCanvasElement, node: HTMLElement, index: number, column: RenderColumn, x: number) {
-  //   const ctx = canvas.getContext('2d')!;
-  //   ctx.clearRect(x - 1, 0, column.width + 2, canvas.height);
-  //   ctx.save();
-  //   ctx.translate(x, 0);
-  //   const needDOM = column.renderCell(ctx, index);
-  //   ctx.restore();
+    if (domColumns.length === 0) {
+      while (node.lastElementChild !== node.firstElementChild) {
+        const n = <HTMLElement>node.lastElementChild!;
+        node.removeChild(n);
+        this.recycleCell(n);
+      }
+      return;
+    }
+    if (domColumns.length === 1) {
+      const first = domColumns[0];
+      if (visibleElements === 0) {
+        const item = this.createCellHandled(first, index);
+        item.classList.add(cssClass('low'));
+        node.appendChild(item);
+        return;
+      }
+      const firstDOM = <HTMLElement>node.lastElementChild!;
+      if (visibleElements === 1 && firstDOM.dataset.colId === first.id) {
+        const isLoading = isLoadingCell(firstDOM);
+        if (isLoading) {
+          const item = this.createCellHandled(first, index);
+          node.replaceChild(item, firstDOM);
+          this.recycleCell(firstDOM, first.index);
+          return;
+        }
+        this.updateCellImpl(first, <HTMLElement>node.lastElementChild, index);
+        return;
+      }
+    }
 
-  //   if (!needDOM && node.childElementCount === 1) { // just canvas
-  //     return;
-  //   }
-  //   const elem = <HTMLElement>node.querySelector(`[data-col-id="${column.id}"]`);
-  //   if (elem && !needDOM) {
-  //     elem.remove();
-  //     return;
-  //   }
-  //   if (elem) {
-  //     return this.updateCellImpl(column, elem, index);
-  //   }
+    const existing = new Map((<HTMLElement[]>Array.from(node.children)).slice(1).map((d) => <[string, HTMLElement]>[d.dataset.col, d]));
+    for (const col of domColumns) {
+      const elem = existing.get(col.id);
+      if (elem && !isLoadingCell(elem)) {
+        existing.delete(col.id);
+        this.updateCellImpl(col, elem, index);
+      } else {
+        const c = this.createCellHandled(col, index);
+        c.classList.add(cssClass('low'));
+        node.appendChild(c);
+      }
+    }
+    existing.forEach((v) => {
+      v.remove();
+      this.recycleCell(v);
+    });
+  }
 
-  //   const c = column.createCell(index);
-  //   c.classList.add(cssClass('low'));
-  //   this.initCellClasses(c, column.id);
-  //   node.appendChild(c);
-  // }
+
+  protected updateCanvasCell(canvas: HTMLCanvasElement, node: HTMLElement, index: number, column: RenderColumn, x: number) {
+    const ctx = canvas.getContext('2d')!;
+    ctx.clearRect(x - 1, 0, column.width + 2, canvas.height);
+    ctx.save();
+    ctx.translate(x, 0);
+    const needDOM = column.renderCell(ctx, index);
+    ctx.restore();
+
+    if (typeof needDOM !== 'boolean' && isAbortAble(needDOM)) {
+      // FIXME
+    }
+
+    if (needDOM !== true && node.childElementCount === 1) { // just canvas
+      return;
+    }
+    const elem = <HTMLElement>node.querySelector(`[data-col-id="${column.id}"]`);
+    if (elem && !needDOM) {
+      elem.remove();
+      this.recycleCell(elem, column.index);
+      return;
+    }
+    if (elem) {
+      return this.updateCellImpl(column, elem, index);
+    }
+
+    const c = this.createCellHandled(column, index);
+    c.classList.add(cssClass('low'));
+    node.appendChild(c);
+  }
 
   private reindex() {
     this.columns.forEach((c, i) => {
@@ -530,7 +562,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const canvas = this.selectCanvas();
     node.appendChild(canvas);
     node.addEventListener('mouseenter', this.canvasMouseHandler.enter, PASSIVE);
-    // this.renderRow(canvas, node, rowIndex);
+    this.renderRow(canvas, node, rowIndex);
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number, hoverLod?: 'high' | 'low'): void {
@@ -602,7 +634,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     // use canvas
     if (wasLow && canvas) {
-      // FIXME this.renderRow(canvas, node, rowIndex);
+      this.renderRow(canvas, node, rowIndex);
       return;
     }
     // clear old
@@ -611,14 +643,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const canvas2 = this.selectCanvas();
     node.appendChild(canvas2);
     node.addEventListener('mouseenter', this.canvasMouseHandler.enter, PASSIVE);
-    // FIXME this.renderRow(canvas2, node, rowIndex);
+    this.renderRow(canvas2, node, rowIndex);
   }
 
   private updateCanvasBody() {
     const width = this.visibleRenderedWidth();
     super.forEachRow((row, index) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        // FIXME this.renderRow(row.querySelector('canvas')!, row, index, width);
+        this.renderRow(row.querySelector('canvas')!, row, index, width);
       }
     });
   }
@@ -722,7 +754,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     super.forEachRow((row, rowIndex) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        // FIXME this.updateCanvasCell(<HTMLCanvasElement>row.firstElementChild!, row, rowIndex, column, x);
+        this.updateCanvasCell(<HTMLCanvasElement>row.firstElementChild!, row, rowIndex, column, x);
         return;
       }
       this.updateCellImpl(column, <HTMLElement>row.children[index], rowIndex);
@@ -737,8 +769,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const r = this.updateCell(before, rowIndex, column);
     let after: HTMLElement;
     if (isAsyncUpdate(r)) {
-      after = r.item;
-      // FIXME async
+      after = this.handleCellReady(r.item, r.ready, column.index);
     } else {
       after = r;
     }
