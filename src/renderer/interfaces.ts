@@ -10,7 +10,7 @@ export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
 }
 
-export declare type IRendderCallback = (ctx: CanvasRenderingContext2D) => void;
+export declare type IRenderCallback = (ctx: CanvasRenderingContext2D) => void;
 
 export declare type IColumnStats = null | IValueStatistics | PromiseLike<IValueStatistics>;
 

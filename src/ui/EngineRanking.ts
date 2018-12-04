@@ -1,4 +1,4 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate, IAbortAblePromise, isAbortAble, isLoadingCell, allAbortAble, ABORTED} from 'lineupengine';
+import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate, IAbortAblePromise, isAbortAble, isLoadingCell} from 'lineupengine';
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
@@ -15,7 +15,7 @@ import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
 import {clear} from '../internal';
 import {ILineUpFlags} from '../interfaces';
-import {IRendderCallback} from '../renderer/interfaces';
+import {IRenderCallback} from '../renderer/interfaces';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -86,7 +86,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private _context: ICellRenderContext<RenderColumn>;
 
-  private readonly loadingCanvas = new WeakMap<HTMLCanvasElement, {col: number, render: IAbortAblePromise<IRendderCallback>}[]>();
+  private readonly loadingCanvas = new WeakMap<HTMLCanvasElement, {col: number, render: IAbortAblePromise<IRenderCallback>}[]>();
 
   private readonly renderCtx: IRankingBodyContext;
   private data: (IGroupItem | IGroupData)[] = [];
@@ -371,7 +371,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return width;
   }
 
-  private pushLazyRedraw(canvas: HTMLCanvasElement, x: number, column: RenderColumn, render: IAbortAblePromise<IRendderCallback>) {
+  private pushLazyRedraw(canvas: HTMLCanvasElement, x: number, column: RenderColumn, render: IAbortAblePromise<IRenderCallback>) {
     render.then((r) => {
       const l = (this.loadingCanvas.get(canvas) || []);
       const pos = l.findIndex((d) => d.render === render && d.col === column.index);

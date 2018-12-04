@@ -1,7 +1,7 @@
 import {IColumn, IAbortAblePromise, IAsyncUpdate} from 'lineupengine';
 import Column from '../model/Column';
 import {ICellRenderer, IGroupCellRenderer} from '../renderer';
-import {ISummaryRenderer, IRendderCallback} from '../renderer/interfaces';
+import {ISummaryRenderer, IRenderCallback} from '../renderer/interfaces';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import {ILineUpFlags} from '../interfaces';
@@ -159,7 +159,7 @@ export default class RenderColumn implements IColumn {
     return node;
   }
 
-  renderCell(ctx: CanvasRenderingContext2D, index: number): boolean | IAbortAblePromise<IRendderCallback> {
+  renderCell(ctx: CanvasRenderingContext2D, index: number): boolean | IAbortAblePromise<IRenderCallback> {
     const r = this.ctx.getRow(index);
     const s = this.renderers!.single;
     if (!s.render) {

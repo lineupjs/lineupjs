@@ -5,7 +5,7 @@ import {medianIndex} from '../model/internal';
 import {default as INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 import {cssClass} from '../styles';
@@ -128,7 +128,8 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         if (renderMissingCanvas(ctx, col, d, width)) {
           return null;
         }
-        const toWait: IAbortAblePromise<void>[] = [];
+        // TODO
+        const toWait: IAbortAblePromise<IRenderCallback>[] = [];
         let stackShift = 0;
         cols.forEach((col) => {
           const cr = col.renderer!;
@@ -147,7 +148,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         });
 
         if (toWait.length > 0) {
-          return <IAbortAblePromise<void>>allAbortAble(toWait);
+          return <IAbortAblePromise<IRenderCallback>>allAbortAble(toWait);
         }
         return null;
       }
