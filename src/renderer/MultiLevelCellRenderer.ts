@@ -9,7 +9,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 import {cssClass} from '../styles';
-import {IAbortAblePromise, allAbortAble} from 'lineupengine';
+import {IAbortAblePromise, allAbortAble, abortAble, ABORTED} from 'lineupengine';
 
 /** @internal */
 export function gridClass(idPrefix: string, column: Column) {
@@ -128,29 +128,42 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         if (renderMissingCanvas(ctx, col, d, width)) {
           return null;
         }
-        // TODO
-        const toWait: IAbortAblePromise<IRenderCallback>[] = [];
+        const toWait: {shift: number, r: IAbortAblePromise<IRenderCallback>}[] = [];
         let stackShift = 0;
-        cols.forEach((col) => {
+        for (const col of cols) {
           const cr = col.renderer!;
           if (cr.render) {
             const shift = col.shift - stackShift;
             ctx.translate(shift, 0);
             const r = cr.render(ctx, d, i, group, meta);
             if (typeof r !== 'boolean' && r) {
-              toWait.push(r);
+              toWait.push({shift, r});
             }
             ctx.translate(-shift, 0);
           }
           if (stacked) {
             stackShift += col.width * (1 - (<INumberColumn>col.column).getNumber(d));
           }
-        });
-
-        if (toWait.length > 0) {
-          return <IAbortAblePromise<IRenderCallback>>allAbortAble(toWait);
         }
-        return null;
+
+        if (toWait.length === 0) {
+          return null;
+        }
+
+        return abortAble(Promise.all(toWait.map((d) => d.r))).then((callbacks) => {
+          return (ctx: CanvasRenderingContext2D) => {
+            for (let i = 0; i < callbacks.length; ++i) {
+              const callback = callbacks[i];
+              if (typeof callback !== 'function') {
+                continue;
+              }
+              const shift = toWait[i].shift;
+              ctx.translate(shift, 0);
+              callback(ctx);
+              ctx.translate(-shift, 0);
+            }
+          };
+        });
       }
     };
   }

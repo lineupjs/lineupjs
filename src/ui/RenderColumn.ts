@@ -137,7 +137,6 @@ export default class RenderColumn implements IColumn {
     }
     const isGroup = this.ctx.isGroup(index);
     // assert that we have the template of the right mode
-    // FIXME
     const oldRenderer = node.dataset.renderer;
     const currentRenderer = isGroup ? this.renderers!.groupId : this.renderers!.singleId;
     const oldGroup = node.dataset.group;
