@@ -351,104 +351,194 @@ class LazyMap3<T1, T2, T3, T4> extends ALazyMap<T1, T4> implements ISequence<T4>
   }
 }
 
-export function lazySeq<T>(iterable: Iterable<T>): ISequence<T> {
-  let v: ReadonlyArray<T> | null = null;
-  const asArr = () => {
-    if (v) {
-      return v;
+class LazySeq<T> implements ISequence<T> {
+  private _arr: ReadonlyArray<T> | null = null;
+
+  constructor(private readonly iterable: Iterable<T>) {
+
+  }
+
+  get arr() {
+    if (this._arr) {
+      return this._arr;
     }
-    if (Array.isArray(iterable)) {
-      v = iterable;
+    if (Array.isArray(this.iterable)) {
+      this._arr = this.iterable;
     } else {
-      v = Array.from(iterable);
+      this._arr = Array.from(this.iterable);
     }
-    return v!;
-  };
+    return this._arr!;
+  }
 
-  const r: any = {
-    [Symbol.iterator]() {
-      return iterable[Symbol.iterator]();
-    },
-    filter(callback: (v: T, i: number) => boolean) {
-      return new LazyFilter(asArr(), [callback]);
-    },
-    map<U>(callback: (v: T, i: number) => U) {
-      return new LazyMap1(asArr(), callback);
-    },
-    forEach(callback: (v: T, i: number) => void) {
-      if (Array.isArray(iterable)) {
-        for (let i = 0; i < iterable.length; ++i) {
-          callback(iterable[i], i);
-        }
-        return;
-      }
-      const it = this[Symbol.iterator]();
-      for (let v = it.next(), i = 0; !v.done; v = it.next(), i++) {
-        callback(v.value, i);
-      }
-    },
-    some(callback: (v: T, i: number) => boolean) {
-      if (Array.isArray(iterable)) {
-        for (let i = 0; i < iterable.length; ++i) {
-          if (callback(iterable[i], i)) {
-            return true;
-          }
-        }
-        return false;
-      }
+  [Symbol.iterator]() {
+    return this.iterable[Symbol.iterator]();
+  }
 
-      const it = this[Symbol.iterator]();
-      for (let v = it.next(), i = 0; !v.done; v = it.next(), i++) {
-        if (callback(v.value, i)) {
+  filter(callback: (v: T, i: number) => boolean) {
+    return new LazyFilter(this.arr, [callback]);
+  }
+
+  map<U>(callback: (v: T, i: number) => U) {
+    return new LazyMap1(this.arr, callback);
+  }
+
+  forEach(callback: (v: T, i: number) => void) {
+    if (Array.isArray(this.iterable)) {
+      for (let i = 0; i < this.iterable.length; ++i) {
+        callback(this.iterable[i], i);
+      }
+      return;
+    }
+    const it = this[Symbol.iterator]();
+    for (let v = it.next(), i = 0; !v.done; v = it.next(), i++) {
+      callback(v.value, i);
+    }
+  }
+
+  some(callback: (v: T, i: number) => boolean) {
+    if (Array.isArray(this.iterable)) {
+      for (let i = 0; i < this.iterable.length; ++i) {
+        if (callback(this.iterable[i], i)) {
           return true;
         }
       }
       return false;
-    },
-    every(callback: (v: T, i: number) => boolean) {
-      if (Array.isArray(iterable)) {
-        for (let i = 0; i < iterable.length; ++i) {
-          if (!callback(iterable[i], i)) {
-            return false;
-          }
-        }
+    }
+
+    const it = this[Symbol.iterator]();
+    for (let v = it.next(), i = 0; !v.done; v = it.next(), i++) {
+      if (callback(v.value, i)) {
         return true;
       }
+    }
+    return false;
+  }
 
-      const it = this[Symbol.iterator]();
-      for (let v = it.next(), i = 0; !v.done; v = it.next(), i++) {
-        if (!callback(v.value, i)) {
+  every(callback: (v: T, i: number) => boolean) {
+    if (Array.isArray(this.iterable)) {
+      for (let i = 0; i < this.iterable.length; ++i) {
+        if (!callback(this.iterable[i], i)) {
           return false;
         }
       }
       return true;
-    },
-    reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U) {
-      if (Array.isArray(iterable)) {
-        return iterable.reduce(callback);
-      }
-
-      const it = this[Symbol.iterator]();
-      let acc = initial;
-      for (let v = it.next(), i = 0; !v.done; v = it.next(), i++) {
-        acc = callback(acc, v.value, i);
-      }
-      return acc;
-    },
-  };
-
-  Object.defineProperty(r, 'length', {
-    enumerable: true,
-    get() {
-      if (Array.isArray(iterable)) {
-        return iterable.length;
-      }
-      if (iterable instanceof Set || iterable instanceof Map) {
-        return iterable.size;
-      }
-      return asArr().length;
     }
-  });
 
-  return <ISequence<T>><any>r;
+    const it = this[Symbol.iterator]();
+    for (let v = it.next(), i = 0; !v.done; v = it.next(), i++) {
+      if (!callback(v.value, i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U) {
+    if (Array.isArray(this.iterable)) {
+      return this.iterable.reduce(callback);
+    }
+
+    const it = this[Symbol.iterator]();
+    let acc = initial;
+    for (let v = it.next(), i = 0; !v.done; v = it.next(), i++) {
+      acc = callback(acc, v.value, i);
+    }
+    return acc;
+  }
+
+  get length() {
+    const it = this.iterable;
+    if (Array.isArray(it) || it instanceof Uint8Array || it instanceof Uint16Array || it instanceof Uint32Array || it instanceof Float32Array) {
+      return it.length;
+    }
+    if (it instanceof Set || it instanceof Map) {
+      return it.size;
+    }
+    return this.arr.length;
+  }
+}
+
+export function lazySeq<T>(iterable: Iterable<T>): ISequence<T> {
+  return new LazySeq(iterable);
+}
+
+
+class ConcatSequence<T> implements ISequence<T> {
+  constructor(private readonly seqs: ISequence<T>[]) {
+    //
+  }
+
+  [Symbol.iterator]() {
+    const seqs = this.seqs.slice();
+    let it = seqs.shift()![Symbol.iterator]();
+    const next = (): {value: T, done: boolean} => {
+      const v = it.next();
+      if (!v.done) {
+        return v;
+      }
+      if (seqs.length === 0) {
+        // last last
+        return v;
+      }
+      // next iterator and compute next element
+      it = seqs.shift()![Symbol.iterator]();
+      return next();
+    };
+    return {next};
+  }
+
+  filter(callback: (v: T, i: number) => boolean): ISequence<T> {
+    return new LazyFilter(this, [callback]);
+  }
+
+  map<U>(callback: (v: T, i: number) => U): ISequence<U> {
+    return new LazyMap1(this, callback);
+  }
+
+  forEach(callback: (v: T, i: number) => void) {
+    for (const s of this.seqs) {
+      s.forEach(callback);
+    }
+  }
+
+  some(callback: (v: T, i: number) => boolean) {
+    for (const s of this.seqs) {
+      if (s.some(callback)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  every(callback: (v: T, i: number) => boolean) {
+    for (const s of this.seqs) {
+      if (!s.every(callback)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U) {
+    let acc = initial;
+    for (const s of this.seqs) {
+      acc = s.reduce(callback, acc);
+    }
+    return acc;
+  }
+
+  get length() {
+    return this.seqs.reduce((a, b) => a + b.length, 0);
+  }
+}
+
+
+export function concatSeq<T>(...seqs: ISequence<T>[]): ISequence<T> {
+  if (seqs.length === 0) {
+    return lazySeq([]);
+  }
+  if (seqs.length === 1) {
+    return seqs[0];
+  }
+  return new ConcatSequence(seqs);
 }
