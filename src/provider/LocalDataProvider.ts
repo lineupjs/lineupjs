@@ -1,4 +1,4 @@
-import {computeHist, computeNormalizedStats, computeDateState, IDateStatistics} from '../internal';
+import {computeHist, computeNormalizedStats, computeDateState, IDateStatistics, IValueStatistics, isPromiseLike} from '../internal';
 import Column, {
   defaultGroup, IColumnDesc, IDataRow, IGroup, INumberColumn,
   IOrderedGroup,
@@ -6,7 +6,10 @@ import Column, {
   mapIndices,
   IGroupMeta,
   ISetColumn,
-  IDateColumn
+  IDateColumn,
+  isCategoricalColumn,
+  isNumberColumn,
+  isDateColumn
 } from '../model';
 import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
@@ -38,7 +41,7 @@ interface ISortHelper {
  * a data provider based on an local array
  */
 export default class LocalDataProvider extends ACommonDataProvider {
-  private options: ILocalDataProviderOptions = {
+  private readonly options: ILocalDataProviderOptions = {
     /**
      * whether the filter should be applied to all rankings regardless where they are
      */
@@ -46,6 +49,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     jumpToSearchResult: false
   };
+
+  /**
+   * stats caches Map<column id, stats> for the whole dataset
+   */
+  private readonly dataStats = new Map<string, IValueStatistics | PromiseLike<IValueStatistics>>();
+
+  /**
+   * stats caches Map<column id, stats> for a column in a ranking
+   */
+  private readonly rankingStats = new Map<string, IValueStatistics | PromiseLike<IValueStatistics>>();
+
 
   private readonly reorderAll: () => void;
 
@@ -92,6 +106,60 @@ export default class LocalDataProvider extends ACommonDataProvider {
   get data() {
     return this._data;
   }
+
+
+  getDataStats(col: Column) {
+    if (this.dataStats.has(col.id)) {
+      return this.dataStats.get(col.id)!;
+    }
+    const seq = lazySeq(this._dataRows);
+    let stats: IValueStatistics | PromiseLike<IValueStatistics> | null = null;
+    if (isNumberColumn(col)) {
+      stats = computeNormalizedStats(seq.map((d) => col.getNumber(d)));
+    } else if (isCategoricalColumn(col)) {
+      stats = computeHist(seq.map((d) => col.getSet(d)), col.categories);
+    } else if (isDateColumn(col)) {
+      stats = computeDateState(seq.map((d) => col.getDate(d)));
+    }
+    if (stats != null) {
+      this.dataStats.set(col.id, stats);
+    }
+    return stats;
+  }
+
+  getRankingStats(ranking: Ranking, col: Column) {
+    if (this.rankingStats.has(col.id)) {
+      return this.rankingStats.get(col.id)!;
+    }
+
+    const seq = this.seqRawRows(ranking.getOrder());
+    let stats: IValueStatistics | PromiseLike<IValueStatistics> | null = null;
+    if (isNumberColumn(col)) {
+      const data = this.getDataStats(col);
+      const arr = seq.map((d) => col.getNumber(d));
+      if (isPromiseLike(data)) {
+        stats = data.then((s) => computeNormalizedStats(arr, s.hist.length));
+      } else {
+        stats = computeNormalizedStats(arr, data ? data.hist.length : undefined);
+      }
+    } else if (isCategoricalColumn(col)) {
+      stats = computeHist(seq.map((d) => col.getSet(d)), col.categories);
+    } else if (isDateColumn(col)) {
+      const data = this.getDataStats(col);
+      const arr = seq.map((d) => col.getDate(d));
+      if (isPromiseLike(data)) {
+        stats = data.then((s) => computeDateState(arr, <IDateStatistics>s));
+      } else {
+        stats = computeDateState(arr, <IDateStatistics>data);
+      }
+    }
+
+    if (stats != null) {
+      this.rankingStats.set(col.id, stats);
+    }
+    return stats;
+  }
+
 
   destroy() {
     super.destroy();
@@ -140,6 +208,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (this.options.filterGlobally) {
       ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }
+
+    // delete caches
+    for (const col of ranking.flatColumns) {
+      this.dataStats.delete(col.id);
+      this.rankingStats.delete(col.id);
+    }
+
     super.cleanUpRanking(ranking);
   }
 

@@ -16,7 +16,7 @@ import {isSupportType} from '../model/annotations';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
 import {ISequence} from '../internal/interable';
-import {IStatistics, ICategoricalStatistics, IDateStatistics} from '../internal';
+import {IValueStatistics} from '../internal';
 
 export {IExportOptions} from './utils';
 
@@ -115,16 +115,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @private
    */
   private readonly rankings: Ranking[] = [];
-
-  /**
-   * stats caches Map<column id, stats> for the whole dataset
-   */
-  private readonly dataStats = new Map<string, Promise<IStatistics | ICategoricalStatistics | IDateStatistics>>();
-
-  /**
-   * stats caches Map<column id, stats> for a column in a ranking
-   */
-  private readonly rankingStats = new Map<string, Promise<IStatistics | ICategoricalStatistics | IDateStatistics>>();
 
   /**
    * the current selected indices
@@ -331,6 +321,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return this.rankings[this.rankings.length - 1];
   }
 
+  abstract getDataStats(col: Column): IValueStatistics | null | PromiseLike<IValueStatistics>;
+
+  abstract getRankingStats(ranking: Ranking, col: Column): IValueStatistics | null | PromiseLike<IValueStatistics>;
+
   ensureOneRanking() {
     if (this.rankings.length === 0) {
       const r = this.pushRanking();
@@ -346,12 +340,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * hook method for cleaning up a ranking
    * @param _ranking
    */
-  cleanUpRanking(ranking: Ranking) {
-    // delete caches
-    for (const col of ranking.flatColumns) {
-      this.dataStats.delete(col.id);
-      this.rankingStats.delete(col.id);
-    }
+  cleanUpRanking(_ranking: Ranking) {
+    // dummy
   }
 
   /**

@@ -448,5 +448,8 @@ export function similar(a: number, b: number, delta = 0.5) {
   return Math.abs(a - b) < delta;
 }
 
-
 export declare type IValueStatistics = ICategoricalStatistics | IDateStatistics | IStatistics;
+
+export function isPromiseLike<T>(value: any): value is PromiseLike<T> {
+  return value instanceof Promise || typeof value.then === 'function';
+}
