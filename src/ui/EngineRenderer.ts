@@ -31,8 +31,6 @@ export default class EngineRenderer extends AEventDispatcher {
 
   protected readonly options: Readonly<ILineUpOptions>;
 
-  private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics | null | Promise<IStatistics | ICategoricalStatistics>>();
-
   readonly node: HTMLElement;
   private readonly table: MultiTableRowRenderer;
   private readonly rankings: EngineRanking[] = [];
@@ -55,13 +53,6 @@ export default class EngineRenderer extends AEventDispatcher {
     this.node.classList.toggle(cssClass('whole-hover'), options.expandLineOnHover);
     parent.appendChild(this.node);
 
-    const statsOf = (col: Column, unfiltered: boolean = false) => {
-      const r = this.histCache.get(unfiltered ? `-${col.id}` : col.id);
-      if (r == null || r instanceof Promise) {
-        return null;
-      }
-      return r;
-    };
     const dialogManager = new DialogManager(parent.ownerDocument!);
 
     parent.appendChild(dialogManager.node);
@@ -72,19 +63,18 @@ export default class EngineRenderer extends AEventDispatcher {
       dialogManager,
       toolbar: this.options.toolbar,
       flags: <ILineUpFlags>this.options.flags,
-      statsOf,
       asElement: domElementCache(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {
         const r = chooseRenderer(col, this.options.renderers);
-        return r.create!(col, this.ctx, statsOf(col), imposer);
+        return r.create!(col, this.ctx, imposer);
       },
       groupRenderer: (col: Column, imposer?: IImposer) => {
         const r = chooseGroupRenderer(col, this.options.renderers);
-        return r.createGroup!(col, this.ctx, statsOf(col), imposer);
+        return r.createGroup!(col, this.ctx, imposer);
       },
       summaryRenderer: (col: Column, interactive: boolean, imposer?: IImposer) => {
         const r = chooseSummaryRenderer(col, this.options.renderers);
-        return r.createSummary!(col, this.ctx, interactive, interactive ? statsOf(col, true) : null, imposer);
+        return r.createSummary!(col, this.ctx, interactive, imposer);
       },
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
@@ -219,7 +209,6 @@ export default class EngineRenderer extends AEventDispatcher {
     data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
       this.setHighlightToNearest(indices, true);
     });
-    data.on(`${ADataProvider.EVENT_DATA_CHANGED}.body`, () => this.updateUnfilterdHists());
     data.on(`${ADataProvider.EVENT_BUSY}.body`, (busy) => this.node.classList.toggle(cssClass('busy'), busy));
 
     (<any>this.ctx).provider = data;
@@ -234,32 +223,13 @@ export default class EngineRenderer extends AEventDispatcher {
     this.slopeGraphs.forEach((r) => r.updateSelection(s));
   }
 
-  private updateHist(ranking?: EngineRanking, col?: Column, removeHist?: boolean) {
-    if (removeHist) {
-      this.histCache.delete(col!.id);
-      return;
-    }
-
+  private updateHist(ranking?: EngineRanking, col?: Column) {
     if (!this.options.summaryHeader) {
       return;
     }
     const rankings = ranking ? [ranking] : this.rankings;
 
     for (const r of rankings) {
-      const ranking = r.ranking;
-      const order = ranking.getOrder();
-      const cols = col ? [col] : ranking.flatColumns;
-      const histo = order == null ? null : this.data.stats(order);
-      for (const col of cols) {
-        if (!col.isVisible()) {
-          continue;
-        }
-        if (isNumberColumn(col)) {
-          this.histCache.set(col.id, histo == null ? null : histo.stats(col, this.histCache.has(`-${col.id}`) ? (<IStatistics>this.histCache.get(`-${col.id}`)!).hist.length : undefined));
-        } else if (isCategoricalColumn(col)) {
-          this.histCache.set(col.id, histo == null ? null : histo.hist(<ICategoricalColumn>col));
-        }
-      }
       if (col) {
         // single update
         r.updateHeaderOf(col);
@@ -293,7 +263,6 @@ export default class EngineRenderer extends AEventDispatcher {
       this.table.widthChanged();
     });
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
-    r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column, removeHist) => this.updateHist(r, col, removeHist));
     this.forward(r, EngineRanking.EVENT_HIGHLIGHT_CHANGED);
     if (this.enabledHighlightListening) {
       r.enableHighlightListening(true);
@@ -303,22 +272,6 @@ export default class EngineRenderer extends AEventDispatcher {
 
     this.rankings.push(r);
     this.update([r]);
-
-    this.updateUnfilterdHists([r]);
-  }
-
-  private updateUnfilterdHists(rankings = this.rankings) {
-    for (const ranking of rankings) {
-      // compute unfiltered hist
-      const histo = this.data.stats();
-      const cols = ranking.ranking.flatColumns;
-      cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
-        this.histCache.set(`-${col.id}`, histo == null ? null : histo.stats(<INumberColumn>col));
-      });
-      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: Column) => {
-        this.histCache.set(`-${col.id}`, histo == null ? null : histo.hist(<ICategoricalColumn>col));
-      });
-    }
   }
 
   private updateRotatedHeaderState() {
@@ -360,10 +313,6 @@ export default class EngineRenderer extends AEventDispatcher {
 
     // TODO support async
     const localData = <IDataRow[][]>data;
-
-    if (this.histCache.size === 0) {
-      this.updateHist();
-    }
 
     const round2 = (v: number) => round(v, 2);
     const rowPadding = round2(this.zoomFactor * this.options.rowPadding!);

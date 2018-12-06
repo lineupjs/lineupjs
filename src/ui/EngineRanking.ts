@@ -42,14 +42,6 @@ export declare function widthChanged(): void;
  */
 export declare function updateData(): void;
 /**
- * emitted when the histogram of a column needs to be updated
- * @asMemberOf EngineRanking
- * @param col the column to update the histogram of
- * @param removeHist whether not to update but clean the stats
- * @event
- */
-export declare function updateHist(col: Column, removeHist?: boolean): void;
-/**
  * emitted when the highlight changes
  * @asMemberOf EngineRanking
  * @param dataIndex the highlghted data index or -1 for none
@@ -62,7 +54,6 @@ export declare function highlightChanged(dataIndex: number): void;
 class RankingEvents extends AEventDispatcher {
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
   static readonly EVENT_UPDATE_DATA = 'updateData';
-  static readonly EVENT_UPDATE_HIST = 'updateHist';
   static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
   fire(type: string | string[], ...args: any[]) {
@@ -70,7 +61,7 @@ class RankingEvents extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA, RankingEvents.EVENT_UPDATE_HIST, RankingEvents.EVENT_HIGHLIGHT_CHANGED]);
+    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA, RankingEvents.EVENT_HIGHLIGHT_CHANGED]);
   }
 }
 
@@ -81,7 +72,6 @@ const PASSIVE: AddEventListenerOptions = {
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection, IEventHandler {
   static readonly EVENT_WIDTH_CHANGED = RankingEvents.EVENT_WIDTH_CHANGED;
   static readonly EVENT_UPDATE_DATA = RankingEvents.EVENT_UPDATE_DATA;
-  static readonly EVENT_UPDATE_HIST = RankingEvents.EVENT_UPDATE_HIST;
   static readonly EVENT_HIGHLIGHT_CHANGED = RankingEvents.EVENT_HIGHLIGHT_CHANGED;
 
   private _context: ICellRenderContext<RenderColumn>;
@@ -194,14 +184,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ranking.on(`${Ranking.EVENT_ADD_COLUMN}.hist`, (col: Column, index: number) => {
       this.columns.splice(index, 0, this.createCol(col, index));
       this.reindex();
-      this.updateHist(col);
       this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_REMOVE_COLUMN}.body`, (col: Column, index: number) => {
       EngineRanking.disableListener(col);
       this.columns.splice(index, 1);
       this.reindex();
-      this.removeHist(col);
       this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_MOVE_COLUMN}.body`, (col: Column, index: number, old: number) => {
@@ -218,31 +206,16 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         // become visible
         const index = ranking.children.indexOf(col);
         this.columns.splice(index, 0, this.createCol(col, index));
-        this.updateHist(col);
       } else {
         // hide
         const index = this.columns.findIndex((d) => d.c === col);
         EngineRanking.disableListener(col);
         this.columns.splice(index, 1);
-        this.removeHist(col);
       }
       this.reindex();
       this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
-
-    ranking.on(`${Ranking.EVENT_DIRTY_CACHES}.body`, function (this: IEventContext) {
-      if (!(this.origin instanceof Column)) {
-        return;
-      }
-      // update hists up to the ranking
-      let col = this.origin;
-      that.updateHist(col);
-      while (col.parent instanceof Column) {
-        col = col.parent;
-        that.updateHist(col);
-      }
-    });
 
     this.selection = new SelectionManager(this.ctx, body);
     this.selection.on(SelectionManager.EVENT_SELECT_RANGE, (from: number, to: number, additional: boolean) => {
@@ -279,7 +252,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   on(type: typeof EngineRanking.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof EngineRanking.EVENT_UPDATE_DATA, listener: typeof updateData | null): this;
-  on(type: typeof EngineRanking.EVENT_UPDATE_HIST, listener: typeof updateHist | null): this;
   on(type: typeof EngineRanking.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
@@ -594,9 +566,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return;
     }
 
-    const {i, meta} = this.renderCtx.getRow(rowIndex);
-    node.classList.toggle(engineCssClass('highlighted'), this.highlight === i);
-    node.dataset.i = i.toString();
+    const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
+    node.classList.toggle(engineCssClass('highlighted'), this.highlight === dataIndex);
+    node.dataset.i = dataIndex.toString();
     node.dataset.agg = 'detail'; //or 'group'
     if (!meta) {
       delete node.dataset.meta;
@@ -604,13 +576,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       node.dataset.meta = meta;
     }
 
-    this.selection.updateState(node, i);
+    this.selection.updateState(node, dataIndex);
     this.selection.add(node);
 
     const low = this.roptions.levelOfDetail(rowIndex) === 'low';
     node.classList.toggle(cssClass('low'), low);
 
-    if (!low || this.ctx.provider.isSelected(i)) {
+    if (!low || this.ctx.provider.isSelected(dataIndex)) {
       super.createRow(node, rowIndex);
       return;
     }
@@ -667,18 +639,18 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return;
     }
 
-    const {i, meta} = this.renderCtx.getRow(rowIndex);
-    node.classList.toggle(engineCssClass('highlighted'), this.highlight === i);
-    node.dataset.i = i.toString();
+    const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
+    node.classList.toggle(engineCssClass('highlighted'), this.highlight === dataIndex);
+    node.dataset.i = dataIndex.toString();
     if (!meta) {
       delete node.dataset.meta;
     } else {
       node.dataset.meta = meta;
     }
-    this.selection.updateState(node, i);
+    this.selection.updateState(node, dataIndex);
 
     const canvas = (wasLow && node.firstElementChild!.nodeName.toLowerCase() === 'canvas') ? <HTMLCanvasElement>node.firstElementChild! : null;
-    if (!low || this.ctx.provider.isSelected(i)) {
+    if (!low || this.ctx.provider.isSelected(dataIndex)) {
       if (canvas) {
         this.recycleCanvas(canvas);
         clear(node);
@@ -802,13 +774,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
   }
 
-  private updateHist(col: Column) {
-    this.events.fire(EngineRanking.EVENT_UPDATE_HIST, col);
-  }
-  private removeHist(col: Column) {
-    this.events.fire(EngineRanking.EVENT_UPDATE_HIST, col, false);
-  }
-
   private updateColumn(index: number) {
     const columns = this.context.columns;
     const column = columns[index];
@@ -867,23 +832,26 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     let offset = 0;
     for (const group of groups) {
       const length = group.order.length;
-      // avoid copy
-      const groupData = groups.length === 1 ? data : data.slice(offset, offset + length);
-      offset += length;
 
       const n = provider.getTopNAggregated(this.ranking, groups[0]);
       if (n >= 0) {
-        r.push(Object.assign({rows: groupData, meta: toGroupMeta(0, n)}, group));
+        r.push(Object.assign({meta: toGroupMeta(0, n)}, group));
       }
-      const slice = Math.min(n > 0 ? n : Number.POSITIVE_INFINITY, groupData.length);
+
+      const slice = Math.min(n > 0 ? n : Number.POSITIVE_INFINITY, length);
       const metaShift = n > 0 ? 1 : 0; // shift by one to avoid having a start
       for (let i = 0; i < slice; ++i) {
-        r.push(Object.assign({
+        const v = data[i + offset];
+        r.push({
           group,
+          vs: v,
+          dataIndex: v ? v.i : i,
           relativeIndex: i,
           meta: toGroupMeta(i + metaShift, slice + metaShift)
-        }, groupData[i]));
+        });
       }
+
+      offset += length;
     }
     return r;
   }
@@ -937,14 +905,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     let firstAfterPos = -1;
     for (let i = visible.first; i >= 0; --i) {
       const d = this.data[i];
-      if (!isGroup(d) && lookFor.has(d.i)) {
+      if (!isGroup(d) && lookFor.has(d.dataIndex)) {
         firstBeforePos = i;
         break;
       }
     }
     for (let i = visible.last; i < this.data.length; ++i) {
       const d = this.data[i];
-      if (!isGroup(d) && lookFor.has(d.i)) {
+      if (!isGroup(d) && lookFor.has(d.dataIndex)) {
         firstAfterPos = i;
         break;
       }
@@ -954,7 +922,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return -1; // not found at all
     }
     const nearestPos = (firstBeforePos >= 0 && (visible.first - firstBeforePos) < (firstAfterPos - visible.last)) ? firstBeforePos : firstAfterPos;
-    return (<IGroupItem>this.data[nearestPos]).i;
+    return (<IGroupItem>this.data[nearestPos]).dataIndex;
   }
 
   scrollIntoView(dataIndex: number) {
@@ -963,7 +931,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       item.scrollIntoView(true);
       return true;
     }
-    const index = this.data.findIndex((d) => !isGroup(d) && d.i === dataIndex);
+    const index = this.data.findIndex((d) => !isGroup(d) && d.dataIndex === dataIndex);
     if (index < 0) {
       return false; // part of a group?
     }

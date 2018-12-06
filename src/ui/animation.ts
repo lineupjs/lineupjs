@@ -15,7 +15,9 @@ function toGroupLookup(items: (IGroupItem | IGroupData)[]): IGroupLookUp {
   const group2firstItemIndex = new Map<string, number>();
   items.forEach((item, i) => {
     if (isGroup(item)) {
-      item.rows.forEach((d) => item2groupIndex.set(d.i, i));
+      for (let o = 0; o < item.order.length; ++o) {
+        item2groupIndex.set(o, i);
+      }
     } else if (item.group && item.relativeIndex === 0) {
       group2firstItemIndex.set(item.group.name, i);
     }
@@ -27,7 +29,7 @@ function toKey(item: IGroupItem | IGroupData) {
   if (isGroup(item)) {
     return item.name;
   }
-  return (<IGroupItem>item).i.toString();
+  return (<IGroupItem>item).dataIndex.toString();
 }
 
 /** @internal */

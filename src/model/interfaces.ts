@@ -1,4 +1,5 @@
 import {ISequence} from '../internal/interable';
+import {IOrderedGroup} from './Group';
 
 export interface IStyleColumn {
   /**
@@ -92,14 +93,15 @@ export interface IGroupParent extends IGroup {
 
 export declare type IGroupMeta = 'first' | 'last' | 'first last' | null;
 
-export interface IGroupItem extends IDataRow {
-  readonly group: Readonly<IGroup>;
+export interface IGroupItem {
+  vs: IDataRow;
+  readonly dataIndex: number;
+  readonly group: Readonly<IOrderedGroup>;
   readonly relativeIndex: number;
   readonly meta: IGroupMeta;
 }
 
-export interface IGroupData extends Readonly<IGroup> {
-  readonly rows: ISequence<IDataRow>;
+export interface IGroupData extends Readonly<IOrderedGroup> {
   readonly meta: IGroupMeta;
 }
 
@@ -115,7 +117,7 @@ export function toGroupMeta(index: number, total: number): IGroupMeta {
   if (index === 0) {
     return 'first';
   }
-  if (index === total -1) {
+  if (index === total - 1) {
     return 'last';
   }
   return null;

@@ -60,7 +60,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       summaryNode.dataset.renderer = cc.getSummaryRenderer();
       n.appendChild(summaryNode);
       this.summaries.push(summary);
-      summary.update(summaryNode, this.ctx.statsOf(<any>cc));
+      summary.update(summaryNode);
     });
 
     return this.updateNested(wrapper, r);
@@ -121,7 +121,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
         this.summaries[i] = renderer;
         node.appendChild(summary);
       }
-      const ready = this.summaries[i].update(summary, this.ctx.statsOf(<any>c));
+      const ready = this.summaries[i].update(summary);
       if (ready) {
         toWait.push(ready);
       }

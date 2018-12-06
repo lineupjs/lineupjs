@@ -118,7 +118,7 @@ export default class RenderColumn implements IColumn {
       summary = this.summaryRenderer()!;
       node.appendChild(summary);
     }
-    const ready = this.renderers.summary.update(summary, this.ctx.statsOf(<any>this.c));
+    const ready = this.renderers.summary.update(summary);
     if (ready) {
       return {item: node, ready};
     }
@@ -147,10 +147,10 @@ export default class RenderColumn implements IColumn {
     let ready: IAbortAblePromise<void> | void | null;
     if (isGroup) {
       const g = this.ctx.getGroup(index);
-      ready = this.renderers!.group.update(node, g, g.rows, g.meta);
+      ready = this.renderers!.group.update(node, g, g.meta);
     } else {
       const r = this.ctx.getRow(index);
-      ready = this.renderers!.single.update(node, r, r.relativeIndex, r.group, r.meta);
+      ready = this.renderers!.single.update(node, r.vs, r.relativeIndex, r.group, r.meta);
     }
     if (ready) {
       return {item: node, ready};
@@ -164,6 +164,6 @@ export default class RenderColumn implements IColumn {
     if (!s.render) {
       return false;
     }
-    return s.render(ctx, r, r.relativeIndex, r.group, r.meta) || false;
+    return s.render(ctx, r.vs, r.relativeIndex, r.group, r.meta) || false;
   }
 }

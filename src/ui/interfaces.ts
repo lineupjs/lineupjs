@@ -24,8 +24,6 @@ export interface IRankingHeaderContextContainer {
 
   readonly flags: ILineUpFlags;
 
-  statsOf(col: (INumberColumn | ICategoricalColumn | IDateColumn) & Column, unfiltered?: boolean): IColumnStats;
-
   getPossibleRenderer(col: Column): {item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[]};
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
