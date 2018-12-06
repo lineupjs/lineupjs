@@ -1,8 +1,8 @@
 import Column, {IColumnDesc, IDataRow} from '../model';
-import {defaultGroup} from '../model/Group';
+import {defaultGroup, IndicesArray} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
-import {IDataProviderOptions, IStatsBuilder} from './interfaces';
+import {IDataProviderOptions} from './interfaces';
 
 /**
  * interface what the server side has to provide
@@ -12,7 +12,7 @@ export interface IServerData {
    * sort the dataset by the given description
    * @param ranking
    */
-  sort(ranking: Ranking): Promise<number[]>;
+  sort(ranking: Ranking): Promise<IndicesArray>;
 
   /**
    * returns a slice of the data array identified by a list of indices
@@ -32,8 +32,6 @@ export interface IServerData {
    * @param column
    */
   search(search: string | RegExp, column: any): Promise<number[]>;
-
-  stats(indices: number[]): IStatsBuilder;
 }
 
 
@@ -141,9 +139,5 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     this.server.search(search, (<any>col.desc).column).then((indices) => {
       this.jumpToNearest(indices);
     });
-  }
-
-  stats(indices: number[]) {
-    return this.server.stats(indices);
   }
 }

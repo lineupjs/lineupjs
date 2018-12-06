@@ -5,15 +5,13 @@ import Column, {
   IndicesArray,
   mapIndices,
   IGroupMeta,
-  ISetColumn,
-  IDateColumn,
   isCategoricalColumn,
   isNumberColumn,
   isDateColumn
 } from '../model';
 import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
-import {IDataProviderOptions, IStatsBuilder} from './interfaces';
+import {IDataProviderOptions} from './interfaces';
 import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker, CompareLookup} from './sort';
 import ADataProvider from './ADataProvider';
 import {ISequence, lazySeq} from '../internal/interable';
@@ -112,6 +110,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (this.dataStats.has(col.id)) {
       return this.dataStats.get(col.id)!;
     }
+
+    requestIdleCallback
     const seq = lazySeq(this._dataRows);
     let stats: IValueStatistics | PromiseLike<IValueStatistics> | null = null;
     if (isNumberColumn(col)) {
@@ -173,6 +173,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
   setData(data: any[]) {
     this._data = data;
     this._dataRows = toRows(data);
+    this.rankingStats.clear();
+    this.dataStats.clear();
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
   }
@@ -190,6 +192,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
       this._data.push(d);
       this._dataRows.push({v: d, i: this._dataRows.length});
     }
+    this.rankingStats.clear();
+    this.dataStats.clear();
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
   }
@@ -331,7 +335,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return this._dataRows[i];
   };
 
-
   viewRaw(indices: IndicesArray) {
     return mapIndices(indices, (i) => this._data[i] || {});
   }
@@ -354,28 +357,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
   fetch(orders: IndicesArray[]): IDataRow[][] {
     return orders.map((order) => this.viewRawRows(order));
   }
-
-  /**
-   * helper for computing statistics
-   * @param indices
-   * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
-   */
-  stats(indices?: IndicesArray): IStatsBuilder {
-    let d: ISequence<IDataRow> | null = null;
-    const getData = () => {
-      if (d == null) {
-        return d = indices && indices.length < this._dataRows.length ? this.seqRawRows(indices) : lazySeq(this._dataRows);
-      }
-      return d;
-    };
-
-    return {
-      stats: (col: INumberColumn, numberOfBins?: number) => computeNormalizedStats(getData().map((d) => col.getNumber(d)), numberOfBins),
-      hist: (col: ISetColumn) => computeHist(getData().map((d) => col.getSet(d)), col.categories),
-      dateStats: (col: IDateColumn, template?: IDateStatistics) => computeDateState(getData().map((d) => col.getDate(d)), template)
-    };
-  }
-
 
   mappingSample(col: INumberColumn): ISequence<number> {
     const MAX_SAMPLE = 120; //at most 500 sample lines

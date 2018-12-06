@@ -1,4 +1,4 @@
-import {IDataProvider, IDataProviderOptions, IStatsBuilder} from './interfaces';
+import {IDataProvider, IDataProviderOptions} from './interfaces';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
 import OrderedSet from '../internal/OrderedSet';
@@ -691,13 +691,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @return {Promise<any>}
    */
   abstract mappingSample(col: Column): Promise<ISequence<number>> | ISequence<number>;
-
-  /**
-   * helper for computing statistics
-   * @param indices
-   * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
-   */
-  abstract stats(indices?: IndicesArray): IStatsBuilder;
 
   /**
    * is the given row selected

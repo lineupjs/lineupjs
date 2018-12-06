@@ -27,7 +27,7 @@ export function fixCSS(id: string) {
  * @internal
  */
 export function clear(node: Node) {
-  while(node.lastChild) {
+  while (node.lastChild) {
     node.removeChild(node.lastChild);
   }
 }

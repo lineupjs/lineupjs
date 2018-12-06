@@ -1,18 +1,9 @@
-import {ICategoricalStatistics, IStatistics, IDateStatistics} from '../internal';
 import AEventDispatcher from '../internal/AEventDispatcher';
-import {Column, IColumnDesc, IGroup, INumberColumn, IndicesArray, ISetColumn, IDateColumn} from '../model';
+import {Column, IColumnDesc, IGroup, IndicesArray} from '../model';
 import Ranking from '../model/Ranking';
 import '!file-loader?name=schema.4.0.0.json!./schema.json';
 import {ISequence} from '../internal/interable';
 
-
-export interface IStatsBuilder {
-  stats(col: INumberColumn, bins?: number): Promise<IStatistics> | IStatistics;
-
-  hist(col: ISetColumn): Promise<ICategoricalStatistics> | ICategoricalStatistics;
-
-  dateStats(col: IDateColumn, template?: IDateStatistics): Promise<IDateStatistics> | IDateStatistics;
-}
 
 export interface IDataProviderOptions {
   columnTypes: {[columnType: string]: typeof Column};
