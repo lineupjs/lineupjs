@@ -329,7 +329,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
           // compute sort group value
           if (groupLookup) {
-            const groupData = Object.assign({rows: lazySeq(order).map((d) => this._dataRows[d]), meta: <IGroupMeta>'first last'}, group);
+            const groupData = Object.assign({meta: <IGroupMeta>'first last'}, o);
             groupLookup.push(i, ranking.toGroupCompareValue(groupData));
           }
           return o;

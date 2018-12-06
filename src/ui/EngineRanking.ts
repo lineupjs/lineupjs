@@ -2,7 +2,7 @@ import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, Gri
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IDataRow, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, toGroupMeta} from '../model';
+import {IGroupData, IGroupItem, isGroup, isMultiLevelColumn, toGroupMeta} from '../model';
 import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
@@ -823,13 +823,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.ranking.flatColumns.forEach((c) => EngineRanking.disableListener(c));
   }
 
-  groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
+  groupData(): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
     const r = <(IGroupItem | IGroupData)[]>[];
 
     //multiple groups
-    let offset = 0;
     for (const group of groups) {
       const length = group.order.length;
 
@@ -841,17 +840,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const slice = Math.min(n > 0 ? n : Number.POSITIVE_INFINITY, length);
       const metaShift = n > 0 ? 1 : 0; // shift by one to avoid having a start
       for (let i = 0; i < slice; ++i) {
-        const v = data[i + offset];
+        const dataIndex = group.order[i];
         r.push({
           group,
-          vs: v,
-          dataIndex: v ? v.i : i,
+          dataIndex,
           relativeIndex: i,
           meta: toGroupMeta(i + metaShift, slice + metaShift)
         });
       }
-
-      offset += length;
     }
     return r;
   }

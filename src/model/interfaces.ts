@@ -94,7 +94,6 @@ export interface IGroupParent extends IGroup {
 export declare type IGroupMeta = 'first' | 'last' | 'first last' | null;
 
 export interface IGroupItem {
-  vs: IDataRow;
   readonly dataIndex: number;
   readonly group: Readonly<IOrderedGroup>;
   readonly relativeIndex: number;

@@ -1,5 +1,5 @@
 import AEventDispatcher from '../internal/AEventDispatcher';
-import {Column, IColumnDesc, IGroup, IndicesArray} from '../model';
+import {Column, IColumnDesc, IGroup, IndicesArray, IDataRow} from '../model';
 import Ranking from '../model/Ranking';
 import '!file-loader?name=schema.4.0.0.json!./schema.json';
 import {ISequence} from '../internal/interable';
@@ -64,6 +64,8 @@ export interface IDataProvider extends AEventDispatcher {
   getTopNAggregated(ranking: Ranking, group: IGroup): number;
 
   setTopNAggregated(ranking: Ranking, group: IGroup, value: number): void;
+
+  getRow(dataIndex: number): Promise<IDataRow> | IDataRow;
 }
 
 

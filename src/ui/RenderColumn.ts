@@ -1,4 +1,4 @@
-import {IColumn, IAbortAblePromise, IAsyncUpdate} from 'lineupengine';
+import {IColumn, IAbortAblePromise, IAsyncUpdate, isAbortAble} from 'lineupengine';
 import Column from '../model/Column';
 import {ICellRenderer, IGroupCellRenderer} from '../renderer';
 import {ISummaryRenderer, IRenderCallback} from '../renderer/interfaces';
@@ -6,6 +6,7 @@ import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import {ILineUpFlags} from '../interfaces';
 import {cssClass, engineCssClass} from '../styles/index';
+import {isPromiseLike} from '../internal';
 
 export interface IRenderers {
   singleId: string;
@@ -150,7 +151,12 @@ export default class RenderColumn implements IColumn {
       ready = this.renderers!.group.update(node, g, g.meta);
     } else {
       const r = this.ctx.getRow(index);
-      ready = this.renderers!.single.update(node, r.vs, r.relativeIndex, r.group, r.meta);
+      const row = this.ctx.provider.getRow(r.dataIndex);
+      if (!isPromiseLike(row)) {
+        ready = this.renderers!.single.update(node, row, r.relativeIndex, r.group, r.meta);
+      } else {
+        ready = chainAbortAble(row, (row) => this.renderers!.single.update(node, row, r.relativeIndex, r.group, r.meta));
+      }
     }
     if (ready) {
       return {item: node, ready};
@@ -164,6 +170,37 @@ export default class RenderColumn implements IColumn {
     if (!s.render) {
       return false;
     }
-    return s.render(ctx, r.vs, r.relativeIndex, r.group, r.meta) || false;
+    const row = this.ctx.provider.getRow(r.dataIndex);
+    if (!isPromiseLike(row)) {
+      return s.render(ctx, row, r.relativeIndex, r.group, r.meta) || false;
+    }
+    return chainAbortAble(row, (row) => s.render!(ctx, row, r.relativeIndex, r.group, r.meta) || false);
   }
+
+}
+
+
+function chainAbortAble<T, U, V>(toWait: Promise<T>, mapper: (value: T) => IAbortAblePromise<U> | V): IAbortAblePromise<U> | V {
+  let aborted = false;
+  const p: any = new Promise<IAbortAblePromise<U> | null | void>((resolve) => {
+    if (aborted) {
+      return;
+    }
+    toWait.then((r) => {
+      if (aborted) {
+        return;
+      }
+      const mapped = mapper(r);
+      if (isAbortAble(<any>mapped)) {
+        p.abort = (<IAbortAblePromise<U>>mapped).abort.bind(mapped);
+        return p.then(resolve);
+      }
+      return resolve(<any>mapped);
+    });
+  });
+
+  p.abort = () => {
+    aborted = true;
+  };
+  return p;
 }

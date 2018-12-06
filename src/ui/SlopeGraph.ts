@@ -69,7 +69,7 @@ export default class SlopeGraph implements ITableSection {
   private rightSlopes: ISlope[][] = [];
   private readonly pool: SVGPathElement[] = [];
 
-  private scrollListener: ((act: { top: number, height: number}) => void) | null = null;
+  private scrollListener: ((act: {top: number, height: number}) => void) | null = null;
 
   readonly width = SLOPEGRAPH_WIDTH;
   readonly height = 0;
@@ -101,8 +101,8 @@ export default class SlopeGraph implements ITableSection {
     //sync scrolling of header and body
     // use internals from lineup engine
     const scroll = (<any>scroller).__le_scroller__;
-    let old: { top: number, height: number} = scroll.asInfo();
-    scroll.push('animation', this.scrollListener = (act: { top: number, height: number}) => {
+    let old: {top: number, height: number} = scroll.asInfo();
+    scroll.push('animation', this.scrollListener = (act: {top: number, height: number}) => {
       if (Math.abs(old.top - act.top) < 5) {
         return;
       }
@@ -192,7 +192,6 @@ export default class SlopeGraph implements ITableSection {
     const createFakeGroup = (first: number, group: IGroup) => {
       let count = 0;
       let height = 0;
-      const rows: IDataRow[] = [];
       // find all items in this group, assuming that they are in order
       for (let i = first; i < left.length; ++i) {
         const item = left[i];
@@ -201,13 +200,11 @@ export default class SlopeGraph implements ITableSection {
         }
         count++;
         height += (leftContext.exceptionsLookup.get(i) || leftContext.defaultRowHeight);
-        rows.push(item);
       }
 
       const padded = height - leftContext.padding(first + count - 1);
 
       const gr = <IGroupData>Object.assign({
-        rows,
         meta: 'first-last'
       }, group);
 
@@ -243,7 +240,7 @@ export default class SlopeGraph implements ITableSection {
         gr = r;
       } else {
         const item = (<IGroupItem>r);
-        const dataIndex = item.i;
+        const dataIndex = item.dataIndex;
         const right = lookup.get(dataIndex);
 
         if (!right) { // no match
@@ -268,27 +265,27 @@ export default class SlopeGraph implements ITableSection {
       }
 
       // free group items to share
-      const free = new Set(gr.rows.map((d) => d.i));
+      const free = new Set(gr.order);
 
-      const heightPerRow = padded / gr.rows.length;
+      const heightPerRow = padded / gr.order.length;
 
-      gr.rows.forEach((d) => {
-        if (!free.has(d.i)) {
+      forEachIndices(gr.order, (d: number) => {
+        if (!free.has(d)) {
           return; // already handled
         }
-        free.delete(d.i);
-        const right = lookup.get(d.i);
+        free.delete(d);
+        const right = lookup.get(d);
         if (!right) {
           return; // no matching
         }
         // find all of this group
         const intersection = filterIndices(right.rows, (r) => free.delete(r));
-        intersection.push(d.i); //self
+        intersection.push(d); //self
 
         const common = intersection.length;
         let s: ISlope;
         if (common === 1) {
-          s = new ItemSlope(start + offset + heightPerRow / 2, right.start + right.offset + right.heightPerRow / 2, [d.i]);
+          s = new ItemSlope(start + offset + heightPerRow / 2, right.start + right.offset + right.heightPerRow / 2, [d]);
         } else if (mode === EMode.ITEM) {
           // fake item
           s = new ItemSlope(start + offset + heightPerRow * common / 2, right.start + right.offset + right.heightPerRow * common / 2, intersection);
@@ -322,17 +319,17 @@ export default class SlopeGraph implements ITableSection {
       };
       if (isGroup(r)) {
         const p = Object.assign(base, {
-          rows: Array.from(r.rows.map((d) => d.i)),
-          heightPerRow: padded / r.rows.length,
+          rows: Array.from(r.order),
+          heightPerRow: padded / r.order.length,
           group: r
         });
 
-        r.rows.forEach((ri) => lookup.set(ri.i, p));
+        forEachIndices(r.order, (ri) => lookup.set(ri, p));
         return slopes;
       }
       // item
       const item = (<IGroupItem>r);
-      const dataIndex = r.i;
+      const dataIndex = r.dataIndex;
 
       let p = Object.assign(base, {
         rows: [dataIndex],

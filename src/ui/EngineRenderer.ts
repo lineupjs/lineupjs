@@ -1,11 +1,8 @@
 import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineupengine';
 import {ILineUpOptions, ILineUpFlags} from '../interfaces';
-import {ICategoricalStatistics, IStatistics, round} from '../internal';
+import {round} from '../internal';
 import AEventDispatcher, {suffix, IEventListener} from '../internal/AEventDispatcher';
-import {
-  Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup,
-  isNumberColumn, INumberColumn
-} from '../model';
+import {Column, IGroupData, IGroupItem, isGroup} from '../model';
 import Ranking from '../model/Ranking';
 import ADataProvider from '../provider/ADataProvider';
 import {
@@ -308,11 +305,6 @@ export default class EngineRenderer extends AEventDispatcher {
     if (rankings.length === 0) {
       return;
     }
-    const orders = rankings.map((r) => r.ranking.getOrder());
-    const data = this.data.fetch(orders);
-
-    // TODO support async
-    const localData = <IDataRow[][]>data;
 
     const round2 = (v: number) => round(v, 2);
     const rowPadding = round2(this.zoomFactor * this.options.rowPadding!);
@@ -339,9 +331,8 @@ export default class EngineRenderer extends AEventDispatcher {
       };
     };
 
-    for (let i = 0; i < rankings.length; ++i) {
-      const r = rankings[i];
-      const grouped = r.groupData(localData[i]);
+    for (const r of rankings) {
+      const grouped = r.groupData();
 
       const {height, defaultHeight, padding} = heightsFor(r.ranking, grouped);
 

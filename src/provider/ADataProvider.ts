@@ -684,8 +684,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   abstract view(indices: ArrayLike<number>): Promise<any[]> | any[];
 
-  abstract fetch(orders: ArrayLike<number>[]): (Promise<IDataRow> | IDataRow)[][];
-
   /**
    * returns a data sample used for the mapping editor
    * @param col
