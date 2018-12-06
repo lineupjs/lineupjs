@@ -1,5 +1,5 @@
-import {ICategoricalStatistics, IStatistics, round} from '../internal';
-import {IDataRow, IGroup, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta} from '../model';
+import {round} from '../internal';
+import {IDataRow, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {medianIndex} from '../model/internal';
 import {default as INumberColumn, isNumberColumn} from '../model/INumberColumn';
@@ -9,7 +9,8 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 import {cssClass} from '../styles';
-import {IAbortAblePromise, allAbortAble, abortAble, ABORTED} from 'lineupengine';
+import {IAbortAblePromise, allAbortAble, abortAble} from 'lineupengine';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
 export function gridClass(idPrefix: string, column: Column) {
@@ -82,13 +83,13 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     return isMultiLevelColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: IMultiLevelColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer) {
     const {cols, stacked, padding} = createData(col, context, this.stacked, ERenderMode.CELL, imposer);
     const useGrid = true;
     const width = context.colWidth(col);
     return {
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid && !stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
+      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta) => {
         if (renderMissingDOM(n, col, d)) {
           return null;
         }
@@ -124,7 +125,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         }
         return null;
       },
-      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return null;
         }
@@ -169,16 +170,16 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   }
 
 
-  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer) {
     if (this.stacked && isNumberColumn(col)) {
-      return super.createGroup(col, context, hist, imposer);
+      return super.createGroup(col, context, imposer);
     }
 
     const {cols, padding} = createData(col, context, false, ERenderMode.GROUP, imposer);
     const useGrid = true;
     return {
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
-      update: (n: HTMLElement, group: IGroup, rows: IDataRow[], meta: IGroupMeta) => {
+      update: (n: HTMLElement, group: IOrderedGroup, meta: IGroupMeta) => {
         matchColumns(n, cols, context);
 
         const toWait: IAbortAblePromise<void>[] = [];
@@ -195,7 +196,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           } else {
             cnode.style.gridColumnStart = (ci + 1).toString();
           }
-          const r = col.groupRenderer!.update(cnode, group, rows, meta);
+          const r = col.groupRenderer!.update(cnode, group, meta);
           if (r) {
             toWait.push(r);
           }
@@ -209,7 +210,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     };
   }
 
-  protected aggregatedIndex(rows: IDataRow[], col: IMultiLevelColumn & Column) {
+  protected aggregatedIndex(rows: ISequence<IDataRow>, col: IMultiLevelColumn & Column) {
     console.assert(isNumberColumn(col));
     return medianIndex(rows, (<INumberColumn><any>col));
   }

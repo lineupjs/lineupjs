@@ -130,7 +130,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement) => {
-        return context.tasks.rankingBoxPlotStats(col, (data: IAdvancedBoxPlotData) => {
+        return context.tasks.summaryBoxPlotStats(col, (data: IAdvancedBoxPlotData) => {
           if (data == null) {
             n.classList.add(cssClass('missing'));
             return;

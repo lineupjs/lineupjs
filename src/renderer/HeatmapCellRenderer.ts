@@ -1,4 +1,4 @@
-import {IDataRow} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
@@ -7,7 +7,6 @@ import {toHeatMapColor} from './BrightnessCellRenderer';
 import IRenderContext, {ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingValue, renderMissingDOM} from './missing';
 import {noop, wideEnough} from './utils';
-import {IGroup} from '../model/interfaces';
 
 const GUESSED_HEIGHT = 20;
 
@@ -19,7 +18,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     return isNumbersColumn(col) && Boolean(col.dataLength);
   }
 
-  private createContext(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  private createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const width = context.colWidth(col);
     const cellDimension = width / col.dataLength!;
     const labels = col.labels;
@@ -47,7 +46,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
   }
 
   create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
-    const {template, render, mover, width} = this.createContext(col, context, _hist, imposer);
+    const {template, render, mover, width} = this.createContext(col, context, imposer);
     return {
       template,
       update: (n: HTMLElement, d: IDataRow) => {
@@ -69,18 +68,18 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
-    const {template, render, mover, width} = this.createContext(col, context, _hist, imposer);
+    const {template, render, mover, width} = this.createContext(col, context, imposer);
     return {
       template,
-      update: (n: HTMLElement, _group: IGroup) => {
-        // render a heatmap
-        const {normalized, raw} = ANumbersCellRenderer.choose(col, rows);
-        const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
-        ctx.canvas.width = width;
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        n.onmousemove = mover(n, raw.map(DEFAULT_FORMATTER));
-        n.onmouseleave = () => n.title = '';
-        render(ctx, normalized, rows[0], GUESSED_HEIGHT);
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, (rows) => ANumbersCellRenderer.choose(col, rows), (data) => {
+          const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+          ctx.canvas.width = width;
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          n.onmousemove = mover(n, data.raw.map(DEFAULT_FORMATTER));
+          n.onmouseleave = () => n.title = '';
+          render(ctx, data.normalized, data.row!, GUESSED_HEIGHT);
+        });
       }
     };
   }

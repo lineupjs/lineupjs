@@ -1,4 +1,4 @@
-import {ICategory, IDataRow, IGroup} from '../model';
+import {ICategory, IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
 import {CANVAS_HEIGHT, UPSET, cssClass} from '../styles';
@@ -100,13 +100,12 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ISetColumn) {
+  createGroup(col: ISetColumn, context: IRenderContext) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     return {
       template: `<div><div class="${cssClass('upset-line')}"></div>${templateRow}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const value = union(col, rows);
-        render(n, value);
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, (rows) => union(col, rows), (value) => render(n, value));
       }
     };
   }

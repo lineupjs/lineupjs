@@ -69,7 +69,7 @@ function staticSummary(col: ISetColumn, context: IRenderContext, interactive: bo
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
-      return context.tasks.rankingCategoricalStats(col, (hist) => {
+      return context.tasks.summaryCategoricalStats(col, (hist) => {
         n.classList.toggle(cssClass('missing'), !hist);
         if (!hist) {
           return;
@@ -89,7 +89,7 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
       }
-      return context.tasks.rankingCategoricalStats(col, (hist, gHist) => {
+      return context.tasks.summaryCategoricalStats(col, (hist, gHist) => {
         filterUpdate((interactive && gHist) ? gHist.missing : (hist ? hist.missing : 0), col);
 
         n.classList.toggle(cssClass('missing'), !hist);

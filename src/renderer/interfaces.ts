@@ -1,5 +1,5 @@
 import {IValueStatistics, IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData} from '../internal/math';
-import {IDataRow, INumberColumn, IGroupMeta, IDateColumn, ISetColumn, IOrderedGroup, IDatesColumnDesc} from '../model';
+import {IDataRow, INumberColumn, IGroupMeta, IDateColumn, ISetColumn, IOrderedGroup, IDatesColumnDesc, INumbersColumn, CategoricalsColumn} from '../model';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
@@ -67,18 +67,18 @@ export interface ISummaryRenderer {
 
 
 export interface IRenderTasks {
-  rankingBoxPlotStats(col: Column & INumberColumn, render: (ranking: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void>;
-  rankingNumberStats(col: Column & INumberColumn, render: (ranking: IStatistics, data: IStatistics) => void): IAbortAblePromise<void>;
-  rankingCategoricalStats(col: Column & ISetColumn, render: (ranking: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void>;
-  rankingDateStats(col: Column & IDateColumn, render: (ranking: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void>;
-
   groupRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void): IAbortAblePromise<void>;
   groupExampleRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void): IAbortAblePromise<void>;
 
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IAdvancedBoxPlotData, ranking: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void>;
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IStatistics, ranking: IStatistics, data: IStatistics) => void): IAbortAblePromise<void>;
-  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup, render: (group: ICategoricalStatistics, ranking: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void>;
-  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup, render: (group: IDateStatistics, ranking: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void>;
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void>;
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IStatistics, summary: IStatistics, data: IStatistics) => void): IAbortAblePromise<void>;
+  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup, render: (group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void>;
+  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup, render: (group: IDateStatistics, summary: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void>;
+
+  summaryBoxPlotStats(col: Column & INumberColumn, render: (summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void>;
+  summaryNumberStats(col: Column & INumberColumn, render: (summary: IStatistics, data: IStatistics) => void): IAbortAblePromise<void>;
+  summaryCategoricalStats(col: Column & ISetColumn, render: (summary: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void>;
+  summaryDateStats(col: Column & IDateColumn, render: (summary: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void>;
 }
 
 /**

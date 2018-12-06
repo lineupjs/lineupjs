@@ -1,6 +1,6 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noRenderer, noop} from './utils';
@@ -47,16 +47,14 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     return `${examples.join(', ')}${examples.length < arr.length} ? ', &hellip;': ''}`;
   }
 
-  createGroup(col: LinkMapColumn) {
+  createGroup(col: LinkMapColumn, context: IRenderContext) {
     const align = col.alignment || 'left';
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
-      update: (node: HTMLElement, _group: IGroup) => {
-        const vs = rows.map((d) => col.getLinkMap(d));
-
-        const entries = groupByKey(vs);
-
-        node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
+      update: (node: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, (rows) => groupByKey(rows.map((d) => col.getLinkMap(d))), (entries) => {
+          node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
+        });
       }
     };
   }

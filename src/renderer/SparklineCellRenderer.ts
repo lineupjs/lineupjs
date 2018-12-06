@@ -1,14 +1,15 @@
-import {IDataRow, IGroup, IOrderedGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {matchRows} from './ANumbersCellRenderer';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEachChild, noRenderer} from './utils';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
-export function line(data: number[]) {
+export function line(data: ISequence<number>) {
   if (data.length === 0) {
     return '';
   }
@@ -51,7 +52,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn) {
+  createGroup(col: INumbersColumn, context: IRenderContext) {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
@@ -59,10 +60,11 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, group: IOrderedGroup) => {
         //overlapping ones
         matchRows(n, group.order.length, `<path></path>`);
-        forEachChild(n, ((row, i) => {
-          const d = rows[i];
-          row.setAttribute('d', line(col.getNumbers(d)));
-        }));
+        return context.tasks.groupRows(col, group, (r) => Array.from(r.map((d) => col.getNumbers(d))), (vs) => {
+          forEachChild(n, ((row, i) => {
+            row.setAttribute('d', line(vs[i]));
+          }));
+        });
       }
     };
   }

@@ -1,8 +1,9 @@
 import {LazyBoxPlotData} from '../internal';
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import {INumbersColumn} from '../model/INumberColumn';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
 export abstract class ANumbersCellRenderer {
@@ -15,8 +16,14 @@ export abstract class ANumbersCellRenderer {
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
-  static choose(col: INumbersColumn, rows: IDataRow[]) {
-    const data = rows.map((r) => ({n: col.getNumbers(r), raw: col.getRawNumbers(r)}));
+  static choose(col: INumbersColumn, rows: ISequence<IDataRow>) {
+    let row: IDataRow | null = null;
+    const data = rows.map((r, i) => {
+      if (i === 0) {
+        row = r;
+      }
+      return {n: col.getNumbers(r), raw: col.getRawNumbers(r)};
+    });
     const cols = col.dataLength!;
     const normalized = <number[]>[];
     const raw = <number[]>[];
@@ -33,10 +40,10 @@ export abstract class ANumbersCellRenderer {
         raw.push(boxRaw[col.getSortMethod()]);
       }
     }
-    return {normalized, raw};
+    return {normalized, raw, row};
   }
 
-  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const width = context.colWidth(col);
     const {templateRow, render, update, clazz} = this.createContext(col, context, imposer);
     return {
@@ -56,14 +63,15 @@ export abstract class ANumbersCellRenderer {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const {templateRow, update, clazz} = this.createContext(col, context, imposer);
     return {
       template: `<div class="${clazz}">${templateRow}</div>`,
-      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLDivElement, group: IOrderedGroup) => {
         // render a heatmap
-        const {normalized, raw} = ANumbersCellRenderer.choose(col, rows);
-        update(n, normalized, raw, rows[0]);
+        return context.tasks.groupRows(col, group, (rows) => ANumbersCellRenderer.choose(col, rows), (data) => {
+          update(n, data.normalized, data.raw, data.row!);
+        });
       }
     };
   }
