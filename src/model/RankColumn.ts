@@ -39,7 +39,7 @@ export default class RankColumn extends Column {
     if (!ranking) {
       return -1;
     }
-    return ranking.getRank(row);
+    return ranking.getRank(row.i);
   }
 
   getValue(row: IDataRow) {

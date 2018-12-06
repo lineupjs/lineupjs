@@ -1,3 +1,6 @@
+import {IAbortAblePromise, ABORTED} from 'lineupengine';
+export {IAbortAblePromise, ABORTED} from 'lineupengine';
+
 export interface IPoorManIdleDeadline {
   didTimeout: boolean;
   timeRemaining(): number;
@@ -10,9 +13,10 @@ export interface IPoorManIdleCallback {
 }
 
 export interface ITask<T> {
+  id: string;
   calc: () => T | PromiseLike<T>;
-  resolve(r: T | PromiseLike<T>): void;
-  result: PromiseLike<T>;
+  resolve(r: T | PromiseLike<T> | symbol): void;
+  result: PromiseLike<T | symbol>;
 }
 
 export default class TaskScheduler {
@@ -34,9 +38,24 @@ export default class TaskScheduler {
     }
   }
 
-  push<T>(calc: () => T | PromiseLike<T>): Promise<T> {
+  push<T>(id: string, calc: () => T | PromiseLike<T>): IAbortAblePromise<T> {
+    // abort task with the same id
+    const abort = () => {
+      const index = this.tasks.findIndex((d) => d.id === id);
+      if (index < 0) {
+        return; // too late or none
+      }
+      const task = this.tasks[index];
+      this.tasks.splice(index, 1);
+
+      task.resolve(ABORTED);
+    };
+
+    abort(); // abort existing with same id
+
     const p = new Promise<T>((resolve) => {
       this.tasks.push({
+        id,
         calc,
         result: p,
         resolve
@@ -53,7 +72,20 @@ export default class TaskScheduler {
         this.taskId = self.setTimeout(this.runTasks, 1);
       }
     });
-    return p;
+    (<any>p).abort = abort;
+    return <IAbortAblePromise<T>>p;
+  }
+
+  abort(id: string) {
+    const index = this.tasks.findIndex((d) => d.id === id);
+    if (index < 0) {
+      return false; // too late or none
+    }
+    const task = this.tasks[index];
+    this.tasks.splice(index, 1);
+
+    task.resolve(ABORTED);
+    return true;
   }
 
   clear() {
@@ -68,6 +100,6 @@ export default class TaskScheduler {
     }
     this.taskId = -1;
 
-    this.tasks.splice(0, this.tasks.length);
+    this.tasks.splice(0, this.tasks.length).forEach((d) => d.resolve(ABORTED));
   }
 }

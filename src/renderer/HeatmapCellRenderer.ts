@@ -68,11 +68,11 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const {template, render, mover, width} = this.createContext(col, context, _hist, imposer);
     return {
       template,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, _group: IGroup) => {
         // render a heatmap
         const {normalized, raw} = ANumbersCellRenderer.choose(col, rows);
         const ctx = (<HTMLCanvasElement>n).getContext('2d')!;

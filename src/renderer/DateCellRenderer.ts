@@ -1,6 +1,6 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
+import IRenderContext, {ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText, exampleText} from './utils';
 import DateColumn, {choose} from '../model/DateColumn';
@@ -26,18 +26,17 @@ export default class DateCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: DateColumn): IGroupCellRenderer {
-    const isGrouped = col.isGroupedBy() >= 0;
-    const grouper = col.getDateGrouper();
+  createGroup(col: DateColumn, context: IRenderContext): IGroupCellRenderer {
     return {
       template: `<div> </div>`,
-      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLDivElement, group: IOrderedGroup) => {
+        const isGrouped = col.isGroupedBy() >= 0;
         if (isGrouped) {
-          const chosen = choose(rows, grouper, col);
-          setText(n, chosen.name);
-          return;
+          return context.tasks.groupRows(col, group, (rows) => choose(rows, col.getDateGrouper(), col), (chosen) => {
+            setText(n, chosen.name);
+          });
         }
-        setText(n, exampleText(col, rows));
+        return context.tasks.groupExampleRows(col, group, (sample) => exampleText(col, sample), (text) => setText(n, text));
       }
     };
   }

@@ -464,12 +464,12 @@ export function lazySeq<T>(iterable: Iterable<T>): ISequence<T> {
 
 
 class ConcatSequence<T> implements ISequence<T> {
-  constructor(private readonly seqs: ISequence<T>[]) {
+  constructor(private readonly seqs: ISequence<ISequence<T>>) {
     //
   }
 
   [Symbol.iterator]() {
-    const seqs = this.seqs.slice();
+    const seqs = Array.from(this.seqs);
     let it = seqs.shift()![Symbol.iterator]();
     const next = (): {value: T, done: boolean} => {
       const v = it.next();
@@ -496,35 +496,19 @@ class ConcatSequence<T> implements ISequence<T> {
   }
 
   forEach(callback: (v: T, i: number) => void) {
-    for (const s of this.seqs) {
-      s.forEach(callback);
-    }
+    this.seqs.forEach((s) => s.forEach(callback));
   }
 
   some(callback: (v: T, i: number) => boolean) {
-    for (const s of this.seqs) {
-      if (s.some(callback)) {
-        return true;
-      }
-    }
-    return false;
+    return this.seqs.some((s) => s.some(callback));
   }
 
   every(callback: (v: T, i: number) => boolean) {
-    for (const s of this.seqs) {
-      if (!s.every(callback)) {
-        return false;
-      }
-    }
-    return true;
+    return this.seqs.every((s) => s.every(callback));
   }
 
   reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U) {
-    let acc = initial;
-    for (const s of this.seqs) {
-      acc = s.reduce(callback, acc);
-    }
-    return acc;
+    return this.seqs.reduce((acc, s) => s.reduce(callback, acc), initial);
   }
 
   get length() {
@@ -532,13 +516,11 @@ class ConcatSequence<T> implements ISequence<T> {
   }
 }
 
-
-export function concatSeq<T>(...seqs: ISequence<T>[]): ISequence<T> {
-  if (seqs.length === 0) {
-    return lazySeq([]);
+export function concatSeq<T>(seqs: ISequence<ISequence<T>>): ISequence<T>;
+export function concatSeq<T>(seq1: ISequence<T>, seq2: ISequence<T>, ...seqs: ISequence<T>[]): ISequence<T>;
+export function concatSeq<T>(seq1: ISequence<T>[] | ISequence<T>, seq2?: ISequence<T>, ...seqs: ISequence<T>[]): ISequence<T> {
+  if (seq2) {
+    return new ConcatSequence([<ISequence<T>>seq1, seq2].concat(seqs));
   }
-  if (seqs.length === 1) {
-    return seqs[0];
-  }
-  return new ConcatSequence(seqs);
+  return new ConcatSequence(<ISequence<T>[]>seq1);
 }

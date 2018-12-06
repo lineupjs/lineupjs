@@ -1,25 +1,27 @@
 import {DENSE_HISTOGRAM} from '../config';
-import {computeHist, ICategoricalBin, ICategoricalStatistics, round} from '../internal/math';
-import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
+import {ICategoricalStatistics, round} from '../internal/math';
+import {ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {isCategoryIncluded} from '../model/ICategoricalColumn';
+import {isCategoryIncluded, ISetColumn, isSetColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
 import OrdinalColumn from '../model/OrdinalColumn';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory, ERenderMode} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough, forEach} from './utils';
 import {color} from 'd3-color';
-import {ISequence} from '../internal/interable';
+
+/** @internal */
+export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn;
 
 /** @internal */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly title = 'Color';
   readonly groupTitle = 'Histogram';
 
-  canRender(col: Column) {
-    return isCategoricalColumn(col);
+  canRender(col: Column, mode: ERenderMode) {
+    return isSetColumn(col) && (mode !== ERenderMode.CELL || isCategoricalColumn(col));
   }
 
   create(col: ICategoricalColumn, context: IRenderContext) {
@@ -45,59 +47,62 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ICategoricalColumn, _context: IRenderContext, globalHist: ICategoricalStatistics | null) {
-    const {template, update} = hist(col, false, null);
+  createGroup(col: ISetColumn, context: IRenderContext) {
+    const {template, update} = hist(col, false);
     return {
       template: `${template}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: ISequence<IDataRow>) => {
-        const {maxBin, hist} = computeHist(rows.map((r: IDataRow) => col.getSet(r)), col.categories);
-
-        const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
-        update(n, max, hist);
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupCategoricalStats(col, group, (hist) => {
+          update(n, hist);
+        });
       }
     };
   }
 
-  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean, unfilteredHist: ICategoricalStatistics | null) {
-    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive, unfilteredHist, ctx.idPrefix) : staticSummary(col, interactive);
+  createSummary(col: ISetColumn, context: IRenderContext, interactive: boolean) {
+    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn || col instanceof SetColumn) ? interactiveSummary(col, context, interactive) : staticSummary(col, context, interactive);
   }
 }
 
-function staticSummary(col: ICategoricalColumn, interactive: boolean) {
-  const {template, update} = hist(col, interactive, null);
+function staticSummary(col: ISetColumn, context: IRenderContext, interactive: boolean) {
+  const {template, update} = hist(col, interactive);
   return {
     template: `${template}</div>`,
-    update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
-      n.classList.toggle(cssClass('missing'), !hist);
-      if (!hist) {
-        return;
-      }
-      update(n, hist.maxBin, hist.hist);
+    update: (n: HTMLElement) => {
+      return context.tasks.rankingCategoricalStats(col, (hist) => {
+        n.classList.toggle(cssClass('missing'), !hist);
+        if (!hist) {
+          return;
+        }
+        update(n, hist, hist);
+      });
     }
   };
 }
 
-function interactiveSummary(col: CategoricalColumn | OrdinalColumn, interactive: boolean, unfilteredHist: ICategoricalStatistics | null, idPrefix: string) {
-  const {template, update} = hist(col, interactive || wideEnough(col), interactive ? unfilteredHist : null);
-  let filterUpdate: (missing: number, col: CategoricalColumn | OrdinalColumn) => void;
+function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, interactive: boolean) {
+  const {template, update} = hist(col, interactive || wideEnough(col));
+  let filterUpdate: (missing: number, col: HasCategoricalFilter) => void;
   return {
-    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0, idPrefix) : ''}</div>`,
-    update: (n: HTMLElement, hist: ICategoricalStatistics | null) => {
+    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0, context.idPrefix) : ''}</div>`,
+    update: (n: HTMLElement) => {
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
       }
-      filterUpdate((interactive && unfilteredHist) ? unfilteredHist.missing : (hist ? hist.missing : 0), col);
+      return context.tasks.rankingCategoricalStats(col, (hist, gHist) => {
+        filterUpdate((interactive && gHist) ? gHist.missing : (hist ? hist.missing : 0), col);
 
-      n.classList.toggle(cssClass('missing'), !hist);
-      if (!hist) {
-        return;
-      }
-      update(n, hist.maxBin, hist.hist);
+        n.classList.toggle(cssClass('missing'), !hist);
+        if (!hist) {
+          return;
+        }
+        update(n, hist, gHist);
+      });
     }
   };
 }
 
-function hist(col: ICategoricalColumn, showLabels: boolean, unfilteredHist: ICategoricalStatistics | null) {
+function hist(col: ISetColumn, showLabels: boolean) {
   const mapping = col.getColorMapping();
   const bins = col.categories.map((c) => `<div class="${cssClass('histogram-bin')}" title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${mapping.apply(c)}"></div></div>`).join('');
   const template = `<div class="${cssClass('histogram')} ${col.dataLength! > DENSE_HISTOGRAM ? cssClass('dense') : ''}">${bins}`; // no closing div to be able to append things
@@ -105,7 +110,7 @@ function hist(col: ICategoricalColumn, showLabels: boolean, unfilteredHist: ICat
 
   return {
     template,
-    update: (n: HTMLElement, lMaxBin: number, hist: ICategoricalBin[]) => {
+    update: (n: HTMLElement, hist: ICategoricalStatistics, gHist?: ICategoricalStatistics) => {
       const mapping = col.getColorMapping();
 
       const selected = col.categories.map((d) => {
@@ -114,14 +119,13 @@ function hist(col: ICategoricalColumn, showLabels: boolean, unfilteredHist: ICat
         return c.toString();
       });
 
-      const gHist = unfilteredHist ? unfilteredHist.hist! : null;
-      const maxBin = unfilteredHist ? unfilteredHist.maxBin : lMaxBin;
+      const maxBin = gHist ? gHist.maxBin : hist.maxBin;
       forEach(n, '[data-cat]', (d: HTMLElement, i) => {
         const cat = col.categories[i];
-        const {count} = hist[i];
+        const {count} = hist.hist[i];
         const inner = <HTMLElement>d.firstElementChild!;
         if (gHist) {
-          const {count: gCount} = gHist[i];
+          const {count: gCount} = gHist.hist[i];
           d.title = `${cat.label}: ${count} of ${gCount}`;
           inner.style.height = `${round(gCount * 100 / maxBin, 2)}%`;
           const relY = 100 - round(count * 100 / gCount, 2);
@@ -138,7 +142,7 @@ function hist(col: ICategoricalColumn, showLabels: boolean, unfilteredHist: ICat
 }
 
 /** @internal */
-export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HTMLElement) {
+export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
   const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
 
   bins.forEach((bin, i) => {
@@ -204,7 +208,7 @@ export function interactiveHist(col: CategoricalColumn | OrdinalColumn, node: HT
   }
 
 
-  return (missing: number, actCol: CategoricalColumn | OrdinalColumn) => {
+  return (missing: number, actCol: HasCategoricalFilter) => {
     col = actCol;
     const cats = col.categories;
     const f = col.getFilter();

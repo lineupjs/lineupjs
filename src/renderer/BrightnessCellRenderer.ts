@@ -1,5 +1,4 @@
 import {hsl} from 'd3-color';
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn} from '../model';
 import Column from '../model/Column';
 import {isNumbersColumn} from '../model/INumberColumn';
@@ -40,7 +39,7 @@ export default class BrightnessCellRenderer implements ICellRendererFactory {
     return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);
   }
 
-  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
     const width = context.colWidth(col);
     return {
       template: `<div title="">

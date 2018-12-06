@@ -36,7 +36,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
   createGroup(col: SelectionColumn) {
     return {
       template: `<div></div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, _group: IGroup) => {
         const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
         const all = selected >= rows.length / 2;
         if (all) {
@@ -103,11 +103,11 @@ export function rangeSelection(provider: IDataProvider, rankingId: string, dataI
     selection.push(nearest.s);
   }
   if (nearest.index < relIndex) {
-    for(let i = nearest.index + 1; i <= relIndex; ++i) {
+    for (let i = nearest.index + 1; i <= relIndex; ++i) {
       selection.push(order[i]);
     }
   } else {
-    for(let i = relIndex; i <= nearest.index; ++i) {
+    for (let i = relIndex; i <= nearest.index; ++i) {
       selection.push(order[i]);
     }
   }

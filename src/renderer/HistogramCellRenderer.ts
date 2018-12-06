@@ -31,7 +31,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     return (isNumberColumn(col) && mode !== ERenderMode.CELL) || (isNumbersColumn(col) && mode === ERenderMode.CELL);
   }
 
-  create(col: INumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const {template, render, guessedBins} = getHistDOMRenderer(context.statsOf(col, true), col, imposer);
     return {
       template: `${template}</div>`,
@@ -39,6 +39,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, row)) {
           return;
         }
+        return abortAbleOrSync(context.stats(col), ()
         render(n, createHist(hist, guessedBins, [row], col));
       }
     };

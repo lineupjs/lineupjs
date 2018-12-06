@@ -27,7 +27,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
         }
         node.innerHTML = col.getLinkMap(d).map(({key, value}) => `
           <div class="${cssClass('table-cell')}">${key}</div>
-          <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align): ''}">
+          <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align) : ''}">
             <a href="${value.href}" target="_blank" rel="noopener">${value.alt}</a>
           </div>`).join('');
       },
@@ -51,7 +51,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     const align = col.alignment || 'left';
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
-      update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (node: HTMLElement, _group: IGroup) => {
         const vs = rows.map((d) => col.getLinkMap(d));
 
         const entries = groupByKey(vs);

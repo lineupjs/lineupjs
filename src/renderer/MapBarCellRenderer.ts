@@ -18,7 +18,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
     return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));
   }
 
-  create(col: IMapColumn<number>, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IMapColumn<number>, _context: IRenderContext, imposer?: IImposer) {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {

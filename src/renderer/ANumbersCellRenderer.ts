@@ -70,12 +70,12 @@ export abstract class ANumbersCellRenderer {
 }
 
 /** @internal */
-export function matchRows(n: HTMLElement | SVGElement, rows: IDataRow[], template: string) {
+export function matchRows(n: HTMLElement | SVGElement, length: number, template: string) {
   // first match the number of rows
   const children = <(HTMLElement | SVGElement)[]>Array.from(n.children);
-  if (children.length > rows.length) {
-    children.slice(rows.length).forEach((c) => c.remove());
-  } else if (rows.length > children.length) {
-    n.insertAdjacentHTML('beforeend', template.repeat(rows.length - children.length));
+  if (children.length > length) {
+    children.slice(length).forEach((c) => c.remove());
+  } else if (length > children.length) {
+    n.insertAdjacentHTML('beforeend', template.repeat(length - children.length));
   }
 }

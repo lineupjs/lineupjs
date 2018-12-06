@@ -5,6 +5,7 @@ import {hsl} from 'd3-color';
 import {cssClass} from '../styles';
 import IRenderContext from './interfaces';
 import {IDataRow} from '../model/interfaces';
+import {ISequence} from '../internal/interable';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -184,7 +185,7 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
 
 
 /** @internal */
-export const uniqueId: (prefix: string)=>string = (function() {
+export const uniqueId: (prefix: string) => string = (function () {
   // side effect but just within the function itself, so good for the library
   let idCounter = 0;
   return (prefix: string) => `${prefix}${(idCounter++).toString(36)}`;
@@ -194,17 +195,15 @@ export const uniqueId: (prefix: string)=>string = (function() {
 const NUM_EXAMPLE_VALUES = 5;
 
 /** @internal */
-export function exampleText(col: Column, rows: IDataRow[]) {
+export function exampleText(col: Column, rows: ISequence<IDataRow>) {
   const examples = <string[]>[];
-  for (const row of rows) {
+  rows.every((row) => {
     if (col.getValue(row) == null) {
-      continue;
+      return true;
     }
     const v = col.getLabel(row);
     examples.push(v);
-    if (examples.length >= NUM_EXAMPLE_VALUES) {
-      break;
-    }
-  }
+    return examples.length < NUM_EXAMPLE_VALUES;
+  });
   return `${examples.join(', ')}${examples.length < rows.length ? ', ...' : ''}`;
 }

@@ -1,4 +1,3 @@
-import {ICategoricalStatistics, IStatistics} from '../internal';
 import {IDataRow, IGroup, toGroupMeta} from '../model';
 import Column from '../model/Column';
 import {
@@ -16,12 +15,12 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
 
   abstract canRender(col: Column, mode: ERenderMode): boolean;
 
-  abstract create(col: T, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer;
+  abstract create(col: T, context: IRenderContext, imposer?: IImposer): ICellRenderer;
 
   protected abstract aggregatedIndex(rows: IDataRow[], col: T): number;
 
-  createGroup(col: T, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer {
-    const single = this.create(col, context, hist, imposer);
+  createGroup(col: T, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
+    const single = this.create(col, context, imposer);
     return {
       template: `<div>${single.template}</div>`,
       update: (node: HTMLElement, group: IGroup, rows: IDataRow[]) => {

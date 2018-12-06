@@ -1,10 +1,11 @@
-import {IDataRow, IGroup, isMissingValue} from '../model';
+import {IDataRow, IGroup, isMissingValue, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn} from '../model/IArrayColumn';
-import {ICellRendererFactory} from './interfaces';
+import IRenderContext, {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
 import {cssClass} from '../styles';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
 export default class TableCellRenderer implements ICellRendererFactory {
@@ -55,42 +56,40 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return `${arr.slice(0, numExampleRows).map((d) => d.value).join(', ')}${numExampleRows < arr.length ? ', &hellip;' : ''}`;
   }
 
-  createGroup(col: IMapColumn<any>) {
+  createGroup(col: IMapColumn<any>, context: IRenderContext) {
     if (isArrayColumn(col) && col.dataLength) {
       // fixed length optimized rendering
-      return this.createFixedGroup(col);
+      return this.createFixedGroup(col, context);
     }
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
-      update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const vs = rows.map((d) => col.getMapLabel(d));
-
-        const entries = groupByKey(vs);
-
-        node.innerHTML = entries.map(({key, values}) => `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${TableCellRenderer.example(values)}</div>`).join('');
+      update: (node: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, (rows) => groupByKey(rows.map((d) => col.getMapLabel(d))), (entries) => {
+          node.innerHTML = entries.map(({key, values}) => `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${TableCellRenderer.example(values)}</div>`).join('');
+        });
       }
     };
   }
 
-  private createFixedGroup(col: IArrayColumn<any>) {
+  private createFixedGroup(col: IArrayColumn<any>, context: IRenderContext) {
     return {
       template: TableCellRenderer.template(col),
-      update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const numExampleRows = 5;
-        const vs = rows.map((d) => col.getLabels(d));
-        forEach(node, '[data-v]', (n: HTMLElement, i) => {
-          const values = <string[]>[];
-          for (const v of vs) {
-            const vi = v[i];
-            if (isMissingValue(vi)) {
-              continue;
+      update: (node: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupExampleRows(col, group, (rows) => {
+          const values: string[][] = col.labels.map(() => []);
+          rows.forEach((row) => {
+            const labels = col.getLabels(row);
+            for (let i = 0; i < Math.min(values.length, labels.length); ++i) {
+              if (!isMissingValue(labels[i])) {
+                values[i].push(labels[i]);
+              }
             }
-            values.push(vi);
-            if (values.length >= numExampleRows) {
-              break;
-            }
-          }
-          n.innerHTML = `${values.join(', ')}${numExampleRows < vs.length ? ', &hellip;' : ''}`;
+          });
+          return values;
+        }, (values) => {
+          forEach(node, '[data-v]', (n: HTMLElement, i) => {
+            n.innerHTML = `${values[i].join(', ')}&hellip;`;
+          });
         });
       }
     };
@@ -106,7 +105,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
 }
 
 /** @internal */
-export function groupByKey<T extends { key: string }>(arr: T[][]) {
+export function groupByKey<T extends {key: string}>(arr: ISequence<ISequence<T>>) {
   const m = new Map<string, T[]>();
   arr.forEach((a) => a.forEach((d) => {
     if (!m.has(d.key)) {

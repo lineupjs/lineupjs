@@ -1,4 +1,4 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
@@ -70,13 +70,12 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     };
   }
 
-  createGroup(col: ISetColumn) {
+  createGroup(col: ISetColumn, context: IRenderContext) {
     const {templateRow, render} = CategoricalHeatmapCellRenderer.createDOMContext(col);
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const value = union(col, rows);
-        render(n, value);
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, (rows) => union(col, rows), (value) => render(n, value));
       }
     };
   }

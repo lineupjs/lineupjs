@@ -1,5 +1,5 @@
-import {IValueStatistics} from '../internal/math';
-import {ICategoricalColumn, IDataRow, IGroup, INumberColumn, IGroupMeta, IDateColumn} from '../model';
+import {IValueStatistics, IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData} from '../internal/math';
+import {IDataRow, INumberColumn, IGroupMeta, IDateColumn, ISetColumn, IOrderedGroup, IDatesColumnDesc} from '../model';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
@@ -30,13 +30,13 @@ export interface ICellRenderer {
    * @param i the order relative index
    * @param group the group this row is part of
    */
-  update(node: HTMLElement, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void | IAbortAblePromise<void> | null;
+  update(node: HTMLElement, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta): void | IAbortAblePromise<void> | null;
 
   /**
    * render a low detail canvas row
    * @return true if a dom element is needed
    */
-  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta): void | IAbortAblePromise<IRenderCallback> | boolean | null;
+  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta): void | IAbortAblePromise<IRenderCallback> | boolean | null;
 }
 
 /**
@@ -52,9 +52,8 @@ export interface IGroupCellRenderer {
    * update a given node (create using the template) with the given data
    * @param node the node to update
    * @param group the group to render
-   * @param rows the data items
    */
-  update(node: HTMLElement, group: IGroup, rows: ISequence<IDataRow>, meta: IGroupMeta): void | IAbortAblePromise<void> | null;
+  update(node: HTMLElement, group: IOrderedGroup, meta: IGroupMeta): void | IAbortAblePromise<void> | null;
 }
 
 export interface ISummaryRenderer {
@@ -63,14 +62,30 @@ export interface ISummaryRenderer {
    */
   readonly template: string;
 
-  update(node: HTMLElement, stats: IColumnStats): void | IAbortAblePromise<void> | null;
+  update(node: HTMLElement): void | IAbortAblePromise<void> | null;
 }
 
+
+export interface IRenderTasks {
+  rankingBoxPlotStats(col: Column & INumberColumn, render: (ranking: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void>;
+  rankingNumberStats(col: Column & INumberColumn, render: (ranking: IStatistics, data: IStatistics) => void): IAbortAblePromise<void>;
+  rankingCategoricalStats(col: Column & ISetColumn, render: (ranking: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void>;
+  rankingDateStats(col: Column & IDateColumn, render: (ranking: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void>;
+
+  groupRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void): IAbortAblePromise<void>;
+  groupExampleRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void): IAbortAblePromise<void>;
+
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IAdvancedBoxPlotData, ranking: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void>;
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IStatistics, ranking: IStatistics, data: IStatistics) => void): IAbortAblePromise<void>;
+  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup, render: (group: ICategoricalStatistics, ranking: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void>;
+  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup, render: (group: IDateStatistics, ranking: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void>;
+}
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */
 export interface IRenderContext {
+  readonly tasks: IRenderTasks;
   /**
    * render a column
    * @param col
@@ -84,8 +99,6 @@ export interface IRenderContext {
   groupRenderer(col: Column, imposer?: IImposer): IGroupCellRenderer;
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
-
-  statsOf(col: (INumberColumn | ICategoricalColumn | IDateColumn) & Column, unfiltered?: boolean): IColumnStats;
 
   /**
    * prefix used for all generated id names
@@ -112,11 +125,11 @@ export interface ICellRendererFactory {
 
   canRender(col: Column, mode: ERenderMode): boolean;
 
-  create?(col: Column, context: IRenderContext, stats: IColumnStats, imposer?: IImposer): ICellRenderer;
+  create?(col: Column, context: IRenderContext, imposer?: IImposer): ICellRenderer;
 
-  createGroup?(col: Column, context: IRenderContext, stats: IColumnStats, imposer?: IImposer): IGroupCellRenderer;
+  createGroup?(col: Column, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer;
 
-  createSummary?(col: Column, context: IRenderContext, interactive: boolean, stats: IColumnStats, imposer?: IImposer): ISummaryRenderer;
+  createSummary?(col: Column, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 }
 
 

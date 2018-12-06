@@ -5,6 +5,7 @@ import {CANVAS_HEIGHT, UPSET, cssClass} from '../styles';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
 export default class UpSetCellRenderer implements ICellRendererFactory {
@@ -116,7 +117,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
 }
 
 /** @internal */
-export function union(col: ISetColumn, rows: IDataRow[]) {
+export function union(col: ISetColumn, rows: ISequence<IDataRow>) {
   const values = new Set<ICategory>();
   rows.forEach((d) => {
     col.getSet(d).forEach((c) => values.add(c));

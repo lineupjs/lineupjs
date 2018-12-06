@@ -1,4 +1,4 @@
-import {ICategoricalStatistics, IStatistics, round} from '../internal';
+import {round} from '../internal';
 import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
@@ -25,7 +25,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
     return mode === ERenderMode.CELL && isNumberColumn(col) && !isNumbersColumn(col);
   }
 
-  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
     const width = context.colWidth(col);
     return {
       template: `<div title="">

@@ -17,6 +17,7 @@ import {IEventListener} from '../internal/AEventDispatcher';
 import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
 import {ISequence} from '../internal/interable';
 import {IValueStatistics} from '../internal';
+import {IAbortAblePromise} from '../internal/scheduler';
 
 export {IExportOptions} from './utils';
 
@@ -321,9 +322,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return this.rankings[this.rankings.length - 1];
   }
 
-  abstract getDataStats(col: Column): IValueStatistics | null | PromiseLike<IValueStatistics>;
+  abstract getDataStats(col: Column): IValueStatistics | null | IAbortAblePromise<IValueStatistics>;
 
-  abstract getRankingStats(ranking: Ranking, col: Column): IValueStatistics | null | PromiseLike<IValueStatistics>;
+  abstract getRankingStats(ranking: Ranking, col: Column): IValueStatistics | null | IAbortAblePromise<IValueStatistics>;
 
   ensureOneRanking() {
     if (this.rankings.length === 0) {

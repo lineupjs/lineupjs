@@ -1,4 +1,4 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import RankColumn from '../model/RankColumn';
 import {ICellRendererFactory} from './interfaces';
@@ -25,18 +25,19 @@ export default class RankCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: Column) {
+    const ranking = col.findMyRanker()!;
     return {
       template: `<div><div></div><div></div></div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, group: IOrderedGroup) => {
         const fromTSpan = <HTMLElement>n.firstElementChild!;
         const toTSpan = <HTMLElement>n.lastElementChild!;
-        if (rows.length === 0) {
+        if (group.order.length === 0) {
           fromTSpan.textContent = '';
           toTSpan.textContent = '';
           return;
         }
-        fromTSpan.textContent = col.getLabel(rows[0]);
-        toTSpan.textContent = col.getLabel(rows[rows.length - 1],);
+        fromTSpan.textContent = ranking.getRank(group.order[0]).toString();
+        toTSpan.textContent = ranking.getRank(group.order[group.order.length - 1]).toString();
       }
     };
   }

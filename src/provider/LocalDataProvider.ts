@@ -15,6 +15,8 @@ import {IDataProviderOptions} from './interfaces';
 import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker, CompareLookup} from './sort';
 import ADataProvider from './ADataProvider';
 import {ISequence, lazySeq} from '../internal/interable';
+import TaskScheduler from '../internal/scheduler';
+import {IAbortAblePromise, ABORTED} from 'lineupengine';
 
 
 export interface ILocalDataProviderOptions {
@@ -51,19 +53,20 @@ export default class LocalDataProvider extends ACommonDataProvider {
   /**
    * stats caches Map<column id, stats> for the whole dataset
    */
-  private readonly dataStats = new Map<string, IValueStatistics | PromiseLike<IValueStatistics>>();
+  private readonly dataStats = new Map<string, IValueStatistics | IAbortAblePromise<IValueStatistics>>();
 
   /**
    * stats caches Map<column id, stats> for a column in a ranking
    */
-  private readonly rankingStats = new Map<string, IValueStatistics | PromiseLike<IValueStatistics>>();
+  private readonly rankingStats = new Map<string, IValueStatistics | IAbortAblePromise<IValueStatistics>>();
 
 
   private readonly reorderAll: () => void;
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private sortWorker: ISortWorker = new WorkerSortWorker(); //
+  private readonly sortWorker: ISortWorker = new WorkerSortWorker(); //
+  private readonly taskScheduler = new TaskScheduler();
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -111,16 +114,28 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return this.dataStats.get(col.id)!;
     }
 
-    requestIdleCallback
-    const seq = lazySeq(this._dataRows);
-    let stats: IValueStatistics | PromiseLike<IValueStatistics> | null = null;
+    let stats: IAbortAblePromise<IValueStatistics> | null = null;
+
     if (isNumberColumn(col)) {
-      stats = computeNormalizedStats(seq.map((d) => col.getNumber(d)));
+      stats = this.taskScheduler.push(`data:${col.id}`, () => {
+        const r = computeNormalizedStats(lazySeq(this._dataRows).map((d) => col.getNumber(d)));
+        this.dataStats.set(col.id, r);
+        return r;
+      });
     } else if (isCategoricalColumn(col)) {
-      stats = computeHist(seq.map((d) => col.getSet(d)), col.categories);
+      stats = this.taskScheduler.push(`data:${col.id}`, () => {
+        const r = computeHist(lazySeq(this._dataRows).map((d) => col.getSet(d)), col.categories);
+        this.dataStats.set(col.id, r);
+        return r;
+      });
     } else if (isDateColumn(col)) {
-      stats = computeDateState(seq.map((d) => col.getDate(d)));
+      stats = this.taskScheduler.push(`data:${col.id}`, () => {
+        const r = computeDateState(lazySeq(this._dataRows).map((d) => col.getDate(d)));
+        this.dataStats.set(col.id, r);
+        return r;
+      });
     }
+
     if (stats != null) {
       this.dataStats.set(col.id, stats);
     }
@@ -133,14 +148,28 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     const seq = this.seqRawRows(ranking.getOrder());
-    let stats: IValueStatistics | PromiseLike<IValueStatistics> | null = null;
+    let stats: IAbortAblePromise<IValueStatistics> | null = null;
+
     if (isNumberColumn(col)) {
       const data = this.getDataStats(col);
       const arr = seq.map((d) => col.getNumber(d));
       if (isPromiseLike(data)) {
-        stats = data.then((s) => computeNormalizedStats(arr, s.hist.length));
+        stats = data.then((data) => {
+          if (data === ABORTED || typeof data === 'symbol') {
+            return ABORTED;
+          }
+          return this.taskScheduler.push(`ranking:${col.id}`, () => {
+            const r = computeNormalizedStats(arr, data ? data.hist.length : undefined);
+            this.dataStats.set(col.id, r);
+            return r;
+          });
+        });
       } else {
-        stats = computeNormalizedStats(arr, data ? data.hist.length : undefined);
+        stats = this.taskScheduler.push(`ranking:${col.id}`, () => {
+          const r = computeNormalizedStats(arr, data ? data.hist.length : undefined);
+          this.dataStats.set(col.id, r);
+          return r;
+        });
       }
     } else if (isCategoricalColumn(col)) {
       stats = computeHist(seq.map((d) => col.getSet(d)), col.categories);

@@ -213,11 +213,11 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.fire([Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_GROUPS_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], old, this.order, oldGroups, groups, dirtyReason);
   }
 
-  getRank(row: IDataRow) {
-    if (row.i < 0 || row.i > this.index2pos.length) {
+  getRank(dataIndex: number) {
+    if (dataIndex < 0 || dataIndex > this.index2pos.length) {
       return -1;
     }
-    const v = this.index2pos[row.i];
+    const v = this.index2pos[dataIndex];
     return v != null && !isNaN(v) && v > 0 ? v : -1;
   }
 

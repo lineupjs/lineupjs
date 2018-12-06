@@ -1,4 +1,4 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IGroup, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
@@ -56,9 +56,9 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
       template: `<svg viewBox="0 0 ${dataLength} 1" preserveAspectRatio="none meet"><line x1="0" x2="${dataLength - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, group: IOrderedGroup) => {
         //overlapping ones
-        matchRows(n, rows, `<path></path>`);
+        matchRows(n, group.order.length, `<path></path>`);
         forEachChild(n, ((row, i) => {
           const d = rows[i];
           row.setAttribute('d', line(col.getNumbers(d)));

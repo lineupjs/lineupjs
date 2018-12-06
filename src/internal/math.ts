@@ -23,7 +23,10 @@ export interface IAdvancedBoxPlotData extends IBoxPlotData {
   readonly mean: number;
 }
 
-export interface IStatistics extends IAdvancedBoxPlotData {
+export interface IStatistics {
+  readonly mean: number;
+  readonly min: number;
+  readonly max: number;
   readonly count: number;
   readonly maxBin: number;
   readonly hist: INumberBin[];
@@ -99,7 +102,7 @@ function quantile(values: Float32Array, quantile: number) {
  * helper class to lazily compute box plotdata out of a given number array
  * @internal
  */
-export class LazyBoxPlotData implements IStatistics {
+export class LazyBoxPlotData implements IStatistics, IAdvancedBoxPlotData {
   private values: Float32Array | null = null;
 
   readonly count: number;
@@ -410,9 +413,10 @@ export function computeHist(arr: ISequence<Set<ICategory> | null | ICategory>, c
   });
 
   const entries: {cat: string; count: number}[] = categories.map((d) => ({cat: d.name, count: m.get(d.name)!}));
+  const maxBin = entries.reduce((a, b) => Math.max(a, b.count), Number.NEGATIVE_INFINITY);
 
   return {
-    maxBin: entries.reduce((a, b) => Math.max(a, b.count), Number.NEGATIVE_INFINITY),
+    maxBin,
     hist: entries,
     missing: missingCount
   };
