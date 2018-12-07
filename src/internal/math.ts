@@ -264,7 +264,7 @@ function cached() {
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeNormalizedStats(arr: ISequence<number>, numberOfBins?: number): IStatistics {
+export function computeNormalizedStats(arr: ISequence<number>, numberOfBins?: number): IStatistics & IAdvancedBoxPlotData {
 
   const bins: INumberBin[] = [];
 
@@ -345,7 +345,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
-export function computeDateState(arr: ISequence<Date | null>, template?: IDateStatistics): IDateStatistics {
+export function computeDateStats(arr: ISequence<Date | null>, template?: IDateStatistics): IDateStatistics {
   // filter out NaN
   let min: Date | null = null;
   let max: Date | null = null;

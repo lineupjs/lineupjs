@@ -1,4 +1,4 @@
-import {computeHist, computeNormalizedStats, computeDateState, IDateStatistics, IValueStatistics, isPromiseLike} from '../internal';
+import {computeHist, computeNormalizedStats, computeDateStats, IDateStatistics, IValueStatistics, isPromiseLike} from '../internal';
 import Column, {
   defaultGroup, IColumnDesc, IDataRow, IGroup, INumberColumn,
   IOrderedGroup,
@@ -130,7 +130,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       });
     } else if (isDateColumn(col)) {
       stats = this.taskScheduler.push(`data:${col.id}`, () => {
-        const r = computeDateState(lazySeq(this._dataRows).map((d) => col.getDate(d)));
+        const r = computeDateStats(lazySeq(this._dataRows).map((d) => col.getDate(d)));
         this.dataStats.set(col.id, r);
         return r;
       });
@@ -177,9 +177,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const data = this.getDataStats(col);
       const arr = seq.map((d) => col.getDate(d));
       if (isPromiseLike(data)) {
-        stats = data.then((s) => computeDateState(arr, <IDateStatistics>s));
+        stats = data.then((s) => computeDateStats(arr, <IDateStatistics>s));
       } else {
-        stats = computeDateState(arr, <IDateStatistics>data);
+        stats = computeDateStats(arr, <IDateStatistics>data);
       }
     }
 

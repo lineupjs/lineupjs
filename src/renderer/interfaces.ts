@@ -5,6 +5,7 @@ import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
 import {ISequence} from '../internal/interable';
 import {IAbortAblePromise} from 'lineupengine';
+import {IRenderTasks} from '../provider/tasks';
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
@@ -63,22 +64,6 @@ export interface ISummaryRenderer {
   readonly template: string;
 
   update(node: HTMLElement): void | IAbortAblePromise<void> | null;
-}
-
-
-export interface IRenderTasks {
-  groupRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void): IAbortAblePromise<void>;
-  groupExampleRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void): IAbortAblePromise<void>;
-
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void>;
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IStatistics, summary: IStatistics, data: IStatistics) => void): IAbortAblePromise<void>;
-  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup, render: (group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void>;
-  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup, render: (group: IDateStatistics, summary: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void>;
-
-  summaryBoxPlotStats(col: Column & INumberColumn, render: (summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void>;
-  summaryNumberStats(col: Column & INumberColumn, render: (summary: IStatistics, data: IStatistics) => void): IAbortAblePromise<void>;
-  summaryCategoricalStats(col: Column & ISetColumn, render: (summary: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void>;
-  summaryDateStats(col: Column & IDateColumn, render: (summary: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void>;
 }
 
 /**
