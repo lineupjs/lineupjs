@@ -64,7 +64,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows) => groupByKey(rows.map((d) => col.getMapLabel(d))), (entries) => {
+        return context.tasks.groupRows(col, group, (rows) => groupByKey(rows.map((d) => col.getMapLabel(d)))).then((entries) => {
           node.innerHTML = entries.map(({key, values}) => `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${TableCellRenderer.example(values)}</div>`).join('');
         });
       }
@@ -86,7 +86,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
             }
           });
           return values;
-        }, (values) => {
+        }).then((values) => {
           forEach(node, '[data-v]', (n: HTMLElement, i) => {
             n.innerHTML = `${values[i].join(', ')}&hellip;`;
           });

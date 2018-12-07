@@ -75,7 +75,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows) => union(col, rows), (value) => render(n, value));
+        return context.tasks.groupRows(col, group, (rows) => union(col, rows)).then((value) => render(n, value));
       }
     };
   }

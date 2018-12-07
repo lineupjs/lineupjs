@@ -114,7 +114,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           }
 
           return {box, label};
-        }, (data) => {
+        }).then((data) => {
           // render
           n.classList.toggle(cssClass('missing'), data === null);
           if (data === null) {
@@ -130,8 +130,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement) => {
-        return context.tasks.summaryBoxPlotStats(col, (data: IAdvancedBoxPlotData) => {
-          if (data == null) {
+        return context.tasks.summaryBoxPlotStats(col).then(({summary}) => {
+          if (summary == null) {
             n.classList.add(cssClass('missing'));
             return;
           }
@@ -143,7 +143,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             Array.from(n.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
           }
 
-          renderDOMBoxPlot(n, data, data, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
+          renderDOMBoxPlot(n, summary, summary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
         });
       }
     };

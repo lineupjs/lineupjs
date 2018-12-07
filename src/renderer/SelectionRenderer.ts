@@ -1,4 +1,4 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IGroup, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
@@ -33,23 +33,25 @@ export default class SelectionRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: SelectionColumn) {
+  createGroup(col: SelectionColumn, context: IRenderContext) {
     return {
       template: `<div></div>`,
-      update: (n: HTMLElement, _group: IGroup) => {
-        const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
-        const all = selected >= rows.length / 2;
-        if (all) {
-          n.classList.add(cssClass('group-selected'));
-        } else {
-          n.classList.remove(cssClass('group-selected'));
-        }
-        n.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-          const value = n.classList.toggle(cssClass('group-selected'));
-          col.setValues(rows, value);
-        };
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, (r) => r).then((rows) => {
+          const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
+          const all = selected >= rows.length / 2;
+          if (all) {
+            n.classList.add(cssClass('group-selected'));
+          } else {
+            n.classList.remove(cssClass('group-selected'));
+          }
+          n.onclick = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const value = n.classList.toggle(cssClass('group-selected'));
+            col.setValues(Array.from(rows), value);
+          };
+        });
       }
     };
   }

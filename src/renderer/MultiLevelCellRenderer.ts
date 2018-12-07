@@ -9,7 +9,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 import {cssClass} from '../styles';
-import {IAbortAblePromise, allAbortAble, abortAble} from 'lineupengine';
+import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
 import {ISequence} from '../internal/interable';
 
 /** @internal */
@@ -121,7 +121,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         });
 
         if (toWait.length > 0) {
-          return <IAbortAblePromise<void>>allAbortAble(toWait);
+          return <IAbortAblePromise<void>>abortAbleAll(toWait);
         }
         return null;
       },
@@ -151,8 +151,11 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           return null;
         }
 
-        return abortAble(Promise.all(toWait.map((d) => d.r))).then((callbacks) => {
+        return abortAbleAll(toWait.map((d) => d.r)).then((callbacks) => {
           return (ctx: CanvasRenderingContext2D) => {
+            if (typeof callbacks === 'symbol') {
+              return;
+            }
             for (let i = 0; i < callbacks.length; ++i) {
               const callback = callbacks[i];
               if (typeof callback !== 'function') {
@@ -203,7 +206,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         });
 
         if (toWait.length > 0) {
-          return <IAbortAblePromise<void>>allAbortAble(toWait);
+          return <IAbortAblePromise<void>>abortAbleAll(toWait);
         }
         return null;
       }

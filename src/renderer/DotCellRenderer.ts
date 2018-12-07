@@ -115,7 +115,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
               .map((value) => ({value, label: DEFAULT_FORMATTER(value), color}));
           });
           return Array.from(concatSeq(vs));
-        }, (data) => {
+        }).then((data) => {
           update(n, data);
         });
       }

@@ -1,5 +1,5 @@
 import {INumberBin, IStatistics} from '../internal';
-import {IDataRow, IGroupMeta, IOrderedGroup} from '../model';
+import {IDataRow, IGroupMeta, IOrderedGroup, INumberColumn} from '../model';
 import Column from '../model/Column';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
@@ -9,7 +9,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
 import {matchColumns, forEachChild} from './utils';
 import {colorOf} from '../ui/dialogs/utils';
-import {allAbortAble} from 'lineupengine';
+import {tasksAll} from '../provider/tasks';
 
 
 /** @internal */
@@ -76,14 +76,18 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement) => {
-        return allAbortAble(cols.map((col) => context.tasks.summaryNumberStats(col, (r) => r))
-        if (!stats.some(Boolean)) {
-          n.classList.add(cssClass('missing'));
-          return;
-        }
-        n.classList.remove(cssClass('missing'));
-        const grouped = groupedHist(stats);
-        render(n, grouped);
+        const tasks = cols.map((col) => context.tasks.summaryNumberStats(<INumberColumn>col));
+
+        return tasksAll(tasks).then((vs) => {
+          const summaries = vs.map((d) => d.summary);
+          if (!summaries.some(Boolean)) {
+            n.classList.add(cssClass('missing'));
+            return;
+          }
+          n.classList.remove(cssClass('missing'));
+          const grouped = groupedHist(summaries)!;
+          render(n, grouped);
+        });
       }
     };
   }

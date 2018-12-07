@@ -69,7 +69,7 @@ export abstract class ANumbersCellRenderer {
       template: `<div class="${clazz}">${templateRow}</div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
         // render a heatmap
-        return context.tasks.groupRows(col, group, (rows) => ANumbersCellRenderer.choose(col, rows), (data) => {
+        return context.tasks.groupRows(col, group, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
           update(n, data.normalized, data.raw, data.row!);
         });
       }

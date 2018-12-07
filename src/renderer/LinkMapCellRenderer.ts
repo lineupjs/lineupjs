@@ -52,7 +52,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows) => groupByKey(rows.map((d) => col.getLinkMap(d))), (entries) => {
+        return context.tasks.groupRows(col, group, (rows) => groupByKey(rows.map((d) => col.getLinkMap(d)))).then((entries) => {
           node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
         });
       }

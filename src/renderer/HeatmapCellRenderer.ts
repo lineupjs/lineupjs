@@ -72,7 +72,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows) => ANumbersCellRenderer.choose(col, rows), (data) => {
+        return context.tasks.groupRows(col, group, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
           const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
           ctx.canvas.width = width;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);

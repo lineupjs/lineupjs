@@ -25,9 +25,7 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
     return {
       template: `<div>${single.template}</div>`,
       update: (node: HTMLElement, group: IOrderedGroup, groupMeta: IGroupMeta) => {
-        return context.tasks.groupRows(col, group, (rows) => {
-          return this.aggregatedIndex(rows, col);
-        }, (data) => {
+        return context.tasks.groupRows(col, group, (rows) => this.aggregatedIndex(rows, col)).then((data) => {
           single.update(<HTMLElement>node.firstElementChild!, data.row, data.index, group, groupMeta);
         });
       }

@@ -52,8 +52,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupCategoricalStats(col, group, (hist) => {
-          update(n, hist);
+        return context.tasks.groupCategoricalStats(col, group).then(({group}) => {
+          update(n, group);
         });
       }
     };
@@ -69,12 +69,12 @@ function staticSummary(col: ISetColumn, context: IRenderContext, interactive: bo
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
-      return context.tasks.summaryCategoricalStats(col, (hist) => {
-        n.classList.toggle(cssClass('missing'), !hist);
-        if (!hist) {
+      return context.tasks.summaryCategoricalStats(col).then(({summary}) => {
+        n.classList.toggle(cssClass('missing'), !summary);
+        if (!summary) {
           return;
         }
-        update(n, hist, hist);
+        update(n, summary, summary);
       });
     }
   };
@@ -89,14 +89,14 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
       }
-      return context.tasks.summaryCategoricalStats(col, (hist, gHist) => {
-        filterUpdate((interactive && gHist) ? gHist.missing : (hist ? hist.missing : 0), col);
+      return context.tasks.summaryCategoricalStats(col).then(({summary, data}) => {
+        filterUpdate((interactive && data) ? data.missing : (summary ? summary.missing : 0), col);
 
-        n.classList.toggle(cssClass('missing'), !hist);
-        if (!hist) {
+        n.classList.toggle(cssClass('missing'), !summary);
+        if (!summary) {
           return;
         }
-        update(n, hist, gHist);
+        update(n, summary, data);
       });
     }
   };

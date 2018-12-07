@@ -52,7 +52,9 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
-        return context.tasks.groupExampleRows(col, group, (rows) => LinkCellRenderer.exampleText(col, rows), (text) => n.innerHTML = text);
+        return context.tasks.groupExampleRows(col, group, (rows) => LinkCellRenderer.exampleText(col, rows)).then((text) => {
+          n.innerHTML = text;
+        });
       }
     };
   }

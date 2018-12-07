@@ -45,12 +45,12 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
-    const {template, render, guessedBins} = getHistDOMRenderer(col, imposer);
+    const {template, render} = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupNumberStats(col, group, (hist, gHist) => {
-          render(n, {global: gHist, hist: hist.hist, maxBin: hist.maxBin});
+        return context.tasks.groupNumberStats(col, group).then(({group, summary}) => {
+          render(n, {global: summary, hist: group.hist, maxBin: group.maxBin});
         });
       }
     };
@@ -78,12 +78,12 @@ function staticSummary(col: INumberColumn, context: IRenderContext, template: st
         Array.from(node.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
       }
 
-      return context.tasks.summaryNumberStats(col, (hist) => {
-        node.classList.toggle(cssClass('missing'), !hist);
-        if (!hist) {
+      return context.tasks.summaryNumberStats(col).then(({summary}) => {
+        node.classList.toggle(cssClass('missing'), !summary);
+        if (!summary) {
           return;
         }
-        render(node, {maxBin: hist.maxBin, hist: hist.hist});
+        render(node, {maxBin: summary.maxBin, hist: summary.hist});
       });
     }
   };
@@ -107,15 +107,15 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
       if (!updateFilter) {
         updateFilter = initFilter(node, col, context);
       }
-      return context.tasks.summaryNumberStats(col, (hist, gHist) => {
-        updateFilter(gHist ? gHist.missing : (hist ? hist.missing : 0), col);
+      return context.tasks.summaryNumberStats(col).then(({summary, data}) => {
+        updateFilter(data ? data.missing : (summary ? summary.missing : 0), col);
 
         node.classList.add(cssClass('histogram-i'));
-        node.classList.toggle(cssClass('missing'), !hist);
-        if (!hist) {
+        node.classList.toggle(cssClass('missing'), !summary);
+        if (!summary) {
           return;
         }
-        render(node, {maxBin: hist.maxBin, hist: hist.hist, global: gHist});
+        render(node, {maxBin: summary.maxBin, hist: summary.hist, global: data});
       });
     }
   };

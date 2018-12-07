@@ -38,7 +38,7 @@ export default class ActionRenderer implements ICellRendererFactory {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            context.tasks.groupRows(col, group, (r) => r, (rows) => {
+            context.tasks.groupRows(col, group, (r) => r).then((rows) => {
               if (Array.isArray(rows)) {
                 actions[i].action(group, rows);
               }

@@ -1,11 +1,10 @@
-import {IValueStatistics, IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData} from '../internal/math';
-import {IDataRow, INumberColumn, IGroupMeta, IDateColumn, ISetColumn, IOrderedGroup, IDatesColumnDesc, INumbersColumn, CategoricalsColumn} from '../model';
+import {IAbortAblePromise} from 'lineupengine';
+import {IValueStatistics} from '../internal/math';
+import {IDataRow, IGroupMeta, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider';
-import DialogManager from '../ui/dialogs/DialogManager';
-import {ISequence} from '../internal/interable';
-import {IAbortAblePromise} from 'lineupengine';
 import {IRenderTasks} from '../provider/tasks';
+import DialogManager from '../ui/dialogs/DialogManager';
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;

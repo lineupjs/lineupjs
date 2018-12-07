@@ -2,24 +2,48 @@ import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotDa
 import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray} from '../model';
 import Column from '../model/Column';
 import {ISequence, lazySeq} from '../internal/interable';
-import {IAbortAblePromise} from 'lineupengine';
+import {IAbortAblePromise, abortAbleResolveNow} from 'lineupengine';
 
 export {IAbortAblePromise} from 'lineupengine';
 
+export interface ITask<T> {
+  then<U = void>(onfullfilled: (value: T) => U): U | IAbortAblePromise<U>;
+}
+
+class TaskNow<T> implements ITask<T> {
+  constructor(public readonly v: T) {
+
+  }
+
+  then<U = void>(onfullfilled: (value: T) => U) {
+    return onfullfilled(this.v);
+  }
+}
+
+function taskNow<T>(v: T) {
+  return new TaskNow(v);
+}
+
+export function tasksAll<T>(tasks: ITask<T>[]): ITask<T[]> {
+  if (tasks.every((t) => t instanceof TaskNow)) {
+    return taskNow(tasks.map((d) => (<TaskNow<T>>d).v));
+  }
+  return taskNow([]); // FIXME
+}
 
 export interface IRenderTasks {
-  groupRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void): IAbortAblePromise<void> | void;
-  groupExampleRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void): IAbortAblePromise<void> | void;
+  groupRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T): ITask<T>;
+  groupExampleRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T): ITask<T>;
 
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void> | void;
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IStatistics, summary: IStatistics, data: IStatistics) => void): IAbortAblePromise<void> | void;
-  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup, render: (group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void> | void;
-  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup, render: (group: IDateStatistics, summary: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void> | void;
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup): ITask<{group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup): ITask<{group: IStatistics, summary: IStatistics, data: IStatistics}>;
+  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup): ITask<{group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
+  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup): ITask<{group: IDateStatistics, summary: IDateStatistics, data: IDateStatistics}>;
 
-  summaryBoxPlotStats(col: Column & INumberColumn, render: (summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData) => void): IAbortAblePromise<void> | void;
-  summaryNumberStats(col: Column & INumberColumn, render: (summary: IStatistics, data: IStatistics) => void): IAbortAblePromise<void> | void;
-  summaryCategoricalStats(col: Column & ISetColumn, render: (summary: ICategoricalStatistics, data: ICategoricalStatistics) => void): IAbortAblePromise<void> | void;
-  summaryDateStats(col: Column & IDateColumn, render: (summary: IDateStatistics, data: IDateStatistics) => void): IAbortAblePromise<void> | void;
+  summaryBoxPlotStats(col: Column & INumberColumn): ITask<{summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
+  summaryNumberStats(col: Column & INumberColumn): ITask<{summary: IStatistics, data: IStatistics}>;
+  summaryCategoricalStats(col: Column & ISetColumn): ITask<{summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
+  summaryDateStats(col: Column & IDateColumn): ITask<{summary: IDateStatistics, data: IDateStatistics}>;
 }
 
 
@@ -37,97 +61,98 @@ export class DirectRenderTasks implements IRenderTasks {
     this.dataCache.clear();
   }
 
+  dirtyColumn(col: Column) {
+    this.dataCache.delete(col.id);
+  }
+
   private byOrder(indices: IndicesArray) {
     return lazySeq(indices).map(this.byIndex);
   }
 
-  groupRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void) {
-    render(compute(this.byOrder(group.order)));
+  groupRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
+    return taskNow(compute(this.byOrder(group.order)));
   }
 
-  groupExampleRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T, render: (value: T) => void) {
-    render(compute(this.byOrder(group.order.slice(0, 5))));
+  groupExampleRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
+    return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
   }
 
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IAdvancedBoxPlotData & IStatistics, summary: IAdvancedBoxPlotData & IStatistics, data: IAdvancedBoxPlotData & IStatistics) => void) {
-    this.groupNumberStats(col, group, render);
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup) {
+    return this.groupNumberStats(col, group);
   }
 
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, render: (group: IAdvancedBoxPlotData & IAdvancedBoxPlotData & IStatistics, summary: IAdvancedBoxPlotData & IStatistics, data: IAdvancedBoxPlotData & IStatistics) => void) {
-    this.summaryNumberStats(col, (summary, data) => {
-      render(computeNormalizedStats(this.byOrder(group.order).map((d) => col.getNumber(d))), summary, data);
-    });
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup) {
+    const {summary, data} = this.summaryNumberStatsD(col);
+    return taskNow({group: computeNormalizedStats(this.byOrder(group.order).map((d) => col.getNumber(d))), summary, data});
   }
 
-  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup, render: (group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics) => void) {
-    this.summaryCategoricalStats(col, (summary, data) => {
-      render(computeHist(this.byOrder(group.order).map((d) => col.getSet(d)), col.categories), summary, data);
-    });
+  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup) {
+    const {summary, data} = this.summaryCategoricalStatsD(col);
+    return taskNow({group: computeHist(this.byOrder(group.order).map((d) => col.getSet(d)), col.categories), summary, data});
   }
 
-  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup, render: (group: IDateStatistics, summary: IDateStatistics, data: IDateStatistics) => void) {
-    this.summaryDateStats(col, (summary, data) => {
-      render(computeDateStats(this.byOrder(group.order).map((d) => col.getDate(d))), summary, data);
-    });
+  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
+    const {summary, data} = this.summaryDateStatsD(col);
+    return taskNow({group: computeDateStats(this.byOrder(group.order).map((d) => col.getDate(d)), summary), summary, data});
   }
 
-  summaryBoxPlotStats(col: Column & INumberColumn, render: (summary: IAdvancedBoxPlotData & IStatistics, data: IAdvancedBoxPlotData & IStatistics) => void) {
-    this.summaryNumberStats(col, render);
+  summaryBoxPlotStats(col: Column & INumberColumn) {
+    return this.summaryNumberStats(col);
   }
 
-  summaryNumberStats(col: Column & INumberColumn, render: (summary: IAdvancedBoxPlotData & IStatistics, data: IAdvancedBoxPlotData & IStatistics) => void) {
+  summaryNumberStats(col: Column & INumberColumn) {
+    return taskNow(this.summaryNumberStatsD(col));
+  }
+
+  summaryCategoricalStats(col: Column & ISetColumn) {
+    return taskNow(this.summaryCategoricalStatsD(col));
+  }
+
+  summaryDateStats(col: Column & IDateColumn) {
+    return taskNow(this.summaryDateStatsD(col));
+  }
+
+  private summaryNumberStatsD(col: Column & INumberColumn) {
     const ranking = col.findMyRanker()!.getOrder();
-    this.dataNumberStats(col, (data) => {
-      render(computeNormalizedStats(this.byOrder(ranking).map((d) => col.getNumber(d)), data.hist.length), data);
-    });
+    const data = this.dataNumberStats(col);
+    return {summary: computeNormalizedStats(this.byOrder(ranking).map((d) => col.getNumber(d)), data.hist.length), data};
   }
 
-  summaryCategoricalStats(col: Column & ISetColumn, render: (summary: ICategoricalStatistics, data: ICategoricalStatistics) => void) {
+  private summaryCategoricalStatsD(col: Column & ISetColumn) {
     const ranking = col.findMyRanker()!.getOrder();
-    this.dataCategoricalStats(col, (data) => {
-      render(computeHist(this.byOrder(ranking).map((d) => col.getSet(d)), col.categories), data);
-    });
+    const data = this.dataCategoricalStats(col);
+    return {summary: computeHist(this.byOrder(ranking).map((d) => col.getSet(d)), col.categories), data};
   }
 
-  summaryDateStats(col: Column & IDateColumn, render: (summary: IDateStatistics, data: IDateStatistics) => void) {
+  private summaryDateStatsD(col: Column & IDateColumn) {
     const ranking = col.findMyRanker()!.getOrder();
-    this.dataDateStats(col, (data) => {
-      render(computeDateStats(this.byOrder(ranking).map((d) => col.getDate(d)), data), data);
-    });
+    const data = this.dataDateStats(col);
+    return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.getDate(d)), data), data};
   }
 
-
-  dataBoxPlotStats(col: Column & INumberColumn, render: (data: IAdvancedBoxPlotData & IStatistics) => void) {
-    this.dataNumberStats(col, render);
+  dataBoxPlotStats(col: Column & INumberColumn) {
+    this.dataNumberStats(col);
   }
 
-  dataNumberStats(col: Column & INumberColumn, render: (data: IAdvancedBoxPlotData & IStatistics) => void) {
+  private cached<T>(col: Column, creator: () => T) {
     if (this.dataCache.has(col.id)) {
-      render(this.dataCache.get(col.id)!);
-      return;
+      return this.dataCache.get(col.id)!;
     }
-    const s = computeNormalizedStats(lazySeq(this.data).map((d) => col.getNumber(d)));
+    const s = creator();
     this.dataCache.set(col.id, s);
-    render(s);
+    return s;
   }
 
-  dataCategoricalStats(col: Column & ISetColumn, render: (data: ICategoricalStatistics) => void) {
-    if (this.dataCache.has(col.id)) {
-      render(this.dataCache.get(col.id)!);
-      return;
-    }
-    const s = computeHist(lazySeq(this.data).map((d) => col.getSet(d)), col.categories);
-    this.dataCache.set(col.id, s);
-    render(s);
+  dataNumberStats(col: Column & INumberColumn) {
+    return this.cached(col, () => computeNormalizedStats(lazySeq(this.data).map((d) => col.getNumber(d))));
   }
 
-  dataDateStats(col: Column & IDateColumn, render: (data: IDateStatistics) => void) {
-    if (this.dataCache.has(col.id)) {
-      return render(this.dataCache.get(col.id)!);
-    }
-    const s = computeDateStats(lazySeq(this.data).map((d) => col.getDate(d)));
-    this.dataCache.set(col.id, s);
-    render(s);
+  dataCategoricalStats(col: Column & ISetColumn) {
+    return this.cached(col, () => computeHist(lazySeq(this.data).map((d) => col.getSet(d)), col.categories));
+  }
+
+  dataDateStats(col: Column & IDateColumn) {
+    return this.cached(col, () => computeDateStats(lazySeq(this.data).map((d) => col.getDate(d))));
   }
 
 }
