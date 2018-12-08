@@ -1,10 +1,13 @@
 
+export interface IForEachAble<T> extends Iterable<T> {
+  forEach(callback: (v: T, i: number) => void): void;
 
-export interface ISequence<T> extends Iterable<T> {
+}
+
+export interface ISequence<T> extends IForEachAble<T> {
   readonly length: number;
   filter(callback: (v: T, i: number) => boolean): ISequence<T>;
   map<U>(callback: (v: T, i: number) => U): ISequence<U>;
-  forEach(callback: (v: T, i: number) => void): void;
 
   some(callback: (v: T, i: number) => boolean): boolean;
   every(callback: (v: T, i: number) => boolean): boolean;

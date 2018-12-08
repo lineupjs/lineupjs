@@ -1,6 +1,6 @@
 import {ICategory, IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
+import {ISetColumn, isSetColumn, ICategoricalLikeColumn} from '../model/ICategoricalColumn';
 import {CANVAS_HEIGHT, UPSET, cssClass} from '../styles';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -120,10 +120,10 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
 }
 
 /** @internal */
-export function union(col: ISetColumn, rows: ISequence<IDataRow>) {
-  const values = new Set<ICategory>();
+export function union(col: ICategoricalLikeColumn, rows: ISequence<IDataRow>) {
+  const values = new Set<ICategory | null>();
   rows.forEach((d) => {
-    col.getSet(d).forEach((c) => values.add(c));
+    col.iterCategory(d).forEach((c) => values.add(c));
   });
   return col.categories.map((cat) => values.has(cat));
 }

@@ -257,22 +257,6 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
   };
 }
 
-// FIXME needed for computing the histogram
-// function createHist(globalHist: IStatistics | null, guessedBins: number, rows: IDataRow[], col: INumberColumn) {
-//   const bins = globalHist ? globalHist.hist.length : guessedBins;
-//   let stats: IStatistics;
-//   if (isNumbersColumn(col)) {
-//     //multiple values
-//     const values = concat(rows.map((r) => col.getNumbers(r)));
-//     stats = computeNormalizedStats(values, bins);
-//   } else {
-//     stats = computeNormalizedStats(rows.map((r) => col.getNumber(r)), bins);
-//   }
-
-//   const maxBin = Math.max(stats.maxBin, globalHist ? globalHist.maxBin : 0);
-//   return {maxBin, hist: stats.hist};
-// }
-
 function filterColor(input: string) {
   const c = color(input)!;
   c.opacity = FILTERED_OPACITY;

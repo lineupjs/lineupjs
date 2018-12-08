@@ -93,7 +93,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return this.categories.length;
   }
 
-  getValue(row: IDataRow): string[] |  null {
+  getValue(row: IDataRow): string[] | null {
     const v = this.getCategories(row);
     if (v.length === 0) {
       return null;
@@ -162,6 +162,14 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
 
   getMapLabel(row: IDataRow) {
     return this.getCategories(row).map((d) => ({key: d.label, value: 'true'}));
+  }
+
+  iterCategory(row: IDataRow) {
+    const r = this.getSet(row);
+    if (r.size > 0) {
+      return Array.from(r);
+    }
+    return [null];
   }
 
   dump(toDescRef: (desc: any) => any): any {

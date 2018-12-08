@@ -3,7 +3,7 @@ import {ICategoricalStatistics, round} from '../internal/math';
 import {ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {isCategoryIncluded, ISetColumn, isSetColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
+import {isCategoryIncluded, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn} from '../model/ICategoricalColumn';
 import OrdinalColumn from '../model/OrdinalColumn';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
@@ -21,7 +21,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly groupTitle = 'Histogram';
 
   canRender(col: Column, mode: ERenderMode) {
-    return isSetColumn(col) && (mode !== ERenderMode.CELL || isCategoricalColumn(col));
+    return isCategoricalLikeColumn(col) && (mode !== ERenderMode.CELL || isCategoricalColumn(col));
   }
 
   create(col: ICategoricalColumn, context: IRenderContext) {
@@ -47,7 +47,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ISetColumn, context: IRenderContext) {
+  createGroup(col: ICategoricalLikeColumn, context: IRenderContext) {
     const {template, update} = hist(col, false);
     return {
       template: `${template}</div>`,
@@ -63,12 +63,12 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: ISetColumn, context: IRenderContext, interactive: boolean) {
+  createSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean) {
     return (col instanceof CategoricalColumn || col instanceof OrdinalColumn || col instanceof SetColumn) ? interactiveSummary(col, context, interactive) : staticSummary(col, context, interactive);
   }
 }
 
-function staticSummary(col: ISetColumn, context: IRenderContext, interactive: boolean) {
+function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean) {
   const {template, update} = hist(col, interactive);
   return {
     template: `${template}</div>`,
@@ -114,10 +114,10 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
   };
 }
 
-function hist(col: ISetColumn, showLabels: boolean) {
+function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
   const mapping = col.getColorMapping();
   const bins = col.categories.map((c) => `<div class="${cssClass('histogram-bin')}" title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${mapping.apply(c)}"></div></div>`).join('');
-  const template = `<div class="${cssClass('histogram')} ${col.dataLength! > DENSE_HISTOGRAM ? cssClass('dense') : ''}">${bins}`; // no closing div to be able to append things
+  const template = `<div class="${cssClass('histogram')} ${col.categories.length! > DENSE_HISTOGRAM ? cssClass('dense') : ''}">${bins}`; // no closing div to be able to append things
 
 
   return {

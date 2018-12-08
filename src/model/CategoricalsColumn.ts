@@ -1,5 +1,5 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {ICategoricalDesc, ICategory, toCategories} from './ICategoricalColumn';
+import {ICategoricalDesc, ICategory, toCategories, ICategoricalLikeColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import {toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
@@ -21,7 +21,7 @@ export declare function colorMappingChanged(previous: ICategoricalColorMappingFu
  * a string column with optional alignment
  */
 @toolbar('colorMappedCategorical')
-export default class CategoricalsColumn extends ArrayColumn<string | null> {
+export default class CategoricalsColumn extends ArrayColumn<string | null> implements ICategoricalLikeColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   readonly categories: ICategory[];
@@ -70,11 +70,15 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> {
   }
 
   getColors(row: IDataRow) {
-    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d): Column.DEFAULT_COLOR);
+    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : Column.DEFAULT_COLOR);
   }
 
   getSet(row: IDataRow) {
     return new Set(this.getCategories(row));
+  }
+
+  iterCategory(row: IDataRow) {
+    return this.getCategories(row);
   }
 
   getValues(row: IDataRow) {

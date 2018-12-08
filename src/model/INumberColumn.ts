@@ -5,12 +5,16 @@ import {IArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {IMapAbleColumn, IMappingFunction} from './MappingFunction';
 import {FIRST_IS_NAN} from './missing';
+import {IForEachAble} from '../internal/interable';
 
 
 export interface INumberColumn extends Column {
   getNumber(row: IDataRow): number;
 
   getRawNumber(row: IDataRow): number;
+
+  iterNumber(row: IDataRow): IForEachAble<number>;
+  iterRawNumber(row: IDataRow): IForEachAble<number>;
 }
 
 

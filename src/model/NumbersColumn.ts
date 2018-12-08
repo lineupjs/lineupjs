@@ -139,6 +139,10 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return this.getRawValue(row).map((d) => isNaN(d) ? NaN : this.mapping.apply(d));
   }
 
+  iterNumber(row: IDataRow) {
+    return this.getValues(row);
+  }
+
   getRawValue(row: IDataRow) {
     const r = super.getRaw(row);
     return r == null ? [] : r.map((d) => isMissingValue(d) ? NaN : +d);

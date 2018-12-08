@@ -1,5 +1,5 @@
 import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData, computeDateStats, computeNormalizedStats, computeHist} from '../internal/math';
-import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking} from '../model';
+import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking, ICategoricalLikeColumn} from '../model';
 import Column from '../model/Column';
 import {ISequence, lazySeq} from '../internal/interable';
 import {IAbortAblePromise, ABORTED, abortAbleAll} from 'lineupengine';
@@ -50,14 +50,14 @@ export interface IRenderTasks {
   groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
   groupExampleRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
 
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup): IRenderTask<{group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup): IRenderTask<{group: IStatistics, summary: IStatistics, data: IStatistics}>;
-  groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup): IRenderTask<{group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean): IRenderTask<{group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean): IRenderTask<{group: IStatistics, summary: IStatistics, data: IStatistics}>;
+  groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup): IRenderTask<{group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup): IRenderTask<{group: IDateStatistics, summary: IDateStatistics, data: IDateStatistics}>;
 
-  summaryBoxPlotStats(col: Column & INumberColumn): IRenderTask<{summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
-  summaryNumberStats(col: Column & INumberColumn): IRenderTask<{summary: IStatistics, data: IStatistics}>;
-  summaryCategoricalStats(col: Column & ISetColumn): IRenderTask<{summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
+  summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<{summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
+  summaryNumberStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<{summary: IStatistics, data: IStatistics}>;
+  summaryCategoricalStats(col: Column & ICategoricalLikeColumn): IRenderTask<{summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
   summaryDateStats(col: Column & IDateColumn): IRenderTask<{summary: IDateStatistics, data: IDateStatistics}>;
 }
 
@@ -78,6 +78,7 @@ export class DirectRenderTasks implements IRenderTasks {
 
   dirtyColumn(col: Column) {
     this.dataCache.delete(col.id);
+    this.dataCache.delete(`${col.id}.raw`);
   }
 
   private byOrder(indices: IndicesArray) {
@@ -92,31 +93,32 @@ export class DirectRenderTasks implements IRenderTasks {
     return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
   }
 
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup) {
-    return this.groupNumberStats(col, group);
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
+    return this.groupNumberStats(col, group, raw);
   }
 
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup) {
-    const {summary, data} = this.summaryNumberStatsD(col);
-    return taskNow({group: computeNormalizedStats(this.byOrder(group.order).map((d) => col.getNumber(d))), summary, data});
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
+    const {summary, data} = this.summaryNumberStatsD(col, raw);
+    const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+    return taskNow({group: computeNormalizedStats(this.byOrder(group.order).map(acc)), summary, data});
   }
 
   groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup) {
     const {summary, data} = this.summaryCategoricalStatsD(col);
-    return taskNow({group: computeHist(this.byOrder(group.order).map((d) => col.getSet(d)), col.categories), summary, data});
+    return taskNow({group: computeHist(this.byOrder(group.order).map((d) => col.iterCategory(d)), col.categories), summary, data});
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
     const {summary, data} = this.summaryDateStatsD(col);
-    return taskNow({group: computeDateStats(this.byOrder(group.order).map((d) => col.getDate(d)), summary), summary, data});
+    return taskNow({group: computeDateStats(this.byOrder(group.order).map((d) => col.iterDate(d)), summary), summary, data});
   }
 
-  summaryBoxPlotStats(col: Column & INumberColumn) {
-    return this.summaryNumberStats(col);
+  summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+    return this.summaryNumberStats(col, raw);
   }
 
-  summaryNumberStats(col: Column & INumberColumn) {
-    return taskNow(this.summaryNumberStatsD(col));
+  summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
+    return taskNow(this.summaryNumberStatsD(col, raw));
   }
 
   summaryCategoricalStats(col: Column & ISetColumn) {
@@ -127,47 +129,50 @@ export class DirectRenderTasks implements IRenderTasks {
     return taskNow(this.summaryDateStatsD(col));
   }
 
-  private summaryNumberStatsD(col: Column & INumberColumn) {
+  private summaryNumberStatsD(col: Column & INumberColumn, raw?: boolean) {
     const ranking = col.findMyRanker()!.getOrder();
-    const data = this.dataNumberStats(col);
-    return {summary: computeNormalizedStats(this.byOrder(ranking).map((d) => col.getNumber(d)), data.hist.length), data};
+    const data = this.dataNumberStats(col, raw);
+    const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+    return {summary: computeNormalizedStats(this.byOrder(ranking).map(acc), data.hist.length), data};
   }
 
   private summaryCategoricalStatsD(col: Column & ISetColumn) {
     const ranking = col.findMyRanker()!.getOrder();
     const data = this.dataCategoricalStats(col);
-    return {summary: computeHist(this.byOrder(ranking).map((d) => col.getSet(d)), col.categories), data};
+    return {summary: computeHist(this.byOrder(ranking).map((d) => col.iterCategory(d)), col.categories), data};
   }
 
   private summaryDateStatsD(col: Column & IDateColumn) {
     const ranking = col.findMyRanker()!.getOrder();
     const data = this.dataDateStats(col);
-    return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.getDate(d)), data), data};
+    return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.iterDate(d)), data), data};
   }
 
-  dataBoxPlotStats(col: Column & INumberColumn) {
-    return this.dataNumberStats(col);
+  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+    return this.dataNumberStats(col, raw);
   }
 
-  private cached<T>(col: Column, creator: () => T) {
-    if (this.dataCache.has(col.id)) {
-      return this.dataCache.get(col.id)!;
+  private cached<T>(col: Column, creator: () => T, suffix: string = '') {
+    const key = `${col.id}${suffix}`;
+    if (this.dataCache.has(key)) {
+      return this.dataCache.get(key)!;
     }
     const s = creator();
-    this.dataCache.set(col.id, s);
+    this.dataCache.set(key, s);
     return s;
   }
 
-  dataNumberStats(col: Column & INumberColumn) {
-    return this.cached(col, () => computeNormalizedStats(lazySeq(this.data).map((d) => col.getNumber(d))));
+  dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
+    const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+    return this.cached(col, () => computeNormalizedStats(lazySeq(this.data).map(acc)), raw ? '.raw' : '');
   }
 
   dataCategoricalStats(col: Column & ISetColumn) {
-    return this.cached(col, () => computeHist(lazySeq(this.data).map((d) => col.getSet(d)), col.categories));
+    return this.cached(col, () => computeHist(lazySeq(this.data).map((d) => col.iterCategory(d)), col.categories));
   }
 
   dataDateStats(col: Column & IDateColumn) {
-    return this.cached(col, () => computeDateStats(lazySeq(this.data).map((d) => col.getDate(d))));
+    return this.cached(col, () => computeDateStats(lazySeq(this.data).map((d) => col.iterDate(d))));
   }
 
 }
@@ -240,55 +245,57 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
     return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
   }
 
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup) {
-    return this.groupNumberStats(col, group);
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
+    return this.groupNumberStats(col, group, raw);
   }
 
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup) {
-    return this.chain(`${col.id}:a:group:${group.name}`, this.summaryNumberStats(col), ({summary, data}) => {
-      return {group: computeNormalizedStats(this.byOrder(group.order).map((d) => col.getNumber(d)), summary.hist.length), summary, data};
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
+    return this.chain(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, this.summaryNumberStats(col, raw), ({summary, data}) => {
+      const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+      return {group: computeNormalizedStats(this.byOrder(group.order).map(acc), summary.hist.length), summary, data};
     });
   }
 
   groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup) {
     return this.chain(`${col.id}:a:group:${group.name}`, this.summaryCategoricalStats(col), ({summary, data}) => {
-      return {group: computeHist(this.byOrder(group.order).map((d) => col.getSet(d)), col.categories), summary, data};
+      return {group: computeHist(this.byOrder(group.order).map((d) => col.iterCategory(d)), col.categories), summary, data};
     });
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
     return this.chain(`${col.id}:a:group:${group.name}`, this.summaryDateStats(col), ({summary, data}) => {
-      return {group: computeDateStats(this.byOrder(group.order).map((d) => col.getDate(d)), summary), summary, data};
+      return {group: computeDateStats(this.byOrder(group.order).map((d) => col.iterDate(d)), summary), summary, data};
     });
   }
 
-  summaryBoxPlotStats(col: Column & INumberColumn) {
-    return this.summaryNumberStats(col);
+  summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+    return this.summaryNumberStats(col, raw);
   }
 
-  summaryNumberStats(col: Column & INumberColumn) {
+  summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
     const ranking = col.findMyRanker()!.getOrder();
-    return this.chain(`${col.id}:b:summary`, this.dataNumberStats(col), (data) => {
-      return {summary: computeNormalizedStats(this.byOrder(ranking).map((d) => col.getNumber(d)), data.hist.length), data};
+    return this.chain(`${col.id}:b:summary${raw ? ':raw' : ''}`, this.dataNumberStats(col, raw), (data) => {
+      const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+      return {summary: computeNormalizedStats(this.byOrder(ranking).map(acc), data.hist.length), data};
     });
   }
 
   summaryCategoricalStats(col: Column & ISetColumn) {
     const ranking = col.findMyRanker()!.getOrder();
     return this.chain(`${col.id}:b:summary`, this.dataCategoricalStats(col), (data) => {
-      return {summary: computeHist(this.byOrder(ranking).map((d) => col.getSet(d)), col.categories), data};
+      return {summary: computeHist(this.byOrder(ranking).map((d) => col.iterCategory(d)), col.categories), data};
     });
   }
 
   summaryDateStats(col: Column & IDateColumn) {
     const ranking = col.findMyRanker()!.getOrder();
     return this.chain(`${col.id}:b:summary`, this.dataDateStats(col), (data) => {
-      return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.getDate(d)), data), data};
+      return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.iterDate(d)), data), data};
     });
   }
 
-  dataBoxPlotStats(col: Column & INumberColumn) {
-    this.dataNumberStats(col);
+  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+    return this.dataNumberStats(col, raw);
   }
 
   private cached<T>(key: string, creator: () => T): IRenderTask<T> {
@@ -339,15 +346,16 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
     return s;
   }
 
-  dataNumberStats(col: Column & INumberColumn) {
-    return this.cached(`${col.id}:c:data`, () => computeNormalizedStats(lazySeq(this.data).map((d) => col.getNumber(d))));
+  dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
+    const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+    return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, () => computeNormalizedStats(lazySeq(this.data).map(acc)));
   }
 
   dataCategoricalStats(col: Column & ISetColumn) {
-    return this.cached(`${col.id}:c:data`, () => computeHist(lazySeq(this.data).map((d) => col.getSet(d)), col.categories));
+    return this.cached(`${col.id}:c:data`, () => computeHist(lazySeq(this.data).map((d) => col.iterCategory(d)), col.categories));
   }
 
   dataDateStats(col: Column & IDateColumn) {
-    return this.cached(`${col.id}:c:data`, () => computeDateStats(lazySeq(this.data).map((d) => col.getDate(d))));
+    return this.cached(`${col.id}:c:data`, () => computeDateStats(lazySeq(this.data).map((d) => col.iterDate(d))));
   }
 }

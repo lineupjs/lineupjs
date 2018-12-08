@@ -216,6 +216,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.mapping.apply(v);
   }
 
+  iterNumber(row: IDataRow) {
+    return [this.getNumber(row)];
+  }
+
   getRawNumber(row: IDataRow) {
     return this.getRawValue(row);
   }

@@ -5,7 +5,7 @@ import {colorPool} from './internal';
 import {FIRST_IS_MISSING} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColorMappingFunction} from './CategoricalColorMappingFunction';
-import {ISequence, isSeqEmpty} from '../internal/interable';
+import {ISequence, isSeqEmpty, IForEachAble} from '../internal/interable';
 
 export interface ICategoricalDesc {
   categories: (string | Partial<ICategory>)[];
@@ -13,13 +13,18 @@ export interface ICategoricalDesc {
 
 export declare type ICategoricalColumnDesc = IValueColumnDesc<string> & ICategoricalDesc;
 
-export interface ISetColumn extends IArrayColumn<boolean> {
-  readonly categories: ICategory[];
 
-  getSet(row: IDataRow): Set<ICategory>;
+export interface ICategoricalLikeColumn extends Column {
+  readonly categories: ICategory[];
 
   getColorMapping(): ICategoricalColorMappingFunction;
   setColorMapping(mapping: ICategoricalColorMappingFunction): void;
+
+  iterCategory(row: IDataRow): IForEachAble<ICategory | null>;
+}
+
+export interface ISetColumn extends IArrayColumn<boolean>, ICategoricalLikeColumn {
+  getSet(row: IDataRow): Set<ICategory>;
 }
 
 export function isSetColumn(col: Column): col is ISetColumn {
@@ -169,6 +174,9 @@ export function toCategories(desc: ICategoricalDesc) {
   return cats.sort(compareCategory);
 }
 
+export function isCategoricalLikeColumn(col: Column): col is ICategoricalLikeColumn {
+  return typeof (<ICategoricalLikeColumn>col).categories !== 'undefined' && typeof (<ICategoricalLikeColumn>col).iterCategory === 'function';
+}
 /**
  * checks whether the given column or description is a categorical column, i.e. the value is a list of categories
  * @param col

@@ -1,4 +1,4 @@
-import {ICategoricalDesc, ICategory, toCategories} from './ICategoricalColumn';
+import {ICategoricalDesc, ICategory, toCategories, ICategoricalLikeColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
@@ -19,7 +19,7 @@ export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDes
 export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 @toolbar('colorMappedCategorical')
-export default class CategoricalMapColumn extends MapColumn<string | null> {
+export default class CategoricalMapColumn extends MapColumn<string | null> implements ICategoricalLikeColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   readonly categories: ICategory[];
@@ -73,7 +73,7 @@ export default class CategoricalMapColumn extends MapColumn<string | null> {
   }
 
   getColors(row: IDataRow) {
-    return this.getCategories(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value): Column.DEFAULT_COLOR}));
+    return this.getCategories(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value) : Column.DEFAULT_COLOR}));
   }
 
   getValue(row: IDataRow) {
@@ -108,5 +108,9 @@ export default class CategoricalMapColumn extends MapColumn<string | null> {
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+  }
+
+  iterCategory(row: IDataRow) {
+    return this.getCategories(row).map((d) => d.value);
   }
 }

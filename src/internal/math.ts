@@ -1,5 +1,5 @@
 import {ICategory} from '../model';
-import {ISequence} from './interable';
+import {ISequence, IForEachAble} from './interable';
 import {bisectLeft} from 'd3-array';
 
 export interface INumberBin {
@@ -264,7 +264,7 @@ function cached() {
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeNormalizedStats(arr: ISequence<number>, numberOfBins?: number): IStatistics & IAdvancedBoxPlotData {
+export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | number>, numberOfBins?: number): IStatistics & IAdvancedBoxPlotData {
 
   const bins: INumberBin[] = [];
 
@@ -345,7 +345,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
-export function computeDateStats(arr: ISequence<Date | null>, template?: IDateStatistics): IDateStatistics {
+export function computeDateStats(arr: ISequence<IForEachAble<Date | null>>, template?: IDateStatistics): IDateStatistics {
   // filter out NaN
   let min: Date | null = null;
   let max: Date | null = null;
@@ -354,21 +354,26 @@ export function computeDateStats(arr: ISequence<Date | null>, template?: IDateSt
 
   // yyyymmdd, count
   const byDay = new Map<number, number>();
-  arr.forEach((v) => {
+  arr.forEach((vs) => {
     count += 1;
-    if (!v) {
+    if (!vs) {
       missing += 1;
       return;
     }
-
-    if (min == null || v < min) {
-      min = v;
-    }
-    if (max == null || v > max) {
-      max = v;
-    }
-    const key = v.getFullYear() * 10000 + v.getMonth() * 100 + v.getDate();
-    byDay.set(key, (byDay.get(key) || 0) + 1);
+    vs.forEach((v) => {
+      if (!v) {
+        missing += 1;
+        return;
+      }
+      if (min == null || v < min) {
+        min = v;
+      }
+      if (max == null || v > max) {
+        max = v;
+      }
+      const key = v.getFullYear() * 10000 + v.getMonth() * 100 + v.getDate();
+      byDay.set(key, (byDay.get(key) || 0) + 1);
+    });
   });
 
   const {histGranularity, hist} = template ? {
@@ -393,22 +398,22 @@ export function computeDateStats(arr: ISequence<Date | null>, template?: IDateSt
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function computeHist(arr: ISequence<Set<ICategory> | null | ICategory>, categories: ICategory[]): ICategoricalStatistics {
+export function computeHist(arr: ISequence<IForEachAble<ICategory | null>>, categories: ICategory[]): ICategoricalStatistics {
   const m = new Map<string, number>();
   let missingCount = 0;
   categories.forEach((cat) => m.set(cat.name, 0));
 
   arr.forEach((vs) => {
-    if (vs == null || (vs instanceof Set && vs.size === 0)) {
+    if (vs == null) {
       missingCount += 1;
       return;
     }
-    if (!(vs instanceof Set)) {
-      m.set(vs.name, (m.get(vs.name) || 0) + 1);
-      return;
-    }
     vs.forEach((v) => {
-      m.set(v.name, (m.get(v.name) || 0) + 1);
+      if (v == null) {
+        missingCount += 1;
+      } else {
+        m.set(v.name, (m.get(v.name) || 0) + 1);
+      }
     });
   });
 
@@ -452,7 +457,6 @@ export function similar(a: number, b: number, delta = 0.5) {
   return Math.abs(a - b) < delta;
 }
 
-export declare type IValueStatistics = ICategoricalStatistics | IDateStatistics | IStatistics;
 
 export function isPromiseLike<T>(value: any): value is PromiseLike<T> {
   return value instanceof Promise || typeof value.then === 'function';

@@ -134,6 +134,10 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return r;
   }
 
+  iterCategory(row: IDataRow) {
+    return [this.getCategory(row)];
+  }
+
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.filter = this.currentFilter;

@@ -6,6 +6,7 @@ import {cssClass} from '../styles';
 import IRenderContext from './interfaces';
 import {IDataRow} from '../model/interfaces';
 import {ISequence} from '../internal/interable';
+import {ICategoricalLikeColumn} from '../model';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -136,6 +137,13 @@ export function wideEnough(col: IArrayColumn<any>, length: number = col.labels.l
   const w = col.getWidth();
   return w / length > MIN_LABEL_WIDTH; // at least 30 pixel
 }
+
+/** @internal */
+export function wideEnoughCat(col: ICategoricalLikeColumn) {
+  const w = col.getWidth();
+  return w / col.categories.length > MIN_LABEL_WIDTH; // at least 30 pixel
+}
+
 
 
 

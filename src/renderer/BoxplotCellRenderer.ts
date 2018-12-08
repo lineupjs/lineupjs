@@ -1,14 +1,14 @@
-import {IBoxPlotData, LazyBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
+import {IBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
 import {IDataRow, isNumberColumn, isMapAbleColumn, IOrderedGroup} from '../model';
 import BoxPlotColumn from '../model/BoxPlotColumn';
 import Column from '../model/Column';
-import {IBoxPlotColumn, INumberColumn, INumbersColumn, isBoxPlotColumn, isNumbersColumn} from '../model/INumberColumn';
+import {IBoxPlotColumn, INumberColumn, isBoxPlotColumn} from '../model/INumberColumn';
 import NumberColumn from '../model/NumberColumn';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas} from './missing';
-import {ISequence, concatSeq} from '../internal/interable';
+import {tasksAll} from '../provider/tasks';
 
 const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
@@ -87,34 +87,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createAggregatedBoxPlot(col: INumbersColumn, rows: ISequence<IDataRow>, raw = false): IBoxPlotData {
-    // concat all values
-    const vs = concatSeq(rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumbers(r))));
-    return new LazyBoxPlotData(vs);
-  }
-
   createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: BOXPLOT,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, 'boxplot', (rows: ISequence<IDataRow>) => {
-          // compute
-          if (rows.every((row) => col.getValue(row) == null)) {
-            return null;
-          }
-          let box: IBoxPlotData, label: IBoxPlotData;
-
-          if (isNumbersColumn(col)) {
-            box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
-            label = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows, true);
-          } else {
-            box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row)));
-            label = new LazyBoxPlotData(rows.map((row) => col.getRawNumber(row)));
-          }
-
-          return {box, label};
-        }).then((data) => {
+        return tasksAll([context.tasks.groupBoxPlotStats(col, group, false), context.tasks.groupBoxPlotStats(col, group, true)]).then((data) => {
           if (typeof data === 'symbol') {
             return;
           }
@@ -123,7 +101,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           if (data === null) {
             return;
           }
-          renderDOMBoxPlot(n, data.box, data.label, sort, colorOf(col, null, imposer));
+          renderDOMBoxPlot(n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
         });
       }
     };
