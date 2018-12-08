@@ -73,16 +73,16 @@ function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, int
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
-      return context.tasks.summaryCategoricalStats(col).then((data) => {
-        if (typeof data === 'symbol') {
+      return context.tasks.summaryCategoricalStats(col).then((r) => {
+        if (typeof r === 'symbol') {
           return;
         }
-        const {summary} = data;
+        const {summary, data} = r;
         n.classList.toggle(cssClass('missing'), !summary);
         if (!summary) {
           return;
         }
-        update(n, summary, summary);
+        update(n, summary, data);
       });
     }
   };
@@ -169,7 +169,6 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
       if (old == null || !Array.isArray(old.filter)) {
         // deselect
         const included = col.categories.slice();
-        bin.dataset.filtered = '';
         included.splice(i, 1);
         col.setFilter({
           filterMissing: old ? old.filterMissing : false,
@@ -181,11 +180,9 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
       const contained = filter.indexOf(cat.name);
       if (contained >= 0) {
         // remove
-        bin.dataset.filtered = '';
         filter.splice(contained, 1);
       } else {
         // readd
-        delete bin.dataset.filtered;
         filter.push(cat.name);
       }
       if (!old.filterMissing && filter.length === col.categories.length) {
@@ -222,15 +219,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
 
   return (missing: number, actCol: HasCategoricalFilter) => {
     col = actCol;
-    const cats = col.categories;
     const f = col.getFilter();
-    bins.forEach((bin, i) => {
-      if (!isCategoryIncluded(f, cats[i])) {
-        bin.dataset.filtered = '';
-      } else {
-        delete bin.dataset.filtered;
-      }
-    });
     if (filterMissing) {
       filterMissing.checked = f != null && f.filterMissing;
       updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, missing);

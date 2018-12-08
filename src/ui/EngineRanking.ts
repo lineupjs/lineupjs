@@ -833,11 +833,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const length = group.order.length;
 
       const n = provider.getTopNAggregated(this.ranking, groups[0]);
+      // -1 = show items, 0 = group only, 5 = group + top 5
       if (n >= 0) {
         r.push(Object.assign({meta: toGroupMeta(0, n)}, group));
       }
-
-      const slice = Math.min(n > 0 ? n : Number.POSITIVE_INFINITY, length);
+      const slice = Math.min(n >= 0 ? n : Number.POSITIVE_INFINITY, length);
       const metaShift = n > 0 ? 1 : 0; // shift by one to avoid having a start
       for (let i = 0; i < slice; ++i) {
         const dataIndex = group.order[i];

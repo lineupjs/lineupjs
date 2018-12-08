@@ -31,9 +31,9 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
           if (typeof r === 'symbol') {
             return;
           }
-          const {summary, group} = r;
+          const {group} = r;
 
-          update(n, group, summary);
+          update(n, group);
         });
       }
     };
@@ -53,13 +53,13 @@ function staticSummary(col: ICategoricalColumn, context: IRenderContext) {
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary} = r;
+        const {summary, data} = r;
 
         n.classList.toggle(cssClass('missing'), !summary);
         if (!summary) {
           return;
         }
-        update(n, summary);
+        update(n, summary, data);
       });
     }
   };
@@ -87,7 +87,7 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
         if (!summary) {
           return;
         }
-        update(n, summary);
+        update(n, summary, data);
       });
     }
   };

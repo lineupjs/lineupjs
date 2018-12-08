@@ -9,9 +9,9 @@
       "src/**/*.d.ts": true,
       "**/*.map": true,
       ".cache-loader": true
-  },
-  "editor.formatOnSave": true,
+},
   "beautify.options": {
+      "editorconfig": true,
       "end_with_newline": true,
       "preserve_newlines": true,
       "space_in_paren": true,
