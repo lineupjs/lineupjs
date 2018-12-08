@@ -4,7 +4,7 @@ import CompositeColumn from '../../model/CompositeColumn';
 import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
-import {cssClass} from '../../styles';
+import {cssClass, engineCssClass} from '../../styles';
 import {clear} from '../../internal/utils';
 
 /** @internal */
@@ -38,8 +38,14 @@ export default class CompositeChildrenDialog extends ADialog {
         const summaryNode = this.ctx.asElement(summary.template);
         summaryNode.dataset.renderer = c.getSummaryRenderer();
         summaryNode.classList.add(cssClass('summary'), cssClass('renderer'));
-        // FIXME handle async
-        summary.update(summaryNode);
+
+        const r = summary.update(summaryNode);
+        if (r) {
+          summaryNode.classList.add(engineCssClass('loading'));
+          r.then(() => {
+            summaryNode.classList.remove(engineCssClass('loading'));
+          });
+        }
         n.appendChild(summaryNode);
         node.appendChild(n);
       });

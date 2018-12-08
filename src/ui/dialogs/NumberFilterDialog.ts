@@ -1,6 +1,6 @@
 import {IMapAbleColumn} from '../../model';
 import {ISummaryRenderer} from '../../renderer/interfaces';
-import {cssClass} from '../../styles';
+import {cssClass, engineCssClass} from '../../styles';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 
@@ -24,7 +24,14 @@ export default class NumberFilterDialog extends ADialog {
     summary.dataset.interactive = '';
     node.appendChild(summary);
 
-    // FIXME handle async
-    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!);
+    const summaryNode = <HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!;
+    const r = this.summary.update(summaryNode);
+    if (!r) {
+      return;
+    }
+    summaryNode.classList.add(engineCssClass('loading'));
+    r.then(() => {
+      summaryNode.classList.remove(engineCssClass('loading'));
+    });
   }
 }
