@@ -209,7 +209,24 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return {maxDataIndex, lookups, groups};
   }
 
-  private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined, maxDataIndex: number) {
+  private sortGroup(g: ISortHelper, i: number, ranking: Ranking, lookups: CompareLookup | undefined, groupLookup: CompareLookup | undefined, singleGroup: boolean): Promise<IOrderedGroup> {
+    const group = g.group;
+
+    const sortTask = this.sortWorker.sort(g.rows, singleGroup, lookups);
+
+    // compute sort group value as task
+    const groupSortTask = groupLookup ? this.tasks
+      .push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(this.view(g.rows), group)) : [];
+
+    return Promise.all([sortTask, groupSortTask]).then(([order, groupC]) => {
+      if (groupLookup && Array.isArray(groupC)) {
+        groupLookup.push(i, groupC);
+      }
+      return Object.assign({order}, group);
+    });
+  }
+
+  private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined) {
     // sort groups
     if (!groupLookup) {
       groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
@@ -218,7 +235,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
       sortComplex(groupIndices, groupLookup.sortOrders);
       groups = groupIndices.map((i) => groups[i]);
     }
+    return groups;
+  }
 
+  private index2pos(groups: IOrderedGroup[], maxDataIndex: number) {
     const index2pos = chooseByLength(maxDataIndex + 1);
     let offset = 1;
     for (const g of groups) {
@@ -256,25 +276,20 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return {groups: [], index2pos: []};
     }
 
+    if (groups.size === 1) {
+      const g = Array.from(groups.values())[0]!;
+      return this.sortGroup(g, 0, ranking, lookups, undefined, true).then((group) => {
+        return this.index2pos([group], maxDataIndex);
+      });
+    }
+
     const groupLookup = isGroupedSortedBy ? new CompareLookup(groups.size, ranking.toGroupCompareValueType()) : undefined;
 
     return Promise.all(Array.from(groups.values()).map((g, i) => {
-      const group = g.group;
-
-      const sortTask = this.sortWorker.sort(g.rows, groups.size === 1, lookups);
-
-      // compute sort group value as task
-      const groupSortTask = groupLookup ? this.tasks
-        .push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(this.view(g.rows), group)) : [];
-
-      return Promise.all([sortTask, groupSortTask]).then(([order, groupC]) => {
-        if (groupLookup && Array.isArray(groupC)) {
-          groupLookup.push(i, groupC);
-        }
-        return Object.assign({order}, group);
-      });
+      return this.sortGroup(g, i, ranking, lookups, groupLookup, false);
     })).then((groups) => {
-      return this.sortGroups(groups, groupLookup, maxDataIndex);
+      const sortedGroups = this.sortGroups(groups, groupLookup);
+      return this.index2pos(sortedGroups, maxDataIndex);
     });
   }
 
