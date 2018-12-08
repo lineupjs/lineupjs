@@ -25,11 +25,25 @@ export default class DataBuilder extends LineUpBuilder {
     super();
   }
 
+  scheduledTaskExecutor() {
+    this.providerOptions.taskExecutor = 'scheduled';
+    return this;
+  }
+
+  webWorkerSorter() {
+    this.providerOptions.sortWorker = 'webworker';
+    return this;
+  }
+
+  scalable() {
+    return this.scheduledTaskExecutor().webWorkerSorter();
+  }
+
   /**
    * allow just a single selection
    */
   singleSelection() {
-    this.providerOptions.multiSelection = false;
+    this.providerOptions.singleSelection = true;
     return this;
   }
 

@@ -3,23 +3,16 @@ import {Taggle, LineUp} from '../../ui';
 import {ILineUpOptions, ITaggleOptions} from '../../interfaces';
 import {IBuilderAdapterRankingProps, buildRanking} from './ranking';
 import {pick, isSame, equal} from './utils';
-import {LocalDataProvider, deriveColumnDescriptions, deriveColors} from '../../provider';
+import {LocalDataProvider, deriveColumnDescriptions, deriveColors, IDataProviderOptions, ILocalDataProviderOptions} from '../../provider';
 
 
-export interface IBuilderAdapterDataProps {
+export interface IBuilderAdapterDataProps extends Partial<IDataProviderOptions>, Partial<ILocalDataProviderOptions> {
   data: any[];
   selection?: number[] | null;
   highlight?: number | null;
 
   onSelectionChanged?(selection: number[]): void;
   onHighlightChanged?(highlight: number): void;
-
-  singleSelection?: boolean;
-  filterGlobally?: boolean;
-  noCriteriaLimits?: boolean;
-  maxGroupColumns?: number;
-  maxNestedSortingCriteria?: number;
-  columnTypes?: {[type: string]: typeof Column};
 
   deriveColumns?: boolean | string[];
   deriveColors?: boolean;
@@ -31,7 +24,7 @@ export interface IBuilderAdapterDataProps {
 
 export declare type IBuilderAdapterProps = Partial<ITaggleOptions> & IBuilderAdapterDataProps;
 
-const providerOptions: (keyof IBuilderAdapterDataProps)[] = ['singleSelection', 'filterGlobally', 'noCriteriaLimits', 'maxGroupColumns', 'maxNestedSortingCriteria', 'columnTypes'];
+const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = ['singleSelection', 'filterGlobally', 'columnTypes', 'sortWorker', 'taskExecutor', 'jumpToSearchResult'];
 const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'canRender', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser'];
 
 interface IRankingContext {

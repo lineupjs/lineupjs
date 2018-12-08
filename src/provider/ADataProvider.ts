@@ -132,7 +132,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
     this.columnTypes = Object.assign(models(), options.columnTypes || {});
-    this.multiSelections = options.multiSelection !== false;
+    this.multiSelections = options.singleSelection !== true;
   }
 
   /**

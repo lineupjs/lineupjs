@@ -10,10 +10,10 @@ export interface IDataProviderOptions {
   columnTypes: {[columnType: string]: typeof Column};
 
   /**
-   * allow multiple selected rows
-   * default: true
+   * allow just single selected rows
+   * default: false
    */
-  multiSelection: boolean;
+  singleSelection: boolean;
 }
 
 export interface IDataProvider extends AEventDispatcher {
