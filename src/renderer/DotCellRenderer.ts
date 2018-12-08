@@ -98,7 +98,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows) => {
+        return context.tasks.groupRows(col, group, 'dot', (rows) => {
           //value, color, label,
 
           if (!isNumbersColumn(col)) {

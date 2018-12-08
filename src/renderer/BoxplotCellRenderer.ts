@@ -98,7 +98,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
       template: BOXPLOT,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows: ISequence<IDataRow>) => {
+        return context.tasks.groupRows(col, group, 'boxplot', (rows: ISequence<IDataRow>) => {
           // compute
           if (rows.every((row) => col.getValue(row) == null)) {
             return null;

@@ -64,7 +64,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows) => groupByKey(rows.map((d) => col.getMapLabel(d)))).then((entries) => {
+        return context.tasks.groupRows(col, group, 'table', (rows) => groupByKey(rows.map((d) => col.getMapLabel(d)))).then((entries) => {
           if (typeof entries === 'symbol') {
             return;
           }
@@ -78,7 +78,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return {
       template: TableCellRenderer.template(col),
       update: (node: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupExampleRows(col, group, (rows) => {
+        return context.tasks.groupExampleRows(col, group, 'table', (rows) => {
           const values: string[][] = col.labels.map(() => []);
           rows.forEach((row) => {
             const labels = col.getLabels(row);

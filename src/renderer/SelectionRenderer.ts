@@ -37,7 +37,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (r) => r).then((rows) => {
+        return context.tasks.groupRows(col, group, 'identity', (r) => r).then((rows) => {
           if (typeof rows === 'symbol') {
             return;
           }

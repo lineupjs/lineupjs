@@ -72,7 +72,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
+        return context.tasks.groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
           if (typeof data === 'symbol') {
             return;
           }
