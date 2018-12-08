@@ -197,6 +197,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private createSorter(ranking: Ranking, filter: ((d: IDataRow) => boolean) | null, isSortedBy: boolean) {
+    // not required if: sort criteria changed, group sort criteria changed
     const groups = new Map<string, ISortHelper>();
     const lookups = isSortedBy ? new CompareLookup(this._data.length, ranking.toCompareValueType()) : undefined;
     let maxDataIndex = -1;
@@ -224,6 +225,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private sortGroup(g: ISortHelper, i: number, ranking: Ranking, lookups: CompareLookup | undefined, groupLookup: CompareLookup | undefined, singleGroup: boolean): Promise<IOrderedGroup> {
+    // not required if: group sort criteria changed
     const group = g.group;
 
     const sortTask = this.sortWorker.sort(g.rows, singleGroup, lookups);
@@ -240,6 +242,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined) {
+    // not required if: sort criteria changed
+
     // sort groups
     if (!groupLookup) {
       groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
@@ -265,7 +269,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
-    // TOOD optimize to just clear groups if the filter hasn't changed
+    // clear summary not required if: sort criteria changed, group sort criteria changed, group criteria changed
+    // clear groups not required if: sort criteria changed, group sort criteria changed
     this.tasks.dirtyRanking(ranking, 'summary');
 
     if (this._data.length === 0) {
@@ -291,6 +296,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (groups.size === 1) {
       const g = Array.from(groups.values())[0]!;
       return this.sortGroup(g, 0, ranking, lookups, undefined, true).then((group) => {
+        this.tasks.dirtyRanking(ranking, 'summary'); // clean again
         return this.index2pos([group], maxDataIndex);
       });
     }
@@ -301,6 +307,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return this.sortGroup(g, i, ranking, lookups, groupLookup, false);
     })).then((groups) => {
       const sortedGroups = this.sortGroups(groups, groupLookup);
+      this.tasks.dirtyRanking(ranking, 'summary'); // clean again
       return this.index2pos(sortedGroups, maxDataIndex);
     });
   }

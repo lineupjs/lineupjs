@@ -43,10 +43,20 @@ export default class TaskScheduler {
       requestAnimationFrame(() => task.resolve(r));
     }
 
-    if (this.tasks.length > 0) {
-      this.taskId = (<IPoorManIdleCallback><any>self).requestIdleCallback(this.runTasks);
+    this.taskId = -1;
+    this.reSchedule();
+  }
+
+  private reSchedule() {
+    if (this.tasks.length === 0 || this.taskId > -1) {
+      return;
+    }
+
+    const ww = (<IPoorManIdleCallback><any>self);
+    if (ww.requestIdleCallback) {
+      this.taskId = ww.requestIdleCallback(this.runTasks);
     } else {
-      this.taskId = -1;
+      this.taskId = self.setTimeout(this.runTasks, 1);
     }
   }
 
@@ -65,26 +75,21 @@ export default class TaskScheduler {
 
     abort(); // abort existing with same id
 
-    const p = new Promise<T | symbol>((resolve) => {
-      this.tasks.push({
-        id,
-        calc,
-        result: p,
-        resolve
-      });
+    let resolve: (value: T | symbol) => void;
 
-      if (this.taskId !== -1) {
-        return;
-      }
-
-      const ww = (<IPoorManIdleCallback><any>self);
-      if (ww.requestIdleCallback) {
-        this.taskId = ww.requestIdleCallback(this.runTasks);
-      } else {
-        this.taskId = self.setTimeout(this.runTasks, 1);
-      }
+    const p = new Promise<T | symbol>((r) => {
+      // called during constructor
+      resolve = r;
     });
 
+    this.tasks.push({
+      id,
+      calc,
+      result: p,
+      resolve: resolve!
+    });
+
+    this.reSchedule();
 
     return {
       then: thenFactory(p, abort),

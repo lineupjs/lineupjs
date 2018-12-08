@@ -2,7 +2,7 @@ import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotDa
 import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking, ICategoricalLikeColumn, IGroup} from '../model';
 import Column, {ICompareValue} from '../model/Column';
 import {ISequence, lazySeq} from '../internal/interable';
-import {IAbortAblePromise, ABORTED, abortAbleAll} from 'lineupengine';
+import {IAbortAblePromise, ABORTED, abortAbleAll, abortAble} from 'lineupengine';
 import TaskScheduler from '../internal/scheduler';
 
 export {IAbortAblePromise} from 'lineupengine';
@@ -31,7 +31,8 @@ class TaskLater<T> implements IRenderTask<T> {
   }
 
   then<U = void>(onfullfilled: (value: T | symbol) => U) {
-    return this.v.then(onfullfilled);
+    // wrap to avoid that the task will be aborted
+    return abortAble(this.v).then(onfullfilled);
   }
 }
 
@@ -317,32 +318,28 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTaskExe
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    const ranking = col.findMyRanker()!.getOrder();
     return this.chain(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, this.dataBoxPlotStats(col, raw), (data) => {
       const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
-      return {summary: computeBoxPlot(this.byOrder(ranking).map(acc)), data};
+      return {summary: computeBoxPlot(this.byOrder(col.findMyRanker()!.getOrder()).map(acc)), data};
     });
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    const ranking = col.findMyRanker()!.getOrder();
     return this.chain(`${col.id}:b:summary${raw ? ':raw' : ''}`, this.dataNumberStats(col, raw), (data) => {
       const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
-      return {summary: computeNormalizedStats(this.byOrder(ranking).map(acc), data.hist.length), data};
+      return {summary: computeNormalizedStats(this.byOrder(col.findMyRanker()!.getOrder()).map(acc), data.hist.length), data};
     });
   }
 
   summaryCategoricalStats(col: Column & ISetColumn) {
-    const ranking = col.findMyRanker()!.getOrder();
     return this.chain(`${col.id}:b:summary`, this.dataCategoricalStats(col), (data) => {
-      return {summary: computeHist(this.byOrder(ranking).map((d) => col.iterCategory(d)), col.categories), data};
+      return {summary: computeHist(this.byOrder(col.findMyRanker()!.getOrder()).map((d) => col.iterCategory(d)), col.categories), data};
     });
   }
 
   summaryDateStats(col: Column & IDateColumn) {
-    const ranking = col.findMyRanker()!.getOrder();
     return this.chain(`${col.id}:b:summary`, this.dataDateStats(col), (data) => {
-      return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.iterDate(d)), data), data};
+      return {summary: computeDateStats(this.byOrder(col.findMyRanker()!.getOrder()).map((d) => col.iterDate(d)), data), data};
     });
   }
 
