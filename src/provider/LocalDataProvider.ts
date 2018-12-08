@@ -1,8 +1,7 @@
 import {IAbortAblePromise} from 'lineupengine';
 import {IValueStatistics} from '../internal';
 import {ISequence, lazySeq} from '../internal/interable';
-import TaskScheduler from '../internal/scheduler';
-import Column, {defaultGroup, IColumnDesc, IDataRow, IGroup, IGroupMeta, IndicesArray, INumberColumn, IOrderedGroup, mapIndices} from '../model';
+import Column, {defaultGroup, IColumnDesc, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices} from '../model';
 import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
@@ -57,7 +56,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
   private readonly sortWorker: ISortWorker = new WorkerSortWorker(); //
-  private readonly taskScheduler = new TaskScheduler();
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -160,10 +158,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     super.cleanUpRanking(ranking);
   }
 
-  sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
-    if (this._data.length === 0) {
-      return {groups: [], index2pos: []};
-    }
+  private resolveFilter(ranking: Ranking) {
     //do the optional filtering step
     let filter: ((d: IDataRow) => boolean) | null = null;
 
@@ -183,23 +178,22 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const bak = filter;
       filter = !filter ? this.filter : (d) => this.filter!(d) && bak!(d);
     }
+    return filter;
+  }
 
-    const isGroupedBy = ranking.getGroupCriteria().length > 0;
-    const isSortedBy = ranking.getSortCriteria().length > 0;
-    const isGroupedSortedBy = ranking.getGroupSortCriteria().length > 0;
-
-    if (!isGroupedBy && !isSortedBy && !filter) {
-      // initial no sorting required just index mapping
-      const l = this._data.length;
-      const order = chooseByLength(l);
-      const index2pos = order.slice();
-      for (let i = 0; i < l; ++i) {
-        order[i] = i;
-        index2pos[i] = i + 1; // shift since default is 0
-      }
-      return {groups: [Object.assign({order}, defaultGroup)], index2pos};
+  private noSorting() {
+    // initial no sorting required just index mapping
+    const l = this._data.length;
+    const order = chooseByLength(l);
+    const index2pos = order.slice();
+    for (let i = 0; i < l; ++i) {
+      order[i] = i;
+      index2pos[i] = i + 1; // shift since default is 0
     }
+    return {groups: [Object.assign({order}, defaultGroup)], index2pos};
+  }
 
+  private createSorter(ranking: Ranking, filter: ((d: IDataRow) => boolean) | null, isSortedBy: boolean) {
     const groups = new Map<string, ISortHelper>();
     const lookups = isSortedBy ? new CompareLookup(this._data.length, ranking.toCompareValueType()) : undefined;
     let maxDataIndex = -1;
@@ -223,6 +217,48 @@ export default class LocalDataProvider extends ACommonDataProvider {
       }
     }
 
+    return {maxDataIndex, lookups, groups};
+  }
+
+  private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined, maxDataIndex: number) {
+    // sort groups
+    if (!groupLookup) {
+      groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+    } else {
+      const groupIndices = groups.map((_, i) => i);
+      sortComplex(groupIndices, groupLookup.sortOrders);
+      groups = groupIndices.map((i) => groups[i]);
+    }
+
+    const index2pos = chooseByLength(maxDataIndex + 1);
+    let offset = 1;
+    for (const g of groups) {
+      // tslint:disable-next-line
+      for (let i = 0; i < g.order.length; i++ , offset++) {
+        index2pos[g.order[i]] = offset;
+      }
+    }
+
+    return {groups, index2pos};
+  }
+
+  sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
+    if (this._data.length === 0) {
+      return {groups: [], index2pos: []};
+    }
+
+    const filter = this.resolveFilter(ranking);
+
+    const isGroupedBy = ranking.getGroupCriteria().length > 0;
+    const isSortedBy = ranking.getSortCriteria().length > 0;
+    const isGroupedSortedBy = ranking.getGroupSortCriteria().length > 0;
+
+    if (!isGroupedBy && !isSortedBy && !filter) {
+      return this.noSorting();
+    }
+
+    const {maxDataIndex, lookups, groups} = this.createSorter(ranking, filter, isSortedBy);
+
     if (groups.size === 0) {
       return {groups: [], index2pos: []};
     }
@@ -231,38 +267,18 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     return Promise.all(Array.from(groups.values()).map((g, i) => {
       const group = g.group;
-      return this.sortWorker.sort(g.rows, groups.size === 1, lookups)
-        // to group info
-        .then((order) => {
-          const o: IOrderedGroup = Object.assign({order}, group);
 
-          // compute sort group value
-          if (groupLookup) {
-            const groupData = Object.assign({meta: <IGroupMeta>'first last'}, o);
-            groupLookup.push(i, ranking.toGroupCompareValue(groupData));
-          }
-          return o;
-        });
+      // compute sort group value
+      if (groupLookup) {
+        groupLookup.push(i, ranking.toGroupCompareValue(this.view(g.rows), group));
+      }
+
+      return this.sortWorker
+        .sort(g.rows, groups.size === 1, lookups)
+        .then((order) => Object.assign({order}, group));
+
     })).then((groups) => {
-      // sort groups
-      if (!groupLookup) {
-        groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-      } else {
-        const groupIndices = groups.map((_, i) => i);
-        sortComplex(groupIndices, groupLookup.sortOrders);
-        groups = groupIndices.map((i) => groups[i]);
-      }
-
-      const index2pos = chooseByLength(maxDataIndex + 1);
-      let offset = 1;
-      for (const g of groups) {
-        // tslint:disable-next-line
-        for (let i = 0; i < g.order.length; i++ , offset++) {
-          index2pos[g.order[i]] = offset;
-        }
-      }
-
-      return {groups, index2pos};
+      return this.sortGroups(groups, groupLookup, maxDataIndex);
     });
   }
 
@@ -285,12 +301,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return this._dataRows[index];
   }
 
-  view(indices: IndicesArray) {
-    return this.viewRaw(indices);
+  seq(indices: IndicesArray) {
+    return lazySeq(indices).map(this.mapToDataRow);
   }
 
-  fetch(orders: IndicesArray[]): IDataRow[][] {
-    return orders.map((order) => this.viewRawRows(order));
+  view(indices: IndicesArray) {
+    return this.viewRaw(indices);
   }
 
   mappingSample(col: INumberColumn): ISequence<number> {

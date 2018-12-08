@@ -1,8 +1,9 @@
 import {Category, SupportType, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import {IGroupData} from './interfaces';
+import {IGroupData, IDataRow, IGroup} from './interfaces';
 import {missingGroup} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {ISequence} from '../internal/interable';
 
 export function createGroupDesc(label = 'Group Name') {
   return {type: 'group', label};
@@ -10,7 +11,7 @@ export function createGroupDesc(label = 'Group Name') {
 
 export enum EGroupSortMethod {
   name = 'name',
-  count ='count'
+  count = 'count'
 }
 
 /**
@@ -78,9 +79,9 @@ export default class GroupColumn extends Column {
     }
   }
 
-  toCompareGroupValue(group: IGroupData) {
+  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
     if (this.groupSortMethod === 'count') {
-      return group.rows.length;
+      return rows.length;
     }
     return group.name === missingGroup.name ? null : group.name.toLowerCase();
   }

@@ -8,6 +8,7 @@ import {IEventListener} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';
 import {IColumnDump} from '../provider/interfaces';
 import {ECompareValueType} from '../provider/sort';
+import {ISequence} from '../internal/interable';
 
 export {IColumnDesc} from './interfaces';
 export {ECompareValueType} from '../provider/sort';
@@ -230,9 +231,9 @@ export default class Column extends AEventDispatcher {
 
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED,
-      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
-      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
-      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES]);
+    Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES]);
   }
 
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -367,7 +368,7 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): { asc: 'asc' | 'desc' | undefined, priority: number | undefined } {
+  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): {asc: 'asc' | 'desc' | undefined, priority: number | undefined} {
     const ranker = this.findMyRanker();
     if (!ranker) {
       return {asc: undefined, priority: undefined};
@@ -424,7 +425,7 @@ export default class Column extends AEventDispatcher {
   /**
    * called when the columns added to a ranking
    */
-  attach(parent: IColumnParent)  {
+  attach(parent: IColumnParent) {
     this.parent = parent;
   }
 
@@ -554,7 +555,7 @@ export default class Column extends AEventDispatcher {
     return defaultGroup;
   }
 
-  toCompareGroupValue(group: IGroupData): ICompareValue | ICompareValue[] {
+  toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup): ICompareValue | ICompareValue[] {
     return group.name.toLowerCase();
   }
 

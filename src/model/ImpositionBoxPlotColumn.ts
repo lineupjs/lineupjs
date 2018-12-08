@@ -4,12 +4,13 @@ import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import BoxPlotColumn, {mappingChanged} from './BoxPlotColumn';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroupData, IGroup} from './interfaces';
 import {ESortMethod, IBoxPlotColumn, INumberFilter, isBoxPlotColumn, noNumberFilter} from './INumberColumn';
 import {IMappingFunction, ScaleMappingFunction, isMapAbleColumn} from './MappingFunction';
 import NumbersColumn from './NumbersColumn';
 import {colorMappingChanged} from './NumberColumn';
 import {DEFAULT_COLOR_FUNCTION, IColorMappingFunction} from './ColorMappingFunction';
+import {ISequence} from '../internal/interable';
 
 
 /**
@@ -68,7 +69,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
 
   getColor(row: IDataRow) {
     const c = this._children;
-    switch(c.length) {
+    switch (c.length) {
       case 0:
         return Column.DEFAULT_COLOR;
       case 1:
@@ -206,8 +207,8 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return BoxPlotColumn.prototype.group.call(this, row);
   }
 
-  toCompareGroupValue(group: IGroupData) {
-    return BoxPlotColumn.prototype.toCompareGroupValue.call(this, group);
+  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+    return BoxPlotColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
   toCompareGroupValueType() {

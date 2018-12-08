@@ -1,11 +1,12 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IDataRow, IGroup, IGroupData} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {patternFunction} from './internal';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IStringDesc, EAlignment} from './StringColumn';
 import StringColumn from './StringColumn';
+import {ISequence} from '../internal/interable';
 
 export interface ILinkDesc extends IStringDesc {
   /**
@@ -204,8 +205,8 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return StringColumn.prototype.toCompareValueType.call(this);
   }
 
-  toCompareGroupValue(group: IGroupData) {
-    return StringColumn.prototype.toCompareGroupValue.call(this, group);
+  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+    return StringColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
   toCompareGroupValueType() {

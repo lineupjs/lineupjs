@@ -1,10 +1,11 @@
 import {format} from 'd3-format';
 import {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {isMissingValue} from './missing';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 import {SortByDefault} from './annotations';
+import {ISequence} from '../internal/interable';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -83,8 +84,8 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return NumberColumn.prototype.toCompareValueType.call(this);
   }
 
-  toCompareGroupValue(group: IGroupData) {
-    return NumberColumn.prototype.toCompareGroupValue.call(this, group);
+  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+    return NumberColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
   toCompareGroupValueType() {

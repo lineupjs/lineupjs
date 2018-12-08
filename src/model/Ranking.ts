@@ -10,6 +10,7 @@ import CompositeColumn from './CompositeColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IRankingDump} from '../provider/interfaces';
 import {chooseByLength} from '../provider/sort';
+import {ISequence} from '../internal/interable';
 
 export interface ISortCriteria {
   readonly col: Column;
@@ -312,13 +313,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return vs;
   }
 
-  toGroupCompareValue(group: IGroupData) {
+  toGroupCompareValue(rows: ISequence<IDataRow>, group: IGroup) {
     if (this.groupSortCriteria.length === 0) {
       return [group.name.toLowerCase()];
     }
     const vs: ICompareValue[] = [];
     for (const s of this.groupSortCriteria) {
-      const r = s.col.toCompareGroupValue(group);
+      const r = s.col.toCompareGroupValue(rows, group);
       if (Array.isArray(r)) {
         vs.push(...r);
       } else {

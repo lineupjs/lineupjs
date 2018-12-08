@@ -1,6 +1,6 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {Category, toolbar, dialogAddons} from './annotations';
-import {IDataRow, IGroupData, IGroup} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {isMissingValue, missingGroup, isUnknown} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
@@ -182,8 +182,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     };
   }
 
-  toCompareGroupValue(g: IGroupData): number {
-    const v = choose(g.rows, this.currentGrouper, this).value;
+  toCompareGroupValue(rows: ISequence<IDataRow>): number {
+    const v = choose(rows, this.currentGrouper, this).value;
     return v == null ? NaN : v;
   }
 
@@ -195,7 +195,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
 /**
  * @internal
  */
-export function choose(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn): { value: number | null, name: string } {
+export function choose(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn): {value: number | null, name: string} {
   const vs = <ISequence<Date>>rows.map((d) => col.getDate(d)).filter((d) => d instanceof Date);
   if (isSeqEmpty(vs)) {
     return {value: null, name: ''};

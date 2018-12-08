@@ -6,10 +6,11 @@ import {
   ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
   isEqualCategoricalFilter, isCategoryIncluded, toCategories, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES,
 } from './ICategoricalColumn';
-import {IDataRow, IGroup, IGroupData} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {missingGroup} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {ISequence} from '../internal/interable';
 
 
 /**
@@ -208,8 +209,8 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return {name: cat.label, color: cat.color};
   }
 
-  toCompareGroupValue(g: IGroupData): ICompareValue[] {
-    return toGroupCompareCategoryValue(g.rows, this);
+  toCompareGroupValue(rows: ISequence<IDataRow>): ICompareValue[] {
+    return toGroupCompareCategoryValue(rows, this);
   }
 
   toCompareGroupValueType() {

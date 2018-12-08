@@ -42,7 +42,7 @@ export interface IRemoteDataProviderOptions {
   maxCacheSize: number;
 }
 
-function createIndex2Pos(order: IndicesArrayj) {
+function createIndex2Pos(order: IndicesArray) {
   const index2pos = <number[]>[];
   for (let i = 0; i < order.length; ++i) {
     index2pos[order[i]] = i + 1;

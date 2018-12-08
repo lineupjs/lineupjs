@@ -2,8 +2,8 @@ import {format} from 'd3-format';
 import {equalArrays} from '../internal';
 import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import {IDataRow, IGroup, IGroupData} from './interfaces';
-import {groupCompare, toCompareGroupValue} from './internal';
+import {IDataRow, IGroup} from './interfaces';
+import {toCompareGroupValue} from './internal';
 import {
   default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
   isNumberIncluded, noNumberFilter, isDummyNumberFilter, restoreNumberFilter
@@ -16,6 +16,7 @@ import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import {ISequence} from '../internal/interable';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 
@@ -227,12 +228,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return ECompareValueType.FLOAT;
   }
 
-  groupCompare(a: IGroupData, b: IGroupData): number {
-    return groupCompare(a.rows, b.rows, this, <any>this.groupSortMethod);
-  }
-
-  toCompareGroupValue(group: IGroupData): number {
-    return toCompareGroupValue(group.rows, this, <any>this.groupSortMethod);
+  toCompareGroupValue(rows: ISequence<IDataRow>): number {
+    return toCompareGroupValue(rows, this, <any>this.groupSortMethod);
   }
 
   toCompareGroupValueType() {
