@@ -57,6 +57,7 @@ export default class EngineRenderer extends AEventDispatcher {
       idPrefix: this.idPrefix,
       document: parent.ownerDocument!,
       provider: data,
+      tasks: data.getTaskExecutor(),
       dialogManager,
       toolbar: this.options.toolbar,
       flags: <ILineUpFlags>this.options.flags,
@@ -174,6 +175,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
     this.data = data;
     (<any>this.ctx).provider = data;
+    (<any>this.ctx).tasks = data.getTaskExecutor();
 
     this.initProvider(data);
   }

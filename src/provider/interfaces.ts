@@ -3,6 +3,7 @@ import {Column, IColumnDesc, IGroup, IndicesArray, IDataRow} from '../model';
 import Ranking from '../model/Ranking';
 import '!file-loader?name=schema.4.0.0.json!./schema.json';
 import {ISequence} from '../internal/interable';
+import {IRenderTasks} from './tasks';
 
 
 export interface IDataProviderOptions {
@@ -19,6 +20,8 @@ export interface IDataProvider extends AEventDispatcher {
   readonly columnTypes: {[columnType: string]: typeof Column};
 
   getTotalNumberOfRows(): number;
+
+  getTaskExecutor(): IRenderTasks;
 
   takeSnapshot(col: Column): void;
 

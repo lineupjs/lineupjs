@@ -11,6 +11,7 @@ import RankColumn from '../model/RankColumn';
 import Ranking, {addColumn, EDirtyReason, orderChanged, removeColumn} from '../model/Ranking';
 import {IColumnDump, IDataProvider, IDataProviderDump, IDataProviderOptions, IRankingDump, SCHEMA_REF} from './interfaces';
 import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
+import {IRenderTasks} from './tasks';
 
 export {IExportOptions} from './utils';
 
@@ -181,6 +182,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @returns {Array}
    */
   abstract getColumns(): IColumnDesc[];
+
+  abstract getTaskExecutor(): IRenderTasks;
 
   /**
    * adds a new ranking

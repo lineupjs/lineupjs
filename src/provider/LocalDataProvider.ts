@@ -84,6 +84,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return this.data.length;
   }
 
+  getTaskExecutor() {
+    return this.tasks;
+  }
+
   get data() {
     return this._data;
   }
