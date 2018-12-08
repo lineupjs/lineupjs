@@ -79,6 +79,9 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
         const tasks = cols.map((col) => context.tasks.summaryNumberStats(<INumberColumn>col));
 
         return tasksAll(tasks).then((vs) => {
+          if (typeof vs === 'symbol') {
+            return;
+          }
           const summaries = vs.map((d) => d.summary);
           if (!summaries.some(Boolean)) {
             n.classList.add(cssClass('missing'));

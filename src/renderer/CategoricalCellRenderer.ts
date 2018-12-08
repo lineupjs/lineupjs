@@ -52,7 +52,11 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupCategoricalStats(col, group).then(({group}) => {
+        return context.tasks.groupCategoricalStats(col, group).then((data) => {
+          if (typeof data === 'symbol') {
+            return;
+          }
+          const {group} = data;
           update(n, group);
         });
       }
@@ -69,7 +73,11 @@ function staticSummary(col: ISetColumn, context: IRenderContext, interactive: bo
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
-      return context.tasks.summaryCategoricalStats(col).then(({summary}) => {
+      return context.tasks.summaryCategoricalStats(col).then((data) => {
+        if (typeof data === 'symbol') {
+          return;
+        }
+        const {summary} = data;
         n.classList.toggle(cssClass('missing'), !summary);
         if (!summary) {
           return;
@@ -89,7 +97,11 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
       }
-      return context.tasks.summaryCategoricalStats(col).then(({summary, data}) => {
+      return context.tasks.summaryCategoricalStats(col).then((r) => {
+        if (typeof r === 'symbol') {
+          return;
+        }
+        const {summary, data} = r;
         filterUpdate((interactive && data) ? data.missing : (summary ? summary.missing : 0), col);
 
         n.classList.toggle(cssClass('missing'), !summary);

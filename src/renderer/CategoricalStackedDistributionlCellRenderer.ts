@@ -27,7 +27,12 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupCategoricalStats(col, group).then(({group, summary}) => {
+        return context.tasks.groupCategoricalStats(col, group).then((r) => {
+          if (typeof r === 'symbol') {
+            return;
+          }
+          const {summary, group} = r;
+
           update(n, group, summary);
         });
       }
@@ -44,7 +49,12 @@ function staticSummary(col: ICategoricalColumn, context: IRenderContext) {
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
-      return context.tasks.summaryCategoricalStats(col).then(({summary}) => {
+      return context.tasks.summaryCategoricalStats(col).then((r) => {
+        if (typeof r === 'symbol') {
+          return;
+        }
+        const {summary} = r;
+
         n.classList.toggle(cssClass('missing'), !summary);
         if (!summary) {
           return;
@@ -64,7 +74,12 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
       }
-      return context.tasks.summaryCategoricalStats(col).then(({summary, data}) => {
+      return context.tasks.summaryCategoricalStats(col).then((r) => {
+        if (typeof r === 'symbol') {
+          return;
+        }
+        const {summary, data} = r;
+
         const missing = interactive && data ? data.missing : (summary ? summary.missing : 0);
         filterUpdate(missing, col);
 

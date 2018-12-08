@@ -38,6 +38,9 @@ export default class SelectionRenderer implements ICellRendererFactory {
       template: `<div></div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
         return context.tasks.groupRows(col, group, (r) => r).then((rows) => {
+          if (typeof rows === 'symbol') {
+            return;
+          }
           const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
           const all = selected >= rows.length / 2;
           if (all) {

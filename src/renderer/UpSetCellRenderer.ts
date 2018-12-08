@@ -105,7 +105,11 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {
       template: `<div><div class="${cssClass('upset-line')}"></div>${templateRow}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, (rows) => union(col, rows)).then((value) => render(n, value));
+        return context.tasks.groupRows(col, group, (rows) => union(col, rows)).then((value) => {
+          if (typeof value !== 'symbol') {
+            render(n, value);
+          }
+        });
       }
     };
   }

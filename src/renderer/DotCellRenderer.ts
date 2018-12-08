@@ -116,7 +116,9 @@ export default class DotCellRenderer implements ICellRendererFactory {
           });
           return Array.from(concatSeq(vs));
         }).then((data) => {
-          update(n, data);
+          if (typeof data !== 'symbol') {
+            update(n, data);
+          }
         });
       }
     };

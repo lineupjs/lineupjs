@@ -115,6 +115,9 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
           return {box, label};
         }).then((data) => {
+          if (typeof data === 'symbol') {
+            return;
+          }
           // render
           n.classList.toggle(cssClass('missing'), data === null);
           if (data === null) {
@@ -130,7 +133,11 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement) => {
-        return context.tasks.summaryBoxPlotStats(col).then(({summary}) => {
+        return context.tasks.summaryBoxPlotStats(col).then((data) => {
+          if (typeof data === 'symbol') {
+            return;
+          }
+          const {summary} = data;
           if (summary == null) {
             n.classList.add(cssClass('missing'));
             return;

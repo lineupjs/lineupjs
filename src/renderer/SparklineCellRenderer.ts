@@ -61,6 +61,9 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
         //overlapping ones
         matchRows(n, group.order.length, `<path></path>`);
         return context.tasks.groupRows(col, group, (r) => Array.from(r.map((d) => col.getNumbers(d)))).then((vs) => {
+          if (typeof vs === 'symbol') {
+            return;
+          }
           forEachChild(n, ((row, i) => {
             row.setAttribute('d', line(vs[i]));
           }));

@@ -33,11 +33,15 @@ export default class DateCellRenderer implements ICellRendererFactory {
         const isGrouped = col.isGroupedBy() >= 0;
         if (isGrouped) {
           return context.tasks.groupRows(col, group, (rows) => choose(rows, col.getDateGrouper(), col)).then((chosen) => {
-            setText(n, chosen.name);
+            if (typeof chosen !== 'symbol') {
+              setText(n, chosen.name);
+            }
           });
         }
         return context.tasks.groupExampleRows(col, group, (sample) => exampleText(col, sample)).then((text) => {
-          setText(n, text);
+          if (typeof text !== 'symbol') {
+            setText(n, text);
+          }
         });
       }
     };

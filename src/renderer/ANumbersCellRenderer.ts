@@ -70,7 +70,9 @@ export abstract class ANumbersCellRenderer {
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
         // render a heatmap
         return context.tasks.groupRows(col, group, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
-          update(n, data.normalized, data.raw, data.row!);
+          if (typeof data !== 'symbol') {
+            update(n, data.normalized, data.raw, data.row!);
+          }
         });
       }
     };

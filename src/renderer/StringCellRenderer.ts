@@ -41,6 +41,9 @@ export default class StringCellRenderer implements ICellRendererFactory {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
         return context.tasks.groupExampleRows(col, group, (rows) => exampleText(col, rows)).then((text) => {
+          if (typeof text === 'symbol') {
+            return;
+          }
           if (col.escape) {
             setText(n, text);
           } else {

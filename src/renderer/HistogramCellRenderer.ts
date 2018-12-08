@@ -49,7 +49,12 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupNumberStats(col, group).then(({group, summary}) => {
+        return context.tasks.groupNumberStats(col, group).then((r) => {
+          if (typeof r === 'symbol') {
+            return;
+          }
+          const {summary, group} = r;
+
           render(n, {global: summary, hist: group.hist, maxBin: group.maxBin});
         });
       }
@@ -78,7 +83,12 @@ function staticSummary(col: INumberColumn, context: IRenderContext, template: st
         Array.from(node.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
       }
 
-      return context.tasks.summaryNumberStats(col).then(({summary}) => {
+      return context.tasks.summaryNumberStats(col).then((r) => {
+        if (typeof r === 'symbol') {
+          return;
+        }
+        const {summary} = r;
+
         node.classList.toggle(cssClass('missing'), !summary);
         if (!summary) {
           return;
@@ -107,7 +117,12 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
       if (!updateFilter) {
         updateFilter = initFilter(node, col, context);
       }
-      return context.tasks.summaryNumberStats(col).then(({summary, data}) => {
+      return context.tasks.summaryNumberStats(col).then((r) => {
+        if (typeof r === 'symbol') {
+          return;
+        }
+        const {summary, data} = r;
+
         updateFilter(data ? data.missing : (summary ? summary.missing : 0), col);
 
         node.classList.add(cssClass('histogram-i'));
