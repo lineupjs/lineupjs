@@ -21,6 +21,8 @@ export interface IBoxPlotData {
 
 export interface IAdvancedBoxPlotData extends IBoxPlotData {
   readonly mean: number;
+  readonly missing: number;
+  readonly count: number;
 }
 
 export interface IStatistics {
@@ -48,6 +50,7 @@ export interface ICategoricalStatistics {
   readonly maxBin: number;
   readonly hist: ICategoricalBin[];
   readonly missing: number;
+  readonly count: number;
 }
 
 export enum EDateHistogramGranularity {
@@ -99,143 +102,6 @@ function quantile(values: Float32Array, quantile: number) {
 }
 
 /**
- * helper class to lazily compute box plotdata out of a given number array
- * @internal
- */
-export class LazyBoxPlotData implements IStatistics, IAdvancedBoxPlotData {
-  private values: Float32Array | null = null;
-
-  readonly count: number;
-  readonly missing: number;
-
-  readonly max: number;
-  readonly min: number;
-  readonly sum: number;
-  readonly mean: number;
-
-  readonly hist: INumberBin[];
-
-  constructor(values: ISequence<number>, histGen?: IHistGenerator) {
-    // filter out NaN
-    let min = Number.POSITIVE_INFINITY;
-    let max = Number.NEGATIVE_INFINITY;
-    let sum = 0;
-    let length = 0;
-
-    this.hist = histGen ? histGen.bins : [];
-
-    this.values = Float32Array.from(values.filter((v) => {
-      length += 1;
-      if (v == null || isNaN(v)) {
-        return false;
-      }
-      if (v < min) {
-        min = v;
-      }
-      if (v > max) {
-        max = v;
-      }
-      sum += v;
-
-      if (histGen) {
-        this.hist[histGen.toBin(v)].count++;
-      }
-
-      return true;
-    }));
-    this.missing = length - this.values.length;
-    this.count = length;
-
-    if (this.values.length === 0) {
-      this.max = this.min = this.mean = NaN;
-      this.sum = 0;
-    } else {
-      this.max = max;
-      this.min = min;
-      this.sum = sum;
-      this.mean = sum / this.values.length;
-    }
-  }
-
-  get maxBin() {
-    return this.hist.reduce((a, b) => Math.max(a, b.count), 0);
-  }
-
-  @cached()
-  private get boxplotData() {
-    const s = this.values!.sort();
-    this.values = null; // not needed anymore
-
-    if (s.length === 0) {
-      return {whiskerHigh: NaN, whiskerLow: NaN, outliers: [], median: NaN, q1: NaN, q3: NaN};
-    }
-
-    const median = quantile(s, 0.5)!;
-    const q1 = quantile(s, 0.25)!;
-    const q3 = quantile(s, 0.75)!;
-
-    const iqr = q3 - q1;
-    const left = q1 - 1.5 * iqr;
-    const right = q3 + 1.5 * iqr;
-
-    let outliers: number[] = [];
-    // look for the closests value which is bigger than the computed left
-    let whiskerLow = left;
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < s.length; ++i) {
-      const v = s[i];
-      if (left < v) {
-        whiskerLow = v;
-        break;
-      }
-      // outlier
-      outliers.push(v);
-    }
-    // look for the closests value which is smaller than the computed right
-    let whiskerHigh = right;
-    const reversedOutliers: number[] = [];
-    for (let i = s.length - 1; i >= 0; --i) {
-      const v = s[i];
-      if (v < right) {
-        whiskerHigh = v;
-        break;
-      }
-      // outlier
-      reversedOutliers.push(v);
-    }
-
-    outliers = outliers.concat(reversedOutliers.reverse());
-
-
-    return {whiskerHigh, whiskerLow, outliers, median, q1, q3};
-  }
-
-  get median() {
-    return this.boxplotData.median;
-  }
-
-  get q1() {
-    return this.boxplotData.q1;
-  }
-
-  get q3() {
-    return this.boxplotData.q3;
-  }
-
-  get whiskerLow() {
-    return this.boxplotData.whiskerLow;
-  }
-
-  get whiskerHigh() {
-    return this.boxplotData.whiskerHigh;
-  }
-
-  get outlier() {
-    return this.boxplotData.outliers;
-  }
-}
-
-/**
  * cache the value in a hidden __ variable
  * @internal
  */
@@ -255,6 +121,112 @@ function cached() {
   };
 }
 
+export function computeBoxPlot(arr: ISequence<IForEachAble<number> | number>): IAdvancedBoxPlotData {
+  // filter out NaN
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
+  let sum = 0;
+  let length = 0;
+  let missing = 0;
+
+  const values: number[] = [];
+
+  const integrate = (v: number) => {
+    length += 1;
+    if (v == null || isNaN(v)) {
+      missing += 1;
+      return;
+    }
+    if (v < min) {
+      min = v;
+    }
+    if (v > max) {
+      max = v;
+    }
+    sum += v;
+    values.push(v);
+  };
+
+  arr.forEach((vs) => {
+    if (typeof vs === 'number') {
+      integrate(vs);
+      return;
+    }
+    vs.forEach(integrate);
+  });
+
+  const valid = length - missing;
+
+  if (valid === 0) {
+    return {
+      min: NaN,
+      max: NaN,
+      mean: NaN,
+      missing,
+      count: length,
+      whiskerHigh: NaN,
+      whiskerLow: NaN,
+      outlier: [],
+      median: NaN,
+      q1: NaN,
+      q3: NaN
+    };
+  }
+
+  const s = Float32Array.from(values).sort();
+
+  const median = quantile(s, 0.5)!;
+  const q1 = quantile(s, 0.25)!;
+  const q3 = quantile(s, 0.75)!;
+
+  const iqr = q3 - q1;
+  const left = q1 - 1.5 * iqr;
+  const right = q3 + 1.5 * iqr;
+
+  let outlier: number[] = [];
+  // look for the closests value which is bigger than the computed left
+  let whiskerLow = left;
+  // tslint:disable-next-line:prefer-for-of
+  for (let i = 0; i < s.length; ++i) {
+    const v = s[i];
+    if (left < v) {
+      whiskerLow = v;
+      break;
+    }
+    // outlier
+    outlier.push(v);
+  }
+  // look for the closests value which is smaller than the computed right
+  let whiskerHigh = right;
+  const reversedOutliers: number[] = [];
+  for (let i = s.length - 1; i >= 0; --i) {
+    const v = s[i];
+    if (v < right) {
+      whiskerHigh = v;
+      break;
+    }
+    // outlier
+    reversedOutliers.push(v);
+  }
+
+  outlier = outlier.concat(reversedOutliers.reverse());
+
+  return {
+    min,
+    max,
+    count: length,
+    missing,
+    mean: sum / valid,
+    whiskerHigh,
+    whiskerLow,
+    outlier,
+    median,
+    q1,
+    q3
+  };
+}
+
+
 
 /**
  * computes the simple statistics of an array using d3 histogram
@@ -264,15 +236,15 @@ function cached() {
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | number>, numberOfBins?: number): IStatistics & IAdvancedBoxPlotData {
+export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | number>, numberOfBins?: number): IStatistics {
 
-  const bins: INumberBin[] = [];
+  const hist: INumberBin[] = [];
 
   const count = numberOfBins ? numberOfBins : getNumberOfBins(arr.length);
   let x0 = 0;
   const binWidth = 1. / count;
   for (let i = 0; i < count; ++i, x0 += binWidth) {
-    bins.push({
+    hist.push({
       x0,
       x1: x0 + binWidth,
       count: 0
@@ -281,7 +253,7 @@ export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | num
 
   const bin1 = 0 + binWidth;
   const binN = 1 - binWidth;
-  const binEnds = bins.map((d) => d.x1);
+  const binEnds = hist.map((d) => d.x1);
 
   const toBin = (v: number) => {
     if (v < bin1) {
@@ -292,7 +264,60 @@ export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | num
     }
     return bisectLeft(binEnds, v);
   };
-  return new LazyBoxPlotData(arr, {bins, toBin});
+
+  // filter out NaN
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
+  let sum = 0;
+  let length = 0;
+  let missing = 0;
+
+  const integrate = (v: number) => {
+    length += 1;
+    if (v == null || isNaN(v)) {
+      missing += 1;
+      return;
+    }
+    if (v < min) {
+      min = v;
+    }
+    if (v > max) {
+      max = v;
+    }
+    sum += v;
+
+    hist[toBin(v)].count++;
+  };
+
+  arr.forEach((vs) => {
+    if (typeof vs === 'number') {
+      integrate(vs);
+      return;
+    }
+    vs.forEach(integrate);
+  });
+
+  const valid = length - missing;
+  if (valid === 0) {
+    return {
+      count: missing,
+      missing,
+      min: NaN,
+      max: NaN,
+      mean: NaN,
+      hist,
+      maxBin: 0
+    };
+  }
+  return {
+    count: length,
+    min,
+    max,
+    mean: sum / valid,
+    missing,
+    hist,
+    maxBin: hist.reduce((a, b) => Math.max(a, b.count), 0)
+  };
 }
 
 function computeGranularity(min: Date | null, max: Date | null) {
@@ -400,17 +425,21 @@ export function computeDateStats(arr: ISequence<IForEachAble<Date | null>>, temp
  */
 export function computeHist(arr: ISequence<IForEachAble<ICategory | null>>, categories: ICategory[]): ICategoricalStatistics {
   const m = new Map<string, number>();
-  let missingCount = 0;
   categories.forEach((cat) => m.set(cat.name, 0));
+
+  let missing = 0;
+  let count = 0;
 
   arr.forEach((vs) => {
     if (vs == null) {
-      missingCount += 1;
+      missing += 1;
+      count += 1;
       return;
     }
     vs.forEach((v) => {
+      count += 1;
       if (v == null) {
-        missingCount += 1;
+        missing += 1;
       } else {
         m.set(v.name, (m.get(v.name) || 0) + 1);
       }
@@ -423,7 +452,8 @@ export function computeHist(arr: ISequence<IForEachAble<ICategory | null>>, cate
   return {
     maxBin,
     hist: entries,
-    missing: missingCount
+    count,
+    missing
   };
 }
 

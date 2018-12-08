@@ -1,4 +1,3 @@
-import {LazyBoxPlotData} from '../internal';
 import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
@@ -12,7 +11,7 @@ import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IAdvancedBoxPlotData} from '../internal/math';
+import {IAdvancedBoxPlotData, computeBoxPlot} from '../internal/math';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 
@@ -86,7 +85,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data.map((d) => isMissingValue(d.value) ? NaN : this.mapping.apply(d.value)));
+    return computeBoxPlot(data.map((d) => isMissingValue(d.value) ? NaN : this.mapping.apply(d.value)));
   }
 
   getRange() {
@@ -98,7 +97,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data.map((d) => d.value));
+    return computeBoxPlot(data.map((d) => d.value));
   }
 
   getNumber(row: IDataRow): number {

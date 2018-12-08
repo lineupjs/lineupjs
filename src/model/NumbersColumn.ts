@@ -1,4 +1,3 @@
-import {LazyBoxPlotData} from '../internal';
 import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
@@ -14,7 +13,7 @@ import {
 } from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IAdvancedBoxPlotData} from '../internal/math';
+import {IAdvancedBoxPlotData, computeBoxPlot} from '../internal/math';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 
@@ -103,7 +102,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data.map((d) => isMissingValue(d) ? NaN : this.mapping.apply(d)));
+    return computeBoxPlot(data.map((d) => isMissingValue(d) ? NaN : this.mapping.apply(d)));
   }
 
   getRange() {
@@ -115,7 +114,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data);
+    return computeBoxPlot(data);
   }
 
   getNumbers(row: IDataRow) {

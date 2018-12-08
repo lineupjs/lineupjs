@@ -1,9 +1,9 @@
-import {LazyBoxPlotData} from '../internal';
 import {IDataRow, IOrderedGroup} from '../model';
-import {INumbersColumn} from '../model/INumberColumn';
+import {INumbersColumn, EAdvancedSortMethod} from '../model/INumberColumn';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {ISequence} from '../internal/interable';
+import {computeBoxPlot, IAdvancedBoxPlotData} from '../internal';
 
 /** @internal */
 export abstract class ANumbersCellRenderer {
@@ -34,10 +34,11 @@ export abstract class ANumbersCellRenderer {
         normalized.push(NaN);
         raw.push(NaN);
       } else {
-        const box = <any>new LazyBoxPlotData(vs.map((d) => d.n));
-        const boxRaw = <any>new LazyBoxPlotData(vs.map((d) => d.raw));
-        normalized.push(box[col.getSortMethod()]);
-        raw.push(boxRaw[col.getSortMethod()]);
+        const box = computeBoxPlot(vs.map((d) => d.n));
+        const s: EAdvancedSortMethod = <any>col.getSortMethod();
+        const boxRaw = computeBoxPlot(vs.map((d) => d.raw));
+        normalized.push(box[s]!);
+        raw.push(boxRaw[s]!);
       }
     }
     return {normalized, raw, row};

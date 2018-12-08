@@ -1,4 +1,4 @@
-import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData, computeDateStats, computeNormalizedStats, computeHist} from '../internal/math';
+import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData, computeDateStats, computeNormalizedStats, computeHist, computeBoxPlot} from '../internal/math';
 import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking, ICategoricalLikeColumn} from '../model';
 import Column from '../model/Column';
 import {ISequence, lazySeq} from '../internal/interable';
@@ -79,6 +79,8 @@ export class DirectRenderTasks implements IRenderTasks {
   dirtyColumn(col: Column) {
     this.dataCache.delete(col.id);
     this.dataCache.delete(`${col.id}.raw`);
+    this.dataCache.delete(`${col.id}.b`);
+    this.dataCache.delete(`${col.id}.braw`);
   }
 
   private byOrder(indices: IndicesArray) {
@@ -94,7 +96,9 @@ export class DirectRenderTasks implements IRenderTasks {
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    return this.groupNumberStats(col, group, raw);
+    const {summary, data} = this.summaryBoxPlotStatsD(col, raw);
+    const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+    return taskNow({group: computeBoxPlot(this.byOrder(group.order).map(acc)), summary, data});
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
@@ -114,7 +118,7 @@ export class DirectRenderTasks implements IRenderTasks {
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.summaryNumberStats(col, raw);
+    return taskNow(this.summaryBoxPlotStatsD(col, raw));
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
@@ -136,6 +140,13 @@ export class DirectRenderTasks implements IRenderTasks {
     return {summary: computeNormalizedStats(this.byOrder(ranking).map(acc), data.hist.length), data};
   }
 
+  private summaryBoxPlotStatsD(col: Column & INumberColumn, raw?: boolean) {
+    const ranking = col.findMyRanker()!.getOrder();
+    const data = this.dataBoxPlotStats(col, raw);
+    const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+    return {summary: computeBoxPlot(this.byOrder(ranking).map(acc)), data};
+  }
+
   private summaryCategoricalStatsD(col: Column & ISetColumn) {
     const ranking = col.findMyRanker()!.getOrder();
     const data = this.dataCategoricalStats(col);
@@ -148,11 +159,8 @@ export class DirectRenderTasks implements IRenderTasks {
     return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.iterDate(d)), data), data};
   }
 
-  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.dataNumberStats(col, raw);
-  }
 
-  private cached<T>(col: Column, creator: () => T, suffix: string = '') {
+  private cached<T>(col: Column, creator: () => T, suffix: string = ''): T {
     const key = `${col.id}${suffix}`;
     if (this.dataCache.has(key)) {
       return this.dataCache.get(key)!;
@@ -160,6 +168,11 @@ export class DirectRenderTasks implements IRenderTasks {
     const s = creator();
     this.dataCache.set(key, s);
     return s;
+  }
+
+  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+    const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+    return this.cached(col, () => computeBoxPlot(lazySeq(this.data).map(acc)), raw ? '.braw' : '.b');
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
@@ -246,7 +259,10 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    return this.groupNumberStats(col, group, raw);
+    return this.chain(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, this.summaryBoxPlotStats(col, raw), ({summary, data}) => {
+      const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+      return {group: computeBoxPlot(this.byOrder(group.order).map(acc)), summary, data};
+    });
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
@@ -269,7 +285,11 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.summaryNumberStats(col, raw);
+    const ranking = col.findMyRanker()!.getOrder();
+    return this.chain(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, this.dataBoxPlotStats(col, raw), (data) => {
+      const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+      return {summary: computeBoxPlot(this.byOrder(ranking).map(acc)), data};
+    });
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
@@ -292,10 +312,6 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
     return this.chain(`${col.id}:b:summary`, this.dataDateStats(col), (data) => {
       return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.iterDate(d)), data), data};
     });
-  }
-
-  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.dataNumberStats(col, raw);
   }
 
   private cached<T>(key: string, creator: () => T): IRenderTask<T> {
@@ -344,6 +360,11 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
       }
     });
     return s;
+  }
+
+  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+    const acc = raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col);
+    return this.cached(`${col.id}:c:data${raw ? ':braw' : ':b'}`, () => computeBoxPlot(lazySeq(this.data).map(acc)));
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
