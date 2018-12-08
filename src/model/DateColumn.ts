@@ -110,6 +110,10 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return this.parse(String(v));
   }
 
+  iterDate(row: IDataRow) {
+    return [this.getDate(row)];
+  }
+
   getLabel(row: IDataRow) {
     const v = this.getValue(row);
     if (!(v instanceof Date)) {

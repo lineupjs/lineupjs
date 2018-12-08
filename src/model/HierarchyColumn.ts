@@ -162,7 +162,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
       let node: Readonly<ICategoryInternalNode> | null = this.hierarchy;
 
       let act = path.shift();
-      while(act && node) {
+      while (act && node) {
         if (node.name !== act) {
           node = null;
           break;
@@ -243,6 +243,10 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   getValue(row: IDataRow) {
     const v = this.getCategory(row);
     return v ? v.name : null;
+  }
+
+  iterCategory(row: IDataRow) {
+    return [this.getCategory(row)];
   }
 
   getLabel(row: IDataRow) {
@@ -337,7 +341,7 @@ export function isHierarchical(categories: (string | Partial<ICategory>)[]) {
   return categories.some((c) => (<any>c).parent != null);
 }
 
-export function deriveHierarchy(categories: (Partial<ICategory> & { parent: string | null })[]) {
+export function deriveHierarchy(categories: (Partial<ICategory> & {parent: string | null})[]) {
   const lookup = new Map<string, ICategoryNode>();
   categories.forEach((c) => {
     const p = c.parent || '';

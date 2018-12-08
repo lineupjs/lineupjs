@@ -147,6 +147,14 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return getBoxPlotNumber(this, row, 'raw');
   }
 
+  iterNumber(row: IDataRow) {
+    return [this.getNumber(row)];
+  }
+
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
+  }
+
   getLabel(row: IDataRow): string {
     const v = this.getRawValue(row);
     if (v == null) {

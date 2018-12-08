@@ -220,6 +220,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return [this.getNumber(row)];
   }
 
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
+  }
+
   getRawNumber(row: IDataRow) {
     return this.getRawValue(row);
   }

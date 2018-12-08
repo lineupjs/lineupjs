@@ -153,6 +153,14 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getRawNumbers(row) : [];
   }
 
+  iterNumber(row: IDataRow) {
+    return this.getNumbers(row);
+  }
+
+  iterRawNumber(row: IDataRow) {
+    return this.getRawNumbers(row);
+  }
+
   getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
     const w = this.wrapper;
     return w ? w.getBoxPlotData(row) : null;

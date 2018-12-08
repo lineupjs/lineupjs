@@ -114,6 +114,11 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return r ? r.map((d) => d.value) : [NaN];
   }
 
+  iterRawNumber(row: IDataRow) {
+    const r = this.getRawValue(row);
+    return r ? r.map((d) => d.value) : [NaN];
+  }
+
   getValue(row: IDataRow) {
     const values = this.getRawValue(row);
     return values.length === 0 ? null : values.map(({key, value}) => ({key, value: isMissingValue(value) ? NaN : this.mapping.apply(value)}));

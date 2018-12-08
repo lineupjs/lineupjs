@@ -120,6 +120,14 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return w ? w.getRawNumber(row) : NaN;
   }
 
+  iterNumber(row: IDataRow) {
+    return [this.getNumber(row)];
+  }
+
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
+  }
+
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       const value = this.getRawNumber(row);

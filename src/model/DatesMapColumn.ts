@@ -87,6 +87,10 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
     }));
   }
 
+  iterDate(row: IDataRow) {
+    return this.getDates(row);
+  }
+
   getValue(row: IDataRow) {
     const r = this.getDateMap(row);
 

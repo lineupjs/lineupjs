@@ -53,8 +53,12 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     });
   }
 
+  iterCategory(row: IDataRow) {
+    return this.getCategories(row);
+  }
+
   getColors(row: IDataRow) {
-    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d): Column.DEFAULT_COLOR);
+    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : Column.DEFAULT_COLOR);
   }
 
 

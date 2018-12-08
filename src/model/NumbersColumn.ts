@@ -140,7 +140,11 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   iterNumber(row: IDataRow) {
-    return this.getValues(row);
+    return this.getNumbers(row);
+  }
+
+  iterRawNumber(row: IDataRow) {
+    return this.getRawNumbers(row);
   }
 
   getRawValue(row: IDataRow) {

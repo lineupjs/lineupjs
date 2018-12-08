@@ -107,6 +107,10 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     return new Date(compute(av, this.sort));
   }
 
+  iterDate(row: IDataRow) {
+    return this.getDates(row);
+  }
+
   getSortMethod() {
     return this.sort;
   }

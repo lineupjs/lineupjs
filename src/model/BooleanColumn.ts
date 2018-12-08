@@ -107,7 +107,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   getValue(row: IDataRow) {
     const v: any = super.getValue(row);
-    if (typeof(v) === 'undefined' || v == null) {
+    if (typeof (v) === 'undefined' || v == null) {
       return false;
     }
     return v === true || v === 'true' || v === 'yes' || v === 'x';
@@ -116,6 +116,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   getCategory(row: IDataRow) {
     const v = this.getValue(row);
     return this.categories[v ? 0 : 1];
+  }
+
+  iterCategory(row: IDataRow) {
+    return [this.getCategory(row)];
   }
 
   getColor(row: IDataRow) {

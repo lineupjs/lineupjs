@@ -1,5 +1,4 @@
 import {IAbortAblePromise} from 'lineupengine';
-import {IValueStatistics} from '../internal/math';
 import {IDataRow, IGroupMeta, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider';
@@ -11,8 +10,6 @@ export interface IImposer {
 }
 
 export declare type IRenderCallback = (ctx: CanvasRenderingContext2D) => void;
-
-export declare type IColumnStats = null | IValueStatistics | PromiseLike<IValueStatistics>;
 
 /**
  * a cell renderer for rendering a cell of specific column

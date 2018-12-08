@@ -117,6 +117,10 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return [this.getNumber(row)];
   }
 
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
+  }
+
   getColor(row: IDataRow) {
     return CategoricalColumn.prototype.getColor.call(this, row);
   }
