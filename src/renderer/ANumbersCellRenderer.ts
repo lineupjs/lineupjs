@@ -3,7 +3,7 @@ import {INumbersColumn, EAdvancedSortMethod} from '../model/INumberColumn';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {ISequence} from '../internal/interable';
-import {computeBoxPlot, IAdvancedBoxPlotData} from '../internal';
+import {computeBoxPlot} from '../internal';
 
 /** @internal */
 export abstract class ANumbersCellRenderer {

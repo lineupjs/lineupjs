@@ -1,4 +1,4 @@
-import {IAbortAblePromise, ABORTED} from 'lineupengine';
+import {IAbortAblePromise, ABORTED, IAbortAblePromiseBase} from 'lineupengine';
 export {IAbortAblePromise, ABORTED} from 'lineupengine';
 
 export interface IPoorManIdleDeadline {
@@ -18,6 +18,18 @@ export interface ITask<T> {
   resolve(r: T | PromiseLike<T> | symbol): void;
   result: PromiseLike<T | symbol>;
 }
+
+function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void) {
+  function then<TResult1 = T | symbol, TResult2 = never>(onfulfilled?: ((value: T | symbol) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): IAbortAblePromiseBase<TResult1 | TResult2> {
+    const r = wrappee.then(onfulfilled, onrejected);
+    return {
+      then: <any>thenFactory(r, abort),
+      abort
+    };
+  }
+  return then;
+}
+
 
 export default class TaskScheduler {
   private tasks: ITask<any>[] = [];
@@ -53,7 +65,7 @@ export default class TaskScheduler {
 
     abort(); // abort existing with same id
 
-    const p = new Promise<T>((resolve) => {
+    const p = new Promise<T | symbol>((resolve) => {
       this.tasks.push({
         id,
         calc,
@@ -72,8 +84,12 @@ export default class TaskScheduler {
         this.taskId = self.setTimeout(this.runTasks, 1);
       }
     });
-    (<any>p).abort = abort;
-    return <IAbortAblePromise<T>>p;
+
+
+    return {
+      then: thenFactory(p, abort),
+      abort
+    };
   }
 
   abort(id: string) {

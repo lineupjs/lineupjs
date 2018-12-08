@@ -101,26 +101,6 @@ function quantile(values: Float32Array, quantile: number) {
   return v + (vAfter - v) * (target - index); // shift by change
 }
 
-/**
- * cache the value in a hidden __ variable
- * @internal
- */
-function cached() {
-  return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const getter = descriptor.get!;
-    const cacheKey = `__${propertyKey}`;
-    descriptor.get = function (this: any) {
-      if (this.hasOwnProperty(cacheKey)) {
-        return this[cacheKey];
-      }
-      const value = getter.call(this);
-      this[cacheKey] = value;
-      return value;
-    };
-    return descriptor;
-  };
-}
-
 export function computeBoxPlot(arr: ISequence<IForEachAble<number> | number>): IAdvancedBoxPlotData {
   // filter out NaN
   let min = Number.POSITIVE_INFINITY;
