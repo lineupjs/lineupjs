@@ -1,11 +1,11 @@
 import {ISequence, lazySeq} from '../internal/interable';
-import Column, {defaultGroup, IColumnDesc, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices} from '../model';
+import Column, {defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices} from '../model';
 import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
-import {chooseByLength, CompareLookup, ISortWorker, sortComplex, WorkerSortWorker} from './sort';
-import {ScheduleRenderTasks} from './tasks';
+import {chooseByLength, CompareLookup, ISortWorker, local, sortComplex, WorkerSortWorker} from './sort';
+import {DirectRenderTasks, IRenderTaskExectutor, ScheduleRenderTasks} from './tasks';
 
 
 export interface ILocalDataProviderOptions {
@@ -19,6 +19,16 @@ export interface ILocalDataProviderOptions {
    * default: false
    */
   jumpToSearchResult: boolean;
+
+  /**
+   * specify the sort worker to use local = direct or webworker = run in a webworker
+   */
+  sortWorker: 'local' | 'webworker';
+
+  /**
+   * specify the task executor to use direct = no delay, scheduled = run when idle
+   */
+  taskExecutor: 'direct' | 'scheduled';
 }
 
 interface ISortHelper {
@@ -36,21 +46,26 @@ export default class LocalDataProvider extends ACommonDataProvider {
      */
     filterGlobally: false,
 
-    jumpToSearchResult: false
+    jumpToSearchResult: false,
+
+    sortWorker: 'local',
+    taskExecutor: 'direct'
   };
 
   private readonly reorderAll: () => void;
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private readonly sortWorker: ISortWorker = new WorkerSortWorker();
-  private readonly tasks: ScheduleRenderTasks;
+  private readonly sortWorker: ISortWorker;
+  private readonly tasks: IRenderTaskExectutor;
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
     Object.assign(this.options, options);
     this._dataRows = toRows(_data);
-    this.tasks = new ScheduleRenderTasks(this._dataRows);
+    this.sortWorker = this.options.sortWorker === 'local' ? local : new WorkerSortWorker();
+    this.tasks = this.options.taskExecutor === 'direct' ? new DirectRenderTasks() : new ScheduleRenderTasks();
+    this.tasks.setData(this._dataRows);
 
     const that = this;
     this.reorderAll = function (this: {source?: Ranking, type: string}) {
@@ -142,7 +157,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     this.tasks.dirtyRanking(ranking, 'data');
-    this.tasks.abortAll((t) => t.id.startsWith(`r${ranking.id}:`));
 
     super.cleanUpRanking(ranking);
   }
@@ -215,8 +229,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const sortTask = this.sortWorker.sort(g.rows, singleGroup, lookups);
 
     // compute sort group value as task
-    const groupSortTask = groupLookup ? this.tasks
-      .push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(this.view(g.rows), group)) : [];
+    const groupSortTask = groupLookup ? this.tasks.groupCompare(ranking, group, this.view(g.rows)).then((r) => r) : <ICompareValue[]>[];
 
     return Promise.all([sortTask, groupSortTask]).then(([order, groupC]) => {
       if (groupLookup && Array.isArray(groupC)) {
@@ -254,7 +267,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
   sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
     // TOOD optimize to just clear groups if the filter hasn't changed
     this.tasks.dirtyRanking(ranking, 'summary');
-    this.tasks.abortAll((t) => t.id.startsWith(`r${ranking.id}:`));
 
     if (this._data.length === 0) {
       return {groups: [], index2pos: []};

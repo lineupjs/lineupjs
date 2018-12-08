@@ -1,6 +1,6 @@
 import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData, computeDateStats, computeNormalizedStats, computeHist, computeBoxPlot} from '../internal/math';
-import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking, ICategoricalLikeColumn} from '../model';
-import Column from '../model/Column';
+import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking, ICategoricalLikeColumn, IGroup} from '../model';
+import Column, {ICompareValue} from '../model/Column';
 import {ISequence, lazySeq} from '../internal/interable';
 import {IAbortAblePromise, ABORTED, abortAbleAll} from 'lineupengine';
 import TaskScheduler from '../internal/scheduler';
@@ -61,13 +61,21 @@ export interface IRenderTasks {
   summaryDateStats(col: Column & IDateColumn): IRenderTask<{summary: IDateStatistics, data: IDateStatistics}>;
 }
 
+export interface IRenderTaskExectutor extends IRenderTasks {
+  setData(data: IDataRow[]): void;
+  dirtyColumn(col: Column, type: 'data' | 'summary' | 'group'): void;
+  dirtyRanking(ranking: Ranking, type: 'data' | 'summary' | 'group'): void;
 
-export class DirectRenderTasks implements IRenderTasks {
+  groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>): IRenderTask<ICompareValue[]>;
+}
+
+
+export class DirectRenderTasks implements IRenderTaskExectutor {
   private readonly byIndex = (i: number) => this.data[i];
 
   private readonly dataCache = new Map<string, any>();
 
-  constructor(private data: IDataRow[]) {
+  constructor(private data: IDataRow[] = []) {
 
   }
 
@@ -76,15 +84,33 @@ export class DirectRenderTasks implements IRenderTasks {
     this.dataCache.clear();
   }
 
-  dirtyColumn(col: Column) {
+  dirtyColumn(col: Column, type: 'data' | 'summary' | 'group') {
+    if (type !== 'data') {
+      // only data is cached
+      return;
+    }
     this.dataCache.delete(col.id);
     this.dataCache.delete(`${col.id}.raw`);
     this.dataCache.delete(`${col.id}.b`);
     this.dataCache.delete(`${col.id}.braw`);
   }
 
+  dirtyRanking(ranking: Ranking, type: 'data' | 'summary' | 'group') {
+    if (type !== 'data') {
+      return;
+    }
+
+    for (const col of ranking.flatColumns) {
+      this.dirtyColumn(col, 'data');
+    }
+  }
+
   private byOrder(indices: IndicesArray) {
     return lazySeq(indices).map(this.byIndex);
+  }
+
+  groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>) {
+    return taskNow(ranking.toGroupCompareValue(rows, group));
   }
 
   groupRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
@@ -191,7 +217,7 @@ export class DirectRenderTasks implements IRenderTasks {
 }
 
 
-export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
+export class ScheduleRenderTasks extends TaskScheduler implements IRenderTaskExectutor {
   private readonly byIndex = (i: number) => this.data[i];
 
   private readonly cache = new Map<string, any>();
@@ -244,10 +270,16 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
         this.abort(key);
       }
     }
+    // group compare tasks
+    this.abortAll((t) => t.id.startsWith(`r${ranking.id}:`));
   }
 
   private byOrder(indices: IndicesArray) {
     return lazySeq(indices).map(this.byIndex);
+  }
+
+  groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>) {
+    return taskLater(this.push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(rows, group)));
   }
 
   groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T) {
