@@ -1,4 +1,4 @@
-import {Column, IColumnDesc} from '../../model';
+import {IColumnDesc} from '../../model';
 import {Taggle, LineUp} from '../../ui';
 import {ILineUpOptions, ITaggleOptions} from '../../interfaces';
 import {IBuilderAdapterRankingProps, buildRanking} from './ranking';
