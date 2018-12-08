@@ -18,9 +18,15 @@ export function isSeqEmpty(seq: ISequence<any>) {
   return seq.every(() => false); // more efficent than counting length
 }
 
+function isIndicesAble<T>(it: Iterable<T>): it is ArrayLike<T> & Iterable<T> {
+  return Array.isArray(it) || it instanceof Uint8Array || it instanceof Uint16Array || it instanceof Uint32Array || it instanceof Float32Array || it instanceof Int8Array || it instanceof Int16Array || it instanceof Int32Array || it instanceof Float64Array;
+}
+
+declare type ISequenceBase<T> = ISequence<T> | (ArrayLike<T> & Iterable<T>);
+
 class LazyFilter<T> implements ISequence<T> {
   private _length = -1;
-  constructor(private readonly it: ISequence<T>, private readonly filters: ((v: T, i: number) => boolean)[]) {
+  constructor(private readonly it: ISequenceBase<T>, private readonly filters: ((v: T, i: number) => boolean)[]) {
 
   }
 
@@ -43,7 +49,7 @@ class LazyFilter<T> implements ISequence<T> {
   }
 
   forEach(callback: (v: T, i: number) => void) {
-    if (Array.isArray(this.it)) {
+    if (isIndicesAble(this.it)) {
       // fast array version
       outer: for (let i = 0; i < this.it.length; ++i) {
         const v = this.it[i];
@@ -99,7 +105,7 @@ class LazyFilter<T> implements ISequence<T> {
   }
 
   some(callback: (v: T, i: number) => boolean) {
-    if (Array.isArray(this.it)) {
+    if (isIndicesAble(this.it)) {
       // fast array version
       outer: for (let i = 0; i < this.it.length; ++i) {
         const v = this.it[i];
@@ -138,7 +144,7 @@ class LazyFilter<T> implements ISequence<T> {
   }
 
   every(callback: (v: T, i: number) => boolean) {
-    if (Array.isArray(this.it)) {
+    if (isIndicesAble(this.it)) {
       // fast array version
       outer: for (let i = 0; i < this.it.length; ++i) {
         const v = this.it[i];
@@ -177,16 +183,20 @@ class LazyFilter<T> implements ISequence<T> {
   }
 
   reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U) {
-    if (Array.isArray(this.it)) {
+    if (isIndicesAble(this.it)) {
       // fast array version
-      return this.it.reduce((acc, v, i) => {
+      let acc = initial;
+      let j = 0;
+      outer: for (let i = 0; i < this.it.length; ++i) {
+        const v = this.it[i];
         for (const f of this.filters) {
           if (!f(v, i)) {
-            return acc;
+            continue outer;
           }
         }
-        return callback(acc, v, i);
-      }, initial);
+        acc = callback(acc, v, j++);
+      }
+      return acc;
     }
 
     let valid = 0;
@@ -212,7 +222,7 @@ class LazyFilter<T> implements ISequence<T> {
 }
 
 abstract class ALazyMap<T, T2> implements ISequence<T2> {
-  constructor(protected readonly it: ISequence<T>) {
+  constructor(protected readonly it: ISequenceBase<T>) {
 
   }
 
@@ -229,7 +239,7 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
 
 
   forEach(callback: (v: T2, i: number) => void) {
-    if (Array.isArray(this.it)) {
+    if (isIndicesAble(this.it)) {
       for (let i = 0; i < this.it.length; ++i) {
         callback(this.mapV(this.it[i], i), i);
       }
@@ -263,7 +273,7 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
   }
 
   some(callback: (v: T2, i: number) => boolean) {
-    if (Array.isArray(this.it)) {
+    if (isIndicesAble(this.it)) {
       for (let i = 0; i < this.it.length; ++i) {
         if (callback(this.mapV(this.it[i], i), i)) {
           return true;
@@ -282,7 +292,7 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
   }
 
   every(callback: (v: T2, i: number) => boolean) {
-    if (Array.isArray(this.it)) {
+    if (isIndicesAble(this.it)) {
       for (let i = 0; i < this.it.length; ++i) {
         if (!callback(this.mapV(this.it[i], i), i)) {
           return false;
@@ -301,8 +311,12 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
   }
 
   reduce<U>(callback: (acc: U, v: T2, i: number) => U, initial: U) {
-    if (Array.isArray(this.it)) {
-      return this.it.reduce((acc, v, i) => callback(acc, this.mapV(v, i), i), initial);
+    if (isIndicesAble(this.it)) {
+      let acc = initial;
+      for (let i = 0; i < this.it.length; ++i) {
+        acc = callback(acc, this.mapV(this.it[i], i), i);
+      }
+      return acc;
     }
 
     const it = this.it[Symbol.iterator]();
@@ -315,7 +329,7 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
 }
 
 class LazyMap1<T1, T2> extends ALazyMap<T1, T2> implements ISequence<T2> {
-  constructor(it: ISequence<T1>, protected readonly mapV: (v: T1, i: number) => T2) {
+  constructor(it: ISequenceBase<T1>, protected readonly mapV: (v: T1, i: number) => T2) {
     super(it);
   }
 
@@ -325,7 +339,7 @@ class LazyMap1<T1, T2> extends ALazyMap<T1, T2> implements ISequence<T2> {
 }
 
 class LazyMap2<T1, T2, T3> extends ALazyMap<T1, T3> implements ISequence<T3> {
-  constructor(it: ISequence<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3) {
+  constructor(it: ISequenceBase<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3) {
     super(it);
   }
 
@@ -340,7 +354,7 @@ class LazyMap2<T1, T2, T3> extends ALazyMap<T1, T3> implements ISequence<T3> {
 
 
 class LazyMap3<T1, T2, T3, T4> extends ALazyMap<T1, T4> implements ISequence<T4> {
-  constructor(it: ISequence<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3, private readonly map34: (v: T3, i: number) => T4) {
+  constructor(it: ISequenceBase<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3, private readonly map34: (v: T3, i: number) => T4) {
     super(it);
   }
 
@@ -355,7 +369,7 @@ class LazyMap3<T1, T2, T3, T4> extends ALazyMap<T1, T4> implements ISequence<T4>
 }
 
 class LazySeq<T> implements ISequence<T> {
-  private _arr: ReadonlyArray<T> | null = null;
+  private _arr: ISequenceBase<T> | null = null;
 
   constructor(private readonly iterable: Iterable<T>) {
 
@@ -365,7 +379,7 @@ class LazySeq<T> implements ISequence<T> {
     if (this._arr) {
       return this._arr;
     }
-    if (Array.isArray(this.iterable)) {
+    if (isIndicesAble(this.iterable)) {
       this._arr = this.iterable;
     } else {
       this._arr = Array.from(this.iterable);
@@ -386,7 +400,7 @@ class LazySeq<T> implements ISequence<T> {
   }
 
   forEach(callback: (v: T, i: number) => void) {
-    if (Array.isArray(this.iterable)) {
+    if (isIndicesAble(this.iterable)) {
       for (let i = 0; i < this.iterable.length; ++i) {
         callback(this.iterable[i], i);
       }
@@ -399,7 +413,7 @@ class LazySeq<T> implements ISequence<T> {
   }
 
   some(callback: (v: T, i: number) => boolean) {
-    if (Array.isArray(this.iterable)) {
+    if (isIndicesAble(this.iterable)) {
       for (let i = 0; i < this.iterable.length; ++i) {
         if (callback(this.iterable[i], i)) {
           return true;
@@ -418,7 +432,7 @@ class LazySeq<T> implements ISequence<T> {
   }
 
   every(callback: (v: T, i: number) => boolean) {
-    if (Array.isArray(this.iterable)) {
+    if (isIndicesAble(this.iterable)) {
       for (let i = 0; i < this.iterable.length; ++i) {
         if (!callback(this.iterable[i], i)) {
           return false;
@@ -437,8 +451,12 @@ class LazySeq<T> implements ISequence<T> {
   }
 
   reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U) {
-    if (Array.isArray(this.iterable)) {
-      return this.iterable.reduce(callback);
+    if (isIndicesAble(this.iterable)) {
+      let acc = initial;
+      for (let i = 0; i < this.iterable.length; ++i) {
+        acc = callback(acc, this.iterable[i], i);
+      }
+      return acc;
     }
 
     const it = this[Symbol.iterator]();
@@ -451,7 +469,7 @@ class LazySeq<T> implements ISequence<T> {
 
   get length() {
     const it = this.iterable;
-    if (Array.isArray(it) || it instanceof Uint8Array || it instanceof Uint16Array || it instanceof Uint32Array || it instanceof Float32Array) {
+    if (isIndicesAble(it)) {
       return it.length;
     }
     if (it instanceof Set || it instanceof Map) {
