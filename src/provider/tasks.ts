@@ -2,8 +2,8 @@ import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotDa
 import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray} from '../model';
 import Column from '../model/Column';
 import {ISequence, lazySeq} from '../internal/interable';
-import {IAbortAblePromise, ABORTED} from 'lineupengine';
-import TaskScheduler, {ITask} from '../internal/scheduler';
+import {IAbortAblePromise, ABORTED, abortAbleAll} from 'lineupengine';
+import TaskScheduler from '../internal/scheduler';
 
 export {IAbortAblePromise} from 'lineupengine';
 
@@ -43,7 +43,7 @@ export function tasksAll<T>(tasks: IRenderTask<T>[]): IRenderTask<T[]> {
   if (tasks.every((t) => t instanceof TaskNow)) {
     return taskNow(tasks.map((d) => (<TaskNow<T>>d).v));
   }
-  return taskNow([]); // FIXME
+  return taskLater(abortAbleAll((<(TaskNow<T> | TaskLater<T>)[]>tasks).map((d) => d.v)));
 }
 
 export interface IRenderTasks {
@@ -146,7 +146,7 @@ export class DirectRenderTasks implements IRenderTasks {
   }
 
   dataBoxPlotStats(col: Column & INumberColumn) {
-    this.dataNumberStats(col);
+    return this.dataNumberStats(col);
   }
 
   private cached<T>(col: Column, creator: () => T) {
@@ -173,13 +173,13 @@ export class DirectRenderTasks implements IRenderTasks {
 }
 
 
-class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
+export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
   private readonly byIndex = (i: number) => this.data[i];
 
   private readonly cache = new Map<string, any>();
 
   constructor(private data: IDataRow[]) {
-
+    super();
   }
 
   setData(data: IDataRow[]) {
@@ -195,8 +195,8 @@ class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
     return lazySeq(indices).map(this.byIndex);
   }
 
-  groupRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
-    return taskNow(compute(this.byOrder(group.order)));
+  groupRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
+    return this.cached(`grouprows:${col.id}:${group.name}`, () => compute(this.byOrder(group.order)));
   }
 
   groupExampleRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
@@ -208,18 +208,21 @@ class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup) {
-    const {summary, data} = this.summaryNumberStatsD(col);
-    return taskNow({group: computeNormalizedStats(this.byOrder(group.order).map((d) => col.getNumber(d))), summary, data});
+    return this.chain(`group:${col.id}:${group.name}`, this.summaryNumberStats(col), ({summary, data}) => {
+      return {group: computeNormalizedStats(this.byOrder(group.order).map((d) => col.getNumber(d)), summary.hist.length), summary, data};
+    });
   }
 
   groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup) {
-    const {summary, data} = this.summaryCategoricalStatsD(col);
-    return taskNow({group: computeHist(this.byOrder(group.order).map((d) => col.getSet(d)), col.categories), summary, data});
+    return this.chain(`group:${col.id}:${group.name}`, this.summaryCategoricalStats(col), ({summary, data}) => {
+      return {group: computeHist(this.byOrder(group.order).map((d) => col.getSet(d)), col.categories), summary, data};
+    });
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
-    const {summary, data} = this.summaryDateStatsD(col);
-    return taskNow({group: computeDateStats(this.byOrder(group.order).map((d) => col.getDate(d)), summary), summary, data});
+    return this.chain(`group:${col.id}:${group.name}`, this.summaryDateStats(col), ({summary, data}) => {
+      return {group: computeDateStats(this.byOrder(group.order).map((d) => col.getDate(d)), summary), summary, data};
+    });
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn) {
@@ -227,39 +230,24 @@ class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
   }
 
   summaryNumberStats(col: Column & INumberColumn) {
-    return taskNow(this.summaryNumberStatsD(col));
+    const ranking = col.findMyRanker()!.getOrder();
+    return this.chain(`summary:${col.id}`, this.dataNumberStats(col), (data) => {
+      return {summary: computeNormalizedStats(this.byOrder(ranking).map((d) => col.getNumber(d)), data.hist.length), data};
+    });
   }
 
   summaryCategoricalStats(col: Column & ISetColumn) {
-    return taskNow(this.summaryCategoricalStatsD(col));
+    const ranking = col.findMyRanker()!.getOrder();
+    return this.chain(`summary:${col.id}`, this.dataCategoricalStats(col), (data) => {
+      return {summary: computeHist(this.byOrder(ranking).map((d) => col.getSet(d)), col.categories), data};
+    });
   }
 
   summaryDateStats(col: Column & IDateColumn) {
-    return taskNow(this.summaryDateStatsD(col));
-  }
-
-  private summaryNumberStatsD(col: Column & INumberColumn) {
     const ranking = col.findMyRanker()!.getOrder();
-    const data = this.dataNumberStats(col);
-    return {summary: computeNormalizedStats(this.byOrder(ranking).map((d) => col.getNumber(d)), data.hist.length), data};
-  }
-
-  private summaryCategoricalStatsD(col: Column & ISetColumn) {
-    const ranking = col.findMyRanker()!.getOrder();
-    const data = this.dataCategoricalStats(col);
-    return {summary: computeHist(this.byOrder(ranking).map((d) => col.getSet(d)), col.categories), data};
-  }
-
-  private summaryDateStatsD(col: Column & IDateColumn) {
-    const ranking = col.findMyRanker()!.getOrder();
-    const data = this.dataDateStats(col);
-    return this.dataDateStats(col).then((r) => {
-      if (typeof r === 'symbol') {
-
-      }
-      return this.cach
-    })
-    return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.getDate(d)), data), data};
+    return this.chain(`summary:${col.id}`, this.dataDateStats(col), (data) => {
+      return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.getDate(d)), data), data};
+    });
   }
 
   dataBoxPlotStats(col: Column & INumberColumn) {
@@ -274,6 +262,35 @@ class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
     const s = taskLater(task);
     this.cache.set(key, s);
     task.then((r) => {
+      if (typeof r === 'symbol') {
+        return;
+      }
+      if (this.cache.get(key) === s) {
+        // still same value replace with faster version
+        this.cache.set(key, taskNow(r));
+      }
+    });
+    return s;
+  }
+
+  private chain<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => U): IRenderTask<U> {
+    if (this.cache.has(key)) {
+      return this.cache.get(key)!;
+    }
+    if (task instanceof TaskNow) {
+      return this.cached(key, () => creator(task.v));
+    }
+
+    const v = (<TaskLater<T>>task).v;
+    const subTask = v.then((data) => {
+      if (typeof data === 'symbol') {
+        return ABORTED;
+      }
+      return this.push(key, () => creator(data));
+    });
+    const s = taskLater(subTask);
+    this.cache.set(key, s);
+    subTask.then((r) => {
       if (typeof r === 'symbol') {
         return;
       }
