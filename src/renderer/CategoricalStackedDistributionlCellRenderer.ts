@@ -127,7 +127,7 @@ function stackedBar(col: ISetColumn) {
           const label = cats[i].label;
           d.style.flexGrow = `${round(total === 0 ? 0 : count, 2)}`;
           d.title = `${label}: ${count}`;
-        };
+        }
         return;
       }
 
@@ -145,7 +145,7 @@ function stackedBar(col: ISetColumn) {
         d.title = `${label}: ${count} of ${gCount}`;
         const relY = 100 - round(count * 100 / gCount, 2);
         d.style.background = relY === 0 ? cats[i].color : (relY === 100 ? cats[i].selected : `linear-gradient(${cats[i].selected} ${relY}%, ${cats[i].color} ${relY}%, ${cats[i].color} 100%)`);
-      };
+      }
     }
   };
 }

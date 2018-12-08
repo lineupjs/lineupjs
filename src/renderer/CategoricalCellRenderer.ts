@@ -3,7 +3,7 @@ import {ICategoricalStatistics, round} from '../internal/math';
 import {ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {isCategoryIncluded, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn} from '../model/ICategoricalColumn';
+import {isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn} from '../model/ICategoricalColumn';
 import OrdinalColumn from '../model/OrdinalColumn';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
