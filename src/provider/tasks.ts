@@ -1,5 +1,5 @@
 import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData, computeDateStats, computeNormalizedStats, computeHist} from '../internal/math';
-import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray} from '../model';
+import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking} from '../model';
 import Column from '../model/Column';
 import {ISequence, lazySeq} from '../internal/interable';
 import {IAbortAblePromise, ABORTED, abortAbleAll} from 'lineupengine';
@@ -47,8 +47,8 @@ export function tasksAll<T>(tasks: IRenderTask<T>[]): IRenderTask<T[]> {
 }
 
 export interface IRenderTasks {
-  groupRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
-  groupExampleRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
+  groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
+  groupExampleRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup): IRenderTask<{group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup): IRenderTask<{group: IStatistics, summary: IStatistics, data: IStatistics}>;
@@ -84,11 +84,11 @@ export class DirectRenderTasks implements IRenderTasks {
     return lazySeq(indices).map(this.byIndex);
   }
 
-  groupRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
+  groupRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
     return taskNow(compute(this.byOrder(group.order)));
   }
 
-  groupExampleRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
+  groupExampleRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
     return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
   }
 
@@ -178,28 +178,65 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
 
   private readonly cache = new Map<string, any>();
 
-  constructor(private data: IDataRow[]) {
+  constructor(private data: IDataRow[] = []) {
     super();
   }
 
   setData(data: IDataRow[]) {
     this.data = data;
     this.cache.clear();
+    this.clear();
   }
 
-  dirtyColumn(col: Column) {
-    this.cache.delete(col.id);
+  dirtyColumn(col: Column, type: 'data' | 'group' | 'summary') {
+    // order designed such that first groups, then summaries, then data is deleted
+
+    for (const key of Array.from(this.cache.keys()).sort()) {
+      // data = all
+      // summary = summary + group
+      // group = group only
+      if ((type === 'data' && key.startsWith(`${col.id}:`) ||
+        (type === 'summary' && key.startsWith(`${col.id}:b:summary:`)) ||
+        (key.startsWith(`${col.id}:a:group`)))) {
+        this.cache.delete(key);
+        this.abort(key);
+      }
+    }
+  }
+
+  dirtyRanking(ranking: Ranking, type: 'data' | 'group' | 'summary') {
+    const cols = ranking.flatColumns;
+
+    let checker: ((key: string) => boolean)[];
+    switch (type) {
+      case 'group':
+        checker = cols.map((col) => (key: string) => key.startsWith(`${col.id}:a:group`));
+        break;
+      case 'summary':
+        checker = cols.map((col) => (key: string) => key.startsWith(`${col.id}:b:summary`) || key.startsWith(`${col.id}:a:group`));
+        break;
+      case 'data':
+      default:
+        checker = cols.map((col) => (key: string) => key.startsWith(`${col.id}:`));
+        break;
+    }
+    for (const key of Array.from(this.cache.keys()).sort()) {
+      if (checker.some((f) => f(key))) {
+        this.cache.delete(key);
+        this.abort(key);
+      }
+    }
   }
 
   private byOrder(indices: IndicesArray) {
     return lazySeq(indices).map(this.byIndex);
   }
 
-  groupRows<T>(col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
-    return this.cached(`grouprows:${col.id}:${group.name}`, () => compute(this.byOrder(group.order)));
+  groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T) {
+    return this.cached(`${col.id}:a:group:${group.name}:${key}`, () => compute(this.byOrder(group.order)));
   }
 
-  groupExampleRows<T>(_col: Column, group: IOrderedGroup, compute: (rows: ISequence<IDataRow>) => T) {
+  groupExampleRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
     return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
   }
 
@@ -208,19 +245,19 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup) {
-    return this.chain(`group:${col.id}:${group.name}`, this.summaryNumberStats(col), ({summary, data}) => {
+    return this.chain(`${col.id}:a:group:${group.name}`, this.summaryNumberStats(col), ({summary, data}) => {
       return {group: computeNormalizedStats(this.byOrder(group.order).map((d) => col.getNumber(d)), summary.hist.length), summary, data};
     });
   }
 
   groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup) {
-    return this.chain(`group:${col.id}:${group.name}`, this.summaryCategoricalStats(col), ({summary, data}) => {
+    return this.chain(`${col.id}:a:group:${group.name}`, this.summaryCategoricalStats(col), ({summary, data}) => {
       return {group: computeHist(this.byOrder(group.order).map((d) => col.getSet(d)), col.categories), summary, data};
     });
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
-    return this.chain(`group:${col.id}:${group.name}`, this.summaryDateStats(col), ({summary, data}) => {
+    return this.chain(`${col.id}:a:group:${group.name}`, this.summaryDateStats(col), ({summary, data}) => {
       return {group: computeDateStats(this.byOrder(group.order).map((d) => col.getDate(d)), summary), summary, data};
     });
   }
@@ -231,21 +268,21 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
 
   summaryNumberStats(col: Column & INumberColumn) {
     const ranking = col.findMyRanker()!.getOrder();
-    return this.chain(`summary:${col.id}`, this.dataNumberStats(col), (data) => {
+    return this.chain(`${col.id}:b:summary`, this.dataNumberStats(col), (data) => {
       return {summary: computeNormalizedStats(this.byOrder(ranking).map((d) => col.getNumber(d)), data.hist.length), data};
     });
   }
 
   summaryCategoricalStats(col: Column & ISetColumn) {
     const ranking = col.findMyRanker()!.getOrder();
-    return this.chain(`summary:${col.id}`, this.dataCategoricalStats(col), (data) => {
+    return this.chain(`${col.id}:b:summary`, this.dataCategoricalStats(col), (data) => {
       return {summary: computeHist(this.byOrder(ranking).map((d) => col.getSet(d)), col.categories), data};
     });
   }
 
   summaryDateStats(col: Column & IDateColumn) {
     const ranking = col.findMyRanker()!.getOrder();
-    return this.chain(`summary:${col.id}`, this.dataDateStats(col), (data) => {
+    return this.chain(`${col.id}:b:summary`, this.dataDateStats(col), (data) => {
       return {summary: computeDateStats(this.byOrder(ranking).map((d) => col.getDate(d)), data), data};
     });
   }
@@ -303,14 +340,14 @@ export class ScheduleRenderTasks extends TaskScheduler implements IRenderTasks {
   }
 
   dataNumberStats(col: Column & INumberColumn) {
-    return this.cached(`data:${col.id}`, () => computeNormalizedStats(lazySeq(this.data).map((d) => col.getNumber(d))));
+    return this.cached(`${col.id}:c:data`, () => computeNormalizedStats(lazySeq(this.data).map((d) => col.getNumber(d))));
   }
 
   dataCategoricalStats(col: Column & ISetColumn) {
-    return this.cached(`data:${col.id}`, () => computeHist(lazySeq(this.data).map((d) => col.getSet(d)), col.categories));
+    return this.cached(`${col.id}:c:data`, () => computeHist(lazySeq(this.data).map((d) => col.getSet(d)), col.categories));
   }
 
   dataDateStats(col: Column & IDateColumn) {
-    return this.cached(`data:${col.id}`, () => computeDateStats(lazySeq(this.data).map((d) => col.getDate(d))));
+    return this.cached(`${col.id}:c:data`, () => computeDateStats(lazySeq(this.data).map((d) => col.getDate(d))));
   }
 }

@@ -20,7 +20,7 @@ export interface ITask<T> {
 }
 
 export default class TaskScheduler {
-  private readonly tasks: ITask<any>[] = [];
+  private tasks: ITask<any>[] = [];
   private taskId: number = -1;
 
   private runTasks = (deadline: IPoorManIdleDeadline) => {
@@ -86,6 +86,17 @@ export default class TaskScheduler {
 
     task.resolve(ABORTED);
     return true;
+  }
+
+  abortAll(filter: (task: ITask<any>) => boolean) {
+    const abort = this.tasks.filter(filter);
+    if (abort.length === 0) {
+      return;
+    }
+    this.tasks = this.tasks.filter((d) => !filter(d));
+    for (const task of abort) {
+      task.resolve(ABORTED);
+    }
   }
 
   clear() {

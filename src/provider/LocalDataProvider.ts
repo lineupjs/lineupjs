@@ -7,6 +7,7 @@ import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {chooseByLength, CompareLookup, ISortWorker, sortComplex, WorkerSortWorker} from './sort';
+import {ScheduleRenderTasks} from './tasks';
 
 
 export interface ILocalDataProviderOptions {
@@ -40,28 +41,18 @@ export default class LocalDataProvider extends ACommonDataProvider {
     jumpToSearchResult: false
   };
 
-  /**
-   * stats caches Map<column id, stats> for the whole dataset
-   */
-  private readonly dataStats = new Map<string, IValueStatistics | IAbortAblePromise<IValueStatistics>>();
-
-  /**
-   * stats caches Map<column id, stats> for a column in a ranking
-   */
-  private readonly rankingStats = new Map<string, IValueStatistics | IAbortAblePromise<IValueStatistics>>();
-
-
   private readonly reorderAll: () => void;
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private readonly sortWorker: ISortWorker = new WorkerSortWorker(); //
+  private readonly sortWorker: ISortWorker = new WorkerSortWorker();
+  private readonly tasks: ScheduleRenderTasks;
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
     Object.assign(this.options, options);
     this._dataRows = toRows(_data);
-
+    this.tasks = new ScheduleRenderTasks(this._dataRows);
 
     const that = this;
     this.reorderAll = function (this: {source?: Ranking, type: string}) {
@@ -100,6 +91,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   destroy() {
     super.destroy();
     this.sortWorker.terminate();
+    this.tasks.setData([]);
   }
 
   /**
@@ -109,8 +101,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   setData(data: any[]) {
     this._data = data;
     this._dataRows = toRows(data);
-    this.rankingStats.clear();
-    this.dataStats.clear();
+    this.tasks.setData(this._dataRows);
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
   }
@@ -128,8 +119,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       this._data.push(d);
       this._dataRows.push({v: d, i: this._dataRows.length});
     }
-    this.rankingStats.clear();
-    this.dataStats.clear();
+    this.tasks.setData(this._dataRows);
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
   }
@@ -149,11 +139,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
       ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }
 
-    // delete caches
-    for (const col of ranking.flatColumns) {
-      this.dataStats.delete(col.id);
-      this.rankingStats.delete(col.id);
-    }
+    this.tasks.dirtyRanking(ranking, 'data');
+    this.tasks.abortAll((t) => t.id.startsWith(`r${ranking.id}:`));
 
     super.cleanUpRanking(ranking);
   }
@@ -243,6 +230,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
+    // TOOD optimize to just clear groups if the filter hasn't changed
+    this.tasks.dirtyRanking(ranking, 'summary');
+    this.tasks.abortAll((t) => t.id.startsWith(`r${ranking.id}:`));
+
     if (this._data.length === 0) {
       return {groups: [], index2pos: []};
     }
@@ -268,15 +259,18 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return Promise.all(Array.from(groups.values()).map((g, i) => {
       const group = g.group;
 
-      // compute sort group value
-      if (groupLookup) {
-        groupLookup.push(i, ranking.toGroupCompareValue(this.view(g.rows), group));
-      }
+      const sortTask = this.sortWorker.sort(g.rows, groups.size === 1, lookups);
 
-      return this.sortWorker
-        .sort(g.rows, groups.size === 1, lookups)
-        .then((order) => Object.assign({order}, group));
+      // compute sort group value as task
+      const groupSortTask = groupLookup ? this.tasks
+        .push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(this.view(g.rows), group)) : [];
 
+      return Promise.all([sortTask, groupSortTask]).then(([order, groupC]) => {
+        if (groupLookup && Array.isArray(groupC)) {
+          groupLookup.push(i, groupC);
+        }
+        return Object.assign({order}, group);
+      });
     })).then((groups) => {
       return this.sortGroups(groups, groupLookup, maxDataIndex);
     });
