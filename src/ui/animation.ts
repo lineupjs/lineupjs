@@ -54,7 +54,7 @@ export function lineupAnimation(previous: IExceptionContext, previousData: (IGro
       prevHelper = toGroupLookup(previousData);
     }
     const item = currentData[currentRowIndex];
-    const referenceIndex = isGroup(item) ? prevHelper.group2firstItemIndex.get(item.name) : prevHelper.item2groupIndex.get(item.i);
+    const referenceIndex = isGroup(item) ? prevHelper.group2firstItemIndex.get(item.name) : prevHelper.item2groupIndex.get(item.dataIndex);
     if (referenceIndex === undefined) {
       return defaultValue;
     }
@@ -69,7 +69,7 @@ export function lineupAnimation(previous: IExceptionContext, previousData: (IGro
       currHelper = toGroupLookup(currentData);
     }
     const item = previousData[previousRowIndex];
-    const referenceIndex = isGroup(item) ? currHelper.group2firstItemIndex.get(item.name) : currHelper.item2groupIndex.get(item.i);
+    const referenceIndex = isGroup(item) ? currHelper.group2firstItemIndex.get(item.name) : currHelper.item2groupIndex.get(item.dataIndex);
     if (referenceIndex === undefined) {
       return defaultValue;
     }

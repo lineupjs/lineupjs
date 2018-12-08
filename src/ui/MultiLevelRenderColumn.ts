@@ -1,4 +1,4 @@
-import {StyleManager, isAsyncUpdate, IAsyncUpdate, IAbortAblePromise, allAbortAble} from 'lineupengine';
+import {StyleManager, isAsyncUpdate, IAsyncUpdate, IAbortAblePromise, abortAbleAll} from 'lineupengine';
 import {round} from '../internal';
 import Column from '../model/Column';
 import {IMultiLevelColumn} from '../model';
@@ -132,7 +132,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     }
     return {
       item: header,
-      ready: <IAbortAblePromise<void>>allAbortAble(toWait)
+      ready: <IAbortAblePromise<void>>abortAbleAll(toWait)
     };
   }
 }

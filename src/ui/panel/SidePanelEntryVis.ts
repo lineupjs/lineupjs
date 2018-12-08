@@ -43,7 +43,7 @@ export default class SidePanelEntryVis {
   update(ctx: IRankingHeaderContext = this.ctx) {
     this.ctx = ctx;
     updateHeader(this.node, this.column);
-    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!, ctx.statsOf(<any>this.column));
+    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!);
   }
 
   private appendSummary() {
@@ -60,7 +60,8 @@ export default class SidePanelEntryVis {
 
     this.summary = this.ctx.summaryRenderer(this.column, true);
     this.appendSummary();
-    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!, this.ctx.statsOf(<any>this.column));
+    // FIXME handle async
+    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!);
   }
 
   destroy() {

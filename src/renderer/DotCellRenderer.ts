@@ -1,15 +1,12 @@
-import {ICategoricalStatistics, IStatistics, round, concat} from '../internal';
-import {INumberColumn, IDataRow, IGroup, isNumberColumn, IOrderedGroup} from '../model';
-/**
- * a renderer rendering a bar for numerical columns
- */
+import {round} from '../internal';
+import {INumberColumn, IDataRow, isNumberColumn, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {attr, forEachChild, noRenderer} from './utils';
+import {attr, noRenderer} from './utils';
 import {concatSeq, ISequence} from '../internal/interable';
 
 /** @internal */

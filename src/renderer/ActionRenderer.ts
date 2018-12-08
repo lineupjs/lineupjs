@@ -1,4 +1,4 @@
-import {IDataRow, IGroup, IOrderedGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import {default as ActionColumn} from '../model/ActionColumn';
 import Column from '../model/Column';
 import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';

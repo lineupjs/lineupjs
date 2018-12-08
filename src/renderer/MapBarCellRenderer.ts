@@ -1,4 +1,4 @@
-import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
+import {round} from '../internal/math';
 import {IDataRow, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {IMapColumn, isMapColumn} from '../model/IArrayColumn';

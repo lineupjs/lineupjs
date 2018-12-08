@@ -42,7 +42,7 @@ export interface IRemoteDataProviderOptions {
   maxCacheSize: number;
 }
 
-function createIndex2Pos(order: number[]) {
+function createIndex2Pos(order: IndicesArrayj) {
   const index2pos = <number[]>[];
   for (let i = 0; i < order.length; ++i) {
     index2pos[order[i]] = i + 1;
@@ -128,6 +128,14 @@ export default class RemoteDataProvider extends ACommonDataProvider {
 
     return orders.map((order) =>
       order.map((i) => this.cache.get(i)!));
+  }
+
+  getRow(index: number) {
+    if (this.cache.has(index)) {
+      return this.cache.get(index)!;
+    }
+    this.loadInCache([index]);
+    return this.cache.get(index)!;
   }
 
 

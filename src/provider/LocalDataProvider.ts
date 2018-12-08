@@ -1,22 +1,13 @@
-import {computeHist, computeNormalizedStats, computeDateStats, IDateStatistics, IValueStatistics, isPromiseLike} from '../internal';
-import Column, {
-  defaultGroup, IColumnDesc, IDataRow, IGroup, INumberColumn,
-  IOrderedGroup,
-  IndicesArray,
-  mapIndices,
-  IGroupMeta,
-  isCategoricalColumn,
-  isNumberColumn,
-  isDateColumn
-} from '../model';
-import Ranking, {EDirtyReason} from '../model/Ranking';
-import ACommonDataProvider from './ACommonDataProvider';
-import {IDataProviderOptions} from './interfaces';
-import {ISortWorker, sortComplex, chooseByLength, WorkerSortWorker, CompareLookup} from './sort';
-import ADataProvider from './ADataProvider';
+import {IAbortAblePromise} from 'lineupengine';
+import {IValueStatistics} from '../internal';
 import {ISequence, lazySeq} from '../internal/interable';
 import TaskScheduler from '../internal/scheduler';
-import {IAbortAblePromise, ABORTED} from 'lineupengine';
+import Column, {defaultGroup, IColumnDesc, IDataRow, IGroup, IGroupMeta, IndicesArray, INumberColumn, IOrderedGroup, mapIndices} from '../model';
+import Ranking, {EDirtyReason} from '../model/Ranking';
+import ACommonDataProvider from './ACommonDataProvider';
+import ADataProvider from './ADataProvider';
+import {IDataProviderOptions} from './interfaces';
+import {chooseByLength, CompareLookup, ISortWorker, sortComplex, WorkerSortWorker} from './sort';
 
 
 export interface ILocalDataProviderOptions {
@@ -107,88 +98,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
   get data() {
     return this._data;
   }
-
-
-  getDataStats(col: Column) {
-    if (this.dataStats.has(col.id)) {
-      return this.dataStats.get(col.id)!;
-    }
-
-    let stats: IAbortAblePromise<IValueStatistics> | null = null;
-
-    if (isNumberColumn(col)) {
-      stats = this.taskScheduler.push(`data:${col.id}`, () => {
-        const r = computeNormalizedStats(lazySeq(this._dataRows).map((d) => col.getNumber(d)));
-        this.dataStats.set(col.id, r);
-        return r;
-      });
-    } else if (isCategoricalColumn(col)) {
-      stats = this.taskScheduler.push(`data:${col.id}`, () => {
-        const r = computeHist(lazySeq(this._dataRows).map((d) => col.getSet(d)), col.categories);
-        this.dataStats.set(col.id, r);
-        return r;
-      });
-    } else if (isDateColumn(col)) {
-      stats = this.taskScheduler.push(`data:${col.id}`, () => {
-        const r = computeDateStats(lazySeq(this._dataRows).map((d) => col.getDate(d)));
-        this.dataStats.set(col.id, r);
-        return r;
-      });
-    }
-
-    if (stats != null) {
-      this.dataStats.set(col.id, stats);
-    }
-    return stats;
-  }
-
-  getRankingStats(ranking: Ranking, col: Column) {
-    if (this.rankingStats.has(col.id)) {
-      return this.rankingStats.get(col.id)!;
-    }
-
-    const seq = this.seqRawRows(ranking.getOrder());
-    let stats: IAbortAblePromise<IValueStatistics> | null = null;
-
-    if (isNumberColumn(col)) {
-      const data = this.getDataStats(col);
-      const arr = seq.map((d) => col.getNumber(d));
-      if (isPromiseLike(data)) {
-        stats = data.then((data) => {
-          if (data === ABORTED || typeof data === 'symbol') {
-            return ABORTED;
-          }
-          return this.taskScheduler.push(`ranking:${col.id}`, () => {
-            const r = computeNormalizedStats(arr, data ? data.hist.length : undefined);
-            this.dataStats.set(col.id, r);
-            return r;
-          });
-        });
-      } else {
-        stats = this.taskScheduler.push(`ranking:${col.id}`, () => {
-          const r = computeNormalizedStats(arr, data ? data.hist.length : undefined);
-          this.dataStats.set(col.id, r);
-          return r;
-        });
-      }
-    } else if (isCategoricalColumn(col)) {
-      stats = computeHist(seq.map((d) => col.getSet(d)), col.categories);
-    } else if (isDateColumn(col)) {
-      const data = this.getDataStats(col);
-      const arr = seq.map((d) => col.getDate(d));
-      if (isPromiseLike(data)) {
-        stats = data.then((s) => computeDateStats(arr, <IDateStatistics>s));
-      } else {
-        stats = computeDateStats(arr, <IDateStatistics>data);
-      }
-    }
-
-    if (stats != null) {
-      this.rankingStats.set(col.id, stats);
-    }
-    return stats;
-  }
-
 
   destroy() {
     super.destroy();
@@ -372,11 +281,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return mapIndices(indices, this.mapToDataRow);
   }
 
-  private seqRawRows(indices: IndicesArray) {
-    if (indices.length < 10000) { // small copy
-      return mapIndices(indices, this.mapToDataRow);
-    }
-    return lazySeq(indices).map(this.mapToDataRow);
+  getRow(index: number) {
+    return this._dataRows[index];
   }
 
   view(indices: IndicesArray) {

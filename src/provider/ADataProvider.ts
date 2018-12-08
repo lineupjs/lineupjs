@@ -1,23 +1,16 @@
-import {IDataProvider, IDataProviderOptions} from './interfaces';
-import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
+import AEventDispatcher, {IEventListener, suffix} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
+import {ISequence} from '../internal/interable';
 import OrderedSet from '../internal/OrderedSet';
-import {
-  Column, createRankDesc, IColumnDesc, IDataRow, IGroup, IOrderedGroup,
-  ISelectionColumnDesc, models, IndicesArray, createSelectionDesc
-} from '../model';
-import {dirty, dirtyHeader, dirtyValues, dirtyCaches} from '../model/Column';
-import AggregateGroupColumn, {IAggregateGroupColumnDesc, createAggregateDesc} from '../model/AggregateGroupColumn';
+import {Column, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, models} from '../model';
+import AggregateGroupColumn, {createAggregateDesc, IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
+import {isSupportType} from '../model/annotations';
+import {dirty, dirtyCaches, dirtyHeader, dirtyValues} from '../model/Column';
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
-import Ranking, {orderChanged, addColumn, removeColumn, EDirtyReason} from '../model/Ranking';
+import Ranking, {addColumn, EDirtyReason, orderChanged, removeColumn} from '../model/Ranking';
+import {IColumnDump, IDataProvider, IDataProviderDump, IDataProviderOptions, IRankingDump, SCHEMA_REF} from './interfaces';
 import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
-import {isSupportType} from '../model/annotations';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {IDataProviderDump, IColumnDump, IRankingDump, SCHEMA_REF} from './interfaces';
-import {ISequence} from '../internal/interable';
-import {IValueStatistics} from '../internal';
-import {IAbortAblePromise} from '../internal/scheduler';
 
 export {IExportOptions} from './utils';
 
@@ -321,10 +314,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   getLastRanking() {
     return this.rankings[this.rankings.length - 1];
   }
-
-  abstract getDataStats(col: Column): IValueStatistics | null | IAbortAblePromise<IValueStatistics>;
-
-  abstract getRankingStats(ranking: Ranking, col: Column): IValueStatistics | null | IAbortAblePromise<IValueStatistics>;
 
   ensureOneRanking() {
     if (this.rankings.length === 0) {
@@ -683,6 +672,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @return {Promise<any>}
    */
   abstract view(indices: ArrayLike<number>): Promise<any[]> | any[];
+
+
+  abstract getRow(index: number): Promise<IDataRow> | IDataRow;
 
   /**
    * returns a data sample used for the mapping editor

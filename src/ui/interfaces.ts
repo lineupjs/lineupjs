@@ -1,7 +1,7 @@
-import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn, IDateColumn} from '../model';
+import {Column, IGroupData, IGroupItem} from '../model';
 import {IDataProvider} from '../provider';
 import {IImposer, IRenderContext} from '../renderer';
-import {ISummaryRenderer, IColumnStats} from '../renderer/interfaces';
+import {ISummaryRenderer} from '../renderer/interfaces';
 import {IToolbarAction, IToolbarDialogAddon} from './toolbar';
 import DialogManager from './dialogs/DialogManager';
 import {ILineUpFlags} from '../interfaces';

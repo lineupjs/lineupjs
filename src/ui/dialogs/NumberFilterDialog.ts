@@ -24,6 +24,7 @@ export default class NumberFilterDialog extends ADialog {
     summary.dataset.interactive = '';
     node.appendChild(summary);
 
-    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!, this.ctx.statsOf(this.column));
+    // FIXME handle async
+    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!);
   }
 }

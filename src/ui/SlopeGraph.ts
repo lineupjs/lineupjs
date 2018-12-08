@@ -1,5 +1,5 @@
 import {IExceptionContext, range, ITableSection} from 'lineupengine';
-import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup, forEachIndices, filterIndices} from '../model';
+import {IGroupData, IGroupItem, isGroup, forEachIndices, filterIndices, IOrderedGroup} from '../model';
 import {SLOPEGRAPH_WIDTH, cssClass, aria} from '../styles';
 import {IRankingHeaderContextContainer} from './interfaces';
 import {engineCssClass} from '../styles/index';
@@ -49,7 +49,7 @@ interface IPos {
   rows: number[]; // data indices
   offset: number;
   ref: number[];
-  group: IGroup;
+  group: IOrderedGroup;
 }
 
 export enum EMode {
@@ -187,9 +187,9 @@ export default class SlopeGraph implements ITableSection {
 
   private computeSlopes(left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, lookup: Map<number, IPos>) {
     const mode = this.mode;
-    const fakeGroups = new Map<IGroup, ISlope[]>();
+    const fakeGroups = new Map<IOrderedGroup, ISlope[]>();
 
-    const createFakeGroup = (first: number, group: IGroup) => {
+    const createFakeGroup = (first: number, group: IOrderedGroup) => {
       let count = 0;
       let height = 0;
       // find all items in this group, assuming that they are in order
@@ -302,7 +302,7 @@ export default class SlopeGraph implements ITableSection {
     const lookup = new Map<number, IPos>();
     const mode = this.mode;
 
-    const fakeGroups = new Map<IGroup, IPos>();
+    const fakeGroups = new Map<IOrderedGroup, IPos>();
     let acc = 0;
 
     this.rightSlopes = right.map((r, i) => {
