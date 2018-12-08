@@ -1,5 +1,3 @@
-import {IAbortAblePromise} from 'lineupengine';
-import {IValueStatistics} from '../internal';
 import {ISequence, lazySeq} from '../internal/interable';
 import Column, {defaultGroup, IColumnDesc, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices} from '../model';
 import Ranking, {EDirtyReason} from '../model/Ranking';

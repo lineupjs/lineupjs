@@ -2,7 +2,7 @@ import AEventDispatcher from '../internal/AEventDispatcher';
 import {similar} from '../internal/math';
 import {fixCSS} from '../internal/utils';
 import {defaultGroup} from './Group';
-import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
+import {IColumnDesc, IDataRow, IGroup} from './interfaces';
 import Ranking, {ISortCriteria} from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {isSortingAscByDefault} from './annotations';

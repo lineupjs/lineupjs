@@ -1,6 +1,6 @@
 import {Category, SupportType, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import {IGroupData, IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {missingGroup} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {ISequence} from '../internal/interable';

@@ -4,7 +4,7 @@ import {toolbar, dialogAddons, SortByDefault} from './annotations';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IKeyValue} from './IArrayColumn';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, noNumberFilter} from './INumberColumn';
 import {IMappingFunction, ScaleMappingFunction, isMapAbleColumn} from './MappingFunction';
 import NumbersColumn, {mappingChanged} from './NumbersColumn';
@@ -68,7 +68,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
 
   getColor(row: IDataRow) {
     const c = this._children;
-    switch(c.length) {
+    switch (c.length) {
       case 0:
         return Column.DEFAULT_COLOR;
       case 1:
@@ -241,8 +241,8 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return NumbersColumn.prototype.toCompareValueType.call(this);
   }
 
-  toCompareGroupValue(group: IGroupData) {
-    return NumbersColumn.prototype.toCompareGroupValue.call(this, group);
+  toCompareGroupValue(rows: IDataRow[], group: IGroup) {
+    return NumbersColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
   toCompareGroupValueType() {

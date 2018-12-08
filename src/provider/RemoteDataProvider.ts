@@ -3,6 +3,7 @@ import {defaultGroup, IndicesArray} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions} from './interfaces';
+import {DirectRenderTasks} from './tasks';
 
 /**
  * interface what the server side has to provide
@@ -69,6 +70,11 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   getTotalNumberOfRows() {
     // TODO not correct
     return this.cache.size;
+  }
+
+  getTaskExecutor() {
+    // FIXME
+    return new DirectRenderTasks([]);
   }
 
   sort(ranking: Ranking) {
