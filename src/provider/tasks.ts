@@ -510,6 +510,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     if (this.cache.has(key) && !dontCache) {
       return this.cache.get(key)!;
     }
+
+    // TODO support that the builder of stats is split up in multiple chunks depending to timeRemaining
+
     const task = this.tasks.push(key, creator);
     const s = taskLater(task);
     if (!dontCache) {
