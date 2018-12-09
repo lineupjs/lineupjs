@@ -192,7 +192,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return filter;
   }
 
-  private noSorting() {
+  private noSorting(ranking: Ranking) {
     // initial no sorting required just index mapping
     const l = this._data.length;
     const order = createIndexArray(l);
@@ -201,6 +201,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
       order[i] = i;
       index2pos[i] = i + 1; // shift since default is 0
     }
+
+    this.tasks.preCompute(ranking, [{rows: order, group: defaultGroup}]);
     return {groups: [Object.assign({order}, defaultGroup)], index2pos};
   }
 
@@ -296,7 +298,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     if (!isGroupedBy && !isSortedBy && !filter) {
       // TODO copy data stats to summary and group stats
-      return this.noSorting();
+      return this.noSorting(ranking);
     }
 
     // TODO not required if: sort criteria changed, group sort criteria changed
