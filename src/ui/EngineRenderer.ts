@@ -336,8 +336,10 @@ export default class EngineRenderer extends AEventDispatcher {
     for (const r of rankings) {
       const grouped = r.groupData();
 
+      // inline with creating the groupData
       const {height, defaultHeight, padding} = heightsFor(r.ranking, grouped);
 
+      // inline and create manually for better performance
       const rowContext = nonUniformContext(grouped.map(height), defaultHeight, (index) => {
         const pad = (typeof padding === 'number' ? padding : padding(grouped[index] || null));
         if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last' || (<IGroupItem>grouped[index]).meta === 'first last')) {

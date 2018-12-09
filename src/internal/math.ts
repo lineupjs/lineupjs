@@ -1,4 +1,4 @@
-import {ICategory} from '../model';
+import {ICategory, isCategory} from '../model';
 import {ISequence, IForEachAble} from './interable';
 import {bisectLeft} from 'd3-array';
 
@@ -350,7 +350,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
-export function computeDateStats(arr: ISequence<IForEachAble<Date | null>>, template?: IDateStatistics): IDateStatistics {
+export function computeDateStats(arr: ISequence<IForEachAble<Date | null> | Date | null>, template?: IDateStatistics): IDateStatistics {
   // filter out NaN
   let min: Date | null = null;
   let max: Date | null = null;
@@ -361,10 +361,22 @@ export function computeDateStats(arr: ISequence<IForEachAble<Date | null>>, temp
   const byDay = new Map<number, number>();
   arr.forEach((vs) => {
     count += 1;
-    if (!vs) {
+    if (!vs || vs == null) {
       missing += 1;
       return;
     }
+    if (vs instanceof Date) {
+      if (min == null || vs < min) {
+        min = vs;
+      }
+      if (max == null || vs > max) {
+        max = vs;
+      }
+      const key = vs.getFullYear() * 10000 + vs.getMonth() * 100 + vs.getDate();
+      byDay.set(key, (byDay.get(key) || 0) + 1);
+      return;
+    }
+
     vs.forEach((v) => {
       if (!v) {
         missing += 1;
@@ -403,7 +415,7 @@ export function computeDateStats(arr: ISequence<IForEachAble<Date | null>>, temp
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function computeHist(arr: ISequence<IForEachAble<ICategory | null>>, categories: ICategory[]): ICategoricalStatistics {
+export function computeHist(arr: ISequence<IForEachAble<ICategory | null> | ICategory | null>, categories: ICategory[]): ICategoricalStatistics {
   const m = new Map<string, number>();
   categories.forEach((cat) => m.set(cat.name, 0));
 
@@ -414,6 +426,15 @@ export function computeHist(arr: ISequence<IForEachAble<ICategory | null>>, cate
     if (vs == null) {
       missing += 1;
       count += 1;
+      return;
+    }
+    if (isCategory(vs)) {
+      count += 1;
+      if (vs == null) {
+        missing += 1;
+      } else {
+        m.set(vs.name, (m.get(vs.name) || 0) + 1);
+      }
       return;
     }
     vs.forEach((v) => {

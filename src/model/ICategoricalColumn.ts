@@ -51,6 +51,10 @@ export interface ICategory {
   value: number;
 }
 
+export function isCategory(v: any): v is ICategory {
+  return typeof v.name === 'string' && typeof v.label === 'string' && typeof v.color === 'string' && typeof v.value === 'number';
+}
+
 /** @internal */
 export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => Column.DEFAULT_COLOR) {
   if (typeof cat === 'string') {

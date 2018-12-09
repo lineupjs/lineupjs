@@ -197,7 +197,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private createSorter(ranking: Ranking, filter: ((d: IDataRow) => boolean) | null, isSortedBy: boolean) {
-    // not required if: sort criteria changed, group sort criteria changed
     const groups = new Map<string, ISortHelper>();
     const lookups = isSortedBy ? new CompareLookup(this._data.length, ranking.toCompareValueType()) : undefined;
     let maxDataIndex = -1;
@@ -225,7 +224,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private sortGroup(g: ISortHelper, i: number, ranking: Ranking, lookups: CompareLookup | undefined, groupLookup: CompareLookup | undefined, singleGroup: boolean): Promise<IOrderedGroup> {
-    // not required if: group sort criteria changed
     const group = g.group;
 
     const sortTask = this.sortWorker.sort(g.rows, singleGroup, lookups);
@@ -242,8 +240,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined) {
-    // not required if: sort criteria changed
-
     // sort groups
     if (!groupLookup) {
       groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
@@ -269,8 +265,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
-    // clear summary not required if: sort criteria changed, group sort criteria changed, group criteria changed
-    // clear groups not required if: sort criteria changed, group sort criteria changed
+    // TODO clear summary not required if: sort criteria changed, group sort criteria changed, group criteria changed
+    // TODO clear groups not required if: sort criteria changed, group sort criteria changed
     this.tasks.dirtyRanking(ranking, 'summary');
 
     if (this._data.length === 0) {
@@ -278,15 +274,18 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     const filter = this.resolveFilter(ranking);
+    // TODO if no filter is set copy the data stats to the summary stats
 
     const isGroupedBy = ranking.getGroupCriteria().length > 0;
     const isSortedBy = ranking.getSortCriteria().length > 0;
     const isGroupedSortedBy = ranking.getGroupSortCriteria().length > 0;
 
     if (!isGroupedBy && !isSortedBy && !filter) {
+      // TODO copy data stats to summary and group stats
       return this.noSorting();
     }
 
+    // TODO not required if: sort criteria changed, group sort criteria changed
     const {maxDataIndex, lookups, groups} = this.createSorter(ranking, filter, isSortedBy);
 
     if (groups.size === 0) {
@@ -294,7 +293,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     if (groups.size === 1) {
+      // TODO can copy the summary stats to the group stats since the same
       const g = Array.from(groups.values())[0]!;
+      // TODO not required if: group sort criteria changed
       return this.sortGroup(g, 0, ranking, lookups, undefined, true).then((group) => {
         this.tasks.dirtyRanking(ranking, 'summary'); // clean again
         return this.index2pos([group], maxDataIndex);
@@ -304,8 +305,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const groupLookup = isGroupedSortedBy ? new CompareLookup(groups.size, ranking.toGroupCompareValueType()) : undefined;
 
     return Promise.all(Array.from(groups.values()).map((g, i) => {
+      // TODO not required if: group sort criteria changed
       return this.sortGroup(g, i, ranking, lookups, groupLookup, false);
     })).then((groups) => {
+      // TODO not required if: sort criteria changed
       const sortedGroups = this.sortGroups(groups, groupLookup);
       this.tasks.dirtyRanking(ranking, 'summary'); // clean again
       return this.index2pos(sortedGroups, maxDataIndex);

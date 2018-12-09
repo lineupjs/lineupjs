@@ -1,7 +1,10 @@
 
 export interface IForEachAble<T> extends Iterable<T> {
   forEach(callback: (v: T, i: number) => void): void;
+}
 
+export function isForEachAble<T>(v: IForEachAble<T> | any): v is IForEachAble<T> {
+  return typeof v.forEach === 'function';
 }
 
 export interface ISequence<T> extends IForEachAble<T> {
