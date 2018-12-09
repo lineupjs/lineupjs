@@ -182,8 +182,8 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow): boolean {
-    return isCategoryIncluded(this.currentFilter, this.getCategory(row));
+  filter(row: IDataRow, valueCache?: any): boolean {
+    return isCategoryIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
   getFilter() {
@@ -197,24 +197,24 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  toCompareValue(row: IDataRow) {
-    return toCompareCategoryValue(this.getCategory(row));
+  toCompareValue(row: IDataRow, valueCache?: any) {
+    return toCompareCategoryValue(valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
   toCompareValueType() {
     return COMPARE_CATEGORY_VALUE_TYPES;
   }
 
-  group(row: IDataRow): IGroup {
-    const cat = this.getCategory(row);
+  group(row: IDataRow, valueCache?: any): IGroup {
+    const cat = valueCache !== undefined ? valueCache : this.getCategory(row);
     if (!cat) {
       return missingGroup;
     }
     return {name: cat.label, color: cat.color};
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>): ICompareValue[] {
-    return toGroupCompareCategoryValue(rows, this);
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): ICompareValue[] {
+    return toGroupCompareCategoryValue(rows, this, valueCache);
   }
 
   toCompareGroupValueType() {

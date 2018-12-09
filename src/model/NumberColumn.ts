@@ -228,16 +228,16 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.getRawValue(row);
   }
 
-  toCompareValue(row: IDataRow) {
-    return this.getNumber(row);
+  toCompareValue(row: IDataRow, valueCache?: any) {
+    return valueCache != null ? valueCache : this.getNumber(row);
   }
 
   toCompareValueType() {
     return ECompareValueType.FLOAT;
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>): number {
-    return toCompareGroupValue(rows, this, <any>this.groupSortMethod);
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
+    return toCompareGroupValue(rows, this, <any>this.groupSortMethod, valueCache);
   }
 
   toCompareGroupValueType() {

@@ -146,12 +146,12 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
    * @param row
    * @returns {boolean}
    */
-  filter(row: IDataRow) {
-    return isDateIncluded(this.currentFilter, this.getDate(row));
+  filter(row: IDataRow, valueCache?: any) {
+    return isDateIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getDate(row));
   }
 
-  toCompareValue(row: IDataRow) {
-    const v = this.getValue(row);
+  toCompareValue(row: IDataRow, valueCache?: any) {
+    const v = valueCache !== undefined ? valueCache : this.getValue(row);
     if (!(v instanceof Date)) {
       return NaN;
     }
@@ -175,8 +175,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     this.fire([DateColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  group(row: IDataRow): IGroup {
-    const v = this.getDate(row);
+  group(row: IDataRow, valueCache?: any): IGroup {
+    const v = valueCache !== undefined ? valueCache : this.getDate(row);
     if (!v || !(v instanceof Date)) {
       return missingGroup;
     }
@@ -190,8 +190,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     };
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>): number {
-    const v = choose(rows, this.currentGrouper, this).value;
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
+    const v = choose(rows, this.currentGrouper, this, valueCache).value;
     return v == null ? NaN : v;
   }
 
@@ -203,8 +203,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
 /**
  * @internal
  */
-export function choose(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn): {value: number | null, name: string} {
-  const vs = <ISequence<Date>>rows.map((d) => col.getDate(d)).filter((d) => d instanceof Date);
+export function choose(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn, valueCache?: ISequence<Date | null>): {value: number | null, name: string} {
+  const vs = <ISequence<Date>>(valueCache ? valueCache : rows.map((d) => col.getDate(d))).filter((d) => d instanceof Date);
   if (isSeqEmpty(vs)) {
     return {value: null, name: ''};
   }

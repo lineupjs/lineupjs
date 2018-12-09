@@ -81,13 +81,19 @@ export function toCompareCategoryValue(v: ICategory | null) {
 
 export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT_ASC;
 
-function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn): {cat: ICategory | null, count: number} {
+function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): {cat: ICategory | null, count: number} {
   const hist = new Map<ICategory | null, number>();
 
-  rows.forEach((row) => {
-    const cat = col.getCategory(row);
-    hist.set(cat, (hist.get(cat) || 0) + 1);
-  });
+  if (valueCache) {
+    valueCache.forEach((cat) => {
+      hist.set(cat, (hist.get(cat) || 0) + 1);
+    });
+  } else {
+    rows.forEach((row) => {
+      const cat = col.getCategory(row);
+      hist.set(cat, (hist.get(cat) || 0) + 1);
+    });
+  }
 
   if (hist.size === 0) {
     return {
@@ -109,40 +115,12 @@ function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn): {
   };
 }
 
-/**
- * sort group by most frequent category or if same without count desc
- * @internal
- */
-export function groupCompareCategory(a: ISequence<IDataRow>, b: ISequence<IDataRow>, col: ICategoricalColumn) {
-  if (isSeqEmpty(a)) {
-    return isSeqEmpty(b) ? 0 : FIRST_IS_MISSING;
-  }
-  if (isSeqEmpty(b)) {
-    return -FIRST_IS_MISSING;
-  }
-
-  const aMostFrequent = findMostFrequent(a, col);
-  const bMostFrequent = findMostFrequent(b, col);
-
-  if (aMostFrequent.cat === null) {
-    return bMostFrequent.cat === null ? 0 : FIRST_IS_MISSING;
-  }
-  if (bMostFrequent.cat === null) {
-    return -FIRST_IS_MISSING;
-  }
-
-  if (aMostFrequent.cat === bMostFrequent.cat) {
-    return bMostFrequent.count - aMostFrequent.count; // by count desc
-  }
-  return aMostFrequent.cat.value - bMostFrequent.cat.value;
-}
-
 /** @internal */
-export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn): ICompareValue[] {
+export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): ICompareValue[] {
   if (isSeqEmpty(rows)) {
     return [NaN, 0];
   }
-  const mostFrequent = findMostFrequent(rows, col);
+  const mostFrequent = findMostFrequent(rows, col, valueCache);
   if (mostFrequent.cat == null) {
     return [NaN, 0];
   }

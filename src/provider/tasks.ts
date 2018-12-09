@@ -7,6 +7,15 @@ import TaskScheduler from '../internal/scheduler';
 
 export {IAbortAblePromise} from 'lineupengine';
 
+// TODO introduce value caches for individual colums, i.e. store
+// number column -> data:IDataRow[] -> getNumber() => Float32Array
+// categorical column -> data:IDataRow[] -> getCategory() => UInt8Array (0 == null, 1 = first category)
+// date column -> data:IDataRow[] -> getDate() => Int32Array (-max = null)
+// string column -> data:IDataRow[] -> getDate() => string[] (-max = null)
+// keep updated and compute
+// or transfer to the worker threads to compute the hists async and keep in sync
+// also use the value cache for computing the comparevalue and groupcompareavalue
+
 export interface IRenderTask<T> {
   then<U = void>(onfullfilled: (value: T | symbol) => U): U | IAbortAblePromise<U>;
 }
