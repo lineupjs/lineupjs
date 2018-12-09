@@ -828,11 +828,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const provider = this.ctx.provider;
     const r = <(IGroupItem | IGroupData)[]>[];
 
-    //multiple groups
     for (const group of groups) {
       const length = group.order.length;
 
-      const n = provider.getTopNAggregated(this.ranking, groups[0]);
+      const n = provider.getTopNAggregated(this.ranking, group);
       // -1 = show items, 0 = group only, 5 = group + top 5
       if (n >= 0) {
         r.push(Object.assign({meta: toGroupMeta(0, n)}, group));
