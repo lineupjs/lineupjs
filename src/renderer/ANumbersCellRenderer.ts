@@ -3,7 +3,7 @@ import {INumbersColumn, EAdvancedSortMethod} from '../model/INumberColumn';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {ISequence} from '../internal/interable';
-import {computeBoxPlot} from '../internal';
+import {boxplotBuilder} from '../internal';
 
 /** @internal */
 export abstract class ANumbersCellRenderer {
@@ -34,11 +34,15 @@ export abstract class ANumbersCellRenderer {
         normalized.push(NaN);
         raw.push(NaN);
       } else {
-        const box = computeBoxPlot(vs.map((d) => d.n));
+        const bbn = boxplotBuilder();
+        const bbr = boxplotBuilder();
         const s: EAdvancedSortMethod = <any>col.getSortMethod();
-        const boxRaw = computeBoxPlot(vs.map((d) => d.raw));
-        normalized.push(box[s]!);
-        raw.push(boxRaw[s]!);
+        vs.forEach((d) => {
+          bbn.push(d.n);
+          bbr.push(d.raw);
+        });
+        normalized.push(bbn.build()[s]!);
+        raw.push(bbr.build()[s]!);
       }
     }
     return {normalized, raw, row};

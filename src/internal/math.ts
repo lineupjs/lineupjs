@@ -1,5 +1,4 @@
-import {ICategory, isCategory} from '../model';
-import {ISequence, IForEachAble} from './interable';
+import {ICategory} from '../model';
 import {bisectLeft} from 'd3-array';
 
 export interface INumberBin {
@@ -31,7 +30,7 @@ export interface IStatistics {
   readonly max: number;
   readonly count: number;
   readonly maxBin: number;
-  readonly hist: INumberBin[];
+  readonly hist: Readonly<INumberBin>[];
   readonly missing: number;
 }
 
@@ -48,7 +47,7 @@ export interface IDateBin {
 
 export interface ICategoricalStatistics {
   readonly maxBin: number;
-  readonly hist: ICategoricalBin[];
+  readonly hist: Readonly<ICategoricalBin>[];
   readonly missing: number;
   readonly count: number;
 }
@@ -65,7 +64,7 @@ export interface IDateStatistics {
   readonly count: number;
   readonly maxBin: number;
   readonly histGranularity: EDateHistogramGranularity;
-  readonly hist: IDateBin[];
+  readonly hist: Readonly<IDateBin>[];
   readonly missing: number;
 }
 
@@ -101,7 +100,7 @@ function quantile(values: Float32Array, quantile: number) {
   return v + (vAfter - v) * (target - index); // shift by change
 }
 
-export function computeBoxPlot(arr: ISequence<IForEachAble<number> | number>): IAdvancedBoxPlotData {
+export function boxplotBuilder(): {push: (v: number) => void, build: () => IAdvancedBoxPlotData} {
   // filter out NaN
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -111,7 +110,7 @@ export function computeBoxPlot(arr: ISequence<IForEachAble<number> | number>): I
 
   const values: number[] = [];
 
-  const integrate = (v: number) => {
+  const push = (v: number) => {
     length += 1;
     if (v == null || isNaN(v)) {
       missing += 1;
@@ -127,103 +126,91 @@ export function computeBoxPlot(arr: ISequence<IForEachAble<number> | number>): I
     values.push(v);
   };
 
-  arr.forEach((vs) => {
-    if (typeof vs === 'number') {
-      integrate(vs);
-      return;
+  const build = () => {
+    const valid = length - missing;
+
+    if (valid === 0) {
+      return {
+        min: NaN,
+        max: NaN,
+        mean: NaN,
+        missing,
+        count: length,
+        whiskerHigh: NaN,
+        whiskerLow: NaN,
+        outlier: [],
+        median: NaN,
+        q1: NaN,
+        q3: NaN
+      };
     }
-    vs.forEach(integrate);
-  });
 
-  const valid = length - missing;
+    const s = Float32Array.from(values).sort();
 
-  if (valid === 0) {
+    const median = quantile(s, 0.5)!;
+    const q1 = quantile(s, 0.25)!;
+    const q3 = quantile(s, 0.75)!;
+
+    const iqr = q3 - q1;
+    const left = q1 - 1.5 * iqr;
+    const right = q3 + 1.5 * iqr;
+
+    let outlier: number[] = [];
+    // look for the closests value which is bigger than the computed left
+    let whiskerLow = left;
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < s.length; ++i) {
+      const v = s[i];
+      if (left < v) {
+        whiskerLow = v;
+        break;
+      }
+      // outlier
+      outlier.push(v);
+    }
+    // look for the closests value which is smaller than the computed right
+    let whiskerHigh = right;
+    const reversedOutliers: number[] = [];
+    for (let i = s.length - 1; i >= 0; --i) {
+      const v = s[i];
+      if (v < right) {
+        whiskerHigh = v;
+        break;
+      }
+      // outlier
+      reversedOutliers.push(v);
+    }
+
+    outlier = outlier.concat(reversedOutliers.reverse());
+
     return {
-      min: NaN,
-      max: NaN,
-      mean: NaN,
-      missing,
+      min,
+      max,
       count: length,
-      whiskerHigh: NaN,
-      whiskerLow: NaN,
-      outlier: [],
-      median: NaN,
-      q1: NaN,
-      q3: NaN
+      missing,
+      mean: sum / valid,
+      whiskerHigh,
+      whiskerLow,
+      outlier,
+      median,
+      q1,
+      q3
     };
-  }
-
-  const s = Float32Array.from(values).sort();
-
-  const median = quantile(s, 0.5)!;
-  const q1 = quantile(s, 0.25)!;
-  const q3 = quantile(s, 0.75)!;
-
-  const iqr = q3 - q1;
-  const left = q1 - 1.5 * iqr;
-  const right = q3 + 1.5 * iqr;
-
-  let outlier: number[] = [];
-  // look for the closests value which is bigger than the computed left
-  let whiskerLow = left;
-  // tslint:disable-next-line:prefer-for-of
-  for (let i = 0; i < s.length; ++i) {
-    const v = s[i];
-    if (left < v) {
-      whiskerLow = v;
-      break;
-    }
-    // outlier
-    outlier.push(v);
-  }
-  // look for the closests value which is smaller than the computed right
-  let whiskerHigh = right;
-  const reversedOutliers: number[] = [];
-  for (let i = s.length - 1; i >= 0; --i) {
-    const v = s[i];
-    if (v < right) {
-      whiskerHigh = v;
-      break;
-    }
-    // outlier
-    reversedOutliers.push(v);
-  }
-
-  outlier = outlier.concat(reversedOutliers.reverse());
-
-  return {
-    min,
-    max,
-    count: length,
-    missing,
-    mean: sum / valid,
-    whiskerHigh,
-    whiskerLow,
-    outlier,
-    median,
-    q1,
-    q3
   };
+
+  return {push, build};
 }
 
-
-
 /**
- * computes the simple statistics of an array using d3 histogram
- * @param arr the data array
- * @param acc accessor function
- * @param numberOfBins the number of bins
- * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  * @internal
  */
-export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | number>, numberOfBins?: number): IStatistics {
+export function normalizedStatsBuilder(numberOfBins: number): {push: (v: number) => void, build: () => IStatistics} {
 
   const hist: INumberBin[] = [];
 
-  const count = numberOfBins ? numberOfBins : getNumberOfBins(arr.length);
   let x0 = 0;
-  const binWidth = 1. / count;
-  for (let i = 0; i < count; ++i, x0 += binWidth) {
+  const binWidth = 1. / numberOfBins;
+  for (let i = 0; i < numberOfBins; ++i, x0 += binWidth) {
     hist.push({
       x0,
       x1: x0 + binWidth,
@@ -240,7 +227,7 @@ export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | num
       return 0;
     }
     if (v >= binN) {
-      return count - 1;
+      return numberOfBins - 1;
     }
     return bisectLeft(binEnds, v);
   };
@@ -252,7 +239,7 @@ export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | num
   let length = 0;
   let missing = 0;
 
-  const integrate = (v: number) => {
+  const push = (v: number) => {
     length += 1;
     if (v == null || isNaN(v)) {
       missing += 1;
@@ -269,35 +256,31 @@ export function computeNormalizedStats(arr: ISequence<IForEachAble<number> | num
     hist[toBin(v)].count++;
   };
 
-  arr.forEach((vs) => {
-    if (typeof vs === 'number') {
-      integrate(vs);
-      return;
+  const build = () => {
+    const valid = length - missing;
+    if (valid === 0) {
+      return {
+        count: missing,
+        missing,
+        min: NaN,
+        max: NaN,
+        mean: NaN,
+        hist,
+        maxBin: 0
+      };
     }
-    vs.forEach(integrate);
-  });
-
-  const valid = length - missing;
-  if (valid === 0) {
     return {
-      count: missing,
+      count: length,
+      min,
+      max,
+      mean: sum / valid,
       missing,
-      min: NaN,
-      max: NaN,
-      mean: NaN,
       hist,
-      maxBin: 0
+      maxBin: hist.reduce((a, b) => Math.max(a, b.count), 0)
     };
-  }
-  return {
-    count: length,
-    min,
-    max,
-    mean: sum / valid,
-    missing,
-    hist,
-    maxBin: hist.reduce((a, b) => Math.max(a, b.count), 0)
   };
+
+  return {push, build};
 }
 
 function computeGranularity(min: Date | null, max: Date | null) {
@@ -350,7 +333,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
-export function computeDateStats(arr: ISequence<IForEachAble<Date | null> | Date | null>, template?: IDateStatistics): IDateStatistics {
+export function dateStatsBuilder(template?: IDateStatistics): {push: (v: Date | null) => void, build: () => IDateStatistics} {
   // filter out NaN
   let min: Date | null = null;
   let max: Date | null = null;
@@ -359,53 +342,39 @@ export function computeDateStats(arr: ISequence<IForEachAble<Date | null> | Date
 
   // yyyymmdd, count
   const byDay = new Map<number, number>();
-  arr.forEach((vs) => {
+  const push = (v: Date | null) => {
     count += 1;
-    if (!vs || vs == null) {
+    if (!v || v == null) {
       missing += 1;
       return;
     }
-    if (vs instanceof Date) {
-      if (min == null || vs < min) {
-        min = vs;
-      }
-      if (max == null || vs > max) {
-        max = vs;
-      }
-      const key = vs.getFullYear() * 10000 + vs.getMonth() * 100 + vs.getDate();
-      byDay.set(key, (byDay.get(key) || 0) + 1);
-      return;
+    if (min == null || v < min) {
+      min = v;
     }
-
-    vs.forEach((v) => {
-      if (!v) {
-        missing += 1;
-        return;
-      }
-      if (min == null || v < min) {
-        min = v;
-      }
-      if (max == null || v > max) {
-        max = v;
-      }
-      const key = v.getFullYear() * 10000 + v.getMonth() * 100 + v.getDate();
-      byDay.set(key, (byDay.get(key) || 0) + 1);
-    });
-  });
-
-  const {histGranularity, hist} = template ? {
-    histGranularity: template.histGranularity, hist: template.hist.map((d) => Object.assign({}, d, {count: 0}))
-  } : computeGranularity(min, max);
-
-  return {
-    min,
-    max,
-    missing,
-    count,
-    maxBin: hist.reduce((acc, h) => Math.max(acc, h.count), 0),
-    hist,
-    histGranularity
+    if (max == null || v > max) {
+      max = v;
+    }
+    const key = v.getFullYear() * 10000 + v.getMonth() * 100 + v.getDate();
+    byDay.set(key, (byDay.get(key) || 0) + 1);
   };
+
+  const build = () => {
+    const {histGranularity, hist} = template ? {
+      histGranularity: template.histGranularity, hist: template.hist.map((d) => Object.assign({}, d, {count: 0}))
+    } : computeGranularity(min, max);
+
+    return {
+      min,
+      max,
+      missing,
+      count,
+      maxBin: hist.reduce((acc, h) => Math.max(acc, h.count), 0),
+      hist,
+      histGranularity
+    };
+  };
+
+  return {push, build};
 }
 
 /**
@@ -415,47 +384,35 @@ export function computeDateStats(arr: ISequence<IForEachAble<Date | null> | Date
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function computeHist(arr: ISequence<IForEachAble<ICategory | null> | ICategory | null>, categories: ICategory[]): ICategoricalStatistics {
+export function categoricalStatsBuilder(categories: ICategory[]): {push: (category: ICategory | null) => void, build: () => ICategoricalStatistics} {
   const m = new Map<string, number>();
   categories.forEach((cat) => m.set(cat.name, 0));
 
   let missing = 0;
   let count = 0;
 
-  arr.forEach((vs) => {
-    if (vs == null) {
+  const push = (v: ICategory | null) => {
+    count += 1;
+    if (v == null) {
       missing += 1;
-      count += 1;
-      return;
+    } else {
+      m.set(v.name, (m.get(v.name) || 0) + 1);
     }
-    if (isCategory(vs)) {
-      count += 1;
-      if (vs == null) {
-        missing += 1;
-      } else {
-        m.set(vs.name, (m.get(vs.name) || 0) + 1);
-      }
-      return;
-    }
-    vs.forEach((v) => {
-      count += 1;
-      if (v == null) {
-        missing += 1;
-      } else {
-        m.set(v.name, (m.get(v.name) || 0) + 1);
-      }
-    });
-  });
-
-  const entries: {cat: string; count: number}[] = categories.map((d) => ({cat: d.name, count: m.get(d.name)!}));
-  const maxBin = entries.reduce((a, b) => Math.max(a, b.count), Number.NEGATIVE_INFINITY);
-
-  return {
-    maxBin,
-    hist: entries,
-    count,
-    missing
   };
+
+  const build = () => {
+    const entries: {cat: string; count: number}[] = categories.map((d) => ({cat: d.name, count: m.get(d.name)!}));
+    const maxBin = entries.reduce((a, b) => Math.max(a, b.count), Number.NEGATIVE_INFINITY);
+
+    return {
+      maxBin,
+      hist: entries,
+      count,
+      missing
+    };
+  };
+
+  return {push, build};
 }
 
 /**

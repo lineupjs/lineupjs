@@ -13,7 +13,7 @@ import {
 } from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IAdvancedBoxPlotData, computeBoxPlot} from '../internal/math';
+import {IAdvancedBoxPlotData, boxplotBuilder} from '../internal/math';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 
@@ -102,7 +102,11 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (data == null) {
       return null;
     }
-    return computeBoxPlot(data.map((d) => isMissingValue(d) ? NaN : this.mapping.apply(d)));
+    const b = boxplotBuilder();
+    for (const d of data) {
+      b.push(isMissingValue(d) ? NaN : this.mapping.apply(d));
+    }
+    return b.build();
   }
 
   getRange() {
@@ -114,7 +118,11 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (data == null) {
       return null;
     }
-    return computeBoxPlot(data);
+    const b = boxplotBuilder();
+    for (const d of data) {
+      b.push(isMissingValue(d) ? NaN : d);
+    }
+    return b.build();
   }
 
   getNumbers(row: IDataRow) {

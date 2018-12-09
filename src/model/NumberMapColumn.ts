@@ -11,7 +11,7 @@ import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IAdvancedBoxPlotData, computeBoxPlot} from '../internal/math';
+import {IAdvancedBoxPlotData, boxplotBuilder} from '../internal/math';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 
@@ -85,7 +85,11 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return computeBoxPlot(data.map((d) => isMissingValue(d.value) ? NaN : this.mapping.apply(d.value)));
+    const b = boxplotBuilder();
+    for (const d of data) {
+      b.push(isMissingValue(d.value) ? NaN : this.mapping.apply(d.value));
+    }
+    return b.build();
   }
 
   getRange() {
@@ -97,7 +101,12 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return computeBoxPlot(data.map((d) => d.value));
+
+    const b = boxplotBuilder();
+    for (const d of data) {
+      b.push(isMissingValue(d.value) ? NaN : d.value);
+    }
+    return b.build();
   }
 
   getNumber(row: IDataRow): number {

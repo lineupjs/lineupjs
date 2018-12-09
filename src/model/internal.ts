@@ -1,4 +1,4 @@
-import {computeBoxPlot, IAdvancedBoxPlotData} from '../internal';
+import {boxplotBuilder, IAdvancedBoxPlotData} from '../internal';
 import {IOrderedGroup} from './Group';
 import {IDataRow, IGroup, IGroupParent} from './interfaces';
 import INumberColumn, {numberCompare} from './INumberColumn';
@@ -102,14 +102,20 @@ export function medianIndex(rows: ISequence<IDataRow>, col: INumberColumn) {
 
 /** @internal */
 export function groupCompare(a: ISequence<IDataRow>, b: ISequence<IDataRow>, col: INumberColumn, sortMethod: keyof IAdvancedBoxPlotData) {
-  const va = computeBoxPlot(a.map((row) => col.getNumber(row)));
-  const vb = computeBoxPlot(b.map((row) => col.getNumber(row)));
+  const vab = boxplotBuilder();
+  a.forEach((row) => vab.push(col.getNumber(row)));
+  const va = vab.build();
+  const vbb = boxplotBuilder();
+  b.forEach((row) => vbb.push(col.getNumber(row)));
+  const vb = vbb.build();
 
   return numberCompare(<number>va[sortMethod], <number>vb[sortMethod]);
 }
 
 /** @internal */
 export function toCompareGroupValue(rows: ISequence<IDataRow>, col: INumberColumn, sortMethod: keyof IAdvancedBoxPlotData) {
-  const vs = computeBoxPlot(rows.map((row) => col.getNumber(row)));
+  const b = boxplotBuilder();
+  rows.forEach((row) => b.push(col.getNumber(row)));
+  const vs = b.build();
   return <number>vs[sortMethod];
 }

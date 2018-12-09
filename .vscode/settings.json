@@ -9,7 +9,7 @@
       "src/**/*.d.ts": true,
       "**/*.map": true,
       ".cache-loader": true
-},
+  },
   "beautify.options": {
       "editorconfig": true,
       "end_with_newline": true,
@@ -18,12 +18,9 @@
       "space_around_selector_separator": true
   },
   "beautify.tabSize": 2,
-  "typescriptHero.imports.insertSpaceBeforeAndAfterImportBraces": false,
   "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
-  "tsimporter.spaceBetweenBraces": false,
-  "tsimporter.noStatusBar": true,
-"typescript.tsdk": "node_modules\\typescript\\lib",
-"editor.formatOnPaste": true,
-"editor.formatOnType": true
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true
 }

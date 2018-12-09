@@ -1,5 +1,5 @@
 import {DENSE_HISTOGRAM} from '../config';
-import {computeNormalizedStats, INumberBin, IStatistics, round, getNumberOfBins} from '../internal/math';
+import {normalizedStatsBuilder, INumberBin, IStatistics, round, getNumberOfBins} from '../internal/math';
 import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {
@@ -38,7 +38,11 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, row)) {
           return;
         }
-        const hist = computeNormalizedStats(col.getNumbers(row), guessedBins);
+        const b = normalizedStatsBuilder(guessedBins);
+        for (const n of col.getNumbers(row)) {
+          b.push(n);
+        }
+        const hist = b.build();
         render(n, {global: null, hist: hist.hist, maxBin: hist.maxBin});
       }
     };

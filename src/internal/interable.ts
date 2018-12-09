@@ -21,7 +21,7 @@ export function isSeqEmpty(seq: ISequence<any>) {
   return seq.every(() => false); // more efficent than counting length
 }
 
-function isIndicesAble<T>(it: Iterable<T>): it is ArrayLike<T> & Iterable<T> {
+export function isIndicesAble<T>(it: Iterable<T>): it is ArrayLike<T> & Iterable<T> {
   return Array.isArray(it) || it instanceof Uint8Array || it instanceof Uint16Array || it instanceof Uint32Array || it instanceof Float32Array || it instanceof Int8Array || it instanceof Int16Array || it instanceof Int32Array || it instanceof Float64Array;
 }
 
