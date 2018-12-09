@@ -4,7 +4,7 @@ import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
-import {chooseByLength, CompareLookup, ISortWorker, local, sortComplex, WorkerSortWorker} from './sort';
+import {createIndexArray, CompareLookup, ISortWorker, local, sortComplex, WorkerSortWorker} from './sort';
 import {DirectRenderTasks, IRenderTaskExectutor, ScheduleRenderTasks} from './tasks';
 
 
@@ -195,7 +195,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   private noSorting() {
     // initial no sorting required just index mapping
     const l = this._data.length;
-    const order = chooseByLength(l);
+    const order = createIndexArray(l);
     const index2pos = order.slice();
     for (let i = 0; i < l; ++i) {
       order[i] = i;
@@ -263,7 +263,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private index2pos(groups: IOrderedGroup[], maxDataIndex: number) {
-    const index2pos = chooseByLength(maxDataIndex + 1);
+    const index2pos = createIndexArray(maxDataIndex + 1);
     let offset = 1;
     for (const g of groups) {
       // tslint:disable-next-line

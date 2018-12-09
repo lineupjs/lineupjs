@@ -543,7 +543,7 @@ export default class Column extends AEventDispatcher {
   }
 
   toCompareValueType(): ECompareValueType | ECompareValueType[] {
-    return ECompareValueType.UINT;
+    return ECompareValueType.UINT8;
   }
 
   /**

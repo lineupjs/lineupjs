@@ -6,6 +6,7 @@ import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMa
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {chooseUIntByDataLength} from '../provider/sort';
 
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
@@ -44,6 +45,10 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
       return NaN;
     }
     return v.reduce((a, b) => a + (b ? 1 : 0), 0);
+  }
+
+  toCompareValueType() {
+    return chooseUIntByDataLength(this.dataLength);
   }
 
   getCategories(row: IDataRow) {

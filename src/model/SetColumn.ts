@@ -7,6 +7,7 @@ import {IDataRow} from './interfaces';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {chooseUIntByDataLength} from '../provider/sort';
 
 export interface ISetDesc extends ICategoricalDesc {
   separator?: string;
@@ -224,6 +225,6 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   toCompareValueType() {
-    return [ECompareValueType.UINT].concat(this.categories.map(() => ECompareValueType.BINARY));
+    return [chooseUIntByDataLength(this.categories.length)].concat(this.categories.map(() => ECompareValueType.BINARY));
   }
 }

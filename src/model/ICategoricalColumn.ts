@@ -149,7 +149,7 @@ export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICat
   return [mostFrequent.cat.value, mostFrequent.count];
 }
 
-export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.UINT];
+export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.COUNT];
 
 /** @internal */
 function compareCategory(a: ICategory | null, b: ICategory | null) {

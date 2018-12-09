@@ -9,7 +9,7 @@ import NumberColumn, {filterChanged} from './NumberColumn';
 import CompositeColumn from './CompositeColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IRankingDump} from '../provider/interfaces';
-import {chooseByLength} from '../provider/sort';
+import {createIndexArray} from '../provider/sort';
 import {ISequence} from '../internal/interable';
 
 export interface ISortCriteria {
@@ -763,7 +763,7 @@ function toOrder(groups: IOrderedGroup[]) {
       return groups[0].order;
     default:
       const total = groups.reduce((a, b) => a + b.order.length, 0);
-      const r = chooseByLength(total);
+      const r = createIndexArray(total);
       let shift = 0;
       for (const g of groups) {
         r.set(g.order, shift);

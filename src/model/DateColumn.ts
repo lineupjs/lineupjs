@@ -158,6 +158,10 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return v.getTime();
   }
 
+  toCompareValueType() {
+    return ECompareValueType.INT32;
+  }
+
   getDateGrouper() {
     return Object.assign({}, this.currentGrouper);
   }
@@ -192,7 +196,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   }
 
   toCompareGroupValueType() {
-    return ECompareValueType.UINT;
+    return ECompareValueType.INT32;
   }
 }
 

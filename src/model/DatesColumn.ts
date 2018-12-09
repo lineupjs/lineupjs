@@ -9,6 +9,7 @@ import {IDataRow} from './interfaces';
 import {isMissingValue} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
 import DateColumn from './DateColumn';
+import {chooseUIntByDataLength} from '../provider/sort';
 
 export enum EDateSort {
   min = 'min',
@@ -152,7 +153,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   }
 
   toCompareValueType() {
-    return [ECompareValueType.UINT, ECompareValueType.UINT];
+    return [chooseUIntByDataLength(this.dataLength), ECompareValueType.INT32];
   }
 
   isFiltered() {
