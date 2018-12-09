@@ -183,24 +183,18 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     this.dataCache.clear();
   }
 
+
   dirtyColumn(col: Column, type: 'data' | 'summary' | 'group') {
-    if (type !== 'data') {
-      // only data is cached
-      return;
-    }
-    this.dataCache.delete(col.id);
-    this.dataCache.delete(`${col.id}.raw`);
-    this.dataCache.delete(`${col.id}.b`);
-    this.dataCache.delete(`${col.id}.braw`);
+    const prefix = type === 'group' ? 'summary' : type;
+    this.dataCache.delete(`${prefix}.${col.id}`);
+    this.dataCache.delete(`${prefix}.${col.id}.raw`);
+    this.dataCache.delete(`${prefix}.${col.id}.b`);
+    this.dataCache.delete(`${prefix}.${col.id}.braw`);
   }
 
   dirtyRanking(ranking: Ranking, type: 'data' | 'summary' | 'group') {
-    if (type !== 'data') {
-      return;
-    }
-
     for (const col of ranking.flatColumns) {
-      this.dirtyColumn(col, 'data');
+      this.dirtyColumn(col, type);
     }
   }
 
@@ -215,6 +209,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   copyData2Summary() {
     // dummy
   }
+
   groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>) {
     return taskNow(ranking.toGroupCompareValue(rows, group));
   }
@@ -264,32 +259,39 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   }
 
   private summaryNumberStatsD(col: Column & INumberColumn, raw?: boolean) {
-    const ranking = col.findMyRanker()!.getOrder();
-    const data = this.dataNumberStats(col, raw);
-    return {summary: this.normalizedStatsBuilder(ranking, col, data.hist.length, raw), data};
+    return this.cached('summary', col, () => {
+      const ranking = col.findMyRanker()!.getOrder();
+      const data = this.dataNumberStats(col, raw);
+      return {summary: this.normalizedStatsBuilder(ranking, col, data.hist.length, raw), data};
+    }, raw ? '.raw' : '');
   }
 
   private summaryBoxPlotStatsD(col: Column & INumberColumn, raw?: boolean) {
-    const ranking = col.findMyRanker()!.getOrder();
-    const data = this.dataBoxPlotStats(col, raw);
-    return {summary: this.boxplotBuilder(ranking, col, raw), data};
+    return this.cached('summary', col, () => {
+      const ranking = col.findMyRanker()!.getOrder();
+      const data = this.dataBoxPlotStats(col, raw);
+      return {summary: this.boxplotBuilder(ranking, col, raw), data};
+    }, raw ? '.braw' : '.b');
   }
 
   private summaryCategoricalStatsD(col: Column & ISetColumn) {
-    const ranking = col.findMyRanker()!.getOrder();
-    const data = this.dataCategoricalStats(col);
-    return {summary: this.categoricalStatsBuilder(ranking, col), data};
+    return this.cached('summary', col, () => {
+      const ranking = col.findMyRanker()!.getOrder();
+      const data = this.dataCategoricalStats(col);
+      return {summary: this.categoricalStatsBuilder(ranking, col), data};
+    });
   }
 
   private summaryDateStatsD(col: Column & IDateColumn) {
-    const ranking = col.findMyRanker()!.getOrder();
-    const data = this.dataDateStats(col);
-    return {summary: this.dateStatsBuilder(ranking, col, data), data};
+    return this.cached('summary', col, () => {
+      const ranking = col.findMyRanker()!.getOrder();
+      const data = this.dataDateStats(col);
+      return {summary: this.dateStatsBuilder(ranking, col, data), data};
+    });
   }
 
-
-  private cached<T>(col: Column, creator: () => T, suffix: string = ''): T {
-    const key = `${col.id}${suffix}`;
+  private cached<T>(prefix: string, col: Column, creator: () => T, suffix: string = ''): T {
+    const key = `${prefix}.${col.id}${suffix}`;
     if (this.dataCache.has(key)) {
       return this.dataCache.get(key)!;
     }
@@ -299,19 +301,19 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   }
 
   dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached(col, () => this.boxplotBuilder(null, col, raw), raw ? '.braw' : '.b');
+    return this.cached('data', col, () => this.boxplotBuilder(null, col, raw), raw ? '.braw' : '.b');
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached(col, () => this.normalizedStatsBuilder(null, col, getNumberOfBins(this.data.length), raw), raw ? '.raw' : '');
+    return this.cached('data', col, () => this.normalizedStatsBuilder(null, col, getNumberOfBins(this.data.length), raw), raw ? '.raw' : '');
   }
 
   dataCategoricalStats(col: Column & ISetColumn) {
-    return this.cached(col, () => this.categoricalStatsBuilder(null, col));
+    return this.cached('data', col, () => this.categoricalStatsBuilder(null, col));
   }
 
   dataDateStats(col: Column & IDateColumn) {
-    return this.cached(col, () => this.dateStatsBuilder(null, col));
+    return this.cached('data', col, () => this.dateStatsBuilder(null, col));
   }
 
 }
