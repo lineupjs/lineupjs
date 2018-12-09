@@ -3,7 +3,7 @@ import {ICategoricalStatistics, round} from '../internal/math';
 import {ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn} from '../model/ICategoricalColumn';
+import {isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory} from '../model/ICategoricalColumn';
 import OrdinalColumn from '../model/OrdinalColumn';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
@@ -157,6 +157,19 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
 export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
   const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
 
+  const markFilter = (bin: HTMLElement, cat: ICategory, value: boolean) => {
+    // update filter highlight eagerly for better user feedback
+    const inner = <HTMLElement>bin.firstElementChild!;
+    const base = col.getColorMapping().apply(cat);
+    if (value) {
+      inner.style.background = base;
+      return;
+    }
+    const c = color(base)!;
+    c.opacity = FILTERED_OPACITY;
+    inner.style.background = c.toString();
+  };
+
   bins.forEach((bin, i) => {
     const cat = col.categories[i];
 
@@ -168,6 +181,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
       const old = col.getFilter();
       if (old == null || !Array.isArray(old.filter)) {
         // deselect
+        markFilter(bin, cat, false);
         const included = col.categories.slice();
         included.splice(i, 1);
         col.setFilter({
@@ -181,9 +195,11 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
       if (contained >= 0) {
         // remove
         filter.splice(contained, 1);
+        markFilter(bin, cat, false);
       } else {
         // readd
         filter.push(cat.name);
+        markFilter(bin, cat, true);
       }
       if (!old.filterMissing && filter.length === col.categories.length) {
         // dummy filter
