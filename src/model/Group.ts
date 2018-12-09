@@ -24,6 +24,17 @@ export function mapIndices<T>(arr: IndicesArray, callback: (value: number, i: nu
   return r;
 }
 
+/**
+ * @internal
+ */
+export function everyIndices(arr: IndicesArray, callback: (value: number, i: number) => boolean): boolean {
+  for (let i = 0; i < arr.length; ++i) {
+    if (!callback(arr[i], i)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * @internal

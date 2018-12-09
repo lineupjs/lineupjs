@@ -3,6 +3,7 @@ import {IDataRow, IGroup} from './interfaces';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {IndicesArray} from './Group';
 
 /**
  * factory for creating a description creating a rank column
@@ -17,24 +18,24 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
   /**
    * setter for selecting/deselecting the given row
    */
-  setter(row: IDataRow, value: boolean): void;
+  setter(index: number, value: boolean): void;
 
   /**
    * setter for selecting/deselecting the given row
    */
-  setterAll(rows: IDataRow[], value: boolean): void;
+  setterAll(indices: IndicesArray, value: boolean): void;
 }
 
 
 /**
  * emitted when rows are selected
  * @asMemberOf SelectionColumn
- * @param row the (de)seleced row
+ * @param dataIndex the (de)seleced row
  * @param value true if selected else false
- * @param rows in case of multiple rows are selected
+ * @param dataIndices in case of multiple rows are selected
  * @event
  */
-export declare function select(row: IDataRow, value: boolean, rows?: IDataRow[]): void;
+export declare function select(dataIndex: number, value: boolean, dataIndices?: IndicesArray): void;
 
 /**
  * a checkbox column for selections
@@ -92,7 +93,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     return this.setImpl(row, value);
   }
 
-  setValues(rows: IDataRow[], value: boolean) {
+  setValues(rows: IndicesArray, value: boolean) {
     if (rows.length === 0) {
       return;
     }
@@ -105,9 +106,9 @@ export default class SelectionColumn extends ValueColumn<boolean> {
 
   private setImpl(row: IDataRow, value: boolean) {
     if ((<ISelectionColumnDesc>this.desc).setter) {
-      (<ISelectionColumnDesc>this.desc).setter(row, value);
+      (<ISelectionColumnDesc>this.desc).setter(row.i, value);
     }
-    this.fire(SelectionColumn.EVENT_SELECT, row, value);
+    this.fire(SelectionColumn.EVENT_SELECT, row.i, value);
     return true;
   }
 

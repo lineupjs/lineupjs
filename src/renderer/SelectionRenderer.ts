@@ -1,4 +1,4 @@
-import {IDataRow, IOrderedGroup} from '../model';
+import {IDataRow, IOrderedGroup, everyIndices} from '../model';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
@@ -37,24 +37,34 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, 'identity', (r) => r).then((rows) => {
-          if (typeof rows === 'symbol') {
-            return;
-          }
-          const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
-          const all = selected >= rows.length / 2;
-          if (all) {
-            n.classList.add(cssClass('group-selected'));
+        let selected = 0;
+        let unselected = 0;
+        const total = group.order.length;
+        everyIndices(group.order, (i) => {
+          const s = context.provider.isSelected(i);
+          if (s) {
+            selected++;
           } else {
-            n.classList.remove(cssClass('group-selected'));
+            unselected++;
           }
-          n.onclick = function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            const value = n.classList.toggle(cssClass('group-selected'));
-            col.setValues(Array.from(rows), value);
-          };
+          if (selected * 2 > total || unselected * 2 > total) {
+            // more than half already, can abort already decided
+            return false;
+          }
+          return true;
         });
+        const all = selected * 2 > length;
+        if (all) {
+          n.classList.add(cssClass('group-selected'));
+        } else {
+          n.classList.remove(cssClass('group-selected'));
+        }
+        n.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          const value = n.classList.toggle(cssClass('group-selected'));
+          col.setValues(group.order, value);
+        };
       }
     };
   }

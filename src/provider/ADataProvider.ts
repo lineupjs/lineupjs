@@ -2,7 +2,7 @@ import AEventDispatcher, {IEventListener, suffix} from '../internal/AEventDispat
 import debounce from '../internal/debounce';
 import {ISequence} from '../internal/interable';
 import OrderedSet from '../internal/OrderedSet';
-import {Column, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, models} from '../model';
+import {Column, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, models, forEachIndices, everyIndices} from '../model';
 import AggregateGroupColumn, {createAggregateDesc, IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 import {isSupportType} from '../model/annotations';
 import {dirty, dirtyCaches, dirtyHeader, dirtyValues} from '../model/Column';
@@ -387,8 +387,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     //hacks for provider dependent descriptors
     if (desc.type === 'selection') {
       (<ISelectionColumnDesc>desc).accessor = (row: IDataRow) => this.isSelected(row.i);
-      (<ISelectionColumnDesc>desc).setter = (row: IDataRow, value: boolean) => value ? this.select(row.i) : this.deselect(row.i);
-      (<ISelectionColumnDesc>desc).setterAll = (rows: IDataRow[], value: boolean) => value ? this.selectAll(rows.map((d) => d.i)) : this.deselectAll(rows.map((d) => d.i));
+      (<ISelectionColumnDesc>desc).setter = (index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
+      (<ISelectionColumnDesc>desc).setterAll = (indices: IndicesArray, value: boolean) => value ? this.selectAll(indices) : this.deselectAll(indices);
     } else if (desc.type === 'aggregate') {
       (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.getTopNAggregated(ranking, group);
       (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: number) => this.setTopNAggregated(ranking, group, value);
@@ -728,17 +728,20 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * also select all the given rows
    * @param indices
    */
-  selectAll(indices: number[]) {
-    if (indices.every((i) => this.selection.has(i))) {
+  selectAll(indices: IndicesArray) {
+    if (everyIndices(indices, (i) => this.selection.has(i))) {
       return; //no change
     }
     if (!this.multiSelections) {
       this.selection.clear();
-      indices = indices.slice(0, 1); //just the first one
+      if (indices.length > 0) {
+        this.selection.add(indices[0]);
+      }
+    } else {
+      forEachIndices(indices, (index) => {
+        this.selection.add(index);
+      });
     }
-    indices.forEach((index) => {
-      this.selection.add(index);
-    });
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
   }
 
@@ -800,11 +803,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * also select all the given rows
    * @param indices
    */
-  deselectAll(indices: number[]) {
-    if (indices.every((i) => !this.selection.has(i))) {
+  deselectAll(indices: IndicesArray) {
+    if (everyIndices(indices, (i) => !this.selection.has(i))) {
       return; //no change
     }
-    indices.forEach((index) => {
+    forEachIndices(indices, (index) => {
       this.selection.delete(index);
     });
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
