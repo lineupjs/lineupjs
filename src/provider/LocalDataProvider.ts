@@ -1,11 +1,12 @@
 import {ISequence, lazySeq} from '../internal/interable';
-import Column, {defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices} from '../model';
+import Column, {defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices, CompositeColumn} from '../model';
 import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {createIndexArray, CompareLookup, ISortWorker, local, sortComplex, WorkerSortWorker} from './sort';
 import {DirectRenderTasks, IRenderTaskExectutor, ScheduleRenderTasks} from './tasks';
+import {IEventContext} from '../internal/AEventDispatcher';
 
 
 export interface ILocalDataProviderOptions {
@@ -148,20 +149,84 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   cloneRanking(existing?: Ranking) {
-    const clone = super.cloneRanking(existing);
+    const ranking = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
-      clone.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
+      ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
     }
 
-    // TODO cached summaries, data from the old one or trigger
+    this.trackRanking(ranking, existing);
+    return ranking;
+  }
 
-    return clone;
+  private trackRanking(ranking: Ranking, existing?: Ranking) {
+
+    const that = this;
+    ranking.on(`${Column.EVENT_DIRTY_CACHES}.cache`, function (this: IEventContext) {
+      let col: any = this.origin;
+      while (col instanceof Column) {
+        that.tasks.dirtyColumn(col, 'data');
+        that.tasks.preComputeCol(col);
+        col = col.parent;
+      }
+    });
+
+    const cols = ranking.flatColumns;
+    const addKey = `${Ranking.EVENT_ADD_COLUMN}.cache`;
+    const removeKey = `${Ranking.EVENT_REMOVE_COLUMN}.cache`;
+
+    const addCol = (col: Column) => {
+      this.tasks.preComputeCol(col);
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, addCol);
+        col.on(removeKey, removeCol);
+      }
+    };
+
+    const removeCol = (col: Column) => {
+      this.tasks.dirtyColumn(col, 'data');
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, null);
+        col.on(removeKey, null);
+      }
+    };
+
+
+    ranking.on(addKey, addCol);
+    ranking.on(removeKey, removeCol);
+    for (const col of cols) {
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, addCol);
+        col.on(removeKey, removeCol);
+      }
+    }
+
+    if (existing) {
+      const copy = existing.flatColumns;
+      for (let i = 0; i < cols.length; ++i) {
+        this.tasks.copyCache(cols[i], copy[i]);
+      }
+    }
+
+    this.tasks.preComputeData(ranking);
   }
 
   cleanUpRanking(ranking: Ranking) {
     if (this.options.filterGlobally) {
       ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, null);
+    }
+
+
+    const cols = ranking.flatColumns;
+    const addKey = `${Ranking.EVENT_ADD_COLUMN}.cache`;
+    const removeKey = `${Ranking.EVENT_REMOVE_COLUMN}.cache`;
+    ranking.on(addKey, null);
+    ranking.on(removeKey, null);
+    for (const col of cols) {
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, null);
+        col.on(removeKey, null);
+      }
     }
 
     this.tasks.dirtyRanking(ranking, 'data');

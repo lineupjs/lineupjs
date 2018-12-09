@@ -538,7 +538,7 @@ export default class Column extends AEventDispatcher {
     return Column.DEFAULT_COLOR;
   }
 
-  toCompareValue(_row: IDataRow): ICompareValue | ICompareValue[] {
+  toCompareValue(_row: IDataRow, _valueCache?: any): ICompareValue | ICompareValue[] {
     return 0;
   }
 
@@ -551,11 +551,11 @@ export default class Column extends AEventDispatcher {
    * @param _row
    * @return {IGroup}
    */
-  group(_row: IDataRow): IGroup {
+  group(_row: IDataRow, _valueCache?: any): IGroup {
     return defaultGroup;
   }
 
-  toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup): ICompareValue | ICompareValue[] {
+  toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup, _valueCache?: ISequence<any>): ICompareValue | ICompareValue[] {
     return group.name.toLowerCase();
   }
 
@@ -576,7 +576,7 @@ export default class Column extends AEventDispatcher {
    * @param row
    * @return {boolean}
    */
-  filter(row: IDataRow) {
+  filter(row: IDataRow, _valueCache?: any) {
     return row != null;
   }
 

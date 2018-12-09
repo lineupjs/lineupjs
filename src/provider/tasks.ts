@@ -79,7 +79,10 @@ export interface IRenderTaskExectutor extends IRenderTasks {
   groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>): IRenderTask<ICompareValue[]>;
 
   preCompute(ranking: Ranking, groups: {rows: IndicesArray, group: IGroup}[]): void;
+  preComputeCol(col: Column): void;
+  preComputeData(ranking: Ranking): void;
   copyData2Summary(ranking: Ranking): void;
+  copyCache(col: Column, from: Column): void;
 }
 
 class MultiIndices {
@@ -90,8 +93,6 @@ class MultiIndices {
 
 export class ARenderTasks {
   protected readonly byIndex = (i: number) => this.data[i];
-
-  protected readonly dataCache = new Map<string, any>();
 
   constructor(protected data: IDataRow[] = []) {
 
@@ -187,18 +188,20 @@ export class ARenderTasks {
 
 export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 
+  protected readonly cache = new Map<string, any>();
+
   setData(data: IDataRow[]) {
     this.data = data;
-    this.dataCache.clear();
+    this.cache.clear();
   }
 
 
   dirtyColumn(col: Column, type: 'data' | 'summary' | 'group') {
     const prefix = type === 'group' ? 'summary' : type;
-    this.dataCache.delete(`${prefix}.${col.id}`);
-    this.dataCache.delete(`${prefix}.${col.id}.raw`);
-    this.dataCache.delete(`${prefix}.${col.id}.b`);
-    this.dataCache.delete(`${prefix}.${col.id}.braw`);
+    this.cache.delete(`${col.id}:${prefix}`);
+    this.cache.delete(`${col.id}:${prefix}:raw`);
+    this.cache.delete(`${col.id}:${prefix}:b`);
+    this.cache.delete(`${col.id}:${prefix}:braw`);
   }
 
   dirtyRanking(ranking: Ranking, type: 'data' | 'summary' | 'group') {
@@ -215,8 +218,24 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     // dummy
   }
 
+  preComputeCol() {
+    // dummy
+  }
+
   copyData2Summary() {
     // dummy
+  }
+
+  copyCache(col: Column, from: Column) {
+    const fromPrefix = `${from.id}:`;
+
+    for (const key of Array.from(this.cache.keys()).sort()) {
+      if (!key.startsWith(fromPrefix)) {
+        continue;
+      }
+      const tkey = `${col.id}:${key.slice(fromPrefix.length)}`;
+      this.cache.set(tkey, this.cache.get(key)!);
+    }
   }
 
   groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>) {
@@ -272,7 +291,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataNumberStats(col, raw);
       return {summary: this.normalizedStatsBuilder(ranking, col, data.hist.length, raw), data};
-    }, raw ? '.raw' : '');
+    }, raw ? ':raw' : '');
   }
 
   private summaryBoxPlotStatsD(col: Column & INumberColumn, raw?: boolean) {
@@ -280,7 +299,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataBoxPlotStats(col, raw);
       return {summary: this.boxplotBuilder(ranking, col, raw), data};
-    }, raw ? '.braw' : '.b');
+    }, raw ? ':braw' : ':b');
   }
 
   private summaryCategoricalStatsD(col: Column & ISetColumn) {
@@ -300,21 +319,21 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   }
 
   private cached<T>(prefix: string, col: Column, creator: () => T, suffix: string = ''): T {
-    const key = `${prefix}.${col.id}${suffix}`;
-    if (this.dataCache.has(key)) {
-      return this.dataCache.get(key)!;
+    const key = `${col.id}:${prefix}${suffix}`;
+    if (this.cache.has(key)) {
+      return this.cache.get(key)!;
     }
     const s = creator();
-    this.dataCache.set(key, s);
+    this.cache.set(key, s);
     return s;
   }
 
   dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached('data', col, () => this.boxplotBuilder(null, col, raw), raw ? '.braw' : '.b');
+    return this.cached('data', col, () => this.boxplotBuilder(null, col, raw), raw ? ':braw' : ':b');
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached('data', col, () => this.normalizedStatsBuilder(null, col, getNumberOfBins(this.data.length), raw), raw ? '.raw' : '');
+    return this.cached('data', col, () => this.normalizedStatsBuilder(null, col, getNumberOfBins(this.data.length), raw), raw ? ':raw' : '');
   }
 
   dataCategoricalStats(col: Column & ISetColumn) {
@@ -439,6 +458,49 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
   }
 
+  preComputeCol(col: Column) {
+    const ranking = col.findMyRanker();
+
+    if (isCategoricalLikeColumn(col)) {
+      this.dataCategoricalStats(col);
+      if (!ranking) {
+        return;
+      }
+      this.summaryCategoricalStats(col);
+      for (const group of ranking.getGroups()) {
+        this.groupCategoricalStats(col, group);
+      }
+      return;
+    }
+
+    if (isNumberColumn(col)) {
+      this.dataNumberStats(col);
+
+      if (!ranking) {
+        return;
+      }
+      this.summaryNumberStats(col);
+      for (const group of ranking.getGroups()) {
+        this.groupNumberStats(col, group);
+      }
+      return;
+    }
+
+    if (!isDateColumn(col)) {
+      return;
+    }
+
+    this.dataDateStats(col);
+
+    if (!ranking) {
+      return;
+    }
+    this.summaryDateStats(col);
+    for (const group of ranking.getGroups()) {
+      this.groupDateStats(col, group);
+    }
+  }
+
   copyData2Summary(ranking: Ranking) {
     for (const col of ranking.flatColumns) {
       if (isCategoricalLikeColumn(col)) {
@@ -452,6 +514,18 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       }
       // copy from data to summary and create proper structure
       this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({summary: data, data}));
+    }
+  }
+
+  copyCache(col: Column, from: Column) {
+    const fromPrefix = `${from.id}:`;
+
+    for (const key of Array.from(this.cache.keys()).sort()) {
+      if (!key.startsWith(fromPrefix)) {
+        continue;
+      }
+      const tkey = `${col.id}:${key.slice(fromPrefix.length)}`;
+      this.chainCopy(tkey, this.cache.get(key)!, (data: any) => data);
     }
   }
 
