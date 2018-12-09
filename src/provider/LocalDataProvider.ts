@@ -118,9 +118,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
   setData(data: any[]) {
     this._data = data;
     this._dataRows = toRows(data);
+    this.dataChanged();
+  }
+
+  private dataChanged() {
     this.tasks.setData(this._dataRows);
+
+    // TODO trigger computation of the data summaries for the rankings
+
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
+
   }
 
   clearData() {
@@ -136,9 +144,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       this._data.push(d);
       this._dataRows.push({v: d, i: this._dataRows.length});
     }
-    this.tasks.setData(this._dataRows);
-    this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
-    this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
+    this.dataChanged();
   }
 
   cloneRanking(existing?: Ranking) {
@@ -147,6 +153,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (this.options.filterGlobally) {
       clone.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
     }
+
+    // TODO cached summaries, data from the old one or trigger
 
     return clone;
   }
@@ -231,6 +239,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     // compute sort group value as task
     const groupSortTask = groupLookup ? this.tasks.groupCompare(ranking, group, this.view(g.rows)).then((r) => r) : <ICompareValue[]>[];
 
+    // trigger task for groups to compute for this group
+
+
     return Promise.all([sortTask, groupSortTask]).then(([order, groupC]) => {
       if (groupLookup && Array.isArray(groupC)) {
         groupLookup.push(i, groupC);
@@ -265,16 +276,19 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
-    // TODO clear summary not required if: sort criteria changed, group sort criteria changed, group criteria changed
-    // TODO clear groups not required if: sort criteria changed, group sort criteria changed
     this.tasks.dirtyRanking(ranking, 'summary');
-
     if (this._data.length === 0) {
       return {groups: [], index2pos: []};
     }
 
     const filter = this.resolveFilter(ranking);
+    // TODO clear summary not required if: sort criteria changed, group sort criteria changed, group criteria changed
+    // TODO clear groups not required if: sort criteria changed, group sort criteria changed
     // TODO if no filter is set copy the data stats to the summary stats
+    if (!filter) {
+      // all rows so summary = data
+      this.tasks.copyData2Summary(ranking);
+    }
 
     const isGroupedBy = ranking.getGroupCriteria().length > 0;
     const isSortedBy = ranking.getSortCriteria().length > 0;
@@ -292,25 +306,28 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return {groups: [], index2pos: []};
     }
 
+    const ggroups = Array.from(groups.values());
+    this.tasks.preCompute(ranking, ggroups);
+
+
     if (groups.size === 1) {
       // TODO can copy the summary stats to the group stats since the same
-      const g = Array.from(groups.values())[0]!;
+      const g = ggroups[0]!;
+
       // TODO not required if: group sort criteria changed
       return this.sortGroup(g, 0, ranking, lookups, undefined, true).then((group) => {
-        this.tasks.dirtyRanking(ranking, 'summary'); // clean again
         return this.index2pos([group], maxDataIndex);
       });
     }
 
     const groupLookup = isGroupedSortedBy ? new CompareLookup(groups.size, ranking.toGroupCompareValueType()) : undefined;
 
-    return Promise.all(Array.from(groups.values()).map((g, i) => {
+    return Promise.all(ggroups.map((g, i) => {
       // TODO not required if: group sort criteria changed
       return this.sortGroup(g, i, ranking, lookups, groupLookup, false);
     })).then((groups) => {
       // TODO not required if: sort criteria changed
       const sortedGroups = this.sortGroups(groups, groupLookup);
-      this.tasks.dirtyRanking(ranking, 'summary'); // clean again
       return this.index2pos(sortedGroups, maxDataIndex);
     });
   }
