@@ -1,7 +1,7 @@
 import {IStatistics, ICategoricalStatistics, IDateStatistics, IAdvancedBoxPlotData, dateStatsBuilder, normalizedStatsBuilder, categoricalStatsBuilder, boxplotBuilder, getNumberOfBins} from '../internal/math';
-import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking, ICategoricalLikeColumn, IGroup, NumberColumn, OrdinalColumn, ImpositionCompositeColumn, ICategory, CategoricalColumn, DateColumn, isCategoricalLikeColumn, isNumberColumn, isDateColumn} from '../model';
+import {IDataRow, INumberColumn, IDateColumn, ISetColumn, IOrderedGroup, IndicesArray, Ranking, ICategoricalLikeColumn, IGroup, NumberColumn, OrdinalColumn, ImpositionCompositeColumn, CategoricalColumn, DateColumn, isCategoricalLikeColumn, isNumberColumn, isDateColumn} from '../model';
 import Column, {ICompareValue} from '../model/Column';
-import {ISequence, lazySeq, IForEachAble, concatSeq, isIndicesAble} from '../internal/interable';
+import {ISequence, lazySeq, IForEachAble, isIndicesAble} from '../internal/interable';
 import {IAbortAblePromise, ABORTED, abortAbleAll, abortAble} from 'lineupengine';
 import TaskScheduler from '../internal/scheduler';
 
