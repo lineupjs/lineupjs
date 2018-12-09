@@ -330,7 +330,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
 
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 
-  private readonly cache = new Map<string, any>();
+  private readonly cache = new Map<string, IRenderTask<any>>();
   private readonly tasks = new TaskScheduler();
 
   setData(data: IDataRow[]) {
@@ -399,8 +399,8 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
         } else {
           continue;
         }
-        // copy from summary to group
-        this.cache.set(`${col.id}:a:group:${group.name}`, this.cache.get(`${col.id}:b:summary`));
+        // copy from summary to group and create proper structure
+        this.chainCopy(`${col.id}:a:group:${group.name}`, this.cache.get(`${col.id}:b:summary`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
       }
       return;
     }
@@ -450,8 +450,8 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       } else {
         continue;
       }
-      // copy from data to summary
-      this.cache.set(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`));
+      // copy from data to summary and create proper structure
+      this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({summary: data, data}));
     }
   }
 
@@ -553,6 +553,37 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
         return ABORTED;
       }
       return this.tasks.push(key, () => creator(data));
+    });
+    const s = taskLater(subTask);
+    this.cache.set(key, s);
+    subTask.then((r) => {
+      if (typeof r === 'symbol') {
+        return;
+      }
+      if (this.cache.get(key) === s) {
+        // still same value replace with faster version
+        this.cache.set(key, taskNow(r));
+      }
+    });
+    return s;
+  }
+
+  private chainCopy<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => U): IRenderTask<U> {
+    if (this.cache.has(key)) {
+      return this.cache.get(key)!;
+    }
+    if (task instanceof TaskNow) {
+      const subTask = taskNow(creator(task.v));
+      this.cache.set(key, subTask);
+      return subTask;
+    }
+
+    const v = (<TaskLater<T>>task).v;
+    const subTask = v.then((data) => {
+      if (typeof data === 'symbol') {
+        return ABORTED;
+      }
+      return creator(data);
     });
     const s = taskLater(subTask);
     this.cache.set(key, s);
