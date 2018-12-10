@@ -150,12 +150,12 @@ export function toDateGroup(grouper: IDateGrouper, value: Date): {value: number,
       if (grouper.circular) {
         return {
           value: value.getMonth(),
-          name: timeFormat('%B')(value) // TODO
+          name: timeFormat('%W')(value)
         };
       }
       return {
         value: timeWeek(value).getTime(),
-        name: timeFormat('%B %Y')(value) // TODO
+        name: timeFormat('%W %Y')(value)
       };
     case 'day_of_week':
       if (grouper.circular) {
