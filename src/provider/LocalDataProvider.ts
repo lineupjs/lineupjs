@@ -125,7 +125,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
   private dataChanged() {
     this.tasks.setData(this._dataRows);
 
-    // TODO trigger computation of the data summaries for the rankings
+    for (const ranking of this.getRankings()) {
+      this.tasks.preComputeData(ranking);
+    }
 
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
@@ -347,6 +349,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (this._data.length === 0) {
       return {groups: [], index2pos: []};
     }
+
+    console.log(_dirtyReason);
 
     const filter = this.resolveFilter(ranking);
     // TODO clear summary not required if: sort criteria changed, group sort criteria changed, group criteria changed

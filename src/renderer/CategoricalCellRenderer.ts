@@ -77,7 +77,7 @@ function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, int
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary, data} = r;
+        const {summary} = r;
         n.classList.toggle(cssClass('missing'), !summary);
         if (!summary) {
           return;
@@ -108,7 +108,7 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
         if (!summary) {
           return;
         }
-        update(n, summary, data);
+        update(n, summary, interactive ? data : undefined);
       });
     }
   };

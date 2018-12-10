@@ -291,7 +291,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataNumberStats(col, raw);
       return {summary: this.normalizedStatsBuilder(ranking, col, data.hist.length, raw), data};
-    }, raw ? ':raw' : '');
+    }, raw ? ':raw' : '', col.findMyRanker()!.getOrderLength() === 0);
   }
 
   private summaryBoxPlotStatsD(col: Column & INumberColumn, raw?: boolean) {
@@ -299,7 +299,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataBoxPlotStats(col, raw);
       return {summary: this.boxplotBuilder(ranking, col, raw), data};
-    }, raw ? ':braw' : ':b');
+    }, raw ? ':braw' : ':b' , col.findMyRanker()!.getOrderLength() === 0);
   }
 
   private summaryCategoricalStatsD(col: Column & ISetColumn) {
@@ -307,7 +307,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataCategoricalStats(col);
       return {summary: this.categoricalStatsBuilder(ranking, col), data};
-    });
+    }, '', col.findMyRanker()!.getOrderLength() === 0);
   }
 
   private summaryDateStatsD(col: Column & IDateColumn) {
@@ -315,16 +315,18 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataDateStats(col);
       return {summary: this.dateStatsBuilder(ranking, col, data), data};
-    });
+    }, '', col.findMyRanker()!.getOrderLength() === 0);
   }
 
-  private cached<T>(prefix: string, col: Column, creator: () => T, suffix: string = ''): T {
+  private cached<T>(prefix: string, col: Column, creator: () => T, suffix: string = '', dontCache = false): T {
     const key = `${col.id}:${prefix}${suffix}`;
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
     const s = creator();
-    this.cache.set(key, s);
+    if (!dontCache) {
+      this.cache.set(key, s);
+    }
     return s;
   }
 
