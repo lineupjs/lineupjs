@@ -82,7 +82,7 @@ function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, int
         if (!summary) {
           return;
         }
-        update(n, summary, data);
+        update(n, summary);
       });
     }
   };
