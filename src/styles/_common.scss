@@ -103,6 +103,6 @@
   }
 }
 
-.#{$lu_css_prefix}-busy {
+.#{$lu_css_prefix}-busy * {
   cursor: wait !important;
 }
