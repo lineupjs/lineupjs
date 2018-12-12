@@ -1,6 +1,8 @@
-import {ICategory} from '../model';
+import {ICategory, UIntTypedArray, IndicesArray} from '../model';
 import {bisectLeft} from 'd3-array';
-import {IForEachAble, isIndicesAble} from './interable';
+import {IForEachAble, isIndicesAble, ISequence} from './interable';
+import {IPoorManWorkerScope, toFunctionBody} from './worker';
+import {createWorkerCodeBlob} from '../provider/worker';
 
 export interface INumberBin {
   x0: number;
@@ -87,11 +89,11 @@ export interface IHistGenerator {
   toBin(value: number): number;
 }
 
-function quantile(values: Float32Array, quantile: number) {
-  if (values.length === 0) {
+function quantile(values: Float32Array, quantile: number, length = values.length) {
+  if (length === 0) {
     return NaN;
   }
-  const target = (values.length - 1) * quantile;
+  const target = (length - 1) * quantile;
   const index = Math.floor(target);
   if (index === target) {
     return values[index];
@@ -243,7 +245,7 @@ export function normalizedStatsBuilder(numberOfBins: number): {push: (v: number)
     if (v >= binN) {
       return numberOfBins - 1;
     }
-    return bisectLeft(binEnds, v);
+    return bisectLeft(binEnds, v); // TODO find better solutions to inline
   };
 
   // filter out NaN
@@ -463,3 +465,119 @@ export function similar(a: number, b: number, delta = 0.5) {
 export function isPromiseLike<T>(value: any): value is PromiseLike<T> {
   return value instanceof Promise || typeof value.then === 'function';
 }
+
+
+/**
+ * @internal
+ */
+export function createIndexArray(length: number) {
+  if (length <= 255) {
+    return new Uint8Array(length);
+  }
+  if (length <= 65535) {
+    return new Uint16Array(length);
+  }
+  return new Uint32Array(length);
+}
+
+export function toIndexArray(arr: ISequence<number>): UIntTypedArray {
+  const l = arr.length;
+  if (l <= 255) {
+    return Uint8Array.from(arr);
+  }
+  if (l <= 65535) {
+    return Uint16Array.from(arr);
+  }
+  return Uint32Array.from(arr);
+}
+
+
+
+function asc(a: any, b: any) {
+  return a < b ? -1 : ((a > b) ? 1 : 0);
+}
+
+function desc(a: any, b: any) {
+  return a < b ? 1 : ((a > b) ? -1 : 0);
+}
+
+export declare type ILookUpArray = Uint8Array | Uint16Array | Uint32Array | Int8Array | Int16Array | Int32Array | string[] | Float32Array | Float64Array;
+
+export function sortComplex(indices: UIntTypedArray | number[], comparators: {asc: boolean, lookup: ILookUpArray}[]) {
+  if (indices.length < 2 || comparators.length === 0) {
+    return indices;
+  }
+
+  switch (comparators.length) {
+    case 1:
+      const f = comparators[0]!.asc ? asc : desc;
+      const fl = comparators[0]!.lookup;
+      return indices.sort((a, b) => {
+        const r = f(fl[a]!, fl[b]!);
+        return r !== 0 ? r : a - b;
+      });
+    case 2:
+      const f1 = comparators[0]!.asc ? asc : desc;
+      const f1l = comparators[0]!.lookup;
+      const f2 = comparators[1]!.asc ? asc : desc;
+      const f2l = comparators[1]!.lookup;
+      return indices.sort((a, b) => {
+        let r = f1(f1l[a], f1l[b]);
+        r = r !== 0 ? r : f2(f2l[a], f2l[b]);
+        return r !== 0 ? r : a - b;
+      });
+    default:
+      const l = comparators.length;
+      const fs = comparators.map((d) => d.asc ? asc : desc);
+      return indices.sort((a, b) => {
+        for (let i = 0; i < l; ++i) {
+          const l = comparators[i].lookup;
+          const r = fs[i](l[a], l[b]);
+          if (r !== 0) {
+            return r;
+          }
+        }
+        return a - b;
+      });
+  }
+}
+
+
+export interface ISortMessageRequest {
+  uid: number;
+
+  indices: UIntTypedArray;
+  sortOrders?: {asc: boolean, lookup: ILookUpArray}[];
+}
+
+export interface ISortMessageResponse {
+  uid: number;
+
+  order: IndicesArray;
+}
+
+
+function sortWorkerMain(self: IPoorManWorkerScope) {
+  self.addEventListener('message', (evt) => {
+    const r = <ISortMessageRequest>evt.data;
+    if (typeof r.uid !== 'number') {
+      return;
+    }
+
+    if (r.sortOrders) {
+      sortComplex(r.indices, r.sortOrders);
+    }
+    self.postMessage(<ISortMessageResponse>{
+      uid: r.uid,
+      order: r.indices
+    }, [r.indices.buffer]);
+  });
+}
+
+export const WORKER_BLOB = createWorkerCodeBlob([
+  createIndexArray.toString(),
+  asc.toString(),
+  desc.toString(),
+  sortComplex.toString(),
+  toFunctionBody(sortWorkerMain)
+]);

@@ -1,8 +1,7 @@
 import {ICompareValue} from '../model/Column';
 import {FIRST_IS_NAN, FIRST_IS_MISSING} from '../model/missing';
 import {IndicesArray, UIntTypedArray} from '../model';
-import {IPoorManWorkerScope, toFunctionBody, createWorkerCodeBlob} from './worker';
-import {ISequence} from '../internal/interable';
+import {ILookUpArray, createIndexArray, toIndexArray, sortComplex, WORKER_BLOB, ISortMessageResponse, ISortMessageRequest} from '../internal';
 
 export enum ECompareValueType {
   BINARY,
@@ -33,30 +32,6 @@ export function chooseUIntByDataLength(dataLength?: number | null) {
   return ECompareValueType.UINT32;
 }
 
-/**
- * @internal
- */
-export function createIndexArray(length: number) {
-  if (length <= 255) {
-    return new Uint8Array(length);
-  }
-  if (length <= 65535) {
-    return new Uint16Array(length);
-  }
-  return new Uint32Array(length);
-}
-
-function toIndexArray(arr: ISequence<number>): UIntTypedArray {
-  const l = arr.length;
-  if (l <= 255) {
-    return Uint8Array.from(arr);
-  }
-  if (l <= 65535) {
-    return Uint16Array.from(arr);
-  }
-  return Uint32Array.from(arr);
-}
-
 
 const missingUInt8 = FIRST_IS_MISSING > 0 ? 255 : 0;
 const missingBinary = missingUInt8;
@@ -80,7 +55,6 @@ function chooseMissingByLength(length: number) {
   return missingUInt32;
 }
 
-declare type ILookUpArray = Uint8Array | Uint16Array | Uint32Array | Int8Array | Int16Array | Int32Array | string[] | Float32Array | Float64Array;
 
 
 function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArray {
@@ -184,55 +158,6 @@ export class CompareLookup {
   }
 }
 
-
-function asc(a: any, b: any) {
-  return a < b ? -1 : ((a > b) ? 1 : 0);
-}
-
-function desc(a: any, b: any) {
-  return a < b ? 1 : ((a > b) ? -1 : 0);
-}
-
-export function sortComplex(indices: UIntTypedArray | number[], comparators: {asc: boolean, lookup: ILookUpArray}[]) {
-  if (indices.length < 2 || comparators.length === 0) {
-    return indices;
-  }
-
-  switch (comparators.length) {
-    case 1:
-      const f = comparators[0]!.asc ? asc : desc;
-      const fl = comparators[0]!.lookup;
-      return indices.sort((a, b) => {
-        const r = f(fl[a]!, fl[b]!);
-        return r !== 0 ? r : a - b;
-      });
-    case 2:
-      const f1 = comparators[0]!.asc ? asc : desc;
-      const f1l = comparators[0]!.lookup;
-      const f2 = comparators[1]!.asc ? asc : desc;
-      const f2l = comparators[1]!.lookup;
-      return indices.sort((a, b) => {
-        let r = f1(f1l[a], f1l[b]);
-        r = r !== 0 ? r : f2(f2l[a], f2l[b]);
-        return r !== 0 ? r : a - b;
-      });
-    default:
-      const l = comparators.length;
-      const fs = comparators.map((d) => d.asc ? asc : desc);
-      return indices.sort((a, b) => {
-        for (let i = 0; i < l; ++i) {
-          const l = comparators[i].lookup;
-          const r = fs[i](l[a], l[b]);
-          if (r !== 0) {
-            return r;
-          }
-        }
-        return a - b;
-      });
-  }
-}
-
-
 function sort(indices: number[], _singleCall: boolean, lookups?: CompareLookup) {
   const order = toIndexArray(indices);
   if (lookups) {
@@ -251,36 +176,6 @@ export const local: ISortWorker = {
   terminate: () => undefined
 };
 
-interface ISortMessageRequest {
-  uid: number;
-
-  indices: UIntTypedArray;
-  sortOrders?: {asc: boolean, lookup: ILookUpArray}[];
-}
-
-interface ISortMessageResponse {
-  uid: number;
-
-  order: IndicesArray;
-}
-
-
-function sortWorkerMain(self: IPoorManWorkerScope) {
-  self.addEventListener('message', (evt) => {
-    const r = <ISortMessageRequest>evt.data;
-    if (typeof r.uid !== 'number') {
-      return;
-    }
-
-    if (r.sortOrders) {
-      sortComplex(r.indices, r.sortOrders);
-    }
-    self.postMessage(<ISortMessageResponse>{
-      uid: r.uid,
-      order: r.indices
-    }, [r.indices.buffer]);
-  });
-}
 
 const SHOULD_USE_WORKER = 50000;
 const MAX_WORKER_THREADS = 10;
@@ -292,19 +187,11 @@ export class WorkerSortWorker implements ISortWorker {
   private readonly workerPool: Worker[] = [];
   private cleanUpWorkerTimer: number = -1;
 
-  private readonly workerBlob = createWorkerCodeBlob([
-    createIndexArray.toString(),
-    asc.toString(),
-    desc.toString(),
-    sortComplex.toString(),
-    toFunctionBody(sortWorkerMain)
-  ]);
-
   constructor() {
     // start with two worker
     for (let i = 0; i < MIN_WORKER_THREADS; ++i) {
-      this.workerPool.push(new Worker(this.workerBlob));
-      this.workerPool.push(new Worker(this.workerBlob));
+      this.workerPool.push(new Worker(WORKER_BLOB));
+      this.workerPool.push(new Worker(WORKER_BLOB));
     }
   }
 
@@ -321,7 +208,7 @@ export class WorkerSortWorker implements ISortWorker {
     if (this.workerPool.length > 0) {
       return this.workerPool.shift()!;
     }
-    return new Worker(this.workerBlob);
+    return new Worker(WORKER_BLOB);
   }
 
   private checkIn(worker: Worker) {

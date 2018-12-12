@@ -1,16 +1,15 @@
 import {equalArrays, fixCSS} from '../internal';
-import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
+import AEventDispatcher, {IEventListener, suffix} from '../internal/AEventDispatcher';
+import {ISequence} from '../internal/interable';
+import {createIndexArray} from '../internal/math';
+import {IRankingDump} from '../provider/interfaces';
 import {isSortingAscByDefault} from './annotations';
-import Column, {IColumnParent, IFlatColumn, visibilityChanged, dirtyValues, dirtyHeader, labelChanged, widthChanged, dirty, ICompareValue, ECompareValueType, dirtyCaches} from './Column';
-import {defaultGroup, IOrderedGroup, IndicesArray} from './Group';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, IColumnParent, ICompareValue, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';
+import CompositeColumn from './CompositeColumn';
+import {defaultGroup, IndicesArray, IOrderedGroup} from './Group';
 import {IDataRow, IGroup} from './interfaces';
 import {joinGroups} from './internal';
 import NumberColumn, {filterChanged} from './NumberColumn';
-import CompositeColumn from './CompositeColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {IRankingDump} from '../provider/interfaces';
-import {createIndexArray} from '../provider/sort';
-import {ISequence} from '../internal/interable';
 
 export interface ISortCriteria {
   readonly col: Column;

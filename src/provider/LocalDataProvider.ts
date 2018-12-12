@@ -4,9 +4,10 @@ import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
-import {createIndexArray, CompareLookup, ISortWorker, local, sortComplex, WorkerSortWorker} from './sort';
+import {CompareLookup, ISortWorker, local, WorkerSortWorker} from './sort';
 import {DirectRenderTasks, IRenderTaskExectutor, ScheduleRenderTasks} from './tasks';
 import {IEventContext} from '../internal/AEventDispatcher';
+import {createIndexArray, sortComplex} from '../internal';
 
 
 export interface ILocalDataProviderOptions {
