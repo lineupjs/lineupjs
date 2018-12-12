@@ -134,7 +134,6 @@ export class ARenderTasks {
       let chunkCounter = currentChunkSize;
       while (o < orders.length) {
         const actOrder = orders[o]!;
-        i = 0;
         for (; i < actOrder.length && chunkCounter > 0; ++i, --chunkCounter) {
           builder.push(acc(this.data[actOrder[i]]));
         }
@@ -144,6 +143,7 @@ export class ARenderTasks {
         }
         // done with this order
         o++;
+        i = 0;
       }
       return {
         done: true,
