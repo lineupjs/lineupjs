@@ -356,7 +356,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     const filter = this.resolveFilter(ranking);
 
-    if (reasons.has(EDirtyReason.UNKNOWN) || reasons.has(EDirtyReason.UNKNOWN)) {
+    if (reasons.has(EDirtyReason.UNKNOWN) || reasons.has(EDirtyReason.FILTER_CHANGED)) {
       this.tasks.dirtyRanking(ranking, 'summary');
     } else if (reasons.has(EDirtyReason.GROUP_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_CRITERIA_DIRTY)) {
       this.tasks.dirtyRanking(ranking, 'group');
