@@ -167,6 +167,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     ranking.on(`${Column.EVENT_DIRTY_CACHES}.cache`, function (this: IEventContext) {
       let col: any = this.origin;
       while (col instanceof Column) {
+        console.log(col.label, 'dirty data');
         that.tasks.dirtyColumn(col, 'data');
         that.tasks.preComputeCol(col);
         col = col.parent;
@@ -345,7 +346,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   sort(ranking: Ranking, dirtyReason: EDirtyReason[]) {
-    this.tasks.dirtyRanking(ranking, 'summary');
+    const reasons = new Set(dirtyReason);
+
     if (this._data.length === 0) {
       return {groups: [], index2pos: []};
     }
@@ -353,9 +355,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
     console.log(dirtyReason);
 
     const filter = this.resolveFilter(ranking);
-    // TODO clear summary not required if: sort criteria changed, group sort criteria changed, group criteria changed
-    // TODO clear groups not required if: sort criteria changed, group sort criteria changed
-    // TODO if no filter is set copy the data stats to the summary stats
+
+    if (reasons.has(EDirtyReason.UNKNOWN) || reasons.has(EDirtyReason.UNKNOWN)) {
+      this.tasks.dirtyRanking(ranking, 'summary');
+    } else if (reasons.has(EDirtyReason.GROUP_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_CRITERIA_DIRTY)) {
+      this.tasks.dirtyRanking(ranking, 'group');
+    }
+    // otherwise the summary and group summaries should still be valid
+
     if (!filter) {
       // all rows so summary = data
       this.tasks.copyData2Summary(ranking);
@@ -366,7 +373,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const isGroupedSortedBy = ranking.getGroupSortCriteria().length > 0;
 
     if (!isGroupedBy && !isSortedBy && !filter) {
-      // TODO copy data stats to summary and group stats
       return this.noSorting(ranking);
     }
 
@@ -382,7 +388,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
 
     if (groups.size === 1) {
-      // TODO can copy the summary stats to the group stats since the same
       const g = ggroups[0]!;
 
       // TODO not required if: group sort criteria changed
@@ -431,7 +436,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   mappingSample(col: INumberColumn): ISequence<number> {
-    const MAX_SAMPLE = 120; //at most 500 sample lines
+    const MAX_SAMPLE = 120; //at most 120 sample lines
     const l = this._dataRows.length;
     if (l <= MAX_SAMPLE) {
       return lazySeq(this._dataRows).map((v) => col.getRawNumber(v));

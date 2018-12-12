@@ -205,11 +205,21 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
 
 
   dirtyColumn(col: Column, type: 'data' | 'summary' | 'group') {
-    const prefix = type === 'group' ? 'summary' : type;
-    this.cache.delete(`${col.id}:${prefix}`);
-    this.cache.delete(`${col.id}:${prefix}:raw`);
-    this.cache.delete(`${col.id}:${prefix}:b`);
-    this.cache.delete(`${col.id}:${prefix}:braw`);
+    if (type === 'group') {
+      return; // not cached
+    }
+    this.cache.delete(`${col.id}:summary`);
+    this.cache.delete(`${col.id}:summary:raw`);
+    this.cache.delete(`${col.id}:summary:b`);
+    this.cache.delete(`${col.id}:summary:braw`);
+
+    if (type === 'summary') {
+      return;
+    }
+    this.cache.delete(`${col.id}:data`);
+    this.cache.delete(`${col.id}:data:raw`);
+    this.cache.delete(`${col.id}:data:b`);
+    this.cache.delete(`${col.id}:data:braw`);
   }
 
   dirtyRanking(ranking: Ranking, type: 'data' | 'summary' | 'group') {
