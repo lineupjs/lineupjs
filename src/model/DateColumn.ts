@@ -138,7 +138,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     this.currentFilter.min = isUnknown(value.min) ? -Infinity : value.min;
     this.currentFilter.max = isUnknown(value.max) ? Infinity : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
-    this.fire([DateColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], bak, this.getFilter());
+    this.fire([DateColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   /**

@@ -76,7 +76,7 @@ export interface IRenderTaskExectutor extends IRenderTasks {
   dirtyColumn(col: Column, type: 'data' | 'summary' | 'group'): void;
   dirtyRanking(ranking: Ranking, type: 'data' | 'summary' | 'group'): void;
 
-  groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>): IRenderTask<ICompareValue[]>;
+  groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray): IRenderTask<ICompareValue[]>;
 
   preCompute(ranking: Ranking, groups: {rows: IndicesArray, group: IGroup}[]): void;
   preComputeCol(col: Column): void;
@@ -246,8 +246,8 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     }
   }
 
-  groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>) {
-    return taskNow(ranking.toGroupCompareValue(rows, group));
+  groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
+    return taskNow(ranking.toGroupCompareValue(this.byOrder(rows), group));
   }
 
   groupRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
@@ -539,8 +539,8 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
   }
 
-  groupCompare(ranking: Ranking, group: IGroup, rows: ISequence<IDataRow>) {
-    return taskLater(this.tasks.push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(rows, group)));
+  groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
+    return taskLater(this.tasks.push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(this.byOrder(rows), group)));
   }
 
   groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T) {

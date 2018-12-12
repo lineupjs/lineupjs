@@ -271,8 +271,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.rankings.splice(index, 0, r);
     this.forward(r, ...ADataProvider.FORWARD_RANKING_EVENTS);
     //delayed reordering per ranking
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce((reason?: EDirtyReason[]) => {
-      this.triggerReorder(r, reason);
+    const that = this;
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function(this: IEventContext) {
+      that.triggerReorder(r, toDirtyReason(this));
     }, 100, mergeDirtyOrderContext));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
     this.triggerReorder(r);

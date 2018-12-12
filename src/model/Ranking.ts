@@ -18,14 +18,14 @@ export interface ISortCriteria {
 }
 
 export enum EDirtyReason {
-  UNKNOWN,
-  FILTER_CHANGED,
-  SORT_CRITERIA_CHANGED,
-  SORT_CRITERIA_DIRTY,
-  GROUP_CRITERIA_CHANGED,
-  GROUP_CRITERIA_DIRTY,
-  GROUP_SORT_CRITERIA_CHANGED,
-  GROUP_SORT_CRITERIA_DIRTY
+  UNKNOWN = 'unknown',
+  FILTER_CHANGED = 'filter',
+  SORT_CRITERIA_CHANGED = 'sort_changed',
+  SORT_CRITERIA_DIRTY = 'sort_dirty',
+  GROUP_CRITERIA_CHANGED = 'group_changed',
+  GROUP_CRITERIA_DIRTY = 'group_dirty',
+  GROUP_SORT_CRITERIA_CHANGED = 'group_sort_changed',
+  GROUP_SORT_CRITERIA_DIRTY = 'group_sort_dirty'
 }
 
 

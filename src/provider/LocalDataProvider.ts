@@ -306,7 +306,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const sortTask = this.sortWorker.sort(g.rows, singleGroup, lookups);
 
     // compute sort group value as task
-    const groupSortTask = groupLookup ? this.tasks.groupCompare(ranking, group, this.view(g.rows)).then((r) => r) : <ICompareValue[]>[];
+    const groupSortTask = groupLookup ? this.tasks.groupCompare(ranking, group, g.rows).then((r) => r) : <ICompareValue[]>[];
 
     // trigger task for groups to compute for this group
 

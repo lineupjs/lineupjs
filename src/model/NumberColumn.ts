@@ -275,7 +275,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([NumberColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire([NumberColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
   }
 
   isFiltered() {
@@ -294,7 +294,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.currentFilter.min = isUnknown(value.min) ? -Infinity : value.min;
     this.currentFilter.max = isUnknown(value.max) ? Infinity : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
-    this.fire([NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], bak, this.getFilter());
+    this.fire([NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   /**

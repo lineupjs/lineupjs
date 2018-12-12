@@ -201,7 +201,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     if (this.currentFilter === filter) {
       return;
     }
-    this.fire([BooleanColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    this.fire([BooleanColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
   toCompareValue(row: IDataRow) {

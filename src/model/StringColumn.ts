@@ -162,7 +162,7 @@ export default class StringColumn extends ValueColumn<string> {
     if (this.currentFilter === filter) {
       return;
     }
-    this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
   getGroupCriteria() {

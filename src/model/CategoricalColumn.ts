@@ -194,7 +194,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     if (isEqualCategoricalFilter(this.currentFilter, filter)) {
       return;
     }
-    this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
   toCompareValue(row: IDataRow, valueCache?: any) {
