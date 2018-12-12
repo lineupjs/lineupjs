@@ -158,7 +158,7 @@ export class CompareLookup {
   }
 }
 
-function sort(indices: number[], _singleCall: boolean, lookups?: CompareLookup) {
+function sort(indices: IndicesArray, _singleCall: boolean, lookups?: CompareLookup) {
   const order = toIndexArray(indices);
   if (lookups) {
     sortComplex(order, lookups.sortOrders);
@@ -167,7 +167,7 @@ function sort(indices: number[], _singleCall: boolean, lookups?: CompareLookup) 
 }
 
 export interface ISortWorker {
-  sort(indices: number[], singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
+  sort(indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
   terminate(): void;
 }
 
@@ -222,7 +222,7 @@ export class WorkerSortWorker implements ISortWorker {
     }
   }
 
-  sort(indices: number[], singleCall: boolean, lookups?: CompareLookup) {
+  sort(indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup) {
 
     if (!lookups || indices.length < SHOULD_USE_WORKER) {
       // no thread needed

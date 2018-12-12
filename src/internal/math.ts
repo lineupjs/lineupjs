@@ -480,7 +480,10 @@ export function createIndexArray(length: number) {
   return new Uint32Array(length);
 }
 
-export function toIndexArray(arr: ISequence<number>): UIntTypedArray {
+export function toIndexArray(arr: ISequence<number> | IndicesArray): UIntTypedArray {
+  if (arr instanceof Uint8Array || arr instanceof Uint16Array || arr instanceof Uint32Array) {
+    return arr.slice();
+  }
   const l = arr.length;
   if (l <= 255) {
     return Uint8Array.from(arr);

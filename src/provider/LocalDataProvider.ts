@@ -35,7 +35,7 @@ export interface ILocalDataProviderOptions {
 
 interface ISortHelper {
   group: IGroup;
-  rows: number[];
+  rows: IndicesArray;
 }
 
 /**
@@ -275,31 +275,87 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return {groups: [Object.assign({order}, defaultGroup)], index2pos};
   }
 
-  private createSorter(ranking: Ranking, filter: ((d: IDataRow) => boolean) | null, isSortedBy: boolean) {
+  private createSorter(ranking: Ranking, filter: ((d: IDataRow) => boolean) | null, isSortedBy: boolean, needsFiltering: boolean, needsGrouping: boolean, needsSorting: boolean) {
     const groups = new Map<string, ISortHelper>();
-    const lookups = isSortedBy ? new CompareLookup(this._data.length, ranking.toCompareValueType()) : undefined;
+    const groupOrder: ISortHelper[] = [];
     let maxDataIndex = -1;
 
-    for (const r of this._dataRows) {
-      if (filter && !filter(r)) {
+    const lookups = isSortedBy && needsSorting ? new CompareLookup(this._data.length, ranking.toCompareValueType()) : undefined;
+
+    const pushGroup = (group: IGroup, r: IDataRow) => {
+      const groupKey = group.name.toLowerCase();
+      if (groups.has(groupKey)) {
+        (<number[]>groups.get(groupKey)!.rows).push(r.i);
+        return;
+      }
+      const s = {group, rows: [r.i]};
+      groups.set(groupKey, s);
+      groupOrder.push(s);
+    };
+
+    if (needsFiltering) {
+      // filter, group, sort
+      for (const r of this._dataRows) {
+        if (filter && !filter(r)) {
+          continue;
+        }
+        if (maxDataIndex < r.i) {
+          maxDataIndex = r.i;
+        }
+        if (lookups) {
+          lookups.push(r.i, ranking.toCompareValue(r));
+        }
+        pushGroup(ranking.grouper(r), r);
+      }
+
+      // some default sorting
+      groupOrder.sort((a, b) => a.group.name.toLowerCase().localeCompare(b.group.name.toLowerCase()));
+      return {maxDataIndex, lookups, groupOrder};
+    }
+
+    // reuse the existing groups
+
+    for (const before of ranking.getGroups()) {
+      const order = before.order;
+      const plain = Object.assign({}, before);
+      delete plain.order;
+
+      if (!needsGrouping) {
+        // reuse in full
+        groupOrder.push({group: plain, rows: order});
+
+        if (!lookups) {
+          continue;
+        }
+        // sort
+        for (let i = 0; i < order.length; ++i) {
+          if (maxDataIndex < i) {
+            maxDataIndex = i;
+          }
+          const r = this._dataRows[i];
+          lookups.push(r.i, ranking.toCompareValue(r));
+        }
         continue;
       }
-      const group = ranking.grouper(r) || defaultGroup;
-      const groupKey = group.name.toLowerCase();
-      if (lookups) {
-        lookups.push(r.i, ranking.toCompareValue(r));
-      }
-      if (groups.has(groupKey)) {
-        groups.get(groupKey)!.rows.push(r.i);
-      } else {
-        groups.set(groupKey, {group, rows: [r.i]});
-      }
-      if (maxDataIndex < r.i) {
-        maxDataIndex = r.i;
+
+      // group, [sort]
+      for (let i = 0; i < order.length; ++i) {
+        if (maxDataIndex < i) {
+          maxDataIndex = i;
+        }
+        const r = this._dataRows[i];
+        if (lookups) {
+          lookups.push(r.i, ranking.toCompareValue(r));
+        }
+        pushGroup(needsGrouping ? ranking.grouper(r) : plain, r);
       }
     }
 
-    return {maxDataIndex, lookups, groups};
+    if (needsGrouping) {
+      // some default sorting
+      groupOrder.sort((a, b) => a.group.name.toLowerCase().localeCompare(b.group.name.toLowerCase()));
+    }
+    return {maxDataIndex, lookups, groupOrder};
   }
 
   private sortGroup(g: ISortHelper, i: number, ranking: Ranking, lookups: CompareLookup | undefined, groupLookup: CompareLookup | undefined, singleGroup: boolean): Promise<IOrderedGroup> {
@@ -323,9 +379,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined) {
     // sort groups
-    if (!groupLookup) {
-      groups.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-    } else {
+    if (groupLookup) {
       const groupIndices = groups.map((_, i) => i);
       sortComplex(groupIndices, groupLookup.sortOrders);
       groups = groupIndices.map((i) => groups[i]);
@@ -357,9 +411,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     const filter = this.resolveFilter(ranking);
 
-    if (reasons.has(EDirtyReason.UNKNOWN) || reasons.has(EDirtyReason.FILTER_CHANGED)) {
+    const needsFiltering = reasons.has(EDirtyReason.UNKNOWN) || reasons.has(EDirtyReason.FILTER_CHANGED);
+    const needsGrouping = needsFiltering || reasons.has(EDirtyReason.GROUP_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_CRITERIA_DIRTY);
+    const needsSorting = needsGrouping || reasons.has(EDirtyReason.SORT_CRITERIA_CHANGED) || reasons.has(EDirtyReason.SORT_CRITERIA_DIRTY);
+    const needsGroupSorting = needsSorting || reasons.has(EDirtyReason.GROUP_SORT_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_SORT_CRITERIA_DIRTY);
+
+    if (needsFiltering) {
       this.tasks.dirtyRanking(ranking, 'summary');
-    } else if (reasons.has(EDirtyReason.GROUP_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_CRITERIA_DIRTY)) {
+    } else if (needsGrouping) {
       this.tasks.dirtyRanking(ranking, 'group');
     }
     // otherwise the summary and group summaries should still be valid
@@ -377,33 +436,31 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return this.noSorting(ranking);
     }
 
-    // TODO not required if: sort criteria changed, group sort criteria changed
-    const {maxDataIndex, lookups, groups} = this.createSorter(ranking, filter, isSortedBy);
+    const {maxDataIndex, lookups, groupOrder} = this.createSorter(ranking, filter, isSortedBy, needsFiltering, needsGrouping, needsSorting);
 
-    if (groups.size === 0) {
+    if (groupOrder.length === 0) {
       return {groups: [], index2pos: []};
     }
 
-    const ggroups = Array.from(groups.values());
-    this.tasks.preCompute(ranking, ggroups);
+    this.tasks.preCompute(ranking, groupOrder);
 
 
-    if (groups.size === 1) {
-      const g = ggroups[0]!;
+    if (groupOrder.length === 1) {
+      const g = groupOrder[0]!;
 
-      // TODO not required if: group sort criteria changed
+      // not required if: group sort criteria changed -> lookups will be none
       return this.sortGroup(g, 0, ranking, lookups, undefined, true).then((group) => {
         return this.index2pos([group], maxDataIndex);
       });
     }
 
-    const groupLookup = isGroupedSortedBy ? new CompareLookup(groups.size, ranking.toGroupCompareValueType()) : undefined;
+    const groupLookup = isGroupedSortedBy && needsGroupSorting ? new CompareLookup(groupOrder.length, ranking.toGroupCompareValueType()) : undefined;
 
-    return Promise.all(ggroups.map((g, i) => {
-      // TODO not required if: group sort criteria changed
+    return Promise.all(groupOrder.map((g, i) => {
+      // not required if: group sort criteria changed -> lookups will be none
       return this.sortGroup(g, i, ranking, lookups, groupLookup, false);
     })).then((groups) => {
-      // TODO not required if: sort criteria changed
+      // not required if: sort criteria changed -> groupLookup will be none
       const sortedGroups = this.sortGroups(groups, groupLookup);
       return this.index2pos(sortedGroups, maxDataIndex);
     });

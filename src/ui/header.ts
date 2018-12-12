@@ -1,4 +1,3 @@
-// import Popper from 'popper.js';
 import {MIN_LABEL_WIDTH} from '../config';
 import {equalArrays} from '../internal';
 import {dragAble, dropAble, hasDnDType, IDropResult} from '../internal/dnd';
