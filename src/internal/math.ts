@@ -1,5 +1,6 @@
 import {ICategory} from '../model';
 import {bisectLeft} from 'd3-array';
+import {IForEachAble, isIndicesAble} from './interable';
 
 export interface INumberBin {
   x0: number;
@@ -100,7 +101,20 @@ function quantile(values: Float32Array, quantile: number) {
   return v + (vAfter - v) * (target - index); // shift by change
 }
 
-export function boxplotBuilder(): {push: (v: number) => void, build: () => IAdvancedBoxPlotData} {
+function pushAll<T>(push: (v: T) => void) {
+  return (vs: IForEachAble<T>) => {
+    if (!isIndicesAble(vs)) {
+      vs.forEach(push);
+      return;
+    }
+    // tslint:disable-next-line:prefer-for-of
+    for (let j = 0; j < vs.length; ++j) {
+      push(vs[j]);
+    }
+  };
+}
+
+export function boxplotBuilder(): {push: (v: number) => void, pushAll: (vs: IForEachAble<number>) => void, build: () => IAdvancedBoxPlotData} {
   // filter out NaN
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -198,13 +212,13 @@ export function boxplotBuilder(): {push: (v: number) => void, build: () => IAdva
     };
   };
 
-  return {push, build};
+  return {push, build, pushAll: pushAll(push)};
 }
 
 /**
  * @internal
  */
-export function normalizedStatsBuilder(numberOfBins: number): {push: (v: number) => void, build: () => IStatistics} {
+export function normalizedStatsBuilder(numberOfBins: number): {push: (v: number) => void, pushAll: (vs: IForEachAble<number>) => void, build: () => IStatistics} {
 
   const hist: INumberBin[] = [];
 
@@ -280,7 +294,7 @@ export function normalizedStatsBuilder(numberOfBins: number): {push: (v: number)
     };
   };
 
-  return {push, build};
+  return {push, build, pushAll: pushAll(push)};
 }
 
 function computeGranularity(min: Date | null, max: Date | null) {
@@ -333,7 +347,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
-export function dateStatsBuilder(template?: IDateStatistics): {push: (v: Date | null) => void, build: () => IDateStatistics} {
+export function dateStatsBuilder(template?: IDateStatistics): {push: (v: Date | null) => void, pushAll: (vs: IForEachAble<Date | null>) => void, build: () => IDateStatistics} {
   // filter out NaN
   let min: Date | null = null;
   let max: Date | null = null;
@@ -374,7 +388,7 @@ export function dateStatsBuilder(template?: IDateStatistics): {push: (v: Date | 
     };
   };
 
-  return {push, build};
+  return {push, build, pushAll: pushAll(push)};
 }
 
 /**
@@ -384,7 +398,7 @@ export function dateStatsBuilder(template?: IDateStatistics): {push: (v: Date | 
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function categoricalStatsBuilder(categories: ICategory[]): {push: (category: ICategory | null) => void, build: () => ICategoricalStatistics} {
+export function categoricalStatsBuilder(categories: ICategory[]): {push: (category: ICategory | null) => void, pushAll: (vs: IForEachAble<ICategory | null>) => void, build: () => ICategoricalStatistics} {
   const m = new Map<string, number>();
   categories.forEach((cat) => m.set(cat.name, 0));
 
@@ -412,7 +426,7 @@ export function categoricalStatsBuilder(categories: ICategory[]): {push: (catego
     };
   };
 
-  return {push, build};
+  return {push, build, pushAll: pushAll(push)};
 }
 
 /**

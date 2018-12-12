@@ -19,6 +19,18 @@ export interface ITask<T> {
   result: PromiseLike<T | symbol>;
 }
 
+export const ANOTHER_ROUND = {
+  value: null,
+  done: false
+};
+
+export function oneShotIterator<T>(calc: () => T): Iterator<T> {
+  return {
+    next: () => ({done: true, value: calc()})
+  };
+}
+
+
 function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void) {
   function then<TResult1 = T | symbol, TResult2 = never>(onfulfilled?: ((value: T | symbol) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): IAbortAblePromiseBase<TResult1 | TResult2> {
     const r = wrappee.then(onfulfilled, onrejected);
@@ -107,15 +119,7 @@ export default class TaskScheduler {
   }
 
   push<T>(id: string, calc: () => T | PromiseLike<T>): IAbortAblePromise<T> {
-    const singleIt = {
-      next: () => {
-        return {
-          value: calc(),
-          done: true
-        };
-      }
-    };
-    return this.pushMulti(id, singleIt);
+    return this.pushMulti(id, oneShotIterator(calc));
   }
 
   abort(id: string) {
