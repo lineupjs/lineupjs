@@ -75,7 +75,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const type = this.type;
       for (const r of that.getRankings()) {
         if (r !== ranking) {
-          r.dirtyOrder(type === Ranking.EVENT_FILTER_CHANGED ? EDirtyReason.FILTER_CHANGED : undefined);
+          r.dirtyOrder(type === Ranking.EVENT_FILTER_CHANGED ? [EDirtyReason.FILTER_CHANGED] : [EDirtyReason.UNKNOWN]);
         }
       }
     };
@@ -344,13 +344,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return {groups, index2pos};
   }
 
-  sort(ranking: Ranking, _dirtyReason?: EDirtyReason) {
+  sort(ranking: Ranking, dirtyReason: EDirtyReason[]) {
     this.tasks.dirtyRanking(ranking, 'summary');
     if (this._data.length === 0) {
       return {groups: [], index2pos: []};
     }
 
-    console.log(_dirtyReason);
+    console.log(dirtyReason);
 
     const filter = this.resolveFilter(ranking);
     // TODO clear summary not required if: sort criteria changed, group sort criteria changed, group criteria changed

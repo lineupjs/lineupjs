@@ -1,5 +1,5 @@
-import AEventDispatcher, {IEventListener, suffix} from '../internal/AEventDispatcher';
-import debounce from '../internal/debounce';
+import AEventDispatcher, {IEventListener, suffix, IEventContext} from '../internal/AEventDispatcher';
+import debounce, {IDebounceContext} from '../internal/debounce';
 import {ISequence} from '../internal/interable';
 import OrderedSet from '../internal/OrderedSet';
 import {Column, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, models, forEachIndices, everyIndices} from '../model';
@@ -78,6 +78,36 @@ export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], va
  */
 export declare function busy(busy: boolean): void;
 
+function toDirtyReason(ctx: IEventContext) {
+  const primary = ctx.primaryType;
+  switch (primary || '') {
+    case Ranking.EVENT_DIRTY_ORDER:
+      return ctx.args[0] || [EDirtyReason.UNKNOWN];
+    case Ranking.EVENT_SORT_CRITERIA_CHANGED:
+      return [EDirtyReason.SORT_CRITERIA_CHANGED];
+    case Ranking.EVENT_GROUP_CRITERIA_CHANGED:
+      return [EDirtyReason.GROUP_CRITERIA_CHANGED];
+    case Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED:
+      return [EDirtyReason.GROUP_SORT_CRITERIA_CHANGED];
+    default:
+      return [EDirtyReason.UNKNOWN];
+  }
+}
+
+function mergeDirtyOrderContext(current: IDebounceContext, next: IDebounceContext) {
+  const currentReason = toDirtyReason(current.self);
+  const nextReason = toDirtyReason(next.self);
+  const combined = new Set(currentReason);
+  for (const r of nextReason) {
+    combined.add(r);
+  }
+  return {
+    self: {primaryType: Ranking.EVENT_DIRTY_ORDER},
+    args: [
+      Array.from(combined)
+    ]
+  };
+}
 
 /**
  * a basic data provider holding the data and rankings
@@ -102,7 +132,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   private static readonly FORWARD_RANKING_EVENTS = suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
     Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
-    Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES);
+    Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY_CACHES);
 
   /**
    * all rankings
@@ -241,23 +271,19 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.rankings.splice(index, 0, r);
     this.forward(r, ...ADataProvider.FORWARD_RANKING_EVENTS);
     //delayed reordering per ranking
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce((reason?: EDirtyReason) => {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce((reason?: EDirtyReason[]) => {
       this.triggerReorder(r, reason);
-    }, 100, (current, next) => {
-      // EDirtyReason is ordered the more important the smaller
-      return Object.assign(next, {
-        args: [Math.min(current.args[0], next.args[0])]
-      });
-    }));
+    }, 100, mergeDirtyOrderContext));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
     this.triggerReorder(r);
   }
 
-  private triggerReorder(ranking: Ranking, dirtyReason?: EDirtyReason) {
+  private triggerReorder(ranking: Ranking, dirtyReason?: EDirtyReason[]) {
     this.fireBusy(true);
-    Promise.resolve(this.sort(ranking, dirtyReason)).then(({groups, index2pos}) => {
+    const reason = dirtyReason || [EDirtyReason.UNKNOWN];
+    Promise.resolve(this.sort(ranking, reason)).then(({groups, index2pos}) => {
       unifyParents(groups);
-      ranking.setGroups(groups, index2pos, dirtyReason);
+      ranking.setGroups(groups, index2pos, reason);
       this.fireBusy(false);
     });
   }
@@ -667,7 +693,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param ranking
    * @return {Promise<any>}
    */
-  abstract sort(ranking: Ranking, dirtyReason?: EDirtyReason): Promise<{groups: IOrderedGroup[], index2pos: IndicesArray}> | {groups: IOrderedGroup[], index2pos: IndicesArray};
+  abstract sort(ranking: Ranking, dirtyReason: EDirtyReason[]): Promise<{groups: IOrderedGroup[], index2pos: IndicesArray}> | {groups: IOrderedGroup[], index2pos: IndicesArray};
 
   /**
    * returns a view in the order of the given indices
