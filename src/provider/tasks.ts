@@ -113,8 +113,8 @@ export class ARenderTasks {
     const chunkSize = 100;
     const orders = order instanceof MultiIndices ? order.indices : [order];
 
-    const nextData = () => {
-      let chunkCounter = chunkSize;
+    const nextData = (currentChunkSize: number = chunkSize) => {
+      let chunkCounter = currentChunkSize;
       const data = this.data;
       for (; i < data.length && chunkCounter > 0; ++i, --chunkCounter) {
         builder.push(acc(data[i++]));
@@ -130,8 +130,8 @@ export class ARenderTasks {
       };
     };
 
-    const nextOrder = () => {
-      let chunkCounter = chunkSize;
+    const nextOrder = (currentChunkSize: number = chunkSize) => {
+      let chunkCounter = currentChunkSize;
       while (o < orders.length) {
         const actOrder = orders[o]!;
         i = 0;
@@ -260,22 +260,22 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     const {summary, data} = this.summaryBoxPlotStatsD(col, raw);
-    return taskNow({group: this.boxplotBuilder(group.order, col, raw), summary, data});
+    return taskNow({group: this.boxplotBuilder(group.order, col, raw).next(Infinity).value!, summary, data});
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     const {summary, data} = this.summaryNumberStatsD(col, raw);
-    return taskNow({group: this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw), summary, data});
+    return taskNow({group: this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw).next(Infinity).value!, summary, data});
   }
 
   groupCategoricalStats(col: Column & ISetColumn, group: IOrderedGroup) {
     const {summary, data} = this.summaryCategoricalStatsD(col);
-    return taskNow({group: this.categoricalStatsBuilder(group.order, col), summary, data});
+    return taskNow({group: this.categoricalStatsBuilder(group.order, col).next(Infinity).value!, summary, data});
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
     const {summary, data} = this.summaryDateStatsD(col);
-    return taskNow({group: this.dateStatsBuilder(group.order, col, summary), summary, data});
+    return taskNow({group: this.dateStatsBuilder(group.order, col, summary).next(Infinity).value!, summary, data});
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
@@ -298,7 +298,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     return this.cached('summary', col, () => {
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataNumberStats(col, raw);
-      return {summary: this.normalizedStatsBuilder(ranking, col, data.hist.length, raw), data};
+      return {summary: this.normalizedStatsBuilder(ranking, col, data.hist.length, raw).next(Infinity).value!, data};
     }, raw ? ':raw' : '', col.findMyRanker()!.getOrderLength() === 0);
   }
 
@@ -306,7 +306,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     return this.cached('summary', col, () => {
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataBoxPlotStats(col, raw);
-      return {summary: this.boxplotBuilder(ranking, col, raw), data};
+      return {summary: this.boxplotBuilder(ranking, col, raw).next(Infinity).value!, data};
     }, raw ? ':braw' : ':b' , col.findMyRanker()!.getOrderLength() === 0);
   }
 
@@ -314,7 +314,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     return this.cached('summary', col, () => {
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataCategoricalStats(col);
-      return {summary: this.categoricalStatsBuilder(ranking, col), data};
+      return {summary: this.categoricalStatsBuilder(ranking, col).next(Infinity).value!, data};
     }, '', col.findMyRanker()!.getOrderLength() === 0);
   }
 
@@ -322,7 +322,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     return this.cached('summary', col, () => {
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataDateStats(col);
-      return {summary: this.dateStatsBuilder(ranking, col, data), data};
+      return {summary: this.dateStatsBuilder(ranking, col, data).next(Infinity).value!, data};
     }, '', col.findMyRanker()!.getOrderLength() === 0);
   }
 
@@ -339,19 +339,19 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   }
 
   dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached('data', col, () => this.boxplotBuilder(null, col, raw), raw ? ':braw' : ':b');
+    return this.cached('data', col, () => this.boxplotBuilder(null, col, raw).next(Infinity).value!, raw ? ':braw' : ':b');
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached('data', col, () => this.normalizedStatsBuilder(null, col, getNumberOfBins(this.data.length), raw), raw ? ':raw' : '');
+    return this.cached('data', col, () => this.normalizedStatsBuilder(null, col, getNumberOfBins(this.data.length), raw).next(Infinity).value!, raw ? ':raw' : '');
   }
 
   dataCategoricalStats(col: Column & ISetColumn) {
-    return this.cached('data', col, () => this.categoricalStatsBuilder(null, col));
+    return this.cached('data', col, () => this.categoricalStatsBuilder(null, col).next(Infinity).value!);
   }
 
   dataDateStats(col: Column & IDateColumn) {
-    return this.cached('data', col, () => this.dateStatsBuilder(null, col));
+    return this.cached('data', col, () => this.dateStatsBuilder(null, col).next(Infinity).value!);
   }
 
 }
