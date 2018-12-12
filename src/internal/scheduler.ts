@@ -14,7 +14,7 @@ export interface IPoorManIdleCallback {
 
 export interface ITask<T> {
   id: string;
-  calc: () => T | PromiseLike<T>;
+  it: Iterator<T | PromiseLike<T> | null>;
   resolve(r: T | PromiseLike<T> | symbol): void;
   result: PromiseLike<T | symbol>;
 }
@@ -39,8 +39,17 @@ export default class TaskScheduler {
     while (this.tasks.length > 0 && (deadline.didTimeout || deadline.timeRemaining() > 0)) {
       const task = this.tasks.shift()!;
 
-      const r = task.calc();
-      requestAnimationFrame(() => task.resolve(r));
+      let r = task.it.next();
+      // call next till done or ran out of time
+      while (!r.done && (deadline.didTimeout || deadline.timeRemaining() > 0)) {
+        r = task.it.next();
+      }
+      if (r.done) {
+        requestAnimationFrame(() => task.resolve(r.value));
+      } else {
+        // reschedule again
+        this.tasks.unshift(task);
+      }
     }
 
     this.taskId = -1;
@@ -60,7 +69,7 @@ export default class TaskScheduler {
     }
   }
 
-  push<T>(id: string, calc: () => T | PromiseLike<T>): IAbortAblePromise<T> {
+  pushMulti<T>(id: string, it: Iterator<T | PromiseLike<T> | null>): IAbortAblePromise<T> {
     // abort task with the same id
     const abort = () => {
       const index = this.tasks.findIndex((d) => d.id === id);
@@ -84,7 +93,7 @@ export default class TaskScheduler {
 
     this.tasks.push({
       id,
-      calc,
+      it,
       result: p,
       resolve: resolve!
     });
@@ -95,6 +104,18 @@ export default class TaskScheduler {
       then: thenFactory(p, abort),
       abort
     };
+  }
+
+  push<T>(id: string, calc: () => T | PromiseLike<T>): IAbortAblePromise<T> {
+    const singleIt = {
+      next: () => {
+        return {
+          value: calc(),
+          done: true
+        };
+      }
+    };
+    return this.pushMulti(id, singleIt);
   }
 
   abort(id: string) {
