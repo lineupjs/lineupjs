@@ -208,7 +208,6 @@ export default class EngineRenderer extends AEventDispatcher {
     data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
       this.setHighlightToNearest(indices, true);
     });
-    data.on(`${ADataProvider.EVENT_BUSY}.body`, (busy) => this.node.classList.toggle(cssClass('busy'), busy));
 
     (<any>this.ctx).provider = data;
 

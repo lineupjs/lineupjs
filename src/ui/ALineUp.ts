@@ -50,6 +50,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     }
 
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
+    data.on(`${DataProvider.EVENT_BUSY}.busy`, (busy) => this.node.classList.toggle(cssClass('busy'), busy));
   }
 
   protected createEventList() {
@@ -82,12 +83,15 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   setDataProvider(data: DataProvider, dump?: IDataProviderDump) {
     if (this.data) {
       this.unforward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
+      data.on(`${DataProvider.EVENT_BUSY}.busy`, null);
     }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
+
+    data.on(`${DataProvider.EVENT_BUSY}.busy`, (busy) => this.node.classList.toggle(cssClass('busy'), busy));
   }
 
   getSelection() {
