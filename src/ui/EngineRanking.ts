@@ -2,7 +2,7 @@ import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, Gri
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IGroupData, IGroupItem, isGroup, isMultiLevelColumn, toGroupMeta} from '../model';
+import {IGroupData, IGroupItem, isGroup, isMultiLevelColumn, toGroupMeta, defaultGroup, IGroupMeta, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
@@ -828,24 +828,36 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const provider = this.ctx.provider;
     const r = <(IGroupItem | IGroupData)[]>[];
 
+    const pushItem = (group: IOrderedGroup, dataIndex: number, i: number, meta: IGroupMeta) => {
+      r.push({
+        group,
+        dataIndex,
+        relativeIndex: i,
+        meta
+      });
+    };
+
+    if (groups.length === 1 && groups[0].name === defaultGroup.name) {
+      const group = groups[0];
+      const order = group.order;
+      for (let i = 0; i < order.length; ++i) {
+        pushItem(group, order[i], i, null);
+      }
+      return r;
+    }
+
     for (const group of groups) {
       const length = group.order.length;
 
       const n = provider.getTopNAggregated(this.ranking, group);
-      // -1 = show items, 0 = group only, 5 = group + top 5
-      if (n >= 0) {
-        r.push(Object.assign({meta: toGroupMeta(0, n)}, group));
-      }
+
+      // always the group for stratified datasets
+      r.push(Object.assign({meta: <IGroupMeta>(n === 0 ? `first last` : `first`)}, group));
+
       const slice = Math.min(n >= 0 ? n : Number.POSITIVE_INFINITY, length);
-      const metaShift = n > 0 ? 1 : 0; // shift by one to avoid having a start
+
       for (let i = 0; i < slice; ++i) {
-        const dataIndex = group.order[i];
-        r.push({
-          group,
-          dataIndex,
-          relativeIndex: i,
-          meta: toGroupMeta(i + metaShift, slice + metaShift)
-        });
+        pushItem(group, group.order[i], i, i === slice -1 ? 'last' : 'inner');
       }
     }
     return r;

@@ -158,11 +158,13 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   readonly columnTypes: {[columnType: string]: typeof Column};
 
   protected readonly multiSelections: boolean;
+  private readonly showTopN: number;
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
     this.columnTypes = Object.assign(models(), options.columnTypes || {});
     this.multiSelections = options.singleSelection !== true;
+    this.showTopN = options.showTopN != null ? options.showTopN : 10;
   }
 
   /**
@@ -640,7 +642,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       }
       g = g.parent;
     }
-    return -1;
+    return this.showTopN;
   }
 
   private unaggregateParents(ranking: Ranking, group: IGroup) {

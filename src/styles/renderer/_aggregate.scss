@@ -6,7 +6,7 @@
   overflow-x: unset;
 
   &::after {
-    content: '';
+    // content: '';
     position: absolute;
     pointer-events: none;
     top: -2px;  // FIXME right padding

@@ -11,9 +11,15 @@ export interface IDataProviderOptions {
 
   /**
    * allow just single selected rows
-   * default: false
+   * @default: false
    */
   singleSelection: boolean;
+
+  /**
+   * show top N rows as sample rows
+   * @default 10
+   */
+  showTopN: number;
 }
 
 export interface IDataProvider extends AEventDispatcher {

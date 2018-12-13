@@ -17,18 +17,13 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
   create(col: AggregateGroupColumn, context: IRenderContext) {
     const width = context.colWidth(col);
     return {
-      template: `<div title="Collapse Group"></div>`,
-      update(node: HTMLElement, _row: IDataRow, _i: number, group: IGroup, meta: IGroupMeta) {
+      template: `<div></div>`,
+      update(node: HTMLElement, _row: IDataRow, _i: number, _group: IGroup, meta: IGroupMeta) {
         if (!meta) {
           delete node.dataset.meta;
         } else {
           node.dataset.meta = meta;
         }
-        node.onclick = (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          col.setAggregated(group, AGGREGATE_TO_TOP);
-        };
       },
       render(ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup, meta: IGroupMeta) {
         ctx.fillStyle = AGGREGATE.color;
@@ -38,16 +33,38 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: AggregateGroupColumn) {
+  createGroup(col: AggregateGroupColumn, context: IRenderContext) {
     return {
-      template: `<div title="Expand Group"></div>`,
+      template: `<div><div title="Expand Group"></div><div title="Show All | Show Top ${AGGREGATE_TO_TOP}"></div></div>`,
       update(node: HTMLElement, group: IGroup, meta: IGroupMeta) {
+        const toggleAggregate = <HTMLElement>node.firstElementChild!;
+        const toggleMore = <HTMLElement>node.lastElementChild!;
+
+        const agg = context.provider.getTopNAggregated(col.findMyRanker()!, group);
+        if (agg < 0) {
+          // expanded
+          toggleAggregate.title = 'Collapse Group';
+          toggleMore.title = 'Show Top';
+        } else if (agg === 0) {
+          // collapse
+          toggleAggregate.title = 'Expand Group';
+          toggleMore.title = 'Show Top';
+        } else {
+          // show top
+          toggleAggregate.title = 'Collapse Group';
+          toggleMore.title = 'Show All';
+        }
         if (!meta) {
           delete node.dataset.meta;
         } else {
           node.dataset.meta = meta;
         }
-        node.onclick = function (event) {
+        toggleAggregate.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          col.setAggregated(group, false);
+        };
+        toggleMore.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
           col.setAggregated(group, false);
