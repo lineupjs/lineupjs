@@ -4,8 +4,6 @@ import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
-const AGGREGATE_TO_TOP = 0;
-
 /** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -35,7 +33,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
   createGroup(col: AggregateGroupColumn) {
     return {
-      template: `<div><div title="Expand Group"></div><div title="Show All | Show Top ${AGGREGATE_TO_TOP}"></div></div>`,
+      template: `<div><div title="Expand Group"></div><div title="Show All"></div></div>`,
       update(node: HTMLElement, group: IGroup, meta: IGroupMeta) {
         const toggleAggregate = <HTMLElement>node.firstElementChild!;
         const toggleMore = <HTMLElement>node.lastElementChild!;
@@ -73,27 +71,57 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
   }
 
   createSummary(col: AggregateGroupColumn, context: IRenderContext) {
-    const cdown = cssClass('icon-caret-down');
-    const cright = cssClass('icon-caret-right');
     return {
-      template: `<div title="(Un)Aggregate All" class="${cdown}"></div>`,
+      template: `<div><div title="Expand All Groups"></div><div title="Show All"></div></div>`,
       update: (node: HTMLElement) => {
-        const ranking = col.findMyRanker();
-        const right = Boolean(ranking && ranking.getGroups().every((g) => col.isAggregated(g) >= 0));
+        const ranking = col.findMyRanker()!;
+        const groups = ranking.getGroups();
 
-        node.classList.toggle(cdown, !right);
-        node.classList.toggle(cright, right);
+        const toggleAggregate = <HTMLElement>node.firstElementChild!;
+        const toggleMore = <HTMLElement>node.lastElementChild!;
 
-        node.onclick = (evt) => {
-          evt.stopPropagation();
+        const isGroupOnly = groups.every((g) => col.isAggregated(g) === 'collapse');
+        const meta: IGroupMeta = groups.length <= 1 ? null : (isGroupOnly ? 'first last' : 'first top');
+        const isTopX = meta === 'first top';
+        const isShowAll = !isGroupOnly && !isTopX;
+
+        node.dataset.meta = meta!;
+        if (isShowAll) {
+          // expanded
+          toggleAggregate.title = 'Collapse Group';
+          toggleMore.title = 'Show Top';
+        } else if (isGroupOnly) {
+          // collapse
+          toggleAggregate.title = 'Expand Group';
+          toggleMore.title = 'Show Top';
+        } else {
+          // show top
+          toggleAggregate.title = 'Collapse Group';
+          toggleMore.title = 'Show All';
+        }
+        toggleAggregate.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
           const ranking = col.findMyRanker();
           if (!ranking || !context) {
             return;
           }
-          const aggregate = node.classList.contains(cdown);
-          node.classList.toggle(cdown, !aggregate);
-          node.classList.toggle(cright, aggregate);
-          context.provider.aggregateAllOf(ranking, aggregate ? AGGREGATE_TO_TOP : -1);
+
+          const meta = node.dataset.meta!;
+          node.dataset.meta = meta === 'first last' ? 'first top' : 'first last';
+          context.provider.aggregateAllOf(ranking, meta === 'first last' ? 'expand_top' : 'collapse');
+        };
+        toggleMore.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          const ranking = col.findMyRanker();
+          if (!ranking || !context) {
+            return;
+          }
+
+          const meta = node.dataset.meta!;
+          node.dataset.meta = meta === 'first top' ? 'first' : 'first top';
+          context.provider.aggregateAllOf(ranking, meta === 'first top' ? 'expand' : 'expand_top');
         };
       }
     };

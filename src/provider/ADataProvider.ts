@@ -694,8 +694,20 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
   }
 
-  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number) {
-    const v = typeof aggregateAll === 'boolean' ? (aggregateAll ? 0 : -1) : aggregateAll;
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | 'collapse' | 'expand' | 'expand_top') {
+    let v: number;
+    if (typeof aggregateAll === 'boolean') {
+      v = aggregateAll ? 0 : -1;
+    } else if (aggregateAll === 'collapse') {
+      v = 0;
+    } else if (aggregateAll === 'expand') {
+      v = -1;
+    } else if (aggregateAll === 'expand_top') {
+      v = this.showTopN;
+    } else {
+      v = aggregateAll;
+    }
+
     const groups = ranking.getGroups();
     for(const group of groups) {
       this.unaggregateParents(ranking, group);

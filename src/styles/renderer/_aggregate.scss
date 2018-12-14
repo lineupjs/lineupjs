@@ -1,7 +1,7 @@
 @import '../vars';
 @import '../icons/index';
 
-.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate {
+.#{$lu_css_prefix}-renderer-aggregate {
   text-align: center;
   overflow-x: unset;
 
@@ -41,8 +41,8 @@
     &::before {
       @include lu_icons();
 
-      content: $lu_icon_ellipsis_h;
-      transform: rotate(270);
+      content: $lu_icon_expand;
+      transform: rotate(-45deg);
       padding-right: $lu_aggregate_square_bracket_width;
     }
   }
@@ -60,6 +60,12 @@
 
   > :last-child::before {
     content: unset;
+  }
+}
+
+.#{$lu_css_prefix}-renderer-aggregate[data-meta='first'] {
+  > :last-child::before {
+    content: $lu_icon_compress;
   }
 }
 
@@ -89,7 +95,9 @@
 
 
 .#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-aggregate {
-  padding-right: $lu_aggregate_square_bracket_width;
-  cursor: pointer;
   font-size: medium;
+
+  > :last-child {
+    display: none;
+  }
 }
