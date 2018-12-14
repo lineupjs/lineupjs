@@ -101,11 +101,13 @@ function mergeDirtyOrderContext(current: IDebounceContext, next: IDebounceContex
   for (const r of nextReason) {
     combined.add(r);
   }
+  const args = [Array.from(combined)];
   return {
-    self: {primaryType: Ranking.EVENT_DIRTY_ORDER},
-    args: [
-      Array.from(combined)
-    ]
+    self: {
+      primaryType: Ranking.EVENT_DIRTY_ORDER,
+      args
+    },
+    args
   };
 }
 
