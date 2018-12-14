@@ -15,7 +15,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
   create(col: AggregateGroupColumn, context: IRenderContext) {
     const width = context.colWidth(col);
     return {
-      template: `<div></div>`,
+      template: `<div><div></div></div>`,
       update(node: HTMLElement, _row: IDataRow, _i: number, _group: IGroup, meta: IGroupMeta) {
         if (!meta) {
           delete node.dataset.meta;
