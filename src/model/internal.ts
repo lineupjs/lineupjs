@@ -104,9 +104,9 @@ export function medianIndex(rows: ISequence<IDataRow>, col: INumberColumn) {
 export function toCompareGroupValue(rows: ISequence<IDataRow>, col: INumberColumn, sortMethod: keyof IAdvancedBoxPlotData, valueCache?: ISequence<number>) {
   const b = boxplotBuilder();
   if (valueCache) {
-    valueCache.forEach(b.push);
+    b.pushAll(valueCache);
   } else {
-    rows.forEach((row) => b.push(col.getNumber(row)));
+    b.pushAll(rows.map((d) => col.getNumber(d)));
   }
   const vs = b.build();
   return <number>vs[sortMethod];

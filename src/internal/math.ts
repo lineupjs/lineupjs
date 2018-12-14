@@ -1,7 +1,6 @@
 import {ICategory, UIntTypedArray, IndicesArray} from '../model';
 import {IForEachAble, isIndicesAble, ISequence} from './interable';
-import {IPoorManWorkerScope, toFunctionBody} from './worker';
-import {createWorkerCodeBlob} from './worker';
+import {IPoorManWorkerScope, toFunctionBody, createWorkerCodeBlob} from './worker';
 
 export interface INumberBin {
   x0: number;
@@ -88,10 +87,12 @@ export interface IHistGenerator {
   toBin(value: number): number;
 }
 
-export function min<T>(values: T[], acc: (v: T) => number) {
+export function min(values: number[]): number;
+export function min<T>(values: T[], acc?: (v: T) => number): number;
+export function min<T>(values: T[], acc?: (v: T) => number) {
   let min = Number.POSITIVE_INFINITY;
   for (const d of values) {
-    const v = acc(d);
+    const v = acc ? acc(d) : <number><unknown>d;
     if (v < min) {
       min = v;
     }
@@ -99,10 +100,12 @@ export function min<T>(values: T[], acc: (v: T) => number) {
   return min;
 }
 
-export function max<T>(values: T[], acc: (v: T) => number) {
+export function max(values: number[]): number;
+export function max<T>(values: T[], acc?: (v: T) => number): number;
+export function max<T>(values: T[], acc?: (v: T) => number) {
   let max = Number.NEGATIVE_INFINITY;
   for (const d of values) {
-    const v = acc(d);
+    const v = acc ? acc(d) : <number><unknown>d;
     if (v > max) {
       max = v;
     }
@@ -110,11 +113,13 @@ export function max<T>(values: T[], acc: (v: T) => number) {
   return max;
 }
 
-export function extent<T>(values: T[], acc: (v: T) => number) {
+export function extent(values: number[]): [number, number];
+export function extent<T>(values: T[], acc?: (v: T) => number): [number, number];
+export function extent<T>(values: T[], acc?: (v: T) => number) {
   let max = Number.NEGATIVE_INFINITY;
   let min = Number.POSITIVE_INFINITY;
   for (const d of values) {
-    const v = acc(d);
+    const v = acc ? acc(d) : <number><unknown>d;
     if (v < min) {
       min = v;
     }
@@ -139,7 +144,7 @@ export function empty(length: number) {
   return r;
 }
 
-export function quantile(values: Float32Array, quantile: number, length = values.length) {
+export function quantile(values: ArrayLike<number>, quantile: number, length = values.length) {
   if (length === 0) {
     return NaN;
   }
@@ -151,6 +156,14 @@ export function quantile(values: Float32Array, quantile: number, length = values
   const v = values[index];
   const vAfter = values[index + 1];
   return v + (vAfter - v) * (target - index); // shift by change
+}
+
+export function median(values: number[]): number;
+export function median<T>(values: T[], acc?: (v: T) => number): number;
+export function median<T>(values: T[], acc?: (v: T) => number) {
+  const arr = acc ? values.map(acc) : (<number[]><unknown>values).slice();
+  arr.sort((a, b) => (a < b ? -1 : (a > b ? 1 : 0)));
+  return quantile(arr, 0.5);
 }
 
 function pushAll<T>(push: (v: T) => void) {
@@ -166,7 +179,13 @@ function pushAll<T>(push: (v: T) => void) {
   };
 }
 
-export function boxplotBuilder(): {push: (v: number) => void, pushAll: (vs: IForEachAble<number>) => void, build: () => IAdvancedBoxPlotData} {
+export interface IBuilder<T, R> {
+  push(v: T): void;
+  pushAll(vs: IForEachAble<T>): void;
+  build(): R;
+}
+
+export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> {
   // filter out NaN
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -192,27 +211,22 @@ export function boxplotBuilder(): {push: (v: number) => void, pushAll: (vs: IFor
     values.push(v);
   };
 
-  const build = () => {
+  const invalid = {
+    min: NaN,
+    max: NaN,
+    mean: NaN,
+    missing,
+    count: length,
+    whiskerHigh: NaN,
+    whiskerLow: NaN,
+    outlier: [],
+    median: NaN,
+    q1: NaN,
+    q3: NaN
+  };
+
+  const buildImpl = (s: ArrayLike<number>) => {
     const valid = length - missing;
-
-    if (valid === 0) {
-      return {
-        min: NaN,
-        max: NaN,
-        mean: NaN,
-        missing,
-        count: length,
-        whiskerHigh: NaN,
-        whiskerLow: NaN,
-        outlier: [],
-        median: NaN,
-        q1: NaN,
-        q3: NaN
-      };
-    }
-
-    const s = Float32Array.from(values).sort();
-
     const median = quantile(s, 0.5)!;
     const q1 = quantile(s, 0.25)!;
     const q3 = quantile(s, 0.75)!;
@@ -264,13 +278,24 @@ export function boxplotBuilder(): {push: (v: number) => void, pushAll: (vs: IFor
     };
   };
 
+  const build = () => {
+    const valid = length - missing;
+
+    if (valid === 0) {
+      return invalid;
+    }
+
+    const s = Float32Array.from(values).sort();
+    return buildImpl(s);
+  };
+
   return {push, build, pushAll: pushAll(push)};
 }
 
 /**
  * @internal
  */
-export function normalizedStatsBuilder(numberOfBins: number): {push: (v: number) => void, pushAll: (vs: IForEachAble<number>) => void, build: () => IStatistics} {
+export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, IStatistics> {
 
   const hist: INumberBin[] = [];
 
@@ -412,7 +437,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
-export function dateStatsBuilder(template?: IDateStatistics): {push: (v: Date | null) => void, pushAll: (vs: IForEachAble<Date | null>) => void, build: () => IDateStatistics} {
+export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | null, IDateStatistics> {
   // filter out NaN
   let min: Date | null = null;
   let max: Date | null = null;
@@ -463,7 +488,7 @@ export function dateStatsBuilder(template?: IDateStatistics): {push: (v: Date | 
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function categoricalStatsBuilder(categories: ICategory[]): {push: (category: ICategory | null) => void, pushAll: (vs: IForEachAble<ICategory | null>) => void, build: () => ICategoricalStatistics} {
+export function categoricalStatsBuilder(categories: ICategory[]): IBuilder<ICategory | null, ICategoricalStatistics> {
   const m = new Map<string, number>();
   categories.forEach((cat) => m.set(cat.name, 0));
 
