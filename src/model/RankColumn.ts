@@ -13,12 +13,6 @@ export function createRankDesc(label: string = 'Rank') {
 }
 
 /**
- * emitted when the filter property changes
- * @asMemberOf StringColumn
- * @event
- */
-export declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
-/**
  * a rank column
  */
 @SupportType()
