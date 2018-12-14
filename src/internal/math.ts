@@ -1,5 +1,4 @@
 import {ICategory, UIntTypedArray, IndicesArray} from '../model';
-import {bisectLeft} from 'd3-array';
 import {IForEachAble, isIndicesAble, ISequence} from './interable';
 import {IPoorManWorkerScope, toFunctionBody} from './worker';
 import {createWorkerCodeBlob} from './worker';
@@ -287,7 +286,6 @@ export function normalizedStatsBuilder(numberOfBins: number): {push: (v: number)
 
   const bin1 = 0 + binWidth;
   const binN = 1 - binWidth;
-  const binEnds = hist.map((d) => d.x1);
 
   const toBin = (v: number) => {
     if (v < bin1) {
@@ -296,7 +294,21 @@ export function normalizedStatsBuilder(numberOfBins: number): {push: (v: number)
     if (v >= binN) {
       return numberOfBins - 1;
     }
-    return bisectLeft(binEnds, v); // TODO find better solutions to inline
+    if (numberOfBins === 3) {
+      return 1;
+    }
+    let low = 1;
+    let high = numberOfBins - 1;
+    // binary search
+    while (low < high) {
+      const center = Math.floor(high + low) / 2;
+      if (v < hist[center].x1) {
+        high = center;
+      } else {
+        low = center + 1;
+      }
+    }
+    return low;
   };
 
   // filter out NaN
