@@ -275,7 +275,7 @@ const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
   sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
   sortDates: uiSortMethod(Object.keys(EDateSort)),
-  sortGroup: uiSortMethod(['count', 'name']),
+  sortGroups: uiSortMethod(['count', 'name']),
   groupNumber: <IToolbarDialogAddon>{
     title: 'Split',
     order: 2,
