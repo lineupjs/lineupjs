@@ -328,7 +328,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
           continue;
         }
         // sort
-        for (let i = 0; i < order.length; ++i) {
+        // tslint:disable-next-line:prefer-for-of
+        for (let o = 0; o < order.length; ++o) {
+          const i = order[o];
           if (maxDataIndex < i) {
             maxDataIndex = i;
           }
@@ -339,7 +341,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
       }
 
       // group, [sort]
-      for (let i = 0; i < order.length; ++i) {
+      // tslint:disable-next-line:prefer-for-of
+      for (let o = 0; o < order.length; ++o) {
+        const i = order[o];
         if (maxDataIndex < i) {
           maxDataIndex = i;
         }
@@ -414,7 +418,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const needsFiltering = reasons.has(EDirtyReason.UNKNOWN) || reasons.has(EDirtyReason.FILTER_CHANGED);
     const needsGrouping = needsFiltering || reasons.has(EDirtyReason.GROUP_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_CRITERIA_DIRTY);
     const needsSorting = needsGrouping || reasons.has(EDirtyReason.SORT_CRITERIA_CHANGED) || reasons.has(EDirtyReason.SORT_CRITERIA_DIRTY);
-    const needsGroupSorting = needsSorting || reasons.has(EDirtyReason.GROUP_SORT_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_SORT_CRITERIA_DIRTY);
+    const needsGroupSorting = needsGrouping || reasons.has(EDirtyReason.GROUP_SORT_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_SORT_CRITERIA_DIRTY);
 
     if (needsFiltering) {
       this.tasks.dirtyRanking(ranking, 'summary');
