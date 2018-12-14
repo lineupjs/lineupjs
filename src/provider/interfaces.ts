@@ -5,6 +5,11 @@ import '!file-loader?name=schema.4.0.0.json!./schema.json';
 import {ISequence} from '../internal/interable';
 import {IRenderTasks} from './tasks';
 
+export enum EAggregationState {
+  COLLAPSE = 'collapse',
+  EXPAND = 'expand',
+  EXPAND_TOP_N = 'expand_top'
+}
 
 export interface IDataProviderOptions {
   columnTypes: {[columnType: string]: typeof Column};
@@ -68,7 +73,11 @@ export interface IDataProvider extends AEventDispatcher {
 
   isAggregated(ranking: Ranking, group: IGroup): boolean;
 
-  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | 'collapse' | 'expand' | 'expand_top'): void;
+  setAggregationState(ranking: Ranking, group: IGroup, state: EAggregationState): void;
+
+  getAggregationState(ranking: Ranking, group: IGroup): EAggregationState;
+
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState): void;
 
   getTopNAggregated(ranking: Ranking, group: IGroup): number;
 

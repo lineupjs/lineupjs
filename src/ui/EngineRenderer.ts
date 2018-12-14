@@ -185,6 +185,7 @@ export default class EngineRenderer extends AEventDispatcher {
     this.data.on(`${ADataProvider.EVENT_ADD_RANKING}.body`, null);
     this.data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, null);
     this.data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
+    this.data.on(`${ADataProvider.EVENT_SHOWTOPN_CHANGED}.body`, null);
     this.data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, null);
     this.data.on(`${ADataProvider.EVENT_BUSY}.body`, null);
 
@@ -204,6 +205,9 @@ export default class EngineRenderer extends AEventDispatcher {
     });
     data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
       this.update(this.rankings.filter((r) => r.ranking === ranking));
+    });
+    data.on(`${ADataProvider.EVENT_SHOWTOPN_CHANGED}.body`, () => {
+      this.update(this.rankings);
     });
     data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
       this.setHighlightToNearest(indices, true);

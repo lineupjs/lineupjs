@@ -3,6 +3,7 @@ import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty,
 import {IGroup} from './interfaces';
 import Ranking from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {EAggregationState} from '../provider/interfaces';
 
 /**
  * factory for creating a description creating a rank column
@@ -14,9 +15,9 @@ export function createAggregateDesc(label: string = 'Aggregate Groups') {
 }
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {
-  isAggregated(ranking: Ranking, group: IGroup): 'collapse' | 'expand' | 'expand_top';
+  isAggregated(ranking: Ranking, group: IGroup): EAggregationState;
 
-  setAggregated(ranking: Ranking, group: IGroup, value: 'collapse' | 'expand' | 'expand_top'): void;
+  setAggregated(ranking: Ranking, group: IGroup, value: EAggregationState): void;
 }
 
 /**
@@ -25,7 +26,7 @@ export interface IAggregateGroupColumnDesc extends IColumnDesc {
  * @asMemberOf AggregateGroupColumn
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean, showTop: number): void;
+export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean, state: EAggregationState): void;
 
 /**
  * a checkbox column for selections
@@ -73,8 +74,8 @@ export default class AggregateGroupColumn extends Column {
     return false;
   }
 
-  setAggregated(group: IGroup, value: boolean | 'collapse' | 'expand' | 'expand_top') {
-    const n = typeof value === 'boolean' ? (value ? 'expand' : 'collapse'): value;
+  setAggregated(group: IGroup, value: boolean | EAggregationState) {
+    const n: EAggregationState = typeof value === 'boolean' ? (value ? EAggregationState.EXPAND : EAggregationState.COLLAPSE): value;
     const ranking = this.findMyRanker()!;
     const current = ((<IAggregateGroupColumnDesc>this.desc).isAggregated) && (<IAggregateGroupColumnDesc>this.desc).isAggregated(ranking, group);
     if (current === n) {
@@ -84,7 +85,7 @@ export default class AggregateGroupColumn extends Column {
     if ((<IAggregateGroupColumnDesc>this.desc).setAggregated) {
       (<IAggregateGroupColumnDesc>this.desc).setAggregated(ranking, group, n);
     }
-    this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, n !== 'collapse', n);
+    this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, n !== EAggregationState.COLLAPSE, n);
     return false;
   }
 }

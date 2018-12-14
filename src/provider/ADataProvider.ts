@@ -9,7 +9,7 @@ import {dirty, dirtyCaches, dirtyHeader, dirtyValues} from '../model/Column';
 import {toGroupID, unifyParents} from '../model/internal';
 import RankColumn from '../model/RankColumn';
 import Ranking, {addColumn, EDirtyReason, orderChanged, removeColumn} from '../model/Ranking';
-import {IColumnDump, IDataProvider, IDataProviderDump, IDataProviderOptions, IRankingDump, SCHEMA_REF} from './interfaces';
+import {IColumnDump, IDataProvider, IDataProviderDump, IDataProviderOptions, IRankingDump, SCHEMA_REF, EAggregationState} from './interfaces';
 import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
 import {IRenderTasks} from './tasks';
 
@@ -58,6 +58,13 @@ export declare function addDesc(desc: IColumnDesc): void;
  * @event
  */
 export declare function clearDesc(): void;
+
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function showTopNChanged(previous: number, current: number): void;
+
 /**
  * emitted when the selection changes
  * @asMemberOf ADataProvider
@@ -69,7 +76,7 @@ export declare function jumpToNearest(dataIndices: number[]): void;
  * @asMemberOf ADataProvider
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, showTopN: number): void;
+export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, state: EAggregationState): void;
 
 
 /**
@@ -126,6 +133,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_DIRTY_VALUES = Ranking.EVENT_DIRTY_VALUES;
   static readonly EVENT_DIRTY_CACHES = Ranking.EVENT_DIRTY_CACHES;
   static readonly EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
+  static readonly EVENT_SHOWTOPN_CHANGED = 'showTopNChanged';
   static readonly EVENT_ADD_DESC = 'addDesc';
   static readonly EVENT_CLEAR_DESC = 'clearDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
@@ -160,7 +168,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   readonly columnTypes: {[columnType: string]: typeof Column};
 
   protected readonly multiSelections: boolean;
-  private readonly showTopN: number;
+  private showTopN: number;
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
@@ -180,6 +188,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   protected createEventList() {
     return super.createEventList().concat([
       ADataProvider.EVENT_DATA_CHANGED, ADataProvider.EVENT_BUSY,
+      ADataProvider.EVENT_SHOWTOPN_CHANGED,
       ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY_CACHES,
@@ -190,6 +199,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   on(type: typeof ADataProvider.EVENT_BUSY, listener: typeof busy | null): this;
   on(type: typeof ADataProvider.EVENT_DATA_CHANGED, listener: typeof dataChanged | null): this;
+  on(type: typeof ADataProvider.EVENT_SHOWTOPN_CHANGED, listener: typeof showTopNChanged | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof ADataProvider.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_RANKING, listener: typeof addRanking | null): this;
@@ -422,8 +432,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       (<ISelectionColumnDesc>desc).setter = (index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
       (<ISelectionColumnDesc>desc).setterAll = (indices: IndicesArray, value: boolean) => value ? this.selectAll(indices) : this.deselectAll(indices);
     } else if (desc.type === 'aggregate') {
-      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.getAggregatedState(ranking, group);
-      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: 'expand' | 'collapse' | 'expand_top') => this.setAggregateState(ranking, group, value);
+      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.getAggregationState(ranking, group);
+      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: EAggregationState) => this.setAggregationState(ranking, group, value);
     }
     return desc;
   }
@@ -633,13 +643,13 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return this.getTopNAggregated(ranking, group) >= 0;
   }
 
-  getAggregatedState(ranking: Ranking, group: IGroup) {
+  getAggregationState(ranking: Ranking, group: IGroup) {
     const n = this.getTopNAggregated(ranking, group);
-    return n < 0 ? 'expand' : (n === 0 ? 'collapse' : 'expand_top');
+    return n < 0 ? EAggregationState.EXPAND : (n === 0 ? EAggregationState.COLLAPSE : EAggregationState.EXPAND_TOP_N);
   }
 
-  setAggregateState(ranking: Ranking, group: IGroup, value: 'collapse' | 'expand' | 'expand_top') {
-    this.setTopNAggregated(ranking, group, value === 'collapse' ? 0 : (value === 'expand' ? -1 : this.showTopN));
+  setAggregationState(ranking: Ranking, group: IGroup, value: EAggregationState) {
+    this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? -1 : this.showTopN));
   }
 
   getTopNAggregated(ranking: Ranking, group: IGroup) {
@@ -694,15 +704,15 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
   }
 
-  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | 'collapse' | 'expand' | 'expand_top') {
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState) {
     let v: number;
     if (typeof aggregateAll === 'boolean') {
       v = aggregateAll ? 0 : -1;
-    } else if (aggregateAll === 'collapse') {
+    } else if (aggregateAll === EAggregationState.COLLAPSE) {
       v = 0;
-    } else if (aggregateAll === 'expand') {
+    } else if (aggregateAll === EAggregationState.EXPAND) {
       v = -1;
-    } else if (aggregateAll === 'expand_top') {
+    } else if (aggregateAll === EAggregationState.EXPAND_TOP_N) {
       v = this.showTopN;
     } else {
       v = aggregateAll;
@@ -723,6 +733,19 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       }
     }
     this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, v >= 0, v);
+  }
+
+  setShowTopN(value: number) {
+    if (this.showTopN === value) {
+      return;
+    }
+    // update entries
+    for (const [k, v] of Array.from(this.aggregations.entries())) {
+      if (v === this.showTopN) {
+        this.aggregations.set(k, value);
+      }
+    }
+    this.fire([ADataProvider.EVENT_SHOWTOPN_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], this.showTopN, this.showTopN = value);
   }
 
   /**
