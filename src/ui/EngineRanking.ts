@@ -2,7 +2,7 @@ import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, Gri
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IGroupData, IGroupItem, isGroup, isMultiLevelColumn, toGroupMeta, defaultGroup, IGroupMeta, IOrderedGroup} from '../model';
+import {IGroupData, IGroupItem, isGroup, isMultiLevelColumn, defaultGroup, IGroupMeta, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
@@ -852,7 +852,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const n = provider.getTopNAggregated(this.ranking, group);
 
       // always the group for stratified datasets
-      r.push(Object.assign({meta: <IGroupMeta>(n === 0 ? `first last` : `first`)}, group));
+      r.push(Object.assign({meta: <IGroupMeta>(n === 0 ? `first last` : (n > 0 ? 'first top' : `first`))}, group));
 
       const slice = Math.min(n >= 0 ? n : Number.POSITIVE_INFINITY, length);
 

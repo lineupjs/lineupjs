@@ -90,7 +90,7 @@ export interface IGroupParent extends IGroup {
   subGroups: (Readonly<IGroupParent> | Readonly<IGroup>)[];
 }
 
-export declare type IGroupMeta = 'first' | 'last' | 'first last' | 'inner' | null;
+export declare type IGroupMeta = 'first' | 'last' | 'first last' | 'inner' | 'first top' | null;
 
 export interface IGroupItem {
   readonly dataIndex: number;

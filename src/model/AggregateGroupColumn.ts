@@ -14,10 +14,9 @@ export function createAggregateDesc(label: string = 'Aggregate Groups') {
 }
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {
-  // -1 = no, 0 = fully aggregated, N = show top N
-  isAggregated(ranking: Ranking, group: IGroup): number;
+  isAggregated(ranking: Ranking, group: IGroup): 'collapse' | 'expand' | 'expand_top';
 
-  setAggregated(ranking: Ranking, group: IGroup, value: number): void;
+  setAggregated(ranking: Ranking, group: IGroup, value: 'collapse' | 'expand' | 'expand_top'): void;
 }
 
 /**
@@ -74,8 +73,8 @@ export default class AggregateGroupColumn extends Column {
     return false;
   }
 
-  setAggregated(group: IGroup, value: boolean | number) {
-    const n = typeof value === 'boolean' ? (value ? 0 : -1): value;
+  setAggregated(group: IGroup, value: boolean | 'collapse' | 'expand' | 'expand_top') {
+    const n = typeof value === 'boolean' ? (value ? 'expand' : 'collapse'): value;
     const ranking = this.findMyRanker()!;
     const current = ((<IAggregateGroupColumnDesc>this.desc).isAggregated) && (<IAggregateGroupColumnDesc>this.desc).isAggregated(ranking, group);
     if (current === n) {
@@ -85,7 +84,7 @@ export default class AggregateGroupColumn extends Column {
     if ((<IAggregateGroupColumnDesc>this.desc).setAggregated) {
       (<IAggregateGroupColumnDesc>this.desc).setAggregated(ranking, group, n);
     }
-    this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, n >= 0, n);
+    this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, n !== 'collapse', n);
     return false;
   }
 }

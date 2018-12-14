@@ -150,7 +150,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private readonly selection = new OrderedSet<number>();
 
   //Map<ranking.id@group.name, showTopN>
-  private readonly aggregations = new Map<string, number>();
+  private readonly aggregations = new Map<string, number>(); // not part of = show all
 
   private uid = 0;
 
@@ -288,6 +288,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     const reason = dirtyReason || [EDirtyReason.UNKNOWN];
     Promise.resolve(this.sort(ranking, reason)).then(({groups, index2pos}) => {
       unifyParents(groups);
+      this.initAggregateState(ranking, groups);
       ranking.setGroups(groups, index2pos, reason);
       this.fireBusy(false);
     });
@@ -421,8 +422,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       (<ISelectionColumnDesc>desc).setter = (index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
       (<ISelectionColumnDesc>desc).setterAll = (indices: IndicesArray, value: boolean) => value ? this.selectAll(indices) : this.deselectAll(indices);
     } else if (desc.type === 'aggregate') {
-      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.getTopNAggregated(ranking, group);
-      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: number) => this.setTopNAggregated(ranking, group, value);
+      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.getAggregatedState(ranking, group);
+      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: 'expand' | 'collapse' | 'expand_top') => this.setAggregateState(ranking, group, value);
     }
     return desc;
   }
@@ -632,6 +633,15 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return this.getTopNAggregated(ranking, group) >= 0;
   }
 
+  getAggregatedState(ranking: Ranking, group: IGroup) {
+    const n = this.getTopNAggregated(ranking, group);
+    return n < 0 ? 'expand' : (n === 0 ? 'collapse' : 'expand_top');
+  }
+
+  setAggregateState(ranking: Ranking, group: IGroup, value: 'collapse' | 'expand' | 'expand_top') {
+    this.setTopNAggregated(ranking, group, value === 'collapse' ? 0 : (value === 'expand' ? -1 : this.showTopN));
+  }
+
   getTopNAggregated(ranking: Ranking, group: IGroup) {
     let g: IGroup | undefined | null = group;
     while (g) {
@@ -644,7 +654,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       }
       g = g.parent;
     }
-    return this.showTopN;
+    return -1;
   }
 
   private unaggregateParents(ranking: Ranking, group: IGroup) {
@@ -652,6 +662,16 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     while (g) {
       this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`);
       g = g.parent;
+    }
+  }
+
+  private initAggregateState(ranking: Ranking, groups: IGroup[]) {
+    // by default show top N
+    for (const group of groups) {
+      const key = `${ranking.id}@${toGroupID(group)}`;
+      if (!this.aggregations.has(key)) {
+        this.aggregations.set(key, this.showTopN);
+      }
     }
   }
 
@@ -677,11 +697,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number) {
     const v = typeof aggregateAll === 'boolean' ? (aggregateAll ? 0 : -1) : aggregateAll;
     const groups = ranking.getGroups();
-    groups.forEach((group) => {
+    for(const group of groups) {
       this.unaggregateParents(ranking, group);
       const current = this.getTopNAggregated(ranking, group);
       if (current === v) {
-        return;
+        continue;
       }
       const key = `${ranking.id}@${toGroupID(group)}`;
       if (v >= 0) {
@@ -689,7 +709,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       } else {
         this.aggregations.delete(key);
       }
-    });
+    }
     this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, v >= 0, v);
   }
 

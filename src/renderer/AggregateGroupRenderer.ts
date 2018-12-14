@@ -33,19 +33,22 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: AggregateGroupColumn, context: IRenderContext) {
+  createGroup(col: AggregateGroupColumn) {
     return {
       template: `<div><div title="Expand Group"></div><div title="Show All | Show Top ${AGGREGATE_TO_TOP}"></div></div>`,
       update(node: HTMLElement, group: IGroup, meta: IGroupMeta) {
         const toggleAggregate = <HTMLElement>node.firstElementChild!;
         const toggleMore = <HTMLElement>node.lastElementChild!;
 
-        const agg = context.provider.getTopNAggregated(col.findMyRanker()!, group);
-        if (agg < 0) {
+        const isGroupOnly = meta === 'first last';
+        const isTopX = meta === 'first top';
+        const isShowAll = !isGroupOnly && !isTopX;
+
+        if (isShowAll) {
           // expanded
           toggleAggregate.title = 'Collapse Group';
           toggleMore.title = 'Show Top';
-        } else if (agg === 0) {
+        } else if (isGroupOnly) {
           // collapse
           toggleAggregate.title = 'Expand Group';
           toggleMore.title = 'Show Top';
@@ -54,20 +57,16 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           toggleAggregate.title = 'Collapse Group';
           toggleMore.title = 'Show All';
         }
-        if (!meta) {
-          delete node.dataset.meta;
-        } else {
-          node.dataset.meta = meta;
-        }
+        node.dataset.meta = meta!;
         toggleAggregate.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          col.setAggregated(group, false);
+          col.setAggregated(group, isGroupOnly ? 'expand_top' : 'collapse');
         };
         toggleMore.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          col.setAggregated(group, false);
+          col.setAggregated(group, isShowAll ? 'expand_top' : 'expand');
         };
       }
     };

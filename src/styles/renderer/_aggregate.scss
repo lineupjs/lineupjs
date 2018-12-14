@@ -5,59 +5,88 @@
   text-align: center;
   overflow-x: unset;
 
-  &::after {
-    // content: '';
-    position: absolute;
-    pointer-events: none;
-    top: -2px;  // FIXME right padding
-    width: $lu_aggregate_square_bracket_width;
-    right: 0;
-    bottom: 0;
-    border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-    box-sizing: border-box;
-  }
+  // &::after {
+  //   // content: '';
+  //   position: absolute;
+  //   pointer-events: none;
+  //   top: -2px; // FIXME right padding
+  //   width: $lu_aggregate_square_bracket_width;
+  //   right: 0;
+  //   bottom: 0;
+  //   border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+  //   box-sizing: border-box;
+  // }
 }
 
-.#{$lu_css_prefix}-renderer-aggregate.#{$lu_css_prefix}-low::after {
-  border-left: none;
-}
+// .#{$lu_css_prefix}-renderer-aggregate.#{$lu_css_prefix}-low::after {
+//   content: unset;
+// }
 
 .#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
-  cursor: pointer;
 
-  &::before {
-    @include lu_icons();
+  > :first-child {
+    cursor: pointer;
 
-    content: $lu_icon_caret_down;
-    padding-right: $lu_aggregate_square_bracket_width;
+    &::before {
+      @include lu_icons();
+
+      content: $lu_icon_caret_down;
+      padding-right: $lu_aggregate_square_bracket_width;
+    }
   }
 
-  &::after {
-    top: 0;
-    border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-  }
-}
+  > :last-child {
+    cursor: pointer;
 
-.#{$lu_css_prefix}-renderer-aggregate[data-meta=last] {
-  &::after {
-    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    &::before {
+      @include lu_icons();
+
+      content: $lu_icon_ellipsis_h;
+      transform: rotate(270);
+      padding-right: $lu_aggregate_square_bracket_width;
+    }
   }
+
+  // &::after {
+  //   top: 0;
+  //   border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+  // }
 }
 
 .#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'] {
-  padding-right: $lu_aggregate_square_bracket_width;
-  cursor: pointer;
+  > :first-child::before {
+    content: $lu_icon_caret_right;
+  }
 
-  &::after {
-    top: 0;
-    border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+  > :last-child::before {
+    content: unset;
   }
 }
 
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-aggregate::before {
-  content: $lu_icon_caret_right;
-}
+// .#{$lu_css_prefix}-renderer-aggregate[data-meta=last] {
+//   &::after {
+//     border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   }
+// }
+
+// .#{$lu_css_prefix}-renderer-aggregate[data-meta=inner] {
+//   &::after {
+//     border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   }
+// }
+
+
+// .#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'] {
+//   padding-right: $lu_aggregate_square_bracket_width;
+//   cursor: pointer;
+
+//   // &::after {
+//   //   top: 0;
+//   //   border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   //   border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   // }
+// }
+
 
 .#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-aggregate {
   padding-right: $lu_aggregate_square_bracket_width;
