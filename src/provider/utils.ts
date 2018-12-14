@@ -1,9 +1,8 @@
-import {extent, range} from 'd3-array';
 import {isNumberColumn, isSupportType, isMapAbleColumn} from '../model';
 import Column, {IColumnDesc} from '../model/Column';
 import {colorPool, MAX_COLORS} from '../model/internal';
 import Ranking from '../model/Ranking';
-import {concat, equal} from '../internal';
+import {concat, equal, extent, range} from '../internal';
 import {timeParse} from 'd3-time-format';
 
 

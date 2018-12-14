@@ -1,4 +1,4 @@
-import {min, max} from 'd3-array';
+import {min, max} from '../../internal/math';
 import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, IMapAbleDesc} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 

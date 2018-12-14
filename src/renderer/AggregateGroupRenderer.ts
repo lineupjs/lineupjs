@@ -3,6 +3,7 @@ import AggregateGroupColumn from '../model/AggregateGroupColumn';
 import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {EAggregationState} from '../provider/interfaces';
 
 /** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
@@ -59,12 +60,12 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
         toggleAggregate.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          col.setAggregated(group, isGroupOnly ? 'expand_top' : 'collapse');
+          col.setAggregated(group, isGroupOnly ? EAggregationState.EXPAND_TOP_N: EAggregationState.COLLAPSE);
         };
         toggleMore.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          col.setAggregated(group, isShowAll ? 'expand_top' : 'expand');
+          col.setAggregated(group, isShowAll ? EAggregationState.EXPAND_TOP_N: EAggregationState.EXPAND);
         };
       }
     };
@@ -109,7 +110,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
           const meta = node.dataset.meta!;
           node.dataset.meta = meta === 'first last' ? 'first top' : 'first last';
-          context.provider.aggregateAllOf(ranking, meta === 'first last' ? 'expand_top' : 'collapse');
+          context.provider.aggregateAllOf(ranking, meta === 'first last' ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
         };
         toggleMore.onclick = function (event) {
           event.preventDefault();
@@ -121,7 +122,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
           const meta = node.dataset.meta!;
           node.dataset.meta = meta === 'first top' ? 'first' : 'first top';
-          context.provider.aggregateAllOf(ranking, meta === 'first top' ? 'expand' : 'expand_top');
+          context.provider.aggregateAllOf(ranking, meta === 'first top' ? EAggregationState.EXPAND : EAggregationState.EXPAND_TOP_N);
         };
       }
     };

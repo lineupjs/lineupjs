@@ -2,7 +2,7 @@ import {ICategory, UIntTypedArray, IndicesArray} from '../model';
 import {bisectLeft} from 'd3-array';
 import {IForEachAble, isIndicesAble, ISequence} from './interable';
 import {IPoorManWorkerScope, toFunctionBody} from './worker';
-import {createWorkerCodeBlob} from '../provider/worker';
+import {createWorkerCodeBlob} from './worker';
 
 export interface INumberBin {
   x0: number;
@@ -89,7 +89,58 @@ export interface IHistGenerator {
   toBin(value: number): number;
 }
 
-function quantile(values: Float32Array, quantile: number, length = values.length) {
+export function min<T>(values: T[], acc: (v: T) => number) {
+  let min = Number.POSITIVE_INFINITY;
+  for (const d of values) {
+    const v = acc(d);
+    if (v < min) {
+      min = v;
+    }
+  }
+  return min;
+}
+
+export function max<T>(values: T[], acc: (v: T) => number) {
+  let max = Number.NEGATIVE_INFINITY;
+  for (const d of values) {
+    const v = acc(d);
+    if (v > max) {
+      max = v;
+    }
+  }
+  return max;
+}
+
+export function extent<T>(values: T[], acc: (v: T) => number) {
+  let max = Number.NEGATIVE_INFINITY;
+  let min = Number.POSITIVE_INFINITY;
+  for (const d of values) {
+    const v = acc(d);
+    if (v < min) {
+      min = v;
+    }
+    if (v > max) {
+      max = v;
+    }
+  }
+  return [min, max];
+}
+
+export function range(length: number) {
+  const r: number[] = new Array(length);
+  for (let i = 0; i < length; ++i) {
+    r[i] = i;
+  }
+  return r;
+}
+
+export function empty(length: number) {
+  const r: null[] = new Array(length);
+  r.fill(null);
+  return r;
+}
+
+export function quantile(values: Float32Array, quantile: number, length = values.length) {
   if (length === 0) {
     return NaN;
   }

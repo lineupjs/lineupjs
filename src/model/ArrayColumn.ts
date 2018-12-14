@@ -1,6 +1,6 @@
 import {Category} from './annotations';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {range} from 'd3-array';
+import {empty} from '../internal/math';
 import {IArrayColumn} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 
@@ -24,7 +24,7 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> implements IArrayCo
   constructor(id: string, desc: Readonly<IArrayColumnDesc<T>>) {
     super(id, desc);
     this._dataLength = desc.dataLength == null || isNaN(desc.dataLength) ? null : desc.dataLength;
-    this.originalLabels = desc.labels || (range(this._dataLength == null ? 0 : this._dataLength).map((_d, i) => `Column ${i}`));
+    this.originalLabels = desc.labels || (empty(this._dataLength == null ? 0 : this._dataLength).map((_d, i) => `Column ${i}`));
   }
 
 

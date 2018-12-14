@@ -1,5 +1,5 @@
 import {timeFormat, timeParse} from 'd3-time-format';
-import {median, min, max} from 'd3-array';
+import {median, min, max} from '../internal/math';
 import {dialogAddons, toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';

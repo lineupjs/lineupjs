@@ -1,5 +1,4 @@
-import {extent} from 'd3-array';
-import {equalArrays} from '../internal';
+import {equalArrays, extent} from '../internal';
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
