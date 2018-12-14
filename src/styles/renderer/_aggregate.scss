@@ -4,23 +4,7 @@
 .#{$lu_css_prefix}-renderer-aggregate {
   text-align: center;
   overflow-x: unset;
-
-  // &::after {
-  //   // content: '';
-  //   position: absolute;
-  //   pointer-events: none;
-  //   top: -2px; // FIXME right padding
-  //   width: $lu_aggregate_square_bracket_width;
-  //   right: 0;
-  //   bottom: 0;
-  //   border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-  //   box-sizing: border-box;
-  // }
 }
-
-// .#{$lu_css_prefix}-renderer-aggregate.#{$lu_css_prefix}-low::after {
-//   content: unset;
-// }
 
 .#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
 
@@ -46,11 +30,6 @@
       padding-right: $lu_aggregate_square_bracket_width;
     }
   }
-
-  // &::after {
-  //   top: 0;
-  //   border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-  // }
 }
 
 .#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'] {
@@ -68,6 +47,95 @@
     content: $lu_icon_compress;
   }
 }
+
+
+.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-aggregate {
+  font-size: medium;
+
+  > :last-child {
+    display: none;
+  }
+}
+
+.#{$lu_css_prefix}-renderer-aggregate[data-meta='inner'] {
+  &::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    top: 50%;
+    width: $lu_aggregate_square_bracket_width;
+    left: 50%;
+    margin-left: -2px;
+    height: 1px;
+    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    box-sizing: border-box;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    top: -2px; // FIXME right padding
+    width: $lu_aggregate_square_bracket_width;
+    left: 50%;
+    margin-left: -2px;
+    bottom: 0;
+    border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    box-sizing: border-box;
+  }
+}
+
+.#{$lu_css_prefix}-renderer-aggregate[data-meta='last'] {
+  &::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    top: -2px;
+    width: $lu_aggregate_square_bracket_width;
+    left: 50%;
+    margin-left: -2px;
+    bottom: 50%;
+    border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    box-sizing: border-box;
+  }
+}
+
+// .#{$engine-css_prefix}-tr[data-meta~='first'] {
+//   border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   border-right: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+// }
+
+// .#{$engine-css_prefix}-tr[data-meta~='last'] {
+//   border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   border-right: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+// }
+
+// .#{$engine-css_prefix}-tr[data-meta='inner'] {
+//   border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   border-right: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+// }
+// &::after {
+//   // content: '';
+//   position: absolute;
+//   pointer-events: none;
+//   top: -2px; // FIXME right padding
+//   width: $lu_aggregate_square_bracket_width;
+//   right: 0;
+//   bottom: 0;
+//   border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+//   box-sizing: border-box;
+// }
+
+// .#{$lu_css_prefix}-renderer-aggregate.#{$lu_css_prefix}-low::after {
+//   content: unset;
+// }
+// &::after {
+//   top: 0;
+//   border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+// }
 
 // .#{$lu_css_prefix}-renderer-aggregate[data-meta=last] {
 //   &::after {
@@ -92,12 +160,3 @@
 //   //   border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
 //   // }
 // }
-
-
-.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-aggregate {
-  font-size: medium;
-
-  > :last-child {
-    display: none;
-  }
-}

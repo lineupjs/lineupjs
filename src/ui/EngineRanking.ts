@@ -561,7 +561,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const isGroup = this.renderCtx.isGroup(rowIndex);
 
     if (isGroup) {
+      const {meta} = this.renderCtx.getGroup(rowIndex);
       node.dataset.agg = 'group';
+      if (!meta) {
+        delete node.dataset.meta;
+      } else {
+        node.dataset.meta = meta;
+      }
       super.createRow(node, rowIndex);
       return;
     }
