@@ -83,6 +83,9 @@ export interface IDataProvider extends AEventDispatcher {
 
   setTopNAggregated(ranking: Ranking, group: IGroup, value: number): void;
 
+  setShowTopN(value: number): void;
+  getShowTopN(): number;
+
   getRow(dataIndex: number): Promise<IDataRow> | IDataRow;
 }
 
@@ -155,4 +158,9 @@ export interface IDataProviderDump {
    * ranking dumps
    */
   rankings?: IRankingDump[];
+
+  /**
+   * custom show top N setting
+   */
+  showTopN?: number;
 }

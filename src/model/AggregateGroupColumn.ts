@@ -1,4 +1,4 @@
-import {Category, SupportType} from './annotations';
+import {Category, SupportType, toolbar} from './annotations';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IGroup} from './interfaces';
 import Ranking from './Ranking';
@@ -31,6 +31,7 @@ export declare function aggregate(ranking: Ranking, group: IGroup, value: boolea
 /**
  * a checkbox column for selections
  */
+@toolbar('setShowTopN')
 @SupportType()
 @Category('support')
 export default class AggregateGroupColumn extends Column {

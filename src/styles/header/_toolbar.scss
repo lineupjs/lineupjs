@@ -53,6 +53,7 @@
   content: $lu_icon_sliders;
 }
 
+.#{$lu_css_prefix}-action-change-show-top-n::before,
 .#{$lu_css_prefix}-action-reduce-by::before,
 .#{$lu_css_prefix}-action-edit-combine-script::before,
 .#{$lu_css_prefix}-action-customize::before {

@@ -30,6 +30,7 @@ import MappingDialog from './dialogs/MappingDialog';
 import DateFilterDialog from './dialogs/DateFilterDialog';
 import {cssClass} from '../styles';
 import CategoricalColorMappingDialog from './dialogs/CategoricalColorMappingDialog';
+import ShowTopNDialog from './dialogs/ShowTopNDialog';
 
 export interface IUIOptions {
   shortcut: boolean|'only';
@@ -270,6 +271,18 @@ const expand = {
   options: { featureCategory: 'model', featureLevel: 'advanced' }
 };
 
+const setShowTopN: IToolbarAction = {
+  title: 'Change Show Top N',
+  onClick: (_col, evt, ctx, level) => {
+    const dialog = new ShowTopNDialog(ctx.provider, dialogContext(ctx, level, evt));
+    dialog.open();
+  },
+  options: {
+    featureCategory: 'ui',
+    featureLevel: 'advanced'
+  }
+};
+
 const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
   sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
@@ -304,6 +317,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   clone,
   remove,
   rename,
+  setShowTopN,
   search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3, featureCategory: 'ranking', featureLevel: 'basic' }),
   filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
   filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),

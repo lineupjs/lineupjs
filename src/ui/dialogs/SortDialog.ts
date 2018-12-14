@@ -9,9 +9,9 @@ import {cssClass} from '../../styles';
 export default class SortDialog extends ADialog {
   private readonly addons: IToolbarDialogAddon[];
 
-  constructor(private readonly column: Column, private readonly group: boolean, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
+  constructor(private readonly column: Column, private readonly groupSortBy: boolean, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog);
-    this.addons = getToolbarDialogAddons(this.column, group ? 'sortGroup' : 'sort', ctx);
+    this.addons = getToolbarDialogAddons(this.column, groupSortBy ? 'sortGroup' : 'sort', ctx);
   }
 
   protected build(node: HTMLElement) {
@@ -20,7 +20,7 @@ export default class SortDialog extends ADialog {
       addon.append(this.column, this.node, this.dialog, this.ctx);
     }
 
-    sortOrder(node, this.column, this.dialog.idPrefix, this.group);
+    sortOrder(node, this.column, this.dialog.idPrefix, this.groupSortBy);
   }
 }
 

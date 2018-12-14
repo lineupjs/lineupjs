@@ -523,7 +523,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       uid: this.uid,
       selection: this.getSelection(),
       aggregations: map2Object(this.aggregations),
-      rankings: this.rankings.map((r) => r.dump(this.toDescRef.bind(this)))
+      rankings: this.rankings.map((r) => r.dump(this.toDescRef.bind(this))),
+      showTopN: this.showTopN
     };
   }
 
@@ -584,6 +585,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.uid = dump.uid || 0;
     if (dump.selection) {
       dump.selection.forEach((s: number) => this.selection.add(s));
+    }
+    if (dump.showTopN != null) {
+      this.showTopN = dump.showTopN;
     }
     if (dump.aggregations) {
       this.aggregations.clear();
@@ -733,6 +737,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       }
     }
     this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, v >= 0, v);
+  }
+
+  getShowTopN() {
+    return this.showTopN;
   }
 
   setShowTopN(value: number) {
