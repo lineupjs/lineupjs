@@ -1,5 +1,5 @@
 import {ISequence, lazySeq} from '../internal/interable';
-import Column, {defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices, CompositeColumn} from '../model';
+import Column, {defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices, CompositeColumn, IValueCacheLookup} from '../model';
 import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
@@ -233,14 +233,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private resolveFilter(ranking: Ranking) {
     //do the optional filtering step
-    let filter: ((d: IDataRow) => boolean) | null = null;
+    let filter: ((d: IDataRow, valueCacheLookup?: IValueCacheLookup) => boolean) | null = null;
 
     if (this.options.filterGlobally) {
       const filtered = this.getRankings().filter((d) => d.isFiltered());
       if (filtered.length === 1) {
         filter = filtered[0].filter.bind(filtered[0]);
       } else if (filtered.length > 1) {
-        filter = (d: IDataRow) => filtered.every((f) => f.filter(d));
+        filter = (d: IDataRow, valueCacheLookup?: IValueCacheLookup) => filtered.every((f) => f.filter(d, valueCacheLookup));
       }
     } else if (ranking.isFiltered()) {
       filter = ranking.filter.bind(ranking);
@@ -249,7 +249,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (this.filter) {
       // insert the extra filter
       const bak = filter;
-      filter = !filter ? this.filter : (d) => this.filter!(d) && bak!(d);
+      filter = !filter ? this.filter : (d, valueCacheLookup?: IValueCacheLookup) => this.filter!(d) && bak!(d, valueCacheLookup);
     }
     return filter;
   }
@@ -268,7 +268,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return {groups: [Object.assign({order}, defaultGroup)], index2pos};
   }
 
-  private createSorter(ranking: Ranking, filter: ((d: IDataRow) => boolean) | null, isSortedBy: boolean, needsFiltering: boolean, needsGrouping: boolean, needsSorting: boolean) {
+  private createSorter(ranking: Ranking, filter: ((d: IDataRow, valueCacheLookup?: IValueCacheLookup) => boolean) | null, isSortedBy: boolean, needsFiltering: boolean, needsGrouping: boolean, needsSorting: boolean) {
     const groups = new Map<string, ISortHelper>();
     const groupOrder: ISortHelper[] = [];
     let maxDataIndex = -1;
@@ -289,16 +289,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (needsFiltering) {
       // filter, group, sort
       for (const r of this._dataRows) {
-        if (filter && !filter(r)) {
+        const l = this.tasks.valueCache(r.i);
+        if (filter && !filter(r, l)) {
           continue;
         }
         if (maxDataIndex < r.i) {
           maxDataIndex = r.i;
         }
         if (lookups) {
-          lookups.push(r.i, ranking.toCompareValue(r));
+          lookups.push(r.i, ranking.toCompareValue(r, l));
         }
-        pushGroup(ranking.grouper(r), r);
+        pushGroup(ranking.grouper(r, l), r);
       }
 
       // some default sorting
@@ -328,7 +329,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
             maxDataIndex = i;
           }
           const r = this._dataRows[i];
-          lookups.push(r.i, ranking.toCompareValue(r));
+          lookups.push(r.i, ranking.toCompareValue(r, this.tasks.valueCache(i)));
         }
         continue;
       }
@@ -340,11 +341,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
         if (maxDataIndex < i) {
           maxDataIndex = i;
         }
+        const l = this.tasks.valueCache(i);
         const r = this._dataRows[i];
         if (lookups) {
-          lookups.push(r.i, ranking.toCompareValue(r));
+          lookups.push(r.i, ranking.toCompareValue(r, l));
         }
-        pushGroup(needsGrouping ? ranking.grouper(r) : plain, r);
+        pushGroup(needsGrouping ? ranking.grouper(r, l) : plain, r);
       }
     }
 

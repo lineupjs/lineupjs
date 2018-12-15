@@ -653,6 +653,11 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: {as
   }
 }
 
+export interface IWorkerMessage {
+  type: string;
+  uid: number;
+}
+
 
 export interface ISortMessageRequest {
   type: 'sort';

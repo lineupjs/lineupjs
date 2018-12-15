@@ -1,8 +1,8 @@
 import {abortAble, abortAbleAll, IAbortAblePromise} from 'lineupengine';
-import {IForEachAble, lazySeq} from '../internal/interable';
+import {IForEachAble, lazySeq, ISequence} from '../internal/interable';
 import {boxplotBuilder, categoricalStatsBuilder, dateStatsBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder} from '../internal/math';
 import {ANOTHER_ROUND} from '../internal/scheduler';
-import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking} from '../model';
+import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, IOrderedGroup} from '../model';
 import Column, {ICompareValue} from '../model/Column';
 import {IRenderTask, IRenderTasks} from '../renderer/interfaces';
 import {CompareLookup} from './sort';
@@ -83,6 +83,8 @@ export interface IRenderTaskExectutor extends IRenderTasks {
 
   sort(indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
   terminate(): void;
+
+  valueCache(dataIndex: number): ((col: Column) => any | undefined) | undefined;
 }
 
 /**

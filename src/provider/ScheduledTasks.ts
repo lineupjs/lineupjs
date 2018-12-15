@@ -1,6 +1,6 @@
-import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, isCategoricalLikeColumn, isNumberColumn, isDateColumn, ICategoricalLikeColumn} from '../model';
+import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, isCategoricalLikeColumn, isNumberColumn, isDateColumn, ICategoricalLikeColumn, UIntTypedArray} from '../model';
 import {ARenderTasks, IRenderTaskExectutor, taskNow, MultiIndices, taskLater, TaskNow, TaskLater} from './tasks';
-import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageRequest, ISortMessageResponse, WORKER_BLOB} from '../internal';
+import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageRequest, ISortMessageResponse, WORKER_BLOB, IWorkerMessage} from '../internal';
 import {CompareLookup} from './sort';
 import {ISequence} from '../internal/interable';
 import {IRenderTask} from '../renderer/interfaces';
@@ -17,9 +17,11 @@ const THREAD_CLEANUP_TIME = 2;
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 
   private readonly cache = new Map<string, IRenderTask<any>>();
+  private readonly valueCacheData = new Map<string, Float32Array | UIntTypedArray>();
   private readonly tasks = new TaskScheduler();
   private readonly workerPool: Worker[] = [];
   private cleanUpWorkerTimer: number = -1;
+  private workerTaskCounter = 0;
 
   constructor() {
     super();
@@ -34,6 +36,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     this.data = data;
     this.cache.clear();
     this.tasks.clear();
+    this.valueCacheData.clear();
   }
 
   dirtyColumn(col: Column, type: 'data' | 'group' | 'summary') {
@@ -49,6 +52,10 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
         this.cache.delete(key);
         this.tasks.abort(key);
       }
+    }
+
+    if (type === 'data') {
+      this.valueCacheData.delete(col.id);
     }
   }
 
@@ -76,6 +83,14 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
     // group compare tasks
     this.tasks.abortAll((t) => t.id.startsWith(`r${ranking.id}:`));
+
+    if (type !== 'data') {
+      return;
+    }
+
+    for (const col of cols) {
+      this.valueCacheData.delete(col.id);
+    }
   }
 
   preCompute(ranking: Ranking, groups: {rows: IndicesArray, group: IGroup}[]) {
@@ -208,6 +223,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   }
 
   groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
+    // TODO value cache
     return taskLater(this.tasks.push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(this.byOrder(rows), group)));
   }
 
@@ -399,41 +415,55 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       return sortDirect(indices, singleCall, lookups);
     }
 
-    return new Promise<IndicesArray>((resolve) => {
-      const uid = Math.random();
+    const indexArray = toIndexArray(indices);
+    const toTransfer = [indexArray.buffer];
 
+    if (singleCall) {
+      // can transfer otherwise need to copy
+      toTransfer.push(...lookups.transferAbles);
+    }
+
+    return this.taskWorker('sort', {
+      indices: indexArray,
+      sortOrders: lookups.sortOrders
+    }, toTransfer, (r: ISortMessageResponse) => r.order);
+  }
+
+  private taskWorker<R, T>(type: string, args: any, transferAbles: ArrayBuffer[], toResult: (r: R) => T) {
+    return new Promise<T>((resolve) => {
+      const uid = this.workerTaskCounter++;
       const worker = this.checkOutWorker();
 
       const receiver = (msg: MessageEvent) => {
-        const r = <ISortMessageResponse>msg.data;
-        if (r.uid !== uid) {
+        const r = <IWorkerMessage>msg.data;
+        if (r.uid !== uid || r.type !== type) {
           return;
         }
         worker.removeEventListener('message', receiver);
         this.checkInWorker(worker);
-        resolve(r.order);
+        resolve(toResult(<any>r));
       };
 
-      const indexArray = toIndexArray(indices);
-
-      const toTransfer = [indexArray.buffer];
-
-      if (singleCall) {
-        // can transfer otherwise need to copy
-        toTransfer.push(...lookups.transferAbles);
-      }
-
       worker.addEventListener('message', receiver);
-      worker.postMessage(<ISortMessageRequest>{
-        uid,
-        indices: indexArray,
-        sortOrders: lookups.sortOrders
-      }, toTransfer);
+      worker.postMessage(Object.assign({
+        type,
+        uid
+      }, args), transferAbles);
     });
   }
 
   terminate() {
     this.workerPool.splice(0, this.workerPool.length).forEach((w) => w.terminate());
     this.cache.clear();
+  }
+
+  valueCache(dataIndex: number) {
+    if (this.valueCacheData.size === 0) {
+      return undefined;
+    }
+    return (col: Column) => {
+      const v = this.valueCacheData.get(col.id);
+      return v ? v[dataIndex] : undefined;
+    };
   }
 }
