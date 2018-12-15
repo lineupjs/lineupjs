@@ -11,7 +11,8 @@ import RankColumn from '../model/RankColumn';
 import Ranking, {addColumn, EDirtyReason, orderChanged, removeColumn} from '../model/Ranking';
 import {IColumnDump, IDataProvider, IDataProviderDump, IDataProviderOptions, IRankingDump, SCHEMA_REF, EAggregationState} from './interfaces';
 import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
-import {IRenderTasks} from './tasks';
+import {IRenderTasks} from '../renderer/interfaces';
+
 
 export {IExportOptions} from './utils';
 

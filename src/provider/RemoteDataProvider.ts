@@ -3,7 +3,7 @@ import {defaultGroup, IndicesArray} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions} from './interfaces';
-import {DirectRenderTasks} from './tasks';
+import {DirectRenderTasks} from './DirectRenderTasks';
 
 /**
  * interface what the server side has to provide

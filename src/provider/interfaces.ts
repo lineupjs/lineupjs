@@ -3,7 +3,7 @@ import {Column, IColumnDesc, IGroup, IndicesArray, IDataRow} from '../model';
 import Ranking from '../model/Ranking';
 import '!file-loader?name=schema.4.0.0.json!./schema.json';
 import {ISequence} from '../internal/interable';
-import {IRenderTasks} from './tasks';
+import {IRenderTasks} from '../renderer/interfaces';
 
 export enum EAggregationState {
   COLLAPSE = 'collapse',
