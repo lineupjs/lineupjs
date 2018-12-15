@@ -1,10 +1,10 @@
 import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, isCategoricalLikeColumn, isNumberColumn, isDateColumn, ICategoricalLikeColumn, UIntTypedArray} from '../model';
 import {ARenderTasks, IRenderTaskExectutor, taskNow, MultiIndices, taskLater, TaskNow, TaskLater} from './tasks';
-import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageRequest, ISortMessageResponse, WORKER_BLOB, IWorkerMessage} from '../internal';
+import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageRequest, ISortMessageResponse, WORKER_BLOB, IWorkerMessage, normalizedStatsBuilder, ISetRefMessageRequest} from '../internal';
 import {CompareLookup} from './sort';
 import {ISequence} from '../internal/interable';
 import {IRenderTask} from '../renderer/interfaces';
-import TaskScheduler, {oneShotIterator, ABORTED} from '../internal/scheduler';
+import TaskScheduler, {oneShotIterator, ABORTED, ANOTHER_ROUND} from '../internal/scheduler';
 import {sortDirect} from './DirectRenderTasks';
 
 
@@ -17,9 +17,9 @@ const THREAD_CLEANUP_TIME = 2;
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 
   private readonly cache = new Map<string, IRenderTask<any>>();
-  private readonly valueCacheData = new Map<string, Float32Array | UIntTypedArray>();
   private readonly tasks = new TaskScheduler();
   private readonly workerPool: Worker[] = [];
+  private readonly activeWorkers= new Set<Worker>();
   private cleanUpWorkerTimer: number = -1;
   private workerTaskCounter = 0;
 
@@ -222,6 +222,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
   }
 
+
   groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
     // TODO value cache
     return taskLater(this.tasks.push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(this.byOrder(rows), group)));
@@ -392,13 +393,18 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
 
     if (this.workerPool.length > 0) {
-      return this.workerPool.shift()!;
+      const w = this.workerPool.shift()!;
+      this.activeWorkers.add(w);
+      return w;
     }
-    return new Worker(WORKER_BLOB);
+    const w = new Worker(WORKER_BLOB);
+    this.activeWorkers.add(w);
+    return w;
   }
 
   private checkInWorker(worker: Worker) {
     this.workerPool.push(worker);
+    this.activeWorkers.delete(worker);
 
     if (this.workerPool.length >= MAX_WORKER_THREADS) {
       this.workerPool.splice(0, MAX_WORKER_THREADS).forEach((w) => w.terminate());
@@ -465,5 +471,19 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       const v = this.valueCacheData.get(col.id);
       return v ? v[dataIndex] : undefined;
     };
+  }
+
+  protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | null) {
+    super.setValueCacheData(key, value);
+    const msg: ISetRefMessageRequest = {
+      uid: this.workerTaskCounter++,
+      type: 'setRef',
+      ref: key,
+      data: value
+    };
+    for (const w of this.workerPool) {
+      w.postMessage(msg);
+    }
+    this.activeWorkers.forEach((w) => w.postMessage(msg));
   }
 }

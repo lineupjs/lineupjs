@@ -1,8 +1,8 @@
 import {abortAble, abortAbleAll, IAbortAblePromise} from 'lineupengine';
 import {IForEachAble, lazySeq, ISequence} from '../internal/interable';
-import {boxplotBuilder, categoricalStatsBuilder, dateStatsBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder} from '../internal/math';
+import {boxplotBuilder, categoricalStatsBuilder, dateStatsBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, getNumberOfBins} from '../internal/math';
 import {ANOTHER_ROUND} from '../internal/scheduler';
-import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, IOrderedGroup} from '../model';
+import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, IOrderedGroup, UIntTypedArray} from '../model';
 import Column, {ICompareValue} from '../model/Column';
 import {IRenderTask, IRenderTasks} from '../renderer/interfaces';
 import {CompareLookup} from './sort';
@@ -100,6 +100,8 @@ export class MultiIndices {
  * @internal
  */
 export class ARenderTasks {
+  protected readonly valueCacheData = new Map<string, Float32Array | UIntTypedArray>();
+
   protected readonly byIndex = (i: number) => this.data[i];
 
   constructor(protected data: IDataRow[] = []) {
@@ -113,6 +115,33 @@ export class ARenderTasks {
 
   protected byOrderAcc<T>(indices: IndicesArray, acc: (row: IDataRow) => T) {
     return lazySeq(indices).map((i) => acc(this.data[i]));
+  }
+
+  private buildNumberCache(col: INumberColumn): Iterator<IStatistics | null> {
+    let i = 0;
+    const chunkSize = 100;
+    const valueCache = new Float32Array(this.data.length);
+    const builder = normalizedStatsBuilder(getNumberOfBins(this.data.length));
+    const data = this.data;
+
+    const next = () => {
+      let chunkCounter = chunkSize;
+      for (; i < data.length && chunkCounter > 0; ++i, --chunkCounter) {
+        builder.push(valueCache[i] = col.getNumber(data[i]));
+        i++;
+      }
+      if (i < data.length) {
+        // need another round
+        return ANOTHER_ROUND;
+      }
+      // done
+      this.setValueCacheData(col.id, valueCache);
+      return {
+        done: true,
+        value: builder.build()
+      };
+    };
+    return {next};
   }
 
   private builder<T, BR, B extends {push: (v: T) => void, build: () => BR}, R = BR>(builder: B, order: IndicesArray | null | MultiIndices, acc: (row: IDataRow) => T, build?: (r: BR) => R): Iterator<R | null> {
@@ -200,4 +229,12 @@ export class ARenderTasks {
     return this.builderForEach(b, order, (row: IDataRow) => col.iterCategory(row), build);
   }
 
+
+  protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | null) {
+    if (value == null) {
+      this.valueCacheData.delete(key);
+    } else {
+      this.valueCacheData.set(key, value);
+    }
+  }
 }
