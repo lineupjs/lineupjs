@@ -107,16 +107,18 @@ export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupItem>item).group == null; // use .group as separator
 }
 
-/** @internal */
-export function toGroupMeta(index: number, total: number): IGroupMeta {
-  if (total === 1) {
-    return 'first last';
-  }
-  if (index === 0) {
-    return 'first';
-  }
-  if (index === total - 1) {
-    return 'last';
-  }
-  return 'inner';
+export enum ECompareValueType {
+  BINARY,
+  COUNT, // count max to the number of rows
+  UINT8,
+  UINT16,
+  UINT32,
+  INT8,
+  INT16,
+  INT32,
+  FLOAT,
+  FLOAT_ASC,
+  DOUBLE,
+  DOUBLE_ASC,
+  STRING
 }

@@ -185,7 +185,7 @@ export interface IBuilder<T, R> {
   build(): R;
 }
 
-export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> {
+export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> & { buildArr: (s: Float32Array) => IAdvancedBoxPlotData} {
   // filter out NaN
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -208,8 +208,13 @@ export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> {
       max = v;
     }
     sum += v;
+  };
+
+  const pushAndSave = (v: number) => {
+    push(v);
     values.push(v);
   };
+
 
   const invalid = {
     min: NaN,
@@ -227,9 +232,9 @@ export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> {
 
   const buildImpl = (s: ArrayLike<number>) => {
     const valid = length - missing;
-    const median = quantile(s, 0.5)!;
-    const q1 = quantile(s, 0.25)!;
-    const q3 = quantile(s, 0.75)!;
+    const median = quantile(s, 0.5, valid)!;
+    const q1 = quantile(s, 0.25, valid)!;
+    const q3 = quantile(s, 0.75, valid)!;
 
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
@@ -239,7 +244,7 @@ export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> {
     // look for the closests value which is bigger than the computed left
     let whiskerLow = left;
     // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < s.length; ++i) {
+    for (let i = 0; i < valid; ++i) {
       const v = s[i];
       if (left < v) {
         whiskerLow = v;
@@ -251,7 +256,7 @@ export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> {
     // look for the closests value which is smaller than the computed right
     let whiskerHigh = right;
     const reversedOutliers: number[] = [];
-    for (let i = s.length - 1; i >= 0; --i) {
+    for (let i = valid - 1; i >= 0; --i) {
       const v = s[i];
       if (v < right) {
         whiskerHigh = v;
@@ -289,7 +294,22 @@ export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> {
     return buildImpl(s);
   };
 
-  return {push, build, pushAll: pushAll(push)};
+  const buildArr = (vs: Float32Array) => {
+    const s = vs.slice().sort();
+    // tslint:disable-next-line:prefer-for-of
+    for (let j = 0; j < vs.length; ++j) {
+      push(vs[j]);
+    }
+    // missing are the last
+    return buildImpl(s);
+  };
+
+  return {
+    push: pushAndSave,
+    build,
+    buildArr,
+    pushAll: pushAll(pushAndSave)
+  };
 }
 
 /**
@@ -790,14 +810,11 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   const boxplotStats = (r: IBoxPlottatsMessageRequest) => {
     const data = r.data ? r.data : <Float32Array>refs.get(r.ref)!;
     const b = boxplotBuilder();
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < data.length; ++i) {
-      b.push(data[i]);
-    }
+
     self.postMessage(<IBoxPlotStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
-      stats: b.build()
+      stats: b.buildArr(data)
     });
   };
 

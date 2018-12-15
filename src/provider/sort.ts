@@ -1,24 +1,12 @@
+import {createIndexArray, ILookUpArray} from '../internal';
+import {ECompareValueType, UIntTypedArray} from '../model';
 import {ICompareValue} from '../model/Column';
-import {FIRST_IS_NAN, FIRST_IS_MISSING} from '../model/missing';
-import {IndicesArray, UIntTypedArray} from '../model';
-import {ILookUpArray, createIndexArray, toIndexArray, sortComplex, WORKER_BLOB, ISortMessageResponse, ISortMessageRequest} from '../internal';
+import {FIRST_IS_MISSING, FIRST_IS_NAN} from '../model/missing';
 
-export enum ECompareValueType {
-  BINARY,
-  COUNT, // count max to the number of rows
-  UINT8,
-  UINT16,
-  UINT32,
-  INT8,
-  INT16,
-  INT32,
-  FLOAT,
-  FLOAT_ASC,
-  DOUBLE,
-  DOUBLE_ASC,
-  STRING
-}
 
+/**
+ * @internal
+ */
 export function chooseUIntByDataLength(dataLength?: number | null) {
   if (dataLength == null || typeof dataLength !== 'number' && !isNaN(dataLength)) {
     return ECompareValueType.UINT32; // worst case
@@ -54,7 +42,6 @@ function chooseMissingByLength(length: number) {
   }
   return missingUInt32;
 }
-
 
 
 function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArray {
@@ -155,114 +142,5 @@ export class CompareLookup {
     // free up to save memory
     this.lookups.splice(0, this.lookups.length);
     this.comparators.splice(0, this.comparators.length);
-  }
-}
-
-function sort(indices: IndicesArray, _singleCall: boolean, lookups?: CompareLookup) {
-  const order = toIndexArray(indices);
-  if (lookups) {
-    sortComplex(order, lookups.sortOrders);
-  }
-  return Promise.resolve(order);
-}
-
-export interface ISortWorker {
-  sort(indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
-  terminate(): void;
-}
-
-export const local: ISortWorker = {
-  sort,
-  terminate: () => undefined
-};
-
-
-const SHOULD_USE_WORKER = 50000;
-const MAX_WORKER_THREADS = 10;
-const MIN_WORKER_THREADS = 2;
-const THREAD_CLEANUP_TIME = 2;
-
-
-export class WorkerSortWorker implements ISortWorker {
-  private readonly workerPool: Worker[] = [];
-  private cleanUpWorkerTimer: number = -1;
-
-  constructor() {
-    // start with two worker
-    for (let i = 0; i < MIN_WORKER_THREADS; ++i) {
-      this.workerPool.push(new Worker(WORKER_BLOB));
-      this.workerPool.push(new Worker(WORKER_BLOB));
-    }
-  }
-
-  private readonly cleanUp = () => {
-    this.workerPool.splice(0, MIN_WORKER_THREADS).forEach((w) => w.terminate());
-  }
-
-  private checkOut() {
-    if (this.cleanUpWorkerTimer >= 0) {
-      clearTimeout(this.cleanUpWorkerTimer);
-      this.cleanUpWorkerTimer = -1;
-    }
-
-    if (this.workerPool.length > 0) {
-      return this.workerPool.shift()!;
-    }
-    return new Worker(WORKER_BLOB);
-  }
-
-  private checkIn(worker: Worker) {
-    this.workerPool.push(worker);
-
-    if (this.workerPool.length >= MAX_WORKER_THREADS) {
-      this.workerPool.splice(0, MAX_WORKER_THREADS).forEach((w) => w.terminate());
-    }
-    if (this.cleanUpWorkerTimer === -1) {
-      this.cleanUpWorkerTimer = self.setTimeout(this.cleanUp, THREAD_CLEANUP_TIME);
-    }
-  }
-
-  sort(indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup) {
-
-    if (!lookups || indices.length < SHOULD_USE_WORKER) {
-      // no thread needed
-      return sort(indices, singleCall, lookups);
-    }
-
-    return new Promise<IndicesArray>((resolve) => {
-      const uid = Math.random();
-
-      const worker = this.checkOut();
-
-      const receiver = (msg: MessageEvent) => {
-        const r = <ISortMessageResponse>msg.data;
-        if (r.uid !== uid) {
-          return;
-        }
-        worker.removeEventListener('message', receiver);
-        this.checkIn(worker);
-        resolve(r.order);
-      };
-
-      const indexArray = toIndexArray(indices);
-
-      const toTransfer = [indexArray.buffer];
-
-      if (singleCall) {
-        // can transfer otherwise need to copy
-        toTransfer.push(...lookups.transferAbles);
-      }
-
-      worker.addEventListener('message', receiver);
-      worker.postMessage(<ISortMessageRequest>{
-        uid,
-        indices: indexArray,
-        sortOrders: lookups.sortOrders
-      }, toTransfer);
-    });
-  }
-
-  terminate() {
-    this.workerPool.splice(0, this.workerPool.length).forEach((w) => w.terminate());
   }
 }

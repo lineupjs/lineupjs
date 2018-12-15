@@ -1,17 +1,14 @@
-import AEventDispatcher from '../internal/AEventDispatcher';
+import AEventDispatcher, {IEventListener} from '../internal/AEventDispatcher';
+import {ISequence} from '../internal/interable';
 import {similar} from '../internal/math';
 import {fixCSS} from '../internal/utils';
-import {defaultGroup} from './Group';
-import {IColumnDesc, IDataRow, IGroup} from './interfaces';
-import Ranking, {ISortCriteria} from './Ranking';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {isSortingAscByDefault} from './annotations';
 import {IColumnDump} from '../provider/interfaces';
-import {ECompareValueType} from '../provider/sort';
-import {ISequence} from '../internal/interable';
+import {isSortingAscByDefault} from './annotations';
+import {defaultGroup} from './Group';
+import {ECompareValueType, IColumnDesc, IDataRow, IGroup} from './interfaces';
+import Ranking, {ISortCriteria} from './Ranking';
 
-export {IColumnDesc} from './interfaces';
-export {ECompareValueType} from '../provider/sort';
+export {ECompareValueType, IColumnDesc} from './interfaces';
 
 export interface IFlatColumn {
   readonly col: Column;
