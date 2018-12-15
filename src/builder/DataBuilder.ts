@@ -30,15 +30,6 @@ export default class DataBuilder extends LineUpBuilder {
     return this;
   }
 
-  webWorkerSorter() {
-    this.providerOptions.sortWorker = 'webworker';
-    return this;
-  }
-
-  scalable() {
-    return this.scheduledTaskExecutor().webWorkerSorter();
-  }
-
   /**
    * allow just a single selection
    */

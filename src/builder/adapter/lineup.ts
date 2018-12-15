@@ -24,7 +24,7 @@ export interface IBuilderAdapterDataProps extends Partial<IDataProviderOptions>,
 
 export declare type IBuilderAdapterProps = Partial<ITaggleOptions> & IBuilderAdapterDataProps;
 
-const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = ['singleSelection', 'filterGlobally', 'columnTypes', 'sortWorker', 'taskExecutor', 'jumpToSearchResult'];
+const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = ['singleSelection', 'filterGlobally', 'columnTypes', 'taskExecutor', 'jumpToSearchResult'];
 const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'canRender', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser'];
 
 interface IRankingContext {
