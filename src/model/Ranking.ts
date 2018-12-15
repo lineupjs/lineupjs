@@ -7,7 +7,7 @@ import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, IColumnParent, ICompareValue, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {defaultGroup, IndicesArray, IOrderedGroup} from './Group';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IValueCacheLookup, IGroupValueCacheLookup} from './interfaces';
 import {joinGroups} from './internal';
 import NumberColumn, {filterChanged} from './NumberColumn';
 
@@ -124,15 +124,15 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    */
   private readonly columns: Column[] = [];
 
-  readonly grouper = (row: IDataRow): IGroup => {
+  readonly grouper = (row: IDataRow, valueCacheLookup?: IValueCacheLookup): IGroup => {
     const g = this.groupColumns;
     switch (g.length) {
       case 0:
         return defaultGroup;
       case 1:
-        return g[0].group(row);
+        return g[0].group(row, valueCacheLookup);
       default:
-        const groups = g.map((gi) => gi.group(row));
+        const groups = g.map((gi) => gi.group(row, valueCacheLookup));
         return joinGroups(groups);
     }
   };
@@ -284,13 +284,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
 
-  toCompareValue(row: IDataRow) {
+  toCompareValue(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
     if (this.sortCriteria.length === 0) {
       return [];
     }
     const vs: ICompareValue[] = [];
     for (const s of this.sortCriteria) {
-      const r = s.col.toCompareValue(row);
+      const r = s.col.toCompareValue(row, valueCacheLookup);
       if (Array.isArray(r)) {
         vs.push(...r);
       } else {
@@ -315,13 +315,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return vs;
   }
 
-  toGroupCompareValue(rows: ISequence<IDataRow>, group: IGroup) {
+  toGroupCompareValue(rows: ISequence<IDataRow>, group: IGroup, valueCacheLookup?: IGroupValueCacheLookup) {
     if (this.groupSortCriteria.length === 0) {
       return [group.name.toLowerCase()];
     }
     const vs: ICompareValue[] = [];
     for (const s of this.groupSortCriteria) {
-      const r = s.col.toCompareGroupValue(rows, group);
+      const r = s.col.toCompareGroupValue(rows, group, valueCacheLookup);
       if (Array.isArray(r)) {
         vs.push(...r);
       } else {
@@ -719,8 +719,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.columns.some((d) => d.isFiltered());
   }
 
-  filter(row: IDataRow) {
-    return this.columns.every((d) => d.filter(row));
+  filter(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
+    return this.columns.every((d) => d.filter(row, valueCacheLookup));
   }
 
   findMyRanker() {

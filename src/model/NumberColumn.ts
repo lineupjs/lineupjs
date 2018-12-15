@@ -2,7 +2,7 @@ import {format} from 'd3-format';
 import {equalArrays} from '../internal';
 import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IValueCacheLookup, IGroupValueCacheLookup} from './interfaces';
 import {toCompareGroupValue} from './internal';
 import {
   default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
@@ -228,7 +228,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.getRawValue(row);
   }
 
-  toCompareValue(row: IDataRow, valueCache?: any) {
+  toCompareValue(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
+    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
     return valueCache != null ? valueCache : this.getNumber(row);
   }
 
@@ -236,8 +237,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return ECompareValueType.FLOAT;
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
-    return toCompareGroupValue(rows, this, <any>this.groupSortMethod, valueCache);
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCacheLookup?: IGroupValueCacheLookup): number {
+    return toCompareGroupValue(rows, this, <any>this.groupSortMethod, valueCacheLookup ? valueCacheLookup(this) : undefined);
   }
 
   toCompareGroupValueType() {

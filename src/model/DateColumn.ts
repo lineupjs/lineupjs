@@ -1,6 +1,6 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {Category, toolbar, dialogAddons} from './annotations';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IValueCacheLookup, IGroupValueCacheLookup} from './interfaces';
 import {isMissingValue, missingGroup, isUnknown} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
@@ -146,11 +146,13 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
    * @param row
    * @returns {boolean}
    */
-  filter(row: IDataRow, valueCache?: any) {
+  filter(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
+    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
     return isDateIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getDate(row));
   }
 
-  toCompareValue(row: IDataRow, valueCache?: any) {
+  toCompareValue(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
+    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
     const v = valueCache !== undefined ? valueCache : this.getValue(row);
     if (!(v instanceof Date)) {
       return NaN;
@@ -175,7 +177,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     this.fire([DateColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  group(row: IDataRow, valueCache?: any): IGroup {
+  group(row: IDataRow, valueCacheLookup?: IValueCacheLookup): IGroup {
+    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
     const v = valueCache !== undefined ? valueCache : this.getDate(row);
     if (!v || !(v instanceof Date)) {
       return missingGroup;
@@ -190,8 +193,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     };
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
-    const v = choose(rows, this.currentGrouper, this, valueCache).value;
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCacheLookup?: IGroupValueCacheLookup): number {
+    const v = choose(rows, this.currentGrouper, this, valueCacheLookup ? valueCacheLookup(this) : undefined).value;
     return v == null ? NaN : v;
   }
 
