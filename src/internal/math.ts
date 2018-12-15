@@ -488,7 +488,7 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function categoricalStatsBuilder(categories: ICategory[]): IBuilder<ICategory | null, ICategoricalStatistics> {
+export function categoricalStatsBuilder(categories: {name: string}[]): IBuilder<{name: string} | null, ICategoricalStatistics> {
   const m = new Map<string, number>();
   categories.forEach((cat) => m.set(cat.name, 0));
 
@@ -635,6 +635,7 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: {as
 
 
 export interface ISortMessageRequest {
+  type: 'sort';
   uid: number;
 
   indices: UIntTypedArray;
@@ -642,30 +643,191 @@ export interface ISortMessageRequest {
 }
 
 export interface ISortMessageResponse {
+  type: 'sort';
   uid: number;
 
   order: IndicesArray;
 }
 
+export interface ISetRefMessageRequest {
+  type: 'setRef';
+  uid: number;
+
+  ref: string;
+  data: UIntTypedArray | Float32Array | null;
+}
+
+export interface IDateStatsMessageRequest {
+  type: 'dateStats';
+  uid: number;
+
+  ref: string;
+  data?: UIntTypedArray;
+  template?: IDateStatistics;
+}
+
+export interface IDateStatsMessageResponse {
+  type: 'dateStats';
+  uid: number;
+
+  stats: IDateStatistics;
+}
+
+export interface INumberStatsMessageRequest {
+  type: 'numberStats';
+  uid: number;
+
+  ref: string;
+  numberOfBins: number;
+  data?: Float32Array;
+}
+
+export interface INumberStatsMessageResponse {
+  type: 'numberStats';
+  uid: number;
+
+  stats: IStatistics;
+}
+
+export interface IBoxPlottatsMessageRequest {
+  type: 'boxplotStats';
+  uid: number;
+
+  ref: string;
+  data?: Float32Array;
+}
+
+export interface IBoxPlotStatsMessageResponse {
+  type: 'boxplotStats';
+  uid: number;
+
+  stats: IAdvancedBoxPlotData;
+}
+
+export interface ICategoricalStatsMessageRequest {
+  type: 'categoricalStats';
+  uid: number;
+
+  ref: string;
+  categories: string[];
+  data?: UIntTypedArray;
+}
+
+export interface ICategoricalStatsMessageResponse {
+  type: 'categoricalStats';
+  uid: number;
+
+  stats: ICategoricalStatistics;
+}
+
 
 function sortWorkerMain(self: IPoorManWorkerScope) {
-  self.addEventListener('message', (evt) => {
-    const r = <ISortMessageRequest>evt.data;
-    if (typeof r.uid !== 'number') {
-      return;
-    }
+  const refs = new Map<string, UIntTypedArray | Float32Array | (Date | null)[]>();
 
+  const sort = (r: ISortMessageRequest) => {
     if (r.sortOrders) {
       sortComplex(r.indices, r.sortOrders);
     }
     self.postMessage(<ISortMessageResponse>{
+      type: r.type,
       uid: r.uid,
       order: r.indices
     }, [r.indices.buffer]);
+  };
+
+  const setRef = (r: ISetRefMessageRequest) => {
+    if (r.data) {
+      refs.set(r.ref, r.data);
+    } else {
+      refs.delete(r.ref);
+    }
+  };
+
+  const dateStats = (r: IDateStatsMessageRequest) => {
+    const data = r.data ? r.data : <UIntTypedArray>refs.get(r.ref)!;
+    const b = dateStatsBuilder(r.template);
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < data.length; ++i) {
+      b.push(new Date(data[i]));
+    }
+    self.postMessage(<IDateStatsMessageResponse>{
+      type: r.type,
+      uid: r.uid,
+      stats: b.build()
+    });
+  };
+
+  const categoricalStats = (r: ICategoricalStatsMessageRequest) => {
+    const data = r.data ? r.data : <UIntTypedArray>refs.get(r.ref)!;
+    const cats = r.categories.map((name) => ({name}));
+    const b = categoricalStatsBuilder(cats);
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < data.length; ++i) {
+      const v = data[i];
+      b.push(v === 0 ? null : cats[v - 1]!);
+    }
+    self.postMessage(<ICategoricalStatsMessageResponse>{
+      type: r.type,
+      uid: r.uid,
+      stats: b.build()
+    });
+  };
+
+  const numberStats = (r: INumberStatsMessageRequest) => {
+    const data = r.data ? r.data : <Float32Array>refs.get(r.ref)!;
+    const b = normalizedStatsBuilder(r.numberOfBins);
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < data.length; ++i) {
+      b.push(data[i]);
+    }
+    self.postMessage(<INumberStatsMessageResponse>{
+      type: r.type,
+      uid: r.uid,
+      stats: b.build()
+    });
+  };
+
+  const boxplotStats = (r: IBoxPlottatsMessageRequest) => {
+    const data = r.data ? r.data : <Float32Array>refs.get(r.ref)!;
+    const b = boxplotBuilder();
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < data.length; ++i) {
+      b.push(data[i]);
+    }
+    self.postMessage(<IBoxPlotStatsMessageResponse>{
+      type: r.type,
+      uid: r.uid,
+      stats: b.build()
+    });
+  };
+
+  const msgHandlers: {[key: string]: (r: any) => void} = {
+    sort,
+    setRef,
+    dateStats,
+    categoricalStats,
+    numberStats,
+    boxplotStats
+  };
+
+  self.addEventListener('message', (evt) => {
+    const r = evt.data;
+    if (typeof r.uid !== 'number' || typeof r.type !== 'string') {
+      return;
+    }
+    const h = msgHandlers[r.type];
+    if (h) {
+      h(r);
+    }
   });
 }
 
 export const WORKER_BLOB = createWorkerCodeBlob([
+  normalizedStatsBuilder.toString(),
+  boxplotBuilder.toString(),
+  computeGranularity.toString(),
+  dateStatsBuilder.toString(),
+  categoricalStatsBuilder.toString(),
   createIndexArray.toString(),
   asc.toString(),
   desc.toString(),
