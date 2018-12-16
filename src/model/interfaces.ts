@@ -1,6 +1,4 @@
 import {IOrderedGroup} from './Group';
-import Column from './Column';
-import {ISequence} from '../internal/interable';
 
 export interface IStyleColumn {
   /**

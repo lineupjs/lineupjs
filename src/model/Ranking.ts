@@ -6,7 +6,7 @@ import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, IColumnParent, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {defaultGroup, IndicesArray, IOrderedGroup} from './Group';
-import {IDataRow, IValueCacheLookup} from './interfaces';
+import {IDataRow} from './interfaces';
 import NumberColumn, {filterChanged} from './NumberColumn';
 
 export interface ISortCriteria {
@@ -638,8 +638,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.columns.some((d) => d.isFiltered());
   }
 
-  filter(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
-    return this.columns.every((d) => d.filter(row, valueCacheLookup));
+  filter(row: IDataRow) {
+    return this.columns.every((d) => d.filter(row));
   }
 
   findMyRanker() {

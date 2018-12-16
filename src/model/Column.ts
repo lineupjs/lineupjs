@@ -5,7 +5,7 @@ import {fixCSS} from '../internal/utils';
 import {IColumnDump} from '../provider/interfaces';
 import {isSortingAscByDefault} from './annotations';
 import {defaultGroup} from './Group';
-import {ECompareValueType, IColumnDesc, IDataRow, IGroup, IValueCacheLookup} from './interfaces';
+import {ECompareValueType, IColumnDesc, IDataRow, IGroup} from './interfaces';
 import Ranking, {ISortCriteria} from './Ranking';
 
 export {ECompareValueType, IColumnDesc} from './interfaces';
@@ -573,7 +573,7 @@ export default class Column extends AEventDispatcher {
    * @param row
    * @return {boolean}
    */
-  filter(row: IDataRow, _valueCacheLookup?: IValueCacheLookup) {
+  filter(row: IDataRow, _valueCache?: any) {
     return row != null;
   }
 
