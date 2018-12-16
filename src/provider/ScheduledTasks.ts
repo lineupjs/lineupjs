@@ -1,34 +1,21 @@
 import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, isCategoricalLikeColumn, isNumberColumn, isDateColumn, ICategoricalLikeColumn, UIntTypedArray} from '../model';
 import {ARenderTasks, IRenderTaskExectutor, taskNow, MultiIndices, taskLater, TaskNow, TaskLater} from './tasks';
-import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageRequest, ISortMessageResponse, WORKER_BLOB, IWorkerMessage, normalizedStatsBuilder, ISetRefMessageRequest} from '../internal';
+import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageResponse, WORKER_BLOB} from '../internal';
 import {CompareLookup} from './sort';
 import {ISequence} from '../internal/interable';
 import {IRenderTask} from '../renderer/interfaces';
-import TaskScheduler, {oneShotIterator, ABORTED, ANOTHER_ROUND} from '../internal/scheduler';
+import TaskScheduler, {oneShotIterator, ABORTED} from '../internal/scheduler';
 import {sortDirect} from './DirectRenderTasks';
-
-
-const SHOULD_USE_WORKER = 50000;
-const MAX_WORKER_THREADS = 10;
-const MIN_WORKER_THREADS = 2;
-const THREAD_CLEANUP_TIME = 2;
-
+import {WorkerTaskScheduler} from '../internal/worker';
 
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 
   private readonly cache = new Map<string, IRenderTask<any>>();
   private readonly tasks = new TaskScheduler();
-  private readonly workerPool: Worker[] = [];
-  private readonly activeWorkers= new Set<Worker>();
-  private cleanUpWorkerTimer: number = -1;
-  private workerTaskCounter = 0;
+  private readonly workers = new WorkerTaskScheduler(WORKER_BLOB, (w) => this.initWorker(w));
 
   constructor() {
     super();
-    // start with two worker
-    for (let i = 0; i < MIN_WORKER_THREADS; ++i) {
-      this.workerPool.push(new Worker(WORKER_BLOB));
-    }
   }
 
 
@@ -382,41 +369,8 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     return this.cached(`${col.id}:c:data`, this.data.length === 0, this.dateStatsBuilder<IDateStatistics>(null, col));
   }
 
-  private readonly cleanUpWorker = () => {
-    this.workerPool.splice(0, MIN_WORKER_THREADS).forEach((w) => w.terminate());
-  }
-
-  private checkOutWorker() {
-    if (this.cleanUpWorkerTimer >= 0) {
-      clearTimeout(this.cleanUpWorkerTimer);
-      this.cleanUpWorkerTimer = -1;
-    }
-
-    if (this.workerPool.length > 0) {
-      const w = this.workerPool.shift()!;
-      this.activeWorkers.add(w);
-      return w;
-    }
-    const w = new Worker(WORKER_BLOB);
-    this.activeWorkers.add(w);
-    return w;
-  }
-
-  private checkInWorker(worker: Worker) {
-    this.workerPool.push(worker);
-    this.activeWorkers.delete(worker);
-
-    if (this.workerPool.length >= MAX_WORKER_THREADS) {
-      this.workerPool.splice(0, MAX_WORKER_THREADS).forEach((w) => w.terminate());
-    }
-    if (this.cleanUpWorkerTimer === -1) {
-      this.cleanUpWorkerTimer = self.setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME);
-    }
-  }
-
   sort(indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup) {
-
-    if (!lookups || indices.length < SHOULD_USE_WORKER) {
+    if (!lookups) {
       // no thread needed
       return sortDirect(indices, singleCall, lookups);
     }
@@ -429,38 +383,10 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       toTransfer.push(...lookups.transferAbles);
     }
 
-    return this.taskWorker('sort', {
+    return this.workers.push('sort', {
       indices: indexArray,
       sortOrders: lookups.sortOrders
     }, toTransfer, (r: ISortMessageResponse) => r.order);
-  }
-
-  private taskWorker<R, T>(type: string, args: any, transferAbles: ArrayBuffer[], toResult: (r: R) => T) {
-    return new Promise<T>((resolve) => {
-      const uid = this.workerTaskCounter++;
-      const worker = this.checkOutWorker();
-
-      const receiver = (msg: MessageEvent) => {
-        const r = <IWorkerMessage>msg.data;
-        if (r.uid !== uid || r.type !== type) {
-          return;
-        }
-        worker.removeEventListener('message', receiver);
-        this.checkInWorker(worker);
-        resolve(toResult(<any>r));
-      };
-
-      worker.addEventListener('message', receiver);
-      worker.postMessage(Object.assign({
-        type,
-        uid
-      }, args), transferAbles);
-    });
-  }
-
-  terminate() {
-    this.workerPool.splice(0, this.workerPool.length).forEach((w) => w.terminate());
-    this.cache.clear();
   }
 
   valueCache(dataIndex: number) {
@@ -473,17 +399,20 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     };
   }
 
+  private initWorker(push: (type: string, msg: any) => void) {
+    this.valueCacheData.forEach((data, ref) => push('setRef', {ref, data}));
+  }
+
   protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | null) {
     super.setValueCacheData(key, value);
-    const msg: ISetRefMessageRequest = {
-      uid: this.workerTaskCounter++,
-      type: 'setRef',
+    this.workers.broadCast('setRef', {
       ref: key,
       data: value
-    };
-    for (const w of this.workerPool) {
-      w.postMessage(msg);
-    }
-    this.activeWorkers.forEach((w) => w.postMessage(msg));
+    });
+  }
+
+  terminate() {
+    this.workers.terminate();
+    this.cache.clear();
   }
 }
