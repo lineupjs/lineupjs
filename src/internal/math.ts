@@ -185,7 +185,7 @@ export interface IBuilder<T, R> {
   build(): R;
 }
 
-export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> & { buildArr: (s: Float32Array) => IAdvancedBoxPlotData} {
+export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvancedBoxPlotData> & { buildArr: (s: Float32Array) => IAdvancedBoxPlotData} {
   // filter out NaN
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -194,6 +194,7 @@ export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> & { bui
   let missing = 0;
 
   const values: number[] = [];
+  const vs: Float32Array | null = fixedLength != null ? new Float32Array(fixedLength) : null;
 
   const push = (v: number) => {
     length += 1;
@@ -212,7 +213,11 @@ export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> & { bui
 
   const pushAndSave = (v: number) => {
     push(v);
-    values.push(v);
+    if (vs) {
+      vs[length] = v;
+    } else {
+      values.push(v);
+    }
   };
 
 
@@ -290,7 +295,7 @@ export function boxplotBuilder(): IBuilder<number, IAdvancedBoxPlotData> & { bui
       return invalid;
     }
 
-    const s = Float32Array.from(values).sort();
+    const s = vs ? vs.sort() : Float32Array.from(values).sort();
     return buildImpl(s);
   };
 
@@ -662,7 +667,7 @@ export interface IWorkerMessage {
 export interface ISortMessageRequest {
   type: 'sort';
   uid: number;
-
+  ref: string;
   indices: UIntTypedArray;
   sortOrders?: {asc: boolean, lookup: ILookUpArray}[];
 }
@@ -671,6 +676,7 @@ export interface ISortMessageResponse {
   type: 'sort';
   uid: number;
 
+  ref: string;
   order: IndicesArray;
 }
 
@@ -686,8 +692,12 @@ export interface IDateStatsMessageRequest {
   type: 'dateStats';
   uid: number;
 
-  ref: string;
+  refIndices: string | null;
+  indices?: UIntTypedArray;
+
+  refData: string;
   data?: UIntTypedArray;
+
   template?: IDateStatistics;
 }
 
@@ -702,9 +712,13 @@ export interface INumberStatsMessageRequest {
   type: 'numberStats';
   uid: number;
 
-  ref: string;
-  numberOfBins: number;
+  refIndices: string | null;
+  indices?: UIntTypedArray;
+
+  refData: string;
   data?: Float32Array;
+
+  numberOfBins: number;
 }
 
 export interface INumberStatsMessageResponse {
@@ -714,11 +728,14 @@ export interface INumberStatsMessageResponse {
   stats: IStatistics;
 }
 
-export interface IBoxPlottatsMessageRequest {
+export interface IBoxPlotStatsMessageRequest {
   type: 'boxplotStats';
   uid: number;
 
-  ref: string;
+  refIndices: string | null;
+  indices?: UIntTypedArray;
+
+  refData: string;
   data?: Float32Array;
 }
 
@@ -733,9 +750,13 @@ export interface ICategoricalStatsMessageRequest {
   type: 'categoricalStats';
   uid: number;
 
-  ref: string;
-  categories: string[];
+  refIndices: string | null;
+  indices?: UIntTypedArray;
+
+  refData: string;
   data?: UIntTypedArray;
+
+  categories: string[];
 }
 
 export interface ICategoricalStatsMessageResponse {
@@ -769,11 +790,20 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   };
 
   const dateStats = (r: IDateStatsMessageRequest) => {
-    const data = r.data ? r.data : <UIntTypedArray>refs.get(r.ref)!;
+    const data = r.data ? r.data : <UIntTypedArray>refs.get(r.refData)!;
+    const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+
     const b = dateStatsBuilder(r.template);
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < data.length; ++i) {
-      b.push(new Date(data[i]));
+    if (indices) {
+      // tslint:disable-next-line:prefer-for-of
+      for (let ii = 0; ii < indices.length; ++ii) {
+        b.push(new Date(data[indices[ii]]));
+      }
+    } else {
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = 0; i < data.length; ++i) {
+        b.push(new Date(data[i]));
+      }
     }
     self.postMessage(<IDateStatsMessageResponse>{
       type: r.type,
@@ -783,14 +813,25 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   };
 
   const categoricalStats = (r: ICategoricalStatsMessageRequest) => {
-    const data = r.data ? r.data : <UIntTypedArray>refs.get(r.ref)!;
+    const data = r.data ? r.data : <UIntTypedArray>refs.get(r.refData)!;
+    const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+
     const cats = r.categories.map((name) => ({name}));
     const b = categoricalStatsBuilder(cats);
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < data.length; ++i) {
-      const v = data[i];
-      b.push(v === 0 ? null : cats[v - 1]!);
+    if (indices) {
+      // tslint:disable-next-line:prefer-for-of
+      for (let ii = 0; ii < indices.length; ++ii) {
+        const v = data[indices[ii]];
+        b.push(v === 0 ? null : cats[v - 1]!);
+      }
+    } else {
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = 0; i < data.length; ++i) {
+        const v = data[i];
+        b.push(v === 0 ? null : cats[v - 1]!);
+      }
     }
+
     self.postMessage(<ICategoricalStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
@@ -799,12 +840,23 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   };
 
   const numberStats = (r: INumberStatsMessageRequest) => {
-    const data = r.data ? r.data : <Float32Array>refs.get(r.ref)!;
+    const data = r.data ? r.data : <Float32Array>refs.get(r.refData)!;
+    const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+
     const b = normalizedStatsBuilder(r.numberOfBins);
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < data.length; ++i) {
-      b.push(data[i]);
+
+    if (indices) {
+      // tslint:disable-next-line:prefer-for-of
+      for (let ii = 0; ii < indices.length; ++ii) {
+        b.push(data[indices[ii]]);
+      }
+    } else {
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = 0; i < data.length; ++i) {
+        b.push(data[i]);
+      }
     }
+
     self.postMessage(<INumberStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
@@ -812,14 +864,27 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     });
   };
 
-  const boxplotStats = (r: IBoxPlottatsMessageRequest) => {
-    const data = r.data ? r.data : <Float32Array>refs.get(r.ref)!;
-    const b = boxplotBuilder();
+  const boxplotStats = (r: IBoxPlotStatsMessageRequest) => {
+    const data = r.data ? r.data : <Float32Array>refs.get(r.refData)!;
+    const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+
+    const b = boxplotBuilder(indices ? indices.length : undefined);
+
+    let stats: IAdvancedBoxPlotData;
+    if (!indices) {
+      stats = b.buildArr(data);
+    } else {
+      // tslint:disable-next-line:prefer-for-of
+      for (let ii = 0; ii < indices.length; ++ii) {
+        b.push(data[indices[ii]]);
+      }
+      stats = b.build();
+    }
 
     self.postMessage(<IBoxPlotStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
-      stats: b.buildArr(data)
+      stats
     });
   };
 
