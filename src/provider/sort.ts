@@ -1,5 +1,5 @@
 import {createIndexArray, ILookUpArray} from '../internal';
-import {ECompareValueType, UIntTypedArray, ISortCriteria} from '../model';
+import {ECompareValueType, UIntTypedArray, Ranking, IDataRow} from '../model';
 import Column, {ICompareValue} from '../model/Column';
 import {FIRST_IS_MISSING, FIRST_IS_NAN} from '../model/missing';
 
@@ -72,87 +72,102 @@ function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArr
   }
 }
 
+function createSetter(type: ECompareValueType, lookup: ILookUpArray, missingCount: number) {
+  return (index: number, v: ICompareValue) => {
+    switch (type) {
+      case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=-Ininity 1 2 255=+Infinity
+        lookup[index] = v == null || isNaN(<number>v) ? missingBinary : (<number>v) + 1;
+        break;
+      case ECompareValueType.COUNT: // uint32
+        lookup[index] = v == null || isNaN(<number>v) ? missingCount : (<number>v) + 1;
+        break;
+      case ECompareValueType.UINT8: // shift by one to have 0 for -Inf
+        lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v) + 1;
+        break;
+      case ECompareValueType.UINT16: // shift by one to have 0 for -Inf
+        lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v) + 1;
+        break;
+      case ECompareValueType.UINT32: // shift by one to have 0 for -Inf
+        lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v) + 1;
+        break;
+      case ECompareValueType.INT8:
+        lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v);
+        break;
+      case ECompareValueType.INT16:
+        lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v);
+        break;
+      case ECompareValueType.INT32:
+        lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v);
+        break;
+      case ECompareValueType.STRING:
+        lookup[index] = v == null || v === '' ? missingString : v;
+        break;
+      case ECompareValueType.FLOAT:
+      case ECompareValueType.DOUBLE:
+        lookup[index] = v == null || isNaN(<number>v) ? missingFloat : v;
+        break;
+      case ECompareValueType.FLOAT_ASC:
+      case ECompareValueType.DOUBLE_ASC:
+        lookup[index] = v == null || isNaN(<number>v) ? missingFloatAsc : v;
+        break;
+    }
+  };
+}
 
 export class CompareLookup {
-  private readonly lookups: ILookUpArray[];
-  private readonly missingCount: number; // since length dependent
-  private readonly comparators: {asc: boolean, v: ECompareValueType}[] = [];
+  private readonly criteria: {col: Column, valueCache?(dataIndex: number): any}[] = [];
+  private readonly data: {asc: boolean, v: ECompareValueType, lookup: ILookUpArray, setter: (dataIndex: number, value: ICompareValue) => void}[] = [];
 
-  constructor(rawLength: number, criteria: ISortCriteria[], acc: (d: Column) => ECompareValueType | ECompareValueType[]) {
-    for (const c of criteria) {
-      const v = acc(c.col);
+  constructor(rawLength: number, isSorting: boolean, ranking: Ranking, valueCaches?: (col: Column) => (undefined | ((i: number) => any))) {
+    const missingCount = chooseMissingByLength(rawLength + 1); // + 1 for the value shift to have 0 as start
+
+    for (const c of (isSorting ? ranking.getSortCriteria() : ranking.getGroupSortCriteria())) {
+      const v = (isSorting ? c.col.toCompareValueType() : c.col.toCompareGroupValueType());
+      const valueCache = valueCaches ? valueCaches(c.col) : undefined;
+      this.criteria.push({col: c.col, valueCache});
       if (!Array.isArray(v)) {
-        this.comparators.push({asc: c.asc, v});
+        const lookup = toCompareLookUp(rawLength, v);
+        this.data.push({asc: c.asc, v, lookup, setter: createSetter(v, lookup, missingCount)});
         continue;
       }
       for (const vi of v) {
-        this.comparators.push({asc: c.asc, v: vi});
+        const lookup = toCompareLookUp(rawLength, vi);
+        this.data.push({asc: c.asc, v: vi, lookup, setter: createSetter(vi, lookup, missingCount)});
       }
     }
-
-    this.lookups = this.comparators.map((d) => toCompareLookUp(rawLength, d.v));
-
-    this.missingCount = chooseMissingByLength(rawLength + 1); // + 1 for the value shift to have 0 as start
   }
 
   get sortOrders() {
-    return this.comparators.map((d, i) => ({asc: d.asc, lookup: this.lookups[i]}));
+    return this.data.map((d) => ({asc: d.asc, lookup: d.lookup}));
   }
 
   get transferAbles() {
     // so a typed array
-    return this.lookups.filter((d): d is UIntTypedArray | Float32Array => !Array.isArray(d)).map((d) => d.buffer);
+    return this.data.map((d) => d.lookup).filter((d): d is UIntTypedArray | Float32Array => !Array.isArray(d)).map((d) => d.buffer);
   }
 
-  push(index: number, vs: ICompareValue[]) {
-    const l = this.comparators.length;
-    for (let i = 0; i < l; ++i) {
-      const type = this.comparators[i].v;
-      const lookup = this.lookups[i];
-      const v = vs[i];
-      switch (type) {
-        case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=-Ininity 1 2 255=+Infinity
-          lookup[index] = v == null || isNaN(<number>v) ? missingBinary : (<number>v) + 1;
-          break;
-        case ECompareValueType.COUNT: // uint32
-          lookup[index] = v == null || isNaN(<number>v) ? this.missingCount : (<number>v) + 1;
-          break;
-        case ECompareValueType.UINT8: // shift by one to have 0 for -Inf
-          lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v) + 1;
-          break;
-        case ECompareValueType.UINT16: // shift by one to have 0 for -Inf
-          lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v) + 1;
-          break;
-        case ECompareValueType.UINT32: // shift by one to have 0 for -Inf
-          lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v) + 1;
-          break;
-        case ECompareValueType.INT8:
-          lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v);
-          break;
-        case ECompareValueType.INT16:
-          lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v);
-          break;
-        case ECompareValueType.INT32:
-          lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v);
-          break;
-        case ECompareValueType.STRING:
-          lookup[index] = v == null || v === '' ? missingString : v;
-          break;
-        case ECompareValueType.FLOAT:
-        case ECompareValueType.DOUBLE:
-          lookup[index] = v == null || isNaN(<number>v) ? missingFloat : v;
-          break;
-        case ECompareValueType.FLOAT_ASC:
-        case ECompareValueType.DOUBLE_ASC:
-          lookup[index] = v == null || isNaN(<number>v) ? missingFloatAsc : v;
-          break;
+  push(row: IDataRow) {
+    let i = 0;
+    for (const c of this.criteria) {
+      const r = c.col.toCompareValue(row, c.valueCache ? c.valueCache(row.i) : undefined);
+      if (!Array.isArray(r)) {
+        this.data[i++].setter(row.i, r);
+        continue;
       }
+      for (const ri of r) {
+        this.data[i++].setter(row.i, ri);
+      }
+    }
+  }
+
+  pushValues(dataIndex: number, vs: ICompareValue[]) {
+    for (let i = 0; i < vs.length; ++i) {
+      this.data[i].setter(dataIndex, vs[i]);
     }
   }
 
   free() {
     // free up to save memory
-    this.lookups.splice(0, this.lookups.length);
-    this.comparators.splice(0, this.comparators.length);
+    this.data.splice(0, this.data.length);
   }
 }

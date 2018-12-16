@@ -7,7 +7,7 @@ import {IDataProviderOptions} from './interfaces';
 import {CompareLookup} from './sort';
 import {IRenderTaskExectutor} from './tasks';
 import {IEventContext} from '../internal/AEventDispatcher';
-import {createIndexArray, sortComplex, concat} from '../internal';
+import {createIndexArray, sortComplex} from '../internal';
 import {DirectRenderTasks} from './DirectRenderTasks';
 import {ScheduleRenderTasks} from './ScheduledTasks';
 import {joinGroups} from '../model/internal';
@@ -271,9 +271,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const groupOrder: ISortHelper[] = [];
     let maxDataIndex = -1;
 
-    const sortCriteria = ranking.getSortCriteria();
     const groupCriteria = ranking.getGroupCriteria();
-    const lookups = isSortedBy && needsSorting ? new CompareLookup(this._data.length, sortCriteria, (d) => d.toCompareValueType()) : undefined;
+    const lookups = isSortedBy && needsSorting ? new CompareLookup(this._data.length, true, ranking, this.tasks.valueCache.bind(this.tasks)) : undefined;
 
     const pushGroup = (group: IGroup, r: IDataRow) => {
       const groupKey = group.name.toLowerCase();
@@ -286,12 +285,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
       groupOrder.push(s);
     };
 
-    const sortCaches = sortCriteria.map((c) => this.tasks.valueCache(c.col));
     const groupCaches = groupCriteria.map((c) => this.tasks.valueCache(c));
     const filterCaches = filter.map((c) => typeof c === 'function' ? undefined : this.tasks.valueCache(c));
 
-    const toCompareValue = (r: IDataRow) => concat(sortCriteria.map((d, i) => d.col.toCompareValue(r, sortCaches[i] ? sortCaches[i]!(r.i) : undefined)));
-    const toGroup = (r: IDataRow) => joinGroups(groupCriteria.map((c, i) => c.group(r, groupCaches[i] ? groupCaches[i]!(r.i) : undefined)));
+    const toGroup = groupCriteria.length === 1 ?
+      (r: IDataRow) => groupCriteria[0].group(r, groupCaches[0] ? groupCaches[0]!(r.i) : undefined) :
+      (r: IDataRow) => joinGroups(groupCriteria.map((c, i) => c.group(r, groupCaches[i] ? groupCaches[i]!(r.i) : undefined)));
 
     if (needsFiltering) {
       // filter, group, sort
@@ -307,7 +306,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
           maxDataIndex = r.i;
         }
         if (lookups) {
-          lookups.push(r.i, toCompareValue(r));
+          lookups.push(r);
         }
         pushGroup(toGroup(r), r);
       }
@@ -339,7 +338,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
             maxDataIndex = i;
           }
           const r = this._dataRows[i];
-          lookups.push(r.i, toCompareValue(r));
+          lookups.push(r);
         }
         continue;
       }
@@ -353,7 +352,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         }
         const r = this._dataRows[i];
         if (lookups) {
-          lookups.push(r.i, toCompareValue(r));
+          lookups.push(r);
         }
         pushGroup(needsGrouping ? toGroup(r) : plain, r);
       }
@@ -379,7 +378,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     return Promise.all([sortTask, groupSortTask]).then(([order, groupC]) => {
       if (groupLookup && Array.isArray(groupC)) {
-        groupLookup.push(i, groupC);
+        groupLookup.pushValues(i, groupC);
       }
       return Object.assign({order}, group);
     });
@@ -462,7 +461,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       });
     }
 
-    const groupLookup = isGroupedSortedBy && needsGroupSorting ? new CompareLookup(groupOrder.length, ranking.getGroupSortCriteria(), (d) => d.toCompareGroupValueType()) : undefined;
+    const groupLookup = isGroupedSortedBy && needsGroupSorting ? new CompareLookup(groupOrder.length, false, ranking) : undefined;
 
     return Promise.all(groupOrder.map((g, i) => {
       // not required if: group sort criteria changed -> lookups will be none
