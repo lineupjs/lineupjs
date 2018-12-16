@@ -72,46 +72,33 @@ function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArr
   }
 }
 
-function createSetter(type: ECompareValueType, lookup: ILookUpArray, missingCount: number) {
-  return (index: number, v: ICompareValue) => {
-    switch (type) {
-      case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=-Ininity 1 2 255=+Infinity
-        lookup[index] = v == null || isNaN(<number>v) ? missingBinary : (<number>v) + 1;
-        break;
-      case ECompareValueType.COUNT: // uint32
-        lookup[index] = v == null || isNaN(<number>v) ? missingCount : (<number>v) + 1;
-        break;
-      case ECompareValueType.UINT8: // shift by one to have 0 for -Inf
-        lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v) + 1;
-        break;
-      case ECompareValueType.UINT16: // shift by one to have 0 for -Inf
-        lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v) + 1;
-        break;
-      case ECompareValueType.UINT32: // shift by one to have 0 for -Inf
-        lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v) + 1;
-        break;
-      case ECompareValueType.INT8:
-        lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v);
-        break;
-      case ECompareValueType.INT16:
-        lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v);
-        break;
-      case ECompareValueType.INT32:
-        lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v);
-        break;
-      case ECompareValueType.STRING:
-        lookup[index] = v == null || v === '' ? missingString : v;
-        break;
-      case ECompareValueType.FLOAT:
-      case ECompareValueType.DOUBLE:
-        lookup[index] = v == null || isNaN(<number>v) ? missingFloat : v;
-        break;
-      case ECompareValueType.FLOAT_ASC:
-      case ECompareValueType.DOUBLE_ASC:
-        lookup[index] = v == null || isNaN(<number>v) ? missingFloatAsc : v;
-        break;
-    }
-  };
+function createSetter(type: ECompareValueType, lookup: ILookUpArray, missingCount: number): ((index: number, v: ICompareValue) => void) {
+  switch (type) {
+    case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=-Ininity 1 2 255=+Infinity
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingBinary : (<number>v) + 1;
+    case ECompareValueType.COUNT: // uint32
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingCount : (<number>v) + 1;
+    case ECompareValueType.UINT8: // shift by one to have 0 for -Inf
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v) + 1;
+    case ECompareValueType.UINT16: // shift by one to have 0 for -Inf
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v) + 1;
+    case ECompareValueType.UINT32: // shift by one to have 0 for -Inf
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v) + 1;
+    case ECompareValueType.INT8:
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v);
+    case ECompareValueType.INT16:
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v);
+    case ECompareValueType.INT32:
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v);
+    case ECompareValueType.STRING:
+      return (index, v) => lookup[index] = v == null || v === '' ? missingString : v;
+    case ECompareValueType.FLOAT:
+    case ECompareValueType.DOUBLE:
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingFloat : v;
+    case ECompareValueType.FLOAT_ASC:
+    case ECompareValueType.DOUBLE_ASC:
+      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingFloatAsc : v;
+  }
 }
 
 export class CompareLookup {

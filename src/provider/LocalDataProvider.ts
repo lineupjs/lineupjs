@@ -337,8 +337,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
           if (maxDataIndex < i) {
             maxDataIndex = i;
           }
-          const r = this._dataRows[i];
-          lookups.push(r);
+          lookups.push(this._dataRows[i]);
         }
         continue;
       }
