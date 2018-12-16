@@ -1,4 +1,4 @@
-import {ICategory, UIntTypedArray, IndicesArray} from '../model';
+import {ICategory, UIntTypedArray, IndicesArray, categoryOf} from '../model';
 import {IForEachAble, isIndicesAble, ISequence} from './interable';
 import {IPoorManWorkerScope, toFunctionBody, createWorkerCodeBlob} from './worker';
 
@@ -583,11 +583,11 @@ export function isPromiseLike<T>(value: any): value is PromiseLike<T> {
 /**
  * @internal
  */
-export function createIndexArray(length: number) {
-  if (length <= 255) {
+export function createIndexArray(length: number, dataSize = length) {
+  if (dataSize <= 255) {
     return new Uint8Array(length);
   }
-  if (length <= 65535) {
+  if (dataSize <= 65535) {
     return new Uint16Array(length);
   }
   return new Uint32Array(length);
@@ -685,7 +685,7 @@ export interface ISetRefMessageRequest {
   uid: number;
 
   ref: string;
-  data: UIntTypedArray | Float32Array | null;
+  data: UIntTypedArray | Float32Array | Int32Array | null;
 }
 
 export interface IDateStatsMessageRequest {
@@ -766,18 +766,46 @@ export interface ICategoricalStatsMessageResponse {
   stats: ICategoricalStatistics;
 }
 
+const MISSING_DATE = 2147483647;
+
+export function dateValueCacheBuilder(length: number) {
+  const vs = new Int32Array(length);
+  let i = 0;
+  return {
+    push: (d: Date | null) => vs[i++] = d == null ? MISSING_DATE : d.getTime(),
+    cache: vs
+  };
+}
+
+export function categoricalValueCacheBuilder(length:  number, categories: {name: string}[]) {
+  const vs = createIndexArray(length, categories.length + 1);
+  const name2index = new Map<string, number>();
+  for (let i = 0; i < categories.length; ++i) {
+    name2index.set(categories[i].name, i + 1); // shift by one for missing = 0
+  }
+  let i = 0;
+  return {
+    push: (d: {name: string} | null) => vs[i++] = d == null ? 0 : name2index.get(d.name) || 0,
+    cache: vs
+  };
+}
+
 
 function sortWorkerMain(self: IPoorManWorkerScope) {
-  const refs = new Map<string, UIntTypedArray | Float32Array | (Date | null)[]>();
+  const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array>();
 
   const sort = (r: ISortMessageRequest) => {
     if (r.sortOrders) {
       sortComplex(r.indices, r.sortOrders);
     }
+    const order = r.indices;
+    refs.set(r.ref, order.slice());
+
     self.postMessage(<ISortMessageResponse>{
       type: r.type,
       uid: r.uid,
-      order: r.indices
+      ref: r.ref,
+      order
     }, [r.indices.buffer]);
   };
 
@@ -797,12 +825,14 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     if (indices) {
       // tslint:disable-next-line:prefer-for-of
       for (let ii = 0; ii < indices.length; ++ii) {
-        b.push(new Date(data[indices[ii]]));
+        const v = data[indices[ii]];
+        b.push(v === MISSING_DATE ? null : new Date(v));
       }
     } else {
       // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < data.length; ++i) {
-        b.push(new Date(data[i]));
+        const v = data[i];
+        b.push(v === MISSING_DATE ? null : new Date(v));
       }
     }
     self.postMessage(<IDateStatsMessageResponse>{

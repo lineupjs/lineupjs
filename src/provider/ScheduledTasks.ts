@@ -1,6 +1,6 @@
 import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, isCategoricalLikeColumn, isNumberColumn, isDateColumn, ICategoricalLikeColumn, UIntTypedArray} from '../model';
 import {ARenderTasks, IRenderTaskExectutor, taskNow, MultiIndices, taskLater, TaskNow, TaskLater} from './tasks';
-import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageResponse, WORKER_BLOB} from '../internal';
+import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageResponse, WORKER_BLOB, ISortMessageRequest} from '../internal';
 import {CompareLookup} from './sort';
 import {ISequence} from '../internal/interable';
 import {IRenderTask} from '../renderer/interfaces';
@@ -384,6 +384,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
 
     return this.workers.push('sort', {
+      ref: 'aaa', // TODO
       indices: indexArray,
       sortOrders: lookups.sortOrders
     }, toTransfer, (r: ISortMessageResponse) => r.order);
@@ -403,7 +404,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     this.valueCacheData.forEach((data, ref) => push('setRef', {ref, data}));
   }
 
-  protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | null) {
+  protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | Int32Array | null) {
     super.setValueCacheData(key, value);
     this.workers.broadCast('setRef', {
       ref: key,

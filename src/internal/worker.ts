@@ -95,7 +95,7 @@ export class WorkerTaskScheduler {
     }
   }
 
-  push<R, T>(type: string, args: any, transferAbles: ArrayBuffer[], toResult: (r: R) => T) {
+  push<M, R, T>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[], toResult: (r: R) => T) {
     return new Promise<T>((resolve) => {
       const uid = this.workerTaskCounter++;
       const {worker, tasks} = this.checkOutWorker();

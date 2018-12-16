@@ -1,8 +1,8 @@
 import {abortAble, abortAbleAll, IAbortAblePromise} from 'lineupengine';
 import {IForEachAble, lazySeq, ISequence} from '../internal/interable';
-import {boxplotBuilder, categoricalStatsBuilder, dateStatsBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, getNumberOfBins} from '../internal/math';
+import {boxplotBuilder, categoricalStatsBuilder, dateStatsBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, getNumberOfBins, dateValueCacheBuilder, categoricalValueCacheBuilder} from '../internal/math';
 import {ANOTHER_ROUND} from '../internal/scheduler';
-import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, IOrderedGroup, UIntTypedArray} from '../model';
+import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, IOrderedGroup, UIntTypedArray, ICategoricalColumn} from '../model';
 import Column, {ICompareValue} from '../model/Column';
 import {IRenderTask, IRenderTasks} from '../renderer/interfaces';
 import {CompareLookup} from './sort';
@@ -96,11 +96,13 @@ export class MultiIndices {
   }
 }
 
+const CHUNK_SIZE = 100;
+
 /**
  * @internal
  */
 export class ARenderTasks {
-  protected readonly valueCacheData = new Map<string, Float32Array | UIntTypedArray>();
+  protected readonly valueCacheData = new Map<string, Float32Array | UIntTypedArray | Int32Array>();
 
   protected readonly byIndex = (i: number) => this.data[i];
 
@@ -117,47 +119,18 @@ export class ARenderTasks {
     return lazySeq(indices).map((i) => acc(this.data[i]));
   }
 
-  private buildNumberCache(col: INumberColumn): Iterator<IStatistics | null> {
-    let i = 0;
-    const chunkSize = 100;
-    const valueCache = new Float32Array(this.data.length);
-    const builder = normalizedStatsBuilder(getNumberOfBins(this.data.length));
-    const data = this.data;
-
-    const next = () => {
-      let chunkCounter = chunkSize;
-      for (; i < data.length && chunkCounter > 0; ++i, --chunkCounter) {
-        builder.push(valueCache[i] = col.getNumber(data[i]));
-        i++;
-      }
-      if (i < data.length) {
-        // need another round
-        return ANOTHER_ROUND;
-      }
-      // done
-      this.setValueCacheData(col.id, valueCache);
-      return {
-        done: true,
-        value: builder.build()
-      };
-    };
-    return {next};
-  }
-
   private builder<T, BR, B extends {push: (v: T) => void, build: () => BR}, R = BR>(builder: B, order: IndicesArray | null | MultiIndices, acc: (row: IDataRow) => T, build?: (r: BR) => R): Iterator<R | null> {
     let i = 0;
     let o = 0;
-    const chunkSize = 100;
     const orders = order instanceof MultiIndices ? order.indices : [order];
 
-    const nextData = (currentChunkSize: number = chunkSize) => {
+    const nextData = (currentChunkSize: number = CHUNK_SIZE) => {
       let chunkCounter = currentChunkSize;
       const data = this.data;
       for (; i < data.length && chunkCounter > 0; ++i, --chunkCounter) {
         builder.push(acc(data[i++]));
       }
-      if (i < data.length) {
-        // need another round
+      if (i < data.length) { // need another round
         return ANOTHER_ROUND;
       }
       // done
@@ -167,15 +140,14 @@ export class ARenderTasks {
       };
     };
 
-    const nextOrder = (currentChunkSize: number = chunkSize) => {
+    const nextOrder = (currentChunkSize: number = CHUNK_SIZE) => {
       let chunkCounter = currentChunkSize;
       while (o < orders.length) {
         const actOrder = orders[o]!;
         for (; i < actOrder.length && chunkCounter > 0; ++i, --chunkCounter) {
           builder.push(acc(this.data[actOrder[i]]));
         }
-        if (i < actOrder.length) {
-          // need another round
+        if (i < actOrder.length) { // need another round
           return ANOTHER_ROUND;
         }
         // done with this order
@@ -200,6 +172,7 @@ export class ARenderTasks {
   protected boxplotBuilder<R = IAdvancedBoxPlotData>(order: IndicesArray | null | MultiIndices, col: INumberColumn, raw?: boolean, build?: (stat: IAdvancedBoxPlotData) => R) {
     const b = boxplotBuilder();
     if (col instanceof NumberColumn || col instanceof OrdinalColumn || col instanceof ImpositionCompositeColumn) {
+      // TODO value cache
       return this.builder(b, order, <(row: IDataRow) => number>(raw ? col.getRawNumber.bind(col) : col.getNumber.bind(col)), build);
     }
     return this.builderForEach(b, order, <(row: IDataRow) => IForEachAble<number>>(raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col)), build);
@@ -208,6 +181,21 @@ export class ARenderTasks {
   protected normalizedStatsBuilder<R = IStatistics>(order: IndicesArray | null | MultiIndices, col: INumberColumn, numberOfBins: number, raw?: boolean, build?: (stat: IStatistics) => R) {
     const b = normalizedStatsBuilder(numberOfBins);
     if (col instanceof NumberColumn || col instanceof OrdinalColumn || col instanceof ImpositionCompositeColumn) {
+      if (order == null && !raw) {
+        // build and valueCache
+        const vs = new Float32Array(this.data.length);
+        let i = 0;
+        return this.builder({
+          push: (v) => {
+            b.push(v);
+            vs[i++] = v;
+          },
+          build: () => {
+            this.setValueCacheData(col.id, vs);
+            return b.build();
+          }
+        }, null, (row: IDataRow) => col.getNumber(row), build);
+      }
       return this.builder(b, order, <(row: IDataRow) => number>(raw ? col.getRawNumber.bind(col) : col.getNumber.bind(col)), build);
     }
     return this.builderForEach(b, order, <(row: IDataRow) => IForEachAble<number>>(raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col)), build);
@@ -216,6 +204,20 @@ export class ARenderTasks {
   protected dateStatsBuilder<R = IDateStatistics>(order: IndicesArray | null | MultiIndices, col: IDateColumn, template?: IDateStatistics, build?: (stat: IDateStatistics) => R) {
     const b = dateStatsBuilder(template);
     if (col instanceof DateColumn) {
+      if (order == null) {
+        // build and valueCache
+        const vs = dateValueCacheBuilder(this.data.length);
+        return this.builder({
+          push: (v) => {
+            b.push(v);
+            vs.push(v);
+          },
+          build: () => {
+            this.setValueCacheData(col.id, vs.cache);
+            return b.build();
+          }
+        }, null, (row: IDataRow) => col.getDate(row), build);
+      }
       return this.builder(b, order, (row: IDataRow) => col.getDate(row), build);
     }
     return this.builderForEach(b, order, (row: IDataRow) => col.iterDate(row), build);
@@ -224,13 +226,27 @@ export class ARenderTasks {
   protected categoricalStatsBuilder<R = ICategoricalStatistics>(order: IndicesArray | null | MultiIndices, col: ICategoricalLikeColumn, build?: (stat: ICategoricalStatistics) => R) {
     const b = categoricalStatsBuilder(col.categories);
     if (col instanceof CategoricalColumn || col instanceof OrdinalColumn) {
+      if (order == null) {
+        // build and valueCache
+        const vs = categoricalValueCacheBuilder(this.data.length, col.categories);
+        return this.builder({
+          push: (v) => {
+            b.push(v);
+            vs.push(v);
+          },
+          build: () => {
+            this.setValueCacheData(col.id, vs.cache);
+            return b.build();
+          }
+        }, null, (row: IDataRow) => col.getCategory(row), build);
+      }
       return this.builder(b, order, (row: IDataRow) => col.getCategory(row), build);
     }
     return this.builderForEach(b, order, (row: IDataRow) => col.iterCategory(row), build);
   }
 
 
-  protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | null) {
+  protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | Int32Array | null) {
     if (value == null) {
       this.valueCacheData.delete(key);
     } else {
