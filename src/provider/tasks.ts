@@ -1,8 +1,8 @@
 import {abortAble, abortAbleAll, IAbortAblePromise} from 'lineupengine';
-import {IForEachAble, lazySeq, ISequence} from '../internal/interable';
-import {boxplotBuilder, categoricalStatsBuilder, dateStatsBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, getNumberOfBins, dateValueCacheBuilder, categoricalValueCacheBuilder} from '../internal/math';
+import {IForEachAble, lazySeq} from '../internal/interable';
+import {boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder} from '../internal/math';
 import {ANOTHER_ROUND} from '../internal/scheduler';
-import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, IOrderedGroup, UIntTypedArray, ICategoricalColumn} from '../model';
+import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, UIntTypedArray} from '../model';
 import Column, {ICompareValue} from '../model/Column';
 import {IRenderTask, IRenderTasks} from '../renderer/interfaces';
 import {CompareLookup} from './sort';

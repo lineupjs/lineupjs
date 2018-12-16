@@ -1,6 +1,6 @@
-import {ICategory, UIntTypedArray, IndicesArray, categoryOf} from '../model';
-import {IForEachAble, isIndicesAble, ISequence} from './interable';
-import {IPoorManWorkerScope, toFunctionBody, createWorkerCodeBlob} from './worker';
+import {ICategory, IndicesArray, UIntTypedArray} from '../model';
+import {IForEachAble, ISequence, isIndicesAble} from './interable';
+import {createWorkerCodeBlob, IPoorManWorkerScope, toFunctionBody} from './worker';
 
 export interface INumberBin {
   x0: number;

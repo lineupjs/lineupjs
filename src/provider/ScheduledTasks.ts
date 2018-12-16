@@ -1,12 +1,12 @@
-import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, isCategoricalLikeColumn, isNumberColumn, isDateColumn, ICategoricalLikeColumn, UIntTypedArray} from '../model';
-import {ARenderTasks, IRenderTaskExectutor, taskNow, MultiIndices, taskLater, TaskNow, TaskLater} from './tasks';
-import {toIndexArray, getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ISortMessageResponse, WORKER_BLOB, ISortMessageRequest} from '../internal';
-import {CompareLookup} from './sort';
+import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISortMessageResponse, IStatistics, toIndexArray, WORKER_BLOB} from '../internal';
 import {ISequence} from '../internal/interable';
-import {IRenderTask} from '../renderer/interfaces';
-import TaskScheduler, {oneShotIterator, ABORTED} from '../internal/scheduler';
-import {sortDirect} from './DirectRenderTasks';
+import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
 import {WorkerTaskScheduler} from '../internal/worker';
+import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray} from '../model';
+import {IRenderTask} from '../renderer/interfaces';
+import {sortDirect} from './DirectRenderTasks';
+import {CompareLookup} from './sort';
+import {ARenderTasks, IRenderTaskExectutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow} from './tasks';
 
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 
