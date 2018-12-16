@@ -124,11 +124,3 @@ export enum ECompareValueType {
   DOUBLE_ASC,
   STRING
 }
-
-export interface IValueCacheLookup {
-  (col: Column): any | undefined;
-}
-
-export interface IGroupValueCacheLookup {
-  (col: Column): ISequence<any> | undefined;
-}

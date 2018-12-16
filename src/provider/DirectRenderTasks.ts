@@ -1,4 +1,4 @@
-import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, ICategoricalLikeColumn} from '../model';
+import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, ICategoricalLikeColumn, ICompareValue} from '../model';
 import {ARenderTasks, IRenderTaskExectutor, taskNow} from './tasks';
 import {toIndexArray, sortComplex, getNumberOfBins} from '../internal';
 import {CompareLookup} from './sort';
@@ -7,12 +7,12 @@ import {ISequence} from '../internal/interable';
 /**
  * @internal
  */
-export function sortDirect(indices: IndicesArray, _singleCall: boolean, lookups?: CompareLookup) {
+export function sortDirect(indices: IndicesArray, lookups?: CompareLookup) {
   const order = toIndexArray(indices);
   if (lookups) {
     sortComplex(order, lookups.sortOrders);
   }
-  return Promise.resolve(order);
+  return order;
 }
 
 export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
@@ -77,10 +77,27 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     }
   }
 
-  readonly sort = sortDirect;
+  sort(_ranking: Ranking, _group: IGroup, indices: IndicesArray, _singleCall: boolean, lookups?: CompareLookup) {
+    return Promise.resolve(sortDirect(indices, lookups));
+  }
 
   groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
-    return taskNow(ranking.toGroupCompareValue(this.byOrder(rows), group));
+    const rg = ranking.getGroupSortCriteria();
+    if (rg.length === 0) {
+      return taskNow([group.name.toLowerCase()]);
+    }
+    const o = this.byOrder(rows);
+    const vs: ICompareValue[] = [];
+    for (const s of rg) {
+      const r = s.col.toCompareGroupValue(o, group);
+      if (Array.isArray(r)) {
+        vs.push(...r);
+      } else {
+        vs.push(r);
+      }
+    }
+    vs.push(group.name.toLowerCase());
+    return taskNow(vs);
   }
 
   groupRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {

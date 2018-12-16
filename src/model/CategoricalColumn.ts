@@ -1,16 +1,12 @@
-import {Category, toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ICompareValue, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {
-  toCompareCategoryValue,
-  ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
-  isEqualCategoricalFilter, isCategoryIncluded, toCategories, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES,
-} from './ICategoricalColumn';
-import {IDataRow, IGroup, IValueCacheLookup, IGroupValueCacheLookup} from './interfaces';
-import {missingGroup} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
-import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
 import {ISequence} from '../internal/interable';
+import {Category, toolbar} from './annotations';
+import {DEFAULT_COLOR_FUNCTION, ICategoricalColorMappingFunction, restoreColorMapping} from './CategoricalColorMappingFunction';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, ICompareValue, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {COMPARE_CATEGORY_VALUE_TYPES, COMPARE_GROUP_CATEGORY_VALUE_TYPES, ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory, isCategoryIncluded, isEqualCategoricalFilter, toCategories, toCompareCategoryValue, toGroupCompareCategoryValue} from './ICategoricalColumn';
+import {IDataRow, IGroup} from './interfaces';
+import {missingGroup} from './missing';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 
 
 /**
@@ -182,8 +178,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow, valueCacheLookup?: IValueCacheLookup): boolean {
-    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
+  filter(row: IDataRow, valueCache?: any): boolean {
     return isCategoryIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
@@ -198,8 +193,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  toCompareValue(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
-    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
+  toCompareValue(row: IDataRow, valueCache?: any) {
     return toCompareCategoryValue(valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
@@ -207,8 +201,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return COMPARE_CATEGORY_VALUE_TYPES;
   }
 
-  group(row: IDataRow, valueCacheLookup?: IValueCacheLookup): IGroup {
-    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
+  group(row: IDataRow, valueCache?: any): IGroup {
     const cat = valueCache !== undefined ? valueCache : this.getCategory(row);
     if (!cat) {
       return missingGroup;
@@ -216,8 +209,8 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return {name: cat.label, color: cat.color};
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCacheLookup?: IGroupValueCacheLookup): ICompareValue[] {
-    return toGroupCompareCategoryValue(rows, this, valueCacheLookup ? valueCacheLookup(this) : undefined);
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): ICompareValue[] {
+    return toGroupCompareCategoryValue(rows, this, valueCache);
   }
 
   toCompareGroupValueType() {

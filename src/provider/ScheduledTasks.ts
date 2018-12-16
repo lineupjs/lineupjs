@@ -2,7 +2,7 @@ import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStat
 import {ISequence} from '../internal/interable';
 import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
 import {WorkerTaskScheduler} from '../internal/worker';
-import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray, isCategoricalColumn} from '../model';
+import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray, DateColumn, CategoricalColumn, OrdinalColumn, ICompareValue} from '../model';
 import {IRenderTask} from '../renderer/interfaces';
 import {sortDirect} from './DirectRenderTasks';
 import {CompareLookup} from './sort';
@@ -211,8 +211,25 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
 
 
   groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
-    // TODO value cache
-    return taskLater(this.tasks.push(`r${ranking.id}:${group.name}`, () => ranking.toGroupCompareValue(this.byOrder(rows), group)));
+    return taskLater(this.tasks.push(`r${ranking.id}:${group.name}`, () => {
+      const rg = ranking.getGroupSortCriteria();
+      if (rg.length === 0) {
+        return [group.name.toLowerCase()];
+      }
+      const o = this.byOrder(rows);
+      const vs: ICompareValue[] = [];
+      for (const s of rg) {
+        // TODO value cache
+        const r = s.col.toCompareGroupValue(o, group);
+        if (Array.isArray(r)) {
+          vs.push(...r);
+        } else {
+          vs.push(r);
+        }
+      }
+      vs.push(group.name.toLowerCase());
+      return vs;
+    }));
   }
 
   groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T) {
@@ -369,10 +386,11 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     return this.cached(`${col.id}:c:data`, this.data.length === 0, this.dateStatsBuilder<IDateStatistics>(null, col));
   }
 
-  sort(indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup) {
+  sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup) {
     if (!lookups) {
       // no thread needed
-      return sortDirect(indices, singleCall, lookups);
+      const order = sortDirect(indices, lookups);
+      return Promise.resolve(order);
     }
 
     const indexArray = toIndexArray(indices);
@@ -384,29 +402,24 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
 
     return this.workers.push('sort', {
-      ref: 'aaa', // TODO
+      ref: `${ranking.id}@${group.name}`,
       indices: indexArray,
       sortOrders: lookups.sortOrders
     }, toTransfer, (r: ISortMessageResponse) => r.order);
   }
 
-  valueCache(dataIndex: number) {
-    if (this.valueCacheData.size === 0) {
+  valueCache(col: Column) {
+    const v = this.valueCacheData.get(col.id);
+    if (!v) {
       return undefined;
     }
-    return (col: Column) => {
-      const v = this.valueCacheData.get(col.id);
-      if (!v) {
-        return undefined;
-      }
-      if (isDateColumn(col)) {
-        return dateValueCache2Value(v[dataIndex]);
-      }
-      if (isCategoricalColumn(col)) {
-        return categoricalValueCache2Value(v[dataIndex], col.categories);
-      }
-      return v[dataIndex];
-    };
+    if (col instanceof DateColumn) {
+      return (dataIndex: number) => dateValueCache2Value(v[dataIndex]);
+    }
+    if (col instanceof CategoricalColumn || col instanceof OrdinalColumn) {
+      return (dataIndex: number) => categoricalValueCache2Value(v[dataIndex], col.categories);
+    }
+    return (dataIndex: number) => v[dataIndex];
   }
 
   private initWorker(push: (type: string, msg: any) => void) {

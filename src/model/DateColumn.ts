@@ -1,15 +1,14 @@
 import {timeFormat, timeParse} from 'd3-time-format';
-import {Category, toolbar, dialogAddons} from './annotations';
-import {IDataRow, IGroup, IValueCacheLookup, IGroupValueCacheLookup} from './interfaces';
-import {isMissingValue, missingGroup, isUnknown} from './missing';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
-import Column from './Column';
-import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter, isEqualDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup, isDefaultDateGrouper, defaultDateGrouper} from './IDateColumn';
-import {defaultGroup} from './Group';
-import {equal} from '../internal/utils';
 import {ISequence, isSeqEmpty} from '../internal/interable';
+import {equal} from '../internal/utils';
+import {Category, dialogAddons, toolbar} from './annotations';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {defaultGroup} from './Group';
+import {defaultDateGrouper, IDateColumn, IDateDesc, IDateFilter, IDateGrouper, isDateIncluded, isDefaultDateGrouper, isDummyDateFilter, isEqualDateFilter, noDateFilter, restoreDateFilter, toDateGroup} from './IDateColumn';
+import {IDataRow, IGroup} from './interfaces';
+import {isMissingValue, isUnknown, missingGroup} from './missing';
+import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
@@ -146,13 +145,11 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
    * @param row
    * @returns {boolean}
    */
-  filter(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
-    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
+  filter(row: IDataRow, valueCache?: any) {
     return isDateIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getDate(row));
   }
 
-  toCompareValue(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
-    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
+  toCompareValue(row: IDataRow, valueCache?: any) {
     const v = valueCache !== undefined ? valueCache : this.getValue(row);
     if (!(v instanceof Date)) {
       return NaN;
@@ -177,8 +174,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     this.fire([DateColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  group(row: IDataRow, valueCacheLookup?: IValueCacheLookup): IGroup {
-    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
+  group(row: IDataRow, valueCache?: any): IGroup {
     const v = valueCache !== undefined ? valueCache : this.getDate(row);
     if (!v || !(v instanceof Date)) {
       return missingGroup;
@@ -193,8 +189,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     };
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCacheLookup?: IGroupValueCacheLookup): number {
-    const v = choose(rows, this.currentGrouper, this, valueCacheLookup ? valueCacheLookup(this) : undefined).value;
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
+    const v = choose(rows, this.currentGrouper, this, valueCache).value;
     return v == null ? NaN : v;
   }
 

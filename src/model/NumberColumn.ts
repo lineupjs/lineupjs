@@ -1,22 +1,16 @@
 import {format} from 'd3-format';
 import {equalArrays} from '../internal';
-import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import {IDataRow, IGroup, IValueCacheLookup, IGroupValueCacheLookup} from './interfaces';
-import {toCompareGroupValue} from './internal';
-import {
-  default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
-  isNumberIncluded, noNumberFilter, isDummyNumberFilter, restoreNumberFilter
-} from './INumberColumn';
-import {
-  createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,
-  ScaleMappingFunction
-} from './MappingFunction';
-import {isMissingValue, isUnknown, missingGroup} from './missing';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
-import {IColorMappingFunction, createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import {ISequence} from '../internal/interable';
+import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
+import {createColorMappingFunction, IColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {IDataRow, IGroup} from './interfaces';
+import {toCompareGroupValue} from './internal';
+import {default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isDummyNumberFilter, isEqualNumberFilter, isNumberIncluded, noNumberFilter, restoreNumberFilter} from './INumberColumn';
+import {createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {isMissingValue, isUnknown, missingGroup} from './missing';
+import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 
@@ -228,8 +222,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.getRawValue(row);
   }
 
-  toCompareValue(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
-    const valueCache: any = valueCacheLookup ? valueCacheLookup(this) : undefined;
+  toCompareValue(row: IDataRow, valueCache?: any) {
     return valueCache != null ? valueCache : this.getNumber(row);
   }
 
@@ -237,8 +230,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return ECompareValueType.FLOAT;
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCacheLookup?: IGroupValueCacheLookup): number {
-    return toCompareGroupValue(rows, this, <any>this.groupSortMethod, valueCacheLookup ? valueCacheLookup(this) : undefined);
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
+    return toCompareGroupValue(rows, this, <any>this.groupSortMethod, valueCache);
   }
 
   toCompareGroupValueType() {

@@ -1,8 +1,8 @@
 import {abortAble, abortAbleAll, IAbortAblePromise} from 'lineupengine';
 import {IForEachAble, lazySeq} from '../internal/interable';
-import {boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder} from '../internal/math';
+import {boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value} from '../internal/math';
 import {ANOTHER_ROUND} from '../internal/scheduler';
-import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, UIntTypedArray} from '../model';
+import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, UIntTypedArray, ICategory} from '../model';
 import Column, {ICompareValue} from '../model/Column';
 import {IRenderTask, IRenderTasks} from '../renderer/interfaces';
 import {CompareLookup} from './sort';
@@ -81,10 +81,10 @@ export interface IRenderTaskExectutor extends IRenderTasks {
   copyData2Summary(ranking: Ranking): void;
   copyCache(col: Column, from: Column): void;
 
-  sort(indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
+  sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
   terminate(): void;
 
-  valueCache(dataIndex: number): ((col: Column) => any | undefined) | undefined;
+  valueCache(col: Column): undefined | ((dataIndex: number) => any);
 }
 
 /**
@@ -119,7 +119,7 @@ export class ARenderTasks {
     return lazySeq(indices).map((i) => acc(this.data[i]));
   }
 
-  private builder<T, BR, B extends {push: (v: T) => void, build: () => BR}, R = BR>(builder: B, order: IndicesArray | null | MultiIndices, acc: (row: IDataRow) => T, build?: (r: BR) => R): Iterator<R | null> {
+  private builder<T, BR, B extends {push: (v: T) => void, build: () => BR}, R = BR>(builder: B, order: IndicesArray | null | MultiIndices, acc: (dataIndex: number) => T, build?: (r: BR) => R): Iterator<R | null> {
     let i = 0;
     let o = 0;
     const orders = order instanceof MultiIndices ? order.indices : [order];
@@ -128,7 +128,7 @@ export class ARenderTasks {
       let chunkCounter = currentChunkSize;
       const data = this.data;
       for (; i < data.length && chunkCounter > 0; ++i, --chunkCounter) {
-        builder.push(acc(data[i]));
+        builder.push(acc(i));
       }
       if (i < data.length) { // need another round
         return ANOTHER_ROUND;
@@ -145,7 +145,7 @@ export class ARenderTasks {
       while (o < orders.length) {
         const actOrder = orders[o]!;
         for (; i < actOrder.length && chunkCounter > 0; ++i, --chunkCounter) {
-          builder.push(acc(this.data[actOrder[i]]));
+          builder.push(acc(actOrder[i]));
         }
         if (i < actOrder.length) { // need another round
           return ANOTHER_ROUND;
@@ -162,7 +162,7 @@ export class ARenderTasks {
     return {next: order == null ? nextData : nextOrder};
   }
 
-  private builderForEach<T, BR, B extends {pushAll: (v: IForEachAble<T>) => void, build: () => BR}, R = BR>(builder: B, order: IndicesArray | null | MultiIndices, acc: (row: IDataRow) => IForEachAble<T>, build?: (r: BR) => R): Iterator<R | null> {
+  private builderForEach<T, BR, B extends {pushAll: (v: IForEachAble<T>) => void, build: () => BR}, R = BR>(builder: B, order: IndicesArray | null | MultiIndices, acc: (dataIndex: number) => IForEachAble<T>, build?: (r: BR) => R): Iterator<R | null> {
     return this.builder({
       push: builder.pushAll,
       build: builder.build
@@ -172,10 +172,13 @@ export class ARenderTasks {
   protected boxplotBuilder<R = IAdvancedBoxPlotData>(order: IndicesArray | null | MultiIndices, col: INumberColumn, raw?: boolean, build?: (stat: IAdvancedBoxPlotData) => R) {
     const b = boxplotBuilder();
     if (col instanceof NumberColumn || col instanceof OrdinalColumn || col instanceof ImpositionCompositeColumn) {
-      // TODO value cache
-      return this.builder(b, order, <(row: IDataRow) => number>(raw ? col.getRawNumber.bind(col) : col.getNumber.bind(col)), build);
+      // TODO compute async
+      const cache = !raw ? this.valueCacheData.get(col.id) : undefined;
+      const acc: (i: number) => number = cache ? (i) => cache[i] : (raw ? (i) => col.getRawNumber(this.data[i]) : (i) => col.getNumber(this.data[i]));
+      return this.builder(b, order, acc, build);
     }
-    return this.builderForEach(b, order, <(row: IDataRow) => IForEachAble<number>>(raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col)), build);
+    const acc: (i: number) => IForEachAble<number> = raw ? (i) => col.iterRawNumber(this.data[i]) : (i) => col.iterNumber(this.data[i]);
+    return this.builderForEach(b, order, acc, build);
   }
 
   protected normalizedStatsBuilder<R = IStatistics>(order: IndicesArray | null | MultiIndices, col: INumberColumn, numberOfBins: number, raw?: boolean, build?: (stat: IStatistics) => R) {
@@ -194,11 +197,14 @@ export class ARenderTasks {
             this.setValueCacheData(col.id, vs);
             return b.build();
           }
-        }, null, (row: IDataRow) => col.getNumber(row), build);
+        }, null, (i: number) => col.getNumber(this.data[i]), build);
       }
-      return this.builder(b, order, <(row: IDataRow) => number>(raw ? col.getRawNumber.bind(col) : col.getNumber.bind(col)), build);
+      const cache = !raw ? this.valueCacheData.get(col.id) : undefined;
+      const acc: (i: number) => number = cache ? (i) => cache[i] : (raw ? (i) => col.getRawNumber(this.data[i]) : (i) => col.getNumber(this.data[i]));
+      return this.builder(b, order, acc, build);
     }
-    return this.builderForEach(b, order, <(row: IDataRow) => IForEachAble<number>>(raw ? col.iterRawNumber.bind(col) : col.iterNumber.bind(col)), build);
+    const acc: (i: number) => IForEachAble<number> = raw ? (i) => col.iterRawNumber(this.data[i]) : (i) => col.iterNumber(this.data[i]);
+    return this.builderForEach(b, order, acc, build);
   }
 
   protected dateStatsBuilder<R = IDateStatistics>(order: IndicesArray | null | MultiIndices, col: IDateColumn, template?: IDateStatistics, build?: (stat: IDateStatistics) => R) {
@@ -216,11 +222,13 @@ export class ARenderTasks {
             this.setValueCacheData(col.id, vs.cache);
             return b.build();
           }
-        }, null, (row: IDataRow) => col.getDate(row), build);
+        }, null, (i: number) => col.getDate(this.data[i]), build);
       }
-      return this.builder(b, order, (row: IDataRow) => col.getDate(row), build);
+      const cache = this.valueCacheData.get(col.id);
+      const acc: (i: number) => Date | null = cache ? (i) => dateValueCache2Value(cache[i]) : (i) => col.getDate(this.data[i]);
+      return this.builder(b, order, acc, build);
     }
-    return this.builderForEach(b, order, (row: IDataRow) => col.iterDate(row), build);
+    return this.builderForEach(b, order, (i: number) => col.iterDate(this.data[i]), build);
   }
 
   protected categoricalStatsBuilder<R = ICategoricalStatistics>(order: IndicesArray | null | MultiIndices, col: ICategoricalLikeColumn, build?: (stat: ICategoricalStatistics) => R) {
@@ -238,11 +246,13 @@ export class ARenderTasks {
             this.setValueCacheData(col.id, vs.cache);
             return b.build();
           }
-        }, null, (row: IDataRow) => col.getCategory(row), build);
+        }, null, (i: number) => col.getCategory(this.data[i]), build);
       }
-      return this.builder(b, order, (row: IDataRow) => col.getCategory(row), build);
+      const cache = this.valueCacheData.get(col.id);
+      const acc: (i: number) => ICategory | null = cache ? (i) => categoricalValueCache2Value(cache[i], col.categories) : (i) => col.getCategory(this.data[i]);
+      return this.builder(b, order, acc, build);
     }
-    return this.builderForEach(b, order, (row: IDataRow) => col.iterCategory(row), build);
+    return this.builderForEach(b, order, (i: number) => col.iterCategory(this.data[i]), build);
   }
 
 

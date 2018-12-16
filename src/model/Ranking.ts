@@ -1,14 +1,12 @@
 import {equalArrays, fixCSS} from '../internal';
 import AEventDispatcher, {IEventListener, suffix} from '../internal/AEventDispatcher';
-import {ISequence} from '../internal/interable';
 import {createIndexArray} from '../internal/math';
 import {IRankingDump} from '../provider/interfaces';
 import {isSortingAscByDefault} from './annotations';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, IColumnParent, ICompareValue, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, IColumnParent, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {defaultGroup, IndicesArray, IOrderedGroup} from './Group';
-import {IDataRow, IGroup, IValueCacheLookup, IGroupValueCacheLookup} from './interfaces';
-import {joinGroups} from './internal';
+import {IDataRow, IValueCacheLookup} from './interfaces';
 import NumberColumn, {filterChanged} from './NumberColumn';
 
 export interface ISortCriteria {
@@ -123,19 +121,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * @private
    */
   private readonly columns: Column[] = [];
-
-  readonly grouper = (row: IDataRow, valueCacheLookup?: IValueCacheLookup): IGroup => {
-    const g = this.groupColumns;
-    switch (g.length) {
-      case 0:
-        return defaultGroup;
-      case 1:
-        return g[0].group(row, valueCacheLookup);
-      default:
-        const groups = g.map((gi) => gi.group(row, valueCacheLookup));
-        return joinGroups(groups);
-    }
-  };
 
   readonly dirtyOrder = (reason?: EDirtyReason[]) => {
     this.fire([Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], reason);
@@ -282,72 +267,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       this.setGroupSortCriteria(restoreSortCriteria(dump.groupSortCriteria));
     }
   }
-
-
-  toCompareValue(row: IDataRow, valueCacheLookup?: IValueCacheLookup) {
-    if (this.sortCriteria.length === 0) {
-      return [];
-    }
-    const vs: ICompareValue[] = [];
-    for (const s of this.sortCriteria) {
-      const r = s.col.toCompareValue(row, valueCacheLookup);
-      if (Array.isArray(r)) {
-        vs.push(...r);
-      } else {
-        vs.push(r);
-      }
-    }
-    return vs;
-  }
-
-  toCompareValueType() {
-    const vs: {asc: boolean, v: ECompareValueType}[] = [];
-    for (const s of this.sortCriteria) {
-      const types = s.col.toCompareValueType();
-      if (!Array.isArray(types)) {
-        vs.push({asc: s.asc, v: types});
-        continue;
-      }
-      for (const v of types) {
-        vs.push({asc: s.asc, v});
-      }
-    }
-    return vs;
-  }
-
-  toGroupCompareValue(rows: ISequence<IDataRow>, group: IGroup, valueCacheLookup?: IGroupValueCacheLookup) {
-    if (this.groupSortCriteria.length === 0) {
-      return [group.name.toLowerCase()];
-    }
-    const vs: ICompareValue[] = [];
-    for (const s of this.groupSortCriteria) {
-      const r = s.col.toCompareGroupValue(rows, group, valueCacheLookup);
-      if (Array.isArray(r)) {
-        vs.push(...r);
-      } else {
-        vs.push(r);
-      }
-    }
-    vs.push(group.name.toLowerCase());
-    return vs;
-  }
-
-  toGroupCompareValueType() {
-    const vs: {asc: boolean, v: ECompareValueType}[] = [];
-    for (const s of this.groupSortCriteria) {
-      const types = s.col.toCompareGroupValueType();
-      if (!Array.isArray(types)) {
-        vs.push({asc: s.asc, v: types});
-        continue;
-      }
-      for (const v of types) {
-        vs.push({asc: s.asc, v});
-      }
-    }
-    vs.push({asc: true, v: ECompareValueType.STRING});
-    return vs;
-  }
-
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     let acc = offset; // + this.getWidth() + padding;

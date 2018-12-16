@@ -680,6 +680,14 @@ export interface ISortMessageResponse {
   order: IndicesArray;
 }
 
+export interface IDeleteRefMessageRequest {
+  type: 'deleteRef';
+  uid: number;
+
+  ref: string;
+  startsWith?: boolean;
+}
+
 export interface ISetRefMessageRequest {
   type: 'setRef';
   uid: number;
@@ -825,6 +833,19 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     }
   };
 
+  const deleteRef = (r: IDeleteRefMessageRequest) => {
+    if (!r.startsWith) {
+      refs.delete(r.ref);
+      return;
+    }
+
+    for (const key of Array.from(refs.keys())) {
+      if (key.startsWith(r.ref)) {
+        refs.delete(key);
+      }
+    }
+  };
+
   const dateStats = (r: IDateStatsMessageRequest) => {
     const data = r.data ? r.data : <UIntTypedArray>refs.get(r.refData)!;
     const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
@@ -926,6 +947,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   const msgHandlers: {[key: string]: (r: any) => void} = {
     sort,
     setRef,
+    deleteRef,
     dateStats,
     categoricalStats,
     numberStats,
@@ -937,7 +959,6 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     if (typeof r.uid !== 'number' || typeof r.type !== 'string') {
       return;
     }
-    debugger;
     const h = msgHandlers[r.type];
     if (h) {
       h(r);

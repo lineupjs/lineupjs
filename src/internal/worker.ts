@@ -120,7 +120,7 @@ export class WorkerTaskScheduler {
     });
   }
 
-  broadCast(type: string, msg: any) {
+  broadCast<T>(type: string, msg: T) {
     const uid = this.workerTaskCounter++;
     // don't store in tasks queue since there is no response
     for (const w of this.workers) {
@@ -132,7 +132,7 @@ export class WorkerTaskScheduler {
   }
 
   private sendMessageTo(worker: Worker) {
-    return (type: string, msg: any) => {
+    return <T>(type: string, msg: T) => {
       const uid = this.workerTaskCounter++;
       // don't store in tasks queue since there is no response
       worker.postMessage(Object.assign({

@@ -1,5 +1,5 @@
 import {boxplotBuilder, IAdvancedBoxPlotData} from '../internal';
-import {IOrderedGroup} from './Group';
+import {IOrderedGroup, defaultGroup} from './Group';
 import {IDataRow, IGroup, IGroupParent} from './interfaces';
 import INumberColumn, {numberCompare} from './INumberColumn';
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
@@ -17,7 +17,9 @@ export function patternFunction(pattern: string, ...args: string[]) {
 
 /** @internal */
 export function joinGroups(groups: IGroup[]): IGroup {
-  console.assert(groups.length > 0);
+  if (groups.length === 0) {
+    return defaultGroup;
+  }
   if (groups.length === 1) {
     return groups[0];
   }

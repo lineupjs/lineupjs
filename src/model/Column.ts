@@ -5,7 +5,7 @@ import {fixCSS} from '../internal/utils';
 import {IColumnDump} from '../provider/interfaces';
 import {isSortingAscByDefault} from './annotations';
 import {defaultGroup} from './Group';
-import {ECompareValueType, IColumnDesc, IDataRow, IGroup, IValueCacheLookup, IGroupValueCacheLookup} from './interfaces';
+import {ECompareValueType, IColumnDesc, IDataRow, IGroup, IValueCacheLookup} from './interfaces';
 import Ranking, {ISortCriteria} from './Ranking';
 
 export {ECompareValueType, IColumnDesc} from './interfaces';
@@ -535,7 +535,7 @@ export default class Column extends AEventDispatcher {
     return Column.DEFAULT_COLOR;
   }
 
-  toCompareValue(_row: IDataRow, _valueCacheLookup?: IValueCacheLookup): ICompareValue | ICompareValue[] {
+  toCompareValue(_row: IDataRow, _valueCache?: any): ICompareValue | ICompareValue[] {
     return 0;
   }
 
@@ -548,11 +548,11 @@ export default class Column extends AEventDispatcher {
    * @param _row
    * @return {IGroup}
    */
-  group(_row: IDataRow, _valueCacheLookup?: IValueCacheLookup): IGroup {
+  group(_row: IDataRow, _valueCache?: any): IGroup {
     return defaultGroup;
   }
 
-  toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup, _valueCacheLookup?: IGroupValueCacheLookup): ICompareValue | ICompareValue[] {
+  toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup, _valueCache?: ISequence<any>): ICompareValue | ICompareValue[] {
     return group.name.toLowerCase();
   }
 

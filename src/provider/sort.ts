@@ -1,6 +1,6 @@
 import {createIndexArray, ILookUpArray} from '../internal';
-import {ECompareValueType, UIntTypedArray} from '../model';
-import {ICompareValue} from '../model/Column';
+import {ECompareValueType, UIntTypedArray, ISortCriteria} from '../model';
+import Column, {ICompareValue} from '../model/Column';
 import {FIRST_IS_MISSING, FIRST_IS_NAN} from '../model/missing';
 
 
@@ -76,9 +76,21 @@ function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArr
 export class CompareLookup {
   private readonly lookups: ILookUpArray[];
   private readonly missingCount: number; // since length dependent
+  private readonly comparators: {asc: boolean, v: ECompareValueType}[] = [];
 
-  constructor(rawLength: number, private readonly comparators: {asc: boolean, v: ECompareValueType}[]) {
-    this.lookups = comparators.map((d) => toCompareLookUp(rawLength, d.v));
+  constructor(rawLength: number, criteria: ISortCriteria[], acc: (d: Column) => ECompareValueType | ECompareValueType[]) {
+    for (const c of criteria) {
+      const v = acc(c.col);
+      if (!Array.isArray(v)) {
+        this.comparators.push({asc: c.asc, v});
+        continue;
+      }
+      for (const vi of v) {
+        this.comparators.push({asc: c.asc, v: vi});
+      }
+    }
+
+    this.lookups = this.comparators.map((d) => toCompareLookUp(rawLength, d.v));
 
     this.missingCount = chooseMissingByLength(rawLength + 1); // + 1 for the value shift to have 0 as start
   }
