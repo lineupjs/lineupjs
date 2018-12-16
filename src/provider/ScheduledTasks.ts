@@ -1,8 +1,8 @@
-import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISortMessageResponse, IStatistics, toIndexArray, WORKER_BLOB} from '../internal';
+import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISortMessageResponse, IStatistics, toIndexArray, WORKER_BLOB, dateValueCache2Value, categoricalValueCache2Value} from '../internal';
 import {ISequence} from '../internal/interable';
 import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
 import {WorkerTaskScheduler} from '../internal/worker';
-import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray} from '../model';
+import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray, isCategoricalColumn} from '../model';
 import {IRenderTask} from '../renderer/interfaces';
 import {sortDirect} from './DirectRenderTasks';
 import {CompareLookup} from './sort';
@@ -396,7 +396,16 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
     return (col: Column) => {
       const v = this.valueCacheData.get(col.id);
-      return v ? v[dataIndex] : undefined;
+      if (!v) {
+        return undefined;
+      }
+      if (isDateColumn(col)) {
+        return dateValueCache2Value(v[dataIndex]);
+      }
+      if (isCategoricalColumn(col)) {
+        return categoricalValueCache2Value(v[dataIndex], col.categories);
+      }
+      return v[dataIndex];
     };
   }
 

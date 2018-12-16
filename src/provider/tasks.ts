@@ -128,7 +128,7 @@ export class ARenderTasks {
       let chunkCounter = currentChunkSize;
       const data = this.data;
       for (; i < data.length && chunkCounter > 0; ++i, --chunkCounter) {
-        builder.push(acc(data[i++]));
+        builder.push(acc(data[i]));
       }
       if (i < data.length) { // need another round
         return ANOTHER_ROUND;

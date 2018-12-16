@@ -351,7 +351,7 @@ export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, I
     let high = numberOfBins - 1;
     // binary search
     while (low < high) {
-      const center = Math.floor(high + low) / 2;
+      const center = Math.floor((high + low) / 2);
       if (v < hist[center].x1) {
         high = center;
       } else {
@@ -777,6 +777,10 @@ export function dateValueCacheBuilder(length: number) {
   };
 }
 
+export function dateValueCache2Value(v: number) {
+  return v === MISSING_DATE ? null : new Date(v);
+}
+
 export function categoricalValueCacheBuilder(length:  number, categories: {name: string}[]) {
   const vs = createIndexArray(length, categories.length + 1);
   const name2index = new Map<string, number>();
@@ -788,6 +792,10 @@ export function categoricalValueCacheBuilder(length:  number, categories: {name:
     push: (d: {name: string} | null) => vs[i++] = d == null ? 0 : name2index.get(d.name) || 0,
     cache: vs
   };
+}
+
+export function categoricalValueCache2Value<T extends {name: string}>(v: number, categories: T[]) {
+  return v === 0 ? null : categories[v - 1];
 }
 
 
@@ -826,13 +834,12 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
       // tslint:disable-next-line:prefer-for-of
       for (let ii = 0; ii < indices.length; ++ii) {
         const v = data[indices[ii]];
-        b.push(v === MISSING_DATE ? null : new Date(v));
+        b.push(dateValueCache2Value(v));
       }
     } else {
       // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < data.length; ++i) {
-        const v = data[i];
-        b.push(v === MISSING_DATE ? null : new Date(v));
+        b.push(dateValueCache2Value(data[i]));
       }
     }
     self.postMessage(<IDateStatsMessageResponse>{
@@ -851,14 +858,12 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     if (indices) {
       // tslint:disable-next-line:prefer-for-of
       for (let ii = 0; ii < indices.length; ++ii) {
-        const v = data[indices[ii]];
-        b.push(v === 0 ? null : cats[v - 1]!);
+        b.push(categoricalValueCache2Value(data[indices[ii]], cats));
       }
     } else {
       // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < data.length; ++i) {
-        const v = data[i];
-        b.push(v === 0 ? null : cats[v - 1]!);
+        b.push(categoricalValueCache2Value(data[i], cats));
       }
     }
 
@@ -932,6 +937,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     if (typeof r.uid !== 'number' || typeof r.type !== 'string') {
       return;
     }
+    debugger;
     const h = msgHandlers[r.type];
     if (h) {
       h(r);
@@ -949,5 +955,7 @@ export const WORKER_BLOB = createWorkerCodeBlob([
   asc.toString(),
   desc.toString(),
   sortComplex.toString(),
+  dateValueCache2Value.toString(),
+  categoricalValueCache2Value.toString(),
   toFunctionBody(sortWorkerMain)
 ]);
