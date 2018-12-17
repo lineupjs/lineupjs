@@ -1,6 +1,5 @@
-import {equalArrays, fixCSS} from '../internal';
+import {equalArrays, fixCSS, joinIndexArrays} from '../internal';
 import AEventDispatcher, {IEventListener, suffix} from '../internal/AEventDispatcher';
-import {createIndexArray} from '../internal/math';
 import {IRankingDump} from '../provider/interfaces';
 import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, IColumnParent, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';
@@ -197,7 +196,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     const oldGroups = this.groups;
     this.groups = groups;
     this.index2pos = index2pos;
-    this.order = toOrder(groups);
+    this.order = joinIndexArrays(groups.map((d) => d.order));
     this.fire([Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_GROUPS_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], old, this.order, oldGroups, groups, dirtyReason);
   }
 
@@ -674,22 +673,4 @@ function equalCriteria(a: ISortCriteria[], b: ISortCriteria[]) {
     const bi = b[i];
     return ai.col === bi.col && ai.asc === bi.asc;
   });
-}
-
-function toOrder(groups: IOrderedGroup[]) {
-  switch (groups.length) {
-    case 0:
-      return [];
-    case 1:
-      return groups[0].order;
-    default:
-      const total = groups.reduce((a, b) => a + b.order.length, 0);
-      const r = createIndexArray(total);
-      let shift = 0;
-      for (const g of groups) {
-        r.set(g.order, shift);
-        shift += g.order.length;
-      }
-      return r;
-  }
 }

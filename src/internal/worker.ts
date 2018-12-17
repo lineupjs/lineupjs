@@ -103,7 +103,7 @@ export class WorkerTaskScheduler {
   pushStats(type: 'numberStats' | 'boxplotStats' | 'categoricalStats' | 'dateStats', args: any, refData: string, data: Float32Array | UIntTypedArray | Int32Array, refIndices?: string, indices?: IndicesArray) {
     return new Promise((resolve) => {
       const uid = this.workerTaskCounter++;
-      const {worker, tasks, refs, index} = this.checkOutWorker();
+      const {worker, tasks, refs} = this.checkOutWorker();
 
       const receiver = (msg: MessageEvent) => {
         const r = <IWorkerMessage>msg.data;
@@ -132,7 +132,7 @@ export class WorkerTaskScheduler {
         if (refData) {
           refs.add(refData);
         }
-        console.log(index, 'set ref (i)', refData);
+        // console.log(index, 'set ref (i)', refData);
       }
       if (indices && (!refIndices || !refs.has(refIndices))) {
         // need to transfer
@@ -140,9 +140,9 @@ export class WorkerTaskScheduler {
         if (refIndices) {
           refs.add(refIndices);
         }
-        console.log(index, 'set ref (i)', refIndices);
+        // console.log(index, 'set ref (i)', refIndices);
       }
-      console.log(index, msg);
+      // console.log(index, msg);
 
       worker.postMessage(msg);
     });
@@ -151,7 +151,7 @@ export class WorkerTaskScheduler {
   push<M, R, T>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[], toResult: (r: R) => T) {
     return new Promise<T>((resolve) => {
       const uid = this.workerTaskCounter++;
-      const {worker, tasks, index} = this.checkOutWorker();
+      const {worker, tasks} = this.checkOutWorker();
 
       const receiver = (msg: MessageEvent) => {
         const r = <IWorkerMessage>msg.data;
@@ -170,7 +170,7 @@ export class WorkerTaskScheduler {
         type,
         uid
       }, args);
-      console.log(index, msg);
+      // console.log(index, msg);
       worker.postMessage(msg, transferAbles);
     });
   }
@@ -194,7 +194,7 @@ export class WorkerTaskScheduler {
       startsWith
     };
     for (const w of this.workers) {
-      console.log(w.index, 'delete ref', ref, startsWith);
+      // console.log(w.index, 'delete ref', ref, startsWith);
       w.worker.postMessage(msg);
       if (startsWith) {
         w.refs.delete(ref);
@@ -217,7 +217,7 @@ export class WorkerTaskScheduler {
       startsWith: true
     };
     for (const w of this.workers) {
-      console.log(w.index, 'delete refs');
+      // console.log(w.index, 'delete refs');
       w.worker.postMessage(msg);
       w.refs.clear();
     }
@@ -230,7 +230,7 @@ export class WorkerTaskScheduler {
       type,
       uid
     }, args);
-    console.log('broadcast', msg);
+    // console.log('broadcast', msg);
     for (const w of this.workers) {
       w.worker.postMessage(msg);
     }

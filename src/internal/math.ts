@@ -603,6 +603,25 @@ export function toIndexArray(arr: ISequence<number> | IndicesArray): UIntTypedAr
 }
 
 
+export function joinIndexArrays(groups: IndicesArray[]) {
+  switch (groups.length) {
+    case 0:
+      return [];
+    case 1:
+      return groups[0];
+    default:
+      const total = groups.reduce((a, b) => a + b.length, 0);
+      const r = createIndexArray(total);
+      let shift = 0;
+      for (const g of groups) {
+        r.set(g, shift);
+        shift += g.length;
+      }
+      return r;
+  }
+}
+
+
 
 function asc(a: any, b: any) {
   return a < b ? -1 : ((a > b) ? 1 : 0);

@@ -1,6 +1,6 @@
 import {abortAble, abortAbleAll, IAbortAblePromise} from 'lineupengine';
 import {IForEachAble, lazySeq} from '../internal/interable';
-import {boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value} from '../internal/math';
+import {boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value, joinIndexArrays} from '../internal/math';
 import {ANOTHER_ROUND} from '../internal/scheduler';
 import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, UIntTypedArray, ICategory} from '../model';
 import Column, {ICompareValue} from '../model/Column';
@@ -91,8 +91,23 @@ export interface IRenderTaskExectutor extends IRenderTasks {
  * @internal
  */
 export class MultiIndices {
+  private _joined: IndicesArray | null = null;
+
   constructor(public readonly indices: IndicesArray[]) {
 
+  }
+
+  get joined() {
+    if (this.indices.length === 1) {
+      return this.indices[0];
+    }
+    if (this.indices.length === 0) {
+      return new Uint8Array(0);
+    }
+    if (this._joined) {
+      return this._joined;
+    }
+    return this._joined = joinIndexArrays(this.indices);
   }
 }
 

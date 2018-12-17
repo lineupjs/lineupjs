@@ -300,9 +300,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, this.dataBoxPlotStats(col, raw), (data) => {
       const ranking = col.findMyRanker()!;
-      if (!order && this.valueCacheData.has(col.id) && !raw) {
+      if (this.valueCacheData.has(col.id) && !raw) {
         // web worker version
-        return () => this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id), ranking.id, ranking.getOrder())
+        return () => this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
           .then((summary) => ({summary, data}));
       }
       return this.boxplotBuilder(order ? order : ranking.getOrder(), col, raw, (summary) => ({summary, data}));
@@ -312,9 +312,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary${raw ? ':raw' : ''}`, this.dataNumberStats(col, raw), (data) => {
       const ranking = col.findMyRanker()!;
-      if (!order && this.valueCacheData.has(col.id) && !raw) {
+      if (this.valueCacheData.has(col.id) && !raw) {
         // web worker version
-        return () => this.workers.pushStats('numberStats', {numberOfBins: data.hist.length}, col.id, <Float32Array>this.valueCacheData.get(col.id), ranking.id, ranking.getOrder())
+        return () => this.workers.pushStats('numberStats', {numberOfBins: data.hist.length}, col.id, <Float32Array>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
           .then((summary) => ({summary, data}));
       }
       return this.normalizedStatsBuilder(order ? order : ranking.getOrder(), col, data.hist.length, raw, (summary) => ({summary, data}));
@@ -324,9 +324,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   summaryCategoricalStats(col: Column & ICategoricalLikeColumn, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary`, this.dataCategoricalStats(col), (data) => {
       const ranking = col.findMyRanker()!;
-      if (!order && this.valueCacheData.has(col.id)) {
+      if (this.valueCacheData.has(col.id)) {
         // web worker version
-        return () => this.workers.pushStats('categoricalStats', {categories: col.categories.map((d) => d.name)}, col.id, <UIntTypedArray>this.valueCacheData.get(col.id), ranking.id, ranking.getOrder())
+        return () => this.workers.pushStats('categoricalStats', {categories: col.categories.map((d) => d.name)}, col.id, <UIntTypedArray>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
           .then((summary) => ({summary, data}));
       }
       return this.categoricalStatsBuilder(order ? order : ranking.getOrder(), col, (summary) => ({summary, data}));
@@ -336,9 +336,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   summaryDateStats(col: Column & IDateColumn, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary`, this.dataDateStats(col), (data) => {
       const ranking = col.findMyRanker()!;
-      if (!order && this.valueCacheData.has(col.id)) {
+      if (this.valueCacheData.has(col.id)) {
         // web worker version
-        return () => this.workers.pushStats('dateStats', {template: data}, col.id, <Int32Array>this.valueCacheData.get(col.id), ranking.id, <UIntTypedArray>ranking.getOrder())
+        return () => this.workers.pushStats('dateStats', {template: data}, col.id, <Int32Array>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
           .then((summary) => ({summary, data}));
       }
       return this.dateStatsBuilder(order ? order : ranking.getOrder(), col, data, (summary) => ({summary, data}));
