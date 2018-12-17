@@ -24,7 +24,7 @@
   ],
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/datavisyn/lineupjs/issues"
+    "url": "https://github.com/lineupjs/lineupjs/issues"
   },
   "homepage": "https://lineup.js.org",
   "main": "build/LineUpJS.js",
@@ -83,7 +83,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/datavisyn/lineupjs.git"
+    "url": "https://github.com/lineupjs/lineupjs.git"
   },
   "devDependencies": {
     "@types/d3-color": "^1.2.1",
@@ -140,7 +140,7 @@
   "dependencies": {
     "@types/d3-format": "^1.3.0",
     "popper.js": "^1.14.4",
-    "lineupengine": "^2.0.0-alpha.4",
+    "lineupengine": "github:lineupjs/lineupengine#asynccell",
     "reflect-metadata": "^0.1.12"
   }
 }
