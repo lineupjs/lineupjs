@@ -173,19 +173,19 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const addKey = `${Ranking.EVENT_ADD_COLUMN}.cache`;
     const removeKey = `${Ranking.EVENT_REMOVE_COLUMN}.cache`;
 
-    const addCol = (col: Column) => {
-      this.tasks.preComputeCol(col);
-      if (col instanceof CompositeColumn) {
-        col.on(addKey, addCol);
-        col.on(removeKey, removeCol);
-      }
-    };
-
     const removeCol = (col: Column) => {
       this.tasks.dirtyColumn(col, 'data');
       if (col instanceof CompositeColumn) {
         col.on(addKey, null);
         col.on(removeKey, null);
+      }
+    };
+
+    const addCol = (col: Column) => {
+      this.tasks.preComputeCol(col);
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, addCol);
+        col.on(removeKey, removeCol);
       }
     };
 

@@ -10,15 +10,15 @@
 }
 
 .#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate[data-meta]::before {
+
   // square bracket around
   content: '';
   pointer-events: none;
   position: absolute;
   left: 2px;
   top: -2px;
-  bottom: 0px;
+  bottom: 0;
   width: $lu_aggregate_square_bracket_width;
-
   border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
 }
 

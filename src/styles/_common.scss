@@ -19,7 +19,7 @@
     pointer-events: none !important;
   }
 
-  >* {
+  > * {
     pointer-events: none !important;
   }
 }
@@ -29,11 +29,11 @@
 }
 
 .#{$lu_css_prefix}-checkbox {
-  >input {
+  > input {
     display: inline;
   }
 
-  >label {
+  > label {
     display: inline-flex;
   }
 }
@@ -49,15 +49,15 @@
   line-height: 0;
   display: flex;
 
-  input:checked+label {
+  input:checked + label {
     outline: 2px solid black;
   }
 
-  >input {
+  > input {
     display: none;
   }
 
-  >label {
+  > label {
     flex: 1 1 0;
   }
 }
@@ -65,11 +65,11 @@
 .#{$lu_css_prefix}-color-gradient {
   display: flex;
 
-  input:checked+label {
+  input:checked + label {
     outline: 2px solid black;
   }
 
-  >label {
+  > label {
     margin: 0.1em;
     flex: 1 1 auto;
   }
@@ -98,7 +98,7 @@
   background-size: $lu_missing_dash_width $lu_missing_dash_height;
   background-repeat: no-repeat;
 
-  >* {
+  > * {
     display: none;
   }
 }
