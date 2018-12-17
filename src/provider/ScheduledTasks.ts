@@ -2,7 +2,7 @@ import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStat
 import {ISequence, lazySeq} from '../internal/interable';
 import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
 import {WorkerTaskScheduler} from '../internal/worker';
-import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, DateColumn, CategoricalColumn, OrdinalColumn, ICompareValue} from '../model';
+import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, DateColumn, CategoricalColumn, OrdinalColumn, ICompareValue, UIntTypedArray} from '../model';
 import {IRenderTask} from '../renderer/interfaces';
 import {sortDirect} from './DirectRenderTasks';
 import {CompareLookup} from './sort';
@@ -25,6 +25,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     this.cache.clear();
     this.tasks.clear();
     this.valueCacheData.clear();
+    this.workers.deleteRefs();
   }
 
   dirtyColumn(col: Column, type: 'data' | 'group' | 'summary') {
@@ -76,7 +77,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     this.tasks.abortAll((t) => t.id.startsWith(`r${ranking.id}:`));
 
     // delete remote caches
-    this.workers.deleteRef(`${ranking.id}:`, true);
+    this.workers.deleteRef(ranking.id, true);
 
     if (type !== 'data') {
       return;
@@ -240,7 +241,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   }
 
   groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T) {
-    return this.cached(`${col.id}:a:group:${group.name}:${key}`, group.order.length === 0, oneShotIterator(() => compute(this.byOrder(group.order))));
+    return this.cached(`${col.id}:a:group:${group.name}:${key}`, oneShotIterator(() => compute(this.byOrder(group.order))));
   }
 
   groupExampleRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
@@ -249,18 +250,36 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     return this.chain(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, this.summaryBoxPlotStats(col, raw), ({summary, data}) => {
+      const ranking = col.findMyRanker()!;
+      if (this.valueCacheData.has(col.id) && !raw && group.order.length > 0) {
+        // web worker version
+        return () => this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
+          .then((group) => ({group, summary, data}));
+      }
       return this.boxplotBuilder(group.order, col, raw, (group) => ({group, summary, data}));
     });
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     return this.chain(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, this.summaryNumberStats(col, raw), ({summary, data}) => {
+      const ranking = col.findMyRanker()!;
+      if (this.valueCacheData.has(col.id) && !raw && group.order.length > 0) {
+        // web worker version
+        return () => this.workers.pushStats('numberStats', {numberOfBins: summary.hist.length}, col.id, <Float32Array>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
+          .then((group) => ({group, summary, data}));
+      }
       return this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw, (group) => ({group, summary, data}));
     });
   }
 
   groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup) {
     return this.chain(`${col.id}:a:group:${group.name}`, this.summaryCategoricalStats(col), ({summary, data}) => {
+      const ranking = col.findMyRanker()!;
+      if (this.valueCacheData.has(col.id) && group.order.length > 0) {
+        // web worker version
+        return () => this.workers.pushStats('categoricalStats', {categories: col.categories.map((d) => d.name)}, col.id, <UIntTypedArray>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
+          .then((group) => ({group, summary, data}));
+      }
       return this.categoricalStatsBuilder(group.order, col, (group) => ({group, summary, data}));
     });
   }
@@ -268,40 +287,72 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
     const key = `${col.id}:a:group:${group.name}`;
     return this.chain(key, this.summaryDateStats(col), ({summary, data}) => {
+      const ranking = col.findMyRanker()!;
+      if (this.valueCacheData.has(col.id) && group.order.length > 0) {
+        // web worker version
+        return () => this.workers.pushStats('dateStats', {template: summary}, col.id, <Int32Array>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
+          .then((group) => ({group, summary, data}));
+      }
       return this.dateStatsBuilder(group.order, col, summary, (group) => ({group, summary, data}));
     });
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, this.dataBoxPlotStats(col, raw), (data) => {
-      return this.boxplotBuilder(order ? order : new MultiIndices(col.findMyRanker()!.getGroups().map((d) => d.order)), col, raw, (summary) => ({summary, data}));
+      const ranking = col.findMyRanker()!;
+      if (!order && this.valueCacheData.has(col.id) && !raw) {
+        // web worker version
+        return () => this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id), ranking.id, ranking.getOrder())
+          .then((summary) => ({summary, data}));
+      }
+      return this.boxplotBuilder(order ? order : ranking.getOrder(), col, raw, (summary) => ({summary, data}));
     });
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary${raw ? ':raw' : ''}`, this.dataNumberStats(col, raw), (data) => {
-      return this.normalizedStatsBuilder(order ? order : new MultiIndices(col.findMyRanker()!.getGroups().map((d) => d.order)), col, data.hist.length, raw, (summary) => ({summary, data}));
+      const ranking = col.findMyRanker()!;
+      if (!order && this.valueCacheData.has(col.id) && !raw) {
+        // web worker version
+        return () => this.workers.pushStats('numberStats', {numberOfBins: data.hist.length}, col.id, <Float32Array>this.valueCacheData.get(col.id), ranking.id, ranking.getOrder())
+          .then((summary) => ({summary, data}));
+      }
+      return this.normalizedStatsBuilder(order ? order : ranking.getOrder(), col, data.hist.length, raw, (summary) => ({summary, data}));
     });
   }
 
   summaryCategoricalStats(col: Column & ICategoricalLikeColumn, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary`, this.dataCategoricalStats(col), (data) => {
-      return this.categoricalStatsBuilder(order ? order : new MultiIndices(col.findMyRanker()!.getGroups().map((d) => d.order)), col, (summary) => ({summary, data}));
+      const ranking = col.findMyRanker()!;
+      if (!order && this.valueCacheData.has(col.id)) {
+        // web worker version
+        return () => this.workers.pushStats('categoricalStats', {categories: col.categories.map((d) => d.name)}, col.id, <UIntTypedArray>this.valueCacheData.get(col.id), ranking.id, ranking.getOrder())
+          .then((summary) => ({summary, data}));
+      }
+      return this.categoricalStatsBuilder(order ? order : ranking.getOrder(), col, (summary) => ({summary, data}));
     });
   }
 
   summaryDateStats(col: Column & IDateColumn, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary`, this.dataDateStats(col), (data) => {
-      return this.dateStatsBuilder(order ? order : new MultiIndices(col.findMyRanker()!.getGroups().map((d) => d.order)), col, data, (summary) => ({summary, data}));
+      const ranking = col.findMyRanker()!;
+      if (!order && this.valueCacheData.has(col.id)) {
+        // web worker version
+        return () => this.workers.pushStats('dateStats', {template: data}, col.id, <Int32Array>this.valueCacheData.get(col.id), ranking.id, <UIntTypedArray>ranking.getOrder())
+          .then((summary) => ({summary, data}));
+      }
+      return this.dateStatsBuilder(order ? order : ranking.getOrder(), col, data, (summary) => ({summary, data}));
     });
   }
 
-  private cached<T>(key: string, dontCache: boolean, it: Iterator<T | null>): IRenderTask<T> {
+  private cached<T>(key: string, it: Iterator<T | null> | (() => Promise<T>)): IRenderTask<T> {
+    const dontCache = this.data.length === 0;
+
     if (this.cache.has(key) && !dontCache) {
       return this.cache.get(key)!;
     }
 
-    const task = this.tasks.pushMulti(key, it);
+    const task = typeof it === 'function' ? abortAble(it()) : this.tasks.pushMulti(key, it);
     const s = taskLater(task);
     if (!dontCache) {
       this.cache.set(key, s);
@@ -318,33 +369,12 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     return s;
   }
 
-  private cachedWorker<T>(key: string, creator: () => Promise<T>): IRenderTask<T> {
-    if (this.cache.has(key)) {
-      return this.cache.get(key)!;
-    }
-
-    const task = creator();
-    const s = taskLater(abortAble(task));
-    this.cache.set(key, s);
-
-    task.then((r) => {
-      if (typeof r === 'symbol') {
-        return;
-      }
-      if (this.cache.get(key) === s) {
-        // still same value replace with faster version
-        this.cache.set(key, taskNow(r));
-      }
-    });
-    return s;
-  }
-
-  private chain<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => Iterator<U | null>): IRenderTask<U> {
+  private chain<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => Iterator<U | null> | (() => Promise<U>)): IRenderTask<U> {
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
     if (task instanceof TaskNow) {
-      return this.cached(key, false, creator(task.v));
+      return this.cached(key, creator(task.v));
     }
 
     const v = (<TaskLater<T>>task).v;
@@ -352,7 +382,12 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       if (typeof data === 'symbol') {
         return ABORTED;
       }
-      return this.tasks.pushMulti(key, creator(data));
+      const created = creator(data);
+      if (typeof created === 'function') {
+        // promise
+        return created();
+      }
+      return this.tasks.pushMulti(key, created);
     });
     const s = taskLater(subTask);
     this.cache.set(key, s);
@@ -400,25 +435,24 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   }
 
   dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    if (!raw && this.valueCacheData.has(col.id)) {
+    const key = `${col.id}:c:data${raw ? ':braw' : ':b'}`;
+    if (!raw && this.valueCacheData.has(col.id) && this.data.length > 0) {
       // use webworker
-      return this.cachedWorker(`${col.id}:c:data:b`, () => {
-        return this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id)!);
-      });
+      return this.cached(key, () => this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id)!));
     }
-    return this.cached(`${col.id}:c:data${raw ? ':braw' : ':b'}`, this.data.length === 0, this.boxplotBuilder<IAdvancedBoxPlotData>(null, col, raw));
+    return this.cached(key, this.boxplotBuilder<IAdvancedBoxPlotData>(null, col, raw));
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, this.data.length === 0, this.normalizedStatsBuilder<IStatistics>(null, col, getNumberOfBins(this.data.length), raw));
+    return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, this.normalizedStatsBuilder<IStatistics>(null, col, getNumberOfBins(this.data.length), raw));
   }
 
   dataCategoricalStats(col: Column & ICategoricalLikeColumn) {
-    return this.cached(`${col.id}:c:data`, this.data.length === 0, this.categoricalStatsBuilder<ICategoricalStatistics>(null, col));
+    return this.cached(`${col.id}:c:data`, this.categoricalStatsBuilder<ICategoricalStatistics>(null, col));
   }
 
   dataDateStats(col: Column & IDateColumn) {
-    return this.cached(`${col.id}:c:data`, this.data.length === 0, this.dateStatsBuilder<IDateStatistics>(null, col));
+    return this.cached(`${col.id}:c:data`, this.dateStatsBuilder<IDateStatistics>(null, col));
   }
 
   sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup) {

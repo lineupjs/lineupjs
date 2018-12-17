@@ -677,7 +677,6 @@ export interface ISortMessageRequest {
 
 export interface ISortMessageResponse {
   type: 'sort';
-  uid: number;
 
   ref: string;
   order: IndicesArray;
@@ -685,7 +684,6 @@ export interface ISortMessageResponse {
 
 export interface IDeleteRefMessageRequest {
   type: 'deleteRef';
-  uid: number;
 
   ref: string;
   startsWith?: boolean;
