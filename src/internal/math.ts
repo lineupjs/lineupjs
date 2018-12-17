@@ -82,11 +82,6 @@ export function getNumberOfBins(length: number) {
   return Math.ceil(Math.log(length) / Math.LN2) + 1;
 }
 
-export interface IHistGenerator {
-  bins: INumberBin[];
-  toBin(value: number): number;
-}
-
 export function min(values: number[]): number;
 export function min<T>(values: T[], acc?: (v: T) => number): number;
 export function min<T>(values: T[], acc?: (v: T) => number) {
@@ -663,6 +658,14 @@ export interface IWorkerMessage {
   uid: number;
 }
 
+export interface IStatsWorkerMessage extends IWorkerMessage {
+  refIndices: string | null;
+  indices?: UIntTypedArray;
+
+  refData: string;
+  data?: UIntTypedArray | Float32Array | Int32Array;
+}
+
 
 export interface ISortMessageRequest {
   type: 'sort';
@@ -789,7 +792,7 @@ export function dateValueCache2Value(v: number) {
   return v === MISSING_DATE ? null : new Date(v);
 }
 
-export function categoricalValueCacheBuilder(length:  number, categories: {name: string}[]) {
+export function categoricalValueCacheBuilder(length: number, categories: {name: string}[]) {
   const vs = createIndexArray(length, categories.length + 1);
   const name2index = new Map<string, number>();
   for (let i = 0; i < categories.length; ++i) {
@@ -815,7 +818,6 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
       sortComplex(r.indices, r.sortOrders);
     }
     const order = r.indices;
-    refs.set(r.ref, order.slice());
 
     self.postMessage(<ISortMessageResponse>{
       type: r.type,
@@ -846,9 +848,20 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     }
   };
 
-  const dateStats = (r: IDateStatsMessageRequest) => {
-    const data = r.data ? r.data : <UIntTypedArray>refs.get(r.refData)!;
+  const resolveRefs = <T extends UIntTypedArray | Float32Array | Int32Array>(r: IStatsWorkerMessage) => {
+    const data: T = r.data ? <T><unknown>r.data : <T><unknown>refs.get(r.refData)!;
     const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+    if (r.refData) {
+      refs.set(r.refData, data);
+    }
+    if (r.refIndices) {
+      refs.set(r.refIndices, indices!);
+    }
+    return {data, indices};
+  };
+
+  const dateStats = (r: IDateStatsMessageRequest) => {
+    const {data, indices} = resolveRefs<Int32Array>(r);
 
     const b = dateStatsBuilder(r.template);
     if (indices) {
@@ -871,8 +884,12 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   };
 
   const categoricalStats = (r: ICategoricalStatsMessageRequest) => {
-    const data = r.data ? r.data : <UIntTypedArray>refs.get(r.refData)!;
-    const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+    const {data, indices} = resolveRefs<UIntTypedArray>(r);
+
+    refs.set(r.refData, data);
+    if (r.refIndices) {
+      refs.set(r.refIndices, indices!);
+    }
 
     const cats = r.categories.map((name) => ({name}));
     const b = categoricalStatsBuilder(cats);
@@ -896,8 +913,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   };
 
   const numberStats = (r: INumberStatsMessageRequest) => {
-    const data = r.data ? r.data : <Float32Array>refs.get(r.refData)!;
-    const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+    const {data, indices} = resolveRefs<Float32Array>(r);
 
     const b = normalizedStatsBuilder(r.numberOfBins);
 
@@ -921,8 +937,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   };
 
   const boxplotStats = (r: IBoxPlotStatsMessageRequest) => {
-    const data = r.data ? r.data : <Float32Array>refs.get(r.refData)!;
-    const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+    const {data, indices} = resolveRefs<Float32Array>(r);
 
     const b = boxplotBuilder(indices ? indices.length : undefined);
 
@@ -967,6 +982,8 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
 }
 
 export const WORKER_BLOB = createWorkerCodeBlob([
+  pushAll.toString(),
+  quantile.toString(),
   normalizedStatsBuilder.toString(),
   boxplotBuilder.toString(),
   computeGranularity.toString(),
