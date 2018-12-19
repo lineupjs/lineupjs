@@ -22,10 +22,13 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   setData(data: IDataRow[]) {
     this.data = data;
     this.cache.clear();
+    this.valueCacheData.clear();
   }
 
 
   dirtyColumn(col: Column, type: 'data' | 'summary' | 'group') {
+    super.dirtyColumn(col, type);
+
     if (type === 'group') {
       return; // not cached
     }

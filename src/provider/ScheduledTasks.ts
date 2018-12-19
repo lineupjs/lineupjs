@@ -29,6 +29,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   }
 
   dirtyColumn(col: Column, type: 'data' | 'group' | 'summary') {
+    super.dirtyColumn(col, type);
     // order designed such that first groups, then summaries, then data is deleted
 
     for (const key of Array.from(this.cache.keys()).sort()) {
@@ -84,7 +85,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
 
     for (const col of cols) {
-      this.valueCacheData.delete(col.id);
+      super.dirtyColumn(col, type);
       this.workers.deleteRef(col.id);
     }
   }

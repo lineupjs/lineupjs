@@ -270,6 +270,12 @@ export class ARenderTasks {
     return this.builderForEach(b, order, (i: number) => col.iterCategory(this.data[i]), build);
   }
 
+  dirtyColumn(col: Column, type: 'data' | 'summary' | 'group') {
+    if (type !== 'data') {
+      return;
+    }
+    this.valueCacheData.delete(col.id);
+  }
 
   protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | Int32Array | null) {
     if (value == null) {
