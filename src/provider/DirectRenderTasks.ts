@@ -210,10 +210,6 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   terminate() {
     this.cache.clear();
   }
-
-  valueCache() {
-    return undefined;
-  }
 }
 
 

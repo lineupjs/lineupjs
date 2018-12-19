@@ -1,6 +1,6 @@
 import {abortAble, abortAbleAll, IAbortAblePromise} from 'lineupengine';
 import {IForEachAble, lazySeq} from '../internal/interable';
-import {boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value, joinIndexArrays} from '../internal/math';
+import {boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value, joinIndexArrays, IBuilder} from '../internal/math';
 import {ANOTHER_ROUND} from '../internal/scheduler';
 import {CategoricalColumn, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, UIntTypedArray, ICategory} from '../model';
 import Column, {ICompareValue} from '../model/Column';
@@ -9,14 +9,6 @@ import {CompareLookup} from './sort';
 
 export {IAbortAblePromise} from 'lineupengine';
 
-// TODO introduce value caches for individual colums, i.e. store
-// number column -> data:IDataRow[] -> getNumber() => Float32Array
-// categorical column -> data:IDataRow[] -> getCategory() => UInt8Array (0 == null, 1 = first category)
-// date column -> data:IDataRow[] -> getDate() => Int32Array (-max = null)
-// string column -> data:IDataRow[] -> getDate() => string[] (-max = null)
-// keep updated and compute
-// or transfer to the worker threads to compute the hists async and keep in sync
-// also use the value cache for computing the comparevalue and groupcompareavalue
 
 /**
  * @internal
@@ -186,20 +178,20 @@ export class ARenderTasks {
 
   protected boxplotBuilder<R = IAdvancedBoxPlotData>(order: IndicesArray | null | MultiIndices, col: INumberColumn, raw?: boolean, build?: (stat: IAdvancedBoxPlotData) => R) {
     const b = boxplotBuilder();
-    if (col instanceof NumberColumn || col instanceof OrdinalColumn || col instanceof ImpositionCompositeColumn) {
-      // TODO compute async
-      const cache = !raw ? this.valueCacheData.get(col.id) : undefined;
-      const acc: (i: number) => number = cache ? (i) => cache[i] : (raw ? (i) => col.getRawNumber(this.data[i]) : (i) => col.getNumber(this.data[i]));
-      return this.builder(b, order, acc, build);
-    }
-    const acc: (i: number) => IForEachAble<number> = raw ? (i) => col.iterRawNumber(this.data[i]) : (i) => col.iterNumber(this.data[i]);
-    return this.builderForEach(b, order, acc, build);
+    return this.numberStatsBuilder(b, order, col, raw, build);
   }
 
   protected normalizedStatsBuilder<R = IStatistics>(order: IndicesArray | null | MultiIndices, col: INumberColumn, numberOfBins: number, raw?: boolean, build?: (stat: IStatistics) => R) {
     const b = normalizedStatsBuilder(numberOfBins);
+    return this.numberStatsBuilder(b, order, col, raw, build);
+  }
+
+  private numberStatsBuilder<R, B extends IBuilder<number, BR>, BR>(b: B, order: IndicesArray | null | MultiIndices, col: INumberColumn, raw?: boolean, build?: (stat: BR) => R) {
     if (col instanceof NumberColumn || col instanceof OrdinalColumn || col instanceof ImpositionCompositeColumn) {
-      if (order == null && !raw) {
+      const key = raw ? `${col.id}:r` : col.id;
+      const dacc: (i: number) => number = raw ? (i) => col.getRawNumber(this.data[i]) : (i) => col.getNumber(this.data[i]);
+
+      if (order == null && !this.valueCacheData.has(key)) {
         // build and valueCache
         const vs = new Float32Array(this.data.length);
         let i = 0;
@@ -209,13 +201,14 @@ export class ARenderTasks {
             vs[i++] = v;
           },
           build: () => {
-            this.setValueCacheData(col.id, vs);
+            this.setValueCacheData(key, vs);
             return b.build();
           }
-        }, null, (i: number) => col.getNumber(this.data[i]), build);
+        }, null, dacc, build);
       }
-      const cache = !raw ? this.valueCacheData.get(col.id) : undefined;
-      const acc: (i: number) => number = cache ? (i) => cache[i] : (raw ? (i) => col.getRawNumber(this.data[i]) : (i) => col.getNumber(this.data[i]));
+
+      const cache = this.valueCacheData.get(key);
+      const acc: (i: number) => number = cache ? (i) => cache[i] : dacc;
       return this.builder(b, order, acc, build);
     }
     const acc: (i: number) => IForEachAble<number> = raw ? (i) => col.iterRawNumber(this.data[i]) : (i) => col.iterNumber(this.data[i]);
@@ -275,6 +268,7 @@ export class ARenderTasks {
       return;
     }
     this.valueCacheData.delete(col.id);
+    this.valueCacheData.delete(`${col.id}:r`);
   }
 
   protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | Int32Array | null) {
@@ -283,5 +277,19 @@ export class ARenderTasks {
     } else {
       this.valueCacheData.set(key, value);
     }
+  }
+
+  valueCache(col: Column) {
+    const v = this.valueCacheData.get(col.id);
+    if (!v) {
+      return undefined;
+    }
+    if (col instanceof DateColumn) {
+      return (dataIndex: number) => dateValueCache2Value(v[dataIndex]);
+    }
+    if (col instanceof CategoricalColumn || col instanceof OrdinalColumn) {
+      return (dataIndex: number) => categoricalValueCache2Value(v[dataIndex], col.categories);
+    }
+    return (dataIndex: number) => v[dataIndex];
   }
 }

@@ -1,8 +1,8 @@
-import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISortMessageResponse, IStatistics, toIndexArray, WORKER_BLOB, dateValueCache2Value, categoricalValueCache2Value} from '../internal';
+import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISortMessageResponse, IStatistics, toIndexArray, WORKER_BLOB} from '../internal';
 import {ISequence, lazySeq} from '../internal/interable';
 import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
 import {WorkerTaskScheduler} from '../internal/worker';
-import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, DateColumn, CategoricalColumn, OrdinalColumn, ICompareValue, UIntTypedArray} from '../model';
+import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking,ICompareValue, UIntTypedArray} from '../model';
 import {IRenderTask} from '../renderer/interfaces';
 import {sortDirect} from './DirectRenderTasks';
 import {CompareLookup} from './sort';
@@ -14,11 +14,6 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   private readonly cache = new Map<string, IRenderTask<any>>();
   private readonly tasks = new TaskScheduler();
   private readonly workers = new WorkerTaskScheduler(WORKER_BLOB);
-
-  constructor() {
-    super();
-  }
-
 
   setData(data: IDataRow[]) {
     this.data = data;
@@ -103,6 +98,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
           this.summaryCategoricalStats(col, multi);
         } else if (isNumberColumn(col)) {
           this.summaryNumberStats(col, false, multi);
+          this.summaryNumberStats(col, true, multi);
         } else if (isDateColumn(col)) {
           this.summaryDateStats(col, multi);
         } else {
@@ -110,6 +106,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
         }
         // copy from summary to group and create proper structure
         this.chainCopy(`${col.id}:a:group:${group.name}`, this.cache.get(`${col.id}:b:summary`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
+        if (isNumberColumn(col)) {
+          this.chainCopy(`${col.id}:a:group:${group.name}:raw`, this.cache.get(`${col.id}:b:summary:raw`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
+        }
       }
       return;
     }
@@ -122,15 +121,17 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
         for (const g of ogroups) {
           this.groupCategoricalStats(col, g);
         }
-      } else if (isNumberColumn(col)) {
-        this.summaryNumberStats(col, false, full);
-        for (const g of ogroups) {
-          this.groupNumberStats(col, g, false);
-        }
       } else if (isDateColumn(col)) {
         this.summaryDateStats(col, full);
         for (const g of ogroups) {
           this.groupDateStats(col, g);
+        }
+      } else if (isNumberColumn(col)) {
+        this.summaryNumberStats(col, false, full);
+        this.summaryNumberStats(col, true, full);
+        for (const g of ogroups) {
+          this.groupNumberStats(col, g, false);
+          this.groupNumberStats(col, g, true);
         }
       }
     }
@@ -141,7 +142,8 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       if (isCategoricalLikeColumn(col)) {
         this.dataCategoricalStats(col);
       } else if (isNumberColumn(col)) {
-        this.dataNumberStats(col);
+        this.dataNumberStats(col, false);
+        this.dataNumberStats(col, true);
       } else if (isDateColumn(col)) {
         this.dataDateStats(col);
       }
@@ -164,14 +166,17 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
 
     if (isNumberColumn(col)) {
-      this.dataNumberStats(col);
+      this.dataNumberStats(col, false);
+      this.dataNumberStats(col, true);
 
       if (!ranking) {
         return;
       }
-      this.summaryNumberStats(col);
+      this.summaryNumberStats(col, false);
+      this.summaryNumberStats(col, true);
       for (const group of ranking.getGroups()) {
-        this.groupNumberStats(col, group);
+        this.groupNumberStats(col, group, false);
+        this.groupNumberStats(col, group, true);
       }
       return;
     }
@@ -196,7 +201,8 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       if (isCategoricalLikeColumn(col)) {
         this.dataCategoricalStats(col);
       } else if (isNumberColumn(col)) {
-        this.dataNumberStats(col);
+        this.dataNumberStats(col, false);
+        this.dataNumberStats(col, true);
       } else if (isDateColumn(col)) {
         this.dataDateStats(col);
       } else {
@@ -204,6 +210,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       }
       // copy from data to summary and create proper structure
       this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({summary: data, data}));
+      if (isNumberColumn(col)) {
+        this.chainCopy(`${col.id}:b:summary:raw`, this.cache.get(`${col.id}:c:data:raw`)!, (data: any) => ({summary: data, data}));
+      }
     }
   }
 
@@ -252,9 +261,10 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     return this.chain(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, this.summaryBoxPlotStats(col, raw), ({summary, data}) => {
       const ranking = col.findMyRanker()!;
-      if (this.valueCacheData.has(col.id) && !raw && group.order.length > 0) {
+      const key = raw ? `${col.id}:r` : col.id;
+      if (this.valueCacheData.has(key) && group.order.length > 0) {
         // web worker version
-        return () => this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
+        return () => this.workers.pushStats('boxplotStats', {}, key, <Float32Array>this.valueCacheData.get(key), `${ranking.id}:${group.name}`, group.order)
           .then((group) => ({group, summary, data}));
       }
       return this.boxplotBuilder(group.order, col, raw, (group) => ({group, summary, data}));
@@ -264,9 +274,10 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     return this.chain(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, this.summaryNumberStats(col, raw), ({summary, data}) => {
       const ranking = col.findMyRanker()!;
-      if (this.valueCacheData.has(col.id) && !raw && group.order.length > 0) {
+      const key = raw ? `${col.id}:r` : col.id;
+      if (this.valueCacheData.has(key) && group.order.length > 0) {
         // web worker version
-        return () => this.workers.pushStats('numberStats', {numberOfBins: summary.hist.length}, col.id, <Float32Array>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
+        return () => this.workers.pushStats('numberStats', {numberOfBins: summary.hist.length}, key, <Float32Array>this.valueCacheData.get(key), `${ranking.id}:${group.name}`, group.order)
           .then((group) => ({group, summary, data}));
       }
       return this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw, (group) => ({group, summary, data}));
@@ -301,9 +312,10 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, this.dataBoxPlotStats(col, raw), (data) => {
       const ranking = col.findMyRanker()!;
-      if (this.valueCacheData.has(col.id) && !raw) {
+      const key = raw ? `${col.id}:r` : col.id;
+      if (this.valueCacheData.has(key)) {
         // web worker version
-        return () => this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
+        return () => this.workers.pushStats('boxplotStats', {}, key, <Float32Array>this.valueCacheData.get(key), ranking.id, order ? order.joined : ranking.getOrder())
           .then((summary) => ({summary, data}));
       }
       return this.boxplotBuilder(order ? order : ranking.getOrder(), col, raw, (summary) => ({summary, data}));
@@ -313,9 +325,10 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean, order?: MultiIndices) {
     return this.chain(`${col.id}:b:summary${raw ? ':raw' : ''}`, this.dataNumberStats(col, raw), (data) => {
       const ranking = col.findMyRanker()!;
-      if (this.valueCacheData.has(col.id) && !raw) {
+      const key = raw ? `${col.id}:r` : col.id;
+      if (this.valueCacheData.has(key)) {
         // web worker version
-        return () => this.workers.pushStats('numberStats', {numberOfBins: data.hist.length}, col.id, <Float32Array>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
+        return () => this.workers.pushStats('numberStats', {numberOfBins: data.hist.length}, key, <Float32Array>this.valueCacheData.get(key), ranking.id, order ? order.joined : ranking.getOrder())
           .then((summary) => ({summary, data}));
       }
       return this.normalizedStatsBuilder(order ? order : ranking.getOrder(), col, data.hist.length, raw, (summary) => ({summary, data}));
@@ -478,22 +491,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }, toTransfer, (r: ISortMessageResponse) => r.order);
   }
 
-  valueCache(col: Column) {
-    const v = this.valueCacheData.get(col.id);
-    if (!v) {
-      return undefined;
-    }
-    if (col instanceof DateColumn) {
-      return (dataIndex: number) => dateValueCache2Value(v[dataIndex]);
-    }
-    if (col instanceof CategoricalColumn || col instanceof OrdinalColumn) {
-      return (dataIndex: number) => categoricalValueCache2Value(v[dataIndex], col.categories);
-    }
-    return (dataIndex: number) => v[dataIndex];
-  }
-
   terminate() {
     this.workers.terminate();
     this.cache.clear();
+    this.valueCacheData.clear();
   }
 }
