@@ -1,17 +1,26 @@
 import {IAbortAblePromise, ABORTED, IAbortAblePromiseBase} from 'lineupengine';
 export {IAbortAblePromise, ABORTED} from 'lineupengine';
 
+/**
+ * @internal
+ */
 export interface IPoorManIdleDeadline {
   didTimeout: boolean;
   timeRemaining(): number;
 }
 
+/**
+ * @internal
+ */
 export interface IPoorManIdleCallback {
   requestIdleCallback(callback: (deadline: IPoorManIdleDeadline) => void, options?: {timeout: number}): number;
 
   clearIdleCallback(callbackId: number): void;
 }
 
+/**
+ * @internal
+ */
 export interface ITask<T> {
   id: string;
   it: Iterator<T | PromiseLike<T> | null>;
@@ -19,11 +28,17 @@ export interface ITask<T> {
   result: PromiseLike<T | symbol>;
 }
 
+/**
+ * @internal
+ */
 export const ANOTHER_ROUND = {
   value: null,
   done: false
 };
 
+/**
+ * @internal
+ */
 export function oneShotIterator<T>(calc: () => T): Iterator<T> {
   return {
     next: () => ({done: true, value: calc()})
@@ -42,7 +57,9 @@ function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void) {
   return then;
 }
 
-
+/**
+ * @internal
+ */
 export default class TaskScheduler {
   private tasks: ITask<any>[] = [];
   private taskId: number = -1;

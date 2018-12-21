@@ -1,11 +1,17 @@
 import {IWorkerMessage, INumberStatsMessageRequest, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ICategoricalStatsMessageRequest, IDateStatsMessageRequest, IBoxPlotStatsMessageRequest} from './math';
 import {UIntTypedArray, IndicesArray} from '../model';
 
+/**
+ * @internal
+ */
 export interface IPoorManWorkerScopeEventMap {
   message: MessageEvent;
   error: ErrorEvent;
 }
 
+/**
+ * @internal
+ */
 export interface IPoorManWorkerScope {
   onmessage: ((this: IPoorManWorkerScope, ev: MessageEvent) => any) | null;
   onerror: ((this: IPoorManWorkerScope, ev: ErrorEvent) => any) | null;
@@ -21,11 +27,17 @@ export interface IPoorManWorkerScope {
 //   });
 // }
 
+/**
+ * @internal
+ */
 export function toFunctionBody(f: Function) {
   const source = f.toString();
   return source.slice(source.indexOf('{') + 1, source.lastIndexOf('}'));
 }
 
+/**
+ * @internal
+ */
 export function createWorkerCodeBlob(fs: (string | Function)[]) {
   const sources = fs.map((d) => d.toString()).join('\n\n');
 
@@ -33,6 +45,9 @@ export function createWorkerCodeBlob(fs: (string | Function)[]) {
   return URL.createObjectURL(blob);
 }
 
+/**
+ * @internal
+ */
 export function createWorker(fs: (string | Function)[]) {
   return new Worker(createWorkerCodeBlob(fs));
 }
@@ -41,6 +56,9 @@ const MAX_WORKER_THREADS = Math.max(navigator.hardwareConcurrency, 1);
 const MIN_WORKER_THREADS = 1;
 const THREAD_CLEANUP_TIME = 10000; // 10s
 
+/**
+ * @internal
+ */
 export class WorkerTaskScheduler {
   private readonly workers: {worker: Worker, tasks: Set<number>, refs: Set<string>, index: number}[] = [];
   private cleanUpWorkerTimer: number = -1;

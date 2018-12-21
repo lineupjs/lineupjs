@@ -26,7 +26,7 @@ export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
  * helper storage for dnd in edge since edge doesn't support custom mime-types
  * @type {Map<number, {[p: string]: string}>}
  */
-const dndTransferStorage = new Map<number, { [key: string]: string }>();
+const dndTransferStorage = new Map<number, {[key: string]: string}>();
 
 function isEdgeDnD(e: DragEvent) {
   return dndTransferStorage.size > 0 && hasDnDType(e, 'text/plain');
@@ -63,13 +63,13 @@ export type IDragEffect = 'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | '
 /** @internal */
 export interface IDragStartResult {
   effectAllowed: IDragEffect;
-  data: { [mimeType: string]: string };
+  data: {[mimeType: string]: string};
 }
 
 /** @internal */
 export interface IDropResult {
   effect: IDragEffect;
-  data: { [mimeType: string]: string };
+  data: {[mimeType: string]: string};
 }
 
 let idCounter = 0;

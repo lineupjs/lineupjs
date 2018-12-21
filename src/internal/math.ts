@@ -82,8 +82,11 @@ export function getNumberOfBins(length: number) {
   return Math.ceil(Math.log(length) / Math.LN2) + 1;
 }
 
+/**
+ * @internal
+ */
 export function min(values: number[]): number;
-export function min<T>(values: T[], acc?: (v: T) => number): number;
+export function min<T>(values: T[], acc: (v: T) => number): number;
 export function min<T>(values: T[], acc?: (v: T) => number) {
   let min = Number.POSITIVE_INFINITY;
   for (const d of values) {
@@ -95,8 +98,11 @@ export function min<T>(values: T[], acc?: (v: T) => number) {
   return min;
 }
 
+/**
+ * @internal
+ */
 export function max(values: number[]): number;
-export function max<T>(values: T[], acc?: (v: T) => number): number;
+export function max<T>(values: T[], acc: (v: T) => number): number;
 export function max<T>(values: T[], acc?: (v: T) => number) {
   let max = Number.NEGATIVE_INFINITY;
   for (const d of values) {
@@ -108,8 +114,11 @@ export function max<T>(values: T[], acc?: (v: T) => number) {
   return max;
 }
 
+/**
+ * @internal
+ */
 export function extent(values: number[]): [number, number];
-export function extent<T>(values: T[], acc?: (v: T) => number): [number, number];
+export function extent<T>(values: T[], acc: (v: T) => number): [number, number];
 export function extent<T>(values: T[], acc?: (v: T) => number) {
   let max = Number.NEGATIVE_INFINITY;
   let min = Number.POSITIVE_INFINITY;
@@ -125,6 +134,9 @@ export function extent<T>(values: T[], acc?: (v: T) => number) {
   return [min, max];
 }
 
+/**
+ * @internal
+ */
 export function range(length: number) {
   const r: number[] = new Array(length);
   for (let i = 0; i < length; ++i) {
@@ -133,12 +145,18 @@ export function range(length: number) {
   return r;
 }
 
+/**
+ * @internal
+ */
 export function empty(length: number) {
   const r: null[] = new Array(length);
   r.fill(null);
   return r;
 }
 
+/**
+ * @internal
+ */
 export function quantile(values: ArrayLike<number>, quantile: number, length = values.length) {
   if (length === 0) {
     return NaN;
@@ -153,8 +171,11 @@ export function quantile(values: ArrayLike<number>, quantile: number, length = v
   return v + (vAfter - v) * (target - index); // shift by change
 }
 
+/**
+ * @internal
+ */
 export function median(values: number[]): number;
-export function median<T>(values: T[], acc?: (v: T) => number): number;
+export function median<T>(values: T[], acc: (v: T) => number): number;
 export function median<T>(values: T[], acc?: (v: T) => number) {
   const arr = acc ? values.map(acc) : (<number[]><unknown>values).slice();
   arr.sort((a, b) => (a < b ? -1 : (a > b ? 1 : 0)));
@@ -174,13 +195,19 @@ function pushAll<T>(push: (v: T) => void) {
   };
 }
 
+/**
+ * @internal
+ */
 export interface IBuilder<T, R> {
   push(v: T): void;
   pushAll(vs: IForEachAble<T>): void;
   build(): R;
 }
 
-export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvancedBoxPlotData> & { buildArr: (s: Float32Array) => IAdvancedBoxPlotData} {
+/**
+ * @internal
+ */
+export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvancedBoxPlotData> & {buildArr: (s: Float32Array) => IAdvancedBoxPlotData} {
   // filter out NaN
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -457,6 +484,9 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
+/**
+ * @internal
+ */
 export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | null, IDateStatistics> {
   // filter out NaN
   let min: Date | null = null;
@@ -570,6 +600,9 @@ export function similar(a: number, b: number, delta = 0.5) {
 }
 
 
+/**
+ * @internal
+ */
 export function isPromiseLike<T>(value: any): value is PromiseLike<T> {
   return value instanceof Promise || typeof value.then === 'function';
 }
@@ -588,6 +621,9 @@ export function createIndexArray(length: number, dataSize = length) {
   return new Uint32Array(length);
 }
 
+/**
+ * @internal
+ */
 export function toIndexArray(arr: ISequence<number> | IndicesArray): UIntTypedArray {
   if (arr instanceof Uint8Array || arr instanceof Uint16Array || arr instanceof Uint32Array) {
     return arr.slice();
@@ -602,7 +638,9 @@ export function toIndexArray(arr: ISequence<number> | IndicesArray): UIntTypedAr
   return Uint32Array.from(arr);
 }
 
-
+/**
+ * @internal
+ */
 export function joinIndexArrays(groups: IndicesArray[]) {
   switch (groups.length) {
     case 0:
@@ -622,7 +660,6 @@ export function joinIndexArrays(groups: IndicesArray[]) {
 }
 
 
-
 function asc(a: any, b: any) {
   return a < b ? -1 : ((a > b) ? 1 : 0);
 }
@@ -631,8 +668,12 @@ function desc(a: any, b: any) {
   return a < b ? 1 : ((a > b) ? -1 : 0);
 }
 
+
 export declare type ILookUpArray = Uint8Array | Uint16Array | Uint32Array | Int8Array | Int16Array | Int32Array | string[] | Float32Array | Float64Array;
 
+/**
+ * @internal
+ */
 export function sortComplex(indices: UIntTypedArray | number[], comparators: {asc: boolean, lookup: ILookUpArray}[]) {
   if (indices.length < 2 || comparators.length === 0) {
     return indices;
@@ -672,11 +713,17 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: {as
   }
 }
 
+/**
+ * @internal
+ */
 export interface IWorkerMessage {
   type: string;
   uid: number;
 }
 
+/**
+ * @internal
+ */
 export interface IStatsWorkerMessage extends IWorkerMessage {
   refIndices: string | null;
   indices?: UIntTypedArray;
@@ -685,7 +732,9 @@ export interface IStatsWorkerMessage extends IWorkerMessage {
   data?: UIntTypedArray | Float32Array | Int32Array;
 }
 
-
+/**
+ * @internal
+ */
 export interface ISortMessageRequest {
   type: 'sort';
   uid: number;
@@ -694,6 +743,9 @@ export interface ISortMessageRequest {
   sortOrders?: {asc: boolean, lookup: ILookUpArray}[];
 }
 
+/**
+ * @internal
+ */
 export interface ISortMessageResponse {
   type: 'sort';
 
@@ -701,6 +753,9 @@ export interface ISortMessageResponse {
   order: IndicesArray;
 }
 
+/**
+ * @internal
+ */
 export interface IDeleteRefMessageRequest {
   type: 'deleteRef';
 
@@ -708,6 +763,9 @@ export interface IDeleteRefMessageRequest {
   startsWith?: boolean;
 }
 
+/**
+ * @internal
+ */
 export interface ISetRefMessageRequest {
   type: 'setRef';
   uid: number;
@@ -716,6 +774,9 @@ export interface ISetRefMessageRequest {
   data: UIntTypedArray | Float32Array | Int32Array | null;
 }
 
+/**
+ * @internal
+ */
 export interface IDateStatsMessageRequest {
   type: 'dateStats';
   uid: number;
@@ -729,6 +790,9 @@ export interface IDateStatsMessageRequest {
   template?: IDateStatistics;
 }
 
+/**
+ * @internal
+ */
 export interface IDateStatsMessageResponse {
   type: 'dateStats';
   uid: number;
@@ -736,6 +800,9 @@ export interface IDateStatsMessageResponse {
   stats: IDateStatistics;
 }
 
+/**
+ * @internal
+ */
 export interface INumberStatsMessageRequest {
   type: 'numberStats';
   uid: number;
@@ -749,6 +816,9 @@ export interface INumberStatsMessageRequest {
   numberOfBins: number;
 }
 
+/**
+ * @internal
+ */
 export interface INumberStatsMessageResponse {
   type: 'numberStats';
   uid: number;
@@ -756,6 +826,9 @@ export interface INumberStatsMessageResponse {
   stats: IStatistics;
 }
 
+/**
+ * @internal
+ */
 export interface IBoxPlotStatsMessageRequest {
   type: 'boxplotStats';
   uid: number;
@@ -767,6 +840,9 @@ export interface IBoxPlotStatsMessageRequest {
   data?: Float32Array;
 }
 
+/**
+ * @internal
+ */
 export interface IBoxPlotStatsMessageResponse {
   type: 'boxplotStats';
   uid: number;
@@ -774,6 +850,9 @@ export interface IBoxPlotStatsMessageResponse {
   stats: IAdvancedBoxPlotData;
 }
 
+/**
+ * @internal
+ */
 export interface ICategoricalStatsMessageRequest {
   type: 'categoricalStats';
   uid: number;
@@ -787,6 +866,9 @@ export interface ICategoricalStatsMessageRequest {
   categories: string[];
 }
 
+/**
+ * @internal
+ */
 export interface ICategoricalStatsMessageResponse {
   type: 'categoricalStats';
   uid: number;
@@ -796,6 +878,9 @@ export interface ICategoricalStatsMessageResponse {
 
 const MISSING_DATE = 2147483647;
 
+/**
+ * @internal
+ */
 export function dateValueCacheBuilder(length: number) {
   const vs = new Int32Array(length);
   let i = 0;
@@ -805,10 +890,16 @@ export function dateValueCacheBuilder(length: number) {
   };
 }
 
+/**
+ * @internal
+ */
 export function dateValueCache2Value(v: number) {
   return v === MISSING_DATE ? null : new Date(v);
 }
 
+/**
+ * @internal
+ */
 export function categoricalValueCacheBuilder(length: number, categories: {name: string}[]) {
   const vs = createIndexArray(length, categories.length + 1);
   const name2index = new Map<string, number>();
@@ -822,6 +913,9 @@ export function categoricalValueCacheBuilder(length: number, categories: {name: 
   };
 }
 
+/**
+ * @internal
+ */
 export function categoricalValueCache2Value<T extends {name: string}>(v: number, categories: T[]) {
   return v === 0 ? null : categories[v - 1];
 }
@@ -998,6 +1092,9 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   });
 }
 
+/**
+ * @internal
+ */
 export const WORKER_BLOB = createWorkerCodeBlob([
   pushAll.toString(),
   quantile.toString(),

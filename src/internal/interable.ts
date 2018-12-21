@@ -3,6 +3,9 @@ export interface IForEachAble<T> extends Iterable<T> {
   forEach(callback: (v: T, i: number) => void): void;
 }
 
+/**
+ * @internal
+ */
 export function isForEachAble<T>(v: IForEachAble<T> | any): v is IForEachAble<T> {
   return typeof v.forEach === 'function';
 }
@@ -17,10 +20,16 @@ export interface ISequence<T> extends IForEachAble<T> {
   reduce<U>(callback: (acc: U, v: T, i: number) => U, initial: U): U;
 }
 
+/**
+ * @internal
+ */
 export function isSeqEmpty(seq: ISequence<any>) {
   return seq.every(() => false); // more efficent than counting length
 }
 
+/**
+ * @internal
+ */
 export function isIndicesAble<T>(it: Iterable<T>): it is ArrayLike<T> & Iterable<T> {
   return Array.isArray(it) || it instanceof Uint8Array || it instanceof Uint16Array || it instanceof Uint32Array || it instanceof Float32Array || it instanceof Int8Array || it instanceof Int16Array || it instanceof Int32Array || it instanceof Float64Array;
 }
@@ -482,6 +491,9 @@ class LazySeq<T> implements ISequence<T> {
   }
 }
 
+/**
+ * @internal
+ */
 export function lazySeq<T>(iterable: Iterable<T>): ISequence<T> {
   return new LazySeq(iterable);
 }
@@ -540,6 +552,9 @@ class ConcatSequence<T> implements ISequence<T> {
   }
 }
 
+/**
+ * @internal
+ */
 export function concatSeq<T>(seqs: ISequence<ISequence<T>>): ISequence<T>;
 export function concatSeq<T>(seq1: ISequence<T>, seq2: ISequence<T>, ...seqs: ISequence<T>[]): ISequence<T>;
 export function concatSeq<T>(seq1: ISequence<T>[] | ISequence<T>, seq2?: ISequence<T>, ...seqs: ISequence<T>[]): ISequence<T> {
