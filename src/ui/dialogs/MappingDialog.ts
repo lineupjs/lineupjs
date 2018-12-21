@@ -152,7 +152,7 @@ export default class MappingDialog extends ADialog {
 
     {
       this.forEach(`.${cssClass('dialog-mapper-details')} input[type=number]`, (d: HTMLInputElement, i) => d.onchange = () => {
-        const v = parseFloat(d.value);
+        const v = d.valueAsNumber;
         if (v === this.rawDomain[i]) {
           d.setCustomValidity('');
           return;

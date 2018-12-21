@@ -34,7 +34,7 @@ export default function append(col: NumberColumn, node: HTMLElement, dialog: IDi
     bins.disabled = isThreshold;
 
     if (isThreshold) {
-      col.setGroupThresholds([parseFloat(threshold.value)]);
+      col.setGroupThresholds([threshold.valueAsNumber]);
       return;
     }
 

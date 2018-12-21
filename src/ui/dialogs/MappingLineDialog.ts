@@ -51,8 +51,8 @@ export default class MappingLineDialog extends ADialog {
     if (!this.node.checkValidity()) {
       return false;
     }
-    const domain = this.adapter.normalizeRaw(parseFloat(this.findInput('input[type=number]').value));
-    const range = parseFloat(this.findInput('input[type=number]:last-of-type').value) * 100;
+    const domain = this.adapter.normalizeRaw(this.findInput('input[type=number]').valueAsNumber);
+    const range = this.findInput('input[type=number]:last-of-type').valueAsNumber * 100;
     this.line.update(domain, range);
     return true;
   }

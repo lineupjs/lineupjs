@@ -33,7 +33,7 @@ export default class InputNumberDialog extends ADialog {
   }
 
   submit() {
-    this.callback(parseFloat(this.findInput('input[type=number]').value));
+    this.callback(this.findInput('input[type=number]').valueAsNumber);
     return true;
   }
 }

@@ -333,18 +333,18 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       case -1:
         //bigger than the last threshold
         return {
-          name: `${this.label} > ${threshold[threshold.length - 1]}`,
+          name: `${this.label} > ${this.numberFormat(threshold[threshold.length - 1])}`,
           color: this.colorMapping.apply(1)
         };
       case 0:
         //smallest
         return {
-          name: `${this.label} <= ${threshold[0]}`,
+          name: `${this.label} <= ${this.numberFormat(threshold[0])}`,
           color: this.colorMapping.apply(0)
         };
       default:
         return {
-          name: `${threshold[treshholdIndex - 1]} <= ${this.label} <= ${threshold[treshholdIndex]}`,
+          name: `${this.numberFormat(threshold[treshholdIndex - 1])} <= ${this.label} <= ${this.numberFormat(threshold[treshholdIndex])}`,
           color: this.colorMapping.apply(this.mapping.apply((threshold[treshholdIndex - 1] + threshold[treshholdIndex]) / 2))
         };
     }
