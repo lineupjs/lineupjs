@@ -12,7 +12,7 @@ import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph, {EMode} from './SlopeGraph';
 import DialogManager from './dialogs/DialogManager';
-import {cssClass} from '../styles/index';
+import {cssClass} from '../styles';
 import domElementCache from './domElementCache';
 
 /**

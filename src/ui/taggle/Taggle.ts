@@ -1,13 +1,13 @@
+import {GridStyleManager} from 'lineupengine';
 import {defaultOptions} from '../../config';
 import {ITaggleOptions} from '../../interfaces';
 import merge from '../../internal/merge';
 import DataProvider from '../../provider/ADataProvider';
+import {cssClass, engineCssClass} from '../../styles';
 import {ALineUp} from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
 import spaceFillingRule from './spaceFillingRule';
 import TaggleRenderer from './TaggleRenderer';
-import {cssClass, engineCssClass} from '../../styles/index';
-import {GridStyleManager} from 'lineupengine';
 
 export {ITaggleOptions} from '../../interfaces';
 
@@ -21,7 +21,8 @@ export default class Taggle extends ALineUp {
 
   constructor(node: HTMLElement, data: DataProvider, options: Partial<ITaggleOptions> = {}) {
     super(node, data, options && options.ignoreUnsupportedBrowser === true);
-    merge(this.options, options, {
+    merge(this.options, options);
+    merge(this.options, {
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     });
 

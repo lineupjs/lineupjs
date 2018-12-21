@@ -1,7 +1,4 @@
-import {
-  defaultPhases, EAnimationMode, IAnimationContext, IAnimationItem, IPhase,
-  KeyFinder, IExceptionContext
-} from 'lineupengine';
+import {defaultPhases, EAnimationMode, IAnimationContext, IAnimationItem, IExceptionContext, IPhase, KeyFinder} from 'lineupengine';
 import {IGroupData, IGroupItem, isGroup} from '../model';
 
 /** @internal */

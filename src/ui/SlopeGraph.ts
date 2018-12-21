@@ -1,8 +1,7 @@
-import {IExceptionContext, range, ITableSection} from 'lineupengine';
-import {IGroupData, IGroupItem, isGroup, forEachIndices, filterIndices, IOrderedGroup} from '../model';
-import {SLOPEGRAPH_WIDTH, cssClass, aria} from '../styles';
+import {IExceptionContext, ITableSection, range} from 'lineupengine';
+import {filterIndices, forEachIndices, IGroupData, IGroupItem, IOrderedGroup, isGroup} from '../model';
+import {aria, cssClass, engineCssClass, SLOPEGRAPH_WIDTH} from '../styles';
 import {IRankingHeaderContextContainer} from './interfaces';
-import {engineCssClass} from '../styles/index';
 
 interface ISlope {
   isSelected(selection: {has(dataIndex: number): boolean}): boolean;

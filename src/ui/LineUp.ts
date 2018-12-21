@@ -2,10 +2,10 @@ import {defaultOptions} from '../config';
 import {ILineUpOptions} from '../interfaces';
 import merge from '../internal/merge';
 import DataProvider from '../provider/ADataProvider';
+import {cssClass} from '../styles';
 import {ALineUp} from './ALineUp';
 import EngineRenderer from './EngineRenderer';
 import SidePanel from './panel/SidePanel';
-import {cssClass} from '../styles';
 
 export {ILineUpOptions} from '../interfaces';
 

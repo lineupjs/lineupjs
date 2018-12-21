@@ -1,22 +1,17 @@
 import {MIN_LABEL_WIDTH} from '../config';
 import {equalArrays} from '../internal';
 import {dragAble, dropAble, hasDnDType, IDropResult} from '../internal/dnd';
-import {
-  createImpositionBoxPlotDesc, createImpositionDesc, createImpositionsDesc, createNestedDesc, createReduceDesc,
-  createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn,
-  isNumbersColumn
-} from '../model';
+import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn} from '../model';
 import {categoryOf, getSortType} from '../model/annotations';
 import Column from '../model/Column';
-import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import ImpositionBoxPlotColumn from '../model/ImpositionBoxPlotColumn';
-import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
-import ImpositionCompositesColumn from '../model/ImpositionCompositesColumn';
-import {IRankingHeaderContext} from './interfaces';
-import {IOnClickHandler, getToolbar, dialogContext} from './toolbar';
-import {IToolbarAction} from './toolbar';
+import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
+import ImpositionBoxPlotColumn, {createImpositionBoxPlotDesc} from '../model/ImpositionBoxPlotColumn';
+import ImpositionCompositeColumn, {createImpositionDesc} from '../model/ImpositionCompositeColumn';
+import ImpositionCompositesColumn, {createImpositionsDesc} from '../model/ImpositionCompositesColumn';
+import {aria, cssClass} from '../styles';
 import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
-import {cssClass, aria} from '../styles';
+import {IRankingHeaderContext} from './interfaces';
+import {dialogContext, getToolbar, IOnClickHandler, IToolbarAction} from './toolbar';
 
 /** @internal */
 export interface IHeaderOptions {
@@ -51,7 +46,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
   // addTooltip(node, col);
 
-  createShortcutMenuItems(<HTMLElement>node.querySelector(`.${cssClass('toolbar')}`)!, options.level!, col, ctx);
+  createShortcutMenuItems(node.querySelector<HTMLElement>(`.${cssClass('toolbar')}`)!, options.level!, col, ctx);
 
   toggleToolbarIcons(node, col);
 
@@ -62,7 +57,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     mergeDropAble(node, col, ctx);
   }
   if (options.rearrangeAble) {
-    rearrangeDropAble(<HTMLElement>node.querySelector(`.${cssClass('handle')}`)!, col, ctx);
+    rearrangeDropAble(node.querySelector<HTMLElement>(`.${cssClass('handle')}`)!, col, ctx);
   }
   if (options.resizeable) {
     dragWidth(col, node);
@@ -73,7 +68,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
-  const label = <HTMLElement>node.querySelector(`.${cssClass('label')}`)!;
+  const label = node.querySelector<HTMLElement>(`.${cssClass('label')}`)!;
   label.innerHTML = col.getWidth() < minWidth ? '&nbsp;' : col.label;
   node.title = col.description ? `${col.label}\n${col.description}` : col.label;
   node.dataset.colId = col.id;
@@ -218,7 +213,7 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
   const availableWidth = col.getWidth();
   const actions = Array.from(toolbar.children).map((d) => ({node: <HTMLElement>d, width: d.clientWidth > 0 ? d.clientWidth : defaultVisibleClientWidth}));
 
-  const shortCuts =  actions.filter((d) => d.node.dataset.a === 'o');
+  const shortCuts = actions.filter((d) => d.node.dataset.a === 'o');
   const hybrids = actions.filter((d) => d.node.dataset.a === 's');
   const moreIcon = actions.find((d) => d.node.dataset.a === 'm');
   const moreEntries = moreIcon ? parseInt(moreIcon.node.dataset.m!, 10) : 0;

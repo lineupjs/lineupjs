@@ -5,7 +5,7 @@ import {ISummaryRenderer, IRenderCallback} from '../renderer/interfaces';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import {ILineUpFlags} from '../interfaces';
-import {cssClass, engineCssClass} from '../styles/index';
+import {cssClass, engineCssClass} from '../styles';
 import {isPromiseLike} from '../internal';
 
 export interface IRenderers {
