@@ -9,7 +9,7 @@ export const SUPPORTED_EDGE_VERSION = 16;
  */
 export function getUnsupportedBrowserError() {
   const info = detect();
-  if (!info) {
+  if (!info || !info.version) {
     return 'browser cannot be detected';
   }
   const prefix = `unsupported browser detected:`;

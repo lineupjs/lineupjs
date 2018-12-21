@@ -111,14 +111,14 @@ export {default as LinksColumn} from './LinksColumn';
  */
 export function defineColumn<T>(name: string, functions: any = {}): typeof Column {
   class CustomColumn extends ValueColumn<T> {
-    constructor(id: string, desc: IValueColumnDesc<T>) {
+    constructor(id: string, desc: IValueColumnDesc<T>, ...args: any[]) {
       super(id, desc);
       if (typeof (this.init) === 'function') {
-        this.init.apply(this, [].slice.apply(arguments));
+        this.init(id, desc, ...args);
       }
     }
 
-    init() {
+    init(..._args: any[]) {
       // dummy
     }
   }
