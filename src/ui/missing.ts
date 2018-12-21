@@ -1,5 +1,5 @@
-import {uniqueId} from './dialogs/utils';
 import {cssClass} from '../styles';
+import {uniqueId} from './dialogs/utils';
 
 /** @internal */
 export const filterMissingText = 'Filter rows containing missing values';
@@ -18,7 +18,7 @@ export function filterMissingNumberMarkup(bakMissing: boolean, count: number, id
   const id = uniqueId(idPrefix);
   return `<div class="${cssClass('checkbox')}">
     <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''} id="${id}">
-    <label for="${id}" class="${cssClass('filter-missing')} ${count === 0 ? cssClass('disabled'): ''}">Filter ${count} missing value rows</label>
+    <label for="${id}" class="${cssClass('filter-missing')} ${count === 0 ? cssClass('disabled') : ''}">Filter ${count} missing value rows</label>
   </div>`;
 }
 

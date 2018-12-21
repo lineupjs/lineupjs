@@ -1,10 +1,10 @@
+import {ILineUpFlags} from '../interfaces';
 import {Column, IGroupData, IGroupItem} from '../model';
 import {IDataProvider} from '../provider';
 import {IImposer, IRenderContext} from '../renderer';
 import {ISummaryRenderer} from '../renderer/interfaces';
-import {IToolbarAction, IToolbarDialogAddon} from './toolbar';
 import DialogManager from './dialogs/DialogManager';
-import {ILineUpFlags} from '../interfaces';
+import {IToolbarAction, IToolbarDialogAddon} from './toolbar';
 
 export interface IRenderInfo {
   type: string;

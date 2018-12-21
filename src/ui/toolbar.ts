@@ -1,39 +1,39 @@
-import {getAllToolbarActions, isSupportType, getAllToolbarDialogAddons, isSortingAscByDefault} from '../model/annotations';
+import {getAllToolbarActions, getAllToolbarDialogAddons, isSortingAscByDefault, isSupportType} from '../model/annotations';
 import Column from '../model/Column';
 import CompositeColumn, {IMultiLevelColumn} from '../model/CompositeColumn';
+import {EDateSort} from '../model/DatesColumn';
+import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
+import {cssClass} from '../styles';
 import ADialog, {IDialogContext} from './dialogs/ADialog';
-import ChangeRendererDialog from './dialogs/ChangeRendererDialog';
-import RenameDialog from './dialogs/RenameDialog';
 import BooleanFilterDialog from './dialogs/BooleanFilterDialog';
+import CategoricalColorMappingDialog from './dialogs/CategoricalColorMappingDialog';
 import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
 import CategoricalMappingFilterDialog from './dialogs/CategoricalMappingFilterDialog';
+import ChangeRendererDialog from './dialogs/ChangeRendererDialog';
+import ColorMappingDialog from './dialogs/ColorMappingDialog';
 import CompositeChildrenDialog from './dialogs/CompositeChildrenDialog';
 import CutOffHierarchyDialog from './dialogs/CutOffHierarchyDialog';
+import DateFilterDialog from './dialogs/DateFilterDialog';
 import EditPatternDialog from './dialogs/EditPatternDialog';
-import NumberFilterDialog from './dialogs/NumberFilterDialog';
-import ReduceDialog from './dialogs/ReduceDialog';
-import ScriptEditDialog from './dialogs/ScriptEditDialog';
-import SearchDialog from './dialogs/SearchDialog';
-import StringFilterDialog from './dialogs/StringFilterDialog';
-import WeightsEditDialog from './dialogs/WeightsEditDialog';
+import appendDate from './dialogs/groupDate';
 import GroupDialog from './dialogs/GroupDialog';
-import {sortMethods} from './dialogs/utils';
-import {IRankingHeaderContext} from './interfaces';
-import SortDialog from './dialogs/SortDialog';
-import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
-import {EDateSort} from '../model/DatesColumn';
 import appendNumber from './dialogs/groupNumber';
 import appendString from './dialogs/groupString';
-import appendDate from './dialogs/groupDate';
-import ColorMappingDialog from './dialogs/ColorMappingDialog';
 import MappingDialog from './dialogs/MappingDialog';
-import DateFilterDialog from './dialogs/DateFilterDialog';
-import {cssClass} from '../styles';
-import CategoricalColorMappingDialog from './dialogs/CategoricalColorMappingDialog';
+import NumberFilterDialog from './dialogs/NumberFilterDialog';
+import ReduceDialog from './dialogs/ReduceDialog';
+import RenameDialog from './dialogs/RenameDialog';
+import ScriptEditDialog from './dialogs/ScriptEditDialog';
+import SearchDialog from './dialogs/SearchDialog';
 import ShowTopNDialog from './dialogs/ShowTopNDialog';
+import SortDialog from './dialogs/SortDialog';
+import StringFilterDialog from './dialogs/StringFilterDialog';
+import {sortMethods} from './dialogs/utils';
+import WeightsEditDialog from './dialogs/WeightsEditDialog';
+import {IRankingHeaderContext} from './interfaces';
 
 export interface IUIOptions {
-  shortcut: boolean|'only';
+  shortcut: boolean | 'only';
   order: number;
   featureLevel: 'basic' | 'advanced';
   featureCategory: 'ranking' | 'model' | 'ui';
@@ -67,7 +67,7 @@ export interface IDialogClass {
 }
 
 function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
-  return { title, onClick, options };
+  return {title, onClick, options};
 }
 
 export function dialogContext(ctx: IRankingHeaderContext, level: number, attachment: HTMLElement | MouseEvent): IDialogContext {
@@ -118,7 +118,7 @@ const sort: IToolbarAction = {
       ranking.sortBy(col, isAscByDefault, current.length);
       return;
     }
-    let next: string|undefined = undefined;
+    let next: string | undefined = undefined;
     if (isAscByDefault) {
       next = order.asc ? 'desc' : undefined;
     } else {
@@ -233,13 +233,13 @@ const group = ui('Group', (col, evt, ctx, level) => {
   const order = current.indexOf(col);
 
   ranking.groupBy(col, order >= 0 ? -1 : current.length);
-}, { shortcut: 'only', order: 2, featureCategory: 'ranking', featureLevel: 'basic' });
+}, {shortcut: 'only', order: 2, featureCategory: 'ranking', featureLevel: 'basic'});
 
 // advanced ranking
 const groupBy = ui('Group By &hellip;', (col, evt, ctx, level) => {
   const dialog = new GroupDialog(col, dialogContext(ctx, level, evt), ctx);
   dialog.open();
-}, { shortcut: false, order: 2, featureCategory: 'ranking', featureLevel: 'advanced' });
+}, {shortcut: false, order: 2, featureCategory: 'ranking', featureLevel: 'advanced'});
 
 function toggleCompressExpand(col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number) {
   ctx.dialogManager.removeAboveLevel(level);
@@ -261,14 +261,14 @@ const compress = {
   title: 'Compress',
   enabled: (col: IMultiLevelColumn) => !col.getCollapsed(),
   onClick: toggleCompressExpand,
-  options: { featureCategory: 'model', featureLevel: 'advanced' }
+  options: {featureCategory: 'model', featureLevel: 'advanced'}
 };
 
 const expand = {
   title: 'Expand',
   enabled: (col: IMultiLevelColumn) => col.getCollapsed(),
   onClick: toggleCompressExpand,
-  options: { featureCategory: 'model', featureLevel: 'advanced' }
+  options: {featureCategory: 'model', featureLevel: 'advanced'}
 };
 
 const setShowTopN: IToolbarAction = {
@@ -283,7 +283,7 @@ const setShowTopN: IToolbarAction = {
   }
 };
 
-const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
+const toolbarAddons: {[key: string]: IToolbarDialogAddon} = {
   sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
@@ -306,7 +306,7 @@ const toolbarAddons: { [key: string]: IToolbarDialogAddon } = {
   },
 };
 
-export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAddon } = Object.assign({
+export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddon} = Object.assign({
   group,
   groupBy,
   compress,
@@ -318,28 +318,28 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
   remove,
   rename,
   setShowTopN,
-  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], { shortcut: true, order: 3, featureCategory: 'ranking', featureLevel: 'basic' }),
-  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
-  filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
-  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
-  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
-  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
-  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], { shortcut: true, featureCategory: 'ranking', featureLevel: 'basic' }),
-  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], { shortcut: false, featureCategory: 'ui', featureLevel: 'advanced' }),
-  colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], { shortcut: false, featureCategory: 'ui', featureLevel: 'advanced' }),
-  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], { shortcut: true, featureCategory: 'model', featureLevel: 'advanced' }),
-  reduce: uiDialog('Reduce by &hellip;', ReduceDialog, () => [], { featureCategory: 'model', featureLevel: 'advanced' }),
-  cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix], { featureCategory: 'model', featureLevel: 'advanced' }),
-  editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx], { featureCategory: 'model', featureLevel: 'advanced' }),
-  editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix], { featureCategory: 'model', featureLevel: 'advanced' }),
-  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], { shortcut: true, featureCategory: 'model', featureLevel: 'advanced' }),
-  compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx], { featureCategory: 'model', featureLevel: 'advanced' }),
+  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {shortcut: true, order: 3, featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
+  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], {shortcut: false, featureCategory: 'ui', featureLevel: 'advanced'}),
+  colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], {shortcut: false, featureCategory: 'ui', featureLevel: 'advanced'}),
+  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {shortcut: true, featureCategory: 'model', featureLevel: 'advanced'}),
+  reduce: uiDialog('Reduce by &hellip;', ReduceDialog, () => [], {featureCategory: 'model', featureLevel: 'advanced'}),
+  cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix], {featureCategory: 'model', featureLevel: 'advanced'}),
+  editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx], {featureCategory: 'model', featureLevel: 'advanced'}),
+  editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix], {featureCategory: 'model', featureLevel: 'advanced'}),
+  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], {shortcut: true, featureCategory: 'model', featureLevel: 'advanced'}),
+  compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx], {featureCategory: 'model', featureLevel: 'advanced'}),
   splitCombined: ui('Split Combined Column', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level - 1); // close itself
     // split the combined column into its children
     (<CompositeColumn>col).children.reverse().forEach((c) => col.insertAfterMe(c));
     col.removeMe();
-  }, { featureCategory: 'model', featureLevel: 'advanced' }),
+  }, {featureCategory: 'model', featureLevel: 'advanced'}),
   invertSelection: ui('Invert Selection', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level - 1); // close itself
     const s = ctx.provider.getSelection();
@@ -351,7 +351,7 @@ export const toolbarActions: { [key: string]: IToolbarAction | IToolbarDialogAdd
     const ss = new Set(s);
     const others = order.filter((d) => !ss.has(d));
     ctx.provider.setSelection(others);
-  }, { featureCategory: 'model', featureLevel: 'advanced' })
+  }, {featureCategory: 'model', featureLevel: 'advanced'})
 }, toolbarAddons);
 
 function sortActions(a: IToolbarAction, b: IToolbarAction) {
@@ -368,7 +368,7 @@ function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
   if (cache.has(col.desc.type)) {
     return cache.get(col.desc.type)!;
   }
-  const icons = <{ [key: string]: IToolbarAction }>ctx.toolbar;
+  const icons = <{[key: string]: IToolbarAction}>ctx.toolbar;
   const actions = new Set<IToolbarAction>();
   if (!col.fixed) {
     actions.add(remove);
@@ -422,7 +422,7 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
   if (cacheAddon.has(cacheKey)) {
     return cacheAddon.get(cacheKey)!;
   }
-  const icons = <{ [key: string]: IToolbarDialogAddon }>ctx.toolbar;
+  const icons = <{[key: string]: IToolbarDialogAddon}>ctx.toolbar;
   const actions = new Set<IToolbarDialogAddon>();
 
   const keys = getAllToolbarDialogAddons(col, key);

@@ -9,15 +9,15 @@ import LocalDataProvider from './provider/LocalDataProvider';
 import LineUp, {ILineUpOptions} from './ui/LineUp';
 import Taggle, {ITaggleOptions} from './ui/taggle';
 
+export * from './builder';
+export * from './config';
+export * from './interfaces';
+export {IAdvancedBoxPlotData, IBoxPlotData, ICategoricalBin, ICategoricalStatistics, INumberBin, IStatistics} from './internal/math';
+export * from './model';
 export * from './provider';
 export * from './renderer';
-export * from './model';
-export * from './builder';
 export * from './ui';
-export * from './interfaces';
-export * from './config';
 export {default} from './ui/LineUp';
-export {IBoxPlotData, IAdvancedBoxPlotData, IStatistics, ICategoricalBin, ICategoricalStatistics, INumberBin} from './internal/math';
 
 
 export function createLocalDataProvider(data: any[], columns: IColumnDesc[], options: Partial<ILocalDataProviderOptions> = {}) {

@@ -1,10 +1,9 @@
-import AEventDispatcher from '../internal/AEventDispatcher';
+import AEventDispatcher, {IEventListener} from '../internal/AEventDispatcher';
 import OrderedSet from '../internal/OrderedSet';
-import {IGroupData, IGroupItem, isGroup, forEachIndices} from '../model';
+import {forEachIndices, IGroupData, IGroupItem, isGroup} from '../model';
 import {IDataProvider} from '../provider';
 import {rangeSelection} from '../renderer/SelectionRenderer';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {engineCssClass, cssClass} from '../styles/index';
+import {cssClass, engineCssClass} from '../styles';
 
 interface IPoint {
   x: number;
@@ -142,11 +141,6 @@ export default class SelectionManager extends AEventDispatcher {
       this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
     };
   }
-
-  /**
-   *
-   */
-
 
   selectRange(rows: {forEach: (c: (item: (IGroupItem | IGroupData)) => void) => void}, additional: boolean = false) {
     const current = new OrderedSet<number>(additional ? this.ctx.provider.getSelection() : []);

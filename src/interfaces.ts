@@ -2,8 +2,8 @@ import Column, {IGroupData, IGroupItem} from './model';
 import Ranking from './model/Ranking';
 import {IDataProvider} from './provider';
 import {ICellRendererFactory} from './renderer';
-import {IToolbarAction, IToolbarDialogAddon} from './ui';
 import {ERenderMode} from './renderer/interfaces';
+import {IToolbarAction, IToolbarDialogAddon} from './ui';
 
 
 /**
