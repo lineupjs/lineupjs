@@ -2,7 +2,6 @@
  * main module of LineUp.js containing the main class and exposes all other modules
  */
 
-import './style.scss';
 import {IColumnDesc} from './model';
 import {ILocalDataProviderOptions} from './provider';
 import ADataProvider from './provider/ADataProvider';
