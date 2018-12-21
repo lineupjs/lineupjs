@@ -1,25 +1,13 @@
 import {suffix} from '../../internal/AEventDispatcher';
-import {
-  createImpositionDesc,
-  createNestedDesc,
-  createReduceDesc,
-  createScriptDesc,
-  createStackDesc,
-  createRankDesc,
-  createGroupDesc,
-  createAggregateDesc,
-  createSelectionDesc,
-  IColumnDesc
-} from '../../model';
+import {createAggregateDesc, createGroupDesc, createImpositionDesc, createNestedDesc, createRankDesc, createReduceDesc, createScriptDesc, createSelectionDesc, createStackDesc, IColumnDesc, Ranking} from '../../model';
 import {categoryOfDesc, IColumnCategory} from '../../model/annotations';
-import Ranking from '../../model/Ranking';
 import {DataProvider, IDataProvider} from '../../provider';
+import {aria, cssClass} from '../../styles';
+import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
 import {IRankingHeaderContext} from '../interfaces';
+import {dialogContext} from '../toolbar';
 import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
-import {dialogContext} from '../toolbar';
-import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
-import {aria, cssClass} from '../../styles';
 
 
 interface IColumnWrapper {
@@ -127,7 +115,7 @@ export default class SidePanel {
       return;
     }
     this.chooser = this.node.ownerDocument!.createElement('header');
-    this.chooser.innerHTML = '<form></form>';
+    this.chooser.appendChild(this.chooser.ownerDocument!.createElement('form'));
     this.chooser.classList.add(cssClass('side-panel-chooser'));
     this.chooser.firstElementChild!.appendChild(this.search.node);
     this.search.on(SearchBox.EVENT_SELECT, (panel: IColumnWrapper) => {
@@ -154,11 +142,11 @@ export default class SidePanel {
     this.data = data;
 
     const wrapDesc = (desc: IColumnDesc) => ({
-        desc,
-        category: categoryOfDesc(desc, data.columnTypes),
-        id: `${desc.type}@${desc.label}`,
-        text: desc.label
-      });
+      desc,
+      category: categoryOfDesc(desc, data.columnTypes),
+      id: `${desc.type}@${desc.label}`,
+      text: desc.label
+    });
     this.descs.splice(0, this.descs.length, ...data.getColumns().concat(this.options.additionalDescs).map(wrapDesc));
 
     data.on(`${DataProvider.EVENT_ADD_DESC}.panel`, (desc) => {
@@ -307,7 +295,7 @@ export default class SidePanel {
       DataProvider.EVENT_ADD_DESC), null);
   }
 
-  private static groupByType(entries: IColumnWrapper[]): { text: string, children: IColumnWrapper[] }[] {
+  private static groupByType(entries: IColumnWrapper[]): {text: string, children: IColumnWrapper[]}[] {
     const map = new Map<IColumnCategory, IColumnWrapper[]>();
     entries.forEach((entry) => {
       if (!map.has(entry.category)) {

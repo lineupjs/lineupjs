@@ -1,10 +1,9 @@
-import Column from '../../model/Column';
-import {ISummaryRenderer} from '../../renderer/interfaces';
-import {dragAbleColumn, updateHeader, createShortcutMenuItems} from '../header';
-import {IRankingHeaderContext} from '../interfaces';
-import {NumberColumn, isMapAbleColumn} from '../../model';
-import {cssClass, engineCssClass} from '../../styles';
+import {Column, isMapAbleColumn, NumberColumn} from '../../model';
 import {IAbortAblePromise} from '../../provider/tasks';
+import {ISummaryRenderer} from '../../renderer/interfaces';
+import {cssClass, engineCssClass} from '../../styles';
+import {createShortcutMenuItems, dragAbleColumn, updateHeader} from '../header';
+import {IRankingHeaderContext} from '../interfaces';
 
 /** @internal */
 export default class SidePanelEntryVis {
