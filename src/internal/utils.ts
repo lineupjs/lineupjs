@@ -1,5 +1,8 @@
 import * as equalImpl from 'fast-deep-equal';
 
+/**
+ * deep equal comparison
+ */
 export const equal: (a: any, b: any) => boolean = (typeof equalImpl === 'function' ? equalImpl : (<any>equalImpl).default);
 
 /** @internal */
@@ -26,10 +29,11 @@ export function fixCSS(id: string) {
  * @param node
  * @internal
  */
-export function clear(node: Node) {
+export function clear<T extends Node>(node: T) {
   while (node.lastChild) {
     node.removeChild(node.lastChild);
   }
+  return node;
 }
 
 /**
