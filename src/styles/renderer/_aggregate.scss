@@ -1,69 +1,124 @@
 @import '../vars';
 @import '../icons/index';
 
-.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate {
+.#{$lu_css_prefix}-renderer-aggregate {
   text-align: center;
-  overflow-x: unset;
+
+  &.#{$engine_css_prefix}-td {
+    overflow: visible;
+  }
+}
+
+.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate[data-meta]::before {
+
+  // square bracket around
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  left: 2px;
+  top: -2px;
+  bottom: 0;
+  width: $lu_aggregate_square_bracket_width;
+  border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+}
+
+.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
+  &::before {
+    top: 0;
+    border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+  }
+}
+
+.#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
+  > :first-child {
+    cursor: pointer;
+
+    &::before {
+      @include lu_icons();
+
+      content: $lu_icon_caret_down;
+    }
+  }
+
+  > :last-child {
+    cursor: pointer;
+
+    &::before {
+      @include lu_icons();
+
+      content: $lu_icon_expand;
+      transform: rotate(-45deg);
+    }
+  }
+}
+
+.#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'] {
+  > :first-child::before {
+    content: $lu_icon_caret_right;
+  }
+
+  > :last-child::before {
+    content: unset;
+  }
+}
+
+.#{$lu_css_prefix}-renderer-aggregate[data-meta~='last'] {
+  &::before {
+    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+  }
+}
+
+.#{$lu_css_prefix}-renderer-aggregate[data-meta='first'] {
+  > :last-child::before {
+    content: $lu_icon_compress;
+  }
+}
+
+.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-aggregate {
+  font-size: medium;
+
+  > :last-child {
+    display: none;
+  }
+}
+
+.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate[data-meta='inner'] {
+  > :first-child {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    top: 50%;
+    width: $lu_aggregate_hierarchy_width;
+    left: 50%;
+    height: 1px;
+    border-bottom: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    box-sizing: border-box;
+  }
 
   &::after {
     content: '';
     position: absolute;
     pointer-events: none;
-    top: -2px;  // FIXME right padding
-    width: $lu_aggregate_square_bracket_width;
-    right: 0;
+    top: -2px; // FIXME right padding
+    width: $lu_aggregate_hierarchy_width;
+    left: 50%;
     bottom: 0;
-    border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    border-left: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
     box-sizing: border-box;
   }
 }
 
-.#{$lu_css_prefix}-renderer-aggregate.#{$lu_css_prefix}-low::after {
-  border-left: none;
-}
-
-.#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
-  cursor: pointer;
-
-  &::before {
-    @include lu_icons();
-
-    content: $lu_icon_caret_down;
-    padding-right: $lu_aggregate_square_bracket_width;
+.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate[data-meta='last'] {
+  > :first-child {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    top: -2px;
+    width: $lu_aggregate_hierarchy_width;
+    left: 50%;
+    bottom: 50%;
+    border-left: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    border-bottom: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    box-sizing: border-box;
   }
-
-  &::after {
-    top: 0;
-    border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-  }
-}
-
-.#{$lu_css_prefix}-renderer-aggregate[data-meta=last] {
-  &::after {
-    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-  }
-}
-
-.#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'],
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-aggregate {
-  padding-right: $lu_aggregate_square_bracket_width;
-  cursor: pointer;
-
-  &::after {
-    top: 0;
-    border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-  }
-}
-
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-aggregate::before {
-  @include lu_icons();
-
-  content: $lu_icon_caret_right;
-}
-
-.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-aggregate {
-  padding-right: $lu_aggregate_square_bracket_width;
-  cursor: pointer;
-  font-size: medium;
 }

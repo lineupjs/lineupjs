@@ -1,21 +1,16 @@
 import {format} from 'd3-format';
 import {equalArrays} from '../internal';
-import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IDataRow, IGroup, IGroupData} from './interfaces';
-import {groupCompare} from './internal';
-import {
-  default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
-  isNumberIncluded, noNumberFilter, numberCompare, isDummyNumberFilter, restoreNumberFilter
-} from './INumberColumn';
-import {
-  createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,
-  ScaleMappingFunction
-} from './MappingFunction';
-import {isMissingValue, isUnknown, missingGroup} from './missing';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
-import {IColorMappingFunction, createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import {ISequence} from '../internal/interable';
+import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
+import {createColorMappingFunction, IColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {IDataRow, IGroup} from './interfaces';
+import {toCompareGroupValue} from './internal';
+import {default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isDummyNumberFilter, isEqualNumberFilter, isNumberIncluded, noNumberFilter, restoreNumberFilter} from './INumberColumn';
+import {createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {isMissingValue, isUnknown, missingGroup} from './missing';
+import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 
@@ -73,8 +68,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 
-  private readonly missingValue: number;
-
   private mapping: IMappingFunction;
   private colorMapping: IColorMappingFunction;
   private original: IMappingFunction;
@@ -86,7 +79,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  private numberFormat: (n: number) => string = format('.2f');
+  private readonly numberFormat: (n: number) => string = format('.2f');
 
   private currentGroupThresholds: number[] = [];
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
@@ -101,7 +94,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-    this.missingValue = desc.missingValue != null ? desc.missingValue : NaN;
 
     this.setGroupRenderer('boxplot');
     this.setDefaultSummaryRenderer('histogram');
@@ -138,9 +130,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (dump.stratifyThreshholds) {
       this.currentGroupThresholds = dump.stratifyThresholds;
     }
-    if (dump.numberFormat) {
-      this.numberFormat = format(dump.numberFormat);
-    }
   }
 
   protected createEventList() {
@@ -159,6 +148,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -192,10 +182,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.mapping.getRange(this.numberFormat);
   }
 
-  getRawValue(row: IDataRow, missingValue = this.missingValue) {
+  getRawValue(row: IDataRow) {
     const v: any = super.getValue(row);
     if (isMissingValue(v)) {
-      return missingValue;
+      return NaN;
     }
     return +v;
   }
@@ -204,32 +194,48 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
   }
 
-  isMissing(row: IDataRow) {
-    return isMissingValue(super.getValue(row));
+  getValue(row: IDataRow) {
+    const v = this.getNumber(row);
+    if (isNaN(v)) {
+      return null;
+    }
+    return v;
   }
 
-  getValue(row: IDataRow) {
+  getNumber(row: IDataRow) {
     const v = this.getRawValue(row);
     if (isNaN(v)) {
-      return v;
+      return NaN;
     }
     return this.mapping.apply(v);
   }
 
-  getNumber(row: IDataRow) {
-    return this.getValue(row);
+  iterNumber(row: IDataRow) {
+    return [this.getNumber(row)];
   }
 
-  getRawNumber(row: IDataRow, missingValue = this.missingValue) {
-    return this.getRawValue(row, missingValue);
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return numberCompare(this.getNumber(a), this.getNumber(b), this.isMissing(a), this.isMissing(b));
+  getRawNumber(row: IDataRow) {
+    return this.getRawValue(row);
   }
 
-  groupCompare(a: IGroupData, b: IGroupData): number {
-    return groupCompare(a.rows, b.rows, this, <any>this.groupSortMethod);
+  toCompareValue(row: IDataRow, valueCache?: any) {
+    return valueCache != null ? valueCache : this.getNumber(row);
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.FLOAT;
+  }
+
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
+    return toCompareGroupValue(rows, this, <any>this.groupSortMethod, valueCache);
+  }
+
+  toCompareGroupValueType() {
+    return ECompareValueType.FLOAT;
   }
 
   getOriginalMapping() {
@@ -244,7 +250,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   getColor(row: IDataRow) {
@@ -291,7 +297,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @returns {boolean}
    */
   filter(row: IDataRow) {
-    return isNumberIncluded(this.currentFilter, this.getRawNumber(row, NaN));
+    return isNumberIncluded(this.currentFilter, this.getRawNumber(row));
   }
 
   getGroupThresholds() {
@@ -309,7 +315,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
 
   group(row: IDataRow): IGroup {
-    if (this.isMissing(row)) {
+    const value = this.getRawNumber(row);
+    if (isNaN(value)) {
       return missingGroup;
     }
 
@@ -320,25 +327,24 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       threshold = [(d[1] - d[0]) / 2];
     }
 
-    const value = this.getRawNumber(row);
     const treshholdIndex = threshold.findIndex((t) => value <= t);
     // group by thresholds / bins
     switch (treshholdIndex) {
       case -1:
         //bigger than the last threshold
         return {
-          name: `${this.label} > ${threshold[threshold.length - 1]}`,
+          name: `${this.label} > ${this.numberFormat(threshold[threshold.length - 1])}`,
           color: this.colorMapping.apply(1)
         };
       case 0:
         //smallest
         return {
-          name: `${this.label} <= ${threshold[0]}`,
+          name: `${this.label} <= ${this.numberFormat(threshold[0])}`,
           color: this.colorMapping.apply(0)
         };
       default:
         return {
-          name: `${threshold[treshholdIndex - 1]} <= ${this.label} <= ${threshold[treshholdIndex]}`,
+          name: `${this.numberFormat(threshold[treshholdIndex - 1])} <= ${this.label} <= ${this.numberFormat(threshold[treshholdIndex])}`,
           color: this.colorMapping.apply(this.mapping.apply((threshold[treshholdIndex - 1] + threshold[treshholdIndex]) / 2))
         };
     }

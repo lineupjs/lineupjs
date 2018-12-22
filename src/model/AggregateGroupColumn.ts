@@ -1,8 +1,9 @@
-import {Category, SupportType} from './annotations';
-import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import {Category, SupportType, toolbar} from './annotations';
+import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IGroup} from './interfaces';
 import Ranking from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {EAggregationState} from '../provider/interfaces';
 
 /**
  * factory for creating a description creating a rank column
@@ -14,21 +15,23 @@ export function createAggregateDesc(label: string = 'Aggregate Groups') {
 }
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {
-  isAggregated(ranking: Ranking, group: IGroup): boolean;
+  isAggregated(ranking: Ranking, group: IGroup): EAggregationState;
 
-  setAggregated(ranking: Ranking, group: IGroup, value: boolean): void;
+  setAggregated(ranking: Ranking, group: IGroup, value: EAggregationState): void;
 }
 
 /**
  * emitted upon changing of the aggregate attribute
+ * @aparam value -1 = no, 0 = fully aggregated, N = show top N
  * @asMemberOf AggregateGroupColumn
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean): void;
+export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean, state: EAggregationState): void;
 
 /**
  * a checkbox column for selections
  */
+@toolbar('setShowTopN')
 @SupportType()
 @Category('support')
 export default class AggregateGroupColumn extends Column {
@@ -54,6 +57,7 @@ export default class AggregateGroupColumn extends Column {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -71,17 +75,18 @@ export default class AggregateGroupColumn extends Column {
     return false;
   }
 
-  setAggregated(group: IGroup, value: boolean) {
+  setAggregated(group: IGroup, value: boolean | EAggregationState) {
+    const n: EAggregationState = typeof value === 'boolean' ? (value ? EAggregationState.EXPAND : EAggregationState.COLLAPSE): value;
     const ranking = this.findMyRanker()!;
     const current = ((<IAggregateGroupColumnDesc>this.desc).isAggregated) && (<IAggregateGroupColumnDesc>this.desc).isAggregated(ranking, group);
-    if (current === value) {
+    if (current === n) {
       return true;
     }
 
     if ((<IAggregateGroupColumnDesc>this.desc).setAggregated) {
-      (<IAggregateGroupColumnDesc>this.desc).setAggregated(ranking, group, value);
+      (<IAggregateGroupColumnDesc>this.desc).setAggregated(ranking, group, n);
     }
-    this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, value);
+    this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, n !== EAggregationState.COLLAPSE, n);
     return false;
   }
 }

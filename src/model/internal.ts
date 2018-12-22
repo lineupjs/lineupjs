@@ -1,8 +1,9 @@
-import {LazyBoxPlotData} from '../internal';
-import {IOrderedGroup} from './Group';
+import {boxplotBuilder, IAdvancedBoxPlotData} from '../internal';
+import {IOrderedGroup, defaultGroup} from './Group';
 import {IDataRow, IGroup, IGroupParent} from './interfaces';
 import INumberColumn, {numberCompare} from './INumberColumn';
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
+import {ISequence} from '../internal/interable';
 
 
 /** @internal */
@@ -16,7 +17,9 @@ export function patternFunction(pattern: string, ...args: string[]) {
 
 /** @internal */
 export function joinGroups(groups: IGroup[]): IGroup {
-  console.assert(groups.length > 0);
+  if (groups.length === 0) {
+    return defaultGroup;
+  }
   if (groups.length === 1) {
     return groups[0];
   }
@@ -47,7 +50,7 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
   }
   const lookup = new Map<string, IGroupParent>();
 
-  const resolve = (g: IGroupParent): { g: IGroupParent, id: string } => {
+  const resolve = (g: IGroupParent): {g: IGroupParent, id: string} => {
     let id = g.name;
     if (g.parent) {
       const parent = resolve(g.parent);
@@ -88,23 +91,25 @@ export function colorPool() {
 
 
 /** @internal */
-export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
+export function medianIndex(rows: ISequence<IDataRow>, col: INumberColumn) {
   //return the median row
-  const data = rows.map((r, i) => ({i, v: col.getNumber(r), m: col.isMissing(r)}));
-  const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
+  const data = rows.map((r, i) => ({r, i, v: col.getNumber(r)}));
+  const sorted = Array.from(data.filter((r) => !isNaN(r.v))).sort((a, b) => numberCompare(a.v, b.v));
   const index = sorted[Math.floor(sorted.length / 2.0)];
   if (index === undefined) {
-    return 0; //error case
+    return {index: 0, row: sorted[0]!.r}; //error case
   }
-  return index.i;
+  return {index: index.i, row: index.r};
 }
 
 /** @internal */
-export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn, sortMethod: keyof LazyBoxPlotData) {
-  const va = new LazyBoxPlotData(a.map((row) => col.getNumber(row)));
-  const vb = new LazyBoxPlotData(b.map((row) => col.getNumber(row)));
-
-  return numberCompare(<number>va[sortMethod], <number>vb[sortMethod]);
+export function toCompareGroupValue(rows: ISequence<IDataRow>, col: INumberColumn, sortMethod: keyof IAdvancedBoxPlotData, valueCache?: ISequence<number>) {
+  const b = boxplotBuilder();
+  if (valueCache) {
+    b.pushAll(valueCache);
+  } else {
+    b.pushAll(rows.map((d) => col.getNumber(d)));
+  }
+  const vs = b.build();
+  return <number>vs[sortMethod];
 }
-
-

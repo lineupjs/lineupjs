@@ -16,8 +16,4 @@ export default class DummyColumn extends Column {
   getValue() {
     return '';
   }
-
-  compare() {
-    return 0; //can't compare
-  }
 }

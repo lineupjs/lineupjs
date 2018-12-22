@@ -1,15 +1,13 @@
-import {ICategoricalStatistics, IStatistics} from '../internal';
-import {INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColumn} from '../model';
-/**
- * a renderer rendering a bar for numerical columns
- */
+import {round} from '../internal';
+import {INumberColumn, IDataRow, isNumberColumn, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {attr, forEachChild, noRenderer} from './utils';
+import {attr, noRenderer} from './utils';
+import {concatSeq, ISequence} from '../internal/interable';
 
 /** @internal */
 export default class DotCellRenderer implements ICellRendererFactory {
@@ -27,26 +25,26 @@ export default class DotCellRenderer implements ICellRendererFactory {
       tmp += `<div style='background-color: ${Column.DEFAULT_COLOR}' title=''></div>`;
     }
 
-    const update = (n: HTMLElement, vs: number[], labels: string[], colors: (string | null)[]) => {
+    const update = (n: HTMLElement, data: ISequence<{value: number, label: string, color: string | null}>) => {
       //adapt the number of children
-      if (n.children.length !== vs.length) {
-        let tmp = '';
-        for (let i = 0; i < vs.length; ++i) {
-          tmp += `<div style='background-color: ${colors[i]}' title='${labels[i]}'></div>`;
-        }
-        n.innerHTML = tmp;
+      const l = data.length;
+      if (n.children.length !== l) {
+        n.innerHTML = data.reduce((tmp, r) => {
+          return `${tmp}<div style='background-color: ${r.color}' title='${r.label}'></div>`;
+        }, '');
       }
-      forEachChild(n, (d: HTMLElement, i) => {
-        const v = vs[i];
+      const children = n.children;
+      data.forEach((v, i) => {
+        const d = children[i];
         attr(<HTMLElement>d, {
-          title: labels[i]
+          title: v.label
         }, {
-          display: isMissingValue(v) ? 'none' : null,
-          left: `${Math.round(v * 100)}%`,
-          // jitter
-          top: vs.length > 1 ? `${Math.round(Math.random() * 80 + 10)}%` : null,
-          'background-color': colors[i]
-        });
+            display: isNaN(v.value) ? 'none' : null,
+            left: `${round(v.value * 100, 2)}%`,
+            // jitter
+            top: l > 1 ? `${round(Math.random() * 80 + 10, 2)}%` : null,
+            'background-color': v.color
+          });
       });
     };
 
@@ -63,7 +61,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {template: `<div>${tmp}</div>`, update, render};
   }
 
-  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
     const {template, render, update} = DotCellRenderer.getDOMRenderer(col);
     const width = context.colWidth(col);
     return {
@@ -73,42 +71,52 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return;
         }
         const color = colorOf(col, d, imposer);
-        const v = col.getValue(d);
         if (!isNumbersColumn(col)) {
-          return update(n, [v], [col.getLabel(d)], [color]);
+          const v = col.getNumber(d);
+          return update(n, [{value: v, label: col.getLabel(d), color}]);
         }
-        const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
-        return update(n, vs, vs.map(DEFAULT_FORMATTER), vs.map((_: any) => color));
+        const data = col.getNumbers(d).filter((vi: number) => !isNaN(vi)).map((value) => ({value, label: DEFAULT_FORMATTER(value), color}));
+        return update(n, data);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
         const color = colorOf(col, d, imposer);
-        const v = col.getValue(d);
         if (!isNumbersColumn(col)) {
+          const v = col.getNumber(d);
           return render(ctx, [v], [color], width);
         }
-        const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
+        const vs: number[] = col.getNumbers(d).filter((vi: number) => !isNaN(vi));
         return render(ctx, vs, vs.map((_: any) => color), width);
       }
     };
   }
 
-  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
     const {template, update} = DotCellRenderer.getDOMRenderer(col);
     return {
       template,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const vs = rows.map((r) => col.getValue(r));
-        const colors = rows.map((r) => colorOf(col, r, imposer));
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, 'dot', (rows) => {
+          //value, color, label,
 
-        if (!isNumbersColumn(col)) {
-          return update(n, vs, rows.map((r) => col.getLabel(r)), colors);
-        }
-        // concatenate all columns
-        const all = (<number[]>[]).concat(...vs.filter((vi: number) => !isMissingValue(vi)));
-        return update(n, all, all.map(DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
+          if (!isNumbersColumn(col)) {
+            return rows.map((r) => ({value: col.getNumber(r), label: col.getLabel(r), color: colorOf(col, r, imposer)}));
+          }
+          // concatenate all columns
+          const vs = rows.map((r) => {
+            const color = colorOf(col, r, imposer);
+            return col.getNumbers(r)
+              .filter((vi: number) => !isNaN(vi))
+              .map((value) => ({value, label: DEFAULT_FORMATTER(value), color}));
+          });
+          return Array.from(concatSeq(vs));
+        }).then((data) => {
+          if (typeof data !== 'symbol') {
+            update(n, data);
+          }
+        });
       }
     };
   }

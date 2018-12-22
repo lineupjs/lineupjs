@@ -1,5 +1,5 @@
 import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
@@ -55,6 +55,7 @@ export default class LinkMapColumn extends MapColumn<string> {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -65,7 +66,8 @@ export default class LinkMapColumn extends MapColumn<string> {
   }
 
   getValue(row: IDataRow) {
-    return this.getLinkMap(row).map(({key, value}) => ({
+    const r = this.getLinkMap(row);
+    return r.every((d) => d.value == null) ? null : r.map(({key, value}) => ({
       key,
       value: value ? value.href : ''
     }));
@@ -79,7 +81,7 @@ export default class LinkMapColumn extends MapColumn<string> {
   }
 
   getLinkMap(row: IDataRow): IKeyValue<ILink>[] {
-    return super.getValue(row).map(({key, value}) => ({
+    return super.getMap(row).map(({key, value}) => ({
       key,
       value: this.transformValue(value, row, key)
     }));

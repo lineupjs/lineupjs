@@ -22,10 +22,8 @@
     "noUnusedLocals": true,
     "noImplicitThis": true,
     "noUnusedParameters": true,
-    "strictNullChecks": true,
+    "strict": true,
     "stripInternal": true,
-    "strictFunctionTypes": true,
-    "strictPropertyInitialization": true,
     "esModuleInterop": true
   },
   "compileOnSave": false,

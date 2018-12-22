@@ -1,7 +1,7 @@
-export {default as DataProvider, IStatsBuilder, IDataProviderOptions, IDataProvider, IExportOptions} from './ADataProvider';
+export {default as DataProvider, IExportOptions} from './ADataProvider';
 export {default as LocalDataProvider} from './LocalDataProvider';
 export {default as RemoteDataProvider} from './RemoteDataProvider';
 export * from './LocalDataProvider';
 export * from './RemoteDataProvider';
 export * from './utils';
-export {SCHEMA_REF} from './interfaces';
+export {IDataProviderOptions, IDataProvider, SCHEMA_REF} from './interfaces';

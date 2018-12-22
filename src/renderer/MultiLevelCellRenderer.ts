@@ -1,14 +1,16 @@
-import {ICategoricalStatistics, IStatistics, round} from '../internal';
-import {IDataRow, IGroup, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta} from '../model';
+import {round} from '../internal';
+import {IDataRow, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {medianIndex} from '../model/internal';
 import {default as INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 import {cssClass} from '../styles';
+import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
 export function gridClass(idPrefix: string, column: Column) {
@@ -16,7 +18,7 @@ export function gridClass(idPrefix: string, column: Column) {
 }
 
 /** @internal */
-export function createData(parent: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
+export function createData(parent: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
   const padding = COLUMN_PADDING;
   let offset = 0;
   const cols = parent.children.map((column) => {
@@ -81,18 +83,19 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     return isMultiLevelColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: IMultiLevelColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer) {
     const {cols, stacked, padding} = createData(col, context, this.stacked, ERenderMode.CELL, imposer);
-    const useGrid = context.option('useGridLayout', false);
+    const useGrid = true;
     const width = context.colWidth(col);
     return {
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid && !stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
+      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta) => {
         if (renderMissingDOM(n, col, d)) {
-          return;
+          return null;
         }
         matchColumns(n, cols, context);
 
+        const toWait: IAbortAblePromise<void>[] = [];
         const children = <HTMLElement[]>Array.from(n.children);
         const total = col.getWidth();
         let missingWeight = 0;
@@ -106,48 +109,83 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = stacked ? null : `${padding}px`;
           } else {
-            (<any>cnode.style).gridColumnStart = (ci + 1).toString();
+            cnode.style.gridColumnStart = (ci + 1).toString();
           }
-          col.renderer!.update(cnode, d, i, group, meta);
+          const r = col.renderer!.update(cnode, d, i, group, meta);
           if (stacked) {
-            missingWeight += (1 - col.column.getValue(d)) * weight;
+            missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
+          }
+          if (r) {
+            toWait.push(r);
           }
         });
-      },
-      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup, meta: IGroupMeta) => {
-        if (renderMissingCanvas(ctx, col, d, width)) {
-          return;
+
+        if (toWait.length > 0) {
+          return <IAbortAblePromise<void>>abortAbleAll(toWait);
         }
+        return null;
+      },
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta) => {
+        if (renderMissingCanvas(ctx, col, d, width)) {
+          return null;
+        }
+        const toWait: {shift: number, r: IAbortAblePromise<IRenderCallback>}[] = [];
         let stackShift = 0;
-        cols.forEach((col) => {
+        for (const col of cols) {
           const cr = col.renderer!;
           if (cr.render) {
             const shift = col.shift - stackShift;
             ctx.translate(shift, 0);
-            cr.render(ctx, d, i, group, meta);
+            const r = cr.render(ctx, d, i, group, meta);
+            if (typeof r !== 'boolean' && r) {
+              toWait.push({shift, r});
+            }
             ctx.translate(-shift, 0);
           }
           if (stacked) {
-            stackShift += col.width * (1 - col.column.getValue(d));
+            stackShift += col.width * (1 - (<INumberColumn>col.column).getNumber(d));
           }
+        }
+
+        if (toWait.length === 0) {
+          return null;
+        }
+
+        return abortAbleAll(toWait.map((d) => d.r)).then((callbacks) => {
+          return (ctx: CanvasRenderingContext2D) => {
+            if (typeof callbacks === 'symbol') {
+              return;
+            }
+            for (let i = 0; i < callbacks.length; ++i) {
+              const callback = callbacks[i];
+              if (typeof callback !== 'function') {
+                continue;
+              }
+              const shift = toWait[i].shift;
+              ctx.translate(shift, 0);
+              callback(ctx);
+              ctx.translate(-shift, 0);
+            }
+          };
         });
       }
     };
   }
 
 
-  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer) {
     if (this.stacked && isNumberColumn(col)) {
-      return super.createGroup(col, context, hist, imposer);
+      return super.createGroup(col, context, imposer);
     }
 
     const {cols, padding} = createData(col, context, false, ERenderMode.GROUP, imposer);
-    const useGrid = context.option('useGridLayout', false);
+    const useGrid = true;
     return {
       template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
-      update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, group: IOrderedGroup, meta: IGroupMeta) => {
         matchColumns(n, cols, context);
 
+        const toWait: IAbortAblePromise<void>[] = [];
         const children = <HTMLElement[]>Array.from(n.children);
         const total = col.getWidth();
         cols.forEach((col, ci) => {
@@ -159,15 +197,23 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = `${padding}px`;
           } else {
-            (<any>cnode.style).gridColumnStart = (ci + 1).toString();
+            cnode.style.gridColumnStart = (ci + 1).toString();
           }
-          col.groupRenderer!.update(cnode, group, rows);
+          const r = col.groupRenderer!.update(cnode, group, meta);
+          if (r) {
+            toWait.push(r);
+          }
         });
+
+        if (toWait.length > 0) {
+          return <IAbortAblePromise<void>>abortAbleAll(toWait);
+        }
+        return null;
       }
     };
   }
 
-  protected aggregatedIndex(rows: IDataRow[], col: IMultiLevelColumn & Column) {
+  protected aggregatedIndex(rows: ISequence<IDataRow>, col: IMultiLevelColumn & Column) {
     console.assert(isNumberColumn(col));
     return medianIndex(rows, (<INumberColumn><any>col));
   }

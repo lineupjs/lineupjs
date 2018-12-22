@@ -1,11 +1,9 @@
-import {extent} from 'd3-array';
-import {equalArrays} from '../internal';
+import {equalArrays, extent} from '../internal';
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {
-  ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, toCategories,
-  toCategory
+  ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, toCategories
 } from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import NumberColumn, {INumberColumn} from './NumberColumn';
@@ -48,8 +46,6 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   readonly categories: ICategory[];
 
-  private missingCategory: ICategory | null;
-
   private colorMapping: ICategoricalColorMappingFunction;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
@@ -60,7 +56,6 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   constructor(id: string, desc: Readonly<ICategoricalNumberColumnDesc>) {
     super(id, desc);
     this.categories = toCategories(desc);
-    this.missingCategory = desc.missingCategory ? toCategory(desc.missingCategory, NaN) : null;
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('boxplot');
@@ -81,6 +76,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -99,17 +95,29 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   }
 
   getValue(row: IDataRow) {
-    const v = this.getCategory(row);
-    return v ? v.value : NaN;
+    const v = this.getNumber(row);
+    return isNaN(v) ? null : v;
   }
 
   getCategory(row: IDataRow) {
     const v = super.getValue(row);
     if (!v) {
-      return this.missingCategory;
+      return null;
     }
     const vs = String(v);
-    return this.lookup.has(vs) ? this.lookup.get(vs)! : this.missingCategory;
+    return this.lookup.has(vs) ? this.lookup.get(vs)! : null;
+  }
+
+  iterCategory(row: IDataRow) {
+    return [this.getCategory(row)];
+  }
+
+  iterNumber(row: IDataRow) {
+    return [this.getNumber(row)];
+  }
+
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
   }
 
   getColor(row: IDataRow) {
@@ -141,11 +149,8 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   }
 
   getNumber(row: IDataRow) {
-    return this.getValue(row);
-  }
-
-  isMissing(row: IDataRow) {
-    return CategoricalColumn.prototype.isMissing.call(this, row);
+    const v = this.getCategory(row);
+    return v ? v.value : NaN;
   }
 
   getRawNumber(row: IDataRow) {
@@ -154,12 +159,13 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
-      if (this.isMissing(row)) {
+      const value = this.getNumber(row);
+      if (isNaN(value)) {
         return null;
       }
       return {
         name: this.getLabel(row),
-        value: this.getValue(row)
+        value
       };
     }
     return super.getExportValue(row, format);
@@ -190,7 +196,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
       return;
     }
     this.categories.forEach((d, i) => d.value = mapping[i] || 0);
-    this.fire([OrdinalColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getMapping());
+    this.fire([OrdinalColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], bak, this.getMapping());
   }
 
   getColorMapping() {
@@ -221,8 +227,12 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return CategoricalColumn.prototype.compare.call(this, a, b);
+  toCompareValue(row: IDataRow) {
+    return CategoricalColumn.prototype.toCompareValue.call(this, row);
+  }
+
+  toCompareValueType() {
+    return CategoricalColumn.prototype.toCompareValueType.call(this);
   }
 
   getRenderer(): string {

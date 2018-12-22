@@ -5,12 +5,16 @@ import {IArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {IMapAbleColumn, IMappingFunction} from './MappingFunction';
 import {FIRST_IS_NAN} from './missing';
+import {IForEachAble} from '../internal/interable';
 
 
 export interface INumberColumn extends Column {
   getNumber(row: IDataRow): number;
 
   getRawNumber(row: IDataRow): number;
+
+  iterNumber(row: IDataRow): IForEachAble<number>;
+  iterRawNumber(row: IDataRow): IForEachAble<number>;
 }
 
 
@@ -38,12 +42,6 @@ export interface INumberDesc {
    * @default .3n
    */
   numberFormat?: string;
-
-  /**
-   * missing value to use
-   * @default 0
-   */
-  missingValue?: number;
 }
 
 /**
@@ -61,14 +59,20 @@ export function isNumberColumn(col: Column | IColumnDesc) {
 export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
   const aVal = col.getBoxPlotData(a);
   const bVal = col.getBoxPlotData(b);
+  const method = <keyof IBoxPlotData>col.getSortMethod();
   if (aVal == null) {
     return bVal == null ? 0 : FIRST_IS_NAN;
   }
   if (bVal == null) {
     return FIRST_IS_NAN * -1;
   }
-  const method = <keyof IBoxPlotData>col.getSortMethod();
   return numberCompare(<number>aVal[method], <number>bVal[method]);
+}
+
+export function toCompareBoxPlotValue(col: IBoxPlotColumn, row: IDataRow) {
+  const v = col.getBoxPlotData(row);
+  const method = <keyof IBoxPlotData>col.getSortMethod();
+  return v == null ? NaN : <number>v[method];
 }
 
 export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw' | 'normalized'): number {

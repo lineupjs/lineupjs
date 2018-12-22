@@ -1,10 +1,11 @@
-import {ICategory, IDataRow, IGroup} from '../model';
+import {ICategory, IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
+import {ISetColumn, isSetColumn, ICategoricalLikeColumn} from '../model/ICategoricalColumn';
 import {CANVAS_HEIGHT, UPSET, cssClass} from '../styles';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
 export default class UpSetCellRenderer implements ICellRendererFactory {
@@ -99,13 +100,16 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ISetColumn) {
+  createGroup(col: ISetColumn, context: IRenderContext) {
     const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
     return {
       template: `<div><div class="${cssClass('upset-line')}"></div>${templateRow}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const value = union(col, rows);
-        render(n, value);
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, 'union', (rows) => union(col, rows)).then((value) => {
+          if (typeof value !== 'symbol') {
+            render(n, value);
+          }
+        });
       }
     };
   }
@@ -116,10 +120,10 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
 }
 
 /** @internal */
-export function union(col: ISetColumn, rows: IDataRow[]) {
-  const values = new Set<ICategory>();
+export function union(col: ICategoricalLikeColumn, rows: ISequence<IDataRow>) {
+  const values = new Set<ICategory | null>();
   rows.forEach((d) => {
-    col.getSet(d).forEach((c) => values.add(c));
+    col.iterCategory(d).forEach((c) => values.add(c));
   });
   return col.categories.map((cat) => values.has(cat));
 }

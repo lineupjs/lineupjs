@@ -1,11 +1,12 @@
 import {Category, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IDataRow, IGroup} from './interfaces';
 import {patternFunction} from './internal';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IStringDesc, EAlignment} from './StringColumn';
 import StringColumn from './StringColumn';
+import {ISequence} from '../internal/interable';
 
 export interface ILinkDesc extends IStringDesc {
   /**
@@ -89,7 +90,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
       return;
     }
     this.patternFunction = null; // reset cache
-    this.fire([LinkColumn.EVENT_PATTERN_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.pattern, this.pattern = pattern);
+    this.fire([LinkColumn.EVENT_PATTERN_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.pattern, this.pattern = pattern);
   }
 
   getPattern() {
@@ -110,6 +111,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -121,7 +123,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
 
   getValue(row: IDataRow) {
     const l = this.getLink(row);
-    return l == null ? '' : l.href;
+    return l == null ? null : l.href;
   }
 
   getLink(row: IDataRow): ILink | null {
@@ -195,8 +197,20 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return StringColumn.prototype.setGroupCriteria.call(this, value);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return StringColumn.prototype.compare.call(this, a, b);
+  toCompareValue(a: IDataRow) {
+    return StringColumn.prototype.toCompareValue.call(this, a);
+  }
+
+  toCompareValueType() {
+    return StringColumn.prototype.toCompareValueType.call(this);
+  }
+
+  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+    return StringColumn.prototype.toCompareGroupValue.call(this, rows, group);
+  }
+
+  toCompareGroupValueType() {
+    return StringColumn.prototype.toCompareGroupValueType.call(this);
   }
 
   group(row: IDataRow): IGroup {

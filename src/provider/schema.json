@@ -23,6 +23,10 @@
         "type": "string"
       }
     },
+    "showTopN": {
+      "type": "integer",
+      "title": "set show top N value"
+    },
     "rankings": {
       "type": "array",
       "title": "list of rankings",

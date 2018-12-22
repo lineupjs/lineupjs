@@ -1,8 +1,8 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup, everyIndices} from '../model';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
-import {IDataProvider} from '../provider/ADataProvider';
+import {IDataProvider} from '../provider';
 import {cssClass} from '../styles';
 
 /** @internal */
@@ -33,12 +33,27 @@ export default class SelectionRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: SelectionColumn) {
+  createGroup(col: SelectionColumn, context: IRenderContext) {
     return {
       template: `<div></div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
-        const all = selected >= rows.length / 2;
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        let selected = 0;
+        let unselected = 0;
+        const total = group.order.length;
+        everyIndices(group.order, (i) => {
+          const s = context.provider.isSelected(i);
+          if (s) {
+            selected++;
+          } else {
+            unselected++;
+          }
+          if (selected * 2 > total || unselected * 2 > total) {
+            // more than half already, can abort already decided
+            return false;
+          }
+          return true;
+        });
+        const all = selected * 2 > length;
         if (all) {
           n.classList.add(cssClass('group-selected'));
         } else {
@@ -48,7 +63,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
           event.preventDefault();
           event.stopPropagation();
           const value = n.classList.toggle(cssClass('group-selected'));
-          col.setValues(rows, value);
+          col.setValues(group.order, value);
         };
       }
     };
@@ -89,7 +104,7 @@ export function rangeSelection(provider: IDataProvider, rankingId: string, dataI
     return false; // no other or deselect
   }
   const order = ranking.getOrder();
-  const lookup = new Map(order.map((d, i) => <[number, number]>[d, i]));
+  const lookup = new Map(Array.from(order).map((d, i) => <[number, number]>[d, i]));
   const distances = selection.map((d) => {
     const index = (lookup.has(d) ? lookup.get(d)! : Infinity);
     return {s: d, index, distance: Math.abs(relIndex - index)};
@@ -103,11 +118,11 @@ export function rangeSelection(provider: IDataProvider, rankingId: string, dataI
     selection.push(nearest.s);
   }
   if (nearest.index < relIndex) {
-    for(let i = nearest.index + 1; i <= relIndex; ++i) {
+    for (let i = nearest.index + 1; i <= relIndex; ++i) {
       selection.push(order[i]);
     }
   } else {
-    for(let i = relIndex; i <= nearest.index; ++i) {
+    for (let i = relIndex; i <= nearest.index; ++i) {
       selection.push(order[i]);
     }
   }

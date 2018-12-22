@@ -1,14 +1,15 @@
-import Column from '../../model/Column';
+import {Column, isMapAbleColumn, NumberColumn} from '../../model';
+import {IAbortAblePromise} from '../../provider/tasks';
 import {ISummaryRenderer} from '../../renderer/interfaces';
-import {dragAbleColumn, updateHeader, createShortcutMenuItems} from '../header';
+import {cssClass, engineCssClass} from '../../styles';
+import {createShortcutMenuItems, dragAbleColumn, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
-import {NumberColumn, isMapAbleColumn} from '../../model';
-import {cssClass} from '../../styles';
 
 /** @internal */
 export default class SidePanelEntryVis {
   readonly node: HTMLElement;
   private summary: ISummaryRenderer;
+  private summaryUpdater: IAbortAblePromise<void> | null = null;
 
   constructor(public readonly column: Column, private ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('article');
@@ -43,7 +44,29 @@ export default class SidePanelEntryVis {
   update(ctx: IRankingHeaderContext = this.ctx) {
     this.ctx = ctx;
     updateHeader(this.node, this.column);
-    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!, ctx.statsOf(<any>this.column));
+    this.updateSummary();
+  }
+
+  private updateSummary() {
+    const summaryNode = <HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!;
+    if (this.summaryUpdater) {
+      this.summaryUpdater.abort();
+      summaryNode.classList.remove(engineCssClass('loading'));
+      this.summaryUpdater = null;
+    }
+    const r = this.summary.update(summaryNode);
+    if (!r) {
+      return;
+    }
+
+    this.summaryUpdater = r;
+    summaryNode.classList.add(engineCssClass('loading'));
+    r.then((a) => {
+      if (typeof a === 'symbol') {
+        return;
+      }
+      summaryNode.classList.remove(engineCssClass('loading'));
+    });
   }
 
   private appendSummary() {
@@ -60,7 +83,7 @@ export default class SidePanelEntryVis {
 
     this.summary = this.ctx.summaryRenderer(this.column, true);
     this.appendSummary();
-    this.summary.update(<HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!, this.ctx.statsOf(<any>this.column));
+    this.updateSummary();
   }
 
   destroy() {

@@ -16,16 +16,17 @@ export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements
   }
 
   getValue(row: IDataRow) {
-    return toKeyValue<T>(<any>super.getValue(row));
+    const r = this.getMap(row);
+    return r.length === 0 ? null : r;
   }
 
   getLabels(row: IDataRow): IKeyValue<string>[] {
-    const v = this.getValue(row);
+    const v = this.getMap(row);
     return v.map(({key, value}) => ({key, value: String(value)}));
   }
 
   getMap(row: IDataRow) {
-    return this.getValue(row);
+    return toKeyValue<T>(<any>super.getValue(row));
   }
 
   getMapLabel(row: IDataRow) {

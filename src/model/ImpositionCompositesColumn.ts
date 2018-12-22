@@ -1,10 +1,10 @@
 import {IAdvancedBoxPlotData} from '../internal';
 import {suffix, IEventListener} from '../internal/AEventDispatcher';
 import {toolbar, dialogAddons, SortByDefault} from './annotations';
-import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IKeyValue} from './IArrayColumn';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, noNumberFilter} from './INumberColumn';
 import {IMappingFunction, ScaleMappingFunction, isMapAbleColumn} from './MappingFunction';
 import NumbersColumn, {mappingChanged} from './NumbersColumn';
@@ -68,7 +68,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
 
   getColor(row: IDataRow) {
     const c = this._children;
-    switch(c.length) {
+    switch (c.length) {
       case 0:
         return Column.DEFAULT_COLOR;
       case 1:
@@ -94,6 +94,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -130,13 +131,13 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
-      if (this.isMissing(row)) {
+      const value = this.getRawNumber(row);
+      if (isNaN(value)) {
         return null;
       }
       return {
         label: this.getLabels(row),
-        color: this.getColor(row),
-        value: this.getRawNumbers(row)
+        color: this.getColor(row)
       };
     }
     return super.getExportValue(row, format);
@@ -150,6 +151,14 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   getRawNumbers(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.getRawNumbers(row) : [];
+  }
+
+  iterNumber(row: IDataRow) {
+    return this.getNumbers(row);
+  }
+
+  iterRawNumber(row: IDataRow) {
+    return this.getRawNumbers(row);
   }
 
   getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
@@ -180,11 +189,6 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   setSortMethod(value: EAdvancedSortMethod) {
     const w = this.wrapper;
     return w ? w.setSortMethod(value) : undefined;
-  }
-
-  isMissing(row: IDataRow) {
-    const w = this.wrapper;
-    return w ? w.isMissing(row) : true;
   }
 
   setMapping(mapping: IMappingFunction): void {
@@ -237,16 +241,20 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getValues(row) : [];
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return NumbersColumn.prototype.compare.call(this, a, b);
+  toCompareValue(row: IDataRow) {
+    return NumbersColumn.prototype.toCompareValue.call(this, row);
   }
 
-  group(row: IDataRow) {
-    return NumbersColumn.prototype.group.call(this, row);
+  toCompareValueType() {
+    return NumbersColumn.prototype.toCompareValueType.call(this);
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return NumbersColumn.prototype.groupCompare.call(this, a, b);
+  toCompareGroupValue(rows: IDataRow[], group: IGroup) {
+    return NumbersColumn.prototype.toCompareGroupValue.call(this, rows, group);
+  }
+
+  toCompareGroupValueType() {
+    return NumbersColumn.prototype.toCompareGroupValueType.call(this);
   }
 
   insert(col: Column, index: number): Column | null {

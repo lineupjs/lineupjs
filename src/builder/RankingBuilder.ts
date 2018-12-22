@@ -74,8 +74,14 @@ export default class RankingBuilder {
    * specify grouping criteria
    * @returns {this}
    */
-  groupBy(...columns: string[]) {
-    this.groups.push(...columns);
+  groupBy(...columns: (string | string[])[]) {
+    for (const col of columns) {
+      if (Array.isArray(col)) {
+        this.groups.push(...col);
+      } else {
+        this.groups.push(col);
+      }
+    }
     return this;
   }
 

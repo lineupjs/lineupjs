@@ -1,3 +1,5 @@
+// COPY TO index.ts, not using webpack to be ES6 compatible
+
 $engine_assets: '~lineupengine/src/assets';
 @import '~lineupengine/src/styles/vars';
 
@@ -64,9 +66,11 @@ $lu_side_panel_font_size: 14px !default;
 $lu_side_panel_toolbar_font_size: 9pt !default;
 $lu_side_panel_separator_color: #dedede !default;
 
-$lu_aggregate_square_bracket_width: 4px !default;
+$lu_aggregate_square_bracket_width: 8px !default;
 $lu_aggregate_square_bracket_stroke_color: #000 !default;
-$lu_aggregate_square_bracket_stroke_width: 1px !default;
+$lu_aggregate_square_bracket_stroke_width: 2px !default;
+$lu_aggregate_hierarchy_width: 4px !default;
+$lu_aggregate_hierarchy_stroke_width: 1px !default;
 
 $lu_taggle_border_color: #6d6c6c !default;
 

@@ -1,18 +1,17 @@
-import {LazyBoxPlotData} from '../internal';
 import {toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IKeyValue} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 import {
-  compareBoxPlot, DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc,
-  INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter
+  DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc,
+  INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue
 } from './INumberColumn';
 import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IAdvancedBoxPlotData} from '../internal/math';
+import {IAdvancedBoxPlotData, boxplotBuilder} from '../internal/math';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 
@@ -73,8 +72,12 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     this.setDefaultRenderer('mapbars');
   }
 
-  compare(a: IDataRow, b: IDataRow): number {
-    return compareBoxPlot(this, a, b);
+  toCompareValue(row: IDataRow): number {
+    return toCompareBoxPlotValue(this, row);
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.FLOAT;
   }
 
   getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
@@ -82,7 +85,11 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data.map((d) => d.value), this.mapping);
+    const b = boxplotBuilder();
+    for (const d of data) {
+      b.push(isMissingValue(d.value) ? NaN : this.mapping.apply(d.value));
+    }
+    return b.build();
   }
 
   getRange() {
@@ -94,7 +101,12 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (data == null) {
       return null;
     }
-    return new LazyBoxPlotData(data.map((d) => d.value));
+
+    const b = boxplotBuilder();
+    for (const d of data) {
+      b.push(isMissingValue(d.value) ? NaN : d.value);
+    }
+    return b.build();
   }
 
   getNumber(row: IDataRow): number {
@@ -105,9 +117,19 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return getBoxPlotNumber(this, row, 'raw');
   }
 
+  iterNumber(row: IDataRow) {
+    const r = this.getValue(row);
+    return r ? r.map((d) => d.value) : [NaN];
+  }
+
+  iterRawNumber(row: IDataRow) {
+    const r = this.getRawValue(row);
+    return r ? r.map((d) => d.value) : [NaN];
+  }
+
   getValue(row: IDataRow) {
     const values = this.getRawValue(row);
-    return values.map(({key, value}) => ({key, value: isMissingValue(value) ? NaN : this.mapping.apply(value)}));
+    return values.length === 0 ? null : values.map(({key, value}) => ({key, value: isMissingValue(value) ? NaN : this.mapping.apply(value)}));
   }
 
   getRawValue(row: IDataRow): IKeyValue<number>[] {
@@ -120,7 +142,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   }
 
   getLabels(row: IDataRow) {
-    const v = this.getValue(row);
+    const v = this.getRawValue(row);
     return v.map(({key, value}) => ({key, value: DEFAULT_FORMATTER(value)}));
   }
 
@@ -181,6 +203,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;

@@ -8,6 +8,7 @@ import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 import {cssClass} from '../../styles';
+import {ISequence} from '../../internal/interable';
 
 /** @internal */
 export default class MappingDialog extends ADialog {
@@ -17,9 +18,8 @@ export default class MappingDialog extends ADialog {
   private readonly mappingLines: MappingLine[] = [];
   private rawDomain: [number, number];
 
-  private readonly data: Promise<number[]>;
+  private readonly data: Promise<ISequence<number>>;
   private readonly idPrefix: string;
-  private loadedData: number[] | null = null;
 
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
@@ -152,7 +152,7 @@ export default class MappingDialog extends ADialog {
 
     {
       this.forEach(`.${cssClass('dialog-mapper-details')} input[type=number]`, (d: HTMLInputElement, i) => d.onchange = () => {
-        const v = parseFloat(d.value);
+        const v = d.valueAsNumber;
         if (v === this.rawDomain[i]) {
           d.setCustomValidity('');
           return;
@@ -165,19 +165,13 @@ export default class MappingDialog extends ADialog {
         d.setCustomValidity('');
         this.rawDomain[i] = v;
         this.scale.domain = this.rawDomain.slice();
-
-        if (!this.loadedData) {
-          return;
-        }
         this.applyMapping(this.scale);
         this.updateLines();
       });
     }
 
     this.data.then((values) => {
-      this.loadedData = values;
-
-      Array.from(values).forEach((v) => {
+      values.forEach((v) => {
         if (!isMissingValue(v)) {
           g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
         }
@@ -193,7 +187,9 @@ export default class MappingDialog extends ADialog {
     const g = <SVGGElement>this.node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
     const domain = this.scale.domain;
     const range = this.scale.range;
-    this.mappingLines.push(...domain.map((d, i) => new MappingLine(g, this.normalizeRaw(d), range[i] * 100, this.mappingAdapter)));
+    for (let i = 0; i < domain.length; ++i) {
+      this.mappingLines.push(new MappingLine(g, this.normalizeRaw(domain[i]), range[i] * 100, this.mappingAdapter));
+    }
   }
 
   private update() {

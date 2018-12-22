@@ -1,11 +1,11 @@
-import {ICategoricalStatistics, IStatistics} from '../internal';
-import {IDataRow, IGroup, toGroupMeta} from '../model';
+import {IDataRow, IGroupMeta, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {
   default as IRenderContext, ERenderMode, ICellRenderer, ICellRendererFactory, IGroupCellRenderer,
   IImposer
 } from './interfaces';
 import {noRenderer} from './utils';
+import {ISequence} from '../internal/interable';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item
@@ -16,17 +16,20 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
 
   abstract canRender(col: Column, mode: ERenderMode): boolean;
 
-  abstract create(col: T, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer;
+  abstract create(col: T, context: IRenderContext, imposer?: IImposer): ICellRenderer;
 
-  protected abstract aggregatedIndex(rows: IDataRow[], col: T): number;
+  protected abstract aggregatedIndex(rows: ISequence<IDataRow>, col: T): {row: IDataRow, index: number};
 
-  createGroup(col: T, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer {
-    const single = this.create(col, context, hist, imposer);
+  createGroup(col: T, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
+    const single = this.create(col, context, imposer);
     return {
       template: `<div>${single.template}</div>`,
-      update: (node: HTMLElement, group: IGroup, rows: IDataRow[]) => {
-        const aggregate = this.aggregatedIndex(rows, col);
-        single.update(<HTMLElement>node.firstElementChild!, rows[aggregate], aggregate, group, toGroupMeta(aggregate, rows.length));
+      update: (node: HTMLElement, group: IOrderedGroup, groupMeta: IGroupMeta) => {
+        return context.tasks.groupRows(col, group, 'aagreated', (rows) => this.aggregatedIndex(rows, col)).then((data) => {
+          if (typeof data !== 'symbol') {
+            single.update(<HTMLElement>node.firstElementChild!, data.row, data.index, group, groupMeta);
+          }
+        });
       }
     };
   }

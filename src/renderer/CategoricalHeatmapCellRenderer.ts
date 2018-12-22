@@ -1,21 +1,21 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
+import {ICategoricalLikeColumn, isCategoricalLikeColumn, isSetColumn, ISetColumn} from '../model/ICategoricalColumn';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory, ERenderMode} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {union} from './UpSetCellRenderer';
-import {noop, wideEnough, forEachChild} from './utils';
+import {noop, forEachChild, wideEnoughCat} from './utils';
 
 /** @internal */
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
   title = 'Heatmap';
 
-  canRender(col: Column) {
-    return isSetColumn(col);
+  canRender(col: Column, mode: ERenderMode) {
+    return isCategoricalLikeColumn(col) && (mode !== ERenderMode.CELL || isSetColumn(col));
   }
 
-  private static createDOMContext(col: ISetColumn) {
+  private static createDOMContext(col: ICategoricalLikeColumn) {
     const categories = col.categories;
     const mapping = col.getColorMapping();
     let templateRows = '';
@@ -70,22 +70,26 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     };
   }
 
-  createGroup(col: ISetColumn) {
+  createGroup(col: ICategoricalLikeColumn, context: IRenderContext) {
     const {templateRow, render} = CategoricalHeatmapCellRenderer.createDOMContext(col);
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const value = union(col, rows);
-        render(n, value);
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, 'union', (rows) => union(col, rows)).then((value) => {
+          if (typeof value === 'symbol') {
+            return;
+          }
+          render(n, value);
+        });
       }
     };
   }
 
-  createSummary(col: ISetColumn) {
+  createSummary(col: ICategoricalLikeColumn) {
     const categories = col.categories;
     const mapping = col.getColorMapping();
     let templateRows = `<div class="${cssClass('heatmap')}">`;
-    const labels = wideEnough(col);
+    const labels = wideEnoughCat(col);
     for (const cat of categories) {
       templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}"${labels ? ` data-title="${cat.label}"` : ''} style="background-color: ${mapping.apply(cat)}"></div>`;
     }

@@ -26,15 +26,6 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
   }
 
   /**
-   * define the category to use in case of missing or null values
-   * @param {string | Partial<ICategory>} missingCategory
-   */
-  missingCategory(missingCategory: (string | Partial<ICategory>)) {
-    this.desc.missingCategory = missingCategory;
-    return this;
-  }
-
-  /**
    * converts this type to a set column, i.e. multiple unique category in a value
    * @param {string} separator optional separator separating a string value
    */

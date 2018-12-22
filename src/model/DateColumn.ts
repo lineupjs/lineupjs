@@ -1,16 +1,14 @@
 import {timeFormat, timeParse} from 'd3-time-format';
-import {Category, toolbar, dialogAddons} from './annotations';
-import {IDataRow, IGroupData, IGroup} from './interfaces';
-import {FIRST_IS_MISSING, isMissingValue, missingGroup, isUnknown} from './missing';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
-import Column from './Column';
-import {IDateFilter, IDateDesc, noDateFilter, isDateIncluded, isDummyDateFilter, isEqualDateFilter, IDateGrouper, restoreDateFilter, IDateColumn, toDateGroup, isDefaultDateGrouper, defaultDateGrouper} from './IDateColumn';
-import {median} from 'd3-array';
-import {defaultGroup} from './Group';
+import {ISequence, isSeqEmpty} from '../internal/interable';
 import {equal} from '../internal/utils';
-import {numberCompare} from './INumberColumn';
+import {Category, dialogAddons, toolbar} from './annotations';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {defaultGroup} from './Group';
+import {defaultDateGrouper, IDateColumn, IDateDesc, IDateFilter, IDateGrouper, isDateIncluded, isDefaultDateGrouper, isDummyDateFilter, isEqualDateFilter, noDateFilter, restoreDateFilter, toDateGroup} from './IDateColumn';
+import {IDataRow, IGroup} from './interfaces';
+import {isMissingValue, isUnknown, missingGroup} from './missing';
+import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
@@ -86,6 +84,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -108,6 +107,10 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
       return v;
     }
     return this.parse(String(v));
+  }
+
+  iterDate(row: IDataRow) {
+    return [this.getDate(row)];
   }
 
   getLabel(row: IDataRow) {
@@ -142,23 +145,20 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
    * @param row
    * @returns {boolean}
    */
-  filter(row: IDataRow) {
-    return isDateIncluded(this.currentFilter, this.getDate(row));
+  filter(row: IDataRow, valueCache?: any) {
+    return isDateIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getDate(row));
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const av = this.getDate(a);
-    const bv = this.getDate(b);
-    if (av === bv) {
-      return 0;
+  toCompareValue(row: IDataRow, valueCache?: any) {
+    const v = valueCache !== undefined ? valueCache : this.getValue(row);
+    if (!(v instanceof Date)) {
+      return NaN;
     }
-    if (!(av instanceof Date)) {
-      return (bv instanceof Date) ? FIRST_IS_MISSING : 0;
-    }
-    if (!(bv instanceof Date)) {
-      return FIRST_IS_MISSING * -1;
-    }
-    return av.getTime() - bv.getTime();
+    return v.getTime();
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.INT32;
   }
 
   getDateGrouper() {
@@ -174,8 +174,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     this.fire([DateColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  group(row: IDataRow): IGroup {
-    const v = this.getDate(row);
+  group(row: IDataRow, valueCache?: any): IGroup {
+    const v = valueCache !== undefined ? valueCache : this.getDate(row);
     if (!v || !(v instanceof Date)) {
       return missingGroup;
     }
@@ -189,33 +189,33 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     };
   }
 
-  groupCompare(a: IGroupData, b: IGroupData): number {
-    const av = choose(a.rows, this.currentGrouper, this).value;
-    const bv = choose(b.rows, this.currentGrouper, this).value;
-    return numberCompare(av, bv, false, false);
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
+    const v = choose(rows, this.currentGrouper, this, valueCache).value;
+    return v == null ? NaN : v;
+  }
+
+  toCompareGroupValueType() {
+    return ECompareValueType.INT32;
   }
 }
 
 /**
  * @internal
  */
-export function choose(rows: IDataRow[], grouper: IDateGrouper | null, col: IDateColumn): { value: number | null, name: string } {
-  const vs = <Date[]>rows.map((d) => col.getDate(d)).filter((d) => d instanceof Date);
-  if (vs.length === 0) {
+export function choose(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn, valueCache?: ISequence<Date | null>): {value: number | null, name: string} {
+  const vs = <ISequence<Date>>(valueCache ? valueCache : rows.map((d) => col.getDate(d))).filter((d) => d instanceof Date);
+  if (isSeqEmpty(vs)) {
     return {value: null, name: ''};
   }
-  const median = trueMedian(vs, (d) => d.getTime())!;
+  const median = trueMedian(vs.map((d) => d.getTime()))!;
   if (!grouper) {
     return {value: median, name: (new Date(median)).toString()};
   }
   return toDateGroup(grouper, new Date(median));
 }
 
-function trueMedian(dates: Date[], acc: (d: Date) => number) {
-  if (dates.length % 2 === 1) {
-    return median(dates, acc);
-  }
+function trueMedian(dates: ISequence<number>) {
   // to avoid interpolating between the centers do it manually
-  const s = dates.slice().sort((a, b) => a.getTime() - b.getTime());
-  return s[Math.floor(s.length / 2)].getTime();
+  const s = Uint32Array.from(dates).sort();
+  return s[Math.floor(s.length / 2)];
 }

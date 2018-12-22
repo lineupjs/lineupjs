@@ -1,16 +1,15 @@
-import * as vars from 'raw-loader!./_vars.scss';
 
 const styles = new Map<string, string>();
-{
-  const r = /^[$]([\w]+): ([\w #.()'\/,-]+)( !default)?;/gmi;
-  const s = String(vars);
+// {
+//   const r = /^[$]([\w]+): ([\w #.()'\/,-]+)( !default)?;/gmi;
+//   const s = String(vars);
 
-  let m: RegExpMatchArray | null = s.match(r);
-  while (m != null) {
-    styles.set(m[1], m[2]);
-    m = s.match(r);
-  }
-}
+//   let m: RegExpMatchArray | null = r.exec(s);
+//   while (m != null) {
+//     styles.set(m[1], m[2]);
+//     m = r.exec(s);
+//   }
+// }
 
 /** @internal */
 export default function getStyle(key: string, defaultValue = '') {
@@ -22,6 +21,7 @@ export default function getStyle(key: string, defaultValue = '') {
   }
   return defaultValue;
 }
+
 /** @internal */
 export const COLUMN_PADDING = parseInt(getStyle('lu_engine_grip_gap', '5px'), 10);
 /** @internal */

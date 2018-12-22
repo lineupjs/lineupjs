@@ -11,6 +11,9 @@ export interface IEventContext {
    */
   readonly source: AEventDispatcher;
 
+  /**
+   * who was sending this event in case of forwarding
+   */
   readonly origin: AEventDispatcher;
   /**
    * the event type
@@ -62,7 +65,7 @@ export default class AEventDispatcher implements IEventHandler {
           this.listenersChanged(d, Boolean(listener!));
           this.listeners.on(d, listener!);
         } else if (__DEBUG__ && !d.includes('.')) {
-           console.warn(this, 'invalid event type', d);
+          console.warn(this, 'invalid event type', d);
         }
       });
     } else if (this.listenerEvents.has((<string>type).split('.')[0])) {

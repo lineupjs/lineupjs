@@ -76,7 +76,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     const items = this.forEach('input[data-cat]', (n: HTMLInputElement) => ({
       checked: n.checked,
       cat: n.dataset.cat!,
-      range: parseFloat((<HTMLInputElement>n.nextElementSibling)!.value)
+      range: (<HTMLInputElement>n.nextElementSibling)!.valueAsNumber
     }));
     let f: string[] | null = items.filter((d) => d.checked).map((d) => d.cat);
     if (f.length === this.column.categories.length) { // all checked = no filter

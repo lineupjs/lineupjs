@@ -1,7 +1,7 @@
 import {IGroupData, IGroupItem, isGroup} from '../../model';
 import {IRule} from './interfaces';
 
-export default function spaceFillingRule(config: { groupHeight: number, rowHeight: number, groupPadding: number }) {
+export default function spaceFillingRule(config: {groupHeight: number, rowHeight: number, groupPadding: number}) {
   function levelOfDetail(item: IGroupData | IGroupItem, height: number): 'high' | 'low' {
     const group = isGroup(item);
     const maxHeight = group ? config.groupHeight : config.rowHeight;
@@ -16,7 +16,7 @@ export default function spaceFillingRule(config: { groupHeight: number, rowHeigh
     const items = <IGroupItem[]>data.filter((d) => !isGroup(d));
     const groups = data.length - items.length;
     const lastItems = items.reduce((a, d) => a + (d.meta === 'last' || d.meta === 'first last' ? 1 : 0), 0);
-    const selected = items.reduce((a, d) => a + (selection.has(d.i) ? 1 : 0), 0);
+    const selected = items.reduce((a, d) => a + (selection.has(d.dataIndex) ? 1 : 0), 0);
     const unselected = items.length - selected;
     const groupSeparators = groups + lastItems;
 
@@ -49,7 +49,7 @@ export default function spaceFillingRule(config: { groupHeight: number, rowHeigh
       const {violation, height} = itemHeight(data, availableHeight, selection);
 
       const item = (item: IGroupItem) => {
-        if (selection.has(item.i)) {
+        if (selection.has(item.dataIndex)) {
           return config.rowHeight;
         }
         return height;

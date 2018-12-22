@@ -1,6 +1,5 @@
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IColumnDesc, IDataRow} from './interfaces';
-import Ranking from './Ranking';
 import {IEventListener} from '../internal/AEventDispatcher';
 
 
@@ -14,11 +13,9 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
   /**
    * value accessor of this column
    * @param row the current row
-   * @param id the id of this column
    * @param desc the description of this column
-   * @param ranking the ranking of this column
    */
-  accessor?(row: IDataRow, id: string, desc: any, ranking: Ranking | null): T;
+  accessor?(row: IDataRow, desc: Readonly<IValueColumnDesc<T>>): T;
 }
 
 /**
@@ -36,7 +33,7 @@ export default class ValueColumn<T> extends Column {
 
   static readonly RENDERER_LOADING = 'loading';
 
-  private readonly accessor: (row: IDataRow, id: string, desc: any, ranking: Ranking | null) => T;
+  private readonly accessor: (row: IDataRow, desc: Readonly<IValueColumnDesc<T>>) => T;
 
   /**
    * is the data available
@@ -62,6 +59,7 @@ export default class ValueColumn<T> extends Column {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -76,17 +74,18 @@ export default class ValueColumn<T> extends Column {
     if (!this.isLoaded()) {
       return '';
     }
-    return String(this.getValue(row));
+    const v = this.getValue(row);
+    return v == null ? '' : String(v);
   }
 
-  getRaw(row: IDataRow) {
+  getRaw(row: IDataRow): T | null {
     if (!this.isLoaded()) {
       return null;
     }
-    return this.accessor(row, this.id, this.desc, this.findMyRanker());
+    return this.accessor(row, this.desc);
   }
 
-  getValue(row: IDataRow) {
+  getValue(row: IDataRow): T | null {
     return this.getRaw(row);
   }
 
@@ -98,7 +97,7 @@ export default class ValueColumn<T> extends Column {
     if (this.loaded === loaded) {
       return;
     }
-    this.fire([ValueColumn.EVENT_DATA_LOADED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.loaded, this.loaded = loaded);
+    this.fire([ValueColumn.EVENT_DATA_LOADED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.loaded, this.loaded = loaded);
   }
 
   getRenderer(): string {

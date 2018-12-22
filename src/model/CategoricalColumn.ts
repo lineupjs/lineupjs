@@ -1,15 +1,12 @@
-import {Category, toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {
-  compareCategory, groupCompareCategory,
-  ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory,
-  isEqualCategoricalFilter, isCategoryIncluded, toCategories, toCategory,
-} from './ICategoricalColumn';
-import {IDataRow, IGroup, IGroupData} from './interfaces';
-import {missingGroup} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
-import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {ISequence} from '../internal/interable';
+import {Category, toolbar} from './annotations';
+import {DEFAULT_COLOR_FUNCTION, ICategoricalColorMappingFunction, restoreColorMapping} from './CategoricalColorMappingFunction';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, ICompareValue, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {COMPARE_CATEGORY_VALUE_TYPES, COMPARE_GROUP_CATEGORY_VALUE_TYPES, ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory, isCategoryIncluded, isEqualCategoricalFilter, toCategories, toCompareCategoryValue, toGroupCompareCategoryValue} from './ICategoricalColumn';
+import {IDataRow, IGroup} from './interfaces';
+import {missingGroup} from './missing';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 
 
 /**
@@ -38,8 +35,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   readonly categories: ICategory[];
 
-  private readonly missingCategory: ICategory | null;
-
   private colorMapping: ICategoricalColorMappingFunction;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
@@ -53,7 +48,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   constructor(id: string, desc: Readonly<ICategoricalColumnDesc>) {
     super(id, desc);
     this.categories = toCategories(desc);
-    this.missingCategory = desc.missingCategory ? toCategory(desc.missingCategory, NaN) : null;
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.colorMapping = DEFAULT_COLOR_FUNCTION;
   }
@@ -71,6 +65,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -88,10 +83,10 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   getCategory(row: IDataRow) {
     const v = super.getValue(row);
     if (!v) {
-      return this.missingCategory;
+      return null;
     }
     const vs = String(v);
-    return this.lookup.has(vs) ? this.lookup.get(vs)! : this.missingCategory;
+    return this.lookup.has(vs) ? this.lookup.get(vs)! : null;
   }
 
   get dataLength() {
@@ -129,14 +124,14 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   getSet(row: IDataRow) {
     const cat = this.getCategory(row);
     const r = new Set<ICategory>();
-    if (cat && cat !== this.missingCategory) {
+    if (cat) {
       r.add(cat);
     }
     return r;
   }
 
-  isMissing(row: IDataRow) {
-    return this.getCategory(row) === this.missingCategory;
+  iterCategory(row: IDataRow) {
+    return [this.getCategory(row)];
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -176,15 +171,15 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire([CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
   }
 
   isFiltered() {
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow): boolean {
-    return isCategoryIncluded(this.currentFilter, this.getCategory(row));
+  filter(row: IDataRow, valueCache?: any): boolean {
+    return isCategoryIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
   getFilter() {
@@ -198,20 +193,28 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return compareCategory(this.getCategory(a), this.getCategory(b));
+  toCompareValue(row: IDataRow, valueCache?: any) {
+    return toCompareCategoryValue(valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
-  group(row: IDataRow): IGroup {
-    const cat = this.getCategory(row);
+  toCompareValueType() {
+    return COMPARE_CATEGORY_VALUE_TYPES;
+  }
+
+  group(row: IDataRow, valueCache?: any): IGroup {
+    const cat = valueCache !== undefined ? valueCache : this.getCategory(row);
     if (!cat) {
       return missingGroup;
     }
     return {name: cat.label, color: cat.color};
   }
 
-  groupCompare(a: IGroupData, b: IGroupData): number {
-    return groupCompareCategory(a.rows, b.rows, this);
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): ICompareValue[] {
+    return toGroupCompareCategoryValue(rows, this, valueCache);
+  }
+
+  toCompareGroupValueType() {
+    return COMPARE_GROUP_CATEGORY_VALUE_TYPES;
   }
 
   getGroupRenderer() {

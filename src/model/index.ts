@@ -49,7 +49,7 @@ export {default as ActionColumn} from './ActionColumn';
 export * from './ActionColumn';
 export {default as AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc} from './AggregateGroupColumn';
 export {default as AnnotateColumn} from './AnnotateColumn';
-export {default as ArrayColumn, IArrayColumnDesc, IArrayDesc, ISplicer} from './ArrayColumn';
+export {default as ArrayColumn, IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
 export {default as BooleanColumn, IBooleanColumnDesc, IBooleanDesc} from './BooleanColumn';
 export * from './BooleansColumn';
 export {default as BooleansColumn} from './BooleansColumn';
@@ -57,7 +57,7 @@ export {default as BoxPlotColumn, IBoxPlotColumnDesc, IBoxPlotDesc} from './BoxP
 export {default as CategoricalColumn} from './CategoricalColumn';
 export {default as CategoricalMapColumn, ICategoricalMapColumnDesc} from './CategoricalMapColumn';
 export {default as CategoricalsColumn, ICategoricalsColumnDesc} from './CategoricalsColumn';
-export {default, default as Column, IFlatColumn, IColumnParent, IColumnMetaData, IColumnDesc} from './Column';
+export {default, default as Column, IFlatColumn, IColumnParent, IColumnMetaData, IColumnDesc, ICompareValue} from './Column';
 export {default as CompositeColumn, isMultiLevelColumn, IMultiLevelColumn} from './CompositeColumn';
 export * from './CompositeNumberColumn';
 export {default as CompositeNumberColumn} from './CompositeNumberColumn';
@@ -111,14 +111,14 @@ export {default as LinksColumn} from './LinksColumn';
  */
 export function defineColumn<T>(name: string, functions: any = {}): typeof Column {
   class CustomColumn extends ValueColumn<T> {
-    constructor(id: string, desc: IValueColumnDesc<T>) {
+    constructor(id: string, desc: IValueColumnDesc<T>, ...args: any[]) {
       super(id, desc);
       if (typeof (this.init) === 'function') {
-        this.init.apply(this, [].slice.apply(arguments));
+        this.init(id, desc, ...args);
       }
     }
 
-    init() {
+    init(..._args: any[]) {
       // dummy
     }
   }

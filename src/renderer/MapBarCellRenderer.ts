@@ -1,5 +1,5 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {IDataRow, isMissingValue, isNumberColumn} from '../model';
+import {round} from '../internal/math';
+import {IDataRow, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {IMapColumn, isMapColumn} from '../model/IArrayColumn';
 import {DEFAULT_FORMATTER} from '../model/INumberColumn';
@@ -18,7 +18,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
     return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));
   }
 
-  create(col: IMapColumn<number>, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IMapColumn<number>, _context: IRenderContext, imposer?: IImposer) {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
@@ -26,10 +26,10 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
           return;
         }
         node.innerHTML = col.getMap(d).map(({key, value}) => {
-          if (isMissingValue(value)) {
+          if (isNaN(value)) {
             return `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')} ${cssClass('missing')}"></div>`;
           }
-          const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
+          const w = round(value * 100, 2);
           return `<div class="${cssClass('table-cell')}">${key}</div>
             <div class="${cssClass('table-cell')}" title="${DEFAULT_FORMATTER(value)}">
               <div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}">

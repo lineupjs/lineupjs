@@ -16,7 +16,7 @@ export * from './adapter';
  */
 export function asTaggle(node: HTMLElement, data: any[], ...columns: string[]): Taggle {
   return builder(data)
-    .deriveColumns(...columns)
+    .deriveColumns(columns)
     .deriveColors()
     .defaultRanking()
     .buildTaggle(node);
@@ -31,7 +31,7 @@ export function asTaggle(node: HTMLElement, data: any[], ...columns: string[]): 
  */
 export function asLineUp(node: HTMLElement, data: any[], ...columns: string[]): LineUp {
   return builder(data)
-    .deriveColumns(...columns)
+    .deriveColumns(columns)
     .deriveColors()
     .defaultRanking()
     .build(node);

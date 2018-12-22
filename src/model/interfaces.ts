@@ -1,3 +1,5 @@
+import {IOrderedGroup} from './Group';
+
 export interface IStyleColumn {
   /**
    * column description
@@ -88,32 +90,35 @@ export interface IGroupParent extends IGroup {
   subGroups: (Readonly<IGroupParent> | Readonly<IGroup>)[];
 }
 
-export declare type IGroupMeta = 'first' | 'last' | 'first last' | null;
+export declare type IGroupMeta = 'first' | 'last' | 'first last' | 'inner' | 'first top' | null;
 
-export interface IGroupItem extends IDataRow {
-  readonly group: Readonly<IGroup>;
+export interface IGroupItem {
+  readonly dataIndex: number;
+  readonly group: Readonly<IOrderedGroup>;
   readonly relativeIndex: number;
   readonly meta: IGroupMeta;
 }
 
-export interface IGroupData extends Readonly<IGroup> {
-  readonly rows: IDataRow[];
+export interface IGroupData extends Readonly<IOrderedGroup> {
+  readonly meta: IGroupMeta;
 }
 
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
-  return item && (<IGroupData>item).name !== undefined; // use .name as separator
+  return item && (<IGroupItem>item).group == null; // use .group as separator
 }
 
-/** @internal */
-export function toGroupMeta(index: number, total: number): IGroupMeta {
-  if (total === 1) {
-    return 'first last';
-  }
-  if (index === 0) {
-    return 'first';
-  }
-  if (index === total -1) {
-    return 'last';
-  }
-  return null;
+export enum ECompareValueType {
+  BINARY,
+  COUNT, // count max to the number of rows
+  UINT8,
+  UINT16,
+  UINT32,
+  INT8,
+  INT16,
+  INT32,
+  FLOAT,
+  FLOAT_ASC,
+  DOUBLE,
+  DOUBLE_ASC,
+  STRING
 }

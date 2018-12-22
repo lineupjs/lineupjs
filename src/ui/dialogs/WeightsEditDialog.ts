@@ -42,7 +42,7 @@ export default class WeightsEditDialog extends ADialog {
     const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]'));
     inputs.forEach((d, i) => {
       d.oninput = () => {
-        const weight = parseFloat(d.value);
+        const weight = d.valueAsNumber;
         if (weight <= 0) {
           d.setCustomValidity('weight cannot be zero');
         } else {
@@ -75,7 +75,7 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   private distributeWeights() {
-    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({input: d, weight: d.value ? parseFloat(d.value) : NaN}));
+    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({input: d, weight: d.value ? d.valueAsNumber : NaN}));
     const hasMissing = inputs.some((d) => isNaN(d.weight));
     if (hasMissing) {
       // compute missing ones
@@ -126,7 +126,7 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   submit() {
-    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({input: d, weight: parseFloat(d.value)}));
+    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({input: d, weight: d.valueAsNumber}));
     let invalid = false;
     for (const input of inputs) {
       if (input.weight <= 0) {

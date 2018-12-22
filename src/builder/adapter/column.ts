@@ -1,4 +1,4 @@
-import {extent} from 'd3-array';
+import {extent} from '../../internal';
 import {
   EAdvancedSortMethod,
   IAction,

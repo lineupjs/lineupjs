@@ -1,6 +1,6 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noRenderer, noop} from './utils';
@@ -27,7 +27,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
         }
         node.innerHTML = col.getLinkMap(d).map(({key, value}) => `
           <div class="${cssClass('table-cell')}">${key}</div>
-          <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align): ''}">
+          <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align) : ''}">
             <a href="${value.href}" target="_blank" rel="noopener">${value.alt}</a>
           </div>`).join('');
       },
@@ -47,16 +47,16 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     return `${examples.join(', ')}${examples.length < arr.length} ? ', &hellip;': ''}`;
   }
 
-  createGroup(col: LinkMapColumn) {
+  createGroup(col: LinkMapColumn, context: IRenderContext) {
     const align = col.alignment || 'left';
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
-      update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getLinkMap(d));
-
-        const entries = groupByKey(vs);
-
-        node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
+      update: (node: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, 'linkmap', (rows) => groupByKey(rows.map((d) => col.getLinkMap(d)))).then((entries) => {
+          if (typeof entries !== 'symbol') {
+            node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
+          }
+        });
       }
     };
   }

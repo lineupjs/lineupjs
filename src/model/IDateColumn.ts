@@ -4,14 +4,19 @@ import {IColumnDesc, IDataRow} from './interfaces';
 import {isNumberIncluded, INumberFilter} from './INumberColumn';
 import {timeDay, timeMonth, timeWeek, timeMinute, timeSecond, timeHour} from 'd3-time';
 import {equal} from '../internal/utils';
+import {IForEachAble} from '../internal/interable';
 
 /** @internal */
-export {restoreNumberFilter as restoreDateFilter,
+export {
+  restoreNumberFilter as restoreDateFilter,
   noNumberFilter as noDateFilter, isEqualNumberFilter as isEqualDateFilter,
-  isDummyNumberFilter as isDummyDateFilter} from './INumberColumn';
+  isDummyNumberFilter as isDummyDateFilter
+} from './INumberColumn';
 
 export interface IDateColumn extends Column {
   getDate(row: IDataRow): Date | null;
+
+  iterDate(row: IDataRow): IForEachAble<Date | null>;
 }
 
 export default IDateColumn;
@@ -76,7 +81,7 @@ export interface IDateGrouper {
  * @internal
  */
 export function defaultDateGrouper(): IDateGrouper {
-  return { granularity: 'month', circular: false};
+  return {granularity: 'month', circular: false};
 }
 
 /**
@@ -91,135 +96,135 @@ export function isDefaultDateGrouper(grouper: IDateGrouper) {
  * @internal
  */
 export function toDateGroup(grouper: IDateGrouper, value: Date): {value: number, name: string} {
-  switch(grouper.granularity) {
-  case 'century':
-    const centuryP = Math.floor(value.getFullYear() / 100);
-    if (grouper.circular) {
-      const century = centuryP % 10;
+  switch (grouper.granularity) {
+    case 'century':
+      const centuryP = Math.floor(value.getFullYear() / 100);
+      if (grouper.circular) {
+        const century = centuryP % 10;
+        return {
+          value: century,
+          name: `*${century}00`
+        };
+      }
       return {
-        value: century,
-        name: `*${century}00`
+        value: centuryP,
+        name: `${centuryP}00`
       };
-    }
-    return {
-      value: centuryP,
-      name: `${centuryP}00`
-    };
-  case 'decade':
-    const decadeP = Math.floor(value.getFullYear() / 10);
-    if (grouper.circular) {
-      const decade = decadeP % 10;
+    case 'decade':
+      const decadeP = Math.floor(value.getFullYear() / 10);
+      if (grouper.circular) {
+        const decade = decadeP % 10;
+        return {
+          value: decade,
+          name: `**${decade}0`
+        };
+      }
       return {
-        value: decade,
-        name: `**${decade}0`
+        value: decadeP,
+        name: `${decadeP}0`
       };
-    }
-    return {
-      value: decadeP,
-      name: `${decadeP}0`
-    };
-  case 'year':
-    if (grouper.circular) {
-      const year = value.getFullYear() % 10;
+    case 'year':
+      if (grouper.circular) {
+        const year = value.getFullYear() % 10;
+        return {
+          value: year,
+          name: `***${year}`
+        };
+      }
       return {
-        value: year,
-        name: `***${year}`
+        value: value.getFullYear(),
+        name: String(value.getFullYear())
       };
-    }
-    return {
-      value: value.getFullYear(),
-      name: String(value.getFullYear())
-    };
-  case 'month':
-    if (grouper.circular) {
+    case 'month':
+      if (grouper.circular) {
+        return {
+          value: value.getMonth(),
+          name: timeFormat('%B')(value)
+        };
+      }
       return {
-        value: value.getMonth(),
-        name: timeFormat('%B')(value)
+        value: timeMonth(value).getTime(),
+        name: timeFormat('%B %Y')(value)
       };
-    }
-    return {
-      value: timeMonth(value).getTime(),
-      name: timeFormat('%B %Y')(value)
-    };
-  case 'week':
-    if (grouper.circular) {
+    case 'week':
+      if (grouper.circular) {
+        return {
+          value: value.getMonth(),
+          name: timeFormat('%W')(value)
+        };
+      }
       return {
-        value: value.getMonth(),
-        name: timeFormat('%B')(value) // TODO
+        value: timeWeek(value).getTime(),
+        name: timeFormat('%W %Y')(value)
       };
-    }
-    return {
-      value: timeWeek(value).getTime(),
-      name: timeFormat('%B %Y')(value) // TODO
-    };
-  case 'day_of_week':
-    if (grouper.circular) {
+    case 'day_of_week':
+      if (grouper.circular) {
+        return {
+          value: value.getDay(),
+          name: timeFormat('%A')(value)
+        };
+      }
       return {
-        value: value.getDay(),
-        name: timeFormat('%A')(value)
+        value: timeDay(value).getTime(),
+        name: timeFormat('%x')(value)
       };
-    }
-    return {
-      value: timeDay(value).getTime(),
-      name: timeFormat('%x')(value)
-    };
-  case 'day_of_month':
-    if (grouper.circular) {
+    case 'day_of_month':
+      if (grouper.circular) {
+        return {
+          value: value.getDate(),
+          name: timeFormat('%d')(value)
+        };
+      }
       return {
-        value: value.getDate(),
-        name: timeFormat('%d')(value)
+        value: timeDay(value).getTime(),
+        name: timeFormat('%x')(value)
       };
-    }
-    return {
-      value: timeDay(value).getTime(),
-      name: timeFormat('%x')(value)
-    };
-  case 'day_of_year':
-    if (grouper.circular) {
-      // %j = day of year
-      const v = timeFormat('%j')(value);
+    case 'day_of_year':
+      if (grouper.circular) {
+        // %j = day of year
+        const v = timeFormat('%j')(value);
+        return {
+          value: parseInt(v, 10),
+          name: v
+        };
+      }
       return {
-        value: parseInt(v, 10),
-        name: v
+        value: timeDay(value).getTime(),
+        name: timeFormat('%x')(value)
       };
-    }
-    return {
-      value: timeDay(value).getTime(),
-      name: timeFormat('%x')(value)
-    };
-  case 'hour':
-    if (grouper.circular) {
+    case 'hour':
+      if (grouper.circular) {
+        return {
+          value: value.getHours(),
+          name: timeFormat('%A')(value)
+        };
+      }
       return {
-        value: value.getHours(),
-        name: timeFormat('%A')(value)
+        value: timeHour(value).getTime(),
+        name: timeFormat('%x')(value)
       };
-    }
-    return {
-      value: timeHour(value).getTime(),
-      name: timeFormat('%x')(value)
-    };
-  case 'minute':
-    if (grouper.circular) {
+    case 'minute':
+      if (grouper.circular) {
+        return {
+          value: value.getMinutes(),
+          name: timeFormat('%A')(value)
+        };
+      }
       return {
-        value: value.getMinutes(),
-        name: timeFormat('%A')(value)
+        value: timeMinute(value).getTime(),
+        name: timeFormat('%x')(value)
       };
-    }
-    return {
-      value: timeMinute(value).getTime(),
-      name: timeFormat('%x')(value)
-    };
-  case 'second':
-    if (grouper.circular) {
+    case 'second':
+      if (grouper.circular) {
+        return {
+          value: value.getSeconds(),
+          name: timeFormat('%A')(value)
+        };
+      }
       return {
-        value: value.getSeconds(),
-        name: timeFormat('%A')(value)
+        value: timeSecond(value).getTime(),
+        name: timeFormat('%x')(value)
       };
-    }
-    return {
-      value: timeSecond(value).getTime(),
-      name: timeFormat('%x')(value)
-    };
   }
 
   return {

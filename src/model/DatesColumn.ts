@@ -1,14 +1,15 @@
 import {timeFormat, timeParse} from 'd3-time-format';
-import {median, min, max} from 'd3-array';
+import {median, min, max} from '../internal/math';
 import {dialogAddons, toolbar} from './annotations';
-import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDateDesc, IDateColumn, IDateFilter, noDateFilter, restoreDateFilter, isDummyDateFilter} from './IDateColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_MISSING, isMissingValue} from './missing';
+import {isMissingValue} from './missing';
 import {IEventListener} from '../internal/AEventDispatcher';
 import DateColumn from './DateColumn';
+import {chooseUIntByDataLength} from '../provider/sort';
 
 export enum EDateSort {
   min = 'min',
@@ -61,7 +62,6 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
 
   on(type: typeof DatesColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
   on(type: typeof DatesColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -69,6 +69,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -78,16 +79,17 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     return super.on(<any>type, listener);
   }
 
-  getValue(row: IDataRow): (Date | null)[] {
-    return this.getDates(row);
+  getValue(row: IDataRow): (Date | null)[] | null {
+    const r = this.getDates(row);
+    return r.every((d) => d == null) ? null : r;
   }
 
   getLabels(row: IDataRow) {
-    return this.getValue(row).map((v) => (v instanceof Date) ? this.format(v) : '');
+    return this.getDates(row).map((v) => (v instanceof Date) ? this.format(v) : '');
   }
 
   getDates(row: IDataRow): (Date | null)[] {
-    return super.getValue(row).map((v) => {
+    return super.getValues(row).map((v) => {
       if (isMissingValue(v)) {
         return null;
       }
@@ -104,6 +106,10 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
       return null;
     }
     return new Date(compute(av, this.sort));
+  }
+
+  iterDate(row: IDataRow) {
+    return this.getDates(row);
   }
 
   getSortMethod() {
@@ -138,21 +144,16 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     }
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const av = <Date[]>this.getValue(a).filter(Boolean);
-    const bv = <Date[]>this.getValue(b).filter(Boolean);
-    if (av === bv) {
-      return 0;
+  toCompareValue(row: IDataRow) {
+    const vs = <Date[]>this.getDates(row).filter(Boolean);
+    if (!vs) {
+      return [0, 0];
     }
-    if (av.length === 0) {
-      return bv.length === 0 ? 0 : FIRST_IS_MISSING;
-    }
-    if (bv.length === 0) {
-      return -FIRST_IS_MISSING;
-    }
-    const as = compute(av, this.sort);
-    const bs = compute(bv, this.sort);
-    return as - bs;
+    return [vs.length, compute(vs, this.sort)];
+  }
+
+  toCompareValueType() {
+    return [chooseUIntByDataLength(this.dataLength), ECompareValueType.INT32];
   }
 
   isFiltered() {

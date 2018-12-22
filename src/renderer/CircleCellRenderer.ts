@@ -1,4 +1,3 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {IDataRow, INumberColumn, isNumberColumn} from '../model';
 import Column from '../model/Column';
 import {isNumbersColumn} from '../model/INumberColumn';
@@ -16,7 +15,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
     return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);
   }
 
-  create(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, _context: IRenderContext, imposer?: IImposer) {
     return {
       template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
               <div class="${cssClass('hover-only')} ${cssClass('bar-label')}"></div>
@@ -27,7 +26,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
         const missing = renderMissingDOM(n, col, d);
         attr(<HTMLElement>n, {}, {
           background: missing ? null : `radial-gradient(circle closest-side, ${colorOf(col, d, imposer)} ${p}%, transparent ${p}%)`
-        },);
+        });
         setText(n.firstElementChild!, col.getLabel(d));
       }
     };

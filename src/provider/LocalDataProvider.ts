@@ -1,12 +1,16 @@
-import {computeHist, computeStats} from '../internal';
-import Column, {
-  defaultGroup, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn,
-  IOrderedGroup,
-  NumberColumn
-} from '../model';
-import Ranking from '../model/Ranking';
+import {ISequence, lazySeq} from '../internal/interable';
+import Column, {defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices, CompositeColumn} from '../model';
+import Ranking, {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
-import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
+import ADataProvider from './ADataProvider';
+import {IDataProviderOptions} from './interfaces';
+import {CompareLookup} from './sort';
+import {IRenderTaskExectutor} from './tasks';
+import {IEventContext} from '../internal/AEventDispatcher';
+import {createIndexArray, sortComplex} from '../internal';
+import {DirectRenderTasks} from './DirectRenderTasks';
+import {ScheduleRenderTasks} from './ScheduledTasks';
+import {joinGroups} from '../model/internal';
 
 
 export interface ILocalDataProviderOptions {
@@ -22,17 +26,21 @@ export interface ILocalDataProviderOptions {
   jumpToSearchResult: boolean;
 
   /**
-   * the maximum number of nested sorting criteria
+   * specify the task executor to use direct = no delay, scheduled = run when idle
    */
-  maxNestedSortingCriteria: number;
-  maxGroupColumns: number;
+  taskExecutor: 'direct' | 'scheduled';
+}
+
+interface ISortHelper {
+  group: IGroup;
+  rows: IndicesArray;
 }
 
 /**
  * a data provider based on an local array
  */
 export default class LocalDataProvider extends ACommonDataProvider {
-  private options: ILocalDataProviderOptions = {
+  private readonly options: ILocalDataProviderOptions = {
     /**
      * whether the filter should be applied to all rankings regardless where they are
      */
@@ -40,30 +48,32 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     jumpToSearchResult: false,
 
-    maxNestedSortingCriteria: Infinity,
-    maxGroupColumns: Infinity
+    taskExecutor: 'direct'
   };
 
   private readonly reorderAll: () => void;
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
+  private readonly tasks: IRenderTaskExectutor;
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
     Object.assign(this.options, options);
     this._dataRows = toRows(_data);
-
+    this.tasks = this.options.taskExecutor === 'direct' ? new DirectRenderTasks() : new ScheduleRenderTasks();
+    this.tasks.setData(this._dataRows);
 
     const that = this;
-    this.reorderAll = function (this: {source: Ranking}) {
+    this.reorderAll = function (this: {source?: Ranking, type: string}) {
       //fire for all other rankings a dirty order event, too
       const ranking = this.source;
-      that.getRankings().forEach((r) => {
+      const type = this.type;
+      for (const r of that.getRankings()) {
         if (r !== ranking) {
-          r.dirtyOrder();
+          r.dirtyOrder(type === Ranking.EVENT_FILTER_CHANGED ? [EDirtyReason.FILTER_CHANGED] : [EDirtyReason.UNKNOWN]);
         }
-      });
+      }
     };
   }
 
@@ -73,7 +83,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   setFilter(filter: ((row: IDataRow) => boolean) | null) {
     this.filter = filter;
-    this.reorderAll();
+    this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
   }
 
   getFilter() {
@@ -84,17 +94,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return this.data.length;
   }
 
-
-  protected getMaxGroupColumns() {
-    return this.options.maxGroupColumns;
-  }
-
-  protected getMaxNestedSortingCriteria() {
-    return this.options.maxNestedSortingCriteria;
+  getTaskExecutor() {
+    return this.tasks;
   }
 
   get data() {
     return this._data;
+  }
+
+  destroy() {
+    super.destroy();
+    this.tasks.terminate();
   }
 
   /**
@@ -104,7 +114,19 @@ export default class LocalDataProvider extends ACommonDataProvider {
   setData(data: any[]) {
     this._data = data;
     this._dataRows = toRows(data);
-    this.reorderAll();
+    this.dataChanged();
+  }
+
+  private dataChanged() {
+    this.tasks.setData(this._dataRows);
+
+    for (const ranking of this.getRankings()) {
+      this.tasks.preComputeData(ranking);
+    }
+
+    this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
+    this.reorderAll.call({type: Ranking.EVENT_FILTER_CHANGED});
+
   }
 
   clearData() {
@@ -116,160 +138,384 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param data
    */
   appendData(data: any[]) {
-    this._data.push(...data);
-    this._dataRows.push(...toRows(data));
-    this.reorderAll();
+    for (const d of data) {
+      this._data.push(d);
+      this._dataRows.push({v: d, i: this._dataRows.length});
+    }
+    this.dataChanged();
   }
 
   cloneRanking(existing?: Ranking) {
-    const clone = super.cloneRanking(existing);
+    const ranking = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
-      clone.on(`${NumberColumn.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
+      ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
     }
 
-    return clone;
+    this.trackRanking(ranking, existing);
+    return ranking;
+  }
+
+  private trackRanking(ranking: Ranking, existing?: Ranking) {
+
+    const that = this;
+    ranking.on(`${Column.EVENT_DIRTY_CACHES}.cache`, function (this: IEventContext) {
+      let col: any = this.origin;
+      while (col instanceof Column) {
+        console.log(col.label, 'dirty data');
+        that.tasks.dirtyColumn(col, 'data');
+        that.tasks.preComputeCol(col);
+        col = col.parent;
+      }
+    });
+
+    const cols = ranking.flatColumns;
+    const addKey = `${Ranking.EVENT_ADD_COLUMN}.cache`;
+    const removeKey = `${Ranking.EVENT_REMOVE_COLUMN}.cache`;
+
+    const removeCol = (col: Column) => {
+      this.tasks.dirtyColumn(col, 'data');
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, null);
+        col.on(removeKey, null);
+      }
+    };
+
+    const addCol = (col: Column) => {
+      this.tasks.preComputeCol(col);
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, addCol);
+        col.on(removeKey, removeCol);
+      }
+    };
+
+
+    ranking.on(addKey, addCol);
+    ranking.on(removeKey, removeCol);
+    for (const col of cols) {
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, addCol);
+        col.on(removeKey, removeCol);
+      }
+    }
+
+    if (existing) {
+      const copy = existing.flatColumns;
+      for (let i = 0; i < cols.length; ++i) {
+        this.tasks.copyCache(cols[i], copy[i]);
+      }
+    }
+
+    this.tasks.preComputeData(ranking);
   }
 
   cleanUpRanking(ranking: Ranking) {
     if (this.options.filterGlobally) {
-      ranking.on(`${NumberColumn.EVENT_FILTER_CHANGED}.reorderAll`, null);
+      ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }
+
+
+    const cols = ranking.flatColumns;
+    const addKey = `${Ranking.EVENT_ADD_COLUMN}.cache`;
+    const removeKey = `${Ranking.EVENT_REMOVE_COLUMN}.cache`;
+    ranking.on(addKey, null);
+    ranking.on(removeKey, null);
+    for (const col of cols) {
+      if (col instanceof CompositeColumn) {
+        col.on(addKey, null);
+        col.on(removeKey, null);
+      }
+    }
+
+    this.tasks.dirtyRanking(ranking, 'data');
+
     super.cleanUpRanking(ranking);
   }
 
-  sortImpl(ranking: Ranking): IOrderedGroup[] {
-    if (this._data.length === 0) {
-      return [];
-    }
-    //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({v: r, i, group: <IGroup | null>null}));
-
+  private resolveFilter(ranking: Ranking) {
     //do the optional filtering step
-    let filter: ((d: IDataRow) => boolean) | null = null;
+    const filter: (Column | ((d: IDataRow) => boolean))[] = [];
+
     if (this.options.filterGlobally) {
-      const filtered = this.getRankings().filter((d) => d.isFiltered());
-      if (filtered.length > 0) {
-        filter = (d: IDataRow) => filtered.every((f) => f.filter(d));
+      for (const r of this.getRankings()) {
+        if (r.isFiltered()) {
+          filter.push(...r.flatColumns.filter((d) => d.isFiltered()));
+        }
       }
     } else if (ranking.isFiltered()) {
-      filter = (d) => ranking.filter(d);
+      filter.push(...ranking.flatColumns.filter((d) => d.isFiltered()));
     }
 
-    if (filter || this.filter) {
-      helper = helper.filter((d) => (!this.filter || this.filter(d)) && (!filter || filter(d)));
+    if (this.filter) {
+      filter.push(this.filter);
+    }
+    return filter;
+  }
+
+  private noSorting(ranking: Ranking) {
+    // initial no sorting required just index mapping
+    const l = this._data.length;
+    const order = createIndexArray(l);
+    const index2pos = order.slice();
+    for (let i = 0; i < l; ++i) {
+      order[i] = i;
+      index2pos[i] = i + 1; // shift since default is 0
     }
 
-    if (helper.length === 0) {
-      return [];
-    }
+    this.tasks.preCompute(ranking, [{rows: order, group: defaultGroup}]);
+    return {groups: [Object.assign({order}, defaultGroup)], index2pos};
+  }
 
-    //create the groups for each row
-    helper.forEach((r) => r.group = ranking.grouper(r) || defaultGroup);
-    if ((new Set<string>(helper.map((r) => r.group!.name))).size === 1) {
-      const group = helper[0].group;
-      //no need to split
-      //sort by the ranking column
-      helper.sort((a, b) => ranking.comparator(a, b));
+  private createSorter(ranking: Ranking, filter: (Column | ((d: IDataRow) => boolean))[], isSortedBy: boolean, needsFiltering: boolean, needsGrouping: boolean, needsSorting: boolean) {
+    const groups = new Map<string, ISortHelper>();
+    const groupOrder: ISortHelper[] = [];
+    let maxDataIndex = -1;
 
-      //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-      const order = <number[]>[];
-      const index2pos = <number[]>[];
+    const groupCriteria = ranking.getGroupCriteria();
+    const lookups = isSortedBy && needsSorting ? new CompareLookup(this._data.length, true, ranking, this.tasks.valueCache.bind(this.tasks)) : undefined;
 
-      for (let i = 0; i < helper.length; ++i) {
-        const ri = helper[i].i;
-        order.push(ri);
-        index2pos[ri] = i;
+    const pushGroup = (group: IGroup, r: IDataRow) => {
+      const groupKey = group.name.toLowerCase();
+      if (groups.has(groupKey)) {
+        (<number[]>groups.get(groupKey)!.rows).push(r.i);
+        return;
       }
-      return [Object.assign({order, index2pos}, group!)];
-    }
-    //sort by group and within by order
-    helper.sort((a, b) => {
-      const ga = a.group!;
-      const gb = b.group!;
-      if (ga.name !== gb.name) {
-        return ga.name.toLowerCase().localeCompare(gb.name.toLowerCase());
+      const s = {group, rows: [r.i]};
+      groups.set(groupKey, s);
+      groupOrder.push(s);
+    };
+
+    const groupCaches = groupCriteria.map((c) => this.tasks.valueCache(c));
+    const filterCaches = filter.map((c) => typeof c === 'function' ? undefined : this.tasks.valueCache(c));
+
+    const toGroup = groupCriteria.length === 1 ?
+      (r: IDataRow) => groupCriteria[0].group(r, groupCaches[0] ? groupCaches[0]!(r.i) : undefined) :
+      (r: IDataRow) => joinGroups(groupCriteria.map((c, i) => c.group(r, groupCaches[i] ? groupCaches[i]!(r.i) : undefined)));
+
+    if (needsFiltering) {
+      // filter, group, sort
+      outer: for (const r of this._dataRows) {
+        for (let f = 0; f < filter.length; ++f) {
+          const fc = filter[f];
+          const c = filterCaches[f];
+          if ((typeof fc === 'function' && !fc(r)) || (fc instanceof Column && !fc.filter(r, c ? c(r.i) : undefined))) {
+            continue outer;
+          }
+        }
+        if (maxDataIndex < r.i) {
+          maxDataIndex = r.i;
+        }
+        if (lookups) {
+          lookups.push(r);
+        }
+        pushGroup(toGroup(r), r);
       }
-      return ranking.comparator(a, b);
+
+      // some default sorting
+      groupOrder.sort((a, b) => a.group.name.toLowerCase().localeCompare(b.group.name.toLowerCase()));
+      return {maxDataIndex, lookups, groupOrder};
+    }
+
+    // reuse the existing groups
+
+    for (const before of ranking.getGroups()) {
+      const order = before.order;
+      const plain = Object.assign({}, before);
+      delete plain.order;
+
+      if (!needsGrouping) {
+        // reuse in full
+        groupOrder.push({group: plain, rows: order});
+
+        if (!lookups) {
+          continue;
+        }
+        // sort
+        // tslint:disable-next-line:prefer-for-of
+        for (let o = 0; o < order.length; ++o) {
+          const i = order[o];
+          if (maxDataIndex < i) {
+            maxDataIndex = i;
+          }
+          lookups.push(this._dataRows[i]);
+        }
+        continue;
+      }
+
+      // group, [sort]
+      // tslint:disable-next-line:prefer-for-of
+      for (let o = 0; o < order.length; ++o) {
+        const i = order[o];
+        if (maxDataIndex < i) {
+          maxDataIndex = i;
+        }
+        const r = this._dataRows[i];
+        if (lookups) {
+          lookups.push(r);
+        }
+        pushGroup(needsGrouping ? toGroup(r) : plain, r);
+      }
+    }
+
+    if (needsGrouping) {
+      // some default sorting
+      groupOrder.sort((a, b) => a.group.name.toLowerCase().localeCompare(b.group.name.toLowerCase()));
+    }
+    return {maxDataIndex, lookups, groupOrder};
+  }
+
+  private sortGroup(g: ISortHelper, i: number, ranking: Ranking, lookups: CompareLookup | undefined, groupLookup: CompareLookup | undefined, singleGroup: boolean): Promise<IOrderedGroup> {
+    const group = g.group;
+
+    const sortTask = this.tasks.sort(ranking, group, g.rows, singleGroup, lookups);
+
+    // compute sort group value as task
+    const groupSortTask = groupLookup ? this.tasks.groupCompare(ranking, group, g.rows).then((r) => r) : <ICompareValue[]>[];
+
+    // trigger task for groups to compute for this group
+
+
+    return Promise.all([sortTask, groupSortTask]).then(([order, groupC]) => {
+      if (groupLookup && Array.isArray(groupC)) {
+        groupLookup.pushValues(i, groupC);
+      }
+      return Object.assign({order}, group);
     });
-    //iterate over groups and create within orders
-    const groups: (IOrderedGroup & IGroupData)[] = [Object.assign({order: [], index2pos: [], rows: []}, helper[0].group!)];
-    let group = groups[0];
-    helper.forEach((row, i) => {
-      const rowGroup = row.group!;
-      if (rowGroup.name === group.name) {
-        group.order.push(row.i);
-        group.index2pos[row.i] = i;
-        group.rows.push(row);
-      } else { // change in groups
-        group = Object.assign({order: [row.i], index2pos: [], rows: [row]}, rowGroup);
-        group.index2pos[row.i] = i;
-        groups.push(group);
-      }
-    });
+  }
 
+  private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined) {
     // sort groups
-    groups.sort((a, b) => ranking.groupComparator(a, b));
-
+    if (groupLookup) {
+      const groupIndices = groups.map((_, i) => i);
+      sortComplex(groupIndices, groupLookup.sortOrders);
+      groups = groupIndices.map((i) => groups[i]);
+    }
     return groups;
   }
 
+  private index2pos(groups: IOrderedGroup[], maxDataIndex: number) {
+    const index2pos = createIndexArray(maxDataIndex + 1);
+    let offset = 1;
+    for (const g of groups) {
+      // tslint:disable-next-line
+      for (let i = 0; i < g.order.length; i++ , offset++) {
+        index2pos[g.order[i]] = offset;
+      }
+    }
 
-  viewRaw(indices: number[]) {
-    //filter invalid indices
-    return indices.map((index) => this._data[index]);
+    return {groups, index2pos};
   }
 
-  viewRawRows(indices: number[]) {
-    //filter invalid indices
-    return indices.map((index) => this._dataRows[index]);
+  sort(ranking: Ranking, dirtyReason: EDirtyReason[]) {
+    const reasons = new Set(dirtyReason);
+
+    if (this._data.length === 0) {
+      return {groups: [], index2pos: []};
+    }
+
+    console.log(dirtyReason);
+
+    const filter = this.resolveFilter(ranking);
+
+    const needsFiltering = reasons.has(EDirtyReason.UNKNOWN) || reasons.has(EDirtyReason.FILTER_CHANGED);
+    const needsGrouping = needsFiltering || reasons.has(EDirtyReason.GROUP_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_CRITERIA_DIRTY);
+    const needsSorting = needsGrouping || reasons.has(EDirtyReason.SORT_CRITERIA_CHANGED) || reasons.has(EDirtyReason.SORT_CRITERIA_DIRTY);
+    const needsGroupSorting = needsGrouping || reasons.has(EDirtyReason.GROUP_SORT_CRITERIA_CHANGED) || reasons.has(EDirtyReason.GROUP_SORT_CRITERIA_DIRTY);
+
+    if (needsFiltering) {
+      this.tasks.dirtyRanking(ranking, 'summary');
+    } else if (needsGrouping) {
+      this.tasks.dirtyRanking(ranking, 'group');
+    }
+    // otherwise the summary and group summaries should still be valid
+
+    if (filter.length === 0) {
+      // all rows so summary = data
+      this.tasks.copyData2Summary(ranking);
+    }
+
+    const isGroupedBy = ranking.getGroupCriteria().length > 0;
+    const isSortedBy = ranking.getSortCriteria().length > 0;
+    const isGroupedSortedBy = ranking.getGroupSortCriteria().length > 0;
+
+    if (!isGroupedBy && !isSortedBy && filter.length === 0) {
+      return this.noSorting(ranking);
+    }
+
+    const {maxDataIndex, lookups, groupOrder} = this.createSorter(ranking, filter, isSortedBy, needsFiltering, needsGrouping, needsSorting);
+
+    if (groupOrder.length === 0) {
+      return {groups: [], index2pos: []};
+    }
+
+    this.tasks.preCompute(ranking, groupOrder);
+
+
+    if (groupOrder.length === 1) {
+      const g = groupOrder[0]!;
+
+      // not required if: group sort criteria changed -> lookups will be none
+      return this.sortGroup(g, 0, ranking, lookups, undefined, true).then((group) => {
+        return this.index2pos([group], maxDataIndex);
+      });
+    }
+
+    const groupLookup = isGroupedSortedBy && needsGroupSorting ? new CompareLookup(groupOrder.length, false, ranking) : undefined;
+
+    return Promise.all(groupOrder.map((g, i) => {
+      // not required if: group sort criteria changed -> lookups will be none
+      return this.sortGroup(g, i, ranking, lookups, groupLookup, false);
+    })).then((groups) => {
+      // not required if: sort criteria changed -> groupLookup will be none
+      const sortedGroups = this.sortGroups(groups, groupLookup);
+      return this.index2pos(sortedGroups, maxDataIndex);
+    });
   }
 
-  view(indices: number[]) {
+  private readonly mapToDataRow = (i: number) => {
+    if (i < 0 || i >= this._dataRows.length) {
+      return {i, v: {}};
+    }
+    return this._dataRows[i];
+  };
+
+  viewRaw(indices: IndicesArray) {
+    return mapIndices(indices, (i) => this._data[i] || {});
+  }
+
+  viewRawRows(indices: IndicesArray) {
+    return mapIndices(indices, this.mapToDataRow);
+  }
+
+  getRow(index: number) {
+    return this._dataRows[index];
+  }
+
+  seq(indices: IndicesArray) {
+    return lazySeq(indices).map(this.mapToDataRow);
+  }
+
+  view(indices: IndicesArray) {
     return this.viewRaw(indices);
   }
 
-  fetch(orders: number[][]): IDataRow[][] {
-    return orders.map((order) => order.map((index) => this._dataRows[index]));
-  }
-
-  /**
-   * helper for computing statistics
-   * @param indices
-   * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
-   */
-  stats(indices?: number[]): IStatsBuilder {
-    let d: IDataRow[] | null = null;
-    const getD = () => {
-      if (d == null) {
-        d = indices ? this.viewRawRows(indices) : this._dataRows;
-      }
-      return d;
-    };
-
-    return {
-      stats: (col: INumberColumn, numbrerOfBins?: number) => computeStats(getD(), (d) => col.getNumber(d), (d) => col.isMissing(d), [0, 1], numbrerOfBins),
-      hist: (col: ICategoricalColumn) => computeHist(getD(), (d) => col.getCategory(d), col.categories)
-    };
-  }
-
-
-  mappingSample(col: INumberColumn): number[] {
-    const MAX_SAMPLE = 120; //at most 500 sample lines
+  mappingSample(col: INumberColumn): ISequence<number> {
+    const MAX_SAMPLE = 120; //at most 120 sample lines
     const l = this._dataRows.length;
     if (l <= MAX_SAMPLE) {
-      return <number[]>this._dataRows.map(col.getRawNumber.bind(col));
+      return lazySeq(this._dataRows).map((v) => col.getRawNumber(v));
     }
     //randomly select 500 elements
-    const indices: number[] = [];
+    const indices = new Set<number>();
+
     for (let i = 0; i < MAX_SAMPLE; ++i) {
       let j = Math.floor(Math.random() * (l - 1));
-      while (indices.indexOf(j) >= 0) {
+      while (indices.has(j)) {
         j = Math.floor(Math.random() * (l - 1));
       }
-      indices.push(j);
+      indices.add(j);
     }
-    return indices.map((i) => col.getRawNumber(this._dataRows[i]));
+    return lazySeq(Array.from(indices)).map((i) => col.getRawNumber(this._dataRows[i]));
   }
 
   searchAndJump(search: string | RegExp, col: Column) {

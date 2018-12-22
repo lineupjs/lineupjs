@@ -1,25 +1,30 @@
-import Column from './Column';
+import Column, {ECompareValueType, ICompareValue} from './Column';
 import {IArrayColumn, isArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {colorPool} from './internal';
 import {FIRST_IS_MISSING} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColorMappingFunction} from './CategoricalColorMappingFunction';
+import {ISequence, isSeqEmpty, IForEachAble} from '../internal/interable';
 
 export interface ICategoricalDesc {
   categories: (string | Partial<ICategory>)[];
-  missingCategory: (string | Partial<ICategory>);
 }
 
 export declare type ICategoricalColumnDesc = IValueColumnDesc<string> & ICategoricalDesc;
 
-export interface ISetColumn extends IArrayColumn<boolean> {
-  readonly categories: ICategory[];
 
-  getSet(row: IDataRow): Set<ICategory>;
+export interface ICategoricalLikeColumn extends Column {
+  readonly categories: ICategory[];
 
   getColorMapping(): ICategoricalColorMappingFunction;
   setColorMapping(mapping: ICategoricalColorMappingFunction): void;
+
+  iterCategory(row: IDataRow): IForEachAble<ICategory | null>;
+}
+
+export interface ISetColumn extends IArrayColumn<boolean>, ICategoricalLikeColumn {
+  getSet(row: IDataRow): Set<ICategory>;
 }
 
 export function isSetColumn(col: Column): col is ISetColumn {
@@ -46,6 +51,10 @@ export interface ICategory {
   value: number;
 }
 
+export function isCategory(v: any): v is ICategory {
+  return typeof v.name === 'string' && typeof v.label === 'string' && typeof v.color === 'string' && typeof v.value === 'number';
+}
+
 /** @internal */
 export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => Column.DEFAULT_COLOR) {
   if (typeof cat === 'string') {
@@ -61,28 +70,29 @@ export function toCategory(cat: (string | Partial<ICategory>), value: number, ne
   };
 }
 
+
 /** @internal */
-export function compareCategory(a: ICategory | null, b: ICategory | null) {
-  const aNull = a == null || isNaN(a.value);
-  const bNull = b == null || isNaN(b.value);
-  if (aNull || a == null) {
-    return bNull ? 0 : FIRST_IS_MISSING;
+export function toCompareCategoryValue(v: ICategory | null) {
+  if (v == null) {
+    return NaN;
   }
-  if (bNull || b == null) {
-    return -FIRST_IS_MISSING;
-  }
-  if (a.value === b.value) {
-    return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
-  }
-  return a.value - b.value;
+  return v.value;
 }
 
-function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICategory | null, count: number} {
+export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT_ASC;
+
+function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): {cat: ICategory | null, count: number} {
   const hist = new Map<ICategory | null, number>();
 
-  for (const row of rows) {
-    const cat = col.getCategory(row);
-    hist.set(cat, (hist.get(cat) || 0) + 1);
+  if (valueCache) {
+    valueCache.forEach((cat) => {
+      hist.set(cat, (hist.get(cat) || 0) + 1);
+    });
+  } else {
+    rows.forEach((row) => {
+      const cat = col.getCategory(row);
+      hist.set(cat, (hist.get(cat) || 0) + 1);
+    });
   }
 
   if (hist.size === 0) {
@@ -105,34 +115,37 @@ function findMostFrequent(rows: IDataRow[], col: ICategoricalColumn): {cat: ICat
   };
 }
 
-/**
- * sort group by most frequent category or if same without count desc
- * @internal
- */
-export function groupCompareCategory(a: IDataRow[], b: IDataRow[], col: ICategoricalColumn) {
-  if (a.length === 0) {
-    return b.length === 0 ? 0 : FIRST_IS_MISSING;
+/** @internal */
+export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): ICompareValue[] {
+  if (isSeqEmpty(rows)) {
+    return [NaN, 0];
   }
-  if (b.length === 0) {
-    return -FIRST_IS_MISSING;
+  const mostFrequent = findMostFrequent(rows, col, valueCache);
+  if (mostFrequent.cat == null) {
+    return [NaN, 0];
   }
-
-  const aMostFrequent = findMostFrequent(a, col);
-  const bMostFrequent = findMostFrequent(b, col);
-
-  if (aMostFrequent.cat === null) {
-    return bMostFrequent.cat === null ? 0 : FIRST_IS_MISSING;
-  }
-  if (bMostFrequent.cat === null) {
-    return -FIRST_IS_MISSING;
-  }
-
-  if (aMostFrequent.cat === bMostFrequent.cat) {
-    return bMostFrequent.count - aMostFrequent.count; // by count desc
-  }
-  return aMostFrequent.cat.value - bMostFrequent.cat.value;
+  return [mostFrequent.cat.value, mostFrequent.count];
 }
 
+export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.COUNT];
+
+/** @internal */
+function compareCategory(a: ICategory | null, b: ICategory | null) {
+  const aNull = a == null || isNaN(a.value);
+  const bNull = b == null || isNaN(b.value);
+  if (aNull || a == null) {
+    return bNull ? 0 : FIRST_IS_MISSING;
+  }
+  if (bNull || b == null) {
+    return -FIRST_IS_MISSING;
+  }
+  if (a.value === b.value) {
+    return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
+  }
+  return a.value - b.value;
+}
+
+/** @internal */
 export function toCategories(desc: ICategoricalDesc) {
   if (!desc.categories) {
     return [];
@@ -143,6 +156,9 @@ export function toCategories(desc: ICategoricalDesc) {
   return cats.sort(compareCategory);
 }
 
+export function isCategoricalLikeColumn(col: Column): col is ICategoricalLikeColumn {
+  return typeof (<ICategoricalLikeColumn>col).categories !== 'undefined' && typeof (<ICategoricalLikeColumn>col).iterCategory === 'function';
+}
 /**
  * checks whether the given column or description is a categorical column, i.e. the value is a list of categories
  * @param col

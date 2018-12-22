@@ -1,10 +1,10 @@
-import {ICategoricalDesc, ICategory, toCategories, toCategory} from './ICategoricalColumn';
+import {ICategoricalDesc, ICategory, toCategories, ICategoricalLikeColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {toolbar} from './annotations';
 
@@ -19,12 +19,10 @@ export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDes
 export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 @toolbar('colorMappedCategorical')
-export default class CategoricalMapColumn extends MapColumn<string | null> {
+export default class CategoricalMapColumn extends MapColumn<string | null> implements ICategoricalLikeColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   readonly categories: ICategory[];
-
-  private readonly missingCategory: ICategory | null;
 
   private readonly lookup = new Map<string, Readonly<ICategory>>();
 
@@ -33,7 +31,6 @@ export default class CategoricalMapColumn extends MapColumn<string | null> {
   constructor(id: string, desc: Readonly<ICategoricalMapColumnDesc>) {
     super(id, desc);
     this.categories = toCategories(desc);
-    this.missingCategory = desc.missingCategory ? toCategory(desc.missingCategory, NaN) : null;
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.colorMapping = DEFAULT_COLOR_FUNCTION;
   }
@@ -49,6 +46,7 @@ export default class CategoricalMapColumn extends MapColumn<string | null> {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -61,25 +59,26 @@ export default class CategoricalMapColumn extends MapColumn<string | null> {
 
   private parseValue(v: any) {
     if (!v) {
-      return this.missingCategory;
+      return null;
     }
     const vs = String(v);
-    return this.lookup.has(vs) ? this.lookup.get(vs)! : this.missingCategory;
+    return this.lookup.has(vs) ? this.lookup.get(vs)! : null;
   }
 
   getCategories(row: IDataRow) {
-    return super.getValue(row).map(({key, value}) => ({
+    return super.getMap(row).map(({key, value}) => ({
       key,
       value: this.parseValue(value)
     }));
   }
 
   getColors(row: IDataRow) {
-    return this.getCategories(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value): Column.DEFAULT_COLOR}));
+    return this.getCategories(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value) : Column.DEFAULT_COLOR}));
   }
 
   getValue(row: IDataRow) {
-    return this.getCategories(row).map(({key, value}) => ({
+    const r = this.getCategories(row);
+    return r.length === 0 ? null : r.map(({key, value}) => ({
       key,
       value: value ? value.name : null
     }));
@@ -109,5 +108,9 @@ export default class CategoricalMapColumn extends MapColumn<string | null> {
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+  }
+
+  iterCategory(row: IDataRow) {
+    return this.getCategories(row).map((d) => d.value);
   }
 }

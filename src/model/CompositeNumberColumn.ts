@@ -1,10 +1,11 @@
 import {format} from 'd3-format';
-import Column, {IColumnDesc} from './Column';
+import {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {isMissingValue} from './missing';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 import {SortByDefault} from './annotations';
+import {ISequence} from '../internal/interable';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -12,12 +13,6 @@ export interface ICompositeNumberDesc extends IColumnDesc {
    * @default 0.3n
    */
   numberFormat?: string;
-
-  /**
-   * missing value to use
-   * @default 0
-   */
-  missingValue?: number;
 }
 
 export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnDesc;
@@ -27,9 +22,7 @@ export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnD
  */
 @SortByDefault('descending')
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
-  missingValue = NaN;
-
-  private numberFormat: (n: number) => string = format('.3n');
+  private readonly numberFormat: (n: number) => string = format('.3n');
 
   constructor(id: string, desc: Readonly<ICompositeNumberColumnDesc>) {
     super(id, desc);
@@ -37,27 +30,6 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-
-    if (desc.missingValue !== undefined) {
-      this.missingValue = desc.missingValue;
-    }
-  }
-
-
-  dump(toDescRef: (desc: any) => any) {
-    const r = super.dump(toDescRef);
-    r.missingValue = this.missingValue;
-    return r;
-  }
-
-  restore(dump: any, factory: (dump: any) => Column | null) {
-    if (dump.missingValue !== undefined) {
-      this.missingValue = dump.missingValue;
-    }
-    if (dump.numberFormat) {
-      this.numberFormat = format(dump.numberFormat);
-    }
-    super.restore(dump, factory);
   }
 
   getLabel(row: IDataRow) {
@@ -76,7 +48,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     //weighted sum
     const v = this.compute(row);
     if (isMissingValue(v)) {
-      return this.missingValue;
+      return null;
     }
     return v;
   }
@@ -94,6 +66,14 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return this.getNumber(row);
   }
 
+  iterNumber(row: IDataRow) {
+    return [this.getNumber(row)];
+  }
+
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
+  }
+
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       return {
@@ -104,16 +84,20 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return super.getExportValue(row, format);
   }
 
-  isMissing(row: IDataRow) {
-    return isMissingValue(this.compute(row));
+  toCompareValue(row: IDataRow) {
+    return NumberColumn.prototype.toCompareValue.call(this, row);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return NumberColumn.prototype.compare.call(this, a, b);
+  toCompareValueType() {
+    return NumberColumn.prototype.toCompareValueType.call(this);
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return NumberColumn.prototype.groupCompare.call(this, a, b);
+  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+    return NumberColumn.prototype.toCompareGroupValue.call(this, rows, group);
+  }
+
+  toCompareGroupValueType() {
+    return NumberColumn.prototype.toCompareGroupValueType.call(this);
   }
 
   getRenderer(): string {

@@ -1,14 +1,15 @@
-import {IDataRow, IGroup, isMissingValue} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {matchRows} from './ANumbersCellRenderer';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEachChild, noRenderer} from './utils';
+import {ISequence} from '../internal/interable';
 
 /** @internal */
-export function line(data: number[]) {
+export function line(data: ISequence<number>) {
   if (data.length === 0) {
     return '';
   }
@@ -16,7 +17,7 @@ export function line(data: number[]) {
   let moveNext = true;
 
   data.forEach((d, i) => {
-    if (isMissingValue(d)) {
+    if (isNaN(d)) {
       moveNext = true;
     } else if (moveNext) {
       p += `M${i},${1 - d} `;
@@ -51,18 +52,22 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn) {
+  createGroup(col: INumbersColumn, context: IRenderContext) {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
       template: `<svg viewBox="0 0 ${dataLength} 1" preserveAspectRatio="none meet"><line x1="0" x2="${dataLength - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, group: IOrderedGroup) => {
         //overlapping ones
-        matchRows(n, rows, `<path></path>`);
-        forEachChild(n, ((row, i) => {
-          const d = rows[i];
-          row.setAttribute('d', line(col.getNumbers(d)));
-        }));
+        matchRows(n, group.order.length, `<path></path>`);
+        return context.tasks.groupRows(col, group, 'numbers', (r) => Array.from(r.map((d) => col.getNumbers(d)))).then((vs) => {
+          if (typeof vs === 'symbol') {
+            return;
+          }
+          forEachChild(n, ((row, i) => {
+            row.setAttribute('d', line(vs[i]));
+          }));
+        });
       }
     };
   }

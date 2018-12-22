@@ -1,14 +1,13 @@
-import Ranking from '../../model/Ranking';
-import Column from '../../model/Column';
-import {ISortCriteria} from '../../model/Ranking';
-import {updateHeader, actionCSSClass} from '../header';
-import {IRankingHeaderContext} from '../interfaces';
-import SearchBox, {ISearchBoxOptions} from './SearchBox';
-import {isSupportType, categoryOf, isSortingAscByDefault} from '../../model/annotations';
-import {isSortAble, isGroupAble, getToolbarDialogAddons, IToolbarDialogAddon, dialogContext, isGroupSortAble} from '../toolbar';
-import AddonDialog from '../dialogs/AddonDialog';
-import {cssClass, aria} from '../../styles';
 import {clear} from '../../internal';
+import {categoryOf, isSortingAscByDefault, isSupportType} from '../../model/annotations';
+import Column from '../../model/Column';
+import Ranking, {ISortCriteria} from '../../model/Ranking';
+import {aria, cssClass} from '../../styles';
+import AddonDialog from '../dialogs/AddonDialog';
+import {actionCSSClass, updateHeader} from '../header';
+import {IRankingHeaderContext} from '../interfaces';
+import {dialogContext, getToolbarDialogAddons, isGroupAble, isGroupSortAble, isSortAble, IToolbarDialogAddon} from '../toolbar';
+import SearchBox, {ISearchBoxOptions} from './SearchBox';
 
 interface IColumnItem {
   col: Column;
@@ -66,7 +65,7 @@ export default class Hierarchy {
     this.renderGroupSorting(ranking, <HTMLElement>this.node.lastElementChild!);
   }
 
-  private render<T>(node: HTMLElement, items: T[], toColumn: (item: T)=>Column, extras: (item: T, node: HTMLElement)=>void, addonKey: string, onChange: (item: T, delta: number)=>void) {
+  private render<T>(node: HTMLElement, items: T[], toColumn: (item: T) => Column, extras: (item: T, node: HTMLElement) => void, addonKey: string, onChange: (item: T, delta: number) => void) {
     const cache = new Map((<HTMLElement[]>Array.from(node.children)).map((d) => <[string, HTMLElement]>[d.dataset.id, d]));
     clear(node);
 
@@ -75,7 +74,7 @@ export default class Hierarchy {
       const item = cache.get(col.id);
       if (item) {
         node.appendChild(item);
-        updateHeader(item, col);
+        updateHeader(item, col, 0);
         return;
       }
       const addons = getToolbarDialogAddons(col, addonKey, this.ctx);
@@ -116,7 +115,7 @@ export default class Hierarchy {
 
       extras(d, last);
 
-      updateHeader(last, col);
+      updateHeader(last, col, 0);
     });
   }
 
@@ -185,7 +184,7 @@ export default class Hierarchy {
     const sortCriterias = ranking.getGroupSortCriteria();
 
     if (sortCriterias.length === 0) {
-      node.innerHTML = '';
+      clear(node);
       return;
     }
 
@@ -217,7 +216,7 @@ export default class Hierarchy {
     this.addGroupSortAdder(ranking, sortCriterias, node);
   }
 
-  private addAdder(adder: SearchBox<IColumnItem>, ranking: Ranking, addonKey: string, current: Column[], node: HTMLElement, check: (col: Column)=>boolean, onSelect: (col: Column)=>void) {
+  private addAdder(adder: SearchBox<IColumnItem>, ranking: Ranking, addonKey: string, current: Column[], node: HTMLElement, check: (col: Column) => boolean, onSelect: (col: Column) => void) {
     const used = new Set(current);
 
     adder.data = ranking.children.filter((col) => !isSupportType(col) && !used.has(col) && check(col)).map((col) => ({col, id: col.id, text: col.label}));
@@ -259,7 +258,7 @@ export default class Hierarchy {
     });
   }
 
-  private customize(col: Column, addons: IToolbarDialogAddon[], attachment: HTMLElement, onClick?: ()=>void) {
+  private customize(col: Column, addons: IToolbarDialogAddon[], attachment: HTMLElement, onClick?: () => void) {
     const dialog = new AddonDialog(col, addons, dialogContext(this.ctx, 0, attachment), this.ctx, onClick);
     dialog.open();
   }

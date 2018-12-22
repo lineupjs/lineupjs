@@ -1,13 +1,14 @@
-import {IBoxPlotData, IStatistics, LazyBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
-import {IDataRow, IGroup, isNumberColumn, isMapAbleColumn} from '../model';
+import {IBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
+import {IDataRow, isNumberColumn, isMapAbleColumn, IOrderedGroup} from '../model';
 import BoxPlotColumn from '../model/BoxPlotColumn';
 import Column from '../model/Column';
-import {IBoxPlotColumn, INumberColumn, INumbersColumn, isBoxPlotColumn, isNumbersColumn} from '../model/INumberColumn';
+import {IBoxPlotColumn, INumberColumn, isBoxPlotColumn} from '../model/INumberColumn';
 import NumberColumn from '../model/NumberColumn';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {renderMissingCanvas} from './missing';
+import {tasksAll} from '../provider/tasks';
 
 const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
@@ -44,7 +45,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));
   }
 
-  create(col: IBoxPlotColumn, context: IRenderContext, _hist: IStatistics | null, imposer?: IImposer) {
+  create(col: IBoxPlotColumn, context: IRenderContext, imposer?: IImposer) {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
@@ -52,7 +53,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       template: BOXPLOT,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d);
-        if (!data || col.isMissing(d)) {
+        if (!data) {
           n.classList.add(cssClass('missing'));
           return;
         }
@@ -86,54 +87,49 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createAggregatedBoxPlot(col: INumbersColumn, rows: IDataRow[], raw = false): IBoxPlotData {
-    // concat all values
-    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumber(r))));
-    return new LazyBoxPlotData(vs);
-  }
-
-  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: BOXPLOT,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        if (rows.every((row) => col.isMissing(row))) {
-          renderMissingDOM(n, col, rows[0]); // doesn't matter since all
-          return;
-        }
-        n.classList.remove(cssClass('missing'));
-
-        let box: IBoxPlotData, label: IBoxPlotData;
-
-        if (isNumbersColumn(col)) {
-          box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
-          label = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows, true);
-        } else {
-          box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row)));
-          label = new LazyBoxPlotData(rows.map((row) => col.getRawNumber(row)));
-        }
-        renderDOMBoxPlot(n, box, label, sort, colorOf(col, null, imposer));
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return tasksAll([context.tasks.groupBoxPlotStats(col, group, false), context.tasks.groupBoxPlotStats(col, group, true)]).then((data) => {
+          if (typeof data === 'symbol') {
+            return;
+          }
+          // render
+          n.classList.toggle(cssClass('missing'), data === null);
+          if (data === null) {
+            return;
+          }
+          renderDOMBoxPlot(n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
+        });
       }
     };
   }
 
-  createSummary(col: INumberColumn, _comtext: IRenderContext, _interactive: boolean, _unfilteredHist: IStatistics | null, imposer?: IImposer) {
+  createSummary(col: INumberColumn, context: IRenderContext, _interactive: boolean, imposer?: IImposer) {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
-      update: (n: HTMLElement, hist: IStatistics | null) => {
-        if (hist == null || hist.count === 0) {
-          n.classList.add(cssClass('missing'));
-          return;
-        }
-        n.classList.remove(cssClass('missing'));
-        const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
+      update: (n: HTMLElement) => {
+        return context.tasks.summaryBoxPlotStats(col).then((data) => {
+          if (typeof data === 'symbol') {
+            return;
+          }
+          const {summary} = data;
+          if (summary == null) {
+            n.classList.add(cssClass('missing'));
+            return;
+          }
+          n.classList.remove(cssClass('missing'));
+          const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
 
-        if (isMapAbleColumn(col)) {
-          const range = col.getRange();
-          Array.from(n.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
-        }
+          if (isMapAbleColumn(col)) {
+            const range = col.getRange();
+            Array.from(n.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
+          }
 
-        renderDOMBoxPlot(n, hist, hist, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
+          renderDOMBoxPlot(n, summary, summary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
+        });
       }
     };
   }

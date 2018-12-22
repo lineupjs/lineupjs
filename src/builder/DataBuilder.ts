@@ -25,11 +25,16 @@ export default class DataBuilder extends LineUpBuilder {
     super();
   }
 
+  scheduledTaskExecutor() {
+    this.providerOptions.taskExecutor = 'scheduled';
+    return this;
+  }
+
   /**
    * allow just a single selection
    */
   singleSelection() {
-    this.providerOptions.multiSelection = false;
+    this.providerOptions.singleSelection = true;
     return this;
   }
 
@@ -42,32 +47,14 @@ export default class DataBuilder extends LineUpBuilder {
   }
 
   /**
-   * no limits for the number of sorting and grouping criteria
-   */
-  noCriteriaLimits() {
-    this.providerOptions.maxGroupColumns = Infinity;
-    this.providerOptions.maxNestedSortingCriteria = Infinity;
-    return this;
-  }
-
-  /**
-   * limit the number of sort and grouping criterias i.e the nesting level
-   * @param {number} sortingCritera
-   * @param {number} groupingCriteria
-   * @returns {this}
-   */
-  limitCriteria(sortingCritera: number, groupingCriteria: number) {
-    this.providerOptions.maxGroupColumns = sortingCritera;
-    this.providerOptions.maxNestedSortingCriteria = groupingCriteria;
-    return this;
-  }
-
-  /**
    * triggers to derive the column descriptions for the given data
    * @param {string} columns optional enforced order of columns
    */
-  deriveColumns(...columns: string[]) {
-    this.columns.push(...deriveColumnDescriptions(this.data, {columns}));
+  deriveColumns(...columns: (string | string[])[]) {
+    const cols = (<string[]>[]).concat(...columns);
+    for (const c of deriveColumnDescriptions(this.data, {columns: cols})) {
+      this.columns.push(c);
+    }
     return this;
   }
 
@@ -130,7 +117,20 @@ export default class DataBuilder extends LineUpBuilder {
    * @returns {LocalDataProvider}
    */
   buildData() {
-    const columns = this.columns.map((d) => typeof d === 'function' ? d(this.data) : d);
+    // last come survived separted by label to be able to override columns
+    const columns: IColumnDesc[] = [];
+    const contained = new Set<string>();
+    for (const col of this.columns) {
+      const c = typeof col === 'function' ? col(this.data) : col;
+      const key = `${c.type}@${c.label}`;
+      if (!contained.has(key)) {
+        columns.push(c);
+        contained.add(key);
+        continue;
+      }
+      const oldPos = columns.findIndex((d) => key === `${d.type}@${d.label}`);
+      columns.splice(oldPos, 1, c); // replace with new one
+    }
     if (this._deriveColors) {
       deriveColors(columns);
     }

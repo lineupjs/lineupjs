@@ -1,13 +1,13 @@
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories, ISetColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_MISSING} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {chooseUIntByDataLength} from '../provider/sort';
 
 export interface ISetDesc extends ICategoricalDesc {
   separator?: string;
@@ -76,6 +76,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -93,8 +94,12 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return this.categories.length;
   }
 
-  getValue(row: IDataRow): string[] {
-    return this.getCategories(row).map((d) => d.name);
+  getValue(row: IDataRow): string[] | null {
+    const v = this.getCategories(row);
+    if (v.length === 0) {
+      return null;
+    }
+    return v.map((d) => d.name);
   }
 
   getLabel(row: IDataRow) {
@@ -142,10 +147,6 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return CategoricalColumn.prototype.setColorMapping.call(this, mapping);
   }
 
-  isMissing(row: IDataRow) {
-    const s = this.getSet(row);
-    return s.size === 0;
-  }
 
   getValues(row: IDataRow) {
     const s = new Set(this.getSet(row));
@@ -162,6 +163,14 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
 
   getMapLabel(row: IDataRow) {
     return this.getCategories(row).map((d) => ({key: d.label, value: 'true'}));
+  }
+
+  iterCategory(row: IDataRow) {
+    const r = this.getSet(row);
+    if (r.size > 0) {
+      return Array.from(r);
+    }
+    return [null];
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -205,27 +214,17 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const av = this.getSet(a);
-    const bv = this.getSet(b);
-    if (av.size === 0) {
-      return bv.size === 0 ? 0 : FIRST_IS_MISSING;
-    }
-    if (bv.size === 0) {
-      return -FIRST_IS_MISSING;
-    }
-    if (av.size !== bv.size) {
-      return av.size - bv.size;
-    }
-    // first one having a category wins
+  toCompareValue(row: IDataRow) {
+    const v = this.getSet(row);
+
+    const vs = [v.size];
     for (const cat of this.categories) {
-      if (av.has(cat)) {
-        return -1;
-      }
-      if (bv.has(cat)) {
-        return +1;
-      }
+      vs.push(v.has(cat) ? 1 : 0);
     }
-    return 0;
+    return vs;
+  }
+
+  toCompareValueType() {
+    return [chooseUIntByDataLength(this.categories.length)].concat(this.categories.map(() => ECompareValueType.BINARY));
   }
 }

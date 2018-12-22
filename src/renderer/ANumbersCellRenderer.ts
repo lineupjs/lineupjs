@@ -1,8 +1,9 @@
-import {LazyBoxPlotData} from '../internal';
-import {IDataRow, IGroup, isMissingValue} from '../model';
-import {INumbersColumn} from '../model/INumberColumn';
+import {IDataRow, IOrderedGroup} from '../model';
+import {INumbersColumn, EAdvancedSortMethod} from '../model/INumberColumn';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {ISequence} from '../internal/interable';
+import {boxplotBuilder} from '../internal';
 
 /** @internal */
 export abstract class ANumbersCellRenderer {
@@ -15,28 +16,39 @@ export abstract class ANumbersCellRenderer {
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
-  static choose(col: INumbersColumn, rows: IDataRow[]) {
-    const data = rows.map((r) => ({n: col.getNumbers(r), raw: col.getRawNumbers(r)}));
+  static choose(col: INumbersColumn, rows: ISequence<IDataRow>) {
+    let row: IDataRow | null = null;
+    const data = rows.map((r, i) => {
+      if (i === 0) {
+        row = r;
+      }
+      return {n: col.getNumbers(r), raw: col.getRawNumbers(r)};
+    });
     const cols = col.dataLength!;
     const normalized = <number[]>[];
     const raw = <number[]>[];
     // mean column)
     for (let i = 0; i < cols; ++i) {
-      const vs = data.map((d) => ({n: d.n[i], raw: d.raw[i]})).filter((d) => !isMissingValue(d.n));
+      const vs = data.map((d) => ({n: d.n[i], raw: d.raw[i]})).filter((d) => !isNaN(d.n));
       if (vs.length === 0) {
         normalized.push(NaN);
         raw.push(NaN);
       } else {
-        const box = <any>new LazyBoxPlotData(vs.map((d) => d.n));
-        const boxRaw = <any>new LazyBoxPlotData(vs.map((d) => d.raw));
-        normalized.push(box[col.getSortMethod()]);
-        raw.push(boxRaw[col.getSortMethod()]);
+        const bbn = boxplotBuilder();
+        const bbr = boxplotBuilder();
+        const s: EAdvancedSortMethod = <any>col.getSortMethod();
+        vs.forEach((d) => {
+          bbn.push(d.n);
+          bbr.push(d.raw);
+        });
+        normalized.push(bbn.build()[s]!);
+        raw.push(bbr.build()[s]!);
       }
     }
-    return {normalized, raw};
+    return {normalized, raw, row};
   }
 
-  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const width = context.colWidth(col);
     const {templateRow, render, update, clazz} = this.createContext(col, context, imposer);
     return {
@@ -56,26 +68,29 @@ export abstract class ANumbersCellRenderer {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const {templateRow, update, clazz} = this.createContext(col, context, imposer);
     return {
       template: `<div class="${clazz}">${templateRow}</div>`,
-      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLDivElement, group: IOrderedGroup) => {
         // render a heatmap
-        const {normalized, raw} = ANumbersCellRenderer.choose(col, rows);
-        update(n, normalized, raw, rows[0]);
+        return context.tasks.groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
+          if (typeof data !== 'symbol') {
+            update(n, data.normalized, data.raw, data.row!);
+          }
+        });
       }
     };
   }
 }
 
 /** @internal */
-export function matchRows(n: HTMLElement | SVGElement, rows: IDataRow[], template: string) {
+export function matchRows(n: HTMLElement | SVGElement, length: number, template: string) {
   // first match the number of rows
   const children = <(HTMLElement | SVGElement)[]>Array.from(n.children);
-  if (children.length > rows.length) {
-    children.slice(rows.length).forEach((c) => c.remove());
-  } else if (rows.length > children.length) {
-    n.insertAdjacentHTML('beforeend', template.repeat(rows.length - children.length));
+  if (children.length > length) {
+    children.slice(length).forEach((c) => c.remove());
+  } else if (length > children.length) {
+    n.insertAdjacentHTML('beforeend', template.repeat(length - children.length));
   }
 }

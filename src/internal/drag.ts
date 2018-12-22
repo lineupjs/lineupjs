@@ -1,11 +1,11 @@
 
 /** @internal */
 export interface IDragHandleOptions {
-  container: HTMLElement|SVGElement;
+  container: HTMLElement | SVGElement;
   filter(evt: MouseEvent): boolean;
-  onStart(handle: HTMLElement|SVGElement, x: number, delta: number, evt: MouseEvent): void;
-  onDrag(handle: HTMLElement|SVGElement, x: number, delta: number, evt: MouseEvent): void;
-  onEnd(handle: HTMLElement|SVGElement, x: number, delta: number, evt: MouseEvent): void;
+  onStart(handle: HTMLElement | SVGElement, x: number, delta: number, evt: MouseEvent): void;
+  onDrag(handle: HTMLElement | SVGElement, x: number, delta: number, evt: MouseEvent): void;
+  onEnd(handle: HTMLElement | SVGElement, x: number, delta: number, evt: MouseEvent): void;
   minDelta: number;
 }
 
@@ -13,7 +13,7 @@ export interface IDragHandleOptions {
  * allow to change the width of a column using dragging the handle
  * @internal
  */
-export function dragHandle(handle: HTMLElement|SVGElement, options: Partial<IDragHandleOptions> = {}) {
+export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<IDragHandleOptions> = {}) {
   const o: Readonly<IDragHandleOptions> = Object.assign({
     container: handle.parentElement!,
     filter: () => true,
@@ -23,7 +23,7 @@ export function dragHandle(handle: HTMLElement|SVGElement, options: Partial<IDra
     minDelta: 2
   }, options);
 
-  const toContainerRelative = (x: number, elem: HTMLElement|SVGElement) => {
+  const toContainerRelative = (x: number, elem: HTMLElement | SVGElement) => {
     const rect = elem.getBoundingClientRect();
     return x - rect.left - elem.clientLeft;
   };

@@ -1,23 +1,9 @@
 import * as equalImpl from 'fast-deep-equal';
 
+/**
+ * deep equal comparison
+ */
 export const equal: (a: any, b: any) => boolean = (typeof equalImpl === 'function' ? equalImpl : (<any>equalImpl).default);
-
-/** @internal */
-export function findOption(options: any) {
-  return (key: string, defaultValue: any): any => {
-    if (key in options) {
-      return options[key];
-    }
-    if (key.indexOf('.') > 0) {
-      const p = key.substring(0, key.indexOf('.'));
-      key = key.substring(key.indexOf('.') + 1);
-      if (p in options && key in options[p]) {
-        return options[p][key];
-      }
-    }
-    return defaultValue;
-  };
-}
 
 /** @internal */
 export function equalArrays<T>(a: T[], b: T[]) {
@@ -43,8 +29,28 @@ export function fixCSS(id: string) {
  * @param node
  * @internal
  */
-export function clear(node: Node) {
-  while(node.lastChild) {
+export function clear<T extends Node>(node: T) {
+  while (node.lastChild) {
     node.removeChild(node.lastChild);
   }
+  return node;
+}
+
+/**
+ * @internal
+ * to avoid [].concat(...) which doesn't work for large arrays
+ * @param arrs
+ */
+export function concat<T>(arrs: (T[] | T)[]): T[] {
+  const r: T[] = [];
+  for (const a of arrs) {
+    if (!Array.isArray(a)) {
+      r.push(a);
+      continue;
+    }
+    for (const ai of a) {
+      r.push(ai);
+    }
+  }
+  return r;
 }

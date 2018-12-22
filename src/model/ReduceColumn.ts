@@ -1,6 +1,6 @@
-import {median, quantile} from 'd3-array';
+import {median, quantile} from '../internal/math';
 import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
@@ -75,9 +75,9 @@ export default class ReduceColumn extends CompositeNumberColumn {
       case EAdvancedSortMethod.mean:
         return vs.reduce((a, b) => a + b, 0) / vs.length;
       case EAdvancedSortMethod.max:
-        return Math.max(...vs);
+        return vs.reduce((a, b) => Math.max(a, b), Number.NEGATIVE_INFINITY);
       case EAdvancedSortMethod.min:
-        return Math.min(...vs);
+        return vs.reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY);
       case EAdvancedSortMethod.median:
         return median(vs)!;
       case EAdvancedSortMethod.q1:
@@ -102,6 +102,7 @@ export default class ReduceColumn extends CompositeNumberColumn {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -119,7 +120,7 @@ export default class ReduceColumn extends CompositeNumberColumn {
     if (this.reduce === reduce) {
       return;
     }
-    this.fire([ReduceColumn.EVENT_REDUCE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.reduce, this.reduce = reduce);
+    this.fire([ReduceColumn.EVENT_REDUCE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.reduce, this.reduce = reduce);
   }
 
   dump(toDescRef: (desc: any) => any) {

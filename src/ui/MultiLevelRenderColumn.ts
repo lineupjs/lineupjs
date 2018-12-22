@@ -1,4 +1,4 @@
-import {StyleManager} from 'lineupengine';
+import {StyleManager, isAsyncUpdate, IAsyncUpdate, IAbortAblePromise, abortAbleAll} from 'lineupengine';
 import {round} from '../internal';
 import Column from '../model/Column';
 import {IMultiLevelColumn} from '../model';
@@ -27,11 +27,16 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   }
 
   createHeader() {
-    const node = super.createHeader();
+    const r = super.createHeader();
     const wrapper = this.ctx.document.createElement('div');
     wrapper.classList.add(cssClass('nested'));
     wrapper.classList.add(gridClass(this.ctx.idPrefix, this.c));
-    node.appendChild(wrapper);
+
+    if (isAsyncUpdate(r)) {
+      r.item.appendChild(wrapper);
+    } else {
+      r.appendChild(wrapper);
+    }
 
     this.summaries.splice(0, this.summaries.length);
     this.mc.children.forEach((cc, i) => {
@@ -55,24 +60,21 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       summaryNode.dataset.renderer = cc.getSummaryRenderer();
       n.appendChild(summaryNode);
       this.summaries.push(summary);
-      summary.update(summaryNode, this.ctx.statsOf(<any>cc));
+      summary.update(summaryNode);
     });
 
-    this.updateNested(wrapper);
-
-    return node;
+    return this.updateNested(wrapper, r);
   }
 
   updateHeader(node: HTMLElement) {
-    super.updateHeader(node);
-
+    const r = super.updateHeader(node);
+    node = isAsyncUpdate(r) ? r.item : r;
     const wrapper = <HTMLElement>node.querySelector(`.${cssClass('nested')}`);
     if (!wrapper) {
-      return node; // too early
+      return r; // too early
     }
     node.appendChild(wrapper); // ensure the last one
-    this.updateNested(wrapper);
-    return node;
+    return this.updateNested(wrapper, r);
   }
 
   updateWidthRule(style: StyleManager) {
@@ -87,9 +89,19 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     return clazz;
   }
 
-  private updateNested(wrapper: HTMLElement) {
+  private updateNested(wrapper: HTMLElement, r: HTMLElement | IAsyncUpdate<HTMLElement>) {
     const sub = this.mc.children;
     const children = <HTMLElement[]>Array.from(wrapper.children);
+
+    const toWait: IAbortAblePromise<void>[] = [];
+    let header: HTMLElement;
+    if (isAsyncUpdate(r)) {
+      toWait.push(r.ready);
+      header = r.item;
+    } else {
+      header = r;
+    }
+
     sub.forEach((c, i) => {
       const node = children[i];
       updateHeader(node, c);
@@ -109,7 +121,18 @@ export default class MultiLevelRenderColumn extends RenderColumn {
         this.summaries[i] = renderer;
         node.appendChild(summary);
       }
-      this.summaries[i].update(summary, this.ctx.statsOf(<any>c));
+      const ready = this.summaries[i].update(summary);
+      if (ready) {
+        toWait.push(ready);
+      }
     });
+
+    if (toWait.length === 0) {
+      return header;
+    }
+    return {
+      item: header,
+      ready: <IAbortAblePromise<void>>abortAbleAll(toWait)
+    };
   }
 }

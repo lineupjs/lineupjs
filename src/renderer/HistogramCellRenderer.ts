@@ -1,6 +1,6 @@
 import {DENSE_HISTOGRAM} from '../config';
-import {computeStats, getNumberOfBins, INumberBin, IStatistics, round, ICategoricalStatistics} from '../internal/math';
-import {IDataRow, IGroup, isMissingValue} from '../model';
+import {normalizedStatsBuilder, INumberBin, IStatistics, round, getNumberOfBins} from '../internal/math';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import {
   DEFAULT_FORMATTER, INumberColumn, INumbersColumn, isNumberColumn,
@@ -30,61 +30,80 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     return (isNumberColumn(col) && mode !== ERenderMode.CELL) || (isNumbersColumn(col) && mode === ERenderMode.CELL);
   }
 
-  create(col: INumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
-    const {template, render, guessedBins} = getHistDOMRenderer(context.statsOf(col, true), col, imposer);
+  create(col: INumbersColumn, _context: IRenderContext, imposer?: IImposer) {
+    const {template, render, guessedBins} = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, row: IDataRow) => {
         if (renderMissingDOM(n, col, row)) {
           return;
         }
-        render(n, createHist(hist, guessedBins, [row], col));
+        const b = normalizedStatsBuilder(guessedBins);
+        for (const n of col.getNumbers(row)) {
+          b.push(n);
+        }
+        const hist = b.build();
+        render(n, {global: null, hist: hist.hist, maxBin: hist.maxBin});
       }
     };
   }
 
-  createGroup(col: INumberColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
-    const {template, render, guessedBins} = getHistDOMRenderer(context.statsOf(col, true), col, imposer);
+  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
+    const {template, render} = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        render(n, createHist(hist, guessedBins, rows, col));
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupNumberStats(col, group).then((r) => {
+          if (typeof r === 'symbol') {
+            return;
+          }
+          const {summary, group} = r;
+
+          render(n, {global: summary, hist: group.hist, maxBin: group.maxBin});
+        });
       }
     };
   }
 
-  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, unfilteredHist: IStatistics | null, imposer?: IImposer) {
-    const r = getHistDOMRenderer(unfilteredHist, col, imposer);
+  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer) {
+    const r = getHistDOMRenderer(col, imposer);
 
     const staticHist = !interactive || !isMapAbleColumn(col);
-    return staticHist ? staticSummary(col, r.template, r.render) : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render, unfilteredHist);
+    return staticHist ? staticSummary(col, context, r.template, r.render) : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render);
   }
 }
 
 
-function staticSummary(col: INumberColumn, template: string, render: (n: HTMLElement, stats: IHistData) => void) {
+function staticSummary(col: INumberColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IHistData) => void) {
   if (isMapAbleColumn(col)) {
     const range = col.getRange();
     template += `<span class="${cssClass('mapping-hint')}">${range[0]}</span><span class="${cssClass('mapping-hint')}">${range[1]}</span>`;
   }
   return {
     template: `${template}</div>`,
-    update: (node: HTMLElement, hist: IStatistics | null) => {
+    update: (node: HTMLElement) => {
       if (isMapAbleColumn(col)) {
         const range = col.getRange();
         Array.from(node.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
       }
 
-      node.classList.toggle(cssClass('missing'), !hist);
-      if (!hist) {
-        return;
-      }
-      render(node, {maxBin: hist.maxBin, hist: hist.hist});
+      return context.tasks.summaryNumberStats(col).then((r) => {
+        if (typeof r === 'symbol') {
+          return;
+        }
+        const {summary} = r;
+
+        node.classList.toggle(cssClass('missing'), !summary);
+        if (!summary) {
+          return;
+        }
+        render(node, {maxBin: summary.maxBin, hist: summary.hist});
+      });
     }
   };
 }
 
-function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IHistData) => void, unfilteredHist: IStatistics | null) {
+function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IHistData) => void) {
   const f = filter(col);
   template += `
       <div class="${cssClass('histogram-min-hint')}" style="width: ${f.percent(f.filterMin)}%"></div>
@@ -98,18 +117,25 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
 
   return {
     template: `${template}</div>`,
-    update: (node: HTMLElement, hist: IStatistics | null) => {
+    update: (node: HTMLElement) => {
       if (!updateFilter) {
         updateFilter = initFilter(node, col, context);
       }
-      updateFilter(unfilteredHist ? unfilteredHist.missing : (hist ? hist.missing : 0), col);
+      return context.tasks.summaryNumberStats(col).then((r) => {
+        if (typeof r === 'symbol') {
+          return;
+        }
+        const {summary, data} = r;
 
-      node.classList.add(cssClass('histogram-i'));
-      node.classList.toggle(cssClass('missing'), !hist);
-      if (!hist) {
-        return;
-      }
-      render(node, {maxBin: hist.maxBin, hist: hist.hist, global: unfilteredHist});
+        updateFilter(data ? data.missing : (summary ? summary.missing : 0), col);
+
+        node.classList.add(cssClass('histogram-i'));
+        node.classList.toggle(cssClass('missing'), !summary);
+        if (!summary) {
+          return;
+        }
+        render(node, {maxBin: summary.maxBin, hist: summary.hist, global: data});
+      });
     }
   };
 }
@@ -235,21 +261,6 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
   };
 }
 
-function createHist(globalHist: IStatistics | null, guessedBins: number, rows: IDataRow[], col: INumberColumn) {
-  const bins = globalHist ? globalHist.hist.length : guessedBins;
-  let stats: IStatistics;
-  if (isNumbersColumn(col)) {
-    //multiple values
-    const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r)));
-    stats = computeStats(values, (v: number) => v, isMissingValue, [0, 1], bins);
-  } else {
-    stats = computeStats(rows, (r: IDataRow) => col.getNumber(r), (r: IDataRow) => col.isMissing(r), [0, 1], bins);
-  }
-
-  const maxBin = Math.max(stats.maxBin, globalHist ? globalHist.maxBin : 0);
-  return {maxBin, hist: stats.hist};
-}
-
 function filterColor(input: string) {
   const c = color(input)!;
   c.opacity = FILTERED_OPACITY;
@@ -257,8 +268,9 @@ function filterColor(input: string) {
 }
 
 /** @internal */
-export function getHistDOMRenderer(globalHist: IStatistics | ICategoricalStatistics | null, col: INumberColumn, imposer?: IImposer) {
-  const guessedBins = globalHist ? globalHist.hist.length : getNumberOfBins(100);
+export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
+  const ranking = col.findMyRanker();
+  const guessedBins = ranking ? getNumberOfBins(ranking.getOrderLength()) : 10;
   let bins = '';
   for (let i = 0; i < guessedBins; ++i) {
     bins += `<div class="${cssClass('histogram-bin')}" title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`;
@@ -280,25 +292,25 @@ export function getHistDOMRenderer(globalHist: IStatistics | ICategoricalStatist
     }
     n.classList.toggle(cssClass('dense'), bins > DENSE_HISTOGRAM);
     nodes.forEach((d: HTMLElement, i) => {
-      const {x0, x1, length} = hist[i];
+      const {x0, x1, count} = hist[i];
       const inner = <HTMLElement>d.firstElementChild!;
       const color = colorOf(col, null, imposer, (x1 + x0) / 2)!;
       d.dataset.x = DEFAULT_FORMATTER(x0);
       if (unfiltered) {
-        const gLength = unfiltered.hist[i].length;
-        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length} of ${gLength})`;
-        inner.style.height = `${round(gLength * 100 / unfiltered.maxBin, 2)}%`;
-        const relY = 100 - round(length * 100 / gLength, 2);
+        const gCount = unfiltered.hist[i].count;
+        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${count} of ${gCount})`;
+        inner.style.height = `${round(gCount * 100 / unfiltered.maxBin, 2)}%`;
+        const relY = 100 - round(count * 100 / gCount, 2);
         inner.style.background = relY === 0 ? color : (relY === 100 ? filterColor(color) : `linear-gradient(${filterColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`);
       } else {
-        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length})`;
-        inner.style.height = `${round(length * 100 / maxBin, 2)}%`;
+        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${count})`;
+        inner.style.height = `${round(count * 100 / maxBin, 2)}%`;
         inner.style.backgroundColor = color;
       }
     });
   };
   return {
-    template: `<div class="${cssClass('histogram')} ${guessedBins > DENSE_HISTOGRAM ? cssClass('dense'): ''}">${bins}`, // no closing div to be able to append things
+    template: `<div class="${cssClass('histogram')} ${guessedBins > DENSE_HISTOGRAM ? cssClass('dense') : ''}">${bins}`, // no closing div to be able to append things
     render,
     guessedBins
   };

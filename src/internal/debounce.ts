@@ -1,4 +1,7 @@
-interface IDebounceContext {
+/**
+ * @internal
+ */
+export interface IDebounceContext {
   self: any;
   args: any[];
 }

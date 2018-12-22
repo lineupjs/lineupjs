@@ -1,7 +1,7 @@
 import {Category, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import {IDataRow, IGroup} from './interfaces';
-import {FIRST_IS_MISSING, missingGroup} from './missing';
+import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {equal} from '../internal';
@@ -84,6 +84,7 @@ export default class StringColumn extends ValueColumn<string> {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -93,9 +94,9 @@ export default class StringColumn extends ValueColumn<string> {
     return super.on(<any>type, listener);
   }
 
-  getValue(row: IDataRow) {
+  getValue(row: IDataRow): string | null {
     const v: any = super.getValue(row);
-    return v == null ? '' : String(v);
+    return isMissingValue(v) ? null : String(v);
   }
 
   getLabel(row: IDataRow) {
@@ -177,20 +178,8 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([StringColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const aValue = this.getLabel(a);
-    const bValue = this.getLabel(b);
-    if (aValue === '') {
-      return bValue === '' ? 0 : FIRST_IS_MISSING; //same = 0
-    }
-    if (bValue === '') {
-      return -FIRST_IS_MISSING;
-    }
-    return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
-  }
-
   group(row: IDataRow): IGroup {
-    if (this.isMissing(row)) {
+    if (this.getValue(row) == null) {
       return missingGroup;
     }
 
@@ -213,6 +202,16 @@ export default class StringColumn extends ValueColumn<string> {
       };
     }
     return defaultGroup;
+  }
+
+
+  toCompareValue(row: IDataRow) {
+    const v = this.getValue(row);
+    return v === '' || v == null ? null : v.toLowerCase();
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.STRING;
   }
 }
 

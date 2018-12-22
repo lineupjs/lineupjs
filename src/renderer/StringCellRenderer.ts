@@ -1,4 +1,4 @@
-import {IDataRow, IGroup} from '../model';
+import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
@@ -36,16 +36,20 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 
 
-  createGroup(col: StringColumn) {
+  createGroup(col: StringColumn, context: IRenderContext) {
     return {
       template: `<div> </div>`,
-      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
-        const v = exampleText(col, rows);
-        if (col.escape) {
-          setText(n, v);
-        } else {
-          n.innerHTML = v;
-        }
+      update: (n: HTMLDivElement, group: IOrderedGroup) => {
+        return context.tasks.groupExampleRows(col, group, 'string', (rows) => exampleText(col, rows)).then((text) => {
+          if (typeof text === 'symbol') {
+            return;
+          }
+          if (col.escape) {
+            setText(n, text);
+          } else {
+            n.innerHTML = text;
+          }
+        });
       }
     };
   }

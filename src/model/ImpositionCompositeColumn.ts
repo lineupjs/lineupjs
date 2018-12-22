@@ -1,11 +1,12 @@
 import {suffix, IEventListener} from '../internal/AEventDispatcher';
 import {toolbar, SortByDefault} from './annotations';
-import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroup} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import NumberColumn, {INumberColumn, mappingChanged, colorMappingChanged} from './NumberColumn';
 import {isMapAbleColumn} from './MappingFunction';
+import {ISequence} from '../internal/interable';
 
 
 /**
@@ -66,6 +67,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -88,7 +90,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
 
   getColor(row: IDataRow) {
     const c = this._children;
-    switch(c.length) {
+    switch (c.length) {
       case 0:
         return Column.DEFAULT_COLOR;
       case 1:
@@ -113,35 +115,43 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     return w ? w.getRawNumber(row) : NaN;
   }
 
+  iterNumber(row: IDataRow) {
+    return [this.getNumber(row)];
+  }
+
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
+  }
+
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
-      if (this.isMissing(row)) {
+      const value = this.getRawNumber(row);
+      if (isNaN(value)) {
         return null;
       }
       return {
         label: this.getLabel(row),
         color: this.getColor(row),
-        value: this.getRawNumber(row)
+        value
       };
     }
     return super.getExportValue(row, format);
   }
 
-  isMissing(row: IDataRow) {
-    const w = this.wrapper;
-    return w ? w.isMissing(row) : true;
+  toCompareValue(row: IDataRow) {
+    return NumberColumn.prototype.toCompareValue.call(this, row);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return NumberColumn.prototype.compare.call(this, a, b);
+  toCompareValueType() {
+    return NumberColumn.prototype.toCompareValueType.call(this);
   }
 
-  group(row: IDataRow) {
-    return NumberColumn.prototype.group.call(this, row);
+  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+    return NumberColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return NumberColumn.prototype.groupCompare.call(this, a, b);
+  toCompareGroupValueType() {
+    return NumberColumn.prototype.toCompareGroupValueType.call(this);
   }
 
   insert(col: Column, index: number): Column | null {

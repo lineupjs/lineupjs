@@ -1,15 +1,14 @@
-import AEventDispatcher from '../internal/AEventDispatcher';
+import AEventDispatcher, {IEventListener} from '../internal/AEventDispatcher';
+import {ISequence} from '../internal/interable';
 import {similar} from '../internal/math';
 import {fixCSS} from '../internal/utils';
-import {defaultGroup} from './Group';
-import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
-import {isMissingValue} from './missing';
-import Ranking, {ISortCriteria} from './Ranking';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {isSortingAscByDefault} from './annotations';
 import {IColumnDump} from '../provider/interfaces';
+import {isSortingAscByDefault} from './annotations';
+import {defaultGroup} from './Group';
+import {ECompareValueType, IColumnDesc, IDataRow, IGroup} from './interfaces';
+import Ranking, {ISortCriteria} from './Ranking';
 
-export {IColumnDesc} from './interfaces';
+export {ECompareValueType, IColumnDesc} from './interfaces';
 
 export interface IFlatColumn {
   readonly col: Column;
@@ -46,6 +45,7 @@ export interface IColumnMetaData {
   description: string;
 }
 
+export declare type ICompareValue = string | number | null;
 
 /**
  * emitted when the width property changes
@@ -88,6 +88,13 @@ export declare function dirtyHeader(): void;
  * @event
  */
 export declare function dirtyValues(): void;
+
+/**
+ * emitted when state of the column related to cached values (hist, compare, ...) is dirty
+ * @asMemberOf Column
+ * @event
+ */
+export declare function dirtyCaches(): void;
 
 /**
  * emitted when the renderer type property changes
@@ -139,6 +146,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_DIRTY = 'dirty';
   static readonly EVENT_DIRTY_HEADER = 'dirtyHeader';
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
+  static readonly EVENT_DIRTY_CACHES = 'dirtyCaches';
   static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
   static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererChanged';
   static readonly EVENT_SUMMARY_RENDERER_TYPE_CHANGED = 'summaryRendererChanged';
@@ -220,9 +228,9 @@ export default class Column extends AEventDispatcher {
 
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED,
-      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
-      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
-      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
+    Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES]);
   }
 
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -231,6 +239,7 @@ export default class Column extends AEventDispatcher {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -356,7 +365,7 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): { asc: 'asc' | 'desc' | undefined, priority: number | undefined } {
+  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): {asc: 'asc' | 'desc' | undefined, priority: number | undefined} {
     const ranker = this.findMyRanker();
     if (!ranker) {
       return {asc: undefined, priority: undefined};
@@ -413,7 +422,7 @@ export default class Column extends AEventDispatcher {
   /**
    * called when the columns added to a ranking
    */
-  attach(parent: IColumnParent)  {
+  attach(parent: IColumnParent) {
     this.parent = parent;
   }
 
@@ -501,7 +510,8 @@ export default class Column extends AEventDispatcher {
    * @return {string} the label of this column at the specified row
    */
   getLabel(row: IDataRow): string {
-    return String(this.getValue(row));
+    const v = this.getValue(row);
+    return v == null ? '' : String(v);
   }
 
   /**
@@ -509,7 +519,7 @@ export default class Column extends AEventDispatcher {
    * @param _row the current row
    * @return the value of this column at the specified row
    */
-  getValue(_row: IDataRow): any {
+  getValue(_row: IDataRow): any | null {
     return ''; //no value
   }
 
@@ -525,18 +535,12 @@ export default class Column extends AEventDispatcher {
     return Column.DEFAULT_COLOR;
   }
 
-  isMissing(row: IDataRow) {
-    return isMissingValue(this.getValue(row));
+  toCompareValue(_row: IDataRow, _valueCache?: any): ICompareValue | ICompareValue[] {
+    return 0;
   }
 
-  /**
-   * compare function used to determine the order according to the values of the current column
-   * @param _a first element
-   * @param _b second element
-   * @return {number}
-   */
-  compare(_a: IDataRow, _b: IDataRow) {
-    return 0; //can't compare
+  toCompareValueType(): ECompareValueType | ECompareValueType[] {
+    return ECompareValueType.UINT8;
   }
 
   /**
@@ -544,18 +548,16 @@ export default class Column extends AEventDispatcher {
    * @param _row
    * @return {IGroup}
    */
-  group(_row: IDataRow): IGroup {
+  group(_row: IDataRow, _valueCache?: any): IGroup {
     return defaultGroup;
   }
 
-  /**
-   * compares groups
-   * @param {IGroupData} a
-   * @param {IGroupData} b
-   * @return {number}
-   */
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+  toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup, _valueCache?: ISequence<any>): ICompareValue | ICompareValue[] {
+    return group.name.toLowerCase();
+  }
+
+  toCompareGroupValueType(): ECompareValueType | ECompareValueType[] {
+    return ECompareValueType.STRING;
   }
 
   /**
@@ -571,7 +573,7 @@ export default class Column extends AEventDispatcher {
    * @param row
    * @return {boolean}
    */
-  filter(row: IDataRow) {
+  filter(row: IDataRow, _valueCache?: any) {
     return row != null;
   }
 
@@ -652,9 +654,9 @@ export default class Column extends AEventDispatcher {
       case 'header':
         return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY]);
       case 'values':
-        return this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+        return this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY]);
       default:
-        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY]);
     }
   }
 }

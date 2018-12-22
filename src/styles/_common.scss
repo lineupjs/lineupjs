@@ -102,3 +102,7 @@
     display: none;
   }
 }
+
+.#{$lu_css_prefix}-busy * {
+  cursor: wait !important;
+}

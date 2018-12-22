@@ -177,7 +177,7 @@ export default class ColorMappingDialog extends ADialog {
     this.forEach('label > input[type=color]', (d: HTMLInputElement) => {
       d.onchange = () => {
         const item = (<HTMLInputElement>d.parentElement!.previousElementSibling!);
-        item.onchange!.call(item, null);
+        item.onchange!.call(item, new Event('change'));
       };
     });
   }

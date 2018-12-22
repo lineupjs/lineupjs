@@ -1,12 +1,12 @@
-import ArrayColumn, {IArrayColumnDesc, spliceChanged} from './ArrayColumn';
+import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ISetColumn, toCategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {FIRST_IS_MISSING} from './missing';
 import CategoricalColumn from './CategoricalColumn';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal/AEventDispatcher';
+import {chooseUIntByDataLength} from '../provider/sort';
 
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
@@ -39,6 +39,18 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     return new Set(this.categories.filter((_, i) => vs[i]));
   }
 
+  toCompareValue(row: IDataRow) {
+    const v = this.getValue(row);
+    if (v == null) {
+      return NaN;
+    }
+    return v.reduce((a, b) => a + (b ? 1 : 0), 0);
+  }
+
+  toCompareValueType() {
+    return chooseUIntByDataLength(this.dataLength);
+  }
+
   getCategories(row: IDataRow) {
     const categories = this.categories;
     return super.getValues(row).map((v, i) => {
@@ -46,8 +58,12 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     });
   }
 
+  iterCategory(row: IDataRow) {
+    return this.getCategories(row);
+  }
+
   getColors(row: IDataRow) {
-    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d): Column.DEFAULT_COLOR);
+    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : Column.DEFAULT_COLOR);
   }
 
 
@@ -56,7 +72,6 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   }
 
   on(type: typeof BooleansColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof ArrayColumn.EVENT_SPLICE_CHANGED, listener: typeof spliceChanged | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -64,6 +79,7 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -90,20 +106,5 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
-  }
-
-  compare(a: IDataRow, b: IDataRow) {
-    const aVal = this.getValue(a);
-    const bVal = this.getValue(b);
-    if (aVal == null) {
-      return bVal == null ? 0 : FIRST_IS_MISSING;
-    }
-    if (bVal == null) {
-      return -FIRST_IS_MISSING;
-    }
-
-    const aCat = aVal.filter((x) => x).length;
-    const bCat = bVal.filter((x) => x).length;
-    return (aCat - bCat);
   }
 }

@@ -1,15 +1,14 @@
-import {suffix} from '../../internal/AEventDispatcher';
+import {clear, suffix} from '../../internal';
 import {isSupportType} from '../../model';
 import Ranking from '../../model/Ranking';
+import {aria, cssClass} from '../../styles';
+import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
+import {actionCSSClass} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
+import {dialogContext} from '../toolbar';
 import Hierarchy from './Hierarchy';
 import {ISidePanelOptions} from './SidePanel';
 import SidePanelEntryVis from './SidePanelEntryVis';
-import {dialogContext} from '../toolbar';
-import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
-import {aria, cssClass} from '../../styles';
-import {clear} from '../../internal';
-import {actionCSSClass} from '../header';
 
 /** @internal */
 export default class SidePanelRanking {
@@ -17,6 +16,7 @@ export default class SidePanelRanking {
   readonly header: HTMLElement;
   readonly dropdown: HTMLElement;
   readonly node: HTMLElement;
+
   private readonly hierarchy: Hierarchy | null;
   private readonly entries = new Map<string, SidePanelEntryVis>();
 
@@ -104,7 +104,7 @@ export default class SidePanelRanking {
       return;
     }
 
-    node.innerHTML = ``;
+    clear(node);
 
     const copy = new Map(this.entries);
     this.entries.clear();
