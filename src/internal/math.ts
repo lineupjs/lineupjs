@@ -3,8 +3,17 @@ import {IForEachAble, ISequence, isIndicesAble} from './interable';
 import {createWorkerCodeBlob, IPoorManWorkerScope, toFunctionBody} from './worker';
 
 export interface INumberBin {
+  /**
+   * bin start
+   */
   x0: number;
+  /**
+   * bin end
+   */
   x1: number;
+  /**
+   * bin count
+   */
   count: number;
 }
 
@@ -21,6 +30,7 @@ export interface IBoxPlotData {
 
 export interface IAdvancedBoxPlotData extends IBoxPlotData {
   readonly mean: number;
+
   readonly missing: number;
   readonly count: number;
 }
@@ -29,10 +39,12 @@ export interface IStatistics {
   readonly mean: number;
   readonly min: number;
   readonly max: number;
-  readonly count: number;
-  readonly maxBin: number;
-  readonly hist: Readonly<INumberBin>[];
+
   readonly missing: number;
+  readonly count: number;
+
+  readonly maxBin: number;
+  readonly hist: ReadonlyArray<INumberBin>;
 }
 
 export interface ICategoricalBin {
@@ -47,10 +59,11 @@ export interface IDateBin {
 }
 
 export interface ICategoricalStatistics {
-  readonly maxBin: number;
-  readonly hist: Readonly<ICategoricalBin>[];
   readonly missing: number;
   readonly count: number;
+
+  readonly maxBin: number;
+  readonly hist: ReadonlyArray<ICategoricalBin>;
 }
 
 export enum EDateHistogramGranularity {
@@ -62,14 +75,17 @@ export enum EDateHistogramGranularity {
 export interface IDateStatistics {
   readonly min: Date | null;
   readonly max: Date | null;
+
+  readonly missing: number;
   readonly count: number;
+
   readonly maxBin: number;
   readonly histGranularity: EDateHistogramGranularity;
-  readonly hist: Readonly<IDateBin>[];
-  readonly missing: number;
+  readonly hist: ReadonlyArray<IDateBin>;
 }
 
 /**
+ * computes the optimal number of bins for a given array length
  * @internal
  * @param {number} length
  * @returns {number}
@@ -146,6 +162,7 @@ export function range(length: number) {
 }
 
 /**
+ * an empty range
  * @internal
  */
 export function empty(length: number) {
@@ -155,6 +172,7 @@ export function empty(length: number) {
 }
 
 /**
+ * computes the X quantile assumes the values are sorted
  * @internal
  */
 export function quantile(values: ArrayLike<number>, quantile: number, length = values.length) {
@@ -196,11 +214,22 @@ function pushAll<T>(push: (v: T) => void) {
 }
 
 /**
+ * common interface for a bulider pattern
  * @internal
  */
 export interface IBuilder<T, R> {
+  /**
+   * push an entry
+   */
   push(v: T): void;
+  /**
+   * push multiple values at once
+   */
   pushAll(vs: IForEachAble<T>): void;
+
+  /**
+   * build the result
+   */
   build(): R;
 }
 
@@ -208,13 +237,13 @@ export interface IBuilder<T, R> {
  * @internal
  */
 export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvancedBoxPlotData> & {buildArr: (s: Float32Array) => IAdvancedBoxPlotData} {
-  // filter out NaN
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
   let sum = 0;
   let length = 0;
   let missing = 0;
 
+  // if fixed size use the typed array else a regular array
   const values: number[] = [];
   const vs: Float32Array | null = fixedLength != null ? new Float32Array(fixedLength) : null;
 
@@ -434,6 +463,9 @@ export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, I
   return {push, build, pushAll: pushAll(push)};
 }
 
+/**
+ * guesses the histogram granularity to use based on min and max date
+ */
 function computeGranularity(min: Date | null, max: Date | null) {
   if (min == null || max == null) {
     return {histGranularity: EDateHistogramGranularity.YEAR, hist: []};
@@ -441,7 +473,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
   const hist: IDateBin[] = [];
 
   if (max.getFullYear() - min.getFullYear() >= 2) {
-    // years
+    // more than two years difference
     const minYear = min.getFullYear();
     const maxYear = max.getFullYear();
     for (let i = minYear; i <= maxYear; ++i) {
@@ -470,6 +502,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
     return {hist, histGranularity: EDateHistogramGranularity.DAY};
   }
 
+  // by month
   let x0 = new Date(min.getFullYear(), min.getMonth(), 1);
   while (x0 <= max) {
     const x1 = new Date(x0);
@@ -484,18 +517,47 @@ function computeGranularity(min: Date | null, max: Date | null) {
   return {hist, histGranularity: EDateHistogramGranularity.MONTH};
 }
 
+function pushDateHist(hist: IDateBin[], v: Date, count: number = 1) {
+  if (v < hist[0].x1) {
+    hist[0].count += count;
+    return;
+  }
+  const l = hist.length - 1;
+  if (v > hist[l].x0) {
+    hist[l].count += count;
+    return;
+  }
+  if (l === 2) {
+    hist[1].count += count;
+    return;
+  }
+
+  let low = 1;
+  let high = l;
+  // binary search
+  while (low < high) {
+    const center = Math.floor((high + low) / 2);
+    if (v < hist[center].x1) {
+      high = center;
+    } else {
+      low = center + 1;
+    }
+  }
+  hist[low].count += count;
+}
 /**
  * @internal
  */
 export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | null, IDateStatistics> {
-  // filter out NaN
   let min: Date | null = null;
   let max: Date | null = null;
   let count = 0;
   let missing = 0;
 
   // yyyymmdd, count
-  const byDay = new Map<number, number>();
+  const byDay = new Map<number, {x: Date, count: number}>();
+  const templateHist = template ? template.hist.map((d) => ({x0: d.x0, x1: d.x1, count: 0})) : null;
+
   const push = (v: Date | null) => {
     count += 1;
     if (!v || v == null) {
@@ -508,14 +570,34 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
     if (max == null || v > max) {
       max = v;
     }
+    if (templateHist) {
+      pushDateHist(templateHist, v, 1);
+      return;
+    }
     const key = v.getFullYear() * 10000 + v.getMonth() * 100 + v.getDate();
-    byDay.set(key, (byDay.get(key) || 0) + 1);
+    if (byDay.has(key)) {
+      byDay.get(key)!.count++;
+    } else {
+      byDay.set(key, {count: 1, x: v});
+    }
   };
 
   const build = () => {
-    const {histGranularity, hist} = template ? {
-      histGranularity: template.histGranularity, hist: template.hist.map((d) => Object.assign({}, d, {count: 0}))
-    } : computeGranularity(min, max);
+    if (templateHist) {
+      return {
+        min,
+        max,
+        missing,
+        count,
+        maxBin: templateHist.reduce((acc, h) => Math.max(acc, h.count), 0),
+        hist: templateHist,
+        histGranularity: template!.histGranularity
+      };
+    }
+    // copy template else derive
+    const {histGranularity, hist} = computeGranularity(min, max);
+
+    byDay.forEach((v) => pushDateHist(hist, v.x, v.count));
 
     return {
       min,
