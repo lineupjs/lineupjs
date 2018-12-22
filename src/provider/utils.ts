@@ -264,13 +264,16 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
     columns: [],
     datePattern: '%x'
   }, options);
+
   const r: IColumnDesc[] = [];
   if (data.length === 0) {
     // no data to derive something from
     return r;
   }
+
   const first = data[0];
   const columns: (number|string)[] = Array.isArray(first) ? range(first.length) : (config.columns.length > 0 ? selectColumns(Object.keys(first), config.columns) : Object.keys(first));
+
   return columns.map((key) => {
     let v = first[key];
     if (isEmpty(v)) {

@@ -11,6 +11,7 @@ export {IAbortAblePromise} from 'lineupengine';
 
 
 /**
+ * a render task that is already resolved
  * @internal
  */
 export class TaskNow<T> implements IRenderTask<T> {
@@ -24,6 +25,7 @@ export class TaskNow<T> implements IRenderTask<T> {
 }
 
 /**
+ * factory function for TaskNow
  * @internal
  */
 export function taskNow<T>(v: T) {
@@ -31,6 +33,7 @@ export function taskNow<T>(v: T) {
 }
 
 /**
+ * a render task based on an abortable promise
  * @internal
  */
 export class TaskLater<T> implements IRenderTask<T> {
@@ -40,7 +43,7 @@ export class TaskLater<T> implements IRenderTask<T> {
 
   then<U = void>(onfullfilled: (value: T | symbol) => U) {
     // wrap to avoid that the task will be aborted
-    return abortAble(this.v).then(onfullfilled);
+    return this.v.then(onfullfilled);
   }
 }
 
@@ -51,6 +54,9 @@ export function taskLater<T>(v: IAbortAblePromise<T>) {
   return new TaskLater(v);
 }
 
+/**
+ * similar to Promise.all
+ */
 export function tasksAll<T>(tasks: IRenderTask<T>[]): IRenderTask<T[]> {
   if (tasks.every((t) => t instanceof TaskNow)) {
     return taskNow(tasks.map((d) => (<TaskNow<T>>d).v));
@@ -62,6 +68,7 @@ export function tasksAll<T>(tasks: IRenderTask<T>[]): IRenderTask<T[]> {
 
 export interface IRenderTaskExectutor extends IRenderTasks {
   setData(data: IDataRow[]): void;
+
   dirtyColumn(col: Column, type: 'data' | 'summary' | 'group'): void;
   dirtyRanking(ranking: Ranking, type: 'data' | 'summary' | 'group'): void;
 
@@ -74,6 +81,7 @@ export interface IRenderTaskExectutor extends IRenderTasks {
   copyCache(col: Column, from: Column): void;
 
   sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
+
   terminate(): void;
 
   valueCache(col: Column): undefined | ((dataIndex: number) => any);
@@ -103,6 +111,9 @@ export class MultiIndices {
   }
 }
 
+/**
+ * number of data points to build per iteration / chunk
+ */
 const CHUNK_SIZE = 100;
 
 /**
@@ -126,11 +137,17 @@ export class ARenderTasks {
     return lazySeq(indices).map((i) => acc(this.data[i]));
   }
 
+  /**
+   * builder factory to create an iterator that can be used to schedule
+   * @param builder the builder to use
+   * @param order the order to iterate over
+   * @param acc the accessor to get the value out of the data
+   * @param build optional build mapper
+   */
   private builder<T, BR, B extends {push: (v: T) => void, build: () => BR}, R = BR>(builder: B, order: IndicesArray | null | MultiIndices, acc: (dataIndex: number) => T, build?: (r: BR) => R): Iterator<R | null> {
     let i = 0;
-    let o = 0;
-    const orders = order instanceof MultiIndices ? order.indices : [order];
 
+    // no indices given over the whole data
     const nextData = (currentChunkSize: number = CHUNK_SIZE) => {
       let chunkCounter = currentChunkSize;
       const data = this.data;
@@ -147,8 +164,12 @@ export class ARenderTasks {
       };
     };
 
+    let o = 0;
+    const orders = order instanceof MultiIndices ? order.indices : [order];
+
     const nextOrder = (currentChunkSize: number = CHUNK_SIZE) => {
       let chunkCounter = currentChunkSize;
+
       while (o < orders.length) {
         const actOrder = orders[o]!;
         for (; i < actOrder.length && chunkCounter > 0; ++i, --chunkCounter) {

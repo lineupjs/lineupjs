@@ -32,6 +32,7 @@ export function rowComplexGetter(row: IDataRow, desc: any) {
 
 
 /**
+ * simple row getter
  * @internal
  */
 export function rowGetter(row: IDataRow, desc: any) {
