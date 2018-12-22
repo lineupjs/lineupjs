@@ -6,7 +6,7 @@ LineUp is an interactive technique designed to create, visualize and explore ran
 
 Key Features
 -----------
- * scalable (~100k rows)
+ * scalable (~1M rows)
  * heterogenous attribute types (string, numerical, categorical, boolean, date)
  * composite column types (weighted sum, min, max, mean, median, impose, nested, ...)
  * array (multi value) and map column types (strings, stringMap, numbers, numberMap, ...)
@@ -106,7 +106,7 @@ Supported Browsers
 Demo Application
 ----------------
 
-A demo application is located at [lineup_app](https://github.com/sgratzl/lineup_app). It support CSV Import, CSV Export, JSON Export, CodePen Export, and Github Gist Export. 
+A demo application is located at [lineup_app](https://github.com/lineupjs/lineup_app). It support CSV Import, CSV Export, JSON Export, CodePen Export, nad local data management. 
 
 The application is deployed at [https://lineup.js.org/app](https://lineup.js.org/app)
 
@@ -271,7 +271,7 @@ Result is same as the builder advanced example
 <a id="angular"></a>
 
 Angular 6 Support (nglineup)
---------------------------
+----------------------------
 
 An [Angular](https://angular.io/) wrapper is located at [nglineup](https://github.com/lineupjs/nglineup). 
 
@@ -636,7 +636,7 @@ Dependencies
 ------------
 
 LineUp.js depends on 
- * [LineUpEngine](https://github.com/sgratzl/lineupengine) table rendering engine
+ * [LineUpEngine](https://github.com/lineupjs/lineupengine) table rendering engine
  * [D3](http://d3js.org) utilities: scales, format, dragging
  * [Popper.js](https://popper.js.org) dialogs
 
