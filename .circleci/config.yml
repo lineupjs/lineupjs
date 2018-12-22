@@ -25,7 +25,7 @@ jobs:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ] ; then
                 git clone git@github.com:lineupjs/lineupjs.github.io.git
-                cd lineup.js.org
+                cd lineupjs.github.io
                 rm -rf "${CIRCLE_BRANCH}/"
                 if [ "${CIRCLE_BRANCH}" == "develop" ] ; then
                   rm -rf ../build/docs
