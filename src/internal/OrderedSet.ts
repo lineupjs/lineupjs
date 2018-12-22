@@ -7,8 +7,8 @@ export default class OrderedSet<T> implements Iterable<T> {
   private readonly set = new Set<T>();
   private readonly list = <T[]>[];
 
-  constructor(values: T[] = []) {
-    this.addAll(values);
+  constructor(values: Iterable<T> = []) {
+    this.addAll(Array.isArray(values) ? values : Array.from(values));
   }
 
   get size() {

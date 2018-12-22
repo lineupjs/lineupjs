@@ -45,27 +45,27 @@ export function createWorkerCodeBlob(fs: (string | Function)[]) {
   return URL.createObjectURL(blob);
 }
 
-/**
- * @internal
- */
-export function createWorker(fs: (string | Function)[]) {
-  return new Worker(createWorkerCodeBlob(fs));
-}
-
-const MAX_WORKER_THREADS = Math.max(navigator.hardwareConcurrency, 1);
 const MIN_WORKER_THREADS = 1;
+const MAX_WORKER_THREADS = Math.max(navigator.hardwareConcurrency - 1, 1); // keep one for the ui
+
 const THREAD_CLEANUP_TIME = 10000; // 10s
+
+interface ITaskWorker {
+  worker: Worker;
+  tasks: Set<number>;
+  refs: Set<string>;
+  index: number;
+}
 
 /**
  * @internal
  */
 export class WorkerTaskScheduler {
-  private readonly workers: {worker: Worker, tasks: Set<number>, refs: Set<string>, index: number}[] = [];
+  private readonly workers: ITaskWorker[] = [];
   private cleanUpWorkerTimer: number = -1;
   private workerTaskCounter = 0;
 
   constructor(private readonly blob: string) {
-    // start with two worker
     for (let i = 0; i < MIN_WORKER_THREADS; ++i) {
       const w = new Worker(blob);
       this.workers.push({worker: w, tasks: new Set(), refs: new Set(), index: i});
@@ -77,7 +77,8 @@ export class WorkerTaskScheduler {
   }
 
   private readonly cleanUpWorker = () => {
-    this.workers.splice(0, MIN_WORKER_THREADS).forEach((w) => w.worker.terminate());
+    // delete workers when they are not needed anymore
+    this.workers.splice(0, this.workers.length - MIN_WORKER_THREADS).forEach((w) => w.worker.terminate());
   }
 
   private checkOutWorker() {
@@ -94,11 +95,11 @@ export class WorkerTaskScheduler {
 
     if (this.workers.length >= MAX_WORKER_THREADS) {
       // find the one with the fewest tasks
-      return this.workers.reduce((a, b) => a == null || a.tasks.size > b.tasks.size ? b : a, <{worker: Worker, tasks: Set<number>, refs: Set<string>, index: number} | null>null)!;
+      return this.workers.reduce((a, b) => a == null || a.tasks.size > b.tasks.size ? b : a, <ITaskWorker | null>null)!;
     }
 
     // create new one
-    const r = {
+    const r: ITaskWorker = {
       worker: new Worker(this.blob),
       tasks: new Set<number>(),
       refs: new Set(),
@@ -145,9 +146,9 @@ export class WorkerTaskScheduler {
       }, args);
 
       if (!refData || !refs.has(refData)) {
-        // need to transfer
+        // need to transfer to worker
         msg.data = data;
-        if (refData) {
+        if (refData) { // save that this worker has this ref
           refs.add(refData);
         }
         // console.log(index, 'set ref (i)', refData);
@@ -166,7 +167,8 @@ export class WorkerTaskScheduler {
     });
   }
 
-  push<M, R, T>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[], toResult: (r: R) => T) {
+  push<M, R>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[]): Promise<R>;
+  push<M, R, T>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[], toResult?: (r: R) => T): Promise<T> {
     return new Promise<T>((resolve) => {
       const uid = this.workerTaskCounter++;
       const {worker, tasks} = this.checkOutWorker();
@@ -179,7 +181,7 @@ export class WorkerTaskScheduler {
         worker.removeEventListener('message', receiver);
         tasks.delete(uid);
         this.finshedTask();
-        resolve(toResult(<any>r));
+        resolve(toResult ? toResult(<any>r) : <any>r);
       };
 
       worker.addEventListener('message', receiver);
