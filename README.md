@@ -348,7 +348,7 @@ Result is same as the builder minimal example
 
 `app.component.html`:
 ```html
-<lineup-lineup [data]="data" [defaultRanking]="true" style="height: 800px">
+<lineup-lineup [data]="data" [defaultRanking]="true" style="height: 800px;">
   <lineup-string-column-desc column="d" label="Label" [width]="100"></lineup-string-column-desc>
   <lineup-categorical-column-desc column="cat" [categories]="cats" color="green"></lineup-categorical-column-desc>
   <lineup-categorical-column-desc column="cat2" [categories]="cats" color="blue"></lineup-categorical-column-desc>
