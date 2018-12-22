@@ -1,6 +1,9 @@
 import {dispatch, Dispatch} from 'd3-dispatch';
 
-/** @internal */
+/**
+ * helper function to suffix the given event types
+ * @internal
+ */
 export function suffix(suffix: string, ...prefix: string[]) {
   return prefix.map((p) => `${p}${suffix}`);
 }
@@ -20,7 +23,7 @@ export interface IEventContext {
    */
   readonly type: string;
   /**
-   * in case of multi propagation the 'main' event type
+   * in case of multi propagation the 'main' event type, aka the first one
    */
   readonly primaryType: string;
   /**
@@ -40,7 +43,7 @@ export interface IEventHandler {
 declare const __DEBUG__: boolean;
 
 /**
- * base class for event dispatching using d3 event mechanism
+ * base class for event dispatching using d3 event mechanism, thus .suffix is supported for multiple registrations
  */
 export default class AEventDispatcher implements IEventHandler {
   private readonly listeners: Dispatch<any>;
@@ -77,6 +80,11 @@ export default class AEventDispatcher implements IEventHandler {
     return this;
   }
 
+  /**
+   * helper function that will be called upon a listener has changed
+   * @param _type event type
+   * @param _active registered or deregistered
+   */
   protected listenersChanged(_type: string, _active: boolean) {
     // hook
   }
@@ -113,7 +121,7 @@ export default class AEventDispatcher implements IEventHandler {
       this.listeners.apply(t, context, args);
     };
     if (Array.isArray(type)) {
-      type.forEach(fireImpl.bind(this));
+      type.forEach(fireImpl);
     } else {
       fireImpl(<string>type);
     }

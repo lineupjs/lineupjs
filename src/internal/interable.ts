@@ -10,6 +10,9 @@ export function isForEachAble<T>(v: IForEachAble<T> | any): v is IForEachAble<T>
   return typeof v.forEach === 'function';
 }
 
+/**
+ * generalized version of Array function similar to Scala ISeq
+ */
 export interface ISequence<T> extends IForEachAble<T> {
   readonly length: number;
   filter(callback: (v: T, i: number) => boolean): ISequence<T>;
@@ -28,6 +31,7 @@ export function isSeqEmpty(seq: ISequence<any>) {
 }
 
 /**
+ * helper function for faster access to avoid function calls
  * @internal
  */
 export function isIndicesAble<T>(it: Iterable<T>): it is ArrayLike<T> & Iterable<T> {
@@ -36,13 +40,18 @@ export function isIndicesAble<T>(it: Iterable<T>): it is ArrayLike<T> & Iterable
 
 declare type ISequenceBase<T> = ISequence<T> | (ArrayLike<T> & Iterable<T>);
 
+/**
+ * sequence implementation that does the operation lazily on the fly
+ */
 class LazyFilter<T> implements ISequence<T> {
   private _length = -1;
+
   constructor(private readonly it: ISequenceBase<T>, private readonly filters: ((v: T, i: number) => boolean)[]) {
 
   }
 
   get length() {
+    // cached
     if (this._length >= 0) {
       return this._length;
     }
@@ -53,10 +62,12 @@ class LazyFilter<T> implements ISequence<T> {
   }
 
   filter(callback: (v: T, i: number) => boolean): ISequence<T> {
+    // propagate filter
     return new LazyFilter(this.it, this.filters.concat(callback));
   }
 
   map<U>(callback: (v: T, i: number) => U): ISequence<U> {
+    // create lazy map out of myself
     return new LazyMap1(this, callback);
   }
 
@@ -75,6 +86,7 @@ class LazyFilter<T> implements ISequence<T> {
       return;
     }
 
+    // iterator version
     let valid = 0;
     const it = this.it[Symbol.iterator]();
     let v = it.next();
@@ -233,6 +245,9 @@ class LazyFilter<T> implements ISequence<T> {
   }
 }
 
+/**
+ * lazy mapping operation
+ */
 abstract class ALazyMap<T, T2> implements ISequence<T2> {
   constructor(protected readonly it: ISequenceBase<T>) {
 

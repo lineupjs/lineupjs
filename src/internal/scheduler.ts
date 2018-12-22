@@ -10,6 +10,7 @@ export interface IPoorManIdleDeadline {
 }
 
 /**
+ * helper since not part of the typings
  * @internal
  */
 export interface IPoorManIdleCallback {
@@ -22,13 +23,26 @@ export interface IPoorManIdleCallback {
  * @internal
  */
 export interface ITask<T> {
+  /**
+   * external task id
+   */
   id: string;
+  /**
+   * iterator for the incremental task, return null for another round
+   */
   it: Iterator<T | PromiseLike<T> | null>;
+  /**
+   * function to the resolve the resulting promise
+   */
   resolve(r: T | PromiseLike<T> | symbol): void;
+  /**
+   * the resulting promise
+   */
   result: PromiseLike<T | symbol>;
 }
 
 /**
+ * iterator result for another round
  * @internal
  */
 export const ANOTHER_ROUND = {
@@ -37,6 +51,7 @@ export const ANOTHER_ROUND = {
 };
 
 /**
+ * iterator for just one entry
  * @internal
  */
 export function oneShotIterator<T>(calc: () => T): Iterator<T> {
@@ -58,13 +73,16 @@ function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void) {
 }
 
 /**
+ * task scheduler for running tasks in idle callbacks
  * @internal
  */
 export default class TaskScheduler {
   private tasks: ITask<any>[] = [];
+  // idle callback id
   private taskId: number = -1;
 
   private runTasks = (deadline: IPoorManIdleDeadline) => {
+    // while more tasks and not timed out
     while (this.tasks.length > 0 && (deadline.didTimeout || deadline.timeRemaining() > 0)) {
       const task = this.tasks.shift()!;
 
@@ -73,7 +91,9 @@ export default class TaskScheduler {
       while (!r.done && (deadline.didTimeout || deadline.timeRemaining() > 0)) {
         r = task.it.next();
       }
+
       if (r.done) {
+        // resolve async
         requestAnimationFrame(() => task.resolve(r.value));
       } else {
         // reschedule again
@@ -98,6 +118,11 @@ export default class TaskScheduler {
     }
   }
 
+  /**
+   * pushes a task with multi hops using an iterator
+   * @param id task id
+   * @param it iterator to execute
+   */
   pushMulti<T>(id: string, it: Iterator<T | PromiseLike<T> | null>): IAbortAblePromise<T> {
     // abort task with the same id
     const abort = () => {
@@ -135,10 +160,19 @@ export default class TaskScheduler {
     };
   }
 
+  /**
+   * pushes a simple task
+   * @param id task id
+   * @param calc task function
+   */
   push<T>(id: string, calc: () => T | PromiseLike<T>): IAbortAblePromise<T> {
     return this.pushMulti(id, oneShotIterator(calc));
   }
 
+  /**
+   * abort a task with the given id
+   * @param id task id
+   */
   abort(id: string) {
     const index = this.tasks.findIndex((d) => d.id === id);
     if (index < 0) {

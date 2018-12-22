@@ -83,8 +83,10 @@ let idCounter = 0;
  */
 export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult, stopPropagation: boolean = false) {
   const id = ++idCounter;
+
   node.classList.add(cssClass('dragable'));
   node.draggable = true;
+
   node.addEventListener('dragstart', (e) => {
     node.classList.add(cssClass('dragging'));
     const payload = onDragStart();
@@ -94,6 +96,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
       e.stopPropagation();
     }
 
+    // copy all data transfer objects
     const keys = Object.keys(payload.data);
     const allSucceded = keys.every((k) => {
       try {
@@ -111,11 +114,14 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     e.dataTransfer!.setData('text/plain', `${id}${text ? `: ${text}` : ''}`);
     dndTransferStorage.set(id, payload.data);
   });
+
   node.addEventListener('dragend', (e) => {
     node.classList.remove(cssClass('dragging'));
+
     if (stopPropagation) {
       e.stopPropagation();
     }
+
     if (dndTransferStorage.size > 0) {
       //clear the id
       dndTransferStorage.delete(id);
@@ -143,7 +149,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
   node.addEventListener('dragenter', (e) => {
     //var xy = mouse($node.node());
     if (node.classList.contains(cssClass('dragging')) || !(hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) || !canDrop()) {
-      //not a valid mime type
+      // not a valid mime type
       node.classList.remove(cssClass('dragover'));
       return;
     }
@@ -154,8 +160,10 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
     //sounds good
     return false;
   });
+
   node.addEventListener('dragover', (e) => {
     if (node.classList.contains(cssClass('dragging')) || !(hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) || !canDrop()) {
+      // not a valid mime type
       return;
     }
 
@@ -172,21 +180,25 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
     //sound good
     return false;
   });
+
   node.addEventListener('dragleave', (evt) => {
     // same fix as in phovea
     (<HTMLElement>evt.target).classList.remove(cssClass('dragover'));
   });
+
   node.addEventListener('drop', (e) => {
     e.preventDefault();
     if (stopPropagation) {
       e.stopPropagation();
     }
     updateDropEffect(e);
+
     const effect = <IDragEffect>e.dataTransfer!.dropEffect;
 
     node.classList.remove(cssClass('dragover'));
 
     if (isEdgeDnD(e)) {
+      // retrieve from helper
       const base = e.dataTransfer!.getData('text/plain');
       const id = parseInt(base.indexOf(':') >= 0 ? base.substring(0, base.indexOf(':')) : base, 10);
       if (dndTransferStorage.has(id)) {
@@ -196,17 +208,20 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
       }
       return;
     }
-    if (hasDnDType(e, ...mimeTypes)) {
-      const data: any = {};
-      //selects the data contained in the data transfer
-      mimeTypes.forEach((mime) => {
-        const value = e.dataTransfer!.getData(mime);
-        if (value !== '') {
-          data[mime] = value;
-        }
-      });
-      return !onDrop({effect, data}, e);
+
+    if (!hasDnDType(e, ...mimeTypes)) {
+      return;
     }
-    return;
+
+    // copy sub mime types
+    const data: any = {};
+    //selects the data contained in the data transfer
+    mimeTypes.forEach((mime) => {
+      const value = e.dataTransfer!.getData(mime);
+      if (value !== '') {
+        data[mime] = value;
+      }
+    });
+    return !onDrop({effect, data}, e);
   });
 }

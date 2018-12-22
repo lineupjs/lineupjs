@@ -36,6 +36,7 @@ export function toFunctionBody(f: Function) {
 }
 
 /**
+ * create a blob out of the given function or string
  * @internal
  */
 export function createWorkerCodeBlob(fs: (string | Function)[]) {
@@ -51,18 +52,34 @@ const MAX_WORKER_THREADS = Math.max(navigator.hardwareConcurrency - 1, 1); // ke
 const THREAD_CLEANUP_TIME = 10000; // 10s
 
 interface ITaskWorker {
-  worker: Worker;
-  tasks: Set<number>;
-  refs: Set<string>;
+  /**
+   * worker index
+   */
   index: number;
+  /**
+   * worker itself
+   */
+  worker: Worker;
+  /**
+   * set of active task numbers
+   */
+  tasks: Set<number>;
+  /**
+   * list of references that are stored on this worker
+   */
+  refs: Set<string>;
 }
 
 /**
+ * task scheduler based on web worker
  * @internal
  */
 export class WorkerTaskScheduler {
   private readonly workers: ITaskWorker[] = [];
   private cleanUpWorkerTimer: number = -1;
+  /**
+   * worker task id
+   */
   private workerTaskCounter = 0;
 
   constructor(private readonly blob: string) {
@@ -136,6 +153,7 @@ export class WorkerTaskScheduler {
       };
 
       worker.addEventListener('message', receiver);
+
       tasks.add(uid);
 
       const msg: any = Object.assign({

@@ -637,7 +637,7 @@ export function categoricalStatsBuilder(categories: {name: string}[]): IBuilder<
   };
 
   const build = () => {
-    const entries: {cat: string; count: number}[] = categories.map((d) => ({cat: d.name, count: m.get(d.name)!}));
+    const entries: ICategoricalBin[] = categories.map((d) => ({cat: d.name, count: m.get(d.name)!}));
     const maxBin = entries.reduce((a, b) => Math.max(a, b.count), Number.NEGATIVE_INFINITY);
 
     return {
@@ -720,6 +720,19 @@ export function toIndexArray(arr: ISequence<number> | IndicesArray): UIntTypedAr
   return Uint32Array.from(arr);
 }
 
+function createLike(template: IndicesArray, total: number) {
+  if (template instanceof Uint8Array) {
+    return new Uint8Array(total);
+  }
+  if (template instanceof Uint16Array) {
+    return new Uint16Array(total);
+  }
+  if (template instanceof Uint32Array) {
+    return new Uint32Array(total);
+  }
+  return createIndexArray(total);
+}
+
 /**
  * @internal
  */
@@ -731,7 +744,7 @@ export function joinIndexArrays(groups: IndicesArray[]) {
       return groups[0];
     default:
       const total = groups.reduce((a, b) => a + b.length, 0);
-      const r = createIndexArray(total);
+      const r = createLike(groups[0], total);
       let shift = 0;
       for (const g of groups) {
         r.set(g, shift);
@@ -754,6 +767,7 @@ function desc(a: any, b: any) {
 export declare type ILookUpArray = Uint8Array | Uint16Array | Uint32Array | Int8Array | Int16Array | Int32Array | string[] | Float32Array | Float64Array;
 
 /**
+ * sort the given index array based on the lookup array
  * @internal
  */
 export function sortComplex(indices: UIntTypedArray | number[], comparators: {asc: boolean, lookup: ILookUpArray}[]) {
@@ -763,20 +777,20 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: {as
 
   switch (comparators.length) {
     case 1:
-      const f = comparators[0]!.asc ? asc : desc;
-      const fl = comparators[0]!.lookup;
+      const c = comparators[0]!.asc ? asc : desc;
+      const cLookup = comparators[0]!.lookup;
       return indices.sort((a, b) => {
-        const r = f(fl[a]!, fl[b]!);
+        const r = c(cLookup[a]!, cLookup[b]!);
         return r !== 0 ? r : a - b;
       });
     case 2:
-      const f1 = comparators[0]!.asc ? asc : desc;
-      const f1l = comparators[0]!.lookup;
-      const f2 = comparators[1]!.asc ? asc : desc;
-      const f2l = comparators[1]!.lookup;
+      const c1 = comparators[0]!.asc ? asc : desc;
+      const c1Lookup = comparators[0]!.lookup;
+      const c2 = comparators[1]!.asc ? asc : desc;
+      const c2Lookup = comparators[1]!.lookup;
       return indices.sort((a, b) => {
-        let r = f1(f1l[a], f1l[b]);
-        r = r !== 0 ? r : f2(f2l[a], f2l[b]);
+        let r = c1(c1Lookup[a], c1Lookup[b]);
+        r = r !== 0 ? r : c2(c2Lookup[a], c2Lookup[b]);
         return r !== 0 ? r : a - b;
       });
     default:
@@ -795,7 +809,10 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: {as
   }
 }
 
+// note the whole worker thing is in this one file to be able to copy the code
+
 /**
+ * base worker message
  * @internal
  */
 export interface IWorkerMessage {
@@ -807,9 +824,15 @@ export interface IWorkerMessage {
  * @internal
  */
 export interface IStatsWorkerMessage extends IWorkerMessage {
+  /**
+   * reference key for the indices array
+   */
   refIndices: string | null;
   indices?: UIntTypedArray;
 
+  /**
+   * reference key for the data indices
+   */
   refData: string;
   data?: UIntTypedArray | Float32Array | Int32Array;
 }
@@ -820,6 +843,7 @@ export interface IStatsWorkerMessage extends IWorkerMessage {
 export interface ISortMessageRequest {
   type: 'sort';
   uid: number;
+
   ref: string;
   indices: UIntTypedArray;
   sortOrders?: {asc: boolean, lookup: ILookUpArray}[];
@@ -958,9 +982,11 @@ export interface ICategoricalStatsMessageResponse {
   stats: ICategoricalStatistics;
 }
 
+// max int32
 const MISSING_DATE = 2147483647;
 
 /**
+ * helper to build a value cache for dates, use dateValueCache2Value to convert back
  * @internal
  */
 export function dateValueCacheBuilder(length: number) {
@@ -1004,6 +1030,7 @@ export function categoricalValueCache2Value<T extends {name: string}>(v: number,
 
 
 function sortWorkerMain(self: IPoorManWorkerScope) {
+  // stored refs to avoid duplicate copy
   const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array>();
 
   const sort = (r: ISortMessageRequest) => {
@@ -1042,6 +1069,8 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
   };
 
   const resolveRefs = <T extends UIntTypedArray | Float32Array | Int32Array>(r: IStatsWorkerMessage) => {
+    // resolve refs or save the new data
+
     const data: T = r.data ? <T><unknown>r.data : <T><unknown>refs.get(r.refData)!;
     const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
     if (r.refData) {
@@ -1152,6 +1181,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     });
   };
 
+  // message type to handler function
   const msgHandlers: {[key: string]: (r: any) => void} = {
     sort,
     setRef,
@@ -1175,6 +1205,8 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
 }
 
 /**
+ * copy source code of a worker and create a blob out of it
+ * to avoid webpack imports all the code functions need to be in this file
  * @internal
  */
 export const WORKER_BLOB = createWorkerCodeBlob([
