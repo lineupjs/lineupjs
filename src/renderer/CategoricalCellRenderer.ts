@@ -94,6 +94,8 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
   return {
     template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
     update: (n: HTMLElement) => {
+      n.classList.toggle(cssClass('histogram-i'), interactive);
+
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
       }
