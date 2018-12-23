@@ -1,7 +1,5 @@
 import {hsl} from 'd3-color';
-import {IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn} from '../model';
-import Column from '../model/Column';
-import {isNumbersColumn} from '../model/INumberColumn';
+import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';

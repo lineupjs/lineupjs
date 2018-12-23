@@ -1,10 +1,8 @@
 import {MIN_LABEL_WIDTH} from '../config';
-import Column from '../model/Column';
-import {IArrayColumn} from '../model/IArrayColumn';
+import {Column, IArrayColumn, IDataRow} from '../model';
 import {hsl} from 'd3-color';
 import {cssClass} from '../styles';
 import IRenderContext from './interfaces';
-import {IDataRow} from '../model/interfaces';
 import {ISequence} from '../internal/interable';
 import {ICategoricalLikeColumn} from '../model';
 

@@ -1,8 +1,5 @@
 import {IBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
-import {IDataRow, isNumberColumn, isMapAbleColumn, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import {IBoxPlotColumn, INumberColumn, isBoxPlotColumn} from '../model/INumberColumn';
-import NumberColumn from '../model/NumberColumn';
+import {NumberColumn, IBoxPlotColumn, INumberColumn, isBoxPlotColumn, Column, IDataRow, isNumberColumn, isMapAbleColumn, IOrderedGroup} from '../model';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';

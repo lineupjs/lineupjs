@@ -1,6 +1,4 @@
-import Column, {IColumnDesc, IDataRow} from '../model';
-import {defaultGroup, IndicesArray} from '../model/Group';
-import Ranking from '../model/Ranking';
+import Column, {IColumnDesc, IDataRow, Ranking, defaultGroup, IndicesArray} from '../model';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {DirectRenderTasks} from './DirectRenderTasks';

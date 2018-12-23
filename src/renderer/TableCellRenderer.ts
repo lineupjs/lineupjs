@@ -1,6 +1,4 @@
-import {IDataRow, isMissingValue, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn} from '../model/IArrayColumn';
+import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn, Column, IDataRow, isMissingValue, IOrderedGroup} from '../model';
 import IRenderContext, {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';

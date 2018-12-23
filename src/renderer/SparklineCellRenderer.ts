@@ -1,7 +1,4 @@
-import {IDataRow, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
-import NumbersColumn from '../model/NumbersColumn';
+import {Column, INumbersColumn, NumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup} from '../model';
 import {matchRows} from './ANumbersCellRenderer';
 import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';

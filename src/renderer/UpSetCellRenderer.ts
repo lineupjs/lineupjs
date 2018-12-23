@@ -1,6 +1,4 @@
-import {ICategory, IDataRow, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import {ISetColumn, isSetColumn, ICategoricalLikeColumn} from '../model/ICategoricalColumn';
+import {Column, ISetColumn, isSetColumn, ICategoricalLikeColumn, ICategory, IDataRow, IOrderedGroup} from '../model';
 import {CANVAS_HEIGHT, UPSET, cssClass} from '../styles';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';

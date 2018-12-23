@@ -1,10 +1,8 @@
-import {IDataRow, IOrderedGroup} from '../model';
-import Column from '../model/Column';
+import {LinkColumn, Column, IDataRow, IOrderedGroup} from '../model';
 import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
-import LinkColumn from '../model/LinkColumn';
 import {ISequence} from '../internal/interable';
 
 /** @internal */

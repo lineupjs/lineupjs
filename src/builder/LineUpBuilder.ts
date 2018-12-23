@@ -1,6 +1,5 @@
 import {IDynamicHeight, ITaggleOptions} from '../interfaces';
-import Column, {IGroupData, IGroupItem} from '../model';
-import Ranking from '../model/Ranking';
+import Column, {IGroupData, IGroupItem, Ranking} from '../model';
 import {ICellRendererFactory, ERenderMode} from '../renderer';
 import {IToolbarAction, IToolbarDialogAddon} from '../ui';
 

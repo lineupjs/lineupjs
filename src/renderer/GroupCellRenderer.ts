@@ -1,6 +1,4 @@
-import {IDataRow, IGroup, IGroupMeta, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import GroupColumn from '../model/GroupColumn';
+import {Column, GroupColumn, IDataRow, IGroup, IGroupMeta, IOrderedGroup} from '../model';
 import {ICellRendererFactory} from './interfaces';
 import {noRenderer} from './utils';
 

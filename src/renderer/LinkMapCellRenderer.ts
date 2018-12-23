@@ -1,13 +1,9 @@
-import {IDataRow, IOrderedGroup} from '../model';
-import Column from '../model/Column';
+import {IDataRow, LinkMapColumn, Column, ILink, IKeyValue, IOrderedGroup} from '../model';
 import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noRenderer, noop} from './utils';
 import {cssClass} from '../styles';
-import LinkMapColumn from '../model/LinkMapColumn';
-import {ILink} from '../model/LinkColumn';
-import {IKeyValue} from '../model/IArrayColumn';
 
 /** @internal */
 export default class LinkMapCellRenderer implements ICellRendererFactory {

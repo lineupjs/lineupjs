@@ -1,5 +1,4 @@
-import BooleanColumn from '../model/BooleanColumn';
-import Column from '../model/Column';
+import {Column, BooleanColumn} from '../model';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import {ERenderMode} from './interfaces';
 import {cssClass} from '../styles';

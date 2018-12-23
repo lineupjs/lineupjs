@@ -1,6 +1,4 @@
-import {IDataRow, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
+import {Column, INumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';

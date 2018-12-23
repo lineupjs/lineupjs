@@ -1,5 +1,4 @@
-import {IColumnDesc} from '../model';
-import Ranking from '../model/Ranking';
+import {IColumnDesc, Ranking} from '../model';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {IDataProviderDump} from './interfaces';

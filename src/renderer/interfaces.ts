@@ -1,6 +1,5 @@
 import {IAbortAblePromise} from 'lineupengine';
-import {IDataRow, IGroupMeta, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn} from '../model';
-import Column from '../model/Column';
+import {Column, IDataRow, IGroupMeta, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn} from '../model';
 import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
 import {IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../internal';

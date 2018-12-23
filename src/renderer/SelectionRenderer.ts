@@ -1,6 +1,4 @@
-import {IDataRow, IOrderedGroup, everyIndices} from '../model';
-import Column from '../model/Column';
-import SelectionColumn from '../model/SelectionColumn';
+import {Column, SelectionColumn, IDataRow, IOrderedGroup, everyIndices} from '../model';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {IDataProvider} from '../provider';
 import {cssClass} from '../styles';

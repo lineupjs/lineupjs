@@ -1,7 +1,5 @@
 import {INumberBin, IStatistics} from '../internal';
-import {IDataRow, IGroupMeta, IOrderedGroup, INumberColumn} from '../model';
-import Column from '../model/Column';
-import CompositeNumberColumn from '../model/CompositeNumberColumn';
+import {Column, CompositeNumberColumn, IDataRow, IGroupMeta, IOrderedGroup, INumberColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {getHistDOMRenderer} from './HistogramCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';

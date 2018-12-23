@@ -63,7 +63,7 @@ export * from './CompositeNumberColumn';
 export {default as CompositeNumberColumn} from './CompositeNumberColumn';
 export {default as DateColumn, IDateColumnDesc} from './DateColumn';
 export {default as DatesMapColumn, IDateMapColumnDesc} from './DatesMapColumn';
-export {default as DatesColumn, IDatesDesc, IDatesColumnDesc} from './DatesColumn';
+export {default as DatesColumn, IDatesDesc, IDatesColumnDesc, EDateSort} from './DatesColumn';
 export * from './DummyColumn';
 export {default as DummyColumn} from './DummyColumn';
 export {default as GroupColumn, createGroupDesc, EGroupSortMethod} from './GroupColumn';
@@ -85,7 +85,7 @@ export {default as NumbersColumn, INumbersDesc, INumbersColumnDesc} from './Numb
 export {default as OrdinalColumn, ICategoricalNumberColumnDesc} from './OrdinalColumn';
 export * from './RankColumn';
 export {default as RankColumn} from './RankColumn';
-export {default as Ranking, ISortCriteria} from './Ranking';
+export {default as Ranking, ISortCriteria, EDirtyReason} from './Ranking';
 export {default as ReduceColumn, createReduceDesc, IReduceDesc, IReduceColumnDesc} from './ReduceColumn';
 export {default as ScriptColumn, createScriptDesc, IScriptDesc, IScriptColumnDesc} from './ScriptColumn';
 export {default as SelectionColumn, createSelectionDesc, ISelectionColumnDesc} from './SelectionColumn';

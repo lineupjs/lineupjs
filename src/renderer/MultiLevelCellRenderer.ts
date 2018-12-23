@@ -1,8 +1,6 @@
 import {round} from '../internal';
-import {IDataRow, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta, IOrderedGroup} from '../model';
-import Column from '../model/Column';
+import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta, IOrderedGroup} from '../model';
 import {medianIndex} from '../model/internal';
-import {default as INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback} from './interfaces';

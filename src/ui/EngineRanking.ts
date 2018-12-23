@@ -2,10 +2,7 @@ import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, Gri
 import {HOVER_DELAY_SHOW_DETAIL} from '../config';
 import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {IGroupData, IGroupItem, isGroup, isMultiLevelColumn, defaultGroup, IGroupMeta, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import Ranking from '../model/Ranking';
-import StackColumn from '../model/StackColumn';
+import {Column, Ranking, StackColumn, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, defaultGroup, IGroupMeta, IOrderedGroup} from '../model';
 import {IImposer, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING, engineCssClass, cssClass} from '../styles';
 import {lineupAnimation} from './animation';

@@ -1,8 +1,5 @@
 import {round} from '../internal/math';
-import {IDataRow, isNumberColumn, INumberColumn} from '../model';
-import Column from '../model/Column';
-import {IMapColumn, isMapColumn} from '../model/IArrayColumn';
-import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
+import {Column, IMapColumn, IMapAbleColumn, isMapAbleColumn, isMapColumn, IDataRow, isNumberColumn, INumberColumn} from '../model';
 import {colorOf} from './impose';
 import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} from './interfaces';
 import {renderMissingDOM} from './missing';

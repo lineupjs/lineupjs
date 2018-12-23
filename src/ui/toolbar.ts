@@ -1,8 +1,5 @@
-import {getAllToolbarActions, getAllToolbarDialogAddons, isSortingAscByDefault, isSupportType} from '../model/annotations';
-import Column from '../model/Column';
-import CompositeColumn, {IMultiLevelColumn} from '../model/CompositeColumn';
-import {EDateSort} from '../model/DatesColumn';
-import {EAdvancedSortMethod, ESortMethod} from '../model/INumberColumn';
+import {getAllToolbarActions, getAllToolbarDialogAddons, isSortingAscByDefault} from '../model/annotations';
+import {Column, EDateSort, EAdvancedSortMethod, ESortMethod, isSupportType, CompositeColumn, IMultiLevelColumn} from '../model';
 import {cssClass} from '../styles';
 import ADialog, {IDialogContext} from './dialogs/ADialog';
 import BooleanFilterDialog from './dialogs/BooleanFilterDialog';

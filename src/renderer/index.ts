@@ -1,4 +1,4 @@
-import Column from '../model/Column';
+import {Column} from '../model';
 import ActionRenderer from './ActionRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
 import AnnotationRenderer from './AnnotationRenderer';

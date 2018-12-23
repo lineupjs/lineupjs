@@ -1,6 +1,4 @@
-import {IDataRow} from '../model';
-import AnnotateColumn from '../model/AnnotateColumn';
-import Column from '../model/Column';
+import {IDataRow, AnnotateColumn, Column} from '../model';
 import StringCellRenderer from './StringCellRenderer';
 import {cssClass} from '../styles';
 

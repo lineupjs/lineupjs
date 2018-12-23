@@ -1,15 +1,10 @@
 import {
+  Column, CompositeColumn, Ranking, ReduceColumn, ScriptColumn, StackColumn,
   createAggregateDesc, createGroupDesc, createImpositionBoxPlotDesc, createImpositionDesc, createImpositionsDesc,
   createNestedDesc, createRankDesc, createReduceDesc, createScriptDesc, createSelectionDesc, createStackDesc,
   EAdvancedSortMethod, IColumnDesc, ISortCriteria
 } from '../model';
-import Column from '../model/Column';
-import CompositeColumn from '../model/CompositeColumn';
-import Ranking from '../model/Ranking';
-import ReduceColumn from '../model/ReduceColumn';
-import ScriptColumn from '../model/ScriptColumn';
-import StackColumn from '../model/StackColumn';
-import ADataProvider from '../provider/ADataProvider';
+import {DataProvider} from '../provider';
 
 export interface IImposeColumnBuilder {
   type: 'impose';
@@ -50,7 +45,7 @@ export interface IScriptedBuilder {
 export default class RankingBuilder {
   private static readonly ALL_MAGIC_FLAG = '*';
 
-  private readonly columns: (string | { desc: IColumnDesc | ((data: ADataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];
+  private readonly columns: (string | {desc: IColumnDesc | ((data: DataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];
   private readonly sort: { column: string, asc: boolean }[] = [];
   private readonly groups: string[] = [];
 
@@ -304,7 +299,7 @@ export default class RankingBuilder {
     return this;
   }
 
-  build(data: ADataProvider): Ranking {
+  build(data: DataProvider): Ranking {
     const r = data.pushRanking();
     const cols = data.getColumns();
 

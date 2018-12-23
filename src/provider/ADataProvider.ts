@@ -2,13 +2,10 @@ import AEventDispatcher, {IEventListener, suffix, IEventContext} from '../intern
 import debounce, {IDebounceContext} from '../internal/debounce';
 import {ISequence} from '../internal/interable';
 import OrderedSet from '../internal/OrderedSet';
-import {Column, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, models, forEachIndices, everyIndices} from '../model';
-import AggregateGroupColumn, {createAggregateDesc, IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
-import {isSupportType} from '../model/annotations';
+import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, models, forEachIndices, everyIndices} from '../model';
 import {dirty, dirtyCaches, dirtyHeader, dirtyValues} from '../model/Column';
 import {toGroupID, unifyParents} from '../model/internal';
-import RankColumn from '../model/RankColumn';
-import Ranking, {addColumn, EDirtyReason, orderChanged, removeColumn} from '../model/Ranking';
+import {addColumn, orderChanged, removeColumn} from '../model/Ranking';
 import {IColumnDump, IDataProvider, IDataProviderDump, IDataProviderOptions, IRankingDump, SCHEMA_REF, EAggregationState} from './interfaces';
 import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer/interfaces';

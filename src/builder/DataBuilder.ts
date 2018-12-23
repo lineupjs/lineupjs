@@ -1,5 +1,4 @@
-import {IColumnDesc} from '../model';
-import Column from '../model/Column';
+import {Column, IColumnDesc} from '../model';
 import {deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions} from '../provider';
 import ADataProvider from '../provider/ADataProvider';
 import LocalDataProvider from '../provider/LocalDataProvider';

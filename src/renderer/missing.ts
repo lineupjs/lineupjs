@@ -1,5 +1,4 @@
-import {IDataRow, isMissingValue} from '../model';
-import Column from '../model/Column';
+import {Column, IDataRow, isMissingValue} from '../model';
 import {CANVAS_HEIGHT, DASH, cssClass} from '../styles';
 
 export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {

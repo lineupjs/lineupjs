@@ -1,6 +1,4 @@
-import {IDataRow, INumberColumn, isNumberColumn} from '../model';
-import Column from '../model/Column';
-import {isNumbersColumn} from '../model/INumberColumn';
+import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn} from '../model';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';

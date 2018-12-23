@@ -1,8 +1,6 @@
 import {round} from '../internal';
-import {IDataRow, INumberColumn, isNumberColumn} from '../model';
-import Column from '../model/Column';
+import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn} from '../model';
 import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
-import {isNumbersColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';

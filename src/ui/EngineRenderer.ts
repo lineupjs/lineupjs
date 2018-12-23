@@ -2,8 +2,7 @@ import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineup
 import {ILineUpOptions, ILineUpFlags} from '../interfaces';
 import {round} from '../internal';
 import AEventDispatcher, {suffix, IEventListener} from '../internal/AEventDispatcher';
-import {Column, IGroupData, IGroupItem, isGroup} from '../model';
-import Ranking from '../model/Ranking';
+import {Ranking, Column, IGroupData, IGroupItem, isGroup} from '../model';
 import ADataProvider from '../provider/ADataProvider';
 import {
   chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, IImposer, IRenderContext, getPossibleRenderer

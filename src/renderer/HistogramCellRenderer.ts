@@ -1,9 +1,6 @@
 import {DENSE_HISTOGRAM} from '../config';
 import {normalizedStatsBuilder, INumberBin, IStatistics, round, getNumberOfBins} from '../internal/math';
-import {IDataRow, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import {INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
-import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
+import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {colorOf} from './impose';

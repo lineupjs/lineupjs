@@ -1,8 +1,5 @@
 import {ICategoricalStatistics, round} from '../internal/math';
-import {ICategoricalColumn, isCategoricalColumn, IOrderedGroup, ISetColumn} from '../model';
-import CategoricalColumn from '../model/CategoricalColumn';
-import Column from '../model/Column';
-import OrdinalColumn from '../model/OrdinalColumn';
+import {CategoricalColumn, Column, OrdinalColumn, ICategoricalColumn, isCategoricalColumn, IOrderedGroup, ISetColumn} from '../model';
 import {filterMissingNumberMarkup} from '../ui/missing';
 import {interactiveHist, HasCategoricalFilter} from './CategoricalCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';

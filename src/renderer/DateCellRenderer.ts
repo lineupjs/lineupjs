@@ -1,9 +1,8 @@
-import {IDataRow, IOrderedGroup} from '../model';
-import Column from '../model/Column';
+import {Column, IDataRow, DateColumn, IOrderedGroup} from '../model';
 import IRenderContext, {ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText, exampleText} from './utils';
-import DateColumn, {choose} from '../model/DateColumn';
+import {choose} from '../model/DateColumn';
 
 /** @internal */
 export default class DateCellRenderer implements ICellRendererFactory {

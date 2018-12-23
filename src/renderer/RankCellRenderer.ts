@@ -1,6 +1,4 @@
-import {IDataRow, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import RankColumn from '../model/RankColumn';
+import {Column, RankColumn, IDataRow, IOrderedGroup} from '../model';
 import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';

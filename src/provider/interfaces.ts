@@ -1,6 +1,5 @@
 import AEventDispatcher from '../internal/AEventDispatcher';
-import {Column, IColumnDesc, IGroup, IndicesArray, IDataRow} from '../model';
-import Ranking from '../model/Ranking';
+import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow} from '../model';
 import {ISequence} from '../internal/interable';
 import {IRenderTasks} from '../renderer/interfaces';
 

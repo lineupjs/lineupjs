@@ -1,7 +1,4 @@
-import {IDataRow} from '../model';
-import Column from '../model/Column';
-import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
-import NumbersColumn from '../model/NumbersColumn';
+import {Column, NumbersColumn, IDataRow, INumbersColumn, isNumbersColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';

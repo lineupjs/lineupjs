@@ -1,5 +1,4 @@
-import {IDataRow, IOrderedGroup} from '../model';
-import {INumbersColumn, EAdvancedSortMethod} from '../model/INumberColumn';
+import {IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup} from '../model';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {ISequence} from '../internal/interable';

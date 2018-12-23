@@ -1,7 +1,5 @@
 import {round} from '../internal';
-import {INumberColumn, IDataRow, isNumberColumn, IOrderedGroup} from '../model';
-import Column from '../model/Column';
-import {isNumbersColumn} from '../model/INumberColumn';
+import {Column, isNumbersColumn, INumberColumn, IDataRow, isNumberColumn, IOrderedGroup} from '../model';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';

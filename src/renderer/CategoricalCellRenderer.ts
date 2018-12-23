@@ -1,10 +1,6 @@
 import {DENSE_HISTOGRAM} from '../config';
 import {ICategoricalStatistics, round} from '../internal/math';
-import {ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
-import CategoricalColumn from '../model/CategoricalColumn';
-import Column from '../model/Column';
-import {isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory} from '../model/ICategoricalColumn';
-import OrdinalColumn from '../model/OrdinalColumn';
+import {OrdinalColumn, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory, Column, CategoricalColumn, ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {default as IRenderContext, ICellRendererFactory, ERenderMode} from './interfaces';

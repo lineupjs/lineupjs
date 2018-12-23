@@ -1,9 +1,7 @@
-import {IDataRow} from '../model';
-import Column from '../model/Column';
+import {Column, IDataRow, LinkColumn} from '../model';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
-import LinkColumn from '../model/LinkColumn';
 
 /** @internal */
 export default class ImageCellRenderer implements ICellRendererFactory {

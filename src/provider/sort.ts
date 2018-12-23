@@ -1,7 +1,5 @@
 import {createIndexArray, ILookUpArray} from '../internal';
-import {ECompareValueType, UIntTypedArray, Ranking, IDataRow} from '../model';
-import Column, {ICompareValue} from '../model/Column';
-import {FIRST_IS_MISSING, FIRST_IS_NAN} from '../model/missing';
+import {FIRST_IS_MISSING, FIRST_IS_NAN, ECompareValueType, ICompareValue, Column, UIntTypedArray, Ranking, IDataRow} from '../model';
 
 
 /**
