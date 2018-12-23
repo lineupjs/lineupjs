@@ -1,5 +1,5 @@
 import {ISequence, lazySeq} from '../internal/interable';
-import Column, {Ranking, defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, mapIndices, CompositeColumn} from '../model';
+import Column, {Ranking, defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, CompositeColumn} from '../model';
 import {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
@@ -10,7 +10,7 @@ import {IEventContext} from '../internal/AEventDispatcher';
 import {createIndexArray, sortComplex} from '../internal';
 import {DirectRenderTasks} from './DirectRenderTasks';
 import {ScheduleRenderTasks} from './ScheduledTasks';
-import {joinGroups} from '../model/internal';
+import {joinGroups, mapIndices} from '../model/internal';
 
 
 export interface ILocalDataProviderOptions {

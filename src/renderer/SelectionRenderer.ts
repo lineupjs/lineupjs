@@ -1,7 +1,8 @@
-import {Column, SelectionColumn, IDataRow, IOrderedGroup, everyIndices} from '../model';
+import {Column, SelectionColumn, IDataRow, IOrderedGroup} from '../model';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {IDataProvider} from '../provider';
 import {cssClass} from '../styles';
+import {everyIndices} from '../model/internal';
 
 /** @internal */
 export default class SelectionRenderer implements ICellRendererFactory {

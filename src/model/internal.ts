@@ -1,5 +1,5 @@
 import {boxplotBuilder, IAdvancedBoxPlotData} from '../internal';
-import {IOrderedGroup, defaultGroup} from './Group';
+import {IOrderedGroup, defaultGroup, IndicesArray} from './Group';
 import {IDataRow, IGroup, IGroupParent} from './interfaces';
 import INumberColumn, {numberCompare} from './INumberColumn';
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
@@ -112,4 +112,51 @@ export function toCompareGroupValue(rows: ISequence<IDataRow>, col: INumberColum
   }
   const vs = b.build();
   return <number>vs[sortMethod];
+}
+
+
+/**
+ * @internal
+ */
+export function mapIndices<T>(arr: IndicesArray, callback: (value: number, i: number) => T): T[] {
+  const r: T[] = [];
+  for (let i = 0; i < arr.length; ++i) {
+    r.push(callback(arr[i], i));
+  }
+  return r;
+}
+
+/**
+ * @internal
+ */
+export function everyIndices(arr: IndicesArray, callback: (value: number, i: number) => boolean): boolean {
+  for (let i = 0; i < arr.length; ++i) {
+    if (!callback(arr[i], i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @internal
+ */
+export function filterIndices(arr: IndicesArray, callback: (value: number, i: number) => boolean): number[] {
+  const r: number[] = [];
+  for (let i = 0; i < arr.length; ++i) {
+    if (callback(arr[i], i)) {
+      r.push(arr[i]);
+    }
+  }
+  return r;
+}
+
+
+/**
+ * @internal
+ */
+export function forEachIndices(arr: IndicesArray, callback: (value: number, i: number) => void) {
+  for (let i = 0; i < arr.length; ++i) {
+    callback(arr[i], i);
+  }
 }

@@ -1,18 +1,17 @@
-import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineupengine';
-import {ILineUpOptions, ILineUpFlags} from '../interfaces';
+import {GridStyleManager, MultiTableRowRenderer, nonUniformContext} from 'lineupengine';
+import {ILineUpFlags, ILineUpOptions} from '../interfaces';
 import {round} from '../internal';
-import AEventDispatcher, {suffix, IEventListener} from '../internal/AEventDispatcher';
-import {Ranking, Column, IGroupData, IGroupItem, isGroup} from '../model';
+import AEventDispatcher, {IEventListener, suffix} from '../internal/AEventDispatcher';
+import {Column, IGroupData, IGroupItem, isGroup, Ranking} from '../model';
 import ADataProvider from '../provider/ADataProvider';
-import {
-  chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, IImposer, IRenderContext, getPossibleRenderer
-} from '../renderer';
+import {IImposer, IRenderContext} from '../renderer';
+import {chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer} from '../renderer/internal';
+import {cssClass} from '../styles';
+import DialogManager from './dialogs/DialogManager';
+import domElementCache from './domElementCache';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph, {EMode} from './SlopeGraph';
-import DialogManager from './dialogs/DialogManager';
-import {cssClass} from '../styles';
-import domElementCache from './domElementCache';
 
 /**
  * emitted when the highlight changes

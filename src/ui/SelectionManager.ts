@@ -1,9 +1,10 @@
 import AEventDispatcher, {IEventListener} from '../internal/AEventDispatcher';
 import OrderedSet from '../internal/OrderedSet';
-import {forEachIndices, IGroupData, IGroupItem, isGroup} from '../model';
+import {IGroupData, IGroupItem, isGroup} from '../model';
 import {IDataProvider} from '../provider';
 import {rangeSelection} from '../renderer/SelectionRenderer';
 import {cssClass, engineCssClass} from '../styles';
+import {forEachIndices} from '../model/internal';
 
 interface IPoint {
   x: number;
