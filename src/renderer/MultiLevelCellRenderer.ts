@@ -1,4 +1,4 @@
-import {round} from '../internal';
+import {ISequence, round} from '../internal';
 import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta, IOrderedGroup} from '../model';
 import {medianIndex} from '../model/internal';
 import {COLUMN_PADDING} from '../styles';
@@ -8,7 +8,6 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 import {cssClass} from '../styles';
 import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
-import {ISequence} from '../internal/interable';
 
 /** @internal */
 export function gridClass(idPrefix: string, column: Column) {

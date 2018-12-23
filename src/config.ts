@@ -2,9 +2,6 @@ import {ITaggleOptions} from './interfaces';
 import {renderers} from './renderer/internal';
 import {toolbarActions} from './ui';
 
-export * from './interfaces';
-
-
 export function defaultOptions(): ITaggleOptions {
   return {
     toolbar: Object.assign({}, toolbarActions),

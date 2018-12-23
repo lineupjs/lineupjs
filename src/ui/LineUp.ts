@@ -1,6 +1,6 @@
 import {defaultOptions} from '../config';
 import {ILineUpOptions} from '../interfaces';
-import merge from '../internal/merge';
+import {merge} from '../internal';
 import DataProvider from '../provider/ADataProvider';
 import {cssClass} from '../styles';
 import {ALineUp} from './ALineUp';

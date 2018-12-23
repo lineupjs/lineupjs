@@ -1,10 +1,9 @@
-import {MIN_LABEL_WIDTH} from '../config';
-import {Column, IArrayColumn, IDataRow} from '../model';
+import {MIN_LABEL_WIDTH} from '../interfaces';
+import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn} from '../model';
 import {hsl} from 'd3-color';
 import {cssClass} from '../styles';
 import IRenderContext from './interfaces';
-import {ISequence} from '../internal/interable';
-import {ICategoricalLikeColumn} from '../model';
+import {ISequence} from '../internal';
 
 /**
  * utility function to sets attributes and styles in a nodes

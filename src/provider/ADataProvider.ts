@@ -1,7 +1,4 @@
-import AEventDispatcher, {IEventListener, suffix, IEventContext} from '../internal/AEventDispatcher';
-import debounce, {IDebounceContext} from '../internal/debounce';
-import {ISequence} from '../internal/interable';
-import OrderedSet from '../internal/OrderedSet';
+import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEventListener, suffix, IEventContext} from '../internal';
 import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc} from '../model';
 import {models} from '../model/models';
 import {dirty, dirtyCaches, dirtyHeader, dirtyValues} from '../model/Column';

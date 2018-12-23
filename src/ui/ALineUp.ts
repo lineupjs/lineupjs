@@ -1,7 +1,6 @@
 import {getUnsupportedBrowserError, SUPPORTED_CHROME_VERSION, SUPPORTED_EDGE_VERSION, SUPPORTED_FIREFOX_VERSION} from '../browser';
 import {ILineUpLike} from '../interfaces';
-import {clear} from '../internal';
-import AEventDispatcher, {IEventListener} from '../internal/AEventDispatcher';
+import {AEventDispatcher, IEventListener, clear} from '../internal';
 import {Column} from '../model';
 import DataProvider from '../provider/ADataProvider';
 import {IDataProviderDump} from '../provider/interfaces';

@@ -5,7 +5,7 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
 import {EAlignment} from './StringColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import LinkColumn, {ILink, ILinkDesc, patternChanged} from './LinkColumn';
 
 export declare type ILinksColumnDesc = ILinkDesc & IArrayColumnDesc<string | ILink>;

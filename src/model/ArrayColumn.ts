@@ -1,6 +1,6 @@
 import {Category} from './annotations';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {empty} from '../internal/math';
+import {empty} from '../internal';
 import {IArrayColumn} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 

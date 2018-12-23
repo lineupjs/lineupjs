@@ -1,6 +1,5 @@
-import {MIN_LABEL_WIDTH} from '../config';
-import {equalArrays} from '../internal';
-import {dragAble, dropAble, hasDnDType, IDropResult} from '../internal/dnd';
+import {MIN_LABEL_WIDTH} from '../interfaces';
+import {equalArrays, dragAble, dropAble, hasDnDType, IDropResult} from '../internal';
 import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn} from '../model';
 import {categoryOf, getSortType} from '../model/annotations';
 import {Column, ImpositionCompositeColumn, ImpositionCompositesColumn, createImpositionDesc, createImpositionsDesc, ImpositionBoxPlotColumn, createImpositionBoxPlotDesc, CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model';

@@ -2,7 +2,7 @@ import {Category, SupportType, toolbar} from './annotations';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IGroup} from './interfaces';
 import Ranking from './Ranking';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import {EAggregationState} from '../provider/interfaces';
 
 /**

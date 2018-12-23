@@ -1,10 +1,9 @@
-import {round, similar} from '../internal';
+import {round, IEventListener, similar} from '../internal';
 import {toolbar} from './annotations';
 import Column, {IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {IMultiLevelColumn, addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
-import {IEventListener} from '../internal/AEventDispatcher';
 
 /**
  * factory for creating a description creating a stacked column

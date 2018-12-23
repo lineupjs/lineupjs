@@ -1,6 +1,6 @@
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {IColumnDesc, IDataRow} from './interfaces';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 
 
 export interface IValueColumnDesc<T> extends IColumnDesc {

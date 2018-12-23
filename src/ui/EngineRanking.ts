@@ -1,7 +1,6 @@
 import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate, IAbortAblePromise, isAbortAble, isLoadingCell} from 'lineupengine';
-import {HOVER_DELAY_SHOW_DETAIL} from '../config';
-import AEventDispatcher, {IEventContext, IEventHandler, IEventListener} from '../internal/AEventDispatcher';
-import debounce from '../internal/debounce';
+import {HOVER_DELAY_SHOW_DETAIL} from '../interfaces';
+import {AEventDispatcher, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
 import {Column, Ranking, StackColumn, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, defaultGroup, IGroupMeta, IOrderedGroup} from '../model';
 import {IImposer, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING, engineCssClass, cssClass} from '../styles';

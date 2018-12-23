@@ -1,11 +1,10 @@
-import {median, quantile} from '../internal/math';
+import {median, quantile, IEventListener} from '../internal';
 import {toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
 import {EAdvancedSortMethod} from './INumberColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
 
 /**
  *  factory for creating a description creating a max column

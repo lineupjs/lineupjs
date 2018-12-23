@@ -10,8 +10,8 @@ import LineUp, {ILineUpOptions} from './ui/LineUp';
 import Taggle, {ITaggleOptions} from './ui/taggle';
 
 export * from './builder';
-export {IDynamicHeight, ILineUpFlags, ILineUpLike, ILineUpOptions, ITaggleOptions, defaultOptions} from './config';
-export * from './interfaces';
+export {defaultOptions} from './config';
+export {IDynamicHeight, ILineUpFlags, ILineUpLike, ILineUpOptions, ITaggleOptions} from './interfaces';
 export {IAdvancedBoxPlotData, IBoxPlotData, ICategoricalBin, ICategoricalStatistics, INumberBin, IStatistics} from './internal/math';
 export * from './model';
 export * from './provider';

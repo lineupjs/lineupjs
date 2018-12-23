@@ -1,5 +1,4 @@
-import {equalArrays, fixCSS, joinIndexArrays} from '../internal';
-import AEventDispatcher, {IEventListener, suffix} from '../internal/AEventDispatcher';
+import {equalArrays, fixCSS, IEventListener, suffix, joinIndexArrays, AEventDispatcher} from '../internal';
 import {IRankingDump} from '../provider/interfaces';
 import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, IColumnParent, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';

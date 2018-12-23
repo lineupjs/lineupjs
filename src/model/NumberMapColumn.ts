@@ -11,8 +11,7 @@ import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IAdvancedBoxPlotData, boxplotBuilder} from '../internal/math';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 import {format} from 'd3-format';
 

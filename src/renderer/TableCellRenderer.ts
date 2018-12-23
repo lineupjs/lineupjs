@@ -3,7 +3,7 @@ import IRenderContext, {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
 import {cssClass} from '../styles';
-import {ISequence} from '../internal/interable';
+import {ISequence} from '../internal';
 
 /** @internal */
 export default class TableCellRenderer implements ICellRendererFactory {

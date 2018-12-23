@@ -1,4 +1,4 @@
-import {round} from '../internal/math';
+import {round} from '../internal';
 import {Column, IMapColumn, IMapAbleColumn, isMapAbleColumn, isMapColumn, IDataRow, isNumberColumn, INumberColumn} from '../model';
 import {colorOf} from './impose';
 import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} from './interfaces';

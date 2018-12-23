@@ -5,7 +5,7 @@ import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import LinkColumn, {ILinkDesc, patternChanged} from './LinkColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import {EAlignment} from './StringColumn';
 import {IKeyValue} from './IArrayColumn';
 import {ILink} from './LinkColumn';

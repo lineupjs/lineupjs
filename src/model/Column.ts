@@ -1,7 +1,4 @@
-import AEventDispatcher, {IEventListener} from '../internal/AEventDispatcher';
-import {ISequence} from '../internal/interable';
-import {similar} from '../internal/math';
-import {fixCSS} from '../internal/utils';
+import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
 import {IColumnDump} from '../provider/interfaces';
 import {isSortingAscByDefault} from './annotations';
 import {defaultGroup} from './Group';

@@ -4,7 +4,7 @@ import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} fro
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 
 const DEFAULT_SCRIPT = `let s = 0;
 col.forEach((c) => s += c.v);

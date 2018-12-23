@@ -1,9 +1,8 @@
-import {boxplotBuilder, IAdvancedBoxPlotData} from '../internal';
+import {ISequence, boxplotBuilder, IAdvancedBoxPlotData} from '../internal';
 import {IOrderedGroup, defaultGroup, IndicesArray} from './Group';
 import {IDataRow, IGroup, IGroupParent} from './interfaces';
 import INumberColumn, {numberCompare} from './INumberColumn';
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
-import {ISequence} from '../internal/interable';
 
 
 /** @internal */

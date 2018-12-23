@@ -3,10 +3,9 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import {IDataRow, IGroup} from './interfaces';
 import {patternFunction} from './internal';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener, ISequence} from '../internal';
 import {IStringDesc, EAlignment} from './StringColumn';
 import StringColumn from './StringColumn';
-import {ISequence} from '../internal/interable';
 
 export interface ILinkDesc extends IStringDesc {
   /**

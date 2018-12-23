@@ -1,5 +1,4 @@
-import {IAdvancedBoxPlotData} from '../internal';
-import {suffix, IEventListener} from '../internal/AEventDispatcher';
+import {suffix, IEventListener, IAdvancedBoxPlotData} from '../internal';
 import {toolbar, dialogAddons, SortByDefault} from './annotations';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';

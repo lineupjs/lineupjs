@@ -12,7 +12,7 @@ import {
   ScaleMappingFunction
 } from './MappingFunction';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 
 

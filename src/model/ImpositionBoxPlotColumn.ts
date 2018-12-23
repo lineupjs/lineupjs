@@ -1,5 +1,5 @@
 import {IBoxPlotData} from '../internal';
-import {suffix, IEventListener} from '../internal/AEventDispatcher';
+import {suffix, ISequence, IEventListener} from '../internal';
 import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import BoxPlotColumn, {mappingChanged} from './BoxPlotColumn';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
@@ -10,7 +10,6 @@ import {IMappingFunction, ScaleMappingFunction, isMapAbleColumn} from './Mapping
 import NumbersColumn from './NumbersColumn';
 import {colorMappingChanged} from './NumberColumn';
 import {DEFAULT_COLOR_FUNCTION, IColorMappingFunction} from './ColorMappingFunction';
-import {ISequence} from '../internal/interable';
 
 
 /**

@@ -1,4 +1,4 @@
-import {ISequence, lazySeq} from '../internal/interable';
+import {createIndexArray, sortComplex, ISequence, lazySeq, IEventContext} from '../internal';
 import Column, {Ranking, defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, CompositeColumn} from '../model';
 import {EDirtyReason} from '../model/Ranking';
 import ACommonDataProvider from './ACommonDataProvider';
@@ -6,8 +6,6 @@ import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {CompareLookup} from './sort';
 import {IRenderTaskExectutor} from './tasks';
-import {IEventContext} from '../internal/AEventDispatcher';
-import {createIndexArray, sortComplex} from '../internal';
 import {DirectRenderTasks} from './DirectRenderTasks';
 import {ScheduleRenderTasks} from './ScheduledTasks';
 import {joinGroups, mapIndices} from '../model/internal';

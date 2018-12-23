@@ -1,4 +1,4 @@
-import {suffix, IEventListener} from '../internal/AEventDispatcher';
+import {suffix, IEventListener} from '../internal';
 import Column, {IColumnParent, IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {Category, toolbar} from './annotations';
 import {IDataRow} from './interfaces';

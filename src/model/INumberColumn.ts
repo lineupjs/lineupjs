@@ -1,11 +1,10 @@
 import {format} from 'd3-format';
-import {IAdvancedBoxPlotData, IBoxPlotData, similar} from '../internal';
+import {IForEachAble, IAdvancedBoxPlotData, IBoxPlotData, similar} from '../internal';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {IMapAbleColumn, IMappingFunction, IMapAbleDesc} from './MappingFunction';
 import {FIRST_IS_NAN} from './missing';
-import {IForEachAble} from '../internal/interable';
 
 
 export interface INumberColumn extends Column {

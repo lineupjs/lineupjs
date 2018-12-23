@@ -1,4 +1,4 @@
-import {ICategoricalStatistics, round} from '../internal/math';
+import {ICategoricalStatistics, round} from '../internal';
 import {CategoricalColumn, Column, OrdinalColumn, ICategoricalColumn, isCategoricalColumn, IOrderedGroup, ISetColumn} from '../model';
 import {filterMissingNumberMarkup} from '../ui/missing';
 import {interactiveHist, HasCategoricalFilter} from './CategoricalCellRenderer';

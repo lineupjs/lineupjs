@@ -1,7 +1,5 @@
 import {timeFormat, timeParse} from 'd3-time-format';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {ISequence, isSeqEmpty} from '../internal/interable';
-import {equal} from '../internal/utils';
+import {ISequence, isSeqEmpty, equal, IEventListener} from '../internal';
 import {Category, dialogAddons, toolbar} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {defaultGroup} from './Group';

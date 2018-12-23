@@ -1,10 +1,9 @@
-import {similar} from '../internal/math';
+import {similar, IEventListener} from '../internal';
 import {toolbar} from './annotations';
 import Column, {IColumnDesc, IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {IMultiLevelColumn, addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IDataRow} from './interfaces';
 import StackColumn from './StackColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
 
 
 /**

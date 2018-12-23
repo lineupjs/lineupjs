@@ -1,8 +1,7 @@
 import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, ICategoricalLikeColumn, ICompareValue} from '../model';
 import {ARenderTasks, IRenderTaskExectutor, taskNow} from './tasks';
-import {toIndexArray, sortComplex, getNumberOfBins} from '../internal';
+import {ISequence, toIndexArray, sortComplex, getNumberOfBins} from '../internal';
 import {CompareLookup} from './sort';
-import {ISequence} from '../internal/interable';
 
 /**
  * @internal

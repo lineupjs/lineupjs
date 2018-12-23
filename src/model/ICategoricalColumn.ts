@@ -5,7 +5,7 @@ import {colorPool} from './internal';
 import {FIRST_IS_MISSING} from './missing';
 import {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColorMappingFunction} from './CategoricalColorMappingFunction';
-import {ISequence, isSeqEmpty, IForEachAble} from '../internal/interable';
+import {ISequence, isSeqEmpty, IForEachAble} from '../internal';
 
 export interface ICategoricalDesc {
   categories: (string | Partial<ICategory>)[];

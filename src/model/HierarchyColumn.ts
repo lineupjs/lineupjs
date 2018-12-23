@@ -6,7 +6,7 @@ import {IDataRow, IGroup} from './interfaces';
 import {colorPool} from './internal';
 import {missingGroup} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import {ICategoricalColorMappingFunction, restoreColorMapping, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
 export interface ICategoryNode extends ICategory {

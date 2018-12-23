@@ -1,8 +1,7 @@
 import {IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup} from '../model';
 import {default as IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {ISequence} from '../internal/interable';
-import {boxplotBuilder} from '../internal';
+import {ISequence, boxplotBuilder} from '../internal';
 
 /** @internal */
 export abstract class ANumbersCellRenderer {

@@ -1,5 +1,4 @@
-import {IEventListener} from '../internal/AEventDispatcher';
-import {ISequence} from '../internal/interable';
+import {IEventListener, ISequence} from '../internal';
 import {Category, toolbar} from './annotations';
 import {DEFAULT_COLOR_FUNCTION, ICategoricalColorMappingFunction, restoreColorMapping} from './CategoricalColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, ICompareValue, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';

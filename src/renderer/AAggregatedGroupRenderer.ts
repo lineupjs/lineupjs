@@ -4,7 +4,7 @@ import {
   IImposer
 } from './interfaces';
 import {noRenderer} from './utils';
-import {ISequence} from '../internal/interable';
+import {ISequence} from '../internal';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item

@@ -1,6 +1,5 @@
-import AEventDispatcher from '../internal/AEventDispatcher';
 import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow} from '../model';
-import {ISequence} from '../internal/interable';
+import {AEventDispatcher, ISequence} from '../internal';
 import {IRenderTasks} from '../renderer/interfaces';
 
 export enum EAggregationState {

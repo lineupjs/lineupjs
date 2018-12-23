@@ -1,5 +1,5 @@
 import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISortMessageResponse, IStatistics, toIndexArray, WORKER_BLOB} from '../internal';
-import {ISequence, lazySeq} from '../internal/interable';
+import {ISequence, lazySeq} from '../internal';
 import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
 import {WorkerTaskScheduler} from '../internal/worker';
 import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking,ICompareValue, UIntTypedArray} from '../model';

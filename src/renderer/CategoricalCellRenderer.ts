@@ -1,5 +1,5 @@
-import {DENSE_HISTOGRAM} from '../config';
-import {ICategoricalStatistics, round} from '../internal/math';
+import {DENSE_HISTOGRAM} from '../interfaces';
+import {ICategoricalStatistics, round} from '../internal';
 import {OrdinalColumn, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory, Column, CategoricalColumn, ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';

@@ -1,39 +1,4 @@
-import ActionColumn from './ActionColumn';
-import AggregateGroupColumn from './AggregateGroupColumn';
-import AnnotateColumn from './AnnotateColumn';
-import BooleanColumn from './BooleanColumn';
-import BooleansColumn from './BooleansColumn';
-import BoxPlotColumn from './BoxPlotColumn';
-import CategoricalColumn from './CategoricalColumn';
-import CategoricalMapColumn from './CategoricalMapColumn';
-import CategoricalsColumn from './CategoricalsColumn';
-import Column from './Column';
-import DateColumn from './DateColumn';
-import DatesColumn from './DatesColumn';
-import DatesMapColumn from './DatesMapColumn';
-import GroupColumn from './GroupColumn';
-import HierarchyColumn from './HierarchyColumn';
-import ImpositionCompositeColumn from './ImpositionCompositeColumn';
-import ImpositionCompositesColumn from './ImpositionCompositesColumn';
-import NestedColumn from './NestedColumn';
-import NumberColumn from './NumberColumn';
-import NumberMapColumn from './NumberMapColumn';
-import NumbersColumn from './NumbersColumn';
-import OrdinalColumn from './OrdinalColumn';
-import RankColumn from './RankColumn';
-import ReduceColumn from './ReduceColumn';
-import ScriptColumn from './ScriptColumn';
-import SelectionColumn from './SelectionColumn';
-import SetColumn from './SetColumn';
-import StackColumn from './StackColumn';
-import StringColumn from './StringColumn';
-import StringMapColumn from './StringMapColumn';
-import StringsColumn from './StringsColumn';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import ImpositionBoxPlotColumn from './ImpositionBoxPlotColumn';
-import LinkColumn from './LinkColumn';
-import LinkMapColumn from './LinkMapColumn';
-import LinksColumn from './LinksColumn';
+import Column, {ActionColumn, AggregateGroupColumn, IValueColumnDesc, ValueColumn, AnnotateColumn, BooleanColumn, BooleansColumn, BoxPlotColumn, CategoricalColumn, CategoricalMapColumn, CategoricalsColumn, DateColumn, DatesMapColumn, DatesColumn, GroupColumn, HierarchyColumn, ImpositionCompositeColumn, ImpositionBoxPlotColumn, ImpositionCompositesColumn, ReduceColumn, NestedColumn, NumberColumn, NumbersColumn, NumberMapColumn, OrdinalColumn, RankColumn, ScriptColumn, SelectionColumn, SetColumn, StackColumn, StringColumn, StringMapColumn, StringsColumn, LinkColumn, LinkMapColumn, LinksColumn} from './';
 
 /**
  * defines a new column type

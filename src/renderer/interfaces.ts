@@ -2,8 +2,8 @@ import {IAbortAblePromise} from 'lineupengine';
 import {Column, IDataRow, IGroupMeta, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn} from '../model';
 import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
-import {IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../internal';
-import {ISequence} from '../internal/interable';
+import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../internal';
+
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;

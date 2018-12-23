@@ -4,7 +4,7 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import {EAlignment, IStringDesc} from './StringColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import {isMissingValue} from './missing';
 
 export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;

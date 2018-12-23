@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import Column from './Column';
 import {IColumnDesc} from './interfaces';
-import OrderedSet from '../internal/OrderedSet';
+import {OrderedSet} from '../internal';
 
 const supportType = Symbol.for('SupportType');
 const category = Symbol.for('Category');

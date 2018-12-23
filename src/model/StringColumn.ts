@@ -3,8 +3,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import {IDataRow, IGroup} from './interfaces';
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {equal} from '../internal';
+import {equal, IEventListener} from '../internal';
 import {defaultGroup} from './Group';
 
 export enum EAlignment {

@@ -1,4 +1,4 @@
-import {equalArrays, extent} from '../internal';
+import {equalArrays, extent, IEventListener} from '../internal';
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
@@ -8,7 +8,6 @@ import {
 import {IDataRow} from './interfaces';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import {DEFAULT_FORMATTER} from './INumberColumn';
 

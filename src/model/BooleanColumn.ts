@@ -4,7 +4,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import {ICategoricalColorMappingFunction, restoreColorMapping, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
 export interface IBooleanDesc {

@@ -1,7 +1,5 @@
 import {format} from 'd3-format';
-import {equalArrays} from '../internal';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {ISequence} from '../internal/interable';
+import {equalArrays, IEventListener, ISequence} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
 import {createColorMappingFunction, IColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';

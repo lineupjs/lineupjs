@@ -3,7 +3,7 @@ import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
-import {ISequence} from '../internal/interable';
+import {ISequence} from '../internal';
 
 /** @internal */
 export default class LinkCellRenderer implements ICellRendererFactory {

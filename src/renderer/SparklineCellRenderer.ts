@@ -3,7 +3,7 @@ import {matchRows} from './ANumbersCellRenderer';
 import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEachChild, noRenderer} from './utils';
-import {ISequence} from '../internal/interable';
+import {ISequence} from '../internal';
 
 /** @internal */
 export function line(data: ISequence<number>) {

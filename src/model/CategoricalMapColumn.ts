@@ -5,7 +5,7 @@ import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMa
 import CategoricalColumn from './CategoricalColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import {toolbar} from './annotations';
 
 

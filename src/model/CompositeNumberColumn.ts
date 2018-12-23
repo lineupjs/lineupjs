@@ -5,7 +5,7 @@ import {IDataRow, IGroup} from './interfaces';
 import {isMissingValue} from './missing';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 import {SortByDefault} from './annotations';
-import {ISequence} from '../internal/interable';
+import {ISequence} from '../internal';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**

@@ -5,7 +5,7 @@ import {IArrayColumn} from './IArrayColumn';
 import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories, ISetColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
 import {chooseUIntByDataLength} from '../provider/sort';
 

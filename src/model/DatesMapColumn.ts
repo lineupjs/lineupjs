@@ -9,7 +9,7 @@ import DateColumn from './DateColumn';
 import {dialogAddons, toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 
 export declare type IDateMapColumnDesc = IDatesDesc & IMapColumnDesc<Date | null>;
 

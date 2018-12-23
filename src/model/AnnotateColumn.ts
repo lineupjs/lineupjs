@@ -1,7 +1,7 @@
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IDataRow} from './interfaces';
 import StringColumn, {filterChanged, groupingChanged} from './StringColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 
 

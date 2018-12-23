@@ -1,5 +1,5 @@
-import {DENSE_HISTOGRAM} from '../config';
-import {normalizedStatsBuilder, INumberBin, IStatistics, round, getNumberOfBins} from '../internal/math';
+import {DENSE_HISTOGRAM} from '../interfaces';
+import {dragHandle, IDragHandleOptions, normalizedStatsBuilder, INumberBin, IStatistics, round, getNumberOfBins} from '../internal';
 import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
@@ -7,7 +7,6 @@ import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {cssClass, FILTERED_OPACITY} from '../styles';
-import {dragHandle, IDragHandleOptions} from '../internal/drag';
 import {color} from 'd3-color';
 
 interface IHistData {

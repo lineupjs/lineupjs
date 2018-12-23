@@ -1,5 +1,4 @@
-import AEventDispatcher, {IEventListener} from '../internal/AEventDispatcher';
-import OrderedSet from '../internal/OrderedSet';
+import {OrderedSet, AEventDispatcher, IEventListener} from '../internal';
 import {IGroupData, IGroupItem, isGroup} from '../model';
 import {IDataProvider} from '../provider';
 import {rangeSelection} from '../renderer/SelectionRenderer';

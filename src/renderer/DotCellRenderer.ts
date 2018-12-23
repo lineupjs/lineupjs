@@ -1,11 +1,11 @@
-import {round} from '../internal';
+import {round, concatSeq, ISequence} from '../internal';
 import {Column, isNumbersColumn, INumberColumn, IDataRow, isNumberColumn, IOrderedGroup} from '../model';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {attr, noRenderer} from './utils';
-import {concatSeq, ISequence} from '../internal/interable';
+
 
 /** @internal */
 export default class DotCellRenderer implements ICellRendererFactory {

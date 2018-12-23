@@ -3,8 +3,7 @@ import Column from './Column';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {isNumberIncluded, INumberFilter} from './INumberColumn';
 import {timeDay, timeMonth, timeWeek, timeMinute, timeSecond, timeHour} from 'd3-time';
-import {equal} from '../internal/utils';
-import {IForEachAble} from '../internal/interable';
+import {equal, IForEachAble} from '../internal';
 
 /** @internal */
 export {
