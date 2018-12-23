@@ -97,7 +97,7 @@ export default class MappingDialog extends ADialog {
         <strong style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
         <div class="${cssClass('dialog-mapper-script')}">
           <strong>Custom Normalization Script</strong>
-          <textarea></textarea>
+          <textarea class="${cssClass('textarea')}"></textarea>
         </div>`);
 
     const g = <SVGGElement>node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);

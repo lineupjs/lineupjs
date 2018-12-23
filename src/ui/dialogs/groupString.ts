@@ -16,7 +16,7 @@ export default function append(col: StringColumn, node: HTMLElement, dialog: IDi
       <input type="radio" name="regex" value="regex" id="${dialog.idPrefix}RE" ${isRegex ? 'checked' : ''}>
       <span>RegExp</span>
     </label>
-    <textarea required rows="5" placeholder="e.g. Test,a.*" id="${dialog.idPrefix}T">${current.map((d) => typeof d === 'string' ? d : d.source).join('\n')}</textarea>
+    <textarea class="${cssClass('textarea')}" required rows="5" placeholder="e.g. Test,a.*" id="${dialog.idPrefix}T">${current.map((d) => typeof d === 'string' ? d : d.source).join('\n')}</textarea>
     <button class="${cssClass('dialog-button')}" id="${dialog.idPrefix}A">Apply</button>
   `);
 

@@ -19,7 +19,7 @@ export default class RenameDialog extends ADialog {
     node.classList.add(cssClass('dialog-rename'));
     node.insertAdjacentHTML('beforeend', `
       <input type="text" value="${this.column.label}" required autofocus placeholder="name">
-      <textarea rows="5" placeholder="description">${this.column.description}</textarea>`);
+      <textarea class="${cssClass('textarea')}" rows="5" placeholder="description">${this.column.description}</textarea>`);
   }
 
   protected reset() {

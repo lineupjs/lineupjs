@@ -1,5 +1,6 @@
 import ScriptColumn from '../../model/ScriptColumn';
 import ADialog, {IDialogContext} from './ADialog';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class ScriptEditDialog extends ADialog {
@@ -13,7 +14,7 @@ export default class ScriptEditDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.insertAdjacentHTML('beforeend', `<textarea autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${this.column.getScript()}</textarea>`);
+    node.insertAdjacentHTML('beforeend', `<textarea class="${cssClass('textarea')}" autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${this.column.getScript()}</textarea>`);
   }
 
   protected reset() {
