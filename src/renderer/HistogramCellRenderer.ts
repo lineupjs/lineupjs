@@ -2,10 +2,7 @@ import {DENSE_HISTOGRAM} from '../config';
 import {normalizedStatsBuilder, INumberBin, IStatistics, round, getNumberOfBins} from '../internal/math';
 import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {
-  DEFAULT_FORMATTER, INumberColumn, INumbersColumn, isNumberColumn,
-  isNumbersColumn
-} from '../model/INumberColumn';
+import {INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
@@ -276,6 +273,8 @@ export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
     bins += `<div class="${cssClass('histogram-bin')}" title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`;
   }
 
+  const formatter = col.getNumberFormat();
+
   const render = (n: HTMLElement, stats: IHistData) => {
     const {maxBin, hist} = stats;
     const bins = hist.length;
@@ -295,15 +294,15 @@ export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
       const {x0, x1, count} = hist[i];
       const inner = <HTMLElement>d.firstElementChild!;
       const color = colorOf(col, null, imposer, (x1 + x0) / 2)!;
-      d.dataset.x = DEFAULT_FORMATTER(x0);
+      d.dataset.x = formatter(x0);
       if (unfiltered) {
         const gCount = unfiltered.hist[i].count;
-        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${count} of ${gCount})`;
+        d.title = `${formatter(x0)} - ${formatter(x1)} (${count} of ${gCount})`;
         inner.style.height = `${round(gCount * 100 / unfiltered.maxBin, 2)}%`;
         const relY = 100 - round(count * 100 / gCount, 2);
         inner.style.background = relY === 0 ? color : (relY === 100 ? filterColor(color) : `linear-gradient(${filterColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`);
       } else {
-        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${count})`;
+        d.title = `${formatter(x0)} - ${formatter(x1)} (${count})`;
         inner.style.height = `${round(count * 100 / maxBin, 2)}%`;
         inner.style.backgroundColor = color;
       }

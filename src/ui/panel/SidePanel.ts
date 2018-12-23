@@ -8,6 +8,7 @@ import {IRankingHeaderContext} from '../interfaces';
 import {dialogContext} from '../toolbar';
 import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
+import {format} from 'd3-format';
 
 
 interface IColumnWrapper {
@@ -280,8 +281,9 @@ export default class SidePanel {
     const stats = <HTMLElement>this.node.querySelector(`.${cssClass('stats')}`);
     const s = this.data.getSelection();
     const r = this.data.getFirstRanking();
+    const f = format(',d');
     const visible = r ? r.getGroups().reduce((a, b) => a + b.order.length, 0) : 0;
-    stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; <span>${s.length} selected</span>` : ''}`;
+    stats.innerHTML = `Showing <strong>${f(visible)}</strong> of ${f(this.data.getTotalNumberOfRows())} items${s.length > 0 ? `; <span>${f(s.length)} selected</span>` : ''}`;
   }
 
   destroy() {

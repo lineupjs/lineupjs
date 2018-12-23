@@ -5,7 +5,7 @@ import BoxPlotColumn, {mappingChanged} from './BoxPlotColumn';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IDataRow, IGroup} from './interfaces';
-import {ESortMethod, IBoxPlotColumn, INumberFilter, isBoxPlotColumn, noNumberFilter} from './INumberColumn';
+import {ESortMethod, IBoxPlotColumn, INumberFilter, isBoxPlotColumn, noNumberFilter, DEFAULT_FORMATTER} from './INumberColumn';
 import {IMappingFunction, ScaleMappingFunction, isMapAbleColumn} from './MappingFunction';
 import NumbersColumn from './NumbersColumn';
 import {colorMappingChanged} from './NumberColumn';
@@ -103,6 +103,11 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
+  }
+
+  getNumberFormat() {
+    const w = this.wrapper;
+    return w ? w.getNumberFormat() : DEFAULT_FORMATTER;
   }
 
   getValue(row: IDataRow) {

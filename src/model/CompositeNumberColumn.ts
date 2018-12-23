@@ -32,6 +32,10 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     }
   }
 
+  getNumberFormat() {
+    return this.numberFormat;
+  }
+
   getLabel(row: IDataRow) {
     if (!this.isLoaded()) {
       return '';

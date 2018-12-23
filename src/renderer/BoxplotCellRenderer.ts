@@ -1,6 +1,5 @@
 import {IBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
 import {IDataRow, isNumberColumn, isMapAbleColumn, IOrderedGroup} from '../model';
-import BoxPlotColumn from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import {IBoxPlotColumn, INumberColumn, isBoxPlotColumn} from '../model/INumberColumn';
 import NumberColumn from '../model/NumberColumn';
@@ -28,11 +27,11 @@ const MAPPED_BOXPLOT = `<div title="">
 
 
 /** @internal */
-export function computeLabel(v: IBoxPlotData | IAdvancedBoxPlotData) {
+export function computeLabel(col: INumberColumn, v: IBoxPlotData | IAdvancedBoxPlotData) {
   if (v == null) {
     return '';
   }
-  const f = BoxPlotColumn.DEFAULT_FORMATTER;
+  const f = col.getNumberFormat();
   const mean = (<IAdvancedBoxPlotData>v).mean != null ? `mean = ${f((<IAdvancedBoxPlotData>v).mean)}\n` : '';
   return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\n${mean}q3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
@@ -59,7 +58,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         }
         n.classList.remove(cssClass('missing'));
         const label = col.getRawBoxPlotData(d)!;
-        renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
+        renderDOMBoxPlot(col, n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
@@ -101,7 +100,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           if (data === null) {
             return;
           }
-          renderDOMBoxPlot(n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
+          renderDOMBoxPlot(col, n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
         });
       }
     };
@@ -128,15 +127,15 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             Array.from(n.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
           }
 
-          renderDOMBoxPlot(n, summary, summary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
+          renderDOMBoxPlot(col, n, summary, summary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
         });
       }
     };
   }
 }
 
-function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string | null, hasRange: boolean = false) {
-  n.title = computeLabel(label);
+function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string | null, hasRange: boolean = false) {
+  n.title = computeLabel(col, label);
 
   const whiskers = <HTMLElement>n.firstElementChild;
   const box = <HTMLElement>whiskers.firstElementChild;

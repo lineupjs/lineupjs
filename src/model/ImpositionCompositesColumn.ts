@@ -5,7 +5,7 @@ import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty,
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IKeyValue} from './IArrayColumn';
 import {IDataRow, IGroup} from './interfaces';
-import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, noNumberFilter} from './INumberColumn';
+import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, noNumberFilter, DEFAULT_FORMATTER} from './INumberColumn';
 import {IMappingFunction, ScaleMappingFunction, isMapAbleColumn} from './MappingFunction';
 import NumbersColumn, {mappingChanged} from './NumbersColumn';
 import {colorMappingChanged} from './NumberColumn';
@@ -112,6 +112,11 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   get dataLength() {
     const w = this.wrapper;
     return w ? w.dataLength : null;
+  }
+
+  getNumberFormat() {
+    const w = this.wrapper;
+    return w ? w.getNumberFormat() : DEFAULT_FORMATTER;
   }
 
   getValue(row: IDataRow) {

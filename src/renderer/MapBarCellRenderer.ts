@@ -1,8 +1,7 @@
 import {round} from '../internal/math';
-import {IDataRow, isNumberColumn} from '../model';
+import {IDataRow, isNumberColumn, INumberColumn} from '../model';
 import Column from '../model/Column';
 import {IMapColumn, isMapColumn} from '../model/IArrayColumn';
-import {DEFAULT_FORMATTER} from '../model/INumberColumn';
 import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
 import {colorOf} from './impose';
 import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} from './interfaces';
@@ -18,7 +17,9 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
     return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));
   }
 
-  create(col: IMapColumn<number>, _context: IRenderContext, imposer?: IImposer) {
+  create(col: IMapColumn<number> & INumberColumn, _context: IRenderContext, imposer?: IImposer) {
+    const formatter = col.getNumberFormat();
+
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
@@ -31,7 +32,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
           }
           const w = round(value * 100, 2);
           return `<div class="${cssClass('table-cell')}">${key}</div>
-            <div class="${cssClass('table-cell')}" title="${DEFAULT_FORMATTER(value)}">
+            <div class="${cssClass('table-cell')}" title="${formatter(value)}">
               <div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}">
                 <span class="${cssClass('hover-only')}">${value}</span>
               </div>

@@ -1,6 +1,6 @@
 import {IDataRow, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
+import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
@@ -47,6 +47,8 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
 
   create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
     const {template, render, mover, width} = this.createContext(col, context, imposer);
+    const formatter = col.getNumberFormat();
+
     return {
       template,
       update: (n: HTMLElement, d: IDataRow) => {
@@ -57,7 +59,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        n.onmousemove = mover(n, col.getRawNumbers(d).map(DEFAULT_FORMATTER));
+        n.onmousemove = mover(n, col.getRawNumbers(d).map(formatter));
         n.onmouseleave = () => n.title = '';
         render(ctx, col.getNumbers(d), d, GUESSED_HEIGHT);
       },
@@ -69,6 +71,8 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
 
   createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const {template, render, mover, width} = this.createContext(col, context, imposer);
+    const formatter = col.getNumberFormat();
+
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -79,7 +83,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
           const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
           ctx.canvas.width = width;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-          n.onmousemove = mover(n, data.raw.map(DEFAULT_FORMATTER));
+          n.onmousemove = mover(n, data.raw.map(formatter));
           n.onmouseleave = () => n.title = '';
           render(ctx, data.normalized, data.row!, GUESSED_HEIGHT);
         });

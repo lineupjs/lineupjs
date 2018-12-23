@@ -1,6 +1,6 @@
 import {IDataRow} from '../model';
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
+import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
@@ -33,6 +33,8 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     for (let i = 0; i < col.dataLength!; ++i) {
       templateRows += `<div class="${cssClass('heatmap-cell')}" style="background-color: white" title=""></div>`;
     }
+    const formatter = col.getNumberFormat();
+
     return {
       clazz: cssClass('heatmap'),
       templateRow: templateRows,
@@ -44,7 +46,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
           const v = data[i];
           const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
           attr(<HTMLElement>d, {
-            title: DEFAULT_FORMATTER(raw[i])
+            title: formatter(raw[i])
           }, {
             'background-color': v < threshold ? zero : one,
             bottom: `${Math.round((100 * bottom) / range)}%`,

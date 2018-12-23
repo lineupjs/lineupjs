@@ -5,10 +5,10 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {
   DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
-  noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue
+  noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue, INumberDesc
 } from './INumberColumn';
 import {
-  createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
+  createMappingFunction, IMappingFunction, restoreMapping,
   ScaleMappingFunction
 } from './MappingFunction';
 import {isMissingValue} from './missing';
@@ -16,9 +16,10 @@ import NumberColumn, {colorMappingChanged} from './NumberColumn';
 import {IAdvancedBoxPlotData, boxplotBuilder} from '../internal/math';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
+import {format} from 'd3-format';
 
 
-export interface INumbersDesc extends IArrayDesc, IMapAbleDesc {
+export interface INumbersDesc extends IArrayDesc, INumberDesc {
   readonly sort?: EAdvancedSortMethod;
 }
 
@@ -54,8 +55,9 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;
   static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
 
-
   static readonly CENTER = 0;
+
+  private readonly numberFormat: (n: number) => string = DEFAULT_FORMATTER;
 
   private sort: EAdvancedSortMethod;
   private mapping: IMappingFunction;
@@ -74,6 +76,10 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     this.original = this.mapping.clone();
     this.colorMapping = restoreColorMapping(desc);
 
+    if (desc.numberFormat) {
+      this.numberFormat = format(desc.numberFormat);
+    }
+
     this.sort = desc.sort || EAdvancedSortMethod.median;
 
     // better initialize the default with based on the data length
@@ -83,6 +89,10 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     this.setDefaultRenderer('heatmap');
     this.setDefaultGroupRenderer('heatmap');
     this.setDefaultSummaryRenderer('histogram');
+  }
+
+  getNumberFormat() {
+    return this.numberFormat;
   }
 
   toCompareValue(row: IDataRow): number {
@@ -110,7 +120,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   getRange() {
-    return this.mapping.getRange(DEFAULT_FORMATTER);
+    return this.mapping.getRange(this.numberFormat);
   }
 
   getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
@@ -164,7 +174,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   getLabels(row: IDataRow) {
-    return this.getValues(row).map(DEFAULT_FORMATTER);
+    return this.getValues(row).map(this.numberFormat);
   }
 
   getSortMethod() {

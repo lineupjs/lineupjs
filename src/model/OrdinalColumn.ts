@@ -10,6 +10,7 @@ import NumberColumn, {INumberColumn} from './NumberColumn';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {DEFAULT_FORMATTER} from './INumberColumn';
 
 export declare type ICategoricalNumberColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
 
@@ -84,6 +85,10 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(<any>type, listener);
+  }
+
+  getNumberFormat() {
+    return DEFAULT_FORMATTER;
   }
 
   get dataLength() {

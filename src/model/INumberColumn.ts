@@ -3,7 +3,7 @@ import {IAdvancedBoxPlotData, IBoxPlotData, similar} from '../internal';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
-import {IMapAbleColumn, IMappingFunction} from './MappingFunction';
+import {IMapAbleColumn, IMappingFunction, IMapAbleDesc} from './MappingFunction';
 import {FIRST_IS_NAN} from './missing';
 import {IForEachAble} from '../internal/interable';
 
@@ -15,6 +15,8 @@ export interface INumberColumn extends Column {
 
   iterNumber(row: IDataRow): IForEachAble<number>;
   iterRawNumber(row: IDataRow): IForEachAble<number>;
+
+  getNumberFormat(): (v: number) => string;
 }
 
 
@@ -24,19 +26,7 @@ export const DEFAULT_FORMATTER = format('.3n');
 export default INumberColumn;
 
 
-export interface INumberDesc {
-  /**
-   * dump of mapping function
-   */
-  map?: any;
-  /**
-   * either map or domain should be available
-   */
-  domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  range?: [number, number];
+export interface INumberDesc extends IMapAbleDesc {
   /**
    * d3 formatting option
    * @default .3n

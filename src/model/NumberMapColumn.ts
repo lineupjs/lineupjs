@@ -14,6 +14,7 @@ import NumberColumn, {colorMappingChanged} from './NumberColumn';
 import {IAdvancedBoxPlotData, boxplotBuilder} from '../internal/math';
 import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
+import {format} from 'd3-format';
 
 
 export interface INumberMapDesc extends INumberDesc {
@@ -52,6 +53,8 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;
   static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
 
+  private readonly numberFormat: (n: number) => string = DEFAULT_FORMATTER;
+
   private sort: EAdvancedSortMethod;
   private mapping: IMappingFunction;
   private original: IMappingFunction;
@@ -69,7 +72,16 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     this.original = this.mapping.clone();
     this.colorMapping = restoreColorMapping(desc);
     this.sort = desc.sort || EAdvancedSortMethod.median;
+
+    if (desc.numberFormat) {
+      this.numberFormat = format(desc.numberFormat);
+    }
+
     this.setDefaultRenderer('mapbars');
+  }
+
+  getNumberFormat() {
+    return this.numberFormat;
   }
 
   toCompareValue(row: IDataRow): number {
@@ -93,7 +105,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   }
 
   getRange() {
-    return this.mapping.getRange(DEFAULT_FORMATTER);
+    return this.mapping.getRange(this.numberFormat);
   }
 
   getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null {
@@ -143,7 +155,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
 
   getLabels(row: IDataRow) {
     const v = this.getRawValue(row);
-    return v.map(({key, value}) => ({key, value: DEFAULT_FORMATTER(value)}));
+    return v.map(({key, value}) => ({key, value: this.numberFormat(value)}));
   }
 
   getSortMethod() {

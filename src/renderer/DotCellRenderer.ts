@@ -1,7 +1,7 @@
 import {round} from '../internal';
 import {INumberColumn, IDataRow, isNumberColumn, IOrderedGroup} from '../model';
 import Column from '../model/Column';
-import {DEFAULT_FORMATTER, isNumbersColumn} from '../model/INumberColumn';
+import {isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
@@ -64,6 +64,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
   create(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
     const {template, render, update} = DotCellRenderer.getDOMRenderer(col);
     const width = context.colWidth(col);
+    const formatter = col.getNumberFormat();
     return {
       template,
       update: (n: HTMLElement, d: IDataRow) => {
@@ -75,7 +76,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
           const v = col.getNumber(d);
           return update(n, [{value: v, label: col.getLabel(d), color}]);
         }
-        const data = col.getNumbers(d).filter((vi: number) => !isNaN(vi)).map((value) => ({value, label: DEFAULT_FORMATTER(value), color}));
+        const data = col.getNumbers(d).filter((vi: number) => !isNaN(vi)).map((value) => ({value, label: formatter(value), color}));
         return update(n, data);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
@@ -95,6 +96,8 @@ export default class DotCellRenderer implements ICellRendererFactory {
 
   createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
     const {template, update} = DotCellRenderer.getDOMRenderer(col);
+    const formatter = col.getNumberFormat();
+
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -109,7 +112,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
             const color = colorOf(col, r, imposer);
             return col.getNumbers(r)
               .filter((vi: number) => !isNaN(vi))
-              .map((value) => ({value, label: DEFAULT_FORMATTER(value), color}));
+              .map((value) => ({value, label: formatter(value), color}));
           });
           return Array.from(concatSeq(vs));
         }).then((data) => {

@@ -5,10 +5,10 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {
-  ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue
+  ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue, INumberDesc, DEFAULT_FORMATTER
 } from './INumberColumn';
 import {
-  createMappingFunction, IMapAbleDesc, IMappingFunction, restoreMapping,
+  createMappingFunction, IMappingFunction, restoreMapping,
   ScaleMappingFunction
 } from './MappingFunction';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
@@ -16,7 +16,7 @@ import {IEventListener} from '../internal/AEventDispatcher';
 import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 
 
-export interface IBoxPlotDesc extends IMapAbleDesc {
+export interface IBoxPlotDesc extends INumberDesc {
   sort?: ESortMethod;
 }
 
@@ -55,7 +55,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;
   static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
 
-  static readonly DEFAULT_FORMATTER = format('.3n');
+  private readonly numberFormat: (n: number) => string = DEFAULT_FORMATTER;
 
   private sort: ESortMethod;
 
@@ -77,8 +77,15 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     this.original = this.mapping.clone();
     this.colorMapping = restoreColorMapping(desc);
 
-    this.sort = desc.sort || ESortMethod.min;
+    if (desc.numberFormat) {
+      this.numberFormat = format(desc.numberFormat);
+    }
 
+    this.sort = desc.sort || ESortMethod.min;
+  }
+
+  getNumberFormat() {
+    return this.numberFormat;
   }
 
   toCompareValue(row: IDataRow): number {
@@ -94,7 +101,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   }
 
   getRange() {
-    return this.mapping.getRange(BoxPlotColumn.DEFAULT_FORMATTER);
+    return this.mapping.getRange(this.numberFormat);
   }
 
   getRawBoxPlotData(row: IDataRow): IBoxPlotData | null {
@@ -160,7 +167,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (v == null) {
       return '';
     }
-    const f = BoxPlotColumn.DEFAULT_FORMATTER;
+    const f = this.numberFormat;
     return `BoxPlot(min = ${f(v.min)}, q1 = ${f(v.q1)}, median = ${f(v.median)}, q3 = ${f(v.q3)}, max = ${f(v.max)})`;
   }
 

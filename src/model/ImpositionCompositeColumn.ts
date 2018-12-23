@@ -3,7 +3,7 @@ import {toolbar, SortByDefault} from './annotations';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IDataRow, IGroup} from './interfaces';
-import {isNumberColumn} from './INumberColumn';
+import {isNumberColumn, DEFAULT_FORMATTER} from './INumberColumn';
 import NumberColumn, {INumberColumn, mappingChanged, colorMappingChanged} from './NumberColumn';
 import {isMapAbleColumn} from './MappingFunction';
 import {ISequence} from '../internal/interable';
@@ -98,6 +98,11 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
       default:
         return c[1].getColor(row);
     }
+  }
+
+  getNumberFormat() {
+    const w = this.wrapper;
+    return w ? w.getNumberFormat() : DEFAULT_FORMATTER;
   }
 
   getValue(row: IDataRow) {

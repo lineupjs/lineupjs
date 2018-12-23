@@ -255,7 +255,11 @@ export interface IMapAbleDesc {
    * @deprecated use colorMapping instead
    */
   color?: string;
-  colorMapping?: string | ((v: number)=>string) | any;
+
+  /**
+   * color mapping
+   */
+  colorMapping?: string | ((v: number) => string) | any;
 }
 
 export function createMappingFunction(dump: any): IMappingFunction {
