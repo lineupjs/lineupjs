@@ -20,14 +20,14 @@ export default class CategoricalFilterDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
-        <label class="${cssClass('dialog-filter-table-entry')}">
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
           <input type="checkbox" checked>
           <span>
             <span class="${cssClass('dialog-filter-table-color')}"></span>
             <div>Un/Select All</div>
           </span>
         </label>
-        ${this.column.categories.map((c) => `<label class="${cssClass('dialog-filter-table-entry')}">
+        ${this.column.categories.map((c) => `<label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
           <input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
           <span>
             <span class="${cssClass('dialog-filter-table-color')}" style="background-color: ${c.color}"></span>

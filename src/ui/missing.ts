@@ -5,7 +5,7 @@ export const filterMissingText = 'Filter rows containing missing values';
 
 /** @internal */
 export function filterMissingMarkup(bakMissing: boolean) {
-  return `<label>
+  return `<label class="${cssClass('checkbox')}">
     <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>
     <span class="${cssClass('filter-missing')}">${filterMissingText}</span>
   </label>`;
@@ -13,7 +13,7 @@ export function filterMissingMarkup(bakMissing: boolean) {
 
 /** @internal */
 export function filterMissingNumberMarkup(bakMissing: boolean, count: number) {
-  return `<label>
+  return `<label class="${cssClass('checkbox')}">
     <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''}>
     <span class="${cssClass('filter-missing')} ${count === 0 ? cssClass('disabled') : ''}">Filter ${count} missing value rows</span>
   </label>`;

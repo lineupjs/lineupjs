@@ -1,6 +1,7 @@
 import Column from '../../model/Column';
 import {IRankingHeaderContext, IRenderInfo} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class ChangeRendererDialog extends ADialog {
@@ -19,11 +20,11 @@ export default class ChangeRendererDialog extends ADialog {
     const byName = (a: IRenderInfo, b: IRenderInfo) => a.label.localeCompare(b.label);
     node.insertAdjacentHTML('beforeend', `
       <strong>Item Visualization</strong>
-      ${item.sort(byName).map((d) => ` <label><input type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
+      ${item.sort(byName).map((d) => ` <label class="${cssClass('checkbox')}"><input type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
       <strong>Group Visualization</strong>
-      ${group.sort(byName).map((d) => ` <label><input type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
+      ${group.sort(byName).map((d) => ` <label class="${cssClass('checkbox')}"><input type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
       <strong>Summary Visualization</strong>
-      ${summary.sort(byName).map((d) => ` <label><input type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
+      ${summary.sort(byName).map((d) => ` <label class="${cssClass('checkbox')}"><input type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
     `);
     this.forEach('input[name="renderer"]', (n: HTMLInputElement) => {
       n.addEventListener('change', () => this.column.setRenderer(n.value), { passive: true });

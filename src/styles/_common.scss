@@ -29,11 +29,13 @@
 }
 
 .#{$lu_css_prefix}-checkbox {
+  display: inline;
+
   > input {
     display: inline;
   }
 
-  > label {
+  > span {
     display: inline-flex;
   }
 }
@@ -49,7 +51,7 @@
   line-height: 0;
   display: flex;
 
-  input:checked + label {
+  input:checked + span {
     outline: 2px solid black;
   }
 
@@ -57,7 +59,7 @@
     display: none;
   }
 
-  > label {
+  > span {
     flex: 1 1 0;
   }
 }
@@ -65,17 +67,17 @@
 .#{$lu_css_prefix}-color-gradient {
   display: flex;
 
-  input:checked + label {
+  input:checked + span {
     outline: 2px solid black;
   }
 
-  > label {
+  > span {
     margin: 0.1em;
     flex: 1 1 auto;
   }
 }
 
-.#{$lu_css_prefix}-summary .#{$lu_css_prefix}-checkbox label {
+.#{$lu_css_prefix}-summary .#{$lu_css_prefix}-checkbox > span {
   display: inline-flex;
 }
 

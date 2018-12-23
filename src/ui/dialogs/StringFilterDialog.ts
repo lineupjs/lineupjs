@@ -2,6 +2,7 @@ import StringColumn from '../../model/StringColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState} from './utils';
+import {cssClass} from '../../styles';
 
 
 /** @internal */
@@ -43,7 +44,7 @@ export default class StringFilterDialog extends ADialog {
       bak = '';
     }
     node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
-    <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>RegExp</span></label>
+    <label class="${cssClass('checkbox')}"><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>RegExp</span></label>
     ${filterMissingMarkup(bakMissing)}`);
 
     const filterMissing = findFilterMissing(node);

@@ -25,12 +25,12 @@ export default class ColorMappingDialog extends ADialog {
     h += `<datalist id="${id}LW"><option>#FFFFFF"</option>${schemeCategory10.slice(0, -1).map((d) => `<option>${d}</option>`).join('')}</datalist>`;
 
     h += `<strong>Quantization</strong>
-    <label>
-      <input name="kind" type="radio" value="continuous" ${current.type !== 'quantized' ? 'checked': ''}>
+    <label class="${cssClass('checkbox')}">
+      <input name="kind" type="radio" id="${id}KC" value="continuous" ${current.type !== 'quantized' ? 'checked': ''}>
       <span>Continuous</span>
     </label>
-    <label>
-      <input name="kind" type="radio" value="quantized" ${current.type === 'quantized' ? 'checked': ''}>
+    <label class="${cssClass('checkbox')}">
+      <input name="kind" type="radio" id="${id}KQ" value="quantized" ${current.type === 'quantized' ? 'checked': ''}>
       <span><input type="number" id="${id}KQS" min="2" step="1" value="${current.type === 'quantized' ? current.steps : 5}">&nbsp; steps</span>
     </label>`;
 
@@ -49,7 +49,7 @@ export default class ColorMappingDialog extends ADialog {
             </label>`).join('')}
         </div>`;
       }
-      h += `<label><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
+      h += `<label class="${cssClass('checkbox')}"><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
         <span><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : Column.DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></span>
       </label>`;
     }
@@ -60,12 +60,12 @@ export default class ColorMappingDialog extends ADialog {
     {
       const name = current.type === 'sequential' ? current.name : '';
       for (const colors of sequentialColors) {
-        h += `<label class="${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors.name}" ${colors.name === name ? 'checked="checked"' : ''}>
+        h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors.name}" ${colors.name === name ? 'checked="checked"' : ''}>
         <span data-c="${colors.name}" style="background: ${gradient(colors.apply, 9)}"></span>
       </label>`;
       }
       const isCustom = entries.length === 2;
-      h += `<label class="${cssClass('color-gradient')}">
+      h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}">
         <input name="color" type="radio" value="custom:sequential" ${isCustom ? 'checked': ''}>
         <span class="${cssClass('color-custom')}">
           <input type="color" name="interpolate0" list="${id}LW" ${!isCustom ? 'disabled': `value="${entries[0].color}"`}>
@@ -79,12 +79,12 @@ export default class ColorMappingDialog extends ADialog {
     {
       const name = current.type === 'sequential' ? current.name : '';
       for (const colors of divergentColors) {
-        h += `<label class="${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors.name}" ${colors.name === name ? 'checked="checked"' : ''}>
+        h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors.name}" ${colors.name === name ? 'checked="checked"' : ''}>
         <span data-c="${colors.name}" style="background: ${gradient(colors.apply, 11)}"></span>
       </label>`;
       }
       const isCustom = entries.length === 3;
-      h += `<label class="${cssClass('color-gradient')}"><input name="color" type="radio" value="custom:divergent" ${isCustom ? 'checked': ''}>
+      h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="custom:divergent" ${isCustom ? 'checked': ''}>
         <span class="${cssClass('custom-color')}">
           <input type="color" name="divergingm1" list="${id}L" ${!isCustom ? 'disabled': `value="${entries[0].color}"`}>
           <input type="color" name="diverging0" list="${id}LW" ${!isCustom ? 'disabled': `value="${entries[1].color}"`}>

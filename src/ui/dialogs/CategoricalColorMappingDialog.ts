@@ -37,10 +37,10 @@ export default class CategoricalColorMappingDialog extends ADialog {
         </select>
       </div>
       ${this.column.categories.map((d) => `
-        <div class="${cssClass('dialog-color-table-entry')}">
-          <input id="${id}${d.name}" data-cat="${d.name}" type="color" value="${color(mapping.apply(d))!.hex()}">
-          <label for="${id}${d.name}">${d.label}</label>
-        </div>`).join('')}
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-color-table-entry')}">
+          <input data-cat="${d.name}" type="color" value="${color(mapping.apply(d))!.hex()}">
+          <span>${d.label}</span>
+        </label>`).join('')}
     </div>`);
 
     this.findInput('select').onchange = (evt) => {

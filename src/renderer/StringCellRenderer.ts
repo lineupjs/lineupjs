@@ -121,7 +121,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     let update: (col: StringColumn) => void;
     return {
       template: `<form><input type="text" placeholder="Filter ${col.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}">
-          <label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>RegExp</span></label>
+          <label class="${cssClass('checkbox')}"><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>RegExp</span></label>
           ${filterMissingMarkup(bakMissing)}</form>`,
       update: (node: HTMLElement) => {
         if (!update) {

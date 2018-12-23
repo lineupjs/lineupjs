@@ -1,7 +1,7 @@
 @import '../vars';
 
 .#{$lu_css_prefix}-summary {
-  label.#{$lu_css_prefix}-disabled {
+  span.#{$lu_css_prefix}-disabled {
     @include user_select_none();
 
     color: gray;
@@ -21,9 +21,8 @@
     cursor: pointer;
   }
 
-  label {
+  .#{$lu_css_prefix}-checkbox > span {
     font-weight: normal;
-    display: flex;
     align-items: center;
     margin: 5px 0;
     font-size: 13px;
