@@ -1,4 +1,4 @@
-import {round} from '../../internal';
+import {ISequence, round} from '../../internal';
 import {
   IMapAbleColumn, IMappingFunction, isMissingValue, ScaleMappingFunction,
   ScriptMappingFunction,
@@ -8,7 +8,6 @@ import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 import {cssClass} from '../../styles';
-import {ISequence} from '../../internal/interable';
 
 /** @internal */
 export default class MappingDialog extends ADialog {

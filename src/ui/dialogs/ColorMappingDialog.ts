@@ -1,10 +1,9 @@
-import ADialog from './ADialog';
-import {IDialogContext} from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel2, schemePastel1} from 'd3-scale-chromatic';
 import {round} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
 import {sequentialColors, divergentColors, createColorMappingFunction, lookupInterpolatingColor, QuantizedColorFunction, asColorFunction, CustomColorMappingFunction} from '../../model/ColorMappingFunction';
-import Column, {IMapAbleColumn} from '../../model';
+import {Column, IMapAbleColumn} from '../../model';
 import {cssClass} from '../../styles';
 
 /** @internal */

@@ -1,7 +1,6 @@
-import {round, similar} from '../../internal/math';
+import {round, similar, dragHandle, IDragHandleOptions} from '../../internal';
 import ADialog, {IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
-import {dragHandle, IDragHandleOptions} from '../../internal/drag';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);

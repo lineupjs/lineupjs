@@ -1,5 +1,5 @@
 import {IDialogContext} from './ADialog';
-import StringColumn from '../../model/StringColumn';
+import {StringColumn} from '../../model';
 import {cssClass} from '../../styles';
 
 

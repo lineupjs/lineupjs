@@ -1,9 +1,8 @@
 import {GridStyleManager} from 'lineupengine';
 import {ILineUpOptions} from '../../interfaces';
-import AEventDispatcher, {IEventListener} from '../../internal/AEventDispatcher';
-import debounce from '../../internal/debounce';
+import {debounce, AEventDispatcher, IEventListener} from '../../internal';
 import {IGroupData, IGroupItem, isGroup, Ranking} from '../../model';
-import DataProvider from '../../provider/ADataProvider';
+import {DataProvider} from '../../provider';
 import {IRenderContext} from '../../renderer';
 import {IEngineRankingContext} from '../EngineRanking';
 import EngineRenderer from '../EngineRenderer';

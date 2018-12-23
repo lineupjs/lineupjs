@@ -1,5 +1,5 @@
 import {round} from '../../internal';
-import StackColumn from '../../model/StackColumn';
+import {StackColumn} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {forEach, colorOf} from './utils';
 import {cssClass} from '../../styles';

@@ -1,4 +1,4 @@
-import ScriptColumn from '../../model/ScriptColumn';
+import {ScriptColumn} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
 

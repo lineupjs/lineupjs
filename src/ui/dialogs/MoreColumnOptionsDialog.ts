@@ -1,4 +1,4 @@
-import Column from '../../model/Column';
+import {Column} from '../../model';
 import {createToolbarMenuItems, updateIconState} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';

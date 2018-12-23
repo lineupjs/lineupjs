@@ -1,6 +1,6 @@
 import Popper from 'popper.js';
 import DialogManager from './DialogManager';
-import merge from '../../internal/merge';
+import {merge} from '../../internal';
 import {cssClass} from '../../styles';
 
 export interface IDialogOptions {

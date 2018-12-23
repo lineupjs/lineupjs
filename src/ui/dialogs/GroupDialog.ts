@@ -1,4 +1,4 @@
-import Column from '../../model/Column';
+import {Column} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {uniqueId, forEach} from './utils';
 import {getToolbarDialogAddons, IToolbarDialogAddon} from '../toolbar';

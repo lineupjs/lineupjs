@@ -1,10 +1,9 @@
-import CategoricalColumn from '../../model/CategoricalColumn';
-import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
-import SetColumn from '../../model/SetColumn';
+import {SetColumn, CategoricalColumn, ICategoricalFilter} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState, forEach} from './utils';
 import {cssClass} from '../../styles';
+import {isCategoryIncluded} from '../../model/ICategoricalColumn';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {

@@ -1,11 +1,9 @@
-import {suffix} from '../../internal/AEventDispatcher';
-import debounce from '../../internal/debounce';
-import CompositeColumn from '../../model/CompositeColumn';
+import {debounce, clear, suffix} from '../../internal';
+import {CompositeColumn} from '../../model';
 import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {cssClass, engineCssClass} from '../../styles';
-import {clear} from '../../internal/utils';
 
 /** @internal */
 export default class CompositeChildrenDialog extends ADialog {

@@ -1,4 +1,4 @@
-import Column from '../../model/Column';
+import {Column} from '../../model';
 import {IDataProvider} from '../../provider';
 import ADialog, { IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';

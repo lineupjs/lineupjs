@@ -1,5 +1,4 @@
-import {EAdvancedSortMethod} from '../../model/INumberColumn';
-import ReduceColumn from '../../model/ReduceColumn';
+import {EAdvancedSortMethod, ReduceColumn} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {sortMethods} from './utils';
 

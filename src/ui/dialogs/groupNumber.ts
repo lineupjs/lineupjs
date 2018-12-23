@@ -1,6 +1,6 @@
-import NumberColumn from '../../model/NumberColumn';
+import {NumberColumn} from '../../model';
 import {IDialogContext} from './ADialog';
-import {round, getNumberOfBins} from '../../internal/math';
+import {round, getNumberOfBins} from '../../internal';
 import {forEach} from '../../renderer/utils';
 import {cssClass} from '../../styles';
 

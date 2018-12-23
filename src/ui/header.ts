@@ -1,8 +1,7 @@
 import {MIN_LABEL_WIDTH} from '../interfaces';
 import {equalArrays, dragAble, dropAble, hasDnDType, IDropResult} from '../internal';
-import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn} from '../model';
 import {categoryOf, getSortType} from '../model/annotations';
-import {Column, ImpositionCompositeColumn, ImpositionCompositesColumn, createImpositionDesc, createImpositionsDesc, ImpositionBoxPlotColumn, createImpositionBoxPlotDesc, CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model';
+import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn, Column, ImpositionCompositeColumn, ImpositionCompositesColumn, createImpositionDesc, createImpositionsDesc, ImpositionBoxPlotColumn, createImpositionBoxPlotDesc, CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model';
 import {aria, cssClass} from '../styles';
 import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
 import {IRankingHeaderContext} from './interfaces';

@@ -1,8 +1,8 @@
 import {GridStyleManager} from 'lineupengine';
 import {defaultOptions} from '../../config';
 import {ITaggleOptions} from '../../interfaces';
-import merge from '../../internal/merge';
-import DataProvider from '../../provider/ADataProvider';
+import {merge} from '../../internal';
+import {DataProvider} from '../../provider';
 import {cssClass, engineCssClass} from '../../styles';
 import {ALineUp} from '../ALineUp';
 import SidePanel from '../panel/SidePanel';

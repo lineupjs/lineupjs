@@ -1,6 +1,6 @@
 import {round} from '../../internal';
-import OrdinalColumn from '../../model/OrdinalColumn';
-import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
+import {OrdinalColumn, ICategoricalFilter} from '../../model';
+import {isCategoryIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState, forEach} from './utils';

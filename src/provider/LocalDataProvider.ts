@@ -1,6 +1,5 @@
 import {createIndexArray, sortComplex, ISequence, lazySeq, IEventContext} from '../internal';
-import Column, {Ranking, defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, CompositeColumn} from '../model';
-import {EDirtyReason} from '../model/Ranking';
+import {Column, EDirtyReason, Ranking, defaultGroup, IColumnDesc, ICompareValue, IDataRow, IGroup, IndicesArray, INumberColumn, IOrderedGroup, CompositeColumn} from '../model';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';

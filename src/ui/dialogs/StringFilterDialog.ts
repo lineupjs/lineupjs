@@ -1,4 +1,4 @@
-import StringColumn from '../../model/StringColumn';
+import {StringColumn} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState} from './utils';

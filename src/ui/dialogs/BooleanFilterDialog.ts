@@ -1,4 +1,4 @@
-import BooleanColumn from '../../model/BooleanColumn';
+import {BooleanColumn} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState} from './utils';
 import {cssClass} from '../../styles';

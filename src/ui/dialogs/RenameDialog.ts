@@ -1,5 +1,4 @@
-import {IColumnMetaData} from '../../model';
-import Column from '../../model/Column';
+import {Column, IColumnMetaData} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
 

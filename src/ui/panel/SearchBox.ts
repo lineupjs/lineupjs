@@ -1,5 +1,4 @@
-import {clear} from '../../internal';
-import AEventDispatcher, {IEventListener} from '../../internal/AEventDispatcher';
+import {clear, AEventDispatcher, IEventListener} from '../../internal';
 import {cssClass} from '../../styles';
 
 export interface IItem {

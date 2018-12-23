@@ -1,4 +1,4 @@
-export {equal} from '../../internal/utils';
+export {equal} from '../../internal';
 
 export function isTypeInstance(clazz: any, superClass: any) {
   let c = clazz;

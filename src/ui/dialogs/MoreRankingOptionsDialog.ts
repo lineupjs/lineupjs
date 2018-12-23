@@ -1,4 +1,4 @@
-import Ranking from '../../model/Ranking';
+import {Ranking} from '../../model';
 import {IRankingHeaderContext} from '../interfaces';
 import {dialogContext} from '../toolbar';
 import ADialog, {IDialogContext} from './ADialog';

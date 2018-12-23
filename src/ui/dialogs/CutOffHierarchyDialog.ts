@@ -1,4 +1,4 @@
-import HierarchyColumn, {ICategoryInternalNode, ICutOffNode, resolveInnerNodes} from '../../model/HierarchyColumn';
+import {HierarchyColumn, ICategoryInternalNode, ICutOffNode, resolveInnerNodes} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */

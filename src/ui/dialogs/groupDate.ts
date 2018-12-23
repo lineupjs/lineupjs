@@ -1,6 +1,5 @@
 import {forEach} from '../../renderer/utils';
-import DateColumn from '../../model/DateColumn';
-import {IDateGranularity} from '../../model';
+import {DateColumn, IDateGranularity} from '../../model';
 import {cssClass} from '../../styles';
 
 

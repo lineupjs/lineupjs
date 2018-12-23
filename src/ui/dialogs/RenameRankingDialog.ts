@@ -1,4 +1,4 @@
-import Ranking from '../../model/Ranking';
+import {Ranking} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
 

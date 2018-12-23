@@ -1,8 +1,8 @@
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState, uniqueId} from './utils';
-import DateColumn from '../../model/DateColumn';
-import {IDateFilter, isDummyDateFilter, noDateFilter} from '../../model/IDateColumn';
+import {DateColumn, IDateFilter} from '../../model';
+import {isDummyDateFilter, noDateFilter} from '../../model/IDateColumn';
 import {timeFormat} from 'd3-time-format';
 
 /** @internal */

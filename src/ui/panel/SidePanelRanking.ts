@@ -1,6 +1,5 @@
 import {clear, suffix} from '../../internal';
-import {isSupportType} from '../../model';
-import Ranking from '../../model/Ranking';
+import {Ranking, isSupportType} from '../../model';
 import {aria, cssClass} from '../../styles';
 import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
 import {actionCSSClass} from '../header';

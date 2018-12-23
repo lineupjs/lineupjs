@@ -12,7 +12,7 @@ import Taggle, {ITaggleOptions} from './ui/taggle';
 export * from './builder';
 export {defaultOptions} from './config';
 export {IDynamicHeight, ILineUpFlags, ILineUpLike, ILineUpOptions, ITaggleOptions} from './interfaces';
-export {IAdvancedBoxPlotData, IBoxPlotData, ICategoricalBin, ICategoricalStatistics, INumberBin, IStatistics} from './internal/math';
+export {IAdvancedBoxPlotData, IBoxPlotData, ICategoricalBin, ICategoricalStatistics, INumberBin, IStatistics} from './internal';
 export * from './model';
 export * from './provider';
 export * from './renderer';

@@ -1,7 +1,6 @@
-import Column from '../../model';
+import {Column, isMapAbleColumn} from '../../model';
 import {forEach} from '../../renderer/utils';
 import {cssClass} from '../../styles';
-import {isMapAbleColumn} from '../../model/MappingFunction';
 
 /** @internal */
 export function updateFilterState(attachment: HTMLElement, column: Column, filtered: boolean) {

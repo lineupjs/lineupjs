@@ -1,4 +1,4 @@
-import {min, max} from '../../internal/math';
+import {min, max} from '../../internal';
 import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 

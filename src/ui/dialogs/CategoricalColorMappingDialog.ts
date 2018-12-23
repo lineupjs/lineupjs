@@ -1,12 +1,10 @@
-import {ICategoricalColumn, ICategory} from '../../model/ICategoricalColumn';
+import {ICategoricalColumn, CategoricalsColumn, CategoricalMapColumn, ICategory} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {uniqueId} from './utils';
 import {cssClass} from '../../styles';
-import { DEFAULT_COLOR_FUNCTION, ReplacmentColorMappingFunction} from '../../model/CategoricalColorMappingFunction';
-import CategoricalsColumn from '../../model/CategoricalsColumn';
-import CategoricalMapColumn from '../../model/CategoricalMapColumn';
 import {color} from 'd3-color';
 import {schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3} from 'd3-scale-chromatic';
+import {DEFAULT_COLOR_FUNCTION, ReplacmentColorMappingFunction} from '../../model/CategoricalColorMappingFunction';
 
 const sets: {[key: string]: ReadonlyArray<string>} = {schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3};
 

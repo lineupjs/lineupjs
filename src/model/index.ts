@@ -7,6 +7,7 @@ export {DEFAULT_FORMATTER, INumberDesc, IAdvancedBoxPlotColumn, INumbersColumn, 
 export {IDateColumn, IDateDesc, IDateFilter, IDateGranularity, IDateGrouper, isDateColumn} from './IDateColumn';
 export * from './IArrayColumn';
 export * from './MappingFunction';
+export {IColorMappingFunction} from './ColorMappingFunction';
 export {defineColumn} from './models';
 
 export {default as ActionColumn} from './ActionColumn';

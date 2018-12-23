@@ -1,6 +1,5 @@
-import {suffix} from '../../internal/AEventDispatcher';
-import {createAggregateDesc, createGroupDesc, createImpositionDesc, createNestedDesc, createRankDesc, createReduceDesc, createScriptDesc, createSelectionDesc, createStackDesc, IColumnDesc, Ranking} from '../../model';
-import {categoryOfDesc, IColumnCategory} from '../../model/annotations';
+import {suffix} from '../../internal';
+import {categoryOfDesc, IColumnCategory, createAggregateDesc, createGroupDesc, createImpositionDesc, createNestedDesc, createRankDesc, createReduceDesc, createScriptDesc, createSelectionDesc, createStackDesc, IColumnDesc, Ranking} from '../../model';
 import {DataProvider, IDataProvider} from '../../provider';
 import {aria, cssClass} from '../../styles';
 import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
