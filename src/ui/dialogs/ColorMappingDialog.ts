@@ -49,8 +49,8 @@ export default class ColorMappingDialog extends ADialog {
             </label>`).join('')}
         </div>`;
       }
-      h += `<label class="${cssClass('checkbox')}"><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
-        <span><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : Column.DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></span>
+      h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
+        <span class="${cssClass('color-custom')}"><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : Column.DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></span>
       </label>`;
     }
     h += '</div>';
