@@ -3,7 +3,7 @@ import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalCo
 import SetColumn from '../../model/SetColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, uniqueId, forEach} from './utils';
+import {updateFilterState, forEach} from './utils';
 import {cssClass} from '../../styles';
 
 /** @internal */
@@ -19,31 +19,28 @@ export default class CategoricalFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-
-    const id = uniqueId(this.dialog.idPrefix);
-
     node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
-        <div class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
-          <input id="${id}" type="checkbox" checked>
-          <label for="${id}">
+        <label class="${cssClass('dialog-filter-table-entry')}">
+          <input type="checkbox" checked>
+          <span>
             <span class="${cssClass('dialog-filter-table-color')}"></span>
             <div>Un/Select All</div>
-          </label>
-        </div>
-        ${this.column.categories.map((c) => `<div class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
-          <input id="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
-          <label for="${id}${c.name}">
+          </span>
+        </label>
+        ${this.column.categories.map((c) => `<label class="${cssClass('dialog-filter-table-entry')}">
+          <input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
+          <span>
             <span class="${cssClass('dialog-filter-table-color')}" style="background-color: ${c.color}"></span>
             <div>${c.label}</div>
-          </label>
-        </div>`).join('')}
+          </span>
+        </label>`).join('')}
     </div>`);
     // selectAll
     const selectAll = this.findInput('input:not([data-cat])');
     selectAll.onchange =  () => {
       forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = selectAll.checked);
     };
-    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing, this.dialog.idPrefix));
+    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
   }
 
   private updateFilter(filter: string[] | null, filterMissing: boolean) {

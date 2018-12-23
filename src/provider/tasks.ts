@@ -1,4 +1,4 @@
-import {abortAble, abortAbleAll, IAbortAblePromise} from 'lineupengine';
+import {abortAbleAll, IAbortAblePromise} from 'lineupengine';
 import {IForEachAble, lazySeq} from '../internal/interable';
 import {boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value, joinIndexArrays, IBuilder} from '../internal/math';
 import {ANOTHER_ROUND} from '../internal/scheduler';

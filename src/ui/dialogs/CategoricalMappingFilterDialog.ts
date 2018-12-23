@@ -3,7 +3,7 @@ import OrdinalColumn from '../../model/OrdinalColumn';
 import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, uniqueId, forEach} from './utils';
+import {updateFilterState, forEach} from './utils';
 import {cssClass} from '../../styles';
 
 /** @internal */
@@ -24,25 +24,24 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     }));
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
-    const id = uniqueId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
-        <div class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
-          <input id="${id}" type="checkbox" checked>
-          <label for="${id}">
+        <label class="${cssClass('dialog-filter-table-entry')}">
+          <input type="checkbox" checked>
+          <span>
             <div>Un/Select All</div>
-          </label>
-        </div>
+          </span>
+        </label>
         ${joint.map(({name, color, label, range}) => `
-          <div class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
-            <input id="${id}${name}" data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
-            <label for="${id}${name}">
+          <label class="${cssClass('dialog-filter-table-entry')}">
+            <input data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
+            <span>
               <input type="number" value="${range}" min="0" max="100" size="5">
               <div class="${cssClass('dialog-filter-color-bar')}">
                 <span style="background-color: ${color}; width: ${range}%"></span>
               </div>
               <div>${label}</div>
-            </label>
-          </div>`).join('')}
+            </span>
+          </label>`).join('')}
     </div>`);
     // selectAll
     const selectAll = this.findInput('input[type=checkbox]:not([data-cat])');
@@ -54,7 +53,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
         (<HTMLElement>d.nextElementSibling!.firstElementChild).style.width = `${d.value}%`;
       };
     });
-    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing, this.dialog.idPrefix));
+    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
   }
 
   private updateFilter(filter: string[] | null, filterMissing: boolean) {

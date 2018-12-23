@@ -18,7 +18,7 @@ import {color} from 'd3-color';
 
 interface IHistData {
   maxBin: number;
-  hist: INumberBin[];
+  hist: ReadonlyArray<INumberBin>;
   global?: IStatistics | null;
 }
 
@@ -110,7 +110,7 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
       <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - f.percent(f.filterMax)}%"></div>
       <div class="${cssClass('histogram-min')}" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or shift click to change"></div>
       <div class="${cssClass('histogram-max')}" data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or shift click to change"></div>
-      ${filterMissingNumberMarkup(f.filterMissing, 0, context.idPrefix)}
+      ${filterMissingNumberMarkup(f.filterMissing, 0)}
     `;
 
   let updateFilter: (missing: number, col: IMapAbleColumn) => void;

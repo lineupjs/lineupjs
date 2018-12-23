@@ -92,7 +92,7 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
   const {template, update} = hist(col, interactive || wideEnough(col));
   let filterUpdate: (missing: number, col: HasCategoricalFilter) => void;
   return {
-    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0, context.idPrefix) : ''}</div>`,
+    template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
     update: (n: HTMLElement) => {
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);

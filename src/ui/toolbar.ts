@@ -94,8 +94,8 @@ function uiSortMethod(methods: string[]): IToolbarDialogAddon {
   return {
     title: 'Sort By',
     order: 2,
-    append(col, node, dialog) {
-      sortMethods(node, <any>col, methods, dialog.idPrefix);
+    append(col, node) {
+      sortMethods(node, <any>col, methods);
     }
   };
 }

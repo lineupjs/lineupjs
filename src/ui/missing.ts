@@ -1,25 +1,22 @@
 import {cssClass} from '../styles';
-import {uniqueId} from './dialogs/utils';
 
 /** @internal */
 export const filterMissingText = 'Filter rows containing missing values';
 
 /** @internal */
-export function filterMissingMarkup(bakMissing: boolean, idPrefix: string) {
-  const id = uniqueId(idPrefix);
-  return `<div class="${cssClass('checkbox')}">
-    <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} id="${id}">
-    <label for="${id}" class="${cssClass('filter-missing')}">${filterMissingText}</label>
-  </div>`;
+export function filterMissingMarkup(bakMissing: boolean) {
+  return `<label>
+    <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>
+    <span class="${cssClass('filter-missing')}">${filterMissingText}</span>
+  </label>`;
 }
 
 /** @internal */
-export function filterMissingNumberMarkup(bakMissing: boolean, count: number, idPrefix: string) {
-  const id = uniqueId(idPrefix);
-  return `<div class="${cssClass('checkbox')}">
-    <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''} id="${id}">
-    <label for="${id}" class="${cssClass('filter-missing')} ${count === 0 ? cssClass('disabled') : ''}">Filter ${count} missing value rows</label>
-  </div>`;
+export function filterMissingNumberMarkup(bakMissing: boolean, count: number) {
+  return `<label>
+    <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''}>
+    <span class="${cssClass('filter-missing')} ${count === 0 ? cssClass('disabled') : ''}">Filter ${count} missing value rows</span>
+  </label>`;
 }
 
 /** @internal */
