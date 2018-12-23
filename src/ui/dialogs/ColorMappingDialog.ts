@@ -84,8 +84,9 @@ export default class ColorMappingDialog extends ADialog {
       </label>`;
       }
       const isCustom = entries.length === 3;
-      h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="custom:divergent" ${isCustom ? 'checked': ''}>
-        <span class="${cssClass('custom-color')}">
+      h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}">
+        <input name="color" type="radio" value="custom:divergent" ${isCustom ? 'checked' : ''}>
+        <span class="${cssClass('color-custom')}">
           <input type="color" name="divergingm1" list="${id}L" ${!isCustom ? 'disabled': `value="${entries[0].color}"`}>
           <input type="color" name="diverging0" list="${id}LW" ${!isCustom ? 'disabled': `value="${entries[1].color}"`}>
           <input type="color" name="diverging1" list="${id}L" ${!isCustom ? 'disabled': `value="${entries[2].color}"`}>
@@ -104,24 +105,6 @@ export default class ColorMappingDialog extends ADialog {
     const quantized = this.findInput(`#${id}KQ`);
     const steps = this.findInput(`#${id}KQS`);
     const toggles = <HTMLElement[]>Array.from(node.querySelectorAll('strong[data-toggle]'));
-
-    continuouos.onchange = () => {
-      if (continuouos.checked) {
-        this.updateGradients(-1);
-      }
-    };
-    quantized.onchange = steps.onchange = () => {
-      if (!quantized.checked) {
-        this.updateGradients(-1);
-        return;
-      }
-      if (toggles[0].dataset.toggle === 'open') {
-        // auto open sequential
-        toggles[0].dataset.toggle = '';
-        toggles[1].dataset.toggle = 'open';
-      }
-      this.updateGradients(parseInt(steps.value, 10));
-    };
 
     for (const toggle of toggles) {
       toggle.onclick = (evt) => {
@@ -152,38 +135,68 @@ export default class ColorMappingDialog extends ADialog {
       return createColorMappingFunction(input.value);
     };
 
+    const updateColor = (d: HTMLInputElement) => {
+      if (!d.checked) {
+        return;
+      }
+      // disable customs
+      for (const custom of customs) {
+        Array.from(custom.nextElementSibling!.querySelectorAll('input')).forEach((s) => s.disabled = custom !== d);
+      }
+      const base = toColor(d);
+      if (quantized.checked && base.type !== 'solid') {
+        this.column.setColorMapping(new QuantizedColorFunction(base, parseInt(steps.value, 10)));
+      } else {
+        this.column.setColorMapping(base);
+      }
+    };
+
+    const updateSelectedColor = () => {
+      const selected = this.findInput(`input[name=color]:checked`);
+      if (selected) {
+        updateColor(selected);
+      }
+    };
+
     this.forEach('input[name=color]', (d: HTMLInputElement) => {
       if (d.value.startsWith('custom:')) {
         customs.push(d);
       }
-      d.onchange = () => {
-        if (!d.checked) {
-          return;
-        }
-        // disable customs
-        for (const custom of customs) {
-          Array.from(custom.nextElementSibling!.querySelectorAll('input')).forEach((s) => s.disabled = custom !== d);
-        }
-        const base = toColor(d);
-        if (quantized.checked && base.type !== 'solid') {
-          this.column.setColorMapping(new QuantizedColorFunction(base, parseInt(steps.value, 10)));
-        } else {
-          this.column.setColorMapping(base);
-        }
-      };
+      d.onchange = () => updateColor(d);
     });
 
     // upon changing custom parameter trigger an update
-    this.forEach('label > input[type=color]', (d: HTMLInputElement) => {
+    this.forEach(`.${cssClass('color-custom')} input[type=color]`, (d: HTMLInputElement) => {
       d.onchange = () => {
         const item = (<HTMLInputElement>d.parentElement!.previousElementSibling!);
-        item.onchange!.call(item, new Event('change'));
+        updateColor(item);
       };
     });
+
+    continuouos.onchange = () => {
+      if (continuouos.checked) {
+        this.updateGradients(-1);
+        updateSelectedColor();
+      }
+    };
+    quantized.onchange = steps.onchange = () => {
+      if (!quantized.checked) {
+        this.updateGradients(-1);
+        updateSelectedColor();
+        return;
+      }
+      if (toggles[0].dataset.toggle === 'open') {
+        // auto open sequential
+        toggles[0].dataset.toggle = '';
+        toggles[1].dataset.toggle = 'open';
+      }
+      this.updateGradients(parseInt(steps.value, 10));
+      updateSelectedColor();
+    };
   }
 
   private updateGradients(steps: number) {
-    this.forEach(`label[data-c]`, (d: HTMLElement) => {
+    this.forEach(`span[data-c]`, (d: HTMLElement) => {
       const f = lookupInterpolatingColor.get(d.dataset.c!)!;
       d.style.background = steps < 0 ? gradient(f.apply, f.type === 'sequential' ? 9 : 11) : steppedGradient(f.apply, steps);
     });
