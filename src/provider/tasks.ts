@@ -12,7 +12,6 @@ export {IAbortAblePromise} from 'lineupengine';
 
 /**
  * a render task that is already resolved
- * @internal
  */
 export class TaskNow<T> implements IRenderTask<T> {
   constructor(public readonly v: T) {
@@ -25,8 +24,7 @@ export class TaskNow<T> implements IRenderTask<T> {
 }
 
 /**
- * factory function for TaskNow
- * @internal
+ * factory function for
  */
 export function taskNow<T>(v: T) {
   return new TaskNow(v);
@@ -34,7 +32,6 @@ export function taskNow<T>(v: T) {
 
 /**
  * a render task based on an abortable promise
- * @internal
  */
 export class TaskLater<T> implements IRenderTask<T> {
   constructor(public readonly v: IAbortAblePromise<T>) {
@@ -47,9 +44,6 @@ export class TaskLater<T> implements IRenderTask<T> {
   }
 }
 
-/**
- * @internal
- */
 export function taskLater<T>(v: IAbortAblePromise<T>) {
   return new TaskLater(v);
 }
@@ -87,9 +81,6 @@ export interface IRenderTaskExectutor extends IRenderTasks {
   valueCache(col: Column): undefined | ((dataIndex: number) => any);
 }
 
-/**
- * @internal
- */
 export class MultiIndices {
   private _joined: IndicesArray | null = null;
 
@@ -116,9 +107,7 @@ export class MultiIndices {
  */
 const CHUNK_SIZE = 100;
 
-/**
- * @internal
- */
+
 export class ARenderTasks {
   protected readonly valueCacheData = new Map<string, Float32Array | UIntTypedArray | Int32Array | Float64Array>();
 
