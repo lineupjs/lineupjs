@@ -118,6 +118,8 @@
 }
 
 .#{$lu_css_prefix}-dialog-filter-table-entry {
+  display: block;
+
   > input[type=checkbox]:not(:checked) + span {
     opacity: 0.5;
   }
@@ -129,6 +131,7 @@
 
 .#{$lu_css_prefix}-dialog-color-table-entry {
   min-width: 10em;
+  display: block;
 
   > input {
     width: 3em;
