@@ -1,4 +1,3 @@
-import {IDialogContext} from './ADialog';
 import {forEach} from '../../renderer/utils';
 import DateColumn from '../../model/DateColumn';
 import {IDateGranularity} from '../../model';
@@ -6,7 +5,7 @@ import {cssClass} from '../../styles';
 
 
 /** @internal */
-export default function appendDate(col: DateColumn, node: HTMLElement, dialog: IDialogContext) {
+export default function appendDate(col: DateColumn, node: HTMLElement) {
   const current = col.getDateGrouper();
 
   let granularity = current.granularity;
@@ -31,7 +30,7 @@ export default function appendDate(col: DateColumn, node: HTMLElement, dialog: I
   };
 
 
-  node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}DC`)!.addEventListener('change', (evt) => {
+  node.querySelector<HTMLInputElement>('input[name=circular]')!.addEventListener('change', (evt) => {
     circular = (<HTMLInputElement>evt.currentTarget).checked;
     update();
   }, { passive: true });

@@ -834,7 +834,7 @@ export interface IStatsWorkerMessage extends IWorkerMessage {
    * reference key for the data indices
    */
   refData: string;
-  data?: UIntTypedArray | Float32Array | Int32Array;
+  data?: UIntTypedArray | Float32Array | Int32Array | Float64Array;
 }
 
 /**
@@ -877,7 +877,7 @@ export interface ISetRefMessageRequest {
   uid: number;
 
   ref: string;
-  data: UIntTypedArray | Float32Array | Int32Array | null;
+  data: UIntTypedArray | Float32Array | Int32Array | Float64Array | null;
 }
 
 /**
@@ -982,18 +982,15 @@ export interface ICategoricalStatsMessageResponse {
   stats: ICategoricalStatistics;
 }
 
-// max int32
-const MISSING_DATE = 2147483647;
-
 /**
  * helper to build a value cache for dates, use dateValueCache2Value to convert back
  * @internal
  */
 export function dateValueCacheBuilder(length: number) {
-  const vs = new Int32Array(length);
+  const vs = new Float64Array(length);
   let i = 0;
   return {
-    push: (d: Date | null) => vs[i++] = d == null ? MISSING_DATE : d.getTime(),
+    push: (d: Date | null) => vs[i++] = d == null ? NaN : d.getTime(),
     cache: vs
   };
 }
@@ -1002,7 +999,7 @@ export function dateValueCacheBuilder(length: number) {
  * @internal
  */
 export function dateValueCache2Value(v: number) {
-  return v === MISSING_DATE ? null : new Date(v);
+  return isNaN(v) ? null : new Date(v);
 }
 
 /**
@@ -1031,7 +1028,7 @@ export function categoricalValueCache2Value<T extends {name: string}>(v: number,
 
 function sortWorkerMain(self: IPoorManWorkerScope) {
   // stored refs to avoid duplicate copy
-  const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array>();
+  const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array | Float64Array>();
 
   const sort = (r: ISortMessageRequest) => {
     if (r.sortOrders) {

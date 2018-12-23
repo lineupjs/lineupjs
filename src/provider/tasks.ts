@@ -120,7 +120,7 @@ const CHUNK_SIZE = 100;
  * @internal
  */
 export class ARenderTasks {
-  protected readonly valueCacheData = new Map<string, Float32Array | UIntTypedArray | Int32Array>();
+  protected readonly valueCacheData = new Map<string, Float32Array | UIntTypedArray | Int32Array | Float64Array>();
 
   protected readonly byIndex = (i: number) => this.data[i];
 
@@ -292,7 +292,7 @@ export class ARenderTasks {
     this.valueCacheData.delete(`${col.id}:r`);
   }
 
-  protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | Int32Array | null) {
+  protected setValueCacheData(key: string, value: Float32Array | UIntTypedArray | Int32Array | Float64Array | null) {
     if (value == null) {
       this.valueCacheData.delete(key);
     } else {

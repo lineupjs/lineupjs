@@ -195,7 +195,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   }
 
   toCompareGroupValueType() {
-    return ECompareValueType.INT32;
+    return ECompareValueType.DOUBLE_ASC;
   }
 }
 
@@ -216,6 +216,11 @@ export function choose(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, 
 
 function trueMedian(dates: ISequence<number>) {
   // to avoid interpolating between the centers do it manually
-  const s = Uint32Array.from(dates).sort();
+  const s = Float64Array.from(dates);
+  if (s.length === 1) {
+    return s[0];
+  }
+
+  s.sort();
   return s[Math.floor(s.length / 2)];
 }

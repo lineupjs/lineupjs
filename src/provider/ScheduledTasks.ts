@@ -302,7 +302,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       const ranking = col.findMyRanker()!;
       if (this.valueCacheData.has(col.id) && group.order.length > 0) {
         // web worker version
-        return () => this.workers.pushStats('dateStats', {template: summary}, col.id, <Int32Array>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
+        return () => this.workers.pushStats('dateStats', {template: summary}, col.id, <Float64Array>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
           .then((group) => ({group, summary, data}));
       }
       return this.dateStatsBuilder(group.order, col, summary, (group) => ({group, summary, data}));
@@ -352,7 +352,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       const ranking = col.findMyRanker()!;
       if (this.valueCacheData.has(col.id)) {
         // web worker version
-        return () => this.workers.pushStats('dateStats', {template: data}, col.id, <Int32Array>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
+        return () => this.workers.pushStats('dateStats', {template: data}, col.id, <Float64Array>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
           .then((summary) => ({summary, data}));
       }
       return this.dateStatsBuilder(order ? order : ranking.getOrder(), col, data, (summary) => ({summary, data}));

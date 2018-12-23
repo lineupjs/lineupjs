@@ -135,8 +135,8 @@ export class WorkerTaskScheduler {
   pushStats(type: 'numberStats', args: Partial<INumberStatsMessageRequest>, refData: string, data: Float32Array, refIndices?: string, indices?: IndicesArray): Promise<IStatistics>;
   pushStats(type: 'boxplotStats', args: Partial<IBoxPlotStatsMessageRequest>, refData: string, data: Float32Array, refIndices?: string, indices?: IndicesArray): Promise<IAdvancedBoxPlotData>;
   pushStats(type: 'categoricalStats', args: Partial<ICategoricalStatsMessageRequest>, refData: string, data: UIntTypedArray, refIndices?: string, indices?: IndicesArray): Promise<ICategoricalStatistics>;
-  pushStats(type: 'dateStats', args: Partial<IDateStatsMessageRequest>, refData: string, data: Int32Array, refIndices?: string, indices?: IndicesArray): Promise<IDateStatistics>;
-  pushStats(type: 'numberStats' | 'boxplotStats' | 'categoricalStats' | 'dateStats', args: any, refData: string, data: Float32Array | UIntTypedArray | Int32Array, refIndices?: string, indices?: IndicesArray) {
+  pushStats(type: 'dateStats', args: Partial<IDateStatsMessageRequest>, refData: string, data: Float64Array, refIndices?: string, indices?: IndicesArray): Promise<IDateStatistics>;
+  pushStats(type: 'numberStats' | 'boxplotStats' | 'categoricalStats' | 'dateStats', args: any, refData: string, data: Float32Array | UIntTypedArray | Float64Array, refIndices?: string, indices?: IndicesArray) {
     return new Promise((resolve) => {
       const uid = this.workerTaskCounter++;
       const {worker, tasks, refs} = this.checkOutWorker();
@@ -214,7 +214,7 @@ export class WorkerTaskScheduler {
     });
   }
 
-  setRef(ref: string, data: Float32Array | UIntTypedArray | Int32Array | IndicesArray) {
+  setRef(ref: string, data: Float32Array | UIntTypedArray | Int32Array | Float64Array | IndicesArray) {
     for (const w of this.workers) {
       w.refs.add(ref);
     }
