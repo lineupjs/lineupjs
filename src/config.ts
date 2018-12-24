@@ -1,4 +1,4 @@
-import {renderers} from './renderer/internal';
+import {renderers} from './renderer/renderers';
 import {toolbarActions} from './ui/toolbar';
 import {Column, Ranking, IGroupData, IGroupItem} from './model';
 import {IDataProvider} from './provider';

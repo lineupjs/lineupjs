@@ -4,7 +4,7 @@ import {round, IEventListener, suffix, AEventDispatcher} from '../internal';
 import {Column, IGroupData, IGroupItem, isGroup, Ranking} from '../model';
 import {DataProvider} from '../provider';
 import {IImposer, IRenderContext} from '../renderer';
-import {chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer} from '../renderer/internal';
+import {chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer} from '../renderer/renderers';
 import {cssClass} from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import domElementCache from './domElementCache';
