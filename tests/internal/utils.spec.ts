@@ -1,4 +1,5 @@
-import {equalArrays, fixCSS, equal, clear, concat} from '../../src/internal/utils';
+import {equalArrays, fixCSS, clear, concat} from '../../src/internal/utils';
+import {equal} from '../../src/internal/mathInterfaces';
 
 
 describe('equalArrays', () => {
