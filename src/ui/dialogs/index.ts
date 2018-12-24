@@ -1,1 +1,2 @@
-export {IDialogOptions, default as ADialog, IDialogContext} from './ADialog';
+export {default as ADialog} from './ADialog';
+export * from './ADialog';

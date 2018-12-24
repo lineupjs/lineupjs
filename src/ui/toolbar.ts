@@ -58,8 +58,7 @@ export interface IToolbarDialogAddon {
   append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): void;
 }
 
-/** @internal */
-export interface IDialogClass {
+interface IDialogClass {
   new(col: any, dialog: IDialogContext, ...args: any[]): ADialog;
 }
 

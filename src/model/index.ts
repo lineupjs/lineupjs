@@ -1,7 +1,7 @@
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
-export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons, categoryOfDesc, categoryOf, IColumnCategory, getSortType, isSortingAscByDefault} from './annotations';
+export * from './annotations';
 export {isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup} from './missing';
 export * from './interfaces';
 export * from './ICategoricalColumn';

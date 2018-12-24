@@ -1,4 +1,4 @@
-import {MIN_LABEL_WIDTH} from '../interfaces';
+import {MIN_LABEL_WIDTH} from '../config';
 import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn} from '../model';
 import {hsl} from 'd3-color';
 import {cssClass} from '../styles';

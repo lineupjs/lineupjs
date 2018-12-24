@@ -6,6 +6,7 @@ export * from './dnd';
 export * from './drag';
 export * from './interable';
 export * from './math';
+export * from './mathInterfaces';
 export {default as merge} from './merge';
 export {default as OrderedSet} from './OrderedSet';
 export * from './utils';

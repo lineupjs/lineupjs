@@ -1,4 +1,4 @@
-import {DENSE_HISTOGRAM} from '../interfaces';
+import {DENSE_HISTOGRAM} from '../config';
 import {dragHandle, IDragHandleOptions, normalizedStatsBuilder, INumberBin, IStatistics, round, getNumberOfBins} from '../internal';
 import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';

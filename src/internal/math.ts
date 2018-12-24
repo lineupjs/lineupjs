@@ -1,88 +1,8 @@
 import {ICategory, IndicesArray, UIntTypedArray} from '../model';
 import {IForEachAble, ISequence, isIndicesAble} from './interable';
 import {createWorkerCodeBlob, IPoorManWorkerScope, toFunctionBody} from './worker';
+import {IAdvancedBoxPlotData, IStatistics, INumberBin, IDateBin, IDateStatistics, ICategoricalStatistics, ICategoricalBin, IDateHistGranularity} from './mathInterfaces';
 
-export interface INumberBin {
-  /**
-   * bin start
-   */
-  x0: number;
-  /**
-   * bin end
-   */
-  x1: number;
-  /**
-   * bin count
-   */
-  count: number;
-}
-
-export interface IBoxPlotData {
-  readonly min: number;
-  readonly max: number;
-  readonly median: number;
-  readonly q1: number;
-  readonly q3: number;
-  readonly outlier?: number[];
-  readonly whiskerLow?: number;
-  readonly whiskerHigh?: number;
-}
-
-export interface IAdvancedBoxPlotData extends IBoxPlotData {
-  readonly mean: number;
-
-  readonly missing: number;
-  readonly count: number;
-}
-
-export interface IStatistics {
-  readonly mean: number;
-  readonly min: number;
-  readonly max: number;
-
-  readonly missing: number;
-  readonly count: number;
-
-  readonly maxBin: number;
-  readonly hist: ReadonlyArray<INumberBin>;
-}
-
-export interface ICategoricalBin {
-  cat: string;
-  count: number;
-}
-
-export interface IDateBin {
-  x0: Date;
-  x1: Date;
-  count: number;
-}
-
-export interface ICategoricalStatistics {
-  readonly missing: number;
-  readonly count: number;
-
-  readonly maxBin: number;
-  readonly hist: ReadonlyArray<ICategoricalBin>;
-}
-
-export enum EDateHistogramGranularity {
-  YEAR = 'year',
-  MONTH = 'month',
-  DAY = 'day'
-}
-
-export interface IDateStatistics {
-  readonly min: Date | null;
-  readonly max: Date | null;
-
-  readonly missing: number;
-  readonly count: number;
-
-  readonly maxBin: number;
-  readonly histGranularity: EDateHistogramGranularity;
-  readonly hist: ReadonlyArray<IDateBin>;
-}
 
 /**
  * computes the optimal number of bins for a given array length
@@ -466,9 +386,9 @@ export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, I
 /**
  * guesses the histogram granularity to use based on min and max date
  */
-function computeGranularity(min: Date | null, max: Date | null) {
+function computeGranularity(min: Date | null, max: Date | null): {histGranularity: IDateHistGranularity, hist: IDateBin[]} {
   if (min == null || max == null) {
-    return {histGranularity: EDateHistogramGranularity.YEAR, hist: []};
+    return {histGranularity: 'year', hist: []};
   }
   const hist: IDateBin[] = [];
 
@@ -483,7 +403,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
         count: 0
       });
     }
-    return {hist, histGranularity: EDateHistogramGranularity.YEAR};
+    return {hist, histGranularity: 'year'};
   }
 
   if ((max.getTime() - min.getTime()) <= 1000 * 60 * 60 * 24 * 31) {
@@ -499,7 +419,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
       });
       x0 = x1;
     }
-    return {hist, histGranularity: EDateHistogramGranularity.DAY};
+    return {hist, histGranularity: 'day'};
   }
 
   // by month
@@ -514,7 +434,7 @@ function computeGranularity(min: Date | null, max: Date | null) {
     });
     x0 = x1;
   }
-  return {hist, histGranularity: EDateHistogramGranularity.MONTH};
+  return {hist, histGranularity: 'month'};
 }
 
 function pushDateHist(hist: IDateBin[], v: Date, count: number = 1) {

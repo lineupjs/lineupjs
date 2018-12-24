@@ -8,8 +8,8 @@ import {LineUp, ILineUpOptions, Taggle, ITaggleOptions} from './ui';
 
 export * from './builder';
 export {defaultOptions} from './config';
-export {IDynamicHeight, ILineUpFlags, ILineUpLike, ILineUpOptions, ITaggleOptions} from './interfaces';
-export {IAdvancedBoxPlotData, IBoxPlotData, ICategoricalBin, ICategoricalStatistics, INumberBin, IStatistics} from './internal';
+export * from './interfaces';
+export * from './internal/mathInterfaces';
 export * from './model';
 export * from './provider';
 export * from './renderer';
