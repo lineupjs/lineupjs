@@ -9,8 +9,8 @@ import {cssClass} from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import domElementCache from './domElementCache';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
-import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
-import SlopeGraph, {EMode} from './SlopeGraph';
+import {IRankingHeaderContext, IRankingHeaderContextContainer, EMode} from './interfaces';
+import SlopeGraph from './SlopeGraph';
 
 /**
  * emitted when the highlight changes

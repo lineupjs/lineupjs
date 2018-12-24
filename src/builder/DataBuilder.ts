@@ -5,6 +5,9 @@ import ColumnBuilder from './column/ColumnBuilder';
 import LineUpBuilder from './LineUpBuilder';
 import RankingBuilder from './RankingBuilder';
 
+export * from './column';
+export * from './RankingBuilder';
+
 /**
  * builder for a LocalDataProvider along with LineUp configuration options
  */

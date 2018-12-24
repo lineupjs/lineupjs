@@ -7,7 +7,7 @@ import {IRenderContext} from '../../renderer';
 import {IEngineRankingContext} from '../EngineRanking';
 import EngineRenderer from '../EngineRenderer';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
-import {IRule} from './interfaces';
+import {IRule} from './rules';
 
 /**
  * emitted when the highlight changes

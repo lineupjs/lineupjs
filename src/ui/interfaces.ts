@@ -70,3 +70,7 @@ export declare type IRankingHeaderContext = Readonly<IRankingHeaderContextContai
 
 export declare type IRankingContext = Readonly<IRankingBodyContext>;
 
+export enum EMode {
+  ITEM = 'item',
+  BAND = 'band'
+}

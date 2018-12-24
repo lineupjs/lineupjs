@@ -1,9 +1,3 @@
-import * as equalImpl from 'fast-deep-equal';
-
-/**
- * deep equal comparison
- */
-export const equal: (a: any, b: any) => boolean = (typeof equalImpl === 'function' ? equalImpl : (<any>equalImpl).default);
 
 /** @internal */
 export function equalArrays<T>(a: T[], b: T[]) {

@@ -1,7 +1,7 @@
 import {IExceptionContext, ITableSection, range} from 'lineupengine';
 import {IGroupData, IGroupItem, IOrderedGroup, isGroup} from '../model';
 import {aria, cssClass, engineCssClass, SLOPEGRAPH_WIDTH} from '../styles';
-import {IRankingHeaderContextContainer} from './interfaces';
+import {IRankingHeaderContextContainer, EMode} from './interfaces';
 import {forEachIndices, filterIndices} from '../model/internal';
 
 interface ISlope {
@@ -50,11 +50,6 @@ interface IPos {
   offset: number;
   ref: number[];
   group: IOrderedGroup;
-}
-
-export enum EMode {
-  ITEM = 'item',
-  BAND = 'band'
 }
 
 export interface ISlopeGraphOptions {

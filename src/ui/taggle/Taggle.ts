@@ -6,7 +6,7 @@ import {DataProvider} from '../../provider';
 import {cssClass, engineCssClass} from '../../styles';
 import {ALineUp} from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
-import spaceFillingRule from './spaceFillingRule';
+import {spaceFillingRule} from './rules';
 import TaggleRenderer from './TaggleRenderer';
 
 export {ITaggleOptions} from '../../interfaces';
