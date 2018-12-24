@@ -1,6 +1,4 @@
-import {ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import Column from './Column';
-
+import {Column, ICategory, ICategoricalColorMappingFunction} from '.';
 
 /**
  * @internal

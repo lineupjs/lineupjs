@@ -1,5 +1,6 @@
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
-import {defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType} from '.';
+import Column, {defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType} from '.';
+import {OrderedSet} from '../internal';
 
 
 /** @internal */
@@ -146,4 +147,58 @@ export function chooseUIntByDataLength(dataLength?: number | null) {
     return ECompareValueType.UINT16;
   }
   return ECompareValueType.UINT32;
+}
+
+
+// side effect
+const cache = new Map<string, string[]>();
+
+
+export function getAllToolbarActions(col: Column) {
+  if (cache.has(col.desc.type)) {
+    return cache.get(col.desc.type)!;
+  }
+  const actions = new OrderedSet<string>();
+
+  // walk up the prototype chain
+  let obj = <any>col;
+  const toolbarIcon = Symbol.for('toolbarIcon');
+  do {
+    const m = <string[]>Reflect.getOwnMetadata(toolbarIcon, obj.constructor);
+    if (m) {
+      for (const mi of m) {
+        actions.add(mi);
+      }
+    }
+    obj = Object.getPrototypeOf(obj);
+  } while (obj);
+  const arr = Array.from(actions);
+  cache.set(col.desc.type, arr);
+  return arr;
+}
+
+
+export function getAllToolbarDialogAddons(col: Column, key: string) {
+  const cacheKey = `${col.desc.type}@${key}`;
+  if (cache.has(cacheKey)) {
+    return cache.get(cacheKey)!;
+  }
+  const actions = new OrderedSet<string>();
+
+  // walk up the prototype chain
+  let obj = <any>col;
+  const symbol = Symbol.for(`toolbarDialogAddon${key}`);
+  do {
+    const m = <string[]>Reflect.getOwnMetadata(symbol, obj.constructor);
+    if (m) {
+      for (const mi of m) {
+        actions.add(mi);
+      }
+    }
+    obj = Object.getPrototypeOf(obj);
+  } while (obj);
+  cache.set(cacheKey, Array.from(actions));
+  const arr = Array.from(actions);
+  cache.set(cacheKey, arr);
+  return arr;
 }

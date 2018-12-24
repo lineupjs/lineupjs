@@ -1,6 +1,5 @@
 import {clear} from '../../internal';
-import {categoryOf, isSortingAscByDefault} from '../../model/annotations';
-import {Column, Ranking, ISortCriteria, isSupportType} from '../../model';
+import {Column, Ranking, categoryOf, isSortingAscByDefault, ISortCriteria, isSupportType} from '../../model';
 import {aria, cssClass} from '../../styles';
 import AddonDialog from '../dialogs/AddonDialog';
 import {actionCSSClass, updateHeader} from '../header';

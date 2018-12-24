@@ -1,31 +1,4 @@
-import Column, {ActionColumn, AggregateGroupColumn, IValueColumnDesc, ValueColumn, AnnotateColumn, BooleanColumn, BooleansColumn, BoxPlotColumn, CategoricalColumn, CategoricalMapColumn, CategoricalsColumn, DateColumn, DatesMapColumn, DatesColumn, GroupColumn, HierarchyColumn, ImpositionCompositeColumn, ImpositionBoxPlotColumn, ImpositionCompositesColumn, ReduceColumn, NestedColumn, NumberColumn, NumbersColumn, NumberMapColumn, OrdinalColumn, RankColumn, ScriptColumn, SelectionColumn, SetColumn, StackColumn, StringColumn, StringMapColumn, StringsColumn, LinkColumn, LinkMapColumn, LinksColumn} from './';
-
-/**
- * defines a new column type
- * @param name
- * @param functions
- * @returns {CustomColumn}
- */
-export function defineColumn<T>(name: string, functions: any = {}): typeof Column {
-  class CustomColumn extends ValueColumn<T> {
-    constructor(id: string, desc: IValueColumnDesc<T>, ...args: any[]) {
-      super(id, desc);
-      if (typeof (this.init) === 'function') {
-        this.init(id, desc, ...args);
-      }
-    }
-
-    init(..._args: any[]) {
-      // dummy
-    }
-  }
-
-  CustomColumn.prototype.toString = () => name;
-  CustomColumn.prototype = Object.assign(CustomColumn.prototype, functions);
-
-  return CustomColumn;
-}
-
+import {ActionColumn, AggregateGroupColumn, AnnotateColumn, BooleanColumn, BooleansColumn, BoxPlotColumn, CategoricalColumn, CategoricalMapColumn, CategoricalsColumn, DateColumn, DatesColumn, DatesMapColumn, GroupColumn, HierarchyColumn, ImpositionBoxPlotColumn, ImpositionCompositeColumn, ImpositionCompositesColumn, LinkColumn, LinkMapColumn, LinksColumn, NestedColumn, NumberColumn, NumberMapColumn, NumbersColumn, OrdinalColumn, RankColumn, ReduceColumn, ScriptColumn, SelectionColumn, SetColumn, StackColumn, StringColumn, StringMapColumn, StringsColumn} from './';
 
 /**
  * a map of all known column types

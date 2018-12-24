@@ -1,7 +1,6 @@
 import {format} from 'd3-format';
 import {IBoxPlotData, similar, ISequence, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
-import {IDataRow, IBoxPlotColumn, INumberFilter, INumberColumn} from '.';
-import {FIRST_IS_NAN} from './missing';
+import {FIRST_IS_NAN, IDataRow, IBoxPlotColumn, INumberFilter, INumberColumn} from '.';
 
 
 /** @internal */

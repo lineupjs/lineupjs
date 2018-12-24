@@ -1,15 +1,70 @@
 import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEventListener, suffix, IEventContext} from '../internal';
 import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc} from '../model';
 import {models} from '../model/models';
-import {dirty, dirtyCaches, dirtyHeader, dirtyValues} from '../model/Column';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
-import {addColumn, orderChanged, removeColumn} from '../model/Ranking';
 import {IColumnDump, IDataProvider, IDataProviderDump, IDataProviderOptions, IRankingDump, SCHEMA_REF, EAggregationState} from './interfaces';
 import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer';
 
 
 export {IExportOptions} from './utils';
+
+
+/**
+ * emitted when a column has been added
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function addColumn(col: Column, index: number): void;
+
+/**
+ * emitted when a column has been moved within this composite columm
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function moveColumn(col: Column, index: number, oldIndex: number): void;
+
+/**
+ * emitted when a column has been removed
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function removeColumn(col: Column, index: number): void;
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function orderChanged(previous: number[], current: number[], previousGroups: IOrderedGroup[], currentGroups: IOrderedGroup[], dirtyReason: EDirtyReason[]): void;
+
+
+/**
+ * emitted when state of the column is dirty
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function dirty(): void;
+
+/**
+ * emitted when state of the column related to its header is dirty
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function dirtyHeader(): void;
+
+/**
+ * emitted when state of the column related to its values is dirty
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function dirtyValues(): void;
+
+/**
+ * emitted when state of the column related to cached values (hist, compare, ...) is dirty
+ * @asMemberOf ADataProvider
+ * @event
+ */
+export declare function dirtyCaches(): void;
+
 
 /**
  * emitted when the data changes
@@ -121,6 +176,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_SELECTION_CHANGED = 'selectionChanged';
   static readonly EVENT_DATA_CHANGED = 'dataChanged';
   static readonly EVENT_ADD_COLUMN = Ranking.EVENT_ADD_COLUMN;
+  static readonly EVENT_MOVE_COLUMN = Ranking.EVENT_MOVE_COLUMN;
   static readonly EVENT_REMOVE_COLUMN = Ranking.EVENT_REMOVE_COLUMN;
   static readonly EVENT_ADD_RANKING = 'addRanking';
   static readonly EVENT_REMOVE_RANKING = 'removeRanking';
@@ -137,7 +193,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_BUSY = 'busy';
 
   private static readonly FORWARD_RANKING_EVENTS = suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
-    Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
+    Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_MOVE_COLUMN,
     Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY_CACHES);
 
   /**
@@ -185,7 +241,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return super.createEventList().concat([
       ADataProvider.EVENT_DATA_CHANGED, ADataProvider.EVENT_BUSY,
       ADataProvider.EVENT_SHOWTOPN_CHANGED,
-      ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
+      ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN, ADataProvider.EVENT_MOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY_CACHES,
       ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED,
@@ -197,6 +253,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   on(type: typeof ADataProvider.EVENT_DATA_CHANGED, listener: typeof dataChanged | null): this;
   on(type: typeof ADataProvider.EVENT_SHOWTOPN_CHANGED, listener: typeof showTopNChanged | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  on(type: typeof ADataProvider.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
   on(type: typeof ADataProvider.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_RANKING, listener: typeof addRanking | null): this;
   on(type: typeof ADataProvider.EVENT_REMOVE_RANKING, listener: typeof removeRanking | null): this;

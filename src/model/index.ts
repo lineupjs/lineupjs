@@ -1,4 +1,7 @@
-export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons, categoryOfDesc, categoryOf, IColumnCategory} from './annotations';
+import Column from './Column';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+
+export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons, categoryOfDesc, categoryOf, IColumnCategory, getSortType, isSortingAscByDefault} from './annotations';
 export {isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup} from './missing';
 export * from './interfaces';
 export * from './ICategoricalColumn';
@@ -6,7 +9,6 @@ export * from './INumberColumn';
 export * from './IDateColumn';
 export * from './IArrayColumn';
 export * from './MappingFunction';
-export {defineColumn} from './models';
 
 export {default as ActionColumn} from './ActionColumn';
 export * from './ActionColumn';
@@ -65,3 +67,30 @@ export * from './LinkMapColumn';
 export {default as LinkMapColumn} from './LinkMapColumn';
 export * from './LinksColumn';
 export {default as LinksColumn} from './LinksColumn';
+
+
+/**
+ * defines a new column type
+ * @param name
+ * @param functions
+ * @returns {CustomColumn}
+ */
+export function defineColumn<T>(name: string, functions: any = {}): typeof Column {
+  class CustomColumn extends ValueColumn<T> {
+    constructor(id: string, desc: IValueColumnDesc<T>, ...args: any[]) {
+      super(id, desc);
+      if (typeof (this.init) === 'function') {
+        this.init(id, desc, ...args);
+      }
+    }
+
+    init(..._args: any[]) {
+      // dummy
+    }
+  }
+
+  CustomColumn.prototype.toString = () => name;
+  CustomColumn.prototype = Object.assign(CustomColumn.prototype, functions);
+
+  return CustomColumn;
+}

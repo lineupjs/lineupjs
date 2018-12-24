@@ -1,8 +1,6 @@
 import {ISequence, isSeqEmpty} from '../internal';
-import {Column, ECompareValueType, ICompareValue, ICategory, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter} from '.';
-import {IDataRow} from './interfaces';
+import {FIRST_IS_MISSING, IDataRow, Column, ECompareValueType, ICompareValue, ICategory, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter} from '.';
 import {colorPool} from './internal';
-import {FIRST_IS_MISSING} from './missing';
 
 /** @internal */
 export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => Column.DEFAULT_COLOR) {
