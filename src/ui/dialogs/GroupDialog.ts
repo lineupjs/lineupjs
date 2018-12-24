@@ -1,8 +1,8 @@
 import {Column} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {uniqueId, forEach} from './utils';
-import {getToolbarDialogAddons, IToolbarDialogAddon} from '../toolbar';
-import {IRankingHeaderContext} from '../interfaces';
+import {getToolbarDialogAddons} from '../toolbar';
+import {IRankingHeaderContext, IToolbarDialogAddon} from '../interfaces';
 import {cssClass} from '../../styles';
 
 /** @internal */

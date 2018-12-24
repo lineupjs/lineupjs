@@ -4,7 +4,7 @@ import {DataProvider, IDataProvider} from '../../provider';
 import {aria, cssClass} from '../../styles';
 import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
 import {IRankingHeaderContext} from '../interfaces';
-import {dialogContext} from '../toolbar';
+import {dialogContext} from '../dialogs';
 import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
 import {format} from 'd3-format';

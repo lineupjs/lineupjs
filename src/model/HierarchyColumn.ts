@@ -2,10 +2,10 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IValueColumnDesc} from './interfaces';
 import {colorPool} from './internal';
 import {missingGroup} from './missing';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
 import {restoreColorMapping, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 

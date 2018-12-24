@@ -1,6 +1,6 @@
 import {ITaggleOptions} from './interfaces';
 import {renderers} from './renderer/internal';
-import {toolbarActions} from './ui';
+import {toolbarActions} from './ui/toolbar';
 
 /**
  * number of bins before switching to dense mode

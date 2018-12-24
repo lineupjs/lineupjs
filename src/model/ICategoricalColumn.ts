@@ -1,8 +1,7 @@
 import {IForEachAble} from '../internal';
 import Column from './Column';
 import {IArrayColumn, isArrayColumn} from './IArrayColumn';
-import {IColumnDesc, IDataRow} from './interfaces';
-import {IValueColumnDesc} from './ValueColumn';
+import {IValueColumnDesc, IColumnDesc, IDataRow} from './interfaces';
 
 export interface ICategoricalDesc {
   categories: (string | Partial<ICategory>)[];

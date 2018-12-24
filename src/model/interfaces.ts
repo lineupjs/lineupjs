@@ -66,6 +66,21 @@ export interface IColumnDesc extends Partial<IStyleColumn> {
   type: string;
 }
 
+export interface IValueColumnDesc<T> extends IColumnDesc {
+  /**
+   * is the data lazy loaded and not yet available
+   * @default false
+   */
+  lazyLoaded?: boolean;
+
+  /**
+   * value accessor of this column
+   * @param row the current row
+   * @param desc the description of this column
+   */
+  accessor?(row: IDataRow, desc: Readonly<IValueColumnDesc<T>>): T;
+}
+
 export interface IFlatColumn {
   readonly col: Column;
   readonly offset: number;

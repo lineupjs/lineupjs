@@ -2,12 +2,10 @@ import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEv
 import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump} from '../model';
 import {models} from '../model/models';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
-import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF} from './interfaces';
-import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
+import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions} from './interfaces';
+import {exportRanking, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer';
 
-
-export {IExportOptions} from './utils';
 
 
 /**

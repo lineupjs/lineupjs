@@ -3,6 +3,6 @@ export {default as LocalDataProvider} from './LocalDataProvider';
 export {default as RemoteDataProvider} from './RemoteDataProvider';
 export * from './LocalDataProvider';
 export * from './RemoteDataProvider';
-export {IDeriveOptions, deriveColors, deriveColumnDescriptions, exportRanking, IExportOptions} from './utils';
+export {deriveColors, deriveColumnDescriptions, exportRanking} from './utils';
 export * from './interfaces';
-export {tasksAll, IAbortAblePromise} from './tasks';
+export {tasksAll} from './tasks';

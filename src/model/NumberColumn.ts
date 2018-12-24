@@ -3,11 +3,11 @@ import {equalArrays, IEventListener, ISequence} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
 import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDataRow, IGroup, ECompareValueType} from './interfaces';
+import {IDataRow, IGroup, ECompareValueType, IValueColumnDesc} from './interfaces';
 import {INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, IMappingFunction, IColorMappingFunction, IMapAbleColumn} from './INumberColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
-import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareGroupValue, isEqualNumberFilter, isNumberIncluded} from './internalNumber';
 
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;

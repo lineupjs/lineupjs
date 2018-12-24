@@ -1,7 +1,7 @@
 import {getAllToolbarActions, getAllToolbarDialogAddons} from '../model/internal';
 import {Column, EDateSort, EAdvancedSortMethod, ESortMethod, isSupportType, CompositeColumn, IMultiLevelColumn, isSortingAscByDefault} from '../model';
 import {cssClass} from '../styles';
-import ADialog, {IDialogContext} from './dialogs/ADialog';
+import ADialog, {IDialogContext, dialogContext} from './dialogs/ADialog';
 import BooleanFilterDialog from './dialogs/BooleanFilterDialog';
 import CategoricalColorMappingDialog from './dialogs/CategoricalColorMappingDialog';
 import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
@@ -27,36 +27,7 @@ import SortDialog from './dialogs/SortDialog';
 import StringFilterDialog from './dialogs/StringFilterDialog';
 import {sortMethods} from './dialogs/utils';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
-import {IRankingHeaderContext} from './interfaces';
-
-export interface IUIOptions {
-  shortcut: boolean | 'only';
-  order: number;
-  featureLevel: 'basic' | 'advanced';
-  featureCategory: 'ranking' | 'model' | 'ui';
-}
-
-export interface IOnClickHandler {
-  (col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number, viaShortcut: boolean): any;
-}
-
-export interface IToolbarAction {
-  title: string;
-
-  enabled?(col: Column): boolean;
-
-  onClick: IOnClickHandler;
-
-  options: Partial<IUIOptions>;
-}
-
-export interface IToolbarDialogAddon {
-  title: string;
-
-  order: number;
-
-  append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): void;
-}
+import {IRankingHeaderContext, IOnClickHandler, IUIOptions, IToolbarAction, IToolbarDialogAddon} from './interfaces';
 
 interface IDialogClass {
   new(col: any, dialog: IDialogContext, ...args: any[]): ADialog;
@@ -64,15 +35,6 @@ interface IDialogClass {
 
 function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
   return {title, onClick, options};
-}
-
-export function dialogContext(ctx: IRankingHeaderContext, level: number, attachment: HTMLElement | MouseEvent): IDialogContext {
-  return {
-    attachment: (<MouseEvent>attachment).currentTarget != null ? <HTMLElement>(<MouseEvent>attachment).currentTarget : <HTMLElement>attachment,
-    level,
-    manager: ctx.dialogManager,
-    idPrefix: ctx.idPrefix
-  };
 }
 
 function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IRankingHeaderContext) => any[]) = () => [], options: Partial<IUIOptions> = {}): IToolbarAction {

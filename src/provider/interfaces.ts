@@ -1,6 +1,10 @@
 import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState} from '../model';
 import {AEventDispatcher, ISequence} from '../internal';
 import {IRenderTasks} from '../renderer';
+import {IAbortAblePromise} from 'lineupengine';
+
+export {ABORTED} from 'lineupengine';
+export declare type IAbortAblePromise<T> = IAbortAblePromise<T>;
 
 export interface IDataProviderOptions {
   columnTypes: {[columnType: string]: typeof Column};
@@ -109,4 +113,55 @@ export interface IDataProviderDump {
    * custom show top N setting
    */
   showTopN?: number;
+}
+
+
+
+export interface IDeriveOptions {
+  /**
+   * maximal percentage of unique values to be treated as a categorical column
+   */
+  categoricalThreshold: number | ((unique: number, total: number) => boolean);
+
+  columns: string[];
+
+  /**
+   * date pattern to check for string matching them
+   * @default %x
+   */
+  datePattern: string;
+}
+
+
+export interface IExportOptions {
+  /**
+   * export separator, default: '\t'
+   */
+  separator: string;
+  /**
+   * new line character, default: '\n'
+   */
+  newline: string;
+  /**
+   * should a header be generated, default: true
+   */
+  header: boolean;
+  /**
+   * quote strings, default: false
+   */
+  quote: boolean;
+  /**
+   * quote string to use, default: '"'
+   */
+  quoteChar: string;
+  /**
+   * filter specific column types, default: exclude all support types (selection, action, rank)
+   * @param col the column description to filter
+   */
+  filter: (col: Column) => boolean; //!isSupportType
+
+  /**
+   * whether the description should be part of the column header
+   */
+  verboseColumnHeaders: boolean;
 }

@@ -1,22 +1,6 @@
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IColumnDesc, IDataRow} from './interfaces';
+import {IValueColumnDesc, IDataRow} from './interfaces';
 import {IEventListener} from '../internal';
-
-
-export interface IValueColumnDesc<T> extends IColumnDesc {
-  /**
-   * is the data lazy loaded and not yet available
-   * @default false
-   */
-  lazyLoaded?: boolean;
-
-  /**
-   * value accessor of this column
-   * @param row the current row
-   * @param desc the description of this column
-   */
-  accessor?(row: IDataRow, desc: Readonly<IValueColumnDesc<T>>): T;
-}
 
 /**
  * emitted when the data of this column has been loaded

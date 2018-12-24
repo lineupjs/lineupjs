@@ -3,7 +3,37 @@ import {Column, IGroupData, IGroupItem} from '../model';
 import {IDataProvider} from '../provider';
 import {IImposer, IRenderContext, ISummaryRenderer} from '../renderer';
 import DialogManager from './dialogs/DialogManager';
-import {IToolbarAction, IToolbarDialogAddon} from './toolbar';
+import {IDialogContext} from './dialogs';
+
+export interface IUIOptions {
+  shortcut: boolean | 'only';
+  order: number;
+  featureLevel: 'basic' | 'advanced';
+  featureCategory: 'ranking' | 'model' | 'ui';
+}
+
+export interface IOnClickHandler {
+  (col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number, viaShortcut: boolean): any;
+}
+
+export interface IToolbarAction {
+  title: string;
+
+  enabled?(col: Column): boolean;
+
+  onClick: IOnClickHandler;
+
+  options: Partial<IUIOptions>;
+}
+
+export interface IToolbarDialogAddon {
+  title: string;
+
+  order: number;
+
+  append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): void;
+}
+
 
 export interface IRenderInfo {
   type: string;

@@ -4,8 +4,9 @@ import {categoryOf, getSortType} from '../model';
 import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn, Column, ImpositionCompositeColumn, ImpositionCompositesColumn, createImpositionDesc, createImpositionsDesc, ImpositionBoxPlotColumn, createImpositionBoxPlotDesc, CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model';
 import {aria, cssClass} from '../styles';
 import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
-import {IRankingHeaderContext} from './interfaces';
-import {dialogContext, getToolbar, IOnClickHandler, IToolbarAction} from './toolbar';
+import {IRankingHeaderContext, IToolbarAction, IOnClickHandler} from './interfaces';
+import {getToolbar} from './toolbar';
+import {dialogContext} from './dialogs';
 
 /** @internal */
 export interface IHeaderOptions {

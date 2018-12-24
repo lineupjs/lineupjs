@@ -2,6 +2,7 @@ import Popper from 'popper.js';
 import DialogManager from './DialogManager';
 import {merge} from '../../internal';
 import {cssClass} from '../../styles';
+import {IRankingHeaderContext} from '../interfaces';
 
 export interface IDialogOptions {
   title: string;
@@ -20,6 +21,15 @@ export interface IDialogContext {
   level: number;
   manager: DialogManager;
   idPrefix: string;
+}
+
+export function dialogContext(ctx: IRankingHeaderContext, level: number, attachment: HTMLElement | MouseEvent): IDialogContext {
+  return {
+    attachment: (<MouseEvent>attachment).currentTarget != null ? <HTMLElement>(<MouseEvent>attachment).currentTarget : <HTMLElement>attachment,
+    level,
+    manager: ctx.dialogManager,
+    idPrefix: ctx.idPrefix
+  };
 }
 
 abstract class ADialog {

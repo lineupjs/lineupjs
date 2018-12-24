@@ -3,9 +3,10 @@ import {Column, Ranking, categoryOf, isSortingAscByDefault, ISortCriteria, isSup
 import {aria, cssClass} from '../../styles';
 import AddonDialog from '../dialogs/AddonDialog';
 import {actionCSSClass, updateHeader} from '../header';
-import {IRankingHeaderContext} from '../interfaces';
-import {dialogContext, getToolbarDialogAddons, isGroupAble, isGroupSortAble, isSortAble, IToolbarDialogAddon} from '../toolbar';
+import {IRankingHeaderContext, IToolbarDialogAddon} from '../interfaces';
+import {getToolbarDialogAddons, isGroupAble, isGroupSortAble, isSortAble} from '../toolbar';
 import SearchBox, {ISearchBoxOptions} from './SearchBox';
+import {dialogContext} from '../dialogs';
 
 interface IColumnItem {
   col: Column;

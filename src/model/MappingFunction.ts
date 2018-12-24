@@ -1,6 +1,6 @@
 import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
 import {similar} from '../internal';
-import {IMappingFunction, IMapAbleDesc} from './INumberColumn';
+import {IMappingFunction, IMapAbleDesc} from '.';
 
 /**
  * interface of a d3 scale

@@ -1,9 +1,9 @@
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, ECompareValueType} from './interfaces';
+import {IDataRow, ECompareValueType, IValueColumnDesc} from './interfaces';
 import {IEventListener} from '../internal';
 import {restoreColorMapping, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 

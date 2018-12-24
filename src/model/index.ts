@@ -1,5 +1,6 @@
 import Column from './Column';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import {IValueColumnDesc} from './interfaces';
 
 export * from './annotations';
 export {isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup} from './missing';
@@ -93,7 +94,7 @@ export {default as StringsColumn} from './StringsColumn';
 export * from './StringsColumn';
 export {default as StringMapColumn} from './StringMapColumn';
 export * from './StringMapColumn';
-export {default as ValueColumn, IValueColumnDesc} from './ValueColumn';
+export {default as ValueColumn} from './ValueColumn';
 // no * export
 
 

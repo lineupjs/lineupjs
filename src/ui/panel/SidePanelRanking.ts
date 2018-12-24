@@ -4,7 +4,7 @@ import {aria, cssClass} from '../../styles';
 import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
 import {actionCSSClass} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
-import {dialogContext} from '../toolbar';
+import {dialogContext} from '../dialogs';
 import Hierarchy from './Hierarchy';
 import {ISidePanelOptions} from './SidePanel';
 import SidePanelEntryVis from './SidePanelEntryVis';

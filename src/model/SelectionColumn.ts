@@ -1,7 +1,7 @@
 import {Category, SupportType, toolbar} from './annotations';
-import {IndicesArray, IDataRow, IGroup, ECompareValueType} from './interfaces';
+import {IndicesArray, IDataRow, IGroup, ECompareValueType, IValueColumnDesc} from './interfaces';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
 
 /**

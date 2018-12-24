@@ -2,23 +2,8 @@ import {Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleCo
 import {colorPool, MAX_COLORS} from '../model/internal';
 import {concat, equal, extent, range} from '../internal';
 import {timeParse} from 'd3-time-format';
-import {IDataProvider} from './interfaces';
+import {IDataProvider, IDeriveOptions, IExportOptions} from './interfaces';
 
-
-export interface IDeriveOptions {
-  /**
-   * maximal percentage of unique values to be treated as a categorical column
-   */
-  categoricalThreshold: number | ((unique: number, total: number) => boolean);
-
-  columns: string[];
-
-  /**
-   * date pattern to check for string matching them
-   * @default %x
-   */
-  datePattern: string;
-}
 
 /**
  * @internal
@@ -300,39 +285,6 @@ export function deriveColors(columns: IColumnDesc[]) {
   return columns;
 }
 
-
-export interface IExportOptions {
-  /**
-   * export separator, default: '\t'
-   */
-  separator: string;
-  /**
-   * new line character, default: '\n'
-   */
-  newline: string;
-  /**
-   * should a header be generated, default: true
-   */
-  header: boolean;
-  /**
-   * quote strings, default: false
-   */
-  quote: boolean;
-  /**
-   * quote string to use, default: '"'
-   */
-  quoteChar: string;
-  /**
-   * filter specific column types, default: exclude all support types (selection, action, rank)
-   * @param col the column description to filter
-   */
-  filter: (col: Column) => boolean; //!isSupportType
-
-  /**
-   * whether the description should be part of the column header
-   */
-  verboseColumnHeaders: boolean;
-}
 
 /**
  * utility to export a ranking to a table with the given separator

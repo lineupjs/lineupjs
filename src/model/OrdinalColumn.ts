@@ -4,10 +4,10 @@ import {DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, IValueColumnDesc} from './interfaces';
 import NumberColumn from './NumberColumn';
 import {INumberColumn} from './INumberColumn';
-import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {toCategories} from './internalCategorical';
 import {DEFAULT_FORMATTER} from './internalNumber';
 

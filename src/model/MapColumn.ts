@@ -1,7 +1,7 @@
 import {Category} from './annotations';
 import {IKeyValue, IMapColumn} from './IArrayColumn';
-import {IDataRow} from './interfaces';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {IDataRow, IValueColumnDesc} from './interfaces';
+import ValueColumn from './ValueColumn';
 
 export interface IMapColumnDesc<T> extends IValueColumnDesc<IKeyValue<T>[]> {
   // dummy

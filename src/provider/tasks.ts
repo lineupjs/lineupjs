@@ -5,8 +5,6 @@ import {CategoricalColumn, Column, ICompareValue, DateColumn, ICategoricalLikeCo
 import {IRenderTask, IRenderTasks} from '../renderer';
 import {CompareLookup} from './sort';
 
-export {IAbortAblePromise} from 'lineupengine';
-
 
 /**
  * a render task that is already resolved

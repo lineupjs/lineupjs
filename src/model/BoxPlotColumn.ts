@@ -3,11 +3,11 @@ import {IBoxPlotData, IEventListener} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
 import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDataRow, ECompareValueType} from './interfaces';
+import {IDataRow, ECompareValueType, IValueColumnDesc} from './interfaces';
 import {ESortMethod, IBoxPlotColumn, INumberDesc, INumberFilter, IColorMappingFunction, IMappingFunction} from './INumberColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import NumberColumn from './NumberColumn';
-import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
 
 

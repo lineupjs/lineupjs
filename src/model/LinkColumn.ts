@@ -1,8 +1,8 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IValueColumnDesc} from './interfaces';
 import {patternFunction} from './internal';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener, ISequence} from '../internal';
 import {IStringDesc, EAlignment} from './StringColumn';
 import StringColumn from './StringColumn';

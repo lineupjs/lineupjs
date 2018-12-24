@@ -1,7 +1,6 @@
 import {Ranking} from '../../model';
 import {IRankingHeaderContext} from '../interfaces';
-import {dialogContext} from '../toolbar';
-import ADialog, {IDialogContext} from './ADialog';
+import ADialog, {dialogContext, IDialogContext} from './ADialog';
 import RenameRankingDialog from './RenameRankingDialog';
 import {cssClass} from '../../styles';
 import {actionCSSClass} from '../header';
