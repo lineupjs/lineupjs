@@ -17,7 +17,7 @@ export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
  * @asMemberOf BooleansColumn
  * @event
  */
-export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 export default class BooleansColumn extends ArrayColumn<boolean> implements ISetColumn {

@@ -1,14 +1,13 @@
 import {IBoxPlotData} from '../internal';
 import {suffix, ISequence, IEventListener} from '../internal';
 import {toolbar, SortByDefault, dialogAddons} from './annotations';
-import BoxPlotColumn, {mappingChanged} from './BoxPlotColumn';
-import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import BoxPlotColumn from './BoxPlotColumn';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IColumnDesc} from './interfaces';
 import {ESortMethod, IBoxPlotColumn, INumberFilter, isBoxPlotColumn, IMappingFunction, IColorMappingFunction, isMapAbleColumn} from './INumberColumn';
 import {ScaleMappingFunction} from './MappingFunction';
 import NumbersColumn from './NumbersColumn';
-import {colorMappingChanged} from './NumberColumn';
 import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
 import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
 
@@ -21,6 +20,21 @@ import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
 export function createImpositionBoxPlotDesc(label: string = 'Imposition') {
   return {type: 'impositions', label};
 }
+
+/**
+ * emitted when the mapping property changes
+ * @asMemberOf ImpositionBoxPlotColumn
+ * @event
+ */
+declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+
+/**
+ * emitted when the color mapping property changes
+ * @asMemberOf ImpositionBoxPlotColumn
+ * @event
+ */
+declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+
 
 /**
  * implementation of a combine column, standard operations how to select

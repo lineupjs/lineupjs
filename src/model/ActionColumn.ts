@@ -1,6 +1,6 @@
 import {Category, SupportType} from './annotations';
-import Column, {IColumnDesc} from './Column';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IColumnDesc, IGroup} from './interfaces';
+import Column from './Column';
 
 export interface IAction {
   name: string;

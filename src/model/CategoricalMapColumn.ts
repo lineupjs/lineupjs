@@ -17,7 +17,7 @@ export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDes
  * @asMemberOf CategoricalMapColumn
  * @event
  */
-export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 @toolbar('colorMappedCategorical')
 export default class CategoricalMapColumn extends MapColumn<string | null> implements ICategoricalLikeColumn {

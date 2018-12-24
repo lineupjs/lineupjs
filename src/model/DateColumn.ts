@@ -1,9 +1,9 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {ISequence, equal, IEventListener} from '../internal';
 import {Category, dialogAddons, toolbar} from './annotations';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {IDateColumn, IDateDesc, IDateFilter, IDateGrouper} from './IDateColumn';
-import {defaultGroup, IDataRow, IGroup} from './interfaces';
+import {defaultGroup, IDataRow, IGroup, ECompareValueType} from './interfaces';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
 import {noDateFilter, defaultDateGrouper, isDummyDateFilter, isDefaultDateGrouper, restoreDateFilter, isEqualDateFilter, isDateIncluded, toDateGroup, chooseAggregatedDate} from './internalDate';
@@ -16,14 +16,14 @@ export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
  * @asMemberOf DateColumn
  * @event
  */
-export declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
+declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 /**
  * emitted when the grouping property changes
  * @asMemberOf DateColumn
  * @event
  */
-export declare function groupingChanged(previous: IDateGrouper | null, current: IDateGrouper | null): void;
+declare function groupingChanged(previous: IDateGrouper | null, current: IDateGrouper | null): void;
 
 
 @toolbar('groupBy', 'sortGroupBy', 'filterDate')

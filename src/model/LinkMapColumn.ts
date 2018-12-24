@@ -4,13 +4,20 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
-import LinkColumn, {ILinkDesc, patternChanged} from './LinkColumn';
+import LinkColumn, {ILinkDesc} from './LinkColumn';
 import {IEventListener} from '../internal';
 import {EAlignment} from './StringColumn';
 import {IKeyValue} from './IArrayColumn';
 import {ILink} from './LinkColumn';
 
 export declare type ILinkMapColumnDesc = ILinkDesc & IMapColumnDesc<string>;
+
+/**
+ * emitted when the pattern property changes
+ * @asMemberOf LinkMapColumn
+ * @event
+ */
+declare function patternChanged(previous: string, current: string): void;
 
 /**
  * a string column with optional alignment

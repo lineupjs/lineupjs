@@ -1,9 +1,9 @@
 import {round, IEventListener, similar} from '../internal';
 import {toolbar} from './annotations';
-import Column, {IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import CompositeColumn, {IMultiLevelColumn, addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, IFlatColumn, IMultiLevelColumn} from './interfaces';
 
 /**
  * factory for creating a description creating a stacked column
@@ -20,7 +20,7 @@ export function createStackDesc(label: string = 'Weighted Sum') {
  * @asMemberOf StackColumn
  * @event
  */
-export declare function collapseChanged(previous: boolean, current: boolean): void;
+declare function collapseChanged(previous: boolean, current: boolean): void;
 
 
 /**
@@ -28,7 +28,7 @@ export declare function collapseChanged(previous: boolean, current: boolean): vo
  * @asMemberOf StackColumn
  * @event
  */
-export declare function weightsChanged(previous: number[], current: number[]): void;
+declare function weightsChanged(previous: number[], current: number[]): void;
 
 
 /**
@@ -36,7 +36,7 @@ export declare function weightsChanged(previous: number[], current: number[]): v
  * @asMemberOf StackColumn
  * @event
  */
-export declare function nestedChildRatio(previous: number[], current: number[]): void;
+declare function nestedChildRatio(previous: number[], current: number[]): void;
 
 /**
  * implementation of the stacked column

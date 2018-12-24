@@ -158,7 +158,7 @@ export declare type IScriptColumnDesc = IScriptDesc & ICompositeNumberDesc;
  * @asMemberOf ScriptColumn
  * @event
  */
-export declare function scriptChanged(previous: string, current: string): void;
+declare function scriptChanged(previous: string, current: string): void;
 
 
 /**

@@ -1,3 +1,6 @@
+import Column from './Column';
+import Ranking from './Ranking';
+import CompositeColumn from './CompositeColumn';
 
 export interface IStyleColumn {
   /**
@@ -62,6 +65,43 @@ export interface IColumnDesc extends Partial<IStyleColumn> {
    */
   type: string;
 }
+
+export interface IFlatColumn {
+  readonly col: Column;
+  readonly offset: number;
+  readonly width: number;
+}
+
+export interface IColumnParent {
+  remove(col: Column): boolean;
+
+  insert(col: Column, index?: number): Column | null;
+
+  insertAfter(col: Column, reference: Column): Column | null;
+
+  move(col: Column, index?: number): Column | null;
+
+  moveAfter(col: Column, reference: Column): Column | null;
+
+  findMyRanker(): Ranking | null;
+
+  readonly fqid: string;
+
+  indexOf(col: Column): number;
+
+  at(index: number): Column;
+
+  readonly fqpath: string;
+
+}
+
+
+export interface IColumnMetaData {
+  label: string;
+  description: string;
+}
+
+export declare type ICompareValue = string | number | null;
 
 
 /**
@@ -135,4 +175,66 @@ export enum ECompareValueType {
   DOUBLE,
   DOUBLE_ASC,
   STRING
+}
+
+
+export interface IColumnDump {
+  id: string;
+  width?: number;
+  desc: any;
+  label?: string;
+  renderer?: string;
+  /**
+   * @deprecated
+   */
+  rendererType?: string;
+  groupRenderer?: string;
+  summaryRenderer?: string;
+
+  // type specific
+  [key: string]: any;
+}
+
+export interface IRankingDump {
+  /**
+   * columsn of this ranking
+   */
+  columns?: IColumnDump[];
+
+  /**
+   * sort criteria
+   */
+  sortCriteria?: {asc: boolean, sortBy: string}[];
+
+  /**
+   * group sort criteria
+   */
+  groupSortCriteria?: {asc: boolean, sortBy: string}[];
+
+  /**
+   * uids of group columns
+   */
+  groupColumns?: string[];
+
+  /**
+   * compatability
+   * @deprecated
+   */
+  sortColumn?: {sortBy: string, asc: boolean};
+}
+
+export interface IMultiLevelColumn extends CompositeColumn {
+  getCollapsed(): boolean;
+
+  setCollapsed(value: boolean): void;
+}
+
+export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {
+  return typeof ((<IMultiLevelColumn>col).getCollapsed) === 'function';
+}
+
+
+export interface ISortCriteria {
+  readonly col: Column;
+  readonly asc: boolean;
 }

@@ -31,7 +31,7 @@ export declare type ILinkColumnDesc = ILinkDesc & IValueColumnDesc<string | ILin
  * @asMemberOf LinkColumn
  * @event
  */
-export declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
 
 
 /**
@@ -39,14 +39,14 @@ export declare function filterChanged(previous: string | RegExp | null, current:
  * @asMemberOf LinkColumn
  * @event
  */
-export declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
+declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * emitted when the pattern property changes
  * @asMemberOf LinkColumn
  * @event
  */
-export declare function patternChanged(previous: string, current: string): void;
+declare function patternChanged(previous: string, current: string): void;
 
 /**
  * a string column with optional alignment

@@ -1,4 +1,5 @@
-import Column, {IColumnDesc} from './Column';
+import Column from './Column';
+import {IColumnDesc} from './interfaces';
 
 /**
  * a default column with no values

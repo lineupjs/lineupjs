@@ -39,7 +39,7 @@ export interface ICutOffNode {
  * @asMemberOf HierarchyColumn
  * @event
  */
-export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 /**
@@ -47,7 +47,7 @@ export declare function colorMappingChanged(previous: ICategoricalColorMappingFu
  * @asMemberOf HierarchyColumn
  * @event
  */
-export declare function cutOffChanged(previous: ICutOffNode, current: ICutOffNode): void;
+declare function cutOffChanged(previous: ICutOffNode, current: ICutOffNode): void;
 
 /**
  * column for hierarchical categorical values

@@ -2,8 +2,8 @@ import {format} from 'd3-format';
 import {equalArrays, IEventListener, ISequence} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
 import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDataRow, IGroup} from './interfaces';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {IDataRow, IGroup, ECompareValueType} from './interfaces';
 import {INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, IMappingFunction, IColorMappingFunction, IMapAbleColumn} from './INumberColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
@@ -18,35 +18,35 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
 
 /**
  * emitted when the color mapping property changes
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 /**
  * emitted when the sort method property changes
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
+declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 /**
  * emitted when the grouping property changes
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function groupingChanged(previous: number[], current: number[]): void;
+declare function groupingChanged(previous: number[], current: number[]): void;
 
 /**
  * a number column mapped from an original input scale to an output range

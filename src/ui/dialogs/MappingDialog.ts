@@ -1,13 +1,10 @@
 import {ISequence, round} from '../../internal';
-import {
-  IMapAbleColumn, IMappingFunction, isMissingValue, ScaleMappingFunction,
-  ScriptMappingFunction,
-  isMapAbleColumn
-} from '../../model';
+import {IMapAbleColumn, IMappingFunction, isMissingValue, isMapAbleColumn} from '../../model';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
 import {cssClass} from '../../styles';
+import {ScaleMappingFunction, ScriptMappingFunction} from '../../model/MappingFunction';
 
 /** @internal */
 export default class MappingDialog extends ADialog {

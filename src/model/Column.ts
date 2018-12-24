@@ -1,47 +1,7 @@
 import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
-import {IColumnDump} from '../provider';
 import {isSortingAscByDefault} from './annotations';
-import {defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup} from './interfaces';
-import Ranking, {ISortCriteria} from './Ranking';
-
-export {ECompareValueType, IColumnDesc} from './interfaces';
-
-export interface IFlatColumn {
-  readonly col: Column;
-  readonly offset: number;
-  readonly width: number;
-}
-
-export interface IColumnParent {
-  remove(col: Column): boolean;
-
-  insert(col: Column, index?: number): Column | null;
-
-  insertAfter(col: Column, reference: Column): Column | null;
-
-  move(col: Column, index?: number): Column | null;
-
-  moveAfter(col: Column, reference: Column): Column | null;
-
-  findMyRanker(): Ranking | null;
-
-  readonly fqid: string;
-
-  indexOf(col: Column): number;
-
-  at(index: number): Column;
-
-  readonly fqpath: string;
-
-}
-
-
-export interface IColumnMetaData {
-  label: string;
-  description: string;
-}
-
-export declare type ICompareValue = string | number | null;
+import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue} from './interfaces';
+import Ranking from './Ranking';
 
 /**
  * emitted when the width property changes

@@ -16,7 +16,7 @@ export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDes
  * @asMemberOf CategoricalsColumn
  * @event
  */
-export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 /**
  * a string column with optional alignment

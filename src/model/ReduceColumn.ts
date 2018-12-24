@@ -27,7 +27,7 @@ export declare type IReduceColumnDesc = IReduceDesc & ICompositeNumberColumnDesc
  * @asMemberOf ReduceColumn
  * @event
  */
-export declare function reduceChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
+declare function reduceChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 /**
  * combines multiple columns by using the maximal value

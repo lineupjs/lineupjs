@@ -1,9 +1,9 @@
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ECompareValueType} from './interfaces';
 import {IEventListener} from '../internal';
 import {restoreColorMapping, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
@@ -27,14 +27,14 @@ export declare type IBooleanColumnDesc = IValueColumnDesc<boolean> & IBooleanDes
  * @asMemberOf BooleanColumn
  * @event
  */
-export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf BooleanColumn
  * @event
  */
-export declare function filterChanged(previous: boolean | null, current: boolean | null): void;
+declare function filterChanged(previous: boolean | null, current: boolean | null): void;
 
 /**
  * a string column with optional alignment

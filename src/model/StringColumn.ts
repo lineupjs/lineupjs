@@ -1,6 +1,6 @@
 import {Category, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import {defaultGroup, IDataRow, IGroup} from './interfaces';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import {defaultGroup, IDataRow, IGroup, ECompareValueType} from './interfaces';
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {equal, IEventListener} from '../internal';
@@ -32,7 +32,7 @@ export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
  * @asMemberOf StringColumn
  * @event
  */
-export declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
 
 
 /**
@@ -40,7 +40,7 @@ export declare function filterChanged(previous: string | RegExp | null, current:
  * @asMemberOf StringColumn
  * @event
  */
-export declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
+declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * a string column with optional alignment

@@ -1,13 +1,9 @@
 import {suffix, IEventListener} from '../internal';
-import Column, {IColumnParent, IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {Category, toolbar} from './annotations';
-import {IDataRow} from './interfaces';
+import {IDataRow, IColumnParent, IFlatColumn} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
-
-export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {
-  return typeof ((<IMultiLevelColumn>col).getCollapsed) === 'function';
-}
 
 /**
  * emitted when the filter property changes
@@ -226,10 +222,4 @@ export default class CompositeColumn extends Column implements IColumnParent {
   get canJustAddNumbers() {
     return false;
   }
-}
-
-export interface IMultiLevelColumn extends CompositeColumn {
-  getCollapsed(): boolean;
-
-  setCollapsed(value: boolean): void;
 }

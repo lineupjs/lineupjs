@@ -1,6 +1,6 @@
 import {Category, SupportType, toolbar} from './annotations';
-import {IndicesArray, IDataRow, IGroup} from './interfaces';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
+import {IndicesArray, IDataRow, IGroup, ECompareValueType} from './interfaces';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
 
@@ -34,7 +34,7 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
  * @param dataIndices in case of multiple rows are selected
  * @event
  */
-export declare function select(dataIndex: number, value: boolean, dataIndices?: IndicesArray): void;
+declare function select(dataIndex: number, value: boolean, dataIndices?: IndicesArray): void;
 
 /**
  * a checkbox column for selections

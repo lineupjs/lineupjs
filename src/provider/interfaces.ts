@@ -1,12 +1,6 @@
-import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow} from '../model';
+import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState} from '../model';
 import {AEventDispatcher, ISequence} from '../internal';
 import {IRenderTasks} from '../renderer';
-
-export enum EAggregationState {
-  COLLAPSE = 'collapse',
-  EXPAND = 'expand',
-  EXPAND_TOP_N = 'expand_top'
-}
 
 export interface IDataProviderOptions {
   columnTypes: {[columnType: string]: typeof Column};
@@ -89,51 +83,6 @@ export interface IDataProvider extends AEventDispatcher {
 
 
 export const SCHEMA_REF = `https://lineup.js.org/develop/schema.4.0.0.json`;
-
-export interface IColumnDump {
-  id: string;
-  width?: number;
-  desc: any;
-  label?: string;
-  renderer?: string;
-  /**
-   * @deprecated
-   */
-  rendererType?: string;
-  groupRenderer?: string;
-  summaryRenderer?: string;
-
-  // type specific
-  [key: string]: any;
-}
-
-export interface IRankingDump {
-  /**
-   * columsn of this ranking
-   */
-  columns?: IColumnDump[];
-
-  /**
-   * sort criteria
-   */
-  sortCriteria?: {asc: boolean, sortBy: string}[];
-
-  /**
-   * group sort criteria
-   */
-  groupSortCriteria?: {asc: boolean, sortBy: string}[];
-
-  /**
-   * uids of group columns
-   */
-  groupColumns?: string[];
-
-  /**
-   * compatability
-   * @deprecated
-   */
-  sortColumn?: {sortBy: string, asc: boolean};
-}
 
 export interface IDataProviderDump {
   '$schema'?: string;

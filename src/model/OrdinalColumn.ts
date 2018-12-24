@@ -11,28 +11,28 @@ import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
 import {toCategories} from './internalCategorical';
 import {DEFAULT_FORMATTER} from './internalNumber';
 
-export declare type ICategoricalNumberColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
+export declare type IOrdinalColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
 
 /**
  * emitted when the mapping property changes
  * @asMemberOf OrdinalColumn
  * @event
  */
-export declare function mappingChanged(previous: number[], current: number[]): void;
+declare function mappingChanged(previous: number[], current: number[]): void;
 
 /**
  * emitted when the color mapping property changes
  * @asMemberOf OrdinalColumn
  * @event
  */
-export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf OrdinalColumn
  * @event
  */
-export declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
 
 /**
  * similar to a categorical column but the categories are mapped to numbers
@@ -53,7 +53,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   private currentFilter: ICategoricalFilter | null = null;
 
 
-  constructor(id: string, desc: Readonly<ICategoricalNumberColumnDesc>) {
+  constructor(id: string, desc: Readonly<IOrdinalColumnDesc>) {
     super(id, desc);
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));

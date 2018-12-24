@@ -1,15 +1,8 @@
 import {equalArrays, fixCSS, IEventListener, suffix, joinIndexArrays, AEventDispatcher} from '../internal';
-import {IRankingDump} from '../provider';
 import {isSortingAscByDefault} from './annotations';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, IColumnParent, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {defaultGroup, IndicesArray, IOrderedGroup, IDataRow} from './interfaces';
-import NumberColumn, {filterChanged} from './NumberColumn';
-
-export interface ISortCriteria {
-  readonly col: Column;
-  readonly asc: boolean;
-}
+import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria} from './interfaces';
 
 export enum EDirtyReason {
   UNKNOWN = 'unknown',
@@ -79,11 +72,17 @@ export declare function orderChanged(previous: number[], current: number[], prev
 export declare function groupsChanged(previous: number[], current: number[], previousGroups: IOrderedGroup[], currentGroups: IOrderedGroup[]): void;
 
 /**
+ * emitted when the filter property changes
+ * @asMemberOf NumberColumn
+ * @event
+ */
+export declare function filterChanged(previous: any | null, current: any | null): void;
+/**
  * a ranking
  */
 export default class Ranking extends AEventDispatcher implements IColumnParent {
   static readonly EVENT_WIDTH_CHANGED = Column.EVENT_WIDTH_CHANGED;
-  static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
+  static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_LABEL_CHANGED = Column.EVENT_LABEL_CHANGED;
   static readonly EVENT_ADD_COLUMN = CompositeColumn.EVENT_ADD_COLUMN;
   static readonly EVENT_MOVE_COLUMN = CompositeColumn.EVENT_MOVE_COLUMN;
@@ -100,10 +99,10 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   static readonly EVENT_ORDER_CHANGED = 'orderChanged';
   static readonly EVENT_GROUPS_CHANGED = 'groupsChanged';
 
-  private static readonly FORWARD_COLUMN_EVENTS = suffix('.ranking', Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_VISIBILITY_CHANGED, NumberColumn.EVENT_FILTER_CHANGED);
-  private static readonly COLUMN_GROUP_SORT_DIRTY = suffix('.groupOrder', Column.EVENT_DIRTY_CACHES, NumberColumn.EVENT_SORTMETHOD_CHANGED);
+  private static readonly FORWARD_COLUMN_EVENTS = suffix('.ranking', Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_VISIBILITY_CHANGED, Ranking.EVENT_FILTER_CHANGED);
+  private static readonly COLUMN_GROUP_SORT_DIRTY = suffix('.groupOrder', Column.EVENT_DIRTY_CACHES, 'sortMethodChanged');
   private static readonly COLUMN_SORT_DIRTY = suffix('.order', Column.EVENT_DIRTY_CACHES);
-  private static readonly COLUMN_GROUP_DIRTY = suffix('.group', Column.EVENT_DIRTY_CACHES, NumberColumn.EVENT_GROUPING_CHANGED);
+  private static readonly COLUMN_GROUP_DIRTY = suffix('.group', Column.EVENT_DIRTY_CACHES, 'groupingChanged');
 
 
   private label: string;

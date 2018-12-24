@@ -1,10 +1,10 @@
 import {suffix, IEventListener, ISequence} from '../internal';
 import {toolbar, SortByDefault} from './annotations';
-import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IGroup} from './interfaces';
-import {isNumberColumn, INumberColumn, isMapAbleColumn} from './INumberColumn';
-import NumberColumn, {mappingChanged, colorMappingChanged} from './NumberColumn';
+import {IDataRow, IGroup, IColumnDesc} from './interfaces';
+import {isNumberColumn, INumberColumn, isMapAbleColumn, IColorMappingFunction, IMappingFunction} from './INumberColumn';
+import NumberColumn from './NumberColumn';
 import {DEFAULT_FORMATTER} from './internalNumber';
 
 
@@ -16,6 +16,20 @@ import {DEFAULT_FORMATTER} from './internalNumber';
 export function createImpositionDesc(label: string = 'Imposition') {
   return {type: 'imposition', label};
 }
+
+/**
+ * emitted when the mapping property changes
+ * @asMemberOf ImpositionCompositeColumn
+ * @event
+ */
+declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+
+/**
+ * emitted when the color mapping property changes
+ * @asMemberOf ImpositionCompositeColumn
+ * @event
+ */
+declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * implementation of a combine column, standard operations how to select

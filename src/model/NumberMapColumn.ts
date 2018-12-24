@@ -1,8 +1,8 @@
 import {toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IKeyValue} from './IArrayColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ECompareValueType} from './interfaces';
 import {
   EAdvancedSortMethod, IAdvancedBoxPlotColumn, INumberDesc,
   INumberFilter,
@@ -11,7 +11,7 @@ import {
 import {default as MapColumn, IMapColumnDesc} from './MapColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
-import NumberColumn, {colorMappingChanged} from './NumberColumn';
+import NumberColumn from './NumberColumn';
 import {IEventListener, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
 import {restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 import {format} from 'd3-format';
@@ -29,21 +29,27 @@ export declare type INumberMapColumnDesc = INumberMapDesc & IMapColumnDesc<numbe
  * @asMemberOf NumberMapColumn
  * @event
  */
-export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+/**
+ * emitted when the color mapping property changes
+ * @asMemberOf NumberMapColumn
+ * @event
+ */
+declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the sort method property changes
  * @asMemberOf NumberMapColumn
  * @event
  */
-export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
+declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf NumberMapColumn
  * @event
  */
-export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 @toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')

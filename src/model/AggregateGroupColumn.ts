@@ -1,9 +1,15 @@
 import {Category, SupportType, toolbar} from './annotations';
-import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IGroup} from './interfaces';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import {IGroup, IColumnDesc} from './interfaces';
 import Ranking from './Ranking';
 import {IEventListener} from '../internal';
-import {EAggregationState} from '../provider';
+
+
+export enum EAggregationState {
+  COLLAPSE = 'collapse',
+  EXPAND = 'expand',
+  EXPAND_TOP_N = 'expand_top'
+}
 
 /**
  * factory for creating a description creating a rank column
@@ -26,7 +32,7 @@ export interface IAggregateGroupColumnDesc extends IColumnDesc {
  * @asMemberOf AggregateGroupColumn
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean, state: EAggregationState): void;
+declare function aggregate(ranking: Ranking, group: IGroup, value: boolean, state: EAggregationState): void;
 
 /**
  * a checkbox column for selections

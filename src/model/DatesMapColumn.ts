@@ -19,14 +19,14 @@ export declare type IDateMapColumnDesc = IDatesDesc & IMapColumnDesc<Date | null
  * @asMemberOf DatesMapColumn
  * @event
  */
-export declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
+declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf DatesMapColumn
  * @event
  */
-export declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
+declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 
 @toolbar('filterDate')

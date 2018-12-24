@@ -1,6 +1,6 @@
 import {Category, SupportType, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import {IDataRow, IGroup} from './interfaces';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import {IDataRow, IGroup, ECompareValueType} from './interfaces';
 import {missingGroup} from './missing';
 import {IEventListener, ISequence} from '../internal';
 
@@ -18,7 +18,7 @@ export enum EGroupSortMethod {
  * @asMemberOf GroupColumn
  * @event
  */
-export declare function sortMethodChanged(previous: EGroupSortMethod, current: EGroupSortMethod): void;
+declare function sortMethodChanged(previous: EGroupSortMethod, current: EGroupSortMethod): void;
 
 
 @SupportType()

@@ -1,16 +1,31 @@
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IDataRow} from './interfaces';
-import StringColumn, {filterChanged, groupingChanged} from './StringColumn';
+import StringColumn from './StringColumn';
 import {IEventListener} from '../internal';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 
+
+/**
+ * emitted when the filter property changes
+ * @asMemberOf AnnotateColumn
+ * @event
+ */
+declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+
+
+/**
+ * emitted when the grouping property changes
+ * @asMemberOf AnnotateColumn
+ * @event
+ */
+declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * emitted when the value of a row changes
  * @asMemberOf AnnotateColumn
  * @event
  */
-export declare function valueChanged(dataIndex: number, previous: string, current: string): void;
+declare function valueChanged(dataIndex: number, previous: string, current: string): void;
 
 /**
  * a string column in which the values can be edited locally

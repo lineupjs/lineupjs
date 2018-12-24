@@ -2,10 +2,10 @@ import {timeFormat, timeParse} from 'd3-time-format';
 import {median, min, max, IEventListener} from '../internal';
 import {dialogAddons, toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDateDesc, IDateColumn, IDateFilter} from './IDateColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ECompareValueType} from './interfaces';
 import {isMissingValue} from './missing';
 import DateColumn from './DateColumn';
 import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';
@@ -28,14 +28,14 @@ export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
  * @asMemberOf DatesColumn
  * @event
  */
-export declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
+declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf DatesColumn
  * @event
  */
-export declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
+declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 @toolbar('filterDate')
 @dialogAddons('sort', 'sortDates')

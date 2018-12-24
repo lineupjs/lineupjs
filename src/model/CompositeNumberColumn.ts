@@ -1,7 +1,6 @@
 import {format} from 'd3-format';
-import {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IColumnDesc} from './interfaces';
 import {isMissingValue} from './missing';
 import NumberColumn from './NumberColumn';
 import {SortByDefault} from './annotations';

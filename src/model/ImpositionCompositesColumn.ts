@@ -1,13 +1,12 @@
 import {suffix, IEventListener, IAdvancedBoxPlotData} from '../internal';
 import {toolbar, dialogAddons, SortByDefault} from './annotations';
-import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IKeyValue} from './IArrayColumn';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, IColumnDesc} from './interfaces';
 import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, IMappingFunction, IColorMappingFunction, isMapAbleColumn} from './INumberColumn';
 import {ScaleMappingFunction} from './MappingFunction';
-import NumbersColumn, {mappingChanged} from './NumbersColumn';
-import {colorMappingChanged} from './NumberColumn';
+import NumbersColumn from './NumbersColumn';
 import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
 import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
 
@@ -20,6 +19,20 @@ import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
 export function createImpositionsDesc(label: string = 'Imposition') {
   return {type: 'impositions', label};
 }
+
+/**
+ * emitted when the mapping property changes
+ * @asMemberOf ImpositionCompositesColumn
+ * @event
+ */
+declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+
+/**
+ * emitted when the color mapping property changes
+ * @asMemberOf ImpositionCompositesColumn
+ * @event
+ */
+declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * implementation of a combine column, standard operations how to select

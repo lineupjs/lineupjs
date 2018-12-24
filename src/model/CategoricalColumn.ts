@@ -1,9 +1,9 @@
 import {IEventListener, ISequence} from '../internal';
 import {Category, toolbar} from './annotations';
 import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, ICompareValue, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IGroup} from './interfaces';
+import {IDataRow, IGroup, ICompareValue} from './interfaces';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {toCategories, isCategoryIncluded, isEqualCategoricalFilter, toCompareCategoryValue, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES} from './internalCategorical';
@@ -14,7 +14,7 @@ import {toCategories, isCategoryIncluded, isEqualCategoricalFilter, toCompareCat
  * @asMemberOf CategoricalColumn
  * @event
  */
-export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 /**
@@ -22,7 +22,7 @@ export declare function colorMappingChanged(previous: ICategoricalColorMappingFu
  * @asMemberOf CategoricalColumn
  * @event
  */
-export declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
 
 /**
  * column for categorical values

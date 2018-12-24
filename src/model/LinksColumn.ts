@@ -6,9 +6,16 @@ import {IDataRow} from './interfaces';
 import {patternFunction} from './internal';
 import {EAlignment} from './StringColumn';
 import {IEventListener} from '../internal';
-import LinkColumn, {ILink, ILinkDesc, patternChanged} from './LinkColumn';
+import LinkColumn, {ILink, ILinkDesc} from './LinkColumn';
 
 export declare type ILinksColumnDesc = ILinkDesc & IArrayColumnDesc<string | ILink>;
+
+/**
+ * emitted when the pattern property changes
+ * @asMemberOf LinksColumn
+ * @event
+ */
+declare function patternChanged(previous: string, current: string): void;
 
 @toolbar('search', 'editPattern')
 export default class LinksColumn extends ArrayColumn<string | ILink> {

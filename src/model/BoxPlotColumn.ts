@@ -2,11 +2,11 @@ import {format} from 'd3-format';
 import {IBoxPlotData, IEventListener} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
 import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDataRow} from './interfaces';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {IDataRow, ECompareValueType} from './interfaces';
 import {ESortMethod, IBoxPlotColumn, INumberDesc, INumberFilter, IColorMappingFunction, IMappingFunction} from './INumberColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
-import NumberColumn, {colorMappingChanged} from './NumberColumn';
+import NumberColumn from './NumberColumn';
 import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
 import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
 
@@ -23,21 +23,28 @@ export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlo
  * @asMemberOf BoxPlotColumn
  * @event
  */
-export declare function sortMethodChanged(previous: ESortMethod, current: ESortMethod): void;
+declare function sortMethodChanged(previous: ESortMethod, current: ESortMethod): void;
 
 /**
  * emitted when the mapping property changes
  * @asMemberOf BoxPlotColumn
  * @event
  */
-export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+
+/**
+ * emitted when the color mapping property changes
+ * @asMemberOf BoxPlotColumn
+ * @event
+ */
+declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf BoxPlotColumn
  * @event
  */
-export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 
 @toolbar('filterNumber', 'colorMapped', 'editMapping')

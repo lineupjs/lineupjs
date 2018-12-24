@@ -1,9 +1,9 @@
 import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
+import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {ICategoricalDesc, ICategoricalFilter, ICategory, ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ECompareValueType} from './interfaces';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
 import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
@@ -21,7 +21,7 @@ export declare type ISetColumnDesc = ISetDesc & IValueColumnDesc<string[]>;
  * @asMemberOf SetColumn
  * @event
  */
-export declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 /**
@@ -29,7 +29,7 @@ export declare function colorMappingChanged(previous: ICategoricalColorMappingFu
  * @asMemberOf SetColumn
  * @event
  */
-export declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
 
 /**
  * a string column with optional alignment

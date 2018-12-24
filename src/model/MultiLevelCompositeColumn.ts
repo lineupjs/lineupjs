@@ -1,8 +1,8 @@
 import {similar, IEventListener} from '../internal';
 import {toolbar} from './annotations';
-import Column, {IColumnDesc, IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import CompositeColumn, {IMultiLevelColumn, addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow} from './interfaces';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
+import {IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn} from './interfaces';
 import StackColumn from './StackColumn';
 
 
@@ -11,14 +11,14 @@ import StackColumn from './StackColumn';
  * @asMemberOf MultiLevelCompositeColumn
  * @event
  */
-export declare function collapseChanged(previous: boolean, current: boolean): void;
+declare function collapseChanged(previous: boolean, current: boolean): void;
 
 /**
  * emitted when the ratios between the children changes
  * @asMemberOf MultiLevelCompositeColumn
  * @event
  */
-export declare function nestedChildRatio(previous: number, current: number): void;
+declare function nestedChildRatio(previous: number, current: number): void;
 
 
 @toolbar('compress', 'expand')
