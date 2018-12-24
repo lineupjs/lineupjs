@@ -1,6 +1,6 @@
 import {StringColumn, Column, IDataRow, IOrderedGroup} from '../model';
 import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {setText, exampleText} from './utils';
 import {cssClass} from '../styles';

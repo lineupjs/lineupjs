@@ -1,5 +1,5 @@
 import {IMapAbleColumn} from '../../model';
-import {ISummaryRenderer} from '../../renderer/interfaces';
+import {ISummaryRenderer} from '../../renderer';
 import {cssClass, engineCssClass} from '../../styles';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';

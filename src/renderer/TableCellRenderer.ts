@@ -1,5 +1,5 @@
 import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn, Column, IDataRow, isMissingValue, IOrderedGroup} from '../model';
-import IRenderContext, {ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
 import {cssClass} from '../styles';

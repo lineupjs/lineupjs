@@ -3,7 +3,7 @@ import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn} from '
 import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 

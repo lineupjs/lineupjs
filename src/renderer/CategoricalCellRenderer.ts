@@ -3,7 +3,7 @@ import {ICategoricalStatistics, round} from '../internal';
 import {OrdinalColumn, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory, Column, CategoricalColumn, ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
-import {default as IRenderContext, ICellRendererFactory, ERenderMode} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ERenderMode} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough, forEach} from './utils';
 import {color} from 'd3-color';

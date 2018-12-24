@@ -3,16 +3,11 @@ import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMu
 import {medianIndex} from '../model/internalNumber';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {matchColumns} from './utils';
+import {matchColumns, multiLevelGridCSSClass} from './utils';
 import {cssClass} from '../styles';
 import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
-
-/** @internal */
-export function gridClass(idPrefix: string, column: Column) {
-  return cssClass(`stacked-${idPrefix}-${column.id}`);
-}
 
 /** @internal */
 export function createData(parent: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
@@ -81,11 +76,10 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   }
 
   create(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer) {
-    const {cols, stacked, padding} = createData(col, context, this.stacked, ERenderMode.CELL, imposer);
-    const useGrid = true;
+    const {cols, stacked} = createData(col, context, this.stacked, ERenderMode.CELL, imposer);
     const width = context.colWidth(col);
     return {
-      template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid && !stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
+      template: `<div class='${multiLevelGridCSSClass(context.idPrefix, col)} ${!stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta) => {
         if (renderMissingDOM(n, col, d)) {
           return null;
@@ -102,12 +96,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           cnode.classList.add(cssClass('stack-sub'), cssClass('detail'));
           cnode.dataset.group = 'd';
           cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
-          if (!useGrid) {
-            cnode.style.width = `${round(weight * 100, 2)}%`;
-            cnode.style.marginRight = stacked ? null : `${padding}px`;
-          } else {
-            cnode.style.gridColumnStart = (ci + 1).toString();
-          }
+          cnode.style.gridColumnStart = (ci + 1).toString();
           const r = col.renderer!.update(cnode, d, i, group, meta);
           if (stacked) {
             missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
@@ -175,27 +164,19 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
       return super.createGroup(col, context, imposer);
     }
 
-    const {cols, padding} = createData(col, context, false, ERenderMode.GROUP, imposer);
-    const useGrid = true;
+    const {cols} = createData(col, context, false, ERenderMode.GROUP, imposer);
     return {
-      template: `<div class='${useGrid ? gridClass(context.idPrefix, col) : ''} ${useGrid ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
+      template: `<div class='${multiLevelGridCSSClass(context.idPrefix, col)} ${cssClass('grid-space')}'>${cols.map((d) => d.template).join('')}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup, meta: IGroupMeta) => {
         matchColumns(n, cols, context);
 
         const toWait: IAbortAblePromise<void>[] = [];
         const children = <HTMLElement[]>Array.from(n.children);
-        const total = col.getWidth();
         cols.forEach((col, ci) => {
-          const weight = col.column.getWidth() / total;
           const cnode = children[ci];
           cnode.classList.add(cssClass('stack-sub'), cssClass('group'));
           cnode.dataset.group = 'g';
-          if (!useGrid) {
-            cnode.style.width = `${round(weight * 100, 2)}%`;
-            cnode.style.marginRight = `${padding}px`;
-          } else {
-            cnode.style.gridColumnStart = (ci + 1).toString();
-          }
+          cnode.style.gridColumnStart = (ci + 1).toString();
           const r = col.groupRenderer!.update(cnode, group, meta);
           if (r) {
             toWait.push(r);

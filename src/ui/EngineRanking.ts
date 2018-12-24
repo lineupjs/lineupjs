@@ -1,17 +1,14 @@
-import {IExceptionContext, nonUniformContext, uniformContext, PrefetchMixin, GridStyleManager, ACellTableSection, ITableSection, ICellRenderContext, tableIds, isAsyncUpdate, IAbortAblePromise, isAbortAble, isLoadingCell} from 'lineupengine';
-import {HOVER_DELAY_SHOW_DETAIL} from '../interfaces';
-import {AEventDispatcher, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
-import {Column, Ranking, StackColumn, IGroupData, IGroupItem, isGroup, isMultiLevelColumn, defaultGroup, IGroupMeta, IOrderedGroup} from '../model';
-import {IImposer, IRenderContext} from '../renderer';
-import {CANVAS_HEIGHT, COLUMN_PADDING, engineCssClass, cssClass} from '../styles';
+import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderContext, IExceptionContext, isAbortAble, isAsyncUpdate, isLoadingCell, ITableSection, nonUniformContext, PrefetchMixin, tableIds, uniformContext} from 'lineupengine';
+import {HOVER_DELAY_SHOW_DETAIL, ILineUpFlags} from '../interfaces';
+import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
+import {Column, defaultGroup, IGroupData, IGroupItem, IGroupMeta, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn} from '../model';
+import {IImposer, IRenderCallback, IRenderContext} from '../renderer';
+import {CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass} from '../styles';
 import {lineupAnimation} from './animation';
 import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
-import {clear} from '../internal';
-import {ILineUpFlags} from '../interfaces';
-import {IRenderCallback} from '../renderer/interfaces';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;

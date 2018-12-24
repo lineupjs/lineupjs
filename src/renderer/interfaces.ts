@@ -132,6 +132,3 @@ export interface ICellRendererFactory {
 
   createSummary?(col: Column, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 }
-
-
-export default IRenderContext;

@@ -1,5 +1,5 @@
 import {IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup} from '../model';
-import {default as IRenderContext, IImposer} from './interfaces';
+import {IRenderContext, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {ISequence, boxplotBuilder} from '../internal';
 

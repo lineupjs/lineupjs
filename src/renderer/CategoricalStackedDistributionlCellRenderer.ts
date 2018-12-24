@@ -2,7 +2,7 @@ import {ICategoricalStatistics, round} from '../internal';
 import {CategoricalColumn, Column, OrdinalColumn, ICategoricalColumn, isCategoricalColumn, IOrderedGroup, ISetColumn} from '../model';
 import {filterMissingNumberMarkup} from '../ui/missing';
 import {interactiveHist, HasCategoricalFilter} from './CategoricalCellRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {noRenderer, adaptTextColorToBgColor} from './utils';
 import {cssClass, FILTERED_OPACITY} from '../styles';
 import {color} from 'd3-color';

@@ -1,7 +1,7 @@
 import {IColumn, IAbortAblePromise, IAsyncUpdate, isAbortAble} from 'lineupengine';
 import {Column} from '../model';
 import {ICellRenderer, IGroupCellRenderer} from '../renderer';
-import {ISummaryRenderer, IRenderCallback} from '../renderer/interfaces';
+import {ISummaryRenderer, IRenderCallback} from '../renderer';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import {ILineUpFlags} from '../interfaces';

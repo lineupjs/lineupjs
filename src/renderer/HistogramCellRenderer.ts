@@ -4,7 +4,7 @@ import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumber
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {colorOf} from './impose';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {cssClass, FILTERED_OPACITY} from '../styles';
 import {color} from 'd3-color';

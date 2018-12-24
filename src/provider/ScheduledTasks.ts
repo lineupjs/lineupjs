@@ -1,12 +1,11 @@
-import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISortMessageResponse, IStatistics, toIndexArray, WORKER_BLOB} from '../internal';
-import {ISequence, lazySeq, WorkerTaskScheduler} from '../internal';
+import {abortAble} from 'lineupengine';
+import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISequence, ISortMessageResponse, IStatistics, lazySeq, toIndexArray, WorkerTaskScheduler, WORKER_BLOB} from '../internal';
 import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
-import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking,ICompareValue, UIntTypedArray} from '../model';
-import {IRenderTask} from '../renderer/interfaces';
+import Column, {ICategoricalLikeColumn, ICompareValue, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray} from '../model';
+import {IRenderTask} from '../renderer';
 import {sortDirect} from './DirectRenderTasks';
 import {CompareLookup} from './sort';
 import {ARenderTasks, IRenderTaskExectutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow} from './tasks';
-import {abortAble} from 'lineupengine';
 
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 

@@ -2,8 +2,8 @@ import {Column, NumbersColumn, IDataRow, INumbersColumn, isNumbersColumn} from '
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
-import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
-import {attr, forEachChild, noRenderer} from './utils';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import { forEachChild, noRenderer} from './utils';
 
 /** @internal */
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
@@ -39,16 +39,13 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
         const zero = toHeatMapColor(0, item, col, imposer);
         const one = toHeatMapColor(1, item, col, imposer);
 
-        forEachChild(row, (d, i) => {
+        forEachChild(row, (d: HTMLElement, i) => {
           const v = data[i];
           const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
-          attr(<HTMLElement>d, {
-            title: formatter(raw[i])
-          }, {
-            'background-color': v < threshold ? zero : one,
-            bottom: `${Math.round((100 * bottom) / range)}%`,
-            height: `${Math.round((100 * height) / range)}%`
-          });
+          d.title = formatter(raw[i]);
+          d.style.backgroundColor = v < threshold ? zero : one;
+          d.style.bottom = `${Math.round((100 * bottom) / range)}%`;
+          d.style.height = `${Math.round((100 * height) / range)}%`;
         });
       },
       render: (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow) => {

@@ -1,5 +1,5 @@
 import {Column, IDataRow, DateColumn, IOrderedGroup} from '../model';
-import IRenderContext, {ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
+import {IRenderContext, ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText, exampleText} from './utils';
 import {chooseAggregatedDate} from '../model/internalDate';

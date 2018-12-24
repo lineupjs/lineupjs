@@ -1,6 +1,6 @@
 import {IDataRow, IGroup, IGroupMeta, Column, AggregateGroupColumn, EAggregationState} from '../model';
 import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory} from './interfaces';
 
 /** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {

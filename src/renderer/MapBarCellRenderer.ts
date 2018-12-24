@@ -1,7 +1,7 @@
 import {round} from '../internal';
 import {Column, IMapColumn, IMapAbleColumn, isMapAbleColumn, isMapColumn, IDataRow, isNumberColumn, INumberColumn} from '../model';
 import {colorOf} from './impose';
-import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} from './interfaces';
+import {ICellRendererFactory, IImposer, IRenderContext, ERenderMode} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
 import {cssClass} from '../styles';

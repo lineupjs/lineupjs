@@ -1,5 +1,5 @@
 import {IDataRow, LinkMapColumn, Column, ILink, IKeyValue, IOrderedGroup} from '../model';
-import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noRenderer, noop} from './utils';

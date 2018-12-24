@@ -2,7 +2,7 @@ import {IBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
 import {NumberColumn, IBoxPlotColumn, INumberColumn, isBoxPlotColumn, Column, IDataRow, isNumberColumn, isMapAbleColumn, IOrderedGroup} from '../model';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
-import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas} from './missing';
 import {tasksAll} from '../provider';
 

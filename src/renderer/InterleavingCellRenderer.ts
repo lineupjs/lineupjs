@@ -2,7 +2,7 @@ import {INumberBin, IStatistics} from '../internal';
 import {Column, CompositeNumberColumn, IDataRow, IGroupMeta, IOrderedGroup, INumberColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {getHistDOMRenderer} from './HistogramCellRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
 import {matchColumns, forEachChild} from './utils';

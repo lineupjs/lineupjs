@@ -1,6 +1,6 @@
 import {Column, IDataRow, IGroupMeta, IOrderedGroup} from '../model';
 import {
-  default as IRenderContext, ERenderMode, ICellRenderer, ICellRendererFactory, IGroupCellRenderer,
+  IRenderContext, ERenderMode, ICellRenderer, ICellRendererFactory, IGroupCellRenderer,
   IImposer
 } from './interfaces';
 import {noRenderer} from './utils';

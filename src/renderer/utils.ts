@@ -2,33 +2,8 @@ import {MIN_LABEL_WIDTH} from '../interfaces';
 import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn} from '../model';
 import {hsl} from 'd3-color';
 import {cssClass} from '../styles';
-import IRenderContext from './interfaces';
+import {IRenderContext} from '.';
 import {ISequence} from '../internal';
-
-/**
- * utility function to sets attributes and styles in a nodes
- * @param node
- * @param attrs
- * @param styles
- * @param text
- * @return {T}
- * @internal
- */
-export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: {[key: string]: any} = {}, styles: {[key: string]: any} = {}, text?: string): T {
-  Object.keys(attrs).forEach((attr) => {
-    const v = String(attrs[attr]);
-    if (node.getAttribute(attr) !== v) {
-      node.setAttribute(attr, v);
-    }
-  });
-  Object.keys(styles).forEach((attr) => {
-    const v = styles[attr];
-    if ((<any>node).style.getPropertyValue(attr) !== v) {
-      (<any>node).style.setProperty(attr, v);
-    }
-  });
-  return setText(node, text);
-}
 
 /** @internal */
 export function noop() {
@@ -143,7 +118,7 @@ export function wideEnoughCat(col: ICategoricalLikeColumn) {
 
 
 
-
+// side effect
 const adaptColorCache: {[bg: string]: string} = {};
 /**
  * Adapts the text color for a given background color
@@ -211,4 +186,10 @@ export function exampleText(col: Column, rows: ISequence<IDataRow>) {
     return examples.length < NUM_EXAMPLE_VALUES;
   });
   return `${examples.join(', ')}${examples.length < rows.length ? ', ...' : ''}`;
+}
+
+
+/** @internal */
+export function multiLevelGridCSSClass(idPrefix: string, column: Column) {
+  return cssClass(`stacked-${idPrefix}-${column.id}`);
 }

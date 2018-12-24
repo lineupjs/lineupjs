@@ -2,9 +2,9 @@ import {round, concatSeq, ISequence} from '../internal';
 import {Column, isNumbersColumn, INumberColumn, IDataRow, isNumberColumn, IOrderedGroup} from '../model';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {attr, noRenderer} from './utils';
+import {noRenderer} from './utils';
 
 
 /** @internal */
@@ -33,16 +33,13 @@ export default class DotCellRenderer implements ICellRendererFactory {
       }
       const children = n.children;
       data.forEach((v, i) => {
-        const d = children[i];
-        attr(<HTMLElement>d, {
-          title: v.label
-        }, {
-            display: isNaN(v.value) ? 'none' : null,
-            left: `${round(v.value * 100, 2)}%`,
-            // jitter
-            top: l > 1 ? `${round(Math.random() * 80 + 10, 2)}%` : null,
-            'background-color': v.color
-          });
+        const d = <HTMLElement>children[i];
+        d.title = v.label;
+        d.style.display = isNaN(v.value) ? 'none' : null;
+        d.style.left = `${round(v.value * 100, 2)}%`;
+        // jitter
+        d.style.top = l > 1 ? `${round(Math.random() * 80 + 10, 2)}%` : null;
+        d.style.backgroundColor = v.color;
       });
     };
 

@@ -2,6 +2,7 @@ import {Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleCo
 import {colorPool, MAX_COLORS} from '../model/internal';
 import {concat, equal, extent, range} from '../internal';
 import {timeParse} from 'd3-time-format';
+import {IDataProvider} from './interfaces';
 
 
 export interface IDeriveOptions {
@@ -390,4 +391,42 @@ export function object2Map<T>(obj: { [key: string]: T}) {
     r.set(k, obj[k]);
   }
   return r;
+}
+
+
+/** @internal */
+export function rangeSelection(provider: IDataProvider, rankingId: string, dataIndex: number, relIndex: number, ctrlKey: boolean) {
+  const ranking = provider.getRankings().find((d) => d.id === rankingId);
+  if (!ranking) { // no known reference
+    return false;
+  }
+  const selection = provider.getSelection();
+  if (selection.length === 0 || selection.includes(dataIndex)) {
+    return false; // no other or deselect
+  }
+  const order = ranking.getOrder();
+  const lookup = new Map(Array.from(order).map((d, i) => <[number, number]>[d, i]));
+  const distances = selection.map((d) => {
+    const index = (lookup.has(d) ? lookup.get(d)! : Infinity);
+    return {s: d, index, distance: Math.abs(relIndex - index)};
+  });
+  const nearest = distances.sort((a, b) => a.distance - b.distance)[0]!;
+  if (!isFinite(nearest.distance)) {
+    return false; // all outside
+  }
+  if (!ctrlKey) {
+    selection.splice(0, selection.length);
+    selection.push(nearest.s);
+  }
+  if (nearest.index < relIndex) {
+    for (let i = nearest.index + 1; i <= relIndex; ++i) {
+      selection.push(order[i]);
+    }
+  } else {
+    for (let i = relIndex; i <= nearest.index; ++i) {
+      selection.push(order[i]);
+    }
+  }
+  provider.setSelection(selection);
+  return true;
 }

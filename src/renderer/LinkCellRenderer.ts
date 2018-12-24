@@ -1,5 +1,5 @@
 import {LinkColumn, Column, IDataRow, IOrderedGroup} from '../model';
-import IRenderContext, {ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';

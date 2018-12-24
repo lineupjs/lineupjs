@@ -1,13 +1,13 @@
-import {StyleManager, isAsyncUpdate, IAsyncUpdate, IAbortAblePromise, abortAbleAll} from 'lineupengine';
+import {abortAbleAll, IAbortAblePromise, IAsyncUpdate, isAsyncUpdate, StyleManager} from 'lineupengine';
+import {ILineUpFlags} from '../interfaces';
 import {round} from '../internal';
-import {IMultiLevelColumn, Column} from '../model';
-import {ISummaryRenderer} from '../renderer/interfaces';
-import {gridClass} from '../renderer/MultiLevelCellRenderer';
+import {Column, IMultiLevelColumn} from '../model';
+import {ISummaryRenderer} from '../renderer';
+import {multiLevelGridCSSClass} from '../renderer/utils';
 import {COLUMN_PADDING, cssClass} from '../styles';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import RenderColumn from './RenderColumn';
-import {ILineUpFlags} from '../interfaces';
 
 /** @internal */
 export default class MultiLevelRenderColumn extends RenderColumn {
@@ -29,7 +29,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     const r = super.createHeader();
     const wrapper = this.ctx.document.createElement('div');
     wrapper.classList.add(cssClass('nested'));
-    wrapper.classList.add(gridClass(this.ctx.idPrefix, this.c));
+    wrapper.classList.add(multiLevelGridCSSClass(this.ctx.idPrefix, this.c));
 
     if (isAsyncUpdate(r)) {
       r.item.appendChild(wrapper);
@@ -80,7 +80,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     const mc = this.mc;
     // need this for chrome to work properly
     const widths = mc.children.map((c) => `minmax(0, ${round(c.getWidth())}fr)`);
-    const clazz = gridClass(this.ctx.idPrefix, this.c);
+    const clazz = multiLevelGridCSSClass(this.ctx.idPrefix, this.c);
     style.updateRule(`stacked-${this.c.id}`, `.${clazz}`, {
       display: 'grid',
       gridTemplateColumns: widths.join(' ')
