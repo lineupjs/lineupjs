@@ -6,5 +6,5 @@ export {default as LineUp, default, ILineUpOptions} from './LineUp';
 export * from './panel';
 export {default as SlopeGraph, EMode} from './SlopeGraph';
 export * from './taggle';
-export {IToolbarAction, IToolbarDialogAddon, IUIOptions, IOnClickHandler, dialogContext} from './toolbar';
+export {IToolbarAction, IToolbarDialogAddon, IUIOptions, IOnClickHandler, dialogContext, toolbarActions} from './toolbar';
 
