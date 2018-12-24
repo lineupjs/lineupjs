@@ -1,9 +1,6 @@
 import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
 import {similar} from '../internal';
-import Column from './Column';
-import INumberColumn, {INumberFilter, isNumberColumn} from './INumberColumn';
-import {IColorMappingFunction} from './ColorMappingFunction';
-import {IColumnDesc} from './interfaces';
+import {IMappingFunction, IMapAbleDesc} from './INumberColumn';
 
 /**
  * interface of a d3 scale
@@ -22,26 +19,6 @@ export interface IScale {
   range(range: number[]): this;
 }
 
-export interface IMappingFunction {
-  //new(domain: number[]);
-
-  apply(v: number): number;
-
-  dump(): any;
-
-  restore(dump: any): void;
-
-  domain: number[];
-
-  clone(): IMappingFunction;
-
-  eq(other: IMappingFunction): boolean;
-
-  getRange(formatter: (v: number) => string): [string, string];
-
-}
-
-
 function toScale(type = 'linear'): IScale {
   switch (type) {
     case 'log':
@@ -57,31 +34,6 @@ function toScale(type = 'linear'): IScale {
     default:
       return scaleLinear().clamp(true);
   }
-}
-
-
-export interface IMapAbleColumn extends INumberColumn {
-  getOriginalMapping(): IMappingFunction;
-
-  getMapping(): IMappingFunction;
-
-  setMapping(mapping: IMappingFunction): void;
-
-  getColorMapping(): IColorMappingFunction;
-
-  setColorMapping(mapping: IColorMappingFunction): void;
-
-  getFilter(): INumberFilter;
-
-  setFilter(value?: INumberFilter): void;
-
-  getRange(): [string, string];
-}
-
-export function isMapAbleColumn(col: Column): col is IMapAbleColumn;
-export function isMapAbleColumn(col: IColumnDesc): col is IMapAbleDesc & IColumnDesc;
-export function isMapAbleColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<IMapAbleColumn>col).getMapping === 'function' || (!(col instanceof Column) && isNumberColumn(col) && ((<IColumnDesc>col).type.startsWith('number') || (<IColumnDesc>col).type.startsWith('boxplot'))));
 }
 
 function isSame(a: number[], b: number[]) {
@@ -235,31 +187,6 @@ export class ScriptMappingFunction implements IMappingFunction {
   clone() {
     return new ScriptMappingFunction(this.domain, this.code);
   }
-}
-
-export interface IMapAbleDesc {
-  /**
-   * dump of mapping function
-   */
-  map?: any;
-  /**
-   * either map or domain should be available
-   */
-  domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  range?: [number, number];
-
-  /**
-   * @deprecated use colorMapping instead
-   */
-  color?: string;
-
-  /**
-   * color mapping
-   */
-  colorMapping?: string | ((v: number) => string) | any;
 }
 
 export function createMappingFunction(dump: any): IMappingFunction {

@@ -1,21 +1,17 @@
-import {toolbar, SortByDefault, dialogAddons} from './annotations';
-import ArrayColumn, {IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
+import {format} from 'd3-format';
+import {boxplotBuilder, IAdvancedBoxPlotData, IEventListener} from '../internal';
+import {dialogAddons, SortByDefault, toolbar} from './annotations';
+import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
+import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {IArrayDesc} from './IArrayColumn';
 import {IDataRow} from './interfaces';
-import {
-  DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, INumberFilter, INumbersColumn,
-  noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue, INumberDesc
-} from './INumberColumn';
-import {
-  createMappingFunction, IMappingFunction, restoreMapping,
-  ScaleMappingFunction
-} from './MappingFunction';
+import {DEFAULT_FORMATTER, getBoxPlotNumber, isDummyNumberFilter, noNumberFilter, restoreNumberFilter, toCompareBoxPlotValue} from './internalNumber';
+import {EAdvancedSortMethod, IColorMappingFunction, IMappingFunction, INumberDesc, INumberFilter, INumbersColumn} from './INumberColumn';
+import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IEventListener, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
-import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
-import {format} from 'd3-format';
+import ValueColumn, {dataLoaded} from './ValueColumn';
 
 
 export interface INumbersDesc extends IArrayDesc, INumberDesc {

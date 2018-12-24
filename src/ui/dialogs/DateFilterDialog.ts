@@ -2,7 +2,7 @@ import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState, uniqueId} from './utils';
 import {DateColumn, IDateFilter} from '../../model';
-import {isDummyDateFilter, noDateFilter} from '../../model/IDateColumn';
+import {isDummyDateFilter, noDateFilter} from '../../model/internalDate';
 import {timeFormat} from 'd3-time-format';
 
 /** @internal */

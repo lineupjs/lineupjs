@@ -3,7 +3,7 @@ import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState, forEach} from './utils';
 import {cssClass} from '../../styles';
-import {isCategoryIncluded} from '../../model/ICategoricalColumn';
+import {isCategoryIncluded} from '../../model/internalCategorical';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {

@@ -4,16 +4,18 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IKeyValue} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 import {
-  DEFAULT_FORMATTER, EAdvancedSortMethod, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberDesc,
-  INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue
-} from './INumberColumn';
+  EAdvancedSortMethod, IAdvancedBoxPlotColumn, INumberDesc,
+  INumberFilter,
+  IMappingFunction,
+  IColorMappingFunction} from './INumberColumn';
 import {default as MapColumn, IMapColumnDesc} from './MapColumn';
-import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
 import {IEventListener, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
-import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
+import {restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 import {format} from 'd3-format';
+import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
 
 
 export interface INumberMapDesc extends INumberDesc {

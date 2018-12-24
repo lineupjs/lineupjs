@@ -1,20 +1,18 @@
 export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons, categoryOfDesc, categoryOf, IColumnCategory} from './annotations';
 export {isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup} from './missing';
-export * from './Group';
 export * from './interfaces';
-export {ISetColumn, isCategoricalColumn, isCategoricalLikeColumn, isSetColumn, ICategoricalColumn, ICategoricalColumnDesc, ICategoricalDesc, ICategoricalFilter, ICategoricalLikeColumn, ICategory, isCategory} from './ICategoricalColumn';
-export {INumberDesc, IAdvancedBoxPlotColumn, INumbersColumn, isNumberColumn, IBoxPlotColumn, INumberColumn, INumberFilter, isBoxPlotColumn, isNumbersColumn, EAdvancedSortMethod, ESortMethod} from './INumberColumn';
-export {IDateColumn, IDateDesc, IDateFilter, IDateGranularity, IDateGrouper, isDateColumn} from './IDateColumn';
+export * from './ICategoricalColumn';
+export * from './INumberColumn';
+export * from './IDateColumn';
 export * from './IArrayColumn';
 export * from './MappingFunction';
-export {IColorMappingFunction} from './ColorMappingFunction';
 export {defineColumn} from './models';
 
 export {default as ActionColumn} from './ActionColumn';
 export * from './ActionColumn';
 export {default as AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc} from './AggregateGroupColumn';
 export {default as AnnotateColumn} from './AnnotateColumn';
-export {default as ArrayColumn, IArrayColumnDesc, IArrayDesc} from './ArrayColumn';
+export {default as ArrayColumn, IArrayColumnDesc} from './ArrayColumn';
 export {default as BooleanColumn, IBooleanColumnDesc, IBooleanDesc} from './BooleanColumn';
 export * from './BooleansColumn';
 export {default as BooleansColumn} from './BooleansColumn';

@@ -2,23 +2,6 @@ import {createIndexArray, ILookUpArray} from '../internal';
 import {FIRST_IS_MISSING, FIRST_IS_NAN, ECompareValueType, ICompareValue, Column, UIntTypedArray, Ranking, IDataRow} from '../model';
 
 
-/**
- * @internal
- */
-export function chooseUIntByDataLength(dataLength?: number | null) {
-  if (dataLength == null || typeof dataLength !== 'number' && !isNaN(dataLength)) {
-    return ECompareValueType.UINT32; // worst case
-  }
-  if (length <= 255) {
-    return ECompareValueType.UINT8;
-  }
-  if (length <= 65535) {
-    return ECompareValueType.UINT16;
-  }
-  return ECompareValueType.UINT32;
-}
-
-
 const missingUInt8 = FIRST_IS_MISSING > 0 ? 255 : 0;
 const missingBinary = missingUInt8;
 const missingUInt16 = FIRST_IS_MISSING > 0 ? 65535 : 0; // max or 0

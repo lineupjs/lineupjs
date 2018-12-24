@@ -2,12 +2,13 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import {IArrayColumn} from './IArrayColumn';
-import {ICategoricalDesc, ICategoricalFilter, ICategory, isCategoryIncluded, toCategories, ISetColumn} from './ICategoricalColumn';
+import {ICategoricalDesc, ICategoricalFilter, ICategory, ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
-import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
-import {chooseUIntByDataLength} from '../provider/sort';
+import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {toCategories, isCategoryIncluded} from './internalCategorical';
+import {chooseUIntByDataLength} from './internal';
 
 export interface ISetDesc extends ICategoricalDesc {
   separator?: string;

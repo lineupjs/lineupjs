@@ -4,11 +4,12 @@ import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty,
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IKeyValue} from './IArrayColumn';
 import {IDataRow, IGroup} from './interfaces';
-import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, noNumberFilter, DEFAULT_FORMATTER} from './INumberColumn';
-import {IMappingFunction, ScaleMappingFunction, isMapAbleColumn} from './MappingFunction';
+import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, IMappingFunction, IColorMappingFunction, isMapAbleColumn} from './INumberColumn';
+import {ScaleMappingFunction} from './MappingFunction';
 import NumbersColumn, {mappingChanged} from './NumbersColumn';
 import {colorMappingChanged} from './NumberColumn';
-import {DEFAULT_COLOR_FUNCTION, IColorMappingFunction} from './ColorMappingFunction';
+import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
+import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
 
 
 /**

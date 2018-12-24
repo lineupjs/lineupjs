@@ -2,11 +2,11 @@ import {timeFormat, timeParse} from 'd3-time-format';
 import {ISequence, equal, IEventListener} from '../internal';
 import {Category, dialogAddons, toolbar} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {defaultGroup} from './Group';
-import {defaultDateGrouper, IDateColumn, IDateDesc, IDateFilter, IDateGrouper, isDateIncluded, isDefaultDateGrouper, isDummyDateFilter, isEqualDateFilter, noDateFilter, restoreDateFilter, toDateGroup, chooseAggregatedDate} from './IDateColumn';
-import {IDataRow, IGroup} from './interfaces';
+import {IDateColumn, IDateDesc, IDateFilter, IDateGrouper} from './IDateColumn';
+import {defaultGroup, IDataRow, IGroup} from './interfaces';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
+import {noDateFilter, defaultDateGrouper, isDummyDateFilter, isDefaultDateGrouper, restoreDateFilter, isEqualDateFilter, isDateIncluded, toDateGroup, chooseAggregatedDate} from './internalDate';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;

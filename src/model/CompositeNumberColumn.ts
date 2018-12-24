@@ -3,9 +3,10 @@ import {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {IDataRow, IGroup} from './interfaces';
 import {isMissingValue} from './missing';
-import NumberColumn, {INumberColumn} from './NumberColumn';
+import NumberColumn from './NumberColumn';
 import {SortByDefault} from './annotations';
 import {ISequence} from '../internal';
+import {INumberColumn} from './INumberColumn';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**

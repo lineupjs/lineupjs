@@ -1,41 +1,8 @@
 import {interpolateBlues, interpolateGreens, interpolateGreys, interpolateOranges, interpolatePurples, interpolateReds, interpolateCool, interpolateCubehelixDefault, interpolateWarm, interpolatePlasma, interpolateMagma, interpolateViridis, interpolateInferno, interpolateYlOrRd, interpolateYlOrBr, interpolateBuGn, interpolateBuPu, interpolateGnBu, interpolateOrRd, interpolatePuBuGn, interpolatePuBu, interpolatePuRd, interpolateRdPu, interpolateYlGnBu, interpolateYlGn, interpolateRainbow, interpolateBrBG, interpolatePRGn, interpolatePiYG, interpolatePuOr, interpolateRdBu, interpolateRdGy, interpolateRdYlBu, interpolateRdYlGn, interpolateSpectral} from 'd3-scale-chromatic';
-import {IMapAbleDesc} from './MappingFunction';
 import Column from './Column';
 import {equal} from '../internal';
 import {scaleLinear} from 'd3-scale';
-
-export interface IColorMappingFunctionBase {
-  apply(v: number): string;
-
-  dump(): any;
-
-  clone(): IColorMappingFunction;
-
-  eq(other: IColorMappingFunction): boolean;
-}
-
-export interface IInterpolateColorMappingFunction extends IColorMappingFunctionBase {
-  type: 'sequential'|'divergent';
-  name: string;
-}
-
-export interface IQuantizedColorMappingFunction extends IColorMappingFunctionBase {
-  type: 'quantized';
-  base: IColorMappingFunction;
-  steps: number;
-}
-
-export interface ISolidColorMappingFunction extends IColorMappingFunctionBase {
-  type: 'solid';
-  color: string;
-}
-
-export interface ICustomColorMappingFunction extends IColorMappingFunctionBase {
-  type: 'custom';
-  entries: {value: number, color: string}[];
-}
-
-export declare type IColorMappingFunction = ISolidColorMappingFunction | ICustomColorMappingFunction | IQuantizedColorMappingFunction | IInterpolateColorMappingFunction;
+import {IInterpolateColorMappingFunction, IColorMappingFunction, ISolidColorMappingFunction, IQuantizedColorMappingFunction, ICustomColorMappingFunction, IMapAbleDesc} from './INumberColumn';
 
 /** @internal */
 export class InterpolatingColorFunction implements IInterpolateColorMappingFunction {

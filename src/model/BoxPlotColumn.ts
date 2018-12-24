@@ -1,19 +1,14 @@
 import {format} from 'd3-format';
-import {IBoxPlotData} from '../internal';
-import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
+import {IBoxPlotData, IEventListener} from '../internal';
+import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
+import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {IDataRow} from './interfaces';
-import {
-  ESortMethod, getBoxPlotNumber, IBoxPlotColumn, INumberFilter, noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareBoxPlotValue, INumberDesc, DEFAULT_FORMATTER
-} from './INumberColumn';
-import {
-  createMappingFunction, IMappingFunction, restoreMapping,
-  ScaleMappingFunction
-} from './MappingFunction';
+import {ESortMethod, IBoxPlotColumn, INumberDesc, INumberFilter, IColorMappingFunction, IMappingFunction} from './INumberColumn';
+import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import NumberColumn, {colorMappingChanged} from './NumberColumn';
-import {IEventListener} from '../internal';
-import {IColorMappingFunction, restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
+import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
+import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
 
 
 export interface IBoxPlotDesc extends INumberDesc {

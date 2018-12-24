@@ -1,17 +1,14 @@
 import {format} from 'd3-format';
 import {equalArrays, IEventListener, ISequence} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
-import {createColorMappingFunction, IColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {IDataRow, IGroup} from './interfaces';
-import {toCompareGroupValue} from './internal';
-import {default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isDummyNumberFilter, isEqualNumberFilter, isNumberIncluded, noNumberFilter, restoreNumberFilter} from './INumberColumn';
-import {createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, IMappingFunction, IColorMappingFunction, IMapAbleColumn} from './INumberColumn';
+import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
-
-export {default as INumberColumn, isNumberColumn} from './INumberColumn';
-
+import {noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareGroupValue, isEqualNumberFilter, isNumberIncluded} from './internalNumber';
 
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 

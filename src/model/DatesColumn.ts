@@ -4,11 +4,12 @@ import {dialogAddons, toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDateDesc, IDateColumn, IDateFilter, noDateFilter, restoreDateFilter, isDummyDateFilter} from './IDateColumn';
+import {IDateDesc, IDateColumn, IDateFilter} from './IDateColumn';
 import {IDataRow} from './interfaces';
 import {isMissingValue} from './missing';
 import DateColumn from './DateColumn';
-import {chooseUIntByDataLength} from '../provider/sort';
+import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';
+import {chooseUIntByDataLength} from './internal';
 
 export enum EDateSort {
   min = 'min',

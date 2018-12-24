@@ -1,15 +1,15 @@
 import {equalArrays, extent, IEventListener} from '../internal';
 import {Category, toolbar} from './annotations';
+import {DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {
-  ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, toCategories
-} from './ICategoricalColumn';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
-import NumberColumn, {INumberColumn} from './NumberColumn';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
-import {DEFAULT_FORMATTER} from './INumberColumn';
+import NumberColumn from './NumberColumn';
+import {INumberColumn} from './INumberColumn';
+import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
+import {toCategories} from './internalCategorical';
+import {DEFAULT_FORMATTER} from './internalNumber';
 
 export declare type ICategoricalNumberColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
 

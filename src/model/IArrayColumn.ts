@@ -1,8 +1,11 @@
 import Column from './Column';
 import {IDataRow, IColumnDesc} from './interfaces';
-import {IArrayDesc} from './ArrayColumn';
-import {IMapColumnDesc} from './MapColumn';
 
+
+export interface IArrayDesc {
+  dataLength?: number;
+  labels?: string[];
+}
 
 export interface IKeyValue<T> {
   key: string;
@@ -16,7 +19,7 @@ export interface IMapColumn<T> extends Column {
 }
 
 export function isMapColumn(col: Column): col is IMapColumn<any>;
-export function isMapColumn(col: IColumnDesc): col is IMapColumnDesc<any> & IColumnDesc;
+export function isMapColumn(col: IColumnDesc): boolean;
 export function isMapColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<IMapColumn<any>>col).getMap === 'function' && typeof (<IMapColumn<any>>col).getMapLabel === 'function') || (!(col instanceof Column) && (<IColumnDesc>col).type.endsWith('Map'));
 }

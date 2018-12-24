@@ -1,12 +1,13 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {ISetColumn, toCategory} from './ICategoricalColumn';
+import {ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
 import CategoricalColumn from './CategoricalColumn';
-import {ICategoricalColorMappingFunction, DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal';
-import {chooseUIntByDataLength} from '../provider/sort';
+import {chooseUIntByDataLength} from './internal';
+import {toCategory} from './internalCategorical';
 
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;

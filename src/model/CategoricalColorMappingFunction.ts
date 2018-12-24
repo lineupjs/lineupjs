@@ -1,16 +1,6 @@
-import {ICategory} from './ICategoricalColumn';
+import {ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import Column from './Column';
 
-
-export interface ICategoricalColorMappingFunction {
-  apply(v: ICategory): string;
-
-  dump(): any;
-
-  clone(): ICategoricalColorMappingFunction;
-
-  eq(other: ICategoricalColorMappingFunction): boolean;
-}
 
 /**
  * @internal

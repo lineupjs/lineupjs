@@ -1,4 +1,3 @@
-import {IOrderedGroup} from './Group';
 
 export interface IStyleColumn {
   /**
@@ -86,6 +85,18 @@ export interface IGroup {
   parent?: Readonly<IGroupParent> | null;
 }
 
+export declare type IndicesArray = (ReadonlyArray<number> | UIntTypedArray) & ArrayLike<number>;
+
+export interface IOrderedGroup extends IGroup {
+  order: IndicesArray;
+}
+
+export const defaultGroup: IGroup = {
+  name: 'Default',
+  color: 'gray'
+};
+
+
 export interface IGroupParent extends IGroup {
   subGroups: (Readonly<IGroupParent> | Readonly<IGroup>)[];
 }
@@ -106,6 +117,9 @@ export interface IGroupData extends Readonly<IOrderedGroup> {
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupItem>item).group == null; // use .group as separator
 }
+
+
+export declare type UIntTypedArray = Uint8Array | Uint16Array | Uint32Array;
 
 export enum ECompareValueType {
   BINARY,

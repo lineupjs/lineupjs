@@ -1,10 +1,111 @@
-import {format} from 'd3-format';
-import {IForEachAble, IAdvancedBoxPlotData, IBoxPlotData, similar} from '../internal';
+import {IAdvancedBoxPlotData, IBoxPlotData, IForEachAble} from '../internal';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {IColumnDesc, IDataRow} from './interfaces';
-import {IMapAbleColumn, IMappingFunction, IMapAbleDesc} from './MappingFunction';
-import {FIRST_IS_NAN} from './missing';
+
+
+export interface IColorMappingFunctionBase {
+  apply(v: number): string;
+
+  dump(): any;
+
+  clone(): IColorMappingFunction;
+
+  eq(other: IColorMappingFunction): boolean;
+}
+
+export interface IInterpolateColorMappingFunction extends IColorMappingFunctionBase {
+  type: 'sequential' | 'divergent';
+  name: string;
+}
+
+export interface IQuantizedColorMappingFunction extends IColorMappingFunctionBase {
+  type: 'quantized';
+  base: IColorMappingFunction;
+  steps: number;
+}
+
+export interface ISolidColorMappingFunction extends IColorMappingFunctionBase {
+  type: 'solid';
+  color: string;
+}
+
+export interface ICustomColorMappingFunction extends IColorMappingFunctionBase {
+  type: 'custom';
+  entries: {value: number, color: string}[];
+}
+
+export declare type IColorMappingFunction = ISolidColorMappingFunction | ICustomColorMappingFunction | IQuantizedColorMappingFunction | IInterpolateColorMappingFunction;
+
+
+export interface IMappingFunction {
+  //new(domain: number[]);
+
+  apply(v: number): number;
+
+  dump(): any;
+
+  restore(dump: any): void;
+
+  domain: number[];
+
+  clone(): IMappingFunction;
+
+  eq(other: IMappingFunction): boolean;
+
+  getRange(formatter: (v: number) => string): [string, string];
+}
+
+
+export interface IMapAbleDesc {
+  /**
+   * dump of mapping function
+   */
+  map?: any;
+  /**
+   * either map or domain should be available
+   */
+  domain?: [number, number];
+  /**
+   * @default [0,1]
+   */
+  range?: [number, number];
+
+  /**
+   * @deprecated use colorMapping instead
+   */
+  color?: string;
+
+  /**
+   * color mapping
+   */
+  colorMapping?: string | ((v: number) => string) | any;
+}
+
+
+export interface IMapAbleColumn extends INumberColumn {
+  getOriginalMapping(): IMappingFunction;
+
+  getMapping(): IMappingFunction;
+
+  setMapping(mapping: IMappingFunction): void;
+
+  getColorMapping(): IColorMappingFunction;
+
+  setColorMapping(mapping: IColorMappingFunction): void;
+
+  getFilter(): INumberFilter;
+
+  setFilter(value?: INumberFilter): void;
+
+  getRange(): [string, string];
+}
+
+export function isMapAbleColumn(col: Column): col is IMapAbleColumn;
+export function isMapAbleColumn(col: IColumnDesc): col is IMapAbleDesc & IColumnDesc;
+export function isMapAbleColumn(col: Column | IColumnDesc) {
+  return (col instanceof Column && typeof (<IMapAbleColumn>col).getMapping === 'function' || (!(col instanceof Column) && isNumberColumn(col) && ((<IColumnDesc>col).type.startsWith('number') || (<IColumnDesc>col).type.startsWith('boxplot'))));
+}
 
 
 export interface INumberColumn extends Column {
@@ -17,13 +118,6 @@ export interface INumberColumn extends Column {
 
   getNumberFormat(): (v: number) => string;
 }
-
-
-/** @internal */
-export const DEFAULT_FORMATTER = format('.3n');
-
-export default INumberColumn;
-
 
 export interface INumberDesc extends IMapAbleDesc {
   /**
@@ -44,33 +138,6 @@ export function isNumberColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<INumberColumn>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
-/** @internal */
-export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
-  const aVal = col.getBoxPlotData(a);
-  const bVal = col.getBoxPlotData(b);
-  const method = <keyof IBoxPlotData>col.getSortMethod();
-  if (aVal == null) {
-    return bVal == null ? 0 : FIRST_IS_NAN;
-  }
-  if (bVal == null) {
-    return FIRST_IS_NAN * -1;
-  }
-  return numberCompare(<number>aVal[method], <number>bVal[method]);
-}
-
-export function toCompareBoxPlotValue(col: IBoxPlotColumn, row: IDataRow) {
-  const v = col.getBoxPlotData(row);
-  const method = <keyof IBoxPlotData>col.getSortMethod();
-  return v == null ? NaN : <number>v[method];
-}
-
-export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw' | 'normalized'): number {
-  const data = mode === 'normalized' ? col.getBoxPlotData(row) : col.getRawBoxPlotData(row);
-  if (data == null) {
-    return NaN;
-  }
-  return <number>data[<keyof IBoxPlotData>col.getSortMethod()];
-}
 
 export enum ESortMethod {
   min = 'min',
@@ -121,64 +188,9 @@ export function isNumbersColumn(col: Column): col is INumbersColumn {
   return isBoxPlotColumn(col) && typeof (<INumbersColumn>col).getNumbers === 'function';
 }
 
-/**
- * save number comparison
- * @param a
- * @param b
- * @param aMissing
- * @param bMissing
- * @return {number}
- * @internal
- */
-export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
-  aMissing = aMissing || a == null || isNaN(a);
-  bMissing = bMissing || b == null || isNaN(b);
-  if (aMissing) { //NaN are smaller
-    return bMissing ? 0 : FIRST_IS_NAN;
-  }
-  if (bMissing) {
-    return FIRST_IS_NAN * -1;
-  }
-  return a! - b!;
-}
 
 export interface INumberFilter {
   min: number;
   max: number;
   filterMissing: boolean;
-}
-
-/** @internal */
-export function noNumberFilter() {
-  return ({min: -Infinity, max: Infinity, filterMissing: false});
-}
-
-/** @internal */
-export function isEqualNumberFilter(a: INumberFilter, b: INumberFilter) {
-  return similar(a.min, b.min, 0.001) && similar(a.max, b.max, 0.001) && a.filterMissing === b.filterMissing;
-}
-
-/** @internal */
-export function isNumberIncluded(filter: INumberFilter | null, value: number) {
-  if (!filter) {
-    return true;
-  }
-  if (isNaN(value)) {
-    return !filter.filterMissing;
-  }
-  return !((isFinite(filter.min) && value < filter.min) || (isFinite(filter.max) && value > filter.max));
-}
-
-/** @internal */
-export function isDummyNumberFilter(filter: INumberFilter) {
-  return !filter.filterMissing && !isFinite(filter.min) && !isFinite(filter.max);
-}
-
-/** @internal */
-export function restoreNumberFilter(v: INumberFilter): INumberFilter {
-  return {
-    min: v.min != null && isFinite(v.min) ? v.min : -Infinity,
-    max: v.max != null && isFinite(v.max) ? v.max : +Infinity,
-    filterMissing: v.filterMissing
-  };
 }

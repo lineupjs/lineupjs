@@ -1,8 +1,5 @@
-import {ISequence, boxplotBuilder, IAdvancedBoxPlotData} from '../internal';
-import {IOrderedGroup, defaultGroup, IndicesArray} from './Group';
-import {IDataRow, IGroup, IGroupParent} from './interfaces';
-import INumberColumn, {numberCompare} from './INumberColumn';
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
+import {defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType} from '.';
 
 
 /** @internal */
@@ -89,31 +86,6 @@ export function colorPool() {
 }
 
 
-/** @internal */
-export function medianIndex(rows: ISequence<IDataRow>, col: INumberColumn) {
-  //return the median row
-  const data = rows.map((r, i) => ({r, i, v: col.getNumber(r)}));
-  const sorted = Array.from(data.filter((r) => !isNaN(r.v))).sort((a, b) => numberCompare(a.v, b.v));
-  const index = sorted[Math.floor(sorted.length / 2.0)];
-  if (index === undefined) {
-    return {index: 0, row: sorted[0]!.r}; //error case
-  }
-  return {index: index.i, row: index.r};
-}
-
-/** @internal */
-export function toCompareGroupValue(rows: ISequence<IDataRow>, col: INumberColumn, sortMethod: keyof IAdvancedBoxPlotData, valueCache?: ISequence<number>) {
-  const b = boxplotBuilder();
-  if (valueCache) {
-    b.pushAll(valueCache);
-  } else {
-    b.pushAll(rows.map((d) => col.getNumber(d)));
-  }
-  const vs = b.build();
-  return <number>vs[sortMethod];
-}
-
-
 /**
  * @internal
  */
@@ -158,4 +130,20 @@ export function forEachIndices(arr: IndicesArray, callback: (value: number, i: n
   for (let i = 0; i < arr.length; ++i) {
     callback(arr[i], i);
   }
+}
+
+/**
+ * @internal
+ */
+export function chooseUIntByDataLength(dataLength?: number | null) {
+  if (dataLength == null || typeof dataLength !== 'number' && !isNaN(dataLength)) {
+    return ECompareValueType.UINT32; // worst case
+  }
+  if (length <= 255) {
+    return ECompareValueType.UINT8;
+  }
+  if (length <= 65535) {
+    return ECompareValueType.UINT16;
+  }
+  return ECompareValueType.UINT32;
 }

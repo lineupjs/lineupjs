@@ -1,5 +1,5 @@
 import {timeFormat, timeParse} from 'd3-time-format';
-import {IDateColumn, IDateFilter, noDateFilter, restoreDateFilter, isDummyDateFilter} from './IDateColumn';
+import {IDateColumn, IDateFilter} from './IDateColumn';
 import {IKeyValue} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
@@ -10,6 +10,7 @@ import {dialogAddons, toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
+import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';
 
 export declare type IDateMapColumnDesc = IDatesDesc & IMapColumnDesc<Date | null>;
 

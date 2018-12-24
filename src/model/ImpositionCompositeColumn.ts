@@ -3,9 +3,9 @@ import {toolbar, SortByDefault} from './annotations';
 import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IDataRow, IGroup} from './interfaces';
-import {isNumberColumn, DEFAULT_FORMATTER} from './INumberColumn';
-import NumberColumn, {INumberColumn, mappingChanged, colorMappingChanged} from './NumberColumn';
-import {isMapAbleColumn} from './MappingFunction';
+import {isNumberColumn, INumberColumn, isMapAbleColumn} from './INumberColumn';
+import NumberColumn, {mappingChanged, colorMappingChanged} from './NumberColumn';
+import {DEFAULT_FORMATTER} from './internalNumber';
 
 
 /**

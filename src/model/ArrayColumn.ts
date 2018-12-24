@@ -1,14 +1,9 @@
 import {Category} from './annotations';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {empty} from '../internal';
-import {IArrayColumn} from './IArrayColumn';
+import {IArrayColumn, IArrayDesc} from './IArrayColumn';
 import {IDataRow} from './interfaces';
 
-
-export interface IArrayDesc {
-  dataLength?: number;
-  labels?: string[];
-}
 
 export interface IArrayColumnDesc<T> extends IArrayDesc, IValueColumnDesc<T[]> {
   // dummy

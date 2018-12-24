@@ -3,8 +3,7 @@ import {IRankingDump} from '../provider';
 import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, IColumnParent, IFlatColumn, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {defaultGroup, IndicesArray, IOrderedGroup} from './Group';
-import {IDataRow} from './interfaces';
+import {defaultGroup, IndicesArray, IOrderedGroup, IDataRow} from './interfaces';
 import NumberColumn, {filterChanged} from './NumberColumn';
 
 export interface ISortCriteria {

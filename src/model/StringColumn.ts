@@ -1,10 +1,9 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, ECompareValueType, dirtyCaches} from './Column';
-import {IDataRow, IGroup} from './interfaces';
+import {defaultGroup, IDataRow, IGroup} from './interfaces';
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {equal, IEventListener} from '../internal';
-import {defaultGroup} from './Group';
 
 export enum EAlignment {
   left = 'left',
