@@ -242,7 +242,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     };
 
     g.parent = {
-      name: `Cardinality ${cardinality}`,
+      name: `#${cardinality}`,
       color: DEFAULT_COLOR,
       subGroups: [g]
     };
