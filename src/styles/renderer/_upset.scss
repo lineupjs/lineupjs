@@ -10,12 +10,13 @@
   position: absolute;
   top: 0;
   height: 50%;
-  border-bottom: 1px solid $lu_renderer_upset_stroke; // line
+  transform: translateY(-1px);
+  border-bottom: 3px solid $lu_renderer_upset_color; // line
 }
 
 .#{$lu_css_prefix}-upset-dot {
   border-radius: 50%;
-  background-color: $lu_renderer_upset_circle_color;
+  background-color: $lu_renderer_upset_color;
   opacity: $lu_renderer_upset_inactive_opacity;
   width: 15px;
   height: 15px;

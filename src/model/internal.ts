@@ -21,17 +21,29 @@ export function joinGroups(groups: IGroup[]): IGroup {
     return groups[0];
   }
   // create a chain
-  const parents: IGroupParent[] = groups.map((g) => Object.assign({subGroups: []}, g));
+  const parents: IGroupParent[] = [];
+  for (const group of groups) {
+    const gparents: IGroupParent[] = [];
+    let g = group;
+    while (g.parent) {
+      // add all parents of this groups
+      gparents.unshift(g.parent);
+      g = g.parent;
+    }
+    parents.push(...gparents);
+    parents.push(Object.assign({subGroups: []}, group));
+  }
   parents.slice(1).forEach((g, i) => {
     g.parent = parents[i];
-    parents[i].subGroups.push(g);
+    parents[i].subGroups = [g];
   });
+  // artificial leaf combining the chain
   const g = {
     name: parents.map((d) => d.name).join(' ∩ '),
     color: parents[0].color,
     parent: parents[parents.length - 1]
   };
-  g.parent.subGroups.push(g);
+  g.parent.subGroups = [g];
   return g;
 }
 
@@ -52,7 +64,7 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
     if (g.parent) {
       const parent = resolve(g.parent);
       g.parent = parent.g;
-      id = `${parent.id}.$[id}`;
+      id = `${parent.id}.${id}`;
     }
     // ensure there is only one instance per id (i.e. share common parents
     if (lookup.has(id)) {

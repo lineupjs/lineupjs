@@ -29,6 +29,11 @@ export default class DataBuilder extends LineUpBuilder {
     return this;
   }
 
+  showTopN(n: number) {
+    this.providerOptions.showTopN = n;
+    return this;
+  }
+
   /**
    * allow just a single selection
    */

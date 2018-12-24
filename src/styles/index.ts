@@ -34,9 +34,8 @@ export const DASH = {
 };
 /** @internal */
 export const UPSET = {
-  circle: getStyle('lu_renderer_upset_circle_color'),
-  inactive: parseFloat(getStyle('lu_renderer_upset_inactive_opacity', '0.1')),
-  stroke: getStyle('lu_renderer_upset_stroke')
+  color: getStyle('lu_renderer_upset_color'),
+  inactive: parseFloat(getStyle('lu_renderer_upset_inactive_opacity', '0.1'))
 };
 /** @internal */
 export const DOT = {

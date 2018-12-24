@@ -3,7 +3,7 @@ import CategoricalColumn from './CategoricalColumn';
 import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {ICategoricalDesc, ICategoricalFilter, ICategory, ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, ECompareValueType, IValueColumnDesc} from './interfaces';
+import {IDataRow, ECompareValueType, IValueColumnDesc, IGroup, DEFAULT_COLOR} from './interfaces';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
 import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
@@ -34,7 +34,7 @@ declare function filterChanged(previous: ICategoricalFilter | null, current: ICa
 /**
  * a string column with optional alignment
  */
-@toolbar('filterCategorical', 'colorMappedCategorical')
+@toolbar('filterCategorical', 'colorMappedCategorical', 'group', 'groupBy')
 @Category('categorical')
 export default class SetColumn extends ValueColumn<string[]> implements IArrayColumn<boolean>, ISetColumn {
   static readonly EVENT_FILTER_CHANGED = CategoricalColumn.EVENT_FILTER_CHANGED;
@@ -227,5 +227,26 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
 
   toCompareValueType() {
     return [chooseUIntByDataLength(this.categories.length)].concat(this.categories.map(() => ECompareValueType.BINARY));
+  }
+
+  group(row: IDataRow): IGroup {
+    const v = this.getSet(row);
+    const cardinality = v.size;
+    const categories = this.categories.filter((c) => v.has(c));
+
+    // by cardinality and then by intersection
+
+    const g: IGroup = {
+      name: categories.length === 0 ? 'None' : categories.map((d) => d.name).join(', '),
+      color: categories.length === 1 ? categories[0].color : DEFAULT_COLOR
+    };
+
+    g.parent = {
+      name: `Cardinality ${cardinality}`,
+      color: DEFAULT_COLOR,
+      subGroups: [g]
+    };
+
+    return g;
   }
 }

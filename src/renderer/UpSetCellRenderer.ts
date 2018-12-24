@@ -75,8 +75,8 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         const hasTrueValues = data.some((d) => d); //some values are true?
 
         ctx.save();
-        ctx.fillStyle = UPSET.circle;
-        ctx.strokeStyle = UPSET.stroke;
+        ctx.fillStyle = UPSET.color;
+        ctx.strokeStyle = UPSET.color;
         if (hasTrueValues) {
           const {left, right} = UpSetCellRenderer.calculateSetPath(data, cellDimension);
           ctx.beginPath();

@@ -143,7 +143,7 @@ function deriveType(label: string, value: any, column: number | string, all: () 
       base.dataLength = value.length;
     }
     const first = value.find((v) => !isEmpty(v));
-    const p = deriveBaseType(first, () => concat(value).filter((d) => !isEmpty(d)), column, options);
+    const p = deriveBaseType(first, () => concat(values).filter((d) => !isEmpty(d)), column, options);
     if (p && p.type === 'categorical' && !sameLength) {
       return Object.assign(base, p, {
         type : 'set'
