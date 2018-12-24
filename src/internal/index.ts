@@ -9,4 +9,4 @@ export * from './math';
 export {default as merge} from './merge';
 export {default as OrderedSet} from './OrderedSet';
 export * from './utils';
-
+export * from './worker';

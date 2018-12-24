@@ -2,7 +2,7 @@ import {GridStyleManager, MultiTableRowRenderer, nonUniformContext} from 'lineup
 import {ILineUpFlags, ILineUpOptions} from '../interfaces';
 import {round, IEventListener, suffix, AEventDispatcher} from '../internal';
 import {Column, IGroupData, IGroupItem, isGroup, Ranking} from '../model';
-import ADataProvider from '../provider/ADataProvider';
+import {DataProvider} from '../provider';
 import {IImposer, IRenderContext} from '../renderer';
 import {chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer} from '../renderer/internal';
 import {cssClass} from '../styles';
@@ -38,7 +38,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
   private enabledHighlightListening: boolean = false;
 
-  constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
+  constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
     this.node = parent.ownerDocument!.createElement('main');
@@ -167,7 +167,7 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
 
-  setDataProvider(data: ADataProvider) {
+  setDataProvider(data: DataProvider) {
     this.takeDownProvider();
 
     this.data = data;
@@ -178,13 +178,13 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   private takeDownProvider() {
-    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_ADD_RANKING}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_SHOWTOPN_CHANGED}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_BUSY}.body`, null);
+    this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, null);
+    this.data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, null);
+    this.data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_SHOWTOPN_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.body`, null);
+    this.data.on(`${DataProvider.EVENT_BUSY}.body`, null);
 
     this.rankings.forEach((r) => this.table.remove(r));
     this.rankings.splice(0, this.rankings.length);
@@ -192,21 +192,21 @@ export default class EngineRenderer extends AEventDispatcher {
     this.slopeGraphs.splice(0, this.slopeGraphs.length);
   }
 
-  private initProvider(data: ADataProvider) {
-    data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.updateSelection(data.getSelection()));
-    data.on(`${ADataProvider.EVENT_ADD_RANKING}.body`, (ranking: Ranking) => {
+  private initProvider(data: DataProvider) {
+    data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.updateSelection(data.getSelection()));
+    data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, (ranking: Ranking) => {
       this.addRanking(ranking);
     });
-    data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, (ranking: Ranking) => {
+    data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, (ranking: Ranking) => {
       this.removeRanking(ranking);
     });
-    data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
+    data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
       this.update(this.rankings.filter((r) => r.ranking === ranking));
     });
-    data.on(`${ADataProvider.EVENT_SHOWTOPN_CHANGED}.body`, () => {
+    data.on(`${DataProvider.EVENT_SHOWTOPN_CHANGED}.body`, () => {
       this.update(this.rankings);
     });
-    data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
+    data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
       this.setHighlightToNearest(indices, true);
     });
 

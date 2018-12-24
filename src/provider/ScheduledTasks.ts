@@ -1,7 +1,6 @@
 import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISortMessageResponse, IStatistics, toIndexArray, WORKER_BLOB} from '../internal';
-import {ISequence, lazySeq} from '../internal';
+import {ISequence, lazySeq, WorkerTaskScheduler} from '../internal';
 import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
-import {WorkerTaskScheduler} from '../internal/worker';
 import Column, {ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking,ICompareValue, UIntTypedArray} from '../model';
 import {IRenderTask} from '../renderer/interfaces';
 import {sortDirect} from './DirectRenderTasks';

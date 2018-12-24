@@ -1,4 +1,4 @@
-import {IWorkerMessage, INumberStatsMessageRequest, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ICategoricalStatsMessageRequest, IDateStatsMessageRequest, IBoxPlotStatsMessageRequest} from './math';
+import {IWorkerMessage, INumberStatsMessageRequest, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ICategoricalStatsMessageRequest, IDateStatsMessageRequest, IBoxPlotStatsMessageRequest} from './';
 import {UIntTypedArray, IndicesArray} from '../model';
 
 /**

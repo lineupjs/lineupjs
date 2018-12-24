@@ -1,6 +1,6 @@
 import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow} from '../model';
 import {AEventDispatcher, ISequence} from '../internal';
-import {IRenderTasks} from '../renderer/interfaces';
+import {IRenderTasks} from '../renderer';
 
 export enum EAggregationState {
   COLLAPSE = 'collapse',

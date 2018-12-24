@@ -7,7 +7,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
 import {matchColumns, forEachChild} from './utils';
 import {colorOf} from '../ui/dialogs/utils';
-import {tasksAll} from '../provider/tasks';
+import {tasksAll} from '../provider';
 
 
 /** @internal */

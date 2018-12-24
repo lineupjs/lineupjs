@@ -1,5 +1,5 @@
 import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
-import {IColumnDump} from '../provider/interfaces';
+import {IColumnDump} from '../provider';
 import {isSortingAscByDefault} from './annotations';
 import {defaultGroup} from './Group';
 import {ECompareValueType, IColumnDesc, IDataRow, IGroup} from './interfaces';

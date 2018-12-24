@@ -1,6 +1,6 @@
 import {Column, isMapAbleColumn, NumberColumn} from '../../model';
-import {IAbortAblePromise} from '../../provider/tasks';
-import {ISummaryRenderer} from '../../renderer/interfaces';
+import {IAbortAblePromise} from '../../provider';
+import {ISummaryRenderer} from '../../renderer';
 import {cssClass, engineCssClass} from '../../styles';
 import {createShortcutMenuItems, dragAbleColumn, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';

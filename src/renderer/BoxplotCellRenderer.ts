@@ -4,7 +4,7 @@ import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingCanvas} from './missing';
-import {tasksAll} from '../provider/tasks';
+import {tasksAll} from '../provider';
 
 const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">

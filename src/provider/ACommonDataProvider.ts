@@ -1,7 +1,6 @@
 import {IColumnDesc, Ranking} from '../model';
 import ADataProvider from './ADataProvider';
-import {IDataProviderOptions} from './interfaces';
-import {IDataProviderDump} from './interfaces';
+import {IDataProviderDump, IDataProviderOptions} from './interfaces';
 import {isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter} from './accessor';
 
 

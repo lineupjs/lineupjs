@@ -1,9 +1,6 @@
 import {Column, IColumnDesc} from '../model';
-import {deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions} from '../provider';
-import ADataProvider from '../provider/ADataProvider';
-import LocalDataProvider from '../provider/LocalDataProvider';
-import LineUp from '../ui/LineUp';
-import Taggle from '../ui/taggle/Taggle';
+import {DataProvider, LocalDataProvider, deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions} from '../provider';
+import {LineUp, Taggle} from '../ui';
 import ColumnBuilder from './column/ColumnBuilder';
 import LineUpBuilder from './LineUpBuilder';
 import RankingBuilder from './RankingBuilder';
@@ -17,7 +14,7 @@ export default class DataBuilder extends LineUpBuilder {
     columnTypes: {}
   };
 
-  private readonly rankBuilders: ((data: ADataProvider) => void)[] = [];
+  private readonly rankBuilders: ((data: DataProvider) => void)[] = [];
   private _deriveColors: boolean = false;
 
   constructor(private readonly data: object[]) {
@@ -104,9 +101,9 @@ export default class DataBuilder extends LineUpBuilder {
 
   /**
    * add another ranking to this data provider
-   * @param {((data: ADataProvider) => void) | RankingBuilder} builder ranking builder
+   * @param {((data: DataProvider) => void) | RankingBuilder} builder ranking builder
    */
-  ranking(builder: ((data: ADataProvider) => void) | RankingBuilder) {
+  ranking(builder: ((data: DataProvider) => void) | RankingBuilder) {
     this.rankBuilders.push(builder instanceof RankingBuilder ? builder.build.bind(builder) : builder);
     return this;
   }

@@ -3,7 +3,7 @@ import Column, {IColumnDesc, widthChanged, labelChanged, metaDataChanged, dirty,
 import {IGroup} from './interfaces';
 import Ranking from './Ranking';
 import {IEventListener} from '../internal';
-import {EAggregationState} from '../provider/interfaces';
+import {EAggregationState} from '../provider';
 
 /**
  * factory for creating a description creating a rank column

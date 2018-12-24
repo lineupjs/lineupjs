@@ -6,7 +6,7 @@ import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/in
 import {addColumn, orderChanged, removeColumn} from '../model/Ranking';
 import {IColumnDump, IDataProvider, IDataProviderDump, IDataProviderOptions, IRankingDump, SCHEMA_REF, EAggregationState} from './interfaces';
 import {exportRanking, IExportOptions, map2Object, object2Map} from './utils';
-import {IRenderTasks} from '../renderer/interfaces';
+import {IRenderTasks} from '../renderer';
 
 
 export {IExportOptions} from './utils';

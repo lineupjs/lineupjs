@@ -2,7 +2,7 @@ import {abortAbleAll, IAbortAblePromise} from 'lineupengine';
 import {ANOTHER_ROUND} from '../internal/scheduler';
 import {IForEachAble, lazySeq, boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value, joinIndexArrays, IBuilder} from '../internal';
 import {CategoricalColumn, Column, ICompareValue, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, UIntTypedArray, ICategory} from '../model';
-import {IRenderTask, IRenderTasks} from '../renderer/interfaces';
+import {IRenderTask, IRenderTasks} from '../renderer';
 import {CompareLookup} from './sort';
 
 export {IAbortAblePromise} from 'lineupengine';

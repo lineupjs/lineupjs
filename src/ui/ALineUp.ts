@@ -2,8 +2,7 @@ import {getUnsupportedBrowserError, SUPPORTED_CHROME_VERSION, SUPPORTED_EDGE_VER
 import {ILineUpLike} from '../interfaces';
 import {AEventDispatcher, IEventListener, clear} from '../internal';
 import {Column} from '../model';
-import DataProvider from '../provider/ADataProvider';
-import {IDataProviderDump} from '../provider/interfaces';
+import {DataProvider, IDataProviderDump} from '../provider';
 import {cssClass} from '../styles';
 
 
