@@ -3,7 +3,7 @@ import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, sche
 import {round} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
 import {sequentialColors, divergentColors, createColorMappingFunction, lookupInterpolatingColor, QuantizedColorFunction, asColorFunction, CustomColorMappingFunction} from '../../model/ColorMappingFunction';
-import {Column, IMapAbleColumn} from '../../model';
+import {IMapAbleColumn, DEFAULT_COLOR} from '../../model';
 import {cssClass} from '../../styles';
 
 /** @internal */
@@ -49,7 +49,7 @@ export default class ColorMappingDialog extends ADialog {
         </div>`;
       }
       h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
-        <span class="${cssClass('color-custom')}"><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : Column.DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></span>
+        <span class="${cssClass('color-custom')}"><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></span>
       </label>`;
     }
     h += '</div>';

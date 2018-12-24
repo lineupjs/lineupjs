@@ -1,9 +1,10 @@
 import {ISequence, isSeqEmpty} from '../internal';
-import {FIRST_IS_MISSING, IDataRow, Column, ECompareValueType, ICompareValue, ICategory, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter} from '.';
+import {FIRST_IS_MISSING, IDataRow, ECompareValueType, ICompareValue, ICategory, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter} from '.';
 import {colorPool} from './internal';
+import {DEFAULT_COLOR} from './interfaces';
 
 /** @internal */
-export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => Column.DEFAULT_COLOR) {
+export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => DEFAULT_COLOR) {
   if (typeof cat === 'string') {
     //just the category value
     return {name: cat, label: cat, color: nextColor(), value};

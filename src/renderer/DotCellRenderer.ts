@@ -1,5 +1,5 @@
 import {round, concatSeq, ISequence} from '../internal';
-import {Column, isNumbersColumn, INumberColumn, IDataRow, isNumberColumn, IOrderedGroup} from '../model';
+import {Column, isNumbersColumn, INumberColumn, IDataRow, isNumberColumn, IOrderedGroup, DEFAULT_COLOR} from '../model';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
@@ -20,7 +20,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     const dots = isNumbersColumn(col) ? col.dataLength! : 1;
     let tmp = '';
     for (let i = 0; i < dots; ++i) {
-      tmp += `<div style='background-color: ${Column.DEFAULT_COLOR}' title=''></div>`;
+      tmp += `<div style='background-color: ${DEFAULT_COLOR}' title=''></div>`;
     }
 
     const update = (n: HTMLElement, data: ISequence<{value: number, label: string, color: string | null}>) => {

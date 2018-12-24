@@ -3,7 +3,7 @@ import {toolbar, dialogAddons, SortByDefault} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IKeyValue} from './IArrayColumn';
-import {IDataRow, IGroup, IColumnDesc} from './interfaces';
+import {IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR} from './interfaces';
 import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, IMappingFunction, IColorMappingFunction, isMapAbleColumn} from './INumberColumn';
 import {ScaleMappingFunction} from './MappingFunction';
 import NumbersColumn from './NumbersColumn';
@@ -83,7 +83,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     const c = this._children;
     switch (c.length) {
       case 0:
-        return Column.DEFAULT_COLOR;
+        return DEFAULT_COLOR;
       case 1:
         return c[0].getColor(row);
       default:

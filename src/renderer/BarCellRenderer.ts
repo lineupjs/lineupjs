@@ -1,5 +1,5 @@
 import {round} from '../internal';
-import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn} from '../model';
+import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAULT_COLOR} from '../model';
 import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
@@ -27,7 +27,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
-          <div class="${cssClass('bar-label')}" style='background-color: ${Column.DEFAULT_COLOR}'>
+          <div class="${cssClass('bar-label')}" style='background-color: ${DEFAULT_COLOR}'>
             <span ${this.renderValue ? '' : `class="${cssClass('hover-only')}"`}></span>
           </div>
         </div>`,
@@ -45,14 +45,14 @@ export default class BarCellRenderer implements ICellRendererFactory {
         setText(bar.firstElementChild!, title);
         const item = <HTMLElement>bar.firstElementChild!;
         setText(item, title);
-        adaptDynamicColorToBgColor(item, color || Column.DEFAULT_COLOR, title, w / 100);
+        adaptDynamicColorToBgColor(item, color || DEFAULT_COLOR, title, w / 100);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
         const value = col.getNumber(d);
-        ctx.fillStyle = colorOf(col, d, imposer, value) || Column.DEFAULT_COLOR;
+        ctx.fillStyle = colorOf(col, d, imposer, value) || DEFAULT_COLOR;
         const w = width * value;
         ctx.fillRect(0, 0, isNaN(w) ? 0 : w, CANVAS_HEIGHT);
 

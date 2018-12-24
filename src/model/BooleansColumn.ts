@@ -1,6 +1,6 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, DEFAULT_COLOR} from './interfaces';
 import CategoricalColumn from './CategoricalColumn';
 import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
 import ValueColumn, {dataLoaded} from './ValueColumn';
@@ -64,7 +64,7 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   }
 
   getColors(row: IDataRow) {
-    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : Column.DEFAULT_COLOR);
+    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : DEFAULT_COLOR);
   }
 
 

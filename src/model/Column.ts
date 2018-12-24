@@ -1,6 +1,6 @@
 import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
 import {isSortingAscByDefault} from './annotations';
-import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue} from './interfaces';
+import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR} from './interfaces';
 import Ranking from './Ranking';
 
 /**
@@ -85,11 +85,6 @@ export declare function visibilityChanged(previous: boolean, current: boolean): 
  * a column in LineUp
  */
 export default class Column extends AEventDispatcher {
-  /**
-   * default color that should be used
-   * @type {string}
-   */
-  static readonly DEFAULT_COLOR = '#C1C1C1';
   /**
    * magic variable for showing all columns
    * @type {number}
@@ -488,7 +483,7 @@ export default class Column extends AEventDispatcher {
   }
 
   getColor(_row: IDataRow) {
-    return Column.DEFAULT_COLOR;
+    return DEFAULT_COLOR;
   }
 
   toCompareValue(_row: IDataRow, _valueCache?: any): ICompareValue | ICompareValue[] {

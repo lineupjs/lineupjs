@@ -1,5 +1,5 @@
 import {MIN_LABEL_WIDTH} from '../constants';
-import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn} from '../model';
+import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn, DEFAULT_COLOR} from '../model';
 import {hsl} from 'd3-color';
 import {cssClass} from '../styles';
 import {IRenderContext} from '.';
@@ -200,5 +200,5 @@ export function colorOf(col: Column) {
   if (isMapAbleColumn(col)) {
     return col.getColorMapping().apply(0);
   }
-  return Column.DEFAULT_COLOR;
+  return DEFAULT_COLOR;
 }

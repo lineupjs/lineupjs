@@ -1,4 +1,4 @@
-import {Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleColumn} from '../model';
+import {Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleColumn, DEFAULT_COLOR} from '../model';
 import {colorPool, MAX_COLORS} from '../model/internal';
 import {concat, equal, extent, range} from '../internal';
 import {timeParse} from 'd3-time-format';
@@ -279,7 +279,7 @@ export function deriveColors(columns: IColumnDesc[]) {
   const colors = colorPool();
   columns.forEach((col: IColumnDesc) => {
     if (isMapAbleColumn(col)) {
-      col.colorMapping = col.colorMapping || col.color || colors() || Column.DEFAULT_COLOR;
+      col.colorMapping = col.colorMapping || col.color || colors() || DEFAULT_COLOR;
     }
   });
   return columns;

@@ -1,5 +1,5 @@
 import {ICategoricalStatistics, round} from '../internal';
-import {CategoricalColumn, Column, OrdinalColumn, ICategoricalColumn, isCategoricalColumn, IOrderedGroup, ISetColumn} from '../model';
+import {CategoricalColumn, Column, OrdinalColumn, ICategoricalColumn, isCategoricalColumn, IOrderedGroup, ISetColumn, DEFAULT_COLOR} from '../model';
 import {filterMissingNumberMarkup} from '../ui/missing';
 import {interactiveHist, HasCategoricalFilter} from './CategoricalCellRenderer';
 import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
@@ -104,7 +104,7 @@ function stackedBar(col: ISetColumn) {
     color: mapping.apply(c),
     selected: selectedCol(mapping.apply(c))
   }));
-  cats.push({label: 'Missing Values', name: 'missing', color: Column.DEFAULT_COLOR, selected: 'transparent'});
+  cats.push({label: 'Missing Values', name: 'missing', color: DEFAULT_COLOR, selected: 'transparent'});
 
   const bins = cats.map((c) => `<div class="${cssClass('distribution-bar')}" style="background-color: ${c.color}; color: ${adaptTextColorToBgColor(c.color)}" title="${c.label}: 0" data-cat="${c.name}"><span>${c.label}</span></div>`).join('');
 

@@ -2,7 +2,7 @@ import {suffix, IEventListener, ISequence} from '../internal';
 import {toolbar, SortByDefault} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IGroup, IColumnDesc} from './interfaces';
+import {IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR} from './interfaces';
 import {isNumberColumn, INumberColumn, isMapAbleColumn, IColorMappingFunction, IMappingFunction} from './INumberColumn';
 import NumberColumn from './NumberColumn';
 import {DEFAULT_FORMATTER} from './internalNumber';
@@ -105,7 +105,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     const c = this._children;
     switch (c.length) {
       case 0:
-        return Column.DEFAULT_COLOR;
+        return DEFAULT_COLOR;
       case 1:
         return c[0].getColor(row);
       default:

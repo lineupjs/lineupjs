@@ -3,7 +3,7 @@ import {toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, DEFAULT_COLOR} from './interfaces';
 import {EAdvancedSortMethod} from './INumberColumn';
 
 /**
@@ -58,11 +58,11 @@ export default class ReduceColumn extends CompositeNumberColumn {
     //compute the index of the maximal one
     const c = this._children;
     if (c.length === 0 || this.reduce === EAdvancedSortMethod.q1 || this.reduce === EAdvancedSortMethod.q3 || this.reduce === EAdvancedSortMethod.mean) {
-      return Column.DEFAULT_COLOR;
+      return DEFAULT_COLOR;
     }
     const v = this.compute(row);
     const selected = c.find((c) => c.getValue(row) === v);
-    return selected ? selected.getColor(row) : Column.DEFAULT_COLOR;
+    return selected ? selected.getColor(row) : DEFAULT_COLOR;
   }
 
   protected compute(row: IDataRow) {

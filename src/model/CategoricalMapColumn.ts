@@ -1,5 +1,5 @@
 import {ICategoricalDesc, ICategory, ICategoricalLikeColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, DEFAULT_COLOR} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
@@ -74,7 +74,7 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
   }
 
   getColors(row: IDataRow) {
-    return this.getCategories(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value) : Column.DEFAULT_COLOR}));
+    return this.getCategories(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value) : DEFAULT_COLOR}));
   }
 
   getValue(row: IDataRow) {

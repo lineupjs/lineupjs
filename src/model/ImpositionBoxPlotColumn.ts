@@ -4,7 +4,7 @@ import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import BoxPlotColumn from './BoxPlotColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IGroup, IColumnDesc} from './interfaces';
+import {IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR} from './interfaces';
 import {ESortMethod, IBoxPlotColumn, INumberFilter, isBoxPlotColumn, IMappingFunction, IColorMappingFunction, isMapAbleColumn} from './INumberColumn';
 import {ScaleMappingFunction} from './MappingFunction';
 import NumbersColumn from './NumbersColumn';
@@ -85,7 +85,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     const c = this._children;
     switch (c.length) {
       case 0:
-        return Column.DEFAULT_COLOR;
+        return DEFAULT_COLOR;
       case 1:
         return c[0].getColor(row);
       default:

@@ -1,7 +1,8 @@
 import {interpolateBlues, interpolateGreens, interpolateGreys, interpolateOranges, interpolatePurples, interpolateReds, interpolateCool, interpolateCubehelixDefault, interpolateWarm, interpolatePlasma, interpolateMagma, interpolateViridis, interpolateInferno, interpolateYlOrRd, interpolateYlOrBr, interpolateBuGn, interpolateBuPu, interpolateGnBu, interpolateOrRd, interpolatePuBuGn, interpolatePuBu, interpolatePuRd, interpolateRdPu, interpolateYlGnBu, interpolateYlGn, interpolateRainbow, interpolateBrBG, interpolatePRGn, interpolatePiYG, interpolatePuOr, interpolateRdBu, interpolateRdGy, interpolateRdYlBu, interpolateRdYlGn, interpolateSpectral} from 'd3-scale-chromatic';
 import {equal} from '../internal';
 import {scaleLinear} from 'd3-scale';
-import {Column, IInterpolateColorMappingFunction, IColorMappingFunction, ISolidColorMappingFunction, IQuantizedColorMappingFunction, ICustomColorMappingFunction, IMapAbleDesc} from '.';
+import {IInterpolateColorMappingFunction, IColorMappingFunction, ISolidColorMappingFunction, IQuantizedColorMappingFunction, ICustomColorMappingFunction, IMapAbleDesc} from '.';
+import {DEFAULT_COLOR} from './interfaces';
 
 /** @internal */
 export class InterpolatingColorFunction implements IInterpolateColorMappingFunction {
@@ -147,7 +148,7 @@ export function asColorFunction(color: string) {
 /**
  * @internal
  */
-export const DEFAULT_COLOR_FUNCTION = asColorFunction(Column.DEFAULT_COLOR);
+export const DEFAULT_COLOR_FUNCTION = asColorFunction(DEFAULT_COLOR);
 
 /**
  * @internal

@@ -3,7 +3,7 @@ import {equalArrays, IEventListener, ISequence} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
 import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDataRow, IGroup, ECompareValueType, IValueColumnDesc} from './interfaces';
+import {IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEFAULT_COLOR} from './interfaces';
 import {INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, IMappingFunction, IColorMappingFunction, IMapAbleColumn} from './INumberColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
@@ -255,7 +255,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   getColor(row: IDataRow) {
     const v = this.getNumber(row);
     if (isNaN(v)) {
-      return Column.DEFAULT_COLOR;
+      return DEFAULT_COLOR;
     }
     return this.colorMapping.apply(v);
   }

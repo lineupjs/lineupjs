@@ -54,6 +54,12 @@ export interface IStyleColumn {
   visible: boolean;
 }
 
+/**
+ * default color that should be used
+ * @type {string}
+ */
+export const DEFAULT_COLOR = '#C1C1C1';
+
 
 export interface IColumnDesc extends Partial<IStyleColumn> {
   /**

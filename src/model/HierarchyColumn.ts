@@ -2,7 +2,7 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IGroup, IValueColumnDesc} from './interfaces';
+import {IDataRow, IGroup, IValueColumnDesc, DEFAULT_COLOR} from './interfaces';
 import {colorPool} from './internal';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
@@ -350,14 +350,14 @@ export function deriveHierarchy(categories: (Partial<ICategory> & {parent: strin
       children: [],
       label: c.name!,
       name: c.name!,
-      color: Column.DEFAULT_COLOR,
+      color: DEFAULT_COLOR,
       value: 0
     }, lookup.get(c.name!) || {}, c);
     lookup.set(c.name!, item);
 
     if (!lookup.has(p)) {
       // create proxy
-      lookup.set(p, {name: p, children: [], label: p, value: 0, color: Column.DEFAULT_COLOR});
+      lookup.set(p, {name: p, children: [], label: p, value: 0, color: DEFAULT_COLOR});
     }
     lookup.get(p)!.children.push(item);
   });

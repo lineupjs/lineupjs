@@ -1,5 +1,5 @@
 import {hsl} from 'd3-color';
-import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn} from '../model';
+import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn, DEFAULT_COLOR} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
@@ -13,7 +13,7 @@ export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColu
   }
   if (imposer || !isMapAbleColumn(col)) {
     //hsl space encoding, encode in lightness
-    const color = hsl(colorOf(col, row, imposer, v) || Column.DEFAULT_COLOR);
+    const color = hsl(colorOf(col, row, imposer, v) || DEFAULT_COLOR);
     color.l = 1 - v; // largest value = darkest color
     return color.toString();
   }
@@ -41,7 +41,7 @@ export default class BrightnessCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
-        <div class="${cssClass('cat-color')}" style="background-color: ${Column.DEFAULT_COLOR}"></div><div class="${cssClass('cat-label')}"> </div>
+        <div class="${cssClass('cat-color')}" style="background-color: ${DEFAULT_COLOR}"></div><div class="${cssClass('cat-label')}"> </div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);

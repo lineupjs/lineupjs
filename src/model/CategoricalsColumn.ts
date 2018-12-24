@@ -1,6 +1,6 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ICategoricalDesc, ICategory, ICategoricalLikeColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, DEFAULT_COLOR} from './interfaces';
 import {toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
@@ -71,7 +71,7 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
   }
 
   getColors(row: IDataRow) {
-    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : Column.DEFAULT_COLOR);
+    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : DEFAULT_COLOR);
   }
 
   getSet(row: IDataRow) {
