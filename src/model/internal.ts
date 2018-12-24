@@ -17,7 +17,7 @@ export function joinGroups(groups: IGroup[]): IGroup {
   if (groups.length === 0) {
     return defaultGroup;
   }
-  if (groups.length === 1) {
+  if (groups.length === 1 && !groups[0].parent) {
     return groups[0];
   }
   // create a chain

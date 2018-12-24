@@ -286,7 +286,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const filterCaches = filter.map((c) => typeof c === 'function' ? undefined : this.tasks.valueCache(c));
 
     const toGroup = groupCriteria.length === 1 ?
-      (r: IDataRow) => groupCriteria[0].group(r, groupCaches[0] ? groupCaches[0]!(r.i) : undefined) :
+      (r: IDataRow) => joinGroups([groupCriteria[0].group(r, groupCaches[0] ? groupCaches[0]!(r.i) : undefined)]) :
       (r: IDataRow) => joinGroups(groupCriteria.map((c, i) => c.group(r, groupCaches[i] ? groupCaches[i]!(r.i) : undefined)));
 
     if (needsFiltering) {
