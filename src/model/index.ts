@@ -3,7 +3,7 @@ export {isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup}
 export * from './Group';
 export * from './interfaces';
 export {ISetColumn, isCategoricalColumn, isCategoricalLikeColumn, isSetColumn, ICategoricalColumn, ICategoricalColumnDesc, ICategoricalDesc, ICategoricalFilter, ICategoricalLikeColumn, ICategory, isCategory} from './ICategoricalColumn';
-export {DEFAULT_FORMATTER, INumberDesc, IAdvancedBoxPlotColumn, INumbersColumn, isNumberColumn, IBoxPlotColumn, INumberColumn, INumberFilter, isBoxPlotColumn, isNumbersColumn, EAdvancedSortMethod, ESortMethod} from './INumberColumn';
+export {INumberDesc, IAdvancedBoxPlotColumn, INumbersColumn, isNumberColumn, IBoxPlotColumn, INumberColumn, INumberFilter, isBoxPlotColumn, isNumbersColumn, EAdvancedSortMethod, ESortMethod} from './INumberColumn';
 export {IDateColumn, IDateDesc, IDateFilter, IDateGranularity, IDateGrouper, isDateColumn} from './IDateColumn';
 export * from './IArrayColumn';
 export * from './MappingFunction';
