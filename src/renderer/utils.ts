@@ -1,5 +1,5 @@
 import {MIN_LABEL_WIDTH} from '../interfaces';
-import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn} from '../model';
+import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn} from '../model';
 import {hsl} from 'd3-color';
 import {cssClass} from '../styles';
 import {IRenderContext} from '.';
@@ -192,4 +192,13 @@ export function exampleText(col: Column, rows: ISequence<IDataRow>) {
 /** @internal */
 export function multiLevelGridCSSClass(idPrefix: string, column: Column) {
   return cssClass(`stacked-${idPrefix}-${column.id}`);
+}
+
+
+/** @internal */
+export function colorOf(col: Column) {
+  if (isMapAbleColumn(col)) {
+    return col.getColorMapping().apply(0);
+  }
+  return Column.DEFAULT_COLOR;
 }

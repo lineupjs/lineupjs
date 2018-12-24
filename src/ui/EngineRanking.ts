@@ -27,20 +27,20 @@ export interface IEngineRankingOptions {
  * @asMemberOf EngineRanking
  * @event
  */
-export declare function widthChanged(): void;
+declare function widthChanged(): void;
 /**
  * emitted when the data of the ranking needs to be updated
  * @asMemberOf EngineRanking
  * @event
  */
-export declare function updateData(): void;
+declare function updateData(): void;
 /**
  * emitted when the highlight changes
  * @asMemberOf EngineRanking
  * @param dataIndex the highlghted data index or -1 for none
  * @event
  */
-export declare function highlightChanged(dataIndex: number): void;
+declare function highlightChanged(dataIndex: number): void;
 
 
 /** @internal */

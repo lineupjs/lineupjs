@@ -1,28 +1,11 @@
 import {IColumnDesc} from '../../model';
-import {Taggle, LineUp} from '../../ui';
-import {ILineUpOptions, ITaggleOptions} from '../../interfaces';
-import {IBuilderAdapterRankingProps, buildRanking} from './ranking';
-import {pick, isSame, equal} from './utils';
-import {LocalDataProvider, deriveColumnDescriptions, deriveColors, IDataProviderOptions, ILocalDataProviderOptions} from '../../provider';
+import {deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider} from '../../provider';
+import {LineUp, Taggle} from '../../ui';
+import {IBuilderAdapter, IBuilderAdapterProps, IChangeDetecter} from './lineupInterfaces';
+import {buildRanking} from './ranking';
+import {IBuilderAdapterRankingProps} from './rankingInterfaces';
+import {equal, isSame, pick} from './utils';
 
-
-export interface IBuilderAdapterDataProps extends Partial<IDataProviderOptions>, Partial<ILocalDataProviderOptions> {
-  data: any[];
-  selection?: number[] | null;
-  highlight?: number | null;
-
-  onSelectionChanged?(selection: number[]): void;
-  onHighlightChanged?(highlight: number): void;
-
-  deriveColumns?: boolean | string[];
-  deriveColors?: boolean;
-
-  restore?: any;
-  defaultRanking?: boolean | 'noSupportTypes';
-}
-
-
-export declare type IBuilderAdapterProps = Partial<ITaggleOptions> & IBuilderAdapterDataProps;
 
 const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = ['singleSelection', 'filterGlobally', 'columnTypes', 'taskExecutor', 'jumpToSearchResult'];
 const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'canRender', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser'];
@@ -39,17 +22,6 @@ interface IColumnContext {
   deriveColumns: boolean;
   deriveColumnNames: string[];
   deriveColors: boolean;
-}
-
-export interface IChangeDetecter {
-  (prop: (keyof IBuilderAdapterProps)): boolean;
-}
-
-export interface IBuilderAdapter {
-  props(): Readonly<IBuilderAdapterProps>;
-  createInstance(data: LocalDataProvider, options: Partial<ILineUpOptions>): LineUp | Taggle;
-  rankingBuilders(): IBuilderAdapterRankingProps[];
-  columnDescs(data: any[]): IColumnDesc[];
 }
 
 export class Adapter {

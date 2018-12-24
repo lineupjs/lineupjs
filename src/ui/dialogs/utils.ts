@@ -1,4 +1,4 @@
-import {Column, isMapAbleColumn} from '../../model';
+import {Column} from '../../model';
 import {forEach} from '../../renderer/utils';
 import {cssClass} from '../../styles';
 
@@ -33,13 +33,6 @@ export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string)
   });
 }
 
-/** @internal */
-export function colorOf(col: Column) {
-  if (isMapAbleColumn(col)) {
-    return col.getColorMapping().apply(0);
-  }
-  return Column.DEFAULT_COLOR;
-}
 
 /** @internal */
-export {uniqueId, forEach, forEachChild} from '../../renderer/utils';
+export {uniqueId, forEach, forEachChild, colorOf} from '../../renderer/utils';

@@ -4,5 +4,5 @@ export {default as RemoteDataProvider} from './RemoteDataProvider';
 export * from './LocalDataProvider';
 export * from './RemoteDataProvider';
 export {IDeriveOptions, deriveColors, deriveColumnDescriptions, exportRanking, IExportOptions} from './utils';
-export {IDataProviderOptions, IDataProvider, SCHEMA_REF, IDataProviderDump} from './interfaces';
+export * from './interfaces';
 export {tasksAll, IAbortAblePromise} from './tasks';

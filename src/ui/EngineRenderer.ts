@@ -18,7 +18,7 @@ import SlopeGraph, {EMode} from './SlopeGraph';
  * @param dataIndex the highlghted data index or -1 for none
  * @event
  */
-export declare function highlightChanged(dataIndex: number): void;
+declare function highlightChanged(dataIndex: number): void;
 
 export default class EngineRenderer extends AEventDispatcher {
   static readonly EVENT_HIGHLIGHT_CHANGED = EngineRanking.EVENT_HIGHLIGHT_CHANGED;

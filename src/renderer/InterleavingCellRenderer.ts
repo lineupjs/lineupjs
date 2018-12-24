@@ -5,8 +5,7 @@ import {getHistDOMRenderer} from './HistogramCellRenderer';
 import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
-import {matchColumns, forEachChild} from './utils';
-import {colorOf} from '../ui/dialogs/utils';
+import {colorOf, matchColumns, forEachChild} from './utils';
 import {tasksAll} from '../provider';
 
 

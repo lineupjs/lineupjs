@@ -1,27 +1,6 @@
 import {extent} from '../../internal';
-import {
-  EAdvancedSortMethod,
-  IAction,
-  IGroupAction,
-  IArrayDesc,
-  ICategoricalColumnDesc,
-  ICategory,
-  IColumnDesc,
-  IDateColumnDesc,
-  IHierarchyColumnDesc,
-  INumberColumnDesc,
-  IPartialCategoryNode,
-  IActionColumnDesc,
-  ILinkColumnDesc,
-  IBooleanColumnDesc
-} from '../../model';
-
-export interface IBuilderAdapterColumnDescProps extends Partial<IColumnDesc> {
-  column: string;
-  asMap?: boolean;
-  asArray?: string[] | number | boolean;
-  custom?: { [key: string]: any };
-}
+import {IActionColumnDesc, IArrayDesc, IBooleanColumnDesc, ICategoricalColumnDesc, IColumnDesc, IDateColumnDesc, IHierarchyColumnDesc, ILinkColumnDesc, INumberColumnDesc} from '../../model';
+import {IBuilderAdapterActionsColumnDescProps, IBuilderAdapterBooleanColumnDescProps, IBuilderAdapterCategoricalColumnDescProps, IBuilderAdapterColumnDescProps, IBuilderAdapterDateColumnDescProps, IBuilderAdapterHierarchyColumnDescProps, IBuilderAdapterNumberColumnDescProps, IBuilderAdapterStringColumnDescProps} from './columnInterfaces';
 
 export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?: any[]): IColumnDesc {
   const {column} = props;
@@ -59,13 +38,6 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
 }
 
 
-export interface IBuilderAdapterCategoricalColumnDescProps extends IBuilderAdapterColumnDescProps {
-  asOrdinal?: boolean;
-  categories?: (string | Partial<ICategory>)[];
-  missingCategory?: (string | Partial<ICategory>);
-  asSet?: boolean | string;
-}
-
 export function buildCategorical(props: IBuilderAdapterCategoricalColumnDescProps, data: any[]): ICategoricalColumnDesc {
   const desc: any = build({...props, type: 'categorical'});
 
@@ -93,11 +65,6 @@ export function buildCategorical(props: IBuilderAdapterCategoricalColumnDescProp
   return desc;
 }
 
-export interface IBuilderAdapterDateColumnDescProps extends IBuilderAdapterColumnDescProps {
-  dateFormat?: string;
-  dateParse?: string;
-}
-
 export function buildDate(props: IBuilderAdapterDateColumnDescProps): IDateColumnDesc {
   const desc: any = build({...props, type: 'date'});
 
@@ -109,11 +76,6 @@ export function buildDate(props: IBuilderAdapterDateColumnDescProps): IDateColum
   return desc;
 }
 
-export interface IBuilderAdapterHierarchyColumnDescProps extends IBuilderAdapterColumnDescProps {
-  hierarchy: IPartialCategoryNode;
-  hierarchySeparator?: string;
-}
-
 export function buildHierarchy(props: Partial<IBuilderAdapterHierarchyColumnDescProps>): IHierarchyColumnDesc {
   const desc: any = build({...(<any>props), type: 'hierarchy'});
 
@@ -123,15 +85,6 @@ export function buildHierarchy(props: Partial<IBuilderAdapterHierarchyColumnDesc
     }
   });
   return desc;
-}
-
-export interface IBuilderAdapterNumberColumnDescProps extends IBuilderAdapterColumnDescProps {
-  domain?: [number, number];
-  range?: [number, number];
-  mapping?: 'linear' | 'sqrt' | 'pow1.1' | 'pow2' | 'pow3';
-  scripted?: string;
-  sort?: EAdvancedSortMethod;
-  colorMapping?: string;
 }
 
 export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: any[]): INumberColumnDesc {
@@ -164,13 +117,6 @@ export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: a
   return desc;
 }
 
-export interface IBuilderAdapterStringColumnDescProps extends IBuilderAdapterColumnDescProps {
-  editable?: boolean;
-  html?: boolean;
-  pattern?: string;
-  patternTemplates?: string[];
-}
-
 export function buildString(props: IBuilderAdapterStringColumnDescProps): ILinkColumnDesc {
   const desc: any = build({...props, type: 'string'});
 
@@ -191,10 +137,6 @@ export function buildString(props: IBuilderAdapterStringColumnDescProps): ILinkC
   return desc;
 }
 
-export interface IBuilderAdapterBooleanColumnDescProps extends IBuilderAdapterColumnDescProps {
-  trueMarker?: string;
-  falseMarker?: string;
-}
 
 export function buildBoolean(props: IBuilderAdapterBooleanColumnDescProps): IBooleanColumnDesc {
   const desc: any = build({...props, type: 'boolean'});
@@ -205,11 +147,6 @@ export function buildBoolean(props: IBuilderAdapterBooleanColumnDescProps): IBoo
     }
   });
   return desc;
-}
-
-export interface IBuilderAdapterActionsColumnDescProps extends IBuilderAdapterColumnDescProps {
-  actions?: IAction[];
-  groupActions?: IGroupAction[];
 }
 
 export function buildActions(props: IBuilderAdapterActionsColumnDescProps): IActionColumnDesc {

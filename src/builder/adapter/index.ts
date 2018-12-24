@@ -1,22 +1,6 @@
-export {
-  IBuilderAdapterCategoricalColumnDescProps,
-  IBuilderAdapterColumnDescProps,
-  IBuilderAdapterDateColumnDescProps,
-  IBuilderAdapterHierarchyColumnDescProps,
-  IBuilderAdapterNumberColumnDescProps,
-  IBuilderAdapterStringColumnDescProps,
-  IBuilderAdapterActionsColumnDescProps
-} from './column';
-export {IChangeDetecter, IBuilderAdapter, IBuilderAdapterDataProps, IBuilderAdapterProps} from './lineup';
-export {
-  IBuilderAdapterImposeColumnProps,
-  IBuilderAdapterNestedColumnProps,
-  IBuilderAdapterRankingProps,
-  IBuilderAdapterReduceColumnProps,
-  IBuilderAdapterScriptColumnProps,
-  IBuilderAdapterSupportColumnProps,
-  IBuilderAdapterWeightedSumColumnProps
-} from './ranking';
+export * from './columnInterfaces';
+export * from './lineupInterfaces';
+export * from './rankingInterfaces';
 
 import {build, buildCategorical, buildDate, buildHierarchy, buildNumber, buildString, buildActions} from './column';
 import {Adapter} from './lineup';
