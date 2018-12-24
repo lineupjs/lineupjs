@@ -1,7 +1,7 @@
 import {buildRanking as buildRankingImpl, INestedBuilder, IReduceBuilder, IScriptedBuilder, IWeightedSumBuilder} from '..';
 import {Ranking} from '../../model';
 import {LocalDataProvider} from '../../provider';
-import {IBuilderAdapterImposeColumnProps, IBuilderAdapterNestedColumnProps, IBuilderAdapterRankingProps, IBuilderAdapterReduceColumnProps, IBuilderAdapterScriptColumnProps, IBuilderAdapterSupportColumnProps, IBuilderAdapterWeightedSumColumnProps} from './rankingInterfaces';
+import {IBuilderAdapterImposeColumnProps, IBuilderAdapterNestedColumnProps, IBuilderAdapterRankingProps, IBuilderAdapterReduceColumnProps, IBuilderAdapterScriptColumnProps, IBuilderAdapterSupportColumnProps, IBuilderAdapterWeightedSumColumnProps} from '.';
 
 
 /*

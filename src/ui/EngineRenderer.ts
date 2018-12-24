@@ -1,5 +1,5 @@
 import {GridStyleManager, MultiTableRowRenderer, nonUniformContext} from 'lineupengine';
-import {ILineUpFlags, ILineUpOptions} from '../interfaces';
+import {ILineUpFlags, ILineUpOptions} from '../config';
 import {round, IEventListener, suffix, AEventDispatcher} from '../internal';
 import {Column, IGroupData, IGroupItem, isGroup, Ranking} from '../model';
 import {DataProvider} from '../provider';

@@ -1,6 +1,6 @@
 import {extent} from '../../internal';
 import {IActionColumnDesc, IArrayDesc, IBooleanColumnDesc, ICategoricalColumnDesc, IColumnDesc, IDateColumnDesc, IHierarchyColumnDesc, ILinkColumnDesc, INumberColumnDesc} from '../../model';
-import {IBuilderAdapterActionsColumnDescProps, IBuilderAdapterBooleanColumnDescProps, IBuilderAdapterCategoricalColumnDescProps, IBuilderAdapterColumnDescProps, IBuilderAdapterDateColumnDescProps, IBuilderAdapterHierarchyColumnDescProps, IBuilderAdapterNumberColumnDescProps, IBuilderAdapterStringColumnDescProps} from './columnInterfaces';
+import {IBuilderAdapterActionsColumnDescProps, IBuilderAdapterBooleanColumnDescProps, IBuilderAdapterCategoricalColumnDescProps, IBuilderAdapterColumnDescProps, IBuilderAdapterDateColumnDescProps, IBuilderAdapterHierarchyColumnDescProps, IBuilderAdapterNumberColumnDescProps, IBuilderAdapterStringColumnDescProps} from '.';
 
 export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?: any[]): IColumnDesc {
   const {column} = props;

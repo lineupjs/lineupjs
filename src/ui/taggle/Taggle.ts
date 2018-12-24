@@ -1,6 +1,6 @@
 import {GridStyleManager} from 'lineupengine';
 import {defaultOptions} from '../../config';
-import {ITaggleOptions} from '../../interfaces';
+import {ITaggleOptions} from '../../config';
 import {merge} from '../../internal';
 import {DataProvider} from '../../provider';
 import {cssClass, engineCssClass} from '../../styles';
@@ -8,8 +8,6 @@ import {ALineUp} from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
 import {spaceFillingRule} from './rules';
 import TaggleRenderer from './TaggleRenderer';
-
-export {ITaggleOptions} from '../../interfaces';
 
 export default class Taggle extends ALineUp {
   private readonly spaceFilling: HTMLElement | null;

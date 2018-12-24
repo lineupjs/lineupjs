@@ -4,17 +4,18 @@
 
 import {IColumnDesc} from './model';
 import {DataProvider, LocalDataProvider, ILocalDataProviderOptions} from './provider';
-import {LineUp, ILineUpOptions, Taggle, ITaggleOptions} from './ui';
+import {LineUp, Taggle} from './ui';
+import {ILineUpOptions, ITaggleOptions} from './config';
+
 
 export * from './builder';
-export {defaultOptions} from './config';
-export * from './interfaces';
+export * from './config';
 export * from './internal/mathInterfaces';
 export * from './model';
 export * from './provider';
 export * from './renderer';
 export * from './ui';
-export {default} from './ui';
+export {LineUp as default} from './ui';
 
 
 export function createLocalDataProvider(data: any[], columns: IColumnDesc[], options: Partial<ILocalDataProviderOptions> = {}) {

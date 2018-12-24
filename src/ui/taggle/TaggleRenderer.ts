@@ -1,5 +1,5 @@
 import {GridStyleManager} from 'lineupengine';
-import {ILineUpOptions} from '../../interfaces';
+import {ILineUpOptions} from '../../config';
 import {debounce, AEventDispatcher, IEventListener} from '../../internal';
 import {IGroupData, IGroupItem, isGroup, Ranking} from '../../model';
 import {DataProvider} from '../../provider';

@@ -1,13 +1,10 @@
-import {defaultOptions} from '../config';
-import {ILineUpOptions} from '../interfaces';
+import {ILineUpOptions, defaultOptions} from '../config';
 import {merge} from '../internal';
 import {DataProvider} from '../provider';
 import {cssClass} from '../styles';
 import {ALineUp} from './ALineUp';
 import EngineRenderer from './EngineRenderer';
 import SidePanel from './panel/SidePanel';
-
-export {ILineUpOptions} from '../interfaces';
 
 export default class LineUp extends ALineUp {
   private readonly renderer: EngineRenderer | null;

@@ -1,5 +1,5 @@
 import {abortAbleAll, IAbortAblePromise, IAsyncUpdate, isAsyncUpdate, StyleManager} from 'lineupengine';
-import {ILineUpFlags} from '../interfaces';
+import {ILineUpFlags} from '../config';
 import {round} from '../internal';
 import {Column, IMultiLevelColumn} from '../model';
 import {ISummaryRenderer} from '../renderer';

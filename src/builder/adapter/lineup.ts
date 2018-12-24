@@ -1,9 +1,8 @@
+import {IBuilderAdapter, IBuilderAdapterProps, IBuilderAdapterRankingProps, IChangeDetecter} from '.';
 import {IColumnDesc} from '../../model';
 import {deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider} from '../../provider';
 import {LineUp, Taggle} from '../../ui';
-import {IBuilderAdapter, IBuilderAdapterProps, IChangeDetecter} from './lineupInterfaces';
 import {buildRanking} from './ranking';
-import {IBuilderAdapterRankingProps} from './rankingInterfaces';
 import {equal, isSame, pick} from './utils';
 
 

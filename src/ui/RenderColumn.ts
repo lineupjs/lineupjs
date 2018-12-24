@@ -4,7 +4,7 @@ import {ICellRenderer, IGroupCellRenderer} from '../renderer';
 import {ISummaryRenderer, IRenderCallback} from '../renderer';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
-import {ILineUpFlags} from '../interfaces';
+import {ILineUpFlags} from '../config';
 import {cssClass, engineCssClass} from '../styles';
 import {isPromiseLike} from '../internal';
 

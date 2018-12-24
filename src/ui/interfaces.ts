@@ -1,4 +1,4 @@
-import {ILineUpFlags} from '../interfaces';
+import {ILineUpFlags} from '../config';
 import {Column, IGroupData, IGroupItem} from '../model';
 import {IDataProvider} from '../provider';
 import {IImposer, IRenderContext, ISummaryRenderer} from '../renderer';
