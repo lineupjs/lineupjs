@@ -3,7 +3,7 @@ import Column from './Column';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {isNumberIncluded, INumberFilter} from './INumberColumn';
 import {timeDay, timeMonth, timeWeek, timeMinute, timeSecond, timeHour} from 'd3-time';
-import {equal, IForEachAble} from '../internal';
+import {equal, IForEachAble, ISequence, isSeqEmpty} from '../internal';
 
 /** @internal */
 export {
@@ -230,4 +230,31 @@ export function toDateGroup(grouper: IDateGrouper, value: Date): {value: number,
     value: value.getTime(),
     name: value.toString()
   };
+}
+
+
+/**
+ * @internal
+ */
+export function chooseAggregatedDate(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn, valueCache?: ISequence<Date | null>): {value: number | null, name: string} {
+  const vs = <ISequence<Date>>(valueCache ? valueCache : rows.map((d) => col.getDate(d))).filter((d) => d instanceof Date);
+  if (isSeqEmpty(vs)) {
+    return {value: null, name: ''};
+  }
+  const median = trueMedian(vs.map((d) => d.getTime()))!;
+  if (!grouper) {
+    return {value: median, name: (new Date(median)).toString()};
+  }
+  return toDateGroup(grouper, new Date(median));
+}
+
+function trueMedian(dates: ISequence<number>) {
+  // to avoid interpolating between the centers do it manually
+  const s = Float64Array.from(dates);
+  if (s.length === 1) {
+    return s[0];
+  }
+
+  s.sort();
+  return s[Math.floor(s.length / 2)];
 }

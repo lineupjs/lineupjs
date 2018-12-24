@@ -1,9 +1,9 @@
 import {timeFormat, timeParse} from 'd3-time-format';
-import {ISequence, isSeqEmpty, equal, IEventListener} from '../internal';
+import {ISequence, equal, IEventListener} from '../internal';
 import {Category, dialogAddons, toolbar} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, ECompareValueType, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {defaultGroup} from './Group';
-import {defaultDateGrouper, IDateColumn, IDateDesc, IDateFilter, IDateGrouper, isDateIncluded, isDefaultDateGrouper, isDummyDateFilter, isEqualDateFilter, noDateFilter, restoreDateFilter, toDateGroup} from './IDateColumn';
+import {defaultDateGrouper, IDateColumn, IDateDesc, IDateFilter, IDateGrouper, isDateIncluded, isDefaultDateGrouper, isDummyDateFilter, isEqualDateFilter, noDateFilter, restoreDateFilter, toDateGroup, chooseAggregatedDate} from './IDateColumn';
 import {IDataRow, IGroup} from './interfaces';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded, IValueColumnDesc} from './ValueColumn';
@@ -188,37 +188,11 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   }
 
   toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
-    const v = choose(rows, this.currentGrouper, this, valueCache).value;
+    const v = chooseAggregatedDate(rows, this.currentGrouper, this, valueCache).value;
     return v == null ? NaN : v;
   }
 
   toCompareGroupValueType() {
     return ECompareValueType.DOUBLE_ASC;
   }
-}
-
-/**
- * @internal
- */
-export function choose(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn, valueCache?: ISequence<Date | null>): {value: number | null, name: string} {
-  const vs = <ISequence<Date>>(valueCache ? valueCache : rows.map((d) => col.getDate(d))).filter((d) => d instanceof Date);
-  if (isSeqEmpty(vs)) {
-    return {value: null, name: ''};
-  }
-  const median = trueMedian(vs.map((d) => d.getTime()))!;
-  if (!grouper) {
-    return {value: median, name: (new Date(median)).toString()};
-  }
-  return toDateGroup(grouper, new Date(median));
-}
-
-function trueMedian(dates: ISequence<number>) {
-  // to avoid interpolating between the centers do it manually
-  const s = Float64Array.from(dates);
-  if (s.length === 1) {
-    return s[0];
-  }
-
-  s.sort();
-  return s[Math.floor(s.length / 2)];
 }
