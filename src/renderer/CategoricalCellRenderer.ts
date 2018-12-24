@@ -212,7 +212,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
   });
 
 
-  const filterMissing = <HTMLInputElement>node.querySelector('input')!;
+  const filterMissing = <HTMLInputElement>node.getElementsByTagName('input')[0]!;
 
   if (filterMissing) {
     filterMissing.onchange = () => {

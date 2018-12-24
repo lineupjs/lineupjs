@@ -133,7 +133,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     enabled: false,
     enter: (evt: MouseEvent) => {
       if (this.highlight >= 0) {
-        const old = this.body.querySelector(`.${engineCssClass('highlighted')}`);
+        const old = this.body.getElementsByClassName(engineCssClass('highlighted'))[0];
         if (old) {
           old.classList.remove(engineCssClass('highlighted'));
         }
@@ -145,7 +145,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     },
     leave: () => {
       if (this.highlight >= 0) {
-        const old = this.body.querySelector(`.${engineCssClass('highlighted')}`);
+        const old = this.body.getElementsByClassName(engineCssClass('highlighted'))[0];
         if (old) {
           old.classList.remove(engineCssClass('highlighted'));
         }
@@ -680,7 +680,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const width = this.visibleRenderedWidth();
     super.forEachRow((row, index) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.renderRow(row.querySelector('canvas')!, row, index, width);
+        this.renderRow(<HTMLCanvasElement>row.firstElementChild!, row, index, width);
       }
     });
   }

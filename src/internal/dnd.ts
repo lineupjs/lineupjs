@@ -128,7 +128,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     }
 
     // remove all
-    const over = <HTMLElement>node.ownerDocument!.querySelector(`.${cssClass('dragover')}`);
+    const over = <HTMLElement>node.ownerDocument!.getElementsByClassName(cssClass('dragover'))[0];
     if (over) {
       over.classList.remove(cssClass('dragover'));
     }

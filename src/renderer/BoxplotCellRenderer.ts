@@ -121,7 +121,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
           if (isMapAbleColumn(col)) {
             const range = col.getRange();
-            Array.from(n.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
+            Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
           }
 
           renderDOMBoxPlot(col, n, summary, summary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));

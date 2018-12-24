@@ -57,8 +57,8 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     this.node.innerHTML = `<input class="${cssClass('search-input')}" type="search" placeholder="${this.options.placeholder}">
     <ul class="${cssClass('search-list')}"></ul>`;
 
-    this.search = this.node.querySelector('input')!;
-    this.body = this.node.querySelector('ul')!;
+    this.search = <HTMLInputElement>this.node.firstElementChild!;
+    this.body = <HTMLElement>this.node.lastElementChild!;
 
     this.search.onfocus = () => this.focus();
     this.search.onblur = () => this.blur();
@@ -146,7 +146,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   }
 
   private get highlighted() {
-    return <HTMLElement>this.body.querySelector(`.${cssClass('search-highlighted')}`) || null;
+    return <HTMLElement>this.body.getElementsByClassName(cssClass('search-highlighted'))[0] || null;
   }
 
   private set highlighted(value: HTMLElement | null) {
@@ -201,7 +201,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private filterResults(node: HTMLElement, text: string) {
     if (text === '') {
       // show all
-      (<HTMLElement[]>Array.from(node.querySelectorAll(`.${cssClass('hidden')}`))).forEach((d: HTMLElement) => d.classList.remove(cssClass('hidden')));
+      (<HTMLElement[]>Array.from(node.getElementsByClassName(cssClass('hidden')))).forEach((d: HTMLElement) => d.classList.remove(cssClass('hidden')));
       return false;
     }
     const children = Array.from(node.children);

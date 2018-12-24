@@ -77,7 +77,7 @@ function staticSummary(col: INumberColumn, context: IRenderContext, template: st
     update: (node: HTMLElement) => {
       if (isMapAbleColumn(col)) {
         const range = col.getRange();
-        Array.from(node.querySelectorAll('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
+        Array.from(node.getElementsByTagName('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
       }
 
       return context.tasks.summaryNumberStats(col).then((r) => {
@@ -134,11 +134,11 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
 }
 
 function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderContext) {
-  const min = <HTMLElement>node.querySelector(`.${cssClass('histogram-min')}`);
-  const max = <HTMLElement>node.querySelector(`.${cssClass('histogram-max')}`);
-  const minHint = <HTMLElement>node.querySelector(`.${cssClass('histogram-min-hint')}`);
-  const maxHint = <HTMLElement>node.querySelector(`.${cssClass('histogram-max-hint')}`);
-  const filterMissing = <HTMLInputElement>node.querySelector('input');
+  const min = <HTMLElement>node.getElementsByClassName(cssClass('histogram-min'))[0];
+  const max = <HTMLElement>node.getElementsByClassName(cssClass('histogram-max'))[0];
+  const minHint = <HTMLElement>node.getElementsByClassName(cssClass('histogram-min-hint'))[0];
+  const maxHint = <HTMLElement>node.getElementsByClassName(cssClass('histogram-max-hint'))[0];
+  const filterMissing = <HTMLInputElement>node.getElementsByTagName('input')[0];
 
   const setFilter = () => {
     const f = filter(col);

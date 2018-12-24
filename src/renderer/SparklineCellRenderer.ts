@@ -44,7 +44,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
           return;
         }
         const data = col.getNumbers(d);
-        n.querySelector('path')!.setAttribute('d', line(data));
+        n.lastElementChild!.setAttribute('d', line(data));
       }
     };
   }

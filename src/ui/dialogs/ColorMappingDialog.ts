@@ -140,7 +140,7 @@ export default class ColorMappingDialog extends ADialog {
       }
       // disable customs
       for (const custom of customs) {
-        Array.from(custom.nextElementSibling!.querySelectorAll('input')).forEach((s) => s.disabled = custom !== d);
+        Array.from(custom.nextElementSibling!.getElementsByTagName('input')).forEach((s) => s.disabled = custom !== d);
       }
       const base = toColor(d);
       if (quantized.checked && base.type !== 'solid') {

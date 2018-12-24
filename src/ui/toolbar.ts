@@ -248,7 +248,7 @@ function toggleCompressExpand(col: Column, evt: MouseEvent, ctx: IRankingHeaderC
   i.title = collapsed ? 'Expand' : 'Compress';
   i.classList.toggle(cssClass('action-compress'), !collapsed);
   i.classList.toggle(cssClass('action-expand'), collapsed);
-  const inner = i.querySelector('span')!;
+  const inner = i.getElementsByTagName('span')[0]!;
   if (inner) {
     inner.textContent = i.title;
   }

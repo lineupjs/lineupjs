@@ -68,7 +68,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   updateHeader(node: HTMLElement) {
     const r = super.updateHeader(node);
     node = isAsyncUpdate(r) ? r.item : r;
-    const wrapper = <HTMLElement>node.querySelector(`.${cssClass('nested')}`);
+    const wrapper = <HTMLElement>node.getElementsByClassName(cssClass('nested'))[0];
     if (!wrapper) {
       return r; // too early
     }
@@ -108,7 +108,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       if (!this.renderers || !this.renderers.summary) {
         return;
       }
-      let summary = <HTMLElement>node.querySelector(`.${cssClass('summary')}`);
+      let summary = <HTMLElement>node.getElementsByClassName(cssClass('summary'))[0];
       const oldRenderer = summary.dataset.renderer;
       const currentRenderer = c.getSummaryRenderer();
       if (oldRenderer !== currentRenderer) {

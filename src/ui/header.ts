@@ -40,7 +40,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
   // addTooltip(node, col);
 
-  createShortcutMenuItems(node.querySelector<HTMLElement>(`.${cssClass('toolbar')}`)!, options.level!, col, ctx);
+  createShortcutMenuItems(<HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0]!, options.level!, col, ctx);
 
   toggleToolbarIcons(node, col);
 
@@ -51,7 +51,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     mergeDropAble(node, col, ctx);
   }
   if (options.rearrangeAble) {
-    rearrangeDropAble(node.querySelector<HTMLElement>(`.${cssClass('handle')}`)!, col, ctx);
+    rearrangeDropAble(<HTMLElement>node.getElementsByClassName(cssClass('handle'))[0]!, col, ctx);
   }
   if (options.resizeable) {
     dragWidth(col, node);
@@ -62,7 +62,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
-  const label = node.querySelector<HTMLElement>(`.${cssClass('label')}`)!;
+  const label = <HTMLElement>node.getElementsByClassName(cssClass('label'))[0]!;
   label.innerHTML = col.getWidth() < minWidth ? '&nbsp;' : col.label;
   node.title = col.description ? `${col.label}\n${col.description}` : col.label;
   node.dataset.colId = col.id;
@@ -75,7 +75,7 @@ export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABE
 
 /** @internal */
 export function updateIconState(node: HTMLElement, col: Column) {
-  const sort = <HTMLElement>node.querySelector(`.${cssClass('action-sort')}`)!;
+  const sort = <HTMLElement>node.getElementsByClassName(cssClass('action-sort'))[0]!;
   if (sort) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
@@ -87,7 +87,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const sortGroups = <HTMLElement>node.querySelector(`.${cssClass('action-sortgroup')}`)!;
+  const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sortgroup'))[0]!;
   if (sortGroups) {
     const {asc, priority} = col.isGroupSortedByMe();
     sortGroups.dataset.sort = asc !== undefined ? asc : '';
@@ -99,7 +99,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const group = <HTMLElement>node.querySelector(`.${cssClass('action-group')}`)!;
+  const group = <HTMLElement>node.getElementsByClassName(cssClass('action-group'))[0]!;
   if (group) {
     const groupedBy = col.isGroupedBy();
     group.dataset.group = groupedBy >= 0 ? 'true' : 'false';
@@ -110,7 +110,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const filter = <HTMLElement>node.querySelector(`.${cssClass('action-filter')}`)!;
+  const filter = <HTMLElement>node.getElementsByClassName(cssClass('action-filter'))[0]!;
   if (!filter) {
     return;
   }
@@ -186,7 +186,7 @@ export function createToolbarMenuItems(node: HTMLElement, level: number, col: Co
 /** @internal */
 function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClientWidth: number) {
   // rotate header flag if needed
-  const label = <HTMLElement>node.querySelector(`.${cssClass('label')}`);
+  const label = <HTMLElement>node.getElementsByClassName(cssClass('label'))[0];
   if (col.getWidth() < MIN_LABEL_WIDTH) {
     label.classList.remove(`.${cssClass('rotated')}`);
     return;
@@ -200,7 +200,7 @@ function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClien
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
   toggleRotatedHeader(node, col, defaultVisibleClientWidth);
 
-  const toolbar = <HTMLElement>node.querySelector(`.${cssClass('toolbar')}`);
+  const toolbar = <HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0];
   if (toolbar.childElementCount === 0) {
     return;
   }
@@ -247,7 +247,7 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
  */
 export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
-  const handle = <HTMLElement>node.querySelector(`.${cssClass('handle')}`);
+  const handle = <HTMLElement>node.getElementsByClassName(cssClass('handle'))[0];
 
 
   let start = 0;
