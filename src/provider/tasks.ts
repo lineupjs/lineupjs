@@ -69,7 +69,7 @@ export interface IRenderTaskExectutor extends IRenderTasks {
   copyData2Summary(ranking: Ranking): void;
   copyCache(col: Column, from: Column): void;
 
-  sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup): Promise<IndicesArray>;
+  sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, maxDataIndex: number, lookups?: CompareLookup): Promise<IndicesArray>;
 
   terminate(): void;
 

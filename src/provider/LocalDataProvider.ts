@@ -252,14 +252,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
   private noSorting(ranking: Ranking) {
     // initial no sorting required just index mapping
     const l = this._data.length;
-    const order = createIndexArray(l);
+    const order = createIndexArray(l, l - 1);
     const index2pos = order.slice();
     for (let i = 0; i < l; ++i) {
       order[i] = i;
       index2pos[i] = i + 1; // shift since default is 0
     }
 
-    this.tasks.preCompute(ranking, [{rows: order, group: defaultGroup}]);
+    this.tasks.preCompute(ranking, [{rows: order, group: defaultGroup}], l - 1);
     return {groups: [Object.assign({order}, defaultGroup)], index2pos};
   }
 
@@ -361,10 +361,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return {maxDataIndex, lookups, groupOrder};
   }
 
-  private sortGroup(g: ISortHelper, i: number, ranking: Ranking, lookups: CompareLookup | undefined, groupLookup: CompareLookup | undefined, singleGroup: boolean): Promise<IOrderedGroup> {
+  private sortGroup(g: ISortHelper, i: number, ranking: Ranking, lookups: CompareLookup | undefined, groupLookup: CompareLookup | undefined, singleGroup: boolean, maxDataIndex: number): Promise<IOrderedGroup> {
     const group = g.group;
 
-    const sortTask = this.tasks.sort(ranking, group, g.rows, singleGroup, lookups);
+    const sortTask = this.tasks.sort(ranking, group, g.rows, singleGroup, maxDataIndex, lookups);
 
     // compute sort group value as task
     const groupSortTask = groupLookup ? this.tasks.groupCompare(ranking, group, g.rows).then((r) => r) : <ICompareValue[]>[];
@@ -391,7 +391,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private index2pos(groups: IOrderedGroup[], maxDataIndex: number) {
-    const index2pos = createIndexArray(maxDataIndex + 1);
+    const total = groups.reduce((a, b) => a + b.order.length, 1);
+    const index2pos = createIndexArray(maxDataIndex + 1, total);
     let offset = 1;
     for (const g of groups) {
       // tslint:disable-next-line
@@ -452,7 +453,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const g = groupOrder[0]!;
 
       // not required if: group sort criteria changed -> lookups will be none
-      return this.sortGroup(g, 0, ranking, lookups, undefined, true).then((group) => {
+      return this.sortGroup(g, 0, ranking, lookups, undefined, true, maxDataIndex).then((group) => {
         return this.index2pos([group], maxDataIndex);
       });
     }
@@ -461,7 +462,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     return Promise.all(groupOrder.map((g, i) => {
       // not required if: group sort criteria changed -> lookups will be none
-      return this.sortGroup(g, i, ranking, lookups, groupLookup, false);
+      return this.sortGroup(g, i, ranking, lookups, groupLookup, false, maxDataIndex);
     })).then((groups) => {
       // not required if: sort criteria changed -> groupLookup will be none
       const sortedGroups = this.sortGroups(groups, groupLookup);

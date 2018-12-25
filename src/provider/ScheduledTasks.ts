@@ -488,14 +488,14 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     return this.cached(`${col.id}:c:data`, false, this.dateStatsBuilder<IDateStatistics>(null, col));
   }
 
-  sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup) {
+  sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, maxDataIndex: number, lookups?: CompareLookup) {
     if (!lookups || indices.length < 1000) {
       // no thread needed
-      const order = sortDirect(indices, lookups);
+      const order = sortDirect(indices, maxDataIndex, lookups);
       return Promise.resolve(order);
     }
 
-    const indexArray = toIndexArray(indices);
+    const indexArray = toIndexArray(indices, maxDataIndex);
     const toTransfer = [indexArray.buffer];
 
     if (singleCall) {

@@ -626,11 +626,11 @@ export function createIndexArray(length: number, dataSize = length) {
 /**
  * @internal
  */
-export function toIndexArray(arr: ISequence<number> | IndicesArray): UIntTypedArray {
+export function toIndexArray(arr: ISequence<number> | IndicesArray, maxDataIndex?: number): UIntTypedArray {
   if (arr instanceof Uint8Array || arr instanceof Uint16Array || arr instanceof Uint32Array) {
     return arr.slice();
   }
-  const l = arr.length;
+  const l = maxDataIndex != null ? maxDataIndex : arr.length;
   if (l <= 255) {
     return Uint8Array.from(arr);
   }

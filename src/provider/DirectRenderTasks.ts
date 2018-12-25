@@ -6,8 +6,8 @@ import {CompareLookup} from './sort';
 /**
  * @internal
  */
-export function sortDirect(indices: IndicesArray, lookups?: CompareLookup) {
-  const order = toIndexArray(indices);
+export function sortDirect(indices: IndicesArray, maxDataIndex: number, lookups?: CompareLookup) {
+  const order = toIndexArray(indices, maxDataIndex);
   if (lookups) {
     sortComplex(order, lookups.sortOrders);
   }
@@ -79,8 +79,8 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     }
   }
 
-  sort(_ranking: Ranking, _group: IGroup, indices: IndicesArray, _singleCall: boolean, lookups?: CompareLookup) {
-    return Promise.resolve(sortDirect(indices, lookups));
+  sort(_ranking: Ranking, _group: IGroup, indices: IndicesArray, _singleCall: boolean, maxDataIndex: number, lookups?: CompareLookup) {
+    return Promise.resolve(sortDirect(indices, maxDataIndex, lookups));
   }
 
   groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
