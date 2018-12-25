@@ -49,6 +49,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
 
     this.setDefaultRenderer('numbers');
     this.setDefaultGroupRenderer('numbers');
+    this.setDefaultSummaryRenderer('histogram');
   }
 
   get label() {

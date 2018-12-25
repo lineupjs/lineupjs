@@ -51,6 +51,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
 
     this.setDefaultRenderer('boxplot');
     this.setDefaultGroupRenderer('boxplot');
+    this.setDefaultSummaryRenderer('boxplot');
   }
 
   get label() {

@@ -3,9 +3,11 @@ import {toolbar, SortByDefault} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import {IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR} from './interfaces';
-import {isNumberColumn, INumberColumn, isMapAbleColumn, IColorMappingFunction, IMappingFunction} from './INumberColumn';
+import {isNumberColumn, INumberColumn, isMapAbleColumn, IColorMappingFunction, IMappingFunction, IMapAbleColumn, INumberFilter} from './INumberColumn';
 import NumberColumn from './NumberColumn';
-import {DEFAULT_FORMATTER} from './internalNumber';
+import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
+import {ScaleMappingFunction} from './MappingFunction';
+import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
 
 
 /**
@@ -36,7 +38,7 @@ declare function colorMappingChanged(previous: IColorMappingFunction, current: I
  */
 @toolbar('filterNumber', 'colorMapped', 'editMapping')
 @SortByDefault('descending')
-export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn {
+export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
 
@@ -45,6 +47,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
 
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('boxplot');
+    this.setDefaultSummaryRenderer('histogram');
   }
 
   get label() {
@@ -154,6 +157,46 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
       };
     }
     return super.getExportValue(row, format);
+  }
+
+  getMapping() {
+    const w = this.wrapper;
+    return w && isMapAbleColumn(w) ? w.getMapping() : new ScaleMappingFunction();
+  }
+
+  getOriginalMapping() {
+    const w = this.wrapper;
+    return w && isMapAbleColumn(w) ? w.getOriginalMapping() : new ScaleMappingFunction();
+  }
+
+  setMapping(mapping: IMappingFunction): void {
+    const w = this.wrapper;
+    return w && isMapAbleColumn(w) ? w.setMapping(mapping) : undefined;
+  }
+
+  getColorMapping() {
+    const w = this.wrapper;
+    return w && isMapAbleColumn(w) ? w.getColorMapping() : DEFAULT_COLOR_FUNCTION;
+  }
+
+  setColorMapping(mapping: IColorMappingFunction) {
+    const w = this.wrapper;
+    return w && isMapAbleColumn(w) ? w.setColorMapping(mapping) : undefined;
+  }
+
+  getFilter() {
+    const w = this.wrapper;
+    return w && isMapAbleColumn(w) ? w.getFilter() : noNumberFilter();
+  }
+
+  setFilter(value?: INumberFilter): void {
+    const w = this.wrapper;
+    return w && isMapAbleColumn(w) ? w.setFilter(value) : undefined;
+  }
+
+  getRange(): [string, string] {
+    const w = this.wrapper;
+    return w && isMapAbleColumn(w) ? w.getRange() : ['0', '1'];
   }
 
   toCompareValue(row: IDataRow) {
