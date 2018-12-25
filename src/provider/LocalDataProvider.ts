@@ -263,7 +263,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return {groups: [Object.assign({order}, defaultGroup)], index2pos};
   }
 
-  private createSorter(ranking: Ranking, filter: (Column | ((d: IDataRow) => boolean))[], _isSortedBy: boolean, needsFiltering: boolean, needsGrouping: boolean, needsSorting: boolean) {
+  private createSorter(ranking: Ranking, filter: (Column | ((d: IDataRow) => boolean))[], needsFiltering: boolean, needsGrouping: boolean, needsSorting: boolean) {
     const groups = new Map<string, ISortHelper>();
     const groupOrder: ISortHelper[] = [];
     let maxDataIndex = -1;
@@ -439,7 +439,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return this.noSorting(ranking);
     }
 
-    const {maxDataIndex, lookups, groupOrder} = this.createSorter(ranking, filter, isSortedBy, needsFiltering, needsGrouping, needsSorting);
+    const {maxDataIndex, lookups, groupOrder} = this.createSorter(ranking, filter, needsFiltering, needsGrouping, needsSorting);
 
     if (groupOrder.length === 0) {
       return {groups: [], index2pos: []};

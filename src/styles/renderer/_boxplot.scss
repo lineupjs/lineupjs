@@ -6,14 +6,18 @@
   align-items: center;
 }
 
-.#{$lu_css_prefix}-boxplot-whisker { // whiskers + contains everything
+.#{$lu_css_prefix}-boxplot-whisker {
+
+  // whiskers + contains everything
   position: relative;
   border-left: 1px solid $lu_renderer_boxplot_stroke;
   border-right: 1px solid $lu_renderer_boxplot_stroke;
   height: 90%;
   max-height: 30px;
 
-  &::before { // whiskers line
+  &::before {
+
+    // whiskers line
     content: '';
     position: absolute;
     top: 0;
@@ -56,9 +60,15 @@
   &[data-sort=median] > .#{$lu_css_prefix}-boxplot-median {
     background-color: $lu_renderer_boxplot_sort_indicator;
   }
+
+  &[data-sort=mean] > .#{$lu_css_prefix}-boxplot-mean {
+    background: repeating-linear-gradient(to bottom, transparent 0%, transparent 5%, $lu_renderer_boxplot_sort_indicator 5%, $lu_renderer_boxplot_sort_indicator 15%, transparent 15%, transparent 20%);
+  }
 }
 
-.#{$lu_css_prefix}-boxplot-box { // box
+.#{$lu_css_prefix}-boxplot-box {
+
+  // box
   position: absolute;
   top: 10%;
   height: 80%;
@@ -74,9 +84,18 @@
   background: $lu_renderer_boxplot_stroke;
 }
 
+.#{$lu_css_prefix}-boxplot-mean {
+  position: absolute;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: repeating-linear-gradient(to bottom, transparent 0%, transparent 5%, $lu_renderer_boxplot_stroke 5%, $lu_renderer_boxplot_stroke 15%, transparent 15%, transparent 20%);
+}
+
 /**
 outlier
   */
+
 .#{$lu_css_prefix}-boxplot-outlier {
   position: absolute;
   top: 50%;

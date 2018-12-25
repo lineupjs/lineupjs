@@ -10,6 +10,7 @@ const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
     <div class="${cssClass('boxplot-box')}"></div>
     <div class="${cssClass('boxplot-median')}"></div>
+    <div class="${cssClass('boxplot-mean')}"></div>
   </div>
 </div>`;
 
@@ -17,6 +18,7 @@ const MAPPED_BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
     <div class="${cssClass('boxplot-box')}"></div>
     <div class="${cssClass('boxplot-median')}"></div>
+    <div class="${cssClass('boxplot-mean')}"></div>
   </div>
   <span class="${cssClass('mapping-hint')}"></span><span class="${cssClass('mapping-hint')}"></span>
 </div>`;
@@ -29,7 +31,7 @@ export function computeLabel(col: INumberColumn, v: IBoxPlotData | IAdvancedBoxP
     return '';
   }
   const f = col.getNumberFormat();
-  const mean = (<IAdvancedBoxPlotData>v).mean != null ? `mean = ${f((<IAdvancedBoxPlotData>v).mean)}\n` : '';
+  const mean = (<IAdvancedBoxPlotData>v).mean != null ? `mean = ${f((<IAdvancedBoxPlotData>v).mean)} (dashed line)\n` : '';
   return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\n${mean}q3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
 
@@ -71,6 +73,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         const scaled = {
           min: data.min * width,
           median: data.median * width,
+          mean: (<IAdvancedBoxPlotData>data).mean != null ? (<IAdvancedBoxPlotData>data).mean * width : undefined,
           q1: data.q1 * width,
           q3: data.q3 * width,
           max: data.max * width,
@@ -131,12 +134,13 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   }
 }
 
-function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string, color: string | null, hasRange: boolean = false) {
+function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData | IAdvancedBoxPlotData, label: IBoxPlotData | IAdvancedBoxPlotData, sort: string, color: string | null, hasRange: boolean = false) {
   n.title = computeLabel(col, label);
 
   const whiskers = <HTMLElement>n.firstElementChild;
   const box = <HTMLElement>whiskers.firstElementChild;
-  const median = <HTMLElement>whiskers.lastElementChild;
+  const median = <HTMLElement>box.nextElementSibling;
+  const mean = <HTMLElement>whiskers.lastElementChild;
 
   const leftWhisker = data.whiskerLow != null ? data.whiskerLow : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
   const rightWhisker = data.whiskerHigh != null ? data.whiskerHigh : Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
@@ -151,6 +155,12 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
 
   //relative within the whiskers
   median.style.left = `${round((data.median - leftWhisker) / range * 100, 2)}%`;
+  if ((<IAdvancedBoxPlotData>data).mean != null) {
+    mean.style.left = `${round(((<IAdvancedBoxPlotData>data).mean - leftWhisker) / range * 100, 2)}%`;
+    mean.style.display = null;
+  } else {
+    mean.style.display = 'none';
+  }
 
   // match lengths
   const outliers = <HTMLElement[]>Array.from(n.children).slice(1, hasRange ? -2 : undefined);
