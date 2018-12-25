@@ -1,16 +1,15 @@
 import {Column, ISetColumn, isSetColumn, ICategoricalLikeColumn, ICategory, IDataRow, IOrderedGroup} from '../model';
 import {CANVAS_HEIGHT, UPSET, cssClass} from '../styles';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {noRenderer} from './utils';
 import {ISequence} from '../internal';
 
 /** @internal */
 export default class UpSetCellRenderer implements ICellRendererFactory {
-  readonly title = 'Matrix';
+  readonly title = 'UpSet';
 
-  canRender(col: Column, mode: ERenderMode) {
-    return isSetColumn(col) && mode !== ERenderMode.SUMMARY;
+  canRender(col: Column) {
+    return isSetColumn(col);
   }
 
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
@@ -30,7 +29,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
       templateRows += `<div class="${cssClass('upset-dot')}" title="${cat.label}"></div>`;
     }
     return {
-      templateRow: templateRows,
+      template: `<div><div class="${cssClass('upset-line')}"></div>${templateRows}</div>`,
       render: (n: HTMLElement, value: boolean[]) => {
         Array.from(n.children).slice(1).forEach((d, i) => {
           const v = value[i];
@@ -53,12 +52,12 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
   create(col: ISetColumn, context: IRenderContext) {
-    const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
+    const {template, render} = UpSetCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
-    const cellDimension = width / col.dataLength!;
+    const cellDimension = width / col.categories.length;
 
     return {
-      template: `<div><div class="${cssClass('upset-line')}"></div>${templateRow}</div>`,
+      template,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;
@@ -99,21 +98,33 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: ISetColumn, context: IRenderContext) {
-    const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
+    const {template, render} = UpSetCellRenderer.createDOMContext(col);
     return {
-      template: `<div><div class="${cssClass('upset-line')}"></div>${templateRow}</div>`,
+      template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, 'union', (rows) => union(col, rows)).then((value) => {
-          if (typeof value !== 'symbol') {
-            render(n, value);
+        return context.tasks.groupCategoricalStats(col, group).then((r) => {
+          if (typeof r === 'symbol') {
+            return;
           }
+          render(n, r.group.hist.map((d) => d.count > 0));
         });
       }
     };
   }
 
-  createSummary() {
-    return noRenderer;
+  createSummary(col: ISetColumn, context: IRenderContext) {
+    const {template, render} = UpSetCellRenderer.createDOMContext(col);
+    return {
+      template,
+      update: (n: HTMLElement) => {
+        return context.tasks.summaryCategoricalStats(col).then((r) => {
+          if (typeof r === 'symbol') {
+            return;
+          }
+          render(n, r.summary.hist.map((d) => d.count > 0));
+        });
+      }
+    };
   }
 }
 

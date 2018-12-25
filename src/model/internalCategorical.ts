@@ -1,7 +1,8 @@
-import {ISequence, isSeqEmpty} from '../internal';
+import {ISequence, isSeqEmpty, empty} from '../internal';
 import {FIRST_IS_MISSING, IDataRow, ECompareValueType, ICompareValue, ICategory, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter} from '.';
 import {colorPool} from './internal';
 import {DEFAULT_COLOR} from './interfaces';
+import {ICategoricalsColumn} from './ICategoricalColumn';
 
 /** @internal */
 export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => DEFAULT_COLOR) {
@@ -29,7 +30,7 @@ export function toCompareCategoryValue(v: ICategory | null) {
 
 export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT_ASC;
 
-function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): {cat: ICategory | null, count: number} {
+function findMostFrequent(rows: ISequence<ICategory | null>, valueCache?: ISequence<ICategory | null>): {cat: ICategory | null, count: number} {
   const hist = new Map<ICategory | null, number>();
 
   if (valueCache) {
@@ -37,8 +38,7 @@ function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn, va
       hist.set(cat, (hist.get(cat) || 0) + 1);
     });
   } else {
-    rows.forEach((row) => {
-      const cat = col.getCategory(row);
+    rows.forEach((cat) => {
       hist.set(cat, (hist.get(cat) || 0) + 1);
     });
   }
@@ -64,11 +64,45 @@ function findMostFrequent(rows: ISequence<IDataRow>, col: ICategoricalColumn, va
 }
 
 /** @internal */
+export function toMostFrequentCategoricals(rows: ISequence<IDataRow>, col: ICategoricalsColumn): (ICategory | null)[] {
+  if (isSeqEmpty(rows)) {
+    return empty(col.dataLength!);
+  }
+  const maps = empty(col.dataLength!).map(() => new Map<ICategory | null, number>());
+  rows.forEach((row) => {
+    const vs = col.getCategories(row);
+    if (!vs) {
+      return;
+    }
+    for (let i = 0; i < maps.length; ++i) {
+      const hist = maps[i];
+      const cat = vs[i] || null;
+      hist.set(cat, (hist.get(cat) || 0) + 1);
+    }
+  });
+
+  return maps.map((hist) => {
+    if (hist.size === 0) {
+      return null;
+    }
+    let topCat: ICategory | null = null;
+    let topCount = 0;
+    hist.forEach((count, cat) => {
+      if (count > topCount) {
+        topCat = cat;
+        topCount = count;
+      }
+    });
+    return topCat;
+  });
+}
+
+/** @internal */
 export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): ICompareValue[] {
   if (isSeqEmpty(rows)) {
     return [NaN, 0];
   }
-  const mostFrequent = findMostFrequent(rows, col, valueCache);
+  const mostFrequent = findMostFrequent(rows.map((d) => col.getCategory(d)), valueCache);
   if (mostFrequent.cat == null) {
     return [NaN, 0];
   }

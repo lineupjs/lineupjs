@@ -25,6 +25,7 @@ import MapBarCellRenderer from './MapBarCellRenderer';
 import MultiLevelCellRenderer from './MultiLevelCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
 import SelectionRenderer from './SelectionRenderer';
+import SetCellRenderer from './SetCellRenderer';
 import SparklineCellRenderer from './SparklineCellRenderer';
 import StringCellRenderer from './StringCellRenderer';
 import TableCellRenderer from './TableCellRenderer';
@@ -63,6 +64,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   mapbars: new MapBarCellRenderer(),
   rank: new RankCellRenderer(),
   selection: new SelectionRenderer(),
+  set: new SetCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   stack: new MultiLevelCellRenderer(),
   string: new StringCellRenderer(),

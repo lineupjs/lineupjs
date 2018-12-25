@@ -66,19 +66,23 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
     return this.lookup.has(vs) ? this.lookup.get(vs)! : null;
   }
 
-  getCategories(row: IDataRow) {
+  getCategoryMap(row: IDataRow) {
     return super.getMap(row).map(({key, value}) => ({
       key,
       value: this.parseValue(value)
     }));
   }
 
+  getCategories(row: IDataRow) {
+    return this.getCategoryMap(row).map((d) => d.value);
+  }
+
   getColors(row: IDataRow) {
-    return this.getCategories(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value) : DEFAULT_COLOR}));
+    return this.getCategoryMap(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value) : DEFAULT_COLOR}));
   }
 
   getValue(row: IDataRow) {
-    const r = this.getCategories(row);
+    const r = this.getCategoryMap(row);
     return r.length === 0 ? null : r.map(({key, value}) => ({
       key,
       value: value ? value.name : null
@@ -86,7 +90,7 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
   }
 
   getLabels(row: IDataRow) {
-    return this.getCategories(row).map(({key, value}) => ({
+    return this.getCategoryMap(row).map(({key, value}) => ({
       key,
       value: value ? value.label : ''
     }));
@@ -112,6 +116,6 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
   }
 
   iterCategory(row: IDataRow) {
-    return this.getCategories(row).map((d) => d.value);
+    return this.getCategories(row);
   }
 }

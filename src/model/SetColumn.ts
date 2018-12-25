@@ -61,6 +61,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.setDefaultRenderer('upset');
     this.setDefaultGroupRenderer('upset');
+    this.setSummaryRenderer('set');
     this.colorMapping = DEFAULT_COLOR_FUNCTION;
   }
 
@@ -137,8 +138,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   getCategories(row: IDataRow) {
-    const s = this.getSet(row);
-    return this.categories.map((d) => s.has(d) ? d : null);
+    return this.getSortedSet(row);
   }
 
   getColors(row: IDataRow) {

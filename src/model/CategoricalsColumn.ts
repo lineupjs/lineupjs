@@ -74,10 +74,6 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : DEFAULT_COLOR);
   }
 
-  getSet(row: IDataRow) {
-    return new Set(this.getCategories(row));
-  }
-
   iterCategory(row: IDataRow) {
     return this.getCategories(row);
   }

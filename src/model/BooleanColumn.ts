@@ -118,6 +118,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return this.categories[v ? 0 : 1];
   }
 
+  getCategories(row: IDataRow) {
+    return [this.getCategory(row)];
+  }
+
   iterCategory(row: IDataRow) {
     return [this.getCategory(row)];
   }

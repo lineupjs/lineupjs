@@ -75,7 +75,7 @@ export function isCategoricalColumn(col: Column | IColumnDesc) {
 export declare type ICategoricalsColumn = ICategoricalLikeColumn & IArrayColumn<string | null>;
 
 export function isCategoricalsColumn(col: Column): col is ICategoricalsColumn {
-  return isCategoricalLikeColumn(col) && isArrayColumn(col);
+  return isCategoricalLikeColumn(col) && isArrayColumn(col) && !isSetColumn(col);
 }
 
 
