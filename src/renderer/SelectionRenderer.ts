@@ -52,12 +52,8 @@ export default class SelectionRenderer implements ICellRendererFactory {
           }
           return true;
         });
-        const all = selected * 2 > length;
-        if (all) {
-          n.classList.add(cssClass('group-selected'));
-        } else {
-          n.classList.remove(cssClass('group-selected'));
-        }
+
+        n.classList.toggle(cssClass('group-selected'), selected * 2 > total);
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();

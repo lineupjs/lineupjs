@@ -1,6 +1,7 @@
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
 import Column, {defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType} from '.';
 import {OrderedSet} from '../internal';
+import {DEFAULT_COLOR} from './interfaces';
 
 
 /** @internal */
@@ -37,14 +38,12 @@ export function joinGroups(groups: IGroup[]): IGroup {
     g.parent = parents[i];
     parents[i].subGroups = [g];
   });
-  // artificial leaf combining the chain
-  const g = {
-    name: parents.map((d) => d.name).join(' ∩ '),
-    color: parents[0].color,
-    parent: parents[parents.length - 1]
-  };
-  g.parent.subGroups = [g];
-  return g;
+
+  // let combined label for leaf
+  const last = parents[parents.length - 1];
+  last.name = parents.map((d) => d.name).join(' ∩ ');
+  last.color = (parents.find((d) => d.color !== DEFAULT_COLOR) || last).color;
+  return last;
 }
 
 /** @internal */

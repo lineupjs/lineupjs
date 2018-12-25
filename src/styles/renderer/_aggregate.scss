@@ -30,7 +30,7 @@
 }
 
 .#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
-  > :first-child {
+  > * {
     cursor: pointer;
 
     &::before {
@@ -41,11 +41,7 @@
   }
 
   > :last-child {
-    cursor: pointer;
-
     &::before {
-      @include lu_icons();
-
       content: $lu_icon_expand;
       transform: rotate(-45deg);
     }
@@ -53,7 +49,7 @@
 }
 
 .#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'] {
-  > :first-child::before {
+  > *::before {
     content: $lu_icon_caret_right;
   }
 

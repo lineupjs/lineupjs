@@ -852,7 +852,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const n = provider.getTopNAggregated(this.ranking, group);
 
       // always the group for stratified datasets
-      r.push(Object.assign({meta: <IGroupMeta>(n === 0 ? `first last` : (n > 0 ? 'first top' : `first`))}, group));
+      r.push(Object.assign(group, {meta: <IGroupMeta>(n === 0 ? `first last` : (n > 0 ? 'first top' : `first`))}));
 
       const slice = Math.min(n >= 0 ? n : Number.POSITIVE_INFINITY, length);
 

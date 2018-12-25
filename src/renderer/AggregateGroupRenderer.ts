@@ -2,6 +2,11 @@ import {IDataRow, IGroup, IGroupMeta, Column, AggregateGroupColumn, EAggregation
 import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
 import {IRenderContext, ICellRendererFactory} from './interfaces';
 
+function preventDefault(event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+}
+
 /** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -33,37 +38,47 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return {
       template: `<div><div title="Expand Group"></div><div title="Show All"></div></div>`,
       update(node: HTMLElement, group: IGroup, meta: IGroupMeta) {
-        const toggleAggregate = <HTMLElement>node.firstElementChild!;
-        const toggleMore = <HTMLElement>node.lastElementChild!;
+        node.dataset.meta = meta!;
+
+        const children = <HTMLElement[]>Array.from(node.children);
+
+        const toggleMore = children.pop()!;
+
+        toggleMore.onclick = (event) => {
+          preventDefault(event);
+          col.setAggregated(group, isShowAll ? EAggregationState.EXPAND_TOP_N : EAggregationState.EXPAND);
+        };
 
         const isGroupOnly = meta === 'first last';
         const isTopX = meta === 'first top';
         const isShowAll = !isGroupOnly && !isTopX;
 
-        if (isShowAll) {
-          // expanded
-          toggleAggregate.title = 'Collapse Group';
-          toggleMore.title = 'Show Top';
-        } else if (isGroupOnly) {
-          // collapse
-          toggleAggregate.title = 'Expand Group';
-          toggleMore.title = 'Show Top';
-        } else {
-          // show top
-          toggleAggregate.title = 'Collapse Group';
-          toggleMore.title = 'Show All';
-        }
-        node.dataset.meta = meta!;
-        toggleAggregate.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
+        toggleMore.title = isTopX ? 'Show All' : 'Show Top';
+
+        const toggleAggregate = children.pop()!;
+        toggleAggregate.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
+        toggleAggregate.onclick = (event) => {
+          preventDefault(event);
           col.setAggregated(group, isGroupOnly ? EAggregationState.EXPAND_TOP_N: EAggregationState.COLLAPSE);
         };
-        toggleMore.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-          col.setAggregated(group, isShowAll ? EAggregationState.EXPAND_TOP_N: EAggregationState.EXPAND);
-        };
+
+        {
+          let g = group;
+          while (g.parent && g.parent.subGroups[0] === g) {
+            g = g.parent;
+            const a = children.length > 0 ? children.pop()! : node.ownerDocument!.createElement('div');
+            a.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
+            a.onclick = (event) => {
+              preventDefault(event);
+              col.setAggregated(g, isGroupOnly ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
+            };
+            node.insertAdjacentElement('afterbegin', a);
+          }
+
+          for(const child of children) {
+            child.remove();
+          }
+        }
       }
     };
   }
@@ -98,8 +113,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           toggleMore.title = 'Show All';
         }
         toggleAggregate.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
+          preventDefault(event);
           const ranking = col.findMyRanker();
           if (!ranking || !context) {
             return;
@@ -110,8 +124,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           context.provider.aggregateAllOf(ranking, meta === 'first last' ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
         };
         toggleMore.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
+          preventDefault(event);
           const ranking = col.findMyRanker();
           if (!ranking || !context) {
             return;

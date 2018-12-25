@@ -9,6 +9,7 @@
   &::before {
     @include lu_icons();
 
+    cursor: pointer;
     display: inline;
     content: $lu_icon_square_o;
   }
@@ -20,7 +21,6 @@
 }
 
 .#{$engine_css_prefix}-tr.#{$lu_css_prefix}-selected > .#{$lu_css_prefix}-renderer-selection::before,
-.#{$lu_css_prefix}-group-selected::before {
+.#{$engine_css_prefix}-td.#{$lu_css_prefix}-group-selected::before {
   content: $lu_icon_check_square_o;
-  padding-left: 2px;
 }
