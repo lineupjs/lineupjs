@@ -36,6 +36,12 @@ declare function widthChanged(): void;
  */
 declare function updateData(): void;
 /**
+ * emitted when the table has be recreated
+ * @asMemberOf EngineRanking
+ * @event
+ */
+declare function recreate(): void;
+/**
  * emitted when the highlight changes
  * @asMemberOf EngineRanking
  * @param dataIndex the highlghted data index or -1 for none
@@ -48,6 +54,7 @@ declare function highlightChanged(dataIndex: number): void;
 class RankingEvents extends AEventDispatcher {
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
   static readonly EVENT_UPDATE_DATA = 'updateData';
+  static readonly EVENT_RECREATE = 'recreate';
   static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
   fire(type: string | string[], ...args: any[]) {
@@ -55,7 +62,7 @@ class RankingEvents extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA, RankingEvents.EVENT_HIGHLIGHT_CHANGED]);
+    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA, RankingEvents.EVENT_RECREATE, RankingEvents.EVENT_HIGHLIGHT_CHANGED]);
   }
 }
 
@@ -66,6 +73,7 @@ const PASSIVE: AddEventListenerOptions = {
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection, IEventHandler {
   static readonly EVENT_WIDTH_CHANGED = RankingEvents.EVENT_WIDTH_CHANGED;
   static readonly EVENT_UPDATE_DATA = RankingEvents.EVENT_UPDATE_DATA;
+  static readonly EVENT_RECREATE = RankingEvents.EVENT_RECREATE;
   static readonly EVENT_HIGHLIGHT_CHANGED = RankingEvents.EVENT_HIGHLIGHT_CHANGED;
 
   private _context: ICellRenderContext<RenderColumn>;
@@ -246,6 +254,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   on(type: typeof EngineRanking.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof EngineRanking.EVENT_UPDATE_DATA, listener: typeof updateData | null): this;
+  on(type: typeof EngineRanking.EVENT_RECREATE, listener: typeof recreate | null): this;
   on(type: typeof EngineRanking.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
@@ -519,6 +528,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     });
 
+    this.events.fire(EngineRanking.EVENT_RECREATE);
     super.recreate();
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
   }
@@ -880,6 +890,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (!this.bodyScroller) { // somehow not part of dom
       return;
     }
+    this.events.fire(EngineRanking.EVENT_RECREATE);
     return super.recreate(this.roptions.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
   }
 

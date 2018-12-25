@@ -236,10 +236,7 @@ export default class EngineRenderer extends AEventDispatcher {
         r.updateHeaders();
       }
     }
-
-    for (const u of this.updateAbles) {
-      u(this.ctx);
-    }
+    this.updateUpdateAbles();
   }
 
   private addRanking(ranking: Ranking) {
@@ -262,6 +259,7 @@ export default class EngineRenderer extends AEventDispatcher {
       this.table.widthChanged();
     });
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
+    r.on(EngineRanking.EVENT_RECREATE, () => this.updateUpdateAbles());
     this.forward(r, EngineRanking.EVENT_HIGHLIGHT_CHANGED);
     if (this.enabledHighlightListening) {
       r.enableHighlightListening(true);
@@ -352,8 +350,15 @@ export default class EngineRenderer extends AEventDispatcher {
 
     this.updateSlopeGraphs(rankings);
 
+    this.updateUpdateAbles();
     this.updateRotatedHeaderState();
     this.table.widthChanged();
+  }
+
+  private updateUpdateAbles() {
+    for (const u of this.updateAbles) {
+      u(this.ctx);
+    }
   }
 
   private updateSlopeGraphs(rankings: EngineRanking[] = this.rankings) {

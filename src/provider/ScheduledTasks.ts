@@ -360,7 +360,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   private cached<T>(key: string, it: Iterator<T | null> | (() => Promise<T>)): IRenderTask<T> {
     const dontCache = this.data.length === 0;
 
-    if (this.cache.has(key) && !dontCache) {
+    if (this.isValidCacheEntry(key) && !dontCache) {
       return this.cache.get(key)!;
     }
 
@@ -370,11 +370,12 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       this.cache.set(key, s);
     }
     task.then((r) => {
-      if (typeof r === 'symbol') {
+      if (this.cache.get(key) !== s) {
         return;
       }
-      if (this.cache.get(key) === s) {
-        // still same value replace with faster version
+      if (typeof r === 'symbol') {
+        this.cache.delete(key);
+      } else {
         this.cache.set(key, taskNow(r));
       }
     });
@@ -382,10 +383,14 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   }
 
   private chain<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => Iterator<U | null> | (() => Promise<U>)): IRenderTask<U> {
-    if (this.cache.has(key)) {
+    if (this.isValidCacheEntry(key)) {
       return this.cache.get(key)!;
     }
     if (task instanceof TaskNow) {
+      if (typeof task.v === 'symbol') {
+        // aborted
+        return taskNow(ABORTED);
+      }
       return this.cached(key, creator(task.v));
     }
 
@@ -404,22 +409,36 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     const s = taskLater(subTask);
     this.cache.set(key, s);
     subTask.then((r) => {
-      if (typeof r === 'symbol') {
+      if (this.cache.get(key) !== s) {
         return;
       }
-      if (this.cache.get(key) === s) {
-        // still same value replace with faster version
+      if (typeof r === 'symbol') {
+        this.cache.delete(key);
+      } else {
         this.cache.set(key, taskNow(r));
       }
     });
     return s;
   }
 
+  private isValidCacheEntry(key: string) {
+    if (!this.cache.has(key)) {
+      return false;
+    }
+    const v = this.cache.get(key);
+    // not an aborted task
+    return !((v instanceof TaskNow) && typeof v.v === 'symbol') && !(v instanceof TaskLater && v.v.isAborted());
+  }
+
   private chainCopy<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => U): IRenderTask<U> {
-    if (this.cache.has(key)) {
+    if (this.isValidCacheEntry(key)) {
       return this.cache.get(key)!;
     }
     if (task instanceof TaskNow) {
+      if (typeof task.v === 'symbol') {
+        // aborted
+        return taskNow(ABORTED);
+      }
       const subTask = taskNow(creator(task.v));
       this.cache.set(key, subTask);
       return subTask;
@@ -435,11 +454,12 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     const s = taskLater(subTask);
     this.cache.set(key, s);
     subTask.then((r) => {
-      if (typeof r === 'symbol') {
+      if (this.cache.get(key) !== s) {
         return;
       }
-      if (this.cache.get(key) === s) {
-        // still same value replace with faster version
+      if (typeof r === 'symbol') {
+        this.cache.delete(key);
+      } else {
         this.cache.set(key, taskNow(r));
       }
     });
@@ -447,12 +467,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   }
 
   dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    const key = `${col.id}:c:data${raw ? ':braw' : ':b'}`;
-    if (!raw && this.valueCacheData.has(col.id) && this.data.length > 0) {
-      // use webworker
-      return this.cached(key, () => this.workers.pushStats('boxplotStats', {}, col.id, <Float32Array>this.valueCacheData.get(col.id)!));
-    }
-    return this.cached(key, this.boxplotBuilder<IAdvancedBoxPlotData>(null, col, raw));
+    return this.cached(`${col.id}:c:data${raw ? ':braw' : ':b'}`, this.boxplotBuilder<IAdvancedBoxPlotData>(null, col, raw));
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean) {

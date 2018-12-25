@@ -39,6 +39,11 @@ export interface ITask<T> {
    * the resulting promise
    */
   result: PromiseLike<T | symbol>;
+
+  /**
+   * aborts this task
+   */
+  abort: () => void;
 }
 
 /**
@@ -61,12 +66,13 @@ export function oneShotIterator<T>(calc: () => T): Iterator<T> {
 }
 
 
-function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void) {
+function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void, isAborted: () => boolean) {
   function then<TResult1 = T | symbol, TResult2 = never>(onfulfilled?: ((value: T | symbol) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): IAbortAblePromiseBase<TResult1 | TResult2> {
     const r = wrappee.then(onfulfilled, onrejected);
     return {
-      then: <any>thenFactory(r, abort),
-      abort
+      then: <any>thenFactory(r, abort, isAborted),
+      abort,
+      isAborted
     };
   }
   return then;
@@ -125,7 +131,10 @@ export default class TaskScheduler {
    */
   pushMulti<T>(id: string, it: Iterator<T | PromiseLike<T> | null>): IAbortAblePromise<T> {
     // abort task with the same id
+    let abortedCalled = false;
+    const isAborted = () => abortedCalled;
     const abort = () => {
+      abortedCalled = true;
       const index = this.tasks.findIndex((d) => d.id === id);
       if (index < 0) {
         return; // too late or none
@@ -137,6 +146,7 @@ export default class TaskScheduler {
     };
 
     abort(); // abort existing with same id
+    abortedCalled = false; // reset
 
     let resolve: (value: T | symbol) => void;
 
@@ -149,14 +159,16 @@ export default class TaskScheduler {
       id,
       it,
       result: p,
+      abort,
       resolve: resolve!
     });
 
     this.reSchedule();
 
     return {
-      then: thenFactory(p, abort),
-      abort
+      then: thenFactory(p, abort, isAborted),
+      abort,
+      isAborted
     };
   }
 
@@ -179,9 +191,7 @@ export default class TaskScheduler {
       return false; // too late or none
     }
     const task = this.tasks[index];
-    this.tasks.splice(index, 1);
-
-    task.resolve(ABORTED);
+    task.abort();
     return true;
   }
 
@@ -193,6 +203,7 @@ export default class TaskScheduler {
     this.tasks = this.tasks.filter((d) => !filter(d));
     for (const task of abort) {
       task.resolve(ABORTED);
+      task.abort();
     }
   }
 
@@ -208,6 +219,9 @@ export default class TaskScheduler {
     }
     this.taskId = -1;
 
-    this.tasks.splice(0, this.tasks.length).forEach((d) => d.resolve(ABORTED));
+    this.tasks.splice(0, this.tasks.length).forEach((d) => {
+      d.resolve(ABORTED);
+      d.abort();
+    });
   }
 }
