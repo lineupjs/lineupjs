@@ -949,7 +949,9 @@ export function categoricalValueCache2Value<T extends {name: string}>(v: number,
 }
 
 
-function sortWorkerMain(self: IPoorManWorkerScope) {
+function sortWorkerMain() {
+  const wself = <IPoorManWorkerScope><unknown>self;
+
   // stored refs to avoid duplicate copy
   const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array | Float64Array>();
 
@@ -959,7 +961,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     }
     const order = r.indices;
 
-    self.postMessage(<ISortMessageResponse>{
+    wself.postMessage(<ISortMessageResponse>{
       type: r.type,
       uid: r.uid,
       ref: r.ref,
@@ -1018,7 +1020,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
         b.push(dateValueCache2Value(data[i]));
       }
     }
-    self.postMessage(<IDateStatsMessageResponse>{
+    wself.postMessage(<IDateStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
       stats: b.build()
@@ -1042,7 +1044,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
       }
     }
 
-    self.postMessage(<ICategoricalStatsMessageResponse>{
+    wself.postMessage(<ICategoricalStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
       stats: b.build()
@@ -1066,7 +1068,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
       }
     }
 
-    self.postMessage(<INumberStatsMessageResponse>{
+    wself.postMessage(<INumberStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
       stats: b.build()
@@ -1089,7 +1091,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
       stats = b.build();
     }
 
-    self.postMessage(<IBoxPlotStatsMessageResponse>{
+    wself.postMessage(<IBoxPlotStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
       stats
@@ -1107,7 +1109,7 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
     boxplotStats
   };
 
-  self.addEventListener('message', (evt) => {
+  wself.addEventListener('message', (evt) => {
     const r = evt.data;
     if (typeof r.uid !== 'number' || typeof r.type !== 'string') {
       return;
