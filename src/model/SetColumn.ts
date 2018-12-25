@@ -96,7 +96,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   getValue(row: IDataRow): string[] | null {
-    const v = this.getCategories(row);
+    const v = this.getSortedSet(row);
     if (v.length === 0) {
       return null;
     }
@@ -104,7 +104,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   getLabel(row: IDataRow) {
-    return `(${this.getCategories(row).map((d) => d.label).join(',')})`;
+    return `(${this.getSortedSet(row).map((d) => d.label).join(',')})`;
   }
 
   private normalize(v: any) {
@@ -132,12 +132,17 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return r;
   }
 
-  getCategories(row: IDataRow) {
+  getSortedSet(row: IDataRow) {
     return Array.from(this.getSet(row)).sort((a, b) => a.value === b.value ? a.label.localeCompare(b.label) : a.value - b.value);
   }
 
+  getCategories(row: IDataRow) {
+    const s = this.getSet(row);
+    return this.categories.map((d) => s.has(d) ? d : null);
+  }
+
   getColors(row: IDataRow) {
-    return this.getCategories(row).map((d) => this.colorMapping.apply(d));
+    return this.getSortedSet(row).map((d) => this.colorMapping.apply(d));
   }
 
   getColorMapping() {
@@ -150,7 +155,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
 
 
   getValues(row: IDataRow) {
-    const s = new Set(this.getSet(row));
+    const s = this.getSet(row);
     return this.categories.map((d) => s.has(d));
   }
 
@@ -159,11 +164,11 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   getMap(row: IDataRow) {
-    return this.getCategories(row).map((d) => ({key: d.label, value: true}));
+    return this.getSortedSet(row).map((d) => ({key: d.label, value: true}));
   }
 
   getMapLabel(row: IDataRow) {
-    return this.getCategories(row).map((d) => ({key: d.label, value: 'true'}));
+    return this.getSortedSet(row).map((d) => ({key: d.label, value: 'true'}));
   }
 
   iterCategory(row: IDataRow) {

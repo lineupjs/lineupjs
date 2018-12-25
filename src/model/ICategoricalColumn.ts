@@ -26,6 +26,12 @@ export interface ICategoricalLikeColumn extends Column {
   setColorMapping(mapping: ICategoricalColorMappingFunction): void;
 
   iterCategory(row: IDataRow): IForEachAble<ICategory | null>;
+
+  getCategories(row: IDataRow): (ICategory | null)[];
+}
+
+export function isCategoricalLikeColumn(col: Column): col is ICategoricalLikeColumn {
+  return typeof (<ICategoricalLikeColumn>col).categories !== 'undefined' && typeof (<ICategoricalLikeColumn>col).iterCategory === 'function';
 }
 
 export interface ISetColumn extends IArrayColumn<boolean>, ICategoricalLikeColumn {
@@ -33,7 +39,7 @@ export interface ISetColumn extends IArrayColumn<boolean>, ICategoricalLikeColum
 }
 
 export function isSetColumn(col: Column): col is ISetColumn {
-  return isArrayColumn(col) && Array.isArray((<ISetColumn>col).categories);
+  return isCategoricalLikeColumn(col) && typeof (<ISetColumn>col).getSet === 'function';
 }
 
 export interface ICategoricalColumn extends ISetColumn {
@@ -55,10 +61,6 @@ export interface ICategory {
 
   value: number;
 }
-
-export function isCategoricalLikeColumn(col: Column): col is ICategoricalLikeColumn {
-  return typeof (<ICategoricalLikeColumn>col).categories !== 'undefined' && typeof (<ICategoricalLikeColumn>col).iterCategory === 'function';
-}
 /**
  * checks whether the given column or description is a categorical column, i.e. the value is a list of categories
  * @param col
@@ -69,6 +71,13 @@ export function isCategoricalColumn(col: IColumnDesc): col is ICategoricalColumn
 export function isCategoricalColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<ICategoricalColumn>col).getCategory === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
 }
+
+export declare type ICategoricalsColumn = ICategoricalLikeColumn & IArrayColumn<string | null>;
+
+export function isCategoricalsColumn(col: Column): col is ICategoricalsColumn {
+  return isCategoricalLikeColumn(col) && isArrayColumn(col);
+}
+
 
 export interface ICategoricalFilter {
   filter: string[] | string | RegExp;

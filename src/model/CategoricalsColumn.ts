@@ -1,5 +1,5 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {ICategoricalDesc, ICategory, ICategoricalLikeColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
+import {ICategoricalDesc, ICategory, ICategoricalColorMappingFunction, ICategoricalsColumn} from './ICategoricalColumn';
 import {IDataRow, DEFAULT_COLOR} from './interfaces';
 import {toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
@@ -22,7 +22,7 @@ declare function colorMappingChanged(previous: ICategoricalColorMappingFunction,
  * a string column with optional alignment
  */
 @toolbar('colorMappedCategorical')
-export default class CategoricalsColumn extends ArrayColumn<string | null> implements ICategoricalLikeColumn {
+export default class CategoricalsColumn extends ArrayColumn<string | null> implements ICategoricalsColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   readonly categories: ICategory[];
