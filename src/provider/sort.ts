@@ -103,6 +103,16 @@ export class CompareLookup {
         this.data.push({asc: c.asc, v: vi, lookup, setter: createSetter(vi, lookup, missingCount)});
       }
     }
+
+    if (isSorting) {
+      return;
+    }
+
+    {
+      const v = ECompareValueType.STRING;
+      const lookup = toCompareLookUp(rawLength, v);
+      this.data.push({asc: true, v, lookup, setter: createSetter(v, lookup, missingCount)});
+    }
   }
 
   get sortOrders() {
