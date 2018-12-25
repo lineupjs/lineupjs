@@ -411,7 +411,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return {groups: [], index2pos: []};
     }
 
-    console.log(dirtyReason);
+    // console.log(dirtyReason);
 
     const filter = this.resolveFilter(ranking);
 

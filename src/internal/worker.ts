@@ -155,6 +155,7 @@ export class WorkerTaskScheduler {
         if (r.uid !== uid || r.type !== type) {
           return;
         }
+        // console.log('worker', index, uid, 'finish', r);
         worker.removeEventListener('message', receiver);
         tasks.delete(uid);
         this.finshedTask();
@@ -188,7 +189,7 @@ export class WorkerTaskScheduler {
         }
         // console.log(index, 'set ref (i)', refIndices);
       }
-      // console.log(index, msg);
+      // console.log('worker', index, uid, msg);
 
       worker.postMessage(msg);
     });
@@ -206,6 +207,7 @@ export class WorkerTaskScheduler {
         if (r.uid !== uid || r.type !== type) {
           return;
         }
+        // console.log('worker', index, uid, 'finish', r);
         worker.removeEventListener('message', receiver);
         tasks.delete(uid);
         this.finshedTask();
@@ -218,7 +220,8 @@ export class WorkerTaskScheduler {
         type,
         uid
       }, args);
-      // console.log(index, msg);
+      // console.log('worker', index, uid, msg);
+
       worker.postMessage(msg, transferAbles);
     });
   }

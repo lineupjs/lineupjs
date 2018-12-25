@@ -134,7 +134,6 @@ export default class TaskScheduler {
   pushMulti<T>(id: string, it: Iterator<T | PromiseLike<T> | null>, abortAble = true): IAbortAblePromise<T> {
     // abort task with the same id
     const abort = () => {
-      console.trace('abort', id);
       const index = this.tasks.findIndex((d) => d.id === id);
       if (index < 0) {
         return; // too late or none
