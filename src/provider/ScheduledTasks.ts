@@ -468,7 +468,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   }
 
   sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, lookups?: CompareLookup) {
-    if (!lookups) {
+    if (!lookups || indices.length < 1000) {
       // no thread needed
       const order = sortDirect(indices, lookups);
       return Promise.resolve(order);

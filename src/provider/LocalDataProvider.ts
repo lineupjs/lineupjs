@@ -263,13 +263,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return {groups: [Object.assign({order}, defaultGroup)], index2pos};
   }
 
-  private createSorter(ranking: Ranking, filter: (Column | ((d: IDataRow) => boolean))[], isSortedBy: boolean, needsFiltering: boolean, needsGrouping: boolean, needsSorting: boolean) {
+  private createSorter(ranking: Ranking, filter: (Column | ((d: IDataRow) => boolean))[], _isSortedBy: boolean, needsFiltering: boolean, needsGrouping: boolean, needsSorting: boolean) {
     const groups = new Map<string, ISortHelper>();
     const groupOrder: ISortHelper[] = [];
     let maxDataIndex = -1;
 
     const groupCriteria = ranking.getGroupCriteria();
-    const lookups = isSortedBy && needsSorting ? new CompareLookup(this._data.length, true, ranking, this.tasks.valueCache.bind(this.tasks)) : undefined;
+    const lookups = needsSorting ? new CompareLookup(this._data.length, true, ranking, this.tasks.valueCache.bind(this.tasks)) : undefined;
 
     const pushGroup = (group: IGroup, r: IDataRow) => {
       const groupKey = group.name.toLowerCase();

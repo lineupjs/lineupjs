@@ -691,11 +691,14 @@ export declare type ILookUpArray = Uint8Array | Uint16Array | Uint32Array | Int8
  * @internal
  */
 export function sortComplex(indices: UIntTypedArray | number[], comparators: {asc: boolean, lookup: ILookUpArray}[]) {
-  if (indices.length < 2 || comparators.length === 0) {
+  if (indices.length < 2) {
     return indices;
   }
 
   switch (comparators.length) {
+    case 0:
+      // sort by indices
+      return indices.sort();
     case 1:
       const c = comparators[0]!.asc ? asc : desc;
       const cLookup = comparators[0]!.lookup;
