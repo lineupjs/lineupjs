@@ -1,8 +1,7 @@
-import {Column, ISetColumn, isSetColumn, ICategoricalLikeColumn, ICategory, IDataRow, IOrderedGroup} from '../model';
-import {CANVAS_HEIGHT, UPSET, cssClass} from '../styles';
-import {IRenderContext, ICellRendererFactory} from './interfaces';
+import {Column, IDataRow, IOrderedGroup, ISetColumn, isSetColumn} from '../model';
+import {CANVAS_HEIGHT, cssClass, UPSET} from '../styles';
+import {ICellRendererFactory, IRenderContext} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {ISequence} from '../internal';
 
 /** @internal */
 export default class UpSetCellRenderer implements ICellRendererFactory {
@@ -126,13 +125,4 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
       }
     };
   }
-}
-
-/** @internal */
-export function union(col: ICategoricalLikeColumn, rows: ISequence<IDataRow>) {
-  const values = new Set<ICategory | null>();
-  rows.forEach((d) => {
-    col.iterCategory(d).forEach((c) => values.add(c));
-  });
-  return col.categories.map((cat) => values.has(cat));
 }

@@ -112,6 +112,10 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return this.lookup.has(vs) ? this.lookup.get(vs)! : null;
   }
 
+  getCategories(row: IDataRow) {
+    return [this.getCategory(row)];
+  }
+
   iterCategory(row: IDataRow) {
     return [this.getCategory(row)];
   }

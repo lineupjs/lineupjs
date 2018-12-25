@@ -2,8 +2,8 @@ import {Column, ICategoricalLikeColumn, IDataRow, IOrderedGroup, ISetColumn, isS
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ICellRendererFactory, IRenderContext} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {union} from './UpSetCellRenderer';
 import {forEachChild, noop, wideEnoughCat} from './utils';
+import {round} from '../internal';
 
 /** @internal */
 export default class SetCellRenderer implements ICellRendererFactory {
@@ -22,10 +22,10 @@ export default class SetCellRenderer implements ICellRendererFactory {
     }
     return {
       templateRow: templateRows,
-      render: (n: HTMLElement, value: boolean[]) => {
+      render: (n: HTMLElement, value: (number | boolean)[]) => {
         forEachChild(n, (d: HTMLElement, i) => {
           const v = value[i];
-          d.style.visibility = v ? null : 'hidden';
+          d.style.opacity = typeof v === 'boolean' ? (v ? '1' : '0') : round(v, 2).toString();
         });
       }
     };
@@ -68,16 +68,16 @@ export default class SetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ICategoricalLikeColumn, context: IRenderContext) {
+  createGroup(col: ISetColumn, context: IRenderContext) {
     const {templateRow, render} = SetCellRenderer.createDOMContext(col);
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, 'union', (rows) => union(col, rows)).then((value) => {
-          if (typeof value === 'symbol') {
+        return context.tasks.groupCategoricalStats(col, group).then((r) => {
+          if (typeof r === 'symbol') {
             return;
           }
-          render(n, value);
+          render(n, r.group.hist.map((d) => d.count / r.group.maxBin));
         });
       }
     };

@@ -245,6 +245,10 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return v ? v.name : null;
   }
 
+  getCategories(row: IDataRow) {
+    return [this.getCategory(row)];
+  }
+
   iterCategory(row: IDataRow) {
     return [this.getCategory(row)];
   }
