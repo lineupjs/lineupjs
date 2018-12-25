@@ -640,7 +640,7 @@ export function toIndexArray(arr: ISequence<number> | IndicesArray): UIntTypedAr
   return Uint32Array.from(arr);
 }
 
-function createLike(template: IndicesArray, total: number) {
+function createLike(template: IndicesArray, total: number, maxDataIndex?: number) {
   if (template instanceof Uint8Array) {
     return new Uint8Array(total);
   }
@@ -650,13 +650,13 @@ function createLike(template: IndicesArray, total: number) {
   if (template instanceof Uint32Array) {
     return new Uint32Array(total);
   }
-  return createIndexArray(total);
+  return createIndexArray(total, maxDataIndex);
 }
 
 /**
  * @internal
  */
-export function joinIndexArrays(groups: IndicesArray[]) {
+export function joinIndexArrays(groups: IndicesArray[], maxDataIndex?: number) {
   switch (groups.length) {
     case 0:
       return [];
@@ -664,7 +664,7 @@ export function joinIndexArrays(groups: IndicesArray[]) {
       return groups[0];
     default:
       const total = groups.reduce((a, b) => a + b.length, 0);
-      const r = createLike(groups[0], total);
+      const r = createLike(groups[0], total, maxDataIndex);
       let shift = 0;
       for (const g of groups) {
         r.set(g, shift);
@@ -1027,11 +1027,6 @@ function sortWorkerMain(self: IPoorManWorkerScope) {
 
   const categoricalStats = (r: ICategoricalStatsMessageRequest) => {
     const {data, indices} = resolveRefs<UIntTypedArray>(r);
-
-    refs.set(r.refData, data);
-    if (r.refIndices) {
-      refs.set(r.refIndices, indices!);
-    }
 
     const cats = r.categories.map((name) => ({name}));
     const b = categoricalStatsBuilder(cats);

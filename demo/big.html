@@ -16,12 +16,13 @@
     window.onload = function () {
       const arr = [];
       const cats = ['c1', 'c2', 'c3'];
+      const cat2 = ['a1', 'a2'];
       for (let i = 0; i < 100000; ++i) {
         arr.push({
           a: Math.random() * 10,
           d: 'Row ' + i,
-          cat: cats[Math.floor(Math.random() * 3)],
-          cat2: cats[Math.floor(Math.random() * 3)]
+          cat: cats[Math.floor(Math.random() * cats.length)],
+          cat2: cat2[Math.floor(Math.random() * cat2.length)],
         })
       }
       console.log('generated');
@@ -47,17 +48,13 @@
           type: 'categorical',
           column: 'cat2',
           categories: [{
-            name: 'c1',
-            label: 'C1',
+            name: 'a1',
+            label: 'A1',
             color: 'green'
           }, {
-            name: 'c2',
-            label: 'C2',
+            name: 'a2',
+            label: 'A2',
             color: 'blue'
-          }, {
-            name: 'c3',
-            label: 'C3',
-            color: 'red'
           }]
         }
       ];

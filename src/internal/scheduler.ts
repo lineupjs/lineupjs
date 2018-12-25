@@ -44,6 +44,8 @@ export interface ITask<T> {
    * aborts this task
    */
   abort: () => void;
+
+  isAborted: boolean;
 }
 
 /**
@@ -129,12 +131,10 @@ export default class TaskScheduler {
    * @param id task id
    * @param it iterator to execute
    */
-  pushMulti<T>(id: string, it: Iterator<T | PromiseLike<T> | null>): IAbortAblePromise<T> {
+  pushMulti<T>(id: string, it: Iterator<T | PromiseLike<T> | null>, abortAble = true): IAbortAblePromise<T> {
     // abort task with the same id
-    let abortedCalled = false;
-    const isAborted = () => abortedCalled;
     const abort = () => {
-      abortedCalled = true;
+      console.trace('abort', id);
       const index = this.tasks.findIndex((d) => d.id === id);
       if (index < 0) {
         return; // too late or none
@@ -142,11 +142,18 @@ export default class TaskScheduler {
       const task = this.tasks[index];
       this.tasks.splice(index, 1);
 
+      task.isAborted = true;
       task.resolve(ABORTED);
     };
 
-    abort(); // abort existing with same id
-    abortedCalled = false; // reset
+    {
+      // abort existing
+      const index = this.tasks.findIndex((d) => d.id === id);
+      if (index >= 0) {
+        const task = this.tasks[index];
+        task.abort();
+      }
+    }
 
     let resolve: (value: T | symbol) => void;
 
@@ -155,20 +162,27 @@ export default class TaskScheduler {
       resolve = r;
     });
 
-    this.tasks.push({
+    const task: ITask<T> = {
       id,
       it,
       result: p,
       abort,
+      isAborted: false,
       resolve: resolve!
-    });
+    };
+    const isAborted = () => task.isAborted;
+
+    this.tasks.push(task);
 
     this.reSchedule();
 
+    const abortOrDummy = abortAble ? abort : () => undefined;
+    const isAbortedOrDummy = abortAble ? isAborted : () => false;
+
     return {
-      then: thenFactory(p, abort, isAborted),
-      abort,
-      isAborted
+      then: thenFactory(p, abortOrDummy, isAbortedOrDummy),
+      abort: abortOrDummy,
+      isAborted: isAbortedOrDummy
     };
   }
 

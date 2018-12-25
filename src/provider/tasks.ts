@@ -35,7 +35,6 @@ export class TaskLater<T> implements IRenderTask<T> {
   }
 
   then<U = void>(onfullfilled: (value: T | symbol) => U) {
-    // wrap to avoid that the task will be aborted
     return this.v.then(onfullfilled);
   }
 }
@@ -64,7 +63,7 @@ export interface IRenderTaskExectutor extends IRenderTasks {
 
   groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray): IRenderTask<ICompareValue[]>;
 
-  preCompute(ranking: Ranking, groups: {rows: IndicesArray, group: IGroup}[]): void;
+  preCompute(ranking: Ranking, groups: {rows: IndicesArray, group: IGroup}[], maxDataIndex: number): void;
   preComputeCol(col: Column): void;
   preComputeData(ranking: Ranking): void;
   copyData2Summary(ranking: Ranking): void;
@@ -80,7 +79,7 @@ export interface IRenderTaskExectutor extends IRenderTasks {
 export class MultiIndices {
   private _joined: IndicesArray | null = null;
 
-  constructor(public readonly indices: IndicesArray[]) {
+  constructor(public readonly indices: IndicesArray[], private readonly maxDataIndex: number) {
 
   }
 
@@ -94,7 +93,7 @@ export class MultiIndices {
     if (this._joined) {
       return this._joined;
     }
-    return this._joined = joinIndexArrays(this.indices);
+    return this._joined = joinIndexArrays(this.indices, this.maxDataIndex);
   }
 }
 

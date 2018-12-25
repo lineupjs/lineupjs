@@ -94,8 +94,17 @@ export class WorkerTaskScheduler {
   }
 
   private readonly cleanUpWorker = () => {
-    // delete workers when they are not needed anymore
-    this.workers.splice(0, this.workers.length - MIN_WORKER_THREADS).forEach((w) => w.worker.terminate());
+    // delete workers when they are not needed anymore and empty
+    while(this.workers.length > MIN_WORKER_THREADS) {
+      const toFree = this.workers.findIndex((d) => d.tasks.size === 0);
+      if (toFree < 0) {
+        break;
+      }
+      const w = this.workers.splice(toFree, 1)[0]!;
+      w.worker.terminate();
+    }
+    // maybe reschedule
+    this.finshedTask();
   }
 
   private checkOutWorker() {
@@ -235,7 +244,7 @@ export class WorkerTaskScheduler {
     for (const w of this.workers) {
       // console.log(w.index, 'delete ref', ref, startsWith);
       w.worker.postMessage(msg);
-      if (startsWith) {
+      if (!startsWith) {
         w.refs.delete(ref);
         continue;
       }

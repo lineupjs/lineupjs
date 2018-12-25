@@ -445,7 +445,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return {groups: [], index2pos: []};
     }
 
-    this.tasks.preCompute(ranking, groupOrder);
+    this.tasks.preCompute(ranking, groupOrder, maxDataIndex);
 
 
     if (groupOrder.length === 1) {
