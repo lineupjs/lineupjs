@@ -179,7 +179,6 @@ export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupItem>item).group == null; // use .group as separator
 }
 
-
 export declare type UIntTypedArray = Uint8Array | Uint16Array | Uint32Array;
 
 export enum ECompareValueType {

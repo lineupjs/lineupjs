@@ -1,5 +1,4 @@
 // COPY TO index.ts, not using webpack to be ES6 compatible
-
 $engine_assets: '~lineupengine/src/assets';
 @import '~lineupengine/src/styles/vars';
 
@@ -21,7 +20,10 @@ $lu_drag_over: rgba(151, 151, 151, 0.8) !default;
 
 $lu_header_background: #6d6c6c !default;
 
-$lu_body_font: 10pt 'Helvetica Neue', Helvetica, Arial, sans-serif !default;
+$lu_body_font: 10pt 'Helvetica Neue',
+Helvetica,
+Arial,
+sans-serif !default;
 $lu_body_text_hover_color: darkblue !default;
 
 $lu_slope_width: 200px !default;
@@ -70,6 +72,7 @@ $lu_aggregate_square_bracket_stroke_color: #000 !default;
 $lu_aggregate_square_bracket_stroke_width: 2px !default;
 $lu_aggregate_hierarchy_width: 4px !default;
 $lu_aggregate_hierarchy_stroke_width: 1px !default;
+$lu_aggregate_hierarchy_color: #000 !default;
 
 $lu_taggle_border_color: #6d6c6c !default;
 

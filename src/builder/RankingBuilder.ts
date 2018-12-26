@@ -349,7 +349,13 @@ export default class RankingBuilder {
           return;
         }
         const desc = findDesc(column);
-        if (desc && data.push(r, desc)) {
+        if (!desc) {
+          console.warn('invalid group criteria column: ', column);
+          return;
+        }
+        const col2 = data.push(r, desc);
+        if (col2) {
+          groups.push(col2);
           return;
         }
         console.warn('invalid group criteria column: ', column);
@@ -367,7 +373,13 @@ export default class RankingBuilder {
           return;
         }
         const desc = findDesc(column);
-        if (desc && data.push(r, desc)) {
+        if (!desc) {
+          console.warn('invalid group criteria column: ', column);
+          return;
+        }
+        const col2 = data.push(r, desc);
+        if (col2) {
+          sorts.push({col: col2, asc});
           return;
         }
         console.warn('invalid sort criteria column: ', column);
