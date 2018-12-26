@@ -46,7 +46,6 @@
     display: none;
   }
 
-  &[data-renderer=aggregate],
   &[data-renderer=selection] {
     display: block; // have just a before element
   }

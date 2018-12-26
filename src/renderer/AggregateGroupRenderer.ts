@@ -1,5 +1,5 @@
 import {IDataRow, IGroup, IGroupMeta, Column, AggregateGroupColumn, EAggregationState} from '../model';
-import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
+import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {IRenderContext, ICellRendererFactory} from './interfaces';
 
 function preventDefault(event: Event) {
@@ -34,9 +34,10 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: AggregateGroupColumn) {
+  createGroup(col: AggregateGroupColumn, context: IRenderContext) {
+    const showMore = context.provider.getShowTopN() > 0;
     return {
-      template: `<div><div title="Expand Group"></div><div title="Show All"></div></div>`,
+      template: `<div><div class="${cssClass('agg-expand')}" title="Expand Group"></div><div class="${cssClass('agg-all')}" title="Show All"></div></div>`,
       update(node: HTMLElement, group: IGroup, meta: IGroupMeta) {
         node.dataset.meta = meta!;
 
@@ -54,39 +55,44 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
         const isShowAll = !isGroupOnly && !isTopX;
 
         toggleMore.title = isTopX ? 'Show All' : 'Show Top';
+        toggleMore.style.display = isGroupOnly || !showMore ? 'none' : null;
+        toggleMore.classList.toggle(cssClass('agg-compress'), isShowAll);
 
         const toggleAggregate = children.pop()!;
         toggleAggregate.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
+        toggleAggregate.classList.toggle(cssClass('agg-collapse'), isGroupOnly);
         toggleAggregate.onclick = (event) => {
           preventDefault(event);
           col.setAggregated(group, isGroupOnly ? EAggregationState.EXPAND_TOP_N: EAggregationState.COLLAPSE);
         };
 
         // multi level TODO
-        // {
-        //   let g = group;
-        //   while (g.parent && g.parent.subGroups[0] === g) {
-        //     g = g.parent;
-        //     const a = children.length > 0 ? children.pop()! : node.ownerDocument!.createElement('div');
-        //     a.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
-        //     a.onclick = (event) => {
-        //       preventDefault(event);
-        //       col.setAggregated(g, isGroupOnly ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
-        //     };
-        //     node.insertAdjacentElement('afterbegin', a);
-        //   }
+        {
+          let g = group;
+          while (g.parent && g.parent.subGroups[0] === g) {
+            g = g.parent;
+            const a = children.length > 0 ? children.pop()! : node.ownerDocument!.createElement('div');
+            a.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
+            a.classList.add(cssClass('agg-expand'));
+            a.classList.toggle(cssClass('agg-collapse'), isGroupOnly);
+            a.onclick = (event) => {
+              preventDefault(event);
+              col.setAggregated(g, isGroupOnly ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
+            };
+            node.insertAdjacentElement('afterbegin', a);
+          }
 
-        //   for(const child of children) {
-        //     child.remove();
-        //   }
-        // }
+          for(const child of children) {
+            child.remove();
+          }
+        }
       }
     };
   }
 
   createSummary(col: AggregateGroupColumn, context: IRenderContext) {
     return {
-      template: `<div><div title="Expand All Groups"></div><div title="Show All"></div></div>`,
+      template: `<div><div class="${cssClass('agg-expand')}"  title="Expand All Groups"></div><div class="${cssClass('agg-all')}"  title="Show All"></div></div>`,
       update: (node: HTMLElement) => {
         const ranking = col.findMyRanker()!;
         const groups = ranking.getGroups();
@@ -113,6 +119,8 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           toggleAggregate.title = 'Collapse Group';
           toggleMore.title = 'Show All';
         }
+
+        toggleAggregate.classList.toggle(cssClass('agg-collapse'), isGroupOnly);
         toggleAggregate.onclick = function (event) {
           preventDefault(event);
           const ranking = col.findMyRanker();

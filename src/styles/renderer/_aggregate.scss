@@ -2,7 +2,9 @@
 @import '../icons/index';
 
 .#{$lu_css_prefix}-renderer-aggregate {
-  text-align: center;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-evenly;
 
   &.#{$engine_css_prefix}-td {
     overflow: visible;
@@ -29,44 +31,41 @@
   }
 }
 
-.#{$lu_css_prefix}-renderer-aggregate[data-meta~=first] {
-  > * {
-    cursor: pointer;
+.#{$lu_css_prefix}-agg-expand {
+  cursor: pointer;
 
-    &::before {
-      @include lu_icons();
+  &::before {
+    @include lu_icons();
 
-      content: $lu_icon_caret_down;
-    }
+    content: $lu_icon_caret_down;
   }
 
-  > :last-child {
-    &::before {
-      content: $lu_icon_expand;
-      transform: rotate(-45deg);
-    }
+  &.#{$lu_css_prefix}-agg-collapse::before {
+    content: $lu_icon_caret_right;
   }
 }
 
-.#{$lu_css_prefix}-renderer-aggregate[data-meta='first last'] {
-  > *::before {
-    content: $lu_icon_caret_right;
+.#{$lu_css_prefix}-agg-all {
+  cursor: pointer;
+  position: absolute;
+  bottom: 2px;
+  right: 0;
+
+  &::before {
+    @include lu_icons();
+
+    content: $lu_icon_expand;
+    transform: rotate(-45deg);
   }
 
-  > :last-child::before {
-    content: unset;
+  &.#{$lu_css_prefix}-agg-compress::before {
+    content: $lu_icon_compress;
   }
 }
 
 .#{$lu_css_prefix}-renderer-aggregate[data-meta~='last'] {
   &::before {
     border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
-  }
-}
-
-.#{$lu_css_prefix}-renderer-aggregate[data-meta='first'] {
-  > :last-child::before {
-    content: $lu_icon_compress;
   }
 }
 
@@ -85,7 +84,7 @@
     pointer-events: none;
     top: 50%;
     width: $lu_aggregate_hierarchy_width;
-    left: 50%;
+    right: 4px;
     height: 1px;
     border-bottom: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
     box-sizing: border-box;
@@ -97,7 +96,7 @@
     pointer-events: none;
     top: -2px; // FIXME right padding
     width: $lu_aggregate_hierarchy_width;
-    left: 50%;
+    right: 4px;
     bottom: 0;
     border-left: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
     box-sizing: border-box;
@@ -111,7 +110,7 @@
     pointer-events: none;
     top: -2px;
     width: $lu_aggregate_hierarchy_width;
-    left: 50%;
+    right: 4px;
     bottom: 50%;
     border-left: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
     border-bottom: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_square_bracket_stroke_color;

@@ -698,7 +698,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   setAggregationState(ranking: Ranking, group: IGroup, value: EAggregationState) {
-    this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? -1 : this.showTopN));
+    this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? this.showTopN  : -1));
   }
 
   getTopNAggregated(ranking: Ranking, group: IGroup) {
