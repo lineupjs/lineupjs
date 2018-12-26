@@ -4,8 +4,7 @@ import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ICellRendererFactory, IRenderContext} from './interfaces';
 import {renderMissingDOM, renderMissingValue} from './missing';
 import {noop, wideEnough} from './utils';
-
-const GUESSED_HEIGHT = 20;
+import {GUESSED_ROW_HEIGHT} from '../constants';
 
 /** @internal */
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
@@ -31,7 +30,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
       });
     };
     return {
-      template: `<canvas height="${GUESSED_HEIGHT}" title=""></canvas>`,
+      template: `<canvas height="${GUESSED_ROW_HEIGHT}" title=""></canvas>`,
       render,
       width,
       mover: (n: HTMLElement, values: string[]) => (evt: MouseEvent) => {
@@ -57,7 +56,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
         }
         n.onmousemove = mover(n, col.getLabels(d));
         n.onmouseleave = () => n.title = '';
-        render(ctx, col.getCategories(d), GUESSED_HEIGHT);
+        render(ctx, col.getCategories(d), GUESSED_ROW_HEIGHT);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         render(ctx, col.getCategories(d), CANVAS_HEIGHT);
@@ -80,7 +79,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
           n.onmousemove = mover(n, data.map((d) => d ? d.label : 'missing'));
           n.onmouseleave = () => n.title = '';
-          render(ctx, data, GUESSED_HEIGHT);
+          render(ctx, data, GUESSED_ROW_HEIGHT);
         });
       }
     };

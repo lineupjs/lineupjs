@@ -62,23 +62,24 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           col.setAggregated(group, isGroupOnly ? EAggregationState.EXPAND_TOP_N: EAggregationState.COLLAPSE);
         };
 
-        {
-          let g = group;
-          while (g.parent && g.parent.subGroups[0] === g) {
-            g = g.parent;
-            const a = children.length > 0 ? children.pop()! : node.ownerDocument!.createElement('div');
-            a.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
-            a.onclick = (event) => {
-              preventDefault(event);
-              col.setAggregated(g, isGroupOnly ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
-            };
-            node.insertAdjacentElement('afterbegin', a);
-          }
+        // multi level TODO
+        // {
+        //   let g = group;
+        //   while (g.parent && g.parent.subGroups[0] === g) {
+        //     g = g.parent;
+        //     const a = children.length > 0 ? children.pop()! : node.ownerDocument!.createElement('div');
+        //     a.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
+        //     a.onclick = (event) => {
+        //       preventDefault(event);
+        //       col.setAggregated(g, isGroupOnly ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
+        //     };
+        //     node.insertAdjacentElement('afterbegin', a);
+        //   }
 
-          for(const child of children) {
-            child.remove();
-          }
-        }
+        //   for(const child of children) {
+        //     child.remove();
+        //   }
+        // }
       }
     };
   }

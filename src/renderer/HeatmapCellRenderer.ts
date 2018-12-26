@@ -5,8 +5,8 @@ import {toHeatMapColor} from './BrightnessCellRenderer';
 import {IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingValue, renderMissingDOM} from './missing';
 import {noop, wideEnough} from './utils';
+import {GUESSED_ROW_HEIGHT} from '../constants';
 
-const GUESSED_HEIGHT = 20;
 
 /** @internal */
 export default class HeatmapCellRenderer implements ICellRendererFactory {
@@ -32,7 +32,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
       });
     };
     return {
-      template: `<canvas height="${GUESSED_HEIGHT}" title=""></canvas>`,
+      template: `<canvas height="${GUESSED_ROW_HEIGHT}" title=""></canvas>`,
       render,
       width,
       mover: (n: HTMLElement, values: string[]) => (evt: MouseEvent) => {
@@ -58,7 +58,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
         }
         n.onmousemove = mover(n, col.getLabels(d));
         n.onmouseleave = () => n.title = '';
-        render(ctx, col.getNumbers(d), d, GUESSED_HEIGHT);
+        render(ctx, col.getNumbers(d), d, GUESSED_ROW_HEIGHT);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         render(ctx, col.getNumbers(d), d, CANVAS_HEIGHT);
@@ -82,7 +82,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
           n.onmousemove = mover(n, data.raw.map(formatter));
           n.onmouseleave = () => n.title = '';
-          render(ctx, data.normalized, data.row!, GUESSED_HEIGHT);
+          render(ctx, data.normalized, data.row!, GUESSED_ROW_HEIGHT);
         });
       }
     };

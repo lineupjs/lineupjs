@@ -1,10 +1,12 @@
-import {round, concatSeq, ISequence} from '../internal';
-import {Column, isNumbersColumn, INumberColumn, IDataRow, isNumberColumn, IOrderedGroup, DEFAULT_COLOR} from '../model';
+import {GUESSES_GROUP_HEIGHT} from '../constants';
+import {concatSeq, ISequence, round} from '../internal';
+import {Column, DEFAULT_COLOR, IDataRow, INumberColumn, IOrderedGroup, isNumberColumn, isNumbersColumn} from '../model';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {ERenderMode, ICellRendererFactory, IImposer, IRenderContext} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
+
 
 
 /** @internal */
@@ -14,6 +16,31 @@ export default class DotCellRenderer implements ICellRendererFactory {
 
   canRender(col: Column, mode: ERenderMode) {
     return isNumberColumn(col) && mode !== ERenderMode.SUMMARY;
+  }
+
+  private static getCanvasRenderer(col: INumberColumn, context: IRenderContext) {
+    const width = context.colWidth(col);
+    const pi2 = Math.PI * 2;
+    const radius = DOT.size / 2;
+    const render = (ctx: CanvasRenderingContext2D, vs: {value: number, color: (string | null)}[], width: number) => {
+      ctx.save();
+      ctx.globalAlpha = DOT.opacity;
+      for (const v of vs) {
+        ctx.fillStyle = v.color || DOT.color;
+        const x = Math.min(width - radius, Math.max(radius, v.value * width));
+        const y = round(Math.random() * (GUESSES_GROUP_HEIGHT - DOT.size) + radius, 2);
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arc(x, y, radius, 0, pi2, true);
+        ctx.fill();
+      }
+      ctx.restore();
+    };
+    return {
+      template: `<canvas height="${GUESSES_GROUP_HEIGHT}"></canvas>`,
+      render,
+      width
+    };
   }
 
   private static getDOMRenderer(col: INumberColumn) {
@@ -90,8 +117,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
-    const {template, update} = DotCellRenderer.getDOMRenderer(col);
-    const formatter = col.getNumberFormat();
+    const {template, render, width} = DotCellRenderer.getCanvasRenderer(col, context);
 
     return {
       template,
@@ -100,20 +126,24 @@ export default class DotCellRenderer implements ICellRendererFactory {
           //value, color, label,
 
           if (!isNumbersColumn(col)) {
-            return rows.map((r) => ({value: col.getNumber(r), label: col.getLabel(r), color: colorOf(col, r, imposer)}));
+            return Array.from(rows.map((r) => ({value: col.getNumber(r), color: colorOf(col, r, imposer)})));
           }
           // concatenate all columns
           const vs = rows.map((r) => {
             const color = colorOf(col, r, imposer);
             return col.getNumbers(r)
               .filter((vi: number) => !isNaN(vi))
-              .map((value) => ({value, label: formatter(value), color}));
+              .map((value) => ({value, color}));
           });
           return Array.from(concatSeq(vs));
         }).then((data) => {
-          if (typeof data !== 'symbol') {
-            update(n, data);
+          if (typeof data === 'symbol') {
+            return;
           }
+          const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+          ctx.canvas.width = width;
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          render(ctx, data, width);
         });
       }
     };

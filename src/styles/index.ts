@@ -41,7 +41,7 @@ export const UPSET = {
 export const DOT = {
   color: getStyle('lu_renderer_dot_color', 'gray'),
   size: parseInt(getStyle('lu_renderer_dot_size', '5px'), 10),
-  opacity: parseFloat(getStyle('lu_renderer_dot_opacity', '0.7'))
+  opacity: parseFloat(getStyle('lu_renderer_dot_opacity', '0.5'))
 };
 /** @internal */
 export const BOX_PLOT = {
