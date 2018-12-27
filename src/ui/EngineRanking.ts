@@ -2,7 +2,7 @@ import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderConte
 import {ILineUpFlags} from '../config';
 import {HOVER_DELAY_SHOW_DETAIL} from '../constants';
 import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
-import {Column, defaultGroup, IGroupData, IGroupItem, IGroupMeta, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn} from '../model';
+import {Column, IGroupData, IGroupItem, IGroupMeta, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent} from '../model';
 import {IImposer, IRenderCallback, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass} from '../styles';
 import {lineupAnimation} from './animation';
@@ -10,6 +10,7 @@ import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces'
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
+import {groupRoots, isOrderedGroup} from '../model/internal';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -838,6 +839,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const provider = this.ctx.provider;
     const r = <(IGroupItem | IGroupData)[]>[];
 
+    if (groups.length === 0) {
+      return r;
+    }
+
     const pushItem = (group: IOrderedGroup, dataIndex: number, i: number, meta: IGroupMeta) => {
       r.push({
         group,
@@ -847,31 +852,56 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       });
     };
 
-    if (groups.length === 1 && groups[0].name === defaultGroup.name) {
-      const group = groups[0];
-      const order = group.order;
-      for (let i = 0; i < order.length; ++i) {
-        pushItem(group, order[i], i, null);
+    const roots = groupRoots(groups);
+
+    const toMeta = (i: number, l: number) => {
+      if (i === 0) {
+        return l === 1 ? 'first last' : 'first';
       }
-      return r;
-    }
+      return i === l - 1 ? 'last' : 'inner';
+    };
 
-    for (const group of groups) {
-      const length = group.order.length;
 
+    const pushGroup = (group: IOrderedGroup | Readonly<IGroupParent>) => {
       const n = provider.getTopNAggregated(this.ranking, group);
-
-      // always the group for stratified datasets
-      // if (n >= 0) {
-      r.push(Object.assign(group, {meta: <IGroupMeta>(n === 0 ? `first last` : (n > 0 ? 'first top' : `first`))}));
-      // }
-
-      const slice = Math.min(n >= 0 ? n : Number.POSITIVE_INFINITY, length);
-
-      for (let i = 0; i < slice; ++i) {
-        pushItem(group, group.order[i], i, i === slice -1 ? 'last' : 'inner');
+      if (n < 0) {
+        // expand
+        const gparent = <IGroupParent>group;
+        if (Array.isArray(gparent.subGroups) && gparent.subGroups.length > 0) {
+          for (const g of gparent.subGroups) {
+            pushGroup(<IOrderedGroup | Readonly<IGroupParent>>g);
+          }
+        } else if (isOrderedGroup(group)) {
+          const l = group.order.length;
+          for (let i = 0; i < l; ++i) {
+            pushItem(group, group.order[i], i, toMeta(i, l));
+          }
+        }
+      } else if (isOrderedGroup(group)) {
+        // collapse
+        r.push(Object.assign(group, {meta: <IGroupMeta>(n === 0 ? `first last` : (n > 0 ? 'first top' : `first`))}));
       }
+      // should not happen since propagated
+    };
+
+    for (const root of roots) {
+      pushGroup(root);
     }
+
+    // for (const group of groups) {
+    //   const length = group.order.length;
+
+    //   const n = provider.getTopNAggregated(this.ranking, group);
+
+    //   // always the group for stratified datasets
+    //   // if (n >= 0) {
+    //   r.push(Object.assign(group, {meta: <IGroupMeta>(n === 0 ? `first last` : (n > 0 ? 'first top' : `first`))}));
+    //   // }
+
+    //   const slice = Math.min(n >= 0 ? n : Number.POSITIVE_INFINITY, length);
+
+
+    // }
     return r;
   }
 

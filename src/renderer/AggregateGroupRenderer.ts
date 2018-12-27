@@ -96,7 +96,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: AggregateGroupColumn, context: IRenderContext) {
-    const showMore = context.provider.getShowTopN() > 0;
+    const _showMore = context.provider.getShowTopN() > 0;
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
       update(node: HTMLElement, group: IGroup, meta: IGroupMeta) {

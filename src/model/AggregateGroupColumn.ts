@@ -45,7 +45,7 @@ export default class AggregateGroupColumn extends Column {
 
   constructor(id: string, desc: Readonly<IAggregateGroupColumnDesc>) {
     super(id, desc);
-    this.setDefaultWidth(30);
+    this.setDefaultWidth(40);
   }
 
   get frozen() {

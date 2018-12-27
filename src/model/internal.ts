@@ -36,14 +36,12 @@ export function joinGroups(groups: IGroup[]): IGroup {
   }
   parents.slice(1).forEach((g, i) => {
     g.parent = parents[i];
+    g.name = `${parents[i].name} ∩ ${g.name}`;
+    g.color = g.color !== DEFAULT_COLOR ? g.color : g.parent.color;
     parents[i].subGroups = [g];
   });
 
-  // let combined label for leaf
-  const last = parents[parents.length - 1];
-  last.name = parents.map((d) => d.name).join(' ∩ ');
-  last.color = (parents.find((d) => d.color !== DEFAULT_COLOR) || last).color;
-  return last;
+  return parents[parents.length - 1];
 }
 
 /** @internal */
@@ -83,6 +81,24 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
       g.parent.subGroups.push(g);
     }
   });
+}
+
+/** @internal */
+export function groupRoots(groups: IOrderedGroup[]) {
+  const roots = new OrderedSet<IOrderedGroup | Readonly<IGroupParent>>();
+  for (const group of groups) {
+    let root: IOrderedGroup | Readonly<IGroupParent> = group;
+    while (root.parent) {
+      root = root.parent;
+    }
+    roots.add(root);
+  }
+  return Array.from(roots);
+}
+
+/** @internal */
+export function isOrderedGroup(g: IOrderedGroup | Readonly<IGroupParent>): g is IOrderedGroup {
+  return (<IOrderedGroup>g).order != null;
 }
 
 // based on https://github.com/d3/d3-scale-chromatic#d3-scale-chromatic
