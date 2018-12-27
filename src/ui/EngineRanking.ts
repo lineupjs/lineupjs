@@ -2,7 +2,7 @@ import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderConte
 import {ILineUpFlags} from '../config';
 import {HOVER_DELAY_SHOW_DETAIL} from '../constants';
 import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
-import {Column, IGroupData, IGroupItem, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent} from '../model';
+import {Column, IGroupData, IGroupItem, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent, defaultGroup} from '../model';
 import {IImposer, IRenderCallback, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass} from '../styles';
 import {lineupAnimation} from './animation';
@@ -10,7 +10,7 @@ import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces'
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
-import {groupRoots, isOrderedGroup, toRowMeta} from '../model/internal';
+import {groupRoots, toRowMeta} from '../model/internal';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -833,6 +833,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   groupData(): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
+    const strategy = provider.getAggregationStrategy();
+    const alwaysShowGroup = strategy === 'group+item' || strategy === 'group+item+top' || strategy === 'group+top+item';
+
     const r = <(IGroupItem | IGroupData)[]>[];
 
     if (groups.length === 0) {
@@ -847,48 +850,45 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       });
     };
 
+    if (groups.length === 1 && groups[0].name === defaultGroup.name) {
+      const group = groups[0];
+      const l = group.order.length;
+      for (let i = 0; i < l; ++i) {
+        pushItem(group, group.order[i], i);
+      }
+      return r;
+    }
+
     const roots = groupRoots(groups);
 
     const pushGroup = (group: IOrderedGroup | Readonly<IGroupParent>) => {
       const n = provider.getTopNAggregated(this.ranking, group);
-      if (n < 0) {
-        // expand
-        const gparent = <IGroupParent>group;
-        if (Array.isArray(gparent.subGroups) && gparent.subGroups.length > 0) {
-          for (const g of gparent.subGroups) {
-            pushGroup(<IOrderedGroup | Readonly<IGroupParent>>g);
-          }
-        } else if (isOrderedGroup(group)) {
-          const l = group.order.length;
-          for (let i = 0; i < l; ++i) {
-            pushItem(group, group.order[i], i);
-          }
-        }
-      } else if (isOrderedGroup(group)) {
-        // collapse
-        r.push(group);
+
+      // all are IOrderedGroup since propagated
+      const ordered = <IOrderedGroup>group;
+      const gparent = <IGroupParent>group;
+
+      if (n === 0 || alwaysShowGroup) {
+        r.push(ordered);
       }
-      // should not happen since propagated
+
+      if (n !== 0 && Array.isArray(gparent.subGroups) && gparent.subGroups.length > 0) {
+        for (const g of gparent.subGroups) {
+          pushGroup(<IOrderedGroup | Readonly<IGroupParent>>g);
+        }
+        return;
+      }
+
+      const l = n < 0 ? ordered.order.length : Math.min(n, ordered.order.length);
+      for (let i = 0; i < l; ++i) {
+        pushItem(ordered, ordered.order[i], i);
+      }
     };
 
     for (const root of roots) {
       pushGroup(root);
     }
 
-    // for (const group of groups) {
-    //   const length = group.order.length;
-
-    //   const n = provider.getTopNAggregated(this.ranking, group);
-
-    //   // always the group for stratified datasets
-    //   // if (n >= 0) {
-    //   r.push(Object.assign(group, {meta: <IGroupMeta>(n === 0 ? `first last` : (n > 0 ? 'first top' : `first`))}));
-    //   // }
-
-    //   const slice = Math.min(n >= 0 ? n : Number.POSITIVE_INFINITY, length);
-
-
-    // }
     return r;
   }
 

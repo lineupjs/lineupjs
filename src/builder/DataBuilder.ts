@@ -1,5 +1,5 @@
 import {Column, IColumnDesc} from '../model';
-import {DataProvider, LocalDataProvider, deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions} from '../provider';
+import {DataProvider, LocalDataProvider, deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions, IAggregationStrategy} from '../provider';
 import {LineUp, Taggle} from '../ui';
 import ColumnBuilder from './column/ColumnBuilder';
 import LineUpBuilder from './LineUpBuilder';
@@ -31,6 +31,11 @@ export default class DataBuilder extends LineUpBuilder {
 
   showTopN(n: number) {
     this.providerOptions.showTopN = n;
+    return this;
+  }
+
+  aggregationStrategy(strategy: IAggregationStrategy) {
+    this.providerOptions.aggregationStrategy = strategy;
     return this;
   }
 

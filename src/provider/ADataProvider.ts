@@ -2,7 +2,7 @@ import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEv
 import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump} from '../model';
 import {models} from '../model/models';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
-import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions} from './interfaces';
+import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions, IAggregationStrategy} from './interfaces';
 import {exportRanking, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer';
 
@@ -201,7 +201,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   private readonly selection = new OrderedSet<number>();
 
-  //Map<ranking.id@group.name, showTopN>
+  //Map<ranking.id@group.name, -1=expand,0=collapse,N=topN>
   private readonly aggregations = new Map<string, number>(); // not part of = show all
 
   private uid = 0;
@@ -212,13 +212,21 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   readonly columnTypes: {[columnType: string]: typeof Column};
 
   protected readonly multiSelections: boolean;
+  private readonly aggregationStrategy: IAggregationStrategy;
   private showTopN: number;
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
-    this.columnTypes = Object.assign(models(), options.columnTypes || {});
-    this.multiSelections = options.singleSelection !== true;
-    this.showTopN = options.showTopN != null ? options.showTopN : 0;
+    const o: Readonly<IDataProviderOptions> = Object.assign({
+      columnTypes: {},
+      singleSelection: false,
+      showTopN: 10,
+      aggregationStrategy: 'item'
+    }, options);
+    this.columnTypes = Object.assign(models(), o.columnTypes);
+    this.multiSelections = o.singleSelection !== true;
+    this.showTopN = o.showTopN;
+    this.aggregationStrategy = o.aggregationStrategy;
   }
 
   /**
@@ -697,6 +705,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return n < 0 ? EAggregationState.EXPAND : (n === 0 ? EAggregationState.COLLAPSE : EAggregationState.EXPAND_TOP_N);
   }
 
+  setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+    return this.setAggregationState(ranking, group, value ? EAggregationState.COLLAPSE : EAggregationState.EXPAND);
+  }
+
   setAggregationState(ranking: Ranking, group: IGroup, value: EAggregationState) {
     this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? this.showTopN  : -1));
   }
@@ -724,18 +736,32 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }
   }
 
-  private initAggregateState(ranking: Ranking, groups: IGroup[]) {
-    // by default show top N
-    for (const group of groups) {
-      const key = `${ranking.id}@${toGroupID(group)}`;
-      if (!this.aggregations.has(key)) {
-        this.aggregations.set(key, this.showTopN);
-      }
-    }
+  getAggregationStrategy() {
+    return this.aggregationStrategy;
   }
 
-  setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
-    return this.setTopNAggregated(ranking, group, value ? 0 : -1);
+  private initAggregateState(ranking: Ranking, groups: IGroup[]) {
+    let initial = -1;
+    switch(this.aggregationStrategy) {
+      case 'group':
+        initial = 0;
+        break;
+      case 'item':
+      case 'group+item':
+      case 'group+item+top':
+        initial = -1;
+        break;
+      case 'group+top+item':
+        initial = this.showTopN;
+        break;
+    }
+
+    for (const group of groups) {
+      const key = `${ranking.id}@${toGroupID(group)}`;
+      if (!this.aggregations.has(key) && initial >= 0) {
+        this.aggregations.set(key, initial);
+      }
+    }
   }
 
   setTopNAggregated(ranking: Ranking, group: IGroup, value: number) {

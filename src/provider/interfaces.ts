@@ -6,6 +6,8 @@ import {IAbortAblePromise} from 'lineupengine';
 export {ABORTED} from 'lineupengine';
 export declare type IAbortAblePromise<T> = IAbortAblePromise<T>;
 
+export declare type IAggregationStrategy = 'group' | 'item' | 'group+item' | 'group+top+item' | 'group+item+top';
+
 export interface IDataProviderOptions {
   columnTypes: {[columnType: string]: typeof Column};
 
@@ -20,6 +22,12 @@ export interface IDataProviderOptions {
    * @default 10
    */
   showTopN: number;
+
+  /**
+   * aggregation strategy to show upon grouping, see also showTopN
+   * @default 'item'
+   */
+  aggregationStrategy: IAggregationStrategy;
 }
 
 export interface IDataProvider extends AEventDispatcher {
@@ -65,6 +73,8 @@ export interface IDataProvider extends AEventDispatcher {
   getLastRanking(): Ranking;
 
   getColumns(): IColumnDesc[];
+
+  getAggregationStrategy(): IAggregationStrategy;
 
   isAggregated(ranking: Ranking, group: IGroup): boolean;
 

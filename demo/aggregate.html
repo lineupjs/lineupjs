@@ -26,6 +26,7 @@
     }
     const b = LineUpJS.builder(arr);
     b.deriveColumns()
+    b.aggregationStrategy('group+top+item')
     b.ranking(LineUpJS.buildRanking()
       .supportTypes()
       .group()
