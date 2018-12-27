@@ -1,5 +1,5 @@
 import {INumberBin, IStatistics} from '../internal';
-import {Column, CompositeNumberColumn, IDataRow, IGroupMeta, IOrderedGroup, INumberColumn} from '../model';
+import {Column, CompositeNumberColumn, IDataRow, IOrderedGroup, INumberColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {getHistDOMRenderer} from './HistogramCellRenderer';
 import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
@@ -22,17 +22,17 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta) => {
+      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IOrderedGroup) => {
         const missing = renderMissingDOM(n, col, d);
         if (missing) {
           return;
         }
         matchColumns(n, cols, context);
         forEachChild(n, (ni: HTMLElement, j) => {
-          cols[j].renderer!.update(ni, d, i, group, meta);
+          cols[j].renderer!.update(ni, d, i, group);
         });
       },
-      render: (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, group: IOrderedGroup, meta: IGroupMeta) => {
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, group: IOrderedGroup) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
@@ -42,7 +42,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
         cols.forEach((r, i) => {
           const rr = r.renderer!;
           if (rr.render) {
-            rr.render(ctx, d, i, group, meta);
+            rr.render(ctx, d, i, group);
           }
           ctx.translate(0, CANVAS_HEIGHT);
         });
@@ -55,10 +55,10 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     const {cols} = createData(col, context, false, ERenderMode.GROUP);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
-      update: (n: HTMLElement, group: IOrderedGroup, meta: IGroupMeta) => {
+      update: (n: HTMLElement, group: IOrderedGroup) => {
         matchColumns(n, cols, context);
         forEachChild(n, (ni: HTMLElement, j) => {
-          cols[j].groupRenderer!.update(ni, group, meta);
+          cols[j].groupRenderer!.update(ni, group);
         });
       }
     };

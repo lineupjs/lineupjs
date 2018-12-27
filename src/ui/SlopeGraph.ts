@@ -199,9 +199,7 @@ export default class SlopeGraph implements ITableSection {
 
       const padded = height - leftContext.padding(first + count - 1);
 
-      const gr = <IGroupData>Object.assign({
-        meta: 'first-last'
-      }, group);
+      const gr = group;
 
       return {gr, padded, height};
     };

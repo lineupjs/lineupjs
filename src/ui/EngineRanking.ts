@@ -2,7 +2,7 @@ import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderConte
 import {ILineUpFlags} from '../config';
 import {HOVER_DELAY_SHOW_DETAIL} from '../constants';
 import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
-import {Column, IGroupData, IGroupItem, IGroupMeta, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent} from '../model';
+import {Column, IGroupData, IGroupItem, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent} from '../model';
 import {IImposer, IRenderCallback, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass} from '../styles';
 import {lineupAnimation} from './animation';
@@ -10,7 +10,7 @@ import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces'
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
-import {groupRoots, isOrderedGroup} from '../model/internal';
+import {groupRoots, isOrderedGroup, toRowMeta} from '../model/internal';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -565,27 +565,23 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     const isGroup = this.renderCtx.isGroup(rowIndex);
 
-    if (isGroup) {
-      const {meta} = this.renderCtx.getGroup(rowIndex);
-      node.dataset.agg = 'group';
-      if (!meta) {
-        delete node.dataset.meta;
-      } else {
-        node.dataset.meta = meta;
-      }
-      super.createRow(node, rowIndex);
-      return;
-    }
-
-    const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
-    node.classList.toggle(engineCssClass('highlighted'), this.highlight === dataIndex);
-    node.dataset.i = dataIndex.toString();
-    node.dataset.agg = 'detail'; //or 'group'
+    const meta = this.toRowMeta(rowIndex);
     if (!meta) {
       delete node.dataset.meta;
     } else {
       node.dataset.meta = meta;
     }
+
+    if (isGroup) {
+      node.dataset.agg = 'group';
+      super.createRow(node, rowIndex);
+      return;
+    }
+
+    const {dataIndex} = this.renderCtx.getRow(rowIndex);
+    node.classList.toggle(engineCssClass('highlighted'), this.highlight === dataIndex);
+    node.dataset.i = dataIndex.toString();
+    node.dataset.agg = 'detail'; //or 'group'
 
     this.selection.updateState(node, dataIndex);
     this.selection.add(node);
@@ -638,26 +634,22 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       node.removeEventListener('mouseenter', this.canvasMouseHandler.enter);
     }
 
-    if (isGroup) {
-      node.classList.remove(engineCssClass('highlighted'));
-      const {meta} = this.renderCtx.getGroup(rowIndex);
-      if (!meta) {
-        delete node.dataset.meta;
-      } else {
-        node.dataset.meta = meta;
-      }
-      super.updateRow(node, rowIndex);
-      return;
-    }
-
-    const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
-    node.classList.toggle(engineCssClass('highlighted'), this.highlight === dataIndex);
-    node.dataset.i = dataIndex.toString();
+    const meta = this.toRowMeta(rowIndex);
     if (!meta) {
       delete node.dataset.meta;
     } else {
       node.dataset.meta = meta;
     }
+
+    if (isGroup) {
+      node.classList.remove(engineCssClass('highlighted'));
+      super.updateRow(node, rowIndex);
+      return;
+    }
+
+    const {dataIndex} = this.renderCtx.getRow(rowIndex);
+    node.classList.toggle(engineCssClass('highlighted'), this.highlight === dataIndex);
+    node.dataset.i = dataIndex.toString();
     this.selection.updateState(node, dataIndex);
 
     const canvas = (wasLow && node.firstElementChild!.nodeName.toLowerCase() === 'canvas') ? <HTMLCanvasElement>node.firstElementChild! : null;
@@ -692,6 +684,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         this.renderRow(<HTMLCanvasElement>row.firstElementChild!, row, index, width);
       }
     });
+  }
+
+  private toRowMeta(rowIndex: number) {
+    return toRowMeta(this.renderCtx.isGroup(rowIndex) ? this.renderCtx.getGroup(rowIndex) : this.renderCtx.getRow(rowIndex));
   }
 
   protected updateShifts(top: number, left: number) {
@@ -843,24 +839,15 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return r;
     }
 
-    const pushItem = (group: IOrderedGroup, dataIndex: number, i: number, meta: IGroupMeta) => {
+    const pushItem = (group: IOrderedGroup, dataIndex: number, i: number) => {
       r.push({
         group,
         dataIndex,
-        relativeIndex: i,
-        meta
+        relativeIndex: i
       });
     };
 
     const roots = groupRoots(groups);
-
-    const toMeta = (i: number, l: number) => {
-      if (i === 0) {
-        return l === 1 ? 'first last' : 'first';
-      }
-      return i === l - 1 ? 'last' : 'inner';
-    };
-
 
     const pushGroup = (group: IOrderedGroup | Readonly<IGroupParent>) => {
       const n = provider.getTopNAggregated(this.ranking, group);
@@ -874,12 +861,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         } else if (isOrderedGroup(group)) {
           const l = group.order.length;
           for (let i = 0; i < l; ++i) {
-            pushItem(group, group.order[i], i, toMeta(i, l));
+            pushItem(group, group.order[i], i);
           }
         }
       } else if (isOrderedGroup(group)) {
         // collapse
-        r.push(Object.assign(group, {meta: <IGroupMeta>(n === 0 ? `first last` : (n > 0 ? 'first top' : `first`))}));
+        r.push(group);
       }
       // should not happen since propagated
     };

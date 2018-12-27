@@ -1,5 +1,5 @@
 import {IAbortAblePromise} from 'lineupengine';
-import {Column, IDataRow, IGroupMeta, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn} from '../model';
+import {Column, IDataRow, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn} from '../model';
 import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
 import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../internal';
@@ -27,13 +27,13 @@ export interface ICellRenderer {
    * @param i the order relative index
    * @param group the group this row is part of
    */
-  update(node: HTMLElement, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta): void | IAbortAblePromise<void> | null;
+  update(node: HTMLElement, d: IDataRow, i: number, group: IOrderedGroup): void | IAbortAblePromise<void> | null;
 
   /**
    * render a low detail canvas row
    * @return true if a dom element is needed
    */
-  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta): void | IAbortAblePromise<IRenderCallback> | boolean | null;
+  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup): void | IAbortAblePromise<IRenderCallback> | boolean | null;
 }
 
 /**
@@ -50,7 +50,7 @@ export interface IGroupCellRenderer {
    * @param node the node to update
    * @param group the group to render
    */
-  update(node: HTMLElement, group: IOrderedGroup, meta: IGroupMeta): void | IAbortAblePromise<void> | null;
+  update(node: HTMLElement, group: IOrderedGroup): void | IAbortAblePromise<void> | null;
 }
 
 export interface ISummaryRenderer {

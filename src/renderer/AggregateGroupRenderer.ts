@@ -1,36 +1,10 @@
-import {IDataRow, IGroup, IGroupMeta, Column, AggregateGroupColumn, EAggregationState, IGroupParent} from '../model';
+import {IDataRow, IGroup, Column, AggregateGroupColumn, EAggregationState, IGroupParent, IOrderedGroup} from '../model';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {IRenderContext, ICellRendererFactory} from './interfaces';
 
 function preventDefault(event: Event) {
   event.preventDefault();
   event.stopPropagation();
-}
-
-function groupParents(group: IGroup, meta: IGroupMeta) {
-  const parents: {group: IGroup, meta: IGroupMeta}[] = [{group, meta}];
-
-  let prev = group;
-  let prevMeta = meta;
-  let parent: IGroupParent | undefined | null = group.parent;
-
-  while (parent) {
-    if (parent.subGroups.length === 1 && prevMeta === 'first last') {
-      meta = 'first last';
-    } else if (parent.subGroups[0] === prev && (prevMeta === 'first' || prevMeta === 'first last')) {
-      meta = 'first';
-    } else if (parent.subGroups[parent.subGroups.length - 1] === prev && (prevMeta === 'last' || prevMeta === 'first last')) {
-      meta = 'last';
-    } else {
-      meta = null;
-    }
-    parents.unshift({group: parent, meta});
-
-    prevMeta = meta;
-    prev = parent;
-    parent = parent.parent;
-  }
-  return parents;
 }
 
 function matchNodes(node: HTMLElement, group: IGroup, meta: IGroupMeta, col: AggregateGroupColumn) {
@@ -84,13 +58,13 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
-      update(node: HTMLElement, _row: IDataRow, _i: number, group: IGroup, meta: IGroupMeta) {
-        matchNodes(node, group, meta, col);
+      update(node: HTMLElement, _row: IDataRow, _i: number, group: IOrderedGroup) {
+        // matchNodes(node, group, meta, col);
       },
-      render(ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup, meta: IGroupMeta) {
+      render(ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup) {
         ctx.fillStyle = AGGREGATE.color;
         ctx.fillRect(width - AGGREGATE.width, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
-        return Boolean(meta);
+        return Boolean(false);
       }
     };
   }
@@ -99,8 +73,8 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     const _showMore = context.provider.getShowTopN() > 0;
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
-      update(node: HTMLElement, group: IGroup, meta: IGroupMeta) {
-        matchNodes(node, group, meta, col);
+      update(node: HTMLElement, group: IOrderedGroup) {
+        // matchNodes(node, group, meta, col);
 
         // const children = <HTMLElement[]>Array.from(node.children);
 

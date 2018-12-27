@@ -148,14 +148,14 @@ export default class RenderColumn implements IColumn {
     let ready: IAbortAblePromise<void> | void | null;
     if (isGroup) {
       const g = this.ctx.getGroup(index);
-      ready = this.renderers!.group.update(node, g, g.meta);
+      ready = this.renderers!.group.update(node, g);
     } else {
       const r = this.ctx.getRow(index);
       const row = this.ctx.provider.getRow(r.dataIndex);
       if (!isPromiseLike(row)) {
-        ready = this.renderers!.single.update(node, row, r.relativeIndex, r.group, r.meta);
+        ready = this.renderers!.single.update(node, row, r.relativeIndex, r.group);
       } else {
-        ready = chainAbortAble(row, (row) => this.renderers!.single.update(node, row, r.relativeIndex, r.group, r.meta));
+        ready = chainAbortAble(row, (row) => this.renderers!.single.update(node, row, r.relativeIndex, r.group));
       }
     }
     if (ready) {
@@ -172,9 +172,9 @@ export default class RenderColumn implements IColumn {
     }
     const row = this.ctx.provider.getRow(r.dataIndex);
     if (!isPromiseLike(row)) {
-      return s.render(ctx, row, r.relativeIndex, r.group, r.meta) || false;
+      return s.render(ctx, row, r.relativeIndex, r.group) || false;
     }
-    return chainAbortAble(row, (row) => s.render!(ctx, row, r.relativeIndex, r.group, r.meta) || false);
+    return chainAbortAble(row, (row) => s.render!(ctx, row, r.relativeIndex, r.group) || false);
   }
 
 }

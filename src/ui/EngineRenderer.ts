@@ -11,6 +11,7 @@ import domElementCache from './domElementCache';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer, EMode} from './interfaces';
 import SlopeGraph from './SlopeGraph';
+import {groupEndLevel} from '../model/internal';
 
 /**
  * emitted when the highlight changes
@@ -95,10 +96,12 @@ export default class EngineRenderer extends AEventDispatcher {
 
     //apply rules
     {
-      this.style.addRule('lineup_groupPadding', `
-       .${this.style.cssClasses.tr}[data-meta~=last]`, {
-          marginBottom: `${options.groupPadding}px`
+      for (let level = 0; level < 4; ++level) {
+        this.style.addRule(`lineup_groupPadding${level}`, `
+        .${this.style.cssClasses.tr}[data-meta~=last${level === 0 ? '': level}]`, {
+            marginBottom: `${options.groupPadding * (level + 1)}px`
         });
+      }
       this.style.addRule('lineup_rowPadding0', `
         .${this.style.cssClasses.tr}`, {
           marginTop: `${options.rowPadding}px`
@@ -340,10 +343,11 @@ export default class EngineRenderer extends AEventDispatcher {
       // inline and create manually for better performance
       const rowContext = nonUniformContext(grouped.map(height), defaultHeight, (index) => {
         const pad = (typeof padding === 'number' ? padding : padding(grouped[index] || null));
-        if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last' || (<IGroupItem>grouped[index]).meta === 'first last')) {
-          return groupPadding + pad;
+        if (index < 0 || !grouped[index]) {
+          return pad;
         }
-        return pad;
+        const v = grouped[index];
+        return pad + groupPadding * groupEndLevel(v);
       });
       r.render(grouped, rowContext);
     }

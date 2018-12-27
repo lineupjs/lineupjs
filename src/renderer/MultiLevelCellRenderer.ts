@@ -1,5 +1,5 @@
 import {ISequence, round} from '../internal';
-import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMultiLevelColumn, IGroupMeta, IOrderedGroup} from '../model';
+import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMultiLevelColumn, IOrderedGroup} from '../model';
 import {medianIndex} from '../model/internalNumber';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
@@ -80,7 +80,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     const width = context.colWidth(col);
     return {
       template: `<div class='${multiLevelGridCSSClass(context.idPrefix, col)} ${!stacked ? cssClass('grid-space') : ''}'>${cols.map((d) => d.template).join('')}</div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta) => {
+      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IOrderedGroup) => {
         if (renderMissingDOM(n, col, d)) {
           return null;
         }
@@ -97,7 +97,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           cnode.dataset.group = 'd';
           cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
           cnode.style.gridColumnStart = (ci + 1).toString();
-          const r = col.renderer!.update(cnode, d, i, group, meta);
+          const r = col.renderer!.update(cnode, d, i, group);
           if (stacked) {
             missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
           }
@@ -111,7 +111,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         }
         return null;
       },
-      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup, meta: IGroupMeta) => {
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return null;
         }
@@ -122,7 +122,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           if (cr.render) {
             const shift = col.shift - stackShift;
             ctx.translate(shift, 0);
-            const r = cr.render(ctx, d, i, group, meta);
+            const r = cr.render(ctx, d, i, group);
             if (typeof r !== 'boolean' && r) {
               toWait.push({shift, r});
             }
@@ -167,7 +167,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     const {cols} = createData(col, context, false, ERenderMode.GROUP, imposer);
     return {
       template: `<div class='${multiLevelGridCSSClass(context.idPrefix, col)} ${cssClass('grid-space')}'>${cols.map((d) => d.template).join('')}</div>`,
-      update: (n: HTMLElement, group: IOrderedGroup, meta: IGroupMeta) => {
+      update: (n: HTMLElement, group: IOrderedGroup) => {
         matchColumns(n, cols, context);
 
         const toWait: IAbortAblePromise<void>[] = [];
@@ -177,7 +177,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           cnode.classList.add(cssClass('stack-sub'), cssClass('group'));
           cnode.dataset.group = 'g';
           cnode.style.gridColumnStart = (ci + 1).toString();
-          const r = col.groupRenderer!.update(cnode, group, meta);
+          const r = col.groupRenderer!.update(cnode, group);
           if (r) {
             toWait.push(r);
           }

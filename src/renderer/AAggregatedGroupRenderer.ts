@@ -1,10 +1,7 @@
-import {Column, IDataRow, IGroupMeta, IOrderedGroup} from '../model';
-import {
-  IRenderContext, ERenderMode, ICellRenderer, ICellRendererFactory, IGroupCellRenderer,
-  IImposer
-} from './interfaces';
-import {noRenderer} from './utils';
 import {ISequence} from '../internal';
+import {Column, IDataRow, IOrderedGroup} from '../model';
+import {ERenderMode, ICellRenderer, ICellRendererFactory, IGroupCellRenderer, IImposer, IRenderContext} from './interfaces';
+import {noRenderer} from './utils';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item
@@ -23,10 +20,10 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
     const single = this.create(col, context, imposer);
     return {
       template: `<div>${single.template}</div>`,
-      update: (node: HTMLElement, group: IOrderedGroup, groupMeta: IGroupMeta) => {
+      update: (node: HTMLElement, group: IOrderedGroup) => {
         return context.tasks.groupRows(col, group, 'aagreated', (rows) => this.aggregatedIndex(rows, col)).then((data) => {
           if (typeof data !== 'symbol') {
-            single.update(<HTMLElement>node.firstElementChild!, data.row, data.index, group, groupMeta);
+            single.update(<HTMLElement>node.firstElementChild!, data.row, data.index, group);
           }
         });
       }

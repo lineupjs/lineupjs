@@ -162,18 +162,13 @@ export interface IGroupParent extends IGroup {
   subGroups: (Readonly<IGroupParent> | Readonly<IGroup>)[];
 }
 
-export declare type IGroupMeta = 'first' | 'last' | 'first last' | 'inner' | 'first top' | null;
-
 export interface IGroupItem {
   readonly dataIndex: number;
   readonly group: Readonly<IOrderedGroup>;
   readonly relativeIndex: number;
-  readonly meta: IGroupMeta;
 }
 
-export interface IGroupData extends Readonly<IOrderedGroup> {
-  readonly meta: IGroupMeta;
-}
+export declare type IGroupData = Readonly<IOrderedGroup>;
 
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupItem>item).group == null; // use .group as separator
