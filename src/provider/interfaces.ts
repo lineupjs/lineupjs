@@ -72,7 +72,7 @@ export interface IDataProvider extends AEventDispatcher {
 
   getAggregationState(ranking: Ranking, group: IGroup): EAggregationState;
 
-  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState): void;
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState, groups?: IGroup[]): void;
 
   getTopNAggregated(ranking: Ranking, group: IGroup): number;
 

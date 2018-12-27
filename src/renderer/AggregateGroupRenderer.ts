@@ -1,4 +1,4 @@
-import {IDataRow, IGroup, Column, AggregateGroupColumn, EAggregationState, IOrderedGroup} from '../model';
+import {IDataRow, Column, AggregateGroupColumn, EAggregationState, IOrderedGroup} from '../model';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {IRenderContext, ICellRendererFactory} from './interfaces';
 import {groupParents, toItemMeta} from '../model/internal';
@@ -8,23 +8,27 @@ function preventDefault(event: Event) {
   event.stopPropagation();
 }
 
-function matchNodes(node: HTMLElement, group: IOrderedGroup, relativeIndex: number, col: AggregateGroupColumn) {
-  const parents = groupParents(group, relativeIndex >= 0 ? toItemMeta(relativeIndex, group) : 'first last');
+function matchNodes(node: HTMLElement, length: number, clazz = 'agg-level') {
   const doc = node.ownerDocument!;
   const children = <HTMLElement[]>Array.from(node.children);
   // add missing
-  for (let i = children.length; i < parents.length; ++i) {
+  for (let i = children.length; i < length; ++i) {
     const child = doc.createElement('div');
-    child.classList.add(cssClass('agg-level'));
+    child.classList.add(cssClass(clazz));
     children.push(child);
     node.appendChild(child);
   }
   // remove too many
-  for (const r of children.splice(parents.length, children.length - parent.length)) {
+  for (const r of children.splice(length, children.length - length)) {
     r.remove();
   }
+  return children;
+}
 
-  // correct match
+function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: number, col: AggregateGroupColumn) {
+  const parents = groupParents(group, relativeIndex >= 0 ? toItemMeta(relativeIndex, group) : 'first last');
+  const children = matchNodes(node, parents.length);
+
   for (let i = 0; i < parents.length; ++i) {
     const parent = parents[i];
     const child = children[i];
@@ -38,7 +42,7 @@ function matchNodes(node: HTMLElement, group: IOrderedGroup, relativeIndex: numb
     const isCollapsed = parent.meta === 'first last';
     child.classList.toggle(cssClass('agg-expand'), isFirst);
     child.classList.toggle(cssClass('agg-collapse'), isCollapsed);
-    child.title = isFirst ? 'Expand Group' : '';
+    child.title = isFirst ? (isCollapsed ? 'Expand Group' : 'Collapse Group') : '';
 
     child.onclick = !isFirst ? null : (evt) => {
       preventDefault(evt);
@@ -55,84 +59,59 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return col instanceof AggregateGroupColumn;
   }
 
-  create(col: AggregateGroupColumn, context: IRenderContext) {
-    const width = context.colWidth(col);
+  create(col: AggregateGroupColumn) {
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IOrderedGroup) {
-        matchNodes(node, group, i, col);
+        renderGroups(node, group, i, col);
       },
-      render(ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup) {
+      render(ctx: CanvasRenderingContext2D, _row: IDataRow, i: number, group: IOrderedGroup) {
+        const parents = groupParents(group, toItemMeta(i, group));
         ctx.fillStyle = AGGREGATE.color;
-        // TODO draw all lines
-        ctx.fillRect(width - AGGREGATE.width, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
-        return Boolean(false);
+        for (let i = 0; i < parents.length; ++i) {
+          ctx.fillRect(AGGREGATE.levelWidth * i + AGGREGATE.levelOffset, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
+        }
+        return parents.some((d) => d.meta != null);
       }
     };
   }
 
-  createGroup(col: AggregateGroupColumn, context: IRenderContext) {
-    const _showMore = context.provider.getShowTopN() > 0;
+  createGroup(col: AggregateGroupColumn) {
+    // const _showMore = context.provider.getShowTopN() > 0;
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
       update(node: HTMLElement, group: IOrderedGroup) {
-        matchNodes(node, group, -1, col);
+        renderGroups(node, group, -1, col);
 
-        // const children = <HTMLElement[]>Array.from(node.children);
-
-        // const toggleMore = children.pop()!;
-
-        // toggleMore.onclick = (event) => {
-        //   preventDefault(event);
-        //   col.setAggregated(group, isShowAll ? EAggregationState.EXPAND_TOP_N : EAggregationState.EXPAND);
-        // };
-
-        // const isGroupOnly = meta === 'first last';
-        // const isTopX = meta === 'first top';
-        // const isShowAll = !isGroupOnly && !isTopX;
-
-        // toggleMore.title = isTopX ? 'Show All' : 'Show Top';
-        // toggleMore.style.display = isGroupOnly || !showMore ? 'none' : null;
-        // toggleMore.classList.toggle(cssClass('agg-compress'), isShowAll);
-
-        // const toggleAggregate = children.pop()!;
-        // toggleAggregate.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
-        // toggleAggregate.classList.toggle(cssClass('agg-collapse'), isGroupOnly);
-        // toggleAggregate.onclick = (event) => {
-        //   preventDefault(event);
-        //   col.setAggregated(group, isGroupOnly ? EAggregationState.EXPAND_TOP_N: EAggregationState.COLLAPSE);
-        // };
-
-        // // multi level TODO
-        // {
-        //   let g = group;
-        //   while (g.parent && g.parent.subGroups[0] === g) {
-        //     g = g.parent;
-        //     const a = children.length > 0 ? children.pop()! : node.ownerDocument!.createElement('div');
-        //     a.title = isGroupOnly ? 'Expand Group' : 'Collapse Group';
-        //     a.classList.add(cssClass('agg-expand'));
-        //     a.classList.toggle(cssClass('agg-collapse'), isGroupOnly);
-        //     a.onclick = (event) => {
-        //       preventDefault(event);
-        //       col.setAggregated(g, isGroupOnly ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
-        //     };
-        //     node.insertAdjacentElement('afterbegin', a);
-        //   }
-
-        //   for(const child of children) {
-        //     child.remove();
-        //   }
-        // }
+        // TODO show all / show top behavior again
       }
     };
   }
 
   createSummary(col: AggregateGroupColumn, context: IRenderContext) {
     return {
-      template: `<div><div class="${cssClass('agg-expand')}"  title="Expand All Groups"></div><div class="${cssClass('agg-all')}"  title="Show All"></div></div>`,
+      template: `<div><div class="${cssClass('agg-expand')}" title="Expand All Groups"></div></div>`,
       update: (node: HTMLElement) => {
-        // const ranking = col.findMyRanker()!;
-        // const groups = ranking.getGroups();
+        const ranking = col.findMyRanker()!;
+        const groups = ranking.getGroups();
+        const gparents = groups.map((group) => groupParents(group, 'first last'));
+
+        const max = gparents.reduce((a, b) => Math.max(a, b.length), Number.NEGATIVE_INFINITY);
+        const children = matchNodes(node, max, 'agg-expand');
+
+        for (let i = 0; i < max; ++i) {
+          const child = children[i];
+          const subGroups = <IOrderedGroup[]>gparents.map((d) => d[i] ? d[i].group : null).filter((d) => d != null);
+
+          const isCollapsed = subGroups.every((d) => context.provider.getAggregationState(ranking, d) === EAggregationState.COLLAPSE);
+          child.classList.toggle(cssClass('agg-collapse'), isCollapsed);
+          child.title = isCollapsed ? 'Expand Group' : 'Collapse Group';
+
+          child.onclick = (evt) => {
+            preventDefault(evt);
+            context.provider.aggregateAllOf(ranking, isCollapsed ? EAggregationState.EXPAND : EAggregationState.COLLAPSE, subGroups);
+          };
+        }
 
         // const toggleAggregate = <HTMLElement>node.firstElementChild!;
         // const toggleMore = <HTMLElement>node.lastElementChild!;

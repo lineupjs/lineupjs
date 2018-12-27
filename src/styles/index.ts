@@ -53,8 +53,10 @@ export const BOX_PLOT = {
 /** @internal */
 export const AGGREGATE = {
   width: parseInt(getStyle('lu_aggregate_square_bracket_width', '4px'), 10),
-  strokeWidth: parseInt(getStyle('lu_aggregate_square_bracket_stroke_width', '1px'), 10),
-  color: getStyle('lu_aggregate_square_bracket_stroke_color', '#000')
+  strokeWidth: parseInt(getStyle('lu_aggregate_square_bracket_stroke_width', '2px'), 10),
+  color: getStyle('lu_aggregate_square_bracket_stroke_color', '#000'),
+  levelOffset: parseInt(getStyle('lu_aggregate_level_offset', '2px'), 10),
+  levelWidth: parseInt(getStyle('lu_aggregate_level_width', '22px'), 10)
 };
 /** @internal */
 export const SLOPEGRAPH_WIDTH = parseInt(getStyle('lu_slope_width', '200px'), 10);

@@ -10,15 +10,13 @@
 }
 
 .#{$lu_css_prefix}-agg-level {
-  flex: 0 0 1.4em;
-  position: relative;
-
-  // square bracket around
+  flex: 0 0 $lu_aggregate_level_width;
+  position: relative; // square bracket around
   &::after {
     content: '';
     pointer-events: none;
     position: absolute;
-    left: 2px;
+    left: $lu_aggregate_level_offset;
     bottom: 0;
     width: $lu_aggregate_square_bracket_width;
     border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
@@ -35,6 +33,8 @@
 }
 
 .#{$lu_css_prefix}-agg-expand {
+  flex: 0 0 $lu_aggregate_level_width;
+  position: relative;
   color: $lu_toolbar_color_base;
 
   &::before {
