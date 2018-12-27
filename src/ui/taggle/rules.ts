@@ -1,4 +1,5 @@
 import {IGroupData, IGroupItem, isGroup} from '../../model';
+import {groupEndLevel} from '../../model/internal';
 
 export interface IRule {
   apply(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>): IRuleInstance;
@@ -27,10 +28,9 @@ export function spaceFillingRule(config: {groupHeight: number, rowHeight: number
     const visibleHeight = availableHeight - config.rowHeight - 5; // some padding for hover
     const items = <IGroupItem[]>data.filter((d) => !isGroup(d));
     const groups = data.length - items.length;
-    const lastItems = items.reduce((a, d) => a + (d.meta === 'last' || d.meta === 'first last' ? 1 : 0), 0);
     const selected = items.reduce((a, d) => a + (selection.has(d.dataIndex) ? 1 : 0), 0);
     const unselected = items.length - selected;
-    const groupSeparators = groups + lastItems;
+    const groupSeparators = items.reduce((a, d) => a + groupEndLevel(d), 0);
 
     if (unselected <= 0) {
       // doesn't matter since all are selected anyhow

@@ -101,30 +101,31 @@ export function isOrderedGroup(g: IOrderedGroup | Readonly<IGroupParent>): g is 
   return (<IOrderedGroup>g).order != null;
 }
 
-declare type IGroupMeta = 'first' | 'last' | 'first last' | null;
+export declare type IGroupMeta = 'first' | 'last' | 'first last' | null;
 
-function toItemMeta(item: IGroupItem): IGroupMeta {
-  if (item.relativeIndex === 0) {
-    return item.group.order.length === 1 ? 'first last' : 'first';
+export function toItemMeta(relativeIndex: number, group: IOrderedGroup): IGroupMeta {
+  if (relativeIndex === 0) {
+    return group.order.length === 1 ? 'first last' : 'first';
   }
-  if (item.relativeIndex === item.group.order.length - 1) {
+  if (relativeIndex === group.order.length - 1) {
     return 'last';
   }
   return null;
 }
 
-function groupParents(group: IGroup, meta: IGroupMeta) {
+export function groupParents(group: IGroup, meta: IGroupMeta) {
   const parents: {group: IGroup, meta: IGroupMeta}[] = [{group, meta}];
 
   let prev = group;
+  let prevMeta = meta;
   let parent: IGroupParent | undefined | null = group.parent;
 
   while (parent) {
-    if (parent.subGroups.length === 1) {
+    if (parent.subGroups.length === 1 && (prevMeta === 'first last')) {
       meta = 'first last';
-    } else if (parent.subGroups[0] === prev) {
+    } else if (parent.subGroups[0] === prev && (prevMeta === 'first last' || prevMeta === 'first')) {
       meta = 'first';
-    } else if (parent.subGroups[parent.subGroups.length - 1] === prev) {
+    } else if (parent.subGroups[parent.subGroups.length - 1] === prev && (prevMeta === 'last' || prevMeta === 'first last')) {
       meta = 'last';
     } else {
       meta = null;
@@ -132,6 +133,7 @@ function groupParents(group: IGroup, meta: IGroupMeta) {
     parents.unshift({group: parent, meta});
 
     prev = parent;
+    prevMeta = meta;
     parent = parent.parent;
   }
   return parents;
@@ -141,7 +143,7 @@ function groupParents(group: IGroup, meta: IGroupMeta) {
  * number of group levels this items ends
  */
 export function groupEndLevel(item: IGroupData | IGroupItem) {
-  const last = isGroup(item) ? 'first last' : toItemMeta(item);
+  const last = isGroup(item) ? 'first last' : toItemMeta(item.relativeIndex, item.group);
   if (last !== 'last' && last !== 'first last') {
     return 0;
   }
@@ -165,7 +167,7 @@ export function groupEndLevel(item: IGroupData | IGroupItem) {
 }
 
 export function toRowMeta(item: IGroupData | IGroupItem): string | null {
-  const last = isGroup(item) ? 'first last' : toItemMeta(item);
+  const last = isGroup(item) ? 'first last' : toItemMeta(item.relativeIndex, item.group);
   if (last == null) {
     return null;
   }

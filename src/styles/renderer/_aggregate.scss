@@ -19,17 +19,12 @@
     pointer-events: none;
     position: absolute;
     left: 2px;
-    top: -2px; // TODO right padding
     bottom: 0;
     width: $lu_aggregate_square_bracket_width;
     border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }
 
-  &[data-level='1']::after {
-    top: -7px; // TODO right padding
-  }
-
-  &[data-meta~=first]::after {
+  &[data-level][data-meta~=first]::after {
     top: 0;
     border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }

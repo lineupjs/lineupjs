@@ -96,16 +96,30 @@ export default class EngineRenderer extends AEventDispatcher {
 
     //apply rules
     {
-      for (let level = 0; level < 4; ++level) {
-        this.style.addRule(`lineup_groupPadding${level}`, `
-        .${this.style.cssClasses.tr}[data-meta~=last${level === 0 ? '': level}]`, {
-            marginBottom: `${options.groupPadding * (level + 1)}px`
-        });
-      }
+
       this.style.addRule('lineup_rowPadding0', `
         .${this.style.cssClasses.tr}`, {
           marginTop: `${options.rowPadding}px`
         });
+
+      for (let level = 0; level < 4; ++level) {
+        this.style.addRule(`lineup_groupPadding${level}`, `
+        .${this.style.cssClasses.tr}[data-meta~=last${level === 0 ? '' : level}]`, {
+            marginBottom: `${options.groupPadding * (level + 1)}px`
+          });
+      }
+
+
+      this.style.addRule('lineup_rowPaddingAgg0', `
+        .${cssClass('agg-level')}::after`, {
+          top: `-${options.rowPadding}px`
+        });
+      for (let level = 1; level <= 4; ++level) {
+        this.style.addRule(`lineup_rowPaddingAgg${level}`, `
+        .${cssClass('agg-level')}[data-level='${level}']::after`, {
+            top: `-${options.rowPadding + options.groupPadding}px`
+          });
+      }
 
       // FIXME flat
       this.style.addRule('lineup_rotation', `

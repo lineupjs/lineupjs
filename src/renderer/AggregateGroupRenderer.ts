@@ -1,14 +1,15 @@
-import {IDataRow, IGroup, Column, AggregateGroupColumn, EAggregationState, IGroupParent, IOrderedGroup} from '../model';
+import {IDataRow, IGroup, Column, AggregateGroupColumn, EAggregationState, IOrderedGroup} from '../model';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {IRenderContext, ICellRendererFactory} from './interfaces';
+import {groupParents, toItemMeta} from '../model/internal';
 
 function preventDefault(event: Event) {
   event.preventDefault();
   event.stopPropagation();
 }
 
-function matchNodes(node: HTMLElement, group: IGroup, meta: IGroupMeta, col: AggregateGroupColumn) {
-  const parents = groupParents(group, meta);
+function matchNodes(node: HTMLElement, group: IOrderedGroup, relativeIndex: number, col: AggregateGroupColumn) {
+  const parents = groupParents(group, relativeIndex >= 0 ? toItemMeta(relativeIndex, group) : 'first last');
   const doc = node.ownerDocument!;
   const children = <HTMLElement[]>Array.from(node.children);
   // add missing
@@ -58,11 +59,12 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
-      update(node: HTMLElement, _row: IDataRow, _i: number, group: IOrderedGroup) {
-        // matchNodes(node, group, meta, col);
+      update(node: HTMLElement, _row: IDataRow, i: number, group: IOrderedGroup) {
+        matchNodes(node, group, i, col);
       },
       render(ctx: CanvasRenderingContext2D, _row: IDataRow, _i: number, _group: IGroup) {
         ctx.fillStyle = AGGREGATE.color;
+        // TODO draw all lines
         ctx.fillRect(width - AGGREGATE.width, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
         return Boolean(false);
       }
@@ -74,7 +76,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
       update(node: HTMLElement, group: IOrderedGroup) {
-        // matchNodes(node, group, meta, col);
+        matchNodes(node, group, -1, col);
 
         // const children = <HTMLElement[]>Array.from(node.children);
 
@@ -129,55 +131,55 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return {
       template: `<div><div class="${cssClass('agg-expand')}"  title="Expand All Groups"></div><div class="${cssClass('agg-all')}"  title="Show All"></div></div>`,
       update: (node: HTMLElement) => {
-        const ranking = col.findMyRanker()!;
-        const groups = ranking.getGroups();
+        // const ranking = col.findMyRanker()!;
+        // const groups = ranking.getGroups();
 
-        const toggleAggregate = <HTMLElement>node.firstElementChild!;
-        const toggleMore = <HTMLElement>node.lastElementChild!;
+        // const toggleAggregate = <HTMLElement>node.firstElementChild!;
+        // const toggleMore = <HTMLElement>node.lastElementChild!;
 
-        const isGroupOnly = groups.every((g) => col.isAggregated(g) === 'collapse');
-        const meta: IGroupMeta = groups.length <= 1 ? null : (isGroupOnly ? 'first last' : 'first top');
-        const isTopX = meta === 'first top';
-        const isShowAll = !isGroupOnly && !isTopX;
+        // const isGroupOnly = groups.every((g) => col.isAggregated(g) === 'collapse');
+        // const meta: IGroupMeta = groups.length <= 1 ? null : (isGroupOnly ? 'first last' : 'first top');
+        // const isTopX = meta === 'first top';
+        // const isShowAll = !isGroupOnly && !isTopX;
 
-        node.dataset.meta = meta!;
-        if (isShowAll) {
-          // expanded
-          toggleAggregate.title = 'Collapse Group';
-          toggleMore.title = 'Show Top';
-        } else if (isGroupOnly) {
-          // collapse
-          toggleAggregate.title = 'Expand Group';
-          toggleMore.title = 'Show Top';
-        } else {
-          // show top
-          toggleAggregate.title = 'Collapse Group';
-          toggleMore.title = 'Show All';
-        }
+        // node.dataset.meta = meta!;
+        // if (isShowAll) {
+        //   // expanded
+        //   toggleAggregate.title = 'Collapse Group';
+        //   toggleMore.title = 'Show Top';
+        // } else if (isGroupOnly) {
+        //   // collapse
+        //   toggleAggregate.title = 'Expand Group';
+        //   toggleMore.title = 'Show Top';
+        // } else {
+        //   // show top
+        //   toggleAggregate.title = 'Collapse Group';
+        //   toggleMore.title = 'Show All';
+        // }
 
-        toggleAggregate.classList.toggle(cssClass('agg-collapse'), isGroupOnly);
-        toggleAggregate.onclick = function (event) {
-          preventDefault(event);
-          const ranking = col.findMyRanker();
-          if (!ranking || !context) {
-            return;
-          }
+        // toggleAggregate.classList.toggle(cssClass('agg-collapse'), isGroupOnly);
+        // toggleAggregate.onclick = function (event) {
+        //   preventDefault(event);
+        //   const ranking = col.findMyRanker();
+        //   if (!ranking || !context) {
+        //     return;
+        //   }
 
-          const meta = node.dataset.meta!;
-          node.dataset.meta = meta === 'first last' ? 'first top' : 'first last';
-          context.provider.aggregateAllOf(ranking, meta === 'first last' ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
-        };
-        toggleMore.onclick = function (event) {
-          preventDefault(event);
-          const ranking = col.findMyRanker();
-          if (!ranking || !context) {
-            return;
-          }
+        //   const meta = node.dataset.meta!;
+        //   node.dataset.meta = meta === 'first last' ? 'first top' : 'first last';
+        //   context.provider.aggregateAllOf(ranking, meta === 'first last' ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
+        // };
+        // toggleMore.onclick = function (event) {
+        //   preventDefault(event);
+        //   const ranking = col.findMyRanker();
+        //   if (!ranking || !context) {
+        //     return;
+        //   }
 
-          const meta = node.dataset.meta!;
-          node.dataset.meta = meta === 'first top' ? 'first' : 'first top';
-          context.provider.aggregateAllOf(ranking, meta === 'first top' ? EAggregationState.EXPAND : EAggregationState.EXPAND_TOP_N);
-        };
+        //   const meta = node.dataset.meta!;
+        //   node.dataset.meta = meta === 'first top' ? 'first' : 'first top';
+        //   context.provider.aggregateAllOf(ranking, meta === 'first top' ? EAggregationState.EXPAND : EAggregationState.EXPAND_TOP_N);
+        // };
       }
     };
   }
