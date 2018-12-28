@@ -1,4 +1,4 @@
-import {IDataRow, Column, AggregateGroupColumn, EAggregationState, IOrderedGroup, IGroupParent, IGroup} from '../model';
+import {IDataRow, Column, AggregateGroupColumn, EAggregationState, IOrderedGroup, IGroupParent, IGroup, defaultGroup} from '../model';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {IRenderContext, ICellRendererFactory} from './interfaces';
 import {IDataProvider} from '../provider';
@@ -122,6 +122,10 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
   }
 }
 
+function isDummyGroup(group: IGroup) {
+  return group.parent == null && group.name === defaultGroup.name;
+}
+
 /** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -132,11 +136,17 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
   create(col: AggregateGroupColumn, context: IRenderContext) {
     return {
-      template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
+      template: `<div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IOrderedGroup) {
+        if (isDummyGroup(group)) {
+          return;
+        }
         renderGroups(node, group, i, col, context.provider);
       },
       render(ctx: CanvasRenderingContext2D, _row: IDataRow, i: number, group: IOrderedGroup) {
+        if (isDummyGroup(group)) {
+          return;
+        }
         const parents = groupParents(group, toItemMeta(i, group, context.provider.getTopNAggregated(col.findMyRanker()!, group)));
         ctx.fillStyle = AGGREGATE.color;
         for (let i = 0; i < parents.length; ++i) {
@@ -161,10 +171,14 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
   createSummary(col: AggregateGroupColumn, context: IRenderContext) {
     return {
-      template: `<div><div class="${cssClass('agg-expand')}" title="Expand All Groups"></div></div>`,
+      template: `<div></div>`,
       update: (node: HTMLElement) => {
         const ranking = col.findMyRanker()!;
         const groups = ranking.getGroups();
+        if (groups.length === 1 && groups[0].name === defaultGroup.name) {
+          return;
+        }
+
         const gparents = groups.map((group) => groupParents(group, 'first last'));
 
         const max = gparents.reduce((a, b) => Math.max(a, b.length), Number.NEGATIVE_INFINITY);
@@ -176,7 +190,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
           const isCollapsed = subGroups.every((d) => context.provider.getAggregationState(ranking, d) === EAggregationState.COLLAPSE);
           child.classList.toggle(cssClass('agg-collapse'), isCollapsed);
-          child.title = isCollapsed ? 'Expand Group' : 'Collapse Group';
+          child.title = isCollapsed ? 'Expand All Groups' : 'Collapse All Groups';
 
           child.onclick = (evt) => {
             preventDefault(evt);
