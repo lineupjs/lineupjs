@@ -60,7 +60,7 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
 
     if (alwaysShowGroup && (isRow || i < lastParent)) {
       // inner or last
-      if (parent.meta === 'last' || parent.meta === 'first last') {
+      if (!isSummary && (parent.meta === 'last' || parent.meta === 'first last')) {
         child.dataset.meta = 'last';
       } else {
         delete child.dataset.meta;
@@ -95,15 +95,13 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
       preventDefault(evt);
       let nextState: EAggregationState;
       switch (strategy) {
-        case 'group+item+top':
-          nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND : (state === EAggregationState.EXPAND ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE);
-          break;
         case 'group+top+item':
-          nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND_TOP_N : (state === EAggregationState.EXPAND  ? EAggregationState.COLLAPSE : EAggregationState.EXPAND);
+          nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE;
           break;
         case 'group':
         case 'item':
         case 'group+item':
+        case 'group+item+top':
         default:
           nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND : EAggregationState.COLLAPSE;
           break;

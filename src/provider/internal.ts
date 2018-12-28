@@ -15,7 +15,7 @@ export function toItemMeta(relativeIndex: number, group: IOrderedGroup, topN: nu
   if (relativeIndex === 0) {
     return group.order.length === 1 ? 'first last' : 'first';
   }
-  if ((relativeIndex === (group.order.length - 1)) || (topN > 0 && relativeIndex === topN)) {
+  if ((relativeIndex === (group.order.length - 1)) || (topN > 0 && relativeIndex === (topN - 1))) {
     return 'last';
   }
   return null;
