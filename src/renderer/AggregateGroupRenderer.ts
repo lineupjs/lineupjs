@@ -56,6 +56,7 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
     const parent = parents[i];
     const child = children[i];
     const state = provider.getAggregationState(ranking, parent.group);
+    const isLastGroup = i === lastParent;
     child.dataset.level = String(parents.length - 1 - i); // count backwards
 
     if (alwaysShowGroup && (isRow || i < lastParent)) {
@@ -65,6 +66,7 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
       } else {
         delete child.dataset.meta;
       }
+      child.classList.toggle(cssClass('agg-inner'), isRow && isLastGroup);
       child.classList.remove(cssClass('agg-expand'), cssClass('agg-collapse'));
       child.title = '';
       child.onclick = null;
@@ -74,7 +76,7 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
     const isCollapsed = state === EAggregationState.COLLAPSE;
     const isFirst = parent.meta === 'first' || parent.meta === 'first last';
     const isShowAll = state === EAggregationState.EXPAND;
-    const childTopN = hasTopN && i === lastParent ? children[parents.length] : null;
+    const childTopN = hasTopN && isLastGroup ? children[parents.length] : null;
 
     let meta = parent.meta;
     if (isSummary && parent.meta === 'first last') {
@@ -158,13 +160,10 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: AggregateGroupColumn, context: IRenderContext) {
-    // const _showMore = context.provider.getShowTopN() > 0;
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
       update(node: HTMLElement, group: IOrderedGroup) {
         renderGroups(node, group, -1, col, context.provider);
-
-        // TODO show all / show top behavior again
       }
     };
   }

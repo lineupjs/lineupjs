@@ -54,6 +54,22 @@
   }
 }
 
+.#{$lu_css_prefix}-agg-inner {
+  &::before {
+    content: '\2012';
+    position: absolute;
+    left: 0.7em;
+    top: -2px;
+    bottom: 0;
+    padding-top: 1px;
+    border-left: 1px solid black;
+  }
+
+  &[data-meta=last]::before {
+    bottom: 50%;
+  }
+}
+
 .#{$lu_css_prefix}-agg-all {
   cursor: pointer;
   position: absolute;
