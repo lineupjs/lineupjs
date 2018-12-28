@@ -1,7 +1,7 @@
 import {GridStyleManager} from 'lineupengine';
 import {ILineUpOptions} from '../../config';
 import {debounce, AEventDispatcher, IEventListener} from '../../internal';
-import {IGroupData, IGroupItem, isGroup, Ranking} from '../../model';
+import {IGroupData, IGroupItem, isGroup, Ranking, IGroup} from '../../model';
 import {DataProvider} from '../../provider';
 import {IRenderContext} from '../../renderer';
 import {IEngineRankingContext} from '../EngineRanking';
@@ -44,7 +44,7 @@ export default class TaggleRenderer extends AEventDispatcher {
 
     this.renderer = new EngineRenderer(data, parent, Object.assign({}, options, {
       dynamicHeight: (data: (IGroupData | IGroupItem)[], ranking: Ranking) => {
-        const r = this.dynamicHeight(data);
+        const r = this.dynamicHeight(data, ranking);
         if (r) {
           return r;
         }
@@ -77,14 +77,16 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.pushUpdateAble(updateAble);
   }
 
-  private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
+  private dynamicHeight(data: (IGroupData | IGroupItem)[], ranking: Ranking) {
     if (!this.rule) {
       this.levelOfDetail = null;
       return null;
     }
 
     const availableHeight = this.renderer ? this.renderer.node.querySelector('main')!.clientHeight : 100;
-    const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()));
+    const topNGetter = (group: IGroup) => this.data.getTopNAggregated(ranking, group);
+    const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()), topNGetter);
+
     this.isDynamicLeafHeight = typeof instance.item === 'function';
 
     this.options.violationChanged(this.rule, instance.violation || '');

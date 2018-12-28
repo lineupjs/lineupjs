@@ -2,7 +2,7 @@ import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderConte
 import {ILineUpFlags} from '../config';
 import {HOVER_DELAY_SHOW_DETAIL} from '../constants';
 import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
-import {Column, IGroupData, IGroupItem, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent, defaultGroup} from '../model';
+import {Column, IGroupData, IGroupItem, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent, defaultGroup, IGroup} from '../model';
 import {IImposer, IRenderCallback, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass} from '../styles';
 import {lineupAnimation} from './animation';
@@ -10,7 +10,8 @@ import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces'
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import SelectionManager from './SelectionManager';
-import {groupRoots, toRowMeta} from '../model/internal';
+import {groupRoots} from '../model/internal';
+import {isAlwaysShowingGroupStrategy, toRowMeta} from '../provider/internal';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
@@ -687,7 +688,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   private toRowMeta(rowIndex: number) {
-    return toRowMeta(this.renderCtx.isGroup(rowIndex) ? this.renderCtx.getGroup(rowIndex) : this.renderCtx.getRow(rowIndex));
+    const provider = this.renderCtx.provider;
+    const topNGetter = (group: IGroup) => provider.getTopNAggregated(this.ranking, group);
+    return toRowMeta(this.renderCtx.getRow(rowIndex), provider.getAggregationStrategy(), topNGetter);
   }
 
   protected updateShifts(top: number, left: number) {
@@ -834,7 +837,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
     const strategy = provider.getAggregationStrategy();
-    const alwaysShowGroup = strategy === 'group+item' || strategy === 'group+item+top' || strategy === 'group+top+item';
+    const alwaysShowGroup = isAlwaysShowingGroupStrategy(strategy);
 
     const r = <(IGroupItem | IGroupData)[]>[];
 

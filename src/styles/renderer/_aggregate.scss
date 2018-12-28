@@ -54,6 +54,47 @@
   }
 }
 
+.#{$lu_css_prefix}-agg-all {
+  cursor: pointer;
+  position: absolute;
+  bottom: 2px;
+  padding-left: 0.4em;
+  left: 0;
+  width: $lu_aggregate_level_width;
+  color: $lu_toolbar_color_base;
+
+  &::before {
+    @include lu_icons();
+
+    content: $lu_icon_expand;
+    transform: rotate(-45deg);
+  }
+
+  &:hover {
+    color: $lu_toolbar_color_hover;
+  }
+
+  &.#{$lu_css_prefix}-agg-compress::before {
+    content: $lu_icon_compress;
+  }
+
+  &[data-level='1'] {
+    left: $lu_aggregate_level_width;
+  }
+
+  &[data-level='2'] {
+    left: $lu_aggregate_level_width * 2;
+  }
+
+  &[data-level='3'] {
+    left: $lu_aggregate_level_width * 3;
+  }
+
+  &[data-level='4'] {
+    left: $lu_aggregate_level_width * 4;
+  }
+}
+
 // .#{$lu_css_prefix}-agg-::before {
 //   @include lu_icons();
 //   cursor: pointer;

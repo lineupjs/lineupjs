@@ -1,17 +1,17 @@
 import {GridStyleManager, MultiTableRowRenderer, nonUniformContext} from 'lineupengine';
 import {ILineUpFlags, ILineUpOptions} from '../config';
-import {round, IEventListener, suffix, AEventDispatcher} from '../internal';
-import {Column, IGroupData, IGroupItem, isGroup, Ranking} from '../model';
+import {AEventDispatcher, IEventListener, round, suffix} from '../internal';
+import {Column, IGroupData, IGroupItem, isGroup, Ranking, IGroup} from '../model';
 import {DataProvider} from '../provider';
+import {isSummaryGroup, groupEndLevel} from '../provider/internal';
 import {IImposer, IRenderContext} from '../renderer';
 import {chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer} from '../renderer/renderers';
 import {cssClass} from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import domElementCache from './domElementCache';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
-import {IRankingHeaderContext, IRankingHeaderContextContainer, EMode} from './interfaces';
+import {EMode, IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph from './SlopeGraph';
-import {groupEndLevel} from '../model/internal';
 
 /**
  * emitted when the highlight changes
@@ -354,14 +354,18 @@ export default class EngineRenderer extends AEventDispatcher {
       // inline with creating the groupData
       const {height, defaultHeight, padding} = heightsFor(r.ranking, grouped);
 
+      const strategy = this.data.getAggregationStrategy();
+      const topNGetter = (group: IGroup) => this.data.getTopNAggregated(r.ranking, group);
+
       // inline and create manually for better performance
       const rowContext = nonUniformContext(grouped.map(height), defaultHeight, (index) => {
         const pad = (typeof padding === 'number' ? padding : padding(grouped[index] || null));
-        if (index < 0 || !grouped[index]) {
+        const v = grouped[index];
+
+        if (index < 0 || !v || (isGroup(v) && isSummaryGroup(v, strategy, topNGetter))) {
           return pad;
         }
-        const v = grouped[index];
-        return pad + groupPadding * groupEndLevel(v);
+        return pad + groupPadding * groupEndLevel(v, topNGetter);
       });
       r.render(grouped, rowContext);
     }

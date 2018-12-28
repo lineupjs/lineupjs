@@ -1,8 +1,8 @@
 import {IGroupData, IGroupItem, isGroup} from '../../model';
-import {groupEndLevel} from '../../model/internal';
+import {groupEndLevel, ITopNGetter} from '../../provider/internal';
 
 export interface IRule {
-  apply(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>): IRuleInstance;
+  apply(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>, topNGetter: ITopNGetter): IRuleInstance;
 
   levelOfDetail(item: IGroupData | IGroupItem, height: number): 'high' | 'low';
 }
@@ -24,13 +24,13 @@ export function spaceFillingRule(config: {groupHeight: number, rowHeight: number
     return 'low';
   }
 
-  function itemHeight(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>) {
+  function itemHeight(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>, topNGetter: ITopNGetter) {
     const visibleHeight = availableHeight - config.rowHeight - 5; // some padding for hover
     const items = <IGroupItem[]>data.filter((d) => !isGroup(d));
     const groups = data.length - items.length;
     const selected = items.reduce((a, d) => a + (selection.has(d.dataIndex) ? 1 : 0), 0);
     const unselected = items.length - selected;
-    const groupSeparators = items.reduce((a, d) => a + groupEndLevel(d), 0);
+    const groupSeparators = items.reduce((a, d) => a + groupEndLevel(d, topNGetter), 0);
 
     if (unselected <= 0) {
       // doesn't matter since all are selected anyhow
@@ -56,9 +56,9 @@ export function spaceFillingRule(config: {groupHeight: number, rowHeight: number
   }
 
   return <IRule>{
-    apply: (data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>) => {
+    apply: (data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>, topNGetter: ITopNGetter) => {
 
-      const {violation, height} = itemHeight(data, availableHeight, selection);
+      const {violation, height} = itemHeight(data, availableHeight, selection, topNGetter);
 
       const item = (item: IGroupItem) => {
         if (selection.has(item.dataIndex)) {
