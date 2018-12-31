@@ -40,7 +40,7 @@ export interface IEventHandler {
   on(type: string | string[], listener: IEventListener | null): this;
 }
 
-declare const __DEBUG__: boolean;
+const __DEBUG = false;
 
 /**
  * base class for event dispatching using d3 event mechanism, thus .suffix is supported for multiple registrations
@@ -67,14 +67,14 @@ export default class AEventDispatcher implements IEventHandler {
         if (this.listenerEvents.has(d.split('.')[0])) {
           this.listenersChanged(d, Boolean(listener!));
           this.listeners.on(d, listener!);
-        } else if (__DEBUG__ && !d.includes('.')) {
+        } else if (__DEBUG && !d.includes('.')) {
           console.warn(this, 'invalid event type', d);
         }
       });
     } else if (this.listenerEvents.has((<string>type).split('.')[0])) {
       this.listenersChanged(<string>type, Boolean(listener!));
       this.listeners.on(<string>type, listener!);
-    } else if (__DEBUG__ && !type.includes('.')) {
+    } else if (__DEBUG && !type.includes('.')) {
       console.warn(this, 'invalid event type', type);
     }
     return this;
@@ -105,7 +105,7 @@ export default class AEventDispatcher implements IEventHandler {
   private fireImpl(type: string | string[], primaryType: string, origin: AEventDispatcher, ...args: any[]) {
     const fireImpl = (t: string) => {
       if (!this.listenerEvents.has(t)) {
-        if (__DEBUG__) {
+        if (__DEBUG) {
           console.warn(this, 'invalid event type', t);
         }
         return;
