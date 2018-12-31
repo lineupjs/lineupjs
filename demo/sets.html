@@ -22,7 +22,7 @@
     }
     const builder = LineUpJS
       .builder(arr)
-      .showTopN(0)
+      .aggregationStrategy('group+item')
       .deriveColumns();
     // and two rankings
     const ranking = LineUpJS.buildRanking()
