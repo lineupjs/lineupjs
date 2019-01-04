@@ -12,6 +12,7 @@
 .#{$lu_css_prefix}-agg-level {
   flex: 0 0 $lu_aggregate_level_width;
   position: relative; // square bracket around
+
   &::after {
     content: '';
     pointer-events: none;
@@ -110,83 +111,3 @@
     left: $lu_aggregate_level_width * 4;
   }
 }
-
-// .#{$lu_css_prefix}-agg-::before {
-//   @include lu_icons();
-//   cursor: pointer;
-//   content: $lu_icon_caret_down;
-// }
-// .#{$lu_css_prefix}-agg-expand {
-//   cursor: pointer;
-//   color: $lu_toolbar_color_base;
-//   &::before {
-//     @include lu_icons();
-//     content: $lu_icon_caret_down;
-//   }
-//   &:hover {
-//     color: $lu_toolbar_color_hover;
-//   }
-// }
-// .#{$lu_css_prefix}-agg-all {
-//   cursor: pointer;
-//   position: absolute;
-//   bottom: 2px;
-//   right: 0;
-//   color: $lu_toolbar_color_base;
-//   &::before {
-//     @include lu_icons();
-//     content: $lu_icon_expand;
-//     transform: rotate(-45deg);
-//   }
-//   &:hover {
-//     color: $lu_toolbar_color_hover;
-//   }
-//   &.#{$lu_css_prefix}-agg-compress::before {
-//     content: $lu_icon_compress;
-//   }
-// }
-// .#{$lu_css_prefix}-renderer-aggregate[data-meta ~ ='last'] {}
-// .#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-aggregate {
-//   font-size: medium;
-//   > :last-child {
-//     display: none;
-//   }
-// }
-// .#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate[data-meta='inner'] {
-//   > :first-child {
-//     content: '';
-//     position: absolute;
-//     pointer-events: none;
-//     top: 50%;
-//     width: $lu_aggregate_hierarchy_width;
-//     right: 4px;
-//     height: 1px;
-//     border-bottom: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_hierarchy_color;
-//     box-sizing: border-box;
-//   }
-//   &::after {
-//     content: '';
-//     position: absolute;
-//     pointer-events: none;
-//     top: -2px; // FIXME right padding
-//     width: $lu_aggregate_hierarchy_width;
-//     right: 4px;
-//     bottom: 0;
-//     border-left: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_hierarchy_color;
-//     box-sizing: border-box;
-//   }
-// }
-// .#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-aggregate[data-meta='last'] {
-//   > :first-child {
-//     content: '';
-//     position: absolute;
-//     pointer-events: none;
-//     top: -2px;
-//     width: $lu_aggregate_hierarchy_width;
-//     right: 4px;
-//     bottom: 50%;
-//     border-left: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_hierarchy_color;
-//     border-bottom: $lu_aggregate_hierarchy_stroke_width solid $lu_aggregate_hierarchy_color;
-//     box-sizing: border-box;
-//   }
-// }
