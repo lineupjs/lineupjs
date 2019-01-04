@@ -1132,6 +1132,7 @@ export const WORKER_BLOB = createWorkerCodeBlob([
   normalizedStatsBuilder.toString(),
   boxplotBuilder.toString(),
   computeGranularity.toString(),
+  pushDateHist.toString(),
   dateStatsBuilder.toString(),
   categoricalStatsBuilder.toString(),
   createIndexArray.toString(),
