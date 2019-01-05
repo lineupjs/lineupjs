@@ -1,5 +1,5 @@
 import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEventListener, suffix, IEventContext} from '../internal';
-import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump} from '../model';
+import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump, INumberColumn} from '../model';
 import {models} from '../model/models';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
 import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions, IAggregationStrategy} from './interfaces';
@@ -576,7 +576,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       uid: this.uid,
       selection: this.getSelection(),
       aggregations: map2Object(this.aggregations),
-      rankings: this.rankings.map((r) => r.dump(this.toDescRef.bind(this))),
+      rankings: this.rankings.map((r) => r.dump(this.toDescRef)),
       showTopN: this.showTopN
     };
   }
@@ -585,22 +585,18 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * dumps a specific column
    */
   dumpColumn(col: Column): IColumnDump {
-    return col.dump(this.toDescRef.bind(this));
+    return col.dump(this.toDescRef);
   }
 
   /**
    * for better dumping describe reference, by default just return the description
    */
-  toDescRef(desc: any): any {
-    return desc;
-  }
+  toDescRef = (desc: any): any => desc;
 
   /**
    * inverse operation of toDescRef
    */
-  fromDescRef(descRef: any): any {
-    return descRef;
-  }
+  fromDescRef = (descRef: any): any => descRef;
 
   private createHelper = (d: IColumnDump) => {
     //factory method for restoring a column
@@ -838,7 +834,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param indices
    * @return {Promise<any>}
    */
-  abstract view(indices: ArrayLike<number>): Promise<any[]> | any[];
+  abstract view(indices: IndicesArray): Promise<any[]> | any[];
 
 
   abstract getRow(index: number): Promise<IDataRow> | IDataRow;
@@ -848,7 +844,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param col
    * @return {Promise<any>}
    */
-  abstract mappingSample(col: Column): Promise<ISequence<number>> | ISequence<number>;
+  abstract mappingSample(col: INumberColumn): Promise<ISequence<number>> | ISequence<number>;
 
   /**
    * is the given row selected

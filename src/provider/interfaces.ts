@@ -1,4 +1,4 @@
-import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState} from '../model';
+import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState, INumberColumn} from '../model';
 import {AEventDispatcher, ISequence} from '../internal';
 import {IRenderTasks} from '../renderer';
 import {IAbortAblePromise} from 'lineupengine';
@@ -63,7 +63,7 @@ export interface IDataProvider extends AEventDispatcher {
 
   fromDescRef(ref: any): IColumnDesc;
 
-  mappingSample(col: Column): Promise<ISequence<number>> | ISequence<number>;
+  mappingSample(col: INumberColumn): Promise<ISequence<number>> | ISequence<number>;
 
   searchAndJump(search: string | RegExp, col: Column): void;
 

@@ -55,7 +55,7 @@ export function tasksAll<T>(tasks: IRenderTask<T>[]): IRenderTask<T[]> {
 
 
 
-export interface IRenderTaskExectutor extends IRenderTasks {
+export interface IRenderTaskExecutor extends IRenderTasks {
   setData(data: IDataRow[]): void;
 
   dirtyColumn(col: Column, type: 'data' | 'summary' | 'group'): void;

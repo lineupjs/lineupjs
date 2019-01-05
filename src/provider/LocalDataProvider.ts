@@ -4,7 +4,7 @@ import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {CompareLookup} from './sort';
-import {IRenderTaskExectutor} from './tasks';
+import {IRenderTaskExecutor} from './tasks';
 import {DirectRenderTasks} from './DirectRenderTasks';
 import {ScheduleRenderTasks} from './ScheduledTasks';
 import {joinGroups, mapIndices} from '../model/internal';
@@ -52,7 +52,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private readonly tasks: IRenderTaskExectutor;
+  private readonly tasks: IRenderTaskExecutor;
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
@@ -470,31 +470,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
     });
   }
 
-  private readonly mapToDataRow = (i: number) => {
-    if (i < 0 || i >= this._dataRows.length) {
-      return {i, v: {}};
-    }
-    return this._dataRows[i];
-  };
-
-  viewRaw(indices: IndicesArray) {
-    return mapIndices(indices, (i) => this._data[i] || {});
-  }
-
-  viewRawRows(indices: IndicesArray) {
-    return mapIndices(indices, this.mapToDataRow);
-  }
-
   getRow(index: number) {
     return this._dataRows[index];
   }
 
-  seq(indices: IndicesArray) {
-    return lazySeq(indices).map(this.mapToDataRow);
-  }
-
   view(indices: IndicesArray) {
-    return this.viewRaw(indices);
+    return mapIndices(indices, (i) => this._data[i] || {});
   }
 
   mappingSample(col: INumberColumn): ISequence<number> {
