@@ -1,7 +1,6 @@
 import {LRUCache, IEventContext} from '../../internal';
 import Column, {IColumnDesc, IDataRow, IndicesArray, INumberColumn, Ranking, CompositeColumn, EDirtyReason} from '../../model';
 import {mapIndices} from '../../model/internal';
-import {IRenderTasks} from '../../renderer';
 import ACommonDataProvider from '../ACommonDataProvider';
 import {IDataProviderOptions} from '../interfaces';
 import {IServerData, toRankingDump} from './interfaces';

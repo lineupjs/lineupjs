@@ -1,7 +1,7 @@
 import {abortAble} from 'lineupengine';
-import {Column, ICategoricalLikeColumn, ICategoricalStatistics, IDataRow, IDateColumn, IDateStatistics, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking} from '../..';
+import {Column, ICategoricalLikeColumn, IDataRow, IDateColumn, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking} from '../../model';
 import {NUM_OF_EXAMPLE_ROWS} from '../../constants';
-import {ISequence} from '../../internal';
+import {ISequence, IDateStatistics, ICategoricalStatistics} from '../../internal';
 import {IRenderTask, IRenderTasks} from '../../renderer';
 import {ABORTED} from '../interfaces';
 import {taskLater, TaskLater, taskNow, TaskNow} from '../tasks';

@@ -1,4 +1,4 @@
-import {IColumnDump, IOrderedGroup, IColumnDesc, Ranking} from '../../model';
+import {IColumnDump, IOrderedGroup, Ranking} from '../../model';
 import {IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../../internal';
 
 
