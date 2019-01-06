@@ -8,6 +8,7 @@ import {IRenderTaskExecutor} from './tasks';
 import {DirectRenderTasks} from './DirectRenderTasks';
 import {ScheduleRenderTasks} from './ScheduledTasks';
 import {joinGroups, mapIndices} from '../model/internal';
+import {index2pos} from './internal';
 
 
 export interface ILocalDataProviderOptions {
@@ -390,20 +391,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return groups;
   }
 
-  private index2pos(groups: IOrderedGroup[], maxDataIndex: number) {
-    const total = groups.reduce((a, b) => a + b.order.length, 1);
-    const index2pos = createIndexArray(maxDataIndex + 1, total);
-    let offset = 1;
-    for (const g of groups) {
-      // tslint:disable-next-line
-      for (let i = 0; i < g.order.length; i++ , offset++) {
-        index2pos[g.order[i]] = offset;
-      }
-    }
-
-    return {groups, index2pos};
-  }
-
   sort(ranking: Ranking, dirtyReason: EDirtyReason[]) {
     const reasons = new Set(dirtyReason);
 
@@ -454,7 +441,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
       // not required if: group sort criteria changed -> lookups will be none
       return this.sortGroup(g, 0, ranking, lookups, undefined, true, maxDataIndex).then((group) => {
-        return this.index2pos([group], maxDataIndex);
+        return index2pos([group], maxDataIndex);
       });
     }
 
@@ -466,7 +453,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     })).then((groups) => {
       // not required if: sort criteria changed -> groupLookup will be none
       const sortedGroups = this.sortGroups(groups, groupLookup);
-      return this.index2pos(sortedGroups, maxDataIndex);
+      return index2pos(sortedGroups, maxDataIndex);
     });
   }
 
