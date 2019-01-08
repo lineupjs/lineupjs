@@ -307,7 +307,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     let hasColumn = false;
     const toClone = !ranking ? [col] : ranking.children.filter((c) => {
       if (c === col) {
-        hasColumn = false;
+        hasColumn = true;
         return true;
       }
       if (!hasString && c.desc.type === 'string') {
