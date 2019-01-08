@@ -325,6 +325,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         groupOrder.push({group: plain, rows: order});
 
         if (!lookups) {
+          maxDataIndex = (<ReadonlyArray<number>>order).reduce((a, b) => Math.max(a, b), maxDataIndex);
           continue;
         }
         // sort
