@@ -1,5 +1,5 @@
 import {IExceptionContext, ITableSection, range} from 'lineupengine';
-import {IGroupData, IGroupItem, IOrderedGroup, isGroup} from '../model';
+import {IGroupData, IGroupItem, IOrderedGroup, isGroup, Ranking} from '../model';
 import {aria, cssClass, engineCssClass, SLOPEGRAPH_WIDTH} from '../styles';
 import {IRankingHeaderContextContainer, EMode} from './interfaces';
 import {forEachIndices, filterIndices} from '../model/internal';
@@ -70,11 +70,17 @@ export default class SlopeGraph implements ITableSection {
   readonly height = 0;
 
   private current: {
+    leftRanking: Ranking;
     left: (IGroupItem | IGroupData)[];
     leftContext: IExceptionContext;
+    rightRanking: Ranking;
     right: (IGroupItem | IGroupData)[];
     rightContext: IExceptionContext;
   } | null = null;
+
+  private chosen = new Set<ISlope>();
+  private chosenSelectionOnly = new Set<ISlope>();
+
   private _mode: EMode = EMode.ITEM;
 
   constructor(public readonly header: HTMLElement, public readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer, options: Partial<ISlopeGraphOptions> = {}) {
@@ -135,7 +141,7 @@ export default class SlopeGraph implements ITableSection {
     }
     this._mode = value;
     if (this.current) {
-      this.rebuild(this.current.left, this.current.leftContext, this.current.right, this.current.rightContext);
+      this.rebuild(this.current.leftRanking, this.current.left, this.current.leftContext, this.current.rightRanking, this.current.right, this.current.rightContext);
     }
   }
 
@@ -171,8 +177,8 @@ export default class SlopeGraph implements ITableSection {
     this.body.remove();
   }
 
-  rebuild(left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, right: (IGroupItem | IGroupData)[], rightContext: IExceptionContext) {
-    this.current = {left, leftContext, right, rightContext};
+  rebuild(leftRanking: Ranking, left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, rightRanking: Ranking, right: (IGroupItem | IGroupData)[], rightContext: IExceptionContext) {
+    this.current = {leftRanking, left, leftContext, right, rightRanking, rightContext};
 
     const lookup: Map<number, IPos> = this.prepareRightSlopes(right, rightContext);
     this.computeSlopes(left, leftContext, lookup);
@@ -395,7 +401,8 @@ export default class SlopeGraph implements ITableSection {
     this.body.style.height = `${(end - start).toFixed(0)}px`;
     (this.node.firstElementChild!).setAttribute('transform', `translate(0,-${start.toFixed(0)})`);
 
-    this.choose(left.first, left.last, right.first, right.last);
+    this.chosen = this.choose(left.first, left.last, right.first, right.last);
+    this.render(this.chosen, this.chooseSelection(left.first, left.last, this.chosen));
   }
 
   private choose(leftVisibleFirst: number, leftVisibleLast: number, rightVisibleFirst: number, rightVisibleLast: number) {
@@ -403,82 +410,167 @@ export default class SlopeGraph implements ITableSection {
 
     const slopes = new Set<ISlope>();
     for (let i = leftVisibleFirst; i <= leftVisibleLast; ++i) {
-      this.leftSlopes[i].forEach((s) => slopes.add(s));
+      for (const s of this.leftSlopes[i]) {
+        slopes.add(s);
+      }
     }
     for (let i = rightVisibleFirst; i <= rightVisibleLast; ++i) {
-      this.rightSlopes[i].forEach((s) => slopes.add(s));
+      for (const s of this.rightSlopes[i]) {
+        slopes.add(s);
+      }
     }
-    this.render(slopes);
+    return slopes;
   }
 
-  private render(slopes: Set<ISlope>) {
+  private chooseSelection(leftVisibleFirst: number, leftVisibleLast: number, alreadyVisible: Set<ISlope>) {
+    const slopes = new Set<ISlope>();
+    // ensure selected slopes are always part of
+    const p = this.ctx.provider;
+
+    if (p.getSelection().length === 0) {
+      return slopes;
+    }
+
+    const selectionLookup = {has: (dataIndex: number) => p.isSelected(dataIndex)};
+
+    // try all not visible ones
+    for (let i = 0; i < leftVisibleFirst; ++i) {
+      for (const s of this.leftSlopes[i]) {
+        if (s.isSelected(selectionLookup) && !alreadyVisible.has(s)) {
+          slopes.add(s);
+        }
+      }
+    }
+    for (let i = leftVisibleLast + 1; i < this.leftSlopes.length; ++i) {
+      for (const s of this.leftSlopes[i]) {
+        if (s.isSelected(selectionLookup) && !alreadyVisible.has(s)) {
+          slopes.add(s);
+        }
+      }
+    }
+    return slopes;
+  }
+
+  private updatePath(p: SVGPathElement, g: SVGGElement, s: ISlope, width: number, selection: {has(dataIndex: number): boolean}) {
+    s.update(p, width);
+    (<any>p).__data__ = s; // data binding
+    const selected = s.isSelected(selection);
+    p.classList.toggle(cssClass('selected'), selected);
+    if (selected) {
+      g.appendChild(p); // to put it on top
+    }
+  }
+
+  private render(visible: Set<ISlope>, selectionSlopes: Set<ISlope>) {
     const g = <SVGGElement>this.node.firstElementChild!;
     const width = g.ownerSVGElement!.getBoundingClientRect()!.width;
-    const paths = this.matchLength(slopes, g);
+    const paths = this.matchLength(visible.size + selectionSlopes.size, g);
 
     const p = this.ctx.provider;
     const selectionLookup = {has: (dataIndex: number) => p.isSelected(dataIndex)};
 
     // update paths
     let i = 0;
-    slopes.forEach((s) => {
-      const p = paths[i++]; // since a set
-      s.update(p, width);
-      (<any>p).__data__ = s; // data binding
-      const selected = s.isSelected(selectionLookup);
-      p.classList.toggle(cssClass('selected'), selected);
-      if (selected) {
-        g.appendChild(p); // to put it on top
-      }
-    });
+    const updatePath = (s: ISlope) => {
+      this.updatePath(paths[i++], g, s, width, selectionLookup);
+    };
+
+    visible.forEach(updatePath);
+    selectionSlopes.forEach(updatePath);
   }
 
-  private matchLength(slopes: Set<ISlope>, g: SVGGElement) {
+  private addPath(g: SVGGElement) {
+    const elem = this.pool.pop();
+    if (elem) {
+      g.appendChild(elem);
+      return elem;
+    }
+
+    const path = g.ownerDocument!.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.onclick = (evt) => {
+      // d3 style
+      const s: ISlope = (<any>path).__data__;
+      const p = this.ctx.provider;
+      const ids = s.dataIndices;
+      if (evt.ctrlKey) {
+        ids.forEach((id) => p.toggleSelection(id, true));
+      } else {
+        // either unset or set depending on the first state
+        const isSelected = p.isSelected(ids[0]!);
+        p.setSelection(isSelected ? [] : ids);
+      }
+    };
+    g.appendChild(path);
+    return path;
+  }
+
+  private matchLength(slopes: number, g: SVGGElement) {
     const paths = <SVGPathElement[]>Array.from(g.children);
-    for (let i = slopes.size; i < paths.length; ++i) {
+    for (let i = slopes; i < paths.length; ++i) {
       const elem = paths[i];
       this.pool.push(elem);
       elem.remove();
     }
 
-    for (let i = paths.length; i < slopes.size; ++i) {
-      const elem = this.pool.pop();
-      if (elem) {
-        g.appendChild(elem);
-        paths.push(elem);
-      } else {
-        const path = g.ownerDocument!.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.onclick = (evt) => {
-          // d3 style
-          const s: ISlope = (<any>path).__data__;
-          const p = this.ctx.provider;
-          const ids = s.dataIndices;
-          if (evt.ctrlKey) {
-            ids.forEach((id) => p.toggleSelection(id, true));
-          } else {
-            // either unset or set depending on the first state
-            const isSelected = p.isSelected(ids[0]!);
-            p.setSelection(isSelected ? [] : ids);
-          }
-        };
-        g.appendChild(path);
-        paths.push(path);
-      }
+    for (let i = paths.length; i < slopes; ++i) {
+      paths.push(this.addPath(g));
     }
     return paths;
   }
 
   updateSelection(selectedDataIndices: Set<number>) {
-    const g = this.node.firstElementChild!;
+    const g = <SVGGElement>this.node.firstElementChild!;
     const paths = <SVGPathElement[]>Array.from(g.children);
 
-    paths.forEach((p) => {
+    const openDataIndices = new Set(selectedDataIndices);
+
+    if (selectedDataIndices.size === 0) {
+      // clear
+      for (const p of paths) {
+        const s: ISlope = (<any>p).__data__;
+        p.classList.toggle(cssClass('selected'), false);
+        if (this.chosenSelectionOnly.has(s)) {
+          p.remove();
+        }
+      }
+      this.chosenSelectionOnly.clear();
+      return;
+    }
+
+    for (const p of paths) {
       const s: ISlope = (<any>p).__data__;
       const selected = s.isSelected(selectedDataIndices);
       p.classList.toggle(cssClass('selected'), selected);
-      if (selected) {
-        g.appendChild(p); // to put it on top
+      if (!selected) {
+        if (this.chosenSelectionOnly.delete(s)) {
+          // was only needed because of the selection
+          p.remove();
+        }
+        continue;
       }
-    });
+
+      g.appendChild(p); // to put it on top
+      // remove already handled
+      s.dataIndices.forEach((d) => openDataIndices.delete(d));
+    }
+
+    if (openDataIndices.size === 0) {
+      return;
+    }
+
+    // find and add missing slopes
+    const width = g.ownerSVGElement!.getBoundingClientRect()!.width;
+    for (const ss of this.leftSlopes) {
+      for (const s of ss) {
+        if (this.chosen.has(s) || this.chosenSelectionOnly.has(s) || !s.isSelected(openDataIndices)) {
+          // not visible or not selected -> skip
+          continue;
+        }
+        // create new path for it
+        this.chosenSelectionOnly.add(s);
+        const p = this.addPath(g);
+        this.updatePath(p, g, s, width, openDataIndices);
+      }
+    }
   }
 }

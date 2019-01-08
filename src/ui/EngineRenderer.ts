@@ -398,7 +398,7 @@ export default class EngineRenderer extends AEventDispatcher {
       }
       const leftRanking = this.rankings[left];
       const rightRanking = this.rankings[right];
-      s.rebuild(leftRanking.currentData, leftRanking.context, rightRanking.currentData, rightRanking.context);
+      s.rebuild(leftRanking.ranking, leftRanking.currentData, leftRanking.context, rightRanking.ranking, rightRanking.currentData, rightRanking.context);
     }
   }
 
