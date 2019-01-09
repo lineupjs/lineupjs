@@ -9,9 +9,16 @@ import RemoteTaskExecutor from './RemoteTaskExecutor';
 
 export interface IRemoteDataProviderOptions {
   /**
-   * maximal cache size (unused at the moment)
+   * maximal cache size
+   * @default 10000
    */
   maxCacheSize: number;
+
+  /**
+   * neighbors to preload when requesting an index
+   * @default 50
+   */
+  loadNeighbors: number;
 }
 
 /**
@@ -19,7 +26,8 @@ export interface IRemoteDataProviderOptions {
  */
 export default class RemoteDataProvider extends ACommonDataProvider {
   private readonly options: IRemoteDataProviderOptions = {
-    maxCacheSize: 1000
+    maxCacheSize: 10000,
+    loadNeighbors: 50
   };
 
   private readonly cache: LRUCache<number, Promise<IDataRow> | IDataRow>;
@@ -204,7 +212,30 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     if (this.cache.has(index)) {
       return this.cache.get(index)!;
     }
-    return this.viewRows([index]).then((r) => r[0]);
+    return this.viewRows(this.guessRowsToLoad(index)).then((r) => r[0]);
+  }
+
+  private guessRowsToLoad(index: number) {
+    const indices = new Set<number>([index]);
+    for (const ranking of this.getRankings()) {
+      const rank = ranking.getRank(index) - 1;
+      if (rank < 0) {
+        continue;
+      }
+      const order = ranking.getOrder();
+      const startRank = Math.max(0, rank - this.options.loadNeighbors);
+      const endRank = Math.min(order.length - 1, rank + this.options.loadNeighbors);
+
+      for (let i = startRank; i <= endRank; ++i) {
+        indices.add(order[i]);
+      }
+    }
+
+    // enforce the first is the one to load
+    indices.delete(index);
+    const toLoad = Array.from(indices);
+    toLoad.unshift(index);
+    return toLoad;
   }
 
 
