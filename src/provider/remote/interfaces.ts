@@ -31,6 +31,9 @@ export declare type IRemoteStatistics = IDateStatistics | ICategoricalStatistics
  * interface what the server side has to provide
  */
 export interface IServerData {
+  /**
+   * total number of rows
+   */
   readonly totalNumberOfRows: number;
 
   /**
@@ -58,6 +61,9 @@ export interface IServerData {
    */
   search(search: string | RegExp, column: IColumnDump): Promise<number[]>;
 
+  /**
+   * compute the data statistics for the given columns
+   */
   computeDataStats(columns: IColumnDump[]): Promise<IRemoteStatistics[]>;
   computeRankingStats(ranking: IServerRankingDump, columns: IColumnDump[]): Promise<IRemoteStatistics[]>;
   computeGroupStats(ranking: IServerRankingDump, group: string, columns: IColumnDump[]): Promise<IRemoteStatistics[]>;

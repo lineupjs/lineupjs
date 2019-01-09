@@ -87,7 +87,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       for (const col of computeAble) {
         // copy from summary to group and create proper structure
         this.chainCopy(`${col.id}:a:group:${group.name}`, this.cache.get(`${col.id}:b:summary`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
-        if (isNumberColumn(col)) {
+        if (col.map) { // number like
           this.chainCopy(`${col.id}:a:group:${group.name}:raw`, this.cache.get(`${col.id}:b:summary:raw`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
         }
       }
