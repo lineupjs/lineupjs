@@ -1,6 +1,6 @@
 import {equalArrays, extent, IEventListener} from '../internal';
 import {Category, toolbar} from './annotations';
-import {DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
@@ -59,7 +59,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('boxplot');
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   protected createEventList() {

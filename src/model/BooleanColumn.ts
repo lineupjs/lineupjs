@@ -5,7 +5,7 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow, ECompareValueType, IValueColumnDesc} from './interfaces';
 import {IEventListener} from '../internal';
-import {restoreColorMapping, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {restoreCategoricalColorMapping, DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
 export interface IBooleanDesc {
   /**
@@ -70,7 +70,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
         value: 1
       }
     ];
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   protected createEventList() {
@@ -168,7 +168,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
     if (typeof dump.filter !== 'undefined') {
       this.currentFilter = dump.filter;
     }

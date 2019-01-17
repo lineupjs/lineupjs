@@ -3,7 +3,7 @@ import {ICategoricalDesc, ICategory, ICategoricalColorMappingFunction, ICategori
 import {IDataRow, DEFAULT_COLOR} from './interfaces';
 import {toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal';
@@ -35,7 +35,7 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     super(id, desc);
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   protected createEventList() {
@@ -102,6 +102,6 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
   }
 }

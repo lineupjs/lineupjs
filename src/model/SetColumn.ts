@@ -6,7 +6,7 @@ import {ICategoricalDesc, ICategoricalFilter, ICategory, ISetColumn, ICategorica
 import {IDataRow, ECompareValueType, IValueColumnDesc, IGroup, DEFAULT_COLOR} from './interfaces';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
-import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import {toCategories, isCategoryIncluded} from './internalCategorical';
 import {chooseUIntByDataLength} from './internal';
 
@@ -62,7 +62,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     this.setDefaultRenderer('upset');
     this.setDefaultGroupRenderer('upset');
     this.setSummaryRenderer('set');
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   protected createEventList() {
@@ -188,7 +188,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
     if (!('filter' in dump)) {
       this.currentFilter = null;
       return;

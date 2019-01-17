@@ -189,6 +189,9 @@ export class ScriptMappingFunction implements IMappingFunction {
   }
 }
 
+/**
+ * @internal
+ */
 export function createMappingFunction(dump: any): IMappingFunction {
   if (dump.type === 'script') {
     const s = new ScriptMappingFunction();

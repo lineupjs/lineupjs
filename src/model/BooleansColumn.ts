@@ -2,7 +2,7 @@ import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow, DEFAULT_COLOR} from './interfaces';
 import CategoricalColumn from './CategoricalColumn';
-import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal';
@@ -28,7 +28,7 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   constructor(id: string, desc: Readonly<IBooleansColumnDesc>) {
     super(id, desc);
     this.setDefaultRenderer('upset');
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   get categories() {
@@ -106,6 +106,6 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
   }
 }

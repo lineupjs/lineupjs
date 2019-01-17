@@ -7,7 +7,7 @@ import {colorPool} from './internal';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
-import {restoreColorMapping, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {restoreCategoricalColorMapping, DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
 export interface ICategoryNode extends ICategory {
   children: Readonly<ICategoryNode>[];
@@ -78,7 +78,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.updateCaches();
 
     this.setDefaultRenderer('categorical');
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   private initHierarchy(root: IPartialCategoryNode) {
@@ -153,7 +153,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
     if (typeof dump.maxDepth !== 'undefined') {
       this.currentMaxDepth = dump.maxDepth;
     }

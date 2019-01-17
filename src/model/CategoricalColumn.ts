@@ -1,6 +1,6 @@
 import {IEventListener, ISequence} from '../internal';
 import {Category, toolbar} from './annotations';
-import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow, IGroup, ICompareValue, DEFAULT_COLOR} from './interfaces';
@@ -49,7 +49,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     super(id, desc);
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   protected createEventList() {
@@ -149,7 +149,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
 
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
 
     if ('filter' in dump) {
       this.currentFilter = null;

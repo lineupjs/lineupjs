@@ -4,7 +4,7 @@ import {uniqueId} from './utils';
 import {cssClass} from '../../styles';
 import {color} from 'd3-color';
 import {schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3} from 'd3-scale-chromatic';
-import {DEFAULT_COLOR_FUNCTION, ReplacmentColorMappingFunction} from '../../model/CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacmentColorMappingFunction} from '../../model/CategoricalColorMappingFunction';
 
 const sets: {[key: string]: ReadonlyArray<string>} = {schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3};
 
@@ -57,7 +57,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
     this.forEach('[data-cat]', (n: HTMLInputElement, i) => {
       n.value = color(cats[i]!.color)!.hex();
     });
-    this.column.setColorMapping(DEFAULT_COLOR_FUNCTION);
+    this.column.setColorMapping(DEFAULT_CATEGORICAL_COLOR_FUNCTION);
   }
 
   submit() {
@@ -70,7 +70,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
       }
     });
     if (map.size === 0) {
-      this.column.setColorMapping(DEFAULT_COLOR_FUNCTION);
+      this.column.setColorMapping(DEFAULT_CATEGORICAL_COLOR_FUNCTION);
     } else {
       this.column.setColorMapping(new ReplacmentColorMappingFunction(map));
     }
