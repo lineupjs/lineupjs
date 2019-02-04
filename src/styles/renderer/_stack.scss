@@ -2,4 +2,5 @@
 
 .#{$lu_css_prefix}-stack-sub {
   height: 100%;
+  width: calc(100% - $lu_engine_grip_gap); // subtract gap to maintain grid
 }
