@@ -19,16 +19,19 @@
     for (let i = 0; i < 100; ++i) {
         arr.push({
         a: Math.random() * 10,
+        b: Math.random() * 10,
         as: l.map((d) => Math.random() * 10),
         bs: l.map((d) => Math.random() * 10),
         cs: l.map((d) => Math.random() * 10)
       })
     }
     const builder = LineUpJS.builder(arr);
-    builder.deriveColumns();
+    builder.deriveColumns().deriveColors();
     // and two rankings
     const ranking = LineUpJS.buildRanking()
       .supportTypes()
+      .column('a').column('b')
+      .weightedSum('stack', 'a', 100, 'b', 100)
       .nested('multi canvas', 'a', 'as', 'bs', 'cs')
 
     builder
