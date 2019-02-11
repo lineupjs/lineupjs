@@ -19,11 +19,11 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
   createGroup(col: T, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const single = this.create(col, context, imposer);
     return {
-      template: `<div>${single.template}</div>`,
+      template: single.template,
       update: (node: HTMLElement, group: IOrderedGroup) => {
         return context.tasks.groupRows(col, group, 'aagreated', (rows) => this.aggregatedIndex(rows, col)).then((data) => {
           if (typeof data !== 'symbol') {
-            single.update(<HTMLElement>node.firstElementChild!, data.row, data.index, group);
+            single.update(node, data.row, data.index, group);
           }
         });
       }
