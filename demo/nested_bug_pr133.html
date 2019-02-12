@@ -33,9 +33,12 @@
       .column('a').column('b')
       .weightedSum('stack', 'a', 100, 'b', 100)
       .nested('multi canvas', 'a', 'as', 'bs', 'cs')
+      .groupBy('a');
 
     builder
       .ranking(ranking);
+
+    builder.aggregationStrategy('group')
 
 
     builder.buildTaggle(document.body);
