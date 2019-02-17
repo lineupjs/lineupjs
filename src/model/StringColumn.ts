@@ -1,6 +1,6 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc} from './interfaces';
+import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, othersGroup} from './interfaces';
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {equal, IEventListener} from '../internal';
@@ -182,12 +182,12 @@ export default class StringColumn extends ValueColumn<string> {
     }
 
     if (this.currentGroupCriteria.length === 0) {
-      return defaultGroup;
+      return othersGroup;
     }
     const value = this.getLabel(row);
 
     if (!value) {
-      return defaultGroup;
+      return missingGroup;
     }
 
     for (const criteria of this.currentGroupCriteria) {
@@ -199,7 +199,7 @@ export default class StringColumn extends ValueColumn<string> {
         color: defaultGroup.color
       };
     }
-    return defaultGroup;
+    return othersGroup;
   }
 
 
