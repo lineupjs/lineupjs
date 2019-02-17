@@ -55,11 +55,18 @@ function wrapWithContext(code: string) {
   return typeof v === 'number' ? v : NaN`;
 }
 
+interface IColumnWrapper {
+  v: any;
+  raw: number | null;
+  type: string;
+  name: string;
+  id: string;
+}
 
 /**
  * wrapper class for simpler column accessing
  */
-class ColumnWrapper {
+class ColumnWrapper implements IColumnWrapper {
   constructor(private readonly c: Column, public readonly v: any, public readonly raw: number | null) {
 
   }
@@ -77,24 +84,52 @@ class ColumnWrapper {
   }
 }
 
+class LazyColumnWrapper implements IColumnWrapper {
+  constructor(private readonly c: Column, private readonly row: IDataRow) {
+
+  }
+
+  get type() {
+    return this.c.desc.type;
+  }
+
+  get name() {
+    return this.c.getMetaData().label;
+  }
+
+  get id() {
+    return this.c.id;
+  }
+
+  get v() {
+    return this.c.getValue(this.row);
+  }
+
+  get raw() {
+    return isNumberColumn(this.c) ? this.c.getRawNumber(this.row) : null;
+  }
+}
+
 /**
  * helper context for accessing columns within a scripted columns
  */
 class ColumnContext {
-  private readonly lookup = new Map<string, ColumnWrapper>();
+  private readonly lookup = new Map<string, IColumnWrapper>();
   private _all: ColumnContext | null = null;
 
-  constructor(private readonly children: ColumnWrapper[], private readonly allFactory?: () => ColumnContext) {
+  constructor(private readonly children: IColumnWrapper[], private readonly allFactory?: () => ColumnContext) {
     children.forEach((c) => {
       this.lookup.set(`ID@${c.id}`, c);
+      this.lookup.set(`ID@${c.id.toLowerCase()}`, c);
       this.lookup.set(`NAME@${c.name}`, c);
+      this.lookup.set(`NAME@${c.name.toLowerCase()}`, c);
     });
   }
 
   /**
    * get a column by name
    * @param {string} name
-   * @return {ColumnWrapper}
+   * @return {IColumnWrapper}
    */
   byName(name: string) {
     return this.lookup.get(`NAME@${name}`);
@@ -103,7 +138,7 @@ class ColumnContext {
   /**
    * get a column by id
    * @param {string} id
-   * @return {ColumnWrapper}
+   * @return {IColumnWrapper}
    */
   byID(id: string) {
     return this.lookup.get(`ID@${id}`);
@@ -112,13 +147,13 @@ class ColumnContext {
   /**
    * get a column by index
    * @param {number} index
-   * @return {ColumnWrapper}
+   * @return {IColumnWrapper}
    */
   byIndex(index: number) {
     return this.children[index];
   }
 
-  forEach(callback: ((c: ColumnWrapper, index: number) => void)) {
+  forEach(callback: ((c: IColumnWrapper, index: number) => void)) {
     return this.children.forEach(callback);
   }
 
@@ -275,8 +310,8 @@ export default class ScriptColumn extends CompositeNumberColumn {
     const values = this._children.map((d) => d.getValue(row));
     const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row) : null);
     const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])), () => {
-      const cols = this.findMyRanker()!.flatColumns;
-      return new ColumnContext(cols.map((c) => new ColumnWrapper(c, c.getValue(row), isNumberColumn(c) ? c.getRawNumber(row) : null)));
+      const cols = this.findMyRanker()!.flatColumns; // all except myself
+      return new ColumnContext(cols.map((c) => new LazyColumnWrapper(c, row)));
     });
     return this.f.call(this, children, values, raws, col, row.v, row.i);
   }
