@@ -28,7 +28,7 @@ export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>
 declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
 /**
  * emitted when the color mapping property changes
- * @asMemberOf NumberMapColumn
+ * @asMemberOf NumbersColumn
  * @event
  */
 declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;

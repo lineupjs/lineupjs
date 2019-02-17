@@ -89,7 +89,7 @@ export default class DataBuilder extends LineUpBuilder {
    * push another column description to this data provider
    * @param {IColumnDesc | ColumnBuilder} column column description or builder instance
    */
-  column(column: IColumnDesc | ColumnBuilder) {
+  column(column: IColumnDesc | ColumnBuilder | ((data: any[]) => IColumnDesc)) {
     this.columns.push(column instanceof ColumnBuilder ? column.build.bind(column) : column);
     return this;
   }

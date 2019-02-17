@@ -182,6 +182,18 @@ export default class RankingBuilder {
   }
 
   /**
+   * @param {IColumnDesc} desc the composite column description
+   * @param {string} columns additional columns to add as children
+   */
+  composite(desc: IColumnDesc, ...columns: string[]) {
+    this.columns.push({
+      desc,
+      columns
+    });
+    return this;
+  }
+
+  /**
    * add a weighted sum / stack column
    * @param {string | null} label optional label
    * @param {string} numberColumn1 the first numerical column
