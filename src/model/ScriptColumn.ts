@@ -1,10 +1,14 @@
-import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
+import {NumberColumn} from '.';
+import {IEventListener} from '../internal';
+import {SortByDefault, toolbar} from './annotations';
+import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import CompositeColumn, {addColumn, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
-import {isNumberColumn} from './INumberColumn';
-import {IEventListener} from '../internal';
+import {isDummyNumberFilter, noNumberFilter, restoreNumberFilter} from './internalNumber';
+import {EAdvancedSortMethod, IColorMappingFunction, IMapAbleColumn, IMapAbleDesc, IMappingFunction, INumberFilter, isNumberColumn} from './INumberColumn';
+import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 
 const DEFAULT_SCRIPT = `let s = 0;
 col.forEach((c) => s += c.v);
@@ -178,7 +182,7 @@ class ColumnContext {
 }
 
 
-export interface IScriptDesc extends ICompositeNumberDesc {
+export interface IScriptDesc extends ICompositeNumberDesc, IMapAbleDesc {
   /**
    * the function to use, it has two parameters: children (current children) and values (their row values)
    * @default 'return Math.max.apply(Math,values)'
@@ -186,7 +190,7 @@ export interface IScriptDesc extends ICompositeNumberDesc {
   script?: string;
 }
 
-export declare type IScriptColumnDesc = IScriptDesc & ICompositeNumberDesc;
+export declare type IScriptColumnDesc = IScriptDesc;
 
 /**
  * emitted when the script property changes
@@ -194,6 +198,34 @@ export declare type IScriptColumnDesc = IScriptDesc & ICompositeNumberDesc;
  * @event
  */
 declare function scriptChanged(previous: string, current: string): void;
+
+/**
+ * emitted when the mapping property changes
+ * @asMemberOf ScriptColumn
+ * @event
+ */
+declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+/**
+ * emitted when the color mapping property changes
+ * @asMemberOf ScriptColumn
+ * @event
+ */
+declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+
+/**
+ * emitted when the sort method property changes
+ * @asMemberOf ScriptColumn
+ * @event
+ */
+declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
+
+/**
+ * emitted when the filter property changes
+ * @asMemberOf ScriptColumn
+ * @event
+ */
+declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+
 
 
 /**
@@ -237,17 +269,35 @@ declare function scriptChanged(previous: string, current: string): void;
  *    <dd>performs a linear mapping from input domain to output domain both given as an array of [min, max] values. <code>denormalize(normalize(v, input[0], input[1]), output[0], output[1])</code></dd>
  *  </dl>
  */
-@toolbar('script')
-export default class ScriptColumn extends CompositeNumberColumn {
+@toolbar('script', 'filterNumber', 'colorMapped', 'editMapping')
+@SortByDefault('descending')
+export default class ScriptColumn extends CompositeNumberColumn implements IMapAbleColumn {
+  static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
+  static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;
+  static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
   static readonly EVENT_SCRIPT_CHANGED = 'scriptChanged';
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
   private f: Function | null = null;
+  private mapping: IMappingFunction;
+  private original: IMappingFunction;
+  private colorMapping: IColorMappingFunction;
+  /**
+   * currently active filter
+   * @type {{min: number, max: number}}
+   * @private
+   */
+  private currentFilter: INumberFilter = noNumberFilter();
+
 
   constructor(id: string, desc: Readonly<IScriptColumnDesc>) {
     super(id, desc);
     this.script = desc.script || this.script;
+    this.mapping = restoreMapping(desc);
+    this.original = this.mapping.clone();
+    this.colorMapping = restoreColorMapping(desc);
 
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('number');
@@ -255,9 +305,13 @@ export default class ScriptColumn extends CompositeNumberColumn {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ScriptColumn.EVENT_SCRIPT_CHANGED]);
+    return super.createEventList().concat([ScriptColumn.EVENT_SCRIPT_CHANGED, ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, ScriptColumn.EVENT_MAPPING_CHANGED, ScriptColumn.EVENT_SORTMETHOD_CHANGED, ScriptColumn.EVENT_FILTER_CHANGED]);
   }
 
+  on(type: typeof ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof ScriptColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof ScriptColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  on(type: typeof ScriptColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof ScriptColumn.EVENT_SCRIPT_CHANGED, listener: typeof scriptChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
@@ -294,12 +348,27 @@ export default class ScriptColumn extends CompositeNumberColumn {
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
     r.script = this.script;
+    r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
+    r.map = this.mapping.dump();
+    r.colorMapping = this.colorMapping.dump();
     return r;
   }
 
   restore(dump: any, factory: (dump: any) => Column | null) {
-    this.script = dump.script || this.script;
     super.restore(dump, factory);
+
+    this.script = dump.script || this.script;
+    if (dump.filter) {
+      this.currentFilter = restoreNumberFilter(dump.filter);
+    }
+    if (dump.map) {
+      this.mapping = createMappingFunction(dump.map);
+    } else if (dump.domain) {
+      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    }
+    if (dump.colorMapping) {
+      this.colorMapping = createColorMappingFunction(dump.colorMapping);
+    }
   }
 
   protected compute(row: IDataRow) {
@@ -324,5 +393,55 @@ export default class ScriptColumn extends CompositeNumberColumn {
       };
     }
     return super.getExportValue(row, format);
+  }
+
+  getRange() {
+    return this.mapping.getRange(this.getNumberFormat());
+  }
+
+  getOriginalMapping() {
+    return this.original.clone();
+  }
+
+  getMapping() {
+    return this.mapping.clone();
+  }
+
+  setMapping(mapping: IMappingFunction) {
+    if (this.mapping.eq(mapping)) {
+      return;
+    }
+    this.fire([ScriptColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+  }
+
+  getColor(row: IDataRow) {
+    return NumberColumn.prototype.getColor.call(this, row);
+  }
+
+  getColorMapping() {
+    return this.colorMapping.clone();
+  }
+
+  setColorMapping(mapping: IColorMappingFunction) {
+    if (this.colorMapping.eq(mapping)) {
+      return;
+    }
+    this.fire([ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+  }
+
+  isFiltered() {
+    return NumberColumn.prototype.isFiltered.call(this);
+  }
+
+  getFilter(): INumberFilter {
+    return NumberColumn.prototype.getFilter.call(this);
+  }
+
+  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+    NumberColumn.prototype.setFilter.call(this, value);
+  }
+
+  filter(row: IDataRow) {
+    return NumberColumn.prototype.filter.call(this, row);
   }
 }
