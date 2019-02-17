@@ -63,12 +63,18 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     if (c.length === 1) {
       return c[0].label;
     }
-    return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
+    const w = this.wrapper;
+    const rest = this.rest;
+    return `${w ? w.label : '?'} (${rest.map((c) => c.label).join(', ')})`;
   }
 
   private get wrapper(): IBoxPlotColumn | null {
-    const c = this._children;
-    return c.length === 0 ? null : <IBoxPlotColumn>c[0];
+    return <IBoxPlotColumn>this._children.find(isBoxPlotColumn) || null;
+  }
+
+  private get rest() {
+    const w = this.wrapper;
+    return this._children.filter((d) => d !== w);
   }
 
   getLabel(row: IDataRow) {
@@ -79,7 +85,9 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     if (c.length === 1) {
       return c[0].getLabel(row);
     }
-    return `${c[0].getLabel(row)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
+    const w = this.wrapper;
+    const rest = this.rest;
+    return `${w ? w.getLabel(row) : '?'} (${rest.map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
   }
 
   getColor(row: IDataRow) {
@@ -90,7 +98,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
       case 1:
         return c[0].getColor(row);
       default:
-        return c[1].getColor(row);
+        return this.rest[0].getColor(row);
     }
   }
 
@@ -244,7 +252,8 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   }
 
   insert(col: Column, index: number): Column | null {
-    if (this._children.length === 0 && !isBoxPlotColumn(col)) {
+    if (this._children.length === 1 && !this.wrapper && !isBoxPlotColumn(col)) {
+      // at least one has to be a number column
       return null;
     }
     if (this._children.length >= 2) {

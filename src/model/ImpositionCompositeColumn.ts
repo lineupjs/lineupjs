@@ -59,12 +59,18 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     if (c.length === 1) {
       return c[0].label;
     }
-    return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
+    const w = this.wrapper;
+    const rest = this.rest;
+    return `${w ? w.label : '?'} (${rest.map((c) => c.label).join(', ')})`;
   }
 
   private get wrapper(): INumberColumn | null {
-    const c = this._children;
-    return c.length === 0 ? null : <INumberColumn>c[0];
+    return <INumberColumn>this._children.find(isNumberColumn) || null;
+  }
+
+  private get rest() {
+    const w = this.wrapper;
+    return this._children.filter((d) => d !== w);
   }
 
   protected createEventList() {
@@ -101,7 +107,9 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     if (c.length === 1) {
       return c[0].getLabel(row);
     }
-    return `${c[0].getLabel(row)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row)}`).join(', ')})`;
+    const w = this.wrapper;
+    const rest = this.rest;
+    return `${w ? w.getLabel(row) : '?'} (${rest.map((c) => `${c.label} = ${c.getLabel(row)}`).join(', ')})`;
   }
 
   getColor(row: IDataRow) {
@@ -112,7 +120,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
       case 1:
         return c[0].getColor(row);
       default:
-        return c[1].getColor(row);
+        return this.rest[0].getColor(row);
     }
   }
 
@@ -216,7 +224,8 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   }
 
   insert(col: Column, index: number): Column | null {
-    if (this._children.length === 0 && !isNumberColumn(col)) {
+    if (this._children.length === 1 && !this.wrapper && !isNumberColumn(col)) {
+      // at least one has to be a number column
       return null;
     }
     if (this._children.length >= 2) {
