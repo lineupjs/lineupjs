@@ -1,5 +1,5 @@
 import {
-  Column, CompositeColumn, Ranking, ReduceColumn, ScriptColumn, StackColumn,
+  Column, CompositeColumn, Ranking, ReduceColumn, StackColumn,
   createAggregateDesc, createGroupDesc, createImpositionBoxPlotDesc, createImpositionDesc, createImpositionsDesc,
   createNestedDesc, createRankDesc, createReduceDesc, createScriptDesc, createSelectionDesc, createStackDesc,
   EAdvancedSortMethod, IColumnDesc, ISortCriteria

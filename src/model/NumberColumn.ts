@@ -90,7 +90,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.numberFormat = format(desc.numberFormat);
     }
 
-    this.setGroupRenderer('boxplot');
+    this.setDefaultGroupRenderer('boxplot');
     this.setDefaultSummaryRenderer('histogram');
   }
 

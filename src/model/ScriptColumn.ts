@@ -291,8 +291,8 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
     this.colorMapping = restoreColorMapping(desc);
 
     this.setDefaultRenderer('number');
-    this.setDefaultGroupRenderer('number');
-    this.setDefaultSummaryRenderer('number');
+    this.setDefaultGroupRenderer('boxplot');
+    this.setDefaultSummaryRenderer('histogram');
   }
 
   protected createEventList() {
