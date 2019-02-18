@@ -7,7 +7,7 @@ import CompositeColumn, {addColumn, moveColumn, removeColumn} from './CompositeC
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
 import {isDummyNumberFilter, noNumberFilter, restoreNumberFilter} from './internalNumber';
-import {EAdvancedSortMethod, IColorMappingFunction, IMapAbleColumn, IMapAbleDesc, IMappingFunction, INumberFilter, isNumberColumn} from './INumberColumn';
+import {IColorMappingFunction, IMapAbleColumn, IMapAbleDesc, IMappingFunction, INumberFilter, isNumberColumn} from './INumberColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 
 const DEFAULT_SCRIPT = `let s = 0;
@@ -213,13 +213,6 @@ declare function mappingChanged(previous: IMappingFunction, current: IMappingFun
 declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
- * emitted when the sort method property changes
- * @asMemberOf ScriptColumn
- * @event
- */
-declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
-
-/**
  * emitted when the filter property changes
  * @asMemberOf ScriptColumn
  * @event
@@ -274,8 +267,6 @@ declare function filterChanged(previous: INumberFilter | null, current: INumberF
 export default class ScriptColumn extends CompositeNumberColumn implements IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
-  static readonly EVENT_SORTMETHOD_CHANGED = NumberColumn.EVENT_SORTMETHOD_CHANGED;
-  static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
   static readonly EVENT_SCRIPT_CHANGED = 'scriptChanged';
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
@@ -305,12 +296,11 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ScriptColumn.EVENT_SCRIPT_CHANGED, ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, ScriptColumn.EVENT_MAPPING_CHANGED, ScriptColumn.EVENT_SORTMETHOD_CHANGED, ScriptColumn.EVENT_FILTER_CHANGED]);
+    return super.createEventList().concat([ScriptColumn.EVENT_SCRIPT_CHANGED, ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, ScriptColumn.EVENT_MAPPING_CHANGED]);
   }
 
   on(type: typeof ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
   on(type: typeof ScriptColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
-  on(type: typeof ScriptColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
   on(type: typeof ScriptColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof ScriptColumn.EVENT_SCRIPT_CHANGED, listener: typeof scriptChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;

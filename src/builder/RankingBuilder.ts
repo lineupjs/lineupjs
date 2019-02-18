@@ -127,8 +127,7 @@ export default class RankingBuilder {
         console.assert(column.columns.length >= 1);
         return this.nested(label, column.columns[0], ... column.columns.slice(1));
       case 'script':
-        console.assert(column.columns.length >= 2);
-        return this.scripted(label, column.code, column.columns[0], column.columns[1], ...column.columns.slice(2));
+        return this.scripted(label, column.code, ...column.columns);
       case 'weightedSum':
         console.assert(column.columns.length >= 2);
         console.assert(column.columns.length === column.weights.length);
@@ -237,17 +236,12 @@ export default class RankingBuilder {
    * add a scripted / formula column
    * @param {string | null} label optional label
    * @param {string} code the JS code see ScriptColumn for details
-   * @param {string} numberColumn1 first numerical column
-   * @param {string} numberColumn2 second numerical column
-   * @param {string} numberColumns additional numerical columns
+   * @param {string} numberColumns additional script columns
    */
-  scripted(label: string | null, code: string, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
+  scripted(label: string | null, code: string, ...numberColumns: string[]) {
     this.columns.push({
-      desc: createScriptDesc(label ? label : undefined),
-      columns: [numberColumn1, numberColumn2].concat(numberColumns),
-      post: (col) => {
-        (<ScriptColumn>col).setScript(code);
-      }
+      desc: Object.assign(createScriptDesc(label ? label : undefined), {script: code}),
+      columns: numberColumns
     });
     return this;
   }

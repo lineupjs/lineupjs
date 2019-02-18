@@ -159,7 +159,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     ranking.on(`${Column.EVENT_DIRTY_CACHES}.cache`, function (this: IEventContext) {
       let col: any = this.origin;
       while (col instanceof Column) {
-        console.log(col.label, 'dirty data');
+        // console.log(col.label, 'dirty data');
         that.tasks.dirtyColumn(col, 'data');
         that.tasks.preComputeCol(col);
         col = col.parent;
