@@ -57,6 +57,8 @@
     ranking.scripted('cat==c1 ? A : B', `values[0] === 'c1' ? values[1] : values[2]`, 'cat', 'a', 'b');
     // complex if clause row version
     ranking.scripted('cat==c1 ? A : B', `row.cat === 'c1' ? normalize(row.a, 5, 10) : normalize(row.b, 0, 10)`);
+    // complex if clause all column version
+    ranking.scripted('cat==c1 ? A : B', `col.all.byName('cat').v === 'c1' ? col.all.byName('a').v : col.all.byName('b').v`);
 
     // fancy complex code
     const code = `
