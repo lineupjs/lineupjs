@@ -221,7 +221,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return w ? w.getFilter() : noNumberFilter();
   }
 
-  setFilter(value?: INumberFilter): void {
+  setFilter(value: INumberFilter | null): void {
     const w = this.wrapper;
     return w ? w.setFilter(value) : undefined;
   }

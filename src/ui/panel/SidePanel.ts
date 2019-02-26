@@ -282,7 +282,18 @@ export default class SidePanel {
     const r = this.data.getFirstRanking();
     const f = format(',d');
     const visible = r ? r.getGroups().reduce((a, b) => a + b.order.length, 0) : 0;
-    stats.innerHTML = `Showing <strong>${f(visible)}</strong> of ${f(this.data.getTotalNumberOfRows())} items${s.length > 0 ? `; <span>${f(s.length)} selected</span>` : ''}`;
+    const total = this.data.getTotalNumberOfRows();
+    stats.innerHTML = `Showing <strong>${f(visible)}</strong> of ${f(total)} items${s.length > 0 ? `; <span>${f(s.length)} selected</span>` : ''}${visible < total ? ` <i class="${cssClass('action')} ${cssClass('action-filter')} ${cssClass('stats-reset')}" title="Reset filters"><span>Reset</span></i>` : ''}`;
+
+    const resetButton = stats.querySelector<HTMLElement>(`.${cssClass('stats-reset')}`);
+    if (!resetButton) {
+      return;
+    }
+    resetButton.onclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.data.clearFilters();
+    };
   }
 
   destroy() {

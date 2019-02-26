@@ -146,11 +146,15 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
     return DateColumn.prototype.getFilter.call(this);
   }
 
-  setFilter(value: IDateFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+  setFilter(value: IDateFilter | null) {
     DateColumn.prototype.setFilter.call(this, value);
   }
 
   filter(row: IDataRow) {
     return DateColumn.prototype.filter.call(this, row);
+  }
+
+  clearFilter() {
+    return DateColumn.prototype.clearFilter.call(this);
   }
 }

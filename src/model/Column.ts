@@ -520,6 +520,15 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
+   * clear the filter
+   * @return {boolean} whether the filtered needed to be reseted
+   */
+  clearFilter() {
+    // hook to clear the filter
+    return false;
+  }
+
+  /**
    * predicate whether the current row should be included
    * @param row
    * @return {boolean}

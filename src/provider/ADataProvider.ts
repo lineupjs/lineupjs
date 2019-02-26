@@ -389,6 +389,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], null, -1);
   }
 
+  clearFilters() {
+    this.rankings.forEach((ranking) => ranking.clearFilters());
+  }
+
   /**
    * returns a list of all current rankings
    * @returns {Ranking[]}

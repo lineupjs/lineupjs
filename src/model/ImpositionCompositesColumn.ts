@@ -238,7 +238,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getFilter() : noNumberFilter();
   }
 
-  setFilter(value?: INumberFilter): void {
+  setFilter(value: INumberFilter | null): void {
     const w = this.wrapper;
     return w ? w.setFilter(value) : undefined;
   }

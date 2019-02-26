@@ -188,6 +188,10 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return StringColumn.prototype.setFilter.call(this, filter);
   }
 
+  clearFilter() {
+    return StringColumn.prototype.clearFilter.call(this);
+  }
+
   getGroupCriteria() {
     return this.currentGroupCriteria.slice();
   }
