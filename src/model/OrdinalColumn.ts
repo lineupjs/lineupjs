@@ -235,6 +235,10 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 
+  clearFilter() {
+    return CategoricalColumn.prototype.clearFilter.call(this);
+  }
+
   toCompareValue(row: IDataRow) {
     return CategoricalColumn.prototype.toCompareValue.call(this, row);
   }

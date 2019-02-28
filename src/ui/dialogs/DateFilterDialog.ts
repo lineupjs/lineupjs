@@ -14,7 +14,7 @@ export default class DateFilterDialog extends ADialog {
 
   private updateFilter(filter: IDateFilter | null) {
     updateFilterState(this.attachment, this.column, filter != null && !isDummyDateFilter(filter));
-    this.column.setFilter(filter != null ? filter : undefined);
+    this.column.setFilter(filter);
   }
 
   reset() {

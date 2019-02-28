@@ -123,11 +123,18 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return !isDummyDateFilter(this.currentFilter);
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   getFilter(): IDateFilter {
     return Object.assign({}, this.currentFilter);
   }
 
-  setFilter(value: IDateFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+  setFilter(value: IDateFilter | null) {
+    value = value || {min: -Infinity, max: +Infinity, filterMissing: false};
     if (isEqualDateFilter(value, this.currentFilter)) {
       return;
     }

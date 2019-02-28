@@ -211,6 +211,10 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.some((d) => d.isFiltered());
   }
 
+  clearFilter() {
+    return this._children.map((d) => d.clearFilter()).some((d) => d);
+  }
+
   filter(row: IDataRow) {
     return this._children.every((d) => d.filter(row));
   }

@@ -92,6 +92,8 @@ export interface IDataProvider extends AEventDispatcher {
   getShowTopN(): number;
 
   getRow(dataIndex: number): Promise<IDataRow> | IDataRow;
+
+  clearFilters(): void;
 }
 
 

@@ -427,11 +427,15 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
     return NumberColumn.prototype.getFilter.call(this);
   }
 
-  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+  setFilter(value: INumberFilter | null) {
     NumberColumn.prototype.setFilter.call(this, value);
   }
 
   filter(row: IDataRow) {
     return NumberColumn.prototype.filter.call(this, row);
+  }
+
+  clearFilter() {
+    return NumberColumn.prototype.clearFilter.call(this);
   }
 }

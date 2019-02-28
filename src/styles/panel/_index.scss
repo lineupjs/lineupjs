@@ -12,9 +12,24 @@
   font-size: small;
   padding: 1em 0.5em;
 
-  span {
+  > span {
     padding: 2px;
     border: 1px solid $lu_selected_color;
+  }
+}
+
+.#{$lu_css_prefix}-stats-reset {
+  padding: 2px;
+  font-style: normal;
+  display: unset;
+  color: $lu_toolbar_color_base2;
+
+  &:hover {
+    color: $lu_toolbar_color_hover;
+  }
+
+  > span {
+    padding-left: 2px;
   }
 }
 

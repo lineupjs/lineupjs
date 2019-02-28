@@ -163,6 +163,12 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   getGroupCriteria() {
     return this.currentGroupCriteria.slice();
   }
