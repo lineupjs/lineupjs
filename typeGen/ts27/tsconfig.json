@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "emitDeclarationOnly": true,
+    "declarationDir": "../../build/types/2.7/",
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true
+  }
+}
