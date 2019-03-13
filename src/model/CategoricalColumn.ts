@@ -215,7 +215,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   group(row: IDataRow, valueCache?: any): IGroup {
     const cat = valueCache !== undefined ? valueCache : this.getCategory(row);
     if (!cat) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
     return {name: cat.label, color: cat.color};
   }

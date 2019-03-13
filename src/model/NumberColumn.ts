@@ -323,7 +323,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   group(row: IDataRow): IGroup {
     const value = this.getRawNumber(row);
     if (isNaN(value)) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
 
     let threshold = this.currentGroupThresholds;
