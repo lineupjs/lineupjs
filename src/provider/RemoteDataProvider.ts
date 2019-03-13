@@ -1,4 +1,4 @@
-import Column, {IColumnDesc, IDataRow, Ranking, defaultGroup, IndicesArray} from '../model';
+import Column, {IColumnDesc, IDataRow, Ranking, defaultGroup, IndicesArray, IOrderedGroup} from '../model';
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {DirectRenderTasks} from './DirectRenderTasks';
@@ -75,7 +75,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return new DirectRenderTasks([]);
   }
 
-  sort(ranking: Ranking) {
+  sort(ranking: Ranking) : Promise<{groups: IOrderedGroup[], index2pos: IndicesArray}> | {groups: IOrderedGroup[], index2pos: IndicesArray} {
     //use the server side to sort
     return this.server.sort(ranking).then((order) => ({groups: [Object.assign({order}, defaultGroup)], index2pos: createIndex2Pos(order)}));
   }

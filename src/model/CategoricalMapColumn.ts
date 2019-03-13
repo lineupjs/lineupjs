@@ -17,7 +17,7 @@ export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDes
  * @asMemberOf CategoricalMapColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_CMC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 @toolbar('colorMappedCategorical')
 export default class CategoricalMapColumn extends MapColumn<string | null> implements ICategoricalLikeColumn {
@@ -39,7 +39,7 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
     return super.createEventList().concat([CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_CMC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

@@ -19,14 +19,14 @@ export declare type IDateMapColumnDesc = IDatesDesc & IMapColumnDesc<Date | null
  * @asMemberOf DatesMapColumn
  * @event
  */
-declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
+export declare function sortMethodChanged_DMC(previous: EDateSort, current: EDateSort): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf DatesMapColumn
  * @event
  */
-declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
+export declare function filterChanged_DMC(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 
 @toolbar('filterDate')
@@ -52,8 +52,8 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
     return super.createEventList().concat([DatesMapColumn.EVENT_SORTMETHOD_CHANGED, DatesMapColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof DatesMapColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
-  on(type: typeof DatesMapColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof DatesMapColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_DMC | null): this;
+  on(type: typeof DatesMapColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_DMC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

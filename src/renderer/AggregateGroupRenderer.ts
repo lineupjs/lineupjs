@@ -41,7 +41,7 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
   const topNGetter = (group: IGroup) => provider.getTopNAggregated(ranking, group);
 
   const isRow = relativeIndex >= 0;
-  const isLeafGroup = !(<IGroupParent><unknown>group).subGroups || (<IGroupParent><unknown>group).subGroups.length === 0;
+  const isLeafGroup = !(<IGroupParent><any>group).subGroups || (<IGroupParent><any>group).subGroups.length === 0;
 
   const alwaysShowGroup = isAlwaysShowingGroupStrategy(strategy);
   const isSummary = !isRow && isSummaryGroup(group, strategy, topNGetter);

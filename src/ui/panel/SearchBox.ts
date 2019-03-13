@@ -27,7 +27,7 @@ export interface ISearchBoxOptions<T extends IItem> {
  * @asMemberOf SearchBox
  * @event
  */
-declare function select(item: any): void;
+export declare function select(item: any): void;
 
 
 export default class SearchBox<T extends IItem> extends AEventDispatcher {

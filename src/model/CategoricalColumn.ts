@@ -3,7 +3,7 @@ import {Category, toolbar} from './annotations';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IGroup, ICompareValue, DEFAULT_COLOR} from './interfaces';
+import {IDataRow, IGroup, ICompareValue, DEFAULT_COLOR, ECompareValueType} from './interfaces';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {toCategories, isCategoryIncluded, isEqualCategoricalFilter, toCompareCategoryValue, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES} from './internalCategorical';
@@ -14,7 +14,7 @@ import {toCategories, isCategoryIncluded, isEqualCategoricalFilter, toCompareCat
  * @asMemberOf CategoricalColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_CC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 /**
@@ -22,7 +22,7 @@ declare function colorMappingChanged(previous: ICategoricalColorMappingFunction,
  * @asMemberOf CategoricalColumn
  * @event
  */
-declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+export declare function filterChanged_CC(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
 
 /**
  * column for categorical values
@@ -56,8 +56,8 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return super.createEventList().concat([CategoricalColumn.EVENT_FILTER_CHANGED, CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof CategoricalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof CategoricalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_CC | null): this;
+  on(type: typeof CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_CC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -208,7 +208,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return toCompareCategoryValue(valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
-  toCompareValueType() {
+  toCompareValueType(): ECompareValueType {
     return COMPARE_CATEGORY_VALUE_TYPES;
   }
 

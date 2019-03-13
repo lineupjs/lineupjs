@@ -16,14 +16,14 @@ export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
  * @asMemberOf DateColumn
  * @event
  */
-declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
+export declare function filterChanged_DC(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 /**
  * emitted when the grouping property changes
  * @asMemberOf DateColumn
  * @event
  */
-declare function groupingChanged(previous: IDateGrouper | null, current: IDateGrouper | null): void;
+export declare function groupingChanged_DC(previous: IDateGrouper | null, current: IDateGrouper | null): void;
 
 
 @toolbar('groupBy', 'sortGroupBy', 'filterDate')
@@ -73,8 +73,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return super.createEventList().concat([DateColumn.EVENT_FILTER_CHANGED, DateColumn.EVENT_GROUPING_CHANGED]);
   }
 
-  on(type: typeof DateColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof DateColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof DateColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_DC | null): this;
+  on(type: typeof DateColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_DC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
