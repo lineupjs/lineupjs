@@ -46,7 +46,8 @@ export default class RankingBuilder {
   private static readonly ALL_MAGIC_FLAG = '*';
 
   private readonly columns: (string | {desc: IColumnDesc | ((data: DataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];
-  private readonly sort: { column: string, asc: boolean }[] = [];
+  private readonly sort: {column: string, asc: boolean}[] = [];
+  private readonly groupSort: {column: string, asc: boolean}[] = [];
   private readonly groups: string[] = [];
 
   /**
@@ -77,6 +78,22 @@ export default class RankingBuilder {
         this.groups.push(col);
       }
     }
+    return this;
+  }
+
+  /**
+   * specify another grouping sorting criteria
+   * @param {string} column the column name optionally with encoded sorting separated by colon, e.g. a:desc
+   * @param {boolean | "asc" | "desc"} asc ascending or descending order
+   */
+  groupSortBy(column: string, asc: boolean | 'asc' | 'desc' = true) {
+    if (column.includes(':')) {
+      // encoded sorting order
+      const index = column.indexOf(':');
+      asc = <'asc' | 'desc'>column.slice(index + 1);
+      column = column.slice(0, index);
+    }
+    this.groupSort.push({column, asc: asc === true || String(asc)[0] === 'a'});
     return this;
   }
 
@@ -380,7 +397,7 @@ export default class RankingBuilder {
         }
         const desc = findDesc(column);
         if (!desc) {
-          console.warn('invalid group criteria column: ', column);
+          console.warn('invalid sort criteria column: ', column);
           return;
         }
         const col2 = data.push(r, desc);
@@ -392,6 +409,30 @@ export default class RankingBuilder {
       });
       if (sorts.length > 0) {
         r.setSortCriteria(sorts);
+      }
+    }
+    {
+      const sorts: ISortCriteria[] = [];
+      this.groupSort.forEach(({column, asc}) => {
+        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+        if (col) {
+          sorts.push({col, asc});
+          return;
+        }
+        const desc = findDesc(column);
+        if (!desc) {
+          console.warn('invalid group sort criteria column: ', column);
+          return;
+        }
+        const col2 = data.push(r, desc);
+        if (col2) {
+          sorts.push({col: col2, asc});
+          return;
+        }
+        console.warn('invalid group sort criteria column: ', column);
+      });
+      if (sorts.length > 0) {
+        r.setGroupSortCriteria(sorts);
       }
     }
     return r;
