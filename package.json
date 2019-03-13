@@ -33,7 +33,7 @@
   "types": "build/types/2.7/index.d.ts",
   "typesVersions": {
     ">=3.1": {
-      "*": ["src/*"]
+      "build/types/2.7/*": ["src/*"]
     }
   },
   "sideEffects": [
