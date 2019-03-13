@@ -93,13 +93,14 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
       }
       // first time seeing this parent
       if (!currentParent || currentParent.parent !== node.parent || currentParent.name !== node.name) {
-        currentParent = node;
+        currentParent = Object.assign({}, node); // copy
         const firstChild = path[level + 1];
         // reset parent
         if (firstChild) {
-          node.subGroups = [firstChild];
+          currentParent.subGroups = [firstChild];
+          firstChild.parent = currentParent;
         } else {
-          node.subGroups = [];
+          currentParent.subGroups = [];
         }
         continue;
       }
