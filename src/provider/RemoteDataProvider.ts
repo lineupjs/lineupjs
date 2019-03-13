@@ -2,6 +2,7 @@ import Column, {IColumnDesc, IDataRow, Ranking, defaultGroup, IndicesArray, IOrd
 import ACommonDataProvider from './ACommonDataProvider';
 import {IDataProviderOptions} from './interfaces';
 import {DirectRenderTasks} from './DirectRenderTasks';
+import {IRenderTasks} from '../renderer';
 
 /**
  * interface what the server side has to provide
@@ -70,7 +71,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.cache.size;
   }
 
-  getTaskExecutor() {
+  getTaskExecutor(): IRenderTasks {
     // FIXME
     return new DirectRenderTasks([]);
   }
