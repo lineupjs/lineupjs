@@ -38,7 +38,6 @@ describe('unifyParents', () => {
     const a = groupGen('a', p);
     const b = groupGen('b', pClone);
     unifyParents([a, b]);
-    expect(a.parent).toBe(p);
     expect(a.parent).toBe(b.parent);
   });
   it('different parent', () => {
@@ -47,7 +46,6 @@ describe('unifyParents', () => {
     const a = groupGen('a', p);
     const b = groupGen('b', p2);
     unifyParents([a, b]);
-    expect(a.parent).toBe(p);
     expect(a.parent).not.toBe(b.parent);
   });
   it('different in the middle', () => {
@@ -58,10 +56,9 @@ describe('unifyParents', () => {
     const b = groupGen('b', p2);
     const c = groupGen('c', pClone); // same as p
     unifyParents([a, b, c]);
-    expect(a.parent).toBe(p);
-    expect(b.parent).toBe(p2);
-    expect(c.parent).toBe(pClone);
+    expect(a.parent).not.toBe(b.parent);
     expect(a.parent).not.toBe(c.parent);
+    expect(b.parent).not.toBe(c.parent);
   });
 
   it('same - different - separate', () => {
@@ -76,11 +73,11 @@ describe('unifyParents', () => {
     const b = groupGen('b', p2);
     const c = groupGen('c', pClone);
     unifyParents([a, b, c]);
-    expect(a.parent).toBe(p);
-    expect(b.parent).toBe(p2);
-    expect(c.parent).toBe(pClone);
-    expect(p.parent).toBe(r);
-    expect(pClone.parent).toBe(r);
-    expect(p2.parent).toBe(r);
+    expect(a.parent!.parent).toBe(b.parent!.parent);
+    expect(a.parent!.parent).toBe(c.parent!.parent);
+
+    expect(a.parent).not.toBe(b.parent);
+    expect(a.parent).not.toBe(c.parent);
+    expect(b.parent).not.toBe(c.parent);
   });
 });
