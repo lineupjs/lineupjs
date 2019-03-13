@@ -96,7 +96,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           cnode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('detail'));
           cnode.dataset.group = 'd';
           cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
-          cnode.style.gridColumnStart = (ci + 1).toString();
+          (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           const r = col.renderer!.update(cnode, d, i, group);
           if (stacked) {
             missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
@@ -176,7 +176,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           const cnode = children[ci];
           cnode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('group'));
           cnode.dataset.group = 'g';
-          cnode.style.gridColumnStart = (ci + 1).toString();
+          (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           const r = col.groupRenderer!.update(cnode, group);
           if (r) {
             toWait.push(r);

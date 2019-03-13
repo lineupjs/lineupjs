@@ -221,7 +221,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       columnTypes: {},
       singleSelection: false,
       showTopN: 10,
-      aggregationStrategy: 'item'
+      aggregationStrategy: <IAggregationStrategy>'item'
     }, options);
     this.columnTypes = Object.assign(models(), o.columnTypes);
     this.multiSelections = o.singleSelection !== true;

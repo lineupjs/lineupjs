@@ -197,9 +197,9 @@ export class WorkerTaskScheduler {
     });
   }
 
-  push<M, R>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[]): Promise<R>;
-  push<M, R, T>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[], toResult: (r: R) => T): Promise<T>;
-  push<M, R, T>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[], toResult?: (r: R) => T): Promise<T> {
+  push<M, R>(type: string, args: M, transferAbles: ArrayBuffer[]): Promise<R>;
+  push<M, R, T>(type: string, args: M, transferAbles: ArrayBuffer[], toResult: (r: R) => T): Promise<T>;
+  push<M, R, T>(type: string, args: M, transferAbles: ArrayBuffer[], toResult?: (r: R) => T): Promise<T> {
     return new Promise<T>((resolve) => {
       const uid = this.workerTaskCounter++;
       const {worker, tasks} = this.checkOutWorker();
