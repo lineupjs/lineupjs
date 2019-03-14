@@ -35,17 +35,22 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
   static readonly EVENT_SORTMETHOD_CHANGED = DatesColumn.EVENT_SORTMETHOD_CHANGED;
   static readonly EVENT_FILTER_CHANGED = DateColumn.EVENT_FILTER_CHANGED;
 
-  private readonly format: (date: Date) => string;
+  private readonly format: (date: Date | null) => string;
   private readonly parse: (date: string) => Date | null;
   private sort: EDateSort;
   private currentFilter: IDateFilter = noDateFilter();
 
   constructor(id: string, desc: Readonly<IDateMapColumnDesc>) {
     super(id, desc);
-    this.format = timeFormat(desc.dateFormat || '%x');
-    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || '%x');
+    const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
+    this.format = (v) => (v instanceof Date) ? f(v) : '';
+    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.sort = desc.sort || EDateSort.median;
     this.setDefaultRenderer('default');
+  }
+
+  getFormatter() {
+    return this.format;
   }
 
   protected createEventList() {
