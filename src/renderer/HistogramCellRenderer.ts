@@ -1,19 +1,12 @@
-import {DENSE_HISTOGRAM} from '../constants';
-import {dragHandle, IDragHandleOptions, normalizedStatsBuilder, INumberBin, IStatistics, round, getNumberOfBins} from '../internal';
+import {dragHandle, IDragHandleOptions, normalizedStatsBuilder, IStatistics, round, getNumberOfBins} from '../internal';
 import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {colorOf} from './impose';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {cssClass, FILTERED_OPACITY} from '../styles';
-import {color} from 'd3-color';
-
-interface IHistData {
-  maxBin: number;
-  hist: ReadonlyArray<INumberBin>;
-  global?: IStatistics | null;
-}
+import {cssClass} from '../styles';
+import {histogramRender, histogramTemplate, IHistogramLike} from './histogram';
 
 /** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
@@ -36,7 +29,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
           b.push(n);
         }
         const hist = b.build();
-        render(n, {global: null, hist: hist.hist, maxBin: hist.maxBin});
+        render(n, hist);
       }
     };
   }
@@ -52,7 +45,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
           }
           const {summary, group} = r;
 
-          render(n, {global: summary, hist: group.hist, maxBin: group.maxBin});
+          render(n, group, summary);
         });
       }
     };
@@ -67,7 +60,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
 }
 
 
-function staticSummary(col: INumberColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IHistData) => void) {
+function staticSummary(col: INumberColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void) {
   if (isMapAbleColumn(col)) {
     const range = col.getRange();
     template += `<span class="${cssClass('mapping-hint')}">${range[0]}</span><span class="${cssClass('mapping-hint')}">${range[1]}</span>`;
@@ -90,13 +83,13 @@ function staticSummary(col: INumberColumn, context: IRenderContext, template: st
         if (!summary) {
           return;
         }
-        render(node, {maxBin: summary.maxBin, hist: summary.hist});
+        render(node, summary);
       });
     }
   };
 }
 
-function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IHistData) => void) {
+function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void) {
   const f = filter(col);
   template += `
       <div class="${cssClass('histogram-min-hint')}" style="width: ${f.percent(f.filterMin)}%"></div>
@@ -127,7 +120,7 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
         if (!summary) {
           return;
         }
-        render(node, {maxBin: summary.maxBin, hist: summary.hist, global: data});
+        render(node, summary, data);
       });
     }
   };
@@ -254,58 +247,17 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
   };
 }
 
-function filterColor(input: string) {
-  const c = color(input)!;
-  c.opacity = FILTERED_OPACITY;
-  return c.toString();
-}
-
 /** @internal */
 export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
   const ranking = col.findMyRanker();
   const guessedBins = ranking ? getNumberOfBins(ranking.getOrderLength()) : 10;
-  let bins = '';
-  for (let i = 0; i < guessedBins; ++i) {
-    bins += `<div class="${cssClass('histogram-bin')}" title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`;
-  }
-
   const formatter = col.getNumberFormat();
 
-  const render = (n: HTMLElement, stats: IHistData) => {
-    const {maxBin, hist} = stats;
-    const bins = hist.length;
-    const unfiltered = <IStatistics>stats.global;
-    //adapt the number of children
-    let nodes = <HTMLElement[]>Array.from(n.querySelectorAll('[data-x]'));
-    if (nodes.length > hist.length) {
-      nodes.splice(bins, nodes.length - bins).forEach((d) => d.remove());
-    } else if (nodes.length < bins) {
-      for (let i = nodes.length; i < bins; ++i) {
-        n.insertAdjacentHTML('afterbegin', `<div class="${cssClass('histogram-bin')}" title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`);
-      }
-      nodes = Array.from(n.querySelectorAll('[data-x]'));
-    }
-    n.classList.toggle(cssClass('dense'), bins > DENSE_HISTOGRAM);
-    nodes.forEach((d: HTMLElement, i) => {
-      const {x0, x1, count} = hist[i];
-      const inner = <HTMLElement>d.firstElementChild!;
-      const color = colorOf(col, null, imposer, (x1 + x0) / 2)!;
-      d.dataset.x = formatter(x0);
-      if (unfiltered) {
-        const gCount = unfiltered.hist[i].count;
-        d.title = `${formatter(x0)} - ${formatter(x1)} (${count} of ${gCount})`;
-        inner.style.height = `${round(gCount * 100 / unfiltered.maxBin, 2)}%`;
-        const relY = 100 - round(count * 100 / gCount, 2);
-        inner.style.background = relY === 0 ? color : (relY === 100 ? filterColor(color) : `linear-gradient(${filterColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`);
-      } else {
-        d.title = `${formatter(x0)} - ${formatter(x1)} (${count})`;
-        inner.style.height = `${round(count * 100 / maxBin, 2)}%`;
-        inner.style.backgroundColor = color;
-      }
-    });
+  const render = (n: HTMLElement, stats: IHistogramLike<number>, unfiltered?: IHistogramLike<number>) => {
+    return histogramRender(n, stats, unfiltered || null, formatter, (bin) => colorOf(col, null, imposer, (bin.x1 + bin.x0) / 2)!);
   };
   return {
-    template: `<div class="${cssClass('histogram')} ${guessedBins > DENSE_HISTOGRAM ? cssClass('dense') : ''}">${bins}`, // no closing div to be able to append things
+    template: histogramTemplate(guessedBins),
     render,
     guessedBins
   };
