@@ -1,6 +1,6 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IDataRow, IGroup, IValueColumnDesc} from './interfaces';
+import {IDataRow, IGroup, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {patternFunction} from './internal';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener, ISequence} from '../internal';
@@ -165,7 +165,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     StringColumn.prototype.restore.call(this, dump, factory);
     if (dump.pattern) {
       this.pattern = dump.pattern;

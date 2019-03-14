@@ -2,7 +2,7 @@ import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ITypeFactory} from './interfaces';
 import {patternFunction} from './internal';
 import {EAlignment} from './StringColumn';
 import {IEventListener} from '../internal';
@@ -110,7 +110,7 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     if (dump.pattern) {
       this.pattern = dump.pattern;
     }

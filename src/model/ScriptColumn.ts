@@ -5,7 +5,7 @@ import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFun
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn, {addColumn, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ITypeFactory} from './interfaces';
 import {isDummyNumberFilter, noNumberFilter, restoreNumberFilter} from './internalNumber';
 import {IColorMappingFunction, IMapAbleColumn, IMapAbleDesc, IMappingFunction, INumberFilter, isNumberColumn} from './INumberColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
@@ -344,7 +344,7 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
 
     this.script = dump.script || this.script;

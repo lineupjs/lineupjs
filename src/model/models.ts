@@ -1,4 +1,6 @@
 import {ActionColumn, AggregateGroupColumn, AnnotateColumn, BooleanColumn, BooleansColumn, BoxPlotColumn, CategoricalColumn, CategoricalMapColumn, CategoricalsColumn, DateColumn, DatesColumn, DatesMapColumn, GroupColumn, HierarchyColumn, ImpositionBoxPlotColumn, ImpositionCompositeColumn, ImpositionCompositesColumn, LinkColumn, LinkMapColumn, LinksColumn, NestedColumn, NumberColumn, NumberMapColumn, NumbersColumn, OrdinalColumn, RankColumn, ReduceColumn, ScriptColumn, SelectionColumn, SetColumn, StackColumn, StringColumn, StringMapColumn, StringsColumn} from './';
+import {ScriptMappingFunction, ScaleMappingFunction} from './MappingFunction';
+import {SolidColorFunction, QuantizedColorFunction, CustomColorMappingFunction} from './ColorMappingFunction';
 
 /**
  * a map of all known column types
@@ -39,5 +41,24 @@ export function models() {
     link: LinkColumn,
     linkMap: LinkMapColumn,
     links: LinksColumn
+  };
+}
+
+export function mappingFunctions() {
+  return {
+    script: ScriptMappingFunction,
+    linear: ScaleMappingFunction,
+    log: ScaleMappingFunction,
+    'pow1.1': ScaleMappingFunction,
+    pow2: ScaleMappingFunction,
+    pow3: ScaleMappingFunction
+  };
+}
+
+export function colorMappingFunctions() {
+  return {
+    solid: SolidColorFunction,
+    quantized: QuantizedColorFunction,
+    custom: CustomColorMappingFunction
   };
 }

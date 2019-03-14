@@ -1,6 +1,6 @@
 import {toolbar} from './annotations';
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ITypeFactory} from './interfaces';
 import {EAlignment, IStringDesc} from './StringColumn';
 import {isMissingValue} from './missing';
 

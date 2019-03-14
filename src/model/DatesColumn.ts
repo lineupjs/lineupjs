@@ -134,7 +134,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

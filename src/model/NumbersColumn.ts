@@ -202,7 +202,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

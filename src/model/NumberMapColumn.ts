@@ -189,7 +189,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

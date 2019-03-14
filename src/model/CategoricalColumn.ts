@@ -146,7 +146,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
 
     this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);

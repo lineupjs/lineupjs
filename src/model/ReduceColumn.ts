@@ -128,7 +128,7 @@ export default class ReduceColumn extends CompositeNumberColumn {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     this.reduce = dump.reduce || this.reduce;
     super.restore(dump, factory);
   }

@@ -1,6 +1,6 @@
 import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEventListener, suffix, IEventContext} from '../internal';
-import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump} from '../model';
-import {models} from '../model/models';
+import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump, IColorMappingFunctionConstructor, IMappingFunctionConstructor} from '../model';
+import {models, colorMappingFunctions, mappingFunctions} from '../model/models';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
 import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions, IAggregationStrategy} from './interfaces';
 import {exportRanking, map2Object, object2Map} from './utils';
@@ -210,6 +210,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * lookup map of a column type to its column implementation
    */
   readonly columnTypes: {[columnType: string]: typeof Column};
+  readonly colorMappingFunctionTypes: {[colorMappingFunctionType: string]: IColorMappingFunctionConstructor};
+  readonly mappingFunctionTypes: {[mappingFunctionType: string]: IMappingFunctionConstructor};
 
   protected readonly multiSelections: boolean;
   private readonly aggregationStrategy: IAggregationStrategy;
@@ -219,11 +221,15 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     super();
     const o: Readonly<IDataProviderOptions> = Object.assign({
       columnTypes: {},
+      colorMappingFunctionTypes: {},
+      mappingFunctionTypes: {},
       singleSelection: false,
       showTopN: 10,
       aggregationStrategy: 'item'
     }, options);
     this.columnTypes = Object.assign(models(), o.columnTypes);
+    this.colorMappingFunctionTypes = Object.assign(colorMappingFunctions(), o.colorMappingFunctionTypes);
+    this.mappingFunctionTypes = Object.assign(mappingFunctions(), o.mappingFunctionTypes);
     this.multiSelections = o.singleSelection !== true;
     this.showTopN = o.showTopN;
     this.aggregationStrategy = o.aggregationStrategy;
@@ -538,7 +544,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     const create = (d: any) => {
       const desc = this.fromDescRef(d.desc);
       this.fixDesc(desc);
-      const type = this.columnTypes[desc.type];
+      const type = this.columnTypes[desc.type] || Column;
       const c = new type('', desc);
       c.restore(d, create);
       c.assignNewId(this.nextId.bind(this));

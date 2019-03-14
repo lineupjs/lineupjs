@@ -1,5 +1,5 @@
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IValueColumnDesc, IDataRow} from './interfaces';
+import {IValueColumnDesc, IDataRow, ITypeFactory} from './interfaces';
 import {IEventListener} from '../internal';
 
 /**
@@ -106,7 +106,7 @@ export default class ValueColumn<T> extends Column {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     if (dump.loaded !== undefined) {
       this.loaded = dump.loaded;
     }

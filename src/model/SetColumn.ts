@@ -186,7 +186,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
     if (!('filter' in dump)) {

@@ -185,7 +185,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     CategoricalColumn.prototype.restore.call(this, dump, factory);
     if (dump.mapping) {
       this.setMapping(dump.mapping);

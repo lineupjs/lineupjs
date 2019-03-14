@@ -114,7 +114,7 @@ export default class StringColumn extends ValueColumn<string> {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.filter && (<string>dump.filter).startsWith('REGEX:')) {
       this.currentFilter = new RegExp(dump.filter.slice(6), 'gm');

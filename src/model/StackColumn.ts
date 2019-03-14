@@ -154,7 +154,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }

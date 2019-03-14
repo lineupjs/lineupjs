@@ -59,7 +59,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.filter) {
       this.currentFilter = restoreDateFilter(dump.filter);
