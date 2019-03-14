@@ -3,7 +3,7 @@
 
 section.#{$lu-css_prefix}-slopegraph {
   width: $lu_slope_width;
-  position: relative;
+  position: absolute;
 }
 
 section.#{$lu-css_prefix}-slopegraph > svg {
