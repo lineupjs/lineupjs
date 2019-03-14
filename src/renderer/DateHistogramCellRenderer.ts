@@ -57,6 +57,8 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
 
 
 function staticSummary(col: IDateColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IDateStatistics) => void) {
+  template += `<span class="${cssClass('mapping-hint')}"></span><span class="${cssClass('mapping-hint')}"></span>`;
+
   return {
     template: `${template}</div>`,
     update: (node: HTMLElement) => {
@@ -70,6 +72,9 @@ function staticSummary(col: IDateColumn, context: IRenderContext, template: stri
         if (!summary) {
           return;
         }
+        const range = [summary.min, summary.max].map((d) => col.getFormatter()(d));
+        Array.from(node.getElementsByTagName('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
+
         render(node, summary);
       });
     }
