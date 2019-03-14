@@ -228,6 +228,6 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   group(row: IDataRow) {
     const enabled = this.getValue(row);
-    return enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE;
+    return Object.assign({}, enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE);
   }
 }

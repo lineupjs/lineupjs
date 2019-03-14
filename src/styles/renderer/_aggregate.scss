@@ -9,6 +9,12 @@
   }
 }
 
+.#{$lu_css_prefix}-renderer-group {
+  &.#{$engine_css_prefix}-td {
+    overflow: visible;
+  }
+}
+
 .#{$lu_css_prefix}-agg-level {
   flex: 0 0 $lu_aggregate_level_width;
   position: relative; // square bracket around

@@ -184,16 +184,16 @@ export default class StringColumn extends ValueColumn<string> {
 
   group(row: IDataRow): IGroup {
     if (this.getValue(row) == null) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
 
     if (this.currentGroupCriteria.length === 0) {
-      return othersGroup;
+      return Object.assign({}, othersGroup);
     }
     const value = this.getLabel(row);
 
     if (!value) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
 
     for (const criteria of this.currentGroupCriteria) {
@@ -205,7 +205,7 @@ export default class StringColumn extends ValueColumn<string> {
         color: defaultGroup.color
       };
     }
-    return othersGroup;
+    return Object.assign({}, othersGroup);
   }
 
 

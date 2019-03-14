@@ -182,10 +182,10 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   group(row: IDataRow, valueCache?: any): IGroup {
     const v = valueCache !== undefined ? valueCache : this.getDate(row);
     if (!v || !(v instanceof Date)) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
     if (!this.currentGrouper) {
-      return defaultGroup;
+      return Object.assign({}, defaultGroup);
     }
     const g = toDateGroup(this.currentGrouper, v);
     return {

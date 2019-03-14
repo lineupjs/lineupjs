@@ -500,7 +500,7 @@ export default class Column extends AEventDispatcher {
    * @return {IGroup}
    */
   group(_row: IDataRow, _valueCache?: any): IGroup {
-    return defaultGroup;
+    return Object.assign({}, defaultGroup);
   }
 
   toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup, _valueCache?: ISequence<any>): ICompareValue | ICompareValue[] {
