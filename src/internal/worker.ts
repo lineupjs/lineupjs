@@ -9,7 +9,7 @@ export interface IPoorManWorkerScopeEventMap {
   error: ErrorEvent;
 }
 
-declare type IPoorManTansferAble = ArrayBuffer | MessagePort | ImageBitmap;
+declare type IPoorManTransferAble = ArrayBuffer | MessagePort | ImageBitmap;
 
 /**
  * @internal
@@ -18,7 +18,7 @@ export interface IPoorManWorkerScope {
   onmessage: ((this: IPoorManWorkerScope, ev: MessageEvent) => any) | null;
   onerror: ((this: IPoorManWorkerScope, ev: ErrorEvent) => any) | null;
   close(): void;
-  postMessage(message: any, transfer?: IPoorManTansferAble[]): void;
+  postMessage(message: any, transfer?: IPoorManTransferAble[]): void;
   addEventListener<K extends keyof IPoorManWorkerScopeEventMap>(type: K, listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
   removeEventListener<K extends keyof IPoorManWorkerScopeEventMap>(type: K, listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
 }
