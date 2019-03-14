@@ -110,30 +110,43 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private readonly canvasMouseHandler = {
     timer: new Set<number>(),
+    hoveredRows: new Set<HTMLElement>(),
     cleanUp: () => {
       const c = this.canvasMouseHandler;
       c.timer.forEach((timer) => {
         self.clearTimeout(timer);
       });
       c.timer.clear();
+      for (const row of Array.from(c.hoveredRows)) {
+        c.unhover(row);
+      }
     },
     enter: (evt: MouseEvent) => {
       const c = this.canvasMouseHandler;
       c.cleanUp();
       const row = <HTMLElement>evt.currentTarget;
       row.addEventListener('mouseleave', c.leave, PASSIVE);
-      c.timer.add(self.setTimeout(() => this.updateHoveredRow(row, true), HOVER_DELAY_SHOW_DETAIL));
+      c.timer.add(self.setTimeout(() => {
+        c.hoveredRows.add(row);
+        this.updateHoveredRow(row, true);
+      }, HOVER_DELAY_SHOW_DETAIL));
     },
-    leave: (evt: MouseEvent) => {
+    leave: (evt: MouseEvent | HTMLElement) => {
       // on row to survive canvas removal
       const c = this.canvasMouseHandler;
+      const row = <HTMLElement>((typeof (<MouseEvent>evt).currentTarget !== 'undefined') ? (<MouseEvent>evt).currentTarget : evt);
+      c.unhover(row);
+
       c.cleanUp();
-      const row = <HTMLElement>evt.currentTarget;
-      if (!EngineRanking.isCanvasRenderedRow(row)) {
+    },
+    unhover: (row: HTMLElement) => {
+      // remove self
+      const c = this.canvasMouseHandler;
+      c.hoveredRows.delete(row);
+      row.removeEventListener('mouseleave', c.leave);
+      if (!EngineRanking.isCanvasRenderedRow(row) && row.parentElement) { // and part of dom
         self.setTimeout(() => this.updateHoveredRow(row, false));
       }
-      // remove self
-      row.removeEventListener('mouseleave', c.leave);
     }
   };
 
