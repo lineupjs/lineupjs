@@ -45,6 +45,7 @@ export function models() {
 }
 
 export function mappingFunctions() {
+  // TODO
   return {
     script: ScriptMappingFunction,
     linear: ScaleMappingFunction,
@@ -56,6 +57,7 @@ export function mappingFunctions() {
 }
 
 export function colorMappingFunctions() {
+  // TODO
   return {
     solid: SolidColorFunction,
     quantized: QuantizedColorFunction,

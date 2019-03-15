@@ -3,7 +3,7 @@ import {IBoxPlotData, IEventListener} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
 import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDataRow, ECompareValueType, IValueColumnDesc} from './interfaces';
+import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {ESortMethod, IBoxPlotColumn, INumberDesc, INumberFilter, IColorMappingFunction, IMappingFunction} from './INumberColumn';
 import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import NumberColumn from './NumberColumn';
@@ -73,11 +73,11 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   private currentFilter: INumberFilter = noNumberFilter();
 
 
-  constructor(id: string, desc: Readonly<IBoxPlotColumnDesc>) {
+  constructor(id: string, desc: Readonly<IBoxPlotColumnDesc>, factory: ITypeFactory) {
     super(id, desc);
     this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(desc);
+    this.colorMapping = factory.colorMappingFunction(desc.colorMapping);
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
@@ -192,8 +192,8 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
     r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
-    r.map = this.mapping.dump();
-    r.colorMapping = this.colorMapping.dump();
+    r.map = this.mapping.toJSON();
+    r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 

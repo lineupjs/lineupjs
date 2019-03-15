@@ -1,6 +1,7 @@
 import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
 import {similar} from '../internal';
 import {IMappingFunction, IMapAbleDesc} from '.';
+import {ITypeFactory} from './interfaces';
 
 /**
  * interface of a d3 scale
@@ -94,7 +95,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     return this.type;
   }
 
-  dump(): any {
+  toJSON() {
     return {
       type: this.type,
       domain: this.domain,
@@ -163,7 +164,7 @@ export class ScriptMappingFunction implements IMappingFunction {
     return NaN;
   }
 
-  dump(): any {
+  toJSON() {
     return {
       type: 'script',
       code: this.code,
@@ -204,7 +205,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
 }
 
 /** @internal */
-export function restoreMapping(desc: IMapAbleDesc): IMappingFunction {
+export function restoreMapping(desc: IMapAbleDesc, factory: ITypeFactory): IMappingFunction {
   if (desc.map) {
     return createMappingFunction(desc.map);
   }

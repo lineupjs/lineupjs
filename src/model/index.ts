@@ -46,8 +46,6 @@ export {default as DatesColumn} from './DatesColumn';
 export * from './DatesColumn';
 export {default as DatesMapColumn} from './DatesMapColumn';
 export * from './DatesMapColumn';
-export {default as DummyColumn} from './DummyColumn';
-export * from './DummyColumn';
 export {default as GroupColumn} from './GroupColumn';
 export *from './GroupColumn';
 export {default as HierarchyColumn} from './HierarchyColumn';

@@ -1,13 +1,13 @@
 import {IAdvancedBoxPlotData, IBoxPlotData, IForEachAble} from '../internal';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
-import {IColumnDesc, IDataRow, ITypeFactory} from './interfaces';
+import {IColumnDesc, IDataRow, ITypedDump} from './interfaces';
 
 
 export interface IColorMappingFunction {
   apply(v: number): string;
 
-  toJSON(): ITypedDump;
+  toJSON(): ITypedDump | string;
 
   clone(): IColorMappingFunction;
 
@@ -15,7 +15,7 @@ export interface IColorMappingFunction {
 }
 
 export interface IColorMappingFunctionConstructor {
-  new(dump: ITypedDump): IColorMappingFunction;
+  new(dump: ITypedDump | string): IColorMappingFunction;
 }
 
 export interface IMappingFunction {
@@ -72,11 +72,11 @@ export interface IMapAbleColumn extends INumberColumn {
 
   getMapping(): IMappingFunction;
 
-  setMapping(mapping: IMappingFunction | ITypedDump): void;
+  setMapping(mapping: IMappingFunction): void;
 
   getColorMapping(): IColorMappingFunction;
 
-  setColorMapping(mapping: IColorMappingFunction | ITypedDump): void;
+  setColorMapping(mapping: IColorMappingFunction): void;
 
   getFilter(): INumberFilter;
 

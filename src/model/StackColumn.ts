@@ -3,7 +3,7 @@ import {toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IDataRow, IFlatColumn, IMultiLevelColumn} from './interfaces';
+import {IDataRow, IFlatColumn, IMultiLevelColumn, ITypeFactory} from './interfaces';
 
 /**
  * factory for creating a description creating a stacked column

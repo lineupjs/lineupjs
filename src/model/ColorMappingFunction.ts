@@ -1,15 +1,15 @@
 import {interpolateBlues, interpolateGreens, interpolateGreys, interpolateOranges, interpolatePurples, interpolateReds, interpolateCool, interpolateCubehelixDefault, interpolateWarm, interpolatePlasma, interpolateMagma, interpolateViridis, interpolateInferno, interpolateYlOrRd, interpolateYlOrBr, interpolateBuGn, interpolateBuPu, interpolateGnBu, interpolateOrRd, interpolatePuBuGn, interpolatePuBu, interpolatePuRd, interpolateRdPu, interpolateYlGnBu, interpolateYlGn, interpolateRainbow, interpolateBrBG, interpolatePRGn, interpolatePiYG, interpolatePuOr, interpolateRdBu, interpolateRdGy, interpolateRdYlBu, interpolateRdYlGn, interpolateSpectral} from 'd3-scale-chromatic';
 import {equal} from '../internal';
 import {scaleLinear} from 'd3-scale';
-import {IInterpolateColorMappingFunction, IColorMappingFunction, ISolidColorMappingFunction, IQuantizedColorMappingFunction, ICustomColorMappingFunction, IMapAbleDesc} from '.';
+import {IColorMappingFunction, IMapAbleDesc} from '.';
 import {DEFAULT_COLOR} from './interfaces';
 
-export class InterpolatingColorFunction implements IInterpolateColorMappingFunction {
+export class InterpolatingColorFunction implements IColorMappingFunction {
   constructor(public readonly name: string, public readonly type: 'sequential'|'divergent', public readonly apply: (v: number)=>string) {
 
   }
 
-  dump() {
+  toJSON() {
     return this.name;
   }
 
@@ -22,20 +22,16 @@ export class InterpolatingColorFunction implements IInterpolateColorMappingFunct
   }
 }
 
-export class SolidColorFunction implements ISolidColorMappingFunction {
+export class SolidColorFunction implements IColorMappingFunction {
   constructor(public readonly color: string) {
 
-  }
-
-  get type(): 'solid' {
-    return 'solid';
   }
 
   apply() {
     return this.color;
   }
 
-  dump() {
+  toJSON() {
     return this.color;
   }
 
@@ -48,22 +44,19 @@ export class SolidColorFunction implements ISolidColorMappingFunction {
   }
 }
 
-export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
+export class QuantizedColorFunction implements IColorMappingFunction {
   constructor(public readonly base: IColorMappingFunction, public readonly steps: number) {
 
-  }
-
-  get type(): 'quantized' {
-    return 'quantized';
   }
 
   apply(v: number) {
     return this.base.apply(quantize(v, this.steps));
   }
 
-  dump() {
+  toJSON() {
     return {
-      base: this.base.dump(),
+      type: 'quantized',
+      base: this.base.toJSON(),
       steps: this.steps
     };
   }
@@ -77,7 +70,7 @@ export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
   }
 }
 
-export class CustomColorMappingFunction implements ICustomColorMappingFunction {
+export class CustomColorMappingFunction implements IColorMappingFunction {
   private readonly scale = scaleLinear<string>();
 
   constructor(public readonly entries: {value: number, color: string}[]) {
@@ -87,16 +80,15 @@ export class CustomColorMappingFunction implements ICustomColorMappingFunction {
       .clamp(true);
   }
 
-  get type(): 'custom' {
-    return 'custom';
-  }
-
   apply(v: number) {
     return this.scale(v);
   }
 
-  dump() {
-    return this.entries;
+  toJSON() {
+    return {
+      type: 'custom',
+      entries: this.entries
+    };
   }
 
   clone() {
@@ -242,7 +234,7 @@ export function createColorMappingFunction(dump: any): IColorMappingFunction {
 /**
  * @internal
  */
-export function restoreColorMapping(desc: IMapAbleDesc): IColorMappingFunction {
+export function restoreColorMapping2(desc: IMapAbleDesc): IColorMappingFunction {
   if (desc.colorMapping) {
     return createColorMappingFunction(desc.colorMapping);
   }

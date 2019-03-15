@@ -254,9 +254,9 @@ export interface IRankingDump {
 export interface ITypeFactory {
   (dump: IColumnDump): Column;
 
-  colorMappingFunction(dump: ITypedDump): IColorMappingFunction;
-  mappingFunction(dump: ITypedDump): IMappingFunction;
-  categoricalColorMappingFunction(dump: ITypedDump, categories: ICategory[]): ICategoricalColorMappingFunction;
+  colorMappingFunction(dump?: ITypedDump | string | ((v: number) => string)): IColorMappingFunction;
+  mappingFunction(dump?: ITypedDump): IMappingFunction;
+  categoricalColorMappingFunction(dump: ITypedDump | string | undefined, categories: ICategory[]): ICategoricalColorMappingFunction;
 }
 
 export interface IMultiLevelColumn extends CompositeColumn {

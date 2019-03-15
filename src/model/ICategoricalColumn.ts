@@ -12,7 +12,7 @@ export declare type ICategoricalColumnDesc = IValueColumnDesc<string> & ICategor
 export interface ICategoricalColorMappingFunction {
   apply(v: ICategory): string;
 
-  toJSON(): ITypedDump;
+  toJSON(): ITypedDump | null;
 
   clone(): ICategoricalColorMappingFunction;
 
@@ -27,7 +27,7 @@ export interface ICategoricalLikeColumn extends Column {
   readonly categories: ICategory[];
 
   getColorMapping(): ICategoricalColorMappingFunction;
-  setColorMapping(mapping: ICategoricalColorMappingFunction | ITypedDump): void;
+  setColorMapping(mapping: ICategoricalColorMappingFunction): void;
 
   iterCategory(row: IDataRow): IForEachAble<ICategory | null>;
 

@@ -4,7 +4,7 @@ import {DEFAULT_COLOR} from './interfaces';
 
 export const DEFAULT_CATEGORICAL_COLOR_FUNCTION: ICategoricalColorMappingFunction = {
   apply: (v) => v ? v.color : DEFAULT_COLOR,
-  dump: () => null,
+  toJSON: () => null,
   clone: () => DEFAULT_CATEGORICAL_COLOR_FUNCTION,
   eq: (other) => other === DEFAULT_CATEGORICAL_COLOR_FUNCTION
 };
@@ -19,7 +19,7 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
     return this.map.has(v.name) ? this.map.get(v.name)! : DEFAULT_CATEGORICAL_COLOR_FUNCTION.apply(v);
   }
 
-  dump() {
+  toJSON() {
     const r: any = {};
     this.map.forEach((v, k) => r[k] = v);
     return r;
@@ -54,7 +54,7 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
 /**
  * @internal
  */
-export function restoreCategoricalColorMapping(dump: any, categories: ICategory[]): ICategoricalColorMappingFunction {
+export function restoreCategoricalColorMapping2(dump: any, categories: ICategory[]): ICategoricalColorMappingFunction {
   if (!dump) {
     return DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }

@@ -1,10 +1,11 @@
 import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEventListener, suffix, IEventContext} from '../internal';
-import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump, IColorMappingFunctionConstructor, IMappingFunctionConstructor} from '../model';
+import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump, IColorMappingFunctionConstructor, IMappingFunctionConstructor, ITypeFactory, ITypedDump} from '../model';
 import {models, colorMappingFunctions, mappingFunctions} from '../model/models';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
 import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions, IAggregationStrategy} from './interfaces';
 import {exportRanking, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer';
+import {IColumnConstructor} from '../model/Column';
 
 
 
@@ -205,11 +206,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private readonly aggregations = new Map<string, number>(); // not part of = show all
 
   private uid = 0;
+  private readonly typeFactory: ITypeFactory;
 
   /**
    * lookup map of a column type to its column implementation
    */
-  readonly columnTypes: {[columnType: string]: typeof Column};
+  readonly columnTypes: {[columnType: string]: IColumnConstructor};
   readonly colorMappingFunctionTypes: {[colorMappingFunctionType: string]: IColorMappingFunctionConstructor};
   readonly mappingFunctionTypes: {[mappingFunctionType: string]: IMappingFunctionConstructor};
 
@@ -233,6 +235,36 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.multiSelections = o.singleSelection !== true;
     this.showTopN = o.showTopN;
     this.aggregationStrategy = o.aggregationStrategy;
+
+    this.typeFactory = this.createTypeFactory();
+  }
+
+  private createTypeFactory() {
+    const factory = <ITypeFactory><any>((d: IColumnDump) => {
+      const desc = this.fromDescRef(d.desc);
+      this.fixDesc(desc);
+      const type = this.columnTypes[desc.type] || Column;
+      const c = new type('', desc, factory);
+      c.restore(d, factory);
+      c.assignNewId(this.nextId.bind(this));
+      return c;
+    });
+    factory.colorMappingFunction = (dump: ITypedDump | string) => {
+      this.colorMappingFunctionTypes
+    };
+    factory.mappingFunction = (dump: ITypedDump) => {
+      const type = dump.type;
+      const c = this.mappingFunctionTypes[type];
+      if (!type || !c) {
+        console.warn('invalid mapping type', type);
+        return
+      }
+      return new c(dump);
+    };
+    factory.categoricalColorMappingFunction = (dump: ITypedDump) => {
+
+    };
+    return factory;
   }
 
   /**
@@ -541,11 +573,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @returns {Column}
    */
   restoreColumn(dump: any): Column {
+    // TODO proper type factory
     const create = (d: any) => {
       const desc = this.fromDescRef(d.desc);
       this.fixDesc(desc);
       const type = this.columnTypes[desc.type] || Column;
-      const c = new type('', desc);
+      const c = new type('', desc, create);
       c.restore(d, create);
       c.assignNewId(this.nextId.bind(this));
       return c;

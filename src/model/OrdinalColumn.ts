@@ -4,7 +4,7 @@ import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunct
 import CategoricalColumn from './CategoricalColumn';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IValueColumnDesc} from './interfaces';
+import {IDataRow, IValueColumnDesc, ITypeFactory} from './interfaces';
 import NumberColumn from './NumberColumn';
 import {INumberColumn} from './INumberColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';

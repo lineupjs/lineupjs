@@ -5,7 +5,7 @@ import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDateDesc, IDateColumn, IDateFilter} from './IDateColumn';
-import {IDataRow, ECompareValueType} from './interfaces';
+import {IDataRow, ECompareValueType, ITypeFactory} from './interfaces';
 import {isMissingValue} from './missing';
 import DateColumn from './DateColumn';
 import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';

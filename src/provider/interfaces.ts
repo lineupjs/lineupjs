@@ -2,6 +2,7 @@ import {Column, Ranking, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDu
 import {AEventDispatcher, ISequence} from '../internal';
 import {IRenderTasks} from '../renderer';
 import {IAbortAblePromise} from 'lineupengine';
+import {IColumnConstructor} from '../model/Column';
 
 export {ABORTED} from 'lineupengine';
 export declare type IAbortAblePromise<T> = IAbortAblePromise<T>;
@@ -34,7 +35,7 @@ export interface IDataProviderOptions {
 }
 
 export interface IDataProvider extends AEventDispatcher {
-  readonly columnTypes: {[columnType: string]: typeof Column};
+  readonly columnTypes: {[columnType: string]: IColumnConstructor};
 
   getTotalNumberOfRows(): number;
 

@@ -3,7 +3,7 @@ import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory, ITypedDump} from './interfaces';
+import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {IEventListener} from '../internal';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
@@ -178,7 +178,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return this.colorMapping.clone();
   }
 
-  setColorMapping(mapping: ICategoricalColorMappingFunction | ITypedDump) {
+  setColorMapping(mapping: ICategoricalColorMappingFunction) {
     if (this.colorMapping.eq(mapping)) {
       return;
     }

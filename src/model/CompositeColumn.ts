@@ -1,7 +1,7 @@
 import {suffix, IEventListener} from '../internal';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {Category, toolbar} from './annotations';
-import {IDataRow, IColumnParent, IFlatColumn} from './interfaces';
+import {IDataRow, IColumnParent, IFlatColumn, ITypeFactory} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
 
