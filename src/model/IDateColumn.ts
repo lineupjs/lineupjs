@@ -10,6 +10,9 @@ export interface IDateColumn extends Column {
   getDate(row: IDataRow): Date | null;
 
   iterDate(row: IDataRow): IForEachAble<Date | null>;
+
+  getFilter(): IDateFilter;
+  setFilter(value: IDateFilter | null): void;
 }
 
 export interface IDatesColumn extends IDateColumn, IArrayColumn<Date | null> {
