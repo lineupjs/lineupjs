@@ -1,6 +1,7 @@
 import {min, max} from '../../internal';
-import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc} from '../../model';
+import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, ITypedDump} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
+import {IScriptMappingFunctionType} from '../../model/MappingFunction';
 
 export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc> {
 
@@ -36,7 +37,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     return this.colorMapping(color);
   }
 
-  colorMapping(type: string | ((v: number)=>string) | any) {
+  colorMapping(type: string | ((v: number)=>string) | ITypedDump) {
     this.desc.colorMapping = type;
     return this;
   }
@@ -55,7 +56,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    * @param {string} code the code to execute
    * @param {[number , number]} domain the input data domain [min, max]
    */
-  scripted(code: string, domain: [number, number]) {
+  scripted(code: string | IScriptMappingFunctionType, domain: [number, number]) {
     this.desc.map = {domain, code, type: 'script'};
     return this;
   }
