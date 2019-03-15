@@ -208,6 +208,12 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     this.fire([BooleanColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
     if (v == null) {
@@ -222,6 +228,6 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   group(row: IDataRow) {
     const enabled = this.getValue(row);
-    return enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE;
+    return Object.assign({}, enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE);
   }
 }

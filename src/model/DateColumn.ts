@@ -123,11 +123,18 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return !isDummyDateFilter(this.currentFilter);
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   getFilter(): IDateFilter {
     return Object.assign({}, this.currentFilter);
   }
 
-  setFilter(value: IDateFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+  setFilter(value: IDateFilter | null) {
+    value = value || {min: -Infinity, max: +Infinity, filterMissing: false};
     if (isEqualDateFilter(value, this.currentFilter)) {
       return;
     }
@@ -175,10 +182,10 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   group(row: IDataRow, valueCache?: any): IGroup {
     const v = valueCache !== undefined ? valueCache : this.getDate(row);
     if (!v || !(v instanceof Date)) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
     if (!this.currentGrouper) {
-      return defaultGroup;
+      return Object.assign({}, defaultGroup);
     }
     const g = toDateGroup(this.currentGrouper, v);
     return {

@@ -386,7 +386,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.fireBusy(true);
     const reason = dirtyReason || [EDirtyReason.UNKNOWN];
     Promise.resolve(this.sort(ranking, reason)).then(({groups, index2pos}) => {
-      unifyParents(groups);
+      groups = unifyParents(groups);
       this.initAggregateState(ranking, groups);
       ranking.setGroups(groups, index2pos, reason);
       this.fireBusy(false);
@@ -423,6 +423,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     // clear
     this.rankings.splice(0, this.rankings.length);
     this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], null, -1);
+  }
+
+  clearFilters() {
+    this.rankings.forEach((ranking) => ranking.clearFilters());
   }
 
   /**

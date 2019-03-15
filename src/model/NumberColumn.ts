@@ -278,7 +278,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return Object.assign({}, this.currentFilter);
   }
 
-  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+  setFilter(value: INumberFilter | null) {
+    value = value || {min: -Infinity, max: +Infinity, filterMissing: false};
     if (isEqualNumberFilter(value, this.currentFilter)) {
       return;
     }
@@ -298,6 +299,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return isNumberIncluded(this.currentFilter, this.getRawNumber(row));
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   getGroupThresholds() {
     return this.currentGroupThresholds.slice();
   }
@@ -315,7 +322,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   group(row: IDataRow): IGroup {
     const value = this.getRawNumber(row);
     if (isNaN(value)) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
 
     let threshold = this.currentGroupThresholds;

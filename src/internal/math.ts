@@ -1126,20 +1126,22 @@ function sortWorkerMain() {
  * to avoid webpack imports all the code functions need to be in this file
  * @internal
  */
-export const WORKER_BLOB = createWorkerCodeBlob([
-  pushAll.toString(),
-  quantile.toString(),
-  normalizedStatsBuilder.toString(),
-  boxplotBuilder.toString(),
-  computeGranularity.toString(),
-  pushDateHist.toString(),
-  dateStatsBuilder.toString(),
-  categoricalStatsBuilder.toString(),
-  createIndexArray.toString(),
-  asc.toString(),
-  desc.toString(),
-  sortComplex.toString(),
-  dateValueCache2Value.toString(),
-  categoricalValueCache2Value.toString(),
-  toFunctionBody(sortWorkerMain)
-]);
+export function createWorkerBlob() {
+  return createWorkerCodeBlob([
+    pushAll.toString(),
+    quantile.toString(),
+    normalizedStatsBuilder.toString(),
+    boxplotBuilder.toString(),
+    computeGranularity.toString(),
+    pushDateHist.toString(),
+    dateStatsBuilder.toString(),
+    categoricalStatsBuilder.toString(),
+    createIndexArray.toString(),
+    asc.toString(),
+    desc.toString(),
+    sortComplex.toString(),
+    dateValueCache2Value.toString(),
+    categoricalValueCache2Value.toString(),
+    toFunctionBody(sortWorkerMain)
+  ]);
+}

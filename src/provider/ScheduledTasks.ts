@@ -1,5 +1,5 @@
 import {abortAble} from 'lineupengine';
-import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISequence, ISortMessageResponse, IStatistics, lazySeq, toIndexArray, WorkerTaskScheduler, WORKER_BLOB} from '../internal';
+import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISequence, ISortMessageResponse, IStatistics, lazySeq, toIndexArray, WorkerTaskScheduler, createWorkerBlob} from '../internal';
 import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
 import Column, {ICategoricalLikeColumn, ICompareValue, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray} from '../model';
 import {IRenderTask} from '../renderer';
@@ -11,7 +11,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
 
   private readonly cache = new Map<string, IRenderTask<any>>();
   private readonly tasks = new TaskScheduler();
-  private readonly workers = new WorkerTaskScheduler(WORKER_BLOB);
+  private readonly workers = new WorkerTaskScheduler(createWorkerBlob());
 
   setData(data: IDataRow[]) {
     this.data = data;

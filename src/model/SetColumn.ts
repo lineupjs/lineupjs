@@ -220,6 +220,10 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 
+  clearFilter() {
+    return CategoricalColumn.prototype.clearFilter.call(this);
+  }
+
   toCompareValue(row: IDataRow) {
     const v = this.getSet(row);
 

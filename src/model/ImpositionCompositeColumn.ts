@@ -197,7 +197,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     return w && isMapAbleColumn(w) ? w.getFilter() : noNumberFilter();
   }
 
-  setFilter(value?: INumberFilter): void {
+  setFilter(value: INumberFilter | null): void {
     const w = this.wrapper;
     return w && isMapAbleColumn(w) ? w.setFilter(value) : undefined;
   }

@@ -675,6 +675,10 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.columns.every((d) => d.filter(row));
   }
 
+  clearFilters() {
+    return this.columns.map((d) => d.clearFilter()).some((d) => d);
+  }
+
   findMyRanker() {
     return this;
   }

@@ -128,6 +128,6 @@ export default class SelectionColumn extends ValueColumn<boolean> {
 
   group(row: IDataRow) {
     const isSelected = this.getValue(row);
-    return isSelected ? SelectionColumn.SELECTED_GROUP : SelectionColumn.NOT_SELECTED_GROUP;
+    return Object.assign({}, isSelected ? SelectionColumn.SELECTED_GROUP : SelectionColumn.NOT_SELECTED_GROUP);
   }
 }

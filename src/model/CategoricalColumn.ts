@@ -198,6 +198,12 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   toCompareValue(row: IDataRow, valueCache?: any) {
     return toCompareCategoryValue(valueCache !== undefined ? valueCache : this.getCategory(row));
   }
@@ -209,7 +215,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   group(row: IDataRow, valueCache?: any): IGroup {
     const cat = valueCache !== undefined ? valueCache : this.getCategory(row);
     if (!cat) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
     return {name: cat.label, color: cat.color};
   }

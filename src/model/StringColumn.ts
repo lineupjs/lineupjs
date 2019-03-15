@@ -163,6 +163,12 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   getGroupCriteria() {
     return this.currentGroupCriteria.slice();
   }
@@ -178,16 +184,16 @@ export default class StringColumn extends ValueColumn<string> {
 
   group(row: IDataRow): IGroup {
     if (this.getValue(row) == null) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
 
     if (this.currentGroupCriteria.length === 0) {
-      return othersGroup;
+      return Object.assign({}, othersGroup);
     }
     const value = this.getLabel(row);
 
     if (!value) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
 
     for (const criteria of this.currentGroupCriteria) {
@@ -199,7 +205,7 @@ export default class StringColumn extends ValueColumn<string> {
         color: defaultGroup.color
       };
     }
-    return othersGroup;
+    return Object.assign({}, othersGroup);
   }
 
 
