@@ -37,7 +37,7 @@ interface ISortHelper {
  * a data provider based on an local array
  */
 export default class LocalDataProvider extends ACommonDataProvider {
-  private readonly options: ILocalDataProviderOptions = {
+  private readonly ooptions: ILocalDataProviderOptions = {
     /**
      * whether the filter should be applied to all rankings regardless where they are
      */
@@ -56,9 +56,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
-    Object.assign(this.options, options);
+    Object.assign(this.ooptions, options);
     this._dataRows = toRows(_data);
-    this.tasks = this.options.taskExecutor === 'direct' ? new DirectRenderTasks() : new ScheduleRenderTasks();
+    this.tasks = this.ooptions.taskExecutor === 'direct' ? new DirectRenderTasks() : new ScheduleRenderTasks();
     this.tasks.setData(this._dataRows);
 
     const that = this;
@@ -145,7 +145,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   cloneRanking(existing?: Ranking) {
     const ranking = super.cloneRanking(existing);
 
-    if (this.options.filterGlobally) {
+    if (this.ooptions.filterGlobally) {
       ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
     }
 
@@ -207,7 +207,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   cleanUpRanking(ranking: Ranking) {
-    if (this.options.filterGlobally) {
+    if (this.ooptions.filterGlobally) {
       ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }
 
@@ -233,7 +233,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     //do the optional filtering step
     const filter: (Column | ((d: IDataRow) => boolean))[] = [];
 
-    if (this.options.filterGlobally) {
+    if (this.ooptions.filterGlobally) {
       for (const r of this.getRankings()) {
         if (r.isFiltered()) {
           filter.push(...r.flatColumns.filter((d) => d.isFiltered()));

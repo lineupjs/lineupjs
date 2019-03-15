@@ -2,7 +2,7 @@ import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEv
 import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump, IColorMappingFunctionConstructor, IMappingFunctionConstructor, ITypeFactory} from '../model';
 import {models} from '../model/models';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
-import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions, IAggregationStrategy} from './interfaces';
+import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions} from './interfaces';
 import {exportRanking, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer';
 import {IColumnConstructor} from '../model/Column';
@@ -211,6 +211,15 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private uid = 0;
   private readonly typeFactory: ITypeFactory;
 
+  private readonly options: Readonly<IDataProviderOptions> = {
+    columnTypes: {},
+    colorMappingFunctionTypes: {},
+    mappingFunctionTypes: {},
+    singleSelection: false,
+    showTopN: 10,
+    aggregationStrategy: 'item'
+  };
+
   /**
    * lookup map of a column type to its column implementation
    */
@@ -218,26 +227,15 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   readonly colorMappingFunctionTypes: {[colorMappingFunctionType: string]: IColorMappingFunctionConstructor};
   readonly mappingFunctionTypes: {[mappingFunctionType: string]: IMappingFunctionConstructor};
 
-  protected readonly multiSelections: boolean;
-  private readonly aggregationStrategy: IAggregationStrategy;
   private showTopN: number;
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
-    const o: Readonly<IDataProviderOptions> = Object.assign({
-      columnTypes: {},
-      colorMappingFunctionTypes: {},
-      mappingFunctionTypes: {},
-      singleSelection: false,
-      showTopN: 10,
-      aggregationStrategy: 'item'
-    }, options);
-    this.columnTypes = Object.assign(models(), o.columnTypes);
-    this.colorMappingFunctionTypes = Object.assign(colorMappingFunctions(), o.colorMappingFunctionTypes);
-    this.mappingFunctionTypes = Object.assign(mappingFunctions(), o.mappingFunctionTypes);
-    this.multiSelections = o.singleSelection !== true;
-    this.showTopN = o.showTopN;
-    this.aggregationStrategy = o.aggregationStrategy;
+    Object.assign(this.options, options);
+    this.columnTypes = Object.assign(models(), this.options.columnTypes);
+    this.colorMappingFunctionTypes = Object.assign(colorMappingFunctions(), this.options.colorMappingFunctionTypes);
+    this.mappingFunctionTypes = Object.assign(mappingFunctions(), this.options.mappingFunctionTypes);
+    this.showTopN = this.options.showTopN;
 
     this.typeFactory = this.createTypeFactory();
   }
@@ -695,7 +693,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (addSupportType) {
       r.push(this.create(createAggregateDesc())!);
       r.push(this.create(createRankDesc())!);
-      if (this.multiSelections) {
+      if (this.options.singleSelection !== false) {
         r.push(this.create(createSelectionDesc())!);
       }
     }
@@ -750,12 +748,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   getAggregationStrategy() {
-    return this.aggregationStrategy;
+    return this.options.aggregationStrategy;
   }
 
   private initAggregateState(ranking: Ranking, groups: IGroup[]) {
     let initial = -1;
-    switch(this.aggregationStrategy) {
+    switch(this.getAggregationStrategy()) {
       case 'group':
         initial = 0;
         break;
@@ -880,7 +878,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (this.selection.has(index)) {
       return; //no change
     }
-    if (!this.multiSelections && this.selection.size > 0) {
+    if (this.options.singleSelection === true && this.selection.size > 0) {
       this.selection.clear();
     }
     this.selection.add(index);
@@ -909,7 +907,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (everyIndices(indices, (i) => this.selection.has(i))) {
       return; //no change
     }
-    if (!this.multiSelections) {
+    if (this.options.singleSelection === true) {
       this.selection.clear();
       if (indices.length > 0) {
         this.selection.add(indices[0]);
