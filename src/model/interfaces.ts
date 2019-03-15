@@ -256,7 +256,7 @@ export interface ITypeFactory {
 
   colorMappingFunction(dump?: ITypedDump | string | ((v: number) => string)): IColorMappingFunction;
   mappingFunction(dump?: ITypedDump): IMappingFunction;
-  categoricalColorMappingFunction(dump: ITypedDump | string | undefined, categories: ICategory[]): ICategoricalColorMappingFunction;
+  categoricalColorMappingFunction(dump: ITypedDump | undefined, categories: ICategory[]): ICategoricalColorMappingFunction;
 }
 
 export interface IMultiLevelColumn extends CompositeColumn {

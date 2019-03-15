@@ -42,22 +42,25 @@ export default class MappingDialog extends ADialog {
   }
 
   private get scaleType() {
-    if (!(this.scale instanceof ScaleMappingFunction)) {
+    if ((this.scale instanceof ScriptMappingFunction)) {
       return 'script';
     }
-    const base = this.scale.scaleType;
-    if (base !== 'linear') {
-      return base;
+    if (this.scale instanceof ScaleMappingFunction) {
+      const base = this.scale.scaleType;
+      if (base !== 'linear') {
+        return base;
+      }
+      // check if invert or absolute
+      const r = this.scale.range;
+      if (r.length === 2 && r[0] === 1 && r[1] === 0) {
+        return 'linear_invert';
+      }
+      if (r.length === 3 && r[0] === 1 && r[1] === 0 && r[2] === 1) {
+        return 'linear_abs';
+      }
+      return 'linear';
     }
-    // check if invert or absolute
-    const r = this.scale.range;
-    if (r.length === 2 && r[0] === 1 && r[1] === 0) {
-      return 'linear_invert';
-    }
-    if (r.length === 3 && r[0] === 1 && r[1] === 0 && r[2] === 1) {
-      return 'linear_abs';
-    }
-    return 'linear';
+    // TODO unknown type
   }
 
   build(node: HTMLElement) {
@@ -130,7 +133,7 @@ export default class MappingDialog extends ADialog {
               this.copyMapping(select.value.slice('copy_'.length));
               return;
             }
-            this.scale = new ScaleMappingFunction(this.rawDomain.slice(), select.value);
+            this.scale = new ScaleMappingFunction(this.rawDomain.slice(), select.value, [0, 1]);
             break;
         }
         this.createMappings();
@@ -245,33 +248,22 @@ export default class MappingDialog extends ADialog {
   }
 
   private computeScale() {
-    const s = this.scale.clone();
-    if (this.scaleType === 'script') {
-      (<ScriptMappingFunction>s).code = this.node.querySelector('textarea')!.value;
-      s.domain = this.rawDomain.slice();
+    const type = this.scaleType;
+    if (type === 'script') {
+      return new ScriptMappingFunction(this.rawDomain.slice(), this.node.querySelector('textarea')!.value);
     }
-    if (s instanceof ScaleMappingFunction) {
-      this.mappingLines.sort((a, b) => a.domain - b.domain);
-      s.domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
-      s.range = this.mappingLines.map((d) => d.range / 100);
-    }
-    return s;
+    this.mappingLines.sort((a, b) => a.domain - b.domain);
+    const domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
+    const range = this.mappingLines.map((d) => d.range / 100);
+    return new ScaleMappingFunction(domain, type, range);
   }
 
   protected submit() {
     if (!this.node.checkValidity()) {
       return false;
     }
-    if (this.scaleType === 'script') {
-      (<ScriptMappingFunction>this.scale).code = this.node.querySelector('textarea')!.value;
-      this.scale.domain = this.rawDomain.slice();
-    }
-    if (this.scale instanceof ScaleMappingFunction) {
-      this.mappingLines.sort((a, b) => a.domain - b.domain);
-      this.scale.domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
-      this.scale.range = this.mappingLines.map((d) => d.range / 100);
-    }
-    this.applyMapping(this.scale);
+    const scale = this.computeScale();
+    this.applyMapping(scale);
     return true;
   }
 }

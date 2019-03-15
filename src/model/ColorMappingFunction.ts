@@ -1,8 +1,9 @@
 import {interpolateBlues, interpolateGreens, interpolateGreys, interpolateOranges, interpolatePurples, interpolateReds, interpolateCool, interpolateCubehelixDefault, interpolateWarm, interpolatePlasma, interpolateMagma, interpolateViridis, interpolateInferno, interpolateYlOrRd, interpolateYlOrBr, interpolateBuGn, interpolateBuPu, interpolateGnBu, interpolateOrRd, interpolatePuBuGn, interpolatePuBu, interpolatePuRd, interpolateRdPu, interpolateYlGnBu, interpolateYlGn, interpolateRainbow, interpolateBrBG, interpolatePRGn, interpolatePiYG, interpolatePuOr, interpolateRdBu, interpolateRdGy, interpolateRdYlBu, interpolateRdYlGn, interpolateSpectral} from 'd3-scale-chromatic';
 import {equal} from '../internal';
 import {scaleLinear} from 'd3-scale';
-import {IColorMappingFunction, IMapAbleDesc} from '.';
-import {DEFAULT_COLOR} from './interfaces';
+import {IColorMappingFunction} from '.';
+import {DEFAULT_COLOR, ITypedDump} from './interfaces';
+import {IColorMappingFunctionConstructor} from './INumberColumn';
 
 export class InterpolatingColorFunction implements IColorMappingFunction {
   constructor(public readonly name: string, public readonly type: 'sequential'|'divergent', public readonly apply: (v: number)=>string) {
@@ -208,35 +209,27 @@ export const lookupInterpolatingColor = new Map<string, InterpolatingColorFuncti
 /**
  * @internal
  */
-export function createColorMappingFunction(dump: any): IColorMappingFunction {
-  if (!dump) {
+export function createColorMappingFunction(types: {[type: string]: IColorMappingFunctionConstructor}) {
+  return (dump: ITypedDump | string): IColorMappingFunction => {
+    if (!dump) {
+      return DEFAULT_COLOR_FUNCTION;
+    }
+    if (typeof dump === 'string') {
+      const s = lookupInterpolatingColor.get(dump);
+      if (s) {
+        return s;
+      }
+      return asColorFunction(dump);
+    }
+    if (typeof dump === 'function') {
+      return new InterpolatingColorFunction('custom', 'sequential', dump);
+    }
+    if (dump.base && dump.steps) {
+      return new QuantizedColorFunction(createColorMappingFunction(dump.base), dump.steps);
+    }
+    if (Array.isArray(dump)) {
+      return new CustomColorMappingFunction(dump);
+    }
     return DEFAULT_COLOR_FUNCTION;
   }
-  if (typeof dump === 'string') {
-    const s = lookupInterpolatingColor.get(dump);
-    if (s) {
-      return s;
-    }
-    return asColorFunction(dump);
-  }
-  if (typeof dump === 'function') {
-    return new InterpolatingColorFunction('custom', 'sequential', dump);
-  }
-  if (dump.base && dump.steps) {
-    return new QuantizedColorFunction(createColorMappingFunction(dump.base), dump.steps);
-  }
-  if (Array.isArray(dump)) {
-    return new CustomColorMappingFunction(dump);
-  }
-  return DEFAULT_COLOR_FUNCTION;
-}
-
-/**
- * @internal
- */
-export function restoreColorMapping2(desc: IMapAbleDesc): IColorMappingFunction {
-  if (desc.colorMapping) {
-    return createColorMappingFunction(desc.colorMapping);
-  }
-  return DEFAULT_COLOR_FUNCTION;
 }

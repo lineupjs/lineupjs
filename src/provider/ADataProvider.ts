@@ -6,6 +6,9 @@ import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExp
 import {exportRanking, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer';
 import {IColumnConstructor} from '../model/Column';
+import {restoreCategoricalColorMapping} from '../model/CategoricalColorMappingFunction';
+import {createColorMappingFunction} from '../model/ColorMappingFunction';
+import {createMappingFunction} from '../model/MappingFunction';
 
 
 
@@ -242,28 +245,23 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private createTypeFactory() {
     const factory = <ITypeFactory><any>((d: IColumnDump) => {
       const desc = this.fromDescRef(d.desc);
+      if (!desc || !desc.type) {
+        console.warn('cannot restore column dump', d);
+        return new Column(d.id || '', d.desc || {});
+      }
       this.fixDesc(desc);
-      const type = this.columnTypes[desc.type] || Column;
+      const type = this.columnTypes[desc.type];
+      if (type == null) {
+        console.warn('invalid column type in column dump using column', d);
+        return new Column(d.id || '', desc);
+      }
       const c = new type('', desc, factory);
       c.restore(d, factory);
-      c.assignNewId(this.nextId.bind(this));
       return c;
     });
-    factory.colorMappingFunction = (dump: ITypedDump | string) => {
-      this.colorMappingFunctionTypes
-    };
-    factory.mappingFunction = (dump: ITypedDump) => {
-      const type = dump.type;
-      const c = this.mappingFunctionTypes[type];
-      if (!type || !c) {
-        console.warn('invalid mapping type', type);
-        return
-      }
-      return new c(dump);
-    };
-    factory.categoricalColorMappingFunction = (dump: ITypedDump) => {
-
-    };
+    factory.colorMappingFunction = createColorMappingFunction(this.colorMappingFunctionTypes);
+    factory.mappingFunction = createMappingFunction(this.mappingFunctionTypes);
+    factory.categoricalColorMappingFunction = restoreCategoricalColorMapping;
     return factory;
   }
 
@@ -552,7 +550,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
     if (type) {
-      return new type(this.nextId(), desc);
+      return new type(this.nextId(), desc, this.typeFactory);
     }
     return null;
   }
@@ -573,17 +571,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @returns {Column}
    */
   restoreColumn(dump: any): Column {
-    // TODO proper type factory
-    const create = (d: any) => {
-      const desc = this.fromDescRef(d.desc);
-      this.fixDesc(desc);
-      const type = this.columnTypes[desc.type] || Column;
-      const c = new type('', desc, create);
-      c.restore(d, create);
-      c.assignNewId(this.nextId.bind(this));
-      return c;
-    };
-    return create(dump);
+    const c = this.typeFactory(dump);
+    c.assignNewId(this.nextId.bind(this));
+    return c;
   }
 
   /**
@@ -641,29 +631,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return descRef;
   }
 
-  private createHelper = (d: IColumnDump) => {
-    //factory method for restoring a column
-    const desc = this.fromDescRef(d.desc);
-
-    if (!desc || !desc.type) {
-      console.warn('cannot restore column dump', d);
-      return null;
-    }
-
-    this.fixDesc(desc);
-    let type = this.columnTypes[desc.type];
-    if (type == null) {
-      console.warn('invalid column type in column dump using dummy column', d);
-      type = this.columnTypes.dummy;
-    }
-    const c = new type(d.id, desc);
-    c.restore(d, this.createHelper);
-    return c;
-  };
-
   restoreRanking(dump: IRankingDump) {
     const ranking = this.cloneRanking();
-    ranking.restore(dump, this.createHelper);
+    ranking.restore(dump, this.typeFactory);
     const idGenerator = this.nextId.bind(this);
     ranking.children.forEach((c) => c.assignNewId(idGenerator));
     return ranking;
@@ -695,7 +665,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (dump.rankings) {
       dump.rankings.forEach((r: any) => {
         const ranking = this.cloneRanking();
-        ranking.restore(r, this.createHelper);
+        ranking.restore(r, this.typeFactory);
         //if no rank column add one
         if (!ranking.children.some((d) => d instanceof RankColumn)) {
           ranking.insert(this.create(createRankDesc())!, 0);

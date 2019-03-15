@@ -1,5 +1,5 @@
 import {hsl} from 'd3-color';
-import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn, DEFAULT_COLOR} from '../model';
+import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn, DEFAULT_COLOR, SolidColorFunction} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
@@ -19,7 +19,7 @@ export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColu
   }
   const map = col.getColorMapping();
   const valueColor = map.apply(v);
-  if (map.type === 'solid') {
+  if (map instanceof SolidColorFunction) {
     //hsl space encoding, encode in lightness
     const color = hsl(valueColor);
     color.l = 1 - v; // largest value = darkest color

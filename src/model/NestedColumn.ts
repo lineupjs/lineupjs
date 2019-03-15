@@ -1,4 +1,4 @@
-import {IDataRow, ITypeFactory} from './interfaces';
+import {IDataRow} from './interfaces';
 import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
 import {concat} from '../internal';
 

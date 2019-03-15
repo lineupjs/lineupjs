@@ -2,7 +2,7 @@ import {equalArrays, fixCSS, IEventListener, suffix, joinIndexArrays, AEventDisp
 import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent} from './interfaces';
+import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent, ITypeFactory} from './interfaces';
 import {groupRoots, isOrderedGroup} from './internal';
 
 export enum EDirtyReason {

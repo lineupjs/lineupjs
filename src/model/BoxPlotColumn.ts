@@ -1,7 +1,7 @@
 import {format} from 'd3-format';
 import {IBoxPlotData, IEventListener} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
-import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
+import {createColorMappingFunction} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {ESortMethod, IBoxPlotColumn, INumberDesc, INumberFilter, IColorMappingFunction, IMappingFunction} from './INumberColumn';
@@ -75,7 +75,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   constructor(id: string, desc: Readonly<IBoxPlotColumnDesc>, factory: ITypeFactory) {
     super(id, desc);
-    this.mapping = restoreMapping(desc);
+    this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping);
 

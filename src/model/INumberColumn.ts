@@ -25,8 +25,6 @@ export interface IMappingFunction {
 
   toJSON(): ITypedDump;
 
-  restore(dump: any): void;
-
   domain: number[];
 
   clone(): IMappingFunction;

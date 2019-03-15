@@ -1,5 +1,5 @@
 import {ICategory, ICategoricalColorMappingFunction} from '.';
-import {DEFAULT_COLOR} from './interfaces';
+import {DEFAULT_COLOR, ITypedDump} from './interfaces';
 
 
 export const DEFAULT_CATEGORICAL_COLOR_FUNCTION: ICategoricalColorMappingFunction = {
@@ -22,7 +22,10 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
   toJSON() {
     const r: any = {};
     this.map.forEach((v, k) => r[k] = v);
-    return r;
+    return {
+      type: 'replace',
+      map: r
+    };
   }
 
   clone() {
@@ -40,6 +43,9 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
   }
 
   static restore(dump: any, categories: ICategory[]) {
+    if (dump.type === 'replace') { // new dump format
+      dump = dump.map;
+    }
     const lookup = new Map(categories.map((d) => <[string, ICategory]>[d.name, d]));
     const r = new Map<ICategory, string>();
     for (const key of Object.keys(dump)) {
@@ -54,7 +60,7 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
 /**
  * @internal
  */
-export function restoreCategoricalColorMapping2(dump: any, categories: ICategory[]): ICategoricalColorMappingFunction {
+export function restoreCategoricalColorMapping(dump: ITypedDump | null | undefined, categories: ICategory[]): ICategoricalColorMappingFunction {
   if (!dump) {
     return DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }

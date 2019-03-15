@@ -1,6 +1,6 @@
 import {IForEachAble} from '../internal';
 import Column from './Column';
-import {IColumnDesc, IDataRow, ITypeFactory} from './interfaces';
+import {IColumnDesc, IDataRow} from './interfaces';
 import {INumberFilter} from './INumberColumn';
 
 export interface IDateColumn extends Column {

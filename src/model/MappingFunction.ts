@@ -1,7 +1,8 @@
 import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
 import {similar} from '../internal';
 import {IMappingFunction, IMapAbleDesc} from '.';
-import {ITypeFactory} from './interfaces';
+import {ITypeFactory, ITypedDump} from './interfaces';
+import {IMappingFunctionConstructor} from './INumberColumn';
 
 /**
  * interface of a d3 scale
@@ -57,10 +58,20 @@ function fixDomain(domain: number[], type: string) {
  */
 export class ScaleMappingFunction implements IMappingFunction {
   private s: IScale;
+  private readonly type: string;
 
-  constructor(domain: number[] = [0, 1], private type = 'linear', range: number[] = [0, 1]) {
-
-    this.s = toScale(type).domain(fixDomain(domain, this.type)).range(range);
+  constructor();
+  constructor(dump: ITypedDump);
+  constructor(domain: number[], type: string, range: number[]);
+  constructor(domain: ITypedDump|number[] = [0, 1], type = 'linear', range: number[] = [0, 1]) {
+    if (!domain || Array.isArray(domain)) {
+      this.type = type;
+      this.s = toScale(type).domain(fixDomain(domain || [0, 1], this.type)).range(range);
+    } else {
+      const dump = domain;
+      this.type = dump.type;
+      this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
+    }
   }
 
   get domain() {
@@ -111,11 +122,6 @@ export class ScaleMappingFunction implements IMappingFunction {
     return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
   }
 
-  restore(dump: any) {
-    this.type = dump.type;
-    this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
-  }
-
   clone() {
     return new ScaleMappingFunction(this.domain, this.type, this.range);
   }
@@ -126,9 +132,22 @@ export class ScaleMappingFunction implements IMappingFunction {
  */
 export class ScriptMappingFunction implements IMappingFunction {
   private f: Function;
+  public domain: number[];
+  private _code: string;
 
-  constructor(public domain: number[] = [0, 1], private _code: string = 'return this.linear(value,this.value_min,this.value_max);') {
-    this.f = new Function('value', _code);
+  constructor();
+  constructor(dump: ITypedDump);
+  constructor(domain: number[], code?: string);
+  constructor(domain: ITypedDump | number[] = [0, 1], code: string = 'return this.linear(value,this.value_min,this.value_max);') {
+    if (!domain || Array.isArray(domain)) {
+      this.domain = domain || [0, 1];
+      this._code = code;
+    } else {
+      const dump = domain;
+      this.domain = dump.domain;
+      this._code = dump.code;
+    }
+    this.f = new Function('value', this._code);
   }
 
   get code() {
@@ -180,9 +199,78 @@ export class ScriptMappingFunction implements IMappingFunction {
     return that.code === this.code;
   }
 
-  restore(dump: any) {
-    this.code = dump.code;
-    this.domain = dump.domain;
+  clone() {
+    return new ScriptMappingFunction(this.domain, this.code);
+  }
+}
+
+export class CustomMappingFunction implements IMappingFunction {
+  private readonly f: (v: number)=>number;
+  public domain: number[];
+  private _code: string;
+
+  constructor();
+  constructor(dump: ITypedDump);
+  constructor(domain: number[], code: string);
+  constructor(domain: ITypedDump | number[] = [0, 1], code: string = 'return this.linear(value,this.value_min,this.value_max);') {
+    if (!domain || Array.isArray(domain)) {
+      this.domain = domain || [0, 1];
+      this._code = code;
+    } else {
+      const dump = domain;
+      this.domain = dump.domain;
+      this._code = dump.code;
+    }
+    this.f = new Function('value', this._code);
+  }
+
+  get code() {
+    return this._code;
+  }
+
+  set code(code: string) {
+    if (this._code === code) {
+      return;
+    }
+    this._code = code;
+    this.f = new Function('value', code);
+  }
+
+  getRange(): [string, string] {
+    return ['?', '?'];
+  }
+
+  apply(v: number): number {
+    const min = this.domain[0];
+    const max = this.domain[this.domain.length - 1];
+    const r = this.f.call({
+      value_min: min,
+      value_max: max,
+      value_range: max - min,
+      value_domain: this.domain.slice(),
+      linear: (v: number, mi: number, ma: number) => (v - mi) / (ma - mi)
+    }, v);
+
+    if (typeof r === 'number') {
+      return Math.max(Math.min(r, 1), 0);
+    }
+    return NaN;
+  }
+
+  toJSON() {
+    return {
+      type: 'script',
+      code: this.code,
+      domain: this.domain
+    };
+  }
+
+  eq(other: IMappingFunction): boolean {
+    if (!(other instanceof ScriptMappingFunction)) {
+      return false;
+    }
+    const that = <ScriptMappingFunction>other;
+    return that.code === this.code;
   }
 
   clone() {
@@ -193,24 +281,27 @@ export class ScriptMappingFunction implements IMappingFunction {
 /**
  * @internal
  */
-export function createMappingFunction(dump: any): IMappingFunction {
-  if (dump.type === 'script') {
-    const s = new ScriptMappingFunction();
-    s.restore(dump);
-    return s;
-  }
-  const l = new ScaleMappingFunction();
-  l.restore(dump);
-  return l;
+export function createMappingFunction(types: {[key: string]: IMappingFunctionConstructor}) {
+  return (dump: ITypedDump | ((v: number) => number)): IMappingFunction => {
+    if (typeof dump === 'function') {
+      return new CustomMappingFunction(dump);
+    }
+    if (!dump || !dump.type) {
+      return new ScaleMappingFunction();
+    }
+    const type = types[dump.type];
+    if (!type) {
+      console.warn('invalid mapping type dump', dump);
+      return new ScaleMappingFunction(dump.domain || [0, 1], 'linear', dump.range || [0, 1]);
+    }
+    return new type(dump);
+  };
 }
 
 /** @internal */
 export function restoreMapping(desc: IMapAbleDesc, factory: ITypeFactory): IMappingFunction {
   if (desc.map) {
-    return createMappingFunction(desc.map);
+    return factory.mappingFunction(desc.map);
   }
-  if (desc.domain) {
-    return new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
-  }
-  return new ScaleMappingFunction([0, 1], 'linear', [0, 1]);
+  return new ScaleMappingFunction(desc.domain || [0, 1], 'linear', desc.range || [0, 1]);
 }
