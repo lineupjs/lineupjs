@@ -2,7 +2,7 @@ import ADialog, {IDialogContext} from './ADialog';
 import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel2, schemePastel1} from 'd3-scale-chromatic';
 import {round} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
-import {sequentialColors, divergentColors, createColorMappingFunction, lookupInterpolatingColor, QuantizedColorFunction, asColorFunction, CustomColorMappingFunction} from '../../model/ColorMappingFunction';
+import {QuantizedColorFunction, CustomColorMappingFunction, SolidColorFunction, SequentialColorFunction, DivergentColorFunction} from '../../model/ColorMappingFunction';
 import {IMapAbleColumn, DEFAULT_COLOR} from '../../model';
 import {cssClass} from '../../styles';
 
@@ -17,7 +17,7 @@ export default class ColorMappingDialog extends ADialog {
     const id = uniqueId('col');
 
     const current = this.column.getColorMapping();
-    const entries = current.type === 'custom' ? current.entries : [];
+    const entries = current instanceof CustomColorMappingFunction ? current.entries : [];
 
     let h = '';
     h += `<datalist id="${id}L">${schemeCategory10.map((d) => `<option>${d}"</option>`).join('')}</datalist>`;
@@ -25,18 +25,18 @@ export default class ColorMappingDialog extends ADialog {
 
     h += `<strong>Quantization</strong>
     <label class="${cssClass('checkbox')}">
-      <input name="kind" type="radio" id="${id}KC" value="continuous" ${current.type !== 'quantized' ? 'checked': ''}>
+      <input name="kind" type="radio" id="${id}KC" value="continuous" ${!(current instanceof QuantizedColorFunction) ? 'checked': ''}>
       <span>Continuous</span>
     </label>
     <label class="${cssClass('checkbox')}">
-      <input name="kind" type="radio" id="${id}KQ" value="quantized" ${current.type === 'quantized' ? 'checked': ''}>
-      <span><input type="number" id="${id}KQS" min="2" step="1" value="${current.type === 'quantized' ? current.steps : 5}">&nbsp; steps</span>
+      <input name="kind" type="radio" id="${id}KQ" value="quantized" ${current instanceof QuantizedColorFunction ? 'checked': ''}>
+      <span><input type="number" id="${id}KQS" min="2" step="1" value="${current instanceof QuantizedColorFunction ? current.steps : 5}">&nbsp; steps</span>
     </label>`;
 
-    h += `<strong data-toggle="${current.type === 'solid' ? 'open' : ''}">Solid Color</strong>`;
+    h += `<strong data-toggle="${current instanceof SolidColorFunction ? 'open' : ''}">Solid Color</strong>`;
     h += `<div>`;
     {
-      const refColor = current.type === 'solid' ? current.color : '';
+      const refColor = current instanceof SolidColorFunction ? current.color : '';
       let has = false;
       const colorsets = [schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3];
       for (const colors of colorsets) {
@@ -49,18 +49,18 @@ export default class ColorMappingDialog extends ADialog {
         </div>`;
       }
       h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
-        <span class="${cssClass('color-custom')}"><input type="color" name="solid" list="${id}L" value="${current.type === 'solid' ? current.color : DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></span>
+        <span class="${cssClass('color-custom')}"><input type="color" name="solid" list="${id}L" value="${current instanceof SolidColorFunction ? current.color : DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></span>
       </label>`;
     }
     h += '</div>';
 
-    h += `<strong data-toggle="${current.type === 'sequential' || (current.type === 'custom' && entries.length === 2) ? 'open' : ''}">Sequential Color</strong>`;
+    h += `<strong data-toggle="${current instanceof SequentialColorFunction || (current instanceof CustomColorMappingFunction && entries.length === 2) ? 'open' : ''}">Sequential Color</strong>`;
     h += '<div>';
     {
-      const name = current.type === 'sequential' ? current.name : '';
-      for (const colors of sequentialColors) {
-        h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors.name}" ${colors.name === name ? 'checked="checked"' : ''}>
-        <span data-c="${colors.name}" style="background: ${gradient(colors.apply, 9)}"></span>
+      const name = current instanceof SequentialColorFunction ? current.name : '';
+      for (const colors of Object.keys(SequentialColorFunction.FUNCTIONS)) {
+        h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors}" ${colors === name ? 'checked="checked"' : ''}>
+        <span data-c="${colors}" style="background: ${gradient(SequentialColorFunction.FUNCTIONS[colors], 9)}"></span>
       </label>`;
       }
       const isCustom = entries.length === 2;
@@ -73,13 +73,13 @@ export default class ColorMappingDialog extends ADialog {
       </label>`;
     }
     h += '</div>';
-    h += `<strong data-toggle="${current.type === 'divergent' || (current.type === 'custom' && entries.length === 3) ? 'open' : ''}">Diverging Color</strong>`;
+    h += `<strong data-toggle="${current instanceof DivergentColorFunction || (current instanceof CustomColorMappingFunction && entries.length === 3) ? 'open' : ''}">Diverging Color</strong>`;
     h += '<div>';
     {
-      const name = current.type === 'sequential' ? current.name : '';
-      for (const colors of divergentColors) {
-        h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors.name}" ${colors.name === name ? 'checked="checked"' : ''}>
-        <span data-c="${colors.name}" style="background: ${gradient(colors.apply, 11)}"></span>
+      const name = current instanceof SequentialColorFunction ? current.name : '';
+      for (const colors of Object.keys(DivergentColorFunction.FUNCTIONS)) {
+        h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors}" ${colors === name ? 'checked="checked"' : ''}>
+        <span data-c="${colors}" style="background: ${gradient(DivergentColorFunction.FUNCTIONS[colors], 11)}"></span>
       </label>`;
       }
       const isCustom = entries.length === 3;
@@ -120,7 +120,7 @@ export default class ColorMappingDialog extends ADialog {
     const toColor = (input: HTMLInputElement) => {
       switch (input.value) {
         case 'custom:solid':
-          return asColorFunction((<HTMLInputElement>node.querySelector('input[name=solid]')!).value);
+          return new SolidColorFunction((<HTMLInputElement>node.querySelector('input[name=solid]')!).value);
         case 'custom:sequential':
           const s0 = (<HTMLInputElement>node.querySelector('input[name=interpolate0]')!).value;
           const s1 = (<HTMLInputElement>node.querySelector('input[name=interpolate1]')!).value;
@@ -131,7 +131,13 @@ export default class ColorMappingDialog extends ADialog {
           const d1 = (<HTMLInputElement>node.querySelector('input[name=divergent1]')!).value;
           return new CustomColorMappingFunction([{color: dm1, value: 0}, {color: d0, value: 0.5}, {color: d1, value: 1}]);
       }
-      return createColorMappingFunction(input.value);
+      if (input.value in SequentialColorFunction.FUNCTIONS) {
+        return new SequentialColorFunction(input.value);
+      }
+      if (input.value in DivergentColorFunction.FUNCTIONS) {
+        return new DivergentColorFunction(input.value);
+      }
+      return new SolidColorFunction(input.value);
     };
 
     const updateColor = (d: HTMLInputElement) => {
@@ -143,7 +149,7 @@ export default class ColorMappingDialog extends ADialog {
         Array.from(custom.nextElementSibling!.getElementsByTagName('input')).forEach((s) => s.disabled = custom !== d);
       }
       const base = toColor(d);
-      if (quantized.checked && base.type !== 'solid') {
+      if (quantized.checked && !(base instanceof SolidColorFunction)) {
         this.column.setColorMapping(new QuantizedColorFunction(base, parseInt(steps.value, 10)));
       } else {
         this.column.setColorMapping(base);
@@ -196,8 +202,17 @@ export default class ColorMappingDialog extends ADialog {
 
   private updateGradients(steps: number) {
     this.forEach(`span[data-c]`, (d: HTMLElement) => {
-      const f = lookupInterpolatingColor.get(d.dataset.c!)!;
-      d.style.background = steps < 0 ? gradient(f.apply, f.type === 'sequential' ? 9 : 11) : steppedGradient(f.apply, steps);
+      const key = d.dataset.c!;
+      const s = SequentialColorFunction.FUNCTIONS[key];
+      if (s) {
+        d.style.background = steps < 0 ? gradient(s, 9) : steppedGradient(s, steps);
+        return;
+      }
+      const di = DivergentColorFunction.FUNCTIONS[key];
+      if (di) {
+        d.style.background = steps < 0 ? gradient(di, 11) : steppedGradient(di, steps);
+        return;
+      }
     });
   }
 }

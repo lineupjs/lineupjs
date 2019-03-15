@@ -60,7 +60,7 @@ export default class MappingDialog extends ADialog {
       }
       return 'linear';
     }
-    // TODO unknown type
+    return 'unknown';
   }
 
   build(node: HTMLElement) {
@@ -80,6 +80,7 @@ export default class MappingDialog extends ADialog {
         <option value="pow3">Pow 3</option>
         <option value="sqrt">Sqrt</option>
         <option value="script">Custom Script</option>
+        <option value="unknown">Unknown</option>
         ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
       </select>
       </div>
@@ -127,6 +128,10 @@ export default class MappingDialog extends ADialog {
             const s = new ScriptMappingFunction(this.rawDomain.slice());
             this.scale = s;
             textarea.value = s.code;
+            break;
+          case 'unknown':
+            // clone original again
+            this.scale = this.column.getOriginalMapping().clone();
             break;
           default:
             if (select.value.startsWith('copy_')) {

@@ -1,7 +1,7 @@
 import {IAdvancedBoxPlotData, IBoxPlotData, IForEachAble} from '../internal';
 import Column from './Column';
 import {IArrayColumn} from './IArrayColumn';
-import {IColumnDesc, IDataRow, ITypedDump} from './interfaces';
+import {IColumnDesc, IDataRow, ITypedDump, ITypeFactory} from './interfaces';
 
 
 export interface IColorMappingFunction {
@@ -15,7 +15,7 @@ export interface IColorMappingFunction {
 }
 
 export interface IColorMappingFunctionConstructor {
-  new(dump: ITypedDump | string): IColorMappingFunction;
+  new(dump: ITypedDump | string, factory: ITypeFactory): IColorMappingFunction;
 }
 
 export interface IMappingFunction {

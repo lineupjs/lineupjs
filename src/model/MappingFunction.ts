@@ -127,39 +127,39 @@ export class ScaleMappingFunction implements IMappingFunction {
   }
 }
 
+export interface IScriptMappingFunctionContext {
+  value_min: number;
+  value_max: number;
+  value_range: number;
+  value_domain: number[];
+  linear(v: number, min: number, max: number): number;
+}
+
+export interface IScriptMappingFunctionType {
+  (this: IScriptMappingFunctionContext, value: number): number;
+}
+
 /**
  * a mapping function based on a custom user function using 'value' as the current value
  */
 export class ScriptMappingFunction implements IMappingFunction {
-  private f: Function;
+  private readonly f: IScriptMappingFunctionType;
   public domain: number[];
-  private _code: string;
+  public readonly code: string;
 
   constructor();
   constructor(dump: ITypedDump);
-  constructor(domain: number[], code?: string);
-  constructor(domain: ITypedDump | number[] = [0, 1], code: string = 'return this.linear(value,this.value_min,this.value_max);') {
+  constructor(domain: number[], code?: string | IScriptMappingFunctionType);
+  constructor(domain: ITypedDump | number[] = [0, 1], code: string | IScriptMappingFunctionType = 'return this.linear(value,this.value_min,this.value_max);') {
     if (!domain || Array.isArray(domain)) {
       this.domain = domain || [0, 1];
-      this._code = code;
     } else {
       const dump = domain;
       this.domain = dump.domain;
-      this._code = dump.code;
+      code = dump.code;
     }
-    this.f = new Function('value', this._code);
-  }
-
-  get code() {
-    return this._code;
-  }
-
-  set code(code: string) {
-    if (this._code === code) {
-      return;
-    }
-    this._code = code;
-    this.f = new Function('value', code);
+    this.code = typeof code === 'string' ? code : code.toString();
+    this.f = typeof code === 'function' ? code : <any>(new Function('value', code));
   }
 
   getRange(): [string, string] {
@@ -196,85 +196,11 @@ export class ScriptMappingFunction implements IMappingFunction {
       return false;
     }
     const that = <ScriptMappingFunction>other;
-    return that.code === this.code;
+    return that.code === this.code || that.f === this.f;
   }
 
   clone() {
-    return new ScriptMappingFunction(this.domain, this.code);
-  }
-}
-
-export class CustomMappingFunction implements IMappingFunction {
-  private readonly f: (v: number)=>number;
-  public domain: number[];
-  private _code: string;
-
-  constructor();
-  constructor(dump: ITypedDump);
-  constructor(domain: number[], code: string);
-  constructor(domain: ITypedDump | number[] = [0, 1], code: string = 'return this.linear(value,this.value_min,this.value_max);') {
-    if (!domain || Array.isArray(domain)) {
-      this.domain = domain || [0, 1];
-      this._code = code;
-    } else {
-      const dump = domain;
-      this.domain = dump.domain;
-      this._code = dump.code;
-    }
-    this.f = new Function('value', this._code);
-  }
-
-  get code() {
-    return this._code;
-  }
-
-  set code(code: string) {
-    if (this._code === code) {
-      return;
-    }
-    this._code = code;
-    this.f = new Function('value', code);
-  }
-
-  getRange(): [string, string] {
-    return ['?', '?'];
-  }
-
-  apply(v: number): number {
-    const min = this.domain[0];
-    const max = this.domain[this.domain.length - 1];
-    const r = this.f.call({
-      value_min: min,
-      value_max: max,
-      value_range: max - min,
-      value_domain: this.domain.slice(),
-      linear: (v: number, mi: number, ma: number) => (v - mi) / (ma - mi)
-    }, v);
-
-    if (typeof r === 'number') {
-      return Math.max(Math.min(r, 1), 0);
-    }
-    return NaN;
-  }
-
-  toJSON() {
-    return {
-      type: 'script',
-      code: this.code,
-      domain: this.domain
-    };
-  }
-
-  eq(other: IMappingFunction): boolean {
-    if (!(other instanceof ScriptMappingFunction)) {
-      return false;
-    }
-    const that = <ScriptMappingFunction>other;
-    return that.code === this.code;
-  }
-
-  clone() {
-    return new ScriptMappingFunction(this.domain, this.code);
+    return new ScriptMappingFunction(this.domain, this.f);
   }
 }
 
@@ -282,9 +208,9 @@ export class CustomMappingFunction implements IMappingFunction {
  * @internal
  */
 export function createMappingFunction(types: {[key: string]: IMappingFunctionConstructor}) {
-  return (dump: ITypedDump | ((v: number) => number)): IMappingFunction => {
+  return (dump: ITypedDump | IScriptMappingFunctionType): IMappingFunction => {
     if (typeof dump === 'function') {
-      return new CustomMappingFunction(dump);
+      return new ScriptMappingFunction([0, 1], dump);
     }
     if (!dump || !dump.type) {
       return new ScaleMappingFunction();
@@ -304,4 +230,16 @@ export function restoreMapping(desc: IMapAbleDesc, factory: ITypeFactory): IMapp
     return factory.mappingFunction(desc.map);
   }
   return new ScaleMappingFunction(desc.domain || [0, 1], 'linear', desc.range || [0, 1]);
+}
+
+
+export function mappingFunctions() {
+  return {
+    script: ScriptMappingFunction,
+    linear: ScaleMappingFunction,
+    log: ScaleMappingFunction,
+    'pow1.1': ScaleMappingFunction,
+    pow2: ScaleMappingFunction,
+    pow3: ScaleMappingFunction
+  };
 }

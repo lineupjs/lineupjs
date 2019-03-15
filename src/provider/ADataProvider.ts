@@ -259,7 +259,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       c.restore(d, factory);
       return c;
     });
-    factory.colorMappingFunction = createColorMappingFunction(this.colorMappingFunctionTypes);
+    factory.colorMappingFunction = createColorMappingFunction(this.colorMappingFunctionTypes, factory);
     factory.mappingFunction = createMappingFunction(this.mappingFunctionTypes);
     factory.categoricalColorMappingFunction = restoreCategoricalColorMapping;
     return factory;
