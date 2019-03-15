@@ -232,7 +232,7 @@ export function colorMappingFunctions() {
   return types;
 }
 
-const DEFAULT_COLOR_FUNCTION = new SolidColorFunction(DEFAULT_COLOR);
+export const DEFAULT_COLOR_FUNCTION = new SolidColorFunction(DEFAULT_COLOR);
 
 
 /**

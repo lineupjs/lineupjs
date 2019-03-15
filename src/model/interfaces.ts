@@ -3,6 +3,7 @@ import Ranking from './Ranking';
 import CompositeColumn from './CompositeColumn';
 import {IColorMappingFunction, IMappingFunction} from './INumberColumn';
 import {ICategoricalColorMappingFunction, ICategory} from './ICategoricalColumn';
+import {IScriptMappingFunctionType} from './MappingFunction';
 
 export interface IStyleColumn {
   /**
@@ -255,7 +256,7 @@ export interface ITypeFactory {
   (dump: IColumnDump): Column;
 
   colorMappingFunction(dump?: ITypedDump | string | ((v: number) => string)): IColorMappingFunction;
-  mappingFunction(dump?: ITypedDump): IMappingFunction;
+  mappingFunction(dump?: ITypedDump | IScriptMappingFunctionType): IMappingFunction;
   categoricalColorMappingFunction(dump: ITypedDump | undefined, categories: ICategory[]): ICategoricalColorMappingFunction;
 }
 

@@ -1,11 +1,10 @@
 import {format} from 'd3-format';
 import {IBoxPlotData, IEventListener} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
-import {createColorMappingFunction} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {ESortMethod, IBoxPlotColumn, INumberDesc, INumberFilter, IColorMappingFunction, IMappingFunction} from './INumberColumn';
-import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {restoreMapping} from './MappingFunction';
 import NumberColumn from './NumberColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
@@ -205,13 +204,11 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (dump.filter) {
       this.currentFilter = restoreNumberFilter(dump.filter);
     }
-    if (dump.map) {
-      this.mapping = createMappingFunction(dump.map);
-    } else if (dump.domain) {
-      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    if (dump.map || dump.domain) {
+      this.mapping = restoreMapping(dump, factory);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(dump.colorMapping);
+      this.colorMapping = factory.colorMappingFunction(dump.colorMapping);
     }
   }
 

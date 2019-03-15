@@ -1,14 +1,14 @@
 import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEventListener, suffix, IEventContext} from '../internal';
-import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump, IColorMappingFunctionConstructor, IMappingFunctionConstructor, ITypeFactory, ITypedDump} from '../model';
-import {models, colorMappingFunctions, mappingFunctions} from '../model/models';
+import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump, IColorMappingFunctionConstructor, IMappingFunctionConstructor, ITypeFactory} from '../model';
+import {models} from '../model/models';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
 import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions, IAggregationStrategy} from './interfaces';
 import {exportRanking, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer';
 import {IColumnConstructor} from '../model/Column';
 import {restoreCategoricalColorMapping} from '../model/CategoricalColorMappingFunction';
-import {createColorMappingFunction} from '../model/ColorMappingFunction';
-import {createMappingFunction} from '../model/MappingFunction';
+import {createColorMappingFunction, colorMappingFunctions} from '../model/ColorMappingFunction';
+import {createMappingFunction, mappingFunctions} from '../model/MappingFunction';
 
 
 
