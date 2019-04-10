@@ -25,27 +25,27 @@ export declare type INumbersColumnDesc = INumbersDesc & IArrayColumnDesc<number>
  * @asMemberOf NumbersColumn
  * @event
  */
-declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+export declare function mappingChanged_NCS(previous: IMappingFunction, current: IMappingFunction): void;
 /**
  * emitted when the color mapping property changes
  * @asMemberOf NumbersColumn
  * @event
  */
-declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+export declare function colorMappingChanged_NCS(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the sort method property changes
  * @asMemberOf NumbersColumn
  * @event
  */
-declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
+export declare function sortMethodChanged_NCS(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf NumbersColumn
  * @event
  */
-declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+export declare function filterChanged_NCS(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 @toolbar('filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
@@ -224,10 +224,10 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return super.createEventList().concat([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SORTMETHOD_CHANGED, NumbersColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof NumbersColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
-  on(type: typeof NumbersColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
-  on(type: typeof NumbersColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_NCS | null): this;
+  on(type: typeof NumbersColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_NCS | null): this;
+  on(type: typeof NumbersColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_NCS | null): this;
+  on(type: typeof NumbersColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_NCS | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

@@ -15,7 +15,7 @@ import {IRule} from './rules';
  * @param dataIndex the highlghted data index or -1 for none
  * @event
  */
-declare function highlightChanged(dataIndex: number): void;
+export declare function highlightChanged(dataIndex: number): void;
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;

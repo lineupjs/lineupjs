@@ -81,7 +81,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     // need this for chrome to work properly
     const widths = mc.children.map((c) => `minmax(0, ${round(c.getWidth())}fr)`);
     const clazz = multiLevelGridCSSClass(this.ctx.idPrefix, this.c);
-    style.updateRule(`stacked-${this.c.id}`, `.${clazz}`, {
+    style.updateRule(`stacked-${this.c.id}`, `.${clazz}`, <any>{
       display: 'grid',
       gridTemplateColumns: widths.join(' ')
     });

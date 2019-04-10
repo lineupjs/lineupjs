@@ -25,14 +25,14 @@ export function createImpositionsDesc(label: string = 'Imposition') {
  * @asMemberOf ImpositionCompositesColumn
  * @event
  */
-declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+export declare function mappingChanged_ICCS(previous: IMappingFunction, current: IMappingFunction): void;
 
 /**
  * emitted when the color mapping property changes
  * @asMemberOf ImpositionCompositesColumn
  * @event
  */
-declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+export declare function colorMappingChanged_ICCS(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * implementation of a combine column, standard operations how to select
@@ -104,8 +104,8 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return super.createEventList().concat([ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_ICCS | null): this;
+  on(type: typeof ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_ICCS | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;

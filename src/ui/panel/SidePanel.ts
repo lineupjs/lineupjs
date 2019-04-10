@@ -10,7 +10,7 @@ import SidePanelRanking from './SidePanelRanking';
 import {format} from 'd3-format';
 
 
-interface IColumnWrapper {
+export interface IColumnWrapper {
   desc: IColumnDesc;
   category: IColumnCategory;
   id: string;

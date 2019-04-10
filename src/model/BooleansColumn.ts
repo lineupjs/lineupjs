@@ -1,6 +1,6 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, DEFAULT_COLOR} from './interfaces';
+import {IDataRow, DEFAULT_COLOR, ECompareValueType} from './interfaces';
 import CategoricalColumn from './CategoricalColumn';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import ValueColumn, {dataLoaded} from './ValueColumn';
@@ -17,7 +17,7 @@ export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
  * @asMemberOf BooleansColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_BCS(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 export default class BooleansColumn extends ArrayColumn<boolean> implements ISetColumn {
@@ -48,7 +48,7 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     return v.reduce((a, b) => a + (b ? 1 : 0), 0);
   }
 
-  toCompareValueType() {
+  toCompareValueType(): ECompareValueType {
     return chooseUIntByDataLength(this.dataLength);
   }
 
@@ -72,7 +72,7 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
     return super.createEventList().concat([BooleansColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof BooleansColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof BooleansColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_BCS | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

@@ -12,7 +12,7 @@ import {cssClass} from '../styles';
  * @param dataIndex the highlghted data index or -1 for none
  * @event
  */
-declare function highlightChanged(dataIndex: number): void;
+export declare function highlightChanged(dataIndex: number): void;
 
 /**
  * emitted when the selection changes
@@ -20,7 +20,7 @@ declare function highlightChanged(dataIndex: number): void;
  * @param dataIndices the selected data indices
  * @event
  */
-declare function selectionChanged(dataIndices: number[]): void;
+export declare function selectionChanged(dataIndices: number[]): void;
 
 export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   static readonly EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
