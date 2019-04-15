@@ -1,10 +1,10 @@
-import {dateStatsBuilder, getNumberOfBins, IDateStatistics} from '../internal';
-import {Column, IDataRow, IDateColumn, IDatesColumn, IOrderedGroup, isDateColumn, isDatesColumn, DateColumn} from '../model';
+import {dateStatsBuilder, IDateStatistics} from '../internal';
+import {Column, IDataRow, IDateColumn, IDatesColumn, IOrderedGroup, isDateColumn, isDatesColumn} from '../model';
 import {cssClass} from '../styles';
 import {ERenderMode, ICellRendererFactory, IRenderContext} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {colorOf} from './utils';
-import {histogramUpdate, histogramTemplate, mappingHintTemplate, mappingHintUpdate, IFilterInfo, IFilterContext} from './histogram';
+import {histogramUpdate, histogramTemplate, mappingHintTemplate, mappingHintUpdate, IFilterInfo, IFilterContext, filteredHistTemplate, initFilter} from './histogram';
 import InputDateDialog from '../ui/dialogs/InputDateDialog';
 
 /** @internal */
@@ -84,24 +84,28 @@ function staticSummary(col: IDateColumn, context: IRenderContext, interactive: b
 
 
 function interactiveSummary(col: IDateColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IDateStatistics, unfiltered?: IDateStatistics) => void) {
-  const fContext = createFilterContext(col, context);
-  template += filteredHistTemplate(fContext, createFilterInfo(col));
+  const filter = col.getFilter();
+  const dummyDomain: [number, number] = [isFinite(filter.min) ? filter.min : 0, isFinite(filter.max) ? filter.max : 100];
 
+  template += filteredHistTemplate(createFilterContext(col, context, dummyDomain), createFilterInfo(col, dummyDomain));
+
+  let fContext: IFilterContext<number>;
   let updateFilter: (missing: number, f: IFilterInfo<number>) => void;
 
   return {
     template: `${template}</div>`,
     update: (node: HTMLElement) => {
-      if (!updateFilter) {
-        updateFilter = initFilter(node, fContext);
-      }
-      return context.tasks.summaryNumberStats(col).then((r) => {
+      return context.tasks.summaryDateStats(col).then((r) => {
         if (typeof r === 'symbol') {
           return;
         }
         const {summary, data} = r;
+        if (!updateFilter) {
+          fContext = createFilterContext(col, context, [data.min, data.max])
+          updateFilter = initFilter(node, fContext);
+        }
 
-        updateFilter(data ? data.missing : (summary ? summary.missing : 0), createFilterInfo(col));
+        updateFilter(data ? data.missing : (summary ? summary.missing : 0), createFilterInfo(col, domain));
 
         node.classList.add(cssClass('histogram-i'));
         node.classList.toggle(cssClass('missing'), !summary);
@@ -130,7 +134,7 @@ function getHistDOMRenderer(col: IDateColumn) {
   };
 }
 
-function createFilterInfo(col: IDateColumn, domain: [Date, Date]): IFilterInfo<number> {
+function createFilterInfo(col: IDateColumn, domain: [number, number]): IFilterInfo<number> {
   const filter = col.getFilter();
   const filterMin = isFinite(filter.min) ? filter.min : domain[0];
   const filterMax = isFinite(filter.max) ? filter.max : domain[1];
@@ -141,13 +145,13 @@ function createFilterInfo(col: IDateColumn, domain: [Date, Date]): IFilterInfo<n
   };
 }
 
-function createFilterContext(col: IDateColumn, domain: [Date, Date], context: IRenderContext): IFilterContext<number> {
-  const percent = (v: Date | null) => Math.round(100 * (v - domain[0]) / (domain[1] - domain[0]));
-  const unpercent = (v: Date | null) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
+function createFilterContext(col: IDateColumn, context: IRenderContext, domain: [number, number]): IFilterContext<number> {
+  const percent = (v: number) => Math.round(100 * (v - domain[0]) / (domain[1] - domain[0]));
+  const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
   return {
     percent,
     unpercent,
-    format: col.getFormatter.bind(col),
+    format: (v) => isNaN(v) ? '' : col.getFormatter()(new Date(v)),
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
       min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : minValue,
@@ -161,7 +165,7 @@ function createFilterContext(col: IDateColumn, domain: [Date, Date], context: IR
           level: 1,
           idPrefix: context.idPrefix
         };
-        const dialog = new InputDateDialog(dialogCtx, resolve, {value});
+        const dialog = new InputDateDialog(dialogCtx, (d) => resolve(d == null ? NaN : d.getTime()), {value: isNaN(value) ? null : new Date(value)});
         dialog.open();
       });
     }
