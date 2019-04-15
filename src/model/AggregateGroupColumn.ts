@@ -32,7 +32,7 @@ export interface IAggregateGroupColumnDesc extends IColumnDesc {
  * @asMemberOf AggregateGroupColumn
  * @event
  */
-declare function aggregate(ranking: Ranking, group: IGroup, value: boolean, state: EAggregationState): void;
+export declare function aggregate(ranking: Ranking, group: IGroup, value: boolean, state: EAggregationState): void;
 
 /**
  * a checkbox column for selections

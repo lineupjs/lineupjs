@@ -23,28 +23,28 @@ export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlo
  * @asMemberOf BoxPlotColumn
  * @event
  */
-declare function sortMethodChanged(previous: ESortMethod, current: ESortMethod): void;
+export declare function sortMethodChanged_BPC(previous: ESortMethod, current: ESortMethod): void;
 
 /**
  * emitted when the mapping property changes
  * @asMemberOf BoxPlotColumn
  * @event
  */
-declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+export declare function mappingChanged_BPC(previous: IMappingFunction, current: IMappingFunction): void;
 
 /**
  * emitted when the color mapping property changes
  * @asMemberOf BoxPlotColumn
  * @event
  */
-declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+export declare function colorMappingChanged_BPC(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf BoxPlotColumn
  * @event
  */
-declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+export declare function filterChanged_BPC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 
 @toolbar('filterNumber', 'colorMapped', 'editMapping')
@@ -219,10 +219,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return super.createEventList().concat([BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, BoxPlotColumn.EVENT_MAPPING_CHANGED, BoxPlotColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof BoxPlotColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
-  on(type: typeof BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
-  on(type: typeof BoxPlotColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_BPC | null): this;
+  on(type: typeof BoxPlotColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_BPC | null): this;
+  on(type: typeof BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_BPC | null): this;
+  on(type: typeof BoxPlotColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_BPC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

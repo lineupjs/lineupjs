@@ -18,7 +18,7 @@ export enum EGroupSortMethod {
  * @asMemberOf GroupColumn
  * @event
  */
-declare function sortMethodChanged(previous: EGroupSortMethod, current: EGroupSortMethod): void;
+export declare function sortMethodChanged(previous: EGroupSortMethod, current: EGroupSortMethod): void;
 
 
 @SupportType()

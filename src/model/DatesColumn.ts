@@ -28,14 +28,14 @@ export declare type IDatesColumnDesc = IDatesDesc & IArrayColumnDesc<Date>;
  * @asMemberOf DatesColumn
  * @event
  */
-declare function sortMethodChanged(previous: EDateSort, current: EDateSort): void;
+export declare function sortMethodChanged_DCS(previous: EDateSort, current: EDateSort): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf DatesColumn
  * @event
  */
-declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
+export declare function filterChanged_DCS(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 @toolbar('filterDate')
 @dialogAddons('sort', 'sortDates')
@@ -67,8 +67,8 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     return super.createEventList().concat([DatesColumn.EVENT_SORTMETHOD_CHANGED, DatesColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof DatesColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
-  on(type: typeof DatesColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof DatesColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_DCS | null): this;
+  on(type: typeof DatesColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_DCS | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

@@ -13,26 +13,26 @@ import {IRenderTasks} from '../renderer';
  * @asMemberOf ADataProvider
  * @event
  */
-declare function addColumn(col: Column, index: number): void;
+export declare function addColumn(col: Column, index: number): void;
 
 /**
  * emitted when a column has been moved within this composite columm
  * @asMemberOf ADataProvider
  * @event
  */
-declare function moveColumn(col: Column, index: number, oldIndex: number): void;
+export declare function moveColumn(col: Column, index: number, oldIndex: number): void;
 
 /**
  * emitted when a column has been removed
  * @asMemberOf ADataProvider
  * @event
  */
-declare function removeColumn(col: Column, index: number): void;
+export declare function removeColumn(col: Column, index: number): void;
 /**
  * @asMemberOf ADataProvider
  * @event
  */
-declare function orderChanged(previous: number[], current: number[], previousGroups: IOrderedGroup[], currentGroups: IOrderedGroup[], dirtyReason: EDirtyReason[]): void;
+export declare function orderChanged(previous: number[], current: number[], previousGroups: IOrderedGroup[], currentGroups: IOrderedGroup[], dirtyReason: EDirtyReason[]): void;
 
 
 /**
@@ -40,28 +40,28 @@ declare function orderChanged(previous: number[], current: number[], previousGro
  * @asMemberOf ADataProvider
  * @event
  */
-declare function dirty(): void;
+export declare function dirty(): void;
 
 /**
  * emitted when state of the column related to its header is dirty
  * @asMemberOf ADataProvider
  * @event
  */
-declare function dirtyHeader(): void;
+export declare function dirtyHeader(): void;
 
 /**
  * emitted when state of the column related to its values is dirty
  * @asMemberOf ADataProvider
  * @event
  */
-declare function dirtyValues(): void;
+export declare function dirtyValues(): void;
 
 /**
  * emitted when state of the column related to cached values (hist, compare, ...) is dirty
  * @asMemberOf ADataProvider
  * @event
  */
-declare function dirtyCaches(): void;
+export declare function dirtyCaches(): void;
 
 
 /**
@@ -70,7 +70,7 @@ declare function dirtyCaches(): void;
  * @param rows the new data rows
  * @event
  */
-declare function dataChanged(rows: IDataRow[]): void;
+export declare function dataChanged(rows: IDataRow[]): void;
 
 /**
  * emitted when the selection changes
@@ -78,35 +78,35 @@ declare function dataChanged(rows: IDataRow[]): void;
  * @param dataIndices the selected data indices
  * @event
  */
-declare function selectionChanged(dataIndices: number[]): void;
+export declare function selectionChanged(dataIndices: number[]): void;
 /**
  * @asMemberOf ADataProvider
  * @event
  */
-declare function addRanking(ranking: Ranking, index: number): void;
+export declare function addRanking(ranking: Ranking, index: number): void;
 /**
  * @asMemberOf ADataProvider
  * @param ranking if null all rankings are removed else just the specific one
  * @event
  */
-declare function removeRanking(ranking: Ranking | null, index: number): void;
+export declare function removeRanking(ranking: Ranking | null, index: number): void;
 
 /**
  * @asMemberOf ADataProvider
  * @event
  */
-declare function addDesc(desc: IColumnDesc): void;
+export declare function addDesc(desc: IColumnDesc): void;
 /**
  * @asMemberOf ADataProvider
  * @event
  */
-declare function clearDesc(): void;
+export declare function clearDesc(): void;
 
 /**
  * @asMemberOf ADataProvider
  * @event
  */
-declare function showTopNChanged(previous: number, current: number): void;
+export declare function showTopNChanged(previous: number, current: number): void;
 
 /**
  * emitted when the selection changes
@@ -114,19 +114,19 @@ declare function showTopNChanged(previous: number, current: number): void;
  * @param dataIndices the selected data indices
  * @event
  */
-declare function jumpToNearest(dataIndices: number[]): void;
+export declare function jumpToNearest(dataIndices: number[]): void;
 /**
  * @asMemberOf ADataProvider
  * @event
  */
-declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, state: EAggregationState): void;
+export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, state: EAggregationState): void;
 
 
 /**
  * @asMemberOf ADataProvider
  * @event
  */
-declare function busy(busy: boolean): void;
+export declare function busy(busy: boolean): void;
 
 function toDirtyReason(ctx: IEventContext) {
   const primary = ctx.primaryType;
@@ -221,7 +221,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       columnTypes: {},
       singleSelection: false,
       showTopN: 10,
-      aggregationStrategy: 'item'
+      aggregationStrategy: <IAggregationStrategy>'item'
     }, options);
     this.columnTypes = Object.assign(models(), o.columnTypes);
     this.multiSelections = o.singleSelection !== true;
