@@ -3,8 +3,6 @@ import {IBin, round, IDragHandleOptions, dragHandle} from '../internal';
 import {cssClass, FILTERED_OPACITY} from '../styles';
 import {color} from 'd3-color';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
-import {IRenderContext} from './interfaces';
-import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 
 function filteredColor(input: string) {
   const c = color(input)!;
@@ -96,6 +94,7 @@ export interface IFilterContext<T> {
   format(v: T): string;
   setFilter(filterMissing: boolean, min: T, max: T): void;
   edit(value: T, attachment: HTMLElement): Promise<T>;
+  domain: [T, T];
 }
 /**
  * @internal

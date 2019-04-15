@@ -52,7 +52,7 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
 
   createSummary(col: IDateColumn, context: IRenderContext, interactive: boolean) {
     const r = getHistDOMRenderer(col);
-    return staticSummary(col, context, interactive, r.template, r.render);
+    return interactive ? interactiveSummary(col, context, r.template, r.render) : staticSummary(col, context, false, r.template, r.render);
   }
 }
 
@@ -101,11 +101,11 @@ function interactiveSummary(col: IDateColumn, context: IRenderContext, template:
         }
         const {summary, data} = r;
         if (!updateFilter) {
-          fContext = createFilterContext(col, context, [data.min, data.max])
+          fContext = createFilterContext(col, context, [data.min ? data.min.getTime() : Date.now(), data.max ? data.max.getTime() : Date.now()])
           updateFilter = initFilter(node, fContext);
         }
 
-        updateFilter(data ? data.missing : (summary ? summary.missing : 0), createFilterInfo(col, domain));
+        updateFilter(data ? data.missing : (summary ? summary.missing : 0), createFilterInfo(col, fContext.domain));
 
         node.classList.add(cssClass('histogram-i'));
         node.classList.toggle(cssClass('missing'), !summary);
@@ -151,6 +151,7 @@ function createFilterContext(col: IDateColumn, context: IRenderContext, domain: 
   return {
     percent,
     unpercent,
+    domain,
     format: (v) => isNaN(v) ? '' : col.getFormatter()(new Date(v)),
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,

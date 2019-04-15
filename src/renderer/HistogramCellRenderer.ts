@@ -152,6 +152,7 @@ function createFilterContext(col: IMapAbleColumn, context: IRenderContext): IFil
   return {
     percent,
     unpercent,
+    domain: <[number, number]>domain,
     format: (v) => round(v, 2).toString(),
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
