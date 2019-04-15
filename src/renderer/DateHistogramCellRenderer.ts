@@ -102,7 +102,7 @@ function interactiveSummary(col: IDateColumn, context: IRenderContext, template:
         }
         const {summary, data} = r;
         if (!updateFilter) {
-          fContext = createFilterContext(col, context, [data.min ? data.min.getTime() : Date.now(), data.max ? data.max.getTime() : Date.now()])
+          fContext = createFilterContext(col, context, [data.min ? data.min.getTime() : Date.now(), data.max ? data.max.getTime() : Date.now()]);
           updateFilter = initFilter(node, fContext);
         }
 
