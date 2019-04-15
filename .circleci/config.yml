@@ -31,7 +31,7 @@ jobs:
                   rm -rf ../build/docs
                 fi
                 mv ../build "${CIRCLE_BRANCH}"
-                cp ../demo/* "${CIRCLE_BRANCH}/"
+                cp -r ../demo/* "${CIRCLE_BRANCH}/"
                 git config user.email "sam@sgratzl.com"
                 git config user.name "Samuel Gratzl"
                 git add -A
