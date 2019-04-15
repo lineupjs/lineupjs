@@ -6,6 +6,7 @@ import {renderMissingDOM} from './missing';
 import {colorOf} from './utils';
 import {histogramUpdate, histogramTemplate, mappingHintTemplate, mappingHintUpdate, IFilterInfo, IFilterContext, filteredHistTemplate, initFilter} from './histogram';
 import InputDateDialog from '../ui/dialogs/InputDateDialog';
+import {shiftFilterDateDay} from '../model/internalDate';
 
 /** @internal */
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
@@ -155,10 +156,10 @@ function createFilterContext(col: IDateColumn, context: IRenderContext, domain: 
     format: (v) => isNaN(v) ? '' : col.getFormatter()(new Date(v)),
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
-      min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : minValue,
-      max: Math.abs(maxValue - domain[1]) < 0.001 ? NaN : maxValue
+      min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : shiftFilterDateDay(minValue, 'min'),
+      max: Math.abs(maxValue - domain[1]) < 0.001 ? NaN : shiftFilterDateDay(maxValue, 'max')
     }),
-    edit: (value, attachment) => {
+    edit: (value, attachment, type) => {
       return new Promise((resolve) => {
         const dialogCtx = {
           attachment,
@@ -166,7 +167,7 @@ function createFilterContext(col: IDateColumn, context: IRenderContext, domain: 
           level: 1,
           idPrefix: context.idPrefix
         };
-        const dialog = new InputDateDialog(dialogCtx, (d) => resolve(d == null ? NaN : d.getTime()), {value: isNaN(value) ? null : new Date(value)});
+        const dialog = new InputDateDialog(dialogCtx, (d) => resolve(d == null ? NaN : shiftFilterDateDay(d.getTime(), type)), {value: isNaN(value) ? null : new Date(value)});
         dialog.open();
       });
     }

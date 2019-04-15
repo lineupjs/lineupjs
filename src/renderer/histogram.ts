@@ -93,7 +93,7 @@ export interface IFilterContext<T> {
   unpercent(p: number): T;
   format(v: T): string;
   setFilter(filterMissing: boolean, min: T, max: T): void;
-  edit(value: T, attachment: HTMLElement): Promise<T>;
+  edit(value: T, attachment: HTMLElement, type: 'min' | 'max'): Promise<T>;
   domain: [T, T];
 }
 /**
@@ -139,7 +139,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
 
     const value = context.unpercent(parseFloat(min.style.left!));
 
-    context.edit(value, min).then((newValue) => {
+    context.edit(value, min, 'min').then((newValue) => {
       minHint.style.width = `${context.percent(newValue)}%`;
       min.dataset.value = context.format(newValue);
       min.style.left = `${context.percent(newValue)}%`;
@@ -157,7 +157,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
 
     const value = context.unpercent(100 - parseFloat(max.style.right!));
 
-    context.edit(value, max).then((newValue) => {
+    context.edit(value, max, 'max').then((newValue) => {
       maxHint.style.width = `${100 - context.percent(newValue)}%`;
       max.dataset.value = context.format(newValue);
       max.style.right = `${100 - context.percent(newValue)}%`;
