@@ -160,7 +160,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   }
 
   toCompareValueType() {
-    return [chooseUIntByDataLength(this.dataLength), ECompareValueType.INT32];
+    return [chooseUIntByDataLength(this.dataLength), ECompareValueType.DOUBLE_ASC];
   }
 
   isFiltered() {

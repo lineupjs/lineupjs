@@ -168,7 +168,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   }
 
   toCompareValueType() {
-    return ECompareValueType.INT32;
+    return ECompareValueType.DOUBLE_ASC;
   }
 
   getDateGrouper() {
