@@ -10,7 +10,7 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
  * @asMemberOf AnnotateColumn
  * @event
  */
-declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+export declare function filterChanged_AC(previous: string | RegExp | null, current: string | RegExp | null): void;
 
 
 /**
@@ -18,14 +18,14 @@ declare function filterChanged(previous: string | RegExp | null, current: string
  * @asMemberOf AnnotateColumn
  * @event
  */
-declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
+export declare function groupingChanged_AC(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * emitted when the value of a row changes
  * @asMemberOf AnnotateColumn
  * @event
  */
-declare function valueChanged(dataIndex: number, previous: string, current: string): void;
+export declare function valueChanged(dataIndex: number, previous: string, current: string): void;
 
 /**
  * a string column in which the values can be edited locally
@@ -40,8 +40,8 @@ export default class AnnotateColumn extends StringColumn {
   }
 
   on(type: typeof AnnotateColumn.EVENT_VALUE_CHANGED, listener: typeof valueChanged | null): this;
-  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_AC | null): this;
+  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_AC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

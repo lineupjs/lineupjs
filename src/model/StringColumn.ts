@@ -32,7 +32,7 @@ export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
  * @asMemberOf StringColumn
  * @event
  */
-declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+export declare function filterChanged_SC(previous: string | RegExp | null, current: string | RegExp | null): void;
 
 
 /**
@@ -40,7 +40,7 @@ declare function filterChanged(previous: string | RegExp | null, current: string
  * @asMemberOf StringColumn
  * @event
  */
-declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
+export declare function groupingChanged_SC(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * a string column with optional alignment
@@ -73,9 +73,9 @@ export default class StringColumn extends ValueColumn<string> {
     return super.createEventList().concat([StringColumn.EVENT_GROUPING_CHANGED, StringColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_SC | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
   on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;

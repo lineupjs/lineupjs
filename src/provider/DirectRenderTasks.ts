@@ -2,6 +2,7 @@ import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberC
 import {ARenderTasks, IRenderTaskExectutor, taskNow} from './tasks';
 import {ISequence, toIndexArray, sortComplex, getNumberOfBins} from '../internal';
 import {CompareLookup} from './sort';
+import {IRenderTask} from '..';
 
 /**
  * @internal
@@ -14,6 +15,9 @@ export function sortDirect(indices: IndicesArray, maxDataIndex: number, lookups?
   return order;
 }
 
+/**
+ * @internal
+ */
 export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 
   protected readonly cache = new Map<string, any>();
@@ -83,7 +87,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     return Promise.resolve(sortDirect(indices, maxDataIndex, lookups));
   }
 
-  groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
+  groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray): IRenderTask<ICompareValue[]> {
     const rg = ranking.getGroupSortCriteria();
     if (rg.length === 0) {
       return taskNow([group.name.toLowerCase()]);
@@ -102,11 +106,11 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     return taskNow(vs);
   }
 
-  groupRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
+  groupRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T> {
     return taskNow(compute(this.byOrder(group.order)));
   }
 
-  groupExampleRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
+  groupExampleRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T> {
     return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
   }
 

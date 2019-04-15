@@ -21,7 +21,7 @@ export declare type ISetColumnDesc = ISetDesc & IValueColumnDesc<string[]>;
  * @asMemberOf SetColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_SSC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 /**
@@ -29,7 +29,7 @@ declare function colorMappingChanged(previous: ICategoricalColorMappingFunction,
  * @asMemberOf SetColumn
  * @event
  */
-declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+export declare function filterChanged_SSC(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
 
 /**
  * a string column with optional alignment
@@ -69,8 +69,8 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return super.createEventList().concat([SetColumn.EVENT_COLOR_MAPPING_CHANGED, SetColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof SetColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof SetColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof SetColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SSC | null): this;
+  on(type: typeof SetColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_SSC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

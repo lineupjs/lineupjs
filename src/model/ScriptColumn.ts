@@ -197,27 +197,27 @@ export declare type IScriptColumnDesc = IScriptDesc;
  * @asMemberOf ScriptColumn
  * @event
  */
-declare function scriptChanged(previous: string, current: string): void;
+export declare function scriptChanged(previous: string, current: string): void;
 
 /**
  * emitted when the mapping property changes
  * @asMemberOf ScriptColumn
  * @event
  */
-declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
 /**
  * emitted when the color mapping property changes
  * @asMemberOf ScriptColumn
  * @event
  */
-declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+export declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf ScriptColumn
  * @event
  */
-declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 
 
