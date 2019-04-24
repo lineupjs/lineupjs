@@ -25,7 +25,7 @@ export interface IRemoteDataProviderOptions {
  * a remote implementation of the data provider
  */
 export default class RemoteDataProvider extends ACommonDataProvider {
-  private readonly options: IRemoteDataProviderOptions = {
+  private readonly ooptions: IRemoteDataProviderOptions = {
     maxCacheSize: 10000,
     loadNeighbors: 50
   };
@@ -36,8 +36,8 @@ export default class RemoteDataProvider extends ACommonDataProvider {
 
   constructor(private server: IServerData, columns: IColumnDesc[] = [], options: Partial<IRemoteDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
-    Object.assign(this.options, options);
-    this.cache = new LRUCache(this.options.maxCacheSize);
+    Object.assign(this.ooptions, options);
+    this.cache = new LRUCache(this.ooptions.maxCacheSize);
     this.tasks = new RemoteTaskExecutor(server, {
       viewRows: this.viewRows.bind(this),
       toDescRef: this.toDescRef
@@ -223,8 +223,8 @@ export default class RemoteDataProvider extends ACommonDataProvider {
         continue;
       }
       const order = ranking.getOrder();
-      const startRank = Math.max(0, rank - this.options.loadNeighbors);
-      const endRank = Math.min(order.length - 1, rank + this.options.loadNeighbors);
+      const startRank = Math.max(0, rank - this.ooptions.loadNeighbors);
+      const endRank = Math.min(order.length - 1, rank + this.ooptions.loadNeighbors);
 
       for (let i = startRank; i <= endRank; ++i) {
         indices.add(order[i]);
