@@ -16,7 +16,7 @@ export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDes
  * @asMemberOf CategoricalsColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_CCS(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 /**
  * a string column with optional alignment
@@ -42,7 +42,7 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     return super.createEventList().concat([CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_CCS | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

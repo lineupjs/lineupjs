@@ -15,7 +15,7 @@ export declare type ILinksColumnDesc = ILinkDesc & IArrayColumnDesc<string | ILi
  * @asMemberOf LinksColumn
  * @event
  */
-declare function patternChanged(previous: string, current: string): void;
+export declare function patternChanged_LCS(previous: string, current: string): void;
 
 @toolbar('search', 'editPattern')
 export default class LinksColumn extends ArrayColumn<string | ILink> {
@@ -48,7 +48,7 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
     return super.createEventList().concat([LinksColumn.EVENT_PATTERN_CHANGED]);
   }
 
-  on(type: typeof LinksColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged | null): this;
+  on(type: typeof LinksColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged_LCS | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

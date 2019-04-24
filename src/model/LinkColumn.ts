@@ -31,7 +31,7 @@ export declare type ILinkColumnDesc = ILinkDesc & IValueColumnDesc<string | ILin
  * @asMemberOf LinkColumn
  * @event
  */
-declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+export declare function filterChanged_LC(previous: string | RegExp | null, current: string | RegExp | null): void;
 
 
 /**
@@ -39,14 +39,14 @@ declare function filterChanged(previous: string | RegExp | null, current: string
  * @asMemberOf LinkColumn
  * @event
  */
-declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
+export declare function groupingChanged_LC(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * emitted when the pattern property changes
  * @asMemberOf LinkColumn
  * @event
  */
-declare function patternChanged(previous: string, current: string): void;
+export declare function patternChanged_LC(previous: string, current: string): void;
 
 /**
  * a string column with optional alignment
@@ -100,10 +100,10 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return super.createEventList().concat([LinkColumn.EVENT_PATTERN_CHANGED, LinkColumn.EVENT_GROUPING_CHANGED, LinkColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof LinkColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged | null): this;
-  on(type: typeof LinkColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof LinkColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged_LC | null): this;
+  on(type: typeof LinkColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_LC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof LinkColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof LinkColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_LC | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
   on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;

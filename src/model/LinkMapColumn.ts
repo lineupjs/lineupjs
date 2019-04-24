@@ -17,7 +17,7 @@ export declare type ILinkMapColumnDesc = ILinkDesc & IMapColumnDesc<string>;
  * @asMemberOf LinkMapColumn
  * @event
  */
-declare function patternChanged(previous: string, current: string): void;
+export declare function patternChanged_LMC(previous: string, current: string): void;
 
 /**
  * a string column with optional alignment
@@ -54,7 +54,7 @@ export default class LinkMapColumn extends MapColumn<string> {
     return super.createEventList().concat([LinkColumn.EVENT_PATTERN_CHANGED]);
   }
 
-  on(type: typeof LinkColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged | null): this;
+  on(type: typeof LinkColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged_LMC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

@@ -21,7 +21,7 @@ interface IShift {
  * @internal
  * @event
  */
-declare function selectRange(from: number, to: number, additional: boolean): void;
+export declare function selectRange(from: number, to: number, additional: boolean): void;
 
 /** @internal */
 export default class SelectionManager extends AEventDispatcher {

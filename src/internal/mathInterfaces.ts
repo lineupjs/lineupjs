@@ -7,21 +7,22 @@ import * as equalImpl from 'fast-deep-equal';
  */
 export const equal: (a: any, b: any) => boolean = (typeof equalImpl === 'function' ? equalImpl : (<any>equalImpl).default);
 
-
-export interface INumberBin {
+export interface IBin<T> {
   /**
    * bin start
    */
-  x0: number;
+  x0: T;
   /**
    * bin end
    */
-  x1: number;
+  x1: T;
   /**
    * bin count
    */
   count: number;
 }
+
+export declare type INumberBin = IBin<number>;
 
 export interface IBoxPlotData {
   readonly min: number;
@@ -41,16 +42,19 @@ export interface IAdvancedBoxPlotData extends IBoxPlotData {
   readonly count: number;
 }
 
-export interface IStatistics {
-  readonly mean: number;
-  readonly min: number;
-  readonly max: number;
+export interface IHistogramStats<T> {
+  readonly min: T | null;
+  readonly max: T | null;
 
   readonly missing: number;
   readonly count: number;
 
   readonly maxBin: number;
-  readonly hist: ReadonlyArray<INumberBin>;
+  readonly hist: ReadonlyArray<IBin<T>>;
+}
+
+export interface IStatistics extends IHistogramStats<number> {
+  readonly mean: number;
 }
 
 export interface ICategoricalBin {
@@ -58,11 +62,7 @@ export interface ICategoricalBin {
   count: number;
 }
 
-export interface IDateBin {
-  x0: Date;
-  x1: Date;
-  count: number;
-}
+export declare type IDateBin = IBin<Date>;
 
 export interface ICategoricalStatistics {
   readonly missing: number;
@@ -74,14 +74,6 @@ export interface ICategoricalStatistics {
 
 export declare type IDateHistGranularity = 'year' | 'month' | 'day';
 
-export interface IDateStatistics {
-  readonly min: Date | null;
-  readonly max: Date | null;
-
-  readonly missing: number;
-  readonly count: number;
-
-  readonly maxBin: number;
+export interface IDateStatistics extends IHistogramStats<Date> {
   readonly histGranularity: IDateHistGranularity;
-  readonly hist: ReadonlyArray<IDateBin>;
 }

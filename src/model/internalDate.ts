@@ -19,6 +19,25 @@ export function isDateIncluded(filter: INumberFilter | null, value: Date | null)
   return isNumberIncluded(filter, value!.getTime());
 }
 
+/**
+ * shifts the given date such that it is on 23:59:59, or 00:00:00
+ * @internal
+ */
+export function shiftFilterDateDay(date: number, type: 'min' | 'max') {
+  const d = new Date(date);
+  if (type === 'max') {
+    d.setHours(23);
+    d.setMinutes(59);
+    d.setSeconds(59);
+    d.setMilliseconds(999);
+  } else {
+    d.setHours(0);
+    d.setMinutes(0);
+    d.setSeconds(0);
+    d.setMilliseconds(0);
+  }
+  return d.getTime();
+}
 
 /**
  * @internal

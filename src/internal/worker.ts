@@ -9,6 +9,8 @@ export interface IPoorManWorkerScopeEventMap {
   error: ErrorEvent;
 }
 
+declare type IPoorManTransferAble = ArrayBuffer | MessagePort | ImageBitmap;
+
 /**
  * @internal
  */
@@ -16,7 +18,7 @@ export interface IPoorManWorkerScope {
   onmessage: ((this: IPoorManWorkerScope, ev: MessageEvent) => any) | null;
   onerror: ((this: IPoorManWorkerScope, ev: ErrorEvent) => any) | null;
   close(): void;
-  postMessage(message: any, transfer?: Transferable[]): void;
+  postMessage(message: any, transfer?: IPoorManTransferAble[]): void;
   addEventListener<K extends keyof IPoorManWorkerScopeEventMap>(type: K, listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
   removeEventListener<K extends keyof IPoorManWorkerScopeEventMap>(type: K, listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
 }
@@ -195,9 +197,9 @@ export class WorkerTaskScheduler {
     });
   }
 
-  push<M, R>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[]): Promise<R>;
-  push<M, R, T>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[], toResult: (r: R) => T): Promise<T>;
-  push<M, R, T>(type: string, args: Exclude<M, IWorkerMessage>, transferAbles: ArrayBuffer[], toResult?: (r: R) => T): Promise<T> {
+  push<M, R>(type: string, args: M, transferAbles: ArrayBuffer[]): Promise<R>;
+  push<M, R, T>(type: string, args: M, transferAbles: ArrayBuffer[], toResult: (r: R) => T): Promise<T>;
+  push<M, R, T>(type: string, args: M, transferAbles: ArrayBuffer[], toResult?: (r: R) => T): Promise<T> {
     return new Promise<T>((resolve) => {
       const uid = this.workerTaskCounter++;
       const {worker, tasks} = this.checkOutWorker();

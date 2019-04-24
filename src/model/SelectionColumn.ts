@@ -34,7 +34,7 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
  * @param dataIndices in case of multiple rows are selected
  * @event
  */
-declare function select(dataIndex: number, value: boolean, dataIndices?: IndicesArray): void;
+export declare function select_SC(dataIndex: number, value: boolean, dataIndices?: IndicesArray): void;
 
 /**
  * a checkbox column for selections
@@ -66,7 +66,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     return super.createEventList().concat([SelectionColumn.EVENT_SELECT]);
   }
 
-  on(type: typeof SelectionColumn.EVENT_SELECT, listener: typeof select | null): this;
+  on(type: typeof SelectionColumn.EVENT_SELECT, listener: typeof select_SC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;

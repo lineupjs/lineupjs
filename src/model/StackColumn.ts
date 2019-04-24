@@ -20,7 +20,7 @@ export function createStackDesc(label: string = 'Weighted Sum') {
  * @asMemberOf StackColumn
  * @event
  */
-declare function collapseChanged(previous: boolean, current: boolean): void;
+export declare function collapseChanged(previous: boolean, current: boolean): void;
 
 
 /**
@@ -28,7 +28,7 @@ declare function collapseChanged(previous: boolean, current: boolean): void;
  * @asMemberOf StackColumn
  * @event
  */
-declare function weightsChanged(previous: number[], current: number[]): void;
+export declare function weightsChanged(previous: number[], current: number[]): void;
 
 
 /**
@@ -36,7 +36,7 @@ declare function weightsChanged(previous: number[], current: number[]): void;
  * @asMemberOf StackColumn
  * @event
  */
-declare function nestedChildRatio(previous: number[], current: number[]): void;
+export declare function nestedChildRatio(previous: number[], current: number[]): void;
 
 /**
  * implementation of the stacked column

@@ -16,15 +16,14 @@ export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
  * @asMemberOf DateColumn
  * @event
  */
-declare function filterChanged(previous: IDateFilter | null, current: IDateFilter | null): void;
+export declare function filterChanged_DC(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 /**
  * emitted when the grouping property changes
  * @asMemberOf DateColumn
  * @event
  */
-declare function groupingChanged(previous: IDateGrouper | null, current: IDateGrouper | null): void;
-
+export declare function groupingChanged_DC(previous: IDateGrouper | null, current: IDateGrouper | null): void;
 
 @toolbar('groupBy', 'sortGroupBy', 'filterDate')
 @dialogAddons('group', 'groupDate')
@@ -33,7 +32,9 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 
-  private readonly format: (date: Date) => string;
+  static readonly DEFAULT_DATE_FORMAT = '%x';
+
+  private readonly format: (date: Date | null) => string;
   private readonly parse: (date: string) => Date | null;
 
   /**
@@ -46,8 +47,15 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
 
   constructor(id: string, desc: Readonly<IDateColumnDesc>) {
     super(id, desc);
-    this.format = timeFormat(desc.dateFormat || '%x');
-    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || '%x');
+    const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
+    this.format = (v) => (v instanceof Date) ? f(v) : '';
+    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
+    this.setDefaultGroupRenderer('datehistogram');
+    this.setDefaultSummaryRenderer('datehistogram');
+  }
+
+  getFormatter() {
+    return this.format;
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -73,8 +81,8 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return super.createEventList().concat([DateColumn.EVENT_FILTER_CHANGED, DateColumn.EVENT_GROUPING_CHANGED]);
   }
 
-  on(type: typeof DateColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof DateColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof DateColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_DC | null): this;
+  on(type: typeof DateColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_DC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -113,9 +121,6 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
 
   getLabel(row: IDataRow) {
     const v = this.getValue(row);
-    if (!(v instanceof Date)) {
-      return '';
-    }
     return this.format(v);
   }
 
@@ -163,7 +168,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   }
 
   toCompareValueType() {
-    return ECompareValueType.INT32;
+    return ECompareValueType.DOUBLE_ASC;
   }
 
   getDateGrouper() {

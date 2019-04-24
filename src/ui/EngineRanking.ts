@@ -1,4 +1,4 @@
-import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderContext, IExceptionContext, isAbortAble, isAsyncUpdate, isLoadingCell, ITableSection, nonUniformContext, PrefetchMixin, tableIds, uniformContext} from 'lineupengine';
+import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderContext, IExceptionContext, isAbortAble, isAsyncUpdate, isLoadingCell, ITableSection, nonUniformContext, PrefetchMixin, tableIds, uniformContext, IAsyncUpdate} from 'lineupengine';
 import {ILineUpFlags} from '../config';
 import {HOVER_DELAY_SHOW_DETAIL} from '../constants';
 import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
@@ -30,26 +30,26 @@ export interface IEngineRankingOptions {
  * @asMemberOf EngineRanking
  * @event
  */
-declare function widthChanged(): void;
+export declare function widthChanged(): void;
 /**
  * emitted when the data of the ranking needs to be updated
  * @asMemberOf EngineRanking
  * @event
  */
-declare function updateData(): void;
+export declare function updateData(): void;
 /**
  * emitted when the table has be recreated
  * @asMemberOf EngineRanking
  * @event
  */
-declare function recreate(): void;
+export declare function recreate(): void;
 /**
  * emitted when the highlight changes
  * @asMemberOf EngineRanking
  * @param dataIndex the highlghted data index or -1 for none
  * @event
  */
-declare function highlightChanged(dataIndex: number): void;
+export declare function highlightChanged(dataIndex: number): void;
 
 
 /** @internal */
@@ -300,7 +300,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return this._context;
   }
 
-  protected createHeader(_document: Document, column: RenderColumn) {
+  protected createHeader(_document: Document, column: RenderColumn): HTMLElement | IAsyncUpdate<HTMLElement> {
     return column.createHeader();
   }
 

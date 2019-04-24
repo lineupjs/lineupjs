@@ -17,11 +17,9 @@
       }
     },
     "aggregations": {
-      "type": "array",
-      "title": "list of aggregated group paths",
-      "items": {
-        "type": "string"
-      }
+      "type": "object",
+      "title": "key value of aggregation states",
+      "additionalProperties": true
     },
     "showTopN": {
       "type": "integer",

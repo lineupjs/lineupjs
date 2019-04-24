@@ -1,6 +1,6 @@
 import {abortAbleAll, IAbortAblePromise} from 'lineupengine';
 import {ANOTHER_ROUND} from '../internal/scheduler';
-import {IForEachAble, lazySeq, boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value, joinIndexArrays, IBuilder} from '../internal';
+import {IForEachAble, lazySeq, boxplotBuilder, categoricalStatsBuilder, categoricalValueCacheBuilder, dateStatsBuilder, dateValueCacheBuilder, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, normalizedStatsBuilder, dateValueCache2Value, categoricalValueCache2Value, joinIndexArrays, IBuilder, ISequence} from '../internal';
 import {CategoricalColumn, Column, ICompareValue, DateColumn, ICategoricalLikeColumn, IDataRow, IDateColumn, IGroup, ImpositionCompositeColumn, IndicesArray, INumberColumn, NumberColumn, OrdinalColumn, Ranking, UIntTypedArray, ICategory} from '../model';
 import {IRenderTask, IRenderTasks} from '../renderer';
 import {CompareLookup} from './sort';
@@ -34,7 +34,7 @@ export class TaskLater<T> implements IRenderTask<T> {
 
   }
 
-  then<U = void>(onfullfilled: (value: T | symbol) => U) {
+  then<U = void>(onfullfilled: (value: T | symbol) => U): IAbortAblePromise<U> {
     return this.v.then(onfullfilled);
   }
 }
@@ -113,7 +113,7 @@ export class ARenderTasks {
   }
 
 
-  protected byOrder(indices: IndicesArray) {
+  protected byOrder(indices: IndicesArray): ISequence<IDataRow> {
     return lazySeq(indices).map(this.byIndex);
   }
 
@@ -144,7 +144,7 @@ export class ARenderTasks {
       // done
       return {
         done: true,
-        value: build ? build(builder.build()) : <R><unknown>builder.build()
+        value: build ? build(builder.build()) : <R><any>builder.build()
       };
     };
 
@@ -168,7 +168,7 @@ export class ARenderTasks {
       }
       return {
         done: true,
-        value: build ? build(builder.build()) : <R><unknown>builder.build()
+        value: build ? build(builder.build()) : <R><any>builder.build()
       };
     };
     return {next: order == null ? nextData : nextOrder};

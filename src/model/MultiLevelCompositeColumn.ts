@@ -11,14 +11,14 @@ import StackColumn from './StackColumn';
  * @asMemberOf MultiLevelCompositeColumn
  * @event
  */
-declare function collapseChanged(previous: boolean, current: boolean): void;
+export declare function collapseChanged_MC(previous: boolean, current: boolean): void;
 
 /**
  * emitted when the ratios between the children changes
  * @asMemberOf MultiLevelCompositeColumn
  * @event
  */
-declare function nestedChildRatio(previous: number, current: number): void;
+export declare function nestedChildRatio_MC(previous: number, current: number): void;
 
 
 @toolbar('compress', 'expand')
@@ -47,8 +47,8 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     return super.createEventList().concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED]);
   }
 
-  on(type: typeof MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged | null): this;
-  on(type: typeof MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, listener: typeof nestedChildRatio | null): this;
+  on(type: typeof MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged_MC | null): this;
+  on(type: typeof MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, listener: typeof nestedChildRatio_MC | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;

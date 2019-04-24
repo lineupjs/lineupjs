@@ -27,14 +27,14 @@ export declare type IBooleanColumnDesc = IValueColumnDesc<boolean> & IBooleanDes
  * @asMemberOf BooleanColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_BC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf BooleanColumn
  * @event
  */
-declare function filterChanged(previous: boolean | null, current: boolean | null): void;
+export declare function filterChanged_BC(previous: boolean | null, current: boolean | null): void;
 
 /**
  * a string column with optional alignment
@@ -77,8 +77,8 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return super.createEventList().concat([BooleanColumn.EVENT_COLOR_MAPPING_CHANGED, BooleanColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof BooleanColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof BooleanColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof BooleanColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_BC | null): this;
+  on(type: typeof BooleanColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_BC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -222,7 +222,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return v ? 1 : 0;
   }
 
-  toCompareValueType() {
+  toCompareValueType(): ECompareValueType {
     return ECompareValueType.BINARY;
   }
 
