@@ -6,6 +6,7 @@ import {IDataProviderOptions} from '../interfaces';
 import {IServerData, toRankingDump} from './interfaces';
 import {index2pos} from '../internal';
 import RemoteTaskExecutor from './RemoteTaskExecutor';
+import {IRenderTasks} from '../../renderer';
 
 export interface IRemoteDataProviderOptions {
   /**
@@ -48,7 +49,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.server.totalNumberOfRows;
   }
 
-  getTaskExecutor() {
+  getTaskExecutor(): IRenderTasks {
     return this.tasks;
   }
 
