@@ -133,7 +133,7 @@ export class QuantizedColorFunction implements IColorMappingFunction {
   constructor(dump: ITypedDump, factory: ITypeFactory);
   constructor(base: IColorMappingFunction, steps: number)
   constructor(base: IColorMappingFunction | ITypedDump, steps: number | ITypeFactory) {
-    if (typeof base.apply === 'function') {
+    if (typeof (<any>base).apply === 'function') {
       this.base = <IColorMappingFunction>base;
       this.steps = steps == null ? 5 : <number>steps;
     } else {
