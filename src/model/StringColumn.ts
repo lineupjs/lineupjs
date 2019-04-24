@@ -1,6 +1,6 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, othersGroup} from './interfaces';
+import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, othersGroup, ITypeFactory} from './interfaces';
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {equal, IEventListener} from '../internal';
@@ -114,7 +114,7 @@ export default class StringColumn extends ValueColumn<string> {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.filter && (<string>dump.filter).startsWith('REGEX:')) {
       this.currentFilter = new RegExp(dump.filter.slice(6), 'gm');

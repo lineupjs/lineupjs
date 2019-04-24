@@ -1,7 +1,7 @@
 import {ICategoricalDesc, ICategory, ICategoricalLikeColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, DEFAULT_COLOR} from './interfaces';
+import {IDataRow, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
@@ -106,13 +106,13 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    r.colorMapping = this.colorMapping.dump();
+    r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
-    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
   }
 
   iterCategory(row: IDataRow) {

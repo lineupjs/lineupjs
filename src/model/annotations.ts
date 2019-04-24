@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import Column from './Column';
+import Column, {IColumnConstructor} from './Column';
 import {IColumnDesc} from './interfaces';
 
 const supportType = Symbol.for('SupportType');
@@ -72,12 +72,12 @@ export interface IColumnCategory {
   featureLevel: 'basic' | 'advanced';
 }
 
-export function categoryOf(col: (typeof Column) | Column): IColumnCategory {
+export function categoryOf(col: IColumnConstructor | Column): IColumnCategory {
   const cat = <keyof Categories>Reflect.getMetadata(category, col instanceof Column ? Object.getPrototypeOf(col).constructor : col) || 'other';
   return <IColumnCategory>categories[cat] || categories.other;
 }
 
-export function categoryOfDesc(col: IColumnDesc | string, models: { [key: string]: typeof Column }): IColumnCategory {
+export function categoryOfDesc(col: IColumnDesc | string, models: { [key: string]: IColumnConstructor }): IColumnCategory {
   const type = typeof col === 'string' ? col : col.type;
   const clazz = models[type];
   return clazz ? categoryOf(clazz) : <IColumnCategory>categories.other;

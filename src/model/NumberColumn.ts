@@ -1,11 +1,10 @@
 import {format} from 'd3-format';
 import {equalArrays, IEventListener, ISequence} from '../internal';
 import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
-import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEFAULT_COLOR} from './interfaces';
+import {IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import {INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, IMappingFunction, IColorMappingFunction, IMapAbleColumn} from './INumberColumn';
-import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareGroupValue, isEqualNumberFilter, isNumberIncluded} from './internalNumber';
@@ -79,12 +78,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private currentGroupThresholds: number[] = [];
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
-  constructor(id: string, desc: INumberColumnDesc) {
+  constructor(id: string, desc: INumberColumnDesc, factory: ITypeFactory) {
     super(id, desc);
 
-    this.mapping = restoreMapping(desc);
+    this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(desc);
+    this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
@@ -100,8 +99,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
-    r.map = this.mapping.dump();
-    r.colorMapping = this.colorMapping.dump();
+    r.map = this.mapping.toJSON();
+    r.colorMapping = this.colorMapping.toJSON();
     r.filter = isDummyNumberFilter(this.currentFilter) ? null : this.currentFilter;
     r.groupSortMethod = this.groupSortMethod;
     if (this.currentGroupThresholds) {
@@ -110,15 +109,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.map) {
-      this.mapping = createMappingFunction(dump.map);
+      this.mapping = factory.mappingFunction(dump.map);
     } else if (dump.domain) {
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(dump.colorMapping);
+      this.colorMapping = factory.colorMappingFunction(dump.colorMapping);
     }
     if (dump.groupSortMethod) {
       this.groupSortMethod = dump.groupSortMethod;

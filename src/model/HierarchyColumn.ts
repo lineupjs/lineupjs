@@ -2,12 +2,12 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IGroup, IValueColumnDesc, DEFAULT_COLOR} from './interfaces';
+import {IDataRow, IGroup, IValueColumnDesc, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import {colorPool} from './internal';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
-import {restoreCategoricalColorMapping, DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
 export interface ICategoryNode extends ICategory {
   children: Readonly<ICategoryNode>[];
@@ -141,7 +141,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    r.colorMapping = this.colorMapping.dump();
+    r.colorMapping = this.colorMapping.toJSON();
     if (isFinite(this.currentMaxDepth)) {
       r.maxDepth = this.currentMaxDepth;
     }
@@ -151,9 +151,9 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
-    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
     if (typeof dump.maxDepth !== 'undefined') {
       this.currentMaxDepth = dump.maxDepth;
     }

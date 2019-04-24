@@ -4,7 +4,7 @@ import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunct
 import CategoricalColumn from './CategoricalColumn';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IValueColumnDesc} from './interfaces';
+import {IDataRow, IValueColumnDesc, ITypeFactory} from './interfaces';
 import NumberColumn from './NumberColumn';
 import {INumberColumn} from './INumberColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';
@@ -185,7 +185,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     CategoricalColumn.prototype.restore.call(this, dump, factory);
     if (dump.mapping) {
       this.setMapping(dump.mapping);

@@ -3,7 +3,7 @@ import {ISequence, equal, IEventListener} from '../internal';
 import {Category, dialogAddons, toolbar} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {IDateColumn, IDateDesc, IDateFilter, IDateGrouper} from './IDateColumn';
-import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEFAULT_COLOR} from './interfaces';
+import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {noDateFilter, defaultDateGrouper, isDummyDateFilter, isDefaultDateGrouper, restoreDateFilter, isEqualDateFilter, isDateIncluded, toDateGroup, chooseAggregatedDate} from './internalDate';
@@ -67,7 +67,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.filter) {
       this.currentFilter = restoreDateFilter(dump.filter);

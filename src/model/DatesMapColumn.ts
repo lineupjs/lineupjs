@@ -1,7 +1,7 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {IDateColumn, IDateFilter} from './IDateColumn';
 import {IKeyValue} from './IArrayColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ITypeFactory} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import {isMissingValue} from './missing';
 import DatesColumn, {EDateSort, IDatesDesc} from './DatesColumn';
@@ -133,7 +133,7 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;
