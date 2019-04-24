@@ -1,17 +1,23 @@
 import {abortAble} from 'lineupengine';
 import {Column, ICategoricalLikeColumn, IDataRow, IDateColumn, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking} from '../../model';
 import {NUM_OF_EXAMPLE_ROWS} from '../../constants';
-import {ISequence, IDateStatistics, ICategoricalStatistics} from '../../internal';
+import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../../internal';
 import {IRenderTask, IRenderTasks} from '../../renderer';
 import {ABORTED} from '../interfaces';
 import {taskLater, TaskLater, taskNow, TaskNow} from '../tasks';
 import {IMultiNumberStatistics, IServerData, toRankingDump} from './interfaces';
 
-interface IProviderAdapter {
+/**
+ * @internal
+ */
+export interface IProviderAdapter {
   viewRows(indices: IndicesArray): Promise<IDataRow[]>;
   toDescRef(desc: any): any;
 }
 
+/**
+ * @internal
+ */
 export default class RemoteTaskExecutor implements IRenderTasks {
   private readonly cache = new Map<string, any>();
 
@@ -300,11 +306,11 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return s;
   }
 
-  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<IAdvancedBoxPlotData> {
     return this.cached(`${col.id}:c:data${raw ? ':braw' : ':b'}`, () => this.dataStats<IMultiNumberStatistics>(col).then((r) => raw ? r.rawBoxPlot : r.normalizedBoxPlot));
   }
 
-  dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
+  dataNumberStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<IStatistics> {
     return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, () => this.dataStats<IMultiNumberStatistics>(col).then((r) => raw ? r.raw : r.normalized));
   }
 
@@ -354,7 +360,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const data = this.dataStats<T>(col);
     const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
-    const summary = <Promise<T>><unknown>this.server.computeRankingStats(ranking, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
+    const summary = <Promise<T>><any>this.server.computeRankingStats(ranking, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
     const v = Promise.all([data, summary]).then(([data, summary]) => ({data, summary}));
     this.cache.set(key, v);
     return v;
@@ -367,7 +373,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const summary = this.summaryStats<T>(col);
     const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
-    const group = <Promise<T>><unknown>this.server.computeGroupStats(ranking, g.name, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
+    const group = <Promise<T>><any>this.server.computeGroupStats(ranking, g.name, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
     const v = Promise.all([summary, group]).then(([summary, group]) => ({...summary, group}));
     this.cache.set(key, v);
     return v;

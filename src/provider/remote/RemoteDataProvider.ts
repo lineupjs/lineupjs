@@ -1,5 +1,5 @@
 import {LRUCache, IEventContext} from '../../internal';
-import Column, {IColumnDesc, IDataRow, IndicesArray, INumberColumn, Ranking, CompositeColumn, EDirtyReason} from '../../model';
+import Column, {IColumnDesc, IDataRow, IndicesArray, INumberColumn, Ranking, CompositeColumn, EDirtyReason, IOrderedGroup, UIntTypedArray} from '../../model';
 import {mapIndices} from '../../model/internal';
 import ACommonDataProvider from '../ACommonDataProvider';
 import {IDataProviderOptions} from '../interfaces';
@@ -129,7 +129,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     super.cleanUpRanking(ranking);
   }
 
-  sort(ranking: Ranking, dirtyReason: EDirtyReason[]) {
+  sort(ranking: Ranking, dirtyReason: EDirtyReason[]): Promise<{groups: IOrderedGroup[], index2pos: UIntTypedArray}> {
     const reasons = new Set(dirtyReason);
 
     const filter = ranking.flatColumns.filter((d) => d.isFiltered()).map((d) => d.dump(this.toDescRef));

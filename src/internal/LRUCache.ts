@@ -16,7 +16,7 @@ class ListIterator<T, K, V> implements IterableIterator<T> {
   next() {
     if (this.current == null) {
       return {
-        value: <T><unknown>undefined,
+        value: <T><any>undefined,
         done: true
       };
     }
