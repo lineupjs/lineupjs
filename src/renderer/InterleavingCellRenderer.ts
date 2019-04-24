@@ -7,6 +7,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
 import {colorOf, matchColumns, forEachChild} from './utils';
 import {tasksAll} from '../provider';
+import {IHistogramLike} from './histogram';
 
 
 /** @internal */
@@ -99,7 +100,7 @@ const dummyBin: INumberBin = {
   x1: 0
 };
 
-function groupedHist(stats: (IStatistics | null)[]) {
+function groupedHist(stats: (IStatistics | null)[]): IHistogramLike<number> | null {
   const sample = stats.find(Boolean)!;
   if (!sample) {
     return null;
@@ -122,5 +123,8 @@ function groupedHist(stats: (IStatistics | null)[]) {
       hist.push(bin);
     });
   }
-  return {maxBin, hist};
+  return {
+    maxBin,
+    hist
+  };
 }

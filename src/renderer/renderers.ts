@@ -32,6 +32,7 @@ import TableCellRenderer from './TableCellRenderer';
 import UpSetCellRenderer from './UpSetCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 import DateCellRenderer from './DateCellRenderer';
+import DateHistogramCellRenderer from './DateHistogramCellRenderer';
 
 const defaultCellRenderer = new DefaultCellRenderer();
 /**
@@ -54,6 +55,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   heatmap: new HeatmapCellRenderer(),
   catheatmap: new CategoricalHeatmapCellRenderer(),
   histogram: new HistogramCellRenderer(),
+  datehistogram: new DateHistogramCellRenderer(),
   image: new ImageCellRenderer(),
   interleaving: new InterleavingCellRenderer(),
   link: new LinkCellRenderer(),

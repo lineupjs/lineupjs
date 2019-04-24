@@ -2,7 +2,7 @@ import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState, uniqueId} from './utils';
 import {DateColumn, IDateFilter} from '../../model';
-import {isDummyDateFilter, noDateFilter} from '../../model/internalDate';
+import {isDummyDateFilter, noDateFilter, shiftFilterDateDay} from '../../model/internalDate';
 import {timeFormat} from 'd3-time-format';
 
 /** @internal */
@@ -27,7 +27,11 @@ export default class DateFilterDialog extends ADialog {
     const filterMissing = findFilterMissing(this.node).checked;
     const from: Date | null = this.findInput('input[name="from"]').valueAsDate;
     const to: Date | null = this.findInput('input[name="to"]').valueAsDate;
-    this.updateFilter({filterMissing, min: from == null ? -Infinity : from.getTime(), max: to == null ? +Infinity : to.getTime()});
+    this.updateFilter({
+      filterMissing,
+      min: from == null ? -Infinity : shiftFilterDateDay(from.getTime(), 'min'),
+      max: to == null ? +Infinity : shiftFilterDateDay(to.getTime(), 'max')
+    });
     return true;
   }
 
