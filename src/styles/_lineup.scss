@@ -12,6 +12,7 @@
 @import './datatypes';
 @import './taggle/index';
 @import './supported_browser';
+@import './safari';
 
 .#{$lu_css_prefix} {
   position: relative;
