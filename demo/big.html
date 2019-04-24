@@ -17,25 +17,35 @@
       const arr = [];
       const cats = ['c1', 'c2', 'c3'];
       const cat2 = ['a1', 'a2'];
-      for (let i = 0; i < 100000; ++i) {
-        arr.push({
-          a: Math.random() * 10,
-          d: 'Row ' + i,
+      const url = new URL(location.href);
+      const size = parseInt(url.searchParams.get('size') || '100000', 10);
+      for (let i = 0; i < size; ++i) {
+          arr.push({
+          label: 'Row ' + i,
+          number: Math.random() * 10,
+          number2: Math.random() * 10,
           cat: cats[Math.floor(Math.random() * cats.length)],
           cat2: cat2[Math.floor(Math.random() * cat2.length)],
+          date: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
         })
       }
       console.log('generated');
       const desc = [{
-          label: 'D',
+          label: 'Label',
           type: 'string',
-          column: 'd'
+          column: 'label'
         },
         {
-          label: 'A',
+          label: 'Number',
           type: 'number',
-          column: 'a',
-          'domain': [0, 10]
+          column: 'number',
+          domain: [0, 10]
+        },
+        {
+        label: 'Number2',
+        type: 'number',
+        column: 'number2',
+        domain: [0, 10]
         },
         {
           label: 'Cat',
@@ -44,7 +54,7 @@
           categories: ['c1', 'c2', 'c3']
         },
         {
-          label: 'Cat Label',
+          label: 'Cat2',
           type: 'categorical',
           column: 'cat2',
           categories: [{
@@ -56,8 +66,14 @@
             label: 'A2',
             color: 'blue'
           }]
-        }
+        },
+        {
+          label: 'Date',
+          type: 'date',
+          column: 'date'
+        },
       ];
+      LineUpJS.deriveColors(desc);
 
       const p = new LineUpJS.LocalDataProvider(arr, desc, {
         grouping: true,

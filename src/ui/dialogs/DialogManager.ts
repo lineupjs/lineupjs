@@ -25,7 +25,8 @@ export default class DialogManager {
   setHighlight(mask: { left: number, top: number, width: number, height: number }) {
     const area = <HTMLElement>this.node.firstElementChild;
     // @see http://bennettfeely.com/clippy/ -> select `Frame` example
-    area.style.clipPath = `polygon(
+    // use webkit prefix for safari
+    area.style.clipPath = (<any>area.style).webkitClipPath = `polygon(
       0% 0%,
       0% 100%,
       ${mask.left}px 100%,

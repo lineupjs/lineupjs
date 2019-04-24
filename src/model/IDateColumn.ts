@@ -2,11 +2,21 @@ import {IForEachAble} from '../internal';
 import Column from './Column';
 import {IColumnDesc, IDataRow} from './interfaces';
 import {INumberFilter} from './INumberColumn';
+import {IArrayColumn} from './IArrayColumn';
 
 export interface IDateColumn extends Column {
+  getFormatter(): (v: Date | null) => string;
+
   getDate(row: IDataRow): Date | null;
 
   iterDate(row: IDataRow): IForEachAble<Date | null>;
+
+  getFilter(): IDateFilter;
+  setFilter(value: IDateFilter | null): void;
+}
+
+export interface IDatesColumn extends IDateColumn, IArrayColumn<Date | null> {
+  getDates(row: IDataRow): (Date | null)[];
 }
 
 export interface IDateDesc {
@@ -33,6 +43,10 @@ export function isDateColumn(col: Column): col is IDateColumn;
 export function isDateColumn(col: IColumnDesc): col is IDateDesc & IColumnDesc;
 export function isDateColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<IDateColumn>col).getDate === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.startsWith('date')));
+}
+
+export function isDatesColumn(col: Column): col is IDatesColumn {
+  return typeof (<IDatesColumn>col).getDates === 'function';
 }
 
 export declare type IDateFilter = INumberFilter;

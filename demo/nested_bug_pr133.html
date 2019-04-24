@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="./LineUpJS.js"></script>
+<script src="./helper/testRules.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const l = new Array(10).fill(0);
+    const cats = ['c1', 'c2', 'c3'];
+    for (let i = 0; i < 100; ++i) {
+        arr.push({
+        a: Math.random() * 10,
+        b: Math.random() * 10,
+        as: l.map((d) => Math.random() * 10),
+        bs: l.map((d) => Math.random() * 10),
+        cs: l.map((d) => Math.random() * 10)
+      })
+    }
+    const builder = LineUpJS.builder(arr);
+    builder.deriveColumns().deriveColors();
+    // and two rankings
+    const ranking = LineUpJS.buildRanking()
+      .supportTypes()
+      .column('a').column('b')
+      .weightedSum('stack', 'a', 100, 'b', 100)
+      .nested('multi canvas', 'a', 'as', 'bs', 'cs')
+      .groupBy('a');
+
+    builder
+      .ranking(ranking);
+
+    builder.aggregationStrategy('group')
+
+
+    builder.buildTaggle(document.body);
+  };
+</script>
+
+</body>
+</html>

@@ -12,6 +12,12 @@
   box-sizing: border-box;
 }
 
+.le-footer {
+
+  // extra space to the right using a width for easier last column resizing
+  width: 50px;
+}
+
 @import './header';
 @import './selection';
 @import './row';

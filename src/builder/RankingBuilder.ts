@@ -1,5 +1,5 @@
 import {
-  Column, CompositeColumn, Ranking, ReduceColumn, ScriptColumn, StackColumn,
+  Column, CompositeColumn, Ranking, ReduceColumn, StackColumn,
   createAggregateDesc, createGroupDesc, createImpositionBoxPlotDesc, createImpositionDesc, createImpositionsDesc,
   createNestedDesc, createRankDesc, createReduceDesc, createScriptDesc, createSelectionDesc, createStackDesc,
   EAdvancedSortMethod, IColumnDesc, ISortCriteria
@@ -46,7 +46,8 @@ export default class RankingBuilder {
   private static readonly ALL_MAGIC_FLAG = '*';
 
   private readonly columns: (string | {desc: IColumnDesc | ((data: DataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];
-  private readonly sort: { column: string, asc: boolean }[] = [];
+  private readonly sort: {column: string, asc: boolean}[] = [];
+  private readonly groupSort: {column: string, asc: boolean}[] = [];
   private readonly groups: string[] = [];
 
   /**
@@ -77,6 +78,22 @@ export default class RankingBuilder {
         this.groups.push(col);
       }
     }
+    return this;
+  }
+
+  /**
+   * specify another grouping sorting criteria
+   * @param {string} column the column name optionally with encoded sorting separated by colon, e.g. a:desc
+   * @param {boolean | "asc" | "desc"} asc ascending or descending order
+   */
+  groupSortBy(column: string, asc: boolean | 'asc' | 'desc' = true) {
+    if (column.includes(':')) {
+      // encoded sorting order
+      const index = column.indexOf(':');
+      asc = <'asc' | 'desc'>column.slice(index + 1);
+      column = column.slice(0, index);
+    }
+    this.groupSort.push({column, asc: asc === true || String(asc)[0] === 'a'});
     return this;
   }
 
@@ -127,8 +144,7 @@ export default class RankingBuilder {
         console.assert(column.columns.length >= 1);
         return this.nested(label, column.columns[0], ... column.columns.slice(1));
       case 'script':
-        console.assert(column.columns.length >= 2);
-        return this.scripted(label, column.code, column.columns[0], column.columns[1], ...column.columns.slice(2));
+        return this.scripted(label, column.code, ...column.columns);
       case 'weightedSum':
         console.assert(column.columns.length >= 2);
         console.assert(column.columns.length === column.weights.length);
@@ -182,6 +198,18 @@ export default class RankingBuilder {
   }
 
   /**
+   * @param {IColumnDesc} desc the composite column description
+   * @param {string} columns additional columns to add as children
+   */
+  composite(desc: IColumnDesc, ...columns: string[]) {
+    this.columns.push({
+      desc,
+      columns
+    });
+    return this;
+  }
+
+  /**
    * add a weighted sum / stack column
    * @param {string | null} label optional label
    * @param {string} numberColumn1 the first numerical column
@@ -225,17 +253,12 @@ export default class RankingBuilder {
    * add a scripted / formula column
    * @param {string | null} label optional label
    * @param {string} code the JS code see ScriptColumn for details
-   * @param {string} numberColumn1 first numerical column
-   * @param {string} numberColumn2 second numerical column
-   * @param {string} numberColumns additional numerical columns
+   * @param {string} numberColumns additional script columns
    */
-  scripted(label: string | null, code: string, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
+  scripted(label: string | null, code: string, ...numberColumns: string[]) {
     this.columns.push({
-      desc: createScriptDesc(label ? label : undefined),
-      columns: [numberColumn1, numberColumn2].concat(numberColumns),
-      post: (col) => {
-        (<ScriptColumn>col).setScript(code);
-      }
+      desc: Object.assign(createScriptDesc(label ? label : undefined), {script: code}),
+      columns: numberColumns
     });
     return this;
   }
@@ -374,7 +397,7 @@ export default class RankingBuilder {
         }
         const desc = findDesc(column);
         if (!desc) {
-          console.warn('invalid group criteria column: ', column);
+          console.warn('invalid sort criteria column: ', column);
           return;
         }
         const col2 = data.push(r, desc);
@@ -386,6 +409,30 @@ export default class RankingBuilder {
       });
       if (sorts.length > 0) {
         r.setSortCriteria(sorts);
+      }
+    }
+    {
+      const sorts: ISortCriteria[] = [];
+      this.groupSort.forEach(({column, asc}) => {
+        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+        if (col) {
+          sorts.push({col, asc});
+          return;
+        }
+        const desc = findDesc(column);
+        if (!desc) {
+          console.warn('invalid group sort criteria column: ', column);
+          return;
+        }
+        const col2 = data.push(r, desc);
+        if (col2) {
+          sorts.push({col: col2, asc});
+          return;
+        }
+        console.warn('invalid group sort criteria column: ', column);
+      });
+      if (sorts.length > 0) {
+        r.setGroupSortCriteria(sorts);
       }
     }
     return r;

@@ -18,35 +18,35 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
  * @asMemberOf NumberColumn
  * @event
  */
-declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+export declare function mappingChanged_NC(previous: IMappingFunction, current: IMappingFunction): void;
 
 /**
  * emitted when the color mapping property changes
  * @asMemberOf NumberColumn
  * @event
  */
-declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+export declare function colorMappingChanged_NC(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf NumberColumn
  * @event
  */
-declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+export declare function filterChanged_NC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 /**
  * emitted when the sort method property changes
  * @asMemberOf NumberColumn
  * @event
  */
-declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
+export declare function sortMethodChanged_NC(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 /**
  * emitted when the grouping property changes
  * @asMemberOf NumberColumn
  * @event
  */
-declare function groupingChanged(previous: number[], current: number[]): void;
+export declare function groupingChanged_NC(previous: number[], current: number[]): void;
 
 /**
  * a number column mapped from an original input scale to an output range
@@ -90,7 +90,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.numberFormat = format(desc.numberFormat);
     }
 
-    this.setGroupRenderer('boxplot');
+    this.setDefaultGroupRenderer('boxplot');
     this.setDefaultSummaryRenderer('histogram');
   }
 
@@ -135,11 +135,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED, NumberColumn.EVENT_COLOR_MAPPING_CHANGED, NumberColumn.EVENT_FILTER_CHANGED, NumberColumn.EVENT_SORTMETHOD_CHANGED, NumberColumn.EVENT_GROUPING_CHANGED]);
   }
 
-  on(type: typeof NumberColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
-  on(type: typeof NumberColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof NumberColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof NumberColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
-  on(type: typeof NumberColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof NumberColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_NC | null): this;
+  on(type: typeof NumberColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_NC | null): this;
+  on(type: typeof NumberColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_NC | null): this;
+  on(type: typeof NumberColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_NC | null): this;
+  on(type: typeof NumberColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_NC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -279,7 +279,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return Object.assign({}, this.currentFilter);
   }
 
-  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+  setFilter(value: INumberFilter | null) {
+    value = value || {min: -Infinity, max: +Infinity, filterMissing: false};
     if (isEqualNumberFilter(value, this.currentFilter)) {
       return;
     }
@@ -299,6 +300,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return isNumberIncluded(this.currentFilter, this.getRawNumber(row));
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   getGroupThresholds() {
     return this.currentGroupThresholds.slice();
   }
@@ -316,7 +323,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   group(row: IDataRow): IGroup {
     const value = this.getRawNumber(row);
     if (isNaN(value)) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
 
     let threshold = this.currentGroupThresholds;

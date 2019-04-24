@@ -1,7 +1,7 @@
 import {ICategoricalDesc, ICategory, ICategoricalLikeColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow, DEFAULT_COLOR} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
@@ -17,7 +17,7 @@ export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDes
  * @asMemberOf CategoricalMapColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_CMC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 @toolbar('colorMappedCategorical')
 export default class CategoricalMapColumn extends MapColumn<string | null> implements ICategoricalLikeColumn {
@@ -33,13 +33,13 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
     super(id, desc);
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
   protected createEventList() {
     return super.createEventList().concat([CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_CMC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -112,7 +112,7 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
   }
 
   iterCategory(row: IDataRow) {

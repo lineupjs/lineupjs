@@ -10,6 +10,10 @@ export * from './INumberColumn';
 export * from './IDateColumn';
 export * from './IArrayColumn';
 
+export {ScaleMappingFunction, ScriptMappingFunction} from './MappingFunction';
+export {DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacmentColorMappingFunction} from './CategoricalColorMappingFunction';
+export {CustomColorMappingFunction, DEFAULT_COLOR_FUNCTION, InterpolatingColorFunction, QuantizedColorFunction, SolidColorFunction} from './ColorMappingFunction';
+
 export {default as ActionColumn} from './ActionColumn';
 export * from './ActionColumn';
 export {default as AggregateGroupColumn} from './AggregateGroupColumn';

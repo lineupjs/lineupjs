@@ -24,16 +24,25 @@ export default class DataBuilder extends LineUpBuilder {
     super();
   }
 
+  /**
+   * use the schedulded task executor to asynchronously compute aggregations
+   */
   scheduledTaskExecutor() {
     this.providerOptions.taskExecutor = 'scheduled';
     return this;
   }
 
+  /**
+   * when using a top-n strategy how many items should be shown
+   */
   showTopN(n: number) {
     this.providerOptions.showTopN = n;
     return this;
   }
 
+  /**
+   * change the aggregation strategy that should be used when grouping by a column
+   */
   aggregationStrategy(strategy: IAggregationStrategy) {
     this.providerOptions.aggregationStrategy = strategy;
     return this;
@@ -89,7 +98,7 @@ export default class DataBuilder extends LineUpBuilder {
    * push another column description to this data provider
    * @param {IColumnDesc | ColumnBuilder} column column description or builder instance
    */
-  column(column: IColumnDesc | ColumnBuilder) {
+  column(column: IColumnDesc | ColumnBuilder | ((data: any[]) => IColumnDesc)) {
     this.columns.push(column instanceof ColumnBuilder ? column.build.bind(column) : column);
     return this;
   }

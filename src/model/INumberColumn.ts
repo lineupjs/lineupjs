@@ -96,7 +96,7 @@ export interface IMapAbleColumn extends INumberColumn {
 
   getFilter(): INumberFilter;
 
-  setFilter(value?: INumberFilter): void;
+  setFilter(value: INumberFilter | null): void;
 
   getRange(): [string, string];
 }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const cats = ['c1', 'c2', 'c3'];
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        d: 'Row ' + i,
+        cat: cats[Math.floor(Math.random() * 3)],
+        a: Math.random() * 5 + 5, // values from [5..10]
+        b: Math.random() * 10, // values from [0..10]
+        c: Math.random() * 2, // values from [0..2]
+      })
+    }
+    const b = LineUpJS.builder(arr);
+
+    const ranking = LineUpJS.buildRanking();
+    ranking.supportTypes();
+    ranking.allColumns();
+
+    // any javascript code is valid
+    ranking.scripted('random', `Math.random()`);
+
+    // .row access to the underlying data row
+    ranking.scripted('row', `row.a + row.b`);
+
+    // ensure that the function is returning a values between 0 ... 1 for proper bar length since there is no mapping step that normalizes values
+    // normalize(v: number, min: number, max: number) ... function has to ensure 0...1 values
+    ranking.scripted('normalized row', `normalize(row.a + row.b, 0, 15)`);
+
+
+    // children version that uses the column wrapper
+
+    // col.byName(name: string) ... return the nested child column by name
+    // col.byIndex(index: number) ... return the nested child by index -> 0 ... a in this case
+    // .raw ... get the raw number value
+    // .v ... get the normalized value
+    ranking.scripted('A + B', `normalize(col.byName('a').raw + col.byName('b').raw, 0, 15)`, 'a', 'b');
+
+    // complex if clause column version
+    ranking.scripted('cat==c1 ? A : B', `col.byName('cat').v === 'c1' ? col.byName('a').v : col.byName('b').v`, 'cat', 'a', 'b');
+    // complex if clause column index version
+    ranking.scripted('cat==c1 ? A : B', `col.byIndex(0).v === 'c1' ? col.byIndex(1).v : col.byIndex(2).v`, 'cat', 'a', 'b');
+    // also a values[] array available
+    ranking.scripted('cat==c1 ? A : B', `values[0] === 'c1' ? values[1] : values[2]`, 'cat', 'a', 'b');
+    // complex if clause row version
+    ranking.scripted('cat==c1 ? A : B', `row.cat === 'c1' ? normalize(row.a, 5, 10) : normalize(row.b, 0, 10)`);
+    // complex if clause all column version
+    ranking.scripted('cat==c1 ? A : B', `col.all.byName('cat').v === 'c1' ? col.all.byName('a').v : col.all.byName('b').v`);
+
+    // fancy complex code
+    const code = `
+const a = col.byName('a');
+const b = col.byName('b');
+const c = col.byName('c');
+
+if (a.raw < b.raw) {
+  return c.v;
+}
+return b.raw / 10 - a.raw;
+`;
+    ranking.scripted('code', code, 'a', 'b', 'c');
+
+    b.deriveColumns().deriveColors();
+    b.ranking(ranking);
+
+    const lineup = b.build(document.body);
+  };
+</script>
+
+</body>
+</html>

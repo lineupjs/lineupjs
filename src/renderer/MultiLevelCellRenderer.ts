@@ -41,9 +41,9 @@ export function createData(parent: {children: Column[]} & Column, context: IRend
     // inject data attributes
     template = template.replace(/^<([^ >]+)([ >])/, `<$1 data-column-id="${column.id}" data-renderer="${rendererId}"$2`);
     // inject classes
-    if (/^<([^ >]+)class="([ >])/.test(template)) {
+    if (/^<([^>]+) class="([ >]*)/.test(template)) {
       // has class attribute
-      template = template.replace(/^<([^ >]+)class="([ >])/, `<$1 class="${cssClass(`renderer-${rendererId}`)} $2`);
+      template = template.replace(/^<([^>]+) class="([ >]*)/, `<$1 class="${cssClass(`renderer-${rendererId}`)} $2`);
     } else {
       // inject as the others
       template = template.replace(/^<([^ >]+)([ >])/, `<$1 class="${cssClass(`renderer-${rendererId}`)}"$2`);
@@ -93,10 +93,10 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         cols.forEach((col, ci) => {
           const weight = col.column.getWidth() / total;
           const cnode = children[ci];
-          cnode.classList.add(cssClass('stack-sub'), cssClass('detail'));
+          cnode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('detail'));
           cnode.dataset.group = 'd';
           cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
-          cnode.style.gridColumnStart = (ci + 1).toString();
+          (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           const r = col.renderer!.update(cnode, d, i, group);
           if (stacked) {
             missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
@@ -174,9 +174,9 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         const children = <HTMLElement[]>Array.from(n.children);
         cols.forEach((col, ci) => {
           const cnode = children[ci];
-          cnode.classList.add(cssClass('stack-sub'), cssClass('group'));
+          cnode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('group'));
           cnode.dataset.group = 'g';
-          cnode.style.gridColumnStart = (ci + 1).toString();
+          (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           const r = col.groupRenderer!.update(cnode, group);
           if (r) {
             toWait.push(r);

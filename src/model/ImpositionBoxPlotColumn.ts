@@ -26,14 +26,14 @@ export function createImpositionBoxPlotDesc(label: string = 'Imposition') {
  * @asMemberOf ImpositionBoxPlotColumn
  * @event
  */
-declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+export declare function mappingChanged_IPBC(previous: IMappingFunction, current: IMappingFunction): void;
 
 /**
  * emitted when the color mapping property changes
  * @asMemberOf ImpositionBoxPlotColumn
  * @event
  */
-declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+export declare function colorMappingChanged_IPBC(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 
 /**
@@ -63,12 +63,18 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     if (c.length === 1) {
       return c[0].label;
     }
-    return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
+    const w = this.wrapper;
+    const rest = this.rest;
+    return `${w ? w.label : '?'} (${rest.map((c) => c.label).join(', ')})`;
   }
 
   private get wrapper(): IBoxPlotColumn | null {
-    const c = this._children;
-    return c.length === 0 ? null : <IBoxPlotColumn>c[0];
+    return <IBoxPlotColumn>this._children.find(isBoxPlotColumn) || null;
+  }
+
+  private get rest() {
+    const w = this.wrapper;
+    return this._children.filter((d) => d !== w);
   }
 
   getLabel(row: IDataRow) {
@@ -79,7 +85,9 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     if (c.length === 1) {
       return c[0].getLabel(row);
     }
-    return `${c[0].getLabel(row)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
+    const w = this.wrapper;
+    const rest = this.rest;
+    return `${w ? w.getLabel(row) : '?'} (${rest.map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
   }
 
   getColor(row: IDataRow) {
@@ -90,7 +98,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
       case 1:
         return c[0].getColor(row);
       default:
-        return c[1].getColor(row);
+        return this.rest[0].getColor(row);
     }
   }
 
@@ -98,8 +106,8 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return super.createEventList().concat([ImpositionBoxPlotColumn.EVENT_MAPPING_CHANGED, ImpositionBoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof ImpositionBoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof ImpositionBoxPlotColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof ImpositionBoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_IPBC | null): this;
+  on(type: typeof ImpositionBoxPlotColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_IPBC | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
@@ -213,7 +221,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return w ? w.getFilter() : noNumberFilter();
   }
 
-  setFilter(value?: INumberFilter): void {
+  setFilter(value: INumberFilter | null): void {
     const w = this.wrapper;
     return w ? w.setFilter(value) : undefined;
   }
@@ -244,7 +252,8 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   }
 
   insert(col: Column, index: number): Column | null {
-    if (this._children.length === 0 && !isBoxPlotColumn(col)) {
+    if (this._children.length === 1 && !this.wrapper && !isBoxPlotColumn(col)) {
+      // at least one has to be a number column
       return null;
     }
     if (this._children.length >= 2) {

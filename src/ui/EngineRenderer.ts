@@ -19,7 +19,7 @@ import SlopeGraph from './SlopeGraph';
  * @param dataIndex the highlghted data index or -1 for none
  * @event
  */
-declare function highlightChanged(dataIndex: number): void;
+export declare function highlightChanged(dataIndex: number): void;
 
 export default class EngineRenderer extends AEventDispatcher {
   static readonly EVENT_HIGHLIGHT_CHANGED = EngineRanking.EVENT_HIGHLIGHT_CHANGED;
@@ -398,7 +398,7 @@ export default class EngineRenderer extends AEventDispatcher {
       }
       const leftRanking = this.rankings[left];
       const rightRanking = this.rankings[right];
-      s.rebuild(leftRanking.currentData, leftRanking.context, rightRanking.currentData, rightRanking.context);
+      s.rebuild(leftRanking.ranking, leftRanking.currentData, leftRanking.context, rightRanking.ranking, rightRanking.currentData, rightRanking.context);
     }
   }
 

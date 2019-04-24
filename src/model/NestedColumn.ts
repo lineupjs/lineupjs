@@ -1,4 +1,4 @@
-import {IDataRow} from './interfaces';
+import {IDataRow, ECompareValueType} from './interfaces';
 import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
 import {concat} from '../internal';
 
@@ -21,7 +21,7 @@ export default class NestedColumn extends MultiLevelCompositeColumn {
     return concat(this.children.map((d) => d.toCompareValue(row)));
   }
 
-  toCompareValueType() {
+  toCompareValueType(): ECompareValueType[] {
     return concat(this.children.map((d) => d.toCompareValueType()));
   }
 

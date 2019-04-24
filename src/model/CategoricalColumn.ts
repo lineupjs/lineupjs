@@ -1,9 +1,9 @@
 import {IEventListener, ISequence} from '../internal';
 import {Category, toolbar} from './annotations';
-import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IGroup, ICompareValue, DEFAULT_COLOR} from './interfaces';
+import {IDataRow, IGroup, ICompareValue, DEFAULT_COLOR, ECompareValueType} from './interfaces';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {toCategories, isCategoryIncluded, isEqualCategoricalFilter, toCompareCategoryValue, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES} from './internalCategorical';
@@ -14,7 +14,7 @@ import {toCategories, isCategoryIncluded, isEqualCategoricalFilter, toCompareCat
  * @asMemberOf CategoricalColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_CC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 /**
@@ -22,7 +22,7 @@ declare function colorMappingChanged(previous: ICategoricalColorMappingFunction,
  * @asMemberOf CategoricalColumn
  * @event
  */
-declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+export declare function filterChanged_CC(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
 
 /**
  * column for categorical values
@@ -49,15 +49,15 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     super(id, desc);
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   protected createEventList() {
     return super.createEventList().concat([CategoricalColumn.EVENT_FILTER_CHANGED, CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof CategoricalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof CategoricalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_CC | null): this;
+  on(type: typeof CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_CC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -149,7 +149,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
 
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
 
     if ('filter' in dump) {
       this.currentFilter = null;
@@ -198,18 +198,24 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   toCompareValue(row: IDataRow, valueCache?: any) {
     return toCompareCategoryValue(valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
-  toCompareValueType() {
+  toCompareValueType(): ECompareValueType {
     return COMPARE_CATEGORY_VALUE_TYPES;
   }
 
   group(row: IDataRow, valueCache?: any): IGroup {
     const cat = valueCache !== undefined ? valueCache : this.getCategory(row);
     if (!cat) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
     return {name: cat.label, color: cat.color};
   }

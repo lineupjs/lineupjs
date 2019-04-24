@@ -1,6 +1,6 @@
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
 import Column, {defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType} from '.';
-import {OrderedSet} from '../internal';
+import {OrderedSet, max} from '../internal';
 import {DEFAULT_COLOR} from './interfaces';
 
 
@@ -50,37 +50,69 @@ export function toGroupID(group: IGroup) {
 }
 
 /** @internal */
+export function isOrderedGroup(g: IOrderedGroup | Readonly<IGroupParent>): g is IOrderedGroup {
+  return (<IOrderedGroup>g).order != null;
+}
+
+
+/** @internal */
+function isGroupParent(g: IOrderedGroup | Readonly<IGroupParent>): g is IGroupParent {
+  return (<IGroupParent>g).subGroups != null;
+}
+
+/**
+ * unify the parents of the given groups by reusing the same group parent if possible
+ * @param groups
+ */
 export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
   if (groups.length <= 1) {
-    return;
+    return groups;
   }
-  const lookup = new Map<string, IGroupParent>();
 
-  const resolve = (g: IGroupParent): {g: IGroupParent, id: string} => {
-    let id = g.name;
-    if (g.parent) {
-      const parent = resolve(g.parent);
-      g.parent = parent.g;
-      id = `${parent.id}.${id}`;
+  const toPath = (group: T) => {
+    const path: (IGroupParent | T)[] = [group];
+    let p = group.parent;
+    while (p) {
+      path.unshift(p);
+      p = p.parent;
     }
-    // ensure there is only one instance per id (i.e. share common parents
-    if (lookup.has(id)) {
-      return {g: lookup.get(id)!, id};
-    }
-    if (g.parent) {
-      g.parent.subGroups.push(g);
-    }
-    g.subGroups = []; // clear old children
-    lookup.set(id, g);
-    return {g, id};
+    return path;
   };
-  // resolve just parents
-  groups.forEach((g) => {
-    if (g.parent) {
-      g.parent = resolve(g.parent).g;
-      g.parent.subGroups.push(g);
+
+  const paths = groups.map(toPath);
+  // now unify paths
+  const maxLevel = max(paths.map((d) => d.length));
+  for (let level = 0; level < maxLevel; ++level) {
+    let currentParent: IGroupParent | null = null;
+    for (const path of paths) {
+      const node = path[level];
+      // null reset
+      if (!node || !isGroupParent(node)) {
+        currentParent = null;
+        continue;
+      }
+      // first time seeing this parent
+      if (!currentParent || currentParent.parent !== node.parent || currentParent.name !== node.name) {
+        currentParent = Object.assign({}, node); // copy
+        const firstChild = path[level + 1];
+        // reset parent
+        if (firstChild) {
+          currentParent.subGroups = [firstChild];
+          firstChild.parent = currentParent;
+        } else {
+          currentParent.subGroups = [];
+        }
+        continue;
+      }
+      // same parent, reuse instance
+      const nextChild = path[level + 1];
+      if (nextChild) {
+        currentParent.subGroups.push(nextChild);
+        nextChild.parent = currentParent;
+      }
     }
-  });
+  }
+  return groups;
 }
 
 /** @internal */
@@ -96,10 +128,6 @@ export function groupRoots(groups: IOrderedGroup[]) {
   return Array.from(roots);
 }
 
-/** @internal */
-export function isOrderedGroup(g: IOrderedGroup | Readonly<IGroupParent>): g is IOrderedGroup {
-  return (<IOrderedGroup>g).order != null;
-}
 
 // based on https://github.com/d3/d3-scale-chromatic#d3-scale-chromatic
 const colors = schemeCategory10.concat(schemeSet3);

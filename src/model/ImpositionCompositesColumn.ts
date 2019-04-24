@@ -25,14 +25,14 @@ export function createImpositionsDesc(label: string = 'Imposition') {
  * @asMemberOf ImpositionCompositesColumn
  * @event
  */
-declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+export declare function mappingChanged_ICCS(previous: IMappingFunction, current: IMappingFunction): void;
 
 /**
  * emitted when the color mapping property changes
  * @asMemberOf ImpositionCompositesColumn
  * @event
  */
-declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+export declare function colorMappingChanged_ICCS(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * implementation of a combine column, standard operations how to select
@@ -61,12 +61,18 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     if (c.length === 1) {
       return c[0].label;
     }
-    return `${c[0].label} (${c.slice(1).map((c) => c.label).join(', ')})`;
+    const w = this.wrapper;
+    const rest = this.rest;
+    return `${w ? w.label : '?'} (${rest.map((c) => c.label).join(', ')})`;
   }
 
   private get wrapper(): INumbersColumn | null {
-    const c = this._children;
-    return c.length === 0 ? null : <INumbersColumn>c[0];
+    return <INumbersColumn>this._children.find(isNumbersColumn) || null;
+  }
+
+  private get rest() {
+    const w = this.wrapper;
+    return this._children.filter((d) => d !== w);
   }
 
   getLabel(row: IDataRow) {
@@ -77,7 +83,9 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     if (c.length === 1) {
       return c[0].getLabel(row);
     }
-    return `${c[0].getLabel(row)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
+    const w = this.wrapper;
+    const rest = this.rest;
+    return `${w ? w.getLabel(row) : '?'} (${rest.map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
   }
 
   getColor(row: IDataRow) {
@@ -88,7 +96,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
       case 1:
         return c[0].getColor(row);
       default:
-        return c[1].getColor(row);
+        return this.rest[0].getColor(row);
     }
   }
 
@@ -96,8 +104,8 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return super.createEventList().concat([ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
+  on(type: typeof ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_ICCS | null): this;
+  on(type: typeof ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_ICCS | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
@@ -230,7 +238,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getFilter() : noNumberFilter();
   }
 
-  setFilter(value?: INumberFilter): void {
+  setFilter(value: INumberFilter | null): void {
     const w = this.wrapper;
     return w ? w.setFilter(value) : undefined;
   }
@@ -277,7 +285,8 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   }
 
   insert(col: Column, index: number): Column | null {
-    if (this._children.length === 0 && !isNumbersColumn(col)) {
+    if (this._children.length === 1 && !this.wrapper && !isNumbersColumn(col)) {
+      // at least one has to be a number column
       return null;
     }
     if (this._children.length >= 2) {

@@ -356,8 +356,12 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
 }
 
 class LazyMap1<T1, T2> extends ALazyMap<T1, T2> implements ISequence<T2> {
-  constructor(it: ISequenceBase<T1>, protected readonly mapV: (v: T1, i: number) => T2) {
+  constructor(it: ISequenceBase<T1>, protected readonly map12: (v: T1, i: number) => T2) {
     super(it);
+  }
+
+  protected mapV(v: T1, i: number) {
+    return this.map12(v, i);
   }
 
   map<U>(callback: (v: T2, i: number) => U): ISequence<U> {

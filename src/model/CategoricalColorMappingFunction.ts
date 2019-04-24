@@ -1,14 +1,12 @@
 import {ICategory, ICategoricalColorMappingFunction} from '.';
 import {DEFAULT_COLOR} from './interfaces';
 
-/**
- * @internal
- */
-export const DEFAULT_COLOR_FUNCTION: ICategoricalColorMappingFunction = {
+
+export const DEFAULT_CATEGORICAL_COLOR_FUNCTION: ICategoricalColorMappingFunction = {
   apply: (v) => v ? v.color : DEFAULT_COLOR,
   dump: () => null,
-  clone: () => DEFAULT_COLOR_FUNCTION,
-  eq: (other) => other === DEFAULT_COLOR_FUNCTION
+  clone: () => DEFAULT_CATEGORICAL_COLOR_FUNCTION,
+  eq: (other) => other === DEFAULT_CATEGORICAL_COLOR_FUNCTION
 };
 
 export class ReplacmentColorMappingFunction implements ICategoricalColorMappingFunction {
@@ -18,7 +16,7 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
   }
 
   apply(v: ICategory) {
-    return this.map.has(v.name) ? this.map.get(v.name)! : DEFAULT_COLOR_FUNCTION.apply(v);
+    return this.map.has(v.name) ? this.map.get(v.name)! : DEFAULT_CATEGORICAL_COLOR_FUNCTION.apply(v);
   }
 
   dump() {
@@ -56,9 +54,9 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
 /**
  * @internal
  */
-export function restoreColorMapping(dump: any, categories: ICategory[]): ICategoricalColorMappingFunction {
+export function restoreCategoricalColorMapping(dump: any, categories: ICategory[]): ICategoricalColorMappingFunction {
   if (!dump) {
-    return DEFAULT_COLOR_FUNCTION;
+    return DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
   return ReplacmentColorMappingFunction.restore(dump, categories);
 }

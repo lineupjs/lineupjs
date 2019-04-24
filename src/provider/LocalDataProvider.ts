@@ -160,7 +160,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     ranking.on(`${Column.EVENT_DIRTY_CACHES}.cache`, function (this: IEventContext) {
       let col: any = this.origin;
       while (col instanceof Column) {
-        console.log(col.label, 'dirty data');
+        // console.log(col.label, 'dirty data');
         that.tasks.dirtyColumn(col, 'data');
         that.tasks.preComputeCol(col);
         col = col.parent;
@@ -326,6 +326,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         groupOrder.push({group: plain, rows: order});
 
         if (!lookups) {
+          maxDataIndex = (<ReadonlyArray<number>>order).reduce((a, b) => Math.max(a, b), maxDataIndex);
           continue;
         }
         // sort
@@ -386,9 +387,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (groupLookup) {
       const groupIndices = groups.map((_, i) => i);
       sortComplex(groupIndices, groupLookup.sortOrders);
-      groups = groupIndices.map((i) => groups[i]);
+      return groupIndices.map((i) => groups[i]);
     }
-    return groups;
+    return groups.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   sort(ranking: Ranking, dirtyReason: EDirtyReason[]) {

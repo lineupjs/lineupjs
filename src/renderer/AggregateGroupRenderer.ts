@@ -41,7 +41,7 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
   const topNGetter = (group: IGroup) => provider.getTopNAggregated(ranking, group);
 
   const isRow = relativeIndex >= 0;
-  const isLeafGroup = !(<IGroupParent><unknown>group).subGroups || (<IGroupParent><unknown>group).subGroups.length === 0;
+  const isLeafGroup = !(<IGroupParent><any>group).subGroups || (<IGroupParent><any>group).subGroups.length === 0;
 
   const alwaysShowGroup = isAlwaysShowingGroupStrategy(strategy);
   const isSummary = !isRow && isSummaryGroup(group, strategy, topNGetter);
@@ -69,7 +69,7 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
       child.classList.toggle(cssClass('agg-inner'), isRow && isLastGroup);
       child.classList.remove(cssClass('agg-expand'), cssClass('agg-collapse'));
       child.title = '';
-      child.onclick = null;
+      delete child.onclick;
       continue;
     }
 
@@ -93,23 +93,27 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
     child.classList.toggle(cssClass('agg-collapse'), isCollapsed);
     child.title = isFirst ? (isCollapsed ? 'Expand Group' : 'Collapse Group') : '';
 
-    child.onclick = !isFirst ? null : (evt) => {
-      preventDefault(evt);
-      let nextState: EAggregationState;
-      switch (strategy) {
-        case 'group+top+item':
-          nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE;
-          break;
-        case 'group':
-        case 'item':
-        case 'group+item':
-        case 'group+item+top':
-        default:
-          nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND : EAggregationState.COLLAPSE;
-          break;
-      }
-      col.setAggregated(parent.group, nextState);
-    };
+    if (!isFirst) {
+      delete child.onclick;
+    } else {
+      child.onclick = (evt) => {
+        preventDefault(evt);
+        let nextState: EAggregationState;
+        switch (strategy) {
+          case 'group+top+item':
+            nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE;
+            break;
+          case 'group':
+          case 'item':
+          case 'group+item':
+          case 'group+item+top':
+          default:
+            nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND : EAggregationState.COLLAPSE;
+            break;
+        }
+        col.setAggregated(parent.group, nextState);
+      };
+    }
 
     if (!childTopN) {
       continue;

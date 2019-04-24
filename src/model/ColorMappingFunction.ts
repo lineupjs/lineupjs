@@ -4,7 +4,6 @@ import {scaleLinear} from 'd3-scale';
 import {IInterpolateColorMappingFunction, IColorMappingFunction, ISolidColorMappingFunction, IQuantizedColorMappingFunction, ICustomColorMappingFunction, IMapAbleDesc} from '.';
 import {DEFAULT_COLOR} from './interfaces';
 
-/** @internal */
 export class InterpolatingColorFunction implements IInterpolateColorMappingFunction {
   constructor(public readonly name: string, public readonly type: 'sequential'|'divergent', public readonly apply: (v: number)=>string) {
 
@@ -23,7 +22,6 @@ export class InterpolatingColorFunction implements IInterpolateColorMappingFunct
   }
 }
 
-/** @internal */
 export class SolidColorFunction implements ISolidColorMappingFunction {
   constructor(public readonly color: string) {
 
@@ -50,7 +48,6 @@ export class SolidColorFunction implements ISolidColorMappingFunction {
   }
 }
 
-/** @internal */
 export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
   constructor(public readonly base: IColorMappingFunction, public readonly steps: number) {
 
@@ -80,7 +77,6 @@ export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
   }
 }
 
-/** @internal */
 export class CustomColorMappingFunction implements ICustomColorMappingFunction {
   private readonly scale = scaleLinear<string>();
 
@@ -145,9 +141,6 @@ export function asColorFunction(color: string) {
   return s;
 }
 
-/**
- * @internal
- */
 export const DEFAULT_COLOR_FUNCTION = asColorFunction(DEFAULT_COLOR);
 
 /**

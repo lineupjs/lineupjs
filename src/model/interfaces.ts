@@ -157,6 +157,11 @@ export const defaultGroup: IGroup = {
   color: 'gray'
 };
 
+export const othersGroup: IGroup = {
+  name: 'Others',
+  color: 'gray'
+};
+
 
 export interface IGroupParent extends IGroup {
   subGroups: (Readonly<IGroupParent> | Readonly<IGroup>)[];

@@ -7,7 +7,7 @@ import {colorPool} from './internal';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
-import {restoreColorMapping, DEFAULT_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {restoreCategoricalColorMapping, DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
 export interface ICategoryNode extends ICategory {
   children: Readonly<ICategoryNode>[];
@@ -39,7 +39,7 @@ export interface ICutOffNode {
  * @asMemberOf HierarchyColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_HC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 /**
@@ -47,7 +47,7 @@ declare function colorMappingChanged(previous: ICategoricalColorMappingFunction,
  * @asMemberOf HierarchyColumn
  * @event
  */
-declare function cutOffChanged(previous: ICutOffNode, current: ICutOffNode): void;
+export declare function cutOffChanged(previous: ICutOffNode, current: ICutOffNode): void;
 
 /**
  * column for hierarchical categorical values
@@ -78,7 +78,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.updateCaches();
 
     this.setDefaultRenderer('categorical');
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   private initHierarchy(root: IPartialCategoryNode) {
@@ -121,7 +121,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   on(type: typeof HierarchyColumn.EVENT_CUTOFF_CHANGED, listener: typeof cutOffChanged | null): this;
-  on(type: typeof HierarchyColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof HierarchyColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_HC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -153,7 +153,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
     if (typeof dump.maxDepth !== 'undefined') {
       this.currentMaxDepth = dump.maxDepth;
     }
@@ -292,7 +292,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   group(row: IDataRow): IGroup {
     const base = this.getCategory(row);
     if (!base) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
     return {name: base.label, color: base.color};
   }

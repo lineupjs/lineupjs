@@ -1,6 +1,6 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc} from './interfaces';
+import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, othersGroup} from './interfaces';
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {equal, IEventListener} from '../internal';
@@ -32,7 +32,7 @@ export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
  * @asMemberOf StringColumn
  * @event
  */
-declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+export declare function filterChanged_SC(previous: string | RegExp | null, current: string | RegExp | null): void;
 
 
 /**
@@ -40,7 +40,7 @@ declare function filterChanged(previous: string | RegExp | null, current: string
  * @asMemberOf StringColumn
  * @event
  */
-declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
+export declare function groupingChanged_SC(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * a string column with optional alignment
@@ -73,9 +73,9 @@ export default class StringColumn extends ValueColumn<string> {
     return super.createEventList().concat([StringColumn.EVENT_GROUPING_CHANGED, StringColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_SC | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
   on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
@@ -163,6 +163,12 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
   getGroupCriteria() {
     return this.currentGroupCriteria.slice();
   }
@@ -178,16 +184,16 @@ export default class StringColumn extends ValueColumn<string> {
 
   group(row: IDataRow): IGroup {
     if (this.getValue(row) == null) {
-      return missingGroup;
+      return Object.assign({}, missingGroup);
     }
 
     if (this.currentGroupCriteria.length === 0) {
-      return defaultGroup;
+      return Object.assign({}, othersGroup);
     }
     const value = this.getLabel(row);
 
     if (!value) {
-      return defaultGroup;
+      return Object.assign({}, missingGroup);
     }
 
     for (const criteria of this.currentGroupCriteria) {
@@ -199,7 +205,7 @@ export default class StringColumn extends ValueColumn<string> {
         color: defaultGroup.color
       };
     }
-    return defaultGroup;
+    return Object.assign({}, othersGroup);
   }
 
 

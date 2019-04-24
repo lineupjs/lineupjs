@@ -6,7 +6,7 @@ import {ICategoricalDesc, ICategoricalFilter, ICategory, ISetColumn, ICategorica
 import {IDataRow, ECompareValueType, IValueColumnDesc, IGroup, DEFAULT_COLOR} from './interfaces';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
-import {DEFAULT_COLOR_FUNCTION, restoreColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
 import {toCategories, isCategoryIncluded} from './internalCategorical';
 import {chooseUIntByDataLength} from './internal';
 
@@ -21,7 +21,7 @@ export declare type ISetColumnDesc = ISetDesc & IValueColumnDesc<string[]>;
  * @asMemberOf SetColumn
  * @event
  */
-declare function colorMappingChanged(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_SSC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
 
 /**
@@ -29,7 +29,7 @@ declare function colorMappingChanged(previous: ICategoricalColorMappingFunction,
  * @asMemberOf SetColumn
  * @event
  */
-declare function filterChanged(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+export declare function filterChanged_SSC(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
 
 /**
  * a string column with optional alignment
@@ -62,15 +62,15 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     this.setDefaultRenderer('upset');
     this.setDefaultGroupRenderer('upset');
     this.setSummaryRenderer('set');
-    this.colorMapping = DEFAULT_COLOR_FUNCTION;
+    this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   protected createEventList() {
     return super.createEventList().concat([SetColumn.EVENT_COLOR_MAPPING_CHANGED, SetColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof SetColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof SetColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
+  on(type: typeof SetColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SSC | null): this;
+  on(type: typeof SetColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_SSC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -188,7 +188,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
 
   restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
-    this.colorMapping = restoreColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
     if (!('filter' in dump)) {
       this.currentFilter = null;
       return;
@@ -218,6 +218,10 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
 
   setFilter(filter: ICategoricalFilter | null) {
     return CategoricalColumn.prototype.setFilter.call(this, filter);
+  }
+
+  clearFilter() {
+    return CategoricalColumn.prototype.clearFilter.call(this);
   }
 
   toCompareValue(row: IDataRow) {
