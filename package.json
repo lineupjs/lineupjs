@@ -81,7 +81,7 @@
     "postdist": "npm run docs && cross-zip ./build/docs ../dist/lineupjs_docs.zip",
     "preversion": "npm test",
     "prepare": "echo 'dummy prepare since prepack has no dev dependencies'",
-    "prepack": "npm run clean && npm run compile && npm run build:prod",
+    "prepack": "npm run clean && npm run compile && npm run build:prod && npm run types:27",
     "release:major": "release-it major",
     "release:minor": "release-it minor",
     "release:patch": "release-it patch",
