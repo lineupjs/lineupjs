@@ -1,7 +1,7 @@
 import {abortAble} from 'lineupengine';
 import {Column, ICategoricalLikeColumn, IDataRow, IDateColumn, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking} from '../../model';
 import {NUM_OF_EXAMPLE_ROWS} from '../../constants';
-import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics, dummyDateStatistics, dummyCategoricalStatistics, dummyStatistics, dummyBoxPlot} from '../../internal';
+import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics, dummyDateStatistics, dummyStatistics, dummyBoxPlot, dummyCategoricalStatisticsBuilder} from '../../internal';
 import {IRenderTask, IRenderTasks} from '../../renderer';
 import {ABORTED} from '../interfaces';
 import {taskLater, TaskLater, taskNow, TaskNow} from '../tasks';
@@ -295,7 +295,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup) {
-    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<ICategoricalStatistics>(col, group, dummyCategoricalStatistics));
+    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<ICategoricalStatistics>(col, group, dummyCategoricalStatisticsBuilder(col.categories)));
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
@@ -317,7 +317,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   summaryCategoricalStats(col: Column & ICategoricalLikeColumn) {
-    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<ICategoricalStatistics>(col, dummyCategoricalStatistics));
+    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<ICategoricalStatistics>(col, dummyCategoricalStatisticsBuilder(col.categories)));
   }
 
   summaryDateStats(col: Column & IDateColumn) {

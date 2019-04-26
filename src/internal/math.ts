@@ -577,13 +577,20 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
 /**
  * @internal
  */
-export function dummyCategoricalStatistics(): ICategoricalStatistics {
+export function dummyCategoricalStatistics(categories: {name: string}[]): ICategoricalStatistics {
   return {
     missing: 0,
     count: 0,
-    hist: [],
+    hist: categories.map((cat) => ({cat: cat.name, count: 0})),
     maxBin: 0,
   };
+}
+
+/**
+ * @internal
+ */
+export function dummyCategoricalStatisticsBuilder(categories: {name: string}[]) {
+  return () => dummyCategoricalStatistics(categories);
 }
 
 /**
