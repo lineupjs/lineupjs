@@ -94,6 +94,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     const computeAble = columns.filter((col) => (isCategoricalLikeColumn(col) || isNumberColumn(col) || isDateColumn(col))).map((d) => d.dump(this.adapter.toDescRef));
 
 
+    // load server data caches
     const toLoadData = computeAble.filter((col) => !this.cache.has(`${col.id}:c:data:m`));
     if (toLoadData.length > 0) {
       const data = this.server.computeDataStats(toLoadData);
@@ -101,12 +102,14 @@ export default class RemoteTaskExecutor implements IRenderTasks {
         this.cache.set(`${col.id}:c:data:m`, data.then((rows) => rows[i]));
       });
     }
+
+    // load server summary caches
     const toLoadSummary = computeAble.filter((col) => !this.cache.has(`${col.id}:b:summary:m`));
     if (toLoadSummary.length > 0) {
       if (this.isDummyRanking(ranking)) {
         for (const col of computeAble) {
           // copy from data to summary and create proper structure
-          this.chainCopy(`${col.id}:b:summary:m`, this.cache.get(`${col.id}:c:data:m`)!, (data: any) => ({summary: data, data}));
+          this.cache.set(`${col.id}:b:summary:m`, this.cache.get(`${col.id}:c:data:m`)!.then((data: any) => ({data, summary: data})));
         }
       } else {
         const data = this.server.computeRankingStats(dump, toLoadData);
@@ -116,25 +119,30 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       }
     }
 
+    // load server group caches
     if (groups.length === 1) { // dummy group
       const group = groups[0];
       for (const col of computeAble) {
         // copy from summary to group and create proper structure
-        this.chainCopy(`${col.id}:a:group:${group.name}:m`, this.cache.get(`${col.id}:b:summary:m`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
+        this.cache.set(`${col.id}:a:group:${group.name}:m`, this.cache.get(`${col.id}:b:summary:m`)!.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})))
       }
-      return;
+    } else {
+      for (const g of groups) {
+        const toLoadGroup = computeAble.filter((col) => !this.cache.has(`${col.id}:a:group:${g.name}:m`));
+        if (toLoadGroup.length === 0) {
+          continue;
+        }
+
+        const data = this.server.computeGroupStats(dump, g.name, toLoadData);
+        toLoadGroup.forEach((col, i) => {
+          this.cache.set(`${col.id}:a:group:${g.name}:m`, Promise.all([this.cache.get(`${col.id}:b:summary:m`)!, data]).then(([summary, rows]) => ({...summary, group: rows[i]})));
+        });
+      }
     }
 
-    for (const g of groups) {
-      const toLoadGroup = computeAble.filter((col) => !this.cache.has(`${col.id}:a:group:${g.name}:m`));
-      if (toLoadGroup.length === 0) {
-        continue;
-      }
-
-      const data = this.server.computeGroupStats(dump, g.name, toLoadData);
-      toLoadGroup.forEach((col, i) => {
-        this.cache.set(`${col.id}:a:group:${g.name}:m`, Promise.all([this.cache.get(`${col.id}:b:summary:m`)!, data]).then(([summary, rows]) => ({...summary, group: rows[i]})));
-      });
+    // create derived entries from the loaded server data
+    for (const col of columns) {
+      this.preComputeColGiven(col, ranking, groups);
     }
   }
 
@@ -155,14 +163,18 @@ export default class RemoteTaskExecutor implements IRenderTasks {
 
   preComputeCol(col: Column) {
     const ranking = col.findMyRanker();
+    const groups = ranking ? ranking.getGroups() : null;
+    return this.preComputeColGiven(col, ranking, groups);
+  }
 
+  private preComputeColGiven(col: Column, ranking: Ranking | null, groups: IOrderedGroup[] | null) {
     if (isCategoricalLikeColumn(col)) {
       this.dataCategoricalStats(col);
       if (!ranking) {
         return;
       }
       this.summaryCategoricalStats(col);
-      for (const group of ranking.getGroups()) {
+      for (const group of groups!) {
         this.groupCategoricalStats(col, group);
       }
       return;
@@ -177,7 +189,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       }
       this.summaryNumberStats(col, false);
       this.summaryNumberStats(col, true);
-      for (const group of ranking.getGroups()) {
+      for (const group of groups!) {
         this.groupNumberStats(col, group, false);
         this.groupNumberStats(col, group, true);
       }
@@ -194,7 +206,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       return;
     }
     this.summaryDateStats(col);
-    for (const group of ranking.getGroups()) {
+    for (const group of groups!) {
       this.groupDateStats(col, group);
     }
   }
