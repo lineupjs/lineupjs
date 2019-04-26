@@ -94,10 +94,6 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   preCompute(ranking: Ranking, groups: IOrderedGroup[]) {
-    if (groups.length === 0) {
-      return;
-    }
-
     const columns = ranking.flatColumns;
     const dump = toRankingDump(ranking, this.adapter.toDescRef);
     const computeAble = columns.filter((col) => (isCategoricalLikeColumn(col) || isNumberColumn(col) || isDateColumn(col))).map((d) => d.dump(this.adapter.toDescRef));
@@ -112,6 +108,11 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       });
     }
 
+    const total = groups.reduce((a, b) => a + b.order.length, 0);
+    if (groups.length === 0 || total === 0) {
+      return;
+    }
+
     // load server summary caches
     const toLoadSummary = computeAble.filter((col) => !this.cache.has(`${col.id}:b:summary:m`));
     if (toLoadSummary.length > 0) {
@@ -121,7 +122,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
           this.cache.set(`${col.id}:b:summary:m`, this.cache.get(`${col.id}:c:data:m`)!.then((data: any) => ({data, summary: data})));
         }
       } else {
-        const data = this.server.computeRankingStats(dump, toLoadData);
+        const data = this.server.computeRankingStats(dump, toLoadSummary);
         toLoadSummary.forEach((col, i) => {
           this.cache.set(`${col.id}:b:summary:m`, Promise.all([this.cache.get(`${col.id}:c:data:m`)!, data]).then(([data, rows]) => ({data, summary: rows[i]})));
         });
@@ -142,7 +143,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
           continue;
         }
 
-        const data = this.server.computeGroupStats(dump, g.name, toLoadData);
+        const data = this.server.computeGroupStats(dump, g.name, toLoadGroup);
         toLoadGroup.forEach((col, i) => {
           this.cache.set(`${col.id}:a:group:${g.name}:m`, Promise.all([this.cache.get(`${col.id}:b:summary:m`)!, data]).then(([summary, rows]) => ({...summary, group: rows[i]})));
         });
@@ -151,7 +152,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
 
     // create derived entries from the loaded server data
     for (const col of columns) {
-      this.preComputeColGiven(col, ranking, groups);
+      this.preComputeColGiven(col, ranking, groups, total);
     }
   }
 
@@ -172,14 +173,14 @@ export default class RemoteTaskExecutor implements IRenderTasks {
 
   preComputeCol(col: Column) {
     const ranking = col.findMyRanker();
-    const groups = ranking ? ranking.getGroups() : null;
-    return this.preComputeColGiven(col, ranking, groups);
+    const groups = ranking ? ranking.getGroups() : [];
+    return this.preComputeColGiven(col, ranking, groups, groups.reduce((a, b) => a + b.order.length, 0));
   }
 
-  private preComputeColGiven(col: Column, ranking: Ranking | null, groups: IOrderedGroup[] | null) {
+  private preComputeColGiven(col: Column, ranking: Ranking | null, groups: IOrderedGroup[], total: number) {
     if (isCategoricalLikeColumn(col)) {
       this.dataCategoricalStats(col);
-      if (!ranking) {
+      if (!ranking || total === 0) {
         return;
       }
       this.summaryCategoricalStats(col);
@@ -192,7 +193,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     if (isDateColumn(col)) {
       this.dataDateStats(col);
 
-      if (!ranking) {
+      if (!ranking || total === 0) {
         return;
       }
       this.summaryDateStats(col);
@@ -209,7 +210,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     this.dataBoxPlotStats(col, false);
     this.dataBoxPlotStats(col, true);
 
-    if (!ranking) {
+    if (!ranking || total === 0) {
       return;
     }
     this.summaryNumberStats(col, false);
@@ -245,16 +246,16 @@ export default class RemoteTaskExecutor implements IRenderTasks {
 
   private copyData2SummaryCol(col: Column) {
       // copy from data to summary and create proper structure
-    this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({summary: data, data}));
+    this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({summary: data, data}), true);
     if (!isNumberColumn(col)) {
       return;
     }
-    this.chainCopy(`${col.id}:b:summary:raw`, this.cache.get(`${col.id}:c:data:raw`)!, (data: any) => ({summary: data, data}));
+    this.chainCopy(`${col.id}:b:summary:raw`, this.cache.get(`${col.id}:c:data:raw`)!, (data: any) => ({summary: data, data}), true);
     if (this.cache.has(`${col.id}:c:data:b`)) {
-      this.chainCopy(`${col.id}:b:summary:b`, this.cache.get(`${col.id}:c:data:b`)!, (data: any) => ({summary: data, data}));
+      this.chainCopy(`${col.id}:b:summary:b`, this.cache.get(`${col.id}:c:data:b`)!, (data: any) => ({summary: data, data}), true);
     }
     if (this.cache.has(`${col.id}:c:data:braw`)) {
-      this.chainCopy(`${col.id}:b:summary:braw`, this.cache.get(`${col.id}:c:data:braw`)!, (data: any) => ({summary: data, data}));
+      this.chainCopy(`${col.id}:b:summary:braw`, this.cache.get(`${col.id}:c:data:braw`)!, (data: any) => ({summary: data, data}), true);
     }
   }
 
@@ -334,8 +335,8 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return !((v instanceof TaskNow) && typeof v.v === 'symbol') && !(v instanceof TaskLater && v.v.isAborted());
   }
 
-  private chainCopy<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => U): IRenderTask<U> {
-    if (this.isValidCacheEntry(key)) {
+  private chainCopy<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => U, force = false): IRenderTask<U> {
+    if (this.isValidCacheEntry(key) && !force) {
       return this.cache.get(key)!;
     }
     if (task instanceof TaskNow) {
@@ -455,7 +456,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
 
     if (ranking.getOrderLength() === 0) {
       const v = data.then((data) => ({data, summary: dummyFactory()}));
-      this.cache.set(key, v);
+      // this.cache.set(key, v); // don't cache dummies
       return v;
     }
 
@@ -480,7 +481,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     const summary = this.summaryStats<T>(col, dummyFactory);
     if (g.order.length === 0) {
       const v = summary.then((summary) => ({...summary, group: dummyFactory()}));
-      this.cache.set(key, v);
+      // this.cache.set(key, v);
       return v;
     }
     const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
