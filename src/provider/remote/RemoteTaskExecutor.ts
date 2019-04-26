@@ -116,7 +116,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     // load server summary caches
     const toLoadSummary = computeAble.filter((col) => !this.cache.has(`${col.id}:b:summary:m`));
     if (toLoadSummary.length > 0) {
-      if (this.isDummyRanking(ranking)) {
+      if (total === this.server.totalNumberOfRows) {
         for (const col of computeAble) {
           // copy from data to summary and create proper structure
           this.cache.set(`${col.id}:b:summary:m`, this.cache.get(`${col.id}:c:data:m`)!.then((data: any) => ({data, summary: data})));
