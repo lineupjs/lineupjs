@@ -180,34 +180,39 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       return;
     }
 
-    if (isNumberColumn(col)) {
-      this.dataNumberStats(col, false);
-      this.dataNumberStats(col, true);
+    if (isDateColumn(col)) {
+      this.dataDateStats(col);
 
       if (!ranking) {
         return;
       }
-      this.summaryNumberStats(col, false);
-      this.summaryNumberStats(col, true);
+      this.summaryDateStats(col);
       for (const group of groups!) {
-        this.groupNumberStats(col, group, false);
-        this.groupNumberStats(col, group, true);
+        this.groupDateStats(col, group);
       }
-      return;
     }
 
-    if (!isDateColumn(col)) {
+    if (!isNumberColumn(col)) {
       return;
     }
-
-    this.dataDateStats(col);
+    this.dataNumberStats(col, false);
+    this.dataNumberStats(col, true);
+    this.dataBoxPlotStats(col, false);
+    this.dataBoxPlotStats(col, true);
 
     if (!ranking) {
       return;
     }
-    this.summaryDateStats(col);
+    this.summaryNumberStats(col, false);
+    this.summaryNumberStats(col, true);
+    this.summaryBoxPlotStats(col, false);
+    this.summaryBoxPlotStats(col, true);
+
     for (const group of groups!) {
-      this.groupDateStats(col, group);
+      this.groupNumberStats(col, group, false);
+      this.groupNumberStats(col, group, true);
+      this.groupBoxPlotStats(col, group, false);
+      this.groupBoxPlotStats(col, group, true);
     }
   }
 
@@ -218,6 +223,8 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       } else if (isNumberColumn(col)) {
         this.dataNumberStats(col, false);
         this.dataNumberStats(col, true);
+        this.dataBoxPlotStats(col, false);
+        this.dataBoxPlotStats(col, true);
       } else if (isDateColumn(col)) {
         this.dataDateStats(col);
       } else {
@@ -234,8 +241,12 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       return;
     }
     this.chainCopy(`${col.id}:b:summary:raw`, this.cache.get(`${col.id}:c:data:raw`)!, (data: any) => ({summary: data, data}));
-    this.chainCopy(`${col.id}:b:summary:b`, this.cache.get(`${col.id}:c:data:b`)!, (data: any) => ({summary: data, data}));
-    this.chainCopy(`${col.id}:b:summary:braw`, this.cache.get(`${col.id}:c:data:braw`)!, (data: any) => ({summary: data, data}));
+    if (this.cache.has(`${col.id}:c:data:b`)) {
+      this.chainCopy(`${col.id}:b:summary:b`, this.cache.get(`${col.id}:c:data:b`)!, (data: any) => ({summary: data, data}));
+    }
+    if (this.cache.has(`${col.id}:c:data:braw`)) {
+      this.chainCopy(`${col.id}:b:summary:braw`, this.cache.get(`${col.id}:c:data:braw`)!, (data: any) => ({summary: data, data}));
+    }
   }
 
   copyCache(col: Column, from: Column) {
