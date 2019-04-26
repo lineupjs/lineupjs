@@ -1,7 +1,7 @@
 import {abortAble} from 'lineupengine';
 import {Column, ICategoricalLikeColumn, IDataRow, IDateColumn, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking} from '../../model';
 import {NUM_OF_EXAMPLE_ROWS} from '../../constants';
-import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../../internal';
+import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics, dummyDateStatistics, dummyCategoricalStatistics, dummyStatistics, dummyBoxPlot} from '../../internal';
 import {IRenderTask, IRenderTasks} from '../../renderer';
 import {ABORTED} from '../interfaces';
 import {taskLater, TaskLater, taskNow, TaskNow} from '../tasks';
@@ -23,6 +23,15 @@ export interface IDebounceContext {
   cols: any[];
   timer: number;
   resolve: (r: Promise<any[]>)=>void;
+}
+
+function dummyMultiNumberStatistics(): IMultiNumberStatistics {
+  return {
+    raw: dummyStatistics(),
+    rawBoxPlot: dummyBoxPlot(),
+    normalized: dummyStatistics(),
+    normalizedBoxPlot: dummyBoxPlot()
+  };
 }
 
 /**
@@ -270,7 +279,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    return this.cached(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, () => this.groupStats<IMultiNumberStatistics>(col, group).then((r) => ({
+    return this.cached(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, () => this.groupStats<IMultiNumberStatistics>(col, group, dummyMultiNumberStatistics).then((r) => ({
       data: raw ? r.data.rawBoxPlot : r.data.normalizedBoxPlot,
       summary: raw ? r.summary.rawBoxPlot : r.summary.normalizedBoxPlot,
       group: raw ? r.group.rawBoxPlot : r.group.normalizedBoxPlot
@@ -278,7 +287,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    return this.cached(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, () => this.groupStats<IMultiNumberStatistics>(col, group).then((r) => ({
+    return this.cached(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, () => this.groupStats<IMultiNumberStatistics>(col, group, dummyMultiNumberStatistics).then((r) => ({
       data: raw ? r.data.raw : r.data.normalized,
       summary: raw ? r.summary.raw : r.summary.normalized,
       group: raw ? r.group.raw : r.group.normalized
@@ -286,33 +295,33 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup) {
-    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<ICategoricalStatistics>(col, group));
+    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<ICategoricalStatistics>(col, group, dummyCategoricalStatistics));
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
-    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<IDateStatistics>(col, group));
+    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<IDateStatistics>(col, group, dummyDateStatistics));
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, () => this.summaryStats<IMultiNumberStatistics>(col).then((r) => ({
+    return this.cached(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, () => this.summaryStats<IMultiNumberStatistics>(col, dummyMultiNumberStatistics).then((r) => ({
       data: raw ? r.data.rawBoxPlot : r.data.normalizedBoxPlot,
       summary: raw ? r.summary.rawBoxPlot : r.summary.normalizedBoxPlot
     })));
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached(`${col.id}:b:summary${raw ? ':raw' : ''}`, () => this.summaryStats<IMultiNumberStatistics>(col).then((r) => ({
+    return this.cached(`${col.id}:b:summary${raw ? ':raw' : ''}`, () => this.summaryStats<IMultiNumberStatistics>(col, dummyMultiNumberStatistics).then((r) => ({
       data: raw ? r.data.raw : r.data.normalized,
       summary: raw ? r.summary.raw : r.summary.normalized
     })));
   }
 
   summaryCategoricalStats(col: Column & ICategoricalLikeColumn) {
-    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<ICategoricalStatistics>(col));
+    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<ICategoricalStatistics>(col, dummyCategoricalStatistics));
   }
 
   summaryDateStats(col: Column & IDateColumn) {
-    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<IDateStatistics>(col));
+    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<IDateStatistics>(col, dummyDateStatistics));
   }
 
 
@@ -436,13 +445,20 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return <any>data;
   }
 
-  private summaryStats<T>(col: Column): Promise<{data: T, summary: T}> {
+  private summaryStats<T>(col: Column, dummyFactory: () => T): Promise<{data: T, summary: T}> {
     const key = `${col.id}:b:summary:m`;
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
     const data = this.dataStats<T>(col);
     const ranking = col.findMyRanker()!;
+
+    if (ranking.getOrderLength() === 0) {
+      const v = data.then((data) => ({data, summary: dummyFactory()}));
+      this.cache.set(key, v);
+      return v;
+    }
+
     if (this.isDummyRanking(ranking)) {
       const v = data.then((data) => ({data, summary: data}));
       this.cache.set(key, v);
@@ -456,12 +472,17 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return v;
   }
 
-  private groupStats<T>(col: Column, g: IOrderedGroup): Promise<{data: T, summary: T, group: T}> {
+  private groupStats<T>(col: Column, g: IOrderedGroup, dummyFactory: () => T): Promise<{data: T, summary: T, group: T}> {
     const key = `${col.id}:a:group:${g.name}:m`;
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
-    const summary = this.summaryStats<T>(col);
+    const summary = this.summaryStats<T>(col, dummyFactory);
+    if (g.order.length === 0) {
+      const v = summary.then((summary) => ({...summary, group: dummyFactory()}));
+      this.cache.set(key, v);
+      return v;
+    }
     const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
     // TODO debounce
     const group = <Promise<T>><any>this.server.computeGroupStats(ranking, g.name, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
