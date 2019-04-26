@@ -152,6 +152,14 @@ export default class RemoteDataProvider extends ACommonDataProvider {
 
     return this.server.sort(toRankingDump(ranking, this.toDescRef)).then(({groups, maxDataIndex}) => {
       const r = index2pos(groups, maxDataIndex);
+
+      // clean again since in the mean time old stuff could have been computed
+      if (needsFiltering && filter.length > 0) {
+        this.tasks.dirtyRanking(ranking, 'summary');
+      } else if (needsGrouping) {
+        this.tasks.dirtyRanking(ranking, 'group');
+      }
+
       this.tasks.preCompute(ranking, groups);
       return r;
     });
