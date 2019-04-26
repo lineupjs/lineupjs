@@ -134,7 +134,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       const group = groups[0];
       for (const col of computeAble) {
         // copy from summary to group and create proper structure
-        this.cache.set(`${col.id}:a:group:${group.name}:m`, this.cache.get(`${col.id}:b:summary:m`)!.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})))
+        this.cache.set(`${col.id}:a:group:${group.name}:m`, this.cache.get(`${col.id}:b:summary:m`)!.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})));
       }
     } else {
       for (const g of groups) {
@@ -455,9 +455,9 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     const ranking = col.findMyRanker()!;
 
     if (ranking.getOrderLength() === 0) {
-      const v = data.then((data) => ({data, summary: dummyFactory()}));
+      return data.then((data) => ({data, summary: dummyFactory()}));
       // this.cache.set(key, v); // don't cache dummies
-      return v;
+      // return v;
     }
 
     if (this.isDummyRanking(ranking)) {
@@ -480,9 +480,9 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const summary = this.summaryStats<T>(col, dummyFactory);
     if (g.order.length === 0) {
-      const v = summary.then((summary) => ({...summary, group: dummyFactory()}));
+      return summary.then((summary) => ({...summary, group: dummyFactory()}));
       // this.cache.set(key, v);
-      return v;
+      // return v;
     }
     const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
     // TODO debounce
