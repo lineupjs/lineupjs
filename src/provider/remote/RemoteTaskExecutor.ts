@@ -18,12 +18,33 @@ export interface IProviderAdapter {
 /**
  * @internal
  */
+export interface IDebounceContext {
+  promise: Promise<any[]>;
+  cols: any[];
+  timer: number;
+  resolve: (r: Promise<any[]>)=>void;
+}
+
+/**
+ * @internal
+ */
 export default class RemoteTaskExecutor implements IRenderTasks {
   private readonly cache = new Map<string, any>();
+  private static readonly DEBOUNCE_DELAY = 100; // 100ms
+  private readonly debounceKeys = new Map<string, IDebounceContext>();
 
   constructor(private readonly server: IServerData, private readonly adapter: IProviderAdapter) {
 
   }
+
+  private isDummyRanking(ranking: Ranking) {
+    // from a stats point of view no difference
+    return ranking.getOrderLength() === this.server.totalNumberOfRows;
+  }
+
+  // private isDummyGroup(ranking: Ranking) {
+  //   return ranking.getGroups().length === 1;
+  // }
 
   dirtyColumn(col: Column, type: 'data' | 'group' | 'summary') {
     // order designed such that first groups, then summaries, then data is deleted
@@ -82,20 +103,24 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const toLoadSummary = computeAble.filter((col) => !this.cache.has(`${col.id}:b:summary:m`));
     if (toLoadSummary.length > 0) {
-      const data = this.server.computeRankingStats(dump, toLoadData);
-      toLoadSummary.forEach((col, i) => {
-        this.cache.set(`${col.id}:b:summary:m`, Promise.all([this.cache.get(`${col.id}:c:data:m`)!, data]).then(([data, rows]) => ({data, summary: rows[i]})));
-      });
+      if (this.isDummyRanking(ranking)) {
+        for (const col of computeAble) {
+          // copy from data to summary and create proper structure
+          this.chainCopy(`${col.id}:b:summary:m`, this.cache.get(`${col.id}:c:data:m`)!, (data: any) => ({summary: data, data}));
+        }
+      } else {
+        const data = this.server.computeRankingStats(dump, toLoadData);
+        toLoadSummary.forEach((col, i) => {
+          this.cache.set(`${col.id}:b:summary:m`, Promise.all([this.cache.get(`${col.id}:c:data:m`)!, data]).then(([data, rows]) => ({data, summary: rows[i]})));
+        });
+      }
     }
 
-    if (groups.length === 1) {
+    if (groups.length === 1) { // dummy group
       const group = groups[0];
       for (const col of computeAble) {
         // copy from summary to group and create proper structure
-        this.chainCopy(`${col.id}:a:group:${group.name}`, this.cache.get(`${col.id}:b:summary`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
-        if (col.map) { // number like
-          this.chainCopy(`${col.id}:a:group:${group.name}:raw`, this.cache.get(`${col.id}:b:summary:raw`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
-        }
+        this.chainCopy(`${col.id}:a:group:${group.name}:m`, this.cache.get(`${col.id}:b:summary:m`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
       }
       return;
     }
@@ -186,12 +211,19 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       } else {
         continue;
       }
-      // copy from data to summary and create proper structure
-      this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({summary: data, data}));
-      if (isNumberColumn(col)) {
-        this.chainCopy(`${col.id}:b:summary:raw`, this.cache.get(`${col.id}:c:data:raw`)!, (data: any) => ({summary: data, data}));
-      }
+      this.copyData2SummaryCol(col);
     }
+  }
+
+  private copyData2SummaryCol(col: Column) {
+      // copy from data to summary and create proper structure
+    this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({summary: data, data}));
+    if (!isNumberColumn(col)) {
+      return;
+    }
+    this.chainCopy(`${col.id}:b:summary:raw`, this.cache.get(`${col.id}:c:data:raw`)!, (data: any) => ({summary: data, data}));
+    this.chainCopy(`${col.id}:b:summary:b`, this.cache.get(`${col.id}:c:data:b`)!, (data: any) => ({summary: data, data}));
+    this.chainCopy(`${col.id}:b:summary:braw`, this.cache.get(`${col.id}:c:data:braw`)!, (data: any) => ({summary: data, data}));
   }
 
   copyCache(col: Column, from: Column) {
@@ -343,12 +375,40 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return s;
   }
 
+  private debouncedCall<T>(key: string, colDump: any, f: (cols: any[]) => Promise<T[]>) {
+    if (!this.debounceKeys.has(key)) {
+      const cols = [colDump];
+      let resolve: (r: Promise<T[]>)=>void = () => undefined;
+      const promise = new Promise<T[]>((resolveImpl) => resolve = resolveImpl);
+      const timer = self.setTimeout(() => {
+        this.debounceKeys.delete(key);
+        resolve(f(cols));
+      }, RemoteTaskExecutor.DEBOUNCE_DELAY);
+      this.debounceKeys.set(key, {promise, resolve, timer, cols});
+      return promise.then((r) => r[0]);
+    }
+
+    // update the timer and push another column to the arguments
+    const entry = this.debounceKeys.get(key)!;
+
+    const index = entry.cols.length;
+    entry.cols.push(colDump);
+
+    clearTimeout(entry.timer);
+    entry.timer = self.setTimeout(() => {
+      this.debounceKeys.delete(key);
+      entry.resolve(f(entry.cols));
+    }, RemoteTaskExecutor.DEBOUNCE_DELAY);
+
+    return entry.promise.then((r) => r[index]);
+  }
+
   private dataStats<T>(col: Column): Promise<T> {
     const key = `${col.id}:c:data:m`;
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
-    const data = this.server.computeDataStats([col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
+    const data = this.debouncedCall('', col.dump(this.adapter.toDescRef), (cols) => this.server.computeDataStats(cols));
     this.cache.set(key, data);
     return <any>data;
   }
@@ -359,20 +419,28 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       return this.cache.get(key)!;
     }
     const data = this.dataStats<T>(col);
-    const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
-    const summary = <Promise<T>><any>this.server.computeRankingStats(ranking, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
+    const ranking = col.findMyRanker()!;
+    if (this.isDummyRanking(ranking)) {
+      const v = data.then((data) => ({data, summary: data}));
+      this.cache.set(key, v);
+      return v;
+    }
+    const rankingDump = toRankingDump(ranking, this.adapter.toDescRef);
+    // TODO debounce
+    const summary = <Promise<T>><any>this.server.computeRankingStats(rankingDump, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
     const v = Promise.all([data, summary]).then(([data, summary]) => ({data, summary}));
     this.cache.set(key, v);
     return v;
   }
 
   private groupStats<T>(col: Column, g: IOrderedGroup): Promise<{data: T, summary: T, group: T}> {
-    const key = `${col.id}:a:group:${g.name}`;
+    const key = `${col.id}:a:group:${g.name}:m`;
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
     const summary = this.summaryStats<T>(col);
     const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
+    // TODO debounce
     const group = <Promise<T>><any>this.server.computeGroupStats(ranking, g.name, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
     const v = Promise.all([summary, group]).then(([summary, group]) => ({...summary, group}));
     this.cache.set(key, v);
