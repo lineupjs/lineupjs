@@ -34,6 +34,17 @@ function dummyMultiNumberStatistics(): IMultiNumberStatistics {
   };
 }
 
+function fixNullNaN<T>(stats: T) {
+  const keys = Object.keys(stats);
+  const s: any = stats;
+  for (const key of keys) {
+    if (s[key] == null) {
+      s[key] = NaN;
+    }
+  }
+  return stats;
+}
+
 /**
  * @internal
  */
@@ -283,7 +294,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return this.cached(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, () => this.groupStats<IMultiNumberStatistics>(col, group, dummyMultiNumberStatistics).then((r) => ({
       data: raw ? r.data.rawBoxPlot : r.data.normalizedBoxPlot,
       summary: raw ? r.summary.rawBoxPlot : r.summary.normalizedBoxPlot,
-      group: raw ? r.group.rawBoxPlot : r.group.normalizedBoxPlot
+      group: fixNullNaN(raw ? r.group.rawBoxPlot : r.group.normalizedBoxPlot)
     })));
   }
 
@@ -291,7 +302,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return this.cached(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, () => this.groupStats<IMultiNumberStatistics>(col, group, dummyMultiNumberStatistics).then((r) => ({
       data: raw ? r.data.raw : r.data.normalized,
       summary: raw ? r.summary.raw : r.summary.normalized,
-      group: raw ? r.group.raw : r.group.normalized
+      group: fixNullNaN(raw ? r.group.raw : r.group.normalized)
     })));
   }
 
@@ -306,14 +317,14 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
     return this.cached(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, () => this.summaryStats<IMultiNumberStatistics>(col, dummyMultiNumberStatistics).then((r) => ({
       data: raw ? r.data.rawBoxPlot : r.data.normalizedBoxPlot,
-      summary: raw ? r.summary.rawBoxPlot : r.summary.normalizedBoxPlot
+      summary: fixNullNaN(raw ? r.summary.rawBoxPlot : r.summary.normalizedBoxPlot)
     })));
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
     return this.cached(`${col.id}:b:summary${raw ? ':raw' : ''}`, () => this.summaryStats<IMultiNumberStatistics>(col, dummyMultiNumberStatistics).then((r) => ({
       data: raw ? r.data.raw : r.data.normalized,
-      summary: raw ? r.summary.raw : r.summary.normalized
+      summary: fixNullNaN(raw ? r.summary.raw : r.summary.normalized)
     })));
   }
 
@@ -372,11 +383,11 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<IAdvancedBoxPlotData> {
-    return this.cached(`${col.id}:c:data${raw ? ':braw' : ':b'}`, () => this.dataStats<IMultiNumberStatistics>(col).then((r) => raw ? r.rawBoxPlot : r.normalizedBoxPlot));
+    return this.cached(`${col.id}:c:data${raw ? ':braw' : ':b'}`, () => this.dataStats<IMultiNumberStatistics>(col).then((r) => fixNullNaN(raw ? r.rawBoxPlot : r.normalizedBoxPlot)));
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<IStatistics> {
-    return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, () => this.dataStats<IMultiNumberStatistics>(col).then((r) => raw ? r.raw : r.normalized));
+    return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, () => this.dataStats<IMultiNumberStatistics>(col).then((r) => fixNullNaN(raw ? r.raw : r.normalized)));
   }
 
   dataCategoricalStats(col: Column & ICategoricalLikeColumn) {
