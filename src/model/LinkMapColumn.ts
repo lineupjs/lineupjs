@@ -1,7 +1,7 @@
 import {toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ITypeFactory} from './interfaces';
 import {patternFunction} from './internal';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import LinkColumn, {ILinkDesc} from './LinkColumn';
@@ -124,7 +124,7 @@ export default class LinkMapColumn extends MapColumn<string> {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     if (dump.pattern) {
       this.pattern = dump.pattern;
     }

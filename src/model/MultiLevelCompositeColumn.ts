@@ -2,7 +2,7 @@ import {similar, IEventListener} from '../internal';
 import {toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn} from './interfaces';
+import {IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn, ITypeFactory} from './interfaces';
 import StackColumn from './StackColumn';
 
 
@@ -86,7 +86,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }

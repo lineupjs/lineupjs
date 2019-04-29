@@ -2,18 +2,17 @@ import {toolbar, SortByDefault, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IKeyValue} from './IArrayColumn';
-import {IDataRow, ECompareValueType} from './interfaces';
+import {IDataRow, ECompareValueType, ITypeFactory} from './interfaces';
 import {
   EAdvancedSortMethod, IAdvancedBoxPlotColumn, INumberDesc,
   INumberFilter,
   IMappingFunction,
   IColorMappingFunction} from './INumberColumn';
-import {default as MapColumn, IMapColumnDesc} from './MapColumn';
-import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import MapColumn, {IMapColumnDesc} from './MapColumn';
+import {restoreMapping} from './MappingFunction';
 import {isMissingValue} from './missing';
 import NumberColumn from './NumberColumn';
 import {IEventListener, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
-import {restoreColorMapping, createColorMappingFunction} from './ColorMappingFunction';
 import {format} from 'd3-format';
 import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
 
@@ -73,11 +72,11 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  constructor(id: string, desc: Readonly<INumberMapColumnDesc>) {
+  constructor(id: string, desc: Readonly<INumberMapColumnDesc>, factory: ITypeFactory) {
     super(id, desc);
-    this.mapping = restoreMapping(desc);
+    this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(desc);
+    this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
     this.sort = desc.sort || EAdvancedSortMethod.median;
 
     if (desc.numberFormat) {
@@ -184,12 +183,12 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
     r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
-    r.map = this.mapping.dump();
-    r.colorMapping = this.colorMapping.dump();
+    r.map = this.mapping.toJSON();
+    r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;
@@ -197,13 +196,11 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (dump.filter) {
       this.currentFilter = restoreNumberFilter(dump.filter);
     }
-    if (dump.map) {
-      this.mapping = createMappingFunction(dump.map);
-    } else if (dump.domain) {
-      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    if (dump.map || dump.domain) {
+      this.mapping = restoreMapping(dump, factory);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(dump.colorMapping);
+      this.colorMapping = factory.colorMappingFunction(dump.colorMapping);
     }
   }
 

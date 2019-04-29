@@ -1,8 +1,8 @@
 import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, DEFAULT_COLOR, ECompareValueType} from './interfaces';
+import {IDataRow, DEFAULT_COLOR, ITypeFactory, ECompareValueType} from './interfaces';
 import CategoricalColumn from './CategoricalColumn';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal';
@@ -100,12 +100,12 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    r.colorMapping = this.colorMapping.dump();
+    r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
-    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
   }
 }

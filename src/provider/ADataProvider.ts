@@ -1,10 +1,14 @@
 import {AEventDispatcher, debounce, ISequence, OrderedSet, IDebounceContext, IEventListener, suffix, IEventContext} from '../internal';
-import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump} from '../model';
+import {Column, Ranking, AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc, isSupportType, EDirtyReason, RankColumn, createRankDesc, createSelectionDesc, IColumnDesc, IDataRow, IGroup, IndicesArray, IOrderedGroup, ISelectionColumnDesc, EAggregationState, IColumnDump, IRankingDump, IColorMappingFunctionConstructor, IMappingFunctionConstructor, ITypeFactory} from '../model';
 import {models} from '../model/models';
 import {forEachIndices, everyIndices, toGroupID, unifyParents} from '../model/internal';
-import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions, IAggregationStrategy} from './interfaces';
+import {IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions} from './interfaces';
 import {exportRanking, map2Object, object2Map} from './utils';
 import {IRenderTasks} from '../renderer';
+import {IColumnConstructor} from '../model/Column';
+import {restoreCategoricalColorMapping} from '../model/CategoricalColorMappingFunction';
+import {createColorMappingFunction, colorMappingFunctions} from '../model/ColorMappingFunction';
+import {createMappingFunction, mappingFunctions} from '../model/MappingFunction';
 
 
 
@@ -205,28 +209,58 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private readonly aggregations = new Map<string, number>(); // not part of = show all
 
   private uid = 0;
+  private readonly typeFactory: ITypeFactory;
+
+  private readonly options: Readonly<IDataProviderOptions> = {
+    columnTypes: {},
+    colorMappingFunctionTypes: {},
+    mappingFunctionTypes: {},
+    singleSelection: false,
+    showTopN: 10,
+    aggregationStrategy: 'item'
+  };
 
   /**
    * lookup map of a column type to its column implementation
    */
-  readonly columnTypes: {[columnType: string]: typeof Column};
+  readonly columnTypes: {[columnType: string]: IColumnConstructor};
+  readonly colorMappingFunctionTypes: {[colorMappingFunctionType: string]: IColorMappingFunctionConstructor};
+  readonly mappingFunctionTypes: {[mappingFunctionType: string]: IMappingFunctionConstructor};
 
-  protected readonly multiSelections: boolean;
-  private readonly aggregationStrategy: IAggregationStrategy;
   private showTopN: number;
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
-    const o: Readonly<IDataProviderOptions> = Object.assign({
-      columnTypes: {},
-      singleSelection: false,
-      showTopN: 10,
-      aggregationStrategy: <IAggregationStrategy>'item'
-    }, options);
-    this.columnTypes = Object.assign(models(), o.columnTypes);
-    this.multiSelections = o.singleSelection !== true;
-    this.showTopN = o.showTopN;
-    this.aggregationStrategy = o.aggregationStrategy;
+    Object.assign(this.options, options);
+    this.columnTypes = Object.assign(models(), this.options.columnTypes);
+    this.colorMappingFunctionTypes = Object.assign(colorMappingFunctions(), this.options.colorMappingFunctionTypes);
+    this.mappingFunctionTypes = Object.assign(mappingFunctions(), this.options.mappingFunctionTypes);
+    this.showTopN = this.options.showTopN;
+
+    this.typeFactory = this.createTypeFactory();
+  }
+
+  private createTypeFactory() {
+    const factory = <ITypeFactory><any>((d: IColumnDump) => {
+      const desc = this.fromDescRef(d.desc);
+      if (!desc || !desc.type) {
+        console.warn('cannot restore column dump', d);
+        return new Column(d.id || '', d.desc || {});
+      }
+      this.fixDesc(desc);
+      const type = this.columnTypes[desc.type];
+      if (type == null) {
+        console.warn('invalid column type in column dump using column', d);
+        return new Column(d.id || '', desc);
+      }
+      const c = new type('', desc, factory);
+      c.restore(d, factory);
+      return c;
+    });
+    factory.colorMappingFunction = createColorMappingFunction(this.colorMappingFunctionTypes, factory);
+    factory.mappingFunction = createMappingFunction(this.mappingFunctionTypes);
+    factory.categoricalColorMappingFunction = restoreCategoricalColorMapping;
+    return factory;
   }
 
   /**
@@ -518,7 +552,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
     if (type) {
-      return new type(this.nextId(), desc);
+      return new type(this.nextId(), desc, this.typeFactory);
     }
     return null;
   }
@@ -539,16 +573,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @returns {Column}
    */
   restoreColumn(dump: any): Column {
-    const create = (d: any) => {
-      const desc = this.fromDescRef(d.desc);
-      this.fixDesc(desc);
-      const type = this.columnTypes[desc.type];
-      const c = new type('', desc);
-      c.restore(d, create);
-      c.assignNewId(this.nextId.bind(this));
-      return c;
-    };
-    return create(dump);
+    const c = this.typeFactory(dump);
+    c.assignNewId(this.nextId.bind(this));
+    return c;
   }
 
   /**
@@ -606,29 +633,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return descRef;
   }
 
-  private createHelper = (d: IColumnDump) => {
-    //factory method for restoring a column
-    const desc = this.fromDescRef(d.desc);
-
-    if (!desc || !desc.type) {
-      console.warn('cannot restore column dump', d);
-      return null;
-    }
-
-    this.fixDesc(desc);
-    let type = this.columnTypes[desc.type];
-    if (type == null) {
-      console.warn('invalid column type in column dump using dummy column', d);
-      type = this.columnTypes.dummy;
-    }
-    const c = new type(d.id, desc);
-    c.restore(d, this.createHelper);
-    return c;
-  };
-
   restoreRanking(dump: IRankingDump) {
     const ranking = this.cloneRanking();
-    ranking.restore(dump, this.createHelper);
+    ranking.restore(dump, this.typeFactory);
     const idGenerator = this.nextId.bind(this);
     ranking.children.forEach((c) => c.assignNewId(idGenerator));
     return ranking;
@@ -660,7 +667,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (dump.rankings) {
       dump.rankings.forEach((r: any) => {
         const ranking = this.cloneRanking();
-        ranking.restore(r, this.createHelper);
+        ranking.restore(r, this.typeFactory);
         //if no rank column add one
         if (!ranking.children.some((d) => d instanceof RankColumn)) {
           ranking.insert(this.create(createRankDesc())!, 0);
@@ -686,7 +693,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (addSupportType) {
       r.push(this.create(createAggregateDesc())!);
       r.push(this.create(createRankDesc())!);
-      if (this.multiSelections) {
+      if (this.options.singleSelection !== false) {
         r.push(this.create(createSelectionDesc())!);
       }
     }
@@ -741,12 +748,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   getAggregationStrategy() {
-    return this.aggregationStrategy;
+    return this.options.aggregationStrategy;
   }
 
   private initAggregateState(ranking: Ranking, groups: IGroup[]) {
     let initial = -1;
-    switch(this.aggregationStrategy) {
+    switch(this.getAggregationStrategy()) {
       case 'group':
         initial = 0;
         break;
@@ -871,7 +878,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (this.selection.has(index)) {
       return; //no change
     }
-    if (!this.multiSelections && this.selection.size > 0) {
+    if (this.options.singleSelection === true && this.selection.size > 0) {
       this.selection.clear();
     }
     this.selection.add(index);
@@ -900,7 +907,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (everyIndices(indices, (i) => this.selection.has(i))) {
       return; //no change
     }
-    if (!this.multiSelections) {
+    if (this.options.singleSelection === true) {
       this.selection.clear();
       if (indices.length > 0) {
         this.selection.add(indices[0]);

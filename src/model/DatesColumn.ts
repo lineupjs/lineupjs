@@ -5,7 +5,7 @@ import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDateDesc, IDatesColumn, IDateFilter} from './IDateColumn';
-import {IDataRow, ECompareValueType} from './interfaces';
+import {IDataRow, ECompareValueType, ITypeFactory} from './interfaces';
 import {isMissingValue} from './missing';
 import DateColumn from './DateColumn';
 import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';
@@ -141,7 +141,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

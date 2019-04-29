@@ -54,7 +54,7 @@ function createIndex2Pos(order: IndicesArray) {
  * a remote implementation of the data provider
  */
 export default class RemoteDataProvider extends ACommonDataProvider {
-  private readonly options: IRemoteDataProviderOptions = {
+  private readonly ooptions: IRemoteDataProviderOptions = {
     maxCacheSize: 1000
   };
 
@@ -63,7 +63,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
 
   constructor(private server: IServerData, columns: IColumnDesc[] = [], options: Partial<IRemoteDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
-    Object.assign(this.options, options);
+    Object.assign(this.ooptions, options);
   }
 
   getTotalNumberOfRows() {
@@ -108,7 +108,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     // removed cached
     this.cache.forEach((_v, k) => union.delete(k));
 
-    if ((this.cache.size + union.size) > this.options.maxCacheSize) {
+    if ((this.cache.size + union.size) > this.ooptions.maxCacheSize) {
       // clean up cache
     }
     // const maxLength = Math.max(...orders.map((o) => o.length));

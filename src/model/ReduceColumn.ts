@@ -3,7 +3,7 @@ import {toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
-import {IDataRow, DEFAULT_COLOR} from './interfaces';
+import {IDataRow, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import {EAdvancedSortMethod} from './INumberColumn';
 
 /**
@@ -128,7 +128,7 @@ export default class ReduceColumn extends CompositeNumberColumn {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     this.reduce = dump.reduce || this.reduce;
     super.restore(dump, factory);
   }

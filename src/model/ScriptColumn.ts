@@ -1,14 +1,13 @@
 import {NumberColumn} from '.';
 import {IEventListener} from '../internal';
 import {SortByDefault, toolbar} from './annotations';
-import {createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn, {addColumn, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IDataRow} from './interfaces';
+import {IDataRow, ITypeFactory} from './interfaces';
 import {isDummyNumberFilter, noNumberFilter, restoreNumberFilter} from './internalNumber';
 import {IColorMappingFunction, IMapAbleColumn, IMapAbleDesc, IMappingFunction, INumberFilter, isNumberColumn} from './INumberColumn';
-import {createMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import {restoreMapping} from './MappingFunction';
 
 const DEFAULT_SCRIPT = `let s = 0;
 col.forEach((c) => s += c.v);
@@ -283,12 +282,12 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
   private currentFilter: INumberFilter = noNumberFilter();
 
 
-  constructor(id: string, desc: Readonly<IScriptColumnDesc>) {
+  constructor(id: string, desc: Readonly<IScriptColumnDesc>, factory: ITypeFactory) {
     super(id, desc);
     this.script = desc.script || this.script;
-    this.mapping = restoreMapping(desc);
+    this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(desc);
+    this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
 
     this.setDefaultRenderer('number');
     this.setDefaultGroupRenderer('boxplot');
@@ -339,25 +338,23 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
     const r = super.dump(toDescRef);
     r.script = this.script;
     r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
-    r.map = this.mapping.dump();
-    r.colorMapping = this.colorMapping.dump();
+    r.map = this.mapping.toJSON();
+    r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
 
     this.script = dump.script || this.script;
     if (dump.filter) {
       this.currentFilter = restoreNumberFilter(dump.filter);
     }
-    if (dump.map) {
-      this.mapping = createMappingFunction(dump.map);
-    } else if (dump.domain) {
-      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    if (dump.map || dump.domain) {
+      this.mapping = restoreMapping(dump.map, factory);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(dump.colorMapping);
+      this.colorMapping = factory.colorMappingFunction(dump.colorMapping);
     }
   }
 

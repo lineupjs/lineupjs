@@ -1,9 +1,9 @@
 import {IEventListener, ISequence} from '../internal';
 import {Category, toolbar} from './annotations';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
 import {ICategoricalColumn, ICategoricalColumnDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IGroup, ICompareValue, DEFAULT_COLOR, ECompareValueType} from './interfaces';
+import {IDataRow, IGroup, ICompareValue, DEFAULT_COLOR, ITypeFactory, ECompareValueType} from './interfaces';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {toCategories, isCategoryIncluded, isEqualCategoricalFilter, toCompareCategoryValue, COMPARE_CATEGORY_VALUE_TYPES, toGroupCompareCategoryValue, COMPARE_GROUP_CATEGORY_VALUE_TYPES} from './internalCategorical';
@@ -142,14 +142,14 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.filter = this.currentFilter;
-    r.colorMapping = this.colorMapping.dump();
+    r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
 
-    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
 
     if ('filter' in dump) {
       this.currentFilter = null;

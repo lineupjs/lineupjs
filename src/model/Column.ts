@@ -1,6 +1,6 @@
 import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
 import {isSortingAscByDefault} from './annotations';
-import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR} from './interfaces';
+import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import Ranking from './Ranking';
 
 /**
@@ -80,6 +80,9 @@ export declare function summaryRendererChanged(previous: string, current: string
  */
 export declare function visibilityChanged(previous: boolean, current: boolean): void;
 
+export interface IColumnConstructor {
+  new(id: string, desc: Readonly<IColumnDesc>, factory: ITypeFactory): Column;
+}
 
 /**
  * a column in LineUp
@@ -438,7 +441,7 @@ export default class Column extends AEventDispatcher {
    * @param dump column dump
    * @param _factory helper for creating columns
    */
-  restore(dump: IColumnDump, _factory: (dump: IColumnDump) => Column | null) {
+  restore(dump: IColumnDump, _factory: ITypeFactory) {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,

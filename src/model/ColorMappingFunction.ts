@@ -1,165 +1,12 @@
 import {interpolateBlues, interpolateGreens, interpolateGreys, interpolateOranges, interpolatePurples, interpolateReds, interpolateCool, interpolateCubehelixDefault, interpolateWarm, interpolatePlasma, interpolateMagma, interpolateViridis, interpolateInferno, interpolateYlOrRd, interpolateYlOrBr, interpolateBuGn, interpolateBuPu, interpolateGnBu, interpolateOrRd, interpolatePuBuGn, interpolatePuBu, interpolatePuRd, interpolateRdPu, interpolateYlGnBu, interpolateYlGn, interpolateRainbow, interpolateBrBG, interpolatePRGn, interpolatePiYG, interpolatePuOr, interpolateRdBu, interpolateRdGy, interpolateRdYlBu, interpolateRdYlGn, interpolateSpectral} from 'd3-scale-chromatic';
 import {equal} from '../internal';
 import {scaleLinear} from 'd3-scale';
-import {IInterpolateColorMappingFunction, IColorMappingFunction, ISolidColorMappingFunction, IQuantizedColorMappingFunction, ICustomColorMappingFunction, IMapAbleDesc} from '.';
-import {DEFAULT_COLOR} from './interfaces';
+import {IColorMappingFunction} from '.';
+import {DEFAULT_COLOR, ITypedDump, ITypeFactory} from './interfaces';
+import {IColorMappingFunctionConstructor} from './INumberColumn';
 
-export class InterpolatingColorFunction implements IInterpolateColorMappingFunction {
-  constructor(public readonly name: string, public readonly type: 'sequential'|'divergent', public readonly apply: (v: number)=>string) {
-
-  }
-
-  dump() {
-    return this.name;
-  }
-
-  clone() {
-    return this; // no clone needed since not parameterized
-  }
-
-  eq(other: IColorMappingFunction): boolean {
-    return other === this;
-  }
-}
-
-export class SolidColorFunction implements ISolidColorMappingFunction {
-  constructor(public readonly color: string) {
-
-  }
-
-  get type(): 'solid' {
-    return 'solid';
-  }
-
-  apply() {
-    return this.color;
-  }
-
-  dump() {
-    return this.color;
-  }
-
-  clone() {
-    return this; // no clone needed since not parameterized
-  }
-
-  eq(other: IColorMappingFunction): boolean {
-    return other instanceof SolidColorFunction && other.color === this.color;
-  }
-}
-
-export class QuantizedColorFunction implements IQuantizedColorMappingFunction {
-  constructor(public readonly base: IColorMappingFunction, public readonly steps: number) {
-
-  }
-
-  get type(): 'quantized' {
-    return 'quantized';
-  }
-
-  apply(v: number) {
-    return this.base.apply(quantize(v, this.steps));
-  }
-
-  dump() {
-    return {
-      base: this.base.dump(),
-      steps: this.steps
-    };
-  }
-
-  clone(): QuantizedColorFunction {
-    return this; // no clone needed since not parameterized
-  }
-
-  eq(other: IColorMappingFunction): boolean {
-    return other instanceof QuantizedColorFunction && other.base.eq(this.base) && other.steps === this.steps;
-  }
-}
-
-export class CustomColorMappingFunction implements ICustomColorMappingFunction {
-  private readonly scale = scaleLinear<string>();
-
-  constructor(public readonly entries: {value: number, color: string}[]) {
-    this.scale
-      .domain(entries.map((d) => d.value))
-      .range(entries.map((d) => d.color))
-      .clamp(true);
-  }
-
-  get type(): 'custom' {
-    return 'custom';
-  }
-
-  apply(v: number) {
-    return this.scale(v);
-  }
-
-  dump() {
-    return this.entries;
-  }
-
-  clone() {
-    return new CustomColorMappingFunction(this.entries);
-  }
-
-  eq(other: IColorMappingFunction): boolean {
-    return other instanceof CustomColorMappingFunction && equal(this.entries, other.entries);
-  }
-}
-
-/**
- * @internal
- */
-export function quantize(v: number, steps: number) {
-  const perStep = 1 / steps;
-  if (v <= perStep) {
-    return 0;
-  }
-  if (v >= (1 - perStep)) {
-    return 1;
-  }
-  for (let acc = 0; acc < 1; acc += perStep) {
-    if (v < acc) {
-      return acc - perStep / 2; // center
-    }
-  }
-  return v;
-}
-
-const cache = new Map<string, SolidColorFunction>();
-
-/**
- * @internal
- */
-export function asColorFunction(color: string) {
-  if (cache.has(color)) {
-    return cache.get(color)!;
-  }
-  const s = new SolidColorFunction(color);
-  cache.set(color, s);
-  return s;
-}
-
-export const DEFAULT_COLOR_FUNCTION = asColorFunction(DEFAULT_COLOR);
-
-/**
- * @internal
- */
-export const sequentialColors: InterpolatingColorFunction[] = [];
-
-/**
- * @internal
- */
-export const divergentColors: InterpolatingColorFunction[] = [];
-
-/**
- * @internal
- */
-export const lookupInterpolatingColor = new Map<string, InterpolatingColorFunction>();
-
-{
-  const sequential: { [key: string]: (v: number)=>string } = {
+export class SequentialColorFunction implements IColorMappingFunction {
+  public static readonly FUNCTIONS: {[key: string]: (v: number) => string} = {
     interpolateBlues,
     interpolateGreens,
     interpolateGreys,
@@ -187,7 +34,28 @@ export const lookupInterpolatingColor = new Map<string, InterpolatingColorFuncti
     interpolateYlGn,
     interpolateRainbow
   };
-  const divergent: { [key: string]: (v: number)=>string } = {
+
+  public readonly apply: (v: number) => string;
+
+  constructor(public readonly name: string) {
+    this.apply = SequentialColorFunction.FUNCTIONS[name] || interpolateBlues;
+  }
+
+  toJSON() {
+    return this.name;
+  }
+
+  clone() {
+    return this; // no clone needed since not parameterized
+  }
+
+  eq(other: IColorMappingFunction): boolean {
+    return other instanceof SequentialColorFunction && other.name === this.name;
+  }
+}
+
+export class DivergentColorFunction implements IColorMappingFunction {
+  public static readonly FUNCTIONS: {[key: string]: (v: number) => string} = {
     interpolateBrBG,
     interpolatePRGn,
     interpolatePiYG,
@@ -198,53 +66,194 @@ export const lookupInterpolatingColor = new Map<string, InterpolatingColorFuncti
     interpolateRdYlGn,
     interpolateSpectral
   };
-  for (const key of Object.keys(sequential)) {
-    sequentialColors.push(new InterpolatingColorFunction(key, 'sequential', sequential[key]));
-  }
-  for (const key of Object.keys(divergent)) {
-    divergentColors.push(new InterpolatingColorFunction(key, 'divergent', divergent[key]));
+
+  public readonly apply: (v: number) => string;
+
+  constructor(public readonly name: string) {
+    this.apply = DivergentColorFunction.FUNCTIONS[name] || interpolateBlues;
   }
 
-  for (const col of sequentialColors) {
-    lookupInterpolatingColor.set(col.name, col);
+  toJSON() {
+    return this.name;
   }
-  for (const col of divergentColors) {
-    lookupInterpolatingColor.set(col.name, col);
+
+  clone() {
+    return this; // no clone needed since not parameterized
+  }
+
+  eq(other: IColorMappingFunction): boolean {
+    return other instanceof DivergentColorFunction && other.name === this.name;
   }
 }
 
-/**
- * @internal
- */
-export function createColorMappingFunction(dump: any): IColorMappingFunction {
-  if (!dump) {
-    return DEFAULT_COLOR_FUNCTION;
+
+export class UnknownColorFunction implements IColorMappingFunction {
+  constructor(public readonly apply: (v: number) => string) {
   }
-  if (typeof dump === 'string') {
-    const s = lookupInterpolatingColor.get(dump);
-    if (s) {
-      return s;
+
+  toJSON() {
+    return this.apply.toString();
+  }
+
+  clone() {
+    return this; // no clone needed since not parameterized
+  }
+
+  eq(other: IColorMappingFunction): boolean {
+    return other instanceof UnknownColorFunction && other.apply === this.apply;
+  }
+}
+
+export class SolidColorFunction implements IColorMappingFunction {
+  constructor(public readonly color: string) {
+
+  }
+
+  apply() {
+    return this.color;
+  }
+
+  toJSON() {
+    return this.color;
+  }
+
+  clone() {
+    return this; // no clone needed since not parameterized
+  }
+
+  eq(other: IColorMappingFunction): boolean {
+    return other instanceof SolidColorFunction && other.color === this.color;
+  }
+}
+
+export class QuantizedColorFunction implements IColorMappingFunction {
+  public readonly base: IColorMappingFunction;
+  public readonly steps: number;
+
+  constructor(dump: ITypedDump, factory: ITypeFactory);
+  constructor(base: IColorMappingFunction, steps: number)
+  constructor(base: IColorMappingFunction | ITypedDump, steps: number | ITypeFactory) {
+    if (typeof (<any>base).apply === 'function') {
+      this.base = <IColorMappingFunction>base;
+      this.steps = steps == null ? 5 : <number>steps;
+    } else {
+      const dump = <ITypedDump>base;
+      this.base = (<ITypeFactory>steps).colorMappingFunction(dump.base);
+      this.steps = dump.steps;
     }
-    return asColorFunction(dump);
   }
-  if (typeof dump === 'function') {
-    return new InterpolatingColorFunction('custom', 'sequential', dump);
+
+  apply(v: number) {
+    return this.base.apply(quantize(v, this.steps));
   }
-  if (dump.base && dump.steps) {
-    return new QuantizedColorFunction(createColorMappingFunction(dump.base), dump.steps);
+
+  toJSON() {
+    return {
+      type: 'quantized',
+      base: this.base.toJSON(),
+      steps: this.steps
+    };
   }
-  if (Array.isArray(dump)) {
-    return new CustomColorMappingFunction(dump);
+
+  clone(): QuantizedColorFunction {
+    return new QuantizedColorFunction(this.base.clone(), this.steps);
   }
-  return DEFAULT_COLOR_FUNCTION;
+
+  eq(other: IColorMappingFunction): boolean {
+    return other instanceof QuantizedColorFunction && other.base.eq(this.base) && other.steps === this.steps;
+  }
+}
+
+export class CustomColorMappingFunction implements IColorMappingFunction {
+  private readonly scale = scaleLinear<string>();
+  public readonly entries: {value: number, color: string}[];
+
+  constructor(dump: ITypedDump);
+  constructor(entries: {value: number, color: string}[]);
+  constructor(entries: ITypedDump | {value: number, color: string}[]) {
+    this.entries = Array.isArray(entries) ? entries : entries.entries;
+    this.scale
+      .domain(this.entries.map((d) => d.value))
+      .range(this.entries.map((d) => d.color))
+      .clamp(true);
+  }
+
+  apply(v: number) {
+    return this.scale(v);
+  }
+
+  toJSON() {
+    return {
+      type: 'custom',
+      entries: this.entries
+    };
+  }
+
+  clone() {
+    return new CustomColorMappingFunction(this.entries.slice());
+  }
+
+  eq(other: IColorMappingFunction): boolean {
+    return other instanceof CustomColorMappingFunction && equal(this.entries, other.entries);
+  }
 }
 
 /**
  * @internal
  */
-export function restoreColorMapping(desc: IMapAbleDesc): IColorMappingFunction {
-  if (desc.colorMapping) {
-    return createColorMappingFunction(desc.colorMapping);
+export function quantize(v: number, steps: number) {
+  const perStep = 1 / steps;
+  if (v <= perStep) {
+    return 0;
   }
-  return DEFAULT_COLOR_FUNCTION;
+  if (v >= (1 - perStep)) {
+    return 1;
+  }
+  for (let acc = 0; acc < 1; acc += perStep) {
+    if (v < acc) {
+      return acc - perStep / 2; // center
+    }
+  }
+  return v;
+}
+
+export function colorMappingFunctions() {
+  const types: any = {
+    [DEFAULT_COLOR]: SolidColorFunction,
+    quantized: QuantizedColorFunction,
+    custom: CustomColorMappingFunction
+  };
+  for (const key of Object.keys(SequentialColorFunction.FUNCTIONS)) {
+    types[key] = SequentialColorFunction;
+  }
+  for (const key of Object.keys(DivergentColorFunction.FUNCTIONS)) {
+    types[key] = DivergentColorFunction;
+  }
+  return types;
+}
+
+export const DEFAULT_COLOR_FUNCTION = new SolidColorFunction(DEFAULT_COLOR);
+
+
+/**
+ * @internal
+ */
+export function createColorMappingFunction(types: {[type: string]: IColorMappingFunctionConstructor}, factory: ITypeFactory) {
+  return (dump: ITypedDump | string | ((v: number) => string)): IColorMappingFunction => {
+    if (!dump) {
+      return DEFAULT_COLOR_FUNCTION;
+    }
+    if (typeof dump === 'function') {
+      return new UnknownColorFunction(dump);
+    }
+    const typeName = typeof dump === 'string' ? dump : dump.type;
+    const type = types[typeName];
+    if (type) {
+      return new type(dump, factory);
+    }
+    if (Array.isArray(dump)) {
+      return new CustomColorMappingFunction(dump);
+    }
+    return new SolidColorFunction(dump.toString());
+  };
 }

@@ -3,10 +3,10 @@ import CategoricalColumn from './CategoricalColumn';
 import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IArrayColumn} from './IArrayColumn';
 import {ICategoricalDesc, ICategoricalFilter, ICategory, ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, ECompareValueType, IValueColumnDesc, IGroup, DEFAULT_COLOR} from './interfaces';
+import {IDataRow, ECompareValueType, IValueColumnDesc, IGroup, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, restoreCategoricalColorMapping} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import {toCategories, isCategoryIncluded} from './internalCategorical';
 import {chooseUIntByDataLength} from './internal';
 
@@ -182,13 +182,13 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.filter = this.currentFilter;
-    r.colorMapping = this.colorMapping.dump();
+    r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
-    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
     if (!('filter' in dump)) {
       this.currentFilter = null;
       return;

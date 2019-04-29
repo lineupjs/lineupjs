@@ -3,9 +3,9 @@ import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, ECompareValueType, IValueColumnDesc} from './interfaces';
+import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {IEventListener} from '../internal';
-import {restoreCategoricalColorMapping, DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 
 export interface IBooleanDesc {
   /**
@@ -159,16 +159,16 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    r.colorMapping = this.colorMapping.dump();
+    r.colorMapping = this.colorMapping.toJSON();
     if (this.currentFilter != null) {
       r.filter = this.currentFilter;
     }
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
-    this.colorMapping = restoreCategoricalColorMapping(dump.colorMapping, this.categories);
+    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
     if (typeof dump.filter !== 'undefined') {
       this.currentFilter = dump.filter;
     }
