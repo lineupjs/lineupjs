@@ -52,6 +52,23 @@ function fixNullNaN<T>(stats: T) {
   return stats;
 }
 
+function fixDateInstance(stats: IDateStatistics): IDateStatistics {
+  function parse(v: Date | null | string) {
+    if (v && !(v instanceof Date)) {
+      return new Date(v);
+    }
+    return v;
+  }
+  const a: any = stats;
+  a.min = parse(a.min);
+  a.max = parse(a.max);
+  for (const bin of a.hist) {
+    bin.x0 = parse(bin.x0);
+    bin.x1 = parse(bin.x1);
+  }
+  return stats;
+}
+
 function isComputeAble(col: Column) {
   return isCategoricalLikeColumn(col) || isNumberColumn(col) || isDateColumn(col);
 }
@@ -377,7 +394,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
-    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<IDateStatistics>(col, group, dummyDateStatistics));
+    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<IDateStatistics>(col, group, dummyDateStatistics).then((d) => ({data: fixDateInstance(d.data), summary: fixDateInstance(d.summary), group: fixDateInstance(d.group)})));
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
@@ -399,7 +416,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   summaryDateStats(col: Column & IDateColumn) {
-    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<IDateStatistics>(col, dummyDateStatistics));
+    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<IDateStatistics>(col, dummyDateStatistics).then((d) => ({data: fixDateInstance(d.data), summary: fixDateInstance(d.summary)})));
   }
 
 
@@ -461,7 +478,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   dataDateStats(col: Column & IDateColumn) {
-    return this.cached(`${col.id}:c:data`, () => this.dataStats<IDateStatistics>(col));
+    return this.cached(`${col.id}:c:data`, () => this.dataStats<IDateStatistics>(col).then(fixDateInstance));
   }
 
   private cached<T>(key: string, creator: () => Promise<T>): IRenderTask<T> {
