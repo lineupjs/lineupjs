@@ -3,7 +3,7 @@ import {ILineUpFlags} from '../config';
 import {round} from '../internal';
 import {Column, IMultiLevelColumn} from '../model';
 import {ISummaryRenderer} from '../renderer';
-import {multiLevelGridCSSClass} from '../renderer/utils';
+import {multiLevelGridCSSClass, forEachChild} from '../renderer/utils';
 import {COLUMN_PADDING, cssClass} from '../styles';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
@@ -37,8 +37,41 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       r.appendChild(wrapper);
     }
 
-    this.summaries.splice(0, this.summaries.length);
-    this.mc.children.forEach((cc, i) => {
+    return this.updateNested(wrapper, r);
+  }
+
+  private matchChildren(wrapper: HTMLElement, children: Column[]) {
+    if (this.summaries.length > children.length) {
+      this.summaries.splice(children.length, this.summaries.length - children.length);
+    }
+
+    function matches(col: Column, i: number) {
+      //do both match?
+      const n = <HTMLElement>wrapper.children[i];
+      return n != null && n.dataset.colId === col.id;
+    }
+
+    if (children.every(matches)) {
+      return;
+    }
+
+    const existing = new Set(children.map((d) => d.id));
+
+    //remove all that are not existing anymore
+    forEachChild(wrapper, (n: HTMLElement) => {
+      const id = n.dataset.colId!;
+      if (!existing.has(id)) {
+        wrapper.removeChild(n);
+      }
+    });
+
+    children.forEach((cc, i) => {
+      const cnode = <HTMLElement>wrapper.querySelector(`[data-col-id="${cc.id}"]`);
+      if (cnode) { // reuse existing
+        wrapper.appendChild(cnode);
+        return;
+      }
+
       const n = createHeader(cc, this.ctx, {
         extraPrefix: 'th',
         mergeDropAble: false,
@@ -58,11 +91,9 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       summaryNode.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass(`renderer-${cc.getSummaryRenderer()}`));
       summaryNode.dataset.renderer = cc.getSummaryRenderer();
       n.appendChild(summaryNode);
-      this.summaries.push(summary);
+      this.summaries[i] = summary;
       summary.update(summaryNode);
     });
-
-    return this.updateNested(wrapper, r);
   }
 
   updateHeader(node: HTMLElement) {
@@ -90,6 +121,8 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
   private updateNested(wrapper: HTMLElement, r: HTMLElement | IAsyncUpdate<HTMLElement>) {
     const sub = this.mc.children;
+    this.matchChildren(wrapper, sub);
+
     const children = <HTMLElement[]>Array.from(wrapper.children);
 
     const toWait: IAbortAblePromise<void>[] = [];
