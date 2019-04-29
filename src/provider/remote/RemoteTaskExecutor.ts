@@ -1,11 +1,11 @@
 import {abortAble} from 'lineupengine';
-import {Column, ICategoricalLikeColumn, IDataRow, IDateColumn, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking} from '../../model';
+import {Column, ICategoricalLikeColumn, IDataRow, IDateColumn, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, IColumnDump} from '../../model';
 import {NUM_OF_EXAMPLE_ROWS} from '../../constants';
 import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics, dummyDateStatistics, dummyStatistics, dummyBoxPlot, dummyCategoricalStatisticsBuilder} from '../../internal';
 import {IRenderTask, IRenderTasks} from '../../renderer';
 import {ABORTED} from '../interfaces';
 import {taskLater, TaskLater, taskNow, TaskNow} from '../tasks';
-import {IMultiNumberStatistics, IServerData, toRankingDump} from './interfaces';
+import {IRawNormalizedAdvancedBoxPlotData, IRawNormalizedStatistics, IServerData, toRankingDump, ERemoteStatiticsType, IComputeColumn} from './interfaces';
 
 /**
  * @internal
@@ -13,6 +13,7 @@ import {IMultiNumberStatistics, IServerData, toRankingDump} from './interfaces';
 export interface IProviderAdapter {
   viewRows(indices: IndicesArray): Promise<IDataRow[]>;
   toDescRef(desc: any): any;
+  precomputeBoxPlotStats: boolean | 'data' | 'summary' | 'group';
 }
 
 /**
@@ -20,19 +21,25 @@ export interface IProviderAdapter {
  */
 export interface IDebounceContext {
   promise: Promise<any[]>;
-  cols: any[];
+  cols: IComputeColumn[];
   timer: number;
   resolve: (r: Promise<any[]>)=>void;
 }
 
-function dummyMultiNumberStatistics(): IMultiNumberStatistics {
+function dummyRawNormalizedStatistics(): IRawNormalizedStatistics {
   return {
     raw: dummyStatistics(),
-    rawBoxPlot: dummyBoxPlot(),
-    normalized: dummyStatistics(),
-    normalizedBoxPlot: dummyBoxPlot()
+    normalized: dummyStatistics()
   };
 }
+
+function dummyRawNormalizedAdvancedBoxPlotData(): IRawNormalizedAdvancedBoxPlotData {
+  return {
+    raw: dummyBoxPlot(),
+    normalized: dummyBoxPlot()
+  };
+}
+
 
 function fixNullNaN<T>(stats: T) {
   const keys = Object.keys(stats);
@@ -43,6 +50,27 @@ function fixNullNaN<T>(stats: T) {
     }
   }
   return stats;
+}
+
+function isComputeAble(col: Column) {
+  return isCategoricalLikeColumn(col) || isNumberColumn(col) || isDateColumn(col);
+}
+
+function toComputeAbleType(col: Column): ERemoteStatiticsType {
+  if (isCategoricalLikeColumn(col)) {
+    return ERemoteStatiticsType.categorical;
+  }
+  if (isNumberColumn(col)) {
+    return ERemoteStatiticsType.number;
+  }
+  if (isDateColumn(col)) {
+    return ERemoteStatiticsType.date;
+  }
+  throw new Error('invalid argument');
+}
+
+function suffix(col: IComputeColumn | ERemoteStatiticsType) {
+  return col === ERemoteStatiticsType.boxplot || ((<IComputeColumn>col).type && (<IComputeColumn>col).type === ERemoteStatiticsType.boxplot ? 'bm' : 'm');
 }
 
 /**
@@ -104,20 +132,22 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
   }
 
+  private preComputeBoxPlot(level: 'data' | 'ranking' | 'group') {
+    if (!this.adapter.precomputeBoxPlotStats) {
+      return false;
+    }
+    return (level === 'data' || (level === 'ranking' && this.adapter.precomputeBoxPlotStats !== 'data') || (level === this.adapter.precomputeBoxPlotStats));
+  }
+
   preCompute(ranking: Ranking, groups: IOrderedGroup[]) {
-    const columns = ranking.flatColumns;
+    const columns = ranking.flatColumns.filter(isComputeAble);
     const dump = toRankingDump(ranking, this.adapter.toDescRef);
-    const computeAble = columns.filter((col) => (isCategoricalLikeColumn(col) || isNumberColumn(col) || isDateColumn(col))).map((d) => d.dump(this.adapter.toDescRef));
+    const computeAble = columns.map((d) => ({dump: d.dump(this.adapter.toDescRef), type: toComputeAbleType(d)}));
+    const computeAbleBoxPlot = computeAble.filter((d) => d.type === ERemoteStatiticsType.number).map((d) => Object.assign({}, d, { type: ERemoteStatiticsType.boxplot}));
 
 
     // load server data caches
-    const toLoadData = computeAble.filter((col) => !this.cache.has(`${col.id}:c:data:m`));
-    if (toLoadData.length > 0) {
-      const data = this.server.computeDataStats(toLoadData);
-      toLoadData.forEach((col, i) => {
-        this.cache.set(`${col.id}:c:data:m`, data.then((rows) => rows[i]));
-      });
-    }
+    this.preComputeDataImpl(computeAble, computeAbleBoxPlot);
 
     const total = groups.reduce((a, b) => a + b.order.length, 0);
     if (groups.length === 0 || total === 0) {
@@ -125,18 +155,25 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
 
     // load server summary caches
-    const toLoadSummary = computeAble.filter((col) => !this.cache.has(`${col.id}:b:summary:m`));
-    if (toLoadSummary.length > 0) {
-      if (total === this.server.totalNumberOfRows) {
-        for (const col of computeAble) {
-          // copy from data to summary and create proper structure
-          this.cache.set(`${col.id}:b:summary:m`, this.cache.get(`${col.id}:c:data:m`)!.then((data: any) => ({data, summary: data})));
+    {
+      const toLoadSummary = computeAble.filter((col) => !this.cache.has(`${col.dump.id}:b:summary:${suffix(col)}`));
+      if (this.preComputeBoxPlot('ranking')) {
+        const toLoadBoxPlotSummary = computeAbleBoxPlot.filter((col) => !this.cache.has(`${col.dump.id}:b:summary:${suffix(col)}`));
+        toLoadSummary.push(...toLoadBoxPlotSummary);
+      }
+
+      if (toLoadSummary.length > 0) {
+        if (total === this.server.totalNumberOfRows) {
+          toLoadSummary.forEach((col) => {
+            // copy from data to summary and create proper structure
+            this.cache.set(`${col.dump.id}:b:summary:${suffix(col)}`, this.cache.get(`${col.dump.id}:c:data:${suffix(col)}`)!.then((data: any) => ({data, summary: data})));
+          });
+        } else {
+          const data = this.server.computeRankingStats(dump, toLoadSummary);
+          toLoadSummary.forEach((col, i) => {
+            this.cache.set(`${col.dump.id}:b:summary:${suffix(col)}`, Promise.all([this.cache.get(`${col.dump.id}:c:data:${suffix(col)}`)!, data]).then(([data, rows]) => ({data, summary: rows[i]})));
+          });
         }
-      } else {
-        const data = this.server.computeRankingStats(dump, toLoadSummary);
-        toLoadSummary.forEach((col, i) => {
-          this.cache.set(`${col.id}:b:summary:m`, Promise.all([this.cache.get(`${col.id}:c:data:m`)!, data]).then(([data, rows]) => ({data, summary: rows[i]})));
-        });
       }
     }
 
@@ -145,18 +182,29 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       const group = groups[0];
       for (const col of computeAble) {
         // copy from summary to group and create proper structure
-        this.cache.set(`${col.id}:a:group:${group.name}:m`, this.cache.get(`${col.id}:b:summary:m`)!.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})));
+        this.cache.set(`${col.dump.id}:a:group:${group.name}:m`, this.cache.get(`${col.dump.id}:b:summary:m`)!.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})));
+      }
+      if (this.preComputeBoxPlot('group')) {
+        for (const col of computeAbleBoxPlot) {
+          // copy from summary to group and create proper structure
+          this.cache.set(`${col.dump.id}:a:group:${group.name}:bm`, this.cache.get(`${col.dump.id}:b:summary:bm`)!.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})));
+        }
       }
     } else {
       for (const g of groups) {
-        const toLoadGroup = computeAble.filter((col) => !this.cache.has(`${col.id}:a:group:${g.name}:m`));
+        const toLoadGroup = computeAble.filter((col) => !this.cache.has(`${col.dump.id}:a:group:${g.name}:m`));
+
+        if (this.preComputeBoxPlot('group')) {
+          const toLoadBoxPlotGroup = computeAbleBoxPlot.filter((col) => !this.cache.has(`${col.dump.id}:a:group:${g.name}:bm`));
+          toLoadGroup.push(...toLoadBoxPlotGroup);
+        }
         if (toLoadGroup.length === 0) {
           continue;
         }
 
         const data = this.server.computeGroupStats(dump, g.name, toLoadGroup);
         toLoadGroup.forEach((col, i) => {
-          this.cache.set(`${col.id}:a:group:${g.name}:m`, Promise.all([this.cache.get(`${col.id}:b:summary:m`)!, data]).then(([summary, rows]) => ({...summary, group: rows[i]})));
+          this.cache.set(`${col.dump.id}:a:group:${g.name}:${suffix(col)}`, Promise.all([this.cache.get(`${col.dump.id}:b:summary:${suffix(col)}`)!, data]).then(([summary, rows]) => ({...summary, group: rows[i]})));
         });
       }
     }
@@ -168,17 +216,27 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   preComputeData(ranking: Ranking) {
-    const columns = ranking.flatColumns;
-    const computeAble = columns.filter((col) => (isCategoricalLikeColumn(col) || isNumberColumn(col) || isDateColumn(col))).map((d) => d.dump(this.adapter.toDescRef));
+    const columns = ranking.flatColumns.filter(isComputeAble);
+    const computeAble = columns.map((d) => ({dump: d.dump(this.adapter.toDescRef), type: toComputeAbleType(d)}));
+    const computeAbleBoxPlot = computeAble.filter((d) => d.type === ERemoteStatiticsType.number).map((d) => Object.assign({}, d, {type: ERemoteStatiticsType.boxplot}));
 
-    const toLoadData = computeAble.filter((col) => !this.cache.has(`${col.id}:c:data:m`));
-    if (toLoadData.length === 0) {
-      return;
+    return this.preComputeDataImpl(computeAble, computeAbleBoxPlot);
+  }
+
+  private preComputeDataImpl(computeAble: IComputeColumn[], computeAbleBoxPlot: IComputeColumn[]) {
+    const toLoadData = computeAble.filter((col) => !this.cache.has(`${col.dump.id}:c:data:m`));
+
+    if (this.preComputeBoxPlot('data')) {
+      const toLoadBoxPlotData = computeAbleBoxPlot.filter((col) => !this.cache.has(`${col.dump.id}:c:data:bm`));
+      toLoadData.push(...toLoadBoxPlotData);
     }
 
+    if (toLoadData.length <= 0) {
+      return;
+    }
     const data = this.server.computeDataStats(toLoadData);
     toLoadData.forEach((col, i) => {
-      this.cache.set(`${col.id}:c:data:m`, data.then((rows) => rows[i]));
+      this.cache.set(`${col.dump.id}:c:data:${suffix(col)}`, data.then((rows) => rows[i]));
     });
   }
 
@@ -218,22 +276,28 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     this.dataNumberStats(col, false);
     this.dataNumberStats(col, true);
-    this.dataBoxPlotStats(col, false);
-    this.dataBoxPlotStats(col, true);
+    if (this.preComputeBoxPlot('data')) {
+      this.dataBoxPlotStats(col, false);
+      this.dataBoxPlotStats(col, true);
+    }
 
     if (!ranking || total === 0) {
       return;
     }
     this.summaryNumberStats(col, false);
     this.summaryNumberStats(col, true);
-    this.summaryBoxPlotStats(col, false);
-    this.summaryBoxPlotStats(col, true);
+    if (this.preComputeBoxPlot('ranking')) {
+      this.summaryBoxPlotStats(col, false);
+      this.summaryBoxPlotStats(col, true);
+    }
 
     for (const group of groups!) {
       this.groupNumberStats(col, group, false);
       this.groupNumberStats(col, group, true);
-      this.groupBoxPlotStats(col, group, false);
-      this.groupBoxPlotStats(col, group, true);
+      if (this.preComputeBoxPlot('group')) {
+        this.groupBoxPlotStats(col, group, false);
+        this.groupBoxPlotStats(col, group, true);
+      }
     }
   }
 
@@ -244,8 +308,10 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       } else if (isNumberColumn(col)) {
         this.dataNumberStats(col, false);
         this.dataNumberStats(col, true);
-        this.dataBoxPlotStats(col, false);
-        this.dataBoxPlotStats(col, true);
+        if (this.preComputeBoxPlot('data')) {
+          this.dataBoxPlotStats(col, false);
+          this.dataBoxPlotStats(col, true);
+        }
       } else if (isDateColumn(col)) {
         this.dataDateStats(col);
       } else {
@@ -291,15 +357,15 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    return this.cached(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, () => this.groupStats<IMultiNumberStatistics>(col, group, dummyMultiNumberStatistics).then((r) => ({
-      data: raw ? r.data.rawBoxPlot : r.data.normalizedBoxPlot,
-      summary: raw ? r.summary.rawBoxPlot : r.summary.normalizedBoxPlot,
-      group: fixNullNaN(raw ? r.group.rawBoxPlot : r.group.normalizedBoxPlot)
+    return this.cached(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, () => this.groupStats<IRawNormalizedAdvancedBoxPlotData>(col, group, dummyRawNormalizedAdvancedBoxPlotData, ERemoteStatiticsType.boxplot).then((r) => ({
+      data: raw ? r.data.raw : r.data.normalized,
+      summary: raw ? r.summary.raw : r.summary.normalized,
+      group: fixNullNaN(raw ? r.group.raw : r.group.normalized)
     })));
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    return this.cached(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, () => this.groupStats<IMultiNumberStatistics>(col, group, dummyMultiNumberStatistics).then((r) => ({
+    return this.cached(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, () => this.groupStats<IRawNormalizedStatistics>(col, group, dummyRawNormalizedStatistics).then((r) => ({
       data: raw ? r.data.raw : r.data.normalized,
       summary: raw ? r.summary.raw : r.summary.normalized,
       group: fixNullNaN(raw ? r.group.raw : r.group.normalized)
@@ -315,14 +381,14 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, () => this.summaryStats<IMultiNumberStatistics>(col, dummyMultiNumberStatistics).then((r) => ({
-      data: raw ? r.data.rawBoxPlot : r.data.normalizedBoxPlot,
-      summary: fixNullNaN(raw ? r.summary.rawBoxPlot : r.summary.normalizedBoxPlot)
+    return this.cached(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, () => this.summaryStats<IRawNormalizedAdvancedBoxPlotData>(col, dummyRawNormalizedAdvancedBoxPlotData, ERemoteStatiticsType.boxplot).then((r) => ({
+      data: raw ? r.data.raw : r.data.normalized,
+      summary: fixNullNaN(raw ? r.summary.raw : r.summary.normalized)
     })));
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached(`${col.id}:b:summary${raw ? ':raw' : ''}`, () => this.summaryStats<IMultiNumberStatistics>(col, dummyMultiNumberStatistics).then((r) => ({
+    return this.cached(`${col.id}:b:summary${raw ? ':raw' : ''}`, () => this.summaryStats<IRawNormalizedStatistics>(col, dummyRawNormalizedStatistics).then((r) => ({
       data: raw ? r.data.raw : r.data.normalized,
       summary: fixNullNaN(raw ? r.summary.raw : r.summary.normalized)
     })));
@@ -383,11 +449,11 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<IAdvancedBoxPlotData> {
-    return this.cached(`${col.id}:c:data${raw ? ':braw' : ':b'}`, () => this.dataStats<IMultiNumberStatistics>(col).then((r) => fixNullNaN(raw ? r.rawBoxPlot : r.normalizedBoxPlot)));
+    return this.cached(`${col.id}:c:data${raw ? ':braw' : ':b'}`, () => this.dataStats<IRawNormalizedAdvancedBoxPlotData>(col, ERemoteStatiticsType.boxplot).then((r) => fixNullNaN(raw ? r.raw : r.normalized)));
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<IStatistics> {
-    return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, () => this.dataStats<IMultiNumberStatistics>(col).then((r) => fixNullNaN(raw ? r.raw : r.normalized)));
+    return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, () => this.dataStats<IRawNormalizedStatistics>(col).then((r) => fixNullNaN(raw ? r.raw : r.normalized)));
   }
 
   dataCategoricalStats(col: Column & ICategoricalLikeColumn) {
@@ -419,9 +485,9 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return s;
   }
 
-  private debouncedCall<T>(key: string, colDump: any, f: (cols: any[]) => Promise<T[]>) {
+  private debouncedCall<T>(key: string, dump: IColumnDump, type: ERemoteStatiticsType, f: (cols: IComputeColumn[]) => Promise<T[]>) {
     if (!this.debounceKeys.has(key)) {
-      const cols = [colDump];
+      const cols = [{dump, type}];
       let resolve: (r: Promise<T[]>)=>void = () => undefined;
       const promise = new Promise<T[]>((resolveImpl) => resolve = resolveImpl);
       const timer = self.setTimeout(() => {
@@ -436,7 +502,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     const entry = this.debounceKeys.get(key)!;
 
     const index = entry.cols.length;
-    entry.cols.push(colDump);
+    entry.cols.push({dump, type});
 
     clearTimeout(entry.timer);
     entry.timer = self.setTimeout(() => {
@@ -447,22 +513,22 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return entry.promise.then((r) => r[index]);
   }
 
-  private dataStats<T>(col: Column): Promise<T> {
-    const key = `${col.id}:c:data:m`;
+  private dataStats<T>(col: Column, type = toComputeAbleType(col)): Promise<T> {
+    const key = `${col.id}:c:data:${suffix(type)}`;
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
-    const data = this.debouncedCall('', col.dump(this.adapter.toDescRef), (cols) => this.server.computeDataStats(cols));
+    const data = this.debouncedCall('', col.dump(this.adapter.toDescRef), type, (cols) => this.server.computeDataStats(cols));
     this.cache.set(key, data);
     return <any>data;
   }
 
-  private summaryStats<T>(col: Column, dummyFactory: () => T): Promise<{data: T, summary: T}> {
-    const key = `${col.id}:b:summary:m`;
+  private summaryStats<T>(col: Column, dummyFactory: () => T, type = toComputeAbleType(col)): Promise<{data: T, summary: T}> {
+    const key = `${col.id}:b:summary:${suffix(type)}`;
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
-    const data = this.dataStats<T>(col);
+    const data = this.dataStats<T>(col, type);
     const ranking = col.findMyRanker()!;
 
     if (ranking.getOrderLength() === 0) {
@@ -478,18 +544,18 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const rankingDump = toRankingDump(ranking, this.adapter.toDescRef);
     // TODO debounce
-    const summary = <Promise<T>><any>this.server.computeRankingStats(rankingDump, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
+    const summary = <Promise<T>><any>this.server.computeRankingStats(rankingDump, [{dump: col.dump(this.adapter.toDescRef), type}]).then((r) => r[0]);
     const v = Promise.all([data, summary]).then(([data, summary]) => ({data, summary}));
     this.cache.set(key, v);
     return v;
   }
 
-  private groupStats<T>(col: Column, g: IOrderedGroup, dummyFactory: () => T): Promise<{data: T, summary: T, group: T}> {
-    const key = `${col.id}:a:group:${g.name}:m`;
+  private groupStats<T>(col: Column, g: IOrderedGroup, dummyFactory: () => T, type = toComputeAbleType(col)): Promise<{data: T, summary: T, group: T}> {
+    const key = `${col.id}:a:group:${g.name}:${suffix(type)}`;
     if (this.cache.has(key)) {
       return this.cache.get(key)!;
     }
-    const summary = this.summaryStats<T>(col, dummyFactory);
+    const summary = this.summaryStats<T>(col, dummyFactory, type);
     if (g.order.length === 0) {
       return summary.then((summary) => ({...summary, group: dummyFactory()}));
       // this.cache.set(key, v);
@@ -497,7 +563,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
     // TODO debounce
-    const group = <Promise<T>><any>this.server.computeGroupStats(ranking, g.name, [col.dump(this.adapter.toDescRef)]).then((r) => r[0]);
+    const group = <Promise<T>><any>this.server.computeGroupStats(ranking, g.name, [{dump: col.dump(this.adapter.toDescRef), type}]).then((r) => r[0]);
     const v = Promise.all([summary, group]).then(([summary, group]) => ({...summary, group}));
     this.cache.set(key, v);
     return v;

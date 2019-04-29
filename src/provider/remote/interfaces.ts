@@ -9,6 +9,9 @@ export interface IServerRankingDump {
   groupSortCriteria: {asc: boolean, col: IColumnDump}[];
 }
 
+/**
+ * @internal
+ */
 export function toRankingDump(ranking: Ranking, toDescRef: (desc: any) => any) {
   return {
     filter: ranking.flatColumns.filter((d) => d.isFiltered()).map((d) => d.dump(toDescRef)),
@@ -18,14 +21,29 @@ export function toRankingDump(ranking: Ranking, toDescRef: (desc: any) => any) {
   };
 }
 
-export interface IMultiNumberStatistics {
+export interface IRawNormalizedStatistics {
   raw: IStatistics;
-  rawBoxPlot: IAdvancedBoxPlotData;
   normalized: IStatistics;
-  normalizedBoxPlot: IAdvancedBoxPlotData;
 }
 
-export declare type IRemoteStatistics = IDateStatistics | ICategoricalStatistics | IMultiNumberStatistics;
+export interface IRawNormalizedAdvancedBoxPlotData {
+  raw: IAdvancedBoxPlotData;
+  normalized: IAdvancedBoxPlotData;
+}
+
+export declare type IRemoteStatistics = IDateStatistics | ICategoricalStatistics | IRawNormalizedStatistics | IRawNormalizedAdvancedBoxPlotData;
+
+export enum ERemoteStatiticsType {
+  categorical = 'categorical',
+  date = 'date',
+  number = 'number',
+  boxplot = 'boxplot'
+}
+
+export interface IComputeColumn {
+  dump: IColumnDump;
+  type: ERemoteStatiticsType;
+}
 
 /**
  * interface what the server side has to provide
@@ -63,10 +81,22 @@ export interface IServerData {
 
   /**
    * compute the data statistics for the given columns
+   * @param columns column dumps
    */
-  computeDataStats(columns: IColumnDump[]): Promise<IRemoteStatistics[]>;
-  computeRankingStats(ranking: IServerRankingDump, columns: IColumnDump[]): Promise<IRemoteStatistics[]>;
-  computeGroupStats(ranking: IServerRankingDump, group: string, columns: IColumnDump[]): Promise<IRemoteStatistics[]>;
+  computeDataStats(columns: IComputeColumn[]): Promise<IRemoteStatistics[]>;
+  /**
+   * compute the ranking statistics for the given columns
+   * @param ranking ranking dump
+   * @param columns column dumps
+   */
+  computeRankingStats(ranking: IServerRankingDump, columns: IComputeColumn[]): Promise<IRemoteStatistics[]>;
+  /**
+   * compute the group statistics for the given columns
+   * @param ranking ranking dump
+   * @param group group name
+   * @param columns column dumps
+   */
+  computeGroupStats(ranking: IServerRankingDump, group: string, columns: IComputeColumn[]): Promise<IRemoteStatistics[]>;
 
 }
 

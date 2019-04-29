@@ -20,6 +20,12 @@ export interface IRemoteDataProviderOptions {
    * @default 50
    */
   loadNeighbors: number;
+
+  /**
+   * whether to precompute box plot statistics
+   * @default false
+   */
+  precomputeBoxPlotStats: boolean | 'data' | 'summary' | 'group';
 }
 
 /**
@@ -28,7 +34,8 @@ export interface IRemoteDataProviderOptions {
 export default class RemoteDataProvider extends ACommonDataProvider {
   private readonly ooptions: IRemoteDataProviderOptions = {
     maxCacheSize: 10000,
-    loadNeighbors: 50
+    loadNeighbors: 50,
+    precomputeBoxPlotStats: false
   };
 
   private readonly cache: LRUCache<number, Promise<IDataRow> | IDataRow>;
@@ -41,7 +48,8 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     this.cache = new LRUCache(this.ooptions.maxCacheSize);
     this.tasks = new RemoteTaskExecutor(server, {
       viewRows: this.viewRows.bind(this),
-      toDescRef: this.toDescRef
+      toDescRef: this.toDescRef,
+      precomputeBoxPlotStats: this.ooptions.precomputeBoxPlotStats
     });
   }
 
@@ -65,7 +73,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     ranking.on(`${Column.EVENT_DIRTY_CACHES}.cache`, function (this: IEventContext) {
       let col: any = this.origin;
       while (col instanceof Column) {
-        console.log(col.label, 'dirty data');
+        //console.log(col.label, 'dirty data');
         that.tasks.dirtyColumn(col, 'data');
         that.tasks.preComputeCol(col);
         col = col.parent;
