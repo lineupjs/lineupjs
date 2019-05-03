@@ -61,7 +61,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.setDefaultRenderer('upset');
     this.setDefaultGroupRenderer('upset');
-    this.setSummaryRenderer('set');
+    this.setSummaryRenderer('categorical');
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
