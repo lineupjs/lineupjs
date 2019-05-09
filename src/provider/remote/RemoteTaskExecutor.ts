@@ -4,7 +4,7 @@ import {NUM_OF_EXAMPLE_ROWS} from '../../constants';
 import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics, dummyDateStatistics, dummyStatistics, dummyBoxPlot, dummyCategoricalStatisticsBuilder} from '../../internal';
 import {IRenderTask, IRenderTasks} from '../../renderer';
 import {ABORTED} from '../interfaces';
-import {taskLater, TaskLater, taskNow, TaskNow} from '../tasks';
+import {taskLater, TaskLater, taskNow, TaskNow, abortedTask} from '../tasks';
 import {IRawNormalizedAdvancedBoxPlotData, IRawNormalizedStatistics, IServerData, toRankingDump, ERemoteStatiticsType, IComputeColumn} from './interfaces';
 
 /**
@@ -399,6 +399,9 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+    if (col.findMyRanker()!.getOrderLength() === 0) {
+      return abortedTask<{data: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData}>();
+    }
     return this.cached(`${col.id}:b:summary${raw ? ':braw' : ':b'}`, () => this.summaryStats<IRawNormalizedAdvancedBoxPlotData>(col, dummyRawNormalizedAdvancedBoxPlotData, ERemoteStatiticsType.boxplot).then((r) => ({
       data: raw ? r.data.raw : r.data.normalized,
       summary: fixNullNaN(raw ? r.summary.raw : r.summary.normalized)
@@ -406,6 +409,9 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
+    if (col.findMyRanker()!.getOrderLength() === 0) {
+      return abortedTask<{data: IStatistics, summary: IStatistics}>();
+    }
     return this.cached(`${col.id}:b:summary${raw ? ':raw' : ''}`, () => this.summaryStats<IRawNormalizedStatistics>(col, dummyRawNormalizedStatistics).then((r) => ({
       data: raw ? r.data.raw : r.data.normalized,
       summary: fixNullNaN(raw ? r.summary.raw : r.summary.normalized)
@@ -413,10 +419,16 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   summaryCategoricalStats(col: Column & ICategoricalLikeColumn) {
+    if (col.findMyRanker()!.getOrderLength() === 0) {
+      return abortedTask<{data: ICategoricalStatistics, summary: ICategoricalStatistics}>();
+    }
     return this.cached(`${col.id}:b:summary`, () => this.summaryStats<ICategoricalStatistics>(col, dummyCategoricalStatisticsBuilder(col.categories)));
   }
 
   summaryDateStats(col: Column & IDateColumn) {
+    if (col.findMyRanker()!.getOrderLength() === 0) {
+      return abortedTask<{data: IDateStatistics, summary: IDateStatistics}>();
+    }
     return this.cached(`${col.id}:b:summary`, () => this.summaryStats<IDateStatistics>(col, dummyDateStatistics).then((d) => ({data: fixDateInstance(d.data, col), summary: fixDateInstance(d.summary, col)})));
   }
 
@@ -427,7 +439,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const v = this.cache.get(key);
     // not an aborted task
-    return !((v instanceof TaskNow) && typeof v.v === 'symbol') && !(v instanceof TaskLater && v.v.isAborted());
+    return !((v instanceof TaskNow) && typeof v.v === 'symbol') || (v instanceof TaskLater && v.v.isAborted());
   }
 
   private chainCopy<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => U, force = false): IRenderTask<U> {
