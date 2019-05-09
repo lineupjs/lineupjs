@@ -52,10 +52,11 @@ function fixNullNaN<T>(stats: T) {
   return stats;
 }
 
-function fixDateInstance(stats: IDateStatistics): IDateStatistics {
+function fixDateInstance(stats: IDateStatistics, column: IDateColumn): IDateStatistics {
+  const parser = column.getParser();
   function parse(v: Date | null | string) {
     if (v && !(v instanceof Date)) {
-      return new Date(v);
+      return parser(v);
     }
     return v;
   }
@@ -394,7 +395,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
-    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<IDateStatistics>(col, group, dummyDateStatistics).then((d) => ({data: fixDateInstance(d.data), summary: fixDateInstance(d.summary), group: fixDateInstance(d.group)})));
+    return this.cached(`${col.id}:a:group:${group.name}`, () => this.groupStats<IDateStatistics>(col, group, dummyDateStatistics).then((d) => ({data: fixDateInstance(d.data, col), summary: fixDateInstance(d.summary, col), group: fixDateInstance(d.group, col)})));
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
@@ -416,7 +417,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   summaryDateStats(col: Column & IDateColumn) {
-    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<IDateStatistics>(col, dummyDateStatistics).then((d) => ({data: fixDateInstance(d.data), summary: fixDateInstance(d.summary)})));
+    return this.cached(`${col.id}:b:summary`, () => this.summaryStats<IDateStatistics>(col, dummyDateStatistics).then((d) => ({data: fixDateInstance(d.data, col), summary: fixDateInstance(d.summary, col)})));
   }
 
 
@@ -478,7 +479,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   }
 
   dataDateStats(col: Column & IDateColumn) {
-    return this.cached(`${col.id}:c:data`, () => this.dataStats<IDateStatistics>(col).then(fixDateInstance));
+    return this.cached(`${col.id}:c:data`, () => this.dataStats<IDateStatistics>(col).then((s) => fixDateInstance(s, col)));
   }
 
   private cached<T>(key: string, creator: () => Promise<T>): IRenderTask<T> {
