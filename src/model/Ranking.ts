@@ -213,7 +213,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
           return offsets.get(g)!;
         }
         const subs = g.subGroups.map((gi) => resolve(<Readonly<IGroupParent> | IOrderedGroup>gi));
-        const offset = subs[0].offset;
+        const offset = subs.length > 0 ? subs[0].offset : 0;
         const size = subs.reduce((a, b) => a + b.size, 0);
         const r = {offset, size};
         offsets.set(g, r);
