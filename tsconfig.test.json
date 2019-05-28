@@ -3,6 +3,17 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "outDir": "build/src"
-  }
+    "outDir": "build"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "tsd.d.ts"
+  ],
+  "exclude": [
+    "src/**/*.d.ts",
+    "tests/**/*.d.ts",
+  ]
 }
