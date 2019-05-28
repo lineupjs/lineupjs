@@ -81,7 +81,7 @@ export declare function summaryRendererChanged(previous: string, current: string
 export declare function visibilityChanged(previous: boolean, current: boolean): void;
 
 export interface IColumnConstructor {
-  new(id: string, desc: Readonly<IColumnDesc>, factory: ITypeFactory): Column;
+  new<T extends IColumnDesc = IColumnDesc>(id: string, desc: Readonly<T>, factory: ITypeFactory): Column;
 }
 
 /**
