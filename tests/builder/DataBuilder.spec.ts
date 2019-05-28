@@ -7,7 +7,7 @@ interface IMyCustomDesc extends IColumnDesc {
 
 
 describe('DataBuilder', () => {
-  it('registerColumnType', () => {
+  describe('registerColumnType', () => {
     it('simple constructor', () => {
       class CustomColumn extends Column {
       }
