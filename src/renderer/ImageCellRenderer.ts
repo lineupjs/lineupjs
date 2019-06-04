@@ -40,7 +40,7 @@ export default class ImageCellRenderer implements ICellRendererFactory {
             return;
           }
           n.style.backgroundImage = missing || !v ? null : `url('${image.src}')`;
-        })
+        });
       }
     };
   }
