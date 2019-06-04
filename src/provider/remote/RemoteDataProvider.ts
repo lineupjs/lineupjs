@@ -3,30 +3,10 @@ import Column, {IColumnDesc, IDataRow, IndicesArray, INumberColumn, Ranking, Com
 import {mapIndices} from '../../model/internal';
 import ACommonDataProvider from '../ACommonDataProvider';
 import {IDataProviderOptions} from '../interfaces';
-import {IServerData, toRankingDump} from './interfaces';
+import {IServerData, toRankingDump, IRemoteDataProviderOptions} from './interfaces';
 import {index2pos} from '../internal';
 import RemoteTaskExecutor from './RemoteTaskExecutor';
 import {IRenderTasks} from '../../renderer';
-
-export interface IRemoteDataProviderOptions {
-  /**
-   * maximal cache size
-   * @default 10000
-   */
-  maxCacheSize: number;
-
-  /**
-   * neighbors to preload when requesting an index
-   * @default 50
-   */
-  loadNeighbors: number;
-
-  /**
-   * whether to precompute box plot statistics
-   * @default false
-   */
-  precomputeBoxPlotStats: boolean | 'data' | 'summary' | 'group';
-}
 
 /**
  * a remote implementation of the data provider

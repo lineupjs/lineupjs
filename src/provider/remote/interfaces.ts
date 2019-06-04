@@ -2,6 +2,26 @@ import {IColumnDump, IOrderedGroup, Ranking} from '../../model';
 import {IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../../internal';
 
 
+export interface IRemoteDataProviderOptions {
+  /**
+   * maximal cache size
+   * @default 10000
+   */
+  maxCacheSize: number;
+
+  /**
+   * neighbors to preload when requesting an index
+   * @default 50
+   */
+  loadNeighbors: number;
+
+  /**
+   * whether to precompute box plot statistics
+   * @default false
+   */
+  precomputeBoxPlotStats: boolean | 'data' | 'summary' | 'group';
+}
+
 export interface IServerRankingDump {
   filter: IColumnDump[];
   sortCriteria: {asc: boolean, col: IColumnDump}[];
