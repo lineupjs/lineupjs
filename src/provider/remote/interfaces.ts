@@ -1,6 +1,5 @@
 import {IColumnDump, IOrderedGroup, Ranking} from '../../model';
 import {IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../../internal';
-import {IAbortAblePromise} from 'lineupengine';
 
 
 export interface IRemoteDataProviderOptions {

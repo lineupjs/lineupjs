@@ -1,6 +1,6 @@
-import {abortAble} from 'lineupengine';
+import {abortAble, ABORTED} from 'lineupengine';
 import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISequence, ISortMessageResponse, IStatistics, lazySeq, toIndexArray, WorkerTaskScheduler, createWorkerBlob} from '../internal';
-import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
+import TaskScheduler, {oneShotIterator} from '../internal/scheduler';
 import Column, {ICategoricalLikeColumn, ICompareValue, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray} from '../model';
 import {IRenderTask} from '../renderer';
 import {sortDirect} from './DirectRenderTasks';

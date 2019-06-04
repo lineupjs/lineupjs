@@ -165,7 +165,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     }).catch((error) => {
       if (signal.aborted) {
         // ok was aborted, so not a real error but the abort error
-        console.info('error during sorting cause has been aborted', error);
+        console.log('error during sorting cause has been aborted', error);
       } else {
         console.error('error during sorting', error)
       }
@@ -175,8 +175,8 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       }
       // return a dummy
       return {
-        groups: [],
-        index2pos: []
+        groups: <IOrderedGroup[]>[],
+        index2pos: new Uint8Array(0)
       };
     });
   }

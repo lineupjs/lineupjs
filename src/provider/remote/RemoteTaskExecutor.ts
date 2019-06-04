@@ -1,11 +1,11 @@
 import {abortAble} from 'lineupengine';
-import {Column, ICategoricalLikeColumn, IDataRow, IDateColumn, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, IColumnDump} from '../../model';
+import {Column, ICategoricalLikeColumn, IDataRow, IDateColumn, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking} from '../../model';
 import {NUM_OF_EXAMPLE_ROWS} from '../../constants';
 import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics, dummyDateStatistics, dummyStatistics, dummyBoxPlot, dummyCategoricalStatisticsBuilder} from '../../internal';
 import {IRenderTask, IRenderTasks} from '../../renderer';
 import {ABORTED} from '../interfaces';
 import {taskLater, TaskLater, taskNow, TaskNow, abortedTask} from '../tasks';
-import {IRawNormalizedAdvancedBoxPlotData, IRawNormalizedStatistics, IServerData, toRankingDump, ERemoteStatiticsType, IComputeColumn, IRemoteStatistics, ICustomAbortSignal} from './interfaces';
+import {IRawNormalizedAdvancedBoxPlotData, IRawNormalizedStatistics, IServerData, toRankingDump, ERemoteStatiticsType, IComputeColumn} from './interfaces';
 import {CustomAbortSignal, MultiAbortSignal, CallDebouncer} from './internal';
 
 /**
