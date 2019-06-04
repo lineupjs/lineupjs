@@ -439,7 +439,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const v = this.cache.get(key);
     // not an aborted task
-    return !((v instanceof TaskNow) && typeof v.v === 'symbol') || (v instanceof TaskLater && v.v.isAborted());
+    return !((v instanceof TaskNow) && typeof v.v === 'symbol') || (v instanceof TaskLater && typeof v.v !== 'symbol' && v.v.isAborted());
   }
 
   private chainCopy<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => U, force = false): IRenderTask<U> {
