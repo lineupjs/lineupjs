@@ -5,7 +5,8 @@ import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData
 import {IRenderTask, IRenderTasks} from '../../renderer';
 import {ABORTED} from '../interfaces';
 import {taskLater, TaskLater, taskNow, TaskNow, abortedTask} from '../tasks';
-import {IRawNormalizedAdvancedBoxPlotData, IRawNormalizedStatistics, IServerData, toRankingDump, ERemoteStatiticsType, IComputeColumn} from './interfaces';
+import {IRawNormalizedAdvancedBoxPlotData, IRawNormalizedStatistics, IServerData, toRankingDump, ERemoteStatiticsType, IComputeColumn, IRemoteStatistics, ICustomAbortSignal} from './interfaces';
+import {CustomAbortSignal, MultiAbortSignal, CallDebouncer} from './internal';
 
 /**
  * @internal
@@ -16,15 +17,6 @@ export interface IProviderAdapter {
   precomputeBoxPlotStats: boolean | 'data' | 'summary' | 'group';
 }
 
-/**
- * @internal
- */
-export interface IDebounceContext {
-  promise: Promise<any[]>;
-  cols: IComputeColumn[];
-  timer: number;
-  resolve: (r: Promise<any[]>)=>void;
-}
 
 function dummyRawNormalizedStatistics(): IRawNormalizedStatistics {
   return {
@@ -88,16 +80,18 @@ function toComputeAbleType(col: Column): ERemoteStatiticsType {
 }
 
 function suffix(col: IComputeColumn | ERemoteStatiticsType) {
-  return col === ERemoteStatiticsType.boxplot || ((<IComputeColumn>col).type && (<IComputeColumn>col).type === ERemoteStatiticsType.boxplot ? 'bm' : 'm');
+  return (col === ERemoteStatiticsType.boxplot || ((<IComputeColumn>col).type && (<IComputeColumn>col).type === ERemoteStatiticsType.boxplot)) ? 'bm' : 'm';
 }
 
 /**
  * @internal
  */
 export default class RemoteTaskExecutor implements IRenderTasks {
-  private readonly cache = new Map<string, any>();
-  private static readonly DEBOUNCE_DELAY = 100; // 100ms
-  private readonly debounceKeys = new Map<string, IDebounceContext>();
+  private readonly cache = new Map<string, IRenderTask<any>>();
+  private readonly cacheLoading = new Map<string, {promise: Promise<any>, signal: {abort(): void}}>();
+
+  private readonly debouncer = new CallDebouncer();
+
 
   constructor(private readonly server: IServerData, private readonly adapter: IProviderAdapter) {
 
@@ -108,6 +102,32 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return ranking.getOrderLength() === this.server.totalNumberOfRows;
   }
 
+  private cleanCaches(deleteKey: (key: string) => boolean) {
+    for (const key of Array.from(this.cache.keys()).sort()) {
+      // data = all
+      // summary = summary + group
+      // group = group only
+      if (!deleteKey(key)) {
+        continue;
+      }
+      const value = this.cache.get(key);
+      this.cache.delete(key);
+      if (value instanceof TaskLater) {
+        value.v.abort();
+      }
+    }
+    for (const key of Array.from(this.cacheLoading.keys()).sort()) {
+      if (!deleteKey(key)) {
+        continue;
+      }
+      const value = this.cacheLoading.get(key);
+      this.cacheLoading.delete(key);
+      if (value) {
+        value.signal.abort();
+      }
+    }
+  }
+
   // private isDummyGroup(ranking: Ranking) {
   //   return ranking.getGroups().length === 1;
   // }
@@ -115,16 +135,11 @@ export default class RemoteTaskExecutor implements IRenderTasks {
   dirtyColumn(col: Column, type: 'data' | 'group' | 'summary') {
     // order designed such that first groups, then summaries, then data is deleted
 
-    for (const key of Array.from(this.cache.keys()).sort()) {
-      // data = all
-      // summary = summary + group
-      // group = group only
-      if ((type === 'data' && key.startsWith(`${col.id}:`) ||
+    const deleteKey = (key: string) => (type === 'data' && key.startsWith(`${col.id}:`) ||
         (type === 'summary' && key.startsWith(`${col.id}:b:summary:`)) ||
-        (key.startsWith(`${col.id}:a:group`)))) {
-        this.cache.delete(key);
-      }
-    }
+        (key.startsWith(`${col.id}:a:group`)));
+
+    this.cleanCaches(deleteKey);
   }
 
   dirtyRanking(ranking: Ranking, type: 'data' | 'group' | 'summary') {
@@ -143,11 +158,7 @@ export default class RemoteTaskExecutor implements IRenderTasks {
         checker = cols.map((col) => (key: string) => key.startsWith(`${col.id}:`));
         break;
     }
-    for (const key of Array.from(this.cache.keys()).sort()) {
-      if (checker.some((f) => f(key))) {
-        this.cache.delete(key);
-      }
-    }
+    this.cleanCaches((key) => checker.some((c) => c(key)));
   }
 
   private preComputeBoxPlot(level: 'data' | 'ranking' | 'group') {
@@ -184,12 +195,20 @@ export default class RemoteTaskExecutor implements IRenderTasks {
         if (total === this.server.totalNumberOfRows) {
           toLoadSummary.forEach((col) => {
             // copy from data to summary and create proper structure
-            this.cache.set(`${col.dump.id}:b:summary:${suffix(col)}`, this.cache.get(`${col.dump.id}:c:data:${suffix(col)}`)!.then((data: any) => ({data, summary: data})));
+            const entry = this.cacheLoading.get(`${col.dump.id}:c:data:${suffix(col)}`)!;
+            this.cacheLoading.set(`${col.dump.id}:b:summary:${suffix(col)}`, {
+              promise: entry.promise.then((data: any) => ({data, summary: data})),
+              signal: entry.signal
+            });
           });
         } else {
-          const data = this.server.computeRankingStats(dump, toLoadSummary);
+          const signal = new MultiAbortSignal(toLoadSummary);
+          const data = this.server.computeRankingStats(dump, toLoadSummary, {signal});
           toLoadSummary.forEach((col, i) => {
-            this.cache.set(`${col.dump.id}:b:summary:${suffix(col)}`, Promise.all([this.cache.get(`${col.dump.id}:c:data:${suffix(col)}`)!, data]).then(([data, rows]) => ({data, summary: rows[i]})));
+            this.cacheLoading.set(`${col.dump.id}:b:summary:${suffix(col)}`, {
+              promise: Promise.all([this.cacheLoading.get(`${col.dump.id}:c:data:${suffix(col)}`)!.promise, data]).then(([data, rows]) => ({data, summary: rows[i]})),
+              signal
+            });
           });
         }
       }
@@ -200,12 +219,20 @@ export default class RemoteTaskExecutor implements IRenderTasks {
       const group = groups[0];
       for (const col of computeAble) {
         // copy from summary to group and create proper structure
-        this.cache.set(`${col.dump.id}:a:group:${group.name}:m`, this.cache.get(`${col.dump.id}:b:summary:m`)!.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})));
+        const entry = this.cacheLoading.get(`${col.dump.id}:b:summary:m`)!;
+        this.cacheLoading.set(`${col.dump.id}:a:group:${group.name}:m`, {
+          promise: entry.promise.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})),
+          signal: entry.signal
+        });
       }
       if (this.preComputeBoxPlot('group')) {
         for (const col of computeAbleBoxPlot) {
           // copy from summary to group and create proper structure
-          this.cache.set(`${col.dump.id}:a:group:${group.name}:bm`, this.cache.get(`${col.dump.id}:b:summary:bm`)!.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})));
+          const entry = this.cacheLoading.get(`${col.dump.id}:b:summary:bm`)!;
+          this.cacheLoading.set(`${col.dump.id}:a:group:${group.name}:bm`, {
+            promise: entry.promise.then((v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data})),
+            signal: entry.signal
+          });
         }
       }
     } else {
@@ -220,9 +247,13 @@ export default class RemoteTaskExecutor implements IRenderTasks {
           continue;
         }
 
-        const data = this.server.computeGroupStats(dump, g.name, toLoadGroup);
+        const signal = new MultiAbortSignal(toLoadGroup);
+        const data = this.server.computeGroupStats(dump, g.name, toLoadGroup, {signal});
         toLoadGroup.forEach((col, i) => {
-          this.cache.set(`${col.dump.id}:a:group:${g.name}:${suffix(col)}`, Promise.all([this.cache.get(`${col.dump.id}:b:summary:${suffix(col)}`)!, data]).then(([summary, rows]) => ({...summary, group: rows[i]})));
+          this.cacheLoading.set(`${col.dump.id}:a:group:${g.name}:${suffix(col)}`, {
+            promise: Promise.all([this.cacheLoading.get(`${col.dump.id}:b:summary:${suffix(col)}`)!.promise, data]).then(([summary, rows]) => ({...summary, group: rows[i]})),
+            signal
+          });
         });
       }
     }
@@ -252,9 +283,13 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     if (toLoadData.length <= 0) {
       return;
     }
-    const data = this.server.computeDataStats(toLoadData);
+    const signal = new MultiAbortSignal(toLoadData);
+    const data = this.server.computeDataStats(toLoadData, {signal});
     toLoadData.forEach((col, i) => {
-      this.cache.set(`${col.dump.id}:c:data:${suffix(col)}`, data.then((rows) => rows[i]));
+      this.cacheLoading.set(`${col.dump.id}:c:data:${suffix(col)}`, {
+        promise: data.then((rows) => rows[i]),
+        signal
+      });
     });
   }
 
@@ -515,48 +550,21 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     return s;
   }
 
-  private debouncedCall<T>(key: string, dump: IColumnDump, type: ERemoteStatiticsType, f: (cols: IComputeColumn[]) => Promise<T[]>) {
-    if (!this.debounceKeys.has(key)) {
-      const cols = [{dump, type}];
-      let resolve: (r: Promise<T[]>)=>void = () => undefined;
-      const promise = new Promise<T[]>((resolveImpl) => resolve = resolveImpl);
-      const timer = self.setTimeout(() => {
-        this.debounceKeys.delete(key);
-        resolve(f(cols));
-      }, RemoteTaskExecutor.DEBOUNCE_DELAY);
-      this.debounceKeys.set(key, {promise, resolve, timer, cols});
-      return promise.then((r) => r[0]);
-    }
-
-    // update the timer and push another column to the arguments
-    const entry = this.debounceKeys.get(key)!;
-
-    const index = entry.cols.length;
-    entry.cols.push({dump, type});
-
-    clearTimeout(entry.timer);
-    entry.timer = self.setTimeout(() => {
-      this.debounceKeys.delete(key);
-      entry.resolve(f(entry.cols));
-    }, RemoteTaskExecutor.DEBOUNCE_DELAY);
-
-    return entry.promise.then((r) => r[index]);
-  }
 
   private dataStats<T>(col: Column, type = toComputeAbleType(col)): Promise<T> {
     const key = `${col.id}:c:data:${suffix(type)}`;
-    if (this.cache.has(key)) {
-      return this.cache.get(key)!;
+    if (this.cacheLoading.has(key)) {
+      return this.cacheLoading.get(key)!.promise;
     }
-    const data = this.debouncedCall('', col.dump(this.adapter.toDescRef), type, (cols) => this.server.computeDataStats(cols));
-    this.cache.set(key, data);
+    const {data, signal} = this.debouncer.debouncedCall('', col.dump(this.adapter.toDescRef), type, (cols, signal) => this.server.computeDataStats(cols, {signal}));
+    this.cacheLoading.set(key, {promise: data, signal});
     return <any>data;
   }
 
   private summaryStats<T>(col: Column, dummyFactory: () => T, type = toComputeAbleType(col)): Promise<{data: T, summary: T}> {
     const key = `${col.id}:b:summary:${suffix(type)}`;
-    if (this.cache.has(key)) {
-      return this.cache.get(key)!;
+    if (this.cacheLoading.has(key)) {
+      return this.cacheLoading.get(key)!.promise;
     }
     const data = this.dataStats<T>(col, type);
     const ranking = col.findMyRanker()!;
@@ -569,21 +577,22 @@ export default class RemoteTaskExecutor implements IRenderTasks {
 
     if (this.isDummyRanking(ranking)) {
       const v = data.then((data) => ({data, summary: data}));
-      this.cache.set(key, v);
+      this.cacheLoading.set(key, {promise: v, signal: {abort: () => undefined}});
       return v;
     }
     const rankingDump = toRankingDump(ranking, this.adapter.toDescRef);
     // TODO debounce
-    const summary = <Promise<T>><any>this.server.computeRankingStats(rankingDump, [{dump: col.dump(this.adapter.toDescRef), type}]).then((r) => r[0]);
+    const signal = new CustomAbortSignal();
+    const summary = <Promise<T>><any>this.server.computeRankingStats(rankingDump, [{dump: col.dump(this.adapter.toDescRef), type}], {signal}).then((r) => r[0]);
     const v = Promise.all([data, summary]).then(([data, summary]) => ({data, summary}));
-    this.cache.set(key, v);
+    this.cacheLoading.set(key, {promise: v, signal});
     return v;
   }
 
   private groupStats<T>(col: Column, g: IOrderedGroup, dummyFactory: () => T, type = toComputeAbleType(col)): Promise<{data: T, summary: T, group: T}> {
     const key = `${col.id}:a:group:${g.name}:${suffix(type)}`;
-    if (this.cache.has(key)) {
-      return this.cache.get(key)!;
+    if (this.cacheLoading.has(key)) {
+      return this.cacheLoading.get(key)!.promise;
     }
     const summary = this.summaryStats<T>(col, dummyFactory, type);
     if (g.order.length === 0) {
@@ -593,9 +602,10 @@ export default class RemoteTaskExecutor implements IRenderTasks {
     }
     const ranking = toRankingDump(col.findMyRanker()!, this.adapter.toDescRef);
     // TODO debounce
-    const group = <Promise<T>><any>this.server.computeGroupStats(ranking, g.name, [{dump: col.dump(this.adapter.toDescRef), type}]).then((r) => r[0]);
+    const signal = new CustomAbortSignal();
+    const group = <Promise<T>><any>this.server.computeGroupStats(ranking, g.name, [{dump: col.dump(this.adapter.toDescRef), type}], {signal}).then((r) => r[0]);
     const v = Promise.all([summary, group]).then(([summary, group]) => ({...summary, group}));
-    this.cache.set(key, v);
+    this.cacheLoading.set(key, {promise: v, signal});
     return v;
   }
 

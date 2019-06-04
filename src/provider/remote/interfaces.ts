@@ -1,5 +1,6 @@
 import {IColumnDump, IOrderedGroup, Ranking} from '../../model';
 import {IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../../internal';
+import {IAbortAblePromise} from 'lineupengine';
 
 
 export interface IRemoteDataProviderOptions {
@@ -65,6 +66,14 @@ export interface IComputeColumn {
   type: ERemoteStatiticsType;
 }
 
+export interface ICustomAbortSignal {
+  readonly aborted: boolean;
+  onabort?(): void;
+}
+
+export interface IAbortOptions {
+  signal?: ICustomAbortSignal;
+}
 /**
  * interface what the server side has to provide
  */
@@ -78,45 +87,45 @@ export interface IServerData {
    * sort the dataset by the given description
    * @param ranking
    */
-  sort(ranking: IServerRankingDump): Promise<{groups: IOrderedGroup[], maxDataIndex: number}>;
+  sort(ranking: IServerRankingDump, options: IAbortOptions): Promise<{groups: IOrderedGroup[], maxDataIndex: number}>;
 
   /**
    * returns a slice of the data array identified by a list of indices
    * @param indices
    */
-  view(indices: number[]): Promise<any[]>;
+  view(indices: number[], options: IAbortOptions): Promise<any[]>;
 
   /**
    * returns a sample of the values for a given column
    * @param column
    */
-  mappingSample(column: IColumnDump): Promise<number[]>;
+  mappingSample(column: IColumnDump, options: IAbortOptions): Promise<number[]>;
 
   /**
    * return the matching indices matching the given arguments
    * @param search
    * @param column
    */
-  search(search: string | RegExp, column: IColumnDump): Promise<number[]>;
+  search(search: string | RegExp, column: IColumnDump, options: IAbortOptions): Promise<number[]>;
 
   /**
    * compute the data statistics for the given columns
    * @param columns column dumps
    */
-  computeDataStats(columns: IComputeColumn[]): Promise<IRemoteStatistics[]>;
+  computeDataStats(columns: IComputeColumn[], options: IAbortOptions): Promise<IRemoteStatistics[]>;
   /**
    * compute the ranking statistics for the given columns
    * @param ranking ranking dump
    * @param columns column dumps
    */
-  computeRankingStats(ranking: IServerRankingDump, columns: IComputeColumn[]): Promise<IRemoteStatistics[]>;
+  computeRankingStats(ranking: IServerRankingDump, columns: IComputeColumn[], options: IAbortOptions): Promise<IRemoteStatistics[]>;
   /**
    * compute the group statistics for the given columns
    * @param ranking ranking dump
    * @param group group name
    * @param columns column dumps
    */
-  computeGroupStats(ranking: IServerRankingDump, group: string, columns: IComputeColumn[]): Promise<IRemoteStatistics[]>;
+  computeGroupStats(ranking: IServerRankingDump, group: string, columns: IComputeColumn[], options: IAbortOptions): Promise<IRemoteStatistics[]>;
 
 }
 

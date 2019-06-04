@@ -40,7 +40,7 @@ export class TaskLater<T> implements IRenderTask<T> {
   }
 
   then<U = void>(onfullfilled: (value: T | symbol) => U): IAbortAblePromise<U> {
-    return this.v.then(onfullfilled);
+    return this.v.then(onfullfilled, () => onfullfilled(ABORTED));
   }
 }
 

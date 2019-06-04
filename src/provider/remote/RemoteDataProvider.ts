@@ -7,6 +7,7 @@ import {IServerData, toRankingDump, IRemoteDataProviderOptions} from './interfac
 import {index2pos} from '../internal';
 import RemoteTaskExecutor from './RemoteTaskExecutor';
 import {IRenderTasks} from '../../renderer';
+import {CustomAbortSignal} from './internal';
 
 /**
  * a remote implementation of the data provider
@@ -18,6 +19,8 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     precomputeBoxPlotStats: false
   };
 
+  private readonly sortAborter = new Map<string, {abort(): void}>();
+  private readonly currentSort = new Map<string, {groups: IOrderedGroup[], index2pos: UIntTypedArray}>();
   private readonly cache: LRUCache<number, Promise<IDataRow> | IDataRow>;
 
   private readonly tasks: RemoteTaskExecutor;
@@ -114,11 +117,16 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     }
 
     this.tasks.dirtyRanking(ranking, 'data');
+    this.sortAborter.delete(ranking.id);
+    this.currentSort.delete(ranking.id);
 
     super.cleanUpRanking(ranking);
   }
 
   sort(ranking: Ranking, dirtyReason: EDirtyReason[]): Promise<{groups: IOrderedGroup[], index2pos: UIntTypedArray}> {
+    if (this.sortAborter.has(ranking.id)) {
+      this.sortAborter.get(ranking.id)!.abort();
+    }
     const reasons = new Set(dirtyReason);
 
     const filter = ranking.flatColumns.filter((d) => d.isFiltered()).map((d) => d.dump(this.toDescRef));
@@ -138,7 +146,10 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       this.tasks.copyData2Summary(ranking);
     }
 
-    return this.server.sort(toRankingDump(ranking, this.toDescRef)).then(({groups, maxDataIndex}) => {
+    const signal = new CustomAbortSignal();
+    this.sortAborter.set(ranking.id, signal);
+
+    return this.server.sort(toRankingDump(ranking, this.toDescRef), {signal}).then(({groups, maxDataIndex}) => {
       const r = index2pos(groups, maxDataIndex);
 
       // clean again since in the mean time old stuff could have been computed
@@ -149,7 +160,24 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       }
 
       this.tasks.preCompute(ranking, groups);
+      this.currentSort.set(ranking.id, r);
       return r;
+    }).catch((error) => {
+      if (signal.aborted) {
+        // ok was aborted, so not a real error but the abort error
+        console.info('error during sorting cause has been aborted', error);
+      } else {
+        console.error('error during sorting', error)
+      }
+      // return the current sorting of the ranking
+      if (this.currentSort.has(ranking.id)) {
+        return this.currentSort.get(ranking.id)!;
+      }
+      // return a dummy
+      return {
+        groups: [],
+        index2pos: []
+      };
     });
   }
 
@@ -194,13 +222,19 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       return Promise.resolve<IDataRow[]>([]);
     }
     // load data and map to rows;
-    return this.server.view(indices).then((rows) => {
+    return this.server.view(indices, {}).then((rows) => {
       //enhance with the data index
       return rows.map((v, i) => {
         const dataIndex = indices[i];
         const r = {v, i: dataIndex};
         this.cache.set(dataIndex, r);
         return r;
+      });
+    }).catch((error) => {
+      console.error('error while fetching rows, creating not cached dummy rows', error);
+      return indices.map((i) => {
+        this.cache.delete(i); // delete loader cache entry
+        return ({v: {}, i});
       });
     });
   }
@@ -237,12 +271,24 @@ export default class RemoteDataProvider extends ACommonDataProvider {
 
 
   mappingSample(col: INumberColumn): Promise<number[]> {
-    return this.server.mappingSample(col.dump(this.toDescRef));
+    const MAX_SAMPLE = 120; //at most 120 sample lines
+    return this.server.mappingSample(col.dump(this.toDescRef), {})
+      .catch((error) => {
+        console.error('error during mapping sample, returning sample of cached indices', error);
+        const indices = Array.from(this.cache.keys());
+        if (indices.length > MAX_SAMPLE) {
+          return indices.slice(0, MAX_SAMPLE);
+        }
+        return indices;
+      });
   }
 
   searchAndJump(search: string | RegExp, col: Column) {
-    this.server.search(search, col.dump(this.toDescRef)).then((indices) => {
+    this.server.search(search, col.dump(this.toDescRef), {}).then((indices) => {
       this.jumpToNearest(indices);
+    }).catch((error) => {
+      console.error('error during server side search', error);
+      // nothing to do
     });
   }
 }
