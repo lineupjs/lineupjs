@@ -365,7 +365,7 @@ class LazyMap1<T1, T2> extends ALazyMap<T1, T2> implements ISequence<T2> {
   }
 
   map<U>(callback: (v: T2, i: number) => U): ISequence<U> {
-    return new LazyMap2(this.it, this.mapV, callback);
+    return new LazyMap2(this.it, this.map12, callback);
   }
 }
 

@@ -10,7 +10,7 @@ export interface IImposeColumnBuilder {
   type: 'impose';
   column: string;
   label?: string;
-  categoricalColumn: string;
+  colorColumn: string;
 }
 
 export interface INestedBuilder {
@@ -133,7 +133,7 @@ export default class RankingBuilder {
     // builder ish
     switch (column.type) {
       case 'impose':
-        return this.impose(label, column.column, column.categoricalColumn);
+        return this.impose(label, column.column, column.colorColumn);
       case 'min':
       case 'max':
       case 'median':
@@ -163,9 +163,9 @@ export default class RankingBuilder {
    * add an imposed column (numerical column colored by categorical column) to this ranking
    * @param {string | null} label optional label
    * @param {string} numberColumn numerical column reference
-   * @param {string} categoricalColumn categorical column reference
+   * @param {string} colorColumn categorical column reference
    */
-  impose(label: string | null, numberColumn: string, categoricalColumn: string) {
+  impose(label: string | null, numberColumn: string, colorColumn: string) {
     this.columns.push({
       desc: (data) => {
         const base = data.getColumns().find((d) => d.label === numberColumn || (<any>d).column === numberColumn);
@@ -178,7 +178,7 @@ export default class RankingBuilder {
             return createImpositionDesc(label ? label : undefined);
         }
       },
-      columns: [numberColumn, categoricalColumn]
+      columns: [numberColumn, colorColumn]
     });
     return this;
   }

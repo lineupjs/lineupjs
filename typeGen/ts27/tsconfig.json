@@ -4,5 +4,13 @@
     "emitDeclarationOnly": true,
     "declarationDir": "../../build/types/2.7/",
     "types": []
-  }
+  },
+  "include": [
+    "../../src/**/*.ts",
+    "../../src/**/*.tsx",
+    "../../tsd.d.ts"
+  ],
+  "exclude": [
+    "../../src/**/*.d.ts"
+  ]
 }

@@ -1,4 +1,4 @@
-import {Column, IColumnDesc} from '../model';
+import {IColumnDesc, IColumnConstructor} from '../model';
 import {DataProvider, LocalDataProvider, deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions, IAggregationStrategy} from '../provider';
 import {LineUp, Taggle} from '../ui';
 import ColumnBuilder from './column/ColumnBuilder';
@@ -87,9 +87,9 @@ export default class DataBuilder extends LineUpBuilder {
   /**
    * register another column type to this data provider
    * @param {string} type unique type id
-   * @param {typeof Column} clazz column class
+   * @param {IColumnConstructor} clazz column class
    */
-  registerColumnType(type: string, clazz: typeof Column) {
+  registerColumnType(type: string, clazz: IColumnConstructor) {
     this.providerOptions.columnTypes![type] = clazz;
     return this;
   }
