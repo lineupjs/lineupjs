@@ -139,7 +139,7 @@ export default class LineUpBuilder {
    * height and padding of a row
    * @default 18 and 2
    */
-  rowHeight(rowHeight: number, rowPadding: number) {
+  rowHeight(rowHeight: number, rowPadding: number = 2) {
     this.options.rowHeight = rowHeight;
     this.options.rowPadding = rowPadding;
     return this;
@@ -149,7 +149,7 @@ export default class LineUpBuilder {
    * height and padding of an aggregated group in pixel
    * @default 40 and 5
    */
-  groupRowHeight(groupHeight: number, groupPadding: number) {
+  groupRowHeight(groupHeight: number, groupPadding: number = 5) {
     this.options.groupHeight = groupHeight;
     this.options.groupPadding = groupPadding;
     return this;

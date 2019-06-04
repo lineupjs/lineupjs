@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const cats = ['c1', 'c2', 'c3'];
+    for (let i = 1; i <= 10; ++i) {
+      arr.push({
+        img: `https://loremflickr.com/320/240?lock=${i}`
+      });
+    }
+    arr.unshift({
+      img: `./transparent_image.png`
+    })
+    const b = LineUpJS.builder(arr);
+    b.rowHeight(240);
+    b.column(LineUpJS.buildStringColumn('img').pattern('${value}').renderer('image').width(320));
+    window.lineup = b.build(document.body);
+  };
+</script>
+
+</body>
+</html>
