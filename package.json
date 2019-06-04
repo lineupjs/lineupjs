@@ -146,7 +146,7 @@
     "detect-browser": "^4.5.0",
     "fast-deep-equal": "^2.0.1",
     "popper.js": "^1.15.0",
-    "lineupengine": "^2.0.0",
+    "lineupengine": "^2.1.0",
     "reflect-metadata": "^0.1.13"
   }
 }

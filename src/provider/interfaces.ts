@@ -3,7 +3,7 @@ import {AEventDispatcher, ISequence} from '../internal';
 import {IRenderTasks} from '../renderer';
 import {IAbortAblePromise} from 'lineupengine';
 
-export {ABORTED} from 'lineupengine';
+export {ABORTED, abortAble, abortAbleAll, abortAbleResolveNow, isAbortAble, abortAbleFetch} from 'lineupengine';
 export declare type IAbortAblePromise<T> = IAbortAblePromise<T>;
 
 export declare type IAggregationStrategy = 'group' | 'item' | 'group+item' | 'group+top+item' | 'group+item+top';
