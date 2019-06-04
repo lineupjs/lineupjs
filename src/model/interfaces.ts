@@ -5,6 +5,11 @@ import {IColorMappingFunction, IMappingFunction} from './INumberColumn';
 import {ICategoricalColorMappingFunction, ICategory} from './ICategoricalColumn';
 import {IScriptMappingFunctionType} from './MappingFunction';
 
+
+export interface IColumnConstructor {
+  new(id: string, desc: Readonly<IColumnDesc> & any, factory: ITypeFactory): Column;
+}
+
 export interface IStyleColumn {
   /**
    * column description
