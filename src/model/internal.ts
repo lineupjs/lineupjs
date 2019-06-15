@@ -1,6 +1,6 @@
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
 import Column, {defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType} from '.';
-import {OrderedSet, max} from '../internal';
+import {OrderedSet} from '../internal';
 import {DEFAULT_COLOR} from './interfaces';
 
 
@@ -78,40 +78,38 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
     }
     return path;
   };
-
   const paths = groups.map(toPath);
-  // now unify paths
-  const maxLevel = max(paths.map((d) => d.length));
-  for (let level = 0; level < maxLevel; ++level) {
-    let currentParent: IGroupParent | null = null;
-    for (const path of paths) {
-      const node = path[level];
-      // null reset
-      if (!node || !isGroupParent(node)) {
-        currentParent = null;
+
+  const findChildren = (node: IGroupParent, level: number) => {
+    // same parent name and same grandfather instance
+    return paths.map((p) => p[level + 1]).filter((p) => p && p.parent!.name === node.name && p.parent!.parent === node.parent);
+  };
+
+  const removeDuplicates = (level: (IGroupParent | T)[], i: number) => {
+    const real: (IGroupParent | T)[] = [];
+    while (level.length > 0) {
+      const node = level.shift()!;
+      if (!isGroupParent(node) || node.subGroups.length === 0) { // cannot share leaves
+        real.push(node);
         continue;
       }
-      // first time seeing this parent
-      if (!currentParent || currentParent.parent !== node.parent || currentParent.name !== node.name) {
-        currentParent = Object.assign({}, node); // copy
-        const firstChild = path[level + 1];
-        // reset parent
-        if (firstChild) {
-          currentParent.subGroups = [firstChild];
-          firstChild.parent = currentParent;
-        } else {
-          currentParent.subGroups = [];
-        }
-        continue;
+      const root = {...node};
+      real.push(root);
+      // remove duplicates
+      level = level.filter((d) => !(d.name === root.name && d.parent === root.parent && isGroupParent(d) && d.subGroups.length > 0));
+      // find children of this parent
+      const children = findChildren(root, i);
+      for (const child of children) {
+        child.parent = root;
       }
-      // same parent, reuse instance
-      const nextChild = path[level + 1];
-      if (nextChild) {
-        currentParent.subGroups.push(nextChild);
-        nextChild.parent = currentParent;
-      }
+      // cleanup children duplicates
+      root.subGroups = removeDuplicates(children, i + 1);
     }
-  }
+    return real;
+  };
+
+  removeDuplicates(paths.map((p) => p[0]), 0);
+
   return groups;
 }
 
