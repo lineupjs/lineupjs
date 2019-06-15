@@ -10,6 +10,8 @@
 src/**/*.js
 src/**/*.css
 src/**/*.d.ts
+tests/**/*.js
+tests/**/*.d.ts
 node_modules
 .cache-loader
 /build*
