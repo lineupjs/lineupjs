@@ -16,10 +16,10 @@ export function patternFunction(pattern: string, ...args: string[]) {
 /** @internal */
 export function joinGroups(groups: IGroup[]): IGroup {
   if (groups.length === 0) {
-    return defaultGroup;
+    return {...defaultGroup}; //copy
   }
   if (groups.length === 1 && !groups[0].parent) {
-    return groups[0];
+    return {...groups[0]}; //copy
   }
   // create a chain
   const parents: IGroupParent[] = [];
@@ -42,6 +42,19 @@ export function joinGroups(groups: IGroup[]): IGroup {
   });
 
   return parents[parents.length - 1];
+}
+
+export function duplicateGroup<T extends IOrderedGroup | IGroupParent>(group: T) {
+  const clone = {...group};
+  delete (<IOrderedGroup>clone).order;
+  if (isGroupParent(clone)) {
+    clone.subGroups = [];
+  }
+  if (clone.parent) {
+    clone.parent = duplicateGroup(clone.parent);
+    clone.parent!.subGroups.push(clone);
+  }
+  return clone;
 }
 
 /** @internal */
@@ -80,9 +93,8 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
   };
   const paths = groups.map(toPath);
 
-  const findChildren = (node: IGroupParent, level: number) => {
-    // same parent name and same grandfather instance
-    return paths.map((p) => p[level + 1]).filter((p) => p && p.parent!.name === node.name && p.parent!.parent === node.parent);
+  const isSame = (a: IGroupParent, b: (IGroupParent | T)) => {
+    return (b.name === a.name && b.parent === a.parent && isGroupParent(b) && b.subGroups.length > 0);
   };
 
   const removeDuplicates = (level: (IGroupParent | T)[], i: number) => {
@@ -95,15 +107,15 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
       }
       const root = {...node};
       real.push(root);
-      // remove duplicates
-      level = level.filter((d) => !(d.name === root.name && d.parent === root.parent && isGroupParent(d) && d.subGroups.length > 0));
-      // find children of this parent
-      const children = findChildren(root, i);
-      for (const child of children) {
-        child.parent = root;
+      // remove duplicates that directly follow
+      while (level.length > 0 && isSame(root, level[0]!)) {
+        root.subGroups.push(...(<IGroupParent>level.shift()!).subGroups);
+      }
+      for (const child of root.subGroups) {
+        (<(IGroupParent | T)>child).parent = root;
       }
       // cleanup children duplicates
-      root.subGroups = removeDuplicates(children, i + 1);
+      root.subGroups = removeDuplicates(<(IGroupParent | T)[]>root.subGroups, i + 1);
     }
     return real;
   };

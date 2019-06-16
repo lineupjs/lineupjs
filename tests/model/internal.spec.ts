@@ -66,7 +66,7 @@ describe('unifyParents', () => {
     const c = groupGen('c', pClone); // same as p
     unifyParents([a, b, c]);
     expect(a.parent).not.toBe(b.parent);
-    expect(a.parent).toBe(c.parent);
+    expect(a.parent).not.toBe(c.parent);
     expect(b.parent).not.toBe(c.parent);
   });
 
@@ -83,19 +83,20 @@ describe('unifyParents', () => {
     const c = groupGen('c', pClone);
 
     // r
-    // p  p2
-    // ac b
+    // p  p2 p
+    // a  b  c
     unifyParents([a, b, c]);
     expect(a.parent!.parent).toBe(b.parent!.parent);
     expect(a.parent!.parent).toBe(c.parent!.parent);
 
     expect(a.parent).not.toBe(b.parent);
-    expect(a.parent).toBe(c.parent);
+    expect(a.parent).not.toBe(c.parent);
     expect(b.parent).not.toBe(c.parent);
 
     const root = a.parent!.parent!;
-    expect(root.subGroups).toHaveLength(2);
-    expect(a.parent!.subGroups).toHaveLength(2);
+    expect(root.subGroups).toHaveLength(3);
+    expect(a.parent!.subGroups).toHaveLength(1);
     expect(b.parent!.subGroups).toHaveLength(1);
+    expect(c.parent!.subGroups).toHaveLength(1);
   });
 });

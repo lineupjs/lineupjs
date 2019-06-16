@@ -7,7 +7,7 @@ import {CompareLookup} from './sort';
 import {IRenderTaskExectutor} from './tasks';
 import {DirectRenderTasks} from './DirectRenderTasks';
 import {ScheduleRenderTasks} from './ScheduledTasks';
-import {joinGroups, mapIndices} from '../model/internal';
+import {joinGroups, mapIndices, duplicateGroup} from '../model/internal';
 
 
 export interface ILocalDataProviderOptions {
@@ -317,12 +317,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     for (const before of ranking.getGroups()) {
       const order = before.order;
-      const plain = Object.assign({}, before);
-      delete plain.order;
-
       if (!needsGrouping) {
+        const clone = duplicateGroup(before);
         // reuse in full
-        groupOrder.push({group: plain, rows: order});
+        groupOrder.push({group: clone, rows: order});
 
         if (!lookups) {
           maxDataIndex = (<ReadonlyArray<number>>order).reduce((a, b) => Math.max(a, b), maxDataIndex);
@@ -351,7 +349,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         if (lookups) {
           lookups.push(r);
         }
-        pushGroup(needsGrouping ? toGroup(r) : plain, r);
+        pushGroup(toGroup(r), r);
       }
     }
 
@@ -377,7 +375,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       if (groupLookup && Array.isArray(groupC)) {
         groupLookup.pushValues(i, groupC);
       }
-      return Object.assign({order}, group);
+      return Object.assign(group, {order});
     });
   }
 
