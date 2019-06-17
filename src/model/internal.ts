@@ -45,7 +45,7 @@ export function joinGroups(groups: IGroup[]): IGroup {
 }
 
 export function duplicateGroup<T extends IOrderedGroup | IGroupParent>(group: T) {
-  const clone = {...group};
+  const clone = Object.assign({}, group);
   delete (<IOrderedGroup>clone).order;
   if (isGroupParent(clone)) {
     clone.subGroups = [];
