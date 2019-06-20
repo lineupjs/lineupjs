@@ -45,10 +45,10 @@ export function joinGroups(groups: IGroup[]): IGroup {
 }
 
 export function duplicateGroup<T extends IOrderedGroup | IGroupParent>(group: T) {
-  const clone = Object.assign({}, group);
+  const clone = <T>Object.assign({}, group);
   delete (<IOrderedGroup>clone).order;
-  if (isGroupParent(clone)) {
-    clone.subGroups = [];
+  if (isGroupParent(<any>clone)) {
+    (<any>clone).subGroups = [];
   }
   if (clone.parent) {
     clone.parent = duplicateGroup(clone.parent);
