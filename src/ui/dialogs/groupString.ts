@@ -13,7 +13,7 @@ export default function append(col: StringColumn, node: HTMLElement, dialog: IDi
     </div>
     <div class="lu-checkbox">
       <input type="radio" name="regex" value="regex" id="${dialog.idPrefix}RE" ${isRegex ? 'checked' : ''}>
-      <label for="${dialog.idPrefix}RE">RegExp</label>
+      <label for="${dialog.idPrefix}RE">Use regular expressions</label>
     </div>
     <textarea required rows="5" placeholder="e.g. Test,a.*" id="${dialog.idPrefix}T">${current.map((d) => typeof d === 'string' ? d : d.source).join('\n')}</textarea>
     <button id="${dialog.idPrefix}A">Apply</button>
