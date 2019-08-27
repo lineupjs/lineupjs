@@ -43,7 +43,7 @@ export default class StringFilterDialog extends ADialog {
     }
     const id = uniqueId(this.dialog.idPrefix);
     node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
-    <span class="lu-checkbox"><input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">RegExp</label></span>
+    <span class="lu-checkbox"><input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">Use regular expressions</label></span>
     ${filterMissingMarkup(bakMissing, this.dialog.idPrefix)}`);
 
     const filterMissing = findFilterMissing(node);
