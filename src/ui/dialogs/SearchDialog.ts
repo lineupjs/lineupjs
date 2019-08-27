@@ -11,7 +11,7 @@ export default class SearchDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)"><label class="${cssClass('checkbox')}"><input type="checkbox"><span>RegExp</span></label>`);
+    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)"><label class="${cssClass('checkbox')}"><input type="checkbox"><span>Use regular expressions</span></label>`);
 
     const input = <HTMLInputElement>node.querySelector('input[type="text"]')!;
     const checkbox = <HTMLInputElement>node.querySelector('input[type="checkbox"]')!;
