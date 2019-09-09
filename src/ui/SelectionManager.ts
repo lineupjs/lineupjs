@@ -36,7 +36,8 @@ export default class SelectionManager extends AEventDispatcher {
     const root = body.parentElement!.parentElement!;
     let hr = <HTMLHRElement>root.querySelector('hr');
     if (!hr) {
-      hr = root.ownerDocument.createElement('hr');
+      console.assert(root.ownerDocument != null);
+      hr = root.ownerDocument!.createElement('hr');
       root.appendChild(hr);
     }
     this.hr = hr;
@@ -55,7 +56,8 @@ export default class SelectionManager extends AEventDispatcher {
       const startNode = this.start.node.classList.contains('lu-row') ? this.start.node : <HTMLElement>this.start.node.closest('.lu-row');
       // somehow on firefox the mouseUp will be triggered on the original node
       // thus search the node explicitly
-      const end = <HTMLElement>this.body.ownerDocument.elementFromPoint(evt.clientX, evt.clientY);
+      console.assert(this.body.ownerDocument != null);
+      const end = <HTMLElement>this.body.ownerDocument!.elementFromPoint(evt.clientX, evt.clientY);
       const endNode = end.classList.contains('lu-row') ? end : <HTMLElement>(end.closest('.lu-row'));
       this.start = null;
       this.body.classList.remove('lu-selection-active');

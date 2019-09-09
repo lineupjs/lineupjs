@@ -232,7 +232,8 @@ export default class Hierarchy {
       return;
     }
 
-    const wrapper = node.ownerDocument.createElement('footer');
+    console.assert(node.ownerDocument != null);
+    const wrapper = node.ownerDocument!.createElement('footer');
     wrapper.appendChild(adder.node);
     node.appendChild(wrapper);
   }
