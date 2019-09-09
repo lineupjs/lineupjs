@@ -31,7 +31,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
         <div class="lu-checkbox"><input type="number" value="${range}" min="0" max="100" size="5"><label for="${id}${name}"><div><div style="background-color: ${color}; width: ${range}%"></div></div><div>${label}</div></label></div>`).join('')}
     </div>`);
     // selectAll
-    this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: HTMLElement) {
+    this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: GlobalEventHandlers) {
       const input = <HTMLInputElement>this;
       forEach(node, '[data-cat]', (n: HTMLInputElement) => n.checked = input.checked);
     };
