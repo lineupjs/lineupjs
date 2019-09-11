@@ -1,6 +1,6 @@
 import {timeFormat, timeParse} from 'd3-time-format';
 import {Category, toolbar, dialogAddons} from './annotations';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroupData, IGroup} from './interfaces';
 import {FIRST_IS_MISSING, isMissingValue, missingGroup, isUnknown} from './missing';
 import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
 import {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
@@ -173,7 +173,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     this.fire([DateColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  group(row: IDataRow) {
+  group(row: IDataRow): IGroup {
     const v = this.getDate(row);
     if (!v || !(v instanceof Date)) {
       return missingGroup;
