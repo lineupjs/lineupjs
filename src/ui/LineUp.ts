@@ -29,12 +29,13 @@ export default class LineUp extends ALineUp {
 
     this.renderer = new EngineRenderer(data, this.node, this.options);
     if (this.options.sidePanel) {
-      this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
+      console.assert(this.node.ownerDocument != null);
+      this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument!, {
         collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true,
         hierarchy: this.options.hierarchyIndicator && this.options.flags.advancedRankingFeatures
       });
       this.renderer.pushUpdateAble((ctx) => this.panel!.update(ctx));
-      this.node.insertBefore(this.panel.node, this.node.firstChild);
+      this.node.insertBefore(this.panel!.node, this.node.firstChild);
     } else {
       this.panel = null;
     }

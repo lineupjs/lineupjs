@@ -90,7 +90,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         cols.forEach((col, ci) => {
           const weight = col.column.getWidth() / total;
           const cnode = children[ci];
-          cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
+          cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : '';
           if (!useGrid) {
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = stacked ? null : `${padding}px`;

@@ -301,7 +301,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (this.canvasPool.length > 0) {
       return this.canvasPool.pop()!;
     }
-    const c = this.body.ownerDocument.createElement('canvas');
+    console.assert(this.body.ownerDocument != null);
+    const c = this.body.ownerDocument!.createElement('canvas');
     c.classList.add('lu-detail-canvas');
     return c;
   }

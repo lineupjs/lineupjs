@@ -168,7 +168,8 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   }
 
   for (let i = outliers.length; i < numOutliers; ++i) {
-    const p = n.ownerDocument.createElement('div');
+    console.assert(n.ownerDocument != null);
+    const p = n.ownerDocument!.createElement('div');
     outliers.unshift(p);
     whiskers.insertAdjacentElement('afterend', p);
   }

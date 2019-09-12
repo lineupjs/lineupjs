@@ -27,7 +27,7 @@ export default class CategoricalFilterDialog extends ADialog {
         ${this.column.categories.map((c) => `<div class="lu-checkbox"><input id="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><label for="${id}${c.name}"><span style="background-color: ${c.color}"></span><div>${c.label}</div></label></div>`).join('')}
     </div>`);
     // selectAll
-    this.findInput('input:not([data-cat])').onchange = function (this: HTMLElement) {
+    this.findInput('input:not([data-cat])').onchange = function (this: GlobalEventHandlers) {
       const input = <HTMLInputElement>this;
       forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = input.checked);
     };

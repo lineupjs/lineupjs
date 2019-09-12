@@ -62,7 +62,7 @@ export default class DialogManager {
 
   clearHighlight() {
     const area = <HTMLElement>this.node.firstElementChild;
-    area.style.clipPath = null;
+    area.style.clipPath = '';
   }
 
   private removeLast() {
@@ -111,7 +111,8 @@ export default class DialogManager {
   }
 
   private setUp() {
-    this.node.ownerDocument.addEventListener('keyup', this.escKeyListener, {
+    console.assert(this.node.ownerDocument != null);
+    this.node.ownerDocument!.addEventListener('keyup', this.escKeyListener, {
       passive: true
     });
     this.node.style.display = 'block';
@@ -119,7 +120,8 @@ export default class DialogManager {
 
   private takeDown() {
     this.clearHighlight();
-    this.node.ownerDocument.removeEventListener('keyup', this.escKeyListener);
+    console.assert(this.node.ownerDocument != null);
+    this.node.ownerDocument!.removeEventListener('keyup', this.escKeyListener);
     this.node.style.display = null;
   }
 

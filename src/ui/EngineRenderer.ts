@@ -48,7 +48,8 @@ export default class EngineRenderer extends AEventDispatcher {
   constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
-    this.node = parent.ownerDocument.createElement('main');
+    console.assert(parent.ownerDocument != null);
+    this.node = parent.ownerDocument!.createElement('main');
     this.node.id = this.idPrefix;
     this.node.classList.toggle('lu-whole-hover', options.expandLineOnHover);
     parent.appendChild(this.node);
@@ -60,11 +61,11 @@ export default class EngineRenderer extends AEventDispatcher {
       }
       return r;
     };
-    const dialogManager = new DialogManager(parent.ownerDocument);
+    const dialogManager = new DialogManager(parent.ownerDocument!);
     parent.appendChild(dialogManager.node);
     this.ctx = {
       idPrefix: this.idPrefix,
-      document: parent.ownerDocument,
+      document: parent.ownerDocument!,
       provider: data,
       dialogManager,
       toolbar: this.options.toolbar,

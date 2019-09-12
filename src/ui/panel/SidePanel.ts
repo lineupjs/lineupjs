@@ -124,7 +124,8 @@ export default class SidePanel {
     if (!this.search) {
       return;
     }
-    this.chooser = this.node.ownerDocument.createElement('header');
+    console.assert(this.node.ownerDocument != null);
+    this.chooser = this.node.ownerDocument!.createElement('header');
     this.chooser.innerHTML = '<form></form>';
     this.chooser.firstElementChild!.appendChild(this.search.node);
     this.search.on(SearchBox.EVENT_SELECT, (panel: IColumnWrapper) => {
@@ -205,7 +206,8 @@ export default class SidePanel {
   }
 
   private createEntry(ranking: Ranking, index: number) {
-    const entry = new SidePanelRanking(ranking, this.ctx, this.node.ownerDocument, this.options);
+    console.assert(this.node.ownerDocument != null);
+    const entry = new SidePanelRanking(ranking, this.ctx, this.node.ownerDocument!, this.options);
 
     const header = this.node.querySelector('header')!;
     const main = this.node.querySelector('main')!;

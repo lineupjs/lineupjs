@@ -27,6 +27,7 @@
     "forin": true,
     "indent": [
       true,
+      "spaces",
       2
     ],
     "interface-name": true,
@@ -35,9 +36,9 @@
     "max-line-length": false,
     "member-ordering": [
       false,
-      "public-before-private",
-      "static-before-instance",
-      "variables-before-functions"
+      {
+        "order": "statics-first"
+      }
     ],
     "new-parens": true,
     "no-arg": true,
@@ -62,7 +63,6 @@
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
     "no-unused-expression": true,
-    "no-use-before-declare": true,
     "no-unsafe-finally": true,
     "no-var-requires": true,
     "no-var-keyword": true,
@@ -101,18 +101,10 @@
     ],
     "typedef-whitespace": [
       true,
-      [
-        "callSignature",
-        "noSpace"
-      ],
-      [
-        "catchClause",
-        "noSpace"
-      ],
-      [
-        "indexSignature",
-        "space"
-      ]
+      {
+        "call-signature": "nospace",
+        "index-signature": "nospace"
+      }
     ],
     "use-isnan": true,
     "variable-name": [
