@@ -210,6 +210,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   }
 
   on(type: typeof SearchBox.EVENT_SELECT, listener: typeof select | null): this;
+  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
