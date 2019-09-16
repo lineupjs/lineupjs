@@ -22,11 +22,7 @@ export function findFilterMissing(node: HTMLElement) {
 /** @internal */
 export function updateFilterMissingNumberMarkup(element: HTMLElement, count: number) {
   const checked = element.querySelector('input')!;
-  if (count > 0) {
-    element.classList.remove('lu-disabled');
-    checked.disabled = false;
-  }
-  if (!checked.checked) {
-    element.lastElementChild!.textContent = `Filter ${count} remaining missing value rows`;
-  }
+  checked.disabled = (count === 0 && !checked.checked); // disable checkbox only if there are no missing values and the checkbox is unchecked (i.e., assumes that the checkbox is unchecked at the beginning)
+  element.lastElementChild!.classList.toggle('lu-disabled', checked.disabled);
+  element.lastElementChild!.textContent = `Filter ${count} missing value rows`;
 }
