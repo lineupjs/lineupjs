@@ -11,7 +11,7 @@ export * from './RankingBuilder';
 /**
  * builder for a LocalDataProvider along with LineUp configuration options
  */
-abstract class ADataBuilder<T extends IDataProviderOptions> extends LineUpBuilder {
+export abstract class ADataBuilder<T extends IDataProviderOptions> extends LineUpBuilder {
   protected readonly columns: (IColumnDesc | ((data: any[]) => IColumnDesc))[] = [];
   protected abstract providerOptions: Partial<T>;
 
