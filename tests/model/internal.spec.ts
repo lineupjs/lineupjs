@@ -2,21 +2,29 @@ import {unifyParents} from '../../src/model/internal';
 import {IGroupParent, IOrderedGroup} from '../../src/model';
 
 function groupGen(name: string, parent?: IGroupParent): IOrderedGroup {
-  return {
+  const r = {
     color: 'gray',
     name,
     order: [],
     parent
   };
+  if (parent) {
+    parent.subGroups.push(r);
+  }
+  return r;
 }
 
 function parentGen(name: string, parent?: IGroupParent): IGroupParent {
-  return {
+  const r = {
     name,
     color: 'gray',
     parent,
     subGroups: []
   };
+  if (parent) {
+    parent.subGroups.push(r);
+  }
+  return r;
 }
 
 describe('unifyParents', () => {
@@ -39,6 +47,7 @@ describe('unifyParents', () => {
     const b = groupGen('b', pClone);
     unifyParents([a, b]);
     expect(a.parent).toBe(b.parent);
+    expect(a.parent!.parent).toBeUndefined();
   });
   it('different parent', () => {
     const p = parentGen('p');
@@ -72,6 +81,10 @@ describe('unifyParents', () => {
     const a = groupGen('a', p);
     const b = groupGen('b', p2);
     const c = groupGen('c', pClone);
+
+    // r
+    // p  p2 p
+    // a  b  c
     unifyParents([a, b, c]);
     expect(a.parent!.parent).toBe(b.parent!.parent);
     expect(a.parent!.parent).toBe(c.parent!.parent);
@@ -79,5 +92,11 @@ describe('unifyParents', () => {
     expect(a.parent).not.toBe(b.parent);
     expect(a.parent).not.toBe(c.parent);
     expect(b.parent).not.toBe(c.parent);
+
+    const root = a.parent!.parent!;
+    expect(root.subGroups).toHaveLength(3);
+    expect(a.parent!.subGroups).toHaveLength(1);
+    expect(b.parent!.subGroups).toHaveLength(1);
+    expect(c.parent!.subGroups).toHaveLength(1);
   });
 });

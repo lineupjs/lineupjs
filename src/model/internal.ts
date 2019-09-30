@@ -1,6 +1,6 @@
 import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
 import Column, {defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType} from '.';
-import {OrderedSet, max} from '../internal';
+import {OrderedSet} from '../internal';
 import {DEFAULT_COLOR} from './interfaces';
 
 
@@ -16,10 +16,10 @@ export function patternFunction(pattern: string, ...args: string[]) {
 /** @internal */
 export function joinGroups(groups: IGroup[]): IGroup {
   if (groups.length === 0) {
-    return defaultGroup;
+    return {...defaultGroup}; //copy
   }
   if (groups.length === 1 && !groups[0].parent) {
-    return groups[0];
+    return {...groups[0]}; //copy
   }
   // create a chain
   const parents: IGroupParent[] = [];
@@ -42,6 +42,19 @@ export function joinGroups(groups: IGroup[]): IGroup {
   });
 
   return parents[parents.length - 1];
+}
+
+export function duplicateGroup<T extends IOrderedGroup | IGroupParent>(group: T) {
+  const clone = <T>Object.assign({}, group);
+  delete (<IOrderedGroup>clone).order;
+  if (isGroupParent(<any>clone)) {
+    (<any>clone).subGroups = [];
+  }
+  if (clone.parent) {
+    clone.parent = duplicateGroup(clone.parent);
+    clone.parent!.subGroups.push(clone);
+  }
+  return clone;
 }
 
 /** @internal */
@@ -78,40 +91,37 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
     }
     return path;
   };
-
   const paths = groups.map(toPath);
-  // now unify paths
-  const maxLevel = max(paths.map((d) => d.length));
-  for (let level = 0; level < maxLevel; ++level) {
-    let currentParent: IGroupParent | null = null;
-    for (const path of paths) {
-      const node = path[level];
-      // null reset
-      if (!node || !isGroupParent(node)) {
-        currentParent = null;
+
+  const isSame = (a: IGroupParent, b: (IGroupParent | T)) => {
+    return (b.name === a.name && b.parent === a.parent && isGroupParent(b) && b.subGroups.length > 0);
+  };
+
+  const removeDuplicates = (level: (IGroupParent | T)[], i: number) => {
+    const real: (IGroupParent | T)[] = [];
+    while (level.length > 0) {
+      const node = level.shift()!;
+      if (!isGroupParent(node) || node.subGroups.length === 0) { // cannot share leaves
+        real.push(node);
         continue;
       }
-      // first time seeing this parent
-      if (!currentParent || currentParent.parent !== node.parent || currentParent.name !== node.name) {
-        currentParent = Object.assign({}, node); // copy
-        const firstChild = path[level + 1];
-        // reset parent
-        if (firstChild) {
-          currentParent.subGroups = [firstChild];
-          firstChild.parent = currentParent;
-        } else {
-          currentParent.subGroups = [];
-        }
-        continue;
+      const root = {...node};
+      real.push(root);
+      // remove duplicates that directly follow
+      while (level.length > 0 && isSame(root, level[0]!)) {
+        root.subGroups.push(...(<IGroupParent>level.shift()!).subGroups);
       }
-      // same parent, reuse instance
-      const nextChild = path[level + 1];
-      if (nextChild) {
-        currentParent.subGroups.push(nextChild);
-        nextChild.parent = currentParent;
+      for (const child of root.subGroups) {
+        (<(IGroupParent | T)>child).parent = root;
       }
+      // cleanup children duplicates
+      root.subGroups = removeDuplicates(<(IGroupParent | T)[]>root.subGroups, i + 1);
     }
-  }
+    return real;
+  };
+
+  removeDuplicates(paths.map((p) => p[0]), 0);
+
   return groups;
 }
 

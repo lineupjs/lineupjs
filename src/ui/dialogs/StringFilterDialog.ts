@@ -44,7 +44,7 @@ export default class StringFilterDialog extends ADialog {
       bak = '';
     }
     node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
-    <label class="${cssClass('checkbox')}"><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>RegExp</span></label>
+    <label class="${cssClass('checkbox')}"><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>Use regular expressions</span></label>
     ${filterMissingMarkup(bakMissing)}`);
 
     const filterMissing = findFilterMissing(node);

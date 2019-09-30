@@ -3,7 +3,7 @@ import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
 import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent, ITypeFactory} from './interfaces';
-import {groupRoots, isOrderedGroup} from './internal';
+import {groupRoots} from './internal';
 
 export enum EDirtyReason {
   UNKNOWN = 'unknown',
@@ -197,32 +197,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.order = joinIndexArrays(groups.map((d) => d.order));
     // replace with subarrays to save memory
     if (groups.length > 1) {
-      let offset = 0;
-      const order = <UIntTypedArray>this.order;
-      const offsets = new Map<Readonly<IGroupParent> | IOrderedGroup, {offset: number, size: number}>();
-      for (const group of groups) {
-        const size = group.order.length;
-        group.order = order.subarray(offset, offset + size);
-        offsets.set(group, {offset, size});
-        offset += size;
-      }
-      // propgate also to the top with views
-      const roots = groupRoots(groups);
-      const resolve = (g: Readonly<IGroupParent> | IOrderedGroup): {offset: number, size: number} => {
-        if (isOrderedGroup(g) || offsets.has(g)) {
-          return offsets.get(g)!;
-        }
-        const subs = g.subGroups.map((gi) => resolve(<Readonly<IGroupParent> | IOrderedGroup>gi));
-        const offset = subs.length > 0 ? subs[0].offset : 0;
-        const size = subs.reduce((a, b) => a + b.size, 0);
-        const r = {offset, size};
-        offsets.set(g, r);
-        (<IOrderedGroup><any>g).order = order.subarray(offset, offset + size);
-        return r;
-      };
-      for (const root of roots) {
-        resolve(root);
-      }
+      this.unifyGroups(groups);
     } else if (groups.length === 1) {
       // propagate to the top
       let p = groups[0].parent;
@@ -232,6 +207,41 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       }
     }
     this.fire([Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_GROUPS_CHANGED, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], old, this.order, oldGroups, groups, dirtyReason);
+  }
+
+  private unifyGroups(groups: IOrderedGroup[]) {
+    let offset = 0;
+    const order = <UIntTypedArray>this.order;
+    const offsets = new Map<Readonly<IGroupParent> | IOrderedGroup, {
+      offset: number;
+      size: number;
+    }>();
+    for (const group of groups) {
+      const size = group.order.length;
+      group.order = order.subarray(offset, offset + size);
+      offsets.set(group, {offset, size});
+      offset += size;
+    }
+    // propgate also to the top with views
+    const roots = groupRoots(groups);
+    const resolve = (g: Readonly<IGroupParent> | IOrderedGroup): {
+      offset: number;
+      size: number;
+    } => {
+      if (offsets.has(g)) { // leaf
+        return offsets.get(g)!;
+      }
+      const subs = (<IGroupParent>g).subGroups.map((gi) => resolve(<Readonly<IGroupParent> | IOrderedGroup>gi));
+      const offset = subs.length > 0 ? subs[0].offset : 0;
+      const size = subs.reduce((a, b) => a + b.size, 0);
+      const r = {offset, size};
+      offsets.set(g, r);
+      (<IOrderedGroup><any>g).order = order.subarray(offset, offset + size);
+      return r;
+    };
+    for (const root of roots) {
+      resolve(root);
+    }
   }
 
   getRank(dataIndex: number) {
