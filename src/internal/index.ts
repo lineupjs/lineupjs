@@ -9,5 +9,6 @@ export * from './math';
 export * from './mathInterfaces';
 export {default as merge} from './merge';
 export {default as OrderedSet} from './OrderedSet';
+export {default as LRUCache} from './LRUCache';
 export * from './utils';
 export * from './worker';
