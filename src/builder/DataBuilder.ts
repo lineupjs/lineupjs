@@ -60,7 +60,8 @@ abstract class ADataBuilder<T extends IDataProviderOptions> extends LineUpBuilde
    * @param {IColumnConstructor} clazz column class
    */
   registerColumnType(type: string, clazz: IColumnConstructor) {
-    this.providerOptions.columnTypes![type] = clazz;
+    const types = <{[columnType: string]: IColumnConstructor}>this.providerOptions.columnTypes!;
+    types[type] = clazz;
     return this;
   }
 

@@ -167,7 +167,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
         // ok was aborted, so not a real error but the abort error
         console.log('error during sorting cause has been aborted', error);
       } else {
-        console.error('error during sorting', error)
+        console.error('error during sorting', error);
       }
       // return the current sorting of the ranking
       if (this.currentSort.has(ranking.id)) {
