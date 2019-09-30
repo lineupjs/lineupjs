@@ -17,5 +17,3 @@ export const HOVER_DELAY_SHOW_DETAIL = 500;
 
 export const GUESSED_ROW_HEIGHT = 18;
 export const GUESSES_GROUP_HEIGHT = 40;
-
-export const NUM_OF_EXAMPLE_ROWS = 5;

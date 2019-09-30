@@ -15,4 +15,3 @@ tests/**/*.d.ts
 node_modules
 .cache-loader
 /build*
-*.tsbuildinfo

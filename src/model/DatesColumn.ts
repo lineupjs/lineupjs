@@ -63,10 +63,6 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     return this.format;
   }
 
-  getParser() {
-    return this.parse;
-  }
-
   protected createEventList() {
     return super.createEventList().concat([DatesColumn.EVENT_SORTMETHOD_CHANGED, DatesColumn.EVENT_FILTER_CHANGED]);
   }

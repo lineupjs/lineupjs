@@ -6,7 +6,6 @@ import {IArrayColumn} from './IArrayColumn';
 
 export interface IDateColumn extends Column {
   getFormatter(): (v: Date | null) => string;
-  getParser(): (v: string) => Date | null;
 
   getDate(row: IDataRow): Date | null;
 

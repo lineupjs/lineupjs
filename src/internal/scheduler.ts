@@ -1,4 +1,5 @@
 import {IAbortAblePromise, ABORTED, IAbortAblePromiseBase} from 'lineupengine';
+export {ABORTED} from 'lineupengine';
 
 /**
  * @internal

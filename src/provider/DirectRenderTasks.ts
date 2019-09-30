@@ -1,8 +1,7 @@
 import Column, {IDataRow, Ranking, IndicesArray, IGroup, IOrderedGroup, INumberColumn, IDateColumn, ICategoricalLikeColumn, ICompareValue} from '../model';
-import {ARenderTasks, IRenderTaskExecutor, taskNow} from './tasks';
+import {ARenderTasks, IRenderTaskExectutor, taskNow} from './tasks';
 import {ISequence, toIndexArray, sortComplex, getNumberOfBins} from '../internal';
 import {CompareLookup} from './sort';
-import {NUM_OF_EXAMPLE_ROWS} from '../constants';
 import {IRenderTask} from '..';
 
 /**
@@ -19,7 +18,7 @@ export function sortDirect(indices: IndicesArray, maxDataIndex: number, lookups?
 /**
  * @internal
  */
-export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecutor {
+export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
 
   protected readonly cache = new Map<string, any>();
 
@@ -112,7 +111,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
   }
 
   groupExampleRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T> {
-    return taskNow(compute(this.byOrder(group.order.slice(0, NUM_OF_EXAMPLE_ROWS))));
+    return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
