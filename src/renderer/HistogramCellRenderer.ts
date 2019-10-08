@@ -120,8 +120,8 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
     const maxValue = f.unpercent(100 - parseFloat(max.style.right!));
     col.setFilter({
       filterMissing: filterMissing.checked,
-      min: Math.abs(minValue - f.domain[0]) < 0.001 ? NaN : minValue,
-      max: Math.abs(maxValue - f.domain[1]) < 0.001 ? NaN : maxValue
+      min: minValue === f.domain[0] ? NaN : minValue,
+      max: maxValue === f.domain[1] ? NaN : maxValue
     });
   };
 
