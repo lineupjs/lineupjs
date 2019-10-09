@@ -13,6 +13,17 @@ export enum EAlignment {
   right = 'right'
 }
 
+export enum EStringGroupCriteriaType {
+  value = 'value',
+  startsWith = 'startsWith',
+  regex = 'regex'
+}
+
+export interface IStringGroupCriteria {
+  type: EStringGroupCriteriaType;
+  values: (string | RegExp)[];
+}
+
 export interface IStringDesc {
   /**
    * column alignment: left, center, right
@@ -61,7 +72,10 @@ export default class StringColumn extends ValueColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
 
-  private currentGroupCriteria: (RegExp | string)[] = [];
+  private currentGroupCriteria: IStringGroupCriteria = {
+    type: EStringGroupCriteriaType.value,
+    values: []
+  };
 
   constructor(id: string, desc: Readonly<IStringColumnDesc>) {
     super(id, desc);
@@ -110,7 +124,11 @@ export default class StringColumn extends ValueColumn<string> {
       r.filter = this.currentFilter;
     }
     if (this.currentGroupCriteria) {
-      r.groupCriteria = this.currentGroupCriteria.map((d) => typeof d === 'string' ? d : `REGEX:${d.source}`);
+      const {type, values} = this.currentGroupCriteria;
+      r.groupCriteria = {
+        type,
+        values: values.map((value) => `${type}:${value instanceof RegExp && type === EStringGroupCriteriaType.regex ? value.source : value}`)
+      };
     }
     return r;
   }
@@ -122,8 +140,14 @@ export default class StringColumn extends ValueColumn<string> {
     } else {
       this.currentFilter = dump.filter || null;
     }
+
+    // tslint:disable-next-line: early-exit
     if (dump.groupCriteria) {
-      this.currentGroupCriteria = dump.groupCriteria.map((d: string) => d.startsWith('REGEX:') ? new RegExp(d.slice(6), 'gm') : d);
+      const {type, values} = <IStringGroupCriteria>dump.groupCriteria;
+      this.currentGroupCriteria = {
+        type,
+        values: values.map((value) => type === EStringGroupCriteriaType.regex ? new RegExp(<string>value, 'gm') : value)
+      };
     }
   }
 
@@ -164,16 +188,16 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  getGroupCriteria() {
-    return this.currentGroupCriteria.slice();
+  getGroupCriteria(): IStringGroupCriteria {
+    return this.currentGroupCriteria;
   }
 
-  setGroupCriteria(value: (string | RegExp)[]) {
-    if (equal(this.currentGroupCriteria, value)) {
+  setGroupCriteria(value: IStringGroupCriteria) {
+    if (equal(this.currentGroupCriteria, value) || value == null) {
       return;
     }
     const bak = this.getGroupCriteria();
-    this.currentGroupCriteria = value.slice();
+    this.currentGroupCriteria = value;
     this.fire([StringColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
@@ -194,24 +218,35 @@ export default class StringColumn extends ValueColumn<string> {
       return missingGroup;
     }
 
-    if (this.currentGroupCriteria.length === 0) {
-      return defaultGroup;
-    }
-    const value = this.getLabel(row);
+    const rowValue = this.getLabel(row);
 
-    if (!value) {
+    if (!rowValue) {
       return defaultGroup;
     }
 
-    for (const criteria of this.currentGroupCriteria) {
-      if (!((criteria instanceof RegExp && criteria.test(value)) || (typeof criteria === 'string' && value.startsWith(criteria)))) {
-        continue;
-      }
+    const {type, values} = this.currentGroupCriteria;
+    if (type === EStringGroupCriteriaType.value) {
       return {
-        name: typeof criteria === 'string' ? criteria : criteria.source,
+        name: rowValue,
         color: defaultGroup.color
       };
     }
+    for (const value of values) {
+      if (type === EStringGroupCriteriaType.startsWith && typeof value === 'string' && rowValue.startsWith(value)) {
+        return {
+          name: value,
+          color: defaultGroup.color
+        };
+      }
+      // tslint:disable-next-line: early-exit
+      if (type === EStringGroupCriteriaType.regex && value instanceof RegExp && value.test(rowValue)) {
+        return {
+          name: value.source,
+          color: defaultGroup.color
+        };
+      }
+    }
+
     return defaultGroup;
   }
 }
