@@ -73,7 +73,7 @@ export default class StringColumn extends ValueColumn<string> {
   readonly escape: boolean;
 
   private currentGroupCriteria: IStringGroupCriteria = {
-    type: EStringGroupCriteriaType.value,
+    type: EStringGroupCriteriaType.startsWith,
     values: []
   };
 
