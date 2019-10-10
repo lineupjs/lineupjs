@@ -20,7 +20,7 @@ export default function append(col: StringColumn, node: HTMLElement, dialog: IDi
       <input type="radio" name="${dialog.idPrefix}groupString" value="${EStringGroupCriteriaType.regex}" id="${dialog.idPrefix}RE" ${type === EStringGroupCriteriaType.regex ? 'checked' : ''}>
       <label for="${dialog.idPrefix}RE">Use regular expressions</label>
     </div>
-    <textarea required ${type === EStringGroupCriteriaType.value ? 'disabled' : ''} rows="5" placeholder="e.g. Test,a.*" id="${dialog.idPrefix}T">${values.map((value) => value instanceof RegExp ? value.source : value).join('\n')}</textarea>
+    <textarea required rows="5" placeholder="e.g. Test,a.*" id="${dialog.idPrefix}T">${values.map((value) => value instanceof RegExp ? value.source : value).join('\n')}</textarea>
     <button id="${dialog.idPrefix}A">Apply</button>
   `);
 
@@ -30,9 +30,14 @@ export default function append(col: StringColumn, node: HTMLElement, dialog: IDi
   const regexRadioButton = node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}RE`)!;
   const text = node.querySelector<HTMLTextAreaElement>(`#${dialog.idPrefix}T`)!;
 
-  valueRadioButton.onchange = () => text.disabled = valueRadioButton.checked;
-  startsWithRadioButton.onchange = () => text.disabled = !startsWithRadioButton.checked;
-  regexRadioButton.onchange = () => text.disabled = !regexRadioButton.checked;
+  const showOrHideTextarea = (show: boolean) => {
+    text.style.display = show ? null : 'none';
+  };
+
+  showOrHideTextarea(type !== EStringGroupCriteriaType.value);
+  valueRadioButton.onchange = () => showOrHideTextarea(!valueRadioButton.checked);
+  startsWithRadioButton.onchange = () => showOrHideTextarea(startsWithRadioButton.checked);
+  regexRadioButton.onchange = () => showOrHideTextarea(regexRadioButton.checked);
 
   button.onclick = (evt) => {
     evt.preventDefault();
