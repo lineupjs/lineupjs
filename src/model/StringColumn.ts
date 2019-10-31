@@ -145,7 +145,7 @@ export default class StringColumn extends ValueColumn<string> {
       return r !== '' && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
     }
     if (filter instanceof RegExp) {
-      return r !== '' && filter.test(r);
+      return r !== '' && r.match(filter) != null; //You can not use RegExp.test() https://stackoverflow.com/a/6891667
     }
     return true;
   }

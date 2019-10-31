@@ -31,7 +31,7 @@ export default class StringFilterDialog extends ADialog {
     }
     const input = this.findInput('input[type="text"]').value;
     const isRegex = this.findInput('input[type="checkbox"]').checked;
-    this.updateFilter(isRegex ? new RegExp(input) : input);
+    this.updateFilter(isRegex ? new RegExp(input,'gm') : input);
     return true;
   }
 
