@@ -155,7 +155,7 @@ export default class MappingDialog extends ADialog {
     }
 
     {
-      this.forEach(`.${cssClass('dialog-mapper-details')} input[type=number]`, (d: HTMLInputElement, i) => d.onchange = () => {
+      this.forEach(`#${this.idPrefix}min, #${this.idPrefix}max`, (d: HTMLInputElement, i) => d.onchange = () => {
         const v = d.valueAsNumber;
         if (v === this.rawDomain[i]) {
           d.setCustomValidity('');

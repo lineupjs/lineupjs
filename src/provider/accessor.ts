@@ -15,7 +15,7 @@ export function isComplexAccessor(column: any) {
  */
 export function rowComplexGetter(row: IDataRow, desc: any) {
   const column = desc.column;
-  if (row.hasOwnProperty(column)) { // well complex but a direct hit
+  if (row.v.hasOwnProperty(column)) { // well complex but a direct hit
     return row.v[column];
   }
   const resolve = (obj: any, col: string) => {

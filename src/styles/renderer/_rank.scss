@@ -4,6 +4,7 @@
   text-align: right;
   display: flex;
   justify-content: flex-end;
+  font-variant-numeric: tabular-nums;
 }
 
 .#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-rank {
