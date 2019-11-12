@@ -14,19 +14,19 @@
 <script>
   window.onload = function () {
     const arr = [];
-    for (let i = 0; i < 1000; ++i) {
+    for (let i = 0; i < 5000; ++i) {
       arr.push({
-        a: Math.random() * 10,
-        d: 'Row ' + i,
         group: Math.floor(Math.random() * 2000).toString()
-      })
+      });
     }
     const builder = LineUpJS.builder(arr);
-    builder.deriveColumns();
+
+    builder
+      .column(LineUpJS.buildStringColumn('group'));
     // and two rankings
     const ranking = LineUpJS.buildRanking()
       .supportTypes()
-      .allColumns() // add all columns
+      .allColumns(); // add all columns
 
     builder
       .ranking(ranking);
