@@ -9,7 +9,6 @@ import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} 
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
 
-/** @internal */
 export default class MapBarCellRenderer implements ICellRendererFactory {
   readonly title = 'Bar Table';
 

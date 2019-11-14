@@ -4,7 +4,6 @@ import Column from '../model/Column';
 import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {forEachChild, noop, noRenderer} from './utils';
 
-/** @internal */
 export default class ActionRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 

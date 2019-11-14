@@ -11,7 +11,6 @@ import {matchColumns, forEachChild} from './utils';
 import {colorOf} from '../ui/dialogs/utils';
 
 
-/** @internal */
 export default class InterleavingCellRenderer implements ICellRendererFactory {
   readonly title = 'Interleaved';
 
