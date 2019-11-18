@@ -234,7 +234,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
     const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row) : null);
     const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])), () => {
       const cols = this.findMyRanker()!.flatColumns;
-      return new ColumnContext(cols.map((c) => new ColumnWrapper(c, c.getValue(row), isNumberColumn(c) ? c.getRawNumber(row) : null)));
+      return new ColumnContext(cols.filter((c) => c !== this).map((c) => new ColumnWrapper(c, c.getValue(row), isNumberColumn(c) ? c.getRawNumber(row) : null)));
     });
     return this.f.call(this, children, values, raws, col, row.v, row.i);
   }
