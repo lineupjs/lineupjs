@@ -154,8 +154,8 @@ function createFilterContext(col: IMapAbleColumn, context: IRenderContext): IFil
     format: (v) => round(v, 2).toString(),
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
-      min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : minValue,
-      max: Math.abs(maxValue - domain[1]) < 0.001 ? NaN : maxValue
+      min: minValue === domain[0] ? NaN : minValue,
+      max: maxValue === domain[1] ? NaN : maxValue
     }),
     edit: (value, attachment) => {
       return new Promise((resolve) => {
