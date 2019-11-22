@@ -5,7 +5,6 @@ import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText} from './utils';
 import LinkColumn from '../model/LinkColumn';
 
-/** @internal */
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title = 'Link';
 

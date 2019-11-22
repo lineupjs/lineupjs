@@ -5,7 +5,6 @@ import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {noop} from './utils';
 import {IDataProvider} from '../provider/ADataProvider';
 
-/** @internal */
 export default class SelectionRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
@@ -75,7 +74,6 @@ export default class SelectionRenderer implements ICellRendererFactory {
   }
 }
 
-/** @internal */
 export function rangeSelection(provider: IDataProvider, rankingId: string, dataIndex: number, relIndex: number, ctrlKey: boolean) {
   const ranking = provider.getRankings().find((d) => d.id === rankingId);
   if (!ranking) { // no known reference

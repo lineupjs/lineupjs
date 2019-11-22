@@ -7,7 +7,6 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {union} from './UpSetCellRenderer';
 import {noop, wideEnough, forEachChild} from './utils';
 
-/** @internal */
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
   title = 'Heatmap';
 
