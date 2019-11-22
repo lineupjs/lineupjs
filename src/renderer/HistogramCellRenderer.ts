@@ -15,7 +15,6 @@ import {renderMissingDOM} from './missing';
 import {noop} from './utils';
 import {dragHandle, IDragHandleOptions} from '../internal/drag';
 
-/** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title = 'Histogram';
 

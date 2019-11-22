@@ -8,7 +8,6 @@ import {interactiveHist} from './CategoricalCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {forEachChild, noRenderer, adaptTextColorToBgColor} from './utils';
 
-/** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
   readonly title = 'Distribution Bar';
 

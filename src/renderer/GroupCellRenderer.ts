@@ -4,7 +4,6 @@ import GroupColumn from '../model/GroupColumn';
 import {ICellRendererFactory} from './interfaces';
 import {noop, noRenderer} from './utils';
 
-/** @internal */
 export default class GroupCellRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 

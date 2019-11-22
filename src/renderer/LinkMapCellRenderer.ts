@@ -8,7 +8,6 @@ import LinkMapColumn from '../model/LinkMapColumn';
 import {ILink} from '../model/LinkColumn';
 import {IKeyValue} from '../model/IArrayColumn';
 
-/** @internal */
 export default class LinkMapCellRenderer implements ICellRendererFactory {
   readonly title = 'Table with Links';
 

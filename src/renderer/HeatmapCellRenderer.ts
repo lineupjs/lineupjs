@@ -11,7 +11,6 @@ import {IGroup} from '../model/interfaces';
 
 const GUESSED_HEIGHT = 20;
 
-/** @internal */
 export default class HeatmapCellRenderer implements ICellRendererFactory {
   readonly title = 'Heatmap';
 

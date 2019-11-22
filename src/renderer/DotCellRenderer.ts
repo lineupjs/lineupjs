@@ -11,7 +11,6 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {attr, forEachChild, noRenderer} from './utils';
 
-/** @internal */
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title = 'Dot';
   readonly groupTitle = 'Dots';
