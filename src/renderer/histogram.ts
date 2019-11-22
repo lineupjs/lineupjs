@@ -10,9 +10,6 @@ function filteredColor(input: string) {
   return c.toString();
 }
 
-/**
- * @internal
- */
 export function histogramTemplate(guessedBins: number) {
   let bins = '';
   for (let i = 0; i < guessedBins; ++i) {
@@ -42,7 +39,6 @@ export interface IHistogramLike<T> {
   readonly hist: ReadonlyArray<IBin<T>>;
 }
 
-/** @internal */
 export function histogramUpdate<T>(n: HTMLElement, stats: IHistogramLike<T>, unfiltered: IHistogramLike<T> | null, formatter: (v: T) => string, colorOf: (bin: IBin<T>) => string) {
   const hist = stats.hist;
   const nodes = matchBins(n, hist.length);
@@ -73,16 +69,10 @@ export function histogramUpdate<T>(n: HTMLElement, stats: IHistogramLike<T>, unf
   });
 }
 
-/**
- * @internal
- */
 export function mappingHintTemplate(range: [string, string]) {
   return `<span class="${cssClass('mapping-hint')}">${range[0]}</span><span class="${cssClass('mapping-hint')}">${range[1]}</span>`;
 }
 
-/**
- * @internal
- */
 export function mappingHintUpdate(n: HTMLElement, range: [string, string]) {
   Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
 }
@@ -96,9 +86,7 @@ export interface IFilterContext<T> {
   edit(value: T, attachment: HTMLElement, type: 'min' | 'max'): Promise<T>;
   domain: [T, T];
 }
-/**
- * @internal
- */
+
 export interface IFilterInfo<T> {
   filterMissing: boolean;
   filterMin: T;
