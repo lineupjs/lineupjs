@@ -5,7 +5,6 @@ import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
 import {ISequence} from '../internal';
 
-/** @internal */
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title = 'Link';
 

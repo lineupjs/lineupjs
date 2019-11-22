@@ -9,7 +9,6 @@ import {noRenderer} from './utils';
 
 
 
-/** @internal */
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title = 'Dot';
   readonly groupTitle = 'Dots';

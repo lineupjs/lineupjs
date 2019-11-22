@@ -6,7 +6,6 @@ import {renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
 import {cssClass} from '../styles';
 
-/** @internal */
 export default class MapBarCellRenderer implements ICellRendererFactory {
   readonly title = 'Bar Table';
 

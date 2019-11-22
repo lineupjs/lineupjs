@@ -3,7 +3,6 @@ import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
 import {forEachChild, noRenderer} from './utils';
 import {cssClass} from '../styles';
 
-/** @internal */
 export default class ActionRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 

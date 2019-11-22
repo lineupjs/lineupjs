@@ -3,7 +3,6 @@ import {DefaultCellRenderer} from './DefaultCellRenderer';
 import {ERenderMode} from './interfaces';
 import {cssClass} from '../styles';
 
-/** @internal */
 export default class BooleanCellRenderer extends DefaultCellRenderer {
   readonly title = 'Default';
 

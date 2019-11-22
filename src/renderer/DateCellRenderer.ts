@@ -4,7 +4,6 @@ import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText, exampleText} from './utils';
 import {chooseAggregatedDate} from '../model/internalDate';
 
-/** @internal */
 export default class DateCellRenderer implements ICellRendererFactory {
   title = 'Date';
   groupTitle = 'Date';

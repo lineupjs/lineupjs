@@ -8,10 +8,8 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough, forEach} from './utils';
 import {color} from 'd3-color';
 
-/** @internal */
 export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn;
 
-/** @internal */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly title = 'Color';
   readonly groupTitle = 'Histogram';
@@ -151,7 +149,6 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
   };
 }
 
-/** @internal */
 export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
   const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
 

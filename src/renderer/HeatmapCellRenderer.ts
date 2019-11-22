@@ -8,7 +8,6 @@ import {noop, wideEnough} from './utils';
 import {GUESSED_ROW_HEIGHT} from '../constants';
 
 
-/** @internal */
 export default class HeatmapCellRenderer implements ICellRendererFactory {
   readonly title = 'Heatmap';
 

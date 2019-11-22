@@ -132,7 +132,6 @@ function isDummyGroup(group: IGroup) {
   return group.parent == null && group.name === defaultGroup.name;
 }
 
-/** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 

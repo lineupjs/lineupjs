@@ -7,7 +7,6 @@ import {renderMissingDOM} from './missing';
 import {cssClass} from '../styles';
 import {histogramUpdate, histogramTemplate, IHistogramLike, mappingHintTemplate, mappingHintUpdate, IFilterInfo, filteredHistTemplate, IFilterContext, initFilter} from './histogram';
 
-/** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title = 'Histogram';
 
@@ -117,7 +116,6 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
   };
 }
 
-/** @internal */
 export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
   const ranking = col.findMyRanker();
   const guessedBins = ranking ? getNumberOfBins(ranking.getOrderLength()) : 10;

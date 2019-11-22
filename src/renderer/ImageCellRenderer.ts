@@ -12,7 +12,6 @@ function loadImage(src: string) {
   });
 }
 
-/** @internal */
 export default class ImageCellRenderer implements ICellRendererFactory {
   readonly title = 'Image';
 

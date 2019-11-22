@@ -6,7 +6,6 @@ import {renderMissingDOM, renderMissingValue} from './missing';
 import {noop, wideEnough} from './utils';
 import {GUESSED_ROW_HEIGHT} from '../constants';
 
-/** @internal */
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
   readonly title = 'Heatmap';
 

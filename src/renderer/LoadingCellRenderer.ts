@@ -1,7 +1,6 @@
 import {ICellRendererFactory} from './interfaces';
 import {noop} from './utils';
 
-/** @internal */
 export default class LoadingCellRenderer implements ICellRendererFactory {
   readonly title = 'Loading';
 

@@ -2,7 +2,6 @@ import {IDataRow, AnnotateColumn, Column} from '../model';
 import StringCellRenderer from './StringCellRenderer';
 import {cssClass} from '../styles';
 
-/** @internal */
 export default class AnnotationRenderer extends StringCellRenderer {
   readonly title = 'Default';
 

@@ -4,7 +4,6 @@ import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
 
-/** @internal */
 export default class RankCellRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 

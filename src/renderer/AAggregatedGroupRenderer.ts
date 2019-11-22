@@ -5,7 +5,6 @@ import {noRenderer} from './utils';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item
- * @internal
  */
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
   abstract readonly title: string;
@@ -35,7 +34,4 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
   }
 }
 
-/**
- * @internal
- */
 export default AAggregatedGroupRenderer;
