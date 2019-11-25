@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <link href="./LineUpJS.css" rel="stylesheet">
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .lu {
+        clear: both;
+        position: absolute;
+        top: 1px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="./LineUpJS.js"></script>
+    <script>
+    const testData = [
+        { n: 0.000054921, m: 1.234 },
+        { n: 0.0000417014, m: 2.342342523 },
+        { n: 1.265e-7, m: 12.312412 },
+        { n: 0.0000417014, m: 5.243325 },
+        { n: 7.8e-9, m: 9.32524 },
+        { n: 0.0000417014, m: 5.45472523 },
+        { n: 0.0000526039, m: 6.42345323 },
+        { n: 0.0000417014, m: 7.332523 },
+        { n: 5.14e-8, m: 6.4234532523 },
+        { n: 0.0000156167, m: 3.42334242523 },
+        { n: 0.0000035539, m: 6.423523 },
+        { n: 0.0000417014, m: 1.523 },
+        { n: 2.722e-7, m: 6.4234532523 },
+        { n: 0.0000146095, m: 8.532523 },
+        { n: 0.0000040818, m: 1.42523 },
+        { n: 0.0000247558, m: 8.32523 },
+        { n: 0.0000313286, m: 2.321441533 },
+        { n: 0.0000417014, m: 6.43 },
+        { n: 0.0000013006, m: 6.3 },
+        { n: 0.0000417014, m: 8.53 },
+        { n: 0.0000012201, m: 6 },
+        { n: 0.0000417014, m: 1.3 },
+        { n: 0.0000050403, m: 6.4234532523 },
+        { n: 0.0000417014, m: 10.44453 },
+        { n: 0.0000021525, m: 9.3 },
+        { n: 0.0000036857, m: 6.4234532523 },
+        { n: 1.16e-8, m: 6.4234532523 },
+        { n: 0.0000153442, m: 6.4234532523 },
+      ];
+
+      const minN = Math.min(...testData.map(d => d.n));
+      const maxN = Math.max(...testData.map(d => d.n));
+
+      const builder = LineUpJS.builder(testData);
+
+      builder.column(
+        LineUpJS.buildNumberColumn('n')
+          .label('Column with small numbers')
+          .width(250)
+          .mapping('log', [minN, maxN], [1, 0])
+          .custom('numberFormat', 'e'),
+      );
+
+
+      const minM = Math.min(...testData.map(d => d.m));
+      const maxM = Math.max(...testData.map(d => d.m));
+
+      builder.column(
+        LineUpJS.buildNumberColumn('m')
+          .label('Column with numbers > 1')
+          .width(250)
+          .mapping('log', [minM, maxM], [1, 0])
+      );
+
+      builder.build(document.body);
+    </script>
+  </body>
+</html>
