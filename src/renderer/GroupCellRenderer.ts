@@ -5,7 +5,7 @@ import {ICellRendererFactory} from './interfaces';
 import {noop, noRenderer} from './utils';
 
 export default class GroupCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return col instanceof GroupColumn;

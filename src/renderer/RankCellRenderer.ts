@@ -6,7 +6,7 @@ import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText} from './utils';
 
 export default class RankCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return col instanceof RankColumn;

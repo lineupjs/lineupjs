@@ -16,7 +16,7 @@ import {noop} from './utils';
 import {dragHandle, IDragHandleOptions} from '../internal/drag';
 
 export default class HistogramCellRenderer implements ICellRendererFactory {
-  readonly title = 'Histogram';
+  readonly title: string = 'Histogram';
 
   canRender(col: Column, mode: ERenderMode) {
     return (isNumberColumn(col) && mode !== ERenderMode.CELL) || (isNumbersColumn(col) && mode === ERenderMode.CELL);

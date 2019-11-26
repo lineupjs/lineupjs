@@ -9,7 +9,7 @@ import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './int
 import {attr, forEachChild, noRenderer} from './utils';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar Chart';
+  readonly title: string = 'Bar Chart';
 
   canRender(col: Column, mode: ERenderMode) {
     return isNumbersColumn(col) && Boolean(col.dataLength) && mode === ERenderMode.CELL;

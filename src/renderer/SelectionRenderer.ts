@@ -6,7 +6,7 @@ import {noop} from './utils';
 import {IDataProvider} from '../provider/ADataProvider';
 
 export default class SelectionRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return col instanceof SelectionColumn;

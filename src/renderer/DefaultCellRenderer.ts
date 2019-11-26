@@ -8,9 +8,9 @@ import {noop, noRenderer, setText} from './utils';
  * default renderer instance rendering the value as a text
  */
 export class DefaultCellRenderer implements ICellRendererFactory {
-  title = 'String';
-  groupTitle = 'None';
-  summaryTitle = 'None';
+  title: string = 'String';
+  groupTitle: string = 'None';
+  summaryTitle: string = 'None';
 
   canRender(_col: Column, _mode: ERenderMode) {
     return true;

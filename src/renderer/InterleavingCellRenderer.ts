@@ -12,7 +12,7 @@ import {colorOf} from '../ui/dialogs/utils';
 
 
 export default class InterleavingCellRenderer implements ICellRendererFactory {
-  readonly title = 'Interleaved';
+  readonly title: string = 'Interleaved';
 
   canRender(col: Column) {
     return col instanceof CompositeNumberColumn;

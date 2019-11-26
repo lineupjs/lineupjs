@@ -8,7 +8,7 @@ import {renderMissingDOM} from './missing';
 import {attr, noop, noRenderer, setText} from './utils';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
-  readonly title = 'Proportional Symbol';
+  readonly title: string = 'Proportional Symbol';
 
   canRender(col: Column, mode: ERenderMode) {
     return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);

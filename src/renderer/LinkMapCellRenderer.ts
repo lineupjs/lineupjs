@@ -9,7 +9,7 @@ import {ILink} from '../model/LinkColumn';
 import {IKeyValue} from '../model/IArrayColumn';
 
 export default class LinkMapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Table with Links';
+  readonly title: string = 'Table with Links';
 
   canRender(col: Column, mode: ERenderMode) {
     return col instanceof LinkMapColumn && mode !== ERenderMode.SUMMARY;

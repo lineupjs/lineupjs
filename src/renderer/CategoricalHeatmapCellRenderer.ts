@@ -8,7 +8,7 @@ import {union} from './UpSetCellRenderer';
 import {noop, wideEnough, forEachChild} from './utils';
 
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
-  title = 'Heatmap';
+  title: string = 'Heatmap';
 
   canRender(col: Column) {
     return isSetColumn(col);

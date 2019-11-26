@@ -6,7 +6,7 @@ import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
 
 export default class TableCellRenderer implements ICellRendererFactory {
-  readonly title = 'Table';
+  readonly title: string = 'Table';
 
   canRender(col: Column) {
     return isMapColumn(col);

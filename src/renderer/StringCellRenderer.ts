@@ -12,7 +12,7 @@ import {noop, setText, uniqueId, exampleText} from './utils';
  * one instance factory shared among strings
  */
 export default class StringCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return col instanceof StringColumn;

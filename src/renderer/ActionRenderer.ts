@@ -5,7 +5,7 @@ import {ERenderMode, ICellRendererFactory} from './interfaces';
 import {forEachChild, noop, noRenderer} from './utils';
 
 export default class ActionRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column, mode: ERenderMode) {
     return col instanceof ActionColumn && mode !== ERenderMode.SUMMARY;

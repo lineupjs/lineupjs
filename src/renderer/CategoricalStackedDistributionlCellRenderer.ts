@@ -9,7 +9,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './in
 import {forEachChild, noRenderer, adaptTextColorToBgColor} from './utils';
 
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
-  readonly title = 'Distribution Bar';
+  readonly title: string = 'Distribution Bar';
 
   canRender(col: Column, mode: ERenderMode) {
     return isCategoricalColumn(col) && mode !== ERenderMode.CELL;

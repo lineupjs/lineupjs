@@ -5,7 +5,7 @@ import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
 import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 
 export default class AggregateGroupRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return col instanceof AggregateGroupColumn;

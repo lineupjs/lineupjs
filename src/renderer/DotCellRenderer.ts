@@ -12,8 +12,8 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {attr, forEachChild, noRenderer} from './utils';
 
 export default class DotCellRenderer implements ICellRendererFactory {
-  readonly title = 'Dot';
-  readonly groupTitle = 'Dots';
+  readonly title: string = 'Dot';
+  readonly groupTitle: string = 'Dots';
 
   canRender(col: Column, mode: ERenderMode) {
     return isNumberColumn(col) && mode !== ERenderMode.SUMMARY;

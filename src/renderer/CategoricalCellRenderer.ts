@@ -12,8 +12,8 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough, forEach} from './utils';
 
 export default class CategoricalCellRenderer implements ICellRendererFactory {
-  readonly title = 'Color';
-  readonly groupTitle = 'Histogram';
+  readonly title: string = 'Color';
+  readonly groupTitle: string = 'Histogram';
 
   canRender(col: Column) {
     return isCategoricalColumn(col);

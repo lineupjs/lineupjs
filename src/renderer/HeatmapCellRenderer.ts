@@ -12,7 +12,7 @@ import {IGroup} from '../model/interfaces';
 const GUESSED_HEIGHT = 20;
 
 export default class HeatmapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Heatmap';
+  readonly title: string = 'Heatmap';
 
   canRender(col: Column) {
     return isNumbersColumn(col) && Boolean(col.dataLength);

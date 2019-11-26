@@ -10,7 +10,7 @@ import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
 
 export default class MapBarCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar Table';
+  readonly title: string = 'Bar Table';
 
   canRender(col: Column, mode: ERenderMode) {
     return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));

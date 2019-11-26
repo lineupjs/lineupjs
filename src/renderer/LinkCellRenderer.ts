@@ -6,7 +6,7 @@ import {noop, noRenderer, setText} from './utils';
 import LinkColumn from '../model/LinkColumn';
 
 export default class LinkCellRenderer implements ICellRendererFactory {
-  readonly title = 'Link';
+  readonly title: string = 'Link';
 
   canRender(col: Column, mode: ERenderMode) {
     return col instanceof LinkColumn && mode !== ERenderMode.SUMMARY;

@@ -7,7 +7,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
-  readonly title = 'Matrix';
+  readonly title: string = 'Matrix';
 
   canRender(col: Column, mode: ERenderMode) {
     return isSetColumn(col) && mode !== ERenderMode.SUMMARY;

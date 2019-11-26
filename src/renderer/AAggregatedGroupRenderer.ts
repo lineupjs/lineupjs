@@ -11,7 +11,7 @@ import {noRenderer} from './utils';
  * helper class that renders a group renderer as a selected (e.g. median) single item
  */
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
-  abstract readonly title: string;
+  abstract title: string;
 
   abstract canRender(col: Column, mode: ERenderMode): boolean;
 
