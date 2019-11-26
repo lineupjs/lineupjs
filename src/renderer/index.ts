@@ -33,6 +33,41 @@ import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 import DateCellRenderer from './DateCellRenderer';
 
 export {
+  Column,
+  ActionRenderer,
+  AggregateGroupRenderer,
+  AnnotationRenderer,
+  BarCellRenderer,
+  BooleanCellRenderer,
+  BoxplotCellRenderer,
+  BrightnessCellRenderer,
+  CategoricalCellRenderer,
+  CategoricalHeatmapCellRenderer,
+  CategoricalStackedDistributionlCellRenderer,
+  CircleCellRenderer,
+  DefaultCellRenderer,
+  DotCellRenderer,
+  GroupCellRenderer,
+  HeatmapCellRenderer,
+  HistogramCellRenderer,
+  ImageCellRenderer,
+  InterleavingCellRenderer,
+  LinkCellRenderer,
+  LinkMapCellRenderer,
+  LoadingCellRenderer,
+  MapBarCellRenderer,
+  MultiLevelCellRenderer,
+  RankCellRenderer,
+  SelectionRenderer,
+  SparklineCellRenderer,
+  StringCellRenderer,
+  TableCellRenderer,
+  UpSetCellRenderer,
+  VerticalBarCellRenderer,
+  DateCellRenderer
+};
+
+export {
   default as IRenderContext,
   IImposer,
   ERenderMode,
