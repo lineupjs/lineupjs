@@ -32,8 +32,8 @@ import UpSetCellRenderer from './UpSetCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 import DateCellRenderer from './DateCellRenderer';
 
+// re-export all the renderers
 export {
-  Column,
   ActionRenderer,
   AggregateGroupRenderer,
   AnnotationRenderer,
