@@ -32,6 +32,38 @@ import UpSetCellRenderer from './UpSetCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 import DateCellRenderer from './DateCellRenderer';
 
+export {default as ActionRenderer} from './ActionRenderer';
+export {default as AggregateGroupRenderer} from './AggregateGroupRenderer';
+export {default as AnnotationRenderer} from './AnnotationRenderer';
+export {default as BarCellRenderer} from './BarCellRenderer';
+export {default as BooleanCellRenderer} from './BooleanCellRenderer';
+export {default as BoxplotCellRenderer} from './BoxplotCellRenderer';
+export {default as BrightnessCellRenderer} from './BrightnessCellRenderer';
+export {default as CategoricalCellRenderer} from './CategoricalCellRenderer';
+export {default as CategoricalHeatmapCellRenderer} from './CategoricalHeatmapCellRenderer';
+export {default as CategoricalStackedDistributionlCellRenderer} from './CategoricalStackedDistributionlCellRenderer';
+export {default as CircleCellRenderer} from './CircleCellRenderer';
+export {DefaultCellRenderer} from './DefaultCellRenderer';
+export {default as DotCellRenderer} from './DotCellRenderer';
+export {default as GroupCellRenderer} from './GroupCellRenderer';
+export {default as HeatmapCellRenderer} from './HeatmapCellRenderer';
+export {default as HistogramCellRenderer} from './HistogramCellRenderer';
+export {default as ImageCellRenderer} from './ImageCellRenderer';
+export {default as InterleavingCellRenderer} from './InterleavingCellRenderer';
+export {default as LinkCellRenderer} from './LinkCellRenderer';
+export {default as LinkMapCellRenderer} from './LinkMapCellRenderer';
+export {default as LoadingCellRenderer} from './LoadingCellRenderer';
+export {default as MapBarCellRenderer} from './MapBarCellRenderer';
+export {default as MultiLevelCellRenderer} from './MultiLevelCellRenderer';
+export {default as RankCellRenderer} from './RankCellRenderer';
+export {default as SelectionRenderer} from './SelectionRenderer';
+export {default as SparklineCellRenderer} from './SparklineCellRenderer';
+export {default as StringCellRenderer} from './StringCellRenderer';
+export {default as TableCellRenderer} from './TableCellRenderer';
+export {default as UpSetCellRenderer} from './UpSetCellRenderer';
+export {default as VerticalBarCellRenderer} from './VerticalBarCellRenderer';
+export {default as DateCellRenderer} from './DateCellRenderer';
+
 // re-export all the renderers
 // export {
 //   ActionRenderer,
