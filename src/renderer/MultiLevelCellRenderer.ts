@@ -5,7 +5,7 @@ import {medianIndex} from '../model/internal';
 import {default as INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 
@@ -13,7 +13,18 @@ export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
 }
 
-export function createData(col: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
+export interface ICols {
+  column: Column;
+  shift: number;
+  width: number;
+  template: string;
+  rendererId: string;
+  renderer: ICellRenderer | null;
+  groupRenderer: IGroupCellRenderer | null;
+  summaryRenderer: ISummaryRenderer | null;
+}
+
+export function createData(col: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer): {cols: ICols[], stacked: boolean, padding: number} {
   const padding = COLUMN_PADDING;
   let offset = 0;
   const cols = col.children.map((d) => {
