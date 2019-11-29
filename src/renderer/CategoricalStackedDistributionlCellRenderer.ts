@@ -5,22 +5,22 @@ import Column from '../model/Column';
 import OrdinalColumn from '../model/OrdinalColumn';
 import {filterMissingNumberMarkup} from '../ui/missing';
 import {interactiveHist} from './CategoricalCellRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {forEachChild, noRenderer, adaptTextColorToBgColor} from './utils';
 
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Distribution Bar';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isCategoricalColumn(col) && mode !== ERenderMode.CELL;
   }
 
-  create() {
+  create(): ICellRenderer {
     return noRenderer;
   }
 
 
-  createGroup(col: ICategoricalColumn) {
+  createGroup(col: ICategoricalColumn): IGroupCellRenderer {
     const { template, update } = stackedBar(col);
     return {
       template: `${template}</div>`,
@@ -31,7 +31,7 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
     };
   }
 
-  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean) {
+  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean): ISummaryRenderer {
     return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive, ctx.idPrefix) : staticSummary(col);
   }
 }

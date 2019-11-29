@@ -1,18 +1,18 @@
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
 import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn} from '../model/IArrayColumn';
-import {ICellRendererFactory} from './interfaces';
+import {ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
 
 export default class TableCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return isMapColumn(col);
   }
 
-  create(col: IMapColumn<any>) {
+  create(col: IMapColumn<any>): ICellRenderer {
     if (isArrayColumn(col) && col.dataLength) {
       // fixed length optimized rendering
       return this.createFixed(col);
@@ -55,7 +55,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return `${arr.slice(0, numExampleRows).map((d) => d.value).join(', ')}${numExampleRows < arr.length ? ', &hellip;' : ''}`;
   }
 
-  createGroup(col: IMapColumn<any>) {
+  createGroup(col: IMapColumn<any>): IGroupCellRenderer {
     if (isArrayColumn(col) && col.dataLength) {
       // fixed length optimized rendering
       return this.createFixedGroup(col);
@@ -96,7 +96,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return {
       template: `<div><div>Key</div><div>Value</div></div>`,
       update: noop

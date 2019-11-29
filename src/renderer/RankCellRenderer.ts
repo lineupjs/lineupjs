@@ -1,18 +1,18 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import RankColumn from '../model/RankColumn';
-import {ICellRendererFactory} from './interfaces';
+import {ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText} from './utils';
 
 export default class RankCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof RankColumn;
   }
 
-  create(col: Column) {
+  create(col: Column): ICellRenderer {
     return {
       template: `<div class="lu-right"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
@@ -23,7 +23,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: Column) {
+  createGroup(col: Column): IGroupCellRenderer {
     return {
       template: `<div><div></div><div></div></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
@@ -40,7 +40,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

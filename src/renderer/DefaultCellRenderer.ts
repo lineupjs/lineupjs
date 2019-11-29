@@ -12,7 +12,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   groupTitle: string = 'None';
   summaryTitle: string = 'None';
 
-  canRender(_col: Column, _mode: ERenderMode) {
+  canRender(_col: Column, _mode: ERenderMode): boolean {
     return true;
   }
 

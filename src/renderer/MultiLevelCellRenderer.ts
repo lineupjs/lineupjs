@@ -5,7 +5,7 @@ import {medianIndex} from '../model/internal';
 import {default as INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 
@@ -65,11 +65,11 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     this.title = this.stacked ? 'Stacked Bar' : 'Nested';
   }
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isMultiLevelColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: IMultiLevelColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IMultiLevelColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer {
     const {cols, stacked, padding} = createData(col, context, this.stacked, ERenderMode.CELL, imposer);
     const useGrid = context.option('useGridLayout', false);
     const width = context.colWidth(col);
@@ -119,7 +119,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   }
 
 
-  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer {
     if (this.stacked && isNumberColumn(col)) {
       return super.createGroup(col, context, hist, imposer);
     }

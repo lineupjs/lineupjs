@@ -1,6 +1,6 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText} from './utils';
 import LinkColumn from '../model/LinkColumn';
@@ -8,11 +8,11 @@ import LinkColumn from '../model/LinkColumn';
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Link';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: LinkColumn) {
+  create(col: LinkColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<a${align !== 'left' ? ` class="lu-${align}"` : ''} target="_blank" href=""></a>`,
@@ -48,7 +48,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
-  createGroup(col: LinkColumn) {
+  createGroup(col: LinkColumn): IGroupCellRenderer {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
@@ -57,7 +57,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

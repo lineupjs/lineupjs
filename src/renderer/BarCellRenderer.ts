@@ -5,7 +5,7 @@ import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
 import {isNumbersColumn} from '../model';
 import {CANVAS_HEIGHT} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
@@ -20,11 +20,11 @@ export default class BarCellRenderer implements ICellRendererFactory {
   constructor(private readonly renderValue: boolean = false) {
   }
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return mode === ERenderMode.CELL && isNumberColumn(col) && !isNumbersColumn(col);
   }
 
-  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
@@ -56,16 +56,15 @@ export default class BarCellRenderer implements ICellRendererFactory {
         ctx.fillStyle = colorOf(col, d, imposer, value) || Column.DEFAULT_COLOR;
         const w = width * value;
         ctx.fillRect(0, 0, isNaN(w) ? 0 : w, CANVAS_HEIGHT);
-
       }
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return noRenderer;
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

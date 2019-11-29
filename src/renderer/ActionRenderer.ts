@@ -1,17 +1,17 @@
 import {IDataRow, IGroup} from '../model';
 import {default as ActionColumn} from '../model/ActionColumn';
 import Column from '../model/Column';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {forEachChild, noop, noRenderer} from './utils';
 
 export default class ActionRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof ActionColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: ActionColumn) {
+  create(col: ActionColumn): ICellRenderer {
     const actions = col.actions;
     return {
       template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`).join('')}</div>`,
@@ -28,7 +28,7 @@ export default class ActionRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ActionColumn) {
+  createGroup(col: ActionColumn): IGroupCellRenderer {
     const actions = col.groupActions;
     return {
       template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`).join('')}</div>`,
@@ -44,7 +44,7 @@ export default class ActionRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

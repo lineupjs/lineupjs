@@ -1,18 +1,18 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {noop} from './utils';
 import {IDataProvider} from '../provider/ADataProvider';
 
 export default class SelectionRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof SelectionColumn;
   }
 
-  create(col: SelectionColumn, ctx: IRenderContext) {
+  create(col: SelectionColumn, ctx: IRenderContext): ICellRenderer {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
@@ -33,7 +33,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: SelectionColumn) {
+  createGroup(col: SelectionColumn): IGroupCellRenderer {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
@@ -54,7 +54,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: SelectionColumn, context: IRenderContext) {
+  createSummary(col: SelectionColumn, context: IRenderContext): ISummaryRenderer {
     return {
       template: `<div title="(Un)Select All" data-icon="unchecked"></div>`,
       update: (node: HTMLElement) => {
