@@ -30,7 +30,7 @@
       // {label: 'Region', type: 'categorical', column: 'region', categories: Array.from(new Set(data.map((d) => d.region)))},
       // {label: 'PI Region', type: 'categorical', column: 'piregion', categories: Array.from(new Set(data.map((d) => d.piregion)))},
     ].concat(...groups.slice(0, 1).map((group, i) => {
-      return  ['boxplot', 'threshold', 'sparkline', 'numbers', 'verticalbar', 'table'].map((renderer) => ({
+      return  ['boxplot', 'threshold', 'sparkline', 'numbers', 'verticalbar', 'table', 'heatmap'].map((renderer) => ({
         label: group,
         type: 'numbers',
         dataLength: years.length,
