@@ -36,7 +36,8 @@
         dataLength: years.length,
         renderer,
         column: group,
-        domain: d3.extent([].concat(...data.map((d) => d[group])))
+        domain: d3.extent([].concat(...data.map((d) => d[group]))),
+        labels: years
       }));
     }));
 
