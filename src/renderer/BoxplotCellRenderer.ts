@@ -144,7 +144,7 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
 
   const leftWhisker = data.whiskerLow != null ? data.whiskerLow : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
   const rightWhisker = data.whiskerHigh != null ? data.whiskerHigh : Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
-  whiskers.style.left = (leftWhisker >= 0) ? `${round(leftWhisker * 100, 2)}%` : '0';
+  whiskers.style.left = (leftWhisker > 0) ? `${round(leftWhisker * 100, 2)}%` : '0';
   const range = rightWhisker - leftWhisker;
   whiskers.style.width = `${round(range * 100, 2)}%`;
 
