@@ -115,11 +115,13 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
+    raw = true;
     const {summary, data} = this.summaryBoxPlotStatsD(col, raw);
     return taskNow({group: this.boxplotBuilder(group.order, col, raw).next(Infinity).value!, summary, data});
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
+    raw = true;
     const {summary, data} = this.summaryNumberStatsD(col, raw);
     return taskNow({group: this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw).next(Infinity).value!, summary, data});
   }
@@ -159,6 +161,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
   }
 
   private summaryBoxPlotStatsD(col: Column & INumberColumn, raw?: boolean) {
+    raw = true;
     return this.cached('summary', col, () => {
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataBoxPlotStats(col, raw);
