@@ -45,6 +45,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
 
   create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
     const {template, render, mover, width} = this.createContext(col, context, imposer);
+    const formatter = col.getNumberFormat();
 
     return {
       template,
@@ -56,7 +57,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        n.onmousemove = mover(n, col.getLabels(d));
+        n.onmousemove = mover(n, col.getRawNumbers(d).map(formatter));
         n.onmouseleave = () => n.title = '';
         render(ctx, col.getNumbers(d), d, GUESSED_ROW_HEIGHT);
       },
