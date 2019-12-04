@@ -77,7 +77,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q1: data.q1 * width,
           q3: data.q3 * width,
           max: data.max * width,
-          outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined,
+          outlier: data.outlier ? data.outlier.map((d) => d) : undefined,
           whiskerLow: data.whiskerLow != null ? data.whiskerLow * width : undefined,
           whiskerHigh: data.whiskerHigh != null ? data.whiskerHigh * width : undefined
         };
