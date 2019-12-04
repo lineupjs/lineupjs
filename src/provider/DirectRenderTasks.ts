@@ -114,14 +114,12 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
   }
 
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    raw = true;
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw: boolean = true) {
     const {summary, data} = this.summaryBoxPlotStatsD(col, raw);
     return taskNow({group: this.boxplotBuilder(group.order, col, raw).next(Infinity).value!, summary, data});
   }
 
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    raw = true;
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw: boolean = true) {
     const {summary, data} = this.summaryNumberStatsD(col, raw);
     return taskNow({group: this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw).next(Infinity).value!, summary, data});
   }
@@ -160,8 +158,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExectu
     }, raw ? ':raw' : '', col.findMyRanker()!.getOrderLength() === 0);
   }
 
-  private summaryBoxPlotStatsD(col: Column & INumberColumn, raw?: boolean) {
-    raw = true;
+  private summaryBoxPlotStatsD(col: Column & INumberColumn, raw: boolean = true) {
     return this.cached('summary', col, () => {
       const ranking = col.findMyRanker()!.getOrder();
       const data = this.dataBoxPlotStats(col, raw);
