@@ -9,6 +9,7 @@ export * from './ICategoricalColumn';
 export * from './INumberColumn';
 export * from './IDateColumn';
 export * from './IArrayColumn';
+export * from './internalCategorical';
 
 export {ScaleMappingFunction, ScriptMappingFunction, mappingFunctions} from './MappingFunction';
 export {DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacmentColorMappingFunction} from './CategoricalColorMappingFunction';
