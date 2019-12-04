@@ -187,6 +187,10 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
   data.outlier.forEach((v, i) => {
     delete outliers[i].dataset.sort;
     outliers[i].style.left = `${round(v * 100, 2)}%`;
+    const stylingLeftWithoutPrecision = outliers[i].style.left!.split('.')[0];
+    if (stylingLeftWithoutPrecision.length >= 3) {
+      outliers[i].style.left = `${round(v, 2)}%`;
+    }
   });
 
   if (sort === 'min' && data.outlier[0] <= leftWhisker) {
