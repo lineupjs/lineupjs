@@ -24,7 +24,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   private static createDOMContext(col: ISetColumn) {
     const labels = col.labels;
     let templateRows = '';
-    for (const lab of labels) {
+    for (const label of labels) {
       templateRows += `<div class="${cssClass('upset-dot')}" title="${lab}"></div>`;
     }
     return {
