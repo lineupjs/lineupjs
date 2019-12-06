@@ -70,10 +70,36 @@
           a: data1[i],
           b: data2[i],
           c: data3[i],
-          d: dataWithOutlier[i]
+          d: dataWithOutlier[i],
+          cat: 'A'
         })
       }
-      const lineup = LineUpJS.asTaggle(document.body, arr);
+
+      const builder = LineUpJS.builder(arr)
+        .deriveColors()
+        .column(LineUpJS.buildCategoricalColumn('cat'))
+
+        .column(LineUpJS.buildNumberColumn('a').label('A').renderer('number', 'boxplot', 'boxplot'))
+        .column(LineUpJS.buildNumberColumn('a').label('A inverted').mapping('linear', [Math.min(...data1), Math.max(...data1)], [1, 0]).renderer('number', 'boxplot', 'boxplot'))
+
+        .column(LineUpJS.buildNumberColumn('b').label('B').renderer('number', 'boxplot', 'boxplot'))
+        .column(LineUpJS.buildNumberColumn('b').label('B inverted').mapping('linear', [Math.min(...data2), Math.max(...data2)], [1, 0]).renderer('number', 'boxplot', 'boxplot'))
+
+        .column(LineUpJS.buildNumberColumn('c').renderer('number', 'boxplot', 'boxplot'))
+        .column(LineUpJS.buildNumberColumn('c').label('C inverted').mapping('linear', [Math.min(...data3), Math.max(...data3)], [1, 0]).renderer('number', 'boxplot', 'boxplot'))
+
+        .column(LineUpJS.buildNumberColumn('d').renderer('number', 'boxplot', 'boxplot'))
+        .column(LineUpJS.buildNumberColumn('d').label('D inverted').mapping('linear', [Math.min(...dataWithOutlier), Math.max(...dataWithOutlier)], [1, 0]).renderer('number', 'boxplot', 'boxplot'));
+
+      const ranking = LineUpJS.buildRanking()
+        .supportTypes()
+        .allColumns() // add all columns
+        .groupBy('cat');
+
+      builder
+        .ranking(ranking);
+
+      builder.buildTaggle(document.body);
     };
   </script>
 
