@@ -180,12 +180,12 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
     outliers.unshift(p);
     whiskers.insertAdjacentElement('afterend', p);
   }
-  data.outlier!.forEach((v, i) => {
+  data.outlier.forEach((v, i) => {
     delete outliers[i].dataset.sort;
     outliers[i].style.left = `${round(v * 100, 2)}%`;
   });
 
-  if (sort === 'min' && data.outlier![0] <= leftWhisker ) {
+  if (sort === 'min' && data.outlier[0] <= leftWhisker ) {
     // first outliers is the min
     whiskers.dataset.sort = '';
     outliers[0].dataset.sort = 'min';
