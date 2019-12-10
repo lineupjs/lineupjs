@@ -185,7 +185,7 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
     outliers[i].style.left = `${round(v * 100, 2)}%`;
   });
 
-  if (sort === 'min' && data.outlier[0] <= leftWhisker ) {
+  if (sort === 'min' && data.outlier[0] <= leftWhisker) {
     // first outliers is the min
     whiskers.dataset.sort = '';
     outliers[0].dataset.sort = 'min';
@@ -193,7 +193,7 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
       // append at the end of the DOM to be on top
       outliers[outliers.length - 1].insertAdjacentElement('afterend', outliers[0]);
     }
-  } else if (sort === 'max' && data.outlier![outliers.length - 1] >= rightWhisker) {
+  } else if (sort === 'max' && data.outlier[outliers.length - 1] >= rightWhisker) {
     // last outlier is the max
     whiskers.dataset.sort = '';
     outliers[outliers.length - 1].dataset.sort = 'max';
