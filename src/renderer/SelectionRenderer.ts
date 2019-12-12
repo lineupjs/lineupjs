@@ -1,5 +1,5 @@
 import {Column, SelectionColumn, IDataRow, IOrderedGroup} from '../model';
-import {IRenderContext, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {cssClass} from '../styles';
 import {everyIndices} from '../model/internal';
 import {rangeSelection} from '../provider/utils';
@@ -11,7 +11,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return col instanceof SelectionColumn;
   }
 
-  create(col: SelectionColumn, ctx: IRenderContext) {
+  create(col: SelectionColumn, ctx: IRenderContext): ICellRenderer {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
@@ -31,7 +31,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: SelectionColumn, context: IRenderContext) {
+  createGroup(col: SelectionColumn, context: IRenderContext): IGroupCellRenderer {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -63,7 +63,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: SelectionColumn, context: IRenderContext) {
+  createSummary(col: SelectionColumn, context: IRenderContext): ISummaryRenderer {
     const unchecked = cssClass('icon-unchecked');
     const checked = cssClass('icon-checked');
     return {

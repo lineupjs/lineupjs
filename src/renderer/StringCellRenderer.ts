@@ -1,6 +1,6 @@
 import {StringColumn, Column, IDataRow, IOrderedGroup} from '../model';
 import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
-import {IRenderContext, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {setText, exampleText} from './utils';
 import {cssClass} from '../styles';
@@ -17,7 +17,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     return col instanceof StringColumn;
   }
 
-  create(col: StringColumn) {
+  create(col: StringColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}> </div>`,
@@ -33,7 +33,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 
 
-  createGroup(col: StringColumn, context: IRenderContext) {
+  createGroup(col: StringColumn, context: IRenderContext): IGroupCellRenderer {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
@@ -100,7 +100,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: StringColumn, _context: IRenderContext, interactive: boolean) {
+  createSummary(col: StringColumn, _context: IRenderContext, interactive: boolean): ISummaryRenderer {
     if (!interactive) {
       return {
         template: `<div></div>`,

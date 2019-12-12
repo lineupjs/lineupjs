@@ -2,13 +2,13 @@ import {Column, NumbersColumn, IDataRow, INumbersColumn, isNumbersColumn} from '
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
-import { forEachChild, noRenderer} from './utils';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ISummaryRenderer} from './interfaces';
+import {forEachChild, noRenderer} from './utils';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
   readonly title = 'Bar Chart';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isNumbersColumn(col) && Boolean(col.dataLength) && mode === ERenderMode.CELL;
   }
 
@@ -61,7 +61,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

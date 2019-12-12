@@ -1,6 +1,6 @@
 import {Column, IDataRow, IOrderedGroup, ISetColumn, isSetColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass, UPSET} from '../styles';
-import {ICellRendererFactory, IRenderContext} from './interfaces';
+import {ICellRendererFactory, IRenderContext, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
@@ -49,7 +49,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  create(col: ISetColumn, context: IRenderContext) {
+  create(col: ISetColumn, context: IRenderContext): ICellRenderer {
     const {template, render} = UpSetCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
     const cellDimension = width / col.categories.length;
@@ -95,7 +95,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ISetColumn, context: IRenderContext) {
+  createGroup(col: ISetColumn, context: IRenderContext): IGroupCellRenderer {
     const {template, render} = UpSetCellRenderer.createDOMContext(col);
     return {
       template,
@@ -110,7 +110,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: ISetColumn, context: IRenderContext) {
+  createSummary(col: ISetColumn, context: IRenderContext): ISummaryRenderer {
     const {template, render} = UpSetCellRenderer.createDOMContext(col);
     return {
       template,

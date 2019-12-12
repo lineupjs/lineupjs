@@ -1,5 +1,5 @@
 import {Column, RankColumn, IDataRow, IOrderedGroup} from '../model';
-import {ICellRendererFactory} from './interfaces';
+import {ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
@@ -11,7 +11,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
     return col instanceof RankColumn;
   }
 
-  create(col: Column) {
+  create(col: Column): ICellRenderer {
     return {
       template: `<div class="${cssClass('right')}"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
@@ -21,7 +21,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: Column) {
+  createGroup(col: Column): IGroupCellRenderer {
     const ranking = col.findMyRanker()!;
     return {
       template: `<div><div></div><div></div></div>`,
@@ -39,7 +39,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

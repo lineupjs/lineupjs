@@ -1,6 +1,6 @@
 import {Column, INumbersColumn, NumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup} from '../model';
 import {matchRows} from './ANumbersCellRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEachChild, noRenderer} from './utils';
 import {ISequence} from '../internal';
@@ -32,7 +32,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     return isNumbersColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: INumbersColumn) {
+  create(col: INumbersColumn): ICellRenderer {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
@@ -47,7 +47,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext) {
+  createGroup(col: INumbersColumn, context: IRenderContext): IGroupCellRenderer {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
@@ -67,7 +67,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 

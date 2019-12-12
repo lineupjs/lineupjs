@@ -1,5 +1,5 @@
 import {Column, IDataRow, LinkColumn} from '../model';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
 import {abortAble} from 'lineupengine';
@@ -15,11 +15,11 @@ function loadImage(src: string) {
 export default class ImageCellRenderer implements ICellRendererFactory {
   readonly title = 'Image';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkColumn && mode === ERenderMode.CELL;
   }
 
-  create(col: LinkColumn) {
+  create(col: LinkColumn): ICellRenderer {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
@@ -44,11 +44,11 @@ export default class ImageCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return noRenderer;
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }
