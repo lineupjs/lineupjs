@@ -3,13 +3,24 @@ import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMu
 import {medianIndex} from '../model/internalNumber';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback, IGroupCellRenderer, ICellRenderer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback, IGroupCellRenderer, ICellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns, multiLevelGridCSSClass} from './utils';
 import {cssClass} from '../styles';
 import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
 
-export function createData(parent: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
+export interface ICols {
+  column: Column;
+  shift: number;
+  width: number;
+  template: string;
+  rendererId: string;
+  renderer: ICellRenderer | null;
+  groupRenderer: IGroupCellRenderer | null;
+  summaryRenderer: ISummaryRenderer | null;
+}
+
+export function createData(parent: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer): {cols: ICols[], stacked: boolean, padding: number} {
   const padding = COLUMN_PADDING;
   let offset = 0;
   const cols = parent.children.map((column) => {
