@@ -2,7 +2,7 @@ import {Column, INumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup} from '
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
-import {IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingValue, renderMissingDOM} from './missing';
 import {noop, wideEnough} from './utils';
 import {GUESSED_ROW_HEIGHT} from '../constants';
@@ -11,7 +11,7 @@ import {GUESSED_ROW_HEIGHT} from '../constants';
 export default class HeatmapCellRenderer implements ICellRendererFactory {
   readonly title = 'Heatmap';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return isNumbersColumn(col) && Boolean(col.dataLength);
   }
 
@@ -42,7 +42,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer): ICellRenderer {
     const {template, render, mover, width} = this.createContext(col, context, imposer);
 
     return {
@@ -65,7 +65,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const {template, render, mover, width} = this.createContext(col, context, imposer);
     const formatter = col.getNumberFormat();
 
@@ -87,7 +87,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumbersColumn) {
+  createSummary(col: INumbersColumn): ISummaryRenderer {
     let labels = col.labels.slice();
     while (labels.length > 0 && !wideEnough(col, labels.length)) {
       labels = labels.filter((_, i) => i % 2 === 0); // even

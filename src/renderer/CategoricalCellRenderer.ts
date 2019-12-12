@@ -3,7 +3,7 @@ import {ICategoricalStatistics, round} from '../internal';
 import {OrdinalColumn, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory, Column, CategoricalColumn, ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
-import {IRenderContext, ICellRendererFactory, ERenderMode} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ERenderMode, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough, forEach} from './utils';
 import {color} from 'd3-color';
@@ -14,11 +14,11 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly title = 'Color';
   readonly groupTitle = 'Histogram';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isCategoricalLikeColumn(col) && (mode !== ERenderMode.CELL || isCategoricalColumn(col));
   }
 
-  create(col: ICategoricalColumn, context: IRenderContext) {
+  create(col: ICategoricalColumn, context: IRenderContext): ICellRenderer {
     const width = context.colWidth(col);
     return {
       template: `<div>
@@ -41,7 +41,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ICategoricalLikeColumn, context: IRenderContext) {
+  createGroup(col: ICategoricalLikeColumn, context: IRenderContext): IGroupCellRenderer {
     const {template, update} = hist(col, false);
     return {
       template: `${template}</div>`,
@@ -57,7 +57,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean) {
+  createSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     return (col instanceof CategoricalColumn || col instanceof OrdinalColumn || col instanceof SetColumn) ? interactiveSummary(col, context, interactive) : staticSummary(col, context, interactive);
   }
 }

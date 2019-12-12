@@ -1,5 +1,5 @@
 import {IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup} from '../model';
-import {IRenderContext, IImposer} from './interfaces';
+import {IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {ISequence, boxplotBuilder} from '../internal';
 
@@ -45,7 +45,7 @@ export abstract class ANumbersCellRenderer {
     return {normalized, raw, row};
   }
 
-  create(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
     const {templateRow, render, update, clazz} = this.createContext(col, context, imposer);
     return {
@@ -65,7 +65,7 @@ export abstract class ANumbersCellRenderer {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const {templateRow, update, clazz} = this.createContext(col, context, imposer);
     return {
       template: `<div class="${clazz}">${templateRow}</div>`,

@@ -11,7 +11,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   groupTitle = 'None';
   summaryTitle = 'None';
 
-  canRender(_col: Column, _mode: ERenderMode) {
+  canRender(_col: Column, _mode: ERenderMode): boolean {
     return true;
   }
 

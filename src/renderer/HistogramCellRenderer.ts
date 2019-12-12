@@ -2,7 +2,7 @@ import {normalizedStatsBuilder, IStatistics, round, getNumberOfBins} from '../in
 import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {cssClass} from '../styles';
 import {histogramUpdate, histogramTemplate, IHistogramLike, mappingHintTemplate, mappingHintUpdate, IFilterInfo, filteredHistTemplate, IFilterContext, initFilter} from './histogram';
@@ -10,11 +10,11 @@ import {histogramUpdate, histogramTemplate, IHistogramLike, mappingHintTemplate,
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title = 'Histogram';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return (isNumberColumn(col) && mode !== ERenderMode.CELL) || (isNumbersColumn(col) && mode === ERenderMode.CELL);
   }
 
-  create(col: INumbersColumn, _context: IRenderContext, imposer?: IImposer) {
+  create(col: INumbersColumn, _context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const {template, render, guessedBins} = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
@@ -32,7 +32,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
+  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const {template, render} = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
@@ -49,7 +49,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer) {
+  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer {
     const r = getHistDOMRenderer(col, imposer);
 
     const staticHist = !interactive || !isMapAbleColumn(col);

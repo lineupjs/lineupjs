@@ -1,6 +1,6 @@
 import {IDataRow, Column, AggregateGroupColumn, EAggregationState, IOrderedGroup, IGroupParent, IGroup, defaultGroup} from '../model';
 import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
-import {IRenderContext, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {IDataProvider} from '../provider';
 import {groupParents, toItemMeta, isAlwaysShowingGroupStrategy, hasTopNStrategy, isSummaryGroup} from '../provider/internal';
 
@@ -135,11 +135,11 @@ function isDummyGroup(group: IGroup) {
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof AggregateGroupColumn;
   }
 
-  create(col: AggregateGroupColumn, context: IRenderContext) {
+  create(col: AggregateGroupColumn, context: IRenderContext): ICellRenderer {
     return {
       template: `<div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IOrderedGroup) {
@@ -162,7 +162,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: AggregateGroupColumn, context: IRenderContext) {
+  createGroup(col: AggregateGroupColumn, context: IRenderContext): IGroupCellRenderer {
     return {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
       update(node: HTMLElement, group: IOrderedGroup) {
@@ -171,7 +171,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: AggregateGroupColumn, context: IRenderContext) {
+  createSummary(col: AggregateGroupColumn, context: IRenderContext): ISummaryRenderer {
     return {
       template: `<div></div>`,
       update: (node: HTMLElement) => {

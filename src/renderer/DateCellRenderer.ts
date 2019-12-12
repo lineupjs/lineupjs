@@ -9,7 +9,7 @@ export default class DateCellRenderer implements ICellRendererFactory {
   groupTitle = 'Date';
   summaryTitle = 'Date';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof DateColumn;
   }
 

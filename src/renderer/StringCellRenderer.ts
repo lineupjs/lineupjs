@@ -1,6 +1,6 @@
 import {StringColumn, Column, IDataRow, IOrderedGroup} from '../model';
 import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
-import {IRenderContext, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {setText, exampleText} from './utils';
 import {cssClass} from '../styles';
@@ -13,11 +13,11 @@ import {cssClass} from '../styles';
 export default class StringCellRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof StringColumn;
   }
 
-  create(col: StringColumn) {
+  create(col: StringColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}> </div>`,
