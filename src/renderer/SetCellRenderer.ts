@@ -6,7 +6,7 @@ import {forEachChild, noop, wideEnoughCat} from './utils';
 import {round} from '../internal';
 
 export default class SetCellRenderer implements ICellRendererFactory {
-  readonly title = 'Matrix';
+  readonly title: string = 'Matrix';
 
   canRender(col: Column): boolean {
     return isSetColumn(col);

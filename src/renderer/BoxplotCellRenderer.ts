@@ -35,7 +35,7 @@ export function computeLabel(col: INumberColumn, v: IBoxPlotData | IAdvancedBoxP
 }
 
 export default class BoxplotCellRenderer implements ICellRendererFactory {
-  readonly title = 'Box Plot';
+  readonly title: string = 'Box Plot';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));

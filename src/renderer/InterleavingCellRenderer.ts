@@ -11,7 +11,7 @@ import {IHistogramLike} from './histogram';
 
 
 export default class InterleavingCellRenderer implements ICellRendererFactory {
-  readonly title = 'Interleaved';
+  readonly title: string = 'Interleaved';
 
   canRender(col: Column) {
     return col instanceof CompositeNumberColumn;

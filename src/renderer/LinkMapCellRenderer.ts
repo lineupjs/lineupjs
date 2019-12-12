@@ -6,7 +6,7 @@ import {noRenderer, noop} from './utils';
 import {cssClass} from '../styles';
 
 export default class LinkMapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Table with Links';
+  readonly title: string = 'Table with Links';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkMapColumn && mode !== ERenderMode.SUMMARY;

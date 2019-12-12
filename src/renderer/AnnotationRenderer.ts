@@ -4,7 +4,7 @@ import {cssClass} from '../styles';
 import {ICellRenderer} from './interfaces';
 
 export default class AnnotationRenderer extends StringCellRenderer {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return super.canRender(col) && col instanceof AnnotateColumn;

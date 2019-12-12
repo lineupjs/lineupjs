@@ -4,7 +4,7 @@ import {ERenderMode, ICellRenderer} from './interfaces';
 import {cssClass} from '../styles';
 
 export default class BooleanCellRenderer extends DefaultCellRenderer {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof BooleanColumn && mode === ERenderMode.CELL;

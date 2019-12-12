@@ -5,7 +5,7 @@ import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
 
 export default class RankCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return col instanceof RankColumn;

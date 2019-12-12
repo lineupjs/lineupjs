@@ -26,7 +26,7 @@ export function line(data: ISequence<number>) {
 }
 
 export default class SparklineCellRenderer implements ICellRendererFactory {
-  readonly title = 'Sparkline';
+  readonly title: string = 'Sparkline';
 
   canRender(col: Column, mode: ERenderMode) {
     return isNumbersColumn(col) && mode !== ERenderMode.SUMMARY;

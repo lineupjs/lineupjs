@@ -7,7 +7,7 @@ import {noRenderer} from './utils';
 import {cssClass} from '../styles';
 
 export default class MapBarCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar Table';
+  readonly title: string = 'Bar Table';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));

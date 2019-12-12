@@ -6,7 +6,7 @@ import {cssClass} from '../styles';
 import {ISequence} from '../internal';
 
 export default class TableCellRenderer implements ICellRendererFactory {
-  readonly title = 'Table';
+  readonly title: string = 'Table';
 
   canRender(col: Column) {
     return isMapColumn(col);

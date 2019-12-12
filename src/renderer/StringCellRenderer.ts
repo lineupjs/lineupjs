@@ -11,7 +11,7 @@ import {cssClass} from '../styles';
  * one instance factory shared among strings
  */
 export default class StringCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column): boolean {
     return col instanceof StringColumn;

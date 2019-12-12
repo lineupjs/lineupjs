@@ -9,7 +9,7 @@ import {GUESSED_ROW_HEIGHT} from '../constants';
 
 
 export default class HeatmapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Heatmap';
+  readonly title: string = 'Heatmap';
 
   canRender(col: Column): boolean {
     return isNumbersColumn(col) && Boolean(col.dataLength);

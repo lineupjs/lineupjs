@@ -29,7 +29,7 @@ export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColu
 }
 
 export default class BrightnessCellRenderer implements ICellRendererFactory {
-  readonly title = 'Brightness';
+  readonly title: string = 'Brightness';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);

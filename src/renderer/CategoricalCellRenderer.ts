@@ -11,8 +11,8 @@ import {color} from 'd3-color';
 export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn;
 
 export default class CategoricalCellRenderer implements ICellRendererFactory {
-  readonly title = 'Color';
-  readonly groupTitle = 'Histogram';
+  readonly title: string = 'Color';
+  readonly groupTitle: string = 'Histogram';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return isCategoricalLikeColumn(col) && (mode !== ERenderMode.CELL || isCategoricalColumn(col));

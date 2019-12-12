@@ -13,7 +13,7 @@ function loadImage(src: string) {
 }
 
 export default class ImageCellRenderer implements ICellRendererFactory {
-  readonly title = 'Image';
+  readonly title: string = 'Image';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkColumn && mode === ERenderMode.CELL;

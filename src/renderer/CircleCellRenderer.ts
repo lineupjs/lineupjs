@@ -6,7 +6,7 @@ import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
-  readonly title = 'Proportional Symbol';
+  readonly title: string = 'Proportional Symbol';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);

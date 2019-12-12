@@ -8,7 +8,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
 export default class BarCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar';
+  readonly title: string = 'Bar';
 
   /**
    * flag to always render the value

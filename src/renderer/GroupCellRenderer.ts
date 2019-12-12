@@ -8,7 +8,7 @@ function isDummyGroup(group: IGroup) {
 }
 
 export default class GroupCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column): boolean {
     return col instanceof GroupColumn;

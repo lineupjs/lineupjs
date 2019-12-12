@@ -6,7 +6,7 @@ import {cssClass} from '../styles';
 import {ISequence} from '../internal';
 
 export default class LinkCellRenderer implements ICellRendererFactory {
-  readonly title = 'Link';
+  readonly title: string = 'Link';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkColumn && mode !== ERenderMode.SUMMARY;

@@ -9,7 +9,7 @@ import InputDateDialog from '../ui/dialogs/InputDateDialog';
 import {shiftFilterDateDay} from '../model/internalDate';
 
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
-  readonly title = 'Histogram';
+  readonly title: string = 'Histogram';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return (isDateColumn(col) && mode !== ERenderMode.CELL) || (isDatesColumn(col) && mode === ERenderMode.CELL);

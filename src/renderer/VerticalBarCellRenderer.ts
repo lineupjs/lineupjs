@@ -6,7 +6,7 @@ import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ISummaryRen
 import {forEachChild, noRenderer} from './utils';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar Chart';
+  readonly title: string = 'Bar Chart';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return isNumbersColumn(col) && Boolean(col.dataLength) && mode === ERenderMode.CELL;

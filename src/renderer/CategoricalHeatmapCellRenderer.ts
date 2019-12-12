@@ -7,7 +7,7 @@ import {noop, wideEnough} from './utils';
 import {GUESSED_ROW_HEIGHT} from '../constants';
 
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Heatmap';
+  readonly title: string = 'Heatmap';
 
   canRender(col: Column): boolean {
     return isCategoricalsColumn(col) && Boolean(col.dataLength);

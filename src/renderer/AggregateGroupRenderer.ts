@@ -133,7 +133,7 @@ function isDummyGroup(group: IGroup) {
 }
 
 export default class AggregateGroupRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column): boolean {
     return col instanceof AggregateGroupColumn;

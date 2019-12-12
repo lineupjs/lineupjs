@@ -5,7 +5,7 @@ import {everyIndices} from '../model/internal';
 import {rangeSelection} from '../provider/utils';
 
 export default class SelectionRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return col instanceof SelectionColumn;

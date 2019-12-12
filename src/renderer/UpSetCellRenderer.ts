@@ -4,7 +4,7 @@ import {ICellRendererFactory, IRenderContext, ISummaryRenderer, IGroupCellRender
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
-  readonly title = 'UpSet';
+  readonly title: string = 'UpSet';
 
   canRender(col: Column) {
     return isSetColumn(col);

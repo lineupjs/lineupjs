@@ -5,9 +5,9 @@ import {noop, noRenderer, setText, exampleText} from './utils';
 import {chooseAggregatedDate} from '../model/internalDate';
 
 export default class DateCellRenderer implements ICellRendererFactory {
-  title = 'Date';
-  groupTitle = 'Date';
-  summaryTitle = 'Date';
+  title: string = 'Date';
+  groupTitle: string = 'Date';
+  summaryTitle: string = 'Date';
 
   canRender(col: Column): boolean {
     return col instanceof DateColumn;

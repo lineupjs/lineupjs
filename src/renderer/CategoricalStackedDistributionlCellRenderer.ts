@@ -8,7 +8,7 @@ import {cssClass, FILTERED_OPACITY} from '../styles';
 import {color} from 'd3-color';
 
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
-  readonly title = 'Distribution Bar';
+  readonly title: string = 'Distribution Bar';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return isCategoricalColumn(col) && mode !== ERenderMode.CELL;
