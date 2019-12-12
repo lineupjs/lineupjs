@@ -2,7 +2,7 @@ import {hsl} from 'd3-color';
 import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn, DEFAULT_COLOR, SolidColorFunction} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 
@@ -31,11 +31,11 @@ export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColu
 export default class BrightnessCellRenderer implements ICellRendererFactory {
   readonly title = 'Brightness';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);
   }
 
-  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
@@ -57,11 +57,11 @@ export default class BrightnessCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return noRenderer;
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

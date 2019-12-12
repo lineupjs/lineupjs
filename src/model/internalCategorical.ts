@@ -127,7 +127,6 @@ function compareCategory(a: ICategory | null, b: ICategory | null) {
   return a.value - b.value;
 }
 
-/** @internal */
 export function toCategories(desc: ICategoricalDesc) {
   if (!desc.categories) {
     return [];

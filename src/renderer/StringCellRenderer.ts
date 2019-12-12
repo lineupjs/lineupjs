@@ -13,7 +13,7 @@ import {cssClass} from '../styles';
 export default class StringCellRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof StringColumn;
   }
 
