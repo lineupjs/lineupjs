@@ -24,7 +24,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
           return;
         }
         const b = normalizedStatsBuilder(guessedBins);
-        for (const n of col.getRawNumbers(row)) {
+        for (const n of col.getNumbers(row)) {
           b.push(n);
         }
         const hist = b.build();
