@@ -45,7 +45,6 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
 
   create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
     const {template, render, mover, width} = this.createContext(col, context, imposer);
-    const formatter = col.getNumberFormat();
 
     return {
       template,
