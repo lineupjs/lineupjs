@@ -57,7 +57,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        n.onmousemove = mover(n, col.getRawNumbers(d).map(formatter));
+        n.onmousemove = mover(n, col.getLabels(d));
         n.onmouseleave = () => n.title = '';
         render(ctx, col.getNumbers(d), d, GUESSED_ROW_HEIGHT);
       },
