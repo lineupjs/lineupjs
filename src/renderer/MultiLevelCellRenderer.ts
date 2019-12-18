@@ -9,6 +9,7 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns} from './utils';
 
+// @internal
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
 }
