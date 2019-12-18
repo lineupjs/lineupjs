@@ -22,10 +22,10 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
   private static createDOMContext(col: ISetColumn) {
-    const labels = col.labels;
+    const categories = col.categories;
     let templateRows = '';
-    for (const label of labels) {
-      templateRows += `<div class="${cssClass('upset-dot')}" title="${label}"></div>`;
+    for (const cat of categories) {
+      templateRows += `<div class="${cssClass('upset-dot')}" title="${cat.label}"></div>`;
     }
     return {
       template: `<div><div class="${cssClass('upset-line')}"></div>${templateRows}</div>`,
