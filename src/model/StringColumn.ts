@@ -140,7 +140,6 @@ export default class StringColumn extends ValueColumn<string> {
     } else {
       this.currentFilter = dump.filter || null;
     }
-
     // tslint:disable-next-line: early-exit
     if (dump.groupCriteria) {
       const {type, values} = <IStringGroupCriteria>dump.groupCriteria;
@@ -193,7 +192,7 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   setGroupCriteria(value: IStringGroupCriteria) {
-    if (equal(this.currentGroupCriteria, value) || value == null) {
+    if (equal(this.currentGroupCriteria, value)) {
       return;
     }
     const bak = this.getGroupCriteria();
@@ -231,17 +230,17 @@ export default class StringColumn extends ValueColumn<string> {
         color: defaultGroup.color
       };
     }
-    for (const value of values) {
-      if (type === EStringGroupCriteriaType.startsWith && typeof value === 'string' && rowValue.startsWith(value)) {
+    for (const groupValue of values) {
+      if (type === EStringGroupCriteriaType.startsWith && typeof groupValue === 'string' && rowValue.startsWith(groupValue)) {
         return {
-          name: value,
+          name: groupValue,
           color: defaultGroup.color
         };
       }
       // tslint:disable-next-line: early-exit
-      if (type === EStringGroupCriteriaType.regex && value instanceof RegExp && value.test(rowValue)) {
+      if (type === EStringGroupCriteriaType.regex && groupValue instanceof RegExp && groupValue.test(rowValue)) {
         return {
-          name: value.source,
+          name: groupValue.source,
           color: defaultGroup.color
         };
       }
