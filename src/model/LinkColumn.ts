@@ -4,7 +4,7 @@ import {IDataRow, IGroup, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {patternFunction} from './internal';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener, ISequence} from '../internal';
-import {IStringDesc, EAlignment} from './StringColumn';
+import {IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType} from './StringColumn';
 import StringColumn from './StringColumn';
 
 export interface ILinkDesc extends IStringDesc {
@@ -64,7 +64,10 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   readonly patternTemplates: string[];
 
   private currentFilter: string | RegExp | null = null;
-  private currentGroupCriteria: (RegExp | string)[] = [];
+  private currentGroupCriteria: IStringGroupCriteria = {
+    type: EStringGroupCriteriaType.startsWith,
+    values: []
+  };
 
   readonly alignment: EAlignment;
   readonly escape: boolean;
@@ -193,10 +196,10 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   }
 
   getGroupCriteria() {
-    return this.currentGroupCriteria.slice();
+    return this.currentGroupCriteria;
   }
 
-  setGroupCriteria(value: (string | RegExp)[]) {
+  setGroupCriteria(value: IStringGroupCriteria) {
     return StringColumn.prototype.setGroupCriteria.call(this, value);
   }
 
