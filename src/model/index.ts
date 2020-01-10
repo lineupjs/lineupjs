@@ -93,7 +93,7 @@ export {default as ScriptColumn, createScriptDesc, IScriptDesc, IScriptColumnDes
 export {default as SelectionColumn, createSelectionDesc, ISelectionColumnDesc} from './SelectionColumn';
 export {default as SetColumn, ISetColumnDesc, ISetDesc} from './SetColumn';
 export {default as StackColumn, createStackDesc} from './StackColumn';
-export {default as StringColumn, EAlignment, IStringDesc, IStringColumnDesc} from './StringColumn';
+export {default as StringColumn, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType, IStringDesc, IStringColumnDesc} from './StringColumn';
 export * from './StringMapColumn';
 export {default as StringMapColumn} from './StringMapColumn';
 export * from './StringsColumn';
