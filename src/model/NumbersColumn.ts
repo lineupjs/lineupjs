@@ -174,7 +174,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   getLabels(row: IDataRow) {
-    return this.getValues(row).map(this.numberFormat);
+    return this.getRawValue(row).map(this.numberFormat);
   }
 
   getSortMethod() {

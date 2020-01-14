@@ -21,7 +21,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
       if (range) {
         this.desc.range = range;
       }
-      return;
+      return this;
     }
     this.desc.map = {
       type, domain, range: range || [0, 1]

@@ -110,12 +110,13 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement) => {
-        return context.tasks.summaryBoxPlotStats(col).then((data) => {
+        return tasksAll([context.tasks.summaryBoxPlotStats(col, false), context.tasks.summaryBoxPlotStats(col, true)]).then((data) => {
           if (typeof data === 'symbol') {
             return;
           }
-          const {summary} = data;
-          if (summary == null) {
+          const mappedSummary = data[0].summary;
+          const rawSummary = data[1].summary;
+          if (mappedSummary == null) {
             n.classList.add(cssClass('missing'));
             return;
           }
@@ -127,7 +128,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
           }
 
-          renderDOMBoxPlot(col, n, summary, summary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
+          renderDOMBoxPlot(col, n, mappedSummary, rawSummary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
         });
       }
     };
@@ -179,7 +180,6 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
     outliers.unshift(p);
     whiskers.insertAdjacentElement('afterend', p);
   }
-
   data.outlier.forEach((v, i) => {
     delete outliers[i].dataset.sort;
     outliers[i].style.left = `${round(v * 100, 2)}%`;
