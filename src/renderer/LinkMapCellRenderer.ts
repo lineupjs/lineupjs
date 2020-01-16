@@ -1,6 +1,6 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noop, noRenderer} from './utils';
@@ -9,13 +9,13 @@ import {ILink} from '../model/LinkColumn';
 import {IKeyValue} from '../model/IArrayColumn';
 
 export default class LinkMapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Table with Links';
+  readonly title: string = 'Table with Links';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkMapColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: LinkMapColumn) {
+  create(col: LinkMapColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div></div>`,
@@ -41,7 +41,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     return `${examples.join(', ')}${examples.length < arr.length} ? ', &hellip;': ''}`;
   }
 
-  createGroup(col: LinkMapColumn) {
+  createGroup(col: LinkMapColumn): IGroupCellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div></div>`,
@@ -55,7 +55,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

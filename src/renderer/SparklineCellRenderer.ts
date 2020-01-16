@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 import NumbersColumn from '../model/NumbersColumn';
 import {matchRows} from './ANumbersCellRenderer';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEachChild, noop, noRenderer} from './utils';
 
@@ -28,13 +28,13 @@ export function line(data: number[]) {
 }
 
 export default class SparklineCellRenderer implements ICellRendererFactory {
-  readonly title = 'Sparkline';
+  readonly title: string = 'Sparkline';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isNumbersColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: INumbersColumn) {
+  create(col: INumbersColumn): ICellRenderer {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
@@ -50,7 +50,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn) {
+  createGroup(col: INumbersColumn): IGroupCellRenderer {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
@@ -66,7 +66,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 

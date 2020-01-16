@@ -7,11 +7,12 @@ import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
 import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
 import {attr, forEachChild, noRenderer} from './utils';
+import {ISummaryRenderer} from './interfaces';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar Chart';
+  readonly title: string = 'Bar Chart';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isNumbersColumn(col) && Boolean(col.dataLength) && mode === ERenderMode.CELL;
   }
 
@@ -64,7 +65,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

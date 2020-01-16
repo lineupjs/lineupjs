@@ -7,15 +7,15 @@ import Column from '../model/Column';
 import {DEFAULT_FORMATTER, isNumbersColumn} from '../model/INumberColumn';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {attr, forEachChild, noRenderer} from './utils';
 
 export default class DotCellRenderer implements ICellRendererFactory {
-  readonly title = 'Dot';
-  readonly groupTitle = 'Dots';
+  readonly title: string = 'Dot';
+  readonly groupTitle: string = 'Dots';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isNumberColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
@@ -62,7 +62,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {template: `<div>${tmp}</div>`, update, render};
   }
 
-  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer {
     const {template, render, update} = DotCellRenderer.getDOMRenderer(col);
     const width = context.colWidth(col);
     return {
@@ -94,7 +94,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer {
     const {template, update} = DotCellRenderer.getDOMRenderer(col);
     return {
       template,
@@ -112,7 +112,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }
