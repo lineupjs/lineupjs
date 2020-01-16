@@ -25,7 +25,7 @@ export interface ICols {
   summaryRenderer: ISummaryRenderer | null;
 }
 
-export function createData(col: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer): {cols: ICols[], stacked: boolean, padding: number} {
+export function createFlatColumnData(col: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer): {cols: ICols[], stacked: boolean, padding: number} {
   const padding = COLUMN_PADDING;
   let offset = 0;
   const cols = col.children.map((d) => {
@@ -82,7 +82,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   }
 
   create(col: IMultiLevelColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer {
-    const {cols, stacked, padding} = createData(col, context, this.stacked, ERenderMode.CELL, imposer);
+    const {cols, stacked, padding} = createFlatColumnData(col, context, this.stacked, ERenderMode.CELL, imposer);
     const useGrid = context.option('useGridLayout', false);
     const width = context.colWidth(col);
     return {
@@ -136,7 +136,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
       return super.createGroup(col, context, hist, imposer);
     }
 
-    const {cols, padding} = createData(col, context, false, ERenderMode.GROUP, imposer);
+    const {cols, padding} = createFlatColumnData(col, context, false, ERenderMode.GROUP, imposer);
     const useGrid = context.option('useGridLayout', false);
     return {
       template: `<div class='${useGrid ? gridClass(col) : ''}${useGrid ? ' lu-grid-space' : ''}'>${cols.map((d) => d.template).join('')}</div>`,

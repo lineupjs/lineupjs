@@ -6,7 +6,7 @@ import {CANVAS_HEIGHT} from '../styles';
 import {getHistDOMRenderer} from './HistogramCellRenderer';
 import {default as IRenderContext, ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {createData} from './MultiLevelCellRenderer';
+import {createFlatColumnData} from './MultiLevelCellRenderer';
 import {matchColumns, forEachChild} from './utils';
 import {colorOf} from '../ui/dialogs/utils';
 
@@ -19,7 +19,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
   }
 
   create(col: CompositeNumberColumn, context: IRenderContext): ICellRenderer {
-    const {cols} = createData(col, context, false, ERenderMode.CELL);
+    const {cols} = createFlatColumnData(col, context, false, ERenderMode.CELL);
     const width = context.colWidth(col);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
@@ -50,7 +50,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: CompositeNumberColumn, context: IRenderContext): IGroupCellRenderer {
-    const {cols} = createData(col, context, false, ERenderMode.GROUP);
+    const {cols} = createFlatColumnData(col, context, false, ERenderMode.GROUP);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
       update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
