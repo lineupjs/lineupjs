@@ -10,20 +10,19 @@ import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {colorOf} from './impose';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop} from './utils';
 import {dragHandle, IDragHandleOptions} from '../internal/drag';
 
-/** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
-  readonly title = 'Histogram';
+  readonly title: string = 'Histogram';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return (isNumberColumn(col) && mode !== ERenderMode.CELL) || (isNumbersColumn(col) && mode === ERenderMode.CELL);
   }
 
-  create(col: INumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer): ICellRenderer {
     const {template, render, guessedBins} = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
       template: `${template}</div>`,
@@ -37,7 +36,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumberColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
+  createGroup(col: INumberColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer): IGroupCellRenderer {
     const {template, render, guessedBins} = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
       template: `${template}</div>`,
@@ -47,7 +46,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer) {
+  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer {
     const r = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
 
     const staticHist = !interactive || !isMapAbleColumn(col);
@@ -120,8 +119,8 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
     const maxValue = f.unpercent(100 - parseFloat(max.style.right!));
     col.setFilter({
       filterMissing: filterMissing.checked,
-      min: Math.abs(minValue - f.domain[0]) < 0.001 ? NaN : minValue,
-      max: Math.abs(maxValue - f.domain[1]) < 0.001 ? NaN : maxValue
+      min: minValue === f.domain[0] ? NaN : minValue,
+      max: maxValue === f.domain[1] ? NaN : maxValue
     });
   };
 

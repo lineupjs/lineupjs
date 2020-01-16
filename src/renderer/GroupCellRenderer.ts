@@ -1,18 +1,17 @@
 import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import GroupColumn from '../model/GroupColumn';
-import {ICellRendererFactory} from './interfaces';
+import {ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {noop, noRenderer} from './utils';
 
-/** @internal */
 export default class GroupCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof GroupColumn;
   }
 
-  create() {
+  create(): ICellRenderer {
     return {
       template: `<div><div></div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IGroup) {
@@ -29,7 +28,7 @@ export default class GroupCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return {
       template: `<div><div></div></div>`,
       update(node: HTMLElement, group: IGroup, rows: IDataRow[]) {
@@ -38,7 +37,7 @@ export default class GroupCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

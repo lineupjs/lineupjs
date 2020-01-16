@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Script Column Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    for (let i = 0; i < 5000; ++i) {
+      arr.push({
+        a: Math.floor(Math.random() * 2000),
+        b: Math.floor(Math.random() * 2000)
+      });
+    }
+    const builder = LineUpJS.builder(arr);
+
+    const scriptDesc = LineUpJS.createScriptDesc('a/b');
+    scriptDesc.script = `const all = col.all; return all.byName('a').raw / all.byName('b').raw;`;
+
+    builder
+      .deriveColumns()
+      .column(scriptDesc);
+    // and a rankings
+    const ranking = LineUpJS.buildRanking()
+      .supportTypes()
+      .allColumns(); // add all columns
+
+    builder
+      .ranking(ranking);
+
+
+    builder.buildTaggle(document.body);
+  };
+</script>
+
+</body>
+</html>

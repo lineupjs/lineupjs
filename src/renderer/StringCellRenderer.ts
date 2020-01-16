@@ -2,7 +2,7 @@ import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, setText, uniqueId, exampleText} from './utils';
 
@@ -10,16 +10,15 @@ import {noop, setText, uniqueId, exampleText} from './utils';
 /**
  * renders a string with additional alignment behavior
  * one instance factory shared among strings
- * @internal
  */
 export default class StringCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof StringColumn;
   }
 
-  create(col: StringColumn) {
+  create(col: StringColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div${align !== 'left' ? ` class="lu-${align}"` : ''}> </div>`,
@@ -36,7 +35,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 
 
-  createGroup(col: StringColumn) {
+  createGroup(col: StringColumn): IGroupCellRenderer {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
@@ -99,7 +98,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: StringColumn, context: IRenderContext, interactive: boolean) {
+  createSummary(col: StringColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     if (!interactive) {
       return {
         template: `<div></div>`,

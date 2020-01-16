@@ -7,20 +7,19 @@ import {isCategoryIncluded} from '../model/ICategoricalColumn';
 import OrdinalColumn from '../model/OrdinalColumn';
 import {CANVAS_HEIGHT} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough, forEach} from './utils';
 
-/** @internal */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
-  readonly title = 'Color';
-  readonly groupTitle = 'Histogram';
+  readonly title: string = 'Color';
+  readonly groupTitle: string = 'Histogram';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return isCategoricalColumn(col);
   }
 
-  create(col: ICategoricalColumn, context: IRenderContext) {
+  create(col: ICategoricalColumn, context: IRenderContext): ICellRenderer {
     const width = context.colWidth(col);
     return {
       template: `<div>
@@ -43,7 +42,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ICategoricalColumn, _context: IRenderContext, globalHist: ICategoricalStatistics | null) {
+  createGroup(col: ICategoricalColumn, _context: IRenderContext, globalHist: ICategoricalStatistics | null): IGroupCellRenderer {
     const {template, update} = hist(col, false);
     return {
       template: `${template}</div>`,
@@ -56,7 +55,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean) {
+  createSummary(col: ICategoricalColumn, ctx: IRenderContext, interactive: boolean): ISummaryRenderer {
     return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, interactive, ctx.idPrefix) : staticSummary(col, interactive);
   }
 }

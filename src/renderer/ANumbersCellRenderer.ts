@@ -1,10 +1,9 @@
 import {LazyBoxPlotData} from '../internal';
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import {INumbersColumn} from '../model/INumberColumn';
-import {default as IRenderContext, IImposer} from './interfaces';
+import {default as IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
-/** @internal */
 export abstract class ANumbersCellRenderer {
   abstract readonly title: string;
 
@@ -35,7 +34,7 @@ export abstract class ANumbersCellRenderer {
     return {normalized, raw};
   }
 
-  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
     const {templateRow, render, update} = this.createContext(col, context, imposer);
     return {
@@ -55,7 +54,7 @@ export abstract class ANumbersCellRenderer {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer): IGroupCellRenderer {
     const {templateRow, update} = this.createContext(col, context, imposer);
     return {
       template: `<div>${templateRow}</div>`,

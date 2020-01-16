@@ -3,16 +3,16 @@ import AnnotateColumn from '../model/AnnotateColumn';
 import Column from '../model/Column';
 import StringCellRenderer from './StringCellRenderer';
 import {noop} from './utils';
+import {ICellRenderer} from './interfaces';
 
-/** @internal */
 export default class AnnotationRenderer extends StringCellRenderer {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return super.canRender(col) && col instanceof AnnotateColumn;
   }
 
-  create(col: AnnotateColumn) {
+  create(col: AnnotateColumn): ICellRenderer {
     return {
       template: `<div class='annotations text'>
         <input class='lu-hover-only'>

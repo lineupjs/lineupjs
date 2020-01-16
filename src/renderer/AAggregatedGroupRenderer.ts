@@ -6,10 +6,10 @@ import {
   IImposer
 } from './interfaces';
 import {noRenderer} from './utils';
+import {ISummaryRenderer} from './interfaces';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item
- * @internal
  */
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
   abstract readonly title: string;
@@ -31,12 +31,9 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }
 
-/**
- * @internal
- */
 export default AAggregatedGroupRenderer;

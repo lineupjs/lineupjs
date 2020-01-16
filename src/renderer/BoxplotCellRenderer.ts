@@ -10,7 +10,6 @@ import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer} 
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMapAbleColumn} from '../model/MappingFunction';
 
-/** @internal */
 export function computeLabel(v: IBoxPlotData | IAdvancedBoxPlotData) {
   if (v == null) {
     return '';
@@ -20,9 +19,8 @@ export function computeLabel(v: IBoxPlotData | IAdvancedBoxPlotData) {
   return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\n${mean}q3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
 
-/** @internal */
 export default class BoxplotCellRenderer implements ICellRendererFactory {
-  readonly title = 'Box Plot';
+  readonly title: string = 'Box Plot';
 
   canRender(col: Column, mode: ERenderMode) {
     return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));

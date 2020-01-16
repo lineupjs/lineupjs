@@ -2,17 +2,16 @@ import {IDataRow, IGroup} from '../model';
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
 import Column from '../model/Column';
 import {AGGREGATE, CANVAS_HEIGHT} from '../styles';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 
-/** @internal */
 export default class AggregateGroupRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof AggregateGroupColumn;
   }
 
-  create(col: AggregateGroupColumn, context: IRenderContext) {
+  create(col: AggregateGroupColumn, context: IRenderContext): ICellRenderer {
     const width = context.colWidth(col);
     return {
       template: `<div title="Collapse Group"></div>`,
@@ -31,7 +30,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: AggregateGroupColumn) {
+  createGroup(col: AggregateGroupColumn): IGroupCellRenderer {
     return {
       template: `<div title="Expand Group"></div>`,
       update(node: HTMLElement, group: IGroup) {
@@ -44,7 +43,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: AggregateGroupColumn, context: IRenderContext) {
+  createSummary(col: AggregateGroupColumn, context: IRenderContext): ISummaryRenderer {
     return {
       template: `<div title="(Un)Aggregate All" data-icon="caret-down"></div>`,
       update: (node: HTMLElement) => {

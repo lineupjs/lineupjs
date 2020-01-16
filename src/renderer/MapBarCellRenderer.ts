@@ -5,19 +5,18 @@ import {IMapColumn, isMapColumn} from '../model/IArrayColumn';
 import {DEFAULT_FORMATTER} from '../model/INumberColumn';
 import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
 import {colorOf} from './impose';
-import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode} from './interfaces';
+import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
 
-/** @internal */
 export default class MapBarCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar Table';
+  readonly title: string = 'Bar Table';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));
   }
 
-  create(col: IMapColumn<number>, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+  create(col: IMapColumn<number>, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer {
     return {
       template: `<div></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
@@ -36,11 +35,11 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return noRenderer;
   }
 
-  createSummary(col: IMapColumn<number> & IMapAbleColumn) {
+  createSummary(col: IMapColumn<number> & IMapAbleColumn): ISummaryRenderer {
     return {
       template: `<div><div>Key</div><div><span></span><span></span>Value</div></div>`,
       update: (node: HTMLElement) => {
