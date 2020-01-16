@@ -20,7 +20,7 @@ export function computeLabel(v: IBoxPlotData | IAdvancedBoxPlotData) {
 }
 
 export default class BoxplotCellRenderer implements ICellRendererFactory {
-  readonly title = 'Box Plot';
+  readonly title: string = 'Box Plot';
 
   canRender(col: Column, mode: ERenderMode) {
     return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));

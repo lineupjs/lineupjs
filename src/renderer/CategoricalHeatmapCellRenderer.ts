@@ -2,15 +2,15 @@ import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
 import {CANVAS_HEIGHT} from '../styles';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {union} from './UpSetCellRenderer';
 import {noop, wideEnough, forEachChild} from './utils';
 
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
-  title = 'Heatmap';
+  title: string = 'Heatmap';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return isSetColumn(col);
   }
 
@@ -31,7 +31,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     };
   }
 
-  create(col: ISetColumn, context: IRenderContext) {
+  create(col: ISetColumn, context: IRenderContext): ICellRenderer {
     const {templateRow, render} = CategoricalHeatmapCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
     const cellDimension = width / col.dataLength!;
@@ -67,7 +67,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     };
   }
 
-  createGroup(col: ISetColumn) {
+  createGroup(col: ISetColumn): IGroupCellRenderer {
     const {templateRow, render} = CategoricalHeatmapCellRenderer.createDOMContext(col);
     return {
       template: `<div>${templateRow}</div>`,
@@ -78,7 +78,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     };
   }
 
-  createSummary(col: ISetColumn) {
+  createSummary(col: ISetColumn): ISummaryRenderer {
     const categories = col.categories;
     let templateRows = '<div>';
     const labels = wideEnough(col);

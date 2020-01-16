@@ -1,14 +1,14 @@
-import {ICellRendererFactory} from './interfaces';
+import {ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {noop} from './utils';
 
 export default class LoadingCellRenderer implements ICellRendererFactory {
-  readonly title = 'Loading';
+  readonly title: string = 'Loading';
 
-  canRender() {
+  canRender(): boolean {
     return false; // just direct selection
   }
 
-  create() {
+  create() { // no typing because ICellRenderer would not be assignable to IGroupCellRenderer and ISummaryRenderer
     return {
       template: `<div>Loading…</div>`,
       update: noop,
@@ -16,11 +16,11 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return this.create();
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return this.create();
   }
 }

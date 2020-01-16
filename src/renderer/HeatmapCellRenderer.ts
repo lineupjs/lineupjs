@@ -8,13 +8,14 @@ import IRenderContext, {ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingValue, renderMissingDOM} from './missing';
 import {noop, wideEnough} from './utils';
 import {IGroup} from '../model/interfaces';
+import {ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 
 const GUESSED_HEIGHT = 20;
 
 export default class HeatmapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Heatmap';
+  readonly title: string = 'Heatmap';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return isNumbersColumn(col) && Boolean(col.dataLength);
   }
 
@@ -45,7 +46,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer): ICellRenderer {
     const {template, render, mover, width} = this.createContext(col, context, _hist, imposer);
     return {
       template,
@@ -67,7 +68,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer): IGroupCellRenderer {
     const {template, render, mover, width} = this.createContext(col, context, _hist, imposer);
     return {
       template,
@@ -84,7 +85,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumbersColumn) {
+  createSummary(col: INumbersColumn): ISummaryRenderer {
     let labels = col.labels.slice();
     while (labels.length > 0 && !wideEnough(col, labels.length)) {
       labels = labels.filter((_, i) => i % 2 === 0); // even
