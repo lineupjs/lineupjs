@@ -107,6 +107,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.setDefaultSummaryRenderer('histogram');
   }
 
+  getNumberFormat() {
+    return this.numberFormat;
+  }
+
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
     r.map = this.mapping.dump();
