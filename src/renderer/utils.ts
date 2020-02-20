@@ -52,6 +52,9 @@ export function setText<T extends Node>(node: T, text?: string): T {
   if (node.textContent !== text) {
     node.textContent = text;
   }
+  if (node instanceof HTMLElement && node.title !== text) {
+    node.title = text;
+  }
   return node;
 }
 
