@@ -29,15 +29,15 @@ import {sortMethods} from './dialogs/utils';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
 import {IRankingHeaderContext, IOnClickHandler, IUIOptions, IToolbarAction, IToolbarDialogAddon} from './interfaces';
 
-interface IDialogClass {
+export interface IDialogClass {
   new(col: any, dialog: IDialogContext, ...args: any[]): ADialog;
 }
 
-function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
+export function ui(title: string, onClick: IOnClickHandler, options: Partial<IUIOptions> = {}): IToolbarAction {
   return {title, onClick, options};
 }
 
-function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IRankingHeaderContext) => any[]) = () => [], options: Partial<IUIOptions> = {}): IToolbarAction {
+export function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IRankingHeaderContext) => any[]) = () => [], options: Partial<IUIOptions> = {}): IToolbarAction {
   return {
     title,
     onClick: (col, evt, ctx, level) => {
@@ -47,7 +47,7 @@ function uiDialog(title: string, dialogClass: IDialogClass, extraArgs: ((ctx: IR
   };
 }
 
-function uiSortMethod(methods: string[]): IToolbarDialogAddon {
+export function uiSortMethod(methods: string[]): IToolbarDialogAddon {
   methods = methods.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
   return {
     title: 'Sort By',
@@ -322,7 +322,7 @@ function sortActions(a: IToolbarAction, b: IToolbarAction) {
 const cache = new Map<string, IToolbarAction[]>();
 const cacheAddon = new Map<string, IToolbarDialogAddon[]>();
 
-function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
+export function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
   if (cache.has(col.desc.type)) {
     return cache.get(col.desc.type)!;
   }
@@ -360,7 +360,6 @@ function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
   return r;
 }
 
-/** @internal */
 export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
   const flags = ctx.flags;
@@ -374,7 +373,6 @@ export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
   });
 }
 
-/** @internal */
 export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHeaderContext) {
   const cacheKey = `${col.desc.type}@${key}`;
   if (cacheAddon.has(cacheKey)) {
