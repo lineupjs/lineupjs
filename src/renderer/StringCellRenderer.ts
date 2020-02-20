@@ -24,10 +24,12 @@ export default class StringCellRenderer implements ICellRendererFactory {
       template: `<div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
+        const label = col.getLabel(d);
         if (col.escape) {
-          setText(n, col.getLabel(d));
+          setText(n, label);
         } else {
-          n.innerHTML = col.getLabel(d);
+          n.innerHTML = label;
+          n.title = label;
         }
       }
     };
@@ -46,6 +48,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
             setText(n, text);
           } else {
             n.innerHTML = text;
+            n.title = text;
           }
         });
       }
