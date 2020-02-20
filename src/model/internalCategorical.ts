@@ -4,7 +4,6 @@ import {colorPool} from './internal';
 import {DEFAULT_COLOR} from './interfaces';
 import {ICategoricalsColumn} from './ICategoricalColumn';
 
-/** @internal */
 export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => DEFAULT_COLOR) {
   if (typeof cat === 'string') {
     //just the category value
@@ -19,8 +18,6 @@ export function toCategory(cat: (string | Partial<ICategory>), value: number, ne
   };
 }
 
-
-/** @internal */
 export function toCompareCategoryValue(v: ICategory | null) {
   if (v == null) {
     return NaN;
@@ -63,7 +60,6 @@ function findMostFrequent(rows: ISequence<ICategory | null>, valueCache?: ISeque
   };
 }
 
-/** @internal */
 export function toMostFrequentCategoricals(rows: ISequence<IDataRow>, col: ICategoricalsColumn): (ICategory | null)[] {
   if (isSeqEmpty(rows)) {
     return empty(col.dataLength!);
@@ -97,7 +93,6 @@ export function toMostFrequentCategoricals(rows: ISequence<IDataRow>, col: ICate
   });
 }
 
-/** @internal */
 export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): ICompareValue[] {
   if (isSeqEmpty(rows)) {
     return [NaN, 0];
@@ -142,7 +137,6 @@ function isEmptyFilter(f: ICategoricalFilter | null) {
   return f == null || (!f.filterMissing && (f.filter == null || f.filter === ''));
 }
 
-/** @internal */
 export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICategoricalFilter | null) {
   if (a === b) {
     return true;
@@ -171,7 +165,6 @@ function arrayEquals<T>(a: T[], b: T[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
-/** @internal */
 export function isCategoryIncluded(filter: ICategoricalFilter | null, category: ICategory | null) {
   if (filter == null) {
     return true;

@@ -10,7 +10,7 @@ export * from './INumberColumn';
 export * from './IDateColumn';
 export * from './IArrayColumn';
 
-export {toCategories} from './internalCategorical';
+export * from './internalCategorical';
 
 export {ScaleMappingFunction, ScriptMappingFunction, mappingFunctions} from './MappingFunction';
 export {DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacmentColorMappingFunction} from './CategoricalColorMappingFunction';
