@@ -8,4 +8,4 @@ export * from './LineUp';
 export * from './panel';
 export {default as SlopeGraph} from './SlopeGraph';
 export * from './taggle';
-
+export * from './toolbar';
