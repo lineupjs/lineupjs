@@ -24,13 +24,12 @@ export default class StringCellRenderer implements ICellRendererFactory {
       template: `<div${align !== 'left' ? ` class="lu-${align}"` : ''}> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
-        const label = col.getLabel(d);
         if (col.escape) {
-          setText(n, label);
+          setText(n, col.getLabel(d));
         } else {
-          n.innerHTML = label;
-          n.title = label;
+          n.innerHTML = col.getLabel(d);
         }
+        n.title = n.textContent!;
       },
       render: noop
     };
