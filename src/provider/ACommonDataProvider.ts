@@ -2,27 +2,20 @@ import {createAggregateDesc, createRankDesc, createSelectionDesc, IColumnDesc, I
 import {IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
+import get from 'lodash.get';
 
 
 function isComplexAccessor(column: any) {
   // something like a.b or a[4]
-  return typeof column === 'string' && column.indexOf('.') >= 0;
+  return typeof column === 'string' && (column.indexOf('.') >= 0 || column.indexOf('[') >= 0);
 }
 
-function resolveComplex(column: string, row: any) {
+/** @internal */
+export function resolveComplex(column: string, row: any) {
   if (row.hasOwnProperty(column)) { // well complex but a direct hit
     return row[column];
   }
-  const resolve = (obj: any, col: string) => {
-    if (obj === undefined) {
-      return obj; // propagate invalid values
-    }
-    if (/\d+/.test(col)) { // index
-      return obj[+col];
-    }
-    return obj[col];
-  };
-  return column.split('.').reduce(resolve, row);
+  return get(row, column);
 }
 
 function rowGetter(row: IDataRow, _id: string, desc: any) {
