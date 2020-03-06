@@ -35,14 +35,14 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     return {
       clazz: cssClass('heatmap'),
       templateRow: templateRows,
-      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow) => {
+      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow, tooltipPrefix?: string) => {
         const zero = toHeatMapColor(0, item, col, imposer);
         const one = toHeatMapColor(1, item, col, imposer);
 
         forEachChild(row, (d: HTMLElement, i) => {
           const v = data[i];
           const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
-          d.title = formatter(raw[i]);
+          d.title = `${tooltipPrefix || ''}${formatter(raw[i])}`;
           d.style.backgroundColor = v < threshold ? zero : one;
           d.style.bottom = `${Math.round((100 * bottom) / range)}%`;
           d.style.height = `${Math.round((100 * height) / range)}%`;

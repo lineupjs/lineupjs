@@ -10,7 +10,7 @@ export abstract class ANumbersCellRenderer {
   protected abstract createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): {
     clazz: string,
     templateRow: string,
-    update: (row: HTMLElement, data: number[], raw: number[], d: IDataRow) => void,
+    update: (row: HTMLElement, data: number[], raw: number[], d: IDataRow, tooltipPrefix?: string) => void,
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
@@ -74,7 +74,7 @@ export abstract class ANumbersCellRenderer {
         // render a heatmap
         return context.tasks.groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
           if (typeof data !== 'symbol') {
-            update(n, data.normalized, data.raw, data.row!);
+            update(n, data.normalized, data.raw, data.row!, `${getSortLabel(col.getSortMethod())} `);
           }
         });
       }
@@ -90,5 +90,29 @@ export function matchRows(n: HTMLElement | SVGElement, length: number, template:
     children.slice(length).forEach((c) => c.remove());
   } else if (length > children.length) {
     n.insertAdjacentHTML('beforeend', template.repeat(length - children.length));
+  }
+}
+
+/**
+ * generates a label for the given sort method
+ * @internal
+ * @param method sort method
+ */
+export function getSortLabel(method: string) {
+  switch (method) {
+    case 'min':
+      return 'Mininum';
+    case 'max':
+      return 'Maximum';
+    case 'median':
+      return 'Median';
+    case 'mean':
+      return 'Mean';
+    case 'q1':
+      return '25% Quantile';
+    case 'q3':
+      return '75% Quantile';
+    default:
+      return String(method);
   }
 }
