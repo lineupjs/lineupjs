@@ -39,6 +39,13 @@
   text-overflow: ellipsis;
 }
 
+.#{$lu_css_prefix}-sublabel {
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  font-size: smaller;
+}
+
 .#{$lu_css_prefix}-spacing {
   flex: 1;
 }

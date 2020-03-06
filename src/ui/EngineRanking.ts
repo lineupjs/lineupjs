@@ -289,6 +289,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   updateHeaders() {
+    this.updateColumnSummaryFlag();
     return super.updateHeaders();
   }
 
@@ -302,6 +303,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   protected createHeader(_document: Document, column: RenderColumn): HTMLElement | IAsyncUpdate<HTMLElement> {
     return column.createHeader();
+  }
+
+  private updateColumnSummaryFlag() {
+    // updates the header flag depending on whether there are any sublabels
+    this.header.classList.toggle(cssClass('show-sublabel'), this.columns.some((c) => c.hasSummaryLine()));
   }
 
   protected updateHeader(node: HTMLElement, column: RenderColumn) {
@@ -543,6 +549,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     });
 
+    this.updateColumnSummaryFlag();
+
     this.events.fire(EngineRanking.EVENT_RECREATE);
     super.recreate();
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
@@ -566,6 +574,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (node && column) {
       this.updateHeader(node, column);
     }
+    this.updateColumnSummaryFlag();
     return node && column;
   }
 

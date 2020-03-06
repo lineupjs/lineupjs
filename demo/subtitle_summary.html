@@ -28,6 +28,9 @@
     builder
       .deriveColumns()
       .column(LineUpJS.buildStringColumn('s').summary('Test'))
+      .column(LineUpJS.buildStringColumn('s').label('Long label that will take up space').summary('Test'))
+      .column(LineUpJS.buildStringColumn('s').label('Teset').summary('Long summary that will take up space'))
+      .column(LineUpJS.buildStringColumn('s').label('Long label that will take up space2').summary('Long summary that will take up space'))
 
     const lineup = builder.build(document.body);
 

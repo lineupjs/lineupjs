@@ -31,9 +31,10 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   const node = ctx.document.createElement('section');
 
   const extra = options.extraPrefix ? (name: string) => `${cssClass(name)} ${cssClass(`${options.extraPrefix}-${name}`)}` : cssClass;
-
+  const summary = col.getMetaData().summary;
   node.innerHTML = `
     <div class="${extra('label')} ${cssClass('typed-icon')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
+    <div class="${extra('sublabel')}">${col.getWidth() < MIN_LABEL_WIDTH || !summary ? '&nbsp;' : summary}</div>
     <div class="${extra('toolbar')}"></div>
     <div class="${extra('spacing')}"></div>
     <div class="${extra('handle')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"></div>
@@ -65,7 +66,18 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
   const label = <HTMLElement>node.getElementsByClassName(cssClass('label'))[0]!;
   label.innerHTML = col.getWidth() < minWidth ? '&nbsp;' : col.label;
-  node.title = col.description ? `${col.label}\n${col.description}` : col.label;
+  const summary = col.getMetaData().summary;
+  const sublabel = <HTMLElement>node.getElementsByClassName(cssClass('sublabel'))[0]!;
+  sublabel.innerHTML = col.getWidth() < minWidth || !summary ? '&nbsp;' : summary;
+
+  let title = col.label;
+  if (summary) {
+    title = `${title}\n${summary}`;
+  }
+  if (col.description) {
+    title = `${title}\n${col.description}`;
+  }
+  node.title = title;
   node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;
   label.dataset.typeCat = categoryOf(col).name;
