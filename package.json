@@ -130,12 +130,13 @@
   "dependencies": {
     "@types/d3-color": "^1.2.2",
     "@types/d3-dispatch": "^1.0.7",
+    "@types/d3-format": "^1.3.1",
     "@types/d3-scale": "^2.1.1",
     "@types/d3-scale-chromatic": "^1.3.1",
     "@types/d3-time": "^1.0.10",
     "@types/d3-time-format": "^2.1.1",
     "@types/detect-browser": "^4.0.0",
-    "@types/d3-format": "^1.3.1",
+    "@types/lodash.get": "^4.4.6",
     "d3-color": "^1.2.3",
     "d3-dispatch": "^1.0.5",
     "d3-format": "^1.3.2",
@@ -145,8 +146,9 @@
     "d3-time-format": "^2.1.3",
     "detect-browser": "^4.5.1",
     "fast-deep-equal": "^2.0.1",
-    "popper.js": "^1.15.0",
     "lineupengine": "^2.1.0",
+    "lodash.get": "^4.4.2",
+    "popper.js": "^1.15.0",
     "reflect-metadata": "^0.1.13"
   }
 }
