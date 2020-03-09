@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="./LineUpJS.js"></script>
+<script src="./helper/testRules.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const l = new Array(10).fill(0);
+    const cats = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'];
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        cat: cats[Math.floor(Math.random() * 3) + 0],
+        cat2: cats[Math.floor(Math.random() * 3) + 1],
+        cat3: cats[Math.floor(Math.random() * 3) + 2],
+        cat4: cats[Math.floor(Math.random() * 3) + 3],
+      })
+    }
+    const builder = LineUpJS.builder(arr);
+    builder.deriveColumns().animated(false)
+      .overviewMode();
+    // and two rankings
+    const ranking = LineUpJS.buildRanking()
+      .supportTypes()
+      .allColumns() // add all columns
+      .column('cat').column('cat2').column("cat3")
+      .groupBy('cat')
+
+    builder
+      .ranking((data) => {
+        const r = ranking.build(data);
+        r.children.slice(3).forEach((c) => c.setWidth(300));
+        return r;
+      });
+
+
+    builder.buildTaggle(document.body);
+  };
+</script>
+
+</body>
+</html>
