@@ -87,7 +87,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private readonly selection: SelectionManager;
   private highlight: number = -1;
   private readonly canvasPool: HTMLCanvasElement[] = [];
-  private oldLeft: number = 0;
+
+  private currentCanvasShift: number = 0;
+  private currentCanvasWidth: number = 0;
 
   private readonly events = new RankingEvents();
 
@@ -265,6 +267,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       #${tableIds(this.tableId).tbody} > .${engineCssClass('tr')}.${engineCssClass('highlighted')} .${cssClass('hover-only')}`, {
         visibility: 'visible'
       });
+
+    this.updateCanvasRule();
   }
 
   on(type: typeof EngineRanking.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -335,7 +339,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (this.canvasPool.length > 0) {
       return this.canvasPool.pop()!;
     }
-    return this.body.ownerDocument!.createElement('canvas');
+    const c = this.body.ownerDocument!.createElement('canvas');
+    c.classList.add(cssClass(`low-c${this.tableId}`));
+    return c;
   }
 
   private rowFlags(row: HTMLElement) {
@@ -393,7 +399,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
   }
 
-  private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number, width = this.visibleRenderedWidth()) {
+  private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number) {
     if (this.loadingCanvas.has(canvas)) {
       for (const a of this.loadingCanvas.get(canvas)!) {
         a.render.abort();
@@ -402,8 +408,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     canvas.classList.remove(cssClass('loading-c'));
 
-    canvas.width = width;
-    canvas.style.width = `${width}px`;
+    canvas.width = this.currentCanvasWidth;
     canvas.height = CANVAS_HEIGHT;
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
@@ -485,7 +490,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
 
   protected updateCanvasCell(canvas: HTMLCanvasElement, node: HTMLElement, index: number, column: RenderColumn, x: number) {
-
     // delete lazy that would render the same thing
     if (this.loadingCanvas.has(canvas)) {
       const l = this.loadingCanvas.get(canvas)!;
@@ -692,10 +696,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   private updateCanvasBody() {
-    const width = this.visibleRenderedWidth();
+    this.updateCanvasRule();
     super.forEachRow((row, index) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.renderRow(<HTMLCanvasElement>row.firstElementChild!, row, index, width);
+        this.renderRow(<HTMLCanvasElement>row.firstElementChild!, row, index);
       }
     });
   }
@@ -706,13 +710,23 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return toRowMeta(this.renderCtx.getRow(rowIndex), provider.getAggregationStrategy(), topNGetter);
   }
 
+  private updateCanvasRule() {
+    this.style.updateRule(`renderCanvas${this.tableId}`, `.${cssClass(`low-c${this.tableId}`)}`, {
+        transform: `translateX(${this.currentCanvasShift}px)`,
+        width: `${this.currentCanvasWidth}px`
+      });
+  }
+
   protected updateShifts(top: number, left: number) {
     super.updateShifts(top, left);
 
-    if (left === this.oldLeft) {
+    const width = this.visibleRenderedWidth();
+    if (left === this.currentCanvasShift && width === this.currentCanvasWidth) {
       return;
     }
-    this.oldLeft = left;
+
+    this.currentCanvasShift = left;
+    this.currentCanvasWidth = width;
     this.updateCanvasBody();
   }
 
@@ -843,6 +857,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   destroy() {
     super.destroy();
     this.style.deleteRule(`hoverOnly${this.tableId}`);
+    this.style.deleteRule(`renderCanvas${this.tableId}`);
     this.ranking.flatColumns.forEach((c) => EngineRanking.disableListener(c));
   }
 
