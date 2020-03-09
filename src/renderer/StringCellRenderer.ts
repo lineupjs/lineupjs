@@ -29,6 +29,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
         } else {
           n.innerHTML = col.getLabel(d);
         }
+        n.title = n.textContent!;
       }
     };
   }
@@ -46,6 +47,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
             setText(n, text);
           } else {
             n.innerHTML = text;
+            n.title = text;
           }
         });
       }
