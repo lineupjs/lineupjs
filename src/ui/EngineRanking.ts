@@ -619,7 +619,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number, hoverLod?: 'high' | 'low'): void {
-    console.log('update row', rowIndex);
     this.roptions.customRowUpdate(node, rowIndex);
 
     const computedLod = this.roptions.levelOfDetail(rowIndex);
