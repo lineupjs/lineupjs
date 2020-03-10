@@ -3,6 +3,7 @@ import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
 import {IRenderContext, ICellRendererFactory} from './interfaces';
 import {IDataProvider} from '../provider';
 import {groupParents, toItemMeta, isAlwaysShowingGroupStrategy, hasTopNStrategy, isSummaryGroup} from '../provider/internal';
+import {clear} from '../internal';
 
 function preventDefault(event: Event) {
   event.preventDefault();
@@ -145,6 +146,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       template: `<div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IOrderedGroup) {
         if (isDummyGroup(group)) {
+          clear(node);
           return;
         }
         renderGroups(node, group, i, col, context.provider);
@@ -179,6 +181,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
         const ranking = col.findMyRanker()!;
         const groups = ranking.getGroups();
         if (groups.length === 1 && groups[0].name === defaultGroup.name) {
+          clear(node);
           return;
         }
 
