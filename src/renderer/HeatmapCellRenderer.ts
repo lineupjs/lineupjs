@@ -1,11 +1,12 @@
 import {Column, INumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {ANumbersCellRenderer, getSortLabel} from './ANumbersCellRenderer';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
 import {IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingValue, renderMissingDOM} from './missing';
 import {noop, wideEnough} from './utils';
 import {GUESSED_ROW_HEIGHT} from '../constants';
+import {getSortLabel} from '../internal';
 
 
 /** @internal */
