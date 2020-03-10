@@ -61,7 +61,7 @@
         arr.push({
           string: 'Row ' + i,
           strings: l.map((d) => 'Row ' + i),
-          boxplot: {min: i / 2, max: i, median: i / 3, q1: i / 4, q3: i / 4},
+          boxplot: {min: i , max: i+5, median: i +2, q1: i+5 , q3: i+8},
           number: Math.floor(Math.random() * 10),
           numbers: l.map((d) => Math.random() * 10),
 
@@ -76,6 +76,10 @@
 
           hierarchical: leaves[i % leaves.length],
           set: cats.filter(() => Math.random() > 0.3),
+          numberMap: {['Row ' + i]: Math.floor(Math.random() * 10)},
+          stringMap: new Map([['Row ' + i, 'random ' + i]]),
+          dateMap: new Map([['Row ' + i, new Date(Date.now() - Math.floor(Math.random() * 1000000000000))]]),
+          categoricalMap: {['Row ' + i]: cats[Math.floor(Math.random() * cats.length)]},
         })
       }
       const builder = LineUpJS.builder(arr);
@@ -84,22 +88,21 @@
 
         // String
         .column(LineUpJS.buildStringColumn('strings').asArray().label('Strings').width(150))
-        .column(LineUpJS.buildStringColumn('string').asMap().label('StringMap').width(150))
+        .column(LineUpJS.buildStringColumn('stringMap').asMap().label('StringMap').width(150))
 
         // Number
-        .column(LineUpJS.buildNumberColumn('number').asMap().label('NumberMap').width(150))
+        .column(LineUpJS.buildNumberColumn('numberMap').asMap().label('NumberMap').width(150))
 
         // Date
-        .column(LineUpJS.buildDateColumn('date').asMap().label('DateMap').width(150))
+        .column(LineUpJS.buildDateColumn('dateMap').asMap().label('DateMap').width(150))
 
         // Link
         .column(LineUpJS.buildStringColumn('string').label('Link').pattern('https://duckduckgo.com/?q=${escapedValue}').width(150))
         .column(LineUpJS.buildStringColumn('strings').label('Links').pattern('https://duckduckgo.com/?q=${escapedValue}').asArray().width(150))
-        .column(LineUpJS.buildStringColumn('string').label('LinkMap').pattern('https://duckduckgo.com/?q=${escapedValue}').asMap().width(150))
-
+        .column(LineUpJS.buildStringColumn('stringMap').label('LinkMap').pattern('https://duckduckgo.com/?q=${escapedValue}').asMap().width(150))
 
         // Categorical
-        .column(LineUpJS.buildCategoricalColumn('categorical', cats).asMap().label('CategoricalMap').width(150))
+        .column(LineUpJS.buildCategoricalColumn('categoricalMap', cats).asMap().label('CategoricalMap').width(150))
 
         // Hierarchical
         .column(LineUpJS.buildHierarchicalColumn('hierarchical', hierarchy).label('Hierarchical').width(150))
@@ -141,14 +144,8 @@
         // Nested
         .nested('Nested', 'number', 'categorical')
 
-        // Composite
-        .composite(LineUpJS.createStackDesc('Composite'), ['number', 'number']) // How to correctly create this column
-
         // Impose Categorical
         .impose('Impose Number', 'number', 'categorical')
-
-        // Impose BoxPlot
-        .impose('Impose BoxPlot', 'boxplot', 'categorical')
       builder
         .ranking(ranking);
       const lineup = builder.build(document.body);
