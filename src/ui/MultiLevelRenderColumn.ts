@@ -108,7 +108,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   }
 
   hasSummaryLine() {
-    return Boolean(this.c.getMetaData().summary) || this.mc.children.some((c) => Boolean(c.getMetaData().summary));
+    return super.hasSummaryLine() || this.mc.children.some((c) => Boolean(c.getMetaData().summary));
   }
 
   updateWidthRule(style: StyleManager) {
