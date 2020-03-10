@@ -1,4 +1,4 @@
-import {rowComplexGetter} from '../../src/provider/accessor';
+import {rowComplexGetter} from '../../src/internal/accessor';
 
 function get(v: any, column: string) {
   return rowComplexGetter({i: 0, v}, {column});
