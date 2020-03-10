@@ -3,7 +3,7 @@ import {ILineUpFlags} from '../config';
 import {round} from '../internal';
 import {Column, IMultiLevelColumn} from '../model';
 import {ISummaryRenderer} from '../renderer';
-import {multiLevelGridCSSClass, forEachChild} from '../renderer/utils';
+import {multiLevelGridCSSClass} from '../renderer/utils';
 import {COLUMN_PADDING, cssClass} from '../styles';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
@@ -11,7 +11,7 @@ import RenderColumn from './RenderColumn';
 
 /** @internal */
 export default class MultiLevelRenderColumn extends RenderColumn {
-  private readonly summaries: ISummaryRenderer[] = [];
+  private summaries: ISummaryRenderer[] = [];
 
   constructor(c: IMultiLevelColumn & Column, index: number, ctx: IRankingContext, flags: ILineUpFlags) {
     super(c, index, ctx, flags);
@@ -41,34 +41,32 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   }
 
   private matchChildren(wrapper: HTMLElement, children: Column[]) {
-    if (this.summaries.length > children.length) {
-      this.summaries.splice(children.length, this.summaries.length - children.length);
-    }
-
     function matches(col: Column, i: number) {
       //do both match?
       const n = <HTMLElement>wrapper.children[i];
       return n != null && n.dataset.colId === col.id;
     }
 
-    if (children.every(matches)) {
+    if (children.every(matches) && children.length === wrapper.childElementCount) {
+      // 1:1 match
       return;
     }
 
-    const existing = new Set(children.map((d) => d.id));
+    const lookup = new Map((<HTMLElement[]>Array.from(wrapper.children)).map((n: HTMLElement, i) =>
+      ([n.dataset.colId!, {node: n, summary: this.summaries[i]}]))
+    );
 
-    //remove all that are not existing anymore
-    forEachChild(wrapper, (n: HTMLElement) => {
-      const id = n.dataset.colId!;
-      if (!existing.has(id)) {
-        wrapper.removeChild(n);
-      }
-    });
+    // reset summaries array
+    this.summaries = [];
 
     children.forEach((cc, i) => {
-      const cnode = <HTMLElement>wrapper.querySelector(`[data-col-id="${cc.id}"]`);
-      if (cnode) { // reuse existing
-        wrapper.appendChild(cnode);
+      const existing = lookup.get(cc.id);
+      if (existing) { // reuse existing
+        lookup.delete(cc.id);
+        const n = existing.node;
+        (<any>n.style).gridColumnStart = (i + 1).toString();
+        wrapper.appendChild(n);
+        this.summaries[i] = existing.summary;
         return;
       }
 
@@ -94,6 +92,9 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       this.summaries[i] = summary;
       summary.update(summaryNode);
     });
+
+    // delete not used ones anymore
+    lookup.forEach((v) => v.node.remove());
   }
 
   updateHeader(node: HTMLElement) {
