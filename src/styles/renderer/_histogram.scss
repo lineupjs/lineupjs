@@ -94,7 +94,7 @@ span.#{$lu_css_prefix}-mapping-hint {
     content: attr(data-value);
     position: absolute;
     bottom: -15px;
-    width: 5em;
+    width: 7em;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -110,7 +110,7 @@ span.#{$lu_css_prefix}-mapping-hint {
 .#{$lu_css_prefix}-histogram-min.#{$lu_css_prefix}-swap-hint,
 .#{$lu_css_prefix}-histogram-max:not(.#{$lu_css_prefix}-swap-hint) {
   &::before {
-    left: -5em;
+    left: -7em;
     text-align: right;
   }
 }
