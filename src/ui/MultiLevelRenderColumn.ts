@@ -53,7 +53,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     }
 
     const lookup = new Map((<HTMLElement[]>Array.from(wrapper.children)).map((n: HTMLElement, i) =>
-      ([n.dataset.colId!, {node: n, summary: this.summaries[i]}] as [string, {node: HTMLElement, summary: ISummaryRenderer}]))
+      (<[string, {node: HTMLElement, summary: ISummaryRenderer}]>[n.dataset.colId!, {node: n, summary: this.summaries[i]}]))
     );
 
     // reset summaries array
