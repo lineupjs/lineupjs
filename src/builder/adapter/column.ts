@@ -14,6 +14,7 @@ import {
   IActionColumnDesc,
   ILinkColumnDesc
 } from '../../model';
+import {resolveValue} from '../../internal/accessor';
 
 export interface IBuilderAdapterColumnDescProps extends Partial<IColumnDesc> {
   column: string;
@@ -84,7 +85,7 @@ export function buildCategorical(props: IBuilderAdapterCategoricalColumnDescProp
 
   if (!props.categories) {
     // derive categories
-    const categories = new Set(data.map((d) => <string>d[(<any>desc).column]));
+    const categories = new Set(data.map((d) => <string>resolveValue(d, (<any>desc).column)));
     desc.categories = Array.from(categories).sort();
   } else {
     desc.categories = props.categories;
@@ -136,7 +137,7 @@ export interface IBuilderAdapterNumberColumnDescProps extends IBuilderAdapterCol
 export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: any[]): INumberColumnDesc {
   const desc: any = build({...props, type: 'number'});
 
-  const domain = props.domain ? props.domain : <[number, number]>extent(data, (d) => <number>d[(<any>desc).column]);
+  const domain = props.domain ? props.domain : <[number, number]>extent(data, (d) => <number>resolveValue(d, (<any>desc).column));
 
   if (props.hasOwnProperty('color')) {
     desc.colorMapping = props.color;

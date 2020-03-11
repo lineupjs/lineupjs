@@ -1,7 +1,7 @@
-import {resolveComplex} from '../../src/provider/ACommonDataProvider';
+import {resolveValue} from '../../src/internal/accessor';
 
 function get(v: any, column: string) {
-  return resolveComplex(column, v);
+  return resolveValue(column, v);
 }
 
 test('simple', () => {

@@ -1,6 +1,7 @@
 import {min, max} from 'd3-array';
 import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, IMapAbleDesc} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
+import {resolveValue} from '../../internal/accessor';
 
 export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc> {
 
@@ -107,12 +108,12 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     };
 
     const minv = min(data, (d) => {
-      const v = d[col];
+      const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'min');
       return vs.length === 0 ? Infinity : min(vs);
     });
     const maxv = max(data, (d) => {
-      const v = d[col];
+      const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'max');
       return vs.length === 0 ? -Infinity : max(vs);
     });
