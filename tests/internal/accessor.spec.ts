@@ -1,7 +1,7 @@
 import {resolveValue} from '../../src/internal/accessor';
 
 function get(v: any, column: string) {
-  return resolveValue(column, v);
+  return resolveValue(v, column);
 }
 
 test('simple', () => {
