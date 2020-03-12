@@ -6,6 +6,7 @@ import {IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
 import {renderMissingValue, renderMissingDOM} from './missing';
 import {noop, wideEnough} from './utils';
 import {GUESSED_ROW_HEIGHT} from '../constants';
+import {getSortLabel} from '../internal';
 
 
 /** @internal */
@@ -35,10 +36,10 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
       template: `<canvas height="${GUESSED_ROW_HEIGHT}" title=""></canvas>`,
       render,
       width,
-      mover: (n: HTMLElement, values: string[]) => (evt: MouseEvent) => {
+      mover: (n: HTMLElement, values: string[], prefix?: string) => (evt: MouseEvent) => {
         const percent = evt.offsetX / width;
         const index = Math.max(0, Math.min(col.dataLength! - 1, Math.floor(percent * (col.dataLength! - 1) + 0.5)));
-        n.title = `${labels[index]}: ${values[index]}`;
+        n.title = `${prefix || ''}${labels[index]}: ${values[index]}`;
       }
     };
   }
@@ -80,7 +81,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
           const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
           ctx.canvas.width = width;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-          n.onmousemove = mover(n, data.raw.map(formatter));
+          n.onmousemove = mover(n, data.raw.map(formatter), `${getSortLabel(col.getSortMethod())} `);
           n.onmouseleave = () => n.title = '';
           render(ctx, data.normalized, data.row!, GUESSED_ROW_HEIGHT);
         });
