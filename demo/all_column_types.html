@@ -76,33 +76,47 @@
 
           hierarchical: leaves[i % leaves.length],
           set: cats.filter(() => Math.random() > 0.3),
-          numberMap: {['Row ' + i]: Math.floor(Math.random() * 10)},
-          stringMap: new Map([['Row ' + i, 'random ' + i]]),
-          dateMap: new Map([['Row ' + i, new Date(Date.now() - Math.floor(Math.random() * 1000000000000))]]),
-          categoricalMap: {['Row ' + i]: cats[Math.floor(Math.random() * cats.length)]},
+
+          numberMap: {
+            a1: Math.random() * 10,
+            a2: Math.random() * 10,
+          },
+          stringMap: {
+            a1: `Row ${i}a`,
+            a2: `Row ${i}b`,
+          },
+          dateMap: {
+            a1: new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
+            a2: new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
+          },
+          categoricalMap: {
+            a1: cats[Math.floor(Math.random() * cats.length)],
+            a2: cats[Math.floor(Math.random() * cats.length)],
+          }
         })
       }
       const builder = LineUpJS.builder(arr);
       builder
+        .rowHeight(50, 2) // increase rowHeight due to map columns
         .deriveColumns(['number', 'numbers', 'string', 'date', 'dates', 'boolean', 'booleans', 'categorical', 'categoricals', 'set'])
 
         // String
         .column(LineUpJS.buildStringColumn('strings').asArray().label('Strings').width(150))
-        .column(LineUpJS.buildStringColumn('stringMap').asMap().label('StringMap').width(150))
+        .column(LineUpJS.buildStringColumn('stringMap').asMap(['a1', 'a2']).label('StringMap').width(150).renderer('table'))
 
         // Number
-        .column(LineUpJS.buildNumberColumn('numberMap').asMap().label('NumberMap').width(150))
+        .column(LineUpJS.buildNumberColumn('numberMap').asMap(['a1', 'a2']).label('NumberMap').width(150))
 
         // Date
-        .column(LineUpJS.buildDateColumn('dateMap').asMap().label('DateMap').width(150))
+        .column(LineUpJS.buildDateColumn('dateMap').asMap(['a1', 'a2']).label('DateMap').width(150).renderer('table'))
 
         // Link
         .column(LineUpJS.buildStringColumn('string').label('Link').pattern('https://duckduckgo.com/?q=${escapedValue}').width(150))
         .column(LineUpJS.buildStringColumn('strings').label('Links').pattern('https://duckduckgo.com/?q=${escapedValue}').asArray().width(150))
-        .column(LineUpJS.buildStringColumn('stringMap').label('LinkMap').pattern('https://duckduckgo.com/?q=${escapedValue}').asMap().width(150))
+        .column(LineUpJS.buildStringColumn('stringMap').label('LinkMap').pattern('https://duckduckgo.com/?q=${escapedValue}').asMap(['a1', 'a2']).width(150).renderer('linkMap'))
 
         // Categorical
-        .column(LineUpJS.buildCategoricalColumn('categoricalMap', cats).asMap().label('CategoricalMap').width(150))
+        .column(LineUpJS.buildCategoricalColumn('categoricalMap', cats).asMap(['a1', 'a2']).label('CategoricalMap').width(150))
 
         // Hierarchical
         .column(LineUpJS.buildHierarchicalColumn('hierarchical', hierarchy).label('Hierarchical').width(150))
