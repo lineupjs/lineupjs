@@ -1,7 +1,7 @@
 import {IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup} from '../model';
 import {IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {ISequence, boxplotBuilder} from '../internal';
+import {ISequence, boxplotBuilder, getSortLabel} from '../internal';
 
 export abstract class ANumbersCellRenderer {
   abstract readonly title: string;
@@ -9,7 +9,7 @@ export abstract class ANumbersCellRenderer {
   protected abstract createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): {
     clazz: string,
     templateRow: string,
-    update: (row: HTMLElement, data: number[], raw: number[], d: IDataRow) => void,
+    update: (row: HTMLElement, data: number[], raw: number[], d: IDataRow, tooltipPrefix?: string) => void,
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
@@ -73,7 +73,7 @@ export abstract class ANumbersCellRenderer {
         // render a heatmap
         return context.tasks.groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
           if (typeof data !== 'symbol') {
-            update(n, data.normalized, data.raw, data.row!);
+            update(n, data.normalized, data.raw, data.row!, `${getSortLabel(col.getSortMethod())} `);
           }
         });
       }
