@@ -1,4 +1,4 @@
-import {extent} from '../../internal';
+import {extent, resolveValue} from '../../internal';
 import {IActionColumnDesc, IArrayDesc, IBooleanColumnDesc, ICategoricalColumnDesc, IColumnDesc, IDateColumnDesc, IHierarchyColumnDesc, ILinkColumnDesc, INumberColumnDesc} from '../../model';
 import {IBuilderAdapterActionsColumnDescProps, IBuilderAdapterBooleanColumnDescProps, IBuilderAdapterCategoricalColumnDescProps, IBuilderAdapterColumnDescProps, IBuilderAdapterDateColumnDescProps, IBuilderAdapterHierarchyColumnDescProps, IBuilderAdapterNumberColumnDescProps, IBuilderAdapterStringColumnDescProps} from '.';
 
@@ -57,7 +57,7 @@ export function buildCategorical(props: IBuilderAdapterCategoricalColumnDescProp
 
   if (!props.categories) {
     // derive categories
-    const categories = new Set(data.map((d) => <string>d[(<any>desc).column]));
+    const categories = new Set(data.map((d) => <string>resolveValue(d, (<any>desc).column)));
     desc.categories = Array.from(categories).sort();
   } else {
     desc.categories = props.categories;
@@ -90,7 +90,7 @@ export function buildHierarchy(props: Partial<IBuilderAdapterHierarchyColumnDesc
 export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: any[]): INumberColumnDesc {
   const desc: any = build({...props, type: 'number'});
 
-  const domain = props.domain ? props.domain : <[number, number]>extent(data, (d) => <number>d[(<any>desc).column]);
+  const domain = props.domain ? props.domain : <[number, number]>extent(data, (d) => <number>resolveValue(d, (<any>desc).column));
 
   if (props.hasOwnProperty('color')) {
     desc.colorMapping = props.color;

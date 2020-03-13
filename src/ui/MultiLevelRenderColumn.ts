@@ -108,6 +108,10 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     return this.updateNested(wrapper, r);
   }
 
+  hasSummaryLine() {
+    return super.hasSummaryLine() || this.mc.children.some((c) => Boolean(c.getMetaData().summary));
+  }
+
   updateWidthRule(style: StyleManager) {
     const mc = this.mc;
     // need this for chrome to work properly

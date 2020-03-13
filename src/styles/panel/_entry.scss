@@ -15,12 +15,13 @@
   font-weight: 500;
 }
 
-.#{$lu_css_prefix}-side-panel-label {
+.#{$lu_css_prefix}-side-panel-labels {
   margin: 0 1em 0 0;
   padding: 0 0 0 0.4em;
   overflow: hidden !important;
   cursor: pointer;
   flex: 1;
+  white-space: nowrap;
 }
 
 .#{$lu_css_prefix}-side-panel-toolbar {
