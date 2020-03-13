@@ -1,6 +1,7 @@
 import {ICategoricalColumnDesc, ICategory} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 import {cleanCategories} from '../../provider/utils';
+import {resolveValue} from '../../internal/accessor';
 
 export default class CategoricalColumnBuilder extends ColumnBuilder<ICategoricalColumnDesc> {
 
@@ -61,7 +62,7 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
       return null;
     };
     data.forEach((d) => {
-      const v = d[(<any>this.desc).column];
+      const v = resolveValue(d, (<any>this.desc).column);
       if (Array.isArray(v)) {
         v.forEach((vi) => categories.add(val(vi)));
       } else if (v != null && v !== '') {
