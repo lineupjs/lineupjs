@@ -649,6 +649,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       this.triggerResort(null);
     } else if (groupSortCriteriaChanged) {
       this.triggerGroupResort(null);
+    } else if (col.isFiltered()) {
+      this.dirtyOrder();
     }
 
     return true;
