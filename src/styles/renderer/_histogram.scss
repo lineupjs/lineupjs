@@ -116,7 +116,7 @@
       content: attr(data-value);
       position: absolute;
       bottom: -15px;
-      width: 5em;
+      width: 7em;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -132,7 +132,7 @@
   > [data-handle=min].#{$lu_css_prefix}-swap-hint,
   > [data-handle=max]:not(.#{$lu_css_prefix}-swap-hint) {
     &::before {
-      left: -5em;
+      left: -7em;
       text-align: right;
     }
   }
