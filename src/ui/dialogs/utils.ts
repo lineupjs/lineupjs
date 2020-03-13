@@ -1,6 +1,7 @@
 import {Column} from '../../model';
 import {forEach} from '../../renderer/utils';
 import {cssClass} from '../../styles';
+import {getSortLabel} from '../../internal';
 
 /** @internal */
 export function updateFilterState(attachment: HTMLElement, column: Column, filtered: boolean) {
@@ -24,7 +25,7 @@ export function updateFilterState(attachment: HTMLElement, column: Column, filte
 /** @internal */
 export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string): void, getSortMethod(): string}, methods: string[]) {
   const bak = column.getSortMethod();
-  methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}"><input type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><span>${d.slice(0, 1).toUpperCase() + d.slice(1)}</span></label>`));
+  methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}"><input type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><span>${getSortLabel(d)}</span></label>`));
 
   forEach(node, 'input[name=multivaluesort]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => column.setSortMethod(n.value), {
