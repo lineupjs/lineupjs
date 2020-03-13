@@ -1,6 +1,6 @@
 import {Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleColumn, DEFAULT_COLOR} from '../model';
 import {colorPool, MAX_COLORS} from '../model/internal';
-import {concat, equal, extent, range} from '../internal';
+import {concat, equal, extent, range, resolveValue} from '../internal';
 import {timeParse} from 'd3-time-format';
 import {IDataProvider, IDeriveOptions, IExportOptions} from './interfaces';
 
@@ -259,13 +259,13 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
   const columns: (number|string)[] = Array.isArray(first) ? range(first.length) : (config.columns.length > 0 ? selectColumns(Object.keys(first), config.columns) : Object.keys(first));
 
   return columns.map((key) => {
-    let v = first[key];
+    let v = resolveValue(first, key);
     if (isEmpty(v)) {
       // cannot derive something from null try other rows
-      const foundRow = data.find((row) => !isEmpty(row[key]));
+      const foundRow = data.find((row) => !isEmpty(resolveValue(row, key)));
       v = foundRow ? foundRow[key] : null;
     }
-    return deriveType(toLabel(key), v, key, () => data.map((d) => d[key]).filter((d) => !isEmpty(d)), config);
+    return deriveType(toLabel(key), v, key, () => data.map((d) => resolveValue(d, key)).filter((d) => !isEmpty(d)), config);
   });
 }
 

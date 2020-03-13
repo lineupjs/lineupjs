@@ -3,7 +3,8 @@
   "compilerOptions": {
     "emitDeclarationOnly": true,
     "declarationDir": "../../build/types/2.7/",
-    "types": []
+    "types": [],
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "../../src/**/*.ts",
