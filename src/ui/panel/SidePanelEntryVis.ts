@@ -33,7 +33,10 @@ export default class SidePanelEntryVis {
   private init() {
     this.node.innerHTML = `
       <header class="${cssClass('side-panel-entry-header')}">
-        <div class="${cssClass('label')} ${cssClass('typed-icon')} ${cssClass('side-panel-label')}"></div>
+        <div class="${cssClass('side-panel-labels')}">
+          <span class="${cssClass('label')} ${cssClass('typed-icon')} ${cssClass('side-panel-label')}"></span>
+          <span class="${cssClass('sublabel')} ${cssClass('side-panel-sublabel')}"></span>
+        </div>
         <div class="${cssClass('toolbar')} ${cssClass('side-panel-toolbar')}"></div>
       </header>`;
     createShortcutMenuItems(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx, false);

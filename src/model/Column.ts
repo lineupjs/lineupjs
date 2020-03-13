@@ -136,6 +136,7 @@ export default class Column extends AEventDispatcher {
 
     this.metadata = {
       label: desc.label || this.id,
+      summary: desc.summary || '',
       description: desc.description || ''
     };
   }
@@ -252,13 +253,14 @@ export default class Column extends AEventDispatcher {
   }
 
   setMetaData(value: Readonly<IColumnMetaData>) {
-    if (value.label === this.label && this.description === value.description) {
+    if (value.label === this.label && this.description === value.description && this.metadata.summary === value.summary) {
       return;
     }
     const bak = this.getMetaData();
     //copy to avoid reference
     this.metadata = {
       label: value.label,
+      summary: value.summary,
       description: value.description
     };
 
@@ -420,6 +422,9 @@ export default class Column extends AEventDispatcher {
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
     }
+    if (this.metadata.summary) {
+      r.summary = this.metadata.summary;
+    }
     if (this.getRenderer() !== this.desc.type) {
       r.renderer = this.getRenderer();
     }
@@ -441,6 +446,7 @@ export default class Column extends AEventDispatcher {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
+      summary: dump.summary || '',
       description: this.description
     };
     if (dump.renderer || dump.rendererType) {
