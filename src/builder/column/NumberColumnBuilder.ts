@@ -1,4 +1,4 @@
-import {min, max} from '../../internal';
+import {min, max, resolveValue} from '../../internal';
 import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, ITypedDump} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 import {IScriptMappingFunctionType} from '../../model/MappingFunction';
@@ -117,12 +117,12 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     };
 
     const minv = min(data, (d) => {
-      const v = d[col];
+      const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'min');
       return vs.length === 0 ? Infinity : min(vs);
     });
     const maxv = max(data, (d) => {
-      const v = d[col];
+      const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'max');
       return vs.length === 0 ? -Infinity : max(vs);
     });

@@ -1,7 +1,7 @@
 import {IColumnDesc, Ranking} from '../model';
 import ADataProvider from './ADataProvider';
 import {IDataProviderDump, IDataProviderOptions} from './interfaces';
-import {isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter} from './accessor';
+import {isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter} from '../internal';
 
 
 function injectAccessor(d: any) {
