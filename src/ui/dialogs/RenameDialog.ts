@@ -8,9 +8,7 @@ export default class RenameDialog extends ADialog {
   private readonly before: IColumnMetaData;
 
   constructor(private readonly column: Column, dialog: IDialogContext) {
-    super(dialog, {
-      fullDialog: true
-    });
+    super(dialog);
     this.before = column.getMetaData();
   }
 
@@ -23,6 +21,7 @@ export default class RenameDialog extends ADialog {
   }
 
   protected reset() {
+    // TODO not just before but defaults
     this.findInput('input[type="text"]').value = this.before.label;
     this.findInput('input[name="summary"]').value = this.before.summary;
     this.node.querySelector('textarea')!.value = this.before.description;
@@ -30,10 +29,14 @@ export default class RenameDialog extends ADialog {
   }
 
   protected submit() {
-    const newValue = this.findInput('input[type="text"]').value;
-    const newSummary = this.findInput('input[name="summary"]').value.trim();
-    const newDescription = this.node.querySelector('textarea')!.value;
-    this.column.setMetaData({label: newValue, description: newDescription, summary: newSummary});
+    const label = this.findInput('input[type="text"]').value;
+    const summary = this.findInput('input[name="summary"]').value.trim();
+    const description = this.node.querySelector('textarea')!.value;
+    this.column.setMetaData({label, description, summary});
     return true;
+  }
+
+  protected cancel() {
+    this.column.setMetaData(this.before);
   }
 }

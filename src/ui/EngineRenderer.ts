@@ -48,7 +48,11 @@ export default class EngineRenderer extends AEventDispatcher {
     this.node.classList.toggle(cssClass('whole-hover'), options.expandLineOnHover);
     parent.appendChild(this.node);
 
-    const dialogManager = new DialogManager(parent.ownerDocument!);
+    const dialogManager = new DialogManager({
+      doc: parent.ownerDocument!,
+      liveFilterPreviews: options.liveFilterPreviews,
+      onDialogBackgroundClick: options.onDialogBackgroundClick,
+    });
 
     parent.appendChild(dialogManager.node);
     this.ctx = {

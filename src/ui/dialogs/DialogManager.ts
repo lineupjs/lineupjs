@@ -12,8 +12,13 @@ export default class DialogManager {
 
   private readonly openDialogs: ADialog[] = [];
   readonly node: HTMLElement;
+  readonly liveFilterPreviews: boolean;
+  readonly onDialogBackgroundClick: 'cancel' | 'confirm';
 
-  constructor(doc = document) {
+  constructor(options: {doc: Document, liveFilterPreviews: boolean, onDialogBackgroundClick: 'cancel' | 'confirm'}) {
+    const doc = options.doc;
+    this.liveFilterPreviews = options.liveFilterPreviews;
+    this.onDialogBackgroundClick = options.onDialogBackgroundClick;
     this.node = doc.createElement('div');
     this.node.classList.add(cssClass('backdrop'));
     this.node.innerHTML = `<div class="${cssClass('backdrop-bg')}"></div>`;
@@ -78,7 +83,7 @@ export default class DialogManager {
       return;
     }
     const all = this.openDialogs.splice(0, this.openDialogs.length);
-    all.forEach((d) => d.destroy());
+    all.forEach((d) => d.onBackgroundClick(this.onDialogBackgroundClick));
     this.takeDown();
   }
 
@@ -89,7 +94,7 @@ export default class DialogManager {
     }
     // destroy self and all levels below that = after that
     const destroyed = this.openDialogs.splice(index, this.openDialogs.length - index);
-    destroyed.reverse().forEach((d) => d.destroy());
+    destroyed.reverse().forEach((d) => d.onBackgroundClick(this.onDialogBackgroundClick));
 
     if (this.openDialogs.length === 0) {
       this.takeDown();

@@ -1,12 +1,13 @@
 import {Ranking} from '../../model';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {dialogContext, IDialogContext} from './ADialog';
+import {dialogContext, IDialogContext} from './ADialog';
 import RenameRankingDialog from './RenameRankingDialog';
 import {cssClass} from '../../styles';
 import {actionCSSClass} from '../header';
+import APopup from './APopup';
 
 /** @internal */
-export default class MoreRankingOptionsDialog extends ADialog {
+export default class MoreRankingOptionsDialog extends APopup {
 
   constructor(private readonly ranking: Ranking, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog);

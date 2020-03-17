@@ -1,4 +1,4 @@
-import {ICategoricalColumn, CategoricalsColumn, CategoricalMapColumn, ICategory} from '../../model';
+import {ICategoricalColumn, CategoricalsColumn, CategoricalMapColumn, ICategory, IColorMappingFunction, ICategoricalColorMappingFunction} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {uniqueId} from './utils';
 import {cssClass} from '../../styles';
@@ -11,10 +11,12 @@ const sets: {[key: string]: ReadonlyArray<string>} = {schemeCategory10, schemeAc
 /** @internal */
 export default class CategoricalColorMappingDialog extends ADialog {
 
+  private readonly before: ICategoricalColorMappingFunction;
+
   constructor(private readonly column: ICategoricalColumn | CategoricalsColumn | CategoricalMapColumn, dialog: IDialogContext) {
-    super(dialog, {
-      fullDialog: true
-    });
+    super(dialog);
+
+    this.before = column.getColorMapping().clone();
   }
 
   protected build(node: HTMLElement) {
@@ -75,5 +77,9 @@ export default class CategoricalColorMappingDialog extends ADialog {
       this.column.setColorMapping(new ReplacmentColorMappingFunction(map));
     }
     return true;
+  }
+
+  cancel() {
+    this.column.setColorMapping(this.before);
   }
 }

@@ -11,9 +11,7 @@ export default class CutOffHierarchyDialog extends ADialog {
 
 
   constructor(private readonly column: HierarchyColumn, dialog: IDialogContext, private readonly idPrefix: string) {
-    super(dialog, {
-      fullDialog: true
-    });
+    super(dialog);
 
     this.innerNodes = resolveInnerNodes(this.column.hierarchy);
     this.innerNodePaths = this.innerNodes.map((n) => n.path);
@@ -38,11 +36,17 @@ export default class CutOffHierarchyDialog extends ADialog {
     }, {
       passive: true
     });
+
+    this.enableLivePreviews('input[type=text],input[type=number]');
   }
 
   protected reset() {
-    this.findInput('input[type="text"]').value = this.before.node.label;
-    this.findInput('input[type="number"]').value = isFinite(this.before.maxDepth) ? String(this.before.maxDepth) : '';
+    this.findInput('input[type="text"]').value = this.column.hierarchy.path;
+    this.findInput('input[type="number"]').value = '';
+    this.column.setCutOff(this.before);
+  }
+
+  protected cancel() {
     this.column.setCutOff(this.before);
   }
 

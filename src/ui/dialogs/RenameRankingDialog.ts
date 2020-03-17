@@ -8,9 +8,7 @@ export default class RenameRankingDialog extends ADialog {
   private readonly before: string;
 
   constructor(private readonly ranking: Ranking, dialog: IDialogContext) {
-    super(dialog, {
-      fullDialog: true
-    });
+    super(dialog);
     this.before = ranking.getLabel();
   }
 
@@ -22,6 +20,10 @@ export default class RenameRankingDialog extends ADialog {
 
   protected reset() {
     this.findInput('input[type="text"]').value = this.before;
+    this.ranking.setLabel(this.before);
+  }
+
+  protected cancel() {
     this.ranking.setLabel(this.before);
   }
 

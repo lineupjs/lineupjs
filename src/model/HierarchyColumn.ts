@@ -70,14 +70,14 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   private colorMapping: ICategoricalColorMappingFunction;
 
   constructor(id: string, desc: Readonly<IHierarchyColumnDesc>) {
-    super(id, desc);
+    super(id, desc, {
+      renderer: 'categorical'
+    });
     this.hierarchySeparator = desc.hierarchySeparator || '.';
     this.hierarchy = this.initHierarchy(desc.hierarchy);
     this.currentNode = this.hierarchy;
     this.currentLeaves = computeLeaves(this.currentNode, this.currentMaxDepth);
     this.updateCaches();
-
-    this.setDefaultRenderer('categorical');
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 

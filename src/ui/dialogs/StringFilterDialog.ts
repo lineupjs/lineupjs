@@ -8,10 +8,14 @@ import {cssClass} from '../../styles';
 /** @internal */
 export default class StringFilterDialog extends ADialog {
 
+  private readonly before: string | RegExp | null;
+
   constructor(private readonly column: StringColumn, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: dialog.manager.liveFilterPreviews
     });
+
+    this.before = this.column.getFilter();
   }
 
   private updateFilter(filter: string | RegExp | null) {
@@ -19,13 +23,17 @@ export default class StringFilterDialog extends ADialog {
     this.column.setFilter(filter);
   }
 
-  reset() {
+  protected reset() {
     this.findInput('input[type="text"]').value = '';
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => n.checked = false);
     this.updateFilter(null);
   }
 
-  submit() {
+  protected cancel() {
+    this.updateFilter(this.before);
+  }
+
+  protected submit() {
     const filterMissing = findFilterMissing(this.node).checked;
     if (filterMissing) {
       this.updateFilter(StringColumn.FILTER_MISSING);
@@ -56,20 +64,16 @@ export default class StringFilterDialog extends ADialog {
       isRegex.disabled = filterMissing.checked;
 
       if (filterMissing.checked) {
-        this.updateFilter(StringColumn.FILTER_MISSING);
         return;
       }
       const valid = input.value.trim();
       filterMissing.disabled = valid.length > 0;
-      if (valid.length <= 0) {
-        this.updateFilter(null);
-        return;
-      }
-      this.updateFilter(isRegex.checked ? new RegExp(input.value, 'gm') : input.value);
     };
 
     filterMissing.onchange = update;
     input.onchange = update;
     isRegex.onchange = update;
+
+    this.enableLivePreviews([filterMissing, input, isRegex]);
   }
 }

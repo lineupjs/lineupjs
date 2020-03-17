@@ -6,9 +6,8 @@ import {IRankingHeaderContext} from '../interfaces';
 
 export interface IDialogOptions {
   title: string;
-  fullDialog: boolean;
-  resetPossible: boolean;
-
+  livePreview: boolean;
+  popup: boolean;
   // popper options
   placement?: Popper.Placement;
   eventsEnabled?: boolean;
@@ -36,8 +35,8 @@ abstract class ADialog {
 
   private readonly options: Readonly<IDialogOptions> = {
     title: '',
-    fullDialog: false,
-    resetPossible: true,
+    livePreview: false,
+    popup: false,
     placement: 'bottom-start',
     toggleDialog: true,
     modifiers: {
@@ -63,6 +62,24 @@ abstract class ADialog {
 
   protected abstract build(node: HTMLElement): boolean | void;
 
+  protected enableLivePreviews(selector: string | (HTMLInputElement | HTMLSelectElement)[]) {
+    if (!this.options.livePreview) {
+      return;
+    }
+    const submitter = () => {
+      this.submit();
+    };
+    if (typeof selector === 'string') {
+      this.forEach(selector, (n: HTMLInputElement | HTMLSelectElement) => {
+        n.addEventListener('change', submitter, {passive: true});
+      });
+    } else {
+      selector.forEach((n) => {
+        n.addEventListener('change', submitter, {passive: true});
+      });
+    }
+  }
+
   equals(that: ADialog) {
     return this.dialog.level === that.dialog.level && this.dialog.attachment === that.dialog.attachment;
   }
@@ -71,7 +88,7 @@ abstract class ADialog {
     this.node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-buttons')}">
       <button class="${cssClass('dialog-button')}" type="submit" title="Apply"></button>
       <button class="${cssClass('dialog-button')}" type="button" title="Cancel"></button>
-      <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values" ${!this.options.resetPossible ? 'style="visibility: hidden"': ''}></button>
+      <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values"></button>
     </div>`);
   }
 
@@ -87,7 +104,7 @@ abstract class ADialog {
     if (this.options.title) {
       this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
     }
-    if (this.options.fullDialog) {
+    if (!this.options.popup) {
       this.appendDialogButtons();
     }
 
@@ -130,6 +147,7 @@ abstract class ADialog {
       cancel.onclick = (evt) => {
         evt.stopPropagation();
         evt.preventDefault();
+        this.cancel();
         this.destroy();
       };
     }
@@ -149,16 +167,28 @@ abstract class ADialog {
     return (<M[]>Array.from(this.node.querySelectorAll(selector))).map(callback);
   }
 
-  protected reset() {
-    // hook
+  protected readonly changed = () => {
+    if (this.options.livePreview) {
+      this.submit();
+    }
   }
 
-  protected submit(): boolean {
-    // hook
-    return true;
+  protected abstract reset(): void;
+
+  protected abstract submit(): boolean;
+
+  protected abstract cancel(): void;
+
+  onBackgroundClick(action: 'cancel' | 'confirm') {
+    if (action === 'confirm') {
+      this.submit(); // TODO what if submit wasn't successful?
+    } else {
+      this.cancel();
+    }
+    this.destroy();
   }
 
-  destroy() {
+  protected destroy() {
     this.dialog.manager.remove(this);
     if (this.popper) {
       this.popper.destroy();

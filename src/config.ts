@@ -85,6 +85,18 @@ export interface ILineUpOptions {
   hierarchyIndicator: boolean;
 
   /**
+   * flag whether dialogs should confirm or cancel on clicking the background
+   * @default cancel
+   */
+  onDialogBackgroundClick: 'cancel' | 'confirm';
+
+  /**
+   * flag whether to shows filter previews as soon as the user changes the filter in the dialog
+   * @default false
+   */
+  liveFilterPreviews: boolean;
+
+  /**
    * option to specify the default slope graph mode
    * @default 'item'
    */
@@ -197,6 +209,9 @@ export function defaultOptions(): ITaggleOptions {
     defaultSlopeGraphMode: 'item',
     overviewMode: false,
 
+    liveFilterPreviews: false,
+    onDialogBackgroundClick: 'cancel',
+
     rowHeight: 18,
     groupHeight: 40,
     groupPadding: 5,
@@ -210,7 +225,7 @@ export function defaultOptions(): ITaggleOptions {
       disableFrozenColumns: true, //disable by default for speed navigator.userAgent.includes('Firefox/52') // disable by default in Firefox ESR 52
       advancedRankingFeatures: true,
       advancedModelFeatures: true,
-      advancedUIFeatures: true
+      advancedUIFeatures: true,
     },
 
     ignoreUnsupportedBrowser: false

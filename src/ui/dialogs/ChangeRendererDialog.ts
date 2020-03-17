@@ -5,8 +5,16 @@ import {cssClass} from '../../styles';
 
 /** @internal */
 export default class ChangeRendererDialog extends ADialog {
+  private readonly before: {renderer: string, group: string, summary: string};
+
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog);
+
+    this.before = {
+      renderer: column.getRenderer(),
+      group: column.getGroupRenderer(),
+      summary: column.getSummaryRenderer()
+    };
   }
 
   protected build(node: HTMLElement) {
@@ -26,15 +34,30 @@ export default class ChangeRendererDialog extends ADialog {
       <strong>Summary Visualization</strong>
       ${summary.sort(byName).map((d) => ` <label class="${cssClass('checkbox')}"><input type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
     `);
-    this.forEach('input[name="renderer"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setRenderer(n.value), { passive: true });
-    });
-    this.forEach('input[name="group"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setGroupRenderer(n.value), { passive: true });
-    });
-    this.forEach('input[name="summary"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setSummaryRenderer(n.value), { passive: true });
-    });
+
+    this.enableLivePreviews('input[type=radio]');
+  }
+
+  protected cancel() {
+    this.column.setRenderer(this.before.renderer);
+    this.column.setGroupRenderer(this.before.group);
+    this.column.setSummaryRenderer(this.before.summary);
+  }
+
+  protected reset() {
+    // TODO get the defaults from the description
+  }
+
+  protected submit() {
+    const renderer = this.findInput('input[name=renderer]:checked').value;
+    const group = this.findInput('input[name=group]:checked').value;
+    const summary = this.findInput('input[name=summary]:checked').value;
+
+    this.column.setRenderer(renderer);
+    this.column.setGroupRenderer(group);
+    this.column.setSummaryRenderer(summary);
+
+    return true;
   }
 
 }

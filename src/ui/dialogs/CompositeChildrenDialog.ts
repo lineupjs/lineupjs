@@ -2,11 +2,12 @@ import {debounce, clear, suffix} from '../../internal';
 import {CompositeColumn} from '../../model';
 import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
 import {cssClass, engineCssClass} from '../../styles';
+import APopup from './APopup';
 
 /** @internal */
-export default class CompositeChildrenDialog extends ADialog {
+export default class CompositeChildrenDialog extends APopup {
 
   private readonly id: string;
 

@@ -117,45 +117,6 @@ export default class ColorMappingDialog extends ADialog {
 
     const customs: HTMLElement[] = [];
 
-    const toColor = (input: HTMLInputElement) => {
-      switch (input.value) {
-        case 'custom:solid':
-          return new SolidColorFunction((<HTMLInputElement>node.querySelector('input[name=solid]')!).value);
-        case 'custom:sequential':
-          const s0 = (<HTMLInputElement>node.querySelector('input[name=interpolate0]')!).value;
-          const s1 = (<HTMLInputElement>node.querySelector('input[name=interpolate1]')!).value;
-          return new CustomColorMappingFunction([{color: s0, value: 0}, {color: s1, value: 1}]);
-        case 'custom:diverging':
-          const dm1 = (<HTMLInputElement>node.querySelector('input[name=divergentm1]')!).value;
-          const d0 = (<HTMLInputElement>node.querySelector('input[name=divergent0]')!).value;
-          const d1 = (<HTMLInputElement>node.querySelector('input[name=divergent1]')!).value;
-          return new CustomColorMappingFunction([{color: dm1, value: 0}, {color: d0, value: 0.5}, {color: d1, value: 1}]);
-      }
-      if (input.value in SequentialColorFunction.FUNCTIONS) {
-        return new SequentialColorFunction(input.value);
-      }
-      if (input.value in DivergentColorFunction.FUNCTIONS) {
-        return new DivergentColorFunction(input.value);
-      }
-      return new SolidColorFunction(input.value);
-    };
-
-    const updateColor = (d: HTMLInputElement) => {
-      if (!d.checked) {
-        return;
-      }
-      // disable customs
-      for (const custom of customs) {
-        Array.from(custom.nextElementSibling!.getElementsByTagName('input')).forEach((s) => s.disabled = custom !== d);
-      }
-      const base = toColor(d);
-      if (quantized.checked && !(base instanceof SolidColorFunction)) {
-        this.column.setColorMapping(new QuantizedColorFunction(base, parseInt(steps.value, 10)));
-      } else {
-        this.column.setColorMapping(base);
-      }
-    };
-
     const updateSelectedColor = () => {
       const selected = this.findInput(`input[name=color]:checked`);
       if (selected) {
@@ -200,6 +161,26 @@ export default class ColorMappingDialog extends ADialog {
     };
   }
 
+  private updateColor() {
+
+
+    const updateColor = (d: HTMLInputElement) => {
+      if (!d.checked) {
+        return;
+      }
+      // disable customs
+      for (const custom of customs) {
+        Array.from(custom.nextElementSibling!.getElementsByTagName('input')).forEach((s) => s.disabled = custom !== d);
+      }
+      const base = toColor(d);
+      if (quantized.checked && !(base instanceof SolidColorFunction)) {
+        this.column.setColorMapping(new QuantizedColorFunction(base, parseInt(steps.value, 10)));
+      } else {
+        this.column.setColorMapping(base);
+      }
+    };
+  }
+
   private updateGradients(steps: number) {
     this.forEach(`span[data-c]`, (d: HTMLElement) => {
       const key = d.dataset.c!;
@@ -216,6 +197,29 @@ export default class ColorMappingDialog extends ADialog {
     });
   }
 }
+
+function toColor(input: HTMLInputElement, node: HTMLElement) {
+  switch (input.value) {
+    case 'custom:solid':
+      return new SolidColorFunction((<HTMLInputElement>node.querySelector('input[name=solid]')!).value);
+    case 'custom:sequential':
+      const s0 = (<HTMLInputElement>node.querySelector('input[name=interpolate0]')!).value;
+      const s1 = (<HTMLInputElement>node.querySelector('input[name=interpolate1]')!).value;
+      return new CustomColorMappingFunction([{color: s0, value: 0}, {color: s1, value: 1}]);
+    case 'custom:diverging':
+      const dm1 = (<HTMLInputElement>node.querySelector('input[name=divergentm1]')!).value;
+      const d0 = (<HTMLInputElement>node.querySelector('input[name=divergent0]')!).value;
+      const d1 = (<HTMLInputElement>node.querySelector('input[name=divergent1]')!).value;
+      return new CustomColorMappingFunction([{color: dm1, value: 0}, {color: d0, value: 0.5}, {color: d1, value: 1}]);
+  }
+  if (input.value in SequentialColorFunction.FUNCTIONS) {
+    return new SequentialColorFunction(input.value);
+  }
+  if (input.value in DivergentColorFunction.FUNCTIONS) {
+    return new DivergentColorFunction(input.value);
+  }
+  return new SolidColorFunction(input.value);
+};
 
 function gradient(interpolate: (v: number)=>string, steps = 2) {
   if (steps <= 1) {

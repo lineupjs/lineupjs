@@ -1,11 +1,12 @@
 import {Column} from '../../model';
 import {createToolbarMenuItems, updateIconState} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
+import APopup from './APopup';
 
 /** @internal */
-export default class MoreColumnOptionsDialog extends ADialog {
+export default class MoreColumnOptionsDialog extends APopup {
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog);

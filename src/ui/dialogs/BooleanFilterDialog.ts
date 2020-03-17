@@ -9,9 +9,7 @@ export default class BooleanFilterDialog extends ADialog {
   private readonly before: boolean | null;
 
   constructor(private readonly column: BooleanColumn, dialog: IDialogContext) {
-    super(dialog, {
-      fullDialog: true
-    });
+    super(dialog);
     this.before = this.column.getFilter();
   }
 
@@ -21,6 +19,7 @@ export default class BooleanFilterDialog extends ADialog {
      <label class="${cssClass('checkbox')}"><input type="radio" name="boolean_check" value="true" ${this.before === true ? 'checked="checked"' : ''}><span>True</span></label>
      <label class="${cssClass('checkbox')}"><input type="radio" name="boolean_check" value="false" ${this.before === false ? 'checked="checked"' : ''}><span>False</span></label>
     `);
+    this.forEach('input[type=radio]', (elem: HTMLInputElement) => elem.onclick = this.changed);
   }
 
   private updateFilter(filter: boolean | null) {
@@ -28,13 +27,17 @@ export default class BooleanFilterDialog extends ADialog {
     this.column.setFilter(filter);
   }
 
-  reset() {
+  protected reset() {
     const v = 'null';
     this.forEach('input[type="radio"]', (d: HTMLInputElement) => d.checked = d.value === v);
     this.updateFilter(null);
   }
 
-  submit() {
+  protected cancel() {
+    this.updateFilter(this.before);
+  }
+
+  protected submit() {
     const isTrue = this.findInput('input[type="radio"][value="true"]').checked;
     const isFalse = this.findInput('input[type="radio"][value="false"]').checked;
     this.updateFilter(isTrue ? true : (isFalse ? false : null));
