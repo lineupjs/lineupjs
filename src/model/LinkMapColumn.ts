@@ -33,13 +33,14 @@ export default class LinkMapColumn extends MapColumn<string> {
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<ILinkMapColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, desc, {
+      width: 200,
+      renderer: 'map'
+    });
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
     this.pattern = desc.pattern || '';
     this.patternTemplates = desc.patternTemplates || [];
-    this.setDefaultRenderer('map');
   }
 
   setPattern(pattern: string) {

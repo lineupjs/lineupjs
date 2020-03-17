@@ -28,8 +28,9 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<ILinksColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, desc, {
+      width: 200
+    });
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
     this.pattern = desc.pattern || '';

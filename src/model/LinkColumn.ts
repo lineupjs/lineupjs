@@ -73,18 +73,17 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<ILinkColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, desc, Object.assign({
+      width: 200
+    }, desc.pattern ? {
+        renderer: 'link',
+        groupRenderer: 'link'
+      } : {}));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
 
     this.pattern = desc.pattern || '';
     this.patternTemplates = desc.patternTemplates || [];
-
-    if (this.pattern) {
-      this.setDefaultRenderer('link');
-      this.setDefaultGroupRenderer('link');
-    }
   }
 
   setPattern(pattern: string) {

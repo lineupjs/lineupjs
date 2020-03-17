@@ -283,15 +283,15 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
 
 
   constructor(id: string, desc: Readonly<IScriptColumnDesc>, factory: ITypeFactory) {
-    super(id, desc);
+    super(id, desc, {
+      renderer: 'number',
+      groupRenderer: 'boxplot',
+      summaryRenderer: 'histogram'
+    });
     this.script = desc.script || this.script;
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
-
-    this.setDefaultRenderer('number');
-    this.setDefaultGroupRenderer('boxplot');
-    this.setDefaultSummaryRenderer('histogram');
   }
 
   protected createEventList() {

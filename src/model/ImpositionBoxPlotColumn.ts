@@ -47,11 +47,11 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumbersColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
-    super(id, desc);
-
-    this.setDefaultRenderer('boxplot');
-    this.setDefaultGroupRenderer('boxplot');
-    this.setDefaultSummaryRenderer('boxplot');
+    super(id, desc, {
+      renderer: 'boxplot',
+      groupRenderer: 'boxplot',
+      summaryRenderer: 'boxplot'
+    });
   }
 
   get label() {
