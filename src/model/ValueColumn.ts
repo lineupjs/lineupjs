@@ -1,5 +1,5 @@
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IValueColumnDesc, IDataRow, ITypeFactory, IColumnDescDefaults} from './interfaces';
+import {IValueColumnDesc, IDataRow, ITypeFactory} from './interfaces';
 import {IEventListener} from '../internal';
 
 /**
@@ -25,8 +25,8 @@ export default class ValueColumn<T> extends Column {
    */
   private loaded: boolean;
 
-  constructor(id: string, desc: Readonly<IValueColumnDesc<T>>, defaults: Partial<IColumnDescDefaults> = {}) {
-    super(id, desc, defaults);
+  constructor(id: string, desc: Readonly<IValueColumnDesc<T>>) {
+    super(id, desc);
     //find accessor
     this.accessor = desc.accessor! || (() => null);
     this.loaded = desc.lazyLoaded !== true;

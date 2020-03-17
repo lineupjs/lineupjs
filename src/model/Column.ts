@@ -1,6 +1,6 @@
 import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
 import {isSortingAscByDefault} from './annotations';
-import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR, ITypeFactory, IColumnDescDefaults} from './interfaces';
+import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import Ranking from './Ranking';
 
 /**
@@ -125,19 +125,19 @@ export default class Column extends AEventDispatcher {
   private summaryRenderer: string;
   private visible: boolean;
 
-  constructor(id: string, public readonly desc: Readonly<IColumnDesc>, defaults: Partial<IColumnDescDefaults> = {}) {
+  constructor(id: string, public readonly desc: Readonly<IColumnDesc>) {
     super();
     this.uid = fixCSS(id);
-    this.renderer = this.desc.renderer || defaults.renderer || this.desc.type;
-    this.groupRenderer = this.desc.groupRenderer || defaults.groupRenderer || this.desc.type;
-    this.summaryRenderer = this.desc.summaryRenderer || defaults.summaryRenderer || this.desc.type;
-    this.width = this.desc.width != null && this.desc.width > 0 ? this.desc.width : (defaults.width != null ? defaults.width : 100);
-    this.visible = this.desc.visible !== false && defaults.visible !== false;
+    this.renderer = this.desc.renderer || this.desc.type;
+    this.groupRenderer = this.desc.groupRenderer || this.desc.type;
+    this.summaryRenderer = this.desc.summaryRenderer || this.desc.type;
+    this.width = this.desc.width != null && this.desc.width > 0 ? this.desc.width : 100;
+    this.visible = this.desc.visible !== false;
 
     this.metadata = {
       label: desc.label || this.id,
-      summary: desc.summary || defaults.summary || '',
-      description: desc.description || defaults.description || ''
+      summary: desc.summary || '',
+      description: desc.description || ''
     };
   }
 

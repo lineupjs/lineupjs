@@ -2,7 +2,7 @@ import {Category} from './annotations';
 import ValueColumn from './ValueColumn';
 import {empty} from '../internal';
 import {IArrayColumn, IArrayDesc} from './IArrayColumn';
-import {IDataRow, IValueColumnDesc, IColumnDescDefaults} from './interfaces';
+import {IDataRow, IValueColumnDesc} from './interfaces';
 
 
 export interface IArrayColumnDesc<T> extends IArrayDesc, IValueColumnDesc<T[]> {
@@ -16,8 +16,8 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> implements IArrayCo
 
   private readonly originalLabels: string[];
 
-  constructor(id: string, desc: Readonly<IArrayColumnDesc<T>>, defaults: Partial<IColumnDescDefaults> = {}) {
-    super(id, desc, defaults);
+  constructor(id: string, desc: Readonly<IArrayColumnDesc<T>>) {
+    super(id, desc);
     this._dataLength = desc.dataLength == null || isNaN(desc.dataLength) ? null : desc.dataLength;
     this.originalLabels = desc.labels || (empty(this._dataLength == null ? 0 : this._dataLength).map((_d, i) => `Column ${i}`));
   }

@@ -6,7 +6,7 @@ import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunct
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal';
-import {chooseUIntByDataLength} from './internal';
+import {chooseUIntByDataLength, integrateDefaults} from './internal';
 import {toCategory} from './internalCategorical';
 
 
@@ -26,9 +26,9 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   private colorMapping: ICategoricalColorMappingFunction;
 
   constructor(id: string, desc: Readonly<IBooleansColumnDesc>) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       renderer: 'upset'
-    });
+    }));
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 

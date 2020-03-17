@@ -3,6 +3,7 @@ import {IndicesArray, IDataRow, IGroup, ECompareValueType, IValueColumnDesc} fro
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
+import {integrateDefaults} from './internal';
 
 /**
  * factory for creating a description creating a rank column
@@ -54,9 +55,9 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   static readonly EVENT_SELECT = 'select';
 
   constructor(id: string, desc: Readonly<ISelectionColumnDesc>) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       width: 20
-    });
+    }));
   }
 
   get frozen() {

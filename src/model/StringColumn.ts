@@ -4,6 +4,7 @@ import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, oth
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {equal, IEventListener} from '../internal';
+import {integrateDefaults} from './internal';
 
 export enum EAlignment {
   left = 'left',
@@ -76,9 +77,9 @@ export default class StringColumn extends ValueColumn<string> {
   };
 
   constructor(id: string, desc: Readonly<IStringColumnDesc>) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       width: 200
-    });
+    }));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
   }

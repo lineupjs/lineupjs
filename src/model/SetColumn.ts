@@ -8,7 +8,7 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import {toCategories, isCategoryIncluded} from './internalCategorical';
-import {chooseUIntByDataLength} from './internal';
+import {chooseUIntByDataLength, integrateDefaults} from './internal';
 
 export interface ISetDesc extends ICategoricalDesc {
   separator?: string;
@@ -55,11 +55,11 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   private currentFilter: ICategoricalFilter | null = null;
 
   constructor(id: string, desc: Readonly<ISetColumnDesc>) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       renderer: 'upset',
       groupRenderer: 'upset',
       summaryRenderer: 'categorical'
-    });
+    }));
     this.separator = new RegExp(desc.separator || ';');
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));

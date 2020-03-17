@@ -11,6 +11,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
 import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';
+import {integrateDefaults} from './internal';
 
 export declare type IDateMapColumnDesc = IDatesDesc & IMapColumnDesc<Date | null>;
 
@@ -41,9 +42,9 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
   private currentFilter: IDateFilter = noDateFilter();
 
   constructor(id: string, desc: Readonly<IDateMapColumnDesc>) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       renderer: 'default'
-    });
+    }));
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.format = (v) => (v instanceof Date) ? f(v) : '';
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);

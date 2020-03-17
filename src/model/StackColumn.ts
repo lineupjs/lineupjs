@@ -4,6 +4,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow, IFlatColumn, IMultiLevelColumn, ITypeFactory} from './interfaces';
+import {integrateDefaults} from './internal';
 
 /**
  * factory for creating a description creating a stacked column
@@ -59,11 +60,11 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   private collapsed = false;
 
   constructor(id: string, desc: ICompositeNumberDesc) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       renderer: 'stack',
       groupRenderer: 'stack',
       summaryRenderer: 'default'
-    });
+    }));
 
     const that = this;
     this.adaptChange = function (this: {source: Column}, oldValue, newValue) {

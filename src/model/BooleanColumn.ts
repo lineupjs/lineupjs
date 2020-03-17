@@ -6,6 +6,7 @@ import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from '.
 import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {IEventListener} from '../internal';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {integrateDefaults} from './internal';
 
 export interface IBooleanDesc {
   /**
@@ -54,9 +55,9 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   readonly categories: ICategory[];
 
   constructor(id: string, desc: Readonly<IBooleanColumnDesc>) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       width: 30
-    });
+    }));
     this.categories = [
       {
         name: desc.trueMarker || '✓',

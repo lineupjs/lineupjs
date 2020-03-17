@@ -15,6 +15,7 @@ import NumberColumn from './NumberColumn';
 import {IEventListener, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
 import {format} from 'd3-format';
 import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
+import {integrateDefaults} from './internal';
 
 
 export interface INumberMapDesc extends INumberDesc {
@@ -73,9 +74,9 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   private currentFilter: INumberFilter = noNumberFilter();
 
   constructor(id: string, desc: Readonly<INumberMapColumnDesc>, factory: ITypeFactory) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       renderer: 'mapbars'
-    });
+    }));
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);

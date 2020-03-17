@@ -67,8 +67,6 @@ export interface IStyleColumn {
   visible: boolean;
 }
 
-export type IColumnDescDefaults = Exclude<IStyleColumn, 'fixed' | 'frozen' | 'color'>;
-
 /**
  * default color that should be used
  * @type {string}

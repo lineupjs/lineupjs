@@ -3,6 +3,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import {IGroup, IColumnDesc} from './interfaces';
 import Ranking from './Ranking';
 import {IEventListener} from '../internal';
+import {integrateDefaults} from './internal';
 
 
 export enum EAggregationState {
@@ -44,9 +45,9 @@ export default class AggregateGroupColumn extends Column {
   static readonly EVENT_AGGREGATE = 'aggregate';
 
   constructor(id: string, desc: Readonly<IAggregateGroupColumnDesc>) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       width: 40
-    });
+    }));
   }
 
   get frozen() {

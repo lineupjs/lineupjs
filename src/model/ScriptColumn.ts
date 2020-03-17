@@ -8,6 +8,7 @@ import {IDataRow, ITypeFactory} from './interfaces';
 import {isDummyNumberFilter, noNumberFilter, restoreNumberFilter} from './internalNumber';
 import {IColorMappingFunction, IMapAbleColumn, IMapAbleDesc, IMappingFunction, INumberFilter, isNumberColumn} from './INumberColumn';
 import {restoreMapping} from './MappingFunction';
+import {integrateDefaults} from './internal';
 
 const DEFAULT_SCRIPT = `let s = 0;
 col.forEach((c) => s += c.v);
@@ -283,11 +284,11 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
 
 
   constructor(id: string, desc: Readonly<IScriptColumnDesc>, factory: ITypeFactory) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       renderer: 'number',
       groupRenderer: 'boxplot',
       summaryRenderer: 'histogram'
-    });
+    }));
     this.script = desc.script || this.script;
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();

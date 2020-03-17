@@ -10,6 +10,7 @@ import {INumberColumn} from './INumberColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {toCategories} from './internalCategorical';
 import {DEFAULT_FORMATTER} from './internalNumber';
+import {integrateDefaults} from './internal';
 
 export declare type IOrdinalColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
 
@@ -54,10 +55,10 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
 
   constructor(id: string, desc: Readonly<IOrdinalColumnDesc>) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       renderer: 'number',
       groupRenderer: 'boxplot'
-    });
+    }));
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;

@@ -8,6 +8,7 @@ import {restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareGroupValue, isEqualNumberFilter, isNumberIncluded} from './internalNumber';
+import {integrateDefaults} from './internal';
 
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
@@ -79,10 +80,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
   constructor(id: string, desc: INumberColumnDesc, factory: ITypeFactory) {
-    super(id, desc, {
+    super(id, integrateDefaults(desc, {
       groupRenderer: 'boxplot',
       summaryRenderer: 'histogram'
-    });
+    }));
 
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
