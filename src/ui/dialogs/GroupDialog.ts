@@ -2,28 +2,54 @@ import {Column} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {uniqueId, forEach} from './utils';
 import {getToolbarDialogAddons} from '../toolbar';
-import {IRankingHeaderContext, IToolbarDialogAddon} from '../interfaces';
+import {IRankingHeaderContext, IToolbarDialogAddonHandler} from '../interfaces';
 import {cssClass} from '../../styles';
 
 /** @internal */
 export default class GroupDialog extends ADialog {
-  private readonly addons: IToolbarDialogAddon[];
+  private readonly handlers: IToolbarDialogAddonHandler[] = [];
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog);
-    this.addons = getToolbarDialogAddons(this.column, 'group', ctx);
   }
 
   protected build(node: HTMLElement) {
-    for(const addon of this.addons) {
+    const addons = getToolbarDialogAddons(this.column, 'group', this.ctx);
+    for(const addon of addons) {
       this.node.insertAdjacentHTML('beforeend', `<strong>${addon.title}</strong>`);
-      addon.append(this.column, this.node, this.dialog, this.ctx);
+      this.handlers.push(addon.append(this.column, this.node, this.dialog, this.ctx));
     }
 
     sortOrder(node, this.column, this.dialog.idPrefix);
+
+    for (const handler of this.handlers) {
+      this.enableLivePreviews(handler.elems);
+    }
+  }
+
+  protected submit() {
+    for (const handler of this.handlers) {
+      if (!handler.submit()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  protected cancel() {
+    for (const handler of this.handlers) {
+      handler.cancel();
+    }
+  }
+
+  protected reset() {
+    for (const handler of this.handlers) {
+      handler.reset();
+    }
   }
 }
 
+// TODO dialog
 function sortOrder(node: HTMLElement, column: Column, idPrefix: string) {
   const ranking = column.findMyRanker()!;
   const current = ranking.getGroupCriteria();

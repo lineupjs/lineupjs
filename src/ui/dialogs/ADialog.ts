@@ -62,7 +62,7 @@ abstract class ADialog {
 
   protected abstract build(node: HTMLElement): boolean | void;
 
-  protected enableLivePreviews(selector: string | (HTMLInputElement | HTMLSelectElement)[]) {
+  protected enableLivePreviews(selector: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[]) {
     if (!this.options.livePreview) {
       return;
     }

@@ -53,7 +53,7 @@ function uiSortMethod(methods: string[]): IToolbarDialogAddon {
     title: 'Sort By',
     order: 2,
     append(col, node) {
-      sortMethods(node, <any>col, methods);
+      return sortMethods(node, <any>col, methods);
     }
   };
 }

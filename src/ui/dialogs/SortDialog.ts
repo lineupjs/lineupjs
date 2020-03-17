@@ -25,6 +25,7 @@ export default class SortDialog extends ADialog {
   }
 }
 
+// TODO
 function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSortBy: boolean = false) {
   const ranking = column.findMyRanker()!;
   const current = groupSortBy  ? ranking.getGroupSortCriteria() : ranking.getSortCriteria();
