@@ -16,6 +16,14 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
   }
 
   /**
+   * column summary text (subtitle)
+   */
+  summary(summary: string) {
+    this.desc.summary = summary;
+    return this;
+  }
+
+  /**
    * column description
    */
   description(description: string) {

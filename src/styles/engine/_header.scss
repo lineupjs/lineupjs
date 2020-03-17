@@ -39,6 +39,16 @@
   font-weight: 500;
 }
 
+.#{$lu_css_prefix}-th-sublabel {
+  text-align: center;
+  margin-right: $lu-engine_grip_gap;
+  display: none;
+}
+
+.#{$lu_css_prefix}-show-sublabel > .#{$lu_css_prefix}-header > .#{$lu_css_prefix}-sublabel {
+  display: unset;
+}
+
 .#{$lu_css_prefix}-th-summary {
   height: 2em;
 
