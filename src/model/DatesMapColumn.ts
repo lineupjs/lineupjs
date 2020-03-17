@@ -41,12 +41,13 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
   private currentFilter: IDateFilter = noDateFilter();
 
   constructor(id: string, desc: Readonly<IDateMapColumnDesc>) {
-    super(id, desc);
+    super(id, desc, {
+      renderer: 'default'
+    });
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.format = (v) => (v instanceof Date) ? f(v) : '';
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.sort = desc.sort || EDateSort.median;
-    this.setDefaultRenderer('default');
   }
 
   getFormatter() {

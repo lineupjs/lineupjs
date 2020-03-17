@@ -54,8 +54,9 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   readonly categories: ICategory[];
 
   constructor(id: string, desc: Readonly<IBooleanColumnDesc>) {
-    super(id, desc);
-    this.setWidthImpl(30);
+    super(id, desc, {
+      width: 30
+    });
     this.categories = [
       {
         name: desc.trueMarker || '✓',

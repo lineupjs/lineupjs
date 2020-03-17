@@ -71,7 +71,14 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   private currentFilter: INumberFilter = noNumberFilter();
 
   constructor(id: string, desc: Readonly<INumbersColumnDesc>, factory: ITypeFactory) {
-    super(id, desc);
+    super(id, desc, Object.assign({
+      renderer: 'heatmap',
+      groupRenderer: 'heatmap',
+      summaryRenderer: 'histogram'
+    }, desc.dataLength != null && !Number.isNaN(desc.dataLength) ? {
+      // better initialize the default with based on the data length
+      width: Math.min(Math.max(100, desc.dataLength! * 10), 500)
+    } : {}));
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
@@ -81,14 +88,6 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     }
 
     this.sort = desc.sort || EAdvancedSortMethod.median;
-
-    // better initialize the default with based on the data length
-    if (this.dataLength) {
-      this.setDefaultWidth(Math.min(Math.max(100, this.dataLength! * 10), 500));
-    }
-    this.setDefaultRenderer('heatmap');
-    this.setDefaultGroupRenderer('heatmap');
-    this.setDefaultSummaryRenderer('histogram');
   }
 
   getNumberFormat() {

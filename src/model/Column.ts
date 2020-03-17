@@ -1,6 +1,6 @@
 import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
 import {isSortingAscByDefault} from './annotations';
-import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR, ITypeFactory} from './interfaces';
+import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR, ITypeFactory, IColumnDescDefaults} from './interfaces';
 import Ranking from './Ranking';
 
 /**
@@ -125,19 +125,19 @@ export default class Column extends AEventDispatcher {
   private summaryRenderer: string;
   private visible: boolean;
 
-  constructor(id: string, public readonly desc: Readonly<IColumnDesc>) {
+  constructor(id: string, public readonly desc: Readonly<IColumnDesc>, defaults: Partial<IColumnDescDefaults> = {}) {
     super();
     this.uid = fixCSS(id);
-    this.renderer = this.desc.renderer || this.desc.type;
-    this.groupRenderer = this.desc.groupRenderer || this.desc.type;
-    this.summaryRenderer = this.desc.summaryRenderer || this.desc.type;
-    this.width = this.desc.width != null && this.desc.width > 0 ? this.desc.width : 100;
-    this.visible = this.desc.visible !== false;
+    this.renderer = this.desc.renderer || defaults.renderer || this.desc.type;
+    this.groupRenderer = this.desc.groupRenderer || defaults.groupRenderer || this.desc.type;
+    this.summaryRenderer = this.desc.summaryRenderer || defaults.summaryRenderer || this.desc.type;
+    this.width = this.desc.width != null && this.desc.width > 0 ? this.desc.width : (defaults.width != null ? defaults.width : 100);
+    this.visible = this.desc.visible !== false && defaults.visible !== false;
 
     this.metadata = {
       label: desc.label || this.id,
-      summary: desc.summary || '',
-      description: desc.description || ''
+      summary: desc.summary || defaults.summary || '',
+      description: desc.description || defaults.description || ''
     };
   }
 
@@ -566,13 +566,6 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderer, this.renderer = renderer);
   }
 
-  protected setDefaultRenderer(renderer: string) {
-    if (this.renderer !== this.desc.type || this.desc.renderer) {
-      return;
-    }
-    return this.setRenderer(renderer);
-  }
-
   setGroupRenderer(renderer: string) {
     if (renderer === this.groupRenderer) {
       // nothing changes
@@ -581,33 +574,12 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.groupRenderer, this.groupRenderer = renderer);
   }
 
-  protected setDefaultGroupRenderer(renderer: string) {
-    if (this.groupRenderer !== this.desc.type || this.desc.groupRenderer) {
-      return;
-    }
-    return this.setGroupRenderer(renderer);
-  }
-
   setSummaryRenderer(renderer: string) {
     if (renderer === this.summaryRenderer) {
       // nothing changes
       return;
     }
     this.fire([Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.summaryRenderer, this.summaryRenderer = renderer);
-  }
-
-  protected setDefaultSummaryRenderer(renderer: string) {
-    if (this.summaryRenderer !== this.desc.type || this.desc.summaryRenderer) {
-      return;
-    }
-    return this.setSummaryRenderer(renderer);
-  }
-
-  protected setDefaultWidth(width: number) {
-    if (this.width !== 100 || this.desc.width) {
-      return;
-    }
-    return this.setWidthImpl(width);
   }
 
   /**

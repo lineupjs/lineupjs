@@ -79,7 +79,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
   constructor(id: string, desc: INumberColumnDesc, factory: ITypeFactory) {
-    super(id, desc);
+    super(id, desc, {
+      groupRenderer: 'boxplot',
+      summaryRenderer: 'histogram'
+    });
 
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
@@ -88,9 +91,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-
-    this.setDefaultGroupRenderer('boxplot');
-    this.setDefaultSummaryRenderer('histogram');
   }
 
   getNumberFormat() {

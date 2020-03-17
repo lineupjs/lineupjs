@@ -26,8 +26,9 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   private colorMapping: ICategoricalColorMappingFunction;
 
   constructor(id: string, desc: Readonly<IBooleansColumnDesc>) {
-    super(id, desc);
-    this.setDefaultRenderer('upset');
+    super(id, desc, {
+      renderer: 'upset'
+    });
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 

@@ -1,6 +1,6 @@
 import {format} from 'd3-format';
 import CompositeColumn from './CompositeColumn';
-import {IDataRow, IGroup, IColumnDesc} from './interfaces';
+import {IDataRow, IGroup, IColumnDesc, IColumnDescDefaults} from './interfaces';
 import {isMissingValue} from './missing';
 import NumberColumn from './NumberColumn';
 import {SortByDefault} from './annotations';
@@ -24,8 +24,8 @@ export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnD
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
   private readonly numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id: string, desc: Readonly<ICompositeNumberColumnDesc>) {
-    super(id, desc);
+  constructor(id: string, desc: Readonly<ICompositeNumberColumnDesc>, defaults: Partial<IColumnDescDefaults> = {}) {
+    super(id, desc, defaults);
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);

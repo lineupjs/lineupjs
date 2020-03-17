@@ -73,7 +73,9 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   private currentFilter: INumberFilter = noNumberFilter();
 
   constructor(id: string, desc: Readonly<INumberMapColumnDesc>, factory: ITypeFactory) {
-    super(id, desc);
+    super(id, desc, {
+      renderer: 'mapbars'
+    });
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
@@ -82,8 +84,6 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-
-    this.setDefaultRenderer('mapbars');
   }
 
   getNumberFormat() {

@@ -76,8 +76,9 @@ export default class StringColumn extends ValueColumn<string> {
   };
 
   constructor(id: string, desc: Readonly<IStringColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, desc, {
+      width: 200
+    });
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
   }

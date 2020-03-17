@@ -55,13 +55,14 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   private currentFilter: ICategoricalFilter | null = null;
 
   constructor(id: string, desc: Readonly<ISetColumnDesc>) {
-    super(id, desc);
+    super(id, desc, {
+      renderer: 'upset',
+      groupRenderer: 'upset',
+      summaryRenderer: 'categorical'
+    });
     this.separator = new RegExp(desc.separator || ';');
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
-    this.setDefaultRenderer('upset');
-    this.setDefaultGroupRenderer('upset');
-    this.setSummaryRenderer('categorical');
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 

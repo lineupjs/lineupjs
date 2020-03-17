@@ -20,8 +20,9 @@ export function createRankDesc(label: string = 'Rank') {
 export default class RankColumn extends Column {
 
   constructor(id: string, desc: IColumnDesc) {
-    super(id, desc);
-    this.setDefaultWidth(50);
+    super(id, desc, {
+      width: 50
+    });
   }
 
   getLabel(row: IDataRow) {

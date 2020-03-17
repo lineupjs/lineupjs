@@ -46,12 +46,13 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   private currentGrouper: IDateGrouper = defaultDateGrouper();
 
   constructor(id: string, desc: Readonly<IDateColumnDesc>) {
-    super(id, desc);
+    super(id, desc, {
+      groupRenderer: 'datehistogram',
+      summaryRenderer: 'datehistogram'
+    });
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.format = (v) => (v instanceof Date) ? f(v) : '';
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
-    this.setDefaultGroupRenderer('datehistogram');
-    this.setDefaultSummaryRenderer('datehistogram');
   }
 
   getFormatter() {

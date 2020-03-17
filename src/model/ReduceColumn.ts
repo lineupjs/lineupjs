@@ -39,11 +39,12 @@ export default class ReduceColumn extends CompositeNumberColumn {
   private reduce: EAdvancedSortMethod;
 
   constructor(id: string, desc: Readonly<IReduceColumnDesc>) {
-    super(id, desc);
+    super(id, desc, {
+      renderer: 'interleaving',
+      groupRenderer: 'interleaving',
+      summaryRenderer: 'interleaving'
+    });
     this.reduce = desc.reduce || EAdvancedSortMethod.max;
-    this.setDefaultRenderer('interleaving');
-    this.setDefaultGroupRenderer('interleaving');
-    this.setDefaultSummaryRenderer('interleaving');
   }
 
   get label() {

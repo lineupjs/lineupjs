@@ -18,11 +18,12 @@ export default class StringMapColumn extends MapColumn<string> {
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<IStringMapColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, desc, {
+      width: 200,
+      renderer: 'map'
+    });
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
-    this.setDefaultRenderer('map');
   }
 
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;

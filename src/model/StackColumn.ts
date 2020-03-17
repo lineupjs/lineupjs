@@ -59,16 +59,16 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   private collapsed = false;
 
   constructor(id: string, desc: ICompositeNumberDesc) {
-    super(id, desc);
+    super(id, desc, {
+      renderer: 'stack',
+      groupRenderer: 'stack',
+      summaryRenderer: 'default'
+    });
 
     const that = this;
     this.adaptChange = function (this: {source: Column}, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
-
-    this.setDefaultRenderer('stack');
-    this.setDefaultGroupRenderer('stack');
-    this.setDefaultSummaryRenderer('default');
   }
 
   get label() {

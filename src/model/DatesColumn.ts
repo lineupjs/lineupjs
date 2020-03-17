@@ -49,14 +49,15 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   private currentFilter: IDateFilter = noDateFilter();
 
   constructor(id: string, desc: Readonly<IDatesColumnDesc>) {
-    super(id, desc);
+    super(id, desc, {
+      renderer: 'datehistogram',
+      groupRenderer: 'datehistogram',
+      summaryRenderer: 'datehistogram'
+    });
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.format = (v) => (v instanceof Date) ? f(v) : '';
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.sort = desc.sort || EDateSort.median;
-    this.setDefaultRenderer('datehistogram');
-    this.setDefaultGroupRenderer('datehistogram');
-    this.setDefaultSummaryRenderer('datehistogram');
   }
 
   getFormatter() {
