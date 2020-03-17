@@ -167,12 +167,6 @@ abstract class ADialog {
     return (<M[]>Array.from(this.node.querySelectorAll(selector))).map(callback);
   }
 
-  protected readonly changed = () => {
-    if (this.options.livePreview) {
-      this.submit();
-    }
-  }
-
   protected abstract reset(): void;
 
   protected abstract submit(): boolean;

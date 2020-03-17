@@ -45,7 +45,7 @@ export default class ChangeRendererDialog extends ADialog {
   }
 
   protected reset() {
-    // TODO get the defaults from the description
+    // TODO dialog get the defaults from the description
   }
 
   protected submit() {

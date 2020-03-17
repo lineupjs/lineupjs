@@ -22,6 +22,7 @@ export function updateFilterState(attachment: HTMLElement, column: Column, filte
   Array.from(root.querySelectorAll(`[data-col-id="${column.id}"] i[title^=Filter]`)).forEach(toggle);
 }
 
+// TODO dialog
 /** @internal */
 export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string): void, getSortMethod(): string}, methods: string[]) {
   const bak = column.getSortMethod();

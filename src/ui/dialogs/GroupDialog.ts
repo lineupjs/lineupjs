@@ -51,6 +51,7 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string) {
   updateDisabled(!enabled);
 
   const trigger = () => {
+    // TODO dialog
     ranking.groupBy(column, !enabled ? -1 : order);
     updateDisabled(!enabled);
   };

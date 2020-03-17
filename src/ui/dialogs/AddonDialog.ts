@@ -4,7 +4,8 @@ import {IToolbarDialogAddon, IRankingHeaderContext} from '../interfaces';
 
 /** @internal */
 export default class AddonDialog extends ADialog {
-  constructor(private readonly column: Column, private readonly addons: IToolbarDialogAddon[], dialog: IDialogContext, private readonly ctx: IRankingHeaderContext, private readonly onClick?: ()=>void) {
+  constructor(private readonly column: Column, private readonly addons: IToolbarDialogAddon[], dialog: IDialogContext, private readonly ctx: IRankingHeaderContext, private readonly onClick?: () => void) {
+    // TODO dialog
     super(dialog, {
       fullDialog: Boolean(onClick),
       resetPossible: false

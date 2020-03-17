@@ -17,7 +17,7 @@ export default class NumberFilterDialog extends ADialog {
   build(node: HTMLElement) {
     node.classList.add(cssClass('dialog-mapper'));
 
-    // TODO
+    // TODO dialog summary delayed??
 
     // patch in lu-summary and renderer
     const summary = this.ctx.asElement(this.summary.template);

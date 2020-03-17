@@ -2,6 +2,7 @@ import {EAdvancedSortMethod, ReduceColumn} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {sortMethods} from './utils';
 
+// TODO dialog
 /** @internal */
 export default class ReduceDialog extends ADialog {
   constructor(private readonly column: ReduceColumn, dialog: IDialogContext) {

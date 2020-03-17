@@ -5,6 +5,7 @@ import {getToolbarDialogAddons} from '../toolbar';
 import {IRankingHeaderContext, IToolbarDialogAddon} from '../interfaces';
 import {cssClass} from '../../styles';
 
+// TODO dialog
 /** @internal */
 export default class SortDialog extends ADialog {
   private readonly addons: IToolbarDialogAddon[];

@@ -1,9 +1,9 @@
 import {IDialogContext} from './ADialog';
 import {StringColumn, EStringGroupCriteriaType} from '../../model';
-import {cssClass} from '../../styles/index';
+import {cssClass} from '../../styles';
 
 /** @internal */
-export default function append(col: StringColumn, node: HTMLElement, dialog: IDialogContext) {
+export default function groupString(col: StringColumn, node: HTMLElement, dialog: IDialogContext) {
   const current = col.getGroupCriteria();
   const {type, values} = current;
 
@@ -57,6 +57,7 @@ export default function append(col: StringColumn, node: HTMLElement, dialog: IDi
     if (newType === EStringGroupCriteriaType.regex) {
       items = items.map((d) => new RegExp(d.toString(), 'gm'));
     }
+    // TODO dialog
     col.setGroupCriteria({
       type: newType,
       values: items

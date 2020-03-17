@@ -96,6 +96,7 @@ export default class ColorMappingDialog extends ADialog {
 
     node.insertAdjacentHTML('beforeend', h);
 
+    // TODO dialog
     this.interactive(node, id);
   }
 

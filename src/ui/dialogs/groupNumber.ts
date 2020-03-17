@@ -6,7 +6,7 @@ import {cssClass} from '../../styles';
 
 
 /** @internal */
-export default function append(col: NumberColumn, node: HTMLElement, dialog: IDialogContext) {
+export default function groupNumber(col: NumberColumn, node: HTMLElement, dialog: IDialogContext) {
   const domain = col.getMapping().domain;
   const current = col.getGroupThresholds();
   let isThreshold = current.length <= 1;
@@ -34,6 +34,7 @@ export default function append(col: NumberColumn, node: HTMLElement, dialog: IDi
     bins.disabled = isThreshold;
 
     if (isThreshold) {
+      // TODO dialog
       col.setGroupThresholds([threshold.valueAsNumber]);
       return;
     }

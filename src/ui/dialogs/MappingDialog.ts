@@ -29,10 +29,9 @@ export default class MappingDialog extends ADialog {
   };
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
-    super(dialog, {
-      fullDialog: true
-    });
+    super(dialog);
 
+    // TODO dialog
     this.idPrefix = `me${ctx.idPrefix}`;
     this.scale = this.column.getMapping().clone();
     const domain = this.scale.domain;

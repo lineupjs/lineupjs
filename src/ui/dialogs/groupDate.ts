@@ -25,6 +25,7 @@ export default function appendDate(col: DateColumn, node: HTMLElement) {
   node.insertAdjacentHTML('beforeend', html);
 
   const update = () => {
+    // TODO dialog
     col.setDateGrouper({granularity, circular});
   };
 

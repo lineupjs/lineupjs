@@ -19,7 +19,7 @@ export default class BooleanFilterDialog extends ADialog {
      <label class="${cssClass('checkbox')}"><input type="radio" name="boolean_check" value="true" ${this.before === true ? 'checked="checked"' : ''}><span>True</span></label>
      <label class="${cssClass('checkbox')}"><input type="radio" name="boolean_check" value="false" ${this.before === false ? 'checked="checked"' : ''}><span>False</span></label>
     `);
-    this.forEach('input[type=radio]', (elem: HTMLInputElement) => elem.onclick = this.changed);
+    this.enableLivePreviews('input[type=radio]');
   }
 
   private updateFilter(filter: boolean | null) {

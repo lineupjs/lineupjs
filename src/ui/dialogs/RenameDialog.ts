@@ -21,7 +21,7 @@ export default class RenameDialog extends ADialog {
   }
 
   protected reset() {
-    // TODO not just before but defaults
+    // TODO dialog not just before but defaults
     this.findInput('input[type="text"]').value = this.before.label;
     this.findInput('input[name="summary"]').value = this.before.summary;
     this.node.querySelector('textarea')!.value = this.before.description;
