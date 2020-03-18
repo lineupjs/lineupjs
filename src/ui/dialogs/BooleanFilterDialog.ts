@@ -30,7 +30,6 @@ export default class BooleanFilterDialog extends ADialog {
   protected reset() {
     const v = 'null';
     this.forEach('input[type="radio"]', (d: HTMLInputElement) => d.checked = d.value === v);
-    this.updateFilter(null);
   }
 
   protected cancel() {

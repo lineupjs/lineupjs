@@ -138,7 +138,7 @@ abstract class ADialog {
         return false;
       }
       if (this.submit()) {
-        this.destroy();
+        this.destroy(true);
       }
       return false;
     };
@@ -148,7 +148,7 @@ abstract class ADialog {
         evt.stopPropagation();
         evt.preventDefault();
         this.cancel();
-        this.destroy();
+        this.destroy(true);
       };
     }
 
@@ -173,17 +173,17 @@ abstract class ADialog {
 
   protected abstract cancel(): void;
 
-  onBackgroundClick(action: 'cancel' | 'confirm') {
+  onBackgroundClick(action: 'cancel' | 'confirm' | 'auto') {
     if (action === 'confirm') {
       this.submit(); // TODO what if submit wasn't successful?
-    } else {
+    } else if (action === 'cancel') {
       this.cancel();
     }
-    this.destroy();
+    this.destroy(true);
   }
 
-  protected destroy() {
-    this.dialog.manager.remove(this);
+  protected destroy(handled = false) {
+    this.dialog.manager.remove(this, handled);
     if (this.popper) {
       this.popper.destroy();
     }

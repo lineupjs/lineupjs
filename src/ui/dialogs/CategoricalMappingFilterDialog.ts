@@ -71,8 +71,6 @@ export default class CategoricalMappingFilterDialog extends ADialog {
       n.checked = false;
       (<HTMLInputElement>n.nextElementSibling!).value = '50';
     });
-    this.updateFilter(null, false);
-    this.column.setMapping(this.column.categories.map(() => 1));
   }
 
   protected submit() {

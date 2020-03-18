@@ -67,8 +67,6 @@ export default function groupNumber(col: NumberColumn, node: HTMLElement, dialog
       bins.value = getNumberOfBins(ranking.getOrderLength()).toString();
       bins.disabled = false;
       node.querySelector<HTMLInputElement>('input[name=threshold][value=threshold]')!.checked = true;
-
-      col.setGroupThresholds([value]);
     }
   }
 }

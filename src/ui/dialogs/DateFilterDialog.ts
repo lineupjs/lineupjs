@@ -25,7 +25,6 @@ export default class DateFilterDialog extends ADialog {
   protected reset() {
     this.forEach('input[type=date]', (n: HTMLInputElement) => n.value = '');
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => n.checked = false);
-    this.updateFilter(null);
   }
 
   protected cancel() {

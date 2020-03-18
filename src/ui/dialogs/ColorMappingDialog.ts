@@ -16,8 +16,7 @@ export default class ColorMappingDialog extends ADialog {
     this.before = this.column.getColorMapping();
   }
 
-  private createTemplate(id: string) {
-    const current = this.column.getColorMapping();
+  private createTemplate(id: string, current: IColorMappingFunction) {
     const entries = current instanceof CustomColorMappingFunction ? current.entries : [];
 
     let h = '';
@@ -114,11 +113,11 @@ export default class ColorMappingDialog extends ADialog {
     }
   }
 
-  protected build(node: HTMLElement) {
+  protected build(node: HTMLElement, value = this.column.getColorMapping()) {
     node.classList.add(cssClass('dialog-color'));
 
     const id = this.id;
-    node.innerHTML = this.createTemplate(id);
+    node.innerHTML = this.createTemplate(id, value);
 
     const continuouos = this.findInput(`#${id}KC`);
     const quantized = this.findInput(`#${id}KQ`);
@@ -194,8 +193,7 @@ export default class ColorMappingDialog extends ADialog {
   }
 
   protected reset() {
-    this.column.setColorMapping(DEFAULT_COLOR_FUNCTION);
-    this.build(this.node);
+    this.build(this.node, DEFAULT_COLOR_FUNCTION);
   }
 
   protected submit() {

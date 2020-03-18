@@ -36,7 +36,6 @@ export default class EditPatternDialog extends ADialog {
 
   protected reset() {
     this.node.querySelector('input')!.value = '';
-    this.column.setPattern('');
   }
 
   protected submit() {

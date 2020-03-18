@@ -68,11 +68,6 @@ export default function groupString(col: StringColumn, node: HTMLElement, dialog
     reset() {
       text.value = '';
       startsWithRadioButton.checked = true;
-
-      col.setGroupCriteria({
-        type: EStringGroupCriteriaType.startsWith,
-        values: []
-      });
     }
   };
 }

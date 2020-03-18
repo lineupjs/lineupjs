@@ -52,7 +52,6 @@ export default class CategoricalFilterDialog extends ADialog {
 
   protected reset() {
     this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked = true);
-    this.updateFilter(null, false);
   }
 
   protected cancel() {

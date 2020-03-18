@@ -226,7 +226,6 @@ export default class MappingDialog extends ADialog {
     this.update();
     this.updateLines();
     this.createMappings();
-    this.column.setMapping(this.scale);
   }
 
   private copyMapping(columnId: string) {

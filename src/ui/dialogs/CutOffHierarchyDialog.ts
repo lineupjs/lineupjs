@@ -43,7 +43,6 @@ export default class CutOffHierarchyDialog extends ADialog {
   protected reset() {
     this.findInput('input[type="text"]').value = this.column.hierarchy.path;
     this.findInput('input[type="number"]').value = '';
-    this.column.setCutOff(this.before);
   }
 
   protected cancel() {

@@ -34,6 +34,5 @@ export default class ShowTopNDialog extends ADialog {
   protected reset() {
     const defaultValue = 10;
     this.findInput('input').value = defaultValue.toString();
-    this.provider.setShowTopN(defaultValue);
   }
 }

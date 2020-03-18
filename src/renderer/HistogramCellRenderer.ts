@@ -1,5 +1,5 @@
 import {normalizedStatsBuilder, IStatistics, round, getNumberOfBins} from '../internal';
-import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn} from '../model';
+import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn, INumberFilter} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {colorOf} from './impose';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderTasks} from './interfaces';
@@ -142,14 +142,14 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
 
   const updateFilter = initFilter(summaryNode, fContext);
 
-  const rerender = () => {
+  const rerender = (filter?: INumberFilter) => {
     const ready = context.tasks.summaryNumberStats(col).then((r) => {
       if (typeof r === 'symbol') {
         return;
       }
       const {summary, data} = r;
-
-      updateFilter(data ? data.missing : (summary ? summary.missing : 0), createFilterInfo(col));
+      currentFilter = createFilterInfo(col, filter);
+      updateFilter(data ? data.missing : (summary ? summary.missing : 0), currentFilter);
       summaryNode.classList.toggle(cssClass('missing'), !summary);
       if (!summary) {
         return;
@@ -167,8 +167,7 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
 
   return {
     reset() {
-      col.setFilter(noNumberFilter());
-      rerender();
+      rerender(noNumberFilter());
     },
     submit() {
       applyFilter(currentFilter.filterMissing, currentFilter.filterMin, currentFilter.filterMax);
@@ -192,8 +191,7 @@ export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
   };
 }
 
-function createFilterInfo(col: IMapAbleColumn): IFilterInfo<number> {
-  const filter = col.getFilter();
+function createFilterInfo(col: IMapAbleColumn, filter = col.getFilter()): IFilterInfo<number> {
   const domain = col.getMapping().domain;
   const filterMin = isFinite(filter.min) ? filter.min : domain[0];
   const filterMax = isFinite(filter.max) ? filter.max : domain[1];

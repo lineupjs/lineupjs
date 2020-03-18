@@ -87,14 +87,14 @@ export default class DialogManager {
     this.takeDown();
   }
 
-  remove(dialog: ADialog) {
+  remove(dialog: ADialog, handled = false) {
     const index = this.openDialogs.indexOf(dialog);
     if (index < 0) {
       return false;
     }
     // destroy self and all levels below that = after that
     const destroyed = this.openDialogs.splice(index, this.openDialogs.length - index);
-    destroyed.reverse().forEach((d) => d.onBackgroundClick(this.onDialogBackgroundClick));
+    destroyed.reverse().forEach((d) => d.onBackgroundClick(handled ? 'auto' : this.onDialogBackgroundClick));
 
     if (this.openDialogs.length === 0) {
       this.takeDown();

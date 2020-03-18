@@ -41,8 +41,6 @@ export default function appendDate(col: DateColumn, node: HTMLElement): IToolbar
       circular.checked = r.circular;
       const g = node.querySelector<HTMLInputElement>(`input[name=granularity][value="${r.granularity}"]`)!;
       g.checked = true;
-
-      col.setDateGrouper(r);
     }
   };
 }

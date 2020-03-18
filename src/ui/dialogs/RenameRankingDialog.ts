@@ -20,7 +20,6 @@ export default class RenameRankingDialog extends ADialog {
 
   protected reset() {
     this.findInput('input[type="text"]').value = this.before;
-    this.ranking.setLabel(this.before);
   }
 
   protected cancel() {

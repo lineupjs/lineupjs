@@ -59,7 +59,6 @@ export default class CategoricalColorMappingDialog extends ADialog {
     this.forEach('[data-cat]', (n: HTMLInputElement, i) => {
       n.value = color(cats[i]!.color)!.hex();
     });
-    this.column.setColorMapping(DEFAULT_CATEGORICAL_COLOR_FUNCTION);
   }
 
   submit() {

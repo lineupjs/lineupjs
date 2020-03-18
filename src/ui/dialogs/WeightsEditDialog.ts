@@ -26,7 +26,6 @@ export default class WeightsEditDialog extends ADialog {
       n.value = String(v);
       (<HTMLElement>n.nextElementSibling!.firstElementChild!).style.width = `${v}%`;
     });
-    this.column.setWeights(this.weights.slice().fill(weight));
   }
 
   protected build(node: HTMLElement) {

@@ -46,9 +46,18 @@ export default class ChangeRendererDialog extends ADialog {
 
   protected reset() {
     const desc = this.column.desc;
-    this.column.setRenderer(desc.renderer || desc.type);
-    this.column.setGroupRenderer(desc.groupRenderer || desc.type);
-    this.column.setSummaryRenderer(desc.summaryRenderer || desc.type);
+    const r = this.findInput(`input[name=renderer][value="${desc.renderer || desc.type}"]`);
+    if (r) {
+      r.checked = true;
+    }
+    const g = this.findInput(`input[name=group][value="${desc.groupRenderer || desc.type}"]`);
+    if (g) {
+      g.checked = true;
+    }
+    const s = this.findInput(`input[name=summary][value="${desc.summaryRenderer || desc.type}"]`);
+    if (s) {
+      s.checked = true;
+    }
   }
 
   protected submit() {
