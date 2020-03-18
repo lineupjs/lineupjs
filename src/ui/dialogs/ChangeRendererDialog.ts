@@ -45,7 +45,10 @@ export default class ChangeRendererDialog extends ADialog {
   }
 
   protected reset() {
-    // TODO dialog get the defaults from the description
+    const desc = this.column.desc;
+    this.column.setRenderer(desc.renderer || desc.type);
+    this.column.setGroupRenderer(desc.groupRenderer || desc.type);
+    this.column.setSummaryRenderer(desc.summaryRenderer || desc.type);
   }
 
   protected submit() {

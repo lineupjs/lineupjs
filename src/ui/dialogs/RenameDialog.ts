@@ -21,11 +21,16 @@ export default class RenameDialog extends ADialog {
   }
 
   protected reset() {
-    // TODO dialog not just before but defaults
-    this.findInput('input[type="text"]').value = this.before.label;
-    this.findInput('input[name="summary"]').value = this.before.summary;
-    this.node.querySelector('textarea')!.value = this.before.description;
-    this.column.setMetaData(this.before);
+    const desc = this.column.desc;
+    const meta = {
+      label: desc.label || this.column.id,
+      summary: desc.summary || '',
+      description: desc.description || ''
+    }
+    this.findInput('input[type="text"]').value = meta.label;
+    this.findInput('input[name="summary"]').value = meta.summary
+    this.node.querySelector('textarea')!.value = meta.description;
+    this.column.setMetaData(meta);
   }
 
   protected submit() {

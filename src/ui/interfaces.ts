@@ -61,8 +61,6 @@ export interface IRankingHeaderContextContainer {
   readonly flags: ILineUpFlags;
 
   getPossibleRenderer(col: Column): {item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[]};
-
-  summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 }
 
 export interface IRankingBodyContext extends IRankingHeaderContextContainer, IRenderContext {

@@ -1,4 +1,4 @@
-import {ICategoricalColumn, CategoricalsColumn, CategoricalMapColumn, ICategory, IColorMappingFunction, ICategoricalColorMappingFunction} from '../../model';
+import {ICategoricalColumn, CategoricalsColumn, CategoricalMapColumn, ICategory, ICategoricalColorMappingFunction} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {uniqueId} from './utils';
 import {cssClass} from '../../styles';

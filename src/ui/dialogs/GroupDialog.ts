@@ -20,7 +20,7 @@ export default class GroupDialog extends ADialog {
       this.handlers.push(addon.append(this.column, this.node, this.dialog, this.ctx));
     }
 
-    sortOrder(node, this.column, this.dialog.idPrefix);
+    this.handlers.push(sortOrder(node, this.column, this.dialog.idPrefix));
 
     for (const handler of this.handlers) {
       this.enableLivePreviews(handler.elems);
@@ -49,12 +49,11 @@ export default class GroupDialog extends ADialog {
   }
 }
 
-// TODO dialog
-function sortOrder(node: HTMLElement, column: Column, idPrefix: string) {
+function sortOrder(node: HTMLElement, column: Column, idPrefix: string): IToolbarDialogAddonHandler {
   const ranking = column.findMyRanker()!;
   const current = ranking.getGroupCriteria();
   let order = current.indexOf(column);
-  let enabled = order >= 0;
+  const enabled = order >= 0;
 
   if (order < 0) {
     order = current.length;
@@ -76,27 +75,28 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string) {
   };
   updateDisabled(!enabled);
 
-  const trigger = () => {
-    // TODO dialog
-    ranking.groupBy(column, !enabled ? -1 : order);
-    updateDisabled(!enabled);
-  };
-
   forEach(node, 'input[name=grouped]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => {
-      enabled = n.value === 'true';
-      trigger();
+      const enabled = n.value === 'true';
+      updateDisabled(!enabled);
     }, {
       passive: true
     });
   });
-  {
-    const priority = (<HTMLInputElement>node.querySelector(`#${id}P`));
-    priority.addEventListener('change', () => {
-      order = parseInt(priority.value, 10) - 1;
-      trigger();
-    }, {
-      passive: true
-    });
-  }
+
+  return {
+    elems: `input[name=grouped], #${id}P`,
+    submit() {
+      const enabled = node.querySelector<HTMLInputElement>('input[name=grouped]:checked')!.value === 'true';
+      const order = Number.parseInt(node.querySelector<HTMLInputElement>(`#${id}P`)!.value, 10);
+      ranking.groupBy(column, !enabled ? -1 : order);
+      return true;
+    },
+    reset() {
+      // things need to be done?
+    },
+    cancel() {
+      ranking.groupBy(column, current.indexOf(column));
+    }
+  };
 }

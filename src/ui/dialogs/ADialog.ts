@@ -33,7 +33,7 @@ export function dialogContext(ctx: IRankingHeaderContext, level: number, attachm
 
 abstract class ADialog {
 
-  private readonly options: Readonly<IDialogOptions> = {
+  protected readonly options: Readonly<IDialogOptions> = {
     title: '',
     livePreview: false,
     popup: false,
