@@ -16,7 +16,7 @@ export default class SearchDialog extends ADialog {
     const input = <HTMLInputElement>node.querySelector('input[type="text"]')!;
     const checkbox = <HTMLInputElement>node.querySelector('input[type="checkbox"]')!;
     const update = () => {
-      let search: any = input.value;
+      const search: any = input.value;
       if (search.length < 3) {
         input.setCustomValidity('at least 3 characters');
         return;

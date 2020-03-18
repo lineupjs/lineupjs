@@ -10,7 +10,9 @@ export default class NumberFilterDialog extends ADialog {
   private handler: {reset: () => void, submit: () => void} | null = null;
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: dialog.manager.liveFilterPreviews
+    });
 
     this.before = column.getFilter();
   }

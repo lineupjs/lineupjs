@@ -1,4 +1,4 @@
-import ADialog, {IDialogContext, IDialogOptions} from "./ADialog";
+import ADialog, {IDialogContext, IDialogOptions} from './ADialog';
 
 abstract class APopup extends ADialog {
   constructor(dialog: Readonly<IDialogContext>, options: Partial<IDialogOptions> = {}) {
@@ -12,11 +12,11 @@ abstract class APopup extends ADialog {
   }
 
   protected reset() {
-
+    // dummy
   }
 
   protected cancel() {
-
+    // dummy
   }
 }
 

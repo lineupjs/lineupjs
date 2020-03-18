@@ -124,7 +124,7 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
   const renderer = getHistDOMRenderer(col);
   const fContext = createFilterContext(col, context);
 
-  parent.innerHTML = renderer.template + filteredHistTemplate(fContext, createFilterInfo(col)) + '</div>';
+  parent.innerHTML = `${renderer.template}${filteredHistTemplate(fContext, createFilterInfo(col))}</div>`;
   const summaryNode = <HTMLElement>parent.firstElementChild!;
   summaryNode.classList.add(cssClass('summary'), cssClass('renderer'));
   summaryNode.dataset.renderer = 'histogram';
@@ -155,13 +155,14 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
         return;
       }
       renderer.render(summaryNode, summary, data);
-    })
-    if (ready) {
-      summaryNode.classList.add(engineCssClass('loading'));
-      ready.then(() => {
-        summaryNode.classList.remove(engineCssClass('loading'));
-      });
+    });
+    if (!ready) {
+      return;
     }
+    summaryNode.classList.add(engineCssClass('loading'));
+    ready.then(() => {
+      summaryNode.classList.remove(engineCssClass('loading'));
+    });
   };
   rerender();
 
@@ -172,7 +173,7 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
     submit() {
       applyFilter(currentFilter.filterMissing, currentFilter.filterMin, currentFilter.filterMax);
     }
-  }
+  };
 }
 
 /** @internal */

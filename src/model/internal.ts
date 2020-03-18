@@ -10,8 +10,8 @@ export function integrateDefaults<T>(desc: T, defaults: Partial<T> = {}) {
     const typed = <keyof T>key;
     if (typeof desc[typed] === 'undefined') {
       (<any>desc)[typed] = defaults[typed];
-    };
-  })
+    }
+  });
   return desc;
 }
 

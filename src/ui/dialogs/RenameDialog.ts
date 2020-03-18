@@ -26,9 +26,9 @@ export default class RenameDialog extends ADialog {
       label: desc.label || this.column.id,
       summary: desc.summary || '',
       description: desc.description || ''
-    }
+    };
     this.findInput('input[type="text"]').value = meta.label;
-    this.findInput('input[name="summary"]').value = meta.summary
+    this.findInput('input[name="summary"]').value = meta.summary;
     this.node.querySelector('textarea')!.value = meta.description;
   }
 

@@ -47,7 +47,7 @@ export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string)
     reset() {
       node.querySelector<HTMLInputElement>(`input[name=multivaluesort][value="${bak}"]`)!.checked = true;
     }
-  }
+  };
 }
 
 
