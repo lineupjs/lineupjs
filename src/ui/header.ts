@@ -69,7 +69,7 @@ export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABE
   const summary = col.getMetaData().summary;
   const sublabel = <HTMLElement>node.getElementsByClassName(cssClass('sublabel'))[0];
   if (sublabel) {
-    sublabel.innerHTML = col.getWidth() < minWidth || !summary ? "&nbsp;" : summary;
+    sublabel.innerHTML = col.getWidth() < minWidth || !summary ? '&nbsp;' : summary;
   }
 
   let title = col.label;
