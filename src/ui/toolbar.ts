@@ -265,6 +265,7 @@ const toolbarAddons: {[key: string]: IToolbarDialogAddon} = {
 };
 
 export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddon} = Object.assign({
+  vis,
   group,
   groupBy,
   compress,
@@ -324,34 +325,20 @@ function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
   if (cache.has(col.desc.type)) {
     return cache.get(col.desc.type)!;
   }
-  const icons = <{[key: string]: IToolbarAction}>ctx.toolbar;
-  const actions = new Set<IToolbarAction>();
+
+  let keys = getAllToolbarActions(col);
+
   if (!col.fixed) {
-    actions.add(remove);
+    keys.push('remove');
   }
   {
     const possible = ctx.getPossibleRenderer(col);
     if (possible.item.length > 2 || possible.group.length > 2 || possible.summary.length > 2) { // default always possible
-      actions.add(vis);
+      keys.push('vis');
     }
   }
 
-  if (!isSupportType(col)) {
-    actions.add(sort);
-    actions.add(sortBy);
-    actions.add(rename);
-    actions.add(clone);
-  }
-
-  const keys = getAllToolbarActions(col);
-
-  keys.forEach((key) => {
-    if (icons.hasOwnProperty(key)) {
-      actions.add(icons[key]);
-    } else {
-      console.warn('cannot find: ', col.desc.type, key);
-    }
-  });
+  const actions = ctx.resolveToolbarActions(col, keys);
 
   const r = Array.from(actions).sort(sortActions);
   cache.set(col.desc.type, r);
@@ -379,18 +366,9 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
   if (cacheAddon.has(cacheKey)) {
     return cacheAddon.get(cacheKey)!;
   }
-  const icons = <{[key: string]: IToolbarDialogAddon}>ctx.toolbar;
-  const actions = new Set<IToolbarDialogAddon>();
 
   const keys = getAllToolbarDialogAddons(col, key);
-
-  keys.forEach((key) => {
-    if (icons.hasOwnProperty(key)) {
-      actions.add(icons[key]);
-    } else {
-      console.warn('cannot find: ', col.desc.type, key);
-    }
-  });
+  const actions = ctx.resolveToolbarDialogAddons(col, keys);
 
   const r = Array.from(actions).sort((a, b) => {
     if (a.order === b.order) {
@@ -405,17 +383,17 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
 /** @internal */
 export function isSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.includes(sortBy);
+  return toolbar.find((d) => d === sort || d === sortBy || d.title === sort.title || d.title.startsWith('Sort By'));
 }
 
 /** @internal */
 export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.includes(groupBy);
+  return toolbar.find((d) => d === group || d === groupBy || d.title === group.title || d.title.startsWith('Group By'));
 }
 
 /** @internal */
 export function isGroupSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.includes(sortGroupBy);
+  return toolbar.find((d) => d === sortGroupBy || d.title === sortGroupBy.title || d.title.startsWith('Sort Groups By'));
 }

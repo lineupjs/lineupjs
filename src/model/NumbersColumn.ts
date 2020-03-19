@@ -46,7 +46,7 @@ export declare function sortMethodChanged_NCS(previous: EAdvancedSortMethod, cur
  */
 export declare function filterChanged_NCS(previous: INumberFilter | null, current: INumberFilter | null): void;
 
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class NumbersColumn extends ArrayColumn<number> implements INumbersColumn {

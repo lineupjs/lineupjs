@@ -50,7 +50,7 @@ export declare function groupingChanged_NC(previous: number[], current: number[]
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('groupBy', 'sortGroupBy', 'filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'groupBy', 'sortGroupBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sortGroup', 'sortNumber')
 @dialogAddons('group', 'groupNumber')
 @Category('number')

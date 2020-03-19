@@ -12,7 +12,7 @@ export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
 /**
  * a string column with optional alignment
  */
-@toolbar('search')
+@toolbar('rename', 'search')
 export default class StringMapColumn extends MapColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;

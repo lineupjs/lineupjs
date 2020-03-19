@@ -50,7 +50,7 @@ export declare function sortMethodChanged_NMC(previous: EAdvancedSortMethod, cur
  */
 export declare function filterChanged_NMC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn {

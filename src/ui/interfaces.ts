@@ -49,7 +49,8 @@ export interface IRankingHeaderContextContainer {
 
   asElement(html: string): HTMLElement;
 
-  readonly toolbar: {[key: string]: IToolbarAction | IToolbarDialogAddon};
+  resolveToolbarActions(col: Column, keys: string[]): IToolbarAction[];
+  resolveToolbarDialogAddons(col: Column, keys: string[]): IToolbarDialogAddon[];
 
   readonly flags: ILineUpFlags;
 
