@@ -1,4 +1,4 @@
-import {Column, Ranking, IColumnConstructor, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState, IColorMappingFunctionConstructor, IMappingFunctionConstructor} from '../model';
+import {Column, Ranking, IColumnConstructor, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState, IColorMappingFunctionConstructor, IMappingFunctionConstructor, ITypeFactory} from '../model';
 import {AEventDispatcher, ISequence} from '../internal';
 import {IRenderTasks} from '../renderer';
 import {IAbortAblePromise} from 'lineupengine';
@@ -12,7 +12,6 @@ export interface IDataProviderOptions {
   columnTypes: {[columnType: string]: IColumnConstructor};
   colorMappingFunctionTypes: {[colorMappingFunctionType: string]: IColorMappingFunctionConstructor};
   mappingFunctionTypes: {[mappingFunctionType: string]: IMappingFunctionConstructor};
-
 
   /**
    * allow just single selected rows
