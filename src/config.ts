@@ -52,6 +52,10 @@ export interface ILineUpFlags {
   advancedUIFeatures: boolean;
 }
 
+export interface IToolbarLookup {
+  [key: string]: IToolbarAction | IToolbarDialogAddon;
+}
+
 export interface ILineUpOptions {
   /**
    * option to enable/disable showing a summary (histogram, ...) in the header
@@ -140,7 +144,17 @@ export interface ILineUpOptions {
   /**
    * register custom toolbar actions and dialog addons
    */
-  toolbar: {[key: string]: IToolbarAction | IToolbarDialogAddon};
+  toolbar: IToolbarLookup;
+
+  /**
+   * hook for postprocess the toolbar actions for a column
+   */
+  resolveToolbarActions: (col: Column, keys: string[], lookup: IToolbarLookup) => IToolbarAction[];
+  /**
+   * hook for postprocess the toolbar dialog addons for a column
+   */
+  resolveToolbarDialogAddons: (col: Column, keys: string[], lookup: IToolbarLookup) => IToolbarDialogAddon[];
+
   /**
    * register custom renderer factories
    */
@@ -180,10 +194,38 @@ export interface ILineUpLike {
   destroy(): void;
 }
 
+function resolveToolbarActions(col: Column, keys: string[], lookup: IToolbarLookup) {
+  const actions: IToolbarAction[] = [];
+
+  keys.forEach((key) => {
+    if (lookup.hasOwnProperty(key)) {
+      actions.push(<IToolbarAction>lookup[key]);
+    } else {
+      console.warn('cannot find: ', col.desc.type, key);
+    }
+  });
+  return actions;
+}
+
+function resolveToolbarDialogAddons(col: Column, keys: string[], lookup: IToolbarLookup) {
+  const actions: IToolbarDialogAddon[] = [];
+
+  keys.forEach((key) => {
+    if (lookup.hasOwnProperty(key)) {
+      actions.push(<IToolbarDialogAddon>lookup[key]);
+    } else {
+      console.warn('cannot find: ', col.desc.type, key);
+    }
+  });
+  return actions;
+}
+
 
 export function defaultOptions(): ITaggleOptions {
   return {
     toolbar: Object.assign({}, toolbarActions),
+    resolveToolbarActions,
+    resolveToolbarDialogAddons,
     renderers: Object.assign({}, renderers),
     canRender: () => true,
 

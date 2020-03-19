@@ -340,7 +340,7 @@ function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
 
   const actions = ctx.resolveToolbarActions(col, keys);
 
-  const r = Array.from(actions).sort(sortActions);
+  const r = Array.from(new Set(actions)).sort(sortActions);
   cache.set(col.desc.type, r);
   return r;
 }
@@ -370,7 +370,7 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
   const keys = getAllToolbarDialogAddons(col, key);
   const actions = ctx.resolveToolbarDialogAddons(col, keys);
 
-  const r = Array.from(actions).sort((a, b) => {
+  const r = Array.from(new Set(actions)).sort((a, b) => {
     if (a.order === b.order) {
       return a.title.localeCompare(b.title);
     }
