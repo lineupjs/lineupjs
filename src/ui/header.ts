@@ -42,7 +42,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
   // addTooltip(node, col);
 
-  createShortcutMenuItems(<HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0]!, options.level!, col, ctx);
+  createShortcutMenuItems(<HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0]!, options.level!, col, ctx, 'header');
 
   toggleToolbarIcons(node, col);
 
@@ -148,9 +148,9 @@ export function actionCSSClass(title: string) {
   return `${cssClass('action')} ${cssClass(`action-${clean}`)}`;
 }
 
-function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
+function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean, mode: 'header' | 'sidePanel') {
   return (action: IToolbarAction) => {
-    node.insertAdjacentHTML('beforeend', `<i data-a="${action.options.shortcut === 'only' ? 'o' : action.options.shortcut ? 's' : 'r'}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''}>${action.title}</span> </i>`);
+    node.insertAdjacentHTML('beforeend', `<i data-a="${hasShortcut(col, action, mode, 'only') ? 'o' : hasShortcut(col, action, mode, true) ? 's' : 'r'}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''}>${action.title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
@@ -166,12 +166,23 @@ export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
+function hasShortcut(col: Column, d: IToolbarAction, mode: 'header' | 'sidePanel', value: 'only' | boolean) {
+  const s = d.options.shortcut === undefined ? false : d.options.shortcut;
+  if (s === value) {
+    return true;
+  }
+  if (typeof s === 'function') {
+    return s(col, mode) === value;
+  }
+  return false;
+}
+
 /** @internal */
-export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, willAutoHide: boolean = true) {
-  const addIcon = addIconDOM(node, col, ctx, level, false);
+export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, mode: 'header' | 'sidePanel', willAutoHide: boolean = true) {
+  const addIcon = addIconDOM(node, col, ctx, level, false, mode);
   const toolbar = getToolbar(col, ctx);
-  const shortcuts = toolbar.filter((d) => d.options.shortcut);
-  const hybrids = shortcuts.reduce((a, b) => a + (b.options.shortcut === true ? 1 : 0), 0);
+  const shortcuts = toolbar.filter((d) => !hasShortcut(col, d, mode, false));
+  const hybrids = shortcuts.reduce((a, b) => a + (hasShortcut(col, b, mode, true) ? 1 : 0), 0);
 
   shortcuts.forEach(addIcon);
   const moreEntries = toolbar.length - shortcuts.length + hybrids;
@@ -187,15 +198,15 @@ export function createShortcutMenuItems(node: HTMLElement, level: number, col: C
   i.onclick = (evt) => {
     evt.stopPropagation();
     ctx.dialogManager.setHighlightColumn(col);
-    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, <any>evt), ctx);
+    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, <any>evt), mode, ctx);
     dialog.open();
   };
 }
 
 /** @internal */
-export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
-  const addIcon = addIconDOM(node, col, ctx, level, true);
-  getToolbar(col, ctx).filter((d) => d.options.shortcut !== 'only').forEach(addIcon);
+export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, mode: 'header' | 'sidePanel') {
+  const addIcon = addIconDOM(node, col, ctx, level, true, mode);
+  getToolbar(col, ctx).filter((d) => !hasShortcut(col, d, mode, 'only')).forEach(addIcon);
 }
 
 /** @internal */

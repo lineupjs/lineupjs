@@ -6,8 +6,18 @@ import DialogManager from './dialogs/DialogManager';
 import {IDialogContext} from './dialogs';
 
 export interface IUIOptions {
-  shortcut: boolean | 'only';
+  /**
+   * whether to show this action as a shortcut action
+   * @default false
+   */
+  shortcut: boolean | 'only' | ((col: Column, mode: 'sidePanel' | 'header') => boolean | 'only');
+
+  /**
+   * order hint for sorting actions
+   * @default 50
+   */
   order: number;
+
   featureLevel: 'basic' | 'advanced';
   featureCategory: 'ranking' | 'model' | 'ui';
 }

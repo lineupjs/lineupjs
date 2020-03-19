@@ -383,17 +383,17 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
 /** @internal */
 export function isSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.find((d) => d === sort || d === sortBy || d.title === sort.title || d.title.startsWith('Sort By'));
+  return toolbar.find((d) => d === sort || d === sortBy || d.title === sort.title || d.title.startsWith('Sort By')) != null;
 }
 
 /** @internal */
 export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.find((d) => d === group || d === groupBy || d.title === group.title || d.title.startsWith('Group By'));
+  return toolbar.find((d) => d === group || d === groupBy || d.title === group.title || d.title.startsWith('Group By')) != null;
 }
 
 /** @internal */
 export function isGroupSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.find((d) => d === sortGroupBy || d.title === sortGroupBy.title || d.title.startsWith('Sort Groups By'));
+  return toolbar.find((d) => d === sortGroupBy || d.title === sortGroupBy.title || d.title.startsWith('Sort Groups By')) != null;
 }
