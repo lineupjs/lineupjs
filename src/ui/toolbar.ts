@@ -326,7 +326,7 @@ function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
     return cache.get(col.desc.type)!;
   }
 
-  let keys = getAllToolbarActions(col);
+  const keys = getAllToolbarActions(col);
 
   if (!col.fixed) {
     keys.push('remove');
