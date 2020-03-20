@@ -279,12 +279,12 @@ export function createColorMappingFunction(dump: any): IColorMappingFunction {
  * @internal
  */
 export function restoreColorMapping(desc: IMapAbleDesc): IColorMappingFunction {
-  if(desc.color) {
-    console.warn('The property `color` in the column description is deprecated and will not work in an upcoming LineUp release. Use the property `colorMapping` instead.');
-    return createColorMappingFunction(desc.color);
-  }
   if (desc.colorMapping) {
     return createColorMappingFunction(desc.colorMapping);
+  }
+  if (desc.color) {
+    console.warn('The property `color` in the column description is deprecated and will not work in an upcoming LineUp release. Use the property `colorMapping` instead.');
+    return createColorMappingFunction(desc.color);
   }
   return DEFAULT_COLOR_FUNCTION;
 }
