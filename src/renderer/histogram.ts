@@ -77,7 +77,7 @@ export function histogramUpdate<T>(n: HTMLElement, stats: IHistogramLike<T>, unf
  * @internal
  */
 export function mappingHintTemplate(range: [string, string]) {
-  return `<span class="${cssClass('mapping-hint')}">${range[0]}</span><span class="${cssClass('mapping-hint')}">${range[1]}</span>`;
+  return `<span class="${cssClass('mapping-hint')}" title="${range[0]}">${range[0]}</span><span class="${cssClass('mapping-hint')}" title="${range[1]}">${range[1]}</span>`;
 }
 
 /**
