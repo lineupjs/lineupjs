@@ -50,7 +50,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
     const dialogManager = new DialogManager({
       doc: parent.ownerDocument!,
-      liveFilterPreviews: options.liveFilterPreviews,
+      livePreviews: options.livePreviws,
       onDialogBackgroundClick: options.onDialogBackgroundClick,
     });
 

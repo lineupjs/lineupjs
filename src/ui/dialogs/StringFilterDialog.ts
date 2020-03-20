@@ -12,7 +12,7 @@ export default class StringFilterDialog extends ADialog {
 
   constructor(private readonly column: StringColumn, dialog: IDialogContext) {
     super(dialog, {
-      livePreview: dialog.manager.liveFilterPreviews
+      livePreview: dialog.manager.livePreviews.includes('filter')
     });
 
     this.before = this.column.getFilter();

@@ -11,7 +11,7 @@ export default class NumberFilterDialog extends ADialog {
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
-      livePreview: dialog.manager.liveFilterPreviews
+      livePreview: dialog.manager.livePreviews.includes('filter')
     });
 
     this.before = column.getFilter();

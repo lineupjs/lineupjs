@@ -92,9 +92,9 @@ export interface ILineUpOptions {
 
   /**
    * flag whether to shows filter previews as soon as the user changes the filter in the dialog
-   * @default false
+   * @default ['filter', 'vis']
    */
-  liveFilterPreviews: boolean;
+  livePreviws: ('search' | 'filter' | 'vis')[];
 
   /**
    * option to specify the default slope graph mode
@@ -209,7 +209,7 @@ export function defaultOptions(): ITaggleOptions {
     defaultSlopeGraphMode: 'item',
     overviewMode: false,
 
-    liveFilterPreviews: false,
+    livePreviws: ['filter', 'vis'],
     onDialogBackgroundClick: 'cancel',
 
     rowHeight: 18,

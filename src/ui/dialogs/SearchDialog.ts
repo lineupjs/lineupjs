@@ -7,7 +7,9 @@ import {cssClass} from '../../styles';
 export default class SearchDialog extends ADialog {
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly provider: IDataProvider) {
-    super(dialog);
+    super(dialog, {
+      livePreview: dialog.manager.livePreviews.includes('search')
+    });
   }
 
   protected build(node: HTMLElement) {

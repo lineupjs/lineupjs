@@ -13,7 +13,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
 
   constructor(private readonly column: OrdinalColumn, dialog: IDialogContext) {
     super(dialog, {
-      livePreview: dialog.manager.liveFilterPreviews
+      livePreview: dialog.manager.livePreviews.includes('filter')
     });
     this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
   }

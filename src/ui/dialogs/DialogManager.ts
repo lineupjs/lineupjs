@@ -12,12 +12,12 @@ export default class DialogManager {
 
   private readonly openDialogs: ADialog[] = [];
   readonly node: HTMLElement;
-  readonly liveFilterPreviews: boolean;
+  readonly livePreviews: string[];
   readonly onDialogBackgroundClick: 'cancel' | 'confirm';
 
-  constructor(options: {doc: Document, liveFilterPreviews: boolean, onDialogBackgroundClick: 'cancel' | 'confirm'}) {
+  constructor(options: {doc: Document, livePreviews: string[], onDialogBackgroundClick: 'cancel' | 'confirm'}) {
     const doc = options.doc;
-    this.liveFilterPreviews = options.liveFilterPreviews;
+    this.livePreviews = options.livePreviews;
     this.onDialogBackgroundClick = options.onDialogBackgroundClick;
     this.node = doc.createElement('div');
     this.node.classList.add(cssClass('backdrop'));
