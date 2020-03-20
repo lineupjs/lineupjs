@@ -22,6 +22,20 @@ export default class LineUpBuilder {
     return this;
   }
 
+  livePreviews({search = false, filter = true, vis = true}) {
+    this.options.livePreviews = [];
+    if (search) {
+      this.options.livePreviews.push('search');
+    }
+    if (filter) {
+      this.options.livePreviews.push('filter');
+    }
+    if (vis) {
+      this.options.livePreviews.push('vis');
+    }
+    return this;
+  }
+
   /**
    * option to rotate labels on demand in narrow columns
    * @param rotation rotation in degrees
