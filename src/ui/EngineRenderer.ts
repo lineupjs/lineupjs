@@ -93,7 +93,11 @@ export default class EngineRenderer extends AEventDispatcher {
         };
       },
       getPossibleRenderer: (col: Column) => getPossibleRenderer(col, this.options.renderers, this.options.canRender),
-      colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth()
+      colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth(),
+      caches: {
+        toolbar: new Map(),
+        toolbarAddons: new Map()
+      }
     };
 
     this.table = new MultiTableRowRenderer(this.node, this.idPrefix);

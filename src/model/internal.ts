@@ -225,15 +225,7 @@ export function chooseUIntByDataLength(dataLength?: number | null) {
   return ECompareValueType.UINT32;
 }
 
-
-// side effect
-const cache = new Map<string, string[]>();
-
-
 export function getAllToolbarActions(col: Column) {
-  if (cache.has(col.desc.type)) {
-    return cache.get(col.desc.type)!;
-  }
   const actions = new OrderedSet<string>();
 
   // walk up the prototype chain
@@ -248,17 +240,11 @@ export function getAllToolbarActions(col: Column) {
     }
     obj = Object.getPrototypeOf(obj);
   } while (obj);
-  const arr = Array.from(actions);
-  cache.set(col.desc.type, arr);
-  return arr;
+  return Array.from(actions);
 }
 
 
 export function getAllToolbarDialogAddons(col: Column, key: string) {
-  const cacheKey = `${col.desc.type}@${key}`;
-  if (cache.has(cacheKey)) {
-    return cache.get(cacheKey)!;
-  }
   const actions = new OrderedSet<string>();
 
   // walk up the prototype chain
@@ -273,8 +259,5 @@ export function getAllToolbarDialogAddons(col: Column, key: string) {
     }
     obj = Object.getPrototypeOf(obj);
   } while (obj);
-  cache.set(cacheKey, Array.from(actions));
-  const arr = Array.from(actions);
-  cache.set(cacheKey, arr);
-  return arr;
+  return Array.from(actions);
 }

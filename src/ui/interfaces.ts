@@ -63,6 +63,11 @@ export interface IRankingHeaderContextContainer {
   getPossibleRenderer(col: Column): {item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[]};
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
+
+  readonly caches: {
+    toolbar: Map<string, IToolbarAction[]>,
+    toolbarAddons: Map<string, IToolbarDialogAddon[]>
+  };
 }
 
 export interface IRankingBodyContext extends IRankingHeaderContextContainer, IRenderContext {
