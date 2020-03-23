@@ -1,0 +1,170 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+  <script src="./LineUpJS.js"></script>
+  <title>LineUp Columns Demo</title>
+</head>
+
+<body>
+  <script>
+    window.onload = function () {
+
+      // For hierarchical columns
+      const hierarchy = {
+        name: '0',
+        color: 'black',
+        children: [{
+          name: 'a1',
+          color: 'blue',
+          children: [{
+            name: 'a2',
+            color: 'blue'
+          }, {
+            name: 'b2',
+            color: 'red',
+            children: [{
+              name: 'a3',
+              color: 'blue'
+            }, {
+              name: 'b3',
+              color: 'red'
+            }, {
+              name: 'c3',
+              color: 'green'
+            }]
+          }]
+        }]
+      };
+      const leaves = [];
+
+      function visit(prefix, node) {
+        if (node.children && node.children.length > 0) {
+          node.children.forEach(function (n) {
+            visit(prefix + node.name + '.', n);
+          });
+        } else {
+          leaves.push(prefix + node.name);
+        }
+      }
+
+      visit('', hierarchy);
+      const numCats = 5;
+      const arr = [];
+      const l = new Array(10).fill(0);
+      const cats = (new Array(numCats)).fill(0).map((_, i) => `c${i + 1}`);
+
+      for (let i = 0; i <= 10; ++i) {
+        arr.push({
+          string: 'Row ' + i,
+          strings: l.map((d) => 'Row ' + i),
+          boxplot: {min: i , max: i+5, median: i +2, q1: i+5 , q3: i+8},
+          number: Math.floor(Math.random() * 10),
+          numbers: l.map((d) => Math.random() * 10),
+
+          date: new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
+          dates: l.map((d) => new Date(Date.now() - Math.floor(Math.random() * 1000000000000))),
+
+          boolean: Math.random() >= 0.5,
+          booleans: l.map((d) => Math.random() >= 0.5),
+
+          categorical: cats[Math.floor(Math.random() * cats.length)],
+          categoricals: l.map((d) => cats[Math.floor(Math.random() * cats.length)]),
+
+          hierarchical: leaves[i % leaves.length],
+          set: cats.filter(() => Math.random() > 0.3),
+
+          numberMap: {
+            a1: Math.random() * 10,
+            a2: Math.random() * 10,
+          },
+          stringMap: {
+            a1: `Row ${i}a`,
+            a2: `Row ${i}b`,
+          },
+          dateMap: {
+            a1: new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
+            a2: new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
+          },
+          categoricalMap: {
+            a1: cats[Math.floor(Math.random() * cats.length)],
+            a2: cats[Math.floor(Math.random() * cats.length)],
+          }
+        })
+      }
+      const builder = LineUpJS.builder(arr);
+      builder
+        .rowHeight(50, 2) // increase rowHeight due to map columns
+        .deriveColumns(['number', 'numbers', 'string', 'date', 'dates', 'boolean', 'booleans', 'categorical', 'categoricals', 'set'])
+
+        // String
+        .column(LineUpJS.buildStringColumn('strings').asArray().label('Strings').width(150))
+        .column(LineUpJS.buildStringColumn('stringMap').asMap(['a1', 'a2']).label('StringMap').width(150).renderer('table'))
+
+        // Number
+        .column(LineUpJS.buildNumberColumn('numberMap').asMap(['a1', 'a2']).label('NumberMap').width(150))
+
+        // Date
+        .column(LineUpJS.buildDateColumn('dateMap').asMap(['a1', 'a2']).label('DateMap').width(150).renderer('table'))
+
+        // Link
+        .column(LineUpJS.buildStringColumn('string').label('Link').pattern('https://duckduckgo.com/?q=${escapedValue}').width(150))
+        .column(LineUpJS.buildStringColumn('strings').label('Links').pattern('https://duckduckgo.com/?q=${escapedValue}').asArray().width(150))  // no working/meaningful renderer available
+        .column(LineUpJS.buildStringColumn('stringMap').label('LinkMap').pattern('https://duckduckgo.com/?q=${escapedValue}').asMap(['a1', 'a2']).width(150).renderer('linkMap'))
+
+        // Categorical
+        .column(LineUpJS.buildCategoricalColumn('categoricalMap', cats).asMap(['a1', 'a2']).label('CategoricalMap').width(150).renderer('table')) // other renderer might not work or are not implemented yet
+
+        // Hierarchical
+        .column(LineUpJS.buildHierarchicalColumn('hierarchical', hierarchy).label('Hierarchical').width(150))
+
+        // Action
+        .column(LineUpJS.buildActionsColumn().action({
+          name: 'Action',
+          icon: '&#x2713;',
+          className: 'myClassName',
+          action: (row) => {
+            console.log(row);
+          }
+        }).label('Actions').width(150))
+
+        // Annotate
+        .column(LineUpJS.buildStringColumn('string').editable().label('Annotate').width(150))
+
+        // Ordinal
+        .column(LineUpJS.buildCategoricalColumn('categorical', cats).label('Ordinal').asOrdinal().width(150))
+
+        // BoxPlot
+        .column(LineUpJS.buildNumberColumn('boxplot').asBoxPlot().label('BoxPlot').width(150))
+
+      const ranking = LineUpJS.buildRanking()
+
+        // Add support columns
+        .supportTypes()
+        .allColumns()
+        .group()
+        // Scripted
+        .scripted('Scripted', `Math.random()`)
+
+        // Reduce
+        .reduce('Reduce', 'max', 'number', 'number')
+
+        // Weighted Sum
+        .weightedSum('Weighted Sum', 'number', .3, 'number', .5)
+
+        // Nested
+        .nested('Nested', 'number', 'categorical')
+
+        // Impose Categorical
+        .impose('Impose Number', 'number', 'categorical')
+      builder
+        .ranking(ranking);
+      const lineup = builder.build(document.body);
+    };
+  </script>
+</body>
+
+</html>
