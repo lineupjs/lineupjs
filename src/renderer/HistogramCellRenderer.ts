@@ -1,4 +1,4 @@
-import {normalizedStatsBuilder, IStatistics, round, getNumberOfBins} from '../internal';
+import {normalizedStatsBuilder, IStatistics, getNumberOfBins} from '../internal';
 import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {colorOf} from './impose';
@@ -145,13 +145,14 @@ function createFilterInfo(col: IMapAbleColumn): IFilterInfo<number> {
 
 function createFilterContext(col: IMapAbleColumn, context: IRenderContext): IFilterContext<number> {
   const domain = col.getMapping().domain;
+  const format = col.getNumberFormat();
   const percent = (v: number) => Math.round(100 * (v - domain[0]) / (domain[1] - domain[0]));
   const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
   return {
     percent,
     unpercent,
     domain: <[number, number]>domain,
-    format: (v) => round(v, 2).toString(),
+    format,
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
       min: minValue === domain[0] ? NaN : minValue,

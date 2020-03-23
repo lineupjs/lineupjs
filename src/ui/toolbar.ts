@@ -319,10 +319,8 @@ function sortActions(a: IToolbarAction, b: IToolbarAction) {
   return (a.options.order || 50) - (b.options.order || 50);
 }
 
-const cache = new Map<string, IToolbarAction[]>();
-const cacheAddon = new Map<string, IToolbarDialogAddon[]>();
-
 function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
+  const cache = ctx.caches.toolbar;
   if (cache.has(col.desc.type)) {
     return cache.get(col.desc.type)!;
   }
@@ -377,6 +375,7 @@ export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
 /** @internal */
 export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHeaderContext) {
   const cacheKey = `${col.desc.type}@${key}`;
+  const cacheAddon = ctx.caches.toolbarAddons;
   if (cacheAddon.has(cacheKey)) {
     return cacheAddon.get(cacheKey)!;
   }
