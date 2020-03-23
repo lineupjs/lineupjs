@@ -112,11 +112,11 @@
 
         // Link
         .column(LineUpJS.buildStringColumn('string').label('Link').pattern('https://duckduckgo.com/?q=${escapedValue}').width(150))
-        .column(LineUpJS.buildStringColumn('strings').label('Links').pattern('https://duckduckgo.com/?q=${escapedValue}').asArray().width(150))
+        .column(LineUpJS.buildStringColumn('strings').label('Links').pattern('https://duckduckgo.com/?q=${escapedValue}').asArray().width(150))  // no working/meaningful renderer available
         .column(LineUpJS.buildStringColumn('stringMap').label('LinkMap').pattern('https://duckduckgo.com/?q=${escapedValue}').asMap(['a1', 'a2']).width(150).renderer('linkMap'))
 
         // Categorical
-        .column(LineUpJS.buildCategoricalColumn('categoricalMap', cats).asMap(['a1', 'a2']).label('CategoricalMap').width(150))
+        .column(LineUpJS.buildCategoricalColumn('categoricalMap', cats).asMap(['a1', 'a2']).label('CategoricalMap').width(150).renderer('table')) // other renderer might not work or are not implemented yet
 
         // Hierarchical
         .column(LineUpJS.buildHierarchicalColumn('hierarchical', hierarchy).label('Hierarchical').width(150))
