@@ -32,9 +32,10 @@
     class MyStringColumn extends LineUpJS.StringColumn {
 
     }
-    Reflect.decorate([
-      LineUpJS.toolbar('my')
-    ], MyStringColumn);
+    // Reflect.decorate([
+    //   LineUpJS.toolbar('my')
+    // ], MyStringColumn);
+    LineUpJS.toolbar('my2')(MyStringColumn);
 
     b.registerColumnType('my', MyStringColumn);
     b.registerToolbarAction('my', {
