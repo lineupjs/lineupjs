@@ -201,7 +201,7 @@ function resolveToolbarActions(col: Column, keys: string[], lookup: IToolbarLook
     if (lookup.hasOwnProperty(key)) {
       actions.push(<IToolbarAction>lookup[key]);
     } else {
-      console.warn('cannot find: ', col.desc.type, key);
+      console.warn(`cannot find toolbar action of type: "${col.desc.type}" with key "${key}"`);
     }
   });
   return actions;
@@ -214,7 +214,7 @@ function resolveToolbarDialogAddons(col: Column, keys: string[], lookup: IToolba
     if (lookup.hasOwnProperty(key)) {
       actions.push(<IToolbarDialogAddon>lookup[key]);
     } else {
-      console.warn('cannot find: ', col.desc.type, key);
+      console.warn(`cannot find toolbar dialog addon of type: "${col.desc.type}" with key "${key}"`);
     }
   });
   return actions;
