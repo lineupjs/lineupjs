@@ -2,6 +2,7 @@ import {Column} from '../../model';
 import {IDataProvider} from '../../provider';
 import ADialog, { IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
+import {debounce} from '../../internal';
 
 /** @internal */
 export default class SearchDialog extends ADialog {
@@ -32,6 +33,12 @@ export default class SearchDialog extends ADialog {
       passive: true
     });
     this.enableLivePreviews([input, checkbox]);
+
+    if (this.showLivePreviews()) {
+      input.addEventListener('input', debounce(() => this.submit(), 100), {
+        passive: true
+      });
+    }
   }
 
   protected submit() {

@@ -133,6 +133,9 @@ abstract class ADialog {
         evt.stopPropagation();
         evt.preventDefault();
         this.reset();
+        if (this.showLivePreviews()) {
+          this.submit();
+        }
       };
     }
     this.node.onsubmit = (evt) => {

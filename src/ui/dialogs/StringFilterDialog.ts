@@ -3,6 +3,7 @@ import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {updateFilterState} from './utils';
 import {cssClass} from '../../styles';
+import {debounce} from '../../internal';
 
 
 /** @internal */
@@ -55,5 +56,11 @@ export default class StringFilterDialog extends ADialog {
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
 
     this.enableLivePreviews([filterMissing, input, isRegex]);
+
+    if (this.showLivePreviews()) {
+      input.addEventListener('input', debounce(() => this.submit(), 100), {
+        passive: true
+      });
+    }
   }
 }

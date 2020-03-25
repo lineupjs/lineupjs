@@ -53,7 +53,12 @@ export default class CategoricalColorMappingDialog extends ADialog {
       this.forEach('[data-cat]', (n: HTMLInputElement, i) => {
         n.value = scheme[i % scheme.length];
       });
+      if (this.showLivePreviews()) {
+        this.submit();
+      }
     };
+
+    this.enableLivePreviews('input[type=color]');
   }
 
   reset() {
