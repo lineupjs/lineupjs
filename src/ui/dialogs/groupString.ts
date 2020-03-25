@@ -38,6 +38,11 @@ export default function groupString(col: StringColumn, node: HTMLElement, dialog
   startsWithRadioButton.onchange = () => showOrHideTextarea(startsWithRadioButton.checked);
   regexRadioButton.onchange = () => showOrHideTextarea(regexRadioButton.checked);
 
+  text.addEventListener('change', () => {
+    const items: (string | RegExp)[] = text.value.trim().split('\n').map((d) => d.trim()).filter((d) => d.length > 0);
+    text.setCustomValidity(!valueRadioButton.checked && items.length === 0 ? 'At least one entry is required' : '');
+  });
+
   return {
     elems: [text, valueRadioButton, startsWithRadioButton, regexRadioButton],
     submit() {

@@ -34,11 +34,12 @@ export default class SearchDialog extends ADialog {
     });
     this.enableLivePreviews([input, checkbox]);
 
-    if (this.showLivePreviews()) {
-      input.addEventListener('input', debounce(() => this.submit(), 100), {
-        passive: true
-      });
+    if (!this.showLivePreviews()) {
+      return;
     }
+    input.addEventListener('input', debounce(() => this.submit(), 100), {
+      passive: true
+    });
   }
 
   protected submit() {

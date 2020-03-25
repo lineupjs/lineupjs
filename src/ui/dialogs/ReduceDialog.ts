@@ -10,7 +10,7 @@ export default class ReduceDialog extends ADialog {
   constructor(private readonly column: ReduceColumn, dialog: IDialogContext) {
     super(dialog, {
       livePreview: 'reduce'
-    })
+    });
   }
 
   protected build(node: HTMLElement) {
