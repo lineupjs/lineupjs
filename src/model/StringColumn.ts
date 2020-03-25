@@ -291,12 +291,12 @@ export default class StringColumn extends ValueColumn<string> {
     }
     // take the smallest one
     if (valueCache) {
-      return valueCache.reduce((acc, v) => acc == null || v < acc ? v : acc, null as null|string);
+      return valueCache.reduce((acc, v) => acc == null || v < acc ? v : acc, <null |string>null);
     }
     return rows.reduce((acc, d) => {
       const v = this.getValue(d);
       return acc == null || (v != null && v < acc) ? v : acc;
-    }, null as null | string);
+    }, <null | string>null);
   }
 
   toCompareGroupValueType() {
