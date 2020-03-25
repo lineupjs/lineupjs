@@ -150,7 +150,8 @@ export function actionCSSClass(title: string) {
 
 function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean, mode: 'header' | 'sidePanel') {
   return (action: IToolbarAction) => {
-    node.insertAdjacentHTML('beforeend', `<i data-a="${hasShortcut(col, action, mode, 'only') ? 'o' : hasShortcut(col, action, mode, true) ? 's' : 'r'}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''}>${action.title}</span> </i>`);
+    const m = isActionMode(col, action, mode, 'shortcut') ? 'o' : isActionMode(col, action, mode, 'menu+shortcut') ? 's' : 'r';
+    node.insertAdjacentHTML('beforeend', `<i data-a="${m}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''}>${action.title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
@@ -166,8 +167,8 @@ export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
-function hasShortcut(col: Column, d: IToolbarAction, mode: 'header' | 'sidePanel', value: 'only' | boolean) {
-  const s = d.options.shortcut === undefined ? false : d.options.shortcut;
+function isActionMode(col: Column, d: IToolbarAction, mode: 'header' | 'sidePanel', value: 'menu' | 'menu+shortcut' | 'shortcut') {
+  const s = d.options.mode === undefined ? 'menu' : d.options.mode;
   if (s === value) {
     return true;
   }
@@ -181,8 +182,8 @@ function hasShortcut(col: Column, d: IToolbarAction, mode: 'header' | 'sidePanel
 export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, mode: 'header' | 'sidePanel', willAutoHide: boolean = true) {
   const addIcon = addIconDOM(node, col, ctx, level, false, mode);
   const toolbar = getToolbar(col, ctx);
-  const shortcuts = toolbar.filter((d) => !hasShortcut(col, d, mode, false));
-  const hybrids = shortcuts.reduce((a, b) => a + (hasShortcut(col, b, mode, true) ? 1 : 0), 0);
+  const shortcuts = toolbar.filter((d) => !isActionMode(col, d, mode, 'menu'));
+  const hybrids = shortcuts.reduce((a, b) => a + (isActionMode(col, b, mode, 'menu+shortcut') ? 1 : 0), 0);
 
   shortcuts.forEach(addIcon);
   const moreEntries = toolbar.length - shortcuts.length + hybrids;
@@ -206,7 +207,7 @@ export function createShortcutMenuItems(node: HTMLElement, level: number, col: C
 /** @internal */
 export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, mode: 'header' | 'sidePanel') {
   const addIcon = addIconDOM(node, col, ctx, level, true, mode);
-  getToolbar(col, ctx).filter((d) => !hasShortcut(col, d, mode, 'only')).forEach(addIcon);
+  getToolbar(col, ctx).filter((d) => !isActionMode(col, d, mode, 'shortcut')).forEach(addIcon);
 }
 
 /** @internal */

@@ -85,7 +85,7 @@ const sort: IToolbarAction = {
     ranking.sortBy(col, next === 'asc', next ? order.priority : -1);
   },
   options: {
-    shortcut: 'only',
+    mode: 'shortcut',
     order: 1,
     featureCategory: 'ranking',
     featureLevel: 'basic'
@@ -99,7 +99,7 @@ const sortBy: IToolbarAction = {
     dialog.open();
   },
   options: {
-    shortcut: false,
+    mode: 'menu',
     order: 1,
     featureCategory: 'ranking',
     featureLevel: 'advanced'
@@ -113,7 +113,7 @@ const sortGroupBy: IToolbarAction = {
     dialog.open();
   },
   options: {
-    shortcut: false,
+    mode: 'menu',
     order: 3,
     featureCategory: 'ranking',
     featureLevel: 'advanced'
@@ -191,13 +191,13 @@ const group = ui('Group', (col, evt, ctx, level) => {
   const order = current.indexOf(col);
 
   ranking.groupBy(col, order >= 0 ? -1 : current.length);
-}, {shortcut: 'only', order: 2, featureCategory: 'ranking', featureLevel: 'basic'});
+}, {mode: 'shortcut', order: 2, featureCategory: 'ranking', featureLevel: 'basic'});
 
 // advanced ranking
 const groupBy = ui('Group By &hellip;', (col, evt, ctx, level) => {
   const dialog = new GroupDialog(col, dialogContext(ctx, level, evt), ctx);
   dialog.open();
-}, {shortcut: false, order: 2, featureCategory: 'ranking', featureLevel: 'advanced'});
+}, {mode: 'menu', order: 2, featureCategory: 'ranking', featureLevel: 'advanced'});
 
 function toggleCompressExpand(col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number) {
   ctx.dialogManager.removeAboveLevel(level);
@@ -277,21 +277,21 @@ export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddo
   remove,
   rename,
   setShowTopN,
-  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {shortcut: true, order: 3, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], {shortcut: false, featureCategory: 'ui', featureLevel: 'advanced'}),
-  colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], {shortcut: false, featureCategory: 'ui', featureLevel: 'advanced'}),
-  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {shortcut: true, featureCategory: 'model', featureLevel: 'advanced'}),
+  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {mode: 'menu+shortcut', order: 3, featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], {mode: 'menu', featureCategory: 'ui', featureLevel: 'advanced'}),
+  colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], {mode: 'menu', featureCategory: 'ui', featureLevel: 'advanced'}),
+  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'model', featureLevel: 'advanced'}),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog, () => [], {featureCategory: 'model', featureLevel: 'advanced'}),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix], {featureCategory: 'model', featureLevel: 'advanced'}),
   editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx], {featureCategory: 'model', featureLevel: 'advanced'}),
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix], {featureCategory: 'model', featureLevel: 'advanced'}),
-  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], {shortcut: true, featureCategory: 'model', featureLevel: 'advanced'}),
+  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'model', featureLevel: 'advanced'}),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx], {featureCategory: 'model', featureLevel: 'advanced'}),
   splitCombined: ui('Split Combined Column', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level - 1); // close itself

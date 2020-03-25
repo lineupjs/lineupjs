@@ -8,9 +8,9 @@ import {IDialogContext} from './dialogs';
 export interface IUIOptions {
   /**
    * whether to show this action as a shortcut action
-   * @default false
+   * @default 'menu'
    */
-  shortcut: boolean | 'only' | ((col: Column, mode: 'sidePanel' | 'header') => boolean | 'only');
+  mode: 'menu' | 'menu+shortcut' | 'shortcut' | ((col: Column, mode: 'sidePanel' | 'header') => 'menu' | 'menu+shortcut' | 'shortcut');
 
   /**
    * order hint for sorting actions
