@@ -14,58 +14,39 @@ export default class StringFilterDialog extends ADialog {
     });
   }
 
-  private updateFilter(filter: string | RegExp | null) {
-    updateFilterState(this.attachment, this.column, filter != null && filter !== '');
-    this.column.setFilter(filter);
+  private updateFilter(filter: string | RegExp | null, filterMissing: boolean) {
+    updateFilterState(this.attachment, this.column, filterMissing || (filter != null && filter !== ''));
+    this.column.setFilter({filter, filterMissing});
   }
 
   reset() {
     this.findInput('input[type="text"]').value = '';
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => n.checked = false);
-    this.updateFilter(null);
+    this.updateFilter(null, false);
   }
 
   submit() {
     const filterMissing = findFilterMissing(this.node).checked;
-    if (filterMissing) {
-      this.updateFilter(StringColumn.FILTER_MISSING);
-      return true;
-    }
     const input = this.findInput('input[type="text"]').value;
     const isRegex = this.findInput('input[type="checkbox"]').checked;
-    this.updateFilter(isRegex ? new RegExp(input, 'gm') : input);
+    this.updateFilter(isRegex ? new RegExp(input, 'gm') : input, filterMissing);
     return true;
   }
 
   protected build(node: HTMLElement) {
-    let bak = this.column.getFilter() || '';
-    const bakMissing = bak === StringColumn.FILTER_MISSING;
-    if (bakMissing) {
-      bak = '';
-    }
-    node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
-    <label class="${cssClass('checkbox')}"><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>Use regular expressions</span></label>
-    ${filterMissingMarkup(bakMissing)}`);
+    const bak = this.column.getFilter() || {filter: '', filterMissing: false};
+    node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak.filter instanceof RegExp) ? bak.filter.source : bak.filter || ''}" style="width: 100%">
+    <label class="${cssClass('checkbox')}"><input type="checkbox" ${(bak.filter instanceof RegExp) ? 'checked="checked"' : ''}><span>Use regular expressions</span></label>
+    ${filterMissingMarkup(bak.filterMissing)}`);
 
     const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
 
     const update = () => {
-      input.disabled = filterMissing.checked;
-      isRegex.disabled = filterMissing.checked;
-
-      if (filterMissing.checked) {
-        this.updateFilter(StringColumn.FILTER_MISSING);
-        return;
-      }
       const valid = input.value.trim();
-      filterMissing.disabled = valid.length > 0;
-      if (valid.length <= 0) {
-        this.updateFilter(null);
-        return;
-      }
-      this.updateFilter(isRegex.checked ? new RegExp(input.value, 'gm') : input.value);
+      const f = valid.length > 0 ? (isRegex.checked ? new RegExp(valid, 'gm') : valid) : null;
+      this.updateFilter(f, filterMissing.checked);
     };
 
     filterMissing.onchange = update;
