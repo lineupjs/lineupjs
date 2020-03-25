@@ -10,7 +10,9 @@ export default class SortDialog extends ADialog {
   private readonly handlers: IToolbarDialogAddonHandler[] = [];
 
   constructor(private readonly column: Column, private readonly groupSortBy: boolean, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: groupSortBy ? 'groupSort' : 'sort'
+    });
   }
 
   protected build(node: HTMLElement) {

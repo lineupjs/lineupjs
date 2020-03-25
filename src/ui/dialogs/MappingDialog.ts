@@ -31,7 +31,9 @@ export default class MappingDialog extends ADialog {
   };
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'dataMapping'
+    });
 
     this.idPrefix = `me${ctx.idPrefix}`;
     this.before = this.column.getMapping().clone();
@@ -171,7 +173,7 @@ export default class MappingDialog extends ADialog {
         this.rawDomain[i] = v;
         this.scale.domain = this.rawDomain.slice();
         this.updateLines();
-        if (this.options.livePreview) {
+        if (this.showLivePreviews()) {
           this.column.setMapping(this.scale);
         }
       });

@@ -14,7 +14,9 @@ export default class CategoricalColorMappingDialog extends ADialog {
   private readonly before: ICategoricalColorMappingFunction;
 
   constructor(private readonly column: ICategoricalColumn | CategoricalsColumn | CategoricalMapColumn, dialog: IDialogContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'colorMapping'
+    });
 
     this.before = column.getColorMapping().clone();
   }

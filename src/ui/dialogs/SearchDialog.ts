@@ -8,7 +8,7 @@ export default class SearchDialog extends ADialog {
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly provider: IDataProvider) {
     super(dialog, {
-      livePreview: dialog.manager.livePreviews.includes('search')
+      livePreview: 'search'
     });
   }
 

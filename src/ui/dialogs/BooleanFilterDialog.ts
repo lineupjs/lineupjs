@@ -10,7 +10,7 @@ export default class BooleanFilterDialog extends ADialog {
 
   constructor(private readonly column: BooleanColumn, dialog: IDialogContext) {
     super(dialog, {
-      livePreview: dialog.manager.livePreviews.includes('filter')
+      livePreview: 'filter'
     });
     this.before = this.column.getFilter();
   }

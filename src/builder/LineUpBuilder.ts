@@ -22,17 +22,24 @@ export default class LineUpBuilder {
     return this;
   }
 
-  livePreviews({search = false, filter = true, vis = true}) {
-    this.options.livePreviews = [];
-    if (search) {
-      this.options.livePreviews.push('search');
-    }
-    if (filter) {
-      this.options.livePreviews.push('filter');
-    }
-    if (vis) {
-      this.options.livePreviews.push('vis');
-    }
+  livePreviews(obj: {search?: boolean, filter?: boolean, vis?: boolean, sort?: boolean, group?: boolean, groupSort?: boolean, colorMapping?: boolean, dataMapping?: boolean}) {
+    const features: {[key: string]: boolean} = Object.assign({
+      // 'search', 'filter', 'vis', 'sort', 'group', 'sortGroup', 'colorMapping'
+      search: true,
+      filter: true,
+      vis: true,
+      group: true,
+      sort: true,
+      sortGroup: true,
+      colorMapping: true,
+    }, obj);
+    const options: string[] = [];
+    Object.keys(features).forEach((key) => {
+      if (features[key]) {
+        options.push(key);
+      }
+    });
+    this.options.livePreviews = options;
     return this;
   }
 

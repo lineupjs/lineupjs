@@ -10,7 +10,9 @@ export default class GroupDialog extends ADialog {
   private readonly handlers: IToolbarDialogAddonHandler[] = [];
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'group'
+    });
   }
 
   protected build(node: HTMLElement) {

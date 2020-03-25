@@ -8,7 +8,9 @@ export default class RenameRankingDialog extends ADialog {
   private readonly before: string;
 
   constructor(private readonly ranking: Ranking, dialog: IDialogContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'rename'
+    });
     this.before = ranking.getLabel();
   }
 

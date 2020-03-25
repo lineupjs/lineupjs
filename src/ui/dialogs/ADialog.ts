@@ -6,7 +6,7 @@ import {IRankingHeaderContext} from '../interfaces';
 
 export interface IDialogOptions {
   title: string;
-  livePreview: boolean;
+  livePreview: boolean | string;
   popup: boolean;
   // popper options
   placement?: Popper.Placement;
@@ -33,7 +33,7 @@ export function dialogContext(ctx: IRankingHeaderContext, level: number, attachm
 
 abstract class ADialog {
 
-  protected readonly options: Readonly<IDialogOptions> = {
+  private readonly options: Readonly<IDialogOptions> = {
     title: '',
     livePreview: false,
     popup: false,
@@ -62,8 +62,12 @@ abstract class ADialog {
 
   protected abstract build(node: HTMLElement): boolean | void;
 
+  protected showLivePreviews() {
+    return this.options.livePreview === true || (typeof this.options.livePreview === 'string' && this.dialog.manager.livePreviews.includes(this.options.livePreview));
+  }
+
   protected enableLivePreviews(selector: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[]) {
-    if (!this.options.livePreview) {
+    if (!this.showLivePreviews()) {
       return;
     }
     const submitter = () => {

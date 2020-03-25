@@ -12,7 +12,7 @@ export default class DateFilterDialog extends ADialog {
 
   constructor(private readonly column: DateColumn, dialog: IDialogContext) {
     super(dialog, {
-      livePreview: dialog.manager.livePreviews.includes('filter')
+      livePreview: 'filter'
     });
     this.before = this.column.getFilter() || noDateFilter();
   }

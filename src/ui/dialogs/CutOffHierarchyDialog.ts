@@ -11,7 +11,9 @@ export default class CutOffHierarchyDialog extends ADialog {
 
 
   constructor(private readonly column: HierarchyColumn, dialog: IDialogContext, private readonly idPrefix: string) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'cutOff'
+    });
 
     this.innerNodes = resolveInnerNodes(this.column.hierarchy);
     this.innerNodePaths = this.innerNodes.map((n) => n.path);

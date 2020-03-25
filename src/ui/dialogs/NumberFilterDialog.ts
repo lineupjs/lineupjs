@@ -11,7 +11,7 @@ export default class NumberFilterDialog extends ADialog {
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
-      livePreview: dialog.manager.livePreviews.includes('filter')
+      livePreview: 'filter'
     });
 
     this.before = column.getFilter();
@@ -24,7 +24,7 @@ export default class NumberFilterDialog extends ADialog {
       dialogManager: this.ctx.dialogManager,
       idPrefix: this.ctx.idPrefix,
       tasks: this.ctx.provider.getTaskExecutor()
-    }, this.options.livePreview);
+    }, this.showLivePreviews());
   }
 
   protected reset() {

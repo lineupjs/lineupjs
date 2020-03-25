@@ -11,7 +11,9 @@ export default class ColorMappingDialog extends ADialog {
   private readonly id = uniqueId('col');
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'colorMapping'
+    });
 
     this.before = this.column.getColorMapping();
   }
@@ -143,7 +145,7 @@ export default class ColorMappingDialog extends ADialog {
       for (const custom of customs) {
         Array.from(custom.nextElementSibling!.getElementsByTagName('input')).forEach((s) => s.disabled = custom !== d);
       }
-      if (this.options.livePreview) {
+      if (this.showLivePreviews()) {
         this.applyColor();
       }
     };

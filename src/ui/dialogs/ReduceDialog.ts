@@ -8,7 +8,9 @@ export default class ReduceDialog extends ADialog {
   private handler: IToolbarDialogAddonHandler | null = null;
 
   constructor(private readonly column: ReduceColumn, dialog: IDialogContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'reduce'
+    })
   }
 
   protected build(node: HTMLElement) {

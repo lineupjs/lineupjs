@@ -9,7 +9,7 @@ export default class ChangeRendererDialog extends ADialog {
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
-      livePreview: dialog.manager.livePreviews.includes('vis')
+      livePreview: 'vis'
     });
 
     this.before = {

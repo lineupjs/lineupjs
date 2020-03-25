@@ -12,7 +12,7 @@ export default class CategoricalFilterDialog extends ADialog {
 
   constructor(private readonly column: CategoricalColumn | SetColumn, dialog: IDialogContext) {
     super(dialog, {
-      livePreview: dialog.manager.livePreviews.includes('filter')
+      livePreview: 'filter'
     });
     this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
   }
