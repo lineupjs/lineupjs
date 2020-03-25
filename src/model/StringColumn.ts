@@ -155,7 +155,7 @@ export default class StringColumn extends ValueColumn<string> {
           };
         } else {
           this.currentFilter = {
-            filter: filter,
+            filter,
             filterMissing: false
           };
         }
@@ -163,7 +163,7 @@ export default class StringColumn extends ValueColumn<string> {
         this.currentFilter = {
           filter: filter.filter && (<string>filter.filter).startsWith('REGEX:') ? new RegExp(filter.slice(6), 'gm') : filter.filter || '',
           filterMissing: filter.filterMissing === true
-        }
+        };
       }
     } else {
       this.currentFilter = null;
