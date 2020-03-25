@@ -100,7 +100,7 @@ export function toMostFrequentCategoricals(rows: ISequence<IDataRow>, col: ICate
 /** @internal */
 export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): ICompareValue[] {
   if (isSeqEmpty(rows)) {
-    return [NaN, null]
+    return [NaN, null];
   }
   const mostFrequent = findMostFrequent(rows.map((d) => col.getCategory(d)), valueCache);
   if (mostFrequent.cat == null) {
