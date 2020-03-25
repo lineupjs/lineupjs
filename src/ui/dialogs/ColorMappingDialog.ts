@@ -39,17 +39,19 @@ export default class ColorMappingDialog extends ADialog {
     h += `<div>`;
     {
       const refColor = current instanceof SolidColorFunction ? current.color : '';
-      let has = false;
+      let has = refColor === DEFAULT_COLOR;
       const colorsets = [schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3];
-      for (const colors of colorsets) {
+      const renderColor = (d: string) => `<label class="${cssClass('checkbox-color')}">
+        <input name="color" type="radio" value="${d}" ${d === refColor ? 'checked="checked"' : ''}>
+        <span style="background: ${d}"></span>
+      </label>`;
+      colorsets.forEach((colors, i) => {
         has = has || colors.includes(refColor);
         h += `<div class="${cssClass('color-line')}">
-          ${colors.map((d) => `<label class="${cssClass('checkbox-color')}">
-              <input name="color" type="radio" value="${d}" ${d === refColor ? 'checked="checked"' : ''}>
-              <span style="background: ${d}"></span>
-            </label>`).join('')}
+          ${colors.map(renderColor).join('')}
+          ${i === 0 ? renderColor(DEFAULT_COLOR) : ''}
         </div>`;
-      }
+      });
       h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
         <span class="${cssClass('color-custom')}"><input type="color" name="solid" list="${id}L" value="${current instanceof SolidColorFunction ? current.color : DEFAULT_COLOR}" ${refColor && !has ? '' : 'disabled'}></span>
       </label>`;
@@ -115,9 +117,14 @@ export default class ColorMappingDialog extends ADialog {
     }
   }
 
-  protected build(node: HTMLElement, value = this.column.getColorMapping()) {
-    node.classList.add(cssClass('dialog-color'));
+  protected build(node: HTMLElement) {
+    const content = node.ownerDocument!.createElement('div');
+    content.classList.add(cssClass('dialog-color'));
+    node.appendChild(content);
+    this.render(content, this.column.getColorMapping());
+  }
 
+  private render(node: HTMLElement, value: IColorMappingFunction) {
     const id = this.id;
     node.innerHTML = this.createTemplate(id, value);
 
@@ -195,7 +202,7 @@ export default class ColorMappingDialog extends ADialog {
   }
 
   protected reset() {
-    this.build(this.node, DEFAULT_COLOR_FUNCTION);
+    this.render(this.node.querySelector<HTMLElement>(`.${cssClass('dialog-color')}`)!, DEFAULT_COLOR_FUNCTION);
   }
 
   protected submit() {
