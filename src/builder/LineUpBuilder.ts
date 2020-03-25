@@ -1,4 +1,4 @@
-import {IDynamicHeight, ITaggleOptions} from '../config';
+import {IDynamicHeight, ITaggleOptions, ILivePreviewOptions} from '../config';
 import Column, {IGroupData, IGroupItem, Ranking} from '../model';
 import {ICellRendererFactory, ERenderMode} from '../renderer';
 import {IToolbarAction, IToolbarDialogAddon} from '../ui';
@@ -22,23 +22,7 @@ export default class LineUpBuilder {
     return this;
   }
 
-  livePreviews(obj: {search?: boolean, filter?: boolean, vis?: boolean, sort?: boolean, group?: boolean, groupSort?: boolean, colorMapping?: boolean, dataMapping?: boolean}) {
-    const features: {[key: string]: boolean} = Object.assign({
-      // 'search', 'filter', 'vis', 'sort', 'group', 'sortGroup', 'colorMapping'
-      search: true,
-      filter: true,
-      vis: true,
-      group: true,
-      sort: true,
-      sortGroup: true,
-      colorMapping: true,
-    }, obj);
-    const options: string[] = [];
-    Object.keys(features).forEach((key) => {
-      if (features[key]) {
-        options.push(key);
-      }
-    });
+  livePreviews(options: Partial<ILivePreviewOptions>) {
     this.options.livePreviews = options;
     return this;
   }

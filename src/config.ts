@@ -52,6 +52,21 @@ export interface ILineUpFlags {
   advancedUIFeatures: boolean;
 }
 
+export interface ILivePreviewOptions {
+  search: boolean;
+  filter: boolean;
+  vis: boolean;
+  sort: boolean;
+  group: boolean;
+  groupSort: boolean;
+  colorMapping: boolean;
+  dataMapping: boolean;
+  reduce: boolean;
+  rename: boolean;
+  cutOff: boolean;
+}
+
+
 export interface ILineUpOptions {
   /**
    * option to enable/disable showing a summary (histogram, ...) in the header
@@ -92,9 +107,9 @@ export interface ILineUpOptions {
 
   /**
    * flag whether to shows filter previews as soon as the user changes the filter in the dialog
-   * @default ['filter', 'vis']
+   * @default {search: true,filter: true, vis: true,sort: true, group: true, groupSort: true, colorMapping: true}
    */
-  livePreviews: string[];
+  livePreviews: Partial<ILivePreviewOptions>;
 
   /**
    * option to specify the default slope graph mode
@@ -209,7 +224,15 @@ export function defaultOptions(): ITaggleOptions {
     defaultSlopeGraphMode: 'item',
     overviewMode: false,
 
-    livePreviews: ['search', 'filter', 'vis', 'sort', 'group', 'sortGroup', 'colorMapping'],
+    livePreviews: {
+      search: true,
+      filter: true,
+      vis: true,
+      sort: true,
+      group: true,
+      groupSort: true,
+      colorMapping: true
+    },
     onDialogBackgroundClick: 'cancel',
 
     rowHeight: 18,

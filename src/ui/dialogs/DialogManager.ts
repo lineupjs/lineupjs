@@ -1,6 +1,7 @@
 import ADialog from './ADialog';
 import Column from '../../model';
 import {cssClass} from '../../styles';
+import {ILivePreviewOptions} from '../../config';
 
 export default class DialogManager {
 
@@ -12,10 +13,10 @@ export default class DialogManager {
 
   private readonly openDialogs: ADialog[] = [];
   readonly node: HTMLElement;
-  readonly livePreviews: string[];
+  readonly livePreviews: Partial<ILivePreviewOptions>;
   readonly onDialogBackgroundClick: 'cancel' | 'confirm';
 
-  constructor(options: {doc: Document, livePreviews: string[], onDialogBackgroundClick: 'cancel' | 'confirm'}) {
+  constructor(options: {doc: Document, livePreviews: Partial<ILivePreviewOptions>, onDialogBackgroundClick: 'cancel' | 'confirm'}) {
     const doc = options.doc;
     this.livePreviews = options.livePreviews;
     this.onDialogBackgroundClick = options.onDialogBackgroundClick;

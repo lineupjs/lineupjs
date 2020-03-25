@@ -3,10 +3,11 @@ import DialogManager from './DialogManager';
 import {merge} from '../../internal';
 import {cssClass} from '../../styles';
 import {IRankingHeaderContext} from '../interfaces';
+import {ILivePreviewOptions} from '../../config';
 
 export interface IDialogOptions {
   title: string;
-  livePreview: boolean | string;
+  livePreview: boolean | keyof ILivePreviewOptions;
   popup: boolean;
   // popper options
   placement?: Popper.Placement;
@@ -63,7 +64,7 @@ abstract class ADialog {
   protected abstract build(node: HTMLElement): boolean | void;
 
   protected showLivePreviews() {
-    return this.options.livePreview === true || (typeof this.options.livePreview === 'string' && this.dialog.manager.livePreviews.includes(this.options.livePreview));
+    return this.options.livePreview === true || (typeof this.options.livePreview === 'string' && this.dialog.manager.livePreviews[this.options.livePreview] === true);
   }
 
   protected enableLivePreviews(selector: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[]) {
