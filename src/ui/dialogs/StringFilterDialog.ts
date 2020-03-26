@@ -6,6 +6,15 @@ import {cssClass} from '../../styles';
 import {debounce} from '../../internal';
 
 
+function toInput(text: string, isRegex: boolean) {
+  const v = text.trim();
+  if (v === '') {
+    return null;
+  }
+  return isRegex ? new RegExp(v, 'gm') : v;
+}
+
+
 /** @internal */
 export default class StringFilterDialog extends ADialog {
 
@@ -20,7 +29,7 @@ export default class StringFilterDialog extends ADialog {
   }
 
   private updateFilter(filter: string | RegExp | null, filterMissing: boolean) {
-    updateFilterState(this.attachment, this.column, filterMissing || (filter != null && filter !== ''));
+    updateFilterState(this.attachment, this.column, filterMissing || filter != null);
     this.column.setFilter({filter, filterMissing});
   }
 
@@ -41,7 +50,7 @@ export default class StringFilterDialog extends ADialog {
     const filterMissing = findFilterMissing(this.node).checked;
     const input = this.findInput('input[type="text"]').value;
     const isRegex = this.findInput('input[type="checkbox"]').checked;
-    this.updateFilter(isRegex ? new RegExp(input, 'gm') : input, filterMissing);
+    this.updateFilter(toInput(input, isRegex), filterMissing);
     return true;
   }
 
