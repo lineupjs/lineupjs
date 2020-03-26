@@ -127,7 +127,7 @@ const rename: IToolbarAction = {
     dialog.open();
   },
   options: {
-    order: 4,
+    order: 5,
     featureCategory: 'ui',
     featureLevel: 'advanced'
   }
@@ -276,7 +276,7 @@ export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddo
   remove,
   rename,
   setShowTopN,
-  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {shortcut: true, order: 3, featureCategory: 'ranking', featureLevel: 'basic'}),
+  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {shortcut: true, order: 4, featureCategory: 'ranking', featureLevel: 'basic'}),
   filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
   filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
   filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
