@@ -1,7 +1,7 @@
 import {GridStyleManager} from 'lineupengine';
 import {defaultOptions} from '../../config';
 import {ITaggleOptions} from '../../config';
-import {merge} from '../../internal';
+import {merge, suffix} from '../../internal';
 import {DataProvider} from '../../provider';
 import {cssClass, engineCssClass} from '../../styles';
 import {ALineUp} from '../ALineUp';
@@ -63,7 +63,7 @@ export default class Taggle extends ALineUp {
         this.renderer.switchRule(spaceFilling);
       }
     }
-    this.forward(this.renderer, `${ALineUp.EVENT_HIGHLIGHT_CHANGED}.main`);
+    this.forward(this.renderer, ...suffix('.main', TaggleRenderer.EVENT_HIGHLIGHT_CHANGED, TaggleRenderer.EVENT_DIALOG_OPENED, TaggleRenderer.EVENT_DIALOG_CLOSED));
   }
 
   private updateLodRules(overviewMode: boolean) {

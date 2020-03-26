@@ -1,5 +1,5 @@
 import {ILineUpOptions, defaultOptions} from '../config';
-import {merge} from '../internal';
+import {merge, suffix} from '../internal';
 import {DataProvider} from '../provider';
 import {cssClass} from '../styles';
 import {ALineUp} from './ALineUp';
@@ -37,7 +37,7 @@ export default class LineUp extends ALineUp {
     } else {
       this.panel = null;
     }
-    this.forward(this.renderer, `${EngineRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
+    this.forward(this.renderer, ...suffix('.main', EngineRenderer.EVENT_HIGHLIGHT_CHANGED, EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED));
   }
 
   destroy() {

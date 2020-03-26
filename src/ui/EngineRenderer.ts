@@ -12,6 +12,7 @@ import domElementCache from './domElementCache';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {EMode, IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph from './SlopeGraph';
+import {ADialog} from './dialogs';
 
 /**
  * emitted when the highlight changes
@@ -21,8 +22,26 @@ import SlopeGraph from './SlopeGraph';
  */
 export declare function highlightChanged(dataIndex: number): void;
 
+/**
+ * emitted a dialog is opened
+ * @asMemberOf EngineRenderer
+ * @param dialog the opened dialog
+ * @event
+ */
+export declare function dialogOpenedER(dialog: ADialog): void;
+/**
+ * emitted a dialog is closed
+ * @asMemberOf EngineRenderer
+ * @param dialog the closed dialog
+ * @param action the action how the dialog was closed
+ * @event
+ */
+export declare function dialogClosedER(dialog: ADialog, action: 'cancel' | 'confirm'): void;
+
 export default class EngineRenderer extends AEventDispatcher {
   static readonly EVENT_HIGHLIGHT_CHANGED = EngineRanking.EVENT_HIGHLIGHT_CHANGED;
+  static readonly EVENT_DIALOG_OPENED = DialogManager.EVENT_DIALOG_OPENED;
+  static readonly EVENT_DIALOG_CLOSED = DialogManager.EVENT_DIALOG_CLOSED;
 
   protected readonly options: Readonly<ILineUpOptions>;
 
@@ -53,6 +72,7 @@ export default class EngineRenderer extends AEventDispatcher {
       livePreviews: options.livePreviews,
       onDialogBackgroundClick: options.onDialogBackgroundClick,
     });
+    this.forward(dialogManager, ...suffix('.main', EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED));
 
     parent.appendChild(dialogManager.node);
     this.ctx = {
@@ -182,10 +202,12 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([EngineRenderer.EVENT_HIGHLIGHT_CHANGED]);
+    return super.createEventList().concat([EngineRenderer.EVENT_HIGHLIGHT_CHANGED, EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED]);
   }
 
   on(type: typeof EngineRenderer.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  on(type: typeof EngineRenderer.EVENT_DIALOG_OPENED, listener: typeof dialogOpenedER | null): this;
+  on(type: typeof EngineRenderer.EVENT_DIALOG_CLOSED, listener: typeof dialogClosedER | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);

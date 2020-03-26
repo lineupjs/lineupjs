@@ -146,7 +146,7 @@ abstract class ADialog {
         return false;
       }
       if (this.submit()) {
-        this.destroy(true);
+        this.destroy('confirm');
       }
       return false;
     };
@@ -156,7 +156,7 @@ abstract class ADialog {
         evt.stopPropagation();
         evt.preventDefault();
         this.cancel();
-        this.destroy(true);
+        this.destroy('cancel');
       };
     }
 
@@ -181,21 +181,26 @@ abstract class ADialog {
 
   protected abstract cancel(): void;
 
-  onBackgroundClick(action: 'cancel' | 'confirm' | 'auto') {
+  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
     if (action === 'confirm') {
       this.submit(); // TODO what if submit wasn't successful?
     } else if (action === 'cancel') {
       this.cancel();
     }
-    this.destroy(true);
-  }
 
-  protected destroy(handled = false) {
-    this.dialog.manager.remove(this, handled);
+    if (action !== 'handled') {
+      this.dialog.manager.triggerDialogClosed(this, action);
+    }
+
     if (this.popper) {
       this.popper.destroy();
     }
     this.node.remove();
+  }
+
+  protected destroy(action: 'cancel' | 'confirm' = 'cancel') {
+    this.dialog.manager.triggerDialogClosed(this, action);
+    this.dialog.manager.remove(this, true);
   }
 }
 

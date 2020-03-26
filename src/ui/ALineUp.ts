@@ -4,6 +4,8 @@ import {AEventDispatcher, IEventListener, clear} from '../internal';
 import {Column} from '../model';
 import {DataProvider, IDataProviderDump} from '../provider';
 import {cssClass} from '../styles';
+import DialogManager from './dialogs/DialogManager';
+import {ADialog} from './dialogs';
 
 
 /**
@@ -21,9 +23,26 @@ export declare function highlightChanged(dataIndex: number): void;
  * @event
  */
 export declare function selectionChanged(dataIndices: number[]): void;
+/**
+ * emitted a dialog is opened
+ * @asMemberOf ALineUp
+ * @param dialog the opened dialog
+ * @event
+ */
+export declare function dialogOpened(dialog: ADialog): void;
+/**
+ * emitted a dialog is closed
+ * @asMemberOf ALineUp
+ * @param dialog the closed dialog
+ * @param action the action how the dialog was closed
+ * @event
+ */
+export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confirm'): void;
 
 export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   static readonly EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
+  static readonly EVENT_DIALOG_OPENED = DialogManager.EVENT_DIALOG_OPENED;
+  static readonly EVENT_DIALOG_CLOSED = DialogManager.EVENT_DIALOG_CLOSED;
   static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
   private highlightListeners = 0;
@@ -51,11 +70,13 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ALineUp.EVENT_HIGHLIGHT_CHANGED, ALineUp.EVENT_SELECTION_CHANGED]);
+    return super.createEventList().concat([ALineUp.EVENT_HIGHLIGHT_CHANGED, ALineUp.EVENT_SELECTION_CHANGED, ALineUp.EVENT_DIALOG_OPENED, ALineUp.EVENT_DIALOG_CLOSED]);
   }
 
   on(type: typeof ALineUp.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
   on(type: typeof ALineUp.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
+  on(type: typeof ALineUp.EVENT_DIALOG_OPENED, listener: typeof dialogOpened | null): this;
+  on(type: typeof ALineUp.EVENT_DIALOG_CLOSED, listener: typeof dialogClosed | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);

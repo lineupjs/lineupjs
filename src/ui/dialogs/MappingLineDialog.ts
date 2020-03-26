@@ -40,7 +40,7 @@ export default class MappingLineDialog extends APopup {
 
     this.forEach('input', (d: HTMLInputElement) => d.onchange = () => this.submit());
     this.find('button').addEventListener('click', () => {
-      this.destroy();
+      this.destroy('confirm');
       this.line.destroy();
     }, {
       passive: true

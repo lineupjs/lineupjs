@@ -33,7 +33,7 @@ export default class MoreRankingOptionsDialog extends APopup {
     this.addIcon(node, 'Remove', (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
-      this.destroy();
+      this.destroy('confirm');
       this.ctx.provider.removeRanking(this.ranking);
     });
   }
