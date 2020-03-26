@@ -30,7 +30,11 @@ export default class StringFilterDialog extends ADialog {
 
   private updateFilter(filter: string | RegExp | null, filterMissing: boolean) {
     updateFilterState(this.attachment, this.column, filterMissing || filter != null);
-    this.column.setFilter({filter, filterMissing});
+    if (filter == null && !filterMissing) {
+      this.column.setFilter(null);
+    } else {
+      this.column.setFilter({filter, filterMissing});
+    }
   }
 
   protected reset() {
@@ -40,7 +44,7 @@ export default class StringFilterDialog extends ADialog {
 
   protected cancel() {
     if (this.before) {
-      this.updateFilter(this.before.filter, this.before.filterMissing);
+      this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing);
     } else {
       this.updateFilter(null, false);
     }
