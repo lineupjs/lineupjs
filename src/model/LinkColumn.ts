@@ -4,7 +4,7 @@ import {IDataRow, IGroup, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {patternFunction} from './internal';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener, ISequence} from '../internal';
-import {IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType} from './StringColumn';
+import {IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType, IStringFilter} from './StringColumn';
 import StringColumn from './StringColumn';
 
 export interface ILinkDesc extends IStringDesc {
@@ -187,7 +187,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return this.currentFilter;
   }
 
-  setFilter(filter: string | RegExp | null) {
+  setFilter(filter: IStringFilter) {
     return StringColumn.prototype.setFilter.call(this, filter);
   }
 
