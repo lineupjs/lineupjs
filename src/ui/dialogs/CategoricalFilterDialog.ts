@@ -14,7 +14,7 @@ export default class CategoricalFilterDialog extends ADialog {
     super(dialog, {
       livePreview: 'filter'
     });
-    this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
+    this.before = this.column.getFilter() || {filter: '', filterMissing: false};
   }
 
   protected build(node: HTMLElement) {
@@ -55,7 +55,7 @@ export default class CategoricalFilterDialog extends ADialog {
   }
 
   protected cancel() {
-    this.updateFilter(this.before.filter, this.before.filterMissing);
+    this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing);
   }
 
   protected submit() {
