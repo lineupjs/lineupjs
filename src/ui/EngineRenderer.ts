@@ -57,8 +57,8 @@ export default class EngineRenderer extends AEventDispatcher {
       provider: data,
       tasks: data.getTaskExecutor(),
       dialogManager,
-      resolveToolbarActions: (col, keys) => this.options.resolveToolbarActions(col, keys, this.options.toolbar),
-      resolveToolbarDialogAddons: (col, keys) => this.options.resolveToolbarDialogAddons(col, keys, this.options.toolbar),
+      resolveToolbarActions: (col, keys) => this.options.resolveToolbarActions(col, keys, this.options.toolbarActions),
+      resolveToolbarDialogAddons: (col, keys) => this.options.resolveToolbarDialogAddons(col, keys, this.options.toolbarDialogAddons),
       flags: <ILineUpFlags>this.options.flags,
       asElement: domElementCache(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {

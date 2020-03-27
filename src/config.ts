@@ -1,5 +1,5 @@
 import {renderers} from './renderer/renderers';
-import {toolbarActions} from './ui/toolbar';
+import {toolbarActions, toolbarDialogAddons} from './ui/toolbar';
 import {Column, Ranking, IGroupData, IGroupItem} from './model';
 import {IDataProvider} from './provider';
 import {ICellRendererFactory, ERenderMode} from './renderer';
@@ -52,8 +52,8 @@ export interface ILineUpFlags {
   advancedUIFeatures: boolean;
 }
 
-export interface IToolbarLookup {
-  [key: string]: IToolbarAction | IToolbarDialogAddon;
+export interface IToolbarLookup<T> {
+  [key: string]: T;
 }
 
 export interface ILineUpOptions {
@@ -144,16 +144,17 @@ export interface ILineUpOptions {
   /**
    * register custom toolbar actions and dialog addons
    */
-  toolbar: IToolbarLookup;
+  toolbarActions: IToolbarLookup<IToolbarAction>;
+  toolbarDialogAddons: IToolbarLookup<IToolbarDialogAddon>;
 
   /**
    * hook for postprocess the toolbar actions for a column
    */
-  resolveToolbarActions: (col: Column, keys: string[], lookup: IToolbarLookup) => IToolbarAction[];
+  resolveToolbarActions: (col: Column, keys: string[], lookup: IToolbarLookup<IToolbarAction>) => IToolbarAction[];
   /**
    * hook for postprocess the toolbar dialog addons for a column
    */
-  resolveToolbarDialogAddons: (col: Column, keys: string[], lookup: IToolbarLookup) => IToolbarDialogAddon[];
+  resolveToolbarDialogAddons: (col: Column, keys: string[], lookup: IToolbarLookup<IToolbarDialogAddon>) => IToolbarDialogAddon[];
 
   /**
    * register custom renderer factories
@@ -194,12 +195,12 @@ export interface ILineUpLike {
   destroy(): void;
 }
 
-function resolveToolbarActions(col: Column, keys: string[], lookup: IToolbarLookup) {
+function resolveToolbarActions(col: Column, keys: string[], lookup: IToolbarLookup<IToolbarAction>) {
   const actions: IToolbarAction[] = [];
 
   keys.forEach((key) => {
     if (lookup.hasOwnProperty(key)) {
-      actions.push(<IToolbarAction>lookup[key]);
+      actions.push(lookup[key]);
     } else {
       console.warn(`cannot find toolbar action of type: "${col.desc.type}" with key "${key}"`);
     }
@@ -207,12 +208,12 @@ function resolveToolbarActions(col: Column, keys: string[], lookup: IToolbarLook
   return actions;
 }
 
-function resolveToolbarDialogAddons(col: Column, keys: string[], lookup: IToolbarLookup) {
+function resolveToolbarDialogAddons(col: Column, keys: string[], lookup: IToolbarLookup<IToolbarDialogAddon>) {
   const actions: IToolbarDialogAddon[] = [];
 
   keys.forEach((key) => {
     if (lookup.hasOwnProperty(key)) {
-      actions.push(<IToolbarDialogAddon>lookup[key]);
+      actions.push(lookup[key]);
     } else {
       console.warn(`cannot find toolbar dialog addon of type: "${col.desc.type}" with key "${key}"`);
     }
@@ -223,7 +224,8 @@ function resolveToolbarDialogAddons(col: Column, keys: string[], lookup: IToolba
 
 export function defaultOptions(): ITaggleOptions {
   return {
-    toolbar: Object.assign({}, toolbarActions),
+    toolbarActions,
+    toolbarDialogAddons,
     resolveToolbarActions,
     resolveToolbarDialogAddons,
     renderers: Object.assign({}, renderers),

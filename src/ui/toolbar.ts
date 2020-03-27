@@ -215,14 +215,14 @@ function toggleCompressExpand(col: Column, evt: MouseEvent, ctx: IRankingHeaderC
   }
 }
 
-const compress = {
+const compress: IToolbarAction = {
   title: 'Compress',
   enabled: (col: IMultiLevelColumn) => !col.getCollapsed(),
   onClick: toggleCompressExpand,
   options: {featureCategory: 'model', featureLevel: 'advanced'}
 };
 
-const expand = {
+const expand: IToolbarAction = {
   title: 'Expand',
   enabled: (col: IMultiLevelColumn) => col.getCollapsed(),
   onClick: toggleCompressExpand,
@@ -241,7 +241,7 @@ const setShowTopN: IToolbarAction = {
   }
 };
 
-const toolbarAddons: {[key: string]: IToolbarDialogAddon} = {
+export const toolbarDialogAddons: {[key: string]: IToolbarDialogAddon} = {
   sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
@@ -264,7 +264,7 @@ const toolbarAddons: {[key: string]: IToolbarDialogAddon} = {
   },
 };
 
-export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddon} = Object.assign({
+export const toolbarActions: {[key: string]: IToolbarAction} = {
   vis,
   group,
   groupBy,
@@ -311,7 +311,7 @@ export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddo
     const others = order.filter((d) => !ss.has(d));
     ctx.provider.setSelection(others);
   }, {featureCategory: 'model', featureLevel: 'advanced'})
-}, toolbarAddons);
+};
 
 function sortActions(a: IToolbarAction, b: IToolbarAction) {
   if (a.options.order === b.options.order) {

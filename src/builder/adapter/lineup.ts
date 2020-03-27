@@ -7,7 +7,7 @@ import {equal, isSame, pick} from './utils';
 
 
 const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = ['singleSelection', 'filterGlobally', 'columnTypes', 'taskExecutor', 'jumpToSearchResult'];
-const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'canRender', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser'];
+const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'canRender', 'toolbarActions', 'toolbarDialogAddons', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser'];
 
 interface IRankingContext {
   builders: IBuilderAdapterRankingProps[];
