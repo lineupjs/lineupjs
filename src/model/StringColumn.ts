@@ -3,7 +3,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, othersGroup, ITypeFactory} from './interfaces';
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import {equal, IEventListener} from '../internal';
+import {equal, IEventListener, ISequence, isSeqEmpty} from '../internal';
 
 export enum EAlignment {
   left = 'left',
@@ -61,7 +61,7 @@ export declare function groupingChanged_SC(previous: (RegExp | string)[][], curr
 /**
  * a string column with optional alignment
  */
-@toolbar('rename', 'clone', 'sort', 'sortBy', 'search', 'groupBy', 'filterString')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'search', 'groupBy', 'sortGroupBy', 'filterString')
 @dialogAddons('group', 'groupString')
 @Category('string')
 export default class StringColumn extends ValueColumn<string> {
@@ -282,6 +282,24 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   toCompareValueType() {
+    return ECompareValueType.STRING;
+  }
+
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>) {
+    if (isSeqEmpty(rows)) {
+      return null;
+    }
+    // take the smallest one
+    if (valueCache) {
+      return valueCache.reduce((acc, v) => acc == null || v < acc ? v : acc, <null |string>null);
+    }
+    return rows.reduce((acc, d) => {
+      const v = this.getValue(d);
+      return acc == null || (v != null && v < acc) ? v : acc;
+    }, <null | string>null);
+  }
+
+  toCompareGroupValueType() {
     return ECompareValueType.STRING;
   }
 }
