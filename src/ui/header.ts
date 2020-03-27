@@ -102,7 +102,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sortgroup'))[0]!;
+  const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sort-groups'))[0]!;
   if (sortGroups) {
     const {asc, priority} = col.isGroupSortedByMe();
     sortGroups.dataset.sort = asc !== undefined ? asc : '';
