@@ -7,6 +7,11 @@ import EngineRenderer from './EngineRenderer';
 import SidePanel from './panel/SidePanel';
 
 export default class LineUp extends ALineUp {
+  static readonly EVENT_SELECTION_CHANGED = ALineUp.EVENT_SELECTION_CHANGED;
+  static readonly EVENT_DIALOG_OPENED = ALineUp.EVENT_DIALOG_OPENED;
+  static readonly EVENT_DIALOG_CLOSED = ALineUp.EVENT_DIALOG_CLOSED;
+  static readonly EVENT_HIGHLIGHT_CHANGED = ALineUp.EVENT_HIGHLIGHT_CHANGED;
+
   private readonly renderer: EngineRenderer | null;
   private readonly panel: SidePanel | null;
 
