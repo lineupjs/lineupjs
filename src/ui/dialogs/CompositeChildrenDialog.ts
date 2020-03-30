@@ -2,11 +2,12 @@ import {debounce, clear, suffix} from '../../internal';
 import {CompositeColumn} from '../../model';
 import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
 import {cssClass, engineCssClass} from '../../styles';
+import APopup from './APopup';
 
 /** @internal */
-export default class CompositeChildrenDialog extends ADialog {
+export default class CompositeChildrenDialog extends APopup {
 
   private readonly id: string;
 
@@ -15,9 +16,9 @@ export default class CompositeChildrenDialog extends ADialog {
     this.id = `.dialog${Math.random().toString(36).slice(-8).substr(0, 3)}`;
   }
 
-  destroy() {
+  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+    super.cleanUp(action);
     this.column.on(suffix(this.id, CompositeColumn.EVENT_ADD_COLUMN, CompositeColumn.EVENT_REMOVE_COLUMN), null);
-    super.destroy();
   }
 
   protected build(node: HTMLElement) {

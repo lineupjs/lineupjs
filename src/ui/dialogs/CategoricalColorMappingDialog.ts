@@ -1,4 +1,4 @@
-import {ICategoricalColumn, CategoricalsColumn, CategoricalMapColumn, ICategory} from '../../model';
+import {ICategoricalColumn, CategoricalsColumn, CategoricalMapColumn, ICategory, ICategoricalColorMappingFunction} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
 import {uniqueId} from './utils';
 import {cssClass} from '../../styles';
@@ -11,10 +11,14 @@ const sets: {[key: string]: ReadonlyArray<string>} = {schemeCategory10, schemeAc
 /** @internal */
 export default class CategoricalColorMappingDialog extends ADialog {
 
+  private readonly before: ICategoricalColorMappingFunction;
+
   constructor(private readonly column: ICategoricalColumn | CategoricalsColumn | CategoricalMapColumn, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'colorMapping'
     });
+
+    this.before = column.getColorMapping().clone();
   }
 
   protected build(node: HTMLElement) {
@@ -49,7 +53,12 @@ export default class CategoricalColorMappingDialog extends ADialog {
       this.forEach('[data-cat]', (n: HTMLInputElement, i) => {
         n.value = scheme[i % scheme.length];
       });
+      if (this.showLivePreviews()) {
+        this.submit();
+      }
     };
+
+    this.enableLivePreviews('input[type=color]');
   }
 
   reset() {
@@ -57,7 +66,6 @@ export default class CategoricalColorMappingDialog extends ADialog {
     this.forEach('[data-cat]', (n: HTMLInputElement, i) => {
       n.value = color(cats[i]!.color)!.hex();
     });
-    this.column.setColorMapping(DEFAULT_CATEGORICAL_COLOR_FUNCTION);
   }
 
   submit() {
@@ -75,5 +83,9 @@ export default class CategoricalColorMappingDialog extends ADialog {
       this.column.setColorMapping(new ReplacmentColorMappingFunction(map));
     }
     return true;
+  }
+
+  cancel() {
+    this.column.setColorMapping(this.before);
   }
 }

@@ -1,5 +1,6 @@
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
 import {timeFormat} from 'd3-time-format';
+import APopup from './APopup';
 
 /** @internal */
 export interface IInputDateOptions {
@@ -8,7 +9,7 @@ export interface IInputDateOptions {
 }
 
 /** @internal */
-export default class InputDateDialog extends ADialog {
+export default class InputDateDialog extends APopup {
 
   private readonly ioptions: Readonly<IInputDateOptions> = {
     value: null,

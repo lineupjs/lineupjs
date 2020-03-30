@@ -3,6 +3,7 @@ import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import {IDataRow} from './interfaces';
 import {EAlignment, IStringDesc} from './StringColumn';
 import {isMissingValue} from './missing';
+import {integrateDefaults} from './internal';
 
 export declare type IStringsColumnDesc = IStringDesc & IArrayColumnDesc<string>;
 
@@ -15,8 +16,9 @@ export default class StringsColumn extends ArrayColumn<string> {
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<IStringsColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200
+    }));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
   }

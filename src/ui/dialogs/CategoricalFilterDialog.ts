@@ -1,7 +1,7 @@
 import {SetColumn, CategoricalColumn, ICategoricalFilter} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, forEach} from './utils';
+import {forEach} from './utils';
 import {cssClass} from '../../styles';
 import {isCategoryIncluded} from '../../model/internalCategorical';
 
@@ -12,9 +12,9 @@ export default class CategoricalFilterDialog extends ADialog {
 
   constructor(private readonly column: CategoricalColumn | SetColumn, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'filter'
     });
-    this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
+    this.before = this.column.getFilter() || {filter: '', filterMissing: false};
   }
 
   protected build(node: HTMLElement) {
@@ -40,20 +40,25 @@ export default class CategoricalFilterDialog extends ADialog {
       forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = selectAll.checked);
     };
     node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
+
+    this.enableLivePreviews('input[type=checkbox]');
   }
 
-  private updateFilter(filter: string[] | null, filterMissing: boolean) {
+  private updateFilter(filter: string[] | null | RegExp | string, filterMissing: boolean) {
     const noFilter = filter == null && filterMissing === false;
-    updateFilterState(this.attachment, this.column, !noFilter);
     this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
   }
 
-  reset() {
+  protected reset() {
     this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked = true);
-    this.updateFilter(null, false);
+    findFilterMissing(this.node).checked = false;
   }
 
-  submit() {
+  protected cancel() {
+    this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing);
+  }
+
+  protected submit() {
     let f: string[] | null = this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked ? n.dataset.cat! : '').filter(Boolean);
     if (f.length === this.column.categories.length) { // all checked = no filter
       f = null;

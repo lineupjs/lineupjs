@@ -3,12 +3,12 @@ import DialogManager from './DialogManager';
 import {merge} from '../../internal';
 import {cssClass} from '../../styles';
 import {IRankingHeaderContext} from '../interfaces';
+import {ILivePreviewOptions} from '../../config';
 
 export interface IDialogOptions {
   title: string;
-  fullDialog: boolean;
-  resetPossible: boolean;
-
+  livePreview: boolean | keyof ILivePreviewOptions;
+  popup: boolean;
   // popper options
   placement?: Popper.Placement;
   eventsEnabled?: boolean;
@@ -36,8 +36,8 @@ abstract class ADialog {
 
   private readonly options: Readonly<IDialogOptions> = {
     title: '',
-    fullDialog: false,
-    resetPossible: true,
+    livePreview: false,
+    popup: false,
     placement: 'bottom-start',
     toggleDialog: true,
     modifiers: {
@@ -63,6 +63,28 @@ abstract class ADialog {
 
   protected abstract build(node: HTMLElement): boolean | void;
 
+  protected showLivePreviews() {
+    return this.options.livePreview === true || (typeof this.options.livePreview === 'string' && this.dialog.manager.livePreviews[this.options.livePreview] === true);
+  }
+
+  protected enableLivePreviews(selector: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[]) {
+    if (!this.showLivePreviews()) {
+      return;
+    }
+    const submitter = () => {
+      this.submit();
+    };
+    if (typeof selector === 'string') {
+      this.forEach(selector, (n: HTMLInputElement | HTMLSelectElement) => {
+        n.addEventListener('change', submitter, {passive: true});
+      });
+    } else {
+      selector.forEach((n) => {
+        n.addEventListener('change', submitter, {passive: true});
+      });
+    }
+  }
+
   equals(that: ADialog) {
     return this.dialog.level === that.dialog.level && this.dialog.attachment === that.dialog.attachment;
   }
@@ -71,7 +93,7 @@ abstract class ADialog {
     this.node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-buttons')}">
       <button class="${cssClass('dialog-button')}" type="submit" title="Apply"></button>
       <button class="${cssClass('dialog-button')}" type="button" title="Cancel"></button>
-      <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values" ${!this.options.resetPossible ? 'style="visibility: hidden"': ''}></button>
+      <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values"></button>
     </div>`);
   }
 
@@ -87,7 +109,7 @@ abstract class ADialog {
     if (this.options.title) {
       this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
     }
-    if (this.options.fullDialog) {
+    if (!this.options.popup) {
       this.appendDialogButtons();
     }
 
@@ -112,6 +134,9 @@ abstract class ADialog {
         evt.stopPropagation();
         evt.preventDefault();
         this.reset();
+        if (this.showLivePreviews()) {
+          this.submit();
+        }
       };
     }
     this.node.onsubmit = (evt) => {
@@ -121,7 +146,7 @@ abstract class ADialog {
         return false;
       }
       if (this.submit()) {
-        this.destroy();
+        this.destroy('confirm');
       }
       return false;
     };
@@ -130,7 +155,8 @@ abstract class ADialog {
       cancel.onclick = (evt) => {
         evt.stopPropagation();
         evt.preventDefault();
-        this.destroy();
+        this.cancel();
+        this.destroy('cancel');
       };
     }
 
@@ -149,21 +175,32 @@ abstract class ADialog {
     return (<M[]>Array.from(this.node.querySelectorAll(selector))).map(callback);
   }
 
-  protected reset() {
-    // hook
-  }
+  protected abstract reset(): void;
 
-  protected submit(): boolean {
-    // hook
-    return true;
-  }
+  protected abstract submit(): boolean;
 
-  destroy() {
-    this.dialog.manager.remove(this);
+  protected abstract cancel(): void;
+
+  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+    if (action === 'confirm') {
+      this.submit(); // TODO what if submit wasn't successful?
+    } else if (action === 'cancel') {
+      this.cancel();
+    }
+
+    if (action !== 'handled') {
+      this.dialog.manager.triggerDialogClosed(this, action);
+    }
+
     if (this.popper) {
       this.popper.destroy();
     }
     this.node.remove();
+  }
+
+  protected destroy(action: 'cancel' | 'confirm' = 'cancel') {
+    this.dialog.manager.triggerDialogClosed(this, action);
+    this.dialog.manager.remove(this, true);
   }
 }
 

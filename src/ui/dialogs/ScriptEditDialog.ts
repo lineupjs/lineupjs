@@ -7,9 +7,7 @@ export default class ScriptEditDialog extends ADialog {
   private readonly before: string;
 
   constructor(private readonly column: ScriptColumn, dialog: IDialogContext) {
-    super(dialog, {
-      fullDialog: true
-    });
+    super(dialog);
     this.before = column.getScript();
   }
 
@@ -17,9 +15,12 @@ export default class ScriptEditDialog extends ADialog {
     node.insertAdjacentHTML('beforeend', `<textarea class="${cssClass('textarea')}" autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${this.column.getScript()}</textarea>`);
   }
 
-  protected reset() {
-    this.node.querySelector('textarea')!.value = this.before;
+  protected cancel() {
     this.column.setScript(this.before);
+  }
+
+  protected reset() {
+    this.node.querySelector('textarea')!.value = (<any>this.column.desc).script || ScriptColumn.DEFAULT_SCRIPT;
   }
 
   protected submit() {

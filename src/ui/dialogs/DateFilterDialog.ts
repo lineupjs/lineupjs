@@ -1,29 +1,36 @@
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, uniqueId} from './utils';
+import {uniqueId} from './utils';
 import {DateColumn, IDateFilter} from '../../model';
-import {isDummyDateFilter, noDateFilter, shiftFilterDateDay} from '../../model/internalDate';
+import {noDateFilter, shiftFilterDateDay} from '../../model/internalDate';
 import {timeFormat} from 'd3-time-format';
 
 /** @internal */
 export default class DateFilterDialog extends ADialog {
 
+  private readonly before: IDateFilter;
+
   constructor(private readonly column: DateColumn, dialog: IDialogContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'filter'
+    });
+    this.before = this.column.getFilter() || noDateFilter();
   }
 
   private updateFilter(filter: IDateFilter | null) {
-    updateFilterState(this.attachment, this.column, filter != null && !isDummyDateFilter(filter));
     this.column.setFilter(filter);
   }
 
-  reset() {
+  protected reset() {
     this.forEach('input[type=date]', (n: HTMLInputElement) => n.value = '');
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => n.checked = false);
-    this.updateFilter(null);
   }
 
-  submit() {
+  protected cancel() {
+    this.updateFilter(this.before);
+  }
+
+  protected submit() {
     const filterMissing = findFilterMissing(this.node).checked;
     const from: Date | null = this.findInput('input[name="from"]').valueAsDate;
     const to: Date | null = this.findInput('input[name="to"]').valueAsDate;
@@ -36,7 +43,7 @@ export default class DateFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    const act = this.column.getFilter() || noDateFilter();
+    const act = this.before;
     const id = uniqueId(this.dialog.idPrefix);
 
     const f = timeFormat('%Y-%m-%d');
@@ -48,10 +55,6 @@ export default class DateFilterDialog extends ADialog {
     <input type="date" id="${id}T" name="to" placeholder="To..." value="${isFinite(act.max) ? f(new Date(act.max)) : ''}">
     ${filterMissingMarkup(act.filterMissing)}`);
 
-    const update = () => {
-      this.submit();
-    };
-
-    this.forEach('input', (n: HTMLInputElement) => n.onchange = update);
+    this.enableLivePreviews('input');
   }
 }

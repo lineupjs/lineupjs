@@ -1,6 +1,7 @@
 import {round, similar, dragHandle, IDragHandleOptions} from '../../internal';
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
+import APopup from './APopup';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
@@ -22,7 +23,7 @@ export interface IMappingAdapter {
 }
 
 /** @internal */
-export default class MappingLineDialog extends ADialog {
+export default class MappingLineDialog extends APopup {
   constructor(private readonly line: {destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void}, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
     super(dialog);
   }
@@ -39,7 +40,7 @@ export default class MappingLineDialog extends ADialog {
 
     this.forEach('input', (d: HTMLInputElement) => d.onchange = () => this.submit());
     this.find('button').addEventListener('click', () => {
-      this.destroy();
+      this.destroy('confirm');
       this.line.destroy();
     }, {
       passive: true

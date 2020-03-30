@@ -1,5 +1,5 @@
 import {ILineUpOptions, defaultOptions} from '../config';
-import {merge} from '../internal';
+import {merge, suffix} from '../internal';
 import {DataProvider} from '../provider';
 import {cssClass} from '../styles';
 import {ALineUp} from './ALineUp';
@@ -7,6 +7,11 @@ import EngineRenderer from './EngineRenderer';
 import SidePanel from './panel/SidePanel';
 
 export default class LineUp extends ALineUp {
+  static readonly EVENT_SELECTION_CHANGED = ALineUp.EVENT_SELECTION_CHANGED;
+  static readonly EVENT_DIALOG_OPENED = ALineUp.EVENT_DIALOG_OPENED;
+  static readonly EVENT_DIALOG_CLOSED = ALineUp.EVENT_DIALOG_CLOSED;
+  static readonly EVENT_HIGHLIGHT_CHANGED = ALineUp.EVENT_HIGHLIGHT_CHANGED;
+
   private readonly renderer: EngineRenderer | null;
   private readonly panel: SidePanel | null;
 
@@ -37,7 +42,7 @@ export default class LineUp extends ALineUp {
     } else {
       this.panel = null;
     }
-    this.forward(this.renderer, `${EngineRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
+    this.forward(this.renderer, ...suffix('.main', EngineRenderer.EVENT_HIGHLIGHT_CHANGED, EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED));
   }
 
   destroy() {

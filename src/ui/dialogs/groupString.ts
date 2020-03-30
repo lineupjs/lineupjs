@@ -1,9 +1,10 @@
 import {IDialogContext} from './ADialog';
 import {StringColumn, EStringGroupCriteriaType} from '../../model';
-import {cssClass} from '../../styles/index';
+import {cssClass} from '../../styles';
+import {IToolbarDialogAddonHandler} from '../interfaces';
 
 /** @internal */
-export default function append(col: StringColumn, node: HTMLElement, dialog: IDialogContext) {
+export default function groupString(col: StringColumn, node: HTMLElement, dialog: IDialogContext): IToolbarDialogAddonHandler {
   const current = col.getGroupCriteria();
   const {type, values} = current;
 
@@ -21,10 +22,8 @@ export default function append(col: StringColumn, node: HTMLElement, dialog: IDi
       <span>Use regular expressions</span>
     </label>
     <textarea required rows="5" placeholder="e.g. Test,a.*" id="${dialog.idPrefix}T">${values.map((value) => value instanceof RegExp ? value.source : value).join('\n')}</textarea>
-    <button id="${dialog.idPrefix}A">Apply</button>
   `);
 
-  const button = node.querySelector<HTMLButtonElement>(`#${dialog.idPrefix}A`)!;
   const valueRadioButton = node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}VAL`)!;
   const startsWithRadioButton = node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}RW`)!;
   const regexRadioButton = node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}RE`)!;
@@ -39,27 +38,41 @@ export default function append(col: StringColumn, node: HTMLElement, dialog: IDi
   startsWithRadioButton.onchange = () => showOrHideTextarea(startsWithRadioButton.checked);
   regexRadioButton.onchange = () => showOrHideTextarea(regexRadioButton.checked);
 
-  button.onclick = (evt) => {
-    evt.preventDefault();
-    evt.stopPropagation();
-    const checkedNode = node.querySelector<HTMLInputElement>(`input[name="${dialog.idPrefix}groupString"]:checked`)!;
-    const newType = <EStringGroupCriteriaType>checkedNode.value;
-    let items: (string | RegExp)[] = text.value.trim().split('\n').map((d) => d.trim()).filter((d) => d.length > 0);
+  text.addEventListener('change', () => {
+    const items: (string | RegExp)[] = text.value.trim().split('\n').map((d) => d.trim()).filter((d) => d.length > 0);
+    text.setCustomValidity(!valueRadioButton.checked && items.length === 0 ? 'At least one entry is required' : '');
+  });
 
-    if (newType !== EStringGroupCriteriaType.value) {
-      const invalid = items.length === 0;
-      text.setCustomValidity(invalid ? 'At least one entry is required' : '');
-      if (invalid) {
-        (<any>text).reportValidity(); // typedoc not uptodate
-        return;
+  return {
+    elems: [text, valueRadioButton, startsWithRadioButton, regexRadioButton],
+    submit() {
+      const checkedNode = node.querySelector<HTMLInputElement>(`input[name="${dialog.idPrefix}groupString"]:checked`)!;
+      const newType = <EStringGroupCriteriaType>checkedNode.value;
+      let items: (string | RegExp)[] = text.value.trim().split('\n').map((d) => d.trim()).filter((d) => d.length > 0);
+
+      if (newType !== EStringGroupCriteriaType.value) {
+        const invalid = items.length === 0;
+        text.setCustomValidity(invalid ? 'At least one entry is required' : '');
+        if (invalid) {
+          (<any>text).reportValidity(); // typedoc not uptodate
+          return false;
+        }
       }
+      if (newType === EStringGroupCriteriaType.regex) {
+        items = items.map((d) => new RegExp(d.toString(), 'gm'));
+      }
+      col.setGroupCriteria({
+        type: newType,
+        values: items
+      });
+      return true;
+    },
+    cancel() {
+      col.setGroupCriteria(current);
+    },
+    reset() {
+      text.value = '';
+      startsWithRadioButton.checked = true;
     }
-    if (newType === EStringGroupCriteriaType.regex) {
-      items = items.map((d) => new RegExp(d.toString(), 'gm'));
-    }
-    col.setGroupCriteria({
-      type: newType,
-      values: items
-    });
   };
 }
