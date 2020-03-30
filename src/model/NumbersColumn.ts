@@ -161,9 +161,8 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (v.every(isNaN)) {
       // missing row
       return [NaN];
-    } else {
-      return v;
     }
+    return v;
   }
 
   iterRawNumber(row: IDataRow) {
@@ -171,9 +170,8 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (v.every(isNaN)) {
       // missing row
       return [NaN];
-    } else {
-      return v;
     }
+    return v;
   }
 
   getRawValue(row: IDataRow) {
