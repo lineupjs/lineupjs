@@ -49,6 +49,14 @@
       })
     }
     const lineup = LineUpJS.asTaggle(document.querySelector('article div'), arr);
+
+    lineup.on('dialogOpened', (dialog) => {
+      console.log('dialog opened', dialog);
+    });
+
+    lineup.on('dialogClosed', (dialog, action) => {
+      console.log('dialog closed', dialog, action);
+    });
   };
 </script>
 
