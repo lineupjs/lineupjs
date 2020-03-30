@@ -1,7 +1,6 @@
 import {StringColumn, IStringFilter} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState} from './utils';
 import {cssClass} from '../../styles';
 import {debounce} from '../../internal';
 
@@ -29,7 +28,6 @@ export default class StringFilterDialog extends ADialog {
   }
 
   private updateFilter(filter: string | RegExp | null, filterMissing: boolean) {
-    updateFilterState(this.attachment, this.column, filterMissing || filter != null);
     if (filter == null && !filterMissing) {
       this.column.setFilter(null);
     } else {

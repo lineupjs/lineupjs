@@ -1,27 +1,7 @@
-import {Column} from '../../model';
 import {forEach} from '../../renderer/utils';
 import {cssClass} from '../../styles';
 import {getSortLabel} from '../../internal';
 import {IToolbarDialogAddonHandler} from '../interfaces';
-
-/** @internal */
-export function updateFilterState(attachment: HTMLElement, column: Column, filtered: boolean) {
-  const toggle = (e: Element) => {
-    const n = <HTMLElement>e;
-    if (filtered) {
-      n.dataset.active = '';
-    } else {
-      delete n.dataset.active;
-    }
-  };
-
-  toggle(attachment);
-  const root = attachment.closest(`.${cssClass()}`);
-  if (!root) {
-    return;
-  }
-  Array.from(root.querySelectorAll(`[data-col-id="${column.id}"] i[title^=Filter]`)).forEach(toggle);
-}
 
 /** @internal */
 export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string): void, getSortMethod(): string}, methods: string[]): IToolbarDialogAddonHandler {

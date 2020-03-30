@@ -14,6 +14,7 @@ export default class MoreColumnOptionsDialog extends APopup {
 
   protected build(node: HTMLElement) {
     node.classList.add(cssClass('more-options'));
+    node.dataset.colId = this.column.id;
     createToolbarMenuItems(node, this.dialog.level + 1, this.column, this.ctx);
 
     updateIconState(node, this.column);

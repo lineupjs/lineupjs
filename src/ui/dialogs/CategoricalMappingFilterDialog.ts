@@ -3,7 +3,7 @@ import {OrdinalColumn, ICategoricalFilter} from '../../model';
 import {isCategoryIncluded} from '../../model/internalCategorical';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, forEach} from './utils';
+import {forEach} from './utils';
 import {cssClass} from '../../styles';
 
 /** @internal */
@@ -60,7 +60,6 @@ export default class CategoricalMappingFilterDialog extends ADialog {
 
   private updateFilter(filter: string[] | null | string | RegExp, filterMissing: boolean) {
     const noFilter = filter == null && filterMissing === false;
-    updateFilterState(this.attachment, this.column, !noFilter);
     this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
   }
 

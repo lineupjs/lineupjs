@@ -1,8 +1,8 @@
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, uniqueId} from './utils';
+import {uniqueId} from './utils';
 import {DateColumn, IDateFilter} from '../../model';
-import {isDummyDateFilter, noDateFilter, shiftFilterDateDay} from '../../model/internalDate';
+import {noDateFilter, shiftFilterDateDay} from '../../model/internalDate';
 import {timeFormat} from 'd3-time-format';
 
 /** @internal */
@@ -18,7 +18,6 @@ export default class DateFilterDialog extends ADialog {
   }
 
   private updateFilter(filter: IDateFilter | null) {
-    updateFilterState(this.attachment, this.column, filter != null && !isDummyDateFilter(filter));
     this.column.setFilter(filter);
   }
 

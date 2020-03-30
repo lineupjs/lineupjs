@@ -1,7 +1,7 @@
 import {SetColumn, CategoricalColumn, ICategoricalFilter} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, forEach} from './utils';
+import {forEach} from './utils';
 import {cssClass} from '../../styles';
 import {isCategoryIncluded} from '../../model/internalCategorical';
 
@@ -46,7 +46,6 @@ export default class CategoricalFilterDialog extends ADialog {
 
   private updateFilter(filter: string[] | null | RegExp | string, filterMissing: boolean) {
     const noFilter = filter == null && filterMissing === false;
-    updateFilterState(this.attachment, this.column, !noFilter);
     this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
   }
 
