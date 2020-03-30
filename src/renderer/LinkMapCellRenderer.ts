@@ -5,6 +5,7 @@ import {groupByKey} from './TableCellRenderer';
 import {noRenderer, noop} from './utils';
 import {cssClass} from '../styles';
 
+/** @internal */
 export default class LinkMapCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table with Links';
 

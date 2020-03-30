@@ -5,6 +5,7 @@ import {forEach, noop} from './utils';
 import {cssClass} from '../styles';
 import {ISequence} from '../internal';
 
+/** @internal */
 export default class TableCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table';
 
@@ -107,6 +108,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
 
 }
 
+/** @internal */
 export function groupByKey<T extends {key: string}>(arr: ISequence<ISequence<T>>) {
   const m = new Map<string, T[]>();
   arr.forEach((a) => a.forEach((d) => {

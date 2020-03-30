@@ -5,6 +5,7 @@ import {noRenderer, setText} from './utils';
 
 /**
  * default renderer instance rendering the value as a text
+ * @internal
  */
 export class DefaultCellRenderer implements ICellRendererFactory {
   title: string = 'String';

@@ -8,6 +8,7 @@ import {histogramUpdate, histogramTemplate, mappingHintTemplate, mappingHintUpda
 import InputDateDialog from '../ui/dialogs/InputDateDialog';
 import {shiftFilterDateDay} from '../model/internalDate';
 
+/** @internal */
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';
 

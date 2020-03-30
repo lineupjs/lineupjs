@@ -7,6 +7,7 @@ import {noRenderer, adaptTextColorToBgColor} from './utils';
 import {cssClass, FILTERED_OPACITY} from '../styles';
 import {color} from 'd3-color';
 
+/** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Distribution Bar';
 

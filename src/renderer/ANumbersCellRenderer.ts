@@ -3,6 +3,7 @@ import {IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer} from './int
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {ISequence, boxplotBuilder, getSortLabel} from '../internal';
 
+/** @internal */
 export abstract class ANumbersCellRenderer {
   abstract readonly title: string;
 
@@ -81,6 +82,7 @@ export abstract class ANumbersCellRenderer {
   }
 }
 
+/** @internal */
 export function matchRows(n: HTMLElement | SVGElement, length: number, template: string) {
   // first match the number of rows
   const children = <(HTMLElement | SVGElement)[]>Array.from(n.children);

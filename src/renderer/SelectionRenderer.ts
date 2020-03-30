@@ -4,6 +4,7 @@ import {cssClass} from '../styles';
 import {everyIndices} from '../model/internal';
 import {rangeSelection} from '../provider/utils';
 
+/** @internal */
 export default class SelectionRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
 

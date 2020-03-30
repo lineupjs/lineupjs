@@ -9,6 +9,7 @@ import {matchColumns, multiLevelGridCSSClass} from './utils';
 import {cssClass} from '../styles';
 import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
 
+/** @internal */
 export interface ICols {
   column: Column;
   shift: number;
@@ -20,6 +21,14 @@ export interface ICols {
   summaryRenderer: ISummaryRenderer | null;
 }
 
+/**
+ * @internal
+ * @param parent Parent column
+ * @param context Render context
+ * @param stacked Are the columns stacked?
+ * @param mode Render mode
+ * @param imposer Imposer object
+ */
 export function createData(parent: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer): {cols: ICols[], stacked: boolean, padding: number} {
   const padding = COLUMN_PADDING;
   let offset = 0;
@@ -72,6 +81,7 @@ export function createData(parent: {children: Column[]} & Column, context: IRend
   return {cols, stacked, padding};
 }
 
+/** @internal */
 export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMultiLevelColumn & Column> implements ICellRendererFactory {
   readonly title: string;
 

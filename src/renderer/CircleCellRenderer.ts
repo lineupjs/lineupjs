@@ -5,6 +5,7 @@ import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
 
+/** @internal */
 export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Proportional Symbol';
 

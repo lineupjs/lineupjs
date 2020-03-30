@@ -3,6 +3,7 @@ import StringCellRenderer from './StringCellRenderer';
 import {cssClass} from '../styles';
 import {ICellRenderer} from './interfaces';
 
+/** @internal */
 export default class AnnotationRenderer extends StringCellRenderer {
   readonly title: string = 'Default';
 

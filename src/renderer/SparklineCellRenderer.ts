@@ -5,6 +5,7 @@ import {renderMissingDOM} from './missing';
 import {forEachChild, noRenderer} from './utils';
 import {ISequence} from '../internal';
 
+/** @internal */
 export function line(data: ISequence<number>) {
   if (data.length === 0) {
     return '';
@@ -25,6 +26,7 @@ export function line(data: ISequence<number>) {
   return p;
 }
 
+/** @internal */
 export default class SparklineCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Sparkline';
 

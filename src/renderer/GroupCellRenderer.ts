@@ -7,6 +7,7 @@ function isDummyGroup(group: IGroup) {
   return group.parent == null && group.name === defaultGroup.name;
 }
 
+/** @internal */
 export default class GroupCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
 

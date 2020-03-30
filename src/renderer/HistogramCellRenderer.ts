@@ -9,6 +9,7 @@ import {histogramUpdate, histogramTemplate, IHistogramLike, mappingHintTemplate,
 import {noNumberFilter} from '../model/internalNumber';
 import DialogManager from '../ui/dialogs/DialogManager';
 
+/** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';
 

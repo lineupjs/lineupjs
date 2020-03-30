@@ -28,6 +28,7 @@ export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColu
   return valueColor;
 }
 
+/** @internal */
 export default class BrightnessCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Brightness';
 

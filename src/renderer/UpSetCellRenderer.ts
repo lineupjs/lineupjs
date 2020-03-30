@@ -3,6 +3,7 @@ import {CANVAS_HEIGHT, cssClass, UPSET} from '../styles';
 import {ICellRendererFactory, IRenderContext, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
+/** @internal */
 export default class UpSetCellRenderer implements ICellRendererFactory {
   readonly title: string = 'UpSet';
 
