@@ -5,6 +5,7 @@ import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} fro
 import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
 import {IDataRow, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import {EAdvancedSortMethod} from './INumberColumn';
+import {integrateDefaults} from './internal';
 
 /**
  *  factory for creating a description creating a max column
@@ -39,11 +40,12 @@ export default class ReduceColumn extends CompositeNumberColumn {
   private reduce: EAdvancedSortMethod;
 
   constructor(id: string, desc: Readonly<IReduceColumnDesc>) {
-    super(id, desc);
+    super(id, integrateDefaults(desc, {
+      renderer: 'interleaving',
+      groupRenderer: 'interleaving',
+      summaryRenderer: 'interleaving'
+    }));
     this.reduce = desc.reduce || EAdvancedSortMethod.max;
-    this.setDefaultRenderer('interleaving');
-    this.setDefaultGroupRenderer('interleaving');
-    this.setDefaultSummaryRenderer('interleaving');
   }
 
   get label() {

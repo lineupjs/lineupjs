@@ -85,6 +85,20 @@ export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABE
   label.dataset.typeCat = categoryOf(col).name;
 
   updateIconState(node, col);
+
+  updateMoreDialogIcons(node, col);
+}
+
+function updateMoreDialogIcons(node: HTMLElement, col: Column) {
+  const root = node.closest(`.${cssClass()}`);
+  if (!root) {
+    return;
+  }
+  const dialog = root.querySelector<HTMLElement>(`.${cssClass('more-options')}[data-col-id="${col.id}"]`);
+  if (!dialog) {
+    return;
+  }
+  updateIconState(dialog, col);
 }
 
 
@@ -102,7 +116,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sortgroup'))[0]!;
+  const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sort-groups'))[0]!;
   if (sortGroups) {
     const {asc, priority} = col.isGroupSortedByMe();
     sortGroups.dataset.sort = asc !== undefined ? asc : '';

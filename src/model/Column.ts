@@ -566,13 +566,6 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderer, this.renderer = renderer);
   }
 
-  protected setDefaultRenderer(renderer: string) {
-    if (this.renderer !== this.desc.type || this.desc.renderer) {
-      return;
-    }
-    return this.setRenderer(renderer);
-  }
-
   setGroupRenderer(renderer: string) {
     if (renderer === this.groupRenderer) {
       // nothing changes
@@ -581,33 +574,12 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.groupRenderer, this.groupRenderer = renderer);
   }
 
-  protected setDefaultGroupRenderer(renderer: string) {
-    if (this.groupRenderer !== this.desc.type || this.desc.groupRenderer) {
-      return;
-    }
-    return this.setGroupRenderer(renderer);
-  }
-
   setSummaryRenderer(renderer: string) {
     if (renderer === this.summaryRenderer) {
       // nothing changes
       return;
     }
     this.fire([Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.summaryRenderer, this.summaryRenderer = renderer);
-  }
-
-  protected setDefaultSummaryRenderer(renderer: string) {
-    if (this.summaryRenderer !== this.desc.type || this.desc.summaryRenderer) {
-      return;
-    }
-    return this.setSummaryRenderer(renderer);
-  }
-
-  protected setDefaultWidth(width: number) {
-    if (this.width !== 100 || this.desc.width) {
-      return;
-    }
-    return this.setWidthImpl(width);
   }
 
   /**

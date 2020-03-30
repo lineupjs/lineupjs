@@ -3,7 +3,7 @@ import {OrdinalColumn, ICategoricalFilter} from '../../model';
 import {isCategoryIncluded} from '../../model/internalCategorical';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, forEach} from './utils';
+import {forEach} from './utils';
 import {cssClass} from '../../styles';
 
 /** @internal */
@@ -13,7 +13,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
 
   constructor(private readonly column: OrdinalColumn, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'filter'
     });
     this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
   }
@@ -54,24 +54,27 @@ export default class CategoricalMappingFilterDialog extends ADialog {
       };
     });
     node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
+
+    this.enableLivePreviews('input[type=checkbox], input[type=number]');
   }
 
-  private updateFilter(filter: string[] | null, filterMissing: boolean) {
+  private updateFilter(filter: string[] | null | string | RegExp, filterMissing: boolean) {
     const noFilter = filter == null && filterMissing === false;
-    updateFilterState(this.attachment, this.column, !noFilter);
     this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
   }
 
-  reset() {
+  protected cancel() {
+    this.updateFilter(this.before.filter, this.before.filterMissing);
+  }
+
+  protected reset() {
     this.forEach('[data-cat]', (n: HTMLInputElement) => {
       n.checked = false;
       (<HTMLInputElement>n.nextElementSibling!).value = '50';
     });
-    this.updateFilter(null, false);
-    this.column.setMapping(this.column.categories.map(() => 1));
   }
 
-  submit() {
+  protected submit() {
     const items = this.forEach('input[data-cat]', (n: HTMLInputElement) => ({
       checked: n.checked,
       cat: n.dataset.cat!,

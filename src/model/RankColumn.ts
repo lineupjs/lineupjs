@@ -1,6 +1,7 @@
 import {Category, SupportType} from './annotations';
 import Column from './Column';
 import {IDataRow, IColumnDesc} from './interfaces';
+import {integrateDefaults} from './internal';
 
 
 /**
@@ -20,8 +21,9 @@ export function createRankDesc(label: string = 'Rank') {
 export default class RankColumn extends Column {
 
   constructor(id: string, desc: IColumnDesc) {
-    super(id, desc);
-    this.setDefaultWidth(50);
+    super(id, integrateDefaults(desc, {
+      width: 50
+    }));
   }
 
   getLabel(row: IDataRow) {
