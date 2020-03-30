@@ -36,12 +36,19 @@ export interface IToolbarAction {
   options: Partial<IUIOptions>;
 }
 
+export interface IToolbarDialogAddonHandler {
+  elems: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[];
+  reset(): void;
+  submit(): boolean;
+  cancel(): void;
+}
+
 export interface IToolbarDialogAddon {
   title: string;
 
   order: number;
 
-  append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): void;
+  append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): IToolbarDialogAddonHandler;
 }
 
 

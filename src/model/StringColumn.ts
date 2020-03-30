@@ -4,6 +4,7 @@ import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, oth
 import {missingGroup, isMissingValue} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {equal, IEventListener, ISequence, isSeqEmpty} from '../internal';
+import {integrateDefaults} from './internal';
 
 export enum EAlignment {
   left = 'left',
@@ -81,8 +82,9 @@ export default class StringColumn extends ValueColumn<string> {
   };
 
   constructor(id: string, desc: Readonly<IStringColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200
+    }));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
   }
@@ -211,7 +213,10 @@ export default class StringColumn extends ValueColumn<string> {
     if (filter === this.currentFilter) {
       return;
     }
-    if (this.currentFilter && filter && this.currentFilter.filterMissing === filter.filterMissing && this.currentFilter.filter === filter.filter) {
+    const current = this.currentFilter || {filter: null, filterMissing: false};
+    const target = filter || {filter: null, filterMissing: false};
+    if (current.filterMissing === target.filterMissing && (current.filter === target.filter ||
+      (current.filter instanceof RegExp && target.filter instanceof RegExp && current.filter.source === target.filter.source))) {
       return;
     }
     this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);

@@ -1,4 +1,5 @@
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
+import APopup from './APopup';
 
 /** @internal */
 export interface IInputNumberOptions {
@@ -10,7 +11,7 @@ export interface IInputNumberOptions {
 }
 
 /** @internal */
-export default class InputNumberDialog extends ADialog {
+export default class InputNumberDialog extends APopup {
 
   private readonly ioptions: Readonly<IInputNumberOptions> = {
     min: NaN,

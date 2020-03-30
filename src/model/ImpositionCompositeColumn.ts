@@ -8,6 +8,7 @@ import NumberColumn from './NumberColumn';
 import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
 import {ScaleMappingFunction} from './MappingFunction';
 import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
+import {integrateDefaults} from './internal';
 
 
 /**
@@ -43,11 +44,11 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
-    super(id, desc);
-
-    this.setDefaultRenderer('number');
-    this.setDefaultGroupRenderer('boxplot');
-    this.setDefaultSummaryRenderer('histogram');
+    super(id, integrateDefaults(desc, {
+      renderer: 'number',
+      groupRenderer: 'boxplot',
+      summaryRenderer: 'histogram'
+    }));
   }
 
   get label() {

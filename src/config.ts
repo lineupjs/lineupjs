@@ -56,6 +56,20 @@ export interface IToolbarLookup<T> {
   [key: string]: T;
 }
 
+export interface ILivePreviewOptions {
+  search: boolean;
+  filter: boolean;
+  vis: boolean;
+  sort: boolean;
+  group: boolean;
+  groupSort: boolean;
+  colorMapping: boolean;
+  dataMapping: boolean;
+  reduce: boolean;
+  rename: boolean;
+  cutOff: boolean;
+}
+
 export interface ILineUpOptions {
   /**
    * option to enable/disable showing a summary (histogram, ...) in the header
@@ -87,6 +101,18 @@ export interface ILineUpOptions {
    * @default true
    */
   hierarchyIndicator: boolean;
+
+  /**
+   * flag whether dialogs should confirm or cancel on clicking the background
+   * @default cancel
+   */
+  onDialogBackgroundClick: 'cancel' | 'confirm';
+
+  /**
+   * flag whether to shows filter previews as soon as the user changes the filter in the dialog
+   * @default {search: true,filter: true, vis: true,sort: true, group: true, groupSort: true, colorMapping: true}
+   */
+  livePreviews: Partial<ILivePreviewOptions>;
 
   /**
    * option to specify the default slope graph mode
@@ -241,6 +267,17 @@ export function defaultOptions(): ITaggleOptions {
     defaultSlopeGraphMode: 'item',
     overviewMode: false,
 
+    livePreviews: {
+      search: true,
+      filter: true,
+      vis: true,
+      sort: true,
+      group: true,
+      groupSort: true,
+      colorMapping: true
+    },
+    onDialogBackgroundClick: 'cancel',
+
     rowHeight: 18,
     groupHeight: 40,
     groupPadding: 5,
@@ -254,7 +291,7 @@ export function defaultOptions(): ITaggleOptions {
       disableFrozenColumns: true, //disable by default for speed navigator.userAgent.includes('Firefox/52') // disable by default in Firefox ESR 52
       advancedRankingFeatures: true,
       advancedModelFeatures: true,
-      advancedUIFeatures: true
+      advancedUIFeatures: true,
     },
 
     ignoreUnsupportedBrowser: false

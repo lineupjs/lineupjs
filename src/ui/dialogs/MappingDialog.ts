@@ -17,6 +17,8 @@ export default class MappingDialog extends ADialog {
   private readonly data: Promise<ISequence<number>>;
   private readonly idPrefix: string;
 
+  private readonly before: IMappingFunction;
+
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
       this.mappingLines.splice(this.mappingLines.indexOf(self), 1);
@@ -30,10 +32,11 @@ export default class MappingDialog extends ADialog {
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'dataMapping'
     });
 
     this.idPrefix = `me${ctx.idPrefix}`;
+    this.before = this.column.getMapping().clone();
     this.scale = this.column.getMapping().clone();
     const domain = this.scale.domain;
     this.rawDomain = [domain[0], domain[domain.length - 1]];
@@ -169,8 +172,10 @@ export default class MappingDialog extends ADialog {
         d.setCustomValidity('');
         this.rawDomain[i] = v;
         this.scale.domain = this.rawDomain.slice();
-        this.applyMapping(this.scale);
         this.updateLines();
+        if (this.showLivePreviews()) {
+          this.column.setMapping(this.scale);
+        }
       });
     }
 
@@ -217,14 +222,9 @@ export default class MappingDialog extends ADialog {
     });
   }
 
-  private applyMapping(newScale: IMappingFunction) {
-    this.column.setMapping(newScale);
-  }
-
   protected reset() {
     this.scale = this.column.getOriginalMapping();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
-    this.applyMapping(this.scale);
     this.update();
     this.updateLines();
     this.createMappings();
@@ -238,7 +238,6 @@ export default class MappingDialog extends ADialog {
     const ref = <IMapAbleColumn>r.find(columnId)!;
     this.scale = ref.getMapping().clone();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
-    this.applyMapping(this.scale);
     this.update();
     this.updateLines();
   }
@@ -268,7 +267,11 @@ export default class MappingDialog extends ADialog {
       return false;
     }
     const scale = this.computeScale();
-    this.applyMapping(scale);
+    this.column.setMapping(scale);
     return true;
+  }
+
+  protected cancel() {
+    this.column.setMapping(this.before);
   }
 }

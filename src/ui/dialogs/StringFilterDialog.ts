@@ -1,35 +1,58 @@
-import {StringColumn} from '../../model';
+import {StringColumn, IStringFilter} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState} from './utils';
 import {cssClass} from '../../styles';
+import {debounce} from '../../internal';
+
+
+function toInput(text: string, isRegex: boolean) {
+  const v = text.trim();
+  if (v === '') {
+    return null;
+  }
+  return isRegex ? new RegExp(v, 'gm') : v;
+}
 
 
 /** @internal */
 export default class StringFilterDialog extends ADialog {
 
+  private readonly before: IStringFilter | null;
+
   constructor(private readonly column: StringColumn, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'filter'
     });
+
+    this.before = this.column.getFilter();
   }
 
   private updateFilter(filter: string | RegExp | null, filterMissing: boolean) {
-    updateFilterState(this.attachment, this.column, filterMissing || (filter != null && filter !== ''));
-    this.column.setFilter({filter, filterMissing});
+    if (filter == null && !filterMissing) {
+      this.column.setFilter(null);
+    } else {
+      this.column.setFilter({filter, filterMissing});
+    }
   }
 
-  reset() {
+  protected reset() {
     this.findInput('input[type="text"]').value = '';
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => n.checked = false);
-    this.updateFilter(null, false);
   }
 
-  submit() {
+  protected cancel() {
+    if (this.before) {
+      this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing);
+    } else {
+      this.updateFilter(null, false);
+    }
+  }
+
+  protected submit() {
     const filterMissing = findFilterMissing(this.node).checked;
     const input = this.findInput('input[type="text"]').value;
     const isRegex = this.findInput('input[type="checkbox"]').checked;
-    this.updateFilter(isRegex ? new RegExp(input, 'gm') : input, filterMissing);
+    this.updateFilter(toInput(input, isRegex), filterMissing);
     return true;
   }
 
@@ -43,14 +66,13 @@ export default class StringFilterDialog extends ADialog {
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
 
-    const update = () => {
-      const valid = input.value.trim();
-      const f = valid.length > 0 ? (isRegex.checked ? new RegExp(valid, 'gm') : valid) : null;
-      this.updateFilter(f, filterMissing.checked);
-    };
+    this.enableLivePreviews([filterMissing, input, isRegex]);
 
-    filterMissing.onchange = update;
-    input.onchange = update;
-    isRegex.onchange = update;
+    if (!this.showLivePreviews()) {
+      return;
+    }
+    input.addEventListener('input', debounce(() => this.submit(), 100), {
+      passive: true
+    });
   }
 }

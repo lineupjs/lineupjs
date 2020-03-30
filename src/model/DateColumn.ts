@@ -7,6 +7,7 @@ import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEF
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {noDateFilter, defaultDateGrouper, isDummyDateFilter, isDefaultDateGrouper, restoreDateFilter, isEqualDateFilter, isDateIncluded, toDateGroup, chooseAggregatedDate} from './internalDate';
+import {integrateDefaults} from './internal';
 
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
@@ -46,12 +47,13 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   private currentGrouper: IDateGrouper = defaultDateGrouper();
 
   constructor(id: string, desc: Readonly<IDateColumnDesc>) {
-    super(id, desc);
+    super(id, integrateDefaults(desc, {
+      groupRenderer: 'datehistogram',
+      summaryRenderer: 'datehistogram'
+    }));
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.format = (v) => (v instanceof Date) ? f(v) : '';
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
-    this.setDefaultGroupRenderer('datehistogram');
-    this.setDefaultSummaryRenderer('datehistogram');
   }
 
   getFormatter() {

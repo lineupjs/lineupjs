@@ -4,6 +4,7 @@ import {IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {setText, exampleText} from './utils';
 import {cssClass} from '../styles';
+import {debounce} from '../internal';
 
 
 /**
@@ -74,6 +75,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
 
     filterMissing.onchange = update;
     input.onchange = update;
+    input.oninput = debounce(update, 100);
     isRegex.onchange = update;
     form.onsubmit = (evt) => {
       evt.preventDefault();
