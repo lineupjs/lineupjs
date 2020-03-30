@@ -29,15 +29,40 @@
     }
     const b = LineUpJS.builder(arr);
 
-    class MyStringColumn extends LineUpJS.StringColumn {
+    class MyColumn extends LineUpJS.Column {
+      firstN = 1;
 
+      setFirstN(val) {
+        if (this.firstN === val) {
+          return;
+        }
+        this.fire(['groupingChanged', LineUpJS.Column.EVENT_DIRTY_VALUES, LineUpJS.Column.EVENT_DIRTY], this.firstN, this.firstN = val);
+      }
+
+     createEventList() {
+        return super.createEventList().concat(['groupingChanged']);
+      }
+
+      getValue(row) {
+        return row.v[this.desc.column];
+      }
+
+      group(row) {
+        const v = this.getValue(row);
+        if (!v) {
+          return super.group(row);
+        }
+        const g = v.slice(0, this.firstN);
+        return {
+          name: g,
+          color: 'grey'
+        };
+      }
     }
-    // Reflect.decorate([
-    //   LineUpJS.toolbar('my')
-    // ], MyStringColumn);
-    LineUpJS.toolbar('my')(MyStringColumn);
+    LineUpJS.toolbar('group', 'groupBy', 'rename', 'my')(MyColumn);
+    LineUpJS.dialogAddons('group', 'myGroupAddon')(MyColumn);
 
-    b.registerColumnType('my', MyStringColumn);
+    b.registerColumnType('my', MyColumn);
     b.registerToolbarAction('my', {
       title: 'My Action',
       onClick: () => {
@@ -47,10 +72,26 @@
         mode: 'menu+shortcut'
       }
     })
+    b.registerToolbarDialogAddon('myGroupAddon', {
+      title: 'Group by the X first characters',
+      order: 1,
+      append(col, node, dialog, ctx) {
+        const val = col.firstN;
+        node.insertAdjacentHTML('beforeend', `
+          <input type="number" name="count" step="1" min="1" value="${val}">
+        `);
+        const input = node.lastElementChild;
+        input.onchange = () => {
+          col.setFirstN(input.valueAsNumber);
+        };
+      }
+    })
 
     b.column({
       type: 'my',
-      column: 's'
+      column: 's',
+      renderer: 'default',
+      groupRenderer: 'string',
     });
 
     const lineup = b.build(document.body);
