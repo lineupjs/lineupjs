@@ -157,11 +157,23 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   iterNumber(row: IDataRow) {
-    return this.getNumbers(row);
+    const v = this.getNumbers(row);
+    if (v.every(isNaN)) {
+      // missing row
+      return [NaN];
+    } else {
+      return v;
+    }
   }
 
   iterRawNumber(row: IDataRow) {
-    return this.getRawNumbers(row);
+    const v = this.getRawNumbers(row);
+    if (v.every(isNaN)) {
+      // missing row
+      return [NaN];
+    } else {
+      return v;
+    }
   }
 
   getRawValue(row: IDataRow) {
