@@ -10,7 +10,7 @@ import {default as AnnotationRenderer} from './AnnotationRenderer';
 import {default as BarCellRenderer} from './BarCellRenderer';
 import {default as BooleanCellRenderer} from './BooleanCellRenderer';
 import {default as BoxplotCellRenderer, computeLabel} from './BoxplotCellRenderer';
-import {default as BrightnessCellRenderer} from './BrightnessCellRenderer';
+import {default as BrightnessCellRenderer, toHeatMapColor} from './BrightnessCellRenderer';
 import {default as CategoricalCellRenderer, interactiveHist} from './CategoricalCellRenderer';
 import {default as CategoricalHeatmapCellRenderer} from './CategoricalHeatmapCellRenderer';
 import {default as CategoricalStackedDistributionlCellRenderer} from './CategoricalStackedDistributionlCellRenderer';
@@ -37,9 +37,12 @@ import {default as StringCellRenderer} from './StringCellRenderer';
 import {default as TableCellRenderer, groupByKey} from './TableCellRenderer';
 import {default as UpSetCellRenderer} from './UpSetCellRenderer';
 import {default as VerticalBarCellRenderer} from './VerticalBarCellRenderer';
+import {histogramUpdate, mappingHintTemplate, mappingHintUpdate} from './histogram';
+import {noop, noRenderer, setText, forEach, forEachChild, matchColumns, wideEnough, wideEnoughCat, adaptTextColorToBgColor, adaptDynamicColorToBgColor, uniqueId, exampleText, multiLevelGridCSSClass, colorOf} from './utils';
 
 export {HasCategoricalFilter} from './CategoricalCellRenderer';
 export {ICols as IMultiLevelCols} from './MultiLevelCellRenderer';
+export {IFilterInfo} from './histogram';
 
 export const rendererClasses = {
   AAggregatedGroupRenderer,
@@ -82,8 +85,26 @@ export const rendererClasses = {
 export const rendererUtils = {
   matchRows,
   computeLabel,
+  toHeatMapColor,
   interactiveHist,
   createData,
   line,
-  groupByKey
+  groupByKey,
+  histogramUpdate,
+  mappingHintTemplate,
+  mappingHintUpdate,
+  noop,
+  noRenderer,
+  setText,
+  forEach,
+  forEachChild,
+  matchColumns,
+  wideEnough,
+  wideEnoughCat,
+  adaptTextColorToBgColor,
+  adaptDynamicColorToBgColor,
+  uniqueId,
+  exampleText,
+  multiLevelGridCSSClass,
+  colorOf
 };

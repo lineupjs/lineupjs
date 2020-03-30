@@ -39,6 +39,7 @@ export interface IHistogramLike<T> {
   readonly hist: ReadonlyArray<IBin<T>>;
 }
 
+/** @internal */
 export function histogramUpdate<T>(n: HTMLElement, stats: IHistogramLike<T>, unfiltered: IHistogramLike<T> | null, formatter: (v: T) => string, colorOf: (bin: IBin<T>) => string) {
   const hist = stats.hist;
   const nodes = matchBins(n, hist.length);
@@ -69,10 +70,16 @@ export function histogramUpdate<T>(n: HTMLElement, stats: IHistogramLike<T>, unf
   });
 }
 
+/**
+ * @internal
+ */
 export function mappingHintTemplate(range: [string, string]) {
   return `<span class="${cssClass('mapping-hint')}" title="${range[0]}">${range[0]}</span><span class="${cssClass('mapping-hint')}" title="${range[1]}">${range[1]}</span>`;
 }
 
+/**
+ * @internal
+ */
 export function mappingHintUpdate(n: HTMLElement, range: [string, string]) {
   Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
 }
@@ -87,6 +94,7 @@ export interface IFilterContext<T> {
   domain: [T, T];
 }
 
+/** @internal */
 export interface IFilterInfo<T> {
   filterMissing: boolean;
   filterMin: T;
