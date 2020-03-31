@@ -306,6 +306,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.removeEventListener('mousemove', mouseMove);
     ueberElement.removeEventListener('mouseup', mouseUp);
     ueberElement.removeEventListener('mouseleave', mouseUp);
+    ueberElement.classList.remove(cssClass('resizing'));
     node.style.width = null;
 
     if (Math.abs(start - end) < 2) {
@@ -323,10 +324,11 @@ export function dragWidth(col: Column, node: HTMLElement) {
     node.classList.add(cssClass('change-width'));
 
     start = evt.clientX;
-    ueberElement = <HTMLElement>node.closest('header')!;
+    ueberElement = <HTMLElement>node.closest('body') || <HTMLElement>node.closest(`.${cssClass()}`)!; // take the whole body or root lineup
     ueberElement.addEventListener('mousemove', mouseMove);
     ueberElement.addEventListener('mouseup', mouseUp);
     ueberElement.addEventListener('mouseleave', mouseUp);
+    ueberElement.classList.add(cssClass('resizing'));
   };
   handle.onclick = (evt) => {
     // avoid resorting
