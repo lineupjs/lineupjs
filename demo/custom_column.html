@@ -75,6 +75,7 @@
     b.registerToolbarDialogAddon('myGroupAddon', {
       title: 'Group by the X first characters',
       order: 1,
+      livePreview: true, // optional, default = false
       append(col, node, dialog, ctx) {
         const val = col.firstN;
         node.insertAdjacentHTML('beforeend', `
