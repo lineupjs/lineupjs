@@ -2,7 +2,7 @@ import {MIN_LABEL_WIDTH} from '../constants';
 import {equalArrays, dragAble, dropAble, hasDnDType, IDropResult} from '../internal';
 import {categoryOf, getSortType} from '../model';
 import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn, Column, ImpositionCompositeColumn, ImpositionCompositesColumn, createImpositionDesc, createImpositionsDesc, ImpositionBoxPlotColumn, createImpositionBoxPlotDesc, CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model';
-import {aria, cssClass} from '../styles';
+import {aria, cssClass, engineCssClass} from '../styles';
 import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
 import {IRankingHeaderContext, IToolbarAction, IOnClickHandler} from './interfaces';
 import {getToolbar} from './toolbar';
@@ -276,22 +276,28 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
  */
 export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
+  let sizeHelper: HTMLElement;
+  let currentFooterTransformation = '';
   const handle = <HTMLElement>node.getElementsByClassName(cssClass('handle'))[0];
 
 
   let start = 0;
+  let originalWidth = 0;
   const mouseMove = (evt: MouseEvent) => {
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
     const delta = end - start;
-    const width = Math.max(0, col.getWidth() + delta);
 
     if (Math.abs(start - end) < 2) {
       //ignore
       return;
     }
     start = end;
+    const width = Math.max(0, col.getWidth() + delta);
+
+    sizeHelper.style.transform = `${currentFooterTransformation} translate(${width - originalWidth}px,0)`;
+
     node.style.width = `${width}px`;
     col.setWidth(width);
     toggleToolbarIcons(node, col);
@@ -308,6 +314,9 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.removeEventListener('mouseleave', mouseUp);
     ueberElement.classList.remove(cssClass('resizing'));
     node.style.width = null;
+    setTimeout(() => {
+      sizeHelper.classList.remove(cssClass('resizing'));
+    }, 1200); // after animation ended
 
     if (Math.abs(start - end) < 2) {
       //ignore
@@ -323,12 +332,18 @@ export function dragWidth(col: Column, node: HTMLElement) {
     evt.preventDefault();
     node.classList.add(cssClass('change-width'));
 
+    originalWidth = col.getWidth();
     start = evt.clientX;
     ueberElement = <HTMLElement>node.closest('body') || <HTMLElement>node.closest(`.${cssClass()}`)!; // take the whole body or root lineup
     ueberElement.addEventListener('mousemove', mouseMove);
     ueberElement.addEventListener('mouseup', mouseUp);
     ueberElement.addEventListener('mouseleave', mouseUp);
     ueberElement.classList.add(cssClass('resizing'));
+
+    sizeHelper = <HTMLElement>node.closest(`.${engineCssClass()}`)!.querySelector<HTMLElement>(`.${cssClass('resize-helper')}`);
+    currentFooterTransformation = (<HTMLElement>sizeHelper.previousElementSibling!).style.transform!;
+    sizeHelper.style.transform = currentFooterTransformation;
+    sizeHelper.classList.add(cssClass('resizing'));
   };
   handle.onclick = (evt) => {
     // avoid resorting

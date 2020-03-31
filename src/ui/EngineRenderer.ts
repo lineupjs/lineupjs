@@ -6,7 +6,7 @@ import {DataProvider} from '../provider';
 import {isSummaryGroup, groupEndLevel} from '../provider/internal';
 import {IImposer, IRenderContext} from '../renderer';
 import {chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer} from '../renderer/renderers';
-import {cssClass} from '../styles';
+import {cssClass, engineCssClass} from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import domElementCache from './domElementCache';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
@@ -121,6 +121,11 @@ export default class EngineRenderer extends AEventDispatcher {
     };
 
     this.table = new MultiTableRowRenderer(this.node, this.idPrefix);
+
+    {
+      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`);
+      footer!.insertAdjacentHTML('afterend', `<div class="${engineCssClass('footer')} ${cssClass('resize-helper')}">&nbsp;</div>`);
+    }
 
     //apply rules
     {
