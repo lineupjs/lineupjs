@@ -37,7 +37,7 @@ export declare function sortMethodChanged_DCS(previous: EDateSort, current: EDat
  */
 export declare function filterChanged_DCS(previous: IDateFilter | null, current: IDateFilter | null): void;
 
-@toolbar('filterDate')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterDate')
 @dialogAddons('sort', 'sortDates')
 export default class DatesColumn extends ArrayColumn<Date | null> implements IDatesColumn {
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';

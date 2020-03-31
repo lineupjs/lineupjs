@@ -8,6 +8,7 @@ import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, 
 import {IEventListener} from '../internal';
 import {chooseUIntByDataLength, integrateDefaults} from './internal';
 import {toCategory} from './internalCategorical';
+import {toolbar} from './annotations';
 
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
@@ -19,7 +20,7 @@ export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
  */
 export declare function colorMappingChanged_BCS(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
-
+@toolbar('rename', 'clone', 'sort', 'sortBy')
 export default class BooleansColumn extends ArrayColumn<boolean> implements ISetColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 

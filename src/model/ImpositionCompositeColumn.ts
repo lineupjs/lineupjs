@@ -37,7 +37,7 @@ export declare function colorMappingChanged_ICC(previous: IColorMappingFunction,
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterNumber', 'colorMapped', 'editMapping')
 @SortByDefault('descending')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;

@@ -38,7 +38,7 @@ export declare function filterChanged_OC(previous: ICategoricalFilter | null, cu
 /**
  * similar to a categorical column but the categories are mapped to numbers
  */
-@toolbar('group', 'filterOrdinal', 'colorMappedCategorical')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'group', 'filterOrdinal', 'colorMappedCategorical')
 @Category('categorical')
 export default class OrdinalColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;

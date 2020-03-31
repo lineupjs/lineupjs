@@ -46,7 +46,7 @@ export declare function colorMappingChanged_BPC(previous: IColorMappingFunction,
 export declare function filterChanged_BPC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
 @Category('array')
 @SortByDefault('descending')

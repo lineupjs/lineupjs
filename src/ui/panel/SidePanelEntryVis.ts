@@ -39,7 +39,7 @@ export default class SidePanelEntryVis {
         </div>
         <div class="${cssClass('toolbar')} ${cssClass('side-panel-toolbar')}"></div>
       </header>`;
-    createShortcutMenuItems(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx, false);
+    createShortcutMenuItems(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx, 'sidePanel', false);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
     this.appendSummary();
   }

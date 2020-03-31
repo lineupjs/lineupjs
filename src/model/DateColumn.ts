@@ -26,7 +26,7 @@ export declare function filterChanged_DC(previous: IDateFilter | null, current: 
  */
 export declare function groupingChanged_DC(previous: IDateGrouper | null, current: IDateGrouper | null): void;
 
-@toolbar('groupBy', 'sortGroupBy', 'filterDate')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'groupBy', 'sortGroupBy', 'filterDate')
 @dialogAddons('group', 'groupDate')
 @Category('date')
 export default class DateColumn extends ValueColumn<Date> implements IDateColumn {

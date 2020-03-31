@@ -19,7 +19,7 @@ export default class AddonDialog extends ADialog {
 
   protected submit(): boolean {
     for (const handler of this.handlers) {
-      if (!handler.submit()) {
+      if (handler.submit() === false) {
         return false;
       }
     }

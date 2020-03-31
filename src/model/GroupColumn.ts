@@ -22,7 +22,7 @@ export declare function sortMethodChanged(previous: EGroupSortMethod, current: E
 
 
 @SupportType()
-@toolbar('sortGroupBy')
+@toolbar('rename', 'sortGroupBy')
 @dialogAddons('sortGroup', 'sortGroups')
 @Category('support')
 export default class GroupColumn extends Column {

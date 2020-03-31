@@ -19,7 +19,7 @@ export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDes
  */
 export declare function colorMappingChanged_CMC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
-@toolbar('colorMappedCategorical')
+@toolbar('rename', 'colorMappedCategorical')
 export default class CategoricalMapColumn extends MapColumn<string | null> implements ICategoricalLikeColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 
