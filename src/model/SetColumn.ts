@@ -34,7 +34,7 @@ export declare function filterChanged_SSC(previous: ICategoricalFilter | null, c
 /**
  * a string column with optional alignment
  */
-@toolbar('filterCategorical', 'colorMappedCategorical', 'group', 'groupBy')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterCategorical', 'colorMappedCategorical', 'group', 'groupBy')
 @Category('categorical')
 export default class SetColumn extends ValueColumn<string[]> implements IArrayColumn<boolean>, ISetColumn {
   static readonly EVENT_FILTER_CHANGED = CategoricalColumn.EVENT_FILTER_CHANGED;

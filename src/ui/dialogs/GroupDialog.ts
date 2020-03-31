@@ -31,7 +31,7 @@ export default class GroupDialog extends ADialog {
 
   protected submit() {
     for (const handler of this.handlers) {
-      if (!handler.submit()) {
+      if (handler.submit() === false) {
         return false;
       }
     }

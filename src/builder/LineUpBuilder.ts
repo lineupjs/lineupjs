@@ -9,7 +9,8 @@ import {IToolbarAction, IToolbarDialogAddon} from '../ui';
 export default class LineUpBuilder {
   protected readonly options: Partial<ITaggleOptions> = {
     renderers: {},
-    toolbar: {},
+    toolbarActions: {},
+    toolbarDialogAddons: {},
     flags: {}
   };
 
@@ -126,7 +127,7 @@ export default class LineUpBuilder {
    * @param action
    */
   registerToolbarAction(id: string, action: IToolbarAction) {
-    this.options.toolbar![id] = action;
+    this.options.toolbarActions![id] = action;
     return this;
   }
 
@@ -136,7 +137,7 @@ export default class LineUpBuilder {
    * @param addon addon description
    */
   registerToolbarDialogAddon(id: string, addon: IToolbarDialogAddon) {
-    this.options.toolbar![id] = addon;
+    this.options.toolbarDialogAddons![id] = addon;
     return this;
   }
 

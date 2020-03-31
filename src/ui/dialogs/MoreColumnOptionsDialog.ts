@@ -8,14 +8,14 @@ import APopup from './APopup';
 /** @internal */
 export default class MoreColumnOptionsDialog extends APopup {
 
-  constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
+  constructor(private readonly column: Column, dialog: IDialogContext, private readonly mode: 'header' | 'sidePanel', private readonly ctx: IRankingHeaderContext) {
     super(dialog);
   }
 
   protected build(node: HTMLElement) {
     node.classList.add(cssClass('more-options'));
     node.dataset.colId = this.column.id;
-    createToolbarMenuItems(node, this.dialog.level + 1, this.column, this.ctx);
+    createToolbarMenuItems(node, this.dialog.level + 1, this.column, this.ctx, this.mode);
 
     updateIconState(node, this.column);
   }

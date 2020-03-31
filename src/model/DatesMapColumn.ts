@@ -30,7 +30,7 @@ export declare function sortMethodChanged_DMC(previous: EDateSort, current: EDat
 export declare function filterChanged_DMC(previous: IDateFilter | null, current: IDateFilter | null): void;
 
 
-@toolbar('filterDate')
+@toolbar('rename', 'filterDate')
 @dialogAddons('sort', 'sortDates')
 export default class DatesMapColumn extends MapColumn<Date | null> implements IDateColumn {
   static readonly EVENT_SORTMETHOD_CHANGED = DatesColumn.EVENT_SORTMETHOD_CHANGED;

@@ -51,7 +51,7 @@ export declare function patternChanged_LC(previous: string, current: string): vo
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'groupBy', 'filterString', 'editPattern')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'search', 'groupBy', 'filterString', 'editPattern')
 @dialogAddons('group', 'groupString')
 @Category('string')
 export default class LinkColumn extends ValueColumn<string | ILink> {

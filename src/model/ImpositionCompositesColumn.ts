@@ -38,7 +38,7 @@ export declare function colorMappingChanged_ICCS(previous: IColorMappingFunction
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class ImpositionCompositesColumn extends CompositeColumn implements INumbersColumn {

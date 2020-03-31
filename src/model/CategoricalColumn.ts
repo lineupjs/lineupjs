@@ -27,7 +27,7 @@ export declare function filterChanged_CC(previous: ICategoricalFilter | null, cu
 /**
  * column for categorical values
  */
-@toolbar('group', 'groupBy', 'sortGroupBy', 'filterCategorical', 'colorMappedCategorical')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'group', 'groupBy', 'sortGroupBy', 'filterCategorical', 'colorMappedCategorical')
 @Category('categorical')
 export default class CategoricalColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';

@@ -40,7 +40,7 @@ export declare function colorMappingChanged_IPBC(previous: IColorMappingFunction
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
 @SortByDefault('descending')
 export default class ImpositionBoxPlotColumn extends CompositeColumn implements IBoxPlotColumn {

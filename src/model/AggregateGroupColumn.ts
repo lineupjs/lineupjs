@@ -38,7 +38,7 @@ export declare function aggregate(ranking: Ranking, group: IGroup, value: boolea
 /**
  * a checkbox column for selections
  */
-@toolbar('setShowTopN')
+@toolbar('setShowTopN', 'rename')
 @SupportType()
 @Category('support')
 export default class AggregateGroupColumn extends Column {

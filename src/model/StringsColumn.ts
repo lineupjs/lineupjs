@@ -10,7 +10,7 @@ export declare type IStringsColumnDesc = IStringDesc & IArrayColumnDesc<string>;
 /**
  * a string column with optional alignment
  */
-@toolbar('search')
+@toolbar('rename', 'search')
 export default class StringsColumn extends ArrayColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
