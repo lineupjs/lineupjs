@@ -39,7 +39,7 @@ export interface IToolbarAction {
 export interface IToolbarDialogAddonHandler {
   elems: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[];
   reset(): void;
-  submit(): boolean;
+  submit(): boolean | undefined;
   cancel(): void;
 }
 

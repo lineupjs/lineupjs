@@ -145,7 +145,7 @@ abstract class ADialog {
       if (!this.node.checkValidity()) {
         return false;
       }
-      if (this.submit()) {
+      if (this.submit() !== false) {
         this.destroy('confirm');
       }
       return false;
@@ -177,7 +177,7 @@ abstract class ADialog {
 
   protected abstract reset(): void;
 
-  protected abstract submit(): boolean;
+  protected abstract submit(): boolean | undefined;
 
   protected abstract cancel(): void;
 

@@ -81,8 +81,17 @@
           <input type="number" name="count" step="1" min="1" value="${val}">
         `);
         const input = node.lastElementChild;
-        input.onchange = () => {
-          col.setFirstN(input.valueAsNumber);
+        return {
+          elems: [input],
+          submit() {
+            col.setFirstN(input.valueAsNumber);
+          },
+          cancel() {
+            col.setFirstN(val);
+          },
+          reset() {
+            input.value = '1';
+          }
         };
       }
     })
