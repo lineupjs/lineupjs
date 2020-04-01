@@ -3,15 +3,15 @@ export * from './interfaces';
 export {renderMissingCanvas, renderMissingDOM} from './missing';
 
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {ANumbersCellRenderer, matchRows} from './ANumbersCellRenderer';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import ActionRenderer from './ActionRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
 import AnnotationRenderer from './AnnotationRenderer';
 import BarCellRenderer from './BarCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
-import BoxplotCellRenderer, {computeLabel} from './BoxplotCellRenderer';
+import BoxplotCellRenderer from './BoxplotCellRenderer';
 import BrightnessCellRenderer, {toHeatMapColor} from './BrightnessCellRenderer';
-import CategoricalCellRenderer, {interactiveHist} from './CategoricalCellRenderer';
+import CategoricalCellRenderer from './CategoricalCellRenderer';
 import CategoricalHeatmapCellRenderer from './CategoricalHeatmapCellRenderer';
 import CategoricalStackedDistributionlCellRenderer from './CategoricalStackedDistributionlCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
@@ -28,21 +28,16 @@ import LinkCellRenderer from './LinkCellRenderer';
 import LinkMapCellRenderer from './LinkMapCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
 import MapBarCellRenderer from './MapBarCellRenderer';
-import MultiLevelCellRenderer, {createData} from './MultiLevelCellRenderer';
+import MultiLevelCellRenderer from './MultiLevelCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
 import SelectionRenderer from './SelectionRenderer';
 import SetCellRenderer from './SetCellRenderer';
-import SparklineCellRenderer, {line} from './SparklineCellRenderer';
+import SparklineCellRenderer from './SparklineCellRenderer';
 import StringCellRenderer from './StringCellRenderer';
-import TableCellRenderer, {groupByKey} from './TableCellRenderer';
+import TableCellRenderer from './TableCellRenderer';
 import UpSetCellRenderer from './UpSetCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
-import {histogramUpdate, mappingHintTemplate, mappingHintUpdate} from './histogram';
-import {noop, noRenderer, setText, forEach, forEachChild, matchColumns, wideEnough, wideEnoughCat, adaptTextColorToBgColor, adaptDynamicColorToBgColor, uniqueId, exampleText, multiLevelGridCSSClass, colorOf} from './utils';
-
-export {HasCategoricalFilter} from './CategoricalCellRenderer';
-export {ICols as IMultiLevelCols} from './MultiLevelCellRenderer';
-export {IFilterInfo} from './histogram';
+import {noRenderer, wideEnough, wideEnoughCat, adaptTextColorToBgColor, adaptDynamicColorToBgColor} from './utils';
 
 export const rendererClasses = {
   AAggregatedGroupRenderer,
@@ -83,28 +78,10 @@ export const rendererClasses = {
 };
 
 export const rendererUtils = {
-  matchRows,
-  computeLabel,
   toHeatMapColor,
-  interactiveHist,
-  createData,
-  line,
-  groupByKey,
-  histogramUpdate,
-  mappingHintTemplate,
-  mappingHintUpdate,
-  noop,
   noRenderer,
-  setText,
-  forEach,
-  forEachChild,
-  matchColumns,
   wideEnough,
   wideEnoughCat,
   adaptTextColorToBgColor,
   adaptDynamicColorToBgColor,
-  uniqueId,
-  exampleText,
-  multiLevelGridCSSClass,
-  colorOf
 };
