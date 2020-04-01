@@ -62,7 +62,7 @@ export declare function groupingChanged_SC(previous: (RegExp | string)[][], curr
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'groupBy', 'sortGroupBy', 'filterString')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'search', 'groupBy', 'sortGroupBy', 'filterString')
 @dialogAddons('group', 'groupString')
 @Category('string')
 export default class StringColumn extends ValueColumn<string> {

@@ -1,5 +1,5 @@
 import {IDataRow, LinkMapColumn, Column, ILink, IKeyValue, IOrderedGroup} from '../model';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noRenderer, noop} from './utils';
@@ -7,13 +7,13 @@ import {cssClass} from '../styles';
 
 /** @internal */
 export default class LinkMapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Table with Links';
+  readonly title: string = 'Table with Links';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkMapColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: LinkMapColumn) {
+  create(col: LinkMapColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
@@ -43,7 +43,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     return `${examples.join(', ')}${examples.length < arr.length} ? ', &hellip;': ''}`;
   }
 
-  createGroup(col: LinkMapColumn, context: IRenderContext) {
+  createGroup(col: LinkMapColumn, context: IRenderContext): IGroupCellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
@@ -57,7 +57,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

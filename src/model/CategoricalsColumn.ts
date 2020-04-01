@@ -21,7 +21,7 @@ export declare function colorMappingChanged_CCS(previous: ICategoricalColorMappi
 /**
  * a string column with optional alignment
  */
-@toolbar('colorMappedCategorical')
+@toolbar('rename', 'colorMappedCategorical')
 export default class CategoricalsColumn extends ArrayColumn<string | null> implements ICategoricalsColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 

@@ -22,7 +22,7 @@ export declare function patternChanged_LMC(previous: string, current: string): v
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'editPattern')
+@toolbar('rename', 'search', 'editPattern')
 export default class LinkMapColumn extends MapColumn<string> {
   static readonly EVENT_PATTERN_CHANGED = LinkColumn.EVENT_PATTERN_CHANGED;
 

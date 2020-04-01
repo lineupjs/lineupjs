@@ -17,7 +17,7 @@ export declare type ILinksColumnDesc = ILinkDesc & IArrayColumnDesc<string | ILi
  */
 export declare function patternChanged_LCS(previous: string, current: string): void;
 
-@toolbar('search', 'editPattern')
+@toolbar('rename', 'search', 'editPattern')
 export default class LinksColumn extends ArrayColumn<string | ILink> {
   static readonly EVENT_PATTERN_CHANGED = LinkColumn.EVENT_PATTERN_CHANGED;
 

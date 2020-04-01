@@ -10,9 +10,6 @@ function filteredColor(input: string) {
   return c.toString();
 }
 
-/**
- * @internal
- */
 export function histogramTemplate(guessedBins: number) {
   let bins = '';
   for (let i = 0; i < guessedBins; ++i) {
@@ -96,9 +93,8 @@ export interface IFilterContext<T> {
   edit(value: T, attachment: HTMLElement, type: 'min' | 'max'): Promise<T>;
   domain: [T, T];
 }
-/**
- * @internal
- */
+
+/** @internal */
 export interface IFilterInfo<T> {
   filterMissing: boolean;
   filterMin: T;

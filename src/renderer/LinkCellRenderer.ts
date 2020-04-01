@@ -1,5 +1,5 @@
 import {LinkColumn, Column, IDataRow, IOrderedGroup} from '../model';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 import {cssClass} from '../styles';
@@ -7,13 +7,13 @@ import {ISequence} from '../internal';
 
 /** @internal */
 export default class LinkCellRenderer implements ICellRendererFactory {
-  readonly title = 'Link';
+  readonly title: string = 'Link';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: LinkColumn) {
+  create(col: LinkColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<a${align !== 'left' ? ` class="${cssClass(align)}"` : ''} target="_blank" rel="noopener" href=""></a>`,
@@ -46,7 +46,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
-  createGroup(col: LinkColumn, context: IRenderContext) {
+  createGroup(col: LinkColumn, context: IRenderContext): IGroupCellRenderer {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
@@ -59,7 +59,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

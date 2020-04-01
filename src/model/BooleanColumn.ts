@@ -40,7 +40,7 @@ export declare function filterChanged_BC(previous: boolean | null, current: bool
 /**
  * a string column with optional alignment
  */
-@toolbar('group', 'groupBy', 'filterBoolean', 'colorMappedCategorical')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'group', 'groupBy', 'filterBoolean', 'colorMappedCategorical')
 @Category('categorical')
 export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';

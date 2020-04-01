@@ -6,8 +6,18 @@ import DialogManager from './dialogs/DialogManager';
 import {IDialogContext} from './dialogs';
 
 export interface IUIOptions {
-  shortcut: boolean | 'only';
+  /**
+   * whether to show this action as a shortcut action
+   * @default 'menu'
+   */
+  mode: 'menu' | 'menu+shortcut' | 'shortcut' | ((col: Column, mode: 'sidePanel' | 'header') => 'menu' | 'menu+shortcut' | 'shortcut');
+
+  /**
+   * order hint for sorting actions
+   * @default 50
+   */
   order: number;
+
   featureLevel: 'basic' | 'advanced';
   featureCategory: 'ranking' | 'model' | 'ui';
 }
@@ -29,7 +39,7 @@ export interface IToolbarAction {
 export interface IToolbarDialogAddonHandler {
   elems: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[];
   reset(): void;
-  submit(): boolean;
+  submit(): boolean | undefined;
   cancel(): void;
 }
 
@@ -56,7 +66,8 @@ export interface IRankingHeaderContextContainer {
 
   asElement(html: string): HTMLElement;
 
-  readonly toolbar: {[key: string]: IToolbarAction | IToolbarDialogAddon};
+  resolveToolbarActions(col: Column, keys: string[]): IToolbarAction[];
+  resolveToolbarDialogAddons(col: Column, keys: string[]): IToolbarDialogAddon[];
 
   readonly flags: ILineUpFlags;
 

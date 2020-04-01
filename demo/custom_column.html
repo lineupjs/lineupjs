@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+  <style>
+    .lu-action-my-action::before {
+      content: "My";
+    }
+  </style>
+</head>
+<body>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const cats = ['c1', 'c2', 'c3'];
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        s: 'Row ' + i,
+        a: Math.random() * 10,
+        cat: cats[Math.floor(Math.random() * 3)],
+        d: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
+      });
+    }
+    const b = LineUpJS.builder(arr);
+
+    class MyColumn extends LineUpJS.Column {
+      firstN = 1;
+
+      setFirstN(val) {
+        if (this.firstN === val) {
+          return;
+        }
+        this.fire(['groupingChanged', LineUpJS.Column.EVENT_DIRTY_VALUES, LineUpJS.Column.EVENT_DIRTY], this.firstN, this.firstN = val);
+      }
+
+     createEventList() {
+        return super.createEventList().concat(['groupingChanged']);
+      }
+
+      getValue(row) {
+        return row.v[this.desc.column];
+      }
+
+      group(row) {
+        const v = this.getValue(row);
+        if (!v) {
+          return super.group(row);
+        }
+        const g = v.slice(0, this.firstN);
+        return {
+          name: g,
+          color: 'grey'
+        };
+      }
+    }
+    LineUpJS.toolbar('group', 'groupBy', 'rename', 'my')(MyColumn);
+    LineUpJS.dialogAddons('group', 'myGroupAddon')(MyColumn);
+
+    b.registerColumnType('my', MyColumn);
+    b.registerToolbarAction('my', {
+      title: 'My Action',
+      onClick: () => {
+        window.alert('clicked');
+      },
+      options: {
+        mode: 'menu+shortcut'
+      }
+    })
+    b.registerToolbarDialogAddon('myGroupAddon', {
+      title: 'Group by the X first characters',
+      order: 1,
+      livePreview: true, // optional, default = false
+      append(col, node, dialog, ctx) {
+        const val = col.firstN;
+        node.insertAdjacentHTML('beforeend', `
+          <input type="number" name="count" step="1" min="1" value="${val}">
+        `);
+        const input = node.lastElementChild;
+        return {
+          elems: [input],
+          submit() {
+            col.setFirstN(input.valueAsNumber);
+          },
+          cancel() {
+            col.setFirstN(val);
+          },
+          reset() {
+            input.value = '1';
+          }
+        };
+      }
+    })
+
+    b.column({
+      type: 'my',
+      column: 's',
+      renderer: 'default',
+      groupRenderer: 'string',
+    });
+
+    const lineup = b.build(document.body);
+  };
+</script>
+
+</body>
+</html>

@@ -1,15 +1,15 @@
 import {Column, ICategoricalLikeColumn, IDataRow, IOrderedGroup, ISetColumn, isSetColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {ICellRendererFactory, IRenderContext} from './interfaces';
+import {ICellRendererFactory, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {forEachChild, noop, wideEnoughCat} from './utils';
 import {round} from '../internal';
 
 /** @internal */
 export default class SetCellRenderer implements ICellRendererFactory {
-  readonly title = 'Matrix';
+  readonly title: string = 'Matrix';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return isSetColumn(col);
   }
 
@@ -31,7 +31,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  create(col: ISetColumn, context: IRenderContext) {
+  create(col: ISetColumn, context: IRenderContext): ICellRenderer {
     const {templateRow, render} = SetCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
     const cellDimension = width / col.dataLength!;
@@ -68,7 +68,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ISetColumn, context: IRenderContext) {
+  createGroup(col: ISetColumn, context: IRenderContext): IGroupCellRenderer {
     const {templateRow, render} = SetCellRenderer.createDOMContext(col);
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
@@ -83,7 +83,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: ICategoricalLikeColumn) {
+  createSummary(col: ICategoricalLikeColumn): ISummaryRenderer {
     const categories = col.categories;
     const mapping = col.getColorMapping();
     let templateRows = `<div class="${cssClass('heatmap')}">`;

@@ -13,7 +13,6 @@ export interface IDataProviderOptions {
   colorMappingFunctionTypes: {[colorMappingFunctionType: string]: IColorMappingFunctionConstructor};
   mappingFunctionTypes: {[mappingFunctionType: string]: IMappingFunctionConstructor};
 
-
   /**
    * allow just single selected rows
    * @default: false

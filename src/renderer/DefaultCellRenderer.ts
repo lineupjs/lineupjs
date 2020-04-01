@@ -8,11 +8,11 @@ import {noRenderer, setText} from './utils';
  * @internal
  */
 export class DefaultCellRenderer implements ICellRendererFactory {
-  title = 'String';
-  groupTitle = 'None';
-  summaryTitle = 'None';
+  title: string = 'String';
+  groupTitle: string = 'None';
+  summaryTitle: string = 'None';
 
-  canRender(_col: Column, _mode: ERenderMode) {
+  canRender(_col: Column, _mode: ERenderMode): boolean {
     return true;
   }
 
