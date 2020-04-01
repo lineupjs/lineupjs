@@ -3,14 +3,33 @@ import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMu
 import {medianIndex} from '../model/internalNumber';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback, IGroupCellRenderer, ICellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {matchColumns, multiLevelGridCSSClass} from './utils';
 import {cssClass} from '../styles';
 import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
 
 /** @internal */
-export function createData(parent: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer) {
+export interface ICols {
+  column: Column;
+  shift: number;
+  width: number;
+  template: string;
+  rendererId: string;
+  renderer: ICellRenderer | null;
+  groupRenderer: IGroupCellRenderer | null;
+  summaryRenderer: ISummaryRenderer | null;
+}
+
+/**
+ * @internal
+ * @param parent Parent column
+ * @param context Render context
+ * @param stacked Are the columns stacked?
+ * @param mode Render mode
+ * @param imposer Imposer object
+ */
+export function createData(parent: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, mode: ERenderMode, imposer?: IImposer): {cols: ICols[], stacked: boolean, padding: number} {
   const padding = COLUMN_PADDING;
   let offset = 0;
   const cols = parent.children.map((column) => {
@@ -71,11 +90,11 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     this.title = this.stacked ? 'Stacked Bar' : 'Nested';
   }
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isMultiLevelColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer) {
+  create(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const {cols, stacked} = createData(col, context, this.stacked, ERenderMode.CELL, imposer);
     const width = context.colWidth(col);
     return {
@@ -159,7 +178,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   }
 
 
-  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer) {
+  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     if (this.stacked && isNumberColumn(col)) {
       return super.createGroup(col, context, imposer);
     }

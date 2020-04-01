@@ -1,5 +1,5 @@
 import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn, Column, IDataRow, isMissingValue, IOrderedGroup} from '../model';
-import {IRenderContext, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
 import {cssClass} from '../styles';
@@ -7,13 +7,13 @@ import {ISequence} from '../internal';
 
 /** @internal */
 export default class TableCellRenderer implements ICellRendererFactory {
-  readonly title = 'Table';
+  readonly title: string = 'Table';
 
   canRender(col: Column) {
     return isMapColumn(col);
   }
 
-  create(col: IMapColumn<any>) {
+  create(col: IMapColumn<any>): ICellRenderer {
     if (isArrayColumn(col) && col.dataLength) {
       // fixed length optimized rendering
       return this.createFixed(col);
@@ -54,7 +54,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return `${arr.slice(0, numExampleRows).map((d) => d.value).join(', ')}${numExampleRows < arr.length ? ', &hellip;' : ''}`;
   }
 
-  createGroup(col: IMapColumn<any>, context: IRenderContext) {
+  createGroup(col: IMapColumn<any>, context: IRenderContext): IGroupCellRenderer {
     if (isArrayColumn(col) && col.dataLength) {
       // fixed length optimized rendering
       return this.createFixedGroup(col, context);
@@ -99,7 +99,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return {
       template: `<div class="${cssClass('rtable')}"><div>Key</div><div>Value</div></div>`,
       update: noop

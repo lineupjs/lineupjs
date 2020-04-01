@@ -1,16 +1,17 @@
 import {IDataRow, AnnotateColumn, Column} from '../model';
 import StringCellRenderer from './StringCellRenderer';
 import {cssClass} from '../styles';
+import {ICellRenderer} from './interfaces';
 
 /** @internal */
 export default class AnnotationRenderer extends StringCellRenderer {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
   canRender(col: Column) {
     return super.canRender(col) && col instanceof AnnotateColumn;
   }
 
-  create(col: AnnotateColumn) {
+  create(col: AnnotateColumn): ICellRenderer {
     return {
       template: `<div>
         <span></span>

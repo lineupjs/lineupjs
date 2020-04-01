@@ -3,13 +3,13 @@ import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAUL
 import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
 /** @internal */
 export default class BarCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar';
+  readonly title: string = 'Bar';
 
   /**
    * flag to always render the value
@@ -19,11 +19,11 @@ export default class BarCellRenderer implements ICellRendererFactory {
   constructor(private readonly renderValue: boolean = false) {
   }
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return mode === ERenderMode.CELL && isNumberColumn(col) && !isNumbersColumn(col);
   }
 
-  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
@@ -60,11 +60,11 @@ export default class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return noRenderer;
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

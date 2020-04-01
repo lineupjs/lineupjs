@@ -1,7 +1,7 @@
 import {dateStatsBuilder, IDateStatistics} from '../internal';
 import {Column, IDataRow, IDateColumn, IDatesColumn, IOrderedGroup, isDateColumn, isDatesColumn} from '../model';
 import {cssClass} from '../styles';
-import {ERenderMode, ICellRendererFactory, IRenderContext} from './interfaces';
+import {ERenderMode, ICellRendererFactory, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {colorOf} from './utils';
 import {histogramUpdate, histogramTemplate, mappingHintTemplate, mappingHintUpdate, IFilterInfo, IFilterContext, filteredHistTemplate, initFilter} from './histogram';
@@ -10,13 +10,13 @@ import {shiftFilterDateDay} from '../model/internalDate';
 
 /** @internal */
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
-  readonly title = 'Histogram';
+  readonly title: string = 'Histogram';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return (isDateColumn(col) && mode !== ERenderMode.CELL) || (isDatesColumn(col) && mode === ERenderMode.CELL);
   }
 
-  create(col: IDatesColumn, _context: IRenderContext) {
+  create(col: IDatesColumn, _context: IRenderContext): ICellRenderer {
     const {template, render} = getHistDOMRenderer(col);
     return {
       template: `${template}</div>`,
@@ -34,7 +34,7 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: IDateColumn, context: IRenderContext) {
+  createGroup(col: IDateColumn, context: IRenderContext): IGroupCellRenderer {
     const {template, render} = getHistDOMRenderer(col);
     return {
       template: `${template}</div>`,
@@ -51,7 +51,7 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: IDateColumn, context: IRenderContext, interactive: boolean) {
+  createSummary(col: IDateColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     const r = getHistDOMRenderer(col);
     return interactive ? interactiveSummary(col, context, r.template, r.render) : staticSummary(col, context, false, r.template, r.render);
   }

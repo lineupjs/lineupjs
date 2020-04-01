@@ -3,7 +3,7 @@ import {concatSeq, ISequence, round} from '../internal';
 import {Column, DEFAULT_COLOR, IDataRow, INumberColumn, IOrderedGroup, isNumberColumn, isNumbersColumn} from '../model';
 import {CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
-import {ERenderMode, ICellRendererFactory, IImposer, IRenderContext} from './interfaces';
+import {ERenderMode, ICellRendererFactory, IImposer, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
 
@@ -11,10 +11,10 @@ import {noRenderer} from './utils';
 
 /** @internal */
 export default class DotCellRenderer implements ICellRendererFactory {
-  readonly title = 'Dot';
-  readonly groupTitle = 'Dots';
+  readonly title: string = 'Dot';
+  readonly groupTitle: string = 'Dots';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isNumberColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
@@ -83,7 +83,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {template: `<div>${tmp}</div>`, update, render};
   }
 
-  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
+  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const {template, render, update} = DotCellRenderer.getDOMRenderer(col);
     const width = context.colWidth(col);
     const formatter = col.getNumberFormat();
@@ -116,7 +116,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
+  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const {template, render, width} = DotCellRenderer.getCanvasRenderer(col, context);
 
     return {
@@ -149,7 +149,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

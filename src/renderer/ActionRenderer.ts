@@ -1,5 +1,5 @@
 import {IDataRow, IOrderedGroup, ActionColumn, Column} from '../model';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {forEachChild, noRenderer} from './utils';
 import {cssClass} from '../styles';
 
@@ -7,11 +7,11 @@ import {cssClass} from '../styles';
 export default class ActionRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof ActionColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: ActionColumn) {
+  create(col: ActionColumn): ICellRenderer {
     const actions = col.actions;
     return {
       template: `<div class="${cssClass('actions')} ${cssClass('hover-only')}">${actions.map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`).join('')}</div>`,
@@ -27,7 +27,7 @@ export default class ActionRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ActionColumn, context: IRenderContext) {
+  createGroup(col: ActionColumn, context: IRenderContext): IGroupCellRenderer {
     const actions = col.groupActions;
     return {
       template: `<div class="${cssClass('actions')} ${cssClass('hover-only')}">${actions.map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`).join('')}</div>`,
@@ -48,7 +48,7 @@ export default class ActionRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }
