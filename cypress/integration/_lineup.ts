@@ -26,6 +26,7 @@ export function waitReady(lineup: LineUp | Taggle) {
   return cy.get('.lu').then(() => {
     delete lineup.node.dataset.ready;
 
+    // fallback in 500ms if no order event received
     const fallback = setTimeout(markReady, 500);
 
     function markReady() {
@@ -39,6 +40,7 @@ export function waitReady(lineup: LineUp | Taggle) {
       markReady();
       lineup.data.on('orderChanged', null);
     })
+    // use cypress to wait for the ready state
     return cy.get('.lu[data-ready]').should('have.class', 'lu');
   });
 }

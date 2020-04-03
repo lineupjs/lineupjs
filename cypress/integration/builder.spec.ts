@@ -28,4 +28,11 @@ describe('builder', () => {
     });
     cy.get('.lu-stats strong').should('contain', '100');
   });
+
+  it('select1', () => {
+    cy.get('.le-tr[data-i="0"]').first().click();
+    cy.get('.lu-stats span').should('contain', '1 selected');
+    cy.get('.le-tr[data-i="0"]').first().click();
+    cy.get('.lu-stats span').should('not.contain', '1 selected');
+  });
 });
