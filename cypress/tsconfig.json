@@ -1,10 +1,22 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "strict": true,
     "baseUrl": "../node_modules",
     "target": "es5",
-    "lib": ["es5", "dom"],
-    "types": ["cypress", "mocha", "chai"]
+    "types": [
+      "cypress",
+      "mocha",
+      "chai",
+      "d3-color",
+      "d3-dispatch",
+      "d3-format",
+      "d3-scale",
+      "d3-scale-chromatic",
+      "d3-time",
+      "d3-time-format",
+      "detect-browser",
+      "lodash.get"
+    ]
   },
   "include": [
     "**/*.ts"
