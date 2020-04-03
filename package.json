@@ -30,14 +30,7 @@
   "main": "build/LineUpJS.js",
   "unpkg": "build/LineUpJS.js",
   "module": "src/index.js",
-  "types": "build/types/2.7/index.d.ts",
-  "typesVersions": {
-    ">=3.1": {
-      "build/types/2.7/*": [
-        "src/*"
-      ]
-    }
-  },
+  "types": "src/index.d.ts",
   "sideEffects": [
     "*.scss",
     "*.css"
@@ -75,13 +68,12 @@
     "dev": "npm run clean && npm run compile:dev && npm run build:dev",
     "watch": "webpack --mode development --watch --devtool source-map",
     "start": "webpack-dev-server --mode development --devtool source-map",
-    "types:27": "cd typeGen/ts27 && npm i && npm run compile",
-    "predist": "npm run build && npm run types:27",
+    "predist": "npm run build",
     "dist": "mkdirp dist && cross-zip ./build ./dist/lineupjs.zip",
     "postdist": "npm run docs && cross-zip ./build/docs ../dist/lineupjs_docs.zip",
     "preversion": "npm test",
     "prepare": "echo 'dummy prepare since prepack has no dev dependencies'",
-    "prepack": "npm run clean && npm run compile && npm run build:prod && npm run types:27",
+    "prepack": "npm run clean && npm run compile && npm run build:prod",
     "release:major": "release-it major",
     "release:minor": "release-it minor",
     "release:patch": "release-it patch",
