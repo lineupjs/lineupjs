@@ -1,5 +1,8 @@
-declare type LineUpJSType = typeof import('../..');
-import {LineUp, Taggle} from '../../';
+export declare type LineUpJSType = typeof import('../..');
+import {LineUp as L, Taggle as T} from '../../';
+
+export declare type LineUp = L;
+export declare type Taggle = T;
 
 export function setupLineUp() {
   // LineUpJS
@@ -20,14 +23,22 @@ export function withLineUp(test: (LineUpJS: LineUpJSType, document: Document) =>
 }
 
 export function waitReady(lineup: LineUp | Taggle) {
-  lineup.data.on('busy', (busy) => {
-    setTimeout(() => {
-      if (!busy) {
+  return cy.get('.lu').then(() => {
+    delete lineup.node.dataset.ready;
+
+    const fallback = setTimeout(markReady, 500);
+
+    function markReady() {
+      clearTimeout(fallback);
+      setTimeout(() => {
         lineup.node.dataset.ready = '';
-      } else {
-        delete lineup.node.dataset.ready;
-      }
-    });
-  })
-  cy.get('.lu[data-ready]').should('have.class', 'lu');
+      }, 100);
+    }
+    // ready when order changed
+    lineup.data.on('orderChanged', () => {
+      markReady();
+      lineup.data.on('orderChanged', null);
+    })
+    return cy.get('.lu[data-ready]').should('have.class', 'lu');
+  });
 }

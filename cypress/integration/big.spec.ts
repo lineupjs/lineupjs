@@ -1,26 +1,18 @@
 import {withLineUp, waitReady} from "./_lineup";
+import {generateData, DEFAULT_CATEGORIES} from './_data';
 
 it('builder2', withLineUp((LineUpJS, document) => {
-  const arr = [];
-  const cats = ['c1', 'c2', 'c3'];
-  const cat2 = ['a1', 'a2'];
-  const size = 10000;
-  for (let i = 0; i < size; ++i) {
-    arr.push({
-      label: 'Row ' + i,
-      number: Math.random() * 10,
-      number2: Math.random() * 10,
-      cat: cats[Math.floor(Math.random() * cats.length)],
-      cat2: cat2[Math.floor(Math.random() * cat2.length)],
-      date: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
-    })
-  }
+  const arr = generateData({
+    count: 10000,
+    number: 2,
+    cat: 1
+  });
   cy.log('generated');
 
   const desc = [{
     label: 'Label',
     type: 'string',
-    column: 'label'
+    column: 'string'
   },
   {
     label: 'Number',
@@ -29,30 +21,16 @@ it('builder2', withLineUp((LineUpJS, document) => {
     domain: [0, 10]
   },
   {
-    label: 'Number2',
+    label: 'Number1',
     type: 'number',
-    column: 'number2',
+    column: 'number1',
     domain: [0, 10]
   },
   {
     label: 'Cat',
     type: 'categorical',
     column: 'cat',
-    categories: ['c1', 'c2', 'c3']
-  },
-  {
-    label: 'Cat2',
-    type: 'categorical',
-    column: 'cat2',
-    categories: [{
-      name: 'a1',
-      label: 'A1',
-      color: 'green'
-    }, {
-      name: 'a2',
-      label: 'A2',
-      color: 'blue'
-    }]
+    categories: DEFAULT_CATEGORIES
   },
   {
     label: 'Date',
@@ -71,7 +49,10 @@ it('builder2', withLineUp((LineUpJS, document) => {
   const instance = new LineUpJS.Taggle(document.body, p, {
     animated: false
   });
-  waitReady(instance);
-
+  waitReady(instance).then(() => {
+    expect(instance.data.getFirstRanking().getOrderLength()).to.eq(10000);
+    expect(instance.data.getTotalNumberOfRows()).to.eq(10000);
+  });
   cy.get('.lu-stats strong').should('contain', '10,000');
+  cy.get('.lu-stats').should('contain', 'of 10,000 item');
 }));

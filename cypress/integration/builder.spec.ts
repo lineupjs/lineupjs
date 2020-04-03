@@ -1,19 +1,31 @@
-import {withLineUp, waitReady} from "./_lineup";
+import {withLineUp, waitReady, LineUpJSType, Taggle} from './_lineup';
+import {generateData} from './_data';
 
-it('builder', withLineUp((LineUpJS, document) => {
-  const arr = [];
-  const cats = ['c1', 'c2', 'c3'];
-  for (let i = 0; i < 100; ++i) {
-    arr.push({
-      s: 'Row ' + i,
-      a: Math.random() * 10,
-      cat: cats[Math.floor(Math.random() * 3)],
-      // d: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
+describe('builder', () => {
+  let lineup: Taggle;
+  let LineUpJS: LineUpJSType;
+  before(withLineUp((l, document) => {
+    LineUpJS = l;
+    const arr = generateData();
+
+    lineup = LineUpJS.asTaggle(document.body, arr);
+    waitReady(lineup);
+  }));
+
+  it('default', () => {
+    cy.get('.lu-stats strong').should('contain', '100');
+  });
+
+  it('filter', () => {
+    cy.get('.lu-histogram-bin[data-cat=c1]').first().click();
+    waitReady(lineup).then(() => {
+      expect(lineup.data.getFirstRanking().getOrderLength()).to.eq(59);
     });
-  }
-  // just JSON serializable?
-  const lineup = LineUpJS.asTaggle(document.body, arr);
-  waitReady(lineup);
-
-  cy.get('.lu-stats strong').should('contain', '100');
-}))
+    cy.get('.lu-stats strong').should('contain', '59');
+    cy.get('.lu-stats-reset').click();
+    waitReady(lineup).then(() => {
+      expect(lineup.data.getFirstRanking().getOrderLength()).to.eq(100);
+    });
+    cy.get('.lu-stats strong').should('contain', '100');
+  });
+});
