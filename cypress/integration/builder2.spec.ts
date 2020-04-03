@@ -1,8 +1,9 @@
-import {setupLineUp} from "./lineup";
+import {setupLineUp, waitReady} from "./_lineup";
 
 it('builder2', async () => {
   // LineUpJS
   const {LineUpJS, document} = await setupLineUp();
+
   const arr = [];
   const cats = ['c1', 'c2', 'c3'];
   for (let i = 0; i < 100; ++i) {
@@ -36,5 +37,5 @@ it('builder2', async () => {
     .ranking(ranking);
 
   const l = builder.build(document.body);
-  console.log(l);
+  waitReady(l);
 });

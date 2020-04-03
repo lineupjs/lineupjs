@@ -1,4 +1,4 @@
-import {withLineUp} from "./lineup";
+import {withLineUp, waitReady} from "./_lineup";
 
 it('builder', withLineUp((LineUpJS, document) => {
   const arr = [];
@@ -11,6 +11,9 @@ it('builder', withLineUp((LineUpJS, document) => {
       // d: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
     });
   }
-  // just JSON serializable
-  LineUpJS.asTaggle(document.body, arr);
+  // just JSON serializable?
+  const lineup = LineUpJS.asTaggle(document.body, arr);
+  waitReady(lineup);
+
+  cy.get('.lu-stats strong').should('contain', '100');
 }))
