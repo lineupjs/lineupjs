@@ -80,6 +80,7 @@
     "release:patch": "release-it patch",
     "release:pre": "release-it --preRelease=alpha --npm.tag=next",
     "cy:open": "cypress open",
+    "cy:start": "cypress open --config baseUrl=http://localhost:8080",
     "cy:run": "cypress run",
     "cy:junit": "cypress run --reporter junit --reporter-options 'mochaFile=junit-results/my-test-output.xml'"
   },
