@@ -1,5 +1,5 @@
 import {normalizedStatsBuilder, IStatistics, getNumberOfBins} from '../internal';
-import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn, INumberFilter} from '../model';
+import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn, Ranking} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {colorOf} from './impose';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderTasks, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
@@ -142,13 +142,12 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
 
   const updateFilter = initFilter(summaryNode, fContext);
 
-  const rerender = (filter?: INumberFilter) => {
+  const rerender = () => {
     const ready = context.tasks.summaryNumberStats(col).then((r) => {
       if (typeof r === 'symbol') {
         return;
       }
       const {summary, data} = r;
-      currentFilter = createFilterInfo(col, filter);
       updateFilter(data ? data.missing : (summary ? summary.missing : 0), currentFilter);
       summaryNode.classList.toggle(cssClass('missing'), !summary);
       if (!summary) {
@@ -164,11 +163,23 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
       summaryNode.classList.remove(engineCssClass('loading'));
     });
   };
+
+  const ranking = col.findMyRanker()!;
+
+  if (ranking) {
+    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.numberFilter`, () => rerender());
+  }
   rerender();
 
   return {
+    cleanUp() {
+      if (ranking) {
+        ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.numberFilter`, null);
+      }
+    },
     reset() {
-      rerender(noNumberFilter());
+      currentFilter = createFilterInfo(col, noNumberFilter());
+      rerender();
     },
     submit() {
       applyFilter(currentFilter.filterMissing, currentFilter.filterMin, currentFilter.filterMax);

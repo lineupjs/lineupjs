@@ -7,7 +7,7 @@ import ADialog, {IDialogContext} from './ADialog';
 /** @internal */
 export default class NumberFilterDialog extends ADialog {
   private readonly before: INumberFilter;
-  private handler: {reset: () => void, submit: () => void} | null = null;
+  private handler: {reset: () => void, submit: () => void, cleanUp: () => void} | null = null;
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
@@ -23,8 +23,13 @@ export default class NumberFilterDialog extends ADialog {
     this.handler = createNumberFilter(this.column, node, {
       dialogManager: this.ctx.dialogManager,
       idPrefix: this.ctx.idPrefix,
-      tasks: this.ctx.provider.getTaskExecutor()
+      tasks: this.ctx.provider.getTaskExecutor(),
     }, this.showLivePreviews());
+  }
+
+  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+    super.cleanUp(action);
+    this.handler!.cleanUp();
   }
 
   protected reset() {
