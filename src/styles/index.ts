@@ -69,6 +69,11 @@ export const CSS_PREFIX = getStyle('lu_css_prefix', 'lu');
 export const ENGINE_CSS_PREFIX = 'le';
 
 /** @internal */
+export const RESIZE_SPACE = parseInt(getStyle('lu_engine_resize_space', '50px'), 10);
+/** @internal */
+export const RESIZE_ANIMATION_DURATION = parseInt(getStyle('lu_engine_resize_animation_duration', '1000ms'), 10);
+
+/** @internal */
 export function cssClass(suffix?: string) {
   return suffix? `${CSS_PREFIX}-${suffix}` : CSS_PREFIX;
 }
