@@ -90,12 +90,14 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string): IToolba
     elems: `input[name=grouped], #${id}P`,
     submit() {
       const enabled = node.querySelector<HTMLInputElement>('input[name=grouped]:checked')!.value === 'true';
-      const order = Number.parseInt(node.querySelector<HTMLInputElement>(`#${id}P`)!.value, 10);
+      const order = Number.parseInt(node.querySelector<HTMLInputElement>(`#${id}P`)!.value, 10) - 1;
       ranking.groupBy(column, !enabled ? -1 : order);
       return true;
     },
     reset() {
-      // things need to be done?
+      node.querySelector<HTMLInputElement>('input[name=grouped][value=false]')!.checked = true;
+      node.querySelector<HTMLInputElement>(`#${id}P`)!.value = (current.length + (!enabled ? 1 : 0)).toString();
+      updateDisabled(true);
     },
     cancel() {
       ranking.groupBy(column, current.indexOf(column));
