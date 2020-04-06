@@ -2,7 +2,7 @@ import {MIN_LABEL_WIDTH} from '../constants';
 import {equalArrays, dragAble, dropAble, hasDnDType, IDropResult} from '../internal';
 import {categoryOf, getSortType} from '../model';
 import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn, Column, ImpositionCompositeColumn, ImpositionCompositesColumn, createImpositionDesc, createImpositionsDesc, ImpositionBoxPlotColumn, createImpositionBoxPlotDesc, CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model';
-import {aria, cssClass, engineCssClass} from '../styles';
+import {aria, cssClass, engineCssClass, RESIZE_ANIMATION_DURATION, RESIZE_SPACE} from '../styles';
 import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
 import {IRankingHeaderContext, IToolbarAction, IOnClickHandler} from './interfaces';
 import {getToolbar} from './toolbar';
@@ -308,7 +308,9 @@ export function dragWidth(col: Column, node: HTMLElement) {
     start = end;
     const width = Math.max(0, col.getWidth() + delta);
 
-    sizeHelper.style.transform = `${currentFooterTransformation} translate(${width - originalWidth}px,0)`;
+    sizeHelper.classList.toggle(cssClass('resize-animated'), width < originalWidth);
+    // no idea why shifted by the size compared to the other footer element
+    sizeHelper.style.transform = `${currentFooterTransformation} translate(${width - originalWidth - RESIZE_SPACE}px, 0px)`;
 
     node.style.width = `${width}px`;
     col.setWidth(width);
@@ -327,8 +329,8 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.classList.remove(cssClass('resizing'));
     node.style.width = null;
     setTimeout(() => {
-      sizeHelper.classList.remove(cssClass('resizing'));
-    }, 1200); // after animation ended
+      sizeHelper.classList.remove(cssClass('resizing'), cssClass('resize-animated'));
+    }, RESIZE_ANIMATION_DURATION * 1.2); // after animation ended
 
     if (Math.abs(start - end) < 2) {
       //ignore
@@ -354,7 +356,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
     sizeHelper = <HTMLElement>node.closest(`.${engineCssClass()}`)!.querySelector<HTMLElement>(`.${cssClass('resize-helper')}`);
     currentFooterTransformation = (<HTMLElement>sizeHelper.previousElementSibling!).style.transform!;
-    sizeHelper.style.transform = currentFooterTransformation;
+    sizeHelper.style.transform = `${currentFooterTransformation} translate(${-RESIZE_SPACE}px, 0px)`;
     sizeHelper.classList.add(cssClass('resizing'));
   };
   handle.onclick = (evt) => {

@@ -124,8 +124,11 @@ export default class EngineRenderer extends AEventDispatcher {
     this.table = new MultiTableRowRenderer(this.node, this.idPrefix);
 
     {
-      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`);
-      footer!.insertAdjacentHTML('afterend', `<div class="${engineCssClass('footer')} ${cssClass('resize-helper')}">&nbsp;</div>`);
+      // helper object for better resizing experience
+      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`)!;
+      const copy = <HTMLElement>footer.cloneNode(true);
+      copy.classList.add(cssClass('resize-helper'));
+      footer!.insertAdjacentElement('afterend', copy);
     }
 
     //apply rules

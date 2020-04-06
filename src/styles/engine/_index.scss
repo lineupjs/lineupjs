@@ -19,7 +19,10 @@
 
 .#{$lu_css_prefix}-resize-helper {
   display: none;
-  transition: transform 1s linear !important;
+}
+
+.#{$lu_css_prefix}-resize-helper.#{$lu_css_prefix}-resize-animated {
+  transition: transform $lu_engine_resize_animation_duration linear !important;
 }
 
 .#{$lu_css_prefix}-resize-helper.#{$lu_css_prefix}-resizing {
