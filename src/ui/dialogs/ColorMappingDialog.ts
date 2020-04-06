@@ -2,15 +2,16 @@ import ADialog, {IDialogContext} from './ADialog';
 import {schemeCategory10, schemeSet1, schemeSet2, schemeSet3, schemeAccent, schemeDark2, schemePastel2, schemePastel1} from 'd3-scale-chromatic';
 import {round} from '../../internal';
 import {uniqueId} from '../../renderer/utils';
-import {QuantizedColorFunction, CustomColorMappingFunction, SolidColorFunction, SequentialColorFunction, DivergentColorFunction, DEFAULT_COLOR_FUNCTION} from '../../model/ColorMappingFunction';
-import {IMapAbleColumn, DEFAULT_COLOR, IColorMappingFunction} from '../../model';
+import {QuantizedColorFunction, CustomColorMappingFunction, SolidColorFunction, SequentialColorFunction, DivergentColorFunction} from '../../model/ColorMappingFunction';
+import {IMapAbleColumn, DEFAULT_COLOR, IColorMappingFunction, IMapAbleDesc} from '../../model';
 import {cssClass} from '../../styles';
+import {IRankingHeaderContext} from '../interfaces';
 
 export default class ColorMappingDialog extends ADialog {
   private readonly before: IColorMappingFunction;
   private readonly id = uniqueId('col');
 
-  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext) {
+  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
       livePreview: 'colorMapping'
     });
@@ -202,7 +203,9 @@ export default class ColorMappingDialog extends ADialog {
   }
 
   protected reset() {
-    this.render(this.node.querySelector<HTMLElement>(`.${cssClass('dialog-color')}`)!, DEFAULT_COLOR_FUNCTION);
+    const desc = <IMapAbleDesc>this.column.desc;
+    const colorMapping = this.ctx.provider.getTypeFactory().colorMappingFunction(desc.colorMapping || desc.color);
+    this.render(this.node.querySelector<HTMLElement>(`.${cssClass('dialog-color')}`)!, colorMapping);
   }
 
   protected submit() {
