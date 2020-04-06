@@ -1,7 +1,7 @@
-import {withLineUp, waitReady} from "./_lineup";
-import {generateData, DEFAULT_CATEGORIES} from './_data';
+import {withLineUp, waitReady} from './utils/lineup';
+import {generateData, DEFAULT_CATEGORIES} from './utils/data';
 
-it('builder2', withLineUp((LineUpJS, document) => {
+it('builder2', withLineUp((lineUpJS, document) => {
   const arr = generateData({
     count: 10000,
     number: 2,
@@ -38,15 +38,15 @@ it('builder2', withLineUp((LineUpJS, document) => {
     column: 'date'
   },
   ];
-  LineUpJS.deriveColors(desc);
+  lineUpJS.deriveColors(desc);
 
-  const p = new LineUpJS.LocalDataProvider(arr, desc, {
+  const p = new lineUpJS.LocalDataProvider(arr, desc, {
     // taskExecutor: 'direct',
     taskExecutor: 'scheduled'
   });
   p.deriveDefault();
 
-  const instance = new LineUpJS.Taggle(document.body, p, {
+  const instance = new lineUpJS.Taggle(document.body, p, {
     animated: false
   });
   waitReady(instance).then(() => {

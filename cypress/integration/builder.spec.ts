@@ -1,14 +1,14 @@
-import {withLineUp, waitReady, LineUpJSType, Taggle} from './_lineup';
-import {generateData} from './_data';
+import {withLineUp, waitReady, LineUpJSType, Taggle} from './utils/lineup';
+import {generateData} from './utils/data';
 
 describe('builder', () => {
   let lineup: Taggle;
-  let LineUpJS: LineUpJSType;
+  let lineUpJS: LineUpJSType;
   before(withLineUp((l, document) => {
-    LineUpJS = l;
+    lineUpJS = l;
     const arr = generateData();
 
-    lineup = LineUpJS.asTaggle(document.body, arr);
+    lineup = lineUpJS.asTaggle(document.body, arr);
     waitReady(lineup);
   }));
 

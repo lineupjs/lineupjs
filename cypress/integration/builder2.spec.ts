@@ -1,5 +1,5 @@
-import {setupLineUp, waitReady} from "./_lineup";
-import {generateData, DEFAULT_CATEGORIES} from './_data';
+import {setupLineUp, waitReady} from './utils/lineup';
+import {generateData, DEFAULT_CATEGORIES} from './utils/data';
 
 it('builder2', async () => {
   // LineUpJS
