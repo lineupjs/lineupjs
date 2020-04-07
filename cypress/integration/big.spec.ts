@@ -1,7 +1,7 @@
 import {withLineUp, waitReady} from './utils/lineup';
 import {generateData, DEFAULT_CATEGORIES} from './utils/data';
 
-describe('builder2', () => {
+describe('big', () => {
   it('builder2', withLineUp((lineUpJS, document) => {
     const arr = generateData({
       count: 10000,
