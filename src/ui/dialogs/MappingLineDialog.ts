@@ -32,7 +32,7 @@ export default class MappingLineDialog extends ADialog {
     this.before = {
       domain: this.line.domain,
       range: this.line.range
-    }
+    };
   }
 
   build(node: HTMLElement) {
@@ -81,8 +81,8 @@ export class MappingLine {
     g.insertAdjacentHTML('beforeend', `<g class="${cssClass('dialog-mapper-mapping')}" transform="translate(${domain},0)">
       <line x1="0" x2="${range - domain}" y2="60"></line>
       <line x1="0" x2="${range - domain}" y2="60"></line>
-      <circle r="3"></circle>
-      <circle cx="${range - domain}" cy="60" r="3"></circle>
+      <circle r="2.5"></circle>
+      <circle cx="${range - domain}" cy="60" r="2.5"></circle>
       <title>Drag the anchor circle to change the mapping, shift click to edit</title>
     </g>`);
     this.node = <SVGGElement>g.lastElementChild!;
