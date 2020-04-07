@@ -19,22 +19,13 @@ export default class ColorMappingDialog extends ADialog {
     this.before = this.column.getColorMapping();
   }
 
-  private createTemplate(id: string, current: IColorMappingFunction) {
+  private createTemplate(id: string, wrapped: IColorMappingFunction) {
+    const current = wrapped instanceof QuantizedColorFunction ? wrapped.base : wrapped;
     const entries = current instanceof CustomColorMappingFunction ? current.entries : [];
 
     let h = '';
     h += `<datalist id="${id}L">${schemeCategory10.map((d) => `<option>${d}"</option>`).join('')}</datalist>`;
     h += `<datalist id="${id}LW"><option>#FFFFFF"</option>${schemeCategory10.slice(0, -1).map((d) => `<option>${d}</option>`).join('')}</datalist>`;
-
-    h += `<strong>Quantization</strong>
-    <label class="${cssClass('checkbox')}">
-      <input name="kind" type="radio" id="${id}KC" value="continuous" ${!(current instanceof QuantizedColorFunction) ? 'checked' : ''}>
-      <span>Continuous</span>
-    </label>
-    <label class="${cssClass('checkbox')}">
-      <input name="kind" type="radio" id="${id}KQ" value="quantized" ${current instanceof QuantizedColorFunction ? 'checked' : ''}>
-      <span><input type="number" id="${id}KQS" min="2" step="1" value="${current instanceof QuantizedColorFunction ? current.steps : 5}">&nbsp; steps</span>
-    </label>`;
 
     h += `<strong data-toggle="${current instanceof SolidColorFunction ? 'open' : ''}">Solid Color</strong>`;
     h += `<div>`;
@@ -61,6 +52,14 @@ export default class ColorMappingDialog extends ADialog {
 
     h += `<strong data-toggle="${current instanceof SequentialColorFunction || (current instanceof CustomColorMappingFunction && entries.length === 2) ? 'open' : ''}">Sequential Color</strong>`;
     h += '<div>';
+    h += `<div><label class="${cssClass('checkbox')}">
+      <input name="kindS" type="radio" id="${id}KC_S" value="continuous" ${!(wrapped instanceof QuantizedColorFunction) ? 'checked' : ''}>
+      <span>Continuous</span>
+    </label>
+    <label class="${cssClass('checkbox')}">
+      <input name="kindS" type="radio" id="${id}KQ_S" value="quantized" ${wrapped instanceof QuantizedColorFunction ? 'checked' : ''}>
+      <span>Discrete&nbsp;<input type="number" id="${id}KQS_S" min="2" step="1" style="width: 3em" value="${wrapped instanceof QuantizedColorFunction ? `${wrapped.steps}"` : '5" disabled'}>&nbsp; steps</span>
+    </label></div>`;
     {
       const name = current instanceof SequentialColorFunction ? current.name : '';
       for (const colors of Object.keys(SequentialColorFunction.FUNCTIONS)) {
@@ -80,6 +79,15 @@ export default class ColorMappingDialog extends ADialog {
     h += '</div>';
     h += `<strong data-toggle="${current instanceof DivergentColorFunction || (current instanceof CustomColorMappingFunction && entries.length === 3) ? 'open' : ''}">Diverging Color</strong>`;
     h += '<div>';
+    h += `<div><label class="${cssClass('checkbox')}">
+      <input name="kindD" type="radio" id="${id}KC_D" value="continuous" ${!(wrapped instanceof QuantizedColorFunction) ? 'checked' : ''}>
+      <span>Continuous</span>
+    </label>
+    <label class="${cssClass('checkbox')}">
+      <input name="kindD" type="radio" id="${id}KQ_D" value="quantized" ${wrapped instanceof QuantizedColorFunction ? 'checked' : ''}>
+      <span>Discrete&nbsp;<input type="number" id="${id}KQS_D" min="2" step="1" style="width: 3em" value="${wrapped instanceof QuantizedColorFunction ? `${wrapped.steps}"` : '5" disabled'}>&nbsp; steps</span>
+    </label></div>`;
+
     {
       const name = current instanceof DivergentColorFunction ? current.name : '';
       for (const colors of Object.keys(DivergentColorFunction.FUNCTIONS)) {
@@ -107,12 +115,12 @@ export default class ColorMappingDialog extends ADialog {
     if (!selected) {
       return;
     }
-    const quantized = this.findInput(`#${this.id}KQ`);
-    const steps = this.findInput(`#${this.id}KQS`);
+    const quantized = this.findInput(`#${this.id}KQ_S`);
+    const steps = this.findInput(`#${this.id}KQS_S`);
 
     const base = toColor(selected, this.node);
     if (quantized.checked && !(base instanceof SolidColorFunction)) {
-      this.column.setColorMapping(new QuantizedColorFunction(base, parseInt(steps.value, 10)));
+      this.column.setColorMapping(new QuantizedColorFunction(base, Number.parseInt(steps.value, 10)));
     } else {
       this.column.setColorMapping(base);
     }
@@ -129,9 +137,6 @@ export default class ColorMappingDialog extends ADialog {
     const id = this.id;
     node.innerHTML = this.createTemplate(id, value);
 
-    const continuouos = this.findInput(`#${id}KC`);
-    const quantized = this.findInput(`#${id}KQ`);
-    const steps = this.findInput(`#${id}KQS`);
     const toggles = <HTMLElement[]>Array.from(node.querySelectorAll('strong[data-toggle]'));
 
     for (const toggle of toggles) {
@@ -180,25 +185,34 @@ export default class ColorMappingDialog extends ADialog {
       };
     });
 
-    continuouos.onchange = () => {
+    // sync and apply
+    const continuouos = this.findInput(`#${id}KC_S`);
+    const quantized = this.findInput(`#${id}KQ_S`);
+    const steps = this.findInput(`#${id}KQS_S`);
+    const continuouos2 = this.findInput(`#${id}KC_D`);
+    const quantized2 = this.findInput(`#${id}KQ_D`);
+    const steps2 = this.findInput(`#${id}KQS_D`);
+
+    continuouos.onchange = continuouos2.onchange = (evt) => {
+      continuouos.checked = continuouos2.checked = (<HTMLInputElement>evt.currentTarget).checked;
+      steps.disabled = steps2.disabled = !quantized.checked;
       if (continuouos.checked) {
         this.updateGradients(-1);
         updateSelectedColor();
       }
     };
-    quantized.onchange = steps.onchange = () => {
-      if (!quantized.checked) {
-        this.updateGradients(-1);
-        updateSelectedColor();
-        return;
-      }
-      if (toggles[0].dataset.toggle === 'open') {
-        // auto open sequential
-        toggles[0].dataset.toggle = '';
-        toggles[1].dataset.toggle = 'open';
-      }
-      this.updateGradients(parseInt(steps.value, 10));
+    steps.onchange = steps2.onchange = (evt) => {
+      steps.value = steps2.value = (<HTMLInputElement>evt.currentTarget).value;
+      this.updateGradients(Number.parseInt(steps.value, 10));
       updateSelectedColor();
+    };
+    quantized.onchange = quantized2.onchange = (evt) => {
+      quantized.checked = quantized2.checked = (<HTMLInputElement>evt.currentTarget).checked;
+      steps.disabled = steps2.disabled = !quantized.checked;
+      if (quantized.checked) {
+        this.updateGradients(Number.parseInt(steps.value, 10));
+        updateSelectedColor();
+      }
     };
   }
 
