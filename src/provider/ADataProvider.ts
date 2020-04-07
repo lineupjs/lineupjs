@@ -262,6 +262,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return factory;
   }
 
+  getTypeFactory() {
+    return this.typeFactory;
+  }
+
   /**
    * events:
    *  * column changes: addColumn, removeColumn
