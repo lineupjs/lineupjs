@@ -386,7 +386,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       sortComplex(groupIndices, groupLookup.sortOrders);
       return groupIndices.map((i) => groups[i]);
     }
-    return groups.sort((a, b) => a.name.localeCompare(b.name));
+    return groups;
   }
 
   private index2pos(groups: IOrderedGroup[], maxDataIndex: number) {
