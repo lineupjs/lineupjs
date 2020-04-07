@@ -30,7 +30,7 @@
   "main": "build/LineUpJS.js",
   "unpkg": "build/LineUpJS.js",
   "module": "src/index.js",
-  "types": "src/index.d.ts",
+  "types": "build/src/index.d.ts",
   "sideEffects": [
     "*.scss",
     "*.css"
@@ -44,6 +44,7 @@
   "files": [
     "build",
     "!build/docs",
+    "!build/tests",
     "!build/demo",
     "src/**/*.js",
     "src/**/*.d.ts",
@@ -52,8 +53,8 @@
   ],
   "scripts": {
     "clean": "rimraf build dist && npm run clean:compile",
-    "clean:compile": "rimraf node_modules/.cache/cache-loader *.tsbuildinfo src/**/*.map src/**/*.js src/**/*.d.ts tests/**/*.js tests/**/*.map tests/**/*.d.ts demo/*.js demo/*.map demo/*.d.ts",
-    "compile": "tsc",
+    "clean:compile": "rimraf node_modules/.cache/cache-loader *.tsbuildinfo build/src build/tests src/**/*.map src/**/*.js src/**/*.d.ts tests/**/*.js tests/**/*.map tests/**/*.d.ts demo/*.js demo/*.map demo/*.d.ts",
+    "compile": "tsc -p ./tsconfig.prod.json",
     "compile:dev": "tsc -p ./tsconfig.dev.json",
     "lint": "tslint -p tsconfig.json -c tslint.json && stylelint src/**/*.scss",
     "docs": "npm run clean:compile && typedoc --tsconfig tsconfig.dev.json --out ./build/docs/ --plugin typedoc-plugin-as-member-of src tsd.d.ts",
@@ -77,26 +78,33 @@
     "release:major": "release-it major",
     "release:minor": "release-it minor",
     "release:patch": "release-it patch",
-    "release:pre": "release-it --preRelease=alpha --npm.tag=next"
+    "release:pre": "release-it --preRelease=alpha --npm.tag=next",
+    "cy:open": "cypress open",
+    "cy:start": "cypress open --config baseUrl=http://localhost:8080",
+    "cy:run": "cypress run",
+    "cy:junit": "cypress run --reporter junit --reporter-options 'mochaFile=junit-results/my-test-output.xml'"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/lineupjs/lineupjs.git"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.14",
+    "@cypress/webpack-preprocessor": "^4.1.3",
+    "@types/jest": "^24.9.1",
     "@types/lodash": "4.14.121",
     "cache-loader": "^4.0.0",
     "cross-zip-cli": "^1.0.0",
     "css-loader": "^3.0.0",
+    "cypress": "^4.3.0",
     "extract-loader": "^3.1.0",
     "file-loader": "^4.0.0",
     "font-awesome": "^4.7.0",
     "fork-ts-checker-webpack-plugin": "^1.3.7",
-    "jest": "^24.8.0",
+    "jest": "^24.9.0",
     "json-loader": "^0.5.7",
     "mini-css-extract-plugin": "^0.7.0",
     "mkdirp": "^0.5.1",
+    "mocha-junit-reporter": "^1.23.3",
     "node-sass": "^4.12.0",
     "raw-loader": "^3.0.0",
     "release-it": "^12.3.0",

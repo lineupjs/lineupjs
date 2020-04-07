@@ -3,7 +3,7 @@ import {DataProvider, LocalDataProvider, deriveColors, deriveColumnDescriptions,
 import {LineUp, Taggle} from '../ui';
 import ColumnBuilder from './column/ColumnBuilder';
 import LineUpBuilder from './LineUpBuilder';
-import RankingBuilder from './RankingBuilder';
+import {RankingBuilder} from './RankingBuilder';
 
 export * from './column';
 export * from './RankingBuilder';
@@ -11,7 +11,7 @@ export * from './RankingBuilder';
 /**
  * builder for a LocalDataProvider along with LineUp configuration options
  */
-export default class DataBuilder extends LineUpBuilder {
+export class DataBuilder extends LineUpBuilder {
   private readonly columns: (IColumnDesc | ((data: any[]) => IColumnDesc))[] = [];
   private readonly providerOptions: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {
     columnTypes: {}
