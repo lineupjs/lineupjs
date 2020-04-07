@@ -669,11 +669,40 @@ npm run build
 npm run lint
 ```
 
+**Run Unit Tests**
+
+```bash
+npm test
+```
 
 **Serve integrated webserver**
 
 ```bash
-npm run start
+npm start
+```
+
+**Run E2E Tests**
+
+via cypress.io
+
+Variant 1: with prebuilt LineUp
+
+```sh
+npm run compile
+npm run build:prod
+npm run cy:open
+```
+
+Variant 2: with webpack-dev-server
+
+first shell:
+```sh
+npm start
+```
+
+second shell:
+```sh
+npm run cy:start
 ```
 
 **Link develop version**
