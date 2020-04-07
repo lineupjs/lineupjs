@@ -12,10 +12,21 @@
   box-sizing: border-box;
 }
 
-.le-footer {
-
+.#{$engine_css_prefix}-footer {
   // extra space to the right using a width for easier last column resizing
-  width: 50px;
+  width: $lu_engine_resize_space;
+}
+
+.#{$lu_css_prefix}-resize-helper {
+  display: none;
+}
+
+.#{$lu_css_prefix}-resize-helper.#{$lu_css_prefix}-resize-animated {
+  transition: transform $lu_engine_resize_animation_duration linear !important;
+}
+
+.#{$lu_css_prefix}-resize-helper.#{$lu_css_prefix}-resizing {
+  display: unset;
 }
 
 @import './header';

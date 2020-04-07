@@ -87,7 +87,7 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSor
     elems: `input[name=sortorder], #${id}P`,
     submit() {
       const asc = node.querySelector<HTMLInputElement>('input[name=sortorder]:checked')!.value;
-      const priority = Number.parseInt(node.querySelector<HTMLInputElement>(`#${id}P`)!.value, 10);
+      const priority = Number.parseInt(node.querySelector<HTMLInputElement>(`#${id}P`)!.value, 10) - 1;
 
       if (groupSortBy) {
         ranking.groupSortBy(column, asc === 'asc', asc === 'none' ? -1 : priority);
@@ -97,7 +97,9 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string, groupSor
       return true;
     },
     reset() {
-      // things need to be done?
+      node.querySelector<HTMLInputElement>('input[name=sortorder][value=none]')!.checked = true;
+      node.querySelector<HTMLInputElement>(`#${id}P`)!.value = (current.length + (order.priority === undefined ? 1 : 0)).toString();
+      updateDisabled(true);
     },
     cancel() {
       if (groupSortBy) {
