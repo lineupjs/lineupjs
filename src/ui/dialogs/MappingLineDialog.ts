@@ -1,7 +1,6 @@
 import {round, similar, dragHandle, IDragHandleOptions} from '../../internal';
-import {IDialogContext} from './ADialog';
+import ADialog, {IDialogContext} from './ADialog';
 import {cssClass} from '../../styles';
-import APopup from './APopup';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
@@ -23,28 +22,44 @@ export interface IMappingAdapter {
 }
 
 /** @internal */
-export default class MappingLineDialog extends APopup {
+export default class MappingLineDialog extends ADialog {
+  private readonly before: {domain: number, range: number};
+
   constructor(private readonly line: {destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void}, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'dataMapping'
+    });
+    this.before = {
+      domain: this.line.domain,
+      range: this.line.range
+    }
   }
 
   build(node: HTMLElement) {
     const domain = this.adapter.domain();
     node.insertAdjacentHTML('beforeend', `
         <strong>Input Domain Value (min ... max)</strong>
-        <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
+        <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly disabled' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
         <strong>Output Normalized Value (0 ... 1)</strong>
         <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
-        <button type="button" ${this.line.frozen ? 'disabled' : ''} >Remove Mapping Line</button>
+        <button type="button" ${this.line.frozen ? 'style="display: none"' : ''} >Remove Mapping Line</button>
       `);
-
-    this.forEach('input', (d: HTMLInputElement) => d.onchange = () => this.submit());
     this.find('button').addEventListener('click', () => {
       this.destroy('confirm');
       this.line.destroy();
     }, {
       passive: true
-    });
+      });
+    this.enableLivePreviews('input');
+  }
+
+  protected cancel() {
+    this.line.update(this.before.domain, this.before.range);
+  }
+
+  protected reset() {
+    this.findInput('input[type=number]').value = round(this.adapter.unnormalizeRaw(this.before.domain), 3).toString();
+    this.findInput('input[type=number]:last-of-type').value = round(this.before.range / 100, 3).toString();
   }
 
   protected submit() {
