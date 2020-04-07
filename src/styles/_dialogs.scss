@@ -168,6 +168,8 @@
 
 .#{$lu_css_prefix}-dialog-color {
   width: 17em;
+  display: flex;
+  flex-direction: column;
 
   > strong[data-toggle] {
     cursor: pointer;
