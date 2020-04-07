@@ -81,7 +81,7 @@ export default class ColorMappingDialog extends ADialog {
     h += `<strong data-toggle="${current instanceof DivergentColorFunction || (current instanceof CustomColorMappingFunction && entries.length === 3) ? 'open' : ''}">Diverging Color</strong>`;
     h += '<div>';
     {
-      const name = current instanceof SequentialColorFunction ? current.name : '';
+      const name = current instanceof DivergentColorFunction ? current.name : '';
       for (const colors of Object.keys(DivergentColorFunction.FUNCTIONS)) {
         h += `<label class="${cssClass('checkbox')} ${cssClass('color-gradient')}"><input name="color" type="radio" value="${colors}" ${colors === name ? 'checked="checked"' : ''}>
         <span data-c="${colors}" style="background: ${gradient(DivergentColorFunction.FUNCTIONS[colors], 11)}"></span>
