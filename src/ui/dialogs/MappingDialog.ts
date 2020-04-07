@@ -209,7 +209,7 @@ export default class MappingDialog extends ADialog {
       (<HTMLTextAreaElement>this.find('textarea')).value = (<ScriptMappingFunction>this.scale).code;
     }
     const domain = this.scale.domain;
-    this.forEach(`.${cssClass('dialog-mapper-details')} input[type=number]`, (d: HTMLInputElement, i) => {
+    this.forEach(`input[type=number]`, (d: HTMLInputElement, i) => {
       d.value = String(domain[i]);
     });
   }
