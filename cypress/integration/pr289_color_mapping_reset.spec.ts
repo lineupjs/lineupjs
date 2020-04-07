@@ -18,36 +18,36 @@ describe('pr275_sort_group', () => {
   }));
 
   function openColorMappingDialog() {
-    // open more menu
-    openMoreDialog('[data-type=number]');
-    // open group by dialog
-    cy.get('.lu-more-options .lu-action-color-mapping').click();
-    cy.get('.lu-dialog').last().as('dialog');
+    return openMoreDialog('[data-type=number]', 'color-mapping');
   }
 
   it('reset color mapping', () => {
-    openColorMappingDialog();
-    // select another color
-    cy.get('@dialog').get('.lu-color-line:last .lu-checkbox-color:last').click();
+    openColorMappingDialog().within(() => {
+      // select another color
+      cy.get('.lu-color-line:last .lu-checkbox-color:last').click();
+    });
     closeDialog();
 
-    openColorMappingDialog();
-    cy.get('@dialog').get('.lu-color-line:last .lu-checkbox-color > input').last().should('be.checked');
-    resetDialog();
-    cy.get('@dialog').get('.lu-color-line:first .lu-checkbox-color > input').first().should('be.checked');
+    openColorMappingDialog().within(() => {
+      cy.get('.lu-color-line:last .lu-checkbox-color > input').last().should('be.checked');
+      resetDialog();
+      cy.get('.lu-color-line:first .lu-checkbox-color > input').first().should('be.checked');
+    });
     closeDialog();
   });
 
   it('choose divergent color mapping', () => {
-    openColorMappingDialog();
-    // select another color
-    cy.get('@dialog').contains('Diverging Color').click();
-    cy.get('@dialog').get('input[value="interpolateBrBG"]').check();
+    openColorMappingDialog().within(() => {
+      // select another color
+      cy.contains('Diverging Color').click();
+      cy.get('input[value="interpolateBrBG"]').check();
+    });
     closeDialog();
 
-    openColorMappingDialog();
-    cy.get('@dialog').get('input[value="interpolateBrBG"]').should('be.checked');
-    resetDialog();
+    openColorMappingDialog().within(() => {
+      cy.get('input[value="interpolateBrBG"]').should('be.checked');
+      resetDialog();
+    });
     closeDialog();
   });
 });
