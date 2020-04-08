@@ -25,7 +25,7 @@ export interface IMappingAdapter {
 export default class MappingLineDialog extends ADialog {
   private readonly before: {domain: number, range: number};
 
-  constructor(private readonly line: {destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number): void}, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
+  constructor(private readonly line: {destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number, trigger: boolean): void}, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
     super(dialog, {
       livePreview: 'dataMapping'
     });
@@ -61,7 +61,7 @@ export default class MappingLineDialog extends ADialog {
   }
 
   protected cancel() {
-    this.line.update(this.before.domain, this.before.range);
+    this.line.update(this.before.domain, this.before.range, true);
   }
 
   protected reset() {
@@ -75,7 +75,7 @@ export default class MappingLineDialog extends ADialog {
     }
     const domain = this.adapter.normalizeRaw(this.findInput('input[type=number]').valueAsNumber);
     const range = this.findInput('input[type=number]:last-of-type').valueAsNumber * 100;
-    this.line.update(domain, range);
+    this.line.update(domain, range, true);
     return true;
   }
 }
@@ -180,7 +180,7 @@ export class MappingLine {
     this.adapter.destroyed(this);
   }
 
-  update(domain: number, range: number) {
+  update(domain: number, range: number, trigger = false) {
     if (similar(domain, this.domain) && similar(range, this.range)) {
       return;
     }
@@ -193,5 +193,9 @@ export class MappingLine {
     const shift = range - domain;
     Array.from(this.node.querySelectorAll<SVGLineElement>('line')).forEach((d) => d.setAttribute('x2', String(shift)));
     this.node.querySelector<SVGCircleElement>('circle[cx]')!.setAttribute('cx', String(shift));
+
+    if (trigger) {
+      this.adapter.updated(this);
+    }
   }
 }
