@@ -54,9 +54,10 @@ $lu_missing_dash_color: #c1c1c1 !default;
 
 $lu_axis_color: #c1c1c1 !default;
 
-$lu_mapping_circle: $lu_toolbar_color_base2;
-$lu_mapping_hover: $lu_selected_color;
-$lu_mapping_bg: $lu_toolbar_color_hover;
+$lu_mapping_box: $lu_toolbar_color_base !default;
+$lu_mapping_line: $lu_hover_color !default;
+$lu_mapping_handle: $lu_toolbar_color_hover !default;
+$lu_mapping_hover: $lu_selected_color !default;
 
 $lu_side_panel_bg_color: #f0f0f0 !default;
 $lu_side_panel_toolbar_bg: #6d6c6c !default;
