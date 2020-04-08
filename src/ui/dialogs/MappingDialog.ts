@@ -32,7 +32,8 @@ export default class MappingDialog extends ADialog {
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
     super(dialog, {
-      livePreview: 'dataMapping'
+      livePreview: 'dataMapping',
+      cancelSubDialogs: true,
     });
 
     this.idPrefix = `me${ctx.idPrefix}`;
@@ -197,11 +198,6 @@ export default class MappingDialog extends ADialog {
           g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
         }
       });
-    });
-
-    this.node.addEventListener('click', () => {
-      // any open dialog line editors
-      this.dialog.manager.removeAboveLevel(this.dialog.level + 1);
     });
   }
 
