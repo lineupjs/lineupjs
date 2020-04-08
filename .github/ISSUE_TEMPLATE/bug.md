@@ -6,14 +6,14 @@ labels: 'type: bug'
 assignees: ''
 
 ---
- 
- * Release number or git hash: 
- * Web browser version and OS: 
+
+* Release number or git hash: 
+* Web browser version and OS: 
 
 ### Steps to reproduce
 
- 1. 
- 1. 
+1. 
+2. 
 
 ### Observed behavior
 <!--
@@ -24,5 +24,6 @@ assignees: ''
 -->
 
 ### Expected behavior
- * 
+
+* 
 
