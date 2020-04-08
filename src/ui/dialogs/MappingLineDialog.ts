@@ -39,11 +39,11 @@ export default class MappingLineDialog extends ADialog {
   build(node: HTMLElement) {
     const domain = this.adapter.domain();
     node.insertAdjacentHTML('beforeend', `
+        <button class="${cssClass('dialog-button')} lu-action-remove" type="button" ${this.line.frozen ? 'style="display: none"' : ''} ><span style="margin-left: 3px">Remove Mapping Line</span></button>
         <strong>Input Domain Value (min ... max)</strong>
         <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly disabled' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
         <strong>Output Normalized Value (0 ... 1)</strong>
         <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
-        <button type="button" ${this.line.frozen ? 'style="display: none"' : 'style="margin-top: 1.5em"'} >Remove Mapping Line</button>
       `);
     this.find('button').addEventListener('click', () => {
       this.destroy('confirm');
