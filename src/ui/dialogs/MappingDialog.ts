@@ -202,7 +202,7 @@ export default class MappingDialog extends ADialog {
     this.node.addEventListener('click', () => {
       // any open dialog line editors
       this.dialog.manager.removeAboveLevel(this.dialog.level + 1);
-    })
+    });
   }
 
   private createMappings() {
