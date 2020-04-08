@@ -90,7 +90,7 @@ export class MappingLine {
       <line x1="0" x2="${range - domain}" y2="60"></line>
       <circle r="2.5"></circle>
       <circle cx="${range - domain}" cy="60" r="2.5"></circle>
-      <title>Drag the anchor circle to change the mapping, shift click to edit</title>
+      <title>Drag the anchor circle to change the mapping, double click to edit</title>
     </g>`);
     this.node = <SVGGElement>g.lastElementChild!;
 
