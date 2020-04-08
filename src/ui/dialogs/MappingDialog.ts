@@ -178,7 +178,12 @@ export default class MappingDialog extends ADialog {
         }
         d.setCustomValidity('');
         this.rawDomain[i] = v;
-        this.scale.domain = this.rawDomain.slice();
+        this.scale = this.computeScale();
+        const patchedDomain = this.scale.domain.slice();
+        patchedDomain[0] = this.rawDomain[0];
+        patchedDomain[patchedDomain.length - 1] = this.rawDomain[1];
+        this.scale.domain = patchedDomain;
+        this.createMappings();
         this.updateLines();
         if (this.showLivePreviews()) {
           this.column.setMapping(this.scale);
@@ -193,6 +198,11 @@ export default class MappingDialog extends ADialog {
         }
       });
     });
+
+    this.node.addEventListener('click', () => {
+      // any open dialog line editors
+      this.dialog.manager.removeAboveLevel(this.dialog.level + 1);
+    })
   }
 
   private createMappings() {

@@ -90,6 +90,7 @@ g.#{$lu_css_prefix}-dialog-mapper-mapping {
     transform: scale(0.4);
   }
 
+  &.#{$lu_css_prefix}-mapping-line-selected,
   &:hover {
     circle {
       fill: $lu_mapping_hover;

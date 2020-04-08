@@ -29,6 +29,7 @@ export default class MappingLineDialog extends ADialog {
     super(dialog, {
       livePreview: 'dataMapping'
     });
+    this.dialog.attachment.classList.add(cssClass('mapping-line-selected'));
     this.before = {
       domain: this.line.domain,
       range: this.line.range
@@ -42,7 +43,7 @@ export default class MappingLineDialog extends ADialog {
         <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly disabled' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
         <strong>Output Normalized Value (0 ... 1)</strong>
         <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
-        <button type="button" ${this.line.frozen ? 'style="display: none"' : ''} >Remove Mapping Line</button>
+        <button type="button" ${this.line.frozen ? 'style="display: none"' : 'style="margin-top: 1.5em"'} >Remove Mapping Line</button>
       `);
     this.find('button').addEventListener('click', () => {
       this.destroy('confirm');
@@ -51,6 +52,12 @@ export default class MappingLineDialog extends ADialog {
       passive: true
       });
     this.enableLivePreviews('input');
+  }
+
+  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+    super.cleanUp(action);
+
+    this.dialog.attachment.classList.remove(cssClass('mapping-line-selected'));
   }
 
   protected cancel() {
@@ -145,15 +152,23 @@ export class MappingLine {
       if (!evt.shiftKey) {
         return;
       }
-      const ctx = {
-        manager: this.adapter.dialog.manager,
-        level: this.adapter.dialog.level + 1,
-        attachment: <any>this.node,
-        idPrefix: this.adapter.dialog.idPrefix
-      };
-      const dialog = new MappingLineDialog(this, ctx, this.adapter);
-      dialog.open();
+      this.openDialog();
     };
+
+    this.node.ondblclick = () => {
+      this.openDialog();
+    };
+  }
+
+  private openDialog() {
+    const ctx = {
+      manager: this.adapter.dialog.manager,
+      level: this.adapter.dialog.level + 1,
+      attachment: <any>this.node,
+      idPrefix: this.adapter.dialog.idPrefix
+    };
+    const dialog = new MappingLineDialog(this, ctx, this.adapter);
+    dialog.open();
   }
 
   get frozen() {
