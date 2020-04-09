@@ -36,10 +36,11 @@
     "*.css"
   ],
   "browserslist": [
-    "Firefox >= 57",
     "Firefox ESR",
-    "Edge >= 16",
-    "Chrome >= 64"
+    "last 2 Firefox versions",
+    "last 2 Chrome versions",
+    "last 2 Edge versions",
+    "Edge 18"
   ],
   "files": [
     "build",
