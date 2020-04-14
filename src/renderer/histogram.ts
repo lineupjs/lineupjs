@@ -106,8 +106,8 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
-    <div class="${cssClass('histogram-min')}" data-value="${c.format(f.filterMin)}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag or shift click to change"></div>
-    <div class="${cssClass('histogram-max')}" data-value="${c.format(f.filterMax)}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag or shift click to change"></div>
+    <div class="${cssClass('histogram-min')}" data-value="${c.format(f.filterMin)}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
+    <div class="${cssClass('histogram-max')}" data-value="${c.format(f.filterMax)}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
     ${filterMissingNumberMarkup(f.filterMissing, 0)}
   `;
 }
@@ -126,10 +126,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     context.setFilter(filterMissing.checked, minValue, maxValue);
   };
 
-  min.onclick = (evt) => {
-    if (!evt.shiftKey && !evt.ctrlKey) {
-      return;
-    }
+  const minImpl = (evt: MouseEvent) => {
     evt.preventDefault();
     evt.stopPropagation();
 
@@ -144,10 +141,15 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     });
   };
 
-  max.onclick = (evt) => {
+  min.onclick = (evt) => {
     if (!evt.shiftKey && !evt.ctrlKey) {
       return;
     }
+    minImpl(evt);
+  };
+  min.ondblclick = minImpl;
+
+  const maxImpl = (evt: MouseEvent) => {
     evt.preventDefault();
     evt.stopPropagation();
 
@@ -161,6 +163,14 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
       setFilter();
     });
   };
+
+  max.onclick = (evt) => {
+    if (!evt.shiftKey && !evt.ctrlKey) {
+      return;
+    }
+    maxImpl(evt);
+  };
+  max.ondblclick = maxImpl;
 
   filterMissing.onchange = () => setFilter();
 

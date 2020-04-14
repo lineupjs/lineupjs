@@ -12,7 +12,8 @@ export default class DateFilterDialog extends ADialog {
 
   constructor(private readonly column: DateColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
-      livePreview: 'filter'
+      livePreview: 'filter',
+      cancelSubDialogs: true,
     });
     this.before = this.column.getFilter() || noDateFilter();
   }

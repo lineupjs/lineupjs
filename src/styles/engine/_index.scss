@@ -13,6 +13,7 @@
 }
 
 .#{$engine_css_prefix}-footer {
+
   // extra space to the right using a width for easier last column resizing
   width: $lu_engine_resize_space;
 }

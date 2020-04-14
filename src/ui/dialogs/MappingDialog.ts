@@ -32,7 +32,8 @@ export default class MappingDialog extends ADialog {
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
     super(dialog, {
-      livePreview: 'dataMapping'
+      livePreview: 'dataMapping',
+      cancelSubDialogs: true,
     });
 
     this.idPrefix = `me${ctx.idPrefix}`;
@@ -87,17 +88,24 @@ export default class MappingDialog extends ADialog {
         ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
       </select>
       </div>
-        <div><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
-        <strong style="text-align: center">Input Domain (min - max)</strong>
+        <div class=${cssClass('dialog-mapper-domain')}>
+          <input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any">
+          <span>Input Domain (min - max)</span>
+          <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any">
+        </div>
         <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
            <g transform="translate(3,3)">
-              <line x2="100"></line>
-              <rect y="-3" width="100" height="10"></rect>
-              <line y1="60" x2="100" y2="60"></line>
-              <rect y="36" width="100" height="10"></rect>
+              <rect y="-3" width="100" height="10">
+                <title>Click to create a new mapping line</title>
+              </rect>
+              <rect y="53" width="100" height="10">
+                <title>Click to create a new mapping line</title>
+              </rect>
            </g>
         </svg>
-        <strong style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
+        <div class=${cssClass('dialog-mapper-range')}>
+          <span>Output Normalized Domain (0 - 1)</span>
+        </div>
         <div class="${cssClass('dialog-mapper-script')}">
           <strong>Custom Normalization Script</strong>
           <textarea class="${cssClass('textarea')}"></textarea>
@@ -171,7 +179,12 @@ export default class MappingDialog extends ADialog {
         }
         d.setCustomValidity('');
         this.rawDomain[i] = v;
-        this.scale.domain = this.rawDomain.slice();
+        this.scale = this.computeScale();
+        const patchedDomain = this.scale.domain.slice();
+        patchedDomain[0] = this.rawDomain[0];
+        patchedDomain[patchedDomain.length - 1] = this.rawDomain[1];
+        this.scale.domain = patchedDomain;
+        this.createMappings();
         this.updateLines();
         if (this.showLivePreviews()) {
           this.column.setMapping(this.scale);
@@ -209,7 +222,7 @@ export default class MappingDialog extends ADialog {
       (<HTMLTextAreaElement>this.find('textarea')).value = (<ScriptMappingFunction>this.scale).code;
     }
     const domain = this.scale.domain;
-    this.forEach(`.${cssClass('dialog-mapper-details')} input[type=number]`, (d: HTMLInputElement, i) => {
+    this.forEach(`input[type=number]`, (d: HTMLInputElement, i) => {
       d.value = String(domain[i]);
     });
   }
