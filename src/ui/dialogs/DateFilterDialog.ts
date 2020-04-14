@@ -3,6 +3,7 @@ import {noDateFilter} from '../../model/internalDate';
 import {createDateFilter} from '../../renderer/DateHistogramCellRenderer';
 import {cssClass} from '../../styles';
 import ADialog, {IDialogContext} from './ADialog';
+import {IRankingHeaderContext} from '../interfaces';
 
 /** @internal */
 export default class DateFilterDialog extends ADialog {

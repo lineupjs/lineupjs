@@ -159,7 +159,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
       maxHint.style.width = `${100 - context.percent(newValue)}%`;
       max.dataset.value = context.format(newValue);
       max.style.right = `${100 - context.percent(newValue)}%`;
-      min.classList.toggle(cssClass('swap-hint'), context.percent(newValue) < 85);
+      max.classList.toggle(cssClass('swap-hint'), context.percent(newValue) < 85);
       setFilter();
     });
   };
@@ -209,6 +209,8 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     max.dataset.value = context.format(f.filterMax);
     min.style.left = `${context.percent(f.filterMin)}%`;
     max.style.right = `${100 - context.percent(f.filterMax)}%`;
+    min.classList.toggle(cssClass('swap-hint'), context.percent(f.filterMin) > 15);
+    max.classList.toggle(cssClass('swap-hint'), context.percent(f.filterMax) < 85);
     filterMissing.checked = f.filterMissing;
     updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, missing);
   };
