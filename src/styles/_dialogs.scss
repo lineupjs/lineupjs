@@ -102,6 +102,10 @@
     float: right;
     color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
   }
+
+  &[title=Remove] {
+    color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
+  }
 }
 
 .#{$lu_css_prefix}-dialog-sub-nested {
