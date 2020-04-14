@@ -22,12 +22,14 @@ export default class MappingDialog extends ADialog {
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
       this.mappingLines.splice(this.mappingLines.indexOf(self), 1);
+      this.updateLines(this.computeScale());
     },
     updated: () => this.updateLines(this.computeScale()),
     domain: () => this.rawDomain,
     normalizeRaw: this.normalizeRaw.bind(this),
     unnormalizeRaw: this.unnormalizeRaw.bind(this),
-    dialog: this.dialog
+    dialog: this.dialog,
+    formatter: this.column.getNumberFormat()
   };
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
@@ -93,11 +95,11 @@ export default class MappingDialog extends ADialog {
           <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any">
         </div>
         <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
-           <g transform="translate(3,3)">
+           <g transform="translate(3,7)">
               <rect y="-3" width="100" height="10">
                 <title>Click to create a new mapping line</title>
               </rect>
-              <rect y="53" width="100" height="10">
+              <rect y="49" width="100" height="10">
                 <title>Click to create a new mapping line</title>
               </rect>
            </g>
@@ -194,7 +196,7 @@ export default class MappingDialog extends ADialog {
     this.data.then((values) => {
       values.forEach((v) => {
         if (!isMissingValue(v)) {
-          g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
+          g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="52"></line>`);
         }
       });
     });

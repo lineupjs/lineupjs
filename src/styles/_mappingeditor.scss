@@ -31,18 +31,19 @@ div.#{$lu_css_prefix}-dialog-mapper-script {
 
 .#{$lu_css_prefix}-dialog-mapper-domain,
 .#{$lu_css_prefix}-dialog-mapper-range {
-  transform: translate(0, 10px);
+  transform: translate(0, 24px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin: 0 14px;
   border: 3px solid $lu_mapping_box;
-  padding: 0.4em 2px;
+  padding: 0.4em 2px 20px;
   text-align: center;
 }
 
 .#{$lu_css_prefix}-dialog-mapper-range {
-  transform: translate(0, -10px);
+  padding: 20px 2px 0.4em;
+  transform: translate(0, -24px);
   justify-content: space-around;
 }
 
@@ -100,6 +101,29 @@ g.#{$lu_css_prefix}-dialog-mapper-mapping {
       stroke: $lu_mapping_hover;
     }
   }
+
+  &.#{$lu_css_prefix}-frozen > .#{$lu_css_prefix}-dialog-mapper-mapping-domain {
+    display: none;
+  }
+}
+
+.#{$lu_css_prefix}-dialog-mapper-mapping-domain {
+  pointer-events: none;
+  font-size: 4px;
+}
+
+.#{$lu_css_prefix}-dialog-mapper-mapping-range {
+  pointer-events: none;
+  font-size: 4px;
+  dominant-baseline: hanging;
+}
+
+.#{$lu_css_prefix}-dialog-mapper-mapping-right {
+  text-anchor: end;
+}
+
+.#{$lu_css_prefix}-dialog-mapper-mapping-middle {
+  text-anchor: middle;
 }
 
 .#{$lu_css_prefix}-dialog-mapper[data-scale=script] div.#{$lu_css_prefix}-dialog-mapper-script {
