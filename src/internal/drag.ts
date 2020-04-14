@@ -2,7 +2,6 @@ import {cssClass} from '../styles';
 
 /** @internal */
 export interface IDragHandleOptions {
-  attachRoot?: boolean;
   /**
    * drag base container
    * @default handle parentElement
