@@ -245,6 +245,8 @@ function createFilterContext(col: IDateColumn, context: {idPrefix: string, dialo
     unpercent,
     domain,
     format: (v) => isNaN(v) ? '' : col.getFormatter()(new Date(v)),
+    formatRaw: String,
+    parseRaw: (v) => Number.parseInt(v, 10),
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
       min: Math.abs(minValue - domain[0]) < 0.001 ? Number.NEGATIVE_INFINITY : shiftFilterDateDay(minValue, 'min'),

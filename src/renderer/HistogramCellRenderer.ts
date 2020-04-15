@@ -224,6 +224,8 @@ function createFilterContext(col: IMapAbleColumn, context: {idPrefix: string, di
     unpercent,
     domain: <[number, number]>domain,
     format,
+    formatRaw: String,
+    parseRaw: Number.parseFloat,
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
       min: minValue === domain[0] ? Number.NEGATIVE_INFINITY : minValue,
