@@ -91,8 +91,8 @@ export class MappingLine {
     g.insertAdjacentHTML('beforeend', `<g class="${cssClass('dialog-mapper-mapping')}" transform="translate(${domain},0)">
       <line x1="0" x2="${range - domain}" y2="${h}"></line>
       <line x1="0" x2="${range - domain}" y2="${h}"></line>
-      <circle r="2.5"></circle>
-      <circle cx="${range - domain}" cy="${h}" r="2.5"></circle>
+      <circle r="2"></circle>
+      <circle cx="${range - domain}" cy="${h}" r="2"></circle>
       <text class="${cssClass('dialog-mapper-mapping-domain')} ${domain > 25 && domain < 75 ? cssClass('dialog-mapper-mapping-middle') : ''}${domain > 75 ? cssClass('dialog-mapper-mapping-right') : ''}" dy="-3">
         ${this.adapter.formatter(this.adapter.unnormalizeRaw(domain))}
       </text>
@@ -184,9 +184,11 @@ export class MappingLine {
     return this.node.classList.contains(cssClass('frozen'));
   }
 
-  destroy() {
+  destroy(handled = false) {
     this.node.remove();
-    this.adapter.destroyed(this);
+    if (!handled) {
+      this.adapter.destroyed(this);
+    }
   }
 
   update(domain: number, range: number, trigger = false) {

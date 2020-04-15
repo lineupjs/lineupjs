@@ -208,7 +208,7 @@ export default class MappingDialog extends ADialog {
   }
 
   private createMappings() {
-    this.mappingLines.splice(0, this.mappingLines.length).forEach((d) => d.destroy());
+    this.mappingLines.splice(0, this.mappingLines.length).forEach((d) => d.destroy(true));
     if (!(this.scale instanceof ScaleMappingFunction)) {
       return;
     }

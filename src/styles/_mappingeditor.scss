@@ -36,7 +36,7 @@ div.#{$lu_css_prefix}-dialog-mapper-script {
   align-items: center;
   justify-content: space-between;
   margin: 0 14px;
-  border: 3px solid $lu_mapping_box;
+  border-bottom: 3px solid $lu_mapping_box;
   padding: 0.4em 2px 20px;
   text-align: center;
 }
@@ -44,6 +44,8 @@ div.#{$lu_css_prefix}-dialog-mapper-script {
 .#{$lu_css_prefix}-dialog-mapper-range {
   padding: 20px 2px 0.4em;
   transform: translate(0, -24px);
+  border-bottom: none;
+  border-top: 3px solid $lu_mapping_box;
   justify-content: space-around;
 }
 
@@ -60,7 +62,7 @@ svg.#{$lu_css_prefix}-dialog-mapper-details {
 
   line {
     stroke: $lu_mapping_handle;
-    stroke-width: 1;
+    stroke-width: 0.8;
     stroke-linejoin: round;
     stroke-linecap: round;
 
