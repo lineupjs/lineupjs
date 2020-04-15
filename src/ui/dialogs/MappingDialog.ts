@@ -227,9 +227,8 @@ export default class MappingDialog extends ADialog {
     if (scaleType === 'script') {
       (<HTMLTextAreaElement>this.find('textarea')).value = (<ScriptMappingFunction>this.scale).code;
     }
-    const domain = this.scale.domain;
     this.forEach(`input[type=number]`, (d: HTMLInputElement, i) => {
-      d.value = String(domain[i]);
+      d.value = round(this.rawDomain[i], 3).toString();
     });
   }
 
@@ -242,11 +241,12 @@ export default class MappingDialog extends ADialog {
   }
 
   protected reset() {
-    this.scale = this.column.getOriginalMapping();
-    this.rawDomain = <[number, number]>this.scale.domain.slice();
+    this.scale = this.column.getOriginalMapping().clone();
+    const domain = this.scale.domain;
+    this.rawDomain = [domain[0], domain[domain.length - 1]];
     this.update();
-    this.updateLines();
     this.createMappings();
+    this.updateLines();
   }
 
   private copyMapping(columnId: string) {
@@ -258,6 +258,7 @@ export default class MappingDialog extends ADialog {
     this.scale = ref.getMapping().clone();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
     this.update();
+    this.createMappings();
     this.updateLines();
   }
 
