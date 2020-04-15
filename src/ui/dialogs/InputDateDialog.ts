@@ -29,6 +29,12 @@ export default class InputDateDialog extends APopup {
     node.insertAdjacentHTML('beforeend', `
      <input type="date" value="${o.value ? f(o.value) : ''}" required autofocus placeholder="${o.label ? o.label : 'enter date'}">
     `);
+    this.findInput('input[type=date]').addEventListener('keypress', (evt) => {
+      if (evt.key === 'Enter') {
+        this.triggerSubmit();
+      }
+    });
+    this.enableLivePreviews('input');
   }
 
   submit() {
