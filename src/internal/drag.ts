@@ -104,7 +104,7 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     ueberElement.addEventListener('mousemove', <any>mouseMove);
     ueberElement.addEventListener('mouseup', <any>mouseUp);
     ueberElement.addEventListener('mouseleave', <any>mouseUp);
-    ueberElement!.classList.add(cssClass('dragging'));
+    ueberElement.classList.add(cssClass('dragging'));
 
     o.onStart(handle, start, 0, evt);
   };
