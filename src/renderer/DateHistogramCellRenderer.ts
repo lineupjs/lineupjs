@@ -130,7 +130,7 @@ export function createDateFilter(col: IDateColumn, parent: HTMLElement, context:
   let domain: [number, number] = [isFinite(filter.min) ? filter.min : 0, isFinite(filter.max) ? filter.max : 100];
 
   let fContext = createFilterContext(col, context, domain);
-  const applyFilter = fContext.setFilter;
+  let applyFilter = fContext.setFilter;
   let currentFilter = createFilterInfo(col, domain);
   fContext.setFilter = (filterMissing, min, max) => {
     currentFilter = {filterMissing, filterMin: min, filterMax: max};
@@ -151,7 +151,7 @@ export function createDateFilter(col: IDateColumn, parent: HTMLElement, context:
     // reinit with proper domain
     domain = [min ? min.getTime() : Date.now(), max ? max.getTime() : Date.now()];
     fContext = createFilterContext(col, context, domain);
-    const applyFilter = fContext.setFilter;
+    applyFilter = fContext.setFilter;
     currentFilter = createFilterInfo(col, domain);
     fContext.setFilter = (filterMissing, min, max) => {
       currentFilter = {filterMissing, filterMin: min, filterMax: max};
@@ -247,8 +247,8 @@ function createFilterContext(col: IDateColumn, context: {idPrefix: string, dialo
     format: (v) => isNaN(v) ? '' : col.getFormatter()(new Date(v)),
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
-      min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : shiftFilterDateDay(minValue, 'min'),
-      max: Math.abs(maxValue - domain[1]) < 0.001 ? NaN : shiftFilterDateDay(maxValue, 'max')
+      min: Math.abs(minValue - domain[0]) < 0.001 ? Number.NEGATIVE_INFINITY : shiftFilterDateDay(minValue, 'min'),
+      max: Math.abs(maxValue - domain[1]) < 0.001 ? Number.POSITIVE_INFINITY : shiftFilterDateDay(maxValue, 'max')
     }),
     edit: (value, attachment, type) => {
       return new Promise((resolve) => {

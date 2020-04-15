@@ -226,8 +226,8 @@ function createFilterContext(col: IMapAbleColumn, context: {idPrefix: string, di
     format,
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
-      min: minValue === domain[0] ? NaN : minValue,
-      max: maxValue === domain[1] ? NaN : maxValue
+      min: minValue === domain[0] ? Number.NEGATIVE_INFINITY : minValue,
+      max: maxValue === domain[1] ? Number.POSITIVE_INFINITY : maxValue
     }),
     edit: (value, attachment) => {
       return new Promise((resolve) => {
