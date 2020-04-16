@@ -649,6 +649,12 @@ LineUp.js depends on
 Development Environment
 -----------------------
 
+Try the Gitpod online IDE and start coding instantly in your browser.
+
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/lineupjs/lineupjs)
+
+Otherwise follow the steps to setup a local development environment.
+
 **Installation**
 
 ```bash
