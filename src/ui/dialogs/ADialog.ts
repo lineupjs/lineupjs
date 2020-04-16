@@ -144,13 +144,7 @@ abstract class ADialog {
     this.node.onsubmit = (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
-      if (!this.node.checkValidity()) {
-        return false;
-      }
-      if (this.submit() !== false) {
-        this.destroy('confirm');
-      }
-      return false;
+      return this.triggerSubmit();
     };
     const cancel = this.find<HTMLButtonElement>('button[title=Cancel]');
     if (cancel) {
@@ -169,6 +163,16 @@ abstract class ADialog {
     }
 
     this.dialog.manager.push(this);
+  }
+
+  protected triggerSubmit() {
+    if (!this.node.checkValidity()) {
+      return false;
+    }
+    if (this.submit() !== false) {
+      this.destroy('confirm');
+    }
+    return false;
   }
 
   protected find<T extends HTMLElement>(selector: string): T {
