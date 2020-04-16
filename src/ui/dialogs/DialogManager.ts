@@ -61,6 +61,10 @@ export default class DialogManager extends AEventDispatcher {
     return super.on(type, listener);
   }
 
+  get maxLevel() {
+    return this.openDialogs.reduce((acc, a) => Math.max(acc, a.level), 0);
+  }
+
 
   setHighlight(mask: { left: number, top: number, width: number, height: number }) {
     const area = <HTMLElement>this.node.firstElementChild;

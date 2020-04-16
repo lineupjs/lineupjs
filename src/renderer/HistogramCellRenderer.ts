@@ -234,7 +234,7 @@ function createFilterContext(col: IMapAbleColumn, context: {idPrefix: string, di
         const dialogCtx = {
           attachment,
           manager: context.dialogManager,
-          level: 1,
+          level: context.dialogManager.maxLevel + 1,
           idPrefix: context.idPrefix
         };
         const dialog = new InputNumberDialog(dialogCtx, resolve, {

@@ -14,6 +14,7 @@ export interface IDialogOptions {
   eventsEnabled?: boolean;
   modifiers?: Popper.Modifiers;
   toggleDialog: boolean;
+  cancelSubDialogs?: boolean;
 }
 
 export interface IDialogContext {
@@ -40,6 +41,7 @@ abstract class ADialog {
     popup: false,
     placement: 'bottom-start',
     toggleDialog: true,
+    cancelSubDialogs: false,
     modifiers: {
     }
   };
@@ -158,6 +160,12 @@ abstract class ADialog {
         this.cancel();
         this.destroy('cancel');
       };
+    }
+
+    if (this.options.cancelSubDialogs) {
+      this.node.addEventListener('click', () => {
+        this.dialog.manager.removeAboveLevel(this.dialog.level + 1);
+      });
     }
 
     this.dialog.manager.push(this);

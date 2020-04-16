@@ -22,17 +22,20 @@ export default class MappingDialog extends ADialog {
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
       this.mappingLines.splice(this.mappingLines.indexOf(self), 1);
+      this.updateLines(this.computeScale());
     },
     updated: () => this.updateLines(this.computeScale()),
     domain: () => this.rawDomain,
     normalizeRaw: this.normalizeRaw.bind(this),
     unnormalizeRaw: this.unnormalizeRaw.bind(this),
-    dialog: this.dialog
+    dialog: this.dialog,
+    formatter: this.column.getNumberFormat()
   };
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
     super(dialog, {
-      livePreview: 'dataMapping'
+      livePreview: 'dataMapping',
+      cancelSubDialogs: true,
     });
 
     this.idPrefix = `me${ctx.idPrefix}`;
@@ -87,17 +90,24 @@ export default class MappingDialog extends ADialog {
         ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
       </select>
       </div>
-        <div><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
-        <strong style="text-align: center">Input Domain (min - max)</strong>
+        <div class=${cssClass('dialog-mapper-domain')}>
+          <input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any">
+          <span>Input Domain (min - max)</span>
+          <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any">
+        </div>
         <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
-           <g transform="translate(3,3)">
-              <line x2="100"></line>
-              <rect y="-3" width="100" height="10"></rect>
-              <line y1="60" x2="100" y2="60"></line>
-              <rect y="36" width="100" height="10"></rect>
+           <g transform="translate(3,7)">
+              <rect y="-3" width="100" height="10">
+                <title>Click to create a new mapping line</title>
+              </rect>
+              <rect y="49" width="100" height="10">
+                <title>Click to create a new mapping line</title>
+              </rect>
            </g>
         </svg>
-        <strong style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
+        <div class=${cssClass('dialog-mapper-range')}>
+          <span>Output Normalized Domain (0 - 1)</span>
+        </div>
         <div class="${cssClass('dialog-mapper-script')}">
           <strong>Custom Normalization Script</strong>
           <textarea class="${cssClass('textarea')}"></textarea>
@@ -171,7 +181,12 @@ export default class MappingDialog extends ADialog {
         }
         d.setCustomValidity('');
         this.rawDomain[i] = v;
-        this.scale.domain = this.rawDomain.slice();
+        this.scale = this.computeScale();
+        const patchedDomain = this.scale.domain.slice();
+        patchedDomain[0] = this.rawDomain[0];
+        patchedDomain[patchedDomain.length - 1] = this.rawDomain[1];
+        this.scale.domain = patchedDomain;
+        this.createMappings();
         this.updateLines();
         if (this.showLivePreviews()) {
           this.column.setMapping(this.scale);
@@ -182,14 +197,14 @@ export default class MappingDialog extends ADialog {
     this.data.then((values) => {
       values.forEach((v) => {
         if (!isMissingValue(v)) {
-          g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
+          g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="52"></line>`);
         }
       });
     });
   }
 
   private createMappings() {
-    this.mappingLines.splice(0, this.mappingLines.length).forEach((d) => d.destroy());
+    this.mappingLines.splice(0, this.mappingLines.length).forEach((d) => d.destroy(true));
     if (!(this.scale instanceof ScaleMappingFunction)) {
       return;
     }
@@ -208,9 +223,8 @@ export default class MappingDialog extends ADialog {
     if (scaleType === 'script') {
       (<HTMLTextAreaElement>this.find('textarea')).value = (<ScriptMappingFunction>this.scale).code;
     }
-    const domain = this.scale.domain;
-    this.forEach(`.${cssClass('dialog-mapper-details')} input[type=number]`, (d: HTMLInputElement, i) => {
-      d.value = String(domain[i]);
+    this.forEach(`input[type=number]`, (d: HTMLInputElement, i) => {
+      d.value = round(this.rawDomain[i], 3).toString();
     });
   }
 
@@ -223,11 +237,12 @@ export default class MappingDialog extends ADialog {
   }
 
   protected reset() {
-    this.scale = this.column.getOriginalMapping();
-    this.rawDomain = <[number, number]>this.scale.domain.slice();
+    this.scale = this.column.getOriginalMapping().clone();
+    const domain = this.scale.domain;
+    this.rawDomain = [domain[0], domain[domain.length - 1]];
     this.update();
-    this.updateLines();
     this.createMappings();
+    this.updateLines();
   }
 
   private copyMapping(columnId: string) {
@@ -239,6 +254,7 @@ export default class MappingDialog extends ADialog {
     this.scale = ref.getMapping().clone();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
     this.update();
+    this.createMappings();
     this.updateLines();
   }
 
