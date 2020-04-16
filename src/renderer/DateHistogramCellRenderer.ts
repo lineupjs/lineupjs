@@ -164,7 +164,7 @@ function createFilterContext(col: IDateColumn, context: IRenderContext, domain: 
         const dialogCtx = {
           attachment,
           manager: context.dialogManager,
-          level: 1,
+          level: context.dialogManager.maxLevel + 1,
           idPrefix: context.idPrefix
         };
         const dialog = new InputDateDialog(dialogCtx, (d) => resolve(d == null ? NaN : shiftFilterDateDay(d.getTime(), type)), {value: isNaN(value) ? null : new Date(value)});
