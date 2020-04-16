@@ -19,6 +19,8 @@ export interface IMappingAdapter {
   unnormalizeRaw(v: number): number;
 
   dialog: IDialogContext;
+
+  formatter(v: number): string;
 }
 
 /** @internal */
@@ -39,9 +41,9 @@ export default class MappingLineDialog extends ADialog {
   build(node: HTMLElement) {
     const domain = this.adapter.domain();
     node.insertAdjacentHTML('beforeend', `
-        <button class="${cssClass('dialog-button')} lu-action-remove" type="button" ${this.line.frozen ? 'style="display: none"' : ''} ><span style="margin-left: 3px">Remove Mapping Line</span></button>
+        <button class="${cssClass('dialog-button')} lu-action-remove" title="Remove" type="button" ${this.line.frozen ? 'style="display: none"' : ''} ><span style="margin-left: 3px">Remove Mapping Line</span></button>
         <strong>Input Domain Value (min ... max)</strong>
-        <input type="number" value="${round(this.adapter.unnormalizeRaw(this.line.domain), 3)}" ${this.line.frozen ? 'readonly disabled' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
+        <input type="number" value="${this.adapter.formatter(this.adapter.unnormalizeRaw(this.line.domain))}" ${this.line.frozen ? 'readonly disabled' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
         <strong>Output Normalized Value (0 ... 1)</strong>
         <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
       `);
@@ -85,11 +87,18 @@ export class MappingLine {
   readonly node: SVGGElement;
 
   constructor(g: SVGGElement, public domain: number, public range: number, private readonly adapter: IMappingAdapter) {
+    const h = 52;
     g.insertAdjacentHTML('beforeend', `<g class="${cssClass('dialog-mapper-mapping')}" transform="translate(${domain},0)">
-      <line x1="0" x2="${range - domain}" y2="60"></line>
-      <line x1="0" x2="${range - domain}" y2="60"></line>
-      <circle r="2.5"></circle>
-      <circle cx="${range - domain}" cy="60" r="2.5"></circle>
+      <line x1="0" x2="${range - domain}" y2="${h}"></line>
+      <line x1="0" x2="${range - domain}" y2="${h}"></line>
+      <circle r="2"></circle>
+      <circle cx="${range - domain}" cy="${h}" r="2"></circle>
+      <text class="${cssClass('dialog-mapper-mapping-domain')} ${domain > 25 && domain < 75 ? cssClass('dialog-mapper-mapping-middle') : ''}${domain > 75 ? cssClass('dialog-mapper-mapping-right') : ''}" dy="-3">
+        ${this.adapter.formatter(this.adapter.unnormalizeRaw(domain))}
+      </text>
+      <text class="${cssClass('dialog-mapper-mapping-range')} ${range > 25 && range < 75 ? cssClass('dialog-mapper-mapping-middle') : ''}${range > 50 ? cssClass('dialog-mapper-mapping-right') : ''}" dy="3" x="${range - domain}" y="${h}">
+        ${round(range / 100, 3)}
+      </text>
       <title>Drag the anchor circle to change the mapping, double click to edit</title>
     </g>`);
     this.node = <SVGGElement>g.lastElementChild!;
@@ -175,12 +184,27 @@ export class MappingLine {
     return this.node.classList.contains(cssClass('frozen'));
   }
 
-  destroy() {
+  destroy(handled = false) {
     this.node.remove();
-    this.adapter.destroyed(this);
+    if (!handled) {
+      this.adapter.destroyed(this);
+    }
   }
 
   update(domain: number, range: number, trigger = false) {
+    if (similar(domain, 100)) {
+      domain = 100;
+    }
+    if (similar(domain, 0)) {
+      domain = 0;
+    }
+    if (similar(range, 100)) {
+      range = 100;
+    }
+    if (similar(range, 0)) {
+      range = 0;
+    }
+
     if (similar(domain, this.domain) && similar(range, this.range)) {
       return;
     }
@@ -193,6 +217,17 @@ export class MappingLine {
     const shift = range - domain;
     Array.from(this.node.querySelectorAll<SVGLineElement>('line')).forEach((d) => d.setAttribute('x2', String(shift)));
     this.node.querySelector<SVGCircleElement>('circle[cx]')!.setAttribute('cx', String(shift));
+
+    const t1 = this.node.querySelector<SVGTextElement>('text')!;
+    t1.textContent = this.adapter.formatter(this.adapter.unnormalizeRaw(domain));
+    t1.classList.toggle(cssClass('dialog-mapper-mapping-right'), domain > 75);
+    t1.classList.toggle(cssClass('dialog-mapper-mapping-middle'), domain >= 25 && domain <= 75);
+
+    const t2 = this.node.querySelector<SVGTextElement>('text[x]')!;
+    t2.textContent = round(range / 100, 3).toString();
+    t2.classList.toggle(cssClass('dialog-mapper-mapping-right'), range > 75);
+    t2.classList.toggle(cssClass('dialog-mapper-mapping-middle'), range >= 25 && range <= 75);
+    t2.setAttribute('x', String(shift));
 
     if (trigger) {
       this.adapter.updated(this);

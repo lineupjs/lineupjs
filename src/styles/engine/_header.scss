@@ -102,6 +102,10 @@
   cursor: col-resize !important;
 }
 
+.#{$lu_css_prefix}-dragging {
+  cursor: ew-resize !important;
+}
+
 // FIXME
 .#{$lu_css_prefix}-dialog-sub-nested > section {
   margin-bottom: $lu_engine_grip_gap + 15px;
