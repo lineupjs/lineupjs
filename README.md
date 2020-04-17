@@ -623,14 +623,14 @@ Related Publications
 **LineUp: Visual Analysis of Multi-Attribute Rankings** [Paper](http://data.caleydo.org/papers/2013_infovis_lineup.pdf) [Paper Website](http://caleydo.org/publications/2013_infovis_lineup/)
 
 Samuel Gratzl, Alexander Lex, Nils Gehlenborg, Hanspeter Pfister, and Marc Streit <br>
-IEEE Transactions on Visualization and Computer Graphics (InfoVis '13), 19(12), pp. 2277–2286, doi:10.1109/TVCG.2013.173, 2013.
+IEEE Transactions on Visualization and Computer Graphics (InfoVis '13), 19(12), pp. 2277–2286, [doi:10.1109/TVCG.2013.173](https://dx.doi.org/10.1109/TVCG.2013.173), 2013.
 
 :trophy: [IEEE VIS](http://ieeevis.org) InfoVis 2013 Best Paper Award 
 
-**Taggle: Scalable Visualization of Tabular Data through Aggregation** [Paper Preprint](http://sci.utah.edu/~vdl/papers/2017_preprint_taggle.pdf) [Paper Website](http://vdl.sci.utah.edu/publications/2017_preprint_taggle/)
+**Taggle: Scalable Visualization of Tabular Data through Aggregation** [Paper Preprint](http://data.caleydo.org/papers/2019_sage_infovis_taggle.pdf) [Paper Website](http://caleydo.org/publications/2019_sage_infovis_taggle/)
 
 Katarina Furmanova, Samuel Gratzl, Holger Stitz, Thomas Zichner, Miroslava Jaresova, Martin Ennemoser, Alexander Lex, and Marc Streit <br>
-arXiv preprint, 2017.
+Information Visualization, 19(2): 114-136, [doi:10.1177/1473871619878085](https://dx.doi.org/10.1177/1473871619878085), 2019. 
 
 Dependencies
 ------------
