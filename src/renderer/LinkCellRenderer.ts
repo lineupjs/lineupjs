@@ -18,9 +18,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return {
       template: `<a${align !== 'left' ? ` class="${cssClass(align)}"` : ''} target="_blank" rel="noopener" href=""></a>`,
       update: (n: HTMLAnchorElement, d: IDataRow) => {
-        if (renderMissingDOM(n, col, d)) {
-          return;
-        }
+        renderMissingDOM(n, col, d);
         const v = col.getLink(d);
         n.href = v ? v.href : '';
         if (col.escape) {
