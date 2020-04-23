@@ -385,7 +385,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
       const groupIndices = groups.map((_, i) => i);
       sortComplex(groupIndices, groupLookup.sortOrders);
       return groupIndices.map((i) => groups[i]);
-    } else if (enforceSorting) {
+    }
+    if (enforceSorting) {
       // create a default sorting
       return groups.sort((a, b) => a.name.localeCompare(b.name));
     }
