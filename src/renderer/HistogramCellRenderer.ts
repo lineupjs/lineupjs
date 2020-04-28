@@ -217,7 +217,8 @@ function createFilterInfo(col: IMapAbleColumn, filter = col.getFilter()): IFilte
 function createFilterContext(col: IMapAbleColumn, context: {idPrefix: string, dialogManager: DialogManager}): IFilterContext<number> {
   const domain = col.getMapping().domain;
   const format = col.getNumberFormat();
-  const percent = (v: number) => Math.round(100 * (v - domain[0]) / (domain[1] - domain[0]));
+  const clamp = (v: number) => Math.max(0, Math.min(100, v));
+  const percent = (v: number) => clamp(Math.round(100 * (v - domain[0]) / (domain[1] - domain[0])));
   const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
   return {
     percent,
