@@ -51,11 +51,15 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
     };
   }
 
-  const dateParse = timeParse(options.datePattern);
-  if (value instanceof Date || dateParse(value) != null) {
-    return {
-      type: 'date'
-    };
+  const formats = Array.isArray(options.datePattern) ? options.datePattern : [options.datePattern];
+  for (const format of formats) {
+    const dateParse = timeParse(format);
+    if (value instanceof Date || dateParse(value) != null) {
+      return {
+        type: 'date',
+        dateParse: format
+      };
+    }
   }
   const treatAsCategorical = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold : (u: number, t: number) => u < t * (<number>options.categoricalThreshold);
 
@@ -246,7 +250,7 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
   const config = Object.assign({
     categoricalThreshold: (u: number, n: number) => u <= MAX_COLORS && u < n * 0.7, //70% unique and less equal to 22 categories
     columns: [],
-    datePattern: '%x'
+    datePattern: ['%x', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S.%LZ']
   }, options);
 
   const r: IColumnDesc[] = [];
