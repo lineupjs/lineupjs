@@ -145,7 +145,7 @@ export interface IDeriveOptions {
    * date pattern to check for string matching them
    * @default %x
    */
-  datePattern: string;
+  datePattern: string | string[];
 }
 
 
