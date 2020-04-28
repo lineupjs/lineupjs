@@ -51,15 +51,21 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
     };
   }
 
+  if (value instanceof Date) {
+    return {
+      type: 'date'
+    };
+  }
   const formats = Array.isArray(options.datePattern) ? options.datePattern : [options.datePattern];
   for (const format of formats) {
     const dateParse = timeParse(format);
-    if (value instanceof Date || dateParse(value) != null) {
-      return {
-        type: 'date',
-        dateParse: format
-      };
+    if (dateParse(value) == null) {
+      continue;
     }
+    return {
+      type: 'date',
+      dateParse: format
+    };
   }
   const treatAsCategorical = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold : (u: number, t: number) => u < t * (<number>options.categoricalThreshold);
 
