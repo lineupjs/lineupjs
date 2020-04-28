@@ -1,7 +1,7 @@
 import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderContext, IExceptionContext, isAbortAble, isAsyncUpdate, isLoadingCell, ITableSection, nonUniformContext, PrefetchMixin, tableIds, uniformContext, IAsyncUpdate} from 'lineupengine';
 import {ILineUpFlags} from '../config';
 import {HOVER_DELAY_SHOW_DETAIL} from '../constants';
-import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
+import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener, suffix} from '../internal';
 import {Column, IGroupData, IGroupItem, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent, defaultGroup, IGroup} from '../model';
 import {IImposer, IRenderCallback, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass} from '../styles';
@@ -1083,7 +1083,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         EngineRanking.disableListener(c); // destroy myself
       }
     });
-    c.on(`${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, () => {
+    c.on(suffix('.body', Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES), () => {
       // replace myself upon renderer type change
       col.renderers = this.ctx.createRenderer(c);
       const valid = this.updateHeaderOf(col.c);
@@ -1121,7 +1121,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private static disableListener(c: Column) {
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
+    c.on(suffix('.body', Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES, Column.EVENT_LABEL_CHANGED), null);
     c.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, null);
     c.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, null);
 
