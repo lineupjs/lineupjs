@@ -1,5 +1,5 @@
 import {withLineUp, waitReady, LineUpJSType, LineUp} from './utils/lineup';
-import {EAggregationState} from '../../src/model';
+import {aggregateAll} from './utils/ui';
 // import {generateData} from './utils/data';
 
 describe('issue 322', () => {
@@ -28,10 +28,7 @@ describe('issue 322', () => {
   }));
 
   it('Check for .lu-missing in boxplot renderer', () => {
-
-    lineup.data.aggregateAllOf(lineup.data.getFirstRanking(), EAggregationState.COLLAPSE);
-
-    waitReady(lineup);
+    aggregateAll();
 
     cy.get('.le-tr[data-index="0"] > .lu-renderer-boxplot[data-group="g"]').should('have.class', 'lu-missing');
   });
