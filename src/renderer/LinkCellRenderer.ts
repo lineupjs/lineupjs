@@ -41,6 +41,9 @@ export default class LinkCellRenderer implements ICellRendererFactory {
       examples.push(`<a target="_blank" rel="noopener"  href="${v.href}">${v.alt}</a>`);
       return examples.length < numExampleRows;
     });
+    if (examples.length === 0) {
+      return '';
+    }
     return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
@@ -49,9 +52,11 @@ export default class LinkCellRenderer implements ICellRendererFactory {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
         return context.tasks.groupExampleRows(col, group, 'link', (rows) => LinkCellRenderer.exampleText(col, rows)).then((text) => {
-          if (typeof text !== 'symbol') {
-            n.innerHTML = text;
+          if (typeof text === 'symbol') {
+            return;
           }
+          n.classList.toggle(cssClass('missing'), !text);
+          n.innerHTML = text;
         });
       }
     };

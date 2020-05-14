@@ -44,9 +44,12 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
           if (typeof r === 'symbol') {
             return;
           }
-          const {group} = r;
-
-          render(n, group);
+          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
+          render(n, r.group);
         });
       }
     };

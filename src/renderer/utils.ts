@@ -185,6 +185,9 @@ export function exampleText(col: Column, rows: ISequence<IDataRow>) {
     examples.push(v);
     return examples.length < NUM_EXAMPLE_VALUES;
   });
+  if (examples.length === 0) {
+    return '';
+  }
   return `${examples.join(', ')}${examples.length < rows.length ? ', ...' : ''}`;
 }
 

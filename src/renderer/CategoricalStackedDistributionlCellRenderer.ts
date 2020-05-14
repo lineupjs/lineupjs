@@ -28,9 +28,12 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
           if (typeof r === 'symbol') {
             return;
           }
-          const {group} = r;
-
-          update(n, group);
+          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
+          update(n, r.group);
         });
       }
     };
@@ -50,13 +53,12 @@ function staticSummary(col: ICategoricalColumn, context: IRenderContext) {
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary, data} = r;
-
-        n.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
-        update(n, summary, data);
+        update(n, r.summary, r.data);
       });
     }
   };
@@ -80,8 +82,9 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
         const missing = interactive && data ? data.missing : (summary ? summary.missing : 0);
         filterUpdate(missing, col);
 
-        n.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
         update(n, summary, data);

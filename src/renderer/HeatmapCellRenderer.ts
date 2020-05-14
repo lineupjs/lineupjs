@@ -81,6 +81,13 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
           const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
           ctx.canvas.width = width;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+          const isMissing = !data || data.normalized.length === 0 || data.normalized.every((v) => Number.isNaN(v));
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
+
           n.onmousemove = mover(n, data.raw.map(formatter), `${getSortLabel(col.getSortMethod())} `);
           n.onmouseleave = () => n.title = '';
           render(ctx, data.normalized, data.row!, GUESSED_ROW_HEIGHT);
