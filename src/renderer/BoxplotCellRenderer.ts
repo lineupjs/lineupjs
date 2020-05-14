@@ -50,11 +50,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       template: BOXPLOT,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d);
+        n.classList.toggle(cssClass('missing'), !data);
         if (!data) {
-          n.classList.add(cssClass('missing'));
           return;
         }
-        n.classList.remove(cssClass('missing'));
         const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(col, n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       },
@@ -95,8 +94,9 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             return;
           }
           // render
-          n.classList.toggle(cssClass('missing'), data === null);
-          if (data === null) {
+          const isMissing = data == null || data[0] == null || data[0].group.count === 0 || data[0].group.count === data[0].group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
             return;
           }
           renderDOMBoxPlot(col, n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
@@ -113,13 +113,13 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           if (typeof data === 'symbol') {
             return;
           }
-          const mappedSummary = data[0].summary;
-          const rawSummary = data[1].summary;
-          if (mappedSummary == null) {
-            n.classList.add(cssClass('missing'));
+          const isMissing = data == null || data[0] == null || data[0].summary.count === 0 || data[0].summary.count === data[0].summary.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
             return;
           }
-          n.classList.remove(cssClass('missing'));
+          const mappedSummary = data[0].summary;
+          const rawSummary = data[1].summary;
           const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
 
           if (isMapAbleColumn(col)) {

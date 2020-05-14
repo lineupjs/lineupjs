@@ -44,8 +44,13 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
           if (typeof r === 'symbol') {
             return;
           }
-          const {summary, group} = r;
+          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
 
+          const {summary, group} = r;
           render(n, group, summary);
         });
       }
@@ -76,13 +81,12 @@ function staticSummary(col: INumberColumn, context: IRenderContext, template: st
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary} = r;
-
-        node.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        node.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
-        render(node, summary);
+        render(node, r.summary);
       });
     }
   };

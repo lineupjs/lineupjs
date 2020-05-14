@@ -1,7 +1,7 @@
 import {GUESSES_GROUP_HEIGHT} from '../constants';
 import {concatSeq, ISequence, round} from '../internal';
 import {Column, DEFAULT_COLOR, IDataRow, INumberColumn, IOrderedGroup, isNumberColumn, isNumbersColumn} from '../model';
-import {CANVAS_HEIGHT, DOT} from '../styles';
+import {CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
 import {ERenderMode, ICellRendererFactory, IImposer, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -138,6 +138,11 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return Array.from(concatSeq(vs));
         }).then((data) => {
           if (typeof data === 'symbol') {
+            return;
+          }
+          const isMissing = !data || data.length === 0 || data.every((v) => Number.isNaN(v.value));
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
             return;
           }
           const ctx = (<HTMLCanvasElement>n).getContext('2d')!;

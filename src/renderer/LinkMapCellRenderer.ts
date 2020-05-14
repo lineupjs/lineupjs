@@ -35,10 +35,16 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     const numExampleRows = 5;
     const examples = <string[]>[];
     for (const row of arr) {
+      if (!row || !row.value.href) {
+        continue;
+      }
       examples.push(`<a target="_blank" rel="noopener" href="${row.value.href}">${row.value.alt}</a>`);
       if (examples.length >= numExampleRows) {
         break;
       }
+    }
+    if (examples.length === 0) {
+      return '';
     }
     return `${examples.join(', ')}${examples.length < arr.length} ? ', &hellip;': ''}`;
   }
@@ -50,7 +56,13 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
       update: (node: HTMLElement, group: IOrderedGroup) => {
         return context.tasks.groupRows(col, group, 'linkmap', (rows) => groupByKey(rows.map((d) => col.getLinkMap(d)))).then((entries) => {
           if (typeof entries !== 'symbol') {
-            node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
+            node.innerHTML = entries.map(({key, values}) => {
+              const data = LinkMapCellRenderer.example(values);
+              if (!data) {
+                return `<div>${key}</div><div class="${cssClass('missing')}"></div>`;
+              }
+              return `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${data}</div>`;
+            }).join('');
           }
         });
       }

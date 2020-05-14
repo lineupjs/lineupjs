@@ -44,6 +44,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
           if (typeof text === 'symbol') {
             return;
           }
+          n.classList.toggle(cssClass('missing'), !text);
           if (col.escape) {
             setText(n, text);
           } else {

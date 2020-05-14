@@ -77,6 +77,12 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
           const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
           ctx.canvas.width = width;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+          const isMissing = !data || data.length === 0 || data.every((d) => d == null);
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
           n.onmousemove = mover(n, data.map((d) => d ? d.label : 'missing'));
           n.onmouseleave = () => n.title = '';
           render(ctx, data, GUESSED_ROW_HEIGHT);

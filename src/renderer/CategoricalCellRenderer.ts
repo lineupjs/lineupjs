@@ -48,12 +48,16 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupCategoricalStats(col, group).then((data) => {
-          if (typeof data === 'symbol') {
+        return context.tasks.groupCategoricalStats(col, group).then((r) => {
+          if (typeof r === 'symbol') {
             return;
           }
-          const {group} = data;
-          update(n, group);
+          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
+          update(n, r.group);
         });
       }
     };
@@ -73,12 +77,12 @@ function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, int
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary} = r;
-        n.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
-        update(n, summary);
+        update(n, r.summary);
       });
     }
   };
@@ -102,8 +106,9 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
         const {summary, data} = r;
         filterUpdate((interactive && data) ? data.missing : (summary ? summary.missing : 0), col);
 
-        n.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
         update(n, summary, interactive ? data : undefined);
