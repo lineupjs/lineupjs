@@ -21,7 +21,9 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
-        setText(n, col.getLabel(d));
+        const l = col.getLabel(d);
+        setText(n, l);
+        n.title = l;
       }
     };
   }
