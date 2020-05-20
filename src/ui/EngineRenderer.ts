@@ -13,11 +13,12 @@ import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {EMode, IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph from './SlopeGraph';
 import {ADialog} from './dialogs';
+import {measureNumberText} from '../renderer/utils';
 
 /**
  * emitted when the highlight changes
  * @asMemberOf EngineRenderer
- * @param dataIndex the highlghted data index or -1 for none
+ * @param dataIndex the highlighted data index or -1 for none
  * @event
  */
 export declare function highlightChanged(dataIndex: number): void;
@@ -118,7 +119,8 @@ export default class EngineRenderer extends AEventDispatcher {
       caches: {
         toolbar: new Map(),
         toolbarAddons: new Map()
-      }
+      },
+      measureNumberText: measureNumberText(this.node)
     };
 
     this.table = new MultiTableRowRenderer(this.node, this.idPrefix);

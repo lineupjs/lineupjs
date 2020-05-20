@@ -81,6 +81,13 @@ export function createData(parent: {children: Column[]} & Column, context: IRend
   return {cols, stacked, padding};
 }
 
+function hasLabelOverlaps(context: IRenderContext, cols: ICols[], d: IDataRow) {
+  return cols.some((col) => {
+    const label = col.column.getLabel(d);
+    return col.width < context.measureNumberText(label);
+  });
+}
+
 /** @internal */
 export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMultiLevelColumn & Column> implements ICellRendererFactory {
   readonly title: string;
@@ -124,6 +131,15 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             toWait.push(r);
           }
         });
+
+        if (!hasLabelOverlaps(context, cols, d)) {
+          if (toWait.length > 0) {
+            return <IAbortAblePromise<void>>abortAbleAll(toWait);
+          }
+          return null;          
+        }
+
+        // TODO patch in the custom label
 
         if (toWait.length > 0) {
           return <IAbortAblePromise<void>>abortAbleAll(toWait);

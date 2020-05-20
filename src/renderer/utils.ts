@@ -205,3 +205,10 @@ export function colorOf(col: Column) {
   }
   return DEFAULT_COLOR;
 }
+
+/** @internal */
+export function measureNumberText(_node: HTMLElement) {
+  return (label: string) => {
+    return label.length * 10;
+  }
+}

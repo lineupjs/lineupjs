@@ -112,6 +112,12 @@ export interface IRenderContext {
 
   readonly provider: IDataProvider;
   readonly dialogManager: DialogManager;
+
+  /**
+   * computes the text width in pixel for the given numeric text
+   * @param text a numeric text, so NaN or [.\d]+
+   */
+  measureNumberText(text: string): number;
 }
 
 export enum ERenderMode {
