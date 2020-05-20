@@ -1,0 +1,18 @@
+@import './vars';
+
+.#{$lu_css_prefix}-text-measure {
+    position: absolute;
+    left: -100000px;
+    top: -100000px;
+    width: 2em;
+    visibility: hidden;
+}
+
+.#{$lu_css_prefix}-text-measure > * {
+    width: 100%;
+}
+
+.#{$lu_css_prefix}-text-measure-sample {
+    position: unset;
+    display: block;
+}

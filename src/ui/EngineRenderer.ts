@@ -120,7 +120,7 @@ export default class EngineRenderer extends AEventDispatcher {
         toolbar: new Map(),
         toolbarAddons: new Map()
       },
-      measureNumberText: measureNumberText(this.node)
+      measureNumberText: measureNumberText(parent)
     };
 
     this.table = new MultiTableRowRenderer(this.node, this.idPrefix);

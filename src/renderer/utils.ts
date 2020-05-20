@@ -1,7 +1,7 @@
 import {MIN_LABEL_WIDTH} from '../constants';
 import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn, DEFAULT_COLOR} from '../model';
 import {hsl} from 'd3-color';
-import {cssClass} from '../styles';
+import {cssClass, engineCssClass} from '../styles';
 import {IRenderContext} from '.';
 import {ISequence} from '../internal';
 
@@ -207,8 +207,30 @@ export function colorOf(col: Column) {
 }
 
 /** @internal */
-export function measureNumberText(_node: HTMLElement) {
+export function measureNumberText(node: HTMLElement) {
+  const samples = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 'N', 'a'].map(String);
+  node.insertAdjacentHTML('beforeend', `<div class="${cssClass('text-measure')} ${engineCssClass('tr')}">
+  <div class="${engineCssClass('td')}">
+    <div class="${cssClass('bar-label')} ${cssClass('text-measure-sample')}">
+      ${samples.map((c) => `<span>${c}</span>`).join('')}
+    </div>
+  </div>
+  </div>`);
+
+  const root = node.lastElementChild!;
+  const lookup = new Map<string, number>();
+
+  requestAnimationFrame(() => {
+    Array.from(root.querySelectorAll<HTMLElement>(`.${cssClass('text-measure-sample')} > *`)).forEach((c, i) => {
+      const bb = c.getBoundingClientRect();
+      console.log(samples[i], bb);
+      lookup.set(samples[i], bb.width || 2);
+    })
+
+    root.remove();
+  });
+
   return (label: string) => {
-    return label.length * 10;
+    return Array.from(label).reduce((acc, c) => acc + (lookup.get(c) || 5), 0);
   }
 }

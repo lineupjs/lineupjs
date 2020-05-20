@@ -13,6 +13,7 @@
 @import './taggle/index';
 @import './supported_browser';
 @import './safari';
+@import './measureText';
 
 .#{$lu_css_prefix} {
   position: relative;
