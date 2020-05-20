@@ -225,12 +225,12 @@ export function measureNumberText(node: HTMLElement) {
     Array.from(root.querySelectorAll<HTMLElement>(`.${cssClass('text-measure-sample')} > *`)).forEach((c, i) => {
       const bb = c.getBoundingClientRect();
       lookup.set(samples[i], bb.width || 8);
-    })
+    });
 
     root.remove();
   });
 
   return (label: string) => {
     return Array.from(label).reduce((acc, c) => acc + (lookup.get(c) || 8), 0);
-  }
+  };
 }

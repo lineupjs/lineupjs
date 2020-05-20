@@ -91,7 +91,7 @@ function hasLabelOverlaps(context: IRenderContext, cols: ICols[], d: IDataRow, i
       label,
       value,
       color: colorOf(col.column, d, imposer, value),
-    }
+    };
   });
   // last one doesn't matter
   if (!data.some((d, i) => i < data.length - 1 && (Number.isNaN(d.value) || d.width < context.measureNumberText(d.label)))) {
@@ -124,7 +124,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         }
         let combinedLabelNode: HTMLElement | null = null;
         if (n.lastElementChild!.classList.contains(cssClass('bar-label'))) {
-          combinedLabelNode = n.lastElementChild! as HTMLElement;
+          combinedLabelNode = <HTMLElement>n.lastElementChild!;
           combinedLabelNode.remove();
         }
 
@@ -149,14 +149,14 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             toWait.push(r);
           }
         });
-        
+
         const overlapData = stacked ? hasLabelOverlaps(context, cols, d, imposer) : null;
         if (!overlapData) {
           n.classList.remove(cssClass('stack-label'));
           if (toWait.length > 0) {
             return <IAbortAblePromise<void>>abortAbleAll(toWait);
           }
-          return null;          
+          return null;
         }
         n.classList.add(cssClass('stack-label'));
 
@@ -173,7 +173,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           if (d.width > acc.subWidth && d.color) {
             acc.color = d.color;
             acc.subWidth = d.width;
-          };
+          }
           return acc;
         }, {
           width: 0,
@@ -181,7 +181,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           subWidth: 0
           });
         combinedLabelNode.style.width = `${round(combinedInfo.width * 100 / total, 2)}%`;
-        adaptDynamicColorToBgColor(combinedLabelNode.firstElementChild! as HTMLElement, combinedInfo.color, combinedLabel, combinedInfo.width / total);
+        adaptDynamicColorToBgColor(<HTMLElement>combinedLabelNode.firstElementChild!, combinedInfo.color, combinedLabel, combinedInfo.width / total);
 
         if (toWait.length > 0) {
           return <IAbortAblePromise<void>>abortAbleAll(toWait);
