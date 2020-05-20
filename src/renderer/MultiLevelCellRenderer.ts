@@ -93,7 +93,8 @@ function hasLabelOverlaps(context: IRenderContext, cols: ICols[], d: IDataRow, i
       color: colorOf(col.column, d, imposer, value),
     }
   });
-  if (!data.some((d) => Number.isNaN(d.value) || d.width < context.measureNumberText(d.label))) {
+  // last one doesn't matter
+  if (!data.some((d, i) => i < data.length - 1 && (Number.isNaN(d.value) || d.width < context.measureNumberText(d.label)))) {
     return null;
   }
   return data;

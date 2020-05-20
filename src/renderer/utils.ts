@@ -221,16 +221,16 @@ export function measureNumberText(node: HTMLElement) {
   const lookup = new Map<string, number>();
 
   requestAnimationFrame(() => {
+    // once layouted
     Array.from(root.querySelectorAll<HTMLElement>(`.${cssClass('text-measure-sample')} > *`)).forEach((c, i) => {
       const bb = c.getBoundingClientRect();
-      console.log(samples[i], bb);
-      lookup.set(samples[i], bb.width || 2);
+      lookup.set(samples[i], bb.width || 8);
     })
 
     root.remove();
   });
 
   return (label: string) => {
-    return Array.from(label).reduce((acc, c) => acc + (lookup.get(c) || 5), 0);
+    return Array.from(label).reduce((acc, c) => acc + (lookup.get(c) || 8), 0);
   }
 }
