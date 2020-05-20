@@ -1,13 +1,14 @@
 import {ISequence, round} from '../internal';
-import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMultiLevelColumn, IOrderedGroup} from '../model';
+import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMultiLevelColumn, IOrderedGroup, DEFAULT_COLOR} from '../model';
 import {medianIndex} from '../model/internalNumber';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback, IGroupCellRenderer, ICellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {matchColumns, multiLevelGridCSSClass} from './utils';
+import {matchColumns, multiLevelGridCSSClass, setText, adaptDynamicColorToBgColor} from './utils';
 import {cssClass} from '../styles';
 import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
+import {colorOf} from './impose';
 
 /** @internal */
 export interface ICols {
@@ -81,18 +82,28 @@ export function createData(parent: {children: Column[]} & Column, context: IRend
   return {cols, stacked, padding};
 }
 
-function hasLabelOverlaps(context: IRenderContext, cols: ICols[], d: IDataRow) {
-  return cols.some((col) => {
+function hasLabelOverlaps(context: IRenderContext, cols: ICols[], d: IDataRow, imposer?: IImposer) {
+  const data = cols.map((col) => {
     const label = col.column.getLabel(d);
-    return col.width < context.measureNumberText(label);
+    const value = (<INumberColumn>col.column).getNumber(d);
+    return {
+      width: (value * col.width),
+      label,
+      value,
+      color: colorOf(col.column, d, imposer, value),
+    }
   });
+  if (!data.some((d) => Number.isNaN(d.value) || d.width < context.measureNumberText(d.label))) {
+    return null;
+  }
+  return data;
 }
 
 /** @internal */
 export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMultiLevelColumn & Column> implements ICellRendererFactory {
   readonly title: string;
 
-  constructor(private readonly stacked: boolean = true) {
+  constructor(private readonly stacked: boolean = true, private readonly renderValue = false) {
     super();
     this.title = this.stacked ? 'Stacked Bar' : 'Nested';
   }
@@ -110,6 +121,12 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         if (renderMissingDOM(n, col, d)) {
           return null;
         }
+        let combinedLabelNode: HTMLElement | null = null;
+        if (n.lastElementChild!.classList.contains(cssClass('bar-label'))) {
+          combinedLabelNode = n.lastElementChild! as HTMLElement;
+          combinedLabelNode.remove();
+        }
+
         matchColumns(n, cols, context);
 
         const toWait: IAbortAblePromise<void>[] = [];
@@ -117,7 +134,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         const total = col.getWidth();
         let missingWeight = 0;
         cols.forEach((col, ci) => {
-          const weight = col.column.getWidth() / total;
+          const weight = col.width / total;
           const cnode = children[ci];
           cnode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('detail'));
           cnode.dataset.group = 'd';
@@ -131,15 +148,39 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             toWait.push(r);
           }
         });
-
-        if (!hasLabelOverlaps(context, cols, d)) {
+        
+        const overlapData = stacked ? hasLabelOverlaps(context, cols, d, imposer) : null;
+        if (!overlapData) {
+          n.classList.remove(cssClass('stack-label'));
           if (toWait.length > 0) {
             return <IAbortAblePromise<void>>abortAbleAll(toWait);
           }
           return null;          
         }
+        n.classList.add(cssClass('stack-label'));
 
-        // TODO patch in the custom label
+        const combinedLabel = overlapData.map((col) => col.label).join(', ');
+        if (!combinedLabelNode) {
+          combinedLabelNode = context.asElement(`<div class="${cssClass('bar-label')}"><span ${this.renderValue ? '' : `class="${cssClass('hover-only')}"`}></span></div>`);
+        }
+        n.appendChild(combinedLabelNode);
+        setText(combinedLabelNode.firstElementChild!, combinedLabel);
+
+        // compute major background color and the width for simple adaptive text
+        const combinedInfo = overlapData.reduce((acc, d) => {
+          acc.width += d.width;
+          if (d.width > acc.subWidth && d.color) {
+            acc.color = d.color;
+            acc.subWidth = d.width;
+          };
+          return acc;
+        }, {
+          width: 0,
+          color: DEFAULT_COLOR,
+          subWidth: 0
+          });
+        combinedLabelNode.style.width = `${round(combinedInfo.width * 100 / total, 2)}%`;
+        adaptDynamicColorToBgColor(combinedLabelNode.firstElementChild! as HTMLElement, combinedInfo.color, combinedLabel, combinedInfo.width / total);
 
         if (toWait.length > 0) {
           return <IAbortAblePromise<void>>abortAbleAll(toWait);
