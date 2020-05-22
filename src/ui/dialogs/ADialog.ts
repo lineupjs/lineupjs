@@ -15,6 +15,7 @@ export interface IDialogOptions {
   modifiers?: Popper.Modifiers;
   toggleDialog: boolean;
   cancelSubDialogs?: boolean;
+  autoClose?: boolean;
 }
 
 export interface IDialogContext {
@@ -42,6 +43,7 @@ abstract class ADialog {
     placement: 'bottom-start',
     toggleDialog: true,
     cancelSubDialogs: false,
+    autoClose: false,
     modifiers: {
     }
   };
@@ -53,6 +55,10 @@ abstract class ADialog {
     Object.assign(this.options, options);
     this.node = dialog.attachment.ownerDocument!.createElement('form');
     this.node.classList.add(cssClass('dialog'));
+  }
+
+  get autoClose() {
+    return this.options.autoClose;
   }
 
   get attachment() {

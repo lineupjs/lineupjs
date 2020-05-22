@@ -9,7 +9,9 @@ import APopup from './APopup';
 export default class MoreColumnOptionsDialog extends APopup {
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly mode: 'header' | 'sidePanel', private readonly ctx: IRankingHeaderContext) {
-    super(dialog);
+    super(dialog, {
+      autoClose: true
+    });
   }
 
   protected build(node: HTMLElement) {
