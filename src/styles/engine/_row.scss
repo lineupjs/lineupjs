@@ -1,12 +1,14 @@
-@import '../vars';
-@import '~lineupengine/src/styles/mixins';
+@import "../vars";
+@import "~lineupengine/src/styles/mixins";
 
 .#{$lu_css_prefix}-hover-only {
   visibility: hidden;
   padding-left: 4px;
 
   > .#{$lu_css_prefix}-gradient-text {
-    left: 4px;
+    padding-left: 4px;
+    color: white;
+    box-sizing: border-box;
   }
 }
 
@@ -25,7 +27,10 @@
     /**
     selected state extends hover state
     */
-    @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
+    @include collapsing-row-border(
+      $lu_engine_row_outline_width,
+      $lu_selected_color
+    );
   }
 
   > canvas {
@@ -34,7 +39,7 @@
   }
 }
 
-.#{$engine-css_prefix}-td[data-group=d] {
+.#{$engine-css_prefix}-td[data-group="d"] {
   white-space: nowrap;
   overflow-x: hidden;
   text-overflow: ellipsis;

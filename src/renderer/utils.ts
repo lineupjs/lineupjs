@@ -3,7 +3,7 @@ import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn,
 import {hsl} from 'd3-color';
 import {cssClass, engineCssClass} from '../styles';
 import {IRenderContext} from '.';
-import {ISequence} from '../internal';
+import {ISequence, round} from '../internal';
 
 /** @internal */
 export function noop() {
@@ -119,14 +119,14 @@ export function wideEnoughCat(col: ICategoricalLikeColumn) {
 
 
 // side effect
-const adaptColorCache: {[bg: string]: string} = {};
+const adaptColorCache: {[bg: string]: 'black' | 'white'} = {};
 /**
  * Adapts the text color for a given background color
  * @param {string} bgColor as `#ff0000`
  * @returns {string} returns `black` or `white` for best contrast
  * @internal
  */
-export function adaptTextColorToBgColor(bgColor: string): string {
+export function adaptTextColorToBgColor(bgColor: string): 'black' | 'white' {
   const bak = adaptColorCache[bgColor];
   if (bak) {
     return bak;
@@ -158,9 +158,49 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
 
   const span = node.ownerDocument!.createElement('span');
   span.classList.add(cssClass('gradient-text'));
-  span.style.color = adapt;
   span.innerText = title;
   node.appendChild(span);
+}
+
+export function multiAdaptDynamicColorToBgColor(node: HTMLElement, title: string, sections: {color: string, width: number}[]) {
+  // compute white sections
+  const whites: {from: number, width: number}[] = [];
+  let from = -1;
+  let acc = 0;
+  sections.forEach((d) => {
+    const c = adaptTextColorToBgColor(d.color);
+    if (c === 'black') {
+      from = -1;
+      acc += d.width;
+      return;
+    }
+    // white section
+    if (from < 0) {
+      // new section
+      whites.push({from: acc, width: d.width});
+      from = acc;
+    } else {
+      // can add
+      whites[whites.length - 1]!.width += d.width;
+    }
+    acc += d.width;
+  });
+
+  if (whites.length === 0) {
+    return;
+  }
+
+  node.style.color = null;
+  node.innerText = title;
+
+  whites.forEach((d) => {
+    const span = node.ownerDocument!.createElement('span');
+    span.classList.add(cssClass('gradient-text'));
+    span.style.left = `${round(d.from * 100, 2)}%`;
+    span.style.width = `${round(d.width * 100, 2)}%`;
+    span.innerText = title;
+    node.appendChild(span);
+  });
 }
 
 

@@ -5,7 +5,7 @@ import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback, IGroupCellRenderer, ICellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {matchColumns, multiLevelGridCSSClass, setText, adaptDynamicColorToBgColor} from './utils';
+import {matchColumns, multiLevelGridCSSClass, setText, multiAdaptDynamicColorToBgColor} from './utils';
 import {cssClass} from '../styles';
 import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
 import {colorOf} from './impose';
@@ -160,28 +160,15 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         }
         n.classList.add(cssClass('stack-label'));
 
-        const combinedLabel = overlapData.map((col) => col.label).join(' ');
+        const combinedLabel = overlapData.map((col) => col.label).join(' ');
         if (!combinedLabelNode) {
           combinedLabelNode = context.asElement(`<div class="${cssClass('bar-label')}"><span ${this.renderValue ? '' : `class="${cssClass('hover-only')}"`}></span></div>`);
         }
         n.appendChild(combinedLabelNode);
         setText(combinedLabelNode.firstElementChild!, combinedLabel);
 
-        // compute major background color and the width for simple adaptive text
-        const combinedInfo = overlapData.reduce((acc, d) => {
-          acc.width += d.width;
-          if (d.width > acc.subWidth && d.color) {
-            acc.color = d.color;
-            acc.subWidth = d.width;
-          }
-          return acc;
-        }, {
-          width: 0,
-          color: DEFAULT_COLOR,
-          subWidth: 0
-          });
-        combinedLabelNode.style.width = `${round(combinedInfo.width * 100 / total, 2)}%`;
-        adaptDynamicColorToBgColor(<HTMLElement>combinedLabelNode.firstElementChild!, combinedInfo.color, combinedLabel, combinedInfo.width / total);
+        const sections = overlapData.map((d) => ({color: d.color || DEFAULT_COLOR, width: d.width / total}));
+        multiAdaptDynamicColorToBgColor(<HTMLElement>combinedLabelNode.firstElementChild!, combinedLabel, sections);
 
         if (toWait.length > 0) {
           return <IAbortAblePromise<void>>abortAbleAll(toWait);
