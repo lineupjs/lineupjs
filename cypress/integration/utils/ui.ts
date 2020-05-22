@@ -4,7 +4,7 @@ export function aggregateAll() {
 
 export function closeDialog(action: 'cancel' | 'confirm' = 'confirm') {
   cy.get(`.lu-dialog-button[type=${action === 'cancel' ? 'button' : 'submit'}]`).click();
-  cy.get('.lu-backdrop').click();
+  // cy.get('.lu-backdrop').click();
 }
 
 export function resetDialog() {
