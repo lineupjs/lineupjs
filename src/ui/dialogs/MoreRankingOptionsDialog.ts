@@ -10,10 +10,12 @@ import APopup from './APopup';
 export default class MoreRankingOptionsDialog extends APopup {
 
   constructor(private readonly ranking: Ranking, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
-    super(dialog);
+    super(dialog, {
+      autoClose: true
+    });
   }
 
-  private addIcon(node: HTMLElement, title: string, onClick: (evt: MouseEvent)=>void) {
+  private addIcon(node: HTMLElement, title: string, onClick: (evt: MouseEvent) => void) {
     node.insertAdjacentHTML('beforeend', `<i title="${title}" class="${actionCSSClass(title)}"><span>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
