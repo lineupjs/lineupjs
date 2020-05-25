@@ -138,7 +138,7 @@ export default class DialogManager extends AEventDispatcher {
     // destroy self and all levels below that = after that
     const destroyed = this.openDialogs.splice(index, this.openDialogs.length - index);
     destroyed.reverse().forEach((d) => d.cleanUp(handled ? 'handled' : this.onDialogBackgroundClick));
-    while (this.openDialogs.length > 0 && this.openDialogs[this.openDialogs.length - 1].autoClose) {
+    while (handled && this.openDialogs.length > 0 && this.openDialogs[this.openDialogs.length - 1].autoClose) {
       const dialog = this.openDialogs.pop()!;
       dialog.cleanUp(this.onDialogBackgroundClick);
     }
