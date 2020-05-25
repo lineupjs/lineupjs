@@ -47,3 +47,11 @@
     white-space: unset;
   }
 }
+
+.#{$engine-css_prefix}-td.#{$engine_css_prefix}-shifted.#{$engine_css_prefix}-frozen {
+  /**
+  add a dummy white blocker for the margin-right
+    */
+  border-right: $lu-engine_grip_gap solid white;
+  box-sizing: content-box;
+}
