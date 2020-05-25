@@ -196,8 +196,7 @@ export function multiAdaptDynamicColorToBgColor(node: HTMLElement, title: string
   whites.forEach((d) => {
     const span = node.ownerDocument!.createElement('span');
     span.classList.add(cssClass('gradient-text'));
-    span.style.left = `${round(d.from * 100, 2)}%`;
-    span.style.width = `${round(d.width * 100, 2)}%`;
+    span.style.clipPath = `inset(0 ${round(100 - d.from * 100 - d.width * 100, 2)}% 0 ${round(d.from * 100, 2)}%)`;
     span.innerText = title;
     node.appendChild(span);
   });
