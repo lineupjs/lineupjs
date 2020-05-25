@@ -160,7 +160,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         }
         n.classList.add(cssClass('stack-label'));
 
-        const combinedLabel = overlapData.map((col) => col.label).join('	');
+        const combinedLabel = overlapData.map((col) => col.label).join(' '); // use "em space" (U+2003 &#8195)
         if (!combinedLabelNode) {
           combinedLabelNode = context.asElement(`<div class="${cssClass('bar-label')}"><span ${this.renderValue ? '' : `class="${cssClass('hover-only')}"`}></span></div>`);
         }
