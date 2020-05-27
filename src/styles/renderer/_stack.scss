@@ -11,6 +11,6 @@
   width: calc(100% - #{$lu_engine_grip_gap}); // subtract gap to maintain grid
 }
 
-.#{$lu_css_prefix}-stack-label > .#{$lu_css_prefix}-stack-sub .#{$lu_css_prefix}-bar-label > span {
+.#{$lu_css_prefix}-no-bar-label > .#{$lu_css_prefix}-bar-label > span {
   display: none;
 }

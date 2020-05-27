@@ -1,14 +1,13 @@
 import {ISequence, round} from '../internal';
-import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMultiLevelColumn, IOrderedGroup, DEFAULT_COLOR} from '../model';
+import {Column, IDataRow, INumberColumn, isNumberColumn, IMultiLevelColumn, isMultiLevelColumn, IOrderedGroup} from '../model';
 import {medianIndex} from '../model/internalNumber';
 import {COLUMN_PADDING} from '../styles';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderCallback, IGroupCellRenderer, ICellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {matchColumns, multiLevelGridCSSClass, setText, multiAdaptDynamicColorToBgColor} from './utils';
+import {matchColumns, multiLevelGridCSSClass} from './utils';
 import {cssClass} from '../styles';
 import {IAbortAblePromise, abortAbleAll} from 'lineupengine';
-import {colorOf} from './impose';
 
 /** @internal */
 export interface ICols {
@@ -82,29 +81,11 @@ export function createData(parent: {children: Column[]} & Column, context: IRend
   return {cols, stacked, padding};
 }
 
-function hasLabelOverlaps(context: IRenderContext, cols: ICols[], d: IDataRow, imposer?: IImposer) {
-  const data = cols.map((col) => {
-    const label = col.column.getLabel(d);
-    const value = (<INumberColumn>col.column).getNumber(d);
-    return {
-      width: (value * col.width),
-      label,
-      value,
-      color: colorOf(col.column, d, imposer, value),
-    };
-  });
-  // last one doesn't matter
-  if (!data.some((d, i) => i < data.length - 1 && (Number.isNaN(d.value) || d.width < context.measureNumberText(d.label)))) {
-    return null;
-  }
-  return data;
-}
-
 /** @internal */
 export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMultiLevelColumn & Column> implements ICellRendererFactory {
   readonly title: string;
 
-  constructor(private readonly stacked: boolean = true, private readonly renderValue = false) {
+  constructor(private readonly stacked: boolean = true) {
     super();
     this.title = this.stacked ? 'Stacked Bar' : 'Nested';
   }
@@ -122,12 +103,6 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         if (renderMissingDOM(n, col, d)) {
           return null;
         }
-        let combinedLabelNode: HTMLElement | null = null;
-        if (n.lastElementChild!.classList.contains(cssClass('bar-label'))) {
-          combinedLabelNode = <HTMLElement>n.lastElementChild!;
-          combinedLabelNode.remove();
-        }
-
         matchColumns(n, cols, context);
 
         const toWait: IAbortAblePromise<void>[] = [];
@@ -143,32 +118,16 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           const r = col.renderer!.update(cnode, d, i, group);
           if (stacked) {
-            missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
+            const vi = (<INumberColumn>col.column).getNumber(d);
+            const wi = vi * col.width;
+            missingWeight += (1 - vi) * weight;
+            const labelLength = context.measureNumberText(col.column.getLabel(d));
+            cnode.classList.toggle(cssClass('no-bar-label'), labelLength + 4 > wi);
           }
           if (r) {
             toWait.push(r);
           }
         });
-
-        const overlapData = stacked ? hasLabelOverlaps(context, cols, d, imposer) : null;
-        if (!overlapData) {
-          n.classList.remove(cssClass('stack-label'));
-          if (toWait.length > 0) {
-            return <IAbortAblePromise<void>>abortAbleAll(toWait);
-          }
-          return null;
-        }
-        n.classList.add(cssClass('stack-label'));
-
-        const combinedLabel = overlapData.map((col) => col.label).join(' '); // use "em space" (U+2003 &#8195)
-        if (!combinedLabelNode) {
-          combinedLabelNode = context.asElement(`<div class="${cssClass('bar-label')}"><span ${this.renderValue ? '' : `class="${cssClass('hover-only')}"`}></span></div>`);
-        }
-        n.appendChild(combinedLabelNode);
-        setText(combinedLabelNode.firstElementChild!, combinedLabel);
-
-        const sections = overlapData.map((d) => ({color: d.color || DEFAULT_COLOR, width: d.width / total}));
-        multiAdaptDynamicColorToBgColor(<HTMLElement>combinedLabelNode.firstElementChild!, combinedLabel, sections);
 
         if (toWait.length > 0) {
           return <IAbortAblePromise<void>>abortAbleAll(toWait);
