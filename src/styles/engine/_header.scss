@@ -5,14 +5,18 @@
   margin-bottom: 15px;
   border-bottom: 1px solid black;
 
-  &.#{$engine_css_prefix}-frozen::before {
+  &.#{$engine_css_prefix}-frozen {
+    position: sticky;
+  }
+
+  &.#{$engine_css_prefix}-shifted.#{$engine_css_prefix}-frozen::before {
     /**
     add a dummy white blocker for the margin-bottom
      */
     content: '';
     position: absolute;
     left: 0;
-    width: 100%;
+    right: -$lu-engine_grip_gap;
     height: 15px;
     bottom: -16px;
     background: white;
