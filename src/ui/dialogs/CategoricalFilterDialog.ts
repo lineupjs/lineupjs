@@ -41,7 +41,7 @@ export default class CategoricalFilterDialog extends ADialog {
     };
     if (this.column instanceof SetColumn) {
       const every = (<ISetCategoricalFilter>this.before).mode !== 'some';
-      node.insertAdjacentHTML('beforeend', `<strong>Show Rows where</strong>`);
+      node.insertAdjacentHTML('beforeend', `<strong>Show rows where</strong>`);
       node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}">
         <input type="radio" ${every ? 'checked="checked"' : ''} name="mode" value="every">
         <span>all are selected</span>
