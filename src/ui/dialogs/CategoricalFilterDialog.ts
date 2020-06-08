@@ -40,14 +40,14 @@ export default class CategoricalFilterDialog extends ADialog {
       forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = selectAll.checked);
     };
     if (this.column instanceof SetColumn) {
-      const every = (<ISetCategoricalFilter>this.before).mode !== 'some';
+      const some = (<ISetCategoricalFilter>this.before).mode !== 'every';
       node.insertAdjacentHTML('beforeend', `<strong>Show rows where</strong>`);
       node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}">
-        <input type="radio" ${every ? 'checked="checked"' : ''} name="mode" value="every">
+        <input type="radio" ${!some ? 'checked="checked"' : ''} name="mode" value="every">
         <span>all are selected</span>
       </label>`);
       node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}">
-        <input type="radio" ${!every ? 'checked="checked"' : ''} name="mode" value="some">
+        <input type="radio" ${some ? 'checked="checked"' : ''} name="mode" value="some">
         <span>some are selected</span>
       </label>`);
     }

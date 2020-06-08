@@ -196,7 +196,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     }
     const bak = dump.filter;
     if (typeof bak === 'string' || Array.isArray(bak)) {
-      this.currentFilter = {filter: bak, filterMissing: false, mode: 'every'};
+      this.currentFilter = {filter: bak, filterMissing: false, mode: 'some'};
     } else {
       this.currentFilter = bak;
     }
@@ -214,14 +214,14 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     if (v.length === 0) {
       return isCategoryIncluded(this.currentFilter, null);
     }
-    if (this.currentFilter.mode === 'some') {
-      return v.some((s) => isCategoryIncluded(this.currentFilter, s));
+    if (this.currentFilter.mode === 'every') {
+      return v.every((s) => isCategoryIncluded(this.currentFilter, s));
     }
-    return v.every((s) => isCategoryIncluded(this.currentFilter, s));
+    return v.some((s) => isCategoryIncluded(this.currentFilter, s));
   }
 
-  getFilter() {
-    return CategoricalColumn.prototype.getFilter.call(this);
+  getFilter(): ISetCategoricalFilter | null {
+    return this.currentFilter == null ? null : Object.assign({}, this.currentFilter);
   }
 
   setFilter(filter: ISetCategoricalFilter | null) {
