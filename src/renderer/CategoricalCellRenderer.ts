@@ -166,7 +166,7 @@ function setCategoricalFilter(col: HasCategoricalFilter, filter: string | RegExp
   } else {
     col.setFilter({
       filter, filterMissing
-    })
+    });
   }
 }
 
