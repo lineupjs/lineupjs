@@ -156,6 +156,20 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
   };
 }
 
+function setCategoricalFilter(col: HasCategoricalFilter, filter: string | RegExp | string[], filterMissing: boolean) {
+  if (col instanceof SetColumn) {
+    const f = col.getFilter();
+    const mode = f ? f.mode : undefined;
+    col.setFilter({
+      filter, filterMissing, mode
+    });
+  } else {
+    col.setFilter({
+      filter, filterMissing
+    });
+  }
+}
+
 /** @internal */
 export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
   const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
@@ -187,10 +201,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
         markFilter(bin, cat, false);
         const included = col.categories.slice();
         included.splice(i, 1);
-        col.setFilter({
-          filterMissing: old ? old.filterMissing : false,
-          filter: included.map((d) => d.name)
-        });
+        setCategoricalFilter(col, included.map((d) => d.name), old ? old.filterMissing : false);
         return;
       }
       const filter = old.filter.slice();
@@ -209,10 +220,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
         col.setFilter(null);
         return;
       }
-      col.setFilter({
-        filterMissing: old.filterMissing,
-        filter
-      });
+      setCategoricalFilter(col, filter, old.filterMissing);
     };
   });
 
@@ -225,12 +233,16 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
       const v = filterMissing.checked;
       const old = col.getFilter();
       if (old == null) {
-        col.setFilter(v ? {filterMissing: v, filter: col.categories.map((d) => d.name)} : null);
+        if (v) {
+          setCategoricalFilter(col, col.categories.map((d) => d.name), v);
+        } else {
+          col.setFilter(null);
+        }
       } else if (!v && Array.isArray(old.filter) && old.filter.length === col.categories.length) {
         // dummy
         col.setFilter(null);
       } else {
-        col.setFilter({filterMissing: v, filter: old.filter});
+        setCategoricalFilter(col, old.filter, v);
       }
     };
   }
