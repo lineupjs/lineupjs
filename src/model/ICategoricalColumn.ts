@@ -88,6 +88,9 @@ export interface ICategoricalFilter {
   filterMissing: boolean;
 }
 
+export interface ISetCategoricalFilter extends ICategoricalFilter {
+  mode?: 'every' | 'some';
+}
 
 export function isCategory(v: any): v is ICategory {
   return typeof v.name === 'string' && typeof v.label === 'string' && typeof v.color === 'string' && typeof v.value === 'number';

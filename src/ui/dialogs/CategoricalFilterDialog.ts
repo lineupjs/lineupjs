@@ -1,4 +1,4 @@
-import {SetColumn, CategoricalColumn, ICategoricalFilter} from '../../model';
+import {SetColumn, CategoricalColumn, ICategoricalFilter, ISetCategoricalFilter} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {forEach} from './utils';
@@ -39,23 +39,43 @@ export default class CategoricalFilterDialog extends ADialog {
     selectAll.onchange =  () => {
       forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = selectAll.checked);
     };
+    if (this.column instanceof SetColumn) {
+      const some = (<ISetCategoricalFilter>this.before).mode !== 'every';
+      node.insertAdjacentHTML('beforeend', `<strong>Show rows where</strong>`);
+      node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}">
+        <input type="radio" ${!some ? 'checked="checked"' : ''} name="mode" value="every">
+        <span>all are selected</span>
+      </label>`);
+      node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}" style="padding-bottom: 0.6em">
+        <input type="radio" ${some ? 'checked="checked"' : ''} name="mode" value="some">
+        <span>some are selected</span>
+      </label>`);
+    }
     node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
 
-    this.enableLivePreviews('input[type=checkbox]');
+    this.enableLivePreviews('input[type=checkbox],input[type=radio]');
   }
 
-  private updateFilter(filter: string[] | null | RegExp | string, filterMissing: boolean) {
+  private updateFilter(filter: string[] | null | RegExp | string, filterMissing: boolean, someMode = false) {
     const noFilter = filter == null && filterMissing === false;
-    this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
+    const f: ISetCategoricalFilter = {filter: filter!, filterMissing};
+    if (this.column instanceof SetColumn) {
+      f.mode = someMode ? 'some' : 'every';
+    }
+    this.column.setFilter(noFilter ? null : f);
   }
 
   protected reset() {
     this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked = true);
     findFilterMissing(this.node).checked = false;
+    const mode = this.findInput('input[value=every]');
+    if (mode) {
+      mode.checked = true;
+    }
   }
 
   protected cancel() {
-    this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing);
+    this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing, (<ISetCategoricalFilter>this.before).mode === 'some');
   }
 
   protected submit() {
@@ -64,7 +84,8 @@ export default class CategoricalFilterDialog extends ADialog {
       f = null;
     }
     const filterMissing = findFilterMissing(this.node).checked;
-    this.updateFilter(f, filterMissing);
+    const mode = this.findInput('input[value=some]');
+    this.updateFilter(f, filterMissing, mode != null && mode.checked);
     return true;
   }
 }

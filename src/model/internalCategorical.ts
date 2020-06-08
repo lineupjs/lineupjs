@@ -2,7 +2,7 @@ import {ISequence, isSeqEmpty, empty} from '../internal';
 import {FIRST_IS_MISSING, IDataRow, ECompareValueType, ICompareValue, ICategory, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter} from '.';
 import {colorPool} from './internal';
 import {DEFAULT_COLOR} from './interfaces';
-import {ICategoricalsColumn} from './ICategoricalColumn';
+import {ICategoricalsColumn, ISetCategoricalFilter} from './ICategoricalColumn';
 
 /** @internal */
 export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => DEFAULT_COLOR) {
@@ -157,6 +157,16 @@ export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICateg
     return arrayEquals(<string[]>a.filter, <string[]>b.filter);
   }
   return String(a.filter) === String(b.filter);
+}
+
+/** @internal */
+export function isEqualSetCategoricalFilter(a: ISetCategoricalFilter | null, b: ISetCategoricalFilter | null) {
+  if (!isEqualCategoricalFilter(a, b)) {
+    return false;
+  }
+  const am = a && a.mode ? a.mode : 'every';
+  const bm = b && b.mode ? b.mode : 'every';
+  return am === bm;
 }
 
 function arrayEquals<T>(a: T[], b: T[]) {
