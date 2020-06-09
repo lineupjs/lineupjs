@@ -456,7 +456,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     })).then((groups) => {
       // not required if: sort criteria changed -> groupLookup will be none
       const sortedGroups = this.sortGroups(groups, groupLookup, needsGroupSorting);
-      return this.index2pos(sortedGroups, maxDataIndex);
+      return index2pos(sortedGroups, maxDataIndex);
     });
   }
 
