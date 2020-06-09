@@ -7,7 +7,6 @@ import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IGroupCellR
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
-/** @internal */
 export default class BarCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Bar';
 

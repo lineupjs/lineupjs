@@ -10,7 +10,6 @@ import {tasksAll} from '../provider';
 import {IHistogramLike} from './histogram';
 
 
-/** @internal */
 export default class InterleavingCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Interleaved';
 

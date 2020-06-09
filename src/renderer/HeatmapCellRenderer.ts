@@ -9,7 +9,6 @@ import {GUESSED_ROW_HEIGHT} from '../constants';
 import {getSortLabel} from '../internal';
 
 
-/** @internal */
 export default class HeatmapCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Heatmap';
 

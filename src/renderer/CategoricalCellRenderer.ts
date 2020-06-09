@@ -11,7 +11,6 @@ import {color} from 'd3-color';
 /** @internal */
 export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn;
 
-/** @internal */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Color';
   readonly groupTitle: string = 'Histogram';
