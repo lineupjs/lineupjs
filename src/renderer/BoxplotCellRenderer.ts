@@ -34,7 +34,6 @@ export function computeLabel(col: INumberColumn, v: IBoxPlotData | IAdvancedBoxP
   return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\n${mean}q3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
 
-/** @internal */
 export default class BoxplotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Box Plot';
 

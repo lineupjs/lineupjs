@@ -81,7 +81,6 @@ export function createData(parent: {children: Column[]} & Column, context: IRend
   return {cols, stacked, padding};
 }
 
-/** @internal */
 export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMultiLevelColumn & Column> implements ICellRendererFactory {
   readonly title: string;
 

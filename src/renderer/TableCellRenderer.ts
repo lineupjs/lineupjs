@@ -5,7 +5,6 @@ import {forEach, noop} from './utils';
 import {cssClass} from '../styles';
 import {ISequence} from '../internal';
 
-/** @internal */
 export default class TableCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table';
 

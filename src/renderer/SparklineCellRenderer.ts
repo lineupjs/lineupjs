@@ -27,7 +27,6 @@ export function line(data: ISequence<number>) {
   return p;
 }
 
-/** @internal */
 export default class SparklineCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Sparkline';
 

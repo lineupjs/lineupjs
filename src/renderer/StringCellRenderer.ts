@@ -10,7 +10,6 @@ import {debounce} from '../internal';
 /**
  * renders a string with additional alignment behavior
  * one instance factory shared among strings
- * @internal
  */
 export default class StringCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
@@ -65,7 +64,8 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const update = () => {
       const valid = input.value.trim();
       if (valid.length <= 0) {
-        col.setFilter({filter: null, filterMissing: filterMissing.checked});
+        const filter = filterMissing.checked ? {filter: null, filterMissing: filterMissing.checked} : null;
+        col.setFilter(filter);
         return;
       }
       col.setFilter({

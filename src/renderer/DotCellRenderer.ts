@@ -8,8 +8,6 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
 
 
-
-/** @internal */
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Dot';
   readonly groupTitle: string = 'Dots';
