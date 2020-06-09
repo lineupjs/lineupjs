@@ -4,6 +4,7 @@ import {ISummaryRenderer} from '../../renderer';
 import {cssClass, engineCssClass} from '../../styles';
 import {createShortcutMenuItems, dragAbleColumn, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
+import {suffix} from '../../internal';
 
 /** @internal */
 export default class SidePanelEntryVis {
@@ -19,10 +20,10 @@ export default class SidePanelEntryVis {
 
     this.summary = ctx.summaryRenderer(column, true);
 
-    this.column.on([`${NumberColumn.EVENT_FILTER_CHANGED}.panel`, `${Column.EVENT_DIRTY_HEADER}.panel`], () => {
+    this.column.on(suffix('.panel', NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_HEADER), () => {
       this.update();
     });
-    this.column.on(`${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.panel`, () => {
+    this.column.on(suffix('.panel',Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES), () => {
       this.recreateSummary();
     });
     this.init();
@@ -33,10 +34,13 @@ export default class SidePanelEntryVis {
   private init() {
     this.node.innerHTML = `
       <header class="${cssClass('side-panel-entry-header')}">
-        <div class="${cssClass('label')} ${cssClass('typed-icon')} ${cssClass('side-panel-label')}"></div>
+        <div class="${cssClass('side-panel-labels')}">
+          <span class="${cssClass('label')} ${cssClass('typed-icon')} ${cssClass('side-panel-label')}"></span>
+          <span class="${cssClass('sublabel')} ${cssClass('side-panel-sublabel')}"></span>
+        </div>
         <div class="${cssClass('toolbar')} ${cssClass('side-panel-toolbar')}"></div>
       </header>`;
-    createShortcutMenuItems(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx, false);
+    createShortcutMenuItems(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx, 'sidePanel', false);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
     this.appendSummary();
   }
@@ -87,7 +91,7 @@ export default class SidePanelEntryVis {
   }
 
   destroy() {
-    this.column.on([`${NumberColumn.EVENT_FILTER_CHANGED}.panel`, `${Column.EVENT_DIRTY_HEADER}.panel`, `${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.panel`], null);
+    this.column.on(suffix('.panel', NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES), null);
     this.node.remove();
   }
 }

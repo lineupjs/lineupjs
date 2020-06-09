@@ -3,6 +3,7 @@ import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader,
 import {IGroup, IColumnDesc} from './interfaces';
 import Ranking from './Ranking';
 import {IEventListener} from '../internal';
+import {integrateDefaults} from './internal';
 
 
 export enum EAggregationState {
@@ -37,15 +38,16 @@ export declare function aggregate(ranking: Ranking, group: IGroup, value: boolea
 /**
  * a checkbox column for selections
  */
-@toolbar('setShowTopN')
+@toolbar('setShowTopN', 'rename')
 @SupportType()
 @Category('support')
 export default class AggregateGroupColumn extends Column {
   static readonly EVENT_AGGREGATE = 'aggregate';
 
   constructor(id: string, desc: Readonly<IAggregateGroupColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(40);
+    super(id, integrateDefaults(desc, {
+      width: 40
+    }));
   }
 
   get frozen() {

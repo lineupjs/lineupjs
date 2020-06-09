@@ -6,6 +6,7 @@ import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from '.
 import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {IEventListener} from '../internal';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {integrateDefaults} from './internal';
 
 export interface IBooleanDesc {
   /**
@@ -39,7 +40,7 @@ export declare function filterChanged_BC(previous: boolean | null, current: bool
 /**
  * a string column with optional alignment
  */
-@toolbar('group', 'groupBy', 'filterBoolean', 'colorMappedCategorical')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'group', 'groupBy', 'filterBoolean', 'colorMappedCategorical')
 @Category('categorical')
 export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
@@ -54,8 +55,9 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   readonly categories: ICategory[];
 
   constructor(id: string, desc: Readonly<IBooleanColumnDesc>) {
-    super(id, desc);
-    this.setWidthImpl(30);
+    super(id, integrateDefaults(desc, {
+      width: 30
+    }));
     this.categories = [
       {
         name: desc.trueMarker || '✓',

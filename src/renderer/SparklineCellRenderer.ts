@@ -1,9 +1,10 @@
-import {Column, INumbersColumn, NumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup} from '../model';
+import {Column, INumbersColumn, NumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup, isMissingValue} from '../model';
 import {matchRows} from './ANumbersCellRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEachChild, noRenderer} from './utils';
 import {ISequence} from '../internal';
+import {cssClass} from '../styles';
 
 /** @internal */
 export function line(data: ISequence<number>) {
@@ -28,13 +29,13 @@ export function line(data: ISequence<number>) {
 
 /** @internal */
 export default class SparklineCellRenderer implements ICellRendererFactory {
-  readonly title = 'Sparkline';
+  readonly title: string = 'Sparkline';
 
   canRender(col: Column, mode: ERenderMode) {
     return isNumbersColumn(col) && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: INumbersColumn) {
+  create(col: INumbersColumn): ICellRenderer {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
@@ -49,7 +50,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext) {
+  createGroup(col: INumbersColumn, context: IRenderContext): IGroupCellRenderer {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
@@ -61,6 +62,11 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
           if (typeof vs === 'symbol') {
             return;
           }
+          const isMissing = vs.length === 0 || vs.every((v) => v.every(isMissingValue));
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
           forEachChild(n, ((row, i) => {
             row.setAttribute('d', line(vs[i]));
           }));
@@ -69,7 +75,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 

@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "4.0.0-alpha.12",
+  "version": "4.0.0-beta.1",
   "author": {
     "name": "Samuel Gratzl",
     "email": "sam@sgratzl.com",
@@ -30,27 +30,22 @@
   "main": "build/LineUpJS.js",
   "unpkg": "build/LineUpJS.js",
   "module": "src/index.js",
-  "types": "build/types/2.7/index.d.ts",
-  "typesVersions": {
-    ">=3.1": {
-      "build/types/2.7/*": [
-        "src/*"
-      ]
-    }
-  },
+  "types": "build/src/index.d.ts",
   "sideEffects": [
     "*.scss",
     "*.css"
   ],
   "browserslist": [
-    "Firefox >= 57",
     "Firefox ESR",
-    "Edge >= 16",
-    "Chrome >= 64"
+    "last 2 Firefox versions",
+    "last 2 Chrome versions",
+    "last 2 Edge versions",
+    "Edge 18"
   ],
   "files": [
     "build",
     "!build/docs",
+    "!build/tests",
     "!build/demo",
     "src/**/*.js",
     "src/**/*.d.ts",
@@ -59,8 +54,8 @@
   ],
   "scripts": {
     "clean": "rimraf build dist && npm run clean:compile",
-    "clean:compile": "rimraf node_modules/.cache/cache-loader *.tsbuildinfo src/**/*.map src/**/*.js src/**/*.d.ts tests/**/*.js tests/**/*.map tests/**/*.d.ts demo/*.js demo/*.map demo/*.d.ts",
-    "compile": "tsc",
+    "clean:compile": "rimraf node_modules/.cache/cache-loader *.tsbuildinfo build/src build/tests src/**/*.map src/**/*.js src/**/*.d.ts tests/**/*.js tests/**/*.map tests/**/*.d.ts demo/*.js demo/*.map demo/*.d.ts",
+    "compile": "tsc -p ./tsconfig.prod.json",
     "compile:dev": "tsc -p ./tsconfig.dev.json",
     "lint": "tslint -p tsconfig.json -c tslint.json && stylelint src/**/*.scss",
     "docs": "npm run clean:compile && typedoc --tsconfig tsconfig.dev.json --out ./build/docs/ --plugin typedoc-plugin-as-member-of src tsd.d.ts",
@@ -75,36 +70,44 @@
     "dev": "npm run clean && npm run compile:dev && npm run build:dev",
     "watch": "webpack --mode development --watch --devtool source-map",
     "start": "webpack-dev-server --mode development --devtool source-map",
-    "types:27": "cd typeGen/ts27 && npm i && npm run compile",
-    "predist": "npm run build && npm run types:27",
+    "predist": "npm run build",
     "dist": "mkdirp dist && cross-zip ./build ./dist/lineupjs.zip",
     "postdist": "npm run docs && cross-zip ./build/docs ../dist/lineupjs_docs.zip",
     "preversion": "npm test",
     "prepare": "echo 'dummy prepare since prepack has no dev dependencies'",
-    "prepack": "npm run clean && npm run compile && npm run build:prod && npm run types:27",
+    "prepack": "npm run clean && npm run compile && npm run build:prod",
     "release:major": "release-it major",
     "release:minor": "release-it minor",
     "release:patch": "release-it patch",
-    "release:pre": "release-it --preRelease=alpha --npm.tag=next"
+    "release:pre": "release-it --preRelease=alpha --npm.tag=next",
+    "release:beta": "release-it --preRelease=beta --npm.tag=next",
+    "cy:open": "cypress open",
+    "cy:start": "cypress open --config baseUrl=http://localhost:8080",
+    "cy:run": "cypress run",
+    "cy:junit": "cypress run --reporter junit --reporter-options 'mochaFile=junit-results/my-test-output.xml'"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/lineupjs/lineupjs.git"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.14",
+    "@cypress/webpack-preprocessor": "^4.1.3",
+    "@types/jest": "^24.9.1",
+    "@types/lodash": "4.14.121",
     "cache-loader": "^4.0.0",
-    "css-loader": "^3.0.0",
     "cross-zip-cli": "^1.0.0",
+    "css-loader": "^3.0.0",
+    "cypress": "^4.5.0",
     "extract-loader": "^3.1.0",
     "file-loader": "^4.0.0",
     "font-awesome": "^4.7.0",
     "fork-ts-checker-webpack-plugin": "^1.3.7",
-    "jest": "^24.8.0",
+    "jest": "^24.9.0",
     "json-loader": "^0.5.7",
     "mini-css-extract-plugin": "^0.7.0",
     "mkdirp": "^0.5.1",
-    "node-sass": "^4.12.0",
+    "mocha-junit-reporter": "^1.23.3",
+    "node-sass": "^4.14.1",
     "raw-loader": "^3.0.0",
     "release-it": "^12.3.0",
     "rimraf": "^2.6.3",
@@ -130,12 +133,13 @@
   "dependencies": {
     "@types/d3-color": "^1.2.2",
     "@types/d3-dispatch": "^1.0.7",
+    "@types/d3-format": "^1.3.1",
     "@types/d3-scale": "^2.1.1",
     "@types/d3-scale-chromatic": "^1.3.1",
     "@types/d3-time": "^1.0.10",
     "@types/d3-time-format": "^2.1.1",
     "@types/detect-browser": "^4.0.0",
-    "@types/d3-format": "^1.3.1",
+    "@types/lodash.get": "4.4.5",
     "d3-color": "^1.2.3",
     "d3-dispatch": "^1.0.5",
     "d3-format": "^1.3.2",
@@ -145,8 +149,9 @@
     "d3-time-format": "^2.1.3",
     "detect-browser": "^4.5.1",
     "fast-deep-equal": "^2.0.1",
-    "popper.js": "^1.15.0",
     "lineupengine": "^2.1.0",
+    "lodash.get": "^4.4.2",
+    "popper.js": "^1.15.0",
     "reflect-metadata": "^0.1.13"
   }
 }

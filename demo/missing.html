@@ -16,7 +16,7 @@
     const l = new Array(10).fill(0);
     const cats = ['c1', 'c2', 'c3'];
     const isMissing = () => Math.random() < 0.1; // 10% missing values
-    for (let i = 0; i < 100; ++i) {
+    for (let i = 0; i < 1000; ++i) {
       arr.push({
         a: i >= 2 && isMissing() ? NaN : Math.random() * 10,
         d: i >= 2 && isMissing() ? null : 'Row ' + i,
@@ -28,6 +28,7 @@
     }
     const builder = LineUpJS.builder(arr);
     builder.deriveColumns();
+    builder.column(LineUpJS.buildStringColumn('d').label('Link').pattern('https://duckduckgo.com/?q=${escapedValue}').width(100));
 
     builder.buildTaggle(document.body);
   };

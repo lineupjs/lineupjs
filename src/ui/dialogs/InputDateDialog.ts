@@ -1,5 +1,6 @@
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
 import {timeFormat} from 'd3-time-format';
+import APopup from './APopup';
 
 /** @internal */
 export interface IInputDateOptions {
@@ -8,7 +9,7 @@ export interface IInputDateOptions {
 }
 
 /** @internal */
-export default class InputDateDialog extends ADialog {
+export default class InputDateDialog extends APopup {
 
   private readonly ioptions: Readonly<IInputDateOptions> = {
     value: null,
@@ -28,6 +29,12 @@ export default class InputDateDialog extends ADialog {
     node.insertAdjacentHTML('beforeend', `
      <input type="date" value="${o.value ? f(o.value) : ''}" required autofocus placeholder="${o.label ? o.label : 'enter date'}">
     `);
+    this.findInput('input[type=date]').addEventListener('keypress', (evt) => {
+      if (evt.key === 'Enter') {
+        this.triggerSubmit();
+      }
+    });
+    this.enableLivePreviews('input');
   }
 
   submit() {

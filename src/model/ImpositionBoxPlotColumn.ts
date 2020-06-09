@@ -10,6 +10,7 @@ import {ScaleMappingFunction} from './MappingFunction';
 import NumbersColumn from './NumbersColumn';
 import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
 import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
+import {integrateDefaults} from './internal';
 
 
 /**
@@ -39,7 +40,7 @@ export declare function colorMappingChanged_IPBC(previous: IColorMappingFunction
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
 @SortByDefault('descending')
 export default class ImpositionBoxPlotColumn extends CompositeColumn implements IBoxPlotColumn {
@@ -47,11 +48,11 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumbersColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
-    super(id, desc);
-
-    this.setDefaultRenderer('boxplot');
-    this.setDefaultGroupRenderer('boxplot');
-    this.setDefaultSummaryRenderer('boxplot');
+    super(id, integrateDefaults(desc, {
+      renderer: 'boxplot',
+      groupRenderer: 'boxplot',
+      summaryRenderer: 'boxplot'
+    }));
   }
 
   get label() {

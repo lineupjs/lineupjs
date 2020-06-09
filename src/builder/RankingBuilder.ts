@@ -42,7 +42,7 @@ export interface IScriptedBuilder {
 /**
  * builder for a ranking
  */
-export default class RankingBuilder {
+export class RankingBuilder {
   private static readonly ALL_MAGIC_FLAG = '*';
 
   private readonly columns: (string | {desc: IColumnDesc | ((data: DataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];

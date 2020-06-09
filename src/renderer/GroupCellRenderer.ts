@@ -1,5 +1,5 @@
 import {Column, GroupColumn, IOrderedGroup, IGroup, defaultGroup, IDataRow} from '../model';
-import {ICellRendererFactory} from './interfaces';
+import {ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {noRenderer} from './utils';
 
 
@@ -9,13 +9,13 @@ function isDummyGroup(group: IGroup) {
 
 /** @internal */
 export default class GroupCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof GroupColumn;
   }
 
-  create() {
+  create(): ICellRenderer {
     return {
       template: `<div><div></div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IOrderedGroup) {
@@ -27,7 +27,7 @@ export default class GroupCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return {
       template: `<div><div></div></div>`,
       update(node: HTMLElement, group: IOrderedGroup) {
@@ -36,7 +36,7 @@ export default class GroupCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

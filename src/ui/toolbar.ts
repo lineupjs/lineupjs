@@ -53,7 +53,7 @@ function uiSortMethod(methods: string[]): IToolbarDialogAddon {
     title: 'Sort By',
     order: 2,
     append(col, node) {
-      sortMethods(node, <any>col, methods);
+      return sortMethods(node, <any>col, methods);
     }
   };
 }
@@ -85,7 +85,7 @@ const sort: IToolbarAction = {
     ranking.sortBy(col, next === 'asc', next ? order.priority : -1);
   },
   options: {
-    shortcut: 'only',
+    mode: 'shortcut',
     order: 1,
     featureCategory: 'ranking',
     featureLevel: 'basic'
@@ -99,7 +99,7 @@ const sortBy: IToolbarAction = {
     dialog.open();
   },
   options: {
-    shortcut: false,
+    mode: 'menu',
     order: 1,
     featureCategory: 'ranking',
     featureLevel: 'advanced'
@@ -113,7 +113,7 @@ const sortGroupBy: IToolbarAction = {
     dialog.open();
   },
   options: {
-    shortcut: false,
+    mode: 'menu',
     order: 3,
     featureCategory: 'ranking',
     featureLevel: 'advanced'
@@ -127,7 +127,7 @@ const rename: IToolbarAction = {
     dialog.open();
   },
   options: {
-    order: 4,
+    order: 5,
     featureCategory: 'ui',
     featureLevel: 'advanced'
   }
@@ -191,13 +191,13 @@ const group = ui('Group', (col, evt, ctx, level) => {
   const order = current.indexOf(col);
 
   ranking.groupBy(col, order >= 0 ? -1 : current.length);
-}, {shortcut: 'only', order: 2, featureCategory: 'ranking', featureLevel: 'basic'});
+}, {mode: 'shortcut', order: 2, featureCategory: 'ranking', featureLevel: 'basic'});
 
 // advanced ranking
 const groupBy = ui('Group By &hellip;', (col, evt, ctx, level) => {
   const dialog = new GroupDialog(col, dialogContext(ctx, level, evt), ctx);
   dialog.open();
-}, {shortcut: false, order: 2, featureCategory: 'ranking', featureLevel: 'advanced'});
+}, {mode: 'menu', order: 2, featureCategory: 'ranking', featureLevel: 'advanced'});
 
 function toggleCompressExpand(col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number) {
   ctx.dialogManager.removeAboveLevel(level);
@@ -215,14 +215,14 @@ function toggleCompressExpand(col: Column, evt: MouseEvent, ctx: IRankingHeaderC
   }
 }
 
-const compress = {
+const compress: IToolbarAction = {
   title: 'Compress',
   enabled: (col: IMultiLevelColumn) => !col.getCollapsed(),
   onClick: toggleCompressExpand,
   options: {featureCategory: 'model', featureLevel: 'advanced'}
 };
 
-const expand = {
+const expand: IToolbarAction = {
   title: 'Expand',
   enabled: (col: IMultiLevelColumn) => col.getCollapsed(),
   onClick: toggleCompressExpand,
@@ -241,7 +241,7 @@ const setShowTopN: IToolbarAction = {
   }
 };
 
-const toolbarAddons: {[key: string]: IToolbarDialogAddon} = {
+export const toolbarDialogAddons: {[key: string]: IToolbarDialogAddon} = {
   sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
@@ -264,7 +264,8 @@ const toolbarAddons: {[key: string]: IToolbarDialogAddon} = {
   },
 };
 
-export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddon} = Object.assign({
+export const toolbarActions: {[key: string]: IToolbarAction} = {
+  vis,
   group,
   groupBy,
   compress,
@@ -276,21 +277,21 @@ export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddo
   remove,
   rename,
   setShowTopN,
-  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {shortcut: true, order: 3, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], {shortcut: true, featureCategory: 'ranking', featureLevel: 'basic'}),
-  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, () => [], {shortcut: false, featureCategory: 'ui', featureLevel: 'advanced'}),
-  colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], {shortcut: false, featureCategory: 'ui', featureLevel: 'advanced'}),
-  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {shortcut: true, featureCategory: 'model', featureLevel: 'advanced'}),
+  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {mode: 'menu+shortcut', order: 4, featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
+  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, (ctx) => [ctx], {mode: 'menu', featureCategory: 'ui', featureLevel: 'advanced'}),
+  colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], {mode: 'menu', featureCategory: 'ui', featureLevel: 'advanced'}),
+  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'model', featureLevel: 'advanced'}),
   reduce: uiDialog('Reduce by &hellip;', ReduceDialog, () => [], {featureCategory: 'model', featureLevel: 'advanced'}),
   cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix], {featureCategory: 'model', featureLevel: 'advanced'}),
   editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx], {featureCategory: 'model', featureLevel: 'advanced'}),
   editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix], {featureCategory: 'model', featureLevel: 'advanced'}),
-  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], {shortcut: true, featureCategory: 'model', featureLevel: 'advanced'}),
+  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'model', featureLevel: 'advanced'}),
   compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx], {featureCategory: 'model', featureLevel: 'advanced'}),
   splitCombined: ui('Split Combined Column', (col, _evt, ctx, level) => {
     ctx.dialogManager.removeAboveLevel(level - 1); // close itself
@@ -310,7 +311,7 @@ export const toolbarActions: {[key: string]: IToolbarAction | IToolbarDialogAddo
     const others = order.filter((d) => !ss.has(d));
     ctx.provider.setSelection(others);
   }, {featureCategory: 'model', featureLevel: 'advanced'})
-}, toolbarAddons);
+};
 
 function sortActions(a: IToolbarAction, b: IToolbarAction) {
   if (a.options.order === b.options.order) {
@@ -319,43 +320,27 @@ function sortActions(a: IToolbarAction, b: IToolbarAction) {
   return (a.options.order || 50) - (b.options.order || 50);
 }
 
-const cache = new Map<string, IToolbarAction[]>();
-const cacheAddon = new Map<string, IToolbarDialogAddon[]>();
-
 function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
+  const cache = ctx.caches.toolbar;
   if (cache.has(col.desc.type)) {
     return cache.get(col.desc.type)!;
-  }
-  const icons = <{[key: string]: IToolbarAction}>ctx.toolbar;
-  const actions = new Set<IToolbarAction>();
-  if (!col.fixed) {
-    actions.add(remove);
-  }
-  {
-    const possible = ctx.getPossibleRenderer(col);
-    if (possible.item.length > 2 || possible.group.length > 2 || possible.summary.length > 2) { // default always possible
-      actions.add(vis);
-    }
-  }
-
-  if (!isSupportType(col)) {
-    actions.add(sort);
-    actions.add(sortBy);
-    actions.add(rename);
-    actions.add(clone);
   }
 
   const keys = getAllToolbarActions(col);
 
-  keys.forEach((key) => {
-    if (icons.hasOwnProperty(key)) {
-      actions.add(icons[key]);
-    } else {
-      console.warn('cannot find: ', col.desc.type, key);
+  if (!col.fixed) {
+    keys.push('remove');
+  }
+  {
+    const possible = ctx.getPossibleRenderer(col);
+    if (possible.item.length > 2 || possible.group.length > 2 || possible.summary.length > 2) { // default always possible
+      keys.push('vis');
     }
-  });
+  }
 
-  const r = Array.from(actions).sort(sortActions);
+  const actions = ctx.resolveToolbarActions(col, keys);
+
+  const r = Array.from(new Set(actions)).sort(sortActions);
   cache.set(col.desc.type, r);
   return r;
 }
@@ -377,23 +362,15 @@ export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
 /** @internal */
 export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHeaderContext) {
   const cacheKey = `${col.desc.type}@${key}`;
+  const cacheAddon = ctx.caches.toolbarAddons;
   if (cacheAddon.has(cacheKey)) {
     return cacheAddon.get(cacheKey)!;
   }
-  const icons = <{[key: string]: IToolbarDialogAddon}>ctx.toolbar;
-  const actions = new Set<IToolbarDialogAddon>();
 
   const keys = getAllToolbarDialogAddons(col, key);
+  const actions = ctx.resolveToolbarDialogAddons(col, keys);
 
-  keys.forEach((key) => {
-    if (icons.hasOwnProperty(key)) {
-      actions.add(icons[key]);
-    } else {
-      console.warn('cannot find: ', col.desc.type, key);
-    }
-  });
-
-  const r = Array.from(actions).sort((a, b) => {
+  const r = Array.from(new Set(actions)).sort((a, b) => {
     if (a.order === b.order) {
       return a.title.localeCompare(b.title);
     }
@@ -406,17 +383,17 @@ export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHe
 /** @internal */
 export function isSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.includes(sortBy);
+  return toolbar.find((d) => d === sort || d === sortBy || d.title === sort.title || d.title.startsWith('Sort By')) != null;
 }
 
 /** @internal */
 export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.includes(groupBy);
+  return toolbar.find((d) => d === group || d === groupBy || d.title === group.title || d.title.startsWith('Group By')) != null;
 }
 
 /** @internal */
 export function isGroupSortAble(col: Column, ctx: IRankingHeaderContext) {
   const toolbar = getFullToolbar(col, ctx);
-  return toolbar.includes(sortGroupBy);
+  return toolbar.find((d) => d === sortGroupBy || d.title === sortGroupBy.title || d.title.startsWith('Sort Groups By')) != null;
 }

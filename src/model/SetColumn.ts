@@ -2,13 +2,13 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IArrayColumn} from './IArrayColumn';
-import {ICategoricalDesc, ICategoricalFilter, ICategory, ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
+import {ICategoricalDesc, ISetCategoricalFilter, ICategory, ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow, ECompareValueType, IValueColumnDesc, IGroup, DEFAULT_COLOR, ITypeFactory} from './interfaces';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
-import {toCategories, isCategoryIncluded} from './internalCategorical';
-import {chooseUIntByDataLength} from './internal';
+import {toCategories, isCategoryIncluded, isEqualSetCategoricalFilter} from './internalCategorical';
+import {chooseUIntByDataLength, integrateDefaults} from './internal';
 
 export interface ISetDesc extends ICategoricalDesc {
   separator?: string;
@@ -29,12 +29,12 @@ export declare function colorMappingChanged_SSC(previous: ICategoricalColorMappi
  * @asMemberOf SetColumn
  * @event
  */
-export declare function filterChanged_SSC(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
+export declare function filterChanged_SSC(previous: ISetCategoricalFilter | null, current: ISetCategoricalFilter | null): void;
 
 /**
  * a string column with optional alignment
  */
-@toolbar('filterCategorical', 'colorMappedCategorical', 'group', 'groupBy')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterCategorical', 'colorMappedCategorical', 'group', 'groupBy')
 @Category('categorical')
 export default class SetColumn extends ValueColumn<string[]> implements IArrayColumn<boolean>, ISetColumn {
   static readonly EVENT_FILTER_CHANGED = CategoricalColumn.EVENT_FILTER_CHANGED;
@@ -52,16 +52,17 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
    * @type {null}
    * @private
    */
-  private currentFilter: ICategoricalFilter | null = null;
+  private currentFilter: ISetCategoricalFilter | null = null;
 
   constructor(id: string, desc: Readonly<ISetColumnDesc>) {
-    super(id, desc);
+    super(id, integrateDefaults(desc, {
+      renderer: 'upset',
+      groupRenderer: 'upset',
+      summaryRenderer: 'categorical'
+    }));
     this.separator = new RegExp(desc.separator || ';');
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
-    this.setDefaultRenderer('upset');
-    this.setDefaultGroupRenderer('upset');
-    this.setSummaryRenderer('categorical');
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
@@ -195,7 +196,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     }
     const bak = dump.filter;
     if (typeof bak === 'string' || Array.isArray(bak)) {
-      this.currentFilter = {filter: bak, filterMissing: false};
+      this.currentFilter = {filter: bak, filterMissing: false, mode: 'some'};
     } else {
       this.currentFilter = bak;
     }
@@ -213,15 +214,21 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     if (v.length === 0) {
       return isCategoryIncluded(this.currentFilter, null);
     }
-    return v.every((s) => isCategoryIncluded(this.currentFilter, s));
+    if (this.currentFilter.mode === 'every') {
+      return v.every((s) => isCategoryIncluded(this.currentFilter, s));
+    }
+    return v.some((s) => isCategoryIncluded(this.currentFilter, s));
   }
 
-  getFilter() {
-    return CategoricalColumn.prototype.getFilter.call(this);
+  getFilter(): ISetCategoricalFilter | null {
+    return this.currentFilter == null ? null : Object.assign({}, this.currentFilter);
   }
 
-  setFilter(filter: ICategoricalFilter | null) {
-    return CategoricalColumn.prototype.setFilter.call(this, filter);
+  setFilter(filter: ISetCategoricalFilter | null) {
+    if (isEqualSetCategoricalFilter(this.currentFilter, filter)) {
+      return;
+    }
+    this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
   clearFilter() {

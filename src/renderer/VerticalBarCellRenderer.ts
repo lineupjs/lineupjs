@@ -2,14 +2,14 @@ import {Column, NumbersColumn, IDataRow, INumbersColumn, isNumbersColumn} from '
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
-import { forEachChild, noRenderer} from './utils';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ISummaryRenderer} from './interfaces';
+import {forEachChild, noRenderer} from './utils';
 
 /** @internal */
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar Chart';
+  readonly title: string = 'Bar Chart';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isNumbersColumn(col) && Boolean(col.dataLength) && mode === ERenderMode.CELL;
   }
 
@@ -35,14 +35,14 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     return {
       clazz: cssClass('heatmap'),
       templateRow: templateRows,
-      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow) => {
+      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow, tooltipPrefix?: string) => {
         const zero = toHeatMapColor(0, item, col, imposer);
         const one = toHeatMapColor(1, item, col, imposer);
 
         forEachChild(row, (d: HTMLElement, i) => {
           const v = data[i];
           const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
-          d.title = formatter(raw[i]);
+          d.title = `${tooltipPrefix || ''}${formatter(raw[i])}`;
           d.style.backgroundColor = v < threshold ? zero : one;
           d.style.bottom = `${Math.round((100 * bottom) / range)}%`;
           d.style.height = `${Math.round((100 * height) / range)}%`;
@@ -62,7 +62,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

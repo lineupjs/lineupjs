@@ -6,8 +6,18 @@ import DialogManager from './dialogs/DialogManager';
 import {IDialogContext} from './dialogs';
 
 export interface IUIOptions {
-  shortcut: boolean | 'only';
+  /**
+   * whether to show this action as a shortcut action
+   * @default 'menu'
+   */
+  mode: 'menu' | 'menu+shortcut' | 'shortcut' | ((col: Column, mode: 'sidePanel' | 'header') => 'menu' | 'menu+shortcut' | 'shortcut');
+
+  /**
+   * order hint for sorting actions
+   * @default 50
+   */
   order: number;
+
   featureLevel: 'basic' | 'advanced';
   featureCategory: 'ranking' | 'model' | 'ui';
 }
@@ -26,12 +36,19 @@ export interface IToolbarAction {
   options: Partial<IUIOptions>;
 }
 
+export interface IToolbarDialogAddonHandler {
+  elems: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[];
+  reset(): void;
+  submit(): boolean | undefined;
+  cancel(): void;
+}
+
 export interface IToolbarDialogAddon {
   title: string;
 
   order: number;
 
-  append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): void;
+  append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): IToolbarDialogAddonHandler;
 }
 
 
@@ -49,13 +66,19 @@ export interface IRankingHeaderContextContainer {
 
   asElement(html: string): HTMLElement;
 
-  readonly toolbar: {[key: string]: IToolbarAction | IToolbarDialogAddon};
+  resolveToolbarActions(col: Column, keys: string[]): IToolbarAction[];
+  resolveToolbarDialogAddons(col: Column, keys: string[]): IToolbarDialogAddon[];
 
   readonly flags: ILineUpFlags;
 
   getPossibleRenderer(col: Column): {item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[]};
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
+
+  readonly caches: {
+    toolbar: Map<string, IToolbarAction[]>,
+    toolbarAddons: Map<string, IToolbarDialogAddon[]>
+  };
 }
 
 export interface IRankingBodyContext extends IRankingHeaderContextContainer, IRenderContext {

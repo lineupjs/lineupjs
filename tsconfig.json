@@ -13,9 +13,6 @@
       "es2016.array.include",
       "es2017.object"
     ],
-    "declaration": true,
-    "declarationMap": true,
-    "composite": true,
     "removeComments": false,
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
@@ -26,7 +23,19 @@
     "noUnusedParameters": true,
     "strict": true,
     "stripInternal": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": [
+      "d3-color",
+      "d3-dispatch",
+      "d3-format",
+      "d3-scale",
+      "d3-scale-chromatic",
+      "d3-time",
+      "d3-time-format",
+      "detect-browser",
+      "lodash.get",
+      "jest"
+    ]
   },
   "compileOnSave": false,
   "include": [

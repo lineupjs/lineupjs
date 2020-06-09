@@ -1,7 +1,7 @@
 import {GridStyleManager} from 'lineupengine';
 import {defaultOptions} from '../../config';
 import {ITaggleOptions} from '../../config';
-import {merge} from '../../internal';
+import {merge, suffix} from '../../internal';
 import {DataProvider} from '../../provider';
 import {cssClass, engineCssClass} from '../../styles';
 import {ALineUp} from '../ALineUp';
@@ -10,6 +10,11 @@ import {spaceFillingRule} from './rules';
 import TaggleRenderer from './TaggleRenderer';
 
 export default class Taggle extends ALineUp {
+  static readonly EVENT_SELECTION_CHANGED = ALineUp.EVENT_SELECTION_CHANGED;
+  static readonly EVENT_DIALOG_OPENED = ALineUp.EVENT_DIALOG_OPENED;
+  static readonly EVENT_DIALOG_CLOSED = ALineUp.EVENT_DIALOG_CLOSED;
+  static readonly EVENT_HIGHLIGHT_CHANGED = ALineUp.EVENT_HIGHLIGHT_CHANGED;
+
   private readonly spaceFilling: HTMLElement | null;
   private readonly renderer: TaggleRenderer | null;
   private readonly panel: SidePanel | null;
@@ -63,7 +68,7 @@ export default class Taggle extends ALineUp {
         this.renderer.switchRule(spaceFilling);
       }
     }
-    this.forward(this.renderer, `${ALineUp.EVENT_HIGHLIGHT_CHANGED}.main`);
+    this.forward(this.renderer, ...suffix('.main', TaggleRenderer.EVENT_HIGHLIGHT_CHANGED, TaggleRenderer.EVENT_DIALOG_OPENED, TaggleRenderer.EVENT_DIALOG_CLOSED));
   }
 
   private updateLodRules(overviewMode: boolean) {

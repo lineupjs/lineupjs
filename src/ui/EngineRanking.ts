@@ -1,7 +1,7 @@
 import {ACellTableSection, GridStyleManager, IAbortAblePromise, ICellRenderContext, IExceptionContext, isAbortAble, isAsyncUpdate, isLoadingCell, ITableSection, nonUniformContext, PrefetchMixin, tableIds, uniformContext, IAsyncUpdate} from 'lineupengine';
 import {ILineUpFlags} from '../config';
 import {HOVER_DELAY_SHOW_DETAIL} from '../constants';
-import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener} from '../internal';
+import {AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener, suffix} from '../internal';
 import {Column, IGroupData, IGroupItem, IOrderedGroup, isGroup, isMultiLevelColumn, Ranking, StackColumn, IGroupParent, defaultGroup, IGroup} from '../model';
 import {IImposer, IRenderCallback, IRenderContext} from '../renderer';
 import {CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass} from '../styles';
@@ -87,7 +87,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private readonly selection: SelectionManager;
   private highlight: number = -1;
   private readonly canvasPool: HTMLCanvasElement[] = [];
-  private oldLeft: number = 0;
+
+  private currentCanvasShift: number = 0;
+  private currentCanvasWidth: number = 0;
 
   private readonly events = new RankingEvents();
 
@@ -265,6 +267,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       #${tableIds(this.tableId).tbody} > .${engineCssClass('tr')}.${engineCssClass('highlighted')} .${cssClass('hover-only')}`, {
         visibility: 'visible'
       });
+
+    this.updateCanvasRule();
   }
 
   on(type: typeof EngineRanking.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -289,6 +293,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   updateHeaders() {
+    this.updateColumnSummaryFlag();
     return super.updateHeaders();
   }
 
@@ -302,6 +307,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   protected createHeader(_document: Document, column: RenderColumn): HTMLElement | IAsyncUpdate<HTMLElement> {
     return column.createHeader();
+  }
+
+  private updateColumnSummaryFlag() {
+    // updates the header flag depending on whether there are any sublabels
+    this.header.classList.toggle(cssClass('show-sublabel'), this.columns.some((c) => c.hasSummaryLine()));
   }
 
   protected updateHeader(node: HTMLElement, column: RenderColumn) {
@@ -335,7 +345,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (this.canvasPool.length > 0) {
       return this.canvasPool.pop()!;
     }
-    return this.body.ownerDocument!.createElement('canvas');
+    const c = this.body.ownerDocument!.createElement('canvas');
+    c.classList.add(cssClass(`low-c${this.tableId}`));
+    return c;
   }
 
   private rowFlags(row: HTMLElement) {
@@ -393,7 +405,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
   }
 
-  private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number, width = this.visibleRenderedWidth()) {
+  private renderRow(canvas: HTMLCanvasElement, node: HTMLElement, index: number) {
     if (this.loadingCanvas.has(canvas)) {
       for (const a of this.loadingCanvas.get(canvas)!) {
         a.render.abort();
@@ -402,8 +414,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     canvas.classList.remove(cssClass('loading-c'));
 
-    canvas.width = width;
-    canvas.style.width = `${width}px`;
+    canvas.width = this.currentCanvasWidth;
     canvas.height = CANVAS_HEIGHT;
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
@@ -485,7 +496,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
 
   protected updateCanvasCell(canvas: HTMLCanvasElement, node: HTMLElement, index: number, column: RenderColumn, x: number) {
-
     // delete lazy that would render the same thing
     if (this.loadingCanvas.has(canvas)) {
       const l = this.loadingCanvas.get(canvas)!;
@@ -543,6 +553,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     });
 
+    this.updateColumnSummaryFlag();
+
     this.events.fire(EngineRanking.EVENT_RECREATE);
     super.recreate();
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
@@ -566,6 +578,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (node && column) {
       this.updateHeader(node, column);
     }
+    this.updateColumnSummaryFlag();
     return node && column;
   }
 
@@ -692,10 +705,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   private updateCanvasBody() {
-    const width = this.visibleRenderedWidth();
+    this.updateCanvasRule();
     super.forEachRow((row, index) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.renderRow(<HTMLCanvasElement>row.firstElementChild!, row, index, width);
+        this.renderRow(<HTMLCanvasElement>row.firstElementChild!, row, index);
       }
     });
   }
@@ -706,13 +719,23 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return toRowMeta(this.renderCtx.getRow(rowIndex), provider.getAggregationStrategy(), topNGetter);
   }
 
+  private updateCanvasRule() {
+    this.style.updateRule(`renderCanvas${this.tableId}`, `.${cssClass(`low-c${this.tableId}`)}`, {
+        transform: `translateX(${this.currentCanvasShift}px)`,
+        width: `${this.currentCanvasWidth}px`
+      });
+  }
+
   protected updateShifts(top: number, left: number) {
     super.updateShifts(top, left);
 
-    if (left === this.oldLeft) {
+    const width = this.visibleRenderedWidth();
+    if (left === this.currentCanvasShift && width === this.currentCanvasWidth) {
       return;
     }
-    this.oldLeft = left;
+
+    this.currentCanvasShift = left;
+    this.currentCanvasWidth = width;
     this.updateCanvasBody();
   }
 
@@ -843,6 +866,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   destroy() {
     super.destroy();
     this.style.deleteRule(`hoverOnly${this.tableId}`);
+    this.style.deleteRule(`renderCanvas${this.tableId}`);
     this.ranking.flatColumns.forEach((c) => EngineRanking.disableListener(c));
   }
 
@@ -1059,7 +1083,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         EngineRanking.disableListener(c); // destroy myself
       }
     });
-    c.on(`${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, () => {
+    c.on(suffix('.body', Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES), () => {
       // replace myself upon renderer type change
       col.renderers = this.ctx.createRenderer(c);
       const valid = this.updateHeaderOf(col.c);
@@ -1097,7 +1121,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private static disableListener(c: Column) {
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
+    c.on(suffix('.body', Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES, Column.EVENT_LABEL_CHANGED), null);
     c.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, null);
     c.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, null);
 

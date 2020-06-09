@@ -10,6 +10,7 @@ import {INumberColumn} from './INumberColumn';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {toCategories} from './internalCategorical';
 import {DEFAULT_FORMATTER} from './internalNumber';
+import {integrateDefaults} from './internal';
 
 export declare type IOrdinalColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
 
@@ -37,7 +38,7 @@ export declare function filterChanged_OC(previous: ICategoricalFilter | null, cu
 /**
  * similar to a categorical column but the categories are mapped to numbers
  */
-@toolbar('group', 'filterOrdinal', 'colorMappedCategorical')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'group', 'filterOrdinal', 'colorMappedCategorical')
 @Category('categorical')
 export default class OrdinalColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
@@ -54,11 +55,12 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
 
   constructor(id: string, desc: Readonly<IOrdinalColumnDesc>) {
-    super(id, desc);
+    super(id, integrateDefaults(desc, {
+      renderer: 'number',
+      groupRenderer: 'boxplot'
+    }));
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
-    this.setDefaultRenderer('number');
-    this.setDefaultGroupRenderer('boxplot');
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 

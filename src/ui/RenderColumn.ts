@@ -106,6 +106,10 @@ export default class RenderColumn implements IColumn {
     return this.updateHeader(node);
   }
 
+  hasSummaryLine() {
+    return Boolean(this.c.getMetaData().summary);
+  }
+
   updateHeader(node: HTMLElement): HTMLElement | IAsyncUpdate<HTMLElement> {
     updateHeader(node, this.c);
     if (!this.renderers || !this.renderers.summary) {

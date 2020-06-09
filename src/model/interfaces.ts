@@ -17,6 +17,11 @@ export interface IStyleColumn {
   description: string;
 
   /**
+   * column summary line (subtitle)
+   */
+  summary: string;
+
+  /**
    * color of this column
    * @deprecated not used anymore
    */
@@ -127,6 +132,7 @@ export interface IColumnParent {
 
 export interface IColumnMetaData {
   label: string;
+  summary: string;
   description: string;
 }
 
@@ -217,6 +223,7 @@ export interface IColumnDump {
   width?: number;
   desc: any;
   label?: string;
+  summary?: string;
   renderer?: string;
   /**
    * @deprecated

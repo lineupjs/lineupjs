@@ -3,7 +3,7 @@ import CompositeColumn from './CompositeColumn';
 import {IDataRow, IGroup, IColumnDesc} from './interfaces';
 import {isMissingValue} from './missing';
 import NumberColumn from './NumberColumn';
-import {SortByDefault} from './annotations';
+import {SortByDefault, toolbar} from './annotations';
 import {ISequence} from '../internal';
 import {INumberColumn} from './INumberColumn';
 
@@ -20,6 +20,7 @@ export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnD
 /**
  * implementation of a combine column, standard operations how to select
  */
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'group', 'groupBy')
 @SortByDefault('descending')
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
   private readonly numberFormat: (n: number) => string = format('.3n');

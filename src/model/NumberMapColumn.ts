@@ -15,6 +15,7 @@ import NumberColumn from './NumberColumn';
 import {IEventListener, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
 import {format} from 'd3-format';
 import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
+import {integrateDefaults} from './internal';
 
 
 export interface INumberMapDesc extends INumberDesc {
@@ -50,7 +51,7 @@ export declare function sortMethodChanged_NMC(previous: EAdvancedSortMethod, cur
  */
 export declare function filterChanged_NMC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortNumbers')
 @SortByDefault('descending')
 export default class NumberMapColumn extends MapColumn<number> implements IAdvancedBoxPlotColumn {
@@ -73,7 +74,9 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   private currentFilter: INumberFilter = noNumberFilter();
 
   constructor(id: string, desc: Readonly<INumberMapColumnDesc>, factory: ITypeFactory) {
-    super(id, desc);
+    super(id, integrateDefaults(desc, {
+      renderer: 'mapbars'
+    }));
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
@@ -82,8 +85,6 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-
-    this.setDefaultRenderer('mapbars');
   }
 
   getNumberFormat() {

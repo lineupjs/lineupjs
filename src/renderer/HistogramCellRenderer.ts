@@ -1,21 +1,23 @@
-import {normalizedStatsBuilder, IStatistics, round, getNumberOfBins} from '../internal';
-import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn} from '../model';
+import {normalizedStatsBuilder, IStatistics, getNumberOfBins} from '../internal';
+import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn, Ranking} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderTasks, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {cssClass} from '../styles';
+import {cssClass, engineCssClass} from '../styles';
 import {histogramUpdate, histogramTemplate, IHistogramLike, mappingHintTemplate, mappingHintUpdate, IFilterInfo, filteredHistTemplate, IFilterContext, initFilter} from './histogram';
+import {noNumberFilter} from '../model/internalNumber';
+import DialogManager from '../ui/dialogs/DialogManager';
 
 /** @internal */
 export default class HistogramCellRenderer implements ICellRendererFactory {
-  readonly title = 'Histogram';
+  readonly title: string = 'Histogram';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return (isNumberColumn(col) && mode !== ERenderMode.CELL) || (isNumbersColumn(col) && mode === ERenderMode.CELL);
   }
 
-  create(col: INumbersColumn, _context: IRenderContext, imposer?: IImposer) {
+  create(col: INumbersColumn, _context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const {template, render, guessedBins} = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
@@ -33,7 +35,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
+  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const {template, render} = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
@@ -42,15 +44,20 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
           if (typeof r === 'symbol') {
             return;
           }
-          const {summary, group} = r;
+          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
 
+          const {summary, group} = r;
           render(n, group, summary);
         });
       }
     };
   }
 
-  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer) {
+  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer {
     const r = getHistDOMRenderer(col, imposer);
 
     const staticHist = !interactive || !isMapAbleColumn(col);
@@ -74,13 +81,12 @@ function staticSummary(col: INumberColumn, context: IRenderContext, template: st
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary} = r;
-
-        node.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        node.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
-        render(node, summary);
+        render(node, r.summary);
       });
     }
   };
@@ -118,6 +124,74 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
 }
 
 /** @internal */
+export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: HTMLElement, context: {idPrefix: string, dialogManager: DialogManager, tasks: IRenderTasks}, livePreviews: boolean) {
+  const renderer = getHistDOMRenderer(col);
+  const fContext = createFilterContext(col, context);
+
+  parent.innerHTML = `${renderer.template}${filteredHistTemplate(fContext, createFilterInfo(col))}</div>`;
+  const summaryNode = <HTMLElement>parent.firstElementChild!;
+  summaryNode.classList.add(cssClass('summary'), cssClass('renderer'));
+  summaryNode.dataset.renderer = 'histogram';
+  summaryNode.dataset.interactive = '';
+  summaryNode.classList.add(cssClass('histogram-i'));
+
+  const applyFilter = fContext.setFilter;
+  let currentFilter = createFilterInfo(col);
+  fContext.setFilter = (filterMissing, min, max) => {
+    currentFilter = {filterMissing, filterMin: min, filterMax: max};
+    if (livePreviews) {
+      applyFilter(filterMissing, min, max);
+    }
+  };
+
+  const updateFilter = initFilter(summaryNode, fContext);
+
+  const rerender = () => {
+    const ready = context.tasks.summaryNumberStats(col).then((r) => {
+      if (typeof r === 'symbol') {
+        return;
+      }
+      const {summary, data} = r;
+      updateFilter(data ? data.missing : (summary ? summary.missing : 0), currentFilter);
+      summaryNode.classList.toggle(cssClass('missing'), !summary);
+      if (!summary) {
+        return;
+      }
+      renderer.render(summaryNode, summary, data);
+    });
+    if (!ready) {
+      return;
+    }
+    summaryNode.classList.add(engineCssClass('loading'));
+    ready.then(() => {
+      summaryNode.classList.remove(engineCssClass('loading'));
+    });
+  };
+
+  const ranking = col.findMyRanker()!;
+
+  if (ranking) {
+    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.numberFilter`, () => rerender());
+  }
+  rerender();
+
+  return {
+    cleanUp() {
+      if (ranking) {
+        ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.numberFilter`, null);
+      }
+    },
+    reset() {
+      currentFilter = createFilterInfo(col, noNumberFilter());
+      rerender();
+    },
+    submit() {
+      applyFilter(currentFilter.filterMissing, currentFilter.filterMin, currentFilter.filterMax);
+    }
+  };
+}
+
+/** @internal */
 export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
   const ranking = col.findMyRanker();
   const guessedBins = ranking ? getNumberOfBins(ranking.getOrderLength()) : 10;
@@ -133,8 +207,7 @@ export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
   };
 }
 
-function createFilterInfo(col: IMapAbleColumn): IFilterInfo<number> {
-  const filter = col.getFilter();
+function createFilterInfo(col: IMapAbleColumn, filter = col.getFilter()): IFilterInfo<number> {
   const domain = col.getMapping().domain;
   const filterMin = isFinite(filter.min) ? filter.min : domain[0];
   const filterMax = isFinite(filter.max) ? filter.max : domain[1];
@@ -145,26 +218,30 @@ function createFilterInfo(col: IMapAbleColumn): IFilterInfo<number> {
   };
 }
 
-function createFilterContext(col: IMapAbleColumn, context: IRenderContext): IFilterContext<number> {
+function createFilterContext(col: IMapAbleColumn, context: {idPrefix: string, dialogManager: DialogManager}): IFilterContext<number> {
   const domain = col.getMapping().domain;
-  const percent = (v: number) => Math.round(100 * (v - domain[0]) / (domain[1] - domain[0]));
+  const format = col.getNumberFormat();
+  const clamp = (v: number) => Math.max(0, Math.min(100, v));
+  const percent = (v: number) => clamp(Math.round(100 * (v - domain[0]) / (domain[1] - domain[0])));
   const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
   return {
     percent,
     unpercent,
     domain: <[number, number]>domain,
-    format: (v) => round(v, 2).toString(),
+    format,
+    formatRaw: String,
+    parseRaw: Number.parseFloat,
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
-      min: minValue === domain[0] ? NaN : minValue,
-      max: maxValue === domain[1] ? NaN : maxValue
+      min: minValue === domain[0] ? Number.NEGATIVE_INFINITY : minValue,
+      max: maxValue === domain[1] ? Number.POSITIVE_INFINITY : maxValue
     }),
     edit: (value, attachment) => {
       return new Promise((resolve) => {
         const dialogCtx = {
           attachment,
           manager: context.dialogManager,
-          level: 1,
+          level: context.dialogManager.maxLevel + 1,
           idPrefix: context.idPrefix
         };
         const dialog = new InputNumberDialog(dialogCtx, resolve, {

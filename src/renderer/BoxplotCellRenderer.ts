@@ -2,7 +2,7 @@ import {IBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
 import {NumberColumn, IBoxPlotColumn, INumberColumn, isBoxPlotColumn, Column, IDataRow, isNumberColumn, isMapAbleColumn, IOrderedGroup} from '../model';
 import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
 import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas} from './missing';
 import {tasksAll} from '../provider';
 
@@ -24,7 +24,6 @@ const MAPPED_BOXPLOT = `<div title="">
 </div>`;
 
 
-
 /** @internal */
 export function computeLabel(col: INumberColumn, v: IBoxPlotData | IAdvancedBoxPlotData) {
   if (v == null) {
@@ -37,13 +36,13 @@ export function computeLabel(col: INumberColumn, v: IBoxPlotData | IAdvancedBoxP
 
 /** @internal */
 export default class BoxplotCellRenderer implements ICellRendererFactory {
-  readonly title = 'Box Plot';
+  readonly title: string = 'Box Plot';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));
   }
 
-  create(col: IBoxPlotColumn, context: IRenderContext, imposer?: IImposer) {
+  create(col: IBoxPlotColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
@@ -51,11 +50,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       template: BOXPLOT,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d);
+        n.classList.toggle(cssClass('missing'), !data);
         if (!data) {
-          n.classList.add(cssClass('missing'));
           return;
         }
-        n.classList.remove(cssClass('missing'));
         const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(col, n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       },
@@ -86,7 +84,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer) {
+  createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: BOXPLOT,
@@ -96,8 +94,9 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             return;
           }
           // render
-          n.classList.toggle(cssClass('missing'), data === null);
-          if (data === null) {
+          const isMissing = data == null || data[0] == null || data[0].group.count === 0 || data[0].group.count === data[0].group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
             return;
           }
           renderDOMBoxPlot(col, n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
@@ -106,7 +105,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumberColumn, context: IRenderContext, _interactive: boolean, imposer?: IImposer) {
+  createSummary(col: INumberColumn, context: IRenderContext, _interactive: boolean, imposer?: IImposer): ISummaryRenderer {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement) => {
@@ -114,13 +113,13 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           if (typeof data === 'symbol') {
             return;
           }
-          const mappedSummary = data[0].summary;
-          const rawSummary = data[1].summary;
-          if (mappedSummary == null) {
-            n.classList.add(cssClass('missing'));
+          const isMissing = data == null || data[0] == null || data[0].summary.count === 0 || data[0].summary.count === data[0].summary.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
             return;
           }
-          n.classList.remove(cssClass('missing'));
+          const mappedSummary = data[0].summary;
+          const rawSummary = data[1].summary;
           const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
 
           if (isMapAbleColumn(col)) {

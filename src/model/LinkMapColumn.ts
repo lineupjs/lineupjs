@@ -2,7 +2,7 @@ import {toolbar} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow, ITypeFactory} from './interfaces';
-import {patternFunction} from './internal';
+import {patternFunction, integrateDefaults} from './internal';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import LinkColumn, {ILinkDesc} from './LinkColumn';
 import {IEventListener} from '../internal';
@@ -22,7 +22,7 @@ export declare function patternChanged_LMC(previous: string, current: string): v
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'editPattern')
+@toolbar('rename', 'search', 'editPattern')
 export default class LinkMapColumn extends MapColumn<string> {
   static readonly EVENT_PATTERN_CHANGED = LinkColumn.EVENT_PATTERN_CHANGED;
 
@@ -33,13 +33,14 @@ export default class LinkMapColumn extends MapColumn<string> {
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<ILinkMapColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200,
+      renderer: 'map'
+    }));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
     this.pattern = desc.pattern || '';
     this.patternTemplates = desc.patternTemplates || [];
-    this.setDefaultRenderer('map');
   }
 
   setPattern(pattern: string) {

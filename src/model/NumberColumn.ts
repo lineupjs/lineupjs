@@ -8,6 +8,7 @@ import {restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareGroupValue, isEqualNumberFilter, isNumberIncluded} from './internalNumber';
+import {integrateDefaults} from './internal';
 
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
@@ -50,7 +51,7 @@ export declare function groupingChanged_NC(previous: number[], current: number[]
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('groupBy', 'sortGroupBy', 'filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'groupBy', 'sortGroupBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sortGroup', 'sortNumber')
 @dialogAddons('group', 'groupNumber')
 @Category('number')
@@ -79,7 +80,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
   constructor(id: string, desc: INumberColumnDesc, factory: ITypeFactory) {
-    super(id, desc);
+    super(id, integrateDefaults(desc, {
+      groupRenderer: 'boxplot',
+      summaryRenderer: 'histogram'
+    }));
 
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
@@ -88,9 +92,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-
-    this.setDefaultGroupRenderer('boxplot');
-    this.setDefaultSummaryRenderer('histogram');
   }
 
   getNumberFormat() {

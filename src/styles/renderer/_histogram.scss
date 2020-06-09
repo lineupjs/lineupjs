@@ -86,6 +86,7 @@ span.#{$lu_css_prefix}-mapping-hint {
   top: 0;
   height: 100%;
   border-right: 1px solid black;
+  transform: translate(-1px, 0);
   transition: border-width 0.2s ease;
   width: 1px;
   cursor: ew-resize;
@@ -94,7 +95,7 @@ span.#{$lu_css_prefix}-mapping-hint {
     content: attr(data-value);
     position: absolute;
     bottom: -15px;
-    width: 5em;
+    width: $lu_histogram_drag_hint_width;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -104,13 +105,14 @@ span.#{$lu_css_prefix}-mapping-hint {
 .#{$lu_css_prefix}-histogram-max {
   right: 0;
   border-right: none;
+  transform: translate(1px, 0);
   border-left: 1px solid black;
 }
 
 .#{$lu_css_prefix}-histogram-min.#{$lu_css_prefix}-swap-hint,
 .#{$lu_css_prefix}-histogram-max:not(.#{$lu_css_prefix}-swap-hint) {
   &::before {
-    left: -5em;
+    left: -$lu_histogram_drag_hint_width;
     text-align: right;
   }
 }

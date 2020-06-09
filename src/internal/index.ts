@@ -12,3 +12,4 @@ export {default as OrderedSet} from './OrderedSet';
 export {default as LRUCache} from './LRUCache';
 export * from './utils';
 export * from './worker';
+export * from './accessor';

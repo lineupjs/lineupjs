@@ -6,23 +6,25 @@ import MapColumn, {IMapColumnDesc} from './MapColumn';
 import {EAlignment, IStringDesc} from './StringColumn';
 import {IEventListener} from '../internal';
 import {isMissingValue} from './missing';
+import {integrateDefaults} from './internal';
 
 export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
 
 /**
  * a string column with optional alignment
  */
-@toolbar('search')
+@toolbar('rename', 'search')
 export default class StringMapColumn extends MapColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<IStringMapColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200,
+      renderer: 'map'
+    }));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
-    this.setDefaultRenderer('map');
   }
 
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;

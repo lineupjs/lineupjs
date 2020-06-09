@@ -1,10 +1,10 @@
 import {Category, toolbar, dialogAddons} from './annotations';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import {IDataRow, IGroup, IValueColumnDesc, ITypeFactory} from './interfaces';
-import {patternFunction} from './internal';
+import {patternFunction, integrateDefaults} from './internal';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener, ISequence} from '../internal';
-import {IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType} from './StringColumn';
+import {IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType, IStringFilter} from './StringColumn';
 import StringColumn from './StringColumn';
 
 export interface ILinkDesc extends IStringDesc {
@@ -51,7 +51,7 @@ export declare function patternChanged_LC(previous: string, current: string): vo
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'groupBy', 'filterString', 'editPattern')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'search', 'groupBy', 'filterString', 'editPattern')
 @dialogAddons('group', 'groupString')
 @Category('string')
 export default class LinkColumn extends ValueColumn<string | ILink> {
@@ -73,18 +73,17 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<ILinkColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, Object.assign({
+      width: 200
+    }, desc.pattern ? {
+        renderer: 'link',
+        groupRenderer: 'link'
+      } : {})));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
 
     this.pattern = desc.pattern || '';
     this.patternTemplates = desc.patternTemplates || [];
-
-    if (this.pattern) {
-      this.setDefaultRenderer('link');
-      this.setDefaultGroupRenderer('link');
-    }
   }
 
   setPattern(pattern: string) {
@@ -187,7 +186,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return this.currentFilter;
   }
 
-  setFilter(filter: string | RegExp | null) {
+  setFilter(filter: IStringFilter) {
     return StringColumn.prototype.setFilter.call(this, filter);
   }
 

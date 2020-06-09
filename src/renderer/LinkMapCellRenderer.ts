@@ -1,5 +1,5 @@
 import {IDataRow, LinkMapColumn, Column, ILink, IKeyValue, IOrderedGroup} from '../model';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {groupByKey} from './TableCellRenderer';
 import {noRenderer, noop} from './utils';
@@ -7,13 +7,13 @@ import {cssClass} from '../styles';
 
 /** @internal */
 export default class LinkMapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Table with Links';
+  readonly title: string = 'Table with Links';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof LinkMapColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: LinkMapColumn) {
+  create(col: LinkMapColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
@@ -35,29 +35,42 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     const numExampleRows = 5;
     const examples = <string[]>[];
     for (const row of arr) {
+      if (!row || !row.value.href) {
+        continue;
+      }
       examples.push(`<a target="_blank" rel="noopener" href="${row.value.href}">${row.value.alt}</a>`);
       if (examples.length >= numExampleRows) {
         break;
       }
     }
+    if (examples.length === 0) {
+      return '';
+    }
     return `${examples.join(', ')}${examples.length < arr.length} ? ', &hellip;': ''}`;
   }
 
-  createGroup(col: LinkMapColumn, context: IRenderContext) {
+  createGroup(col: LinkMapColumn, context: IRenderContext): IGroupCellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, group: IOrderedGroup) => {
         return context.tasks.groupRows(col, group, 'linkmap', (rows) => groupByKey(rows.map((d) => col.getLinkMap(d)))).then((entries) => {
-          if (typeof entries !== 'symbol') {
-            node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${LinkMapCellRenderer.example(values)}</div>`).join('');
+          if (typeof entries === 'symbol') {
+            return;
           }
+          node.innerHTML = entries.map(({key, values}) => {
+            const data = LinkMapCellRenderer.example(values);
+            if (!data) {
+              return `<div>${key}</div><div class="${cssClass('missing')}"></div>`;
+            }
+            return `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${data}</div>`;
+          }).join('');
         });
       }
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }

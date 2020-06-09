@@ -1,22 +1,23 @@
 import {dateStatsBuilder, IDateStatistics} from '../internal';
-import {Column, IDataRow, IDateColumn, IDatesColumn, IOrderedGroup, isDateColumn, isDatesColumn} from '../model';
-import {cssClass} from '../styles';
-import {ERenderMode, ICellRendererFactory, IRenderContext} from './interfaces';
+import {Column, IDataRow, IDateColumn, IDatesColumn, IOrderedGroup, isDateColumn, isDatesColumn, Ranking} from '../model';
+import {cssClass, engineCssClass} from '../styles';
+import {ERenderMode, ICellRendererFactory, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer, IRenderTasks} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {colorOf} from './utils';
 import {histogramUpdate, histogramTemplate, mappingHintTemplate, mappingHintUpdate, IFilterInfo, IFilterContext, filteredHistTemplate, initFilter} from './histogram';
 import InputDateDialog from '../ui/dialogs/InputDateDialog';
-import {shiftFilterDateDay} from '../model/internalDate';
+import {shiftFilterDateDay, noDateFilter} from '../model/internalDate';
+import DialogManager from '../ui/dialogs/DialogManager';
 
 /** @internal */
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
-  readonly title = 'Histogram';
+  readonly title: string = 'Histogram';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return (isDateColumn(col) && mode !== ERenderMode.CELL) || (isDatesColumn(col) && mode === ERenderMode.CELL);
   }
 
-  create(col: IDatesColumn, _context: IRenderContext) {
+  create(col: IDatesColumn, _context: IRenderContext): ICellRenderer {
     const {template, render} = getHistDOMRenderer(col);
     return {
       template: `${template}</div>`,
@@ -34,7 +35,7 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: IDateColumn, context: IRenderContext) {
+  createGroup(col: IDateColumn, context: IRenderContext): IGroupCellRenderer {
     const {template, render} = getHistDOMRenderer(col);
     return {
       template: `${template}</div>`,
@@ -43,15 +44,18 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
           if (typeof r === 'symbol') {
             return;
           }
-          const {group} = r;
-
-          render(n, group);
+          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
+          render(n, r.group);
         });
       }
     };
   }
 
-  createSummary(col: IDateColumn, context: IRenderContext, interactive: boolean) {
+  createSummary(col: IDateColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     const r = getHistDOMRenderer(col);
     return interactive ? interactiveSummary(col, context, r.template, r.render) : staticSummary(col, context, false, r.template, r.render);
   }
@@ -102,7 +106,8 @@ function interactiveSummary(col: IDateColumn, context: IRenderContext, template:
         }
         const {summary, data} = r;
         if (!updateFilter) {
-          fContext = createFilterContext(col, context, [data.min ? data.min.getTime() : Date.now(), data.max ? data.max.getTime() : Date.now()]);
+          const domain: [number, number] = [data.min ? data.min.getTime() : Date.now(), data.max ? data.max.getTime() : Date.now()];
+          fContext = createFilterContext(col, context, domain);
           updateFilter = initFilter(node, fContext);
         }
 
@@ -118,6 +123,96 @@ function interactiveSummary(col: IDateColumn, context: IRenderContext, template:
     }
   };
 }
+
+
+/** @internal */
+export function createDateFilter(col: IDateColumn, parent: HTMLElement, context: {idPrefix: string, dialogManager: DialogManager, tasks: IRenderTasks}, livePreviews: boolean) {
+  const renderer = getHistDOMRenderer(col);
+  const filter = col.getFilter();
+
+  let domain: [number, number] = [isFinite(filter.min) ? filter.min : 0, isFinite(filter.max) ? filter.max : 100];
+
+  let fContext = createFilterContext(col, context, domain);
+  let applyFilter = fContext.setFilter;
+  let currentFilter = createFilterInfo(col, domain);
+  fContext.setFilter = (filterMissing, min, max) => {
+    currentFilter = {filterMissing, filterMin: min, filterMax: max};
+    if (livePreviews) {
+      applyFilter(filterMissing, min, max);
+    }
+  };
+  parent.innerHTML = `${renderer.template}${filteredHistTemplate(fContext, createFilterInfo(col, domain))}</div>`;
+  const summaryNode = <HTMLElement>parent.firstElementChild!;
+  summaryNode.classList.add(cssClass('summary'), cssClass('renderer'));
+  summaryNode.dataset.renderer = 'histogram';
+  summaryNode.dataset.interactive = '';
+  summaryNode.classList.add(cssClass('histogram-i'));
+
+
+  let updateFilter: null | ((missing: number, filter: IFilterInfo<number>) => void) = null;
+  const prepareRender = (min: Date | null, max: Date | null) => {
+    // reinit with proper domain
+    domain = [min ? min.getTime() : Date.now(), max ? max.getTime() : Date.now()];
+    fContext = createFilterContext(col, context, domain);
+    applyFilter = fContext.setFilter;
+    currentFilter = createFilterInfo(col, domain);
+    fContext.setFilter = (filterMissing, min, max) => {
+      currentFilter = {filterMissing, filterMin: min, filterMax: max};
+      if (livePreviews) {
+        applyFilter(filterMissing, min, max);
+      }
+    };
+    return initFilter(summaryNode, fContext);
+  };
+
+  const rerender = () => {
+    const ready = context.tasks.summaryDateStats(col).then((r) => {
+      if (typeof r === 'symbol') {
+        return;
+      }
+      const {summary, data} = r;
+      if (!updateFilter) {
+        updateFilter = prepareRender(data.min, data.max);
+      }
+      updateFilter(data ? data.missing : (summary ? summary.missing : 0), currentFilter);
+      summaryNode.classList.toggle(cssClass('missing'), !summary);
+      if (!summary) {
+        return;
+      }
+      renderer.render(summaryNode, summary, data);
+    });
+    if (!ready) {
+      return;
+    }
+    summaryNode.classList.add(engineCssClass('loading'));
+    ready.then(() => {
+      summaryNode.classList.remove(engineCssClass('loading'));
+    });
+  };
+
+  const ranking = col.findMyRanker()!;
+
+  if (ranking) {
+    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.numberFilter`, () => rerender());
+  }
+  rerender();
+
+  return {
+    cleanUp() {
+      if (ranking) {
+        ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.numberFilter`, null);
+      }
+    },
+    reset() {
+      currentFilter = createFilterInfo(col, domain, noDateFilter());
+      rerender();
+    },
+    submit() {
+      applyFilter(currentFilter.filterMissing, currentFilter.filterMin, currentFilter.filterMax);
+    }
+  };
+}
+
 
 function getHistDOMRenderer(col: IDateColumn) {
   const guessedBins = 10;
@@ -135,8 +230,7 @@ function getHistDOMRenderer(col: IDateColumn) {
   };
 }
 
-function createFilterInfo(col: IDateColumn, domain: [number, number]): IFilterInfo<number> {
-  const filter = col.getFilter();
+function createFilterInfo(col: IDateColumn, domain: [number, number], filter = col.getFilter()): IFilterInfo<number> {
   const filterMin = isFinite(filter.min) ? filter.min : domain[0];
   const filterMax = isFinite(filter.max) ? filter.max : domain[1];
   return {
@@ -146,25 +240,28 @@ function createFilterInfo(col: IDateColumn, domain: [number, number]): IFilterIn
   };
 }
 
-function createFilterContext(col: IDateColumn, context: IRenderContext, domain: [number, number]): IFilterContext<number> {
-  const percent = (v: number) => Math.round(100 * (v - domain[0]) / (domain[1] - domain[0]));
+function createFilterContext(col: IDateColumn, context: {idPrefix: string, dialogManager: DialogManager}, domain: [number, number]): IFilterContext<number> {
+  const clamp = (v: number) => Math.max(0, Math.min(100, v));
+  const percent = (v: number) => clamp(Math.round(100 * (v - domain[0]) / (domain[1] - domain[0])));
   const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
   return {
     percent,
     unpercent,
     domain,
     format: (v) => isNaN(v) ? '' : col.getFormatter()(new Date(v)),
+    formatRaw: String,
+    parseRaw: (v) => Number.parseInt(v, 10),
     setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
       filterMissing,
-      min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : shiftFilterDateDay(minValue, 'min'),
-      max: Math.abs(maxValue - domain[1]) < 0.001 ? NaN : shiftFilterDateDay(maxValue, 'max')
+      min: Math.abs(minValue - domain[0]) < 0.001 ? Number.NEGATIVE_INFINITY : shiftFilterDateDay(minValue, 'min'),
+      max: Math.abs(maxValue - domain[1]) < 0.001 ? Number.POSITIVE_INFINITY : shiftFilterDateDay(maxValue, 'max')
     }),
     edit: (value, attachment, type) => {
       return new Promise((resolve) => {
         const dialogCtx = {
           attachment,
           manager: context.dialogManager,
-          level: 1,
+          level: context.dialogManager.maxLevel + 1,
           idPrefix: context.idPrefix
         };
         const dialog = new InputDateDialog(dialogCtx, (d) => resolve(d == null ? NaN : shiftFilterDateDay(d.getTime(), type)), {value: isNaN(value) ? null : new Date(value)});

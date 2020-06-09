@@ -2,7 +2,7 @@ import {MIN_LABEL_WIDTH} from '../constants';
 import {equalArrays, dragAble, dropAble, hasDnDType, IDropResult} from '../internal';
 import {categoryOf, getSortType} from '../model';
 import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn, Column, ImpositionCompositeColumn, ImpositionCompositesColumn, createImpositionDesc, createImpositionsDesc, ImpositionBoxPlotColumn, createImpositionBoxPlotDesc, CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model';
-import {aria, cssClass} from '../styles';
+import {aria, cssClass, engineCssClass, RESIZE_ANIMATION_DURATION, RESIZE_SPACE} from '../styles';
 import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
 import {IRankingHeaderContext, IToolbarAction, IOnClickHandler} from './interfaces';
 import {getToolbar} from './toolbar';
@@ -31,9 +31,10 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   const node = ctx.document.createElement('section');
 
   const extra = options.extraPrefix ? (name: string) => `${cssClass(name)} ${cssClass(`${options.extraPrefix}-${name}`)}` : cssClass;
-
+  const summary = col.getMetaData().summary;
   node.innerHTML = `
     <div class="${extra('label')} ${cssClass('typed-icon')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
+    <div class="${extra('sublabel')}">${col.getWidth() < MIN_LABEL_WIDTH || !summary ? '&nbsp;' : summary}</div>
     <div class="${extra('toolbar')}"></div>
     <div class="${extra('spacing')}"></div>
     <div class="${extra('handle')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"></div>
@@ -41,7 +42,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
   // addTooltip(node, col);
 
-  createShortcutMenuItems(<HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0]!, options.level!, col, ctx);
+  createShortcutMenuItems(<HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0]!, options.level!, col, ctx, 'header');
 
   toggleToolbarIcons(node, col);
 
@@ -65,12 +66,39 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
   const label = <HTMLElement>node.getElementsByClassName(cssClass('label'))[0]!;
   label.innerHTML = col.getWidth() < minWidth ? '&nbsp;' : col.label;
-  node.title = col.description ? `${col.label}\n${col.description}` : col.label;
+  const summary = col.getMetaData().summary;
+  const sublabel = <HTMLElement>node.getElementsByClassName(cssClass('sublabel'))[0];
+  if (sublabel) {
+    sublabel.innerHTML = col.getWidth() < minWidth || !summary ? '&nbsp;' : summary;
+  }
+
+  let title = col.label;
+  if (summary) {
+    title = `${title}\n${summary}`;
+  }
+  if (col.description) {
+    title = `${title}\n${col.description}`;
+  }
+  node.title = title;
   node.dataset.colId = col.id;
   node.dataset.type = col.desc.type;
   label.dataset.typeCat = categoryOf(col).name;
 
   updateIconState(node, col);
+
+  updateMoreDialogIcons(node, col);
+}
+
+function updateMoreDialogIcons(node: HTMLElement, col: Column) {
+  const root = node.closest(`.${cssClass()}`);
+  if (!root) {
+    return;
+  }
+  const dialog = root.querySelector<HTMLElement>(`.${cssClass('more-options')}[data-col-id="${col.id}"]`);
+  if (!dialog) {
+    return;
+  }
+  updateIconState(dialog, col);
 }
 
 
@@ -88,7 +116,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sortgroup'))[0]!;
+  const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sort-groups'))[0]!;
   if (sortGroups) {
     const {asc, priority} = col.isGroupSortedByMe();
     sortGroups.dataset.sort = asc !== undefined ? asc : '';
@@ -134,9 +162,10 @@ export function actionCSSClass(title: string) {
   return `${cssClass('action')} ${cssClass(`action-${clean}`)}`;
 }
 
-function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean) {
+function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean, mode: 'header' | 'sidePanel') {
   return (action: IToolbarAction) => {
-    node.insertAdjacentHTML('beforeend', `<i data-a="${action.options.shortcut === 'only' ? 'o' : action.options.shortcut ? 's' : 'r'}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''}>${action.title}</span> </i>`);
+    const m = isActionMode(col, action, mode, 'shortcut') ? 'o' : isActionMode(col, action, mode, 'menu+shortcut') ? 's' : 'r';
+    node.insertAdjacentHTML('beforeend', `<i data-a="${m}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''}>${action.title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
@@ -152,12 +181,23 @@ export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
+function isActionMode(col: Column, d: IToolbarAction, mode: 'header' | 'sidePanel', value: 'menu' | 'menu+shortcut' | 'shortcut') {
+  const s = d.options.mode === undefined ? 'menu' : d.options.mode;
+  if (s === value) {
+    return true;
+  }
+  if (typeof s === 'function') {
+    return s(col, mode) === value;
+  }
+  return false;
+}
+
 /** @internal */
-export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, willAutoHide: boolean = true) {
-  const addIcon = addIconDOM(node, col, ctx, level, false);
+export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, mode: 'header' | 'sidePanel', willAutoHide: boolean = true) {
+  const addIcon = addIconDOM(node, col, ctx, level, false, mode);
   const toolbar = getToolbar(col, ctx);
-  const shortcuts = toolbar.filter((d) => d.options.shortcut);
-  const hybrids = shortcuts.reduce((a, b) => a + (b.options.shortcut === true ? 1 : 0), 0);
+  const shortcuts = toolbar.filter((d) => !isActionMode(col, d, mode, 'menu'));
+  const hybrids = shortcuts.reduce((a, b) => a + (isActionMode(col, b, mode, 'menu+shortcut') ? 1 : 0), 0);
 
   shortcuts.forEach(addIcon);
   const moreEntries = toolbar.length - shortcuts.length + hybrids;
@@ -173,15 +213,15 @@ export function createShortcutMenuItems(node: HTMLElement, level: number, col: C
   i.onclick = (evt) => {
     evt.stopPropagation();
     ctx.dialogManager.setHighlightColumn(col);
-    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, <any>evt), ctx);
+    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, <any>evt), mode, ctx);
     dialog.open();
   };
 }
 
 /** @internal */
-export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext) {
-  const addIcon = addIconDOM(node, col, ctx, level, true);
-  getToolbar(col, ctx).filter((d) => d.options.shortcut !== 'only').forEach(addIcon);
+export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, mode: 'header' | 'sidePanel') {
+  const addIcon = addIconDOM(node, col, ctx, level, true, mode);
+  getToolbar(col, ctx).filter((d) => !isActionMode(col, d, mode, 'shortcut')).forEach(addIcon);
 }
 
 /** @internal */
@@ -248,22 +288,30 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
  */
 export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
+  let sizeHelper: HTMLElement;
+  let currentFooterTransformation = '';
   const handle = <HTMLElement>node.getElementsByClassName(cssClass('handle'))[0];
 
 
   let start = 0;
+  let originalWidth = 0;
   const mouseMove = (evt: MouseEvent) => {
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
     const delta = end - start;
-    const width = Math.max(0, col.getWidth() + delta);
 
     if (Math.abs(start - end) < 2) {
       //ignore
       return;
     }
     start = end;
+    const width = Math.max(0, col.getWidth() + delta);
+
+    sizeHelper.classList.toggle(cssClass('resize-animated'), width < originalWidth);
+    // no idea why shifted by the size compared to the other footer element
+    sizeHelper.style.transform = `${currentFooterTransformation} translate(${width - originalWidth - RESIZE_SPACE}px, 0px)`;
+
     node.style.width = `${width}px`;
     col.setWidth(width);
     toggleToolbarIcons(node, col);
@@ -278,7 +326,11 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.removeEventListener('mousemove', mouseMove);
     ueberElement.removeEventListener('mouseup', mouseUp);
     ueberElement.removeEventListener('mouseleave', mouseUp);
+    ueberElement.classList.remove(cssClass('resizing'));
     node.style.width = null;
+    setTimeout(() => {
+      sizeHelper.classList.remove(cssClass('resizing'), cssClass('resize-animated'));
+    }, RESIZE_ANIMATION_DURATION * 1.2); // after animation ended
 
     if (Math.abs(start - end) < 2) {
       //ignore
@@ -294,11 +346,18 @@ export function dragWidth(col: Column, node: HTMLElement) {
     evt.preventDefault();
     node.classList.add(cssClass('change-width'));
 
+    originalWidth = col.getWidth();
     start = evt.clientX;
-    ueberElement = <HTMLElement>node.closest('header')!;
+    ueberElement = <HTMLElement>node.closest('body') || <HTMLElement>node.closest(`.${cssClass()}`)!; // take the whole body or root lineup
     ueberElement.addEventListener('mousemove', mouseMove);
     ueberElement.addEventListener('mouseup', mouseUp);
     ueberElement.addEventListener('mouseleave', mouseUp);
+    ueberElement.classList.add(cssClass('resizing'));
+
+    sizeHelper = <HTMLElement>node.closest(`.${engineCssClass()}`)!.querySelector<HTMLElement>(`.${cssClass('resize-helper')}`);
+    currentFooterTransformation = (<HTMLElement>sizeHelper.previousElementSibling!).style.transform!;
+    sizeHelper.style.transform = `${currentFooterTransformation} translate(${-RESIZE_SPACE}px, 0px)`;
+    sizeHelper.classList.add(cssClass('resizing'));
   };
   handle.onclick = (evt) => {
     // avoid resorting

@@ -1,4 +1,5 @@
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
+import APopup from './APopup';
 
 /** @internal */
 export interface IInputNumberOptions {
@@ -10,7 +11,7 @@ export interface IInputNumberOptions {
 }
 
 /** @internal */
-export default class InputNumberDialog extends ADialog {
+export default class InputNumberDialog extends APopup {
 
   private readonly ioptions: Readonly<IInputNumberOptions> = {
     min: NaN,
@@ -30,6 +31,7 @@ export default class InputNumberDialog extends ADialog {
     node.insertAdjacentHTML('beforeend', `
      <input type="number" value="${isNaN(o.value) ? '' : String(o.value)}" required autofocus placeholder="${o.label ? o.label : 'enter number'}" ${isNaN(o.min) ? '' : ` min="${o.min}"`} ${isNaN(o.max) ? '' : ` max="${o.max}"`} step="${o.step}">
     `);
+    this.enableLivePreviews('input');
   }
 
   submit() {

@@ -1,3 +1,4 @@
+import {cssClass} from '../styles';
 
 /** @internal */
 export interface IDragHandleOptions {
@@ -38,6 +39,8 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     minDelta: 2
   }, options);
 
+  let ueberElement: HTMLElement | null = null;
+
   // converts the given x coordinate to be relative to the given element
   const toContainerRelative = (x: number, elem: HTMLElement | SVGElement) => {
     const rect = elem.getBoundingClientRect();
@@ -73,9 +76,10 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     evt.preventDefault();
 
     const end = toContainerRelative(evt.clientX, o.container) - handleShift;
-    o.container.removeEventListener('mousemove', <any>mouseMove);
-    o.container.removeEventListener('mouseup', <any>mouseUp);
-    o.container.removeEventListener('mouseleave', <any>mouseUp);
+    ueberElement!.removeEventListener('mousemove', <any>mouseMove);
+    ueberElement!.removeEventListener('mouseup', <any>mouseUp);
+    ueberElement!.removeEventListener('mouseleave', <any>mouseUp);
+    ueberElement!.classList.remove(cssClass('dragging'));
 
     if (Math.abs(start - end) < 2) {
       //ignore
@@ -96,9 +100,11 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     start = last = toContainerRelative(evt.clientX, o.container) - handleShift;
 
     // register other event listeners
-    o.container.addEventListener('mousemove', <any>mouseMove);
-    o.container.addEventListener('mouseup', <any>mouseUp);
-    o.container.addEventListener('mouseleave', <any>mouseUp);
+    ueberElement = <HTMLElement>handle.closest('body') || <HTMLElement>handle.closest(`.${cssClass()}`)!; // take the whole body or root lineup
+    ueberElement.addEventListener('mousemove', <any>mouseMove);
+    ueberElement.addEventListener('mouseup', <any>mouseUp);
+    ueberElement.addEventListener('mouseleave', <any>mouseUp);
+    ueberElement.classList.add(cssClass('dragging'));
 
     o.onStart(handle, start, 0, evt);
   };

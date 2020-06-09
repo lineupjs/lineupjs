@@ -102,6 +102,10 @@
     float: right;
     color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
   }
+
+  &[title=Remove] {
+    color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
+  }
 }
 
 .#{$lu_css_prefix}-dialog-sub-nested {
@@ -167,7 +171,9 @@
 }
 
 .#{$lu_css_prefix}-dialog-color {
-  width: 15em;
+  width: 17em;
+  display: flex;
+  flex-direction: column;
 
   > strong[data-toggle] {
     cursor: pointer;

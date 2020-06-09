@@ -3,7 +3,7 @@ import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow, ITypeFactory} from './interfaces';
-import {patternFunction} from './internal';
+import {patternFunction, integrateDefaults} from './internal';
 import {EAlignment} from './StringColumn';
 import {IEventListener} from '../internal';
 import LinkColumn, {ILink, ILinkDesc} from './LinkColumn';
@@ -17,7 +17,7 @@ export declare type ILinksColumnDesc = ILinkDesc & IArrayColumnDesc<string | ILi
  */
 export declare function patternChanged_LCS(previous: string, current: string): void;
 
-@toolbar('search', 'editPattern')
+@toolbar('rename', 'search', 'editPattern')
 export default class LinksColumn extends ArrayColumn<string | ILink> {
   static readonly EVENT_PATTERN_CHANGED = LinkColumn.EVENT_PATTERN_CHANGED;
 
@@ -28,8 +28,9 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<ILinksColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200
+    }));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
     this.pattern = desc.pattern || '';

@@ -6,12 +6,13 @@ import {DataProvider} from '../provider';
 import {isSummaryGroup, groupEndLevel} from '../provider/internal';
 import {IImposer, IRenderContext} from '../renderer';
 import {chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer} from '../renderer/renderers';
-import {cssClass} from '../styles';
+import {cssClass, engineCssClass} from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import domElementCache from './domElementCache';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {EMode, IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import SlopeGraph from './SlopeGraph';
+import {ADialog} from './dialogs';
 
 /**
  * emitted when the highlight changes
@@ -21,8 +22,26 @@ import SlopeGraph from './SlopeGraph';
  */
 export declare function highlightChanged(dataIndex: number): void;
 
+/**
+ * emitted a dialog is opened
+ * @asMemberOf EngineRenderer
+ * @param dialog the opened dialog
+ * @event
+ */
+export declare function dialogOpenedER(dialog: ADialog): void;
+/**
+ * emitted a dialog is closed
+ * @asMemberOf EngineRenderer
+ * @param dialog the closed dialog
+ * @param action the action how the dialog was closed
+ * @event
+ */
+export declare function dialogClosedER(dialog: ADialog, action: 'cancel' | 'confirm'): void;
+
 export default class EngineRenderer extends AEventDispatcher {
   static readonly EVENT_HIGHLIGHT_CHANGED = EngineRanking.EVENT_HIGHLIGHT_CHANGED;
+  static readonly EVENT_DIALOG_OPENED = DialogManager.EVENT_DIALOG_OPENED;
+  static readonly EVENT_DIALOG_CLOSED = DialogManager.EVENT_DIALOG_CLOSED;
 
   protected readonly options: Readonly<ILineUpOptions>;
 
@@ -48,7 +67,12 @@ export default class EngineRenderer extends AEventDispatcher {
     this.node.classList.toggle(cssClass('whole-hover'), options.expandLineOnHover);
     parent.appendChild(this.node);
 
-    const dialogManager = new DialogManager(parent.ownerDocument!);
+    const dialogManager = new DialogManager({
+      doc: parent.ownerDocument!,
+      livePreviews: options.livePreviews,
+      onDialogBackgroundClick: options.onDialogBackgroundClick,
+    });
+    this.forward(dialogManager, ...suffix('.main', EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED));
 
     parent.appendChild(dialogManager.node);
     this.ctx = {
@@ -57,7 +81,8 @@ export default class EngineRenderer extends AEventDispatcher {
       provider: data,
       tasks: data.getTaskExecutor(),
       dialogManager,
-      toolbar: this.options.toolbar,
+      resolveToolbarActions: (col, keys) => this.options.resolveToolbarActions(col, keys, this.options.toolbarActions),
+      resolveToolbarDialogAddons: (col, keys) => this.options.resolveToolbarDialogAddons(col, keys, this.options.toolbarDialogAddons),
       flags: <ILineUpFlags>this.options.flags,
       asElement: domElementCache(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {
@@ -89,10 +114,22 @@ export default class EngineRenderer extends AEventDispatcher {
         };
       },
       getPossibleRenderer: (col: Column) => getPossibleRenderer(col, this.options.renderers, this.options.canRender),
-      colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth()
+      colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth(),
+      caches: {
+        toolbar: new Map(),
+        toolbarAddons: new Map()
+      }
     };
 
     this.table = new MultiTableRowRenderer(this.node, this.idPrefix);
+
+    {
+      // helper object for better resizing experience
+      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`)!;
+      const copy = <HTMLElement>footer.cloneNode(true);
+      copy.classList.add(cssClass('resize-helper'));
+      footer!.insertAdjacentElement('afterend', copy);
+    }
 
     //apply rules
     {
@@ -174,10 +211,12 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([EngineRenderer.EVENT_HIGHLIGHT_CHANGED]);
+    return super.createEventList().concat([EngineRenderer.EVENT_HIGHLIGHT_CHANGED, EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED]);
   }
 
   on(type: typeof EngineRenderer.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  on(type: typeof EngineRenderer.EVENT_DIALOG_OPENED, listener: typeof dialogOpenedER | null): this;
+  on(type: typeof EngineRenderer.EVENT_DIALOG_CLOSED, listener: typeof dialogClosedER | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);

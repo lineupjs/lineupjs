@@ -252,7 +252,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
         console.warn('invalid column type in column dump using column', d);
         return new Column(d.id || '', desc);
       }
-      const c = new type('', desc, factory);
+      const c = this.instantiateColumn(type, '', desc, this.typeFactory);
       c.restore(d, factory);
       return c;
     });
@@ -260,6 +260,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     factory.mappingFunction = createMappingFunction(this.mappingFunctionTypes);
     factory.categoricalColorMappingFunction = restoreCategoricalColorMapping;
     return factory;
+  }
+
+  getTypeFactory() {
+    return this.typeFactory;
   }
 
   /**
@@ -551,9 +555,13 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
     if (type) {
-      return new type(this.nextId(), desc, this.typeFactory);
+      return this.instantiateColumn(type, this.nextId(), desc, this.typeFactory);
     }
     return null;
+  }
+
+  protected instantiateColumn(type: IColumnConstructor, id: string, desc: IColumnDesc, typeFactory: ITypeFactory) {
+    return new type(id, desc, typeFactory);
   }
 
   /**

@@ -5,14 +5,18 @@
   margin-bottom: 15px;
   border-bottom: 1px solid black;
 
-  &.#{$engine_css_prefix}-frozen::before {
+  &.#{$engine_css_prefix}-frozen {
+    position: sticky;
+  }
+
+  &.#{$engine_css_prefix}-shifted.#{$engine_css_prefix}-frozen::before {
     /**
     add a dummy white blocker for the margin-bottom
      */
     content: '';
     position: absolute;
     left: 0;
-    width: 100%;
+    right: -$lu-engine_grip_gap;
     height: 15px;
     bottom: -16px;
     background: white;
@@ -37,6 +41,16 @@
   padding-left: 0.8em;
   margin-right: $lu-engine_grip_gap;
   font-weight: 500;
+}
+
+.#{$lu_css_prefix}-th-sublabel {
+  text-align: center;
+  margin-right: $lu-engine_grip_gap;
+  display: none;
+}
+
+.#{$lu_css_prefix}-show-sublabel > .#{$lu_css_prefix}-header > .#{$lu_css_prefix}-sublabel {
+  display: unset;
 }
 
 .#{$lu_css_prefix}-th-summary {
@@ -86,6 +100,14 @@
   &:hover {
     background-color: $lu_hover_color;
   }
+}
+
+.#{$lu_css_prefix}-resizing {
+  cursor: col-resize !important;
+}
+
+.#{$lu_css_prefix}-dragging {
+  cursor: ew-resize !important;
 }
 
 // FIXME

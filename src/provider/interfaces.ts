@@ -1,4 +1,4 @@
-import {Column, Ranking, IColumnConstructor, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState, INumberColumn, IColorMappingFunctionConstructor, IMappingFunctionConstructor, IColumnDesc} from '../model';
+import {Column, Ranking, IColumnConstructor, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState, IColorMappingFunctionConstructor, IMappingFunctionConstructor, ITypeFactory, INumberColumn} from '../model';
 import {AEventDispatcher, ISequence} from '../internal';
 import {IRenderTasks} from '../renderer';
 import {IAbortAblePromise} from 'lineupengine';
@@ -12,7 +12,6 @@ export interface IDataProviderOptions {
   columnTypes: {[columnType: string]: IColumnConstructor};
   colorMappingFunctionTypes: {[colorMappingFunctionType: string]: IColorMappingFunctionConstructor};
   mappingFunctionTypes: {[mappingFunctionType: string]: IMappingFunctionConstructor};
-
 
   /**
    * allow just single selected rows
@@ -39,6 +38,8 @@ export interface IDataProvider extends AEventDispatcher {
   getTotalNumberOfRows(): number;
 
   getTaskExecutor(): IRenderTasks;
+
+  getTypeFactory(): ITypeFactory;
 
   takeSnapshot(col: Column): void;
 
@@ -144,7 +145,7 @@ export interface IDeriveOptions {
    * date pattern to check for string matching them
    * @default %x
    */
-  datePattern: string;
+  datePattern: string | string[];
 }
 
 

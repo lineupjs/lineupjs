@@ -48,3 +48,28 @@ export function concat<T>(arrs: (T[] | T)[]): T[] {
   }
   return r;
 }
+
+
+/**
+ * generates a label for the given sort method
+ * @internal
+ * @param method sort method
+ */
+export function getSortLabel(method: string) {
+  switch (method) {
+    case 'min':
+      return 'Mininum';
+    case 'max':
+      return 'Maximum';
+    case 'median':
+      return 'Median';
+    case 'mean':
+      return 'Mean';
+    case 'q1':
+      return '25% Quantile';
+    case 'q3':
+      return '75% Quantile';
+    default:
+      return String(method);
+  }
+}

@@ -2,6 +2,7 @@ import {Category} from './annotations';
 import {IKeyValue, IMapColumn} from './IArrayColumn';
 import {IDataRow, IValueColumnDesc} from './interfaces';
 import ValueColumn from './ValueColumn';
+import {integrateDefaults} from './internal';
 
 export interface IMapColumnDesc<T> extends IValueColumnDesc<IKeyValue<T>[]> {
   // dummy
@@ -11,8 +12,9 @@ export interface IMapColumnDesc<T> extends IValueColumnDesc<IKeyValue<T>[]> {
 export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements IMapColumn<T> {
 
   constructor(id: string, desc: Readonly<IMapColumnDesc<T>>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200
+    }));
   }
 
   getValue(row: IDataRow) {

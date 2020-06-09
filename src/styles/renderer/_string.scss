@@ -6,6 +6,7 @@
 }
 
 .#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-string,
+.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-link,
 .#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-date {
   display: block;
   overflow: hidden;

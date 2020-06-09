@@ -2,17 +2,18 @@ import {Column, INumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup} from '
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
-import {IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {IRenderContext, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingValue, renderMissingDOM} from './missing';
 import {noop, wideEnough} from './utils';
 import {GUESSED_ROW_HEIGHT} from '../constants';
+import {getSortLabel} from '../internal';
 
 
 /** @internal */
 export default class HeatmapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Heatmap';
+  readonly title: string = 'Heatmap';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return isNumbersColumn(col) && Boolean(col.dataLength);
   }
 
@@ -35,15 +36,15 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
       template: `<canvas height="${GUESSED_ROW_HEIGHT}" title=""></canvas>`,
       render,
       width,
-      mover: (n: HTMLElement, values: string[]) => (evt: MouseEvent) => {
+      mover: (n: HTMLElement, values: string[], prefix?: string) => (evt: MouseEvent) => {
         const percent = evt.offsetX / width;
         const index = Math.max(0, Math.min(col.dataLength! - 1, Math.floor(percent * (col.dataLength! - 1) + 0.5)));
-        n.title = `${labels[index]}: ${values[index]}`;
+        n.title = `${prefix || ''}${labels[index]}: ${values[index]}`;
       }
     };
   }
 
-  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer) {
+  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer): ICellRenderer {
     const {template, render, mover, width} = this.createContext(col, context, imposer);
 
     return {
@@ -66,7 +67,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer) {
+  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const {template, render, mover, width} = this.createContext(col, context, imposer);
     const formatter = col.getNumberFormat();
 
@@ -80,7 +81,14 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
           const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
           ctx.canvas.width = width;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-          n.onmousemove = mover(n, data.raw.map(formatter));
+
+          const isMissing = !data || data.normalized.length === 0 || data.normalized.every((v) => Number.isNaN(v));
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
+
+          n.onmousemove = mover(n, data.raw.map(formatter), `${getSortLabel(col.getSortMethod())} `);
           n.onmouseleave = () => n.title = '';
           render(ctx, data.normalized, data.row!, GUESSED_ROW_HEIGHT);
         });
@@ -88,7 +96,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumbersColumn) {
+  createSummary(col: INumbersColumn): ISummaryRenderer {
     let labels = col.labels.slice();
     while (labels.length > 0 && !wideEnough(col, labels.length)) {
       labels = labels.filter((_, i) => i % 2 === 0); // even

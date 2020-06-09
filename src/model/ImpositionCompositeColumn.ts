@@ -8,6 +8,7 @@ import NumberColumn from './NumberColumn';
 import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
 import {ScaleMappingFunction} from './MappingFunction';
 import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
+import {integrateDefaults} from './internal';
 
 
 /**
@@ -36,18 +37,18 @@ export declare function colorMappingChanged_ICC(previous: IColorMappingFunction,
 /**
  * implementation of a combine column, standard operations how to select
  */
-@toolbar('filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterNumber', 'colorMapped', 'editMapping')
 @SortByDefault('descending')
 export default class ImpositionCompositeColumn extends CompositeColumn implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
-    super(id, desc);
-
-    this.setDefaultRenderer('number');
-    this.setDefaultGroupRenderer('boxplot');
-    this.setDefaultSummaryRenderer('histogram');
+    super(id, integrateDefaults(desc, {
+      renderer: 'number',
+      groupRenderer: 'boxplot',
+      summaryRenderer: 'histogram'
+    }));
   }
 
   get label() {

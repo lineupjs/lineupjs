@@ -1,37 +1,48 @@
-import {IMapAbleColumn} from '../../model';
-import {ISummaryRenderer} from '../../renderer';
-import {cssClass, engineCssClass} from '../../styles';
+import {IMapAbleColumn, INumberFilter} from '../../model';
+import {createNumberFilter} from '../../renderer/HistogramCellRenderer';
+import {cssClass} from '../../styles';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 
 /** @internal */
 export default class NumberFilterDialog extends ADialog {
-  private readonly summary: ISummaryRenderer;
+  private readonly before: INumberFilter;
+  private handler: {reset: () => void, submit: () => void, cleanUp: () => void} | null = null;
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'filter',
+      cancelSubDialogs: true,
+    });
 
-    this.summary = ctx.summaryRenderer(this.column, true);
+    this.before = column.getFilter();
   }
 
   build(node: HTMLElement) {
     node.classList.add(cssClass('dialog-mapper'));
 
-    // patch in lu-summary and renderer
-    const summary = this.ctx.asElement(this.summary.template);
-    summary.classList.add(cssClass('summary'), cssClass('renderer'));
-    summary.dataset.renderer = this.column.getSummaryRenderer();
-    summary.dataset.interactive = '';
-    node.appendChild(summary);
+    this.handler = createNumberFilter(this.column, node, {
+      dialogManager: this.ctx.dialogManager,
+      idPrefix: this.ctx.idPrefix,
+      tasks: this.ctx.provider.getTaskExecutor(),
+    }, this.showLivePreviews());
+  }
 
-    const summaryNode = <HTMLElement>this.node.getElementsByClassName(cssClass('summary'))[0]!;
-    const r = this.summary.update(summaryNode);
-    if (!r) {
-      return;
-    }
-    summaryNode.classList.add(engineCssClass('loading'));
-    r.then(() => {
-      summaryNode.classList.remove(engineCssClass('loading'));
-    });
+  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+    super.cleanUp(action);
+    this.handler!.cleanUp();
+  }
+
+  protected reset() {
+    this.handler!.reset();
+  }
+
+  protected submit() {
+    this.handler!.submit();
+    return true;
+  }
+
+  protected cancel() {
+    this.column.setFilter(this.before);
   }
 }

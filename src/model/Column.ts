@@ -136,6 +136,7 @@ export default class Column extends AEventDispatcher {
 
     this.metadata = {
       label: desc.label || this.id,
+      summary: desc.summary || '',
       description: desc.description || ''
     };
   }
@@ -252,13 +253,14 @@ export default class Column extends AEventDispatcher {
   }
 
   setMetaData(value: Readonly<IColumnMetaData>) {
-    if (value.label === this.label && this.description === value.description) {
+    if (value.label === this.label && this.description === value.description && this.metadata.summary === value.summary) {
       return;
     }
     const bak = this.getMetaData();
     //copy to avoid reference
     this.metadata = {
       label: value.label,
+      summary: value.summary,
       description: value.description
     };
 
@@ -420,6 +422,9 @@ export default class Column extends AEventDispatcher {
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
     }
+    if (this.metadata.summary) {
+      r.summary = this.metadata.summary;
+    }
     if (this.getRenderer() !== this.desc.type) {
       r.renderer = this.getRenderer();
     }
@@ -441,6 +446,7 @@ export default class Column extends AEventDispatcher {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
+      summary: dump.summary || '',
       description: this.description
     };
     if (dump.renderer || dump.rendererType) {
@@ -560,13 +566,6 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderer, this.renderer = renderer);
   }
 
-  protected setDefaultRenderer(renderer: string) {
-    if (this.renderer !== this.desc.type || this.desc.renderer) {
-      return;
-    }
-    return this.setRenderer(renderer);
-  }
-
   setGroupRenderer(renderer: string) {
     if (renderer === this.groupRenderer) {
       // nothing changes
@@ -575,33 +574,12 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.groupRenderer, this.groupRenderer = renderer);
   }
 
-  protected setDefaultGroupRenderer(renderer: string) {
-    if (this.groupRenderer !== this.desc.type || this.desc.groupRenderer) {
-      return;
-    }
-    return this.setGroupRenderer(renderer);
-  }
-
   setSummaryRenderer(renderer: string) {
     if (renderer === this.summaryRenderer) {
       // nothing changes
       return;
     }
     this.fire([Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.summaryRenderer, this.summaryRenderer = renderer);
-  }
-
-  protected setDefaultSummaryRenderer(renderer: string) {
-    if (this.summaryRenderer !== this.desc.type || this.desc.summaryRenderer) {
-      return;
-    }
-    return this.setSummaryRenderer(renderer);
-  }
-
-  protected setDefaultWidth(width: number) {
-    if (this.width !== 100 || this.desc.width) {
-      return;
-    }
-    return this.setWidthImpl(width);
   }
 
   /**

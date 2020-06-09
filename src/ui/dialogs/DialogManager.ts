@@ -1,8 +1,30 @@
 import ADialog from './ADialog';
 import Column from '../../model';
 import {cssClass} from '../../styles';
+import {ILivePreviewOptions} from '../../config';
+import {AEventDispatcher, IEventListener} from '../../internal';
 
-export default class DialogManager {
+/**
+ * emitted a dialog is opened
+ * @asMemberOf DialogManager
+ * @param dialog the opened dialog
+ * @event
+ */
+export declare function dialogOpened(dialog: ADialog): void;
+
+/**
+ * emitted a dialog is closed
+ * @asMemberOf DialogManager
+ * @param dialog the closed dialog
+ * @param action the action how the dialog was closed
+ * @event
+ */
+export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confirm'): void;
+
+
+export default class DialogManager extends AEventDispatcher {
+  static readonly EVENT_DIALOG_OPENED = 'dialogOpened';
+  static readonly EVENT_DIALOG_CLOSED = 'dialogClosed';
 
   private readonly escKeyListener = (evt: KeyboardEvent) => {
     if (evt.which === 27) {
@@ -12,8 +34,14 @@ export default class DialogManager {
 
   private readonly openDialogs: ADialog[] = [];
   readonly node: HTMLElement;
+  readonly livePreviews: Partial<ILivePreviewOptions>;
+  readonly onDialogBackgroundClick: 'cancel' | 'confirm';
 
-  constructor(doc = document) {
+  constructor(options: {doc: Document, livePreviews: Partial<ILivePreviewOptions>, onDialogBackgroundClick: 'cancel' | 'confirm'}) {
+    super();
+    const doc = options.doc;
+    this.livePreviews = options.livePreviews;
+    this.onDialogBackgroundClick = options.onDialogBackgroundClick;
     this.node = doc.createElement('div');
     this.node.classList.add(cssClass('backdrop'));
     this.node.innerHTML = `<div class="${cssClass('backdrop-bg')}"></div>`;
@@ -22,7 +50,23 @@ export default class DialogManager {
     };
   }
 
-  setHighlight(mask: { left: number, top: number, width: number, height: number }) {
+  protected createEventList() {
+    return super.createEventList().concat([DialogManager.EVENT_DIALOG_CLOSED, DialogManager.EVENT_DIALOG_OPENED]);
+  }
+
+  on(type: typeof DialogManager.EVENT_DIALOG_OPENED, listener: typeof dialogOpened | null): this;
+  on(type: typeof DialogManager.EVENT_DIALOG_CLOSED, listener: typeof dialogClosed | null): this;
+  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  on(type: string | string[], listener: IEventListener | null): this {
+    return super.on(type, listener);
+  }
+
+  get maxLevel() {
+    return this.openDialogs.reduce((acc, a) => Math.max(acc, a.level), 0);
+  }
+
+
+  setHighlight(mask: {left: number, top: number, width: number, height: number}) {
     const area = <HTMLElement>this.node.firstElementChild;
     // @see http://bennettfeely.com/clippy/ -> select `Frame` example
     // use webkit prefix for safari
@@ -78,18 +122,26 @@ export default class DialogManager {
       return;
     }
     const all = this.openDialogs.splice(0, this.openDialogs.length);
-    all.forEach((d) => d.destroy());
+    all.reverse().forEach((d) => d.cleanUp(this.onDialogBackgroundClick));
     this.takeDown();
   }
 
-  remove(dialog: ADialog) {
+  triggerDialogClosed(dialog: ADialog, action: 'cancel' | 'confirm') {
+    this.fire(DialogManager.EVENT_DIALOG_CLOSED, dialog, action);
+  }
+
+  remove(dialog: ADialog, handled = false) {
     const index = this.openDialogs.indexOf(dialog);
     if (index < 0) {
       return false;
     }
     // destroy self and all levels below that = after that
     const destroyed = this.openDialogs.splice(index, this.openDialogs.length - index);
-    destroyed.reverse().forEach((d) => d.destroy());
+    destroyed.reverse().forEach((d) => d.cleanUp(handled ? 'handled' : this.onDialogBackgroundClick));
+    while (handled && this.openDialogs.length > 0 && this.openDialogs[this.openDialogs.length - 1].autoClose) {
+      const dialog = this.openDialogs.pop()!;
+      dialog.cleanUp(this.onDialogBackgroundClick);
+    }
 
     if (this.openDialogs.length === 0) {
       this.takeDown();
@@ -132,5 +184,6 @@ export default class DialogManager {
     }
 
     this.openDialogs.push(dialog);
+    this.fire(DialogManager.EVENT_DIALOG_OPENED, dialog);
   }
 }

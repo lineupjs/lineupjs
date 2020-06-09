@@ -1,20 +1,20 @@
 import {round} from '../internal';
 import {Column, IMapColumn, IMapAbleColumn, isMapAbleColumn, isMapColumn, IDataRow, isNumberColumn, INumberColumn} from '../model';
 import {colorOf} from './impose';
-import {ICellRendererFactory, IImposer, IRenderContext, ERenderMode} from './interfaces';
+import {ICellRendererFactory, IImposer, IRenderContext, ERenderMode, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noRenderer} from './utils';
 import {cssClass} from '../styles';
 
 /** @internal */
 export default class MapBarCellRenderer implements ICellRendererFactory {
-  readonly title = 'Bar Table';
+  readonly title: string = 'Bar Table';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));
   }
 
-  create(col: IMapColumn<number> & INumberColumn, _context: IRenderContext, imposer?: IImposer) {
+  create(col: IMapColumn<number> & INumberColumn, _context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const formatter = col.getNumberFormat();
 
     return {
@@ -39,11 +39,11 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup() {
+  createGroup(): IGroupCellRenderer {
     return noRenderer;
   }
 
-  createSummary(col: IMapColumn<number> & IMapAbleColumn) {
+  createSummary(col: IMapColumn<number> & IMapAbleColumn): ISummaryRenderer {
     return {
       template: `<div class="${cssClass('rtable')}"><div>Key</div><div><span></span><span></span>Value</div></div>`,
       update: (node: HTMLElement) => {

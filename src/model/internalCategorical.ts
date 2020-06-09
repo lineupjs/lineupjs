@@ -2,7 +2,7 @@ import {ISequence, isSeqEmpty, empty} from '../internal';
 import {FIRST_IS_MISSING, IDataRow, ECompareValueType, ICompareValue, ICategory, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter} from '.';
 import {colorPool} from './internal';
 import {DEFAULT_COLOR} from './interfaces';
-import {ICategoricalsColumn} from './ICategoricalColumn';
+import {ICategoricalsColumn, ISetCategoricalFilter} from './ICategoricalColumn';
 
 /** @internal */
 export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => DEFAULT_COLOR) {
@@ -100,16 +100,16 @@ export function toMostFrequentCategoricals(rows: ISequence<IDataRow>, col: ICate
 /** @internal */
 export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): ICompareValue[] {
   if (isSeqEmpty(rows)) {
-    return [NaN, 0];
+    return [NaN, null];
   }
   const mostFrequent = findMostFrequent(rows.map((d) => col.getCategory(d)), valueCache);
   if (mostFrequent.cat == null) {
-    return [NaN, 0];
+    return [NaN, null];
   }
-  return [mostFrequent.cat.value, mostFrequent.count];
+  return [mostFrequent.cat.value, mostFrequent.cat.name.toLowerCase()];
 }
 
-export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.COUNT];
+export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.STRING];
 
 /** @internal */
 function compareCategory(a: ICategory | null, b: ICategory | null) {
@@ -157,6 +157,16 @@ export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICateg
     return arrayEquals(<string[]>a.filter, <string[]>b.filter);
   }
   return String(a.filter) === String(b.filter);
+}
+
+/** @internal */
+export function isEqualSetCategoricalFilter(a: ISetCategoricalFilter | null, b: ISetCategoricalFilter | null) {
+  if (!isEqualCategoricalFilter(a, b)) {
+    return false;
+  }
+  const am = a && a.mode ? a.mode : 'every';
+  const bm = b && b.mode ? b.mode : 'every';
+  return am === bm;
 }
 
 function arrayEquals<T>(a: T[], b: T[]) {

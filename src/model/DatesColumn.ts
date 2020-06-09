@@ -9,7 +9,7 @@ import {IDataRow, ECompareValueType, ITypeFactory} from './interfaces';
 import {isMissingValue} from './missing';
 import DateColumn from './DateColumn';
 import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';
-import {chooseUIntByDataLength} from './internal';
+import {chooseUIntByDataLength, integrateDefaults} from './internal';
 
 export enum EDateSort {
   min = 'min',
@@ -37,7 +37,7 @@ export declare function sortMethodChanged_DCS(previous: EDateSort, current: EDat
  */
 export declare function filterChanged_DCS(previous: IDateFilter | null, current: IDateFilter | null): void;
 
-@toolbar('filterDate')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'filterDate')
 @dialogAddons('sort', 'sortDates')
 export default class DatesColumn extends ArrayColumn<Date | null> implements IDatesColumn {
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
@@ -49,14 +49,15 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   private currentFilter: IDateFilter = noDateFilter();
 
   constructor(id: string, desc: Readonly<IDatesColumnDesc>) {
-    super(id, desc);
+    super(id, integrateDefaults(desc, {
+      renderer: 'datehistogram',
+      groupRenderer: 'datehistogram',
+      summaryRenderer: 'datehistogram'
+    }));
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.format = (v) => (v instanceof Date) ? f(v) : '';
     this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.sort = desc.sort || EDateSort.median;
-    this.setDefaultRenderer('datehistogram');
-    this.setDefaultGroupRenderer('datehistogram');
-    this.setDefaultSummaryRenderer('datehistogram');
   }
 
   getFormatter() {

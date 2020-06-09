@@ -2,24 +2,24 @@ import {ICategoricalStatistics, round} from '../internal';
 import {CategoricalColumn, Column, OrdinalColumn, ICategoricalColumn, isCategoricalColumn, IOrderedGroup, ISetColumn, DEFAULT_COLOR} from '../model';
 import {filterMissingNumberMarkup} from '../ui/missing';
 import {interactiveHist, HasCategoricalFilter} from './CategoricalCellRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {noRenderer, adaptTextColorToBgColor} from './utils';
 import {cssClass, FILTERED_OPACITY} from '../styles';
 import {color} from 'd3-color';
 
 /** @internal */
 export default class CategoricalStackedDistributionlCellRenderer implements ICellRendererFactory {
-  readonly title = 'Distribution Bar';
+  readonly title: string = 'Distribution Bar';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isCategoricalColumn(col) && mode !== ERenderMode.CELL;
   }
 
-  create() {
+  create(): ICellRenderer {
     return noRenderer;
   }
 
-  createGroup(col: ICategoricalColumn, context: IRenderContext) {
+  createGroup(col: ICategoricalColumn, context: IRenderContext): IGroupCellRenderer {
     const {template, update} = stackedBar(col);
     return {
       template: `${template}</div>`,
@@ -28,15 +28,18 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
           if (typeof r === 'symbol') {
             return;
           }
-          const {group} = r;
-
-          update(n, group);
+          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
+          update(n, r.group);
         });
       }
     };
   }
 
-  createSummary(col: ICategoricalColumn, context: IRenderContext, interactive: boolean) {
+  createSummary(col: ICategoricalColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     return (col instanceof CategoricalColumn || col instanceof OrdinalColumn) ? interactiveSummary(col, context, interactive) : staticSummary(col, context);
   }
 }
@@ -50,13 +53,12 @@ function staticSummary(col: ICategoricalColumn, context: IRenderContext) {
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary, data} = r;
-
-        n.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
-        update(n, summary, data);
+        update(n, r.summary, r.data);
       });
     }
   };
@@ -80,8 +82,9 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
         const missing = interactive && data ? data.missing : (summary ? summary.missing : 0);
         filterUpdate(missing, col);
 
-        n.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
         update(n, summary, data);

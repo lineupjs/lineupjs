@@ -1,7 +1,7 @@
 import {IColumnDesc, Ranking} from '../model';
 import ADataProvider from './ADataProvider';
 import {IDataProviderDump, IDataProviderOptions} from './interfaces';
-import {isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter} from './accessor';
+import {isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter} from '../internal';
 
 
 function injectAccessor(d: any) {
@@ -66,8 +66,8 @@ abstract class ACommonDataProvider extends ADataProvider {
    * @param desc
    * @returns {string}
    */
-  toDescRef = (desc: any): any => {
-    return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : this.cleanDesc(Object.assign(desc));
+  toDescRef(desc: any): any {
+    return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : this.cleanDesc(Object.assign({}, desc));
   }
 
   fromDescRef = (descRef: any): any => {

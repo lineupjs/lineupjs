@@ -380,14 +380,18 @@ export default class LocalDataProvider extends ACommonDataProvider {
     });
   }
 
-  private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined) {
+  private sortGroups(groups: IOrderedGroup[], groupLookup: CompareLookup | undefined, enforceSorting: boolean) {
     // sort groups
     if (groupLookup) {
       const groupIndices = groups.map((_, i) => i);
       sortComplex(groupIndices, groupLookup.sortOrders);
       return groupIndices.map((i) => groups[i]);
     }
-    return groups.sort((a, b) => a.name.localeCompare(b.name));
+    if (enforceSorting) {
+      // create a default sorting
+      return groups.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return groups;
   }
 
   sort(ranking: Ranking, dirtyReason: EDirtyReason[]) {
@@ -451,8 +455,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return this.sortGroup(g, i, ranking, lookups, groupLookup, false, maxDataIndex);
     })).then((groups) => {
       // not required if: sort criteria changed -> groupLookup will be none
-      const sortedGroups = this.sortGroups(groups, groupLookup);
-      return index2pos(sortedGroups, maxDataIndex);
+      const sortedGroups = this.sortGroups(groups, groupLookup, needsGroupSorting);
+      return this.index2pos(sortedGroups, maxDataIndex);
     });
   }
 

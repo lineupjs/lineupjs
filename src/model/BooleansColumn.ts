@@ -6,8 +6,9 @@ import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunct
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
 import {IEventListener} from '../internal';
-import {chooseUIntByDataLength} from './internal';
+import {chooseUIntByDataLength, integrateDefaults} from './internal';
 import {toCategory} from './internalCategorical';
+import {toolbar} from './annotations';
 
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
@@ -19,15 +20,16 @@ export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
  */
 export declare function colorMappingChanged_BCS(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
 
-
+@toolbar('rename', 'clone', 'sort', 'sortBy')
 export default class BooleansColumn extends ArrayColumn<boolean> implements ISetColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   private colorMapping: ICategoricalColorMappingFunction;
 
   constructor(id: string, desc: Readonly<IBooleansColumnDesc>) {
-    super(id, desc);
-    this.setDefaultRenderer('upset');
+    super(id, integrateDefaults(desc, {
+      renderer: 'upset'
+    }));
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 

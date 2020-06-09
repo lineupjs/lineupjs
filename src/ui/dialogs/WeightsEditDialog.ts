@@ -10,11 +10,13 @@ export default class WeightsEditDialog extends ADialog {
   private readonly weights: number[];
 
   constructor(private readonly column: StackColumn, dialog: IDialogContext) {
-    super(dialog, {
-      fullDialog: true
-    });
+    super(dialog);
 
     this.weights = this.column.getWeights();
+  }
+
+  protected cancel() {
+    this.column.setWeights(this.weights.slice());
   }
 
   protected reset() {
@@ -24,7 +26,6 @@ export default class WeightsEditDialog extends ADialog {
       n.value = String(v);
       (<HTMLElement>n.nextElementSibling!.firstElementChild!).style.width = `${v}%`;
     });
-    this.column.setWeights(this.weights.slice().fill(weight));
   }
 
   protected build(node: HTMLElement) {

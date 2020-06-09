@@ -3,7 +3,7 @@ import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
 import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
 import {IDataRow, IGroup, IValueColumnDesc, DEFAULT_COLOR, ITypeFactory} from './interfaces';
-import {colorPool} from './internal';
+import {colorPool, integrateDefaults} from './internal';
 import {missingGroup} from './missing';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IEventListener} from '../internal';
@@ -52,7 +52,7 @@ export declare function cutOffChanged(previous: ICutOffNode, current: ICutOffNod
 /**
  * column for hierarchical categorical values
  */
-@toolbar('cutoff', 'group', 'groupBy', 'colorMappedCategorical')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'cutoff', 'group', 'groupBy', 'colorMappedCategorical')
 @Category('categorical')
 export default class HierarchyColumn extends ValueColumn<string> implements ICategoricalColumn {
   static readonly EVENT_CUTOFF_CHANGED = 'cutOffChanged';
@@ -70,14 +70,14 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   private colorMapping: ICategoricalColorMappingFunction;
 
   constructor(id: string, desc: Readonly<IHierarchyColumnDesc>) {
-    super(id, desc);
+    super(id, integrateDefaults(desc, {
+      renderer: 'categorical'
+    }));
     this.hierarchySeparator = desc.hierarchySeparator || '.';
     this.hierarchy = this.initHierarchy(desc.hierarchy);
     this.currentNode = this.hierarchy;
     this.currentLeaves = computeLeaves(this.currentNode, this.currentMaxDepth);
     this.updateCaches();
-
-    this.setDefaultRenderer('categorical');
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 

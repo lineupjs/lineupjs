@@ -3,7 +3,7 @@ import {ICategoricalStatistics, round} from '../internal';
 import {OrdinalColumn, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory, Column, CategoricalColumn, ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
-import {IRenderContext, ICellRendererFactory, ERenderMode} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ERenderMode, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {setText, wideEnough, forEach} from './utils';
 import {color} from 'd3-color';
@@ -13,14 +13,14 @@ export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | S
 
 /** @internal */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
-  readonly title = 'Color';
-  readonly groupTitle = 'Histogram';
+  readonly title: string = 'Color';
+  readonly groupTitle: string = 'Histogram';
 
-  canRender(col: Column, mode: ERenderMode) {
+  canRender(col: Column, mode: ERenderMode): boolean {
     return isCategoricalLikeColumn(col) && (mode !== ERenderMode.CELL || isCategoricalColumn(col));
   }
 
-  create(col: ICategoricalColumn, context: IRenderContext) {
+  create(col: ICategoricalColumn, context: IRenderContext): ICellRenderer {
     const width = context.colWidth(col);
     return {
       template: `<div>
@@ -43,23 +43,27 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ICategoricalLikeColumn, context: IRenderContext) {
+  createGroup(col: ICategoricalLikeColumn, context: IRenderContext): IGroupCellRenderer {
     const {template, update} = hist(col, false);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupCategoricalStats(col, group).then((data) => {
-          if (typeof data === 'symbol') {
+        return context.tasks.groupCategoricalStats(col, group).then((r) => {
+          if (typeof r === 'symbol') {
             return;
           }
-          const {group} = data;
-          update(n, group);
+          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
+          update(n, r.group);
         });
       }
     };
   }
 
-  createSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean) {
+  createSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     return (col instanceof CategoricalColumn || col instanceof OrdinalColumn || col instanceof SetColumn) ? interactiveSummary(col, context, interactive) : staticSummary(col, context, interactive);
   }
 }
@@ -73,12 +77,12 @@ function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, int
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary} = r;
-        n.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
-        update(n, summary);
+        update(n, r.summary);
       });
     }
   };
@@ -102,8 +106,9 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
         const {summary, data} = r;
         filterUpdate((interactive && data) ? data.missing : (summary ? summary.missing : 0), col);
 
-        n.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
+        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
           return;
         }
         update(n, summary, interactive ? data : undefined);
@@ -151,6 +156,20 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
   };
 }
 
+function setCategoricalFilter(col: HasCategoricalFilter, filter: string | RegExp | string[], filterMissing: boolean) {
+  if (col instanceof SetColumn) {
+    const f = col.getFilter();
+    const mode = f ? f.mode : undefined;
+    col.setFilter({
+      filter, filterMissing, mode
+    });
+  } else {
+    col.setFilter({
+      filter, filterMissing
+    });
+  }
+}
+
 /** @internal */
 export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
   const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
@@ -182,10 +201,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
         markFilter(bin, cat, false);
         const included = col.categories.slice();
         included.splice(i, 1);
-        col.setFilter({
-          filterMissing: old ? old.filterMissing : false,
-          filter: included.map((d) => d.name)
-        });
+        setCategoricalFilter(col, included.map((d) => d.name), old ? old.filterMissing : false);
         return;
       }
       const filter = old.filter.slice();
@@ -204,10 +220,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
         col.setFilter(null);
         return;
       }
-      col.setFilter({
-        filterMissing: old.filterMissing,
-        filter
-      });
+      setCategoricalFilter(col, filter, old.filterMissing);
     };
   });
 
@@ -220,12 +233,16 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
       const v = filterMissing.checked;
       const old = col.getFilter();
       if (old == null) {
-        col.setFilter(v ? {filterMissing: v, filter: col.categories.map((d) => d.name)} : null);
+        if (v) {
+          setCategoricalFilter(col, col.categories.map((d) => d.name), v);
+        } else {
+          col.setFilter(null);
+        }
       } else if (!v && Array.isArray(old.filter) && old.filter.length === col.categories.length) {
         // dummy
         col.setFilter(null);
       } else {
-        col.setFilter({filterMissing: v, filter: old.filter});
+        setCategoricalFilter(col, old.filter, v);
       }
     };
   }

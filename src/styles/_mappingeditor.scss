@@ -19,7 +19,6 @@
 }
 
 div.#{$lu_css_prefix}-dialog-mapper-script {
-  margin-top: 1em;
   display: none;
 
   textarea {
@@ -30,9 +29,31 @@ div.#{$lu_css_prefix}-dialog-mapper-script {
   }
 }
 
+.#{$lu_css_prefix}-dialog-mapper-domain,
+.#{$lu_css_prefix}-dialog-mapper-range {
+  transform: translate(0, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 14px;
+  border-bottom: 3px solid $lu_mapping_box;
+  padding: 0.4em 2px 20px;
+  text-align: center;
+}
+
+.#{$lu_css_prefix}-dialog-mapper-range {
+  padding: 20px 2px 0.4em;
+  transform: translate(0, -24px);
+  border-bottom: none;
+  border-top: 3px solid $lu_mapping_box;
+  justify-content: space-around;
+}
+
 svg.#{$lu_css_prefix}-dialog-mapper-details {
   shape-rendering: geometricprecision;
+  z-index: 1;
   height: 25em * 6 / 10;
+  background: transparent;
 
   rect {
     fill: transparent;
@@ -40,27 +61,21 @@ svg.#{$lu_css_prefix}-dialog-mapper-details {
   }
 
   line {
-    stroke: $lu_mapping_bg;
-    stroke-width: 1;
+    stroke: $lu_mapping_handle;
+    stroke-width: 0.8;
     stroke-linejoin: round;
     stroke-linecap: round;
-
-    &:not([x1]) {
-
-      // the horizontal lines
-      stroke-width: 1.5;
-    }
 
     &[data-v] {
       stroke-opacity: 0.5;
       stroke-width: 0.5;
-      stroke: $lu_toolbar_color_base2;
+      stroke: $lu_mapping_line;
       pointer-events: none;
     }
   }
 
   circle {
-    fill: $lu_mapping_circle;
+    fill: $lu_mapping_handle;
   }
 }
 
@@ -74,9 +89,11 @@ g.#{$lu_css_prefix}-dialog-mapper-mapping {
 
   &.#{$lu_css_prefix}-frozen circle:first-of-type {
     cursor: not-allowed;
-    fill: $lu_mapping_circle !important;
+    fill: $lu_mapping_handle !important;
+    transform: scale(0.4);
   }
 
+  &.#{$lu_css_prefix}-mapping-line-selected,
   &:hover {
     circle {
       fill: $lu_mapping_hover;
@@ -86,6 +103,29 @@ g.#{$lu_css_prefix}-dialog-mapper-mapping {
       stroke: $lu_mapping_hover;
     }
   }
+
+  &.#{$lu_css_prefix}-frozen > .#{$lu_css_prefix}-dialog-mapper-mapping-domain {
+    display: none;
+  }
+}
+
+.#{$lu_css_prefix}-dialog-mapper-mapping-domain {
+  pointer-events: none;
+  font-size: 4px;
+}
+
+.#{$lu_css_prefix}-dialog-mapper-mapping-range {
+  pointer-events: none;
+  font-size: 4px;
+  dominant-baseline: hanging;
+}
+
+.#{$lu_css_prefix}-dialog-mapper-mapping-right {
+  text-anchor: end;
+}
+
+.#{$lu_css_prefix}-dialog-mapper-mapping-middle {
+  text-anchor: middle;
 }
 
 .#{$lu_css_prefix}-dialog-mapper[data-scale=script] div.#{$lu_css_prefix}-dialog-mapper-script {

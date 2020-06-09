@@ -1,9 +1,10 @@
-import {StringColumn, Column, IDataRow, IOrderedGroup} from '../model';
+import {StringColumn, Column, IDataRow, IOrderedGroup, IStringFilter} from '../model';
 import {filterMissingMarkup, findFilterMissing} from '../ui/missing';
-import {IRenderContext, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {setText, exampleText} from './utils';
 import {cssClass} from '../styles';
+import {debounce} from '../internal';
 
 
 /**
@@ -12,13 +13,13 @@ import {cssClass} from '../styles';
  * @internal
  */
 export default class StringCellRenderer implements ICellRendererFactory {
-  readonly title = 'Default';
+  readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return col instanceof StringColumn;
   }
 
-  create(col: StringColumn) {
+  create(col: StringColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
       template: `<div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}> </div>`,
@@ -35,7 +36,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 
 
-  createGroup(col: StringColumn, context: IRenderContext) {
+  createGroup(col: StringColumn, context: IRenderContext): IGroupCellRenderer {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
@@ -43,6 +44,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
           if (typeof text === 'symbol') {
             return;
           }
+          n.classList.toggle(cssClass('missing'), !text);
           if (col.escape) {
             setText(n, text);
           } else {
@@ -61,24 +63,20 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
 
     const update = () => {
-      input.disabled = filterMissing.checked;
-      isRegex.disabled = filterMissing.checked;
-
-      if (filterMissing.checked) {
-        col.setFilter(StringColumn.FILTER_MISSING);
-        return;
-      }
       const valid = input.value.trim();
-      filterMissing.disabled = valid.length > 0;
       if (valid.length <= 0) {
-        col.setFilter(null);
+        col.setFilter({filter: null, filterMissing: filterMissing.checked});
         return;
       }
-      col.setFilter(isRegex.checked ? new RegExp(input.value) : input.value);
+      col.setFilter({
+        filter: isRegex.checked ? new RegExp(input.value) : input.value,
+        filterMissing: filterMissing.checked
+      });
     };
 
     filterMissing.onchange = update;
     input.onchange = update;
+    input.oninput = debounce(update, 100);
     isRegex.onchange = update;
     form.onsubmit = (evt) => {
       evt.preventDefault();
@@ -89,40 +87,31 @@ export default class StringCellRenderer implements ICellRendererFactory {
 
     return (actCol: StringColumn) => {
       col = actCol;
-      let bak = col.getFilter() || '';
-      const bakMissing = bak === StringColumn.FILTER_MISSING;
-      if (bakMissing) {
-        bak = '';
-      }
-      filterMissing.checked = bakMissing;
-      input.value = bak instanceof RegExp ? bak.source : bak;
+      const f = col.getFilter() || {filter: null, filterMissing: false};
+      const bak = f.filter;
+      filterMissing.checked = f.filterMissing;
+      input.value = bak instanceof RegExp ? bak.source : bak || '';
       isRegex.checked = bak instanceof RegExp;
-      filterMissing.disabled = input.value.trim().length > 0;
-      input.disabled = filterMissing.checked;
-      isRegex.disabled = filterMissing.checked;
     };
   }
 
-  createSummary(col: StringColumn, _context: IRenderContext, interactive: boolean) {
+  createSummary(col: StringColumn, _context: IRenderContext, interactive: boolean): ISummaryRenderer {
     if (!interactive) {
       return {
         template: `<div></div>`,
         update: (node: HTMLElement) => {
-          const filter = col.getFilter() || '';
+          const filter = col.getFilter();
           node.textContent = toString(filter);
         }
       };
     }
-    let bak = col.getFilter() || '';
-    const bakMissing = bak === StringColumn.FILTER_MISSING;
-    if (bakMissing) {
-      bak = '';
-    }
+    const f = col.getFilter() || {filter: null, filterMissing: false};
+    const bak = f.filter || '';
     let update: (col: StringColumn) => void;
     return {
       template: `<form><input type="text" placeholder="Filter ${col.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}">
           <label class="${cssClass('checkbox')}"><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>Use regular expressions</span></label>
-          ${filterMissingMarkup(bakMissing)}</form>`,
+          ${filterMissingMarkup(f.filterMissing)}</form>`,
       update: (node: HTMLElement) => {
         if (!update) {
           update = StringCellRenderer.interactiveSummary(col, node);
@@ -133,12 +122,12 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 }
 
-function toString(filter: null | string | RegExp) {
-  if (filter == null || filter === '' || filter === StringColumn.FILTER_MISSING) {
+function toString(filter: IStringFilter | null) {
+  if (filter == null || !filter.filter) {
     return '';
   }
-  if (filter instanceof RegExp) {
-    return filter.source;
+  if (filter.filter instanceof RegExp) {
+    return filter.filter.source;
   }
-  return String(filter);
+  return filter.filter;
 }

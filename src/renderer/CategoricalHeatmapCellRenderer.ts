@@ -1,16 +1,16 @@
 import {Column, ICategoricalsColumn, ICategory, IDataRow, IOrderedGroup, isCategoricalsColumn} from '../model';
 import {toMostFrequentCategoricals} from '../model/internalCategorical';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {ICellRendererFactory, IRenderContext} from './interfaces';
+import {ICellRendererFactory, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM, renderMissingValue} from './missing';
 import {noop, wideEnough} from './utils';
 import {GUESSED_ROW_HEIGHT} from '../constants';
 
 /** @internal */
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
-  readonly title = 'Heatmap';
+  readonly title: string = 'Heatmap';
 
-  canRender(col: Column) {
+  canRender(col: Column): boolean {
     return isCategoricalsColumn(col) && Boolean(col.dataLength);
   }
 
@@ -41,7 +41,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     };
   }
 
-  create(col: ICategoricalsColumn, context: IRenderContext) {
+  create(col: ICategoricalsColumn, context: IRenderContext): ICellRenderer {
     const {template, render, mover, width} = this.createContext(col, context);
 
     return {
@@ -64,7 +64,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     };
   }
 
-  createGroup(col: ICategoricalsColumn, context: IRenderContext) {
+  createGroup(col: ICategoricalsColumn, context: IRenderContext): IGroupCellRenderer {
     const {template, render, mover, width} = this.createContext(col, context);
 
     return {
@@ -77,6 +77,12 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
           const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
           ctx.canvas.width = width;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+          const isMissing = !data || data.length === 0 || data.every((d) => d == null);
+          n.classList.toggle(cssClass('missing'), isMissing);
+          if (isMissing) {
+            return;
+          }
           n.onmousemove = mover(n, data.map((d) => d ? d.label : 'missing'));
           n.onmouseleave = () => n.title = '';
           render(ctx, data, GUESSED_ROW_HEIGHT);
@@ -85,7 +91,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     };
   }
 
-  createSummary(col: ICategoricalsColumn) {
+  createSummary(col: ICategoricalsColumn): ISummaryRenderer {
     let labels = col.labels.slice();
     while (labels.length > 0 && !wideEnough(col, labels.length)) {
       labels = labels.filter((_, i) => i % 2 === 0); // even

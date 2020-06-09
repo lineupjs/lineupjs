@@ -3,7 +3,7 @@ import {DataProvider, LocalDataProvider, deriveColors, RemoteDataProvider, IRemo
 import {LineUp, Taggle} from '../ui';
 import ColumnBuilder from './column/ColumnBuilder';
 import LineUpBuilder from './LineUpBuilder';
-import RankingBuilder from './RankingBuilder';
+import {RankingBuilder} from './RankingBuilder';
 
 export * from './column';
 export * from './RankingBuilder';

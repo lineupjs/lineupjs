@@ -2,7 +2,7 @@ import {INumberBin, IStatistics} from '../internal';
 import {Column, CompositeNumberColumn, IDataRow, IOrderedGroup, INumberColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {getHistDOMRenderer} from './HistogramCellRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {createData} from './MultiLevelCellRenderer';
 import {colorOf, matchColumns, forEachChild} from './utils';
@@ -12,13 +12,13 @@ import {IHistogramLike} from './histogram';
 
 /** @internal */
 export default class InterleavingCellRenderer implements ICellRendererFactory {
-  readonly title = 'Interleaved';
+  readonly title: string = 'Interleaved';
 
   canRender(col: Column) {
     return col instanceof CompositeNumberColumn;
   }
 
-  create(col: CompositeNumberColumn, context: IRenderContext) {
+  create(col: CompositeNumberColumn, context: IRenderContext): ICellRenderer {
     const {cols} = createData(col, context, false, ERenderMode.CELL);
     const width = context.colWidth(col);
     return {
@@ -52,7 +52,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: CompositeNumberColumn, context: IRenderContext) {
+  createGroup(col: CompositeNumberColumn, context: IRenderContext): IGroupCellRenderer {
     const {cols} = createData(col, context, false, ERenderMode.GROUP);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
@@ -65,7 +65,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: CompositeNumberColumn, context: IRenderContext, _interactive: boolean) {
+  createSummary(col: CompositeNumberColumn, context: IRenderContext, _interactive: boolean): ISummaryRenderer {
     const cols = col.children;
     let acc = 0;
     const {template, render} = getHistDOMRenderer(col, {
