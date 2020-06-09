@@ -1,7 +1,6 @@
 import {ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {noop} from './utils';
 
-/** @internal */
 export default class LoadingCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Loading';
 
@@ -12,7 +11,7 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
   create() { // no typing because ICellRenderer would not be assignable to IGroupCellRenderer and ISummaryRenderer
     return {
       template: `<div>Loading &hellip;</div>`,
-      update: noop
+      update: <() => void>noop
     };
   }
 

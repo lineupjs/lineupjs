@@ -5,7 +5,6 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {forEachChild, noop, wideEnoughCat} from './utils';
 import {round} from '../internal';
 
-/** @internal */
 export default class SetCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Matrix';
 
