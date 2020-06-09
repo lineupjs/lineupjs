@@ -5,7 +5,6 @@ import {noop, noRenderer, setText, exampleText} from './utils';
 import {chooseAggregatedDate} from '../model/internalDate';
 import {cssClass} from '../styles';
 
-/** @internal */
 export default class DateCellRenderer implements ICellRendererFactory {
   title: string = 'Date';
   groupTitle: string = 'Date';

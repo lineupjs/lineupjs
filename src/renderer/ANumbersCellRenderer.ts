@@ -3,7 +3,6 @@ import {IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer} from './int
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {ISequence, boxplotBuilder, getSortLabel} from '../internal';
 
-/** @internal */
 export abstract class ANumbersCellRenderer {
   abstract readonly title: string;
 

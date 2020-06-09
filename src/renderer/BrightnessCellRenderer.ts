@@ -6,7 +6,6 @@ import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRender
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 
-/** @internal */
 export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColumn, imposer?: IImposer) {
   if (v == null || isNaN(v)) {
     v = 1; // max = brightest
@@ -29,7 +28,6 @@ export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColu
   return valueColor;
 }
 
-/** @internal */
 export default class BrightnessCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Brightness';
 
