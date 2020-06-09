@@ -64,7 +64,8 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const update = () => {
       const valid = input.value.trim();
       if (valid.length <= 0) {
-        col.setFilter({filter: null, filterMissing: filterMissing.checked});
+        const filter = filterMissing.checked ? {filter: null, filterMissing: filterMissing.checked} : null;
+        col.setFilter(filter);
         return;
       }
       col.setFilter({
