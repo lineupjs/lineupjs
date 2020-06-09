@@ -63,7 +63,7 @@
     font-size: 8pt;
   }
 
-  .#{$lu_css_prefix}-checkbox > span {
+  .#{$lu_css_prefix}-checkbox:not(.#{$lu_css_prefix}-dialog-filter-table-entry) > span {
     font-weight: normal;
     align-items: center;
     margin: 5px 0;
