@@ -121,7 +121,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
             if (ci < cols.length - 1) {
               const span = cnode.querySelector('span');
               if (span) {
-                span.style.overflowX = 'hidden';
+                span.style.overflow = 'hidden';
               }
             }
           }
