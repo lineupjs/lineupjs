@@ -3,6 +3,7 @@ import {isNumberColumn, isSupportType} from '../model';
 import {default as Column, IColumnDesc} from '../model/Column';
 import {colorPool} from '../model/internal';
 import Ranking from '../model/Ranking';
+import {resolveValue} from '../internal/accessor';
 
 
 export interface IDeriveOptions {
@@ -37,7 +38,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
   };
   if (typeof value === 'number') {
     base.type = 'number';
-    base.domain = extent(data, (d) => d[column]);
+    base.domain = extent(data, (d) => resolveValue(d, column));
     return base;
   }
   if (value && value instanceof Date) {
@@ -50,7 +51,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
   }
   if (typeof value === 'string') {
     //maybe a categorical
-    const categories = new Set(data.map((d) => d[column]));
+    const categories = new Set(data.map((d) => resolveValue(d, column)));
     if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
       base.type = 'categorical';
       base.categories = cleanCategories(categories);
@@ -63,7 +64,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
     const vs = value[0];
     if (typeof vs === 'number') {
       base.type = 'numbers';
-      base.domain = extent((<number[]>[]).concat(...data.map((d) => d[column])));
+      base.domain = extent((<number[]>[]).concat(...data.map((d) => resolveValue(d, column))));
       return base;
     }
     if (vs && value instanceof Date) {
@@ -76,7 +77,7 @@ function deriveType(label: string, value: any, column: number | string, data: an
     }
     if (typeof value === 'string') {
       //maybe a categorical
-      const categories = new Set((<string[]>[]).concat(...data.map((d) => d[column])));
+      const categories = new Set((<string[]>[]).concat(...data.map((d) => resolveValue(d, column))));
       if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
         base.type = 'categoricals';
         base.categories = cleanCategories(categories);
@@ -106,7 +107,7 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
   }
   //objects
   const columns = config.columns.length > 0 ? config.columns : Object.keys(first);
-  return columns.map((key) => deriveType(key, first[key], key, data, config));
+  return columns.map((key) => deriveType(key, resolveValue(first, key), key, data, config));
 }
 
 
@@ -120,7 +121,7 @@ export function deriveColors(columns: IColumnDesc[]) {
   columns.forEach((col: any) => {
     switch (col.type) {
       case 'number':
-        col.color = col.color || colors() || Column.DEFAULT_COLOR;
+        col.colorMapping = col.colorMapping || col.color || colors() || Column.DEFAULT_COLOR;
         break;
     }
   });

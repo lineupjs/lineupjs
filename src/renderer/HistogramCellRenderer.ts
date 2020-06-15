@@ -1,5 +1,5 @@
 import {DENSE_HISTOGRAM} from '../config';
-import {computeStats, getNumberOfBins, INumberBin, IStatistics, round} from '../internal/math';
+import {computeStats, getNumberOfBins, INumberBin, IStatistics} from '../internal/math';
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
 import {
@@ -50,7 +50,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     const r = getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
 
     const staticHist = !interactive || !isMapAbleColumn(col);
-    return staticHist ? staticSummary(col, r.template, r.render) : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render);
+    return staticHist ? staticSummary(col, r.template, r.render) : interactiveSummary(<INumberColumn & IMapAbleColumn>col, context, r.template, r.render);
   }
 }
 
@@ -77,13 +77,14 @@ function staticSummary(col: INumberColumn, template: string, render: (n: HTMLEle
   };
 }
 
-function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void) {
+function interactiveSummary(col: INumberColumn & IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: {bins: number, max: number, hist: INumberBin[]}) => void) {
   const f = filter(col);
+  const formatter = col.getNumberFormat ? col.getNumberFormat() : DEFAULT_FORMATTER;
   template += `
       <div data-handle="min-hint" style="width: ${f.percent(f.filterMin)}%"></div>
       <div data-handle="max-hint" style="width: ${100 - f.percent(f.filterMax)}%"></div>
-      <div data-handle="min" data-value="${round(f.filterMin, 2)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or shift click to change"></div>
-      <div data-handle='max' data-value="${round(f.filterMax, 2)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or shift click to change"></div>
+      <div data-handle="min" data-value="${formatter(f.filterMin)}" style="left: ${f.percent(f.filterMin)}%" title="min filter, drag or shift click to change"></div>
+      <div data-handle='max' data-value="${formatter(f.filterMax)}" style="right: ${100 - f.percent(f.filterMax)}%" title="max filter, drag or shift click to change"></div>
       ${filterMissingNumberMarkup(f.filterMissing, 0, context.idPrefix)}
     `;
 
@@ -112,6 +113,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
   const minHint = <HTMLElement>node.querySelector('[data-handle=min-hint]');
   const maxHint = <HTMLElement>node.querySelector('[data-handle=max-hint]');
   const filterMissing = <HTMLInputElement>node.querySelector('input');
+  const formatter = col.getNumberFormat ? col.getNumberFormat() : DEFAULT_FORMATTER;
 
   const setFilter = () => {
     const f = filter(col);
@@ -143,7 +145,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
 
     const dialog = new InputNumberDialog(dialogCtx, (newValue) => {
       minHint.style.width = `${f.percent(newValue)}%`;
-      min.dataset.value = round(newValue, 2).toString();
+      min.dataset.value = formatter(newValue);
       min.style.left = `${f.percent(newValue)}%`;
       min.classList.toggle('lu-swap-hint', f.percent(newValue) > 15);
       setFilter();
@@ -172,7 +174,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
 
     const dialog = new InputNumberDialog(dialogCtx, (newValue) => {
       maxHint.style.width = `${100 - f.percent(newValue)}%`;
-      max.dataset.value = round(newValue, 2).toString();
+      max.dataset.value = formatter(newValue);
       max.style.right = `${100 - f.percent(newValue)}%`;
       min.classList.toggle('lu-swap-hint', f.percent(newValue) < 85);
       setFilter();
@@ -193,7 +195,7 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
       const px = Math.max(0, Math.min(x, total));
       const percent = Math.round(100 * px / total);
       const domain = col.getMapping().domain;
-      (<HTMLElement>handle).dataset.value = round(((percent / 100) * (domain[1] - domain[0]) + domain[0]), 2).toString();
+      (<HTMLElement>handle).dataset.value = formatter(((percent / 100) * (domain[1] - domain[0]) + domain[0]));
 
       if ((<HTMLElement>handle).dataset.handle === 'min') {
         handle.style.left = `${percent}%`;
@@ -218,8 +220,8 @@ function initFilter(node: HTMLElement, col: IMapAbleColumn, context: IRenderCont
     const f = filter(col);
     minHint.style.width = `${f.percent(f.filterMin)}%`;
     maxHint.style.width = `${100 - f.percent(f.filterMax)}%`;
-    min.dataset.value = round(f.filterMin, 2).toString();
-    max.dataset.value = round(f.filterMax, 2).toString();
+    min.dataset.value = formatter(f.filterMin);
+    max.dataset.value = formatter(f.filterMax);
     min.style.left = `${f.percent(f.filterMin)}%`;
     max.style.right = `${100 - f.percent(f.filterMax)}%`;
     filterMissing.checked = f.filterMissing;
@@ -244,6 +246,7 @@ function createHist(globalHist: IStatistics | null, guessedBins: number, rows: I
 
 export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn, imposer?: IImposer) {
   const guessedBins = getNumberOfBins(totalNumberOfRows);
+  const formatter = col.getNumberFormat ? col.getNumberFormat() : DEFAULT_FORMATTER;
   let bins = '';
   for (let i = 0; i < guessedBins; ++i) {
     bins += `<div title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`;
@@ -265,8 +268,8 @@ export function getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn
     nodes.forEach((d: HTMLElement, i) => {
       const {x0, x1, length} = hist[i];
       const inner = <HTMLElement>d.firstElementChild!;
-      d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length})`;
-      d.dataset.x = DEFAULT_FORMATTER(x0);
+      d.title = `${formatter(x0)} - ${formatter(x1)} (${length})`;
+      d.dataset.x = formatter(x0);
       inner.style.height = `${Math.round(length * 100 / max)}%`;
       inner.style.backgroundColor = colorOf(col, null, imposer, (x1 + x0) / 2);
     });

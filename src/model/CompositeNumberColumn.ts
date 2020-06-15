@@ -43,6 +43,9 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     }
   }
 
+  getNumberFormat() {
+    return this.numberFormat;
+  }
 
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);

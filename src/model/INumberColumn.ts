@@ -13,6 +13,8 @@ export interface INumberColumn extends Column {
   getNumber(row: IDataRow): number;
 
   getRawNumber(row: IDataRow): number;
+
+  getNumberFormat?(): (v: number) => string;
 }
 
 
