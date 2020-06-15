@@ -8,12 +8,12 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v3-deps-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
-            - v3-deps-{{ checksum "package.json" }}
-            - v3-deps-
+            - v4-deps-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
+            - v4-deps-{{ checksum "package.json" }}
+            - v4-deps-
       - run: npm ci
       - save_cache:
-          key: v3-deps-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
+          key: v4-deps-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
           paths:
             - ~/.npm
             - ~/.cache
