@@ -1,0 +1,15 @@
+// safari 10+ only
+// see https://stackoverflow.com/questions/16348489/is-there-a-css-hack-for-safari-only-not-chrome#25975282
+
+@import './vars';
+
+$lu_safari_check: 0.001dpcm;
+
+@media not all and (min-resolution: $lu_safari_check) {
+  @supports (-webkit-appearance: none) {
+    .#{$engine_css_prefix}-header,
+    .#{$lu_css_prefix}-side-panel {
+      transform: unset;
+    }
+  }
+}

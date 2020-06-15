@@ -1,43 +1,21 @@
-import {MIN_LABEL_WIDTH} from '../config';
-import Column from '../model/Column';
-import {IArrayColumn} from '../model/IArrayColumn';
+import {MIN_LABEL_WIDTH} from '../constants';
+import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn, DEFAULT_COLOR} from '../model';
 import {hsl} from 'd3-color';
-import {IDataRow} from '../model/interfaces';
+import {cssClass} from '../styles';
+import {IRenderContext} from '.';
+import {ISequence} from '../internal';
 
-/**
- * utility function to sets attributes and styles in a nodes
- * @param node
- * @param attrs
- * @param styles
- * @param text
- * @return {T}
- */
-export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: {[key: string]: any} = {}, styles: {[key: string]: any} = {}, text?: string): T {
-  Object.keys(attrs).forEach((attr) => {
-    const v = String(attrs[attr]);
-    if (node.getAttribute(attr) !== v) {
-      node.setAttribute(attr, v);
-    }
-  });
-  Object.keys(styles).forEach((attr) => {
-    const v = styles[attr];
-    if ((<any>node).style.getPropertyValue(attr) !== v) {
-      (<any>node).style.setProperty(attr, v);
-    }
-  });
-  return setText(node, text);
-}
-
+/** @internal */
 export function noop() {
   // no op
 }
 
 export const noRenderer = {
   template: `<div></div>`,
-  update: noop,
-  render: noop
+  update: <() => void>noop
 };
 
+/** @internal */
 export function setText<T extends Node>(node: T, text?: string): T {
   if (text === undefined) {
     return node;
@@ -45,7 +23,7 @@ export function setText<T extends Node>(node: T, text?: string): T {
   //no performance boost if setting the text node directly
   //const textNode = <Text>node.firstChild;
   //if (textNode == null) {
-  //  node.appendChild(node.ownerDocument.createTextNode(text));
+  //  node.appendChild(node.ownerDocument!.createTextNode(text));
   //} else {
   //  textNode.data = text;
   //}
@@ -60,11 +38,13 @@ export function setText<T extends Node>(node: T, text?: string): T {
  * @param node
  * @param selector
  * @param callback
+ * @internal
  */
 export function forEach<T extends Element>(node: Element, selector: string, callback: (d: T, i: number) => void) {
   (<T[]>Array.from(node.querySelectorAll(selector))).forEach(callback);
 }
 
+/** @internal */
 export function forEachChild<T extends Element>(node: Element, callback: (d: T, i: number) => void) {
   (<T[]>Array.from(node.children)).forEach(callback);
 }
@@ -73,8 +53,9 @@ export function forEachChild<T extends Element>(node: Element, callback: (d: T, 
  * matches the columns and the dom nodes representing them
  * @param {HTMLElement} node row
  * @param columns columns to check
+ * @internal
  */
-export function matchColumns(node: HTMLElement, columns: {column: Column, template: string, rendererId: string}[]) {
+export function matchColumns(node: HTMLElement, columns: {column: Column, template: string, rendererId: string}[], ctx: IRenderContext) {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.template).join('');
@@ -85,6 +66,7 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
       cnode.dataset.columnId = col.column.id;
       // store current renderer
       cnode.dataset.renderer = col.rendererId;
+      cnode.classList.add(cssClass(`renderer-${col.rendererId}`));
     });
     return;
   }
@@ -112,10 +94,10 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
   columns.forEach((col) => {
     let cnode = <HTMLElement>node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
-      node.insertAdjacentHTML('beforeend', col.template);
-      cnode = <HTMLElement>node.lastElementChild!;
+      cnode = ctx.asElement(col.template);
       cnode.dataset.columnId = col.column.id;
       cnode.dataset.renderer = col.rendererId;
+      cnode.classList.add(cssClass(`renderer-${col.rendererId}`));
     }
     node.appendChild(cnode);
   });
@@ -126,14 +108,26 @@ export function wideEnough(col: IArrayColumn<any>, length: number = col.labels.l
   return w / length > MIN_LABEL_WIDTH; // at least 30 pixel
 }
 
+export function wideEnoughCat(col: ICategoricalLikeColumn) {
+  const w = col.getWidth();
+  return w / col.categories.length > MIN_LABEL_WIDTH; // at least 30 pixel
+}
 
+
+
+// side effect
+const adaptColorCache: {[bg: string]: string} = {};
 /**
  * Adapts the text color for a given background color
  * @param {string} bgColor as `#ff0000`
  * @returns {string} returns `black` or `white` for best contrast
  */
 export function adaptTextColorToBgColor(bgColor: string): string {
-  return hsl(bgColor).l > 0.5 ? 'black' : 'white';
+  const bak = adaptColorCache[bgColor];
+  if (bak) {
+    return bak;
+  }
+  return adaptColorCache[bgColor] = hsl(bgColor).l > 0.5 ? 'black' : 'white';
 }
 
 
@@ -157,17 +151,16 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
   node.style.color = null;
   node.innerText = title;
 
-  console.assert(node.ownerDocument != null);
   const span = node.ownerDocument!.createElement('span');
-  span.classList.add('lu-gradient-text');
+  span.classList.add(cssClass('gradient-text'));
   span.style.color = adapt;
   span.innerText = title;
   node.appendChild(span);
 }
 
 
-
-export const uniqueId: (prefix: string)=>string = (function() {
+/** @internal */
+export const uniqueId: (prefix: string) => string = (function () {
   // side effect but just within the function itself, so good for the library
   let idCounter = 0;
   return (prefix: string) => `${prefix}${(idCounter++).toString(36)}`;
@@ -176,17 +169,34 @@ export const uniqueId: (prefix: string)=>string = (function() {
 
 const NUM_EXAMPLE_VALUES = 5;
 
-export function exampleText(col: Column, rows: IDataRow[]) {
+/** @internal */
+export function exampleText(col: Column, rows: ISequence<IDataRow>) {
   const examples = <string[]>[];
-  for (const row of rows) {
-    if (col.isMissing(row)) {
-      continue;
+  rows.every((row) => {
+    if (col.getValue(row) == null) {
+      return true;
     }
     const v = col.getLabel(row);
     examples.push(v);
-    if (examples.length >= NUM_EXAMPLE_VALUES) {
-      break;
-    }
+    return examples.length < NUM_EXAMPLE_VALUES;
+  });
+  if (examples.length === 0) {
+    return '';
   }
   return `${examples.join(', ')}${examples.length < rows.length ? ', ...' : ''}`;
+}
+
+
+/** @internal */
+export function multiLevelGridCSSClass(idPrefix: string, column: Column) {
+  return cssClass(`stacked-${idPrefix}-${column.id}`);
+}
+
+
+/** @internal */
+export function colorOf(col: Column) {
+  if (isMapAbleColumn(col)) {
+    return col.getColorMapping().apply(0);
+  }
+  return DEFAULT_COLOR;
 }

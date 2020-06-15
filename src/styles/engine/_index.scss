@@ -1,13 +1,33 @@
 @import '../vars';
 
-$engine_assets: '~lineupengine/src/assets';
 @import '~lineupengine/src/style';
 
-.lineup-engine {
-  > header .#{$lu_css_prefix}-header,
-  .#{$lu_css_prefix}-row > * {
-    margin-right: $lu_engine_grip_gap;
-  }
+.#{$engine_css_prefix}-th,
+.#{$lu_css_prefix}-nested-th {
+  box-sizing: border-box;
+  margin-right: $lu_engine_grip_gap;
+}
+
+.#{$engine_css_prefix}-td {
+  box-sizing: border-box;
+}
+
+.#{$engine_css_prefix}-footer {
+
+  // extra space to the right using a width for easier last column resizing
+  width: $lu_engine_resize_space;
+}
+
+.#{$lu_css_prefix}-resize-helper {
+  display: none;
+}
+
+.#{$lu_css_prefix}-resize-helper.#{$lu_css_prefix}-resize-animated {
+  transition: transform $lu_engine_resize_animation_duration linear !important;
+}
+
+.#{$lu_css_prefix}-resize-helper.#{$lu_css_prefix}-resizing {
+  display: unset;
 }
 
 @import './header';

@@ -1,9 +1,9 @@
-import AEventDispatcher from '../internal/AEventDispatcher';
-import OrderedSet from '../internal/OrderedSet';
+import {OrderedSet, AEventDispatcher, IEventListener} from '../internal';
 import {IGroupData, IGroupItem, isGroup} from '../model';
-import {IDataProvider} from '../provider/ADataProvider';
-import {rangeSelection} from '../renderer/SelectionRenderer';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IDataProvider} from '../provider';
+import {cssClass, engineCssClass} from '../styles';
+import {forEachIndices} from '../model/internal';
+import {rangeSelection} from '../provider/utils';
 
 interface IPoint {
   x: number;
@@ -18,6 +18,7 @@ interface IShift {
 
 /**
  * @asMemberOf SelectionManager
+ * @internal
  * @event
  */
 export declare function selectRange(from: number, to: number, additional: boolean): void;
@@ -31,16 +32,16 @@ export default class SelectionManager extends AEventDispatcher {
 
   private start: (IPoint & IShift) | null = null;
 
-  constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement) {
+  constructor(private readonly ctx: {provider: IDataProvider}, private readonly body: HTMLElement) {
     super();
     const root = body.parentElement!.parentElement!;
     let hr = <HTMLHRElement>root.querySelector('hr');
     if (!hr) {
-      console.assert(root.ownerDocument != null);
       hr = root.ownerDocument!.createElement('hr');
       root.appendChild(hr);
     }
     this.hr = hr;
+    this.hr.classList.add(cssClass('hr'));
 
     const mouseMove = (evt: MouseEvent) => {
       this.showHint(evt);
@@ -53,15 +54,16 @@ export default class SelectionManager extends AEventDispatcher {
       if (!this.start) {
         return;
       }
-      const startNode = this.start.node.classList.contains('lu-row') ? this.start.node : <HTMLElement>this.start.node.closest('.lu-row');
+      const row = engineCssClass('tr');
+      const startNode = this.start.node.classList.contains(row) ? this.start.node : <HTMLElement>this.start.node.closest(`.${row}`);
       // somehow on firefox the mouseUp will be triggered on the original node
       // thus search the node explicitly
-      console.assert(this.body.ownerDocument != null);
       const end = <HTMLElement>this.body.ownerDocument!.elementFromPoint(evt.clientX, evt.clientY);
-      const endNode = end.classList.contains('lu-row') ? end : <HTMLElement>(end.closest('.lu-row'));
+      const endNode = end.classList.contains(row) ? end : <HTMLElement>(end.closest(`.${row}`));
       this.start = null;
-      this.body.classList.remove('lu-selection-active');
-      this.hr.classList.remove('lu-selection-active');
+
+      this.body.classList.remove(cssClass('selection-active'));
+      this.hr.classList.remove(cssClass('selection-active'));
 
       this.select(evt.ctrlKey, startNode, endNode);
     };
@@ -69,7 +71,8 @@ export default class SelectionManager extends AEventDispatcher {
     body.addEventListener('mousedown', (evt) => {
       const r = root.getBoundingClientRect();
       this.start = {x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
-      this.body.classList.add('lu-selection-active');
+
+      this.body.classList.add(cssClass('selection-active'));
       body.addEventListener('mousemove', mouseMove, {
         passive: true
       });
@@ -80,8 +83,8 @@ export default class SelectionManager extends AEventDispatcher {
         passive: true
       });
     }, {
-      passive: true
-    });
+        passive: true
+      });
   }
 
   protected createEventList() {
@@ -117,7 +120,7 @@ export default class SelectionManager extends AEventDispatcher {
     const ey = end.clientY;
 
     const visible = Math.abs(sy - ey) > SelectionManager.MIN_DISTANCE;
-    this.hr.classList.toggle('lu-selection-active', visible);
+    this.hr.classList.toggle(cssClass('selection-active'), visible);
     this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(ey - sy)})rotate(${ey > sy ? 90 : -90}deg)`;
   }
 
@@ -139,12 +142,7 @@ export default class SelectionManager extends AEventDispatcher {
     };
   }
 
-  /**
-   *
-   */
-
-
-  selectRange(rows: { forEach: (c: (item: (IGroupItem | IGroupData)) => void) => void }, additional: boolean = false) {
+  selectRange(rows: {forEach: (c: (item: (IGroupItem | IGroupData)) => void) => void}, additional: boolean = false) {
     const current = new OrderedSet<number>(additional ? this.ctx.provider.getSelection() : []);
     const toggle = (dataIndex: number) => {
       if (current.has(dataIndex)) {
@@ -155,9 +153,9 @@ export default class SelectionManager extends AEventDispatcher {
     };
     rows.forEach((d) => {
       if (isGroup(d)) {
-        d.rows.forEach((r) => toggle(r.i));
+        forEachIndices(d.order, toggle);
       } else {
-        toggle(d.i);
+        toggle(d.dataIndex);
       }
     });
     this.ctx.provider.setSelection(Array.from(current));
@@ -165,18 +163,18 @@ export default class SelectionManager extends AEventDispatcher {
 
   updateState(node: HTMLElement, dataIndex: number) {
     if (this.ctx.provider.isSelected(dataIndex)) {
-      node.classList.add('lu-selected');
+      node.classList.add(cssClass('selected'));
     } else {
-      node.classList.remove('lu-selected');
+      node.classList.remove(cssClass('selected'));
     }
   }
 
-  update(node: HTMLElement, selectedDataIndices: { has(dataIndex: number): boolean }) {
+  update(node: HTMLElement, selectedDataIndices: {has(dataIndex: number): boolean}) {
     const dataIndex = parseInt(node.dataset.i!, 10);
     if (selectedDataIndices.has(dataIndex)) {
-      node.classList.add('lu-selected');
+      node.classList.add(cssClass('selected'));
     } else {
-      node.classList.remove('lu-selected');
+      node.classList.remove(cssClass('selected'));
     }
   }
 }

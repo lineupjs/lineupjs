@@ -1,12 +1,22 @@
-import Column from '../../model/Column';
-import {IRankingHeaderContext} from '../interfaces';
+import {Column} from '../../model';
+import {IRankingHeaderContext, IRenderInfo} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
-import {uniqueId} from './utils';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class ChangeRendererDialog extends ADialog {
+  private readonly before: {renderer: string, group: string, summary: string};
+
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'vis'
+    });
+
+    this.before = {
+      renderer: column.getRenderer(),
+      group: column.getGroupRenderer(),
+      summary: column.getSummaryRenderer()
+    };
   }
 
   protected build(node: HTMLElement) {
@@ -17,24 +27,51 @@ export default class ChangeRendererDialog extends ADialog {
 
     console.assert(item.length > 1 || group.length > 1 || summary.length > 1); // otherwise no need to show this
 
-    const id = uniqueId(this.dialog.idPrefix);
+    const byName = (a: IRenderInfo, b: IRenderInfo) => a.label.localeCompare(b.label);
     node.insertAdjacentHTML('beforeend', `
       <strong>Item Visualization</strong>
-      ${item.sort((a, b) => a.label.localeCompare(b.label)).map((d) => ` <div class="lu-checkbox"><input id="${id}0${d.type}" type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><label for="${id}0${d.type}">${d.label}</label></div>`).join('')}
+      ${item.sort(byName).map((d) => ` <label class="${cssClass('checkbox')}"><input type="radio" name="renderer" value="${d.type}" ${(current === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
       <strong>Group Visualization</strong>
-      ${group.sort((a, b) => a.label.localeCompare(b.label)).map((d) => ` <div class="lu-checkbox"><input id="${id}1${d.type}" type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><label for="${id}1${d.type}">${d.label}</label></div>`).join('')}
+      ${group.sort(byName).map((d) => ` <label class="${cssClass('checkbox')}"><input type="radio" name="group" value="${d.type}" ${(currentGroup === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
       <strong>Summary Visualization</strong>
-      ${summary.sort((a, b) => a.label.localeCompare(b.label)).map((d) => ` <div class="lu-checkbox"><input id="${id}2${d.type}" type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><label for="${id}2${d.type}">${d.label}</label></div>`).join('')}
+      ${summary.sort(byName).map((d) => ` <label class="${cssClass('checkbox')}"><input type="radio" name="summary" value="${d.type}" ${(currentSummary === d.type) ? 'checked' : ''}><span>${d.label}</span></label>`).join('')}
     `);
-    this.forEach('input[name="renderer"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setRenderer(n.value), { passive: true });
-    });
-    this.forEach('input[name="group"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setGroupRenderer(n.value), { passive: true });
-    });
-    this.forEach('input[name="summary"]', (n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setSummaryRenderer(n.value), { passive: true });
-    });
+
+    this.enableLivePreviews('input[type=radio]');
+  }
+
+  protected cancel() {
+    this.column.setRenderer(this.before.renderer);
+    this.column.setGroupRenderer(this.before.group);
+    this.column.setSummaryRenderer(this.before.summary);
+  }
+
+  protected reset() {
+    const desc = this.column.desc;
+    const r = this.findInput(`input[name=renderer][value="${desc.renderer || desc.type}"]`);
+    if (r) {
+      r.checked = true;
+    }
+    const g = this.findInput(`input[name=group][value="${desc.groupRenderer || desc.type}"]`);
+    if (g) {
+      g.checked = true;
+    }
+    const s = this.findInput(`input[name=summary][value="${desc.summaryRenderer || desc.type}"]`);
+    if (s) {
+      s.checked = true;
+    }
+  }
+
+  protected submit() {
+    const renderer = this.findInput('input[name=renderer]:checked').value;
+    const group = this.findInput('input[name=group]:checked').value;
+    const summary = this.findInput('input[name=summary]:checked').value;
+
+    this.column.setRenderer(renderer);
+    this.column.setGroupRenderer(group);
+    this.column.setSummaryRenderer(summary);
+
+    return true;
   }
 
 }

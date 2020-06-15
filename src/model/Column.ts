@@ -1,50 +1,7 @@
-import AEventDispatcher from '../internal/AEventDispatcher';
-import {similar} from '../internal/math';
-import {fixCSS} from '../internal/utils';
-import {defaultGroup} from './Group';
-import {IColumnDesc, IDataRow, IGroup, IGroupData} from './interfaces';
-import {isMissingValue} from './missing';
-import Ranking, {ISortCriteria} from './Ranking';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
 import {isSortingAscByDefault} from './annotations';
-
-export {IColumnDesc} from './interfaces';
-
-export interface IFlatColumn {
-  readonly col: Column;
-  readonly offset: number;
-  readonly width: number;
-}
-
-export interface IColumnParent {
-  remove(col: Column): boolean;
-
-  insert(col: Column, index?: number): Column | null;
-
-  insertAfter(col: Column, reference: Column): Column | null;
-
-  move(col: Column, index?: number): Column | null;
-
-  moveAfter(col: Column, reference: Column): Column | null;
-
-  findMyRanker(): Ranking | null;
-
-  readonly fqid: string;
-
-  indexOf(col: Column): number;
-
-  at(index: number): Column;
-
-  readonly fqpath: string;
-
-}
-
-
-export interface IColumnMetaData {
-  label: string;
-  description: string;
-}
-
+import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR, ITypeFactory} from './interfaces';
+import Ranking from './Ranking';
 
 /**
  * emitted when the width property changes
@@ -89,6 +46,13 @@ export declare function dirtyHeader(): void;
 export declare function dirtyValues(): void;
 
 /**
+ * emitted when state of the column related to cached values (hist, compare, ...) is dirty
+ * @asMemberOf Column
+ * @event
+ */
+export declare function dirtyCaches(): void;
+
+/**
  * emitted when the renderer type property changes
  * @asMemberOf Column
  * @event
@@ -116,16 +80,10 @@ export declare function summaryRendererChanged(previous: string, current: string
  */
 export declare function visibilityChanged(previous: boolean, current: boolean): void;
 
-
 /**
  * a column in LineUp
  */
 export default class Column extends AEventDispatcher {
-  /**
-   * default color that should be used
-   * @type {string}
-   */
-  static readonly DEFAULT_COLOR = '#C1C1C1';
   /**
    * magic variable for showing all columns
    * @type {number}
@@ -138,6 +96,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_DIRTY = 'dirty';
   static readonly EVENT_DIRTY_HEADER = 'dirtyHeader';
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
+  static readonly EVENT_DIRTY_CACHES = 'dirtyCaches';
   static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
   static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererChanged';
   static readonly EVENT_SUMMARY_RENDERER_TYPE_CHANGED = 'summaryRendererChanged';
@@ -177,6 +136,7 @@ export default class Column extends AEventDispatcher {
 
     this.metadata = {
       label: desc.label || this.id,
+      summary: desc.summary || '',
       description: desc.description || ''
     };
   }
@@ -219,9 +179,9 @@ export default class Column extends AEventDispatcher {
 
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED,
-      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
-      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
-      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
+    Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES]);
   }
 
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -230,6 +190,7 @@ export default class Column extends AEventDispatcher {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -292,13 +253,14 @@ export default class Column extends AEventDispatcher {
   }
 
   setMetaData(value: Readonly<IColumnMetaData>) {
-    if (value.label === this.label && this.description === value.description) {
+    if (value.label === this.label && this.description === value.description && this.metadata.summary === value.summary) {
       return;
     }
     const bak = this.getMetaData();
     //copy to avoid reference
     this.metadata = {
       label: value.label,
+      summary: value.summary,
       description: value.description
     };
 
@@ -355,7 +317,7 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): { asc: 'asc' | 'desc' | undefined, priority: number | undefined } {
+  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): {asc: 'asc' | 'desc' | undefined, priority: number | undefined} {
     const ranker = this.findMyRanker();
     if (!ranker) {
       return {asc: undefined, priority: undefined};
@@ -412,7 +374,7 @@ export default class Column extends AEventDispatcher {
   /**
    * called when the columns added to a ranking
    */
-  attach(parent: IColumnParent)  {
+  attach(parent: IColumnParent) {
     this.parent = parent;
   }
 
@@ -452,13 +414,16 @@ export default class Column extends AEventDispatcher {
    * @returns {any} dump of this column
    */
   dump(toDescRef: (desc: any) => any): any {
-    const r: any = {
+    const r: IColumnDump = {
       id: this.id,
       desc: toDescRef(this.desc),
       width: this.width
     };
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
+    }
+    if (this.metadata.summary) {
+      r.summary = this.metadata.summary;
     }
     if (this.getRenderer() !== this.desc.type) {
       r.renderer = this.getRenderer();
@@ -477,14 +442,15 @@ export default class Column extends AEventDispatcher {
    * @param dump column dump
    * @param _factory helper for creating columns
    */
-  restore(dump: any, _factory: (dump: any) => Column | null) {
+  restore(dump: IColumnDump, _factory: ITypeFactory) {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
+      summary: dump.summary || '',
       description: this.description
     };
     if (dump.renderer || dump.rendererType) {
-      this.renderer = dump.renderer || dump.rendererType;
+      this.renderer = dump.renderer || dump.rendererType || this.renderer;
     }
     if (dump.groupRenderer) {
       this.groupRenderer = dump.groupRenderer;
@@ -500,7 +466,8 @@ export default class Column extends AEventDispatcher {
    * @return {string} the label of this column at the specified row
    */
   getLabel(row: IDataRow): string {
-    return String(this.getValue(row));
+    const v = this.getValue(row);
+    return v == null ? '' : String(v);
   }
 
   /**
@@ -508,7 +475,7 @@ export default class Column extends AEventDispatcher {
    * @param _row the current row
    * @return the value of this column at the specified row
    */
-  getValue(_row: IDataRow): any {
+  getValue(_row: IDataRow): any | null {
     return ''; //no value
   }
 
@@ -521,21 +488,15 @@ export default class Column extends AEventDispatcher {
   }
 
   getColor(_row: IDataRow) {
-    return Column.DEFAULT_COLOR;
+    return DEFAULT_COLOR;
   }
 
-  isMissing(row: IDataRow) {
-    return isMissingValue(this.getValue(row));
+  toCompareValue(_row: IDataRow, _valueCache?: any): ICompareValue | ICompareValue[] {
+    return 0;
   }
 
-  /**
-   * compare function used to determine the order according to the values of the current column
-   * @param _a first element
-   * @param _b second element
-   * @return {number}
-   */
-  compare(_a: IDataRow, _b: IDataRow) {
-    return 0; //can't compare
+  toCompareValueType(): ECompareValueType | ECompareValueType[] {
+    return ECompareValueType.UINT8;
   }
 
   /**
@@ -543,18 +504,16 @@ export default class Column extends AEventDispatcher {
    * @param _row
    * @return {IGroup}
    */
-  group(_row: IDataRow): IGroup {
-    return defaultGroup;
+  group(_row: IDataRow, _valueCache?: any): IGroup {
+    return Object.assign({}, defaultGroup);
   }
 
-  /**
-   * compares groups
-   * @param {IGroupData} a
-   * @param {IGroupData} b
-   * @return {number}
-   */
-  groupCompare(a: IGroupData, b: IGroupData) {
-    return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+  toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup, _valueCache?: ISequence<any>): ICompareValue | ICompareValue[] {
+    return group.name.toLowerCase();
+  }
+
+  toCompareGroupValueType(): ECompareValueType | ECompareValueType[] {
+    return ECompareValueType.STRING;
   }
 
   /**
@@ -566,11 +525,20 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
+   * clear the filter
+   * @return {boolean} whether the filtered needed to be reseted
+   */
+  clearFilter() {
+    // hook to clear the filter
+    return false;
+  }
+
+  /**
    * predicate whether the current row should be included
    * @param row
    * @return {boolean}
    */
-  filter(row: IDataRow) {
+  filter(row: IDataRow, _valueCache?: any) {
     return row != null;
   }
 
@@ -598,13 +566,6 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderer, this.renderer = renderer);
   }
 
-  protected setDefaultRenderer(renderer: string) {
-    if (this.renderer !== this.desc.type || this.desc.renderer) {
-      return;
-    }
-    return this.setRenderer(renderer);
-  }
-
   setGroupRenderer(renderer: string) {
     if (renderer === this.groupRenderer) {
       // nothing changes
@@ -613,33 +574,12 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.groupRenderer, this.groupRenderer = renderer);
   }
 
-  protected setDefaultGroupRenderer(renderer: string) {
-    if (this.groupRenderer !== this.desc.type || this.desc.groupRenderer) {
-      return;
-    }
-    return this.setGroupRenderer(renderer);
-  }
-
   setSummaryRenderer(renderer: string) {
     if (renderer === this.summaryRenderer) {
       // nothing changes
       return;
     }
     this.fire([Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.summaryRenderer, this.summaryRenderer = renderer);
-  }
-
-  protected setDefaultSummaryRenderer(renderer: string) {
-    if (this.summaryRenderer !== this.desc.type || this.desc.summaryRenderer) {
-      return;
-    }
-    return this.setSummaryRenderer(renderer);
-  }
-
-  protected setDefaultWidth(width: number) {
-    if (this.width !== 100 || this.desc.width) {
-      return;
-    }
-    return this.setWidthImpl(width);
   }
 
   /**
@@ -651,9 +591,9 @@ export default class Column extends AEventDispatcher {
       case 'header':
         return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY]);
       case 'values':
-        return this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+        return this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY]);
       default:
-        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]);
+        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY]);
     }
   }
 }

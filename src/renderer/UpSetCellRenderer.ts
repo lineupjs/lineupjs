@@ -1,16 +1,13 @@
-import {ICategory, IDataRow, IGroup} from '../model';
-import Column from '../model/Column';
-import {ISetColumn, isSetColumn} from '../model/ICategoricalColumn';
-import {CANVAS_HEIGHT, UPSET} from '../styles';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
+import {Column, IDataRow, IOrderedGroup, ISetColumn, isSetColumn} from '../model';
+import {CANVAS_HEIGHT, cssClass, UPSET} from '../styles';
+import {ICellRendererFactory, IRenderContext, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {noRenderer} from './utils';
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
-  readonly title: string = 'Matrix';
+  readonly title: string = 'UpSet';
 
-  canRender(col: Column, mode: ERenderMode): boolean {
-    return isSetColumn(col) && mode !== ERenderMode.SUMMARY;
+  canRender(col: Column) {
+    return isSetColumn(col);
   }
 
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
@@ -27,14 +24,14 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     const categories = col.categories;
     let templateRows = '';
     for (const cat of categories) {
-      templateRows += `<div title="${cat.label}"></div>`;
+      templateRows += `<div class="${cssClass('upset-dot')}" title="${cat.label}"></div>`;
     }
     return {
-      templateRow: templateRows,
+      template: `<div><div class="${cssClass('upset-line')}"></div>${templateRows}</div>`,
       render: (n: HTMLElement, value: boolean[]) => {
         Array.from(n.children).slice(1).forEach((d, i) => {
           const v = value[i];
-          d.classList.toggle('enabled', v);
+          d.classList.toggle(cssClass('enabled'), v);
         });
 
         const line = <HTMLElement>n.firstElementChild;
@@ -53,12 +50,12 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
   create(col: ISetColumn, context: IRenderContext): ICellRenderer {
-    const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
+    const {template, render} = UpSetCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
-    const cellDimension = width / col.dataLength!;
+    const cellDimension = width / col.categories.length;
 
     return {
-      template: `<div><div></div>${templateRow}</div>`,
+      template,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;
@@ -75,8 +72,8 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         const hasTrueValues = data.some((d) => d); //some values are true?
 
         ctx.save();
-        ctx.fillStyle = UPSET.circle;
-        ctx.strokeStyle = UPSET.stroke;
+        ctx.fillStyle = UPSET.color;
+        ctx.strokeStyle = UPSET.color;
         if (hasTrueValues) {
           const {left, right} = UpSetCellRenderer.calculateSetPath(data, cellDimension);
           ctx.beginPath();
@@ -98,27 +95,33 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: ISetColumn): IGroupCellRenderer {
-    const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
+  createGroup(col: ISetColumn, context: IRenderContext): IGroupCellRenderer {
+    const {template, render} = UpSetCellRenderer.createDOMContext(col);
     return {
-      template: `<div><div></div>${templateRow}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const value = union(col, rows);
-        render(n, value);
+      template,
+      update: (n: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupCategoricalStats(col, group).then((r) => {
+          if (typeof r === 'symbol') {
+            return;
+          }
+          render(n, r.group.hist.map((d) => d.count > 0));
+        });
       }
     };
   }
 
-  createSummary(): ISummaryRenderer {
-    return noRenderer;
+  createSummary(col: ISetColumn, context: IRenderContext): ISummaryRenderer {
+    const {template, render} = UpSetCellRenderer.createDOMContext(col);
+    return {
+      template,
+      update: (n: HTMLElement) => {
+        return context.tasks.summaryCategoricalStats(col).then((r) => {
+          if (typeof r === 'symbol') {
+            return;
+          }
+          render(n, r.summary.hist.map((d) => d.count > 0));
+        });
+      }
+    };
   }
-}
-
-
-export function union(col: ISetColumn, rows: IDataRow[]) {
-  const values = new Set<ICategory>();
-  rows.forEach((d) => {
-    col.getSet(d).forEach((c) => values.add(c));
-  });
-  return col.categories.map((cat) => values.has(cat));
 }

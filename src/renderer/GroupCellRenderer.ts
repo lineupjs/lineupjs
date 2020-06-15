@@ -1,8 +1,11 @@
-import {IDataRow, IGroup} from '../model';
-import Column from '../model/Column';
-import GroupColumn from '../model/GroupColumn';
+import {Column, GroupColumn, IOrderedGroup, IGroup, defaultGroup, IDataRow} from '../model';
 import {ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {noop, noRenderer} from './utils';
+import {noRenderer} from './utils';
+
+
+function isDummyGroup(group: IGroup) {
+  return group.parent == null && group.name === defaultGroup.name;
+}
 
 export default class GroupCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
@@ -14,25 +17,20 @@ export default class GroupCellRenderer implements ICellRendererFactory {
   create(): ICellRenderer {
     return {
       template: `<div><div></div></div>`,
-      update(node: HTMLElement, _row: IDataRow, i: number, group: IGroup) {
-        const p = (<HTMLElement>node.firstElementChild!);
-        if (i !== 0) {
-          p.innerText = '';
-        } else if (Array.isArray((<any>group).order)) {
-          p.innerText = `${group.name} (${(<any>group).order.length})`;
-        } else {
-          p.innerText = group.name;
-        }
+      update(node: HTMLElement, _row: IDataRow, i: number, group: IOrderedGroup) {
+        (<HTMLElement>node.firstElementChild!).textContent = isDummyGroup(group) || i > 0 ? '' : `${group.name} (${group.order.length})`;
       },
-      render: noop
+      render(_ctx: CanvasRenderingContext2D, _row: IDataRow, i: number) {
+        return i === 0;
+      }
     };
   }
 
   createGroup(): IGroupCellRenderer {
     return {
       template: `<div><div></div></div>`,
-      update(node: HTMLElement, group: IGroup, rows: IDataRow[]) {
-        (<HTMLElement>node.firstElementChild!).innerText = `${group.name} (${rows.length})`;
+      update(node: HTMLElement, group: IOrderedGroup) {
+        (<HTMLElement>node.firstElementChild!).textContent = isDummyGroup(group) ? '' : `${group.name} (${group.order.length})`;
       }
     };
   }

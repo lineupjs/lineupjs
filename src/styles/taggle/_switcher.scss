@@ -3,7 +3,7 @@
 @import '~lineupengine/src/styles/import_once';
 
 @include exports('lineupjs/taggle/switcher') {
-  .#{$lu_css_prefix}-side-panel > div.#{$lu_css_prefix}-rule-button-chooser {
+  .#{$lu_css_prefix}-rule-button-chooser {
     padding: 0.5em 0.5em 0 1em;
     flex: 0 0 auto;
     cursor: pointer;
@@ -16,45 +16,16 @@
       padding-left: 5px;
     }
 
-    div {
-      display: none;
-    }
-
-    &:hover {
-      div:not(:empty) {
-        opacity: 1;
-        visibility: visible;
-        transition-delay: 0s, 0.3s;
-      }
-    }
-
-    &.violated {
-      div {
+    &.#{$lu_css_prefix}-violated {
+      .#{$lu_css_prefix}-rule-violation {
         display: block;
-        position: absolute;
-        background: lighten(#ffd700, 45%);
-        border: 1px solid black;
-        top: 110%;
-        left: 5px;
-        width: 96%;
-        hyphens: manual;
-        padding: 5px;
-        z-index: 100;
-        pointer-events: none;
-        opacity: 0;
-        visibility: hidden;
-        transition: visibility 0s ease 0.3s, opacity 0.3s ease 0s;
+      }
 
-        &::before {
-          content: '';
-          width: 0;
-          height: 0;
-          border-left: 5px solid transparent;
-          border-right: 5px solid transparent;
-          border-bottom: 5px solid black;
-          position: absolute;
-          top: -6px;
-          left: 29.4%;
+      &:hover {
+        .#{$lu_css_prefix}-rule-violation {
+          opacity: 1;
+          visibility: visible;
+          transition-delay: 0s, 0.3s;
         }
       }
 
@@ -67,5 +38,34 @@
         color: #ffd700;
       }
     }
+  }
+}
+
+.#{$lu_css_prefix}-rule-violation {
+  display: none;
+  position: absolute;
+  background: lighten(#ffd700, 45%);
+  border: 1px solid black;
+  top: 110%;
+  left: 5px;
+  width: 96%;
+  hyphens: manual;
+  padding: 5px;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: visibility 0s ease 0.3s, opacity 0.3s ease 0s;
+
+  &::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid black;
+    position: absolute;
+    top: -6px;
+    left: 29.4%;
   }
 }

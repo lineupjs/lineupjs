@@ -1,7 +1,7 @@
-import {min, max} from 'd3-array';
-import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, IMapAbleDesc} from '../../model';
+import {min, max, resolveValue} from '../../internal';
+import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, ITypedDump} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
-import {resolveValue} from '../../internal/accessor';
+import {IScriptMappingFunctionType} from '../../model/MappingFunction';
 
 export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc> {
 
@@ -21,7 +21,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
       if (range) {
         this.desc.range = range;
       }
-      return;
+      return this;
     }
     this.desc.map = {
       type, domain, range: range || [0, 1]
@@ -37,8 +37,17 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     return this.colorMapping(color);
   }
 
-  colorMapping(type: string | ((v: number)=>string) | any) {
-    (<IMapAbleDesc>this.desc).colorMapping = type;
+  colorMapping(type: string | ((v: number)=>string) | ITypedDump) {
+    this.desc.colorMapping = type;
+    return this;
+  }
+
+  /**
+   * d3-format to use for formatting
+   * @param format d3-format
+   */
+  numberFormat(format: string) {
+    this.desc.numberFormat = format;
     return this;
   }
 
@@ -47,7 +56,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    * @param {string} code the code to execute
    * @param {[number , number]} domain the input data domain [min, max]
    */
-  scripted(code: string, domain: [number, number]) {
+  scripted(code: string | IScriptMappingFunctionType, domain: [number, number]) {
     this.desc.map = {domain, code, type: 'script'};
     return this;
   }

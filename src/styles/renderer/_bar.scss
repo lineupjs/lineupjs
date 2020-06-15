@@ -1,42 +1,27 @@
-[data-renderer=number],
-[data-renderer=circle] {
-  position: relative;
-  white-space: nowrap;
+@import '../vars';
 
-  div {
-    position: absolute;
-    width: 100%;
-  }
+.#{$lu_css_prefix}-bar-label {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  font-variant-numeric: tabular-nums;
 
-  > div {
-    top: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    font-variant-numeric: tabular-nums;
-
-    > div {
-      height: 100%;
-    }
-
-    > span.#{$lu_css_prefix}-hover-only {
-      position: relative; // required to position .lu-gradient-text
-    }
+  > span.#{$lu_css_prefix}-hover-only {
+    position: relative; // required to position .lu-gradient-text
   }
 }
 
-[data-agg=group] {
-  [data-renderer$=number] {
-    > div > div {
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-    }
-  }
-}
-
-[data-renderer=stack] [data-renderer$=number] > div {
+.#{$lu_css_prefix}-renderer-stack .#{$lu_css_prefix}-renderer[data-renderer$=number] > div {
   overflow-x: hidden;
   text-overflow: ellipsis;
+}
+
+.#{$lu_css_prefix}-group[data-renderer$=number] > div > div {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
 }

@@ -1,5 +1,6 @@
-import Ranking from '../../model/Ranking';
+import {Ranking} from '../../model';
 import ADialog, {IDialogContext} from './ADialog';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class RenameRankingDialog extends ADialog {
@@ -8,19 +9,22 @@ export default class RenameRankingDialog extends ADialog {
 
   constructor(private readonly ranking: Ranking, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'rename'
     });
     this.before = ranking.getLabel();
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-rename-dialog');
+    node.classList.add(cssClass('dialog-rename'));
     node.insertAdjacentHTML('beforeend', `
       <input type="text" value="${this.ranking.getLabel()}" required autofocus placeholder="name">`);
   }
 
   protected reset() {
     this.findInput('input[type="text"]').value = this.before;
+  }
+
+  protected cancel() {
     this.ranking.setLabel(this.before);
   }
 

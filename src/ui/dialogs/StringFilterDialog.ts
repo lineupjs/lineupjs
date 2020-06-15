@@ -1,74 +1,81 @@
-import StringColumn from '../../model/StringColumn';
+import {StringColumn, IStringFilter} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, uniqueId} from './utils';
+import {cssClass} from '../../styles';
+import {debounce} from '../../internal';
+
+
+function toInput(text: string, isRegex: boolean) {
+  const v = text.trim();
+  if (v === '') {
+    return null;
+  }
+  return isRegex ? new RegExp(v, 'gm') : v;
+}
+
 
 /** @internal */
 export default class StringFilterDialog extends ADialog {
 
+  private readonly before: IStringFilter | null;
+
   constructor(private readonly column: StringColumn, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'filter'
     });
+
+    this.before = this.column.getFilter();
   }
 
-  private updateFilter(filter: string | RegExp | null) {
-    updateFilterState(this.attachment, this.column, filter != null && filter !== '');
-    this.column.setFilter(filter);
+  private updateFilter(filter: string | RegExp | null, filterMissing: boolean) {
+    if (filter == null && !filterMissing) {
+      this.column.setFilter(null);
+    } else {
+      this.column.setFilter({filter, filterMissing});
+    }
   }
 
-  reset() {
+  protected reset() {
     this.findInput('input[type="text"]').value = '';
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => n.checked = false);
-    this.updateFilter(null);
   }
 
-  submit() {
-    const filterMissing = findFilterMissing(this.node).checked;
-    if (filterMissing) {
-      this.updateFilter(StringColumn.FILTER_MISSING);
-      return true;
+  protected cancel() {
+    if (this.before) {
+      this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing);
+    } else {
+      this.updateFilter(null, false);
     }
+  }
+
+  protected submit() {
+    const filterMissing = findFilterMissing(this.node).checked;
     const input = this.findInput('input[type="text"]').value;
     const isRegex = this.findInput('input[type="checkbox"]').checked;
-    this.updateFilter(isRegex ? new RegExp(input,'gm') : input);
+    this.updateFilter(toInput(input, isRegex), filterMissing);
     return true;
   }
 
   protected build(node: HTMLElement) {
-    let bak = this.column.getFilter() || '';
-    const bakMissing = bak === StringColumn.FILTER_MISSING;
-    if (bakMissing) {
-      bak = '';
-    }
-    const id = uniqueId(this.dialog.idPrefix);
-    node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
-    <span class="lu-checkbox"><input id="${id}" type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><label for="${id}">Use regular expressions</label></span>
-    ${filterMissingMarkup(bakMissing, this.dialog.idPrefix)}`);
+    const bak = this.column.getFilter() || {filter: '', filterMissing: false};
+    node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak.filter instanceof RegExp) ? bak.filter.source : bak.filter || ''}" style="width: 100%">
+    <label class="${cssClass('checkbox')}">
+      <input type="checkbox" ${(bak.filter instanceof RegExp) ? 'checked="checked"' : ''}>
+      <span>Use regular expressions</span>
+    </label>
+    ${filterMissingMarkup(bak.filterMissing)}`);
 
     const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
     const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
 
-    const update = () => {
-      input.disabled = filterMissing.checked;
-      isRegex.disabled = filterMissing.checked;
+    this.enableLivePreviews([filterMissing, input, isRegex]);
 
-      if (filterMissing.checked) {
-        this.updateFilter(StringColumn.FILTER_MISSING);
-        return;
-      }
-      const valid = input.value.trim();
-      filterMissing.disabled = valid.length > 0;
-      if (valid.length <= 0) {
-        this.updateFilter(null);
-        return;
-      }
-      this.updateFilter(isRegex.checked ? new RegExp(input.value, 'gm') : input.value);
-    };
-
-    filterMissing.onchange = update;
-    input.onchange = update;
-    isRegex.onchange = update;
+    if (!this.showLivePreviews()) {
+      return;
+    }
+    input.addEventListener('input', debounce(() => this.submit(), 100), {
+      passive: true
+    });
   }
 }

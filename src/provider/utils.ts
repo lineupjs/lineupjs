@@ -1,19 +1,9 @@
-import {extent} from 'd3-array';
-import {isNumberColumn, isSupportType} from '../model';
-import {default as Column, IColumnDesc} from '../model/Column';
-import {colorPool} from '../model/internal';
-import Ranking from '../model/Ranking';
-import {resolveValue} from '../internal/accessor';
+import {Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleColumn, DEFAULT_COLOR} from '../model';
+import {colorPool, MAX_COLORS} from '../model/internal';
+import {concat, equal, extent, range, resolveValue} from '../internal';
+import {timeParse} from 'd3-time-format';
+import {IDataProvider, IDeriveOptions, IExportOptions} from './interfaces';
 
-
-export interface IDeriveOptions {
-  /**
-   * maximal percentage of unique values to be treated as a categorical column
-   */
-  categoricalThreshold: number;
-
-  columns: string[];
-}
 
 /**
  * @internal
@@ -30,84 +20,263 @@ export function cleanCategories(categories: Set<string>) {
   return Array.from(categories).map(String).sort();
 }
 
-function deriveType(label: string, value: any, column: number | string, data: any[], options: IDeriveOptions): IColumnDesc {
+function hasDifferentSizes(data: any[][]) {
+  if (data.length === 0) {
+    return false;
+  }
+  const base = data[0].length;
+
+  return data.some((d) => d != null && base !== (Array.isArray(d) ? d.length : -1));
+}
+
+function isEmpty(v: any) {
+  return v == null || (Array.isArray(v) && v.length === 0) || (v instanceof Set && v.size === 0) || (v instanceof Map && v.size === 0) || equal({}, v);
+}
+
+function deriveBaseType(value: any, all: () => any[], column: number | string, options: IDeriveOptions) {
+  if (value == null) {
+    console.warn('cannot derive from null value for column: ', column);
+    return null;
+  }
+  // primitive
+  if (typeof value === 'number') {
+    return {
+      type: 'number',
+      domain: extent(all())
+    };
+  }
+  if (typeof value === 'boolean') {
+    return {
+      type: 'boolean'
+    };
+  }
+
+  if (value instanceof Date) {
+    return {
+      type: 'date'
+    };
+  }
+  const formats = Array.isArray(options.datePattern) ? options.datePattern : [options.datePattern];
+  for (const format of formats) {
+    const dateParse = timeParse(format);
+    if (dateParse(value) == null) {
+      continue;
+    }
+    return {
+      type: 'date',
+      dateParse: format
+    };
+  }
+  const treatAsCategorical = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold : (u: number, t: number) => u < t * (<number>options.categoricalThreshold);
+
+  if (typeof value === 'string') {
+    //maybe a categorical
+    const values = all();
+    const categories = new Set(values);
+    if (treatAsCategorical(categories.size, values.length)) {
+      return {
+        type: 'categorical',
+        categories: cleanCategories(categories)
+      };
+    }
+    return {
+      type: 'string'
+    };
+  }
+
+  if (typeof value === 'object' && value.alt != null && value.href != null) {
+    return {
+      type: 'link'
+    };
+  }
+
+  return null;
+}
+
+function deriveType(label: string, value: any, column: number | string, all: () => any[], options: IDeriveOptions): IColumnDesc {
   const base: any = {
     type: 'string',
     label,
-    column,
+    column
   };
-  if (typeof value === 'number') {
-    base.type = 'number';
-    base.domain = extent(data, (d) => resolveValue(d, column));
-    return base;
+
+  const primitive = deriveBaseType(value, all, column, options);
+  if (primitive != null) {
+    return Object.assign(base, primitive);
   }
-  if (value && value instanceof Date) {
-    base.type = 'date';
-    return base;
-  }
-  if (typeof value === 'boolean') {
-    base.type = 'boolean';
-    return base;
-  }
-  if (typeof value === 'string') {
-    //maybe a categorical
-    const categories = new Set(data.map((d) => resolveValue(d, column)));
-    if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
-      base.type = 'categorical';
-      base.categories = cleanCategories(categories);
-    }
-    return base;
-  }
-  if (Array.isArray(value)) {
-    base.type = 'strings';
-    base.dataLength = value.length;
-    const vs = value[0];
-    if (typeof vs === 'number') {
-      base.type = 'numbers';
-      base.domain = extent((<number[]>[]).concat(...data.map((d) => resolveValue(d, column))));
-      return base;
-    }
-    if (vs && value instanceof Date) {
-      base.type = 'dates';
-      return base;
-    }
-    if (typeof value === 'boolean') {
-      base.type = 'booleans';
-      return base;
-    }
-    if (typeof value === 'string') {
-      //maybe a categorical
-      const categories = new Set((<string[]>[]).concat(...data.map((d) => resolveValue(d, column))));
-      if (categories.size < data.length * options.categoricalThreshold) { // 70% unique guess categorical
-        base.type = 'categoricals';
-        base.categories = cleanCategories(categories);
+
+  // set
+  if (value instanceof Set) {
+    const cats = new Set<string>();
+    for (const value of all()) {
+      if (!(value instanceof Set)) {
+        continue;
       }
-      return base;
+      value.forEach((vi) =>  {
+        cats.add(String(vi));
+      });
+    }
+    return Object.assign(base, {
+      type: 'set',
+      categories: cleanCategories(cats)
+    });
+  }
+
+  // map
+  if (value instanceof Map) {
+    const first = Array.from(value.values()).find((d) => !isEmpty(d));
+    const mapAll = () => {
+      const r: any[] = [];
+      for (const vi of all()) {
+        if (!(vi instanceof Map)) {
+          continue;
+        }
+        vi.forEach((vii) => {
+          if (!isEmpty(vii)) {
+            r.push(vii);
+          }
+        });
+      }
+      return r;
+    };
+    const p = deriveBaseType(first, mapAll, column, options);
+    return Object.assign(base, p || {}, {
+      type: p ? `${p.type}Map` : 'stringMap'
+    });
+  }
+
+  // array
+  if (Array.isArray(value)) {
+    const values = all();
+    const sameLength = !hasDifferentSizes(values);
+    if (sameLength) {
+      base.dataLength = value.length;
+    }
+    const first = value.find((v) => !isEmpty(v));
+    const p = deriveBaseType(first, () => concat(values).filter((d) => !isEmpty(d)), column, options);
+    if (p && p.type === 'categorical' && !sameLength) {
+      return Object.assign(base, p, {
+        type : 'set'
+      });
+    }
+    if (p || isEmpty(first)) {
+      return Object.assign(base, p || {}, {
+        type: p ? `${p.type}s` : 'strings'
+      });
+    }
+
+    if (typeof first === 'object' && first.key != null && first.value != null) {
+      // key,value pair map
+      const mapAll = () => {
+        const r: any[] = [];
+        for (const vi of values) {
+          if (!Array.isArray(vi)) {
+            continue;
+          }
+          for (const vii of vi) {
+            if (!isEmpty(vii)) {
+              r.push(vii);
+            }
+          }
+        }
+        return r;
+      };
+      const p = deriveBaseType(first.value, mapAll, column, options);
+      return Object.assign(base, p || {}, {
+        type: p ? `${p.type}Map` : 'stringMap'
+      });
     }
   }
+
+  // check boxplot
+  const bs = ['min', 'max', 'median', 'q1', 'q3'];
+  if (typeof value === 'object' && bs.every((b) => typeof value[b] === 'number')) {
+    //  boxplot
+    const vs = all();
+    return Object.assign(base, {
+      type: 'boxplot',
+      domain: [
+        vs.reduce((a, b) => Math.min(a, b.min), Number.POSITIVE_INFINITY),
+        vs.reduce((a, b) => Math.max(a, b.max), Number.NEGATIVE_INFINITY)
+      ]
+    });
+  }
+
+  if (typeof value === 'object') {
+    // object map
+    const first = Object.keys(value).map((k) => value[k]).filter((d) => !isEmpty(d));
+    const mapAll = () => {
+      const r: any[] = [];
+      for (const vi of all()) {
+        if (vi == null) {
+          continue;
+        }
+        Object.keys(vi).forEach((k) => {
+          const vii = vi[k];
+          if (!isEmpty(vii)) {
+            r.push(vii);
+          }
+        });
+      }
+      return r;
+    };
+    const p = deriveBaseType(first, mapAll, column, options);
+    return Object.assign(base, p || {}, {
+      type: p ? `${p.type}Map` : 'stringMap'
+    });
+  }
+
   console.log('cannot infer type of column:', column);
   //unknown type
   return base;
 }
 
+function selectColumns(existing: string[], columns: string[]) {
+  const allNots = columns.every((d) => d.startsWith('-'));
+  if (!allNots) {
+    return columns;
+  }
+  // negate case, exclude columns that are given using -notation
+  const exclude = new Set(columns);
+  return existing.filter((d) => !exclude.has(`-${d}`));
+}
+
+function toLabel(key: string | number) {
+  if (typeof(key) === 'number') {
+    return `Col ${key + 1}`;
+  }
+  key = key.trim();
+  if (key.length === 0) {
+    return 'Unknown';
+  }
+  return key.split(/[\s]+/gm).map((k) => k.length === 0 ? k : `${k[0]!.toUpperCase()}${k.slice(1)}`).join(' ');
+}
+
 export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOptions> = {}) {
   const config = Object.assign({
-    categoricalThreshold: 0.7,
-    columns: []
+    categoricalThreshold: (u: number, n: number) => u <= MAX_COLORS && u < n * 0.7, //70% unique and less equal to 22 categories
+    columns: [],
+    datePattern: ['%x', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S.%LZ']
   }, options);
+
   const r: IColumnDesc[] = [];
   if (data.length === 0) {
     // no data to derive something from
     return r;
   }
+
   const first = data[0];
-  if (Array.isArray(first)) {
-    //array of arrays
-    return first.map((v, i) => deriveType(`Col${i}`, v, i, data, config));
-  }
-  //objects
-  const columns = config.columns.length > 0 ? config.columns : Object.keys(first);
-  return columns.map((key) => deriveType(key, resolveValue(first, key), key, data, config));
+  const columns: (number|string)[] = Array.isArray(first) ? range(first.length) : (config.columns.length > 0 ? selectColumns(Object.keys(first), config.columns) : Object.keys(first));
+
+  return columns.map((key) => {
+    let v = resolveValue(first, key);
+    if (isEmpty(v)) {
+      // cannot derive something from null try other rows
+      const foundRow = data.find((row) => !isEmpty(resolveValue(row, key)));
+      v = foundRow ? foundRow[key] : null;
+    }
+    return deriveType(toLabel(key), v, key, () => data.map((d) => resolveValue(d, key)).filter((d) => !isEmpty(d)), config);
+  });
 }
 
 
@@ -118,49 +287,14 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
  */
 export function deriveColors(columns: IColumnDesc[]) {
   const colors = colorPool();
-  columns.forEach((col: any) => {
-    switch (col.type) {
-      case 'number':
-        col.colorMapping = col.colorMapping || col.color || colors() || Column.DEFAULT_COLOR;
-        break;
+  columns.forEach((col: IColumnDesc) => {
+    if (isMapAbleColumn(col)) {
+      col.colorMapping = col.colorMapping || col.color || colors() || DEFAULT_COLOR;
     }
   });
   return columns;
 }
 
-
-export interface IExportOptions {
-  /**
-   * export separator, default: '\t'
-   */
-  separator: string;
-  /**
-   * new line character, default: '\n'
-   */
-  newline: string;
-  /**
-   * should a header be generated, default: true
-   */
-  header: boolean;
-  /**
-   * quote strings, default: false
-   */
-  quote: boolean;
-  /**
-   * quote string to use, default: '"'
-   */
-  quoteChar: string;
-  /**
-   * filter specific column types, default: exclude all support types (selection, action, rank)
-   * @param col the column description to filter
-   */
-  filter: (col: Column) => boolean; //!isSupportType
-
-  /**
-   * whether the description should be part of the column header
-   */
-  verboseColumnHeaders: boolean;
-}
 
 /**
  * utility to export a ranking to a table with the given separator
@@ -202,4 +336,59 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
     r.push(columns.map((c) => quote(c.getExportValue({v: row, i: order[i]}, 'text'), c)).join(opts.separator));
   });
   return r.join(opts.newline);
+}
+
+
+/** @internal */
+export function map2Object<T>(map: Map<string, T>) {
+  const r : { [key: string]: T} = {};
+  map.forEach((v, k) => r[k] = v);
+  return r;
+}
+
+/** @internal */
+export function object2Map<T>(obj: { [key: string]: T}) {
+  const r = new Map<string, T>();
+  for (const k of Object.keys(obj)) {
+    r.set(k, obj[k]);
+  }
+  return r;
+}
+
+
+/** @internal */
+export function rangeSelection(provider: IDataProvider, rankingId: string, dataIndex: number, relIndex: number, ctrlKey: boolean) {
+  const ranking = provider.getRankings().find((d) => d.id === rankingId);
+  if (!ranking) { // no known reference
+    return false;
+  }
+  const selection = provider.getSelection();
+  if (selection.length === 0 || selection.includes(dataIndex)) {
+    return false; // no other or deselect
+  }
+  const order = ranking.getOrder();
+  const lookup = new Map(Array.from(order).map((d, i) => <[number, number]>[d, i]));
+  const distances = selection.map((d) => {
+    const index = (lookup.has(d) ? lookup.get(d)! : Infinity);
+    return {s: d, index, distance: Math.abs(relIndex - index)};
+  });
+  const nearest = distances.sort((a, b) => a.distance - b.distance)[0]!;
+  if (!isFinite(nearest.distance)) {
+    return false; // all outside
+  }
+  if (!ctrlKey) {
+    selection.splice(0, selection.length);
+    selection.push(nearest.s);
+  }
+  if (nearest.index < relIndex) {
+    for (let i = nearest.index + 1; i <= relIndex; ++i) {
+      selection.push(order[i]);
+    }
+  } else {
+    for (let i = relIndex; i <= nearest.index; ++i) {
+      selection.push(order[i]);
+    }
+  }
+  provider.setSelection(selection);
+  return true;
 }

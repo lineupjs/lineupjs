@@ -1,11 +1,56 @@
-import {ICategoricalStatistics, IStatistics} from '../internal';
-import {Column, ICategoricalColumn, IGroupData, IGroupItem, INumberColumn} from '../model';
+import {ILineUpFlags} from '../config';
+import {Column, IGroupData, IGroupItem} from '../model';
 import {IDataProvider} from '../provider';
-import {IImposer, IRenderContext} from '../renderer';
-import {ISummaryRenderer} from '../renderer/interfaces';
-import {IToolbarAction, IToolbarDialogAddon} from './toolbar';
+import {IImposer, IRenderContext, ISummaryRenderer} from '../renderer';
 import DialogManager from './dialogs/DialogManager';
-import {ILineUpFlags} from '../interfaces';
+import {IDialogContext} from './dialogs';
+
+export interface IUIOptions {
+  /**
+   * whether to show this action as a shortcut action
+   * @default 'menu'
+   */
+  mode: 'menu' | 'menu+shortcut' | 'shortcut' | ((col: Column, mode: 'sidePanel' | 'header') => 'menu' | 'menu+shortcut' | 'shortcut');
+
+  /**
+   * order hint for sorting actions
+   * @default 50
+   */
+  order: number;
+
+  featureLevel: 'basic' | 'advanced';
+  featureCategory: 'ranking' | 'model' | 'ui';
+}
+
+export interface IOnClickHandler {
+  (col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number, viaShortcut: boolean): any;
+}
+
+export interface IToolbarAction {
+  title: string;
+
+  enabled?(col: Column): boolean;
+
+  onClick: IOnClickHandler;
+
+  options: Partial<IUIOptions>;
+}
+
+export interface IToolbarDialogAddonHandler {
+  elems: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[];
+  reset(): void;
+  submit(): boolean | undefined;
+  cancel(): void;
+}
+
+export interface IToolbarDialogAddon {
+  title: string;
+
+  order: number;
+
+  append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): IToolbarDialogAddonHandler;
+}
+
 
 export interface IRenderInfo {
   type: string;
@@ -19,15 +64,21 @@ export interface IRankingHeaderContextContainer {
 
   readonly dialogManager: DialogManager;
 
-  toolbar: { [key: string]: IToolbarAction | IToolbarDialogAddon };
+  asElement(html: string): HTMLElement;
 
-  flags: ILineUpFlags;
+  resolveToolbarActions(col: Column, keys: string[]): IToolbarAction[];
+  resolveToolbarDialogAddons(col: Column, keys: string[]): IToolbarDialogAddon[];
 
-  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
+  readonly flags: ILineUpFlags;
 
-  getPossibleRenderer(col: Column): { item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[] };
+  getPossibleRenderer(col: Column): {item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[]};
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
+
+  readonly caches: {
+    toolbar: Map<string, IToolbarAction[]>,
+    toolbarAddons: Map<string, IToolbarDialogAddon[]>
+  };
 }
 
 export interface IRankingBodyContext extends IRankingHeaderContextContainer, IRenderContext {
@@ -42,3 +93,7 @@ export declare type IRankingHeaderContext = Readonly<IRankingHeaderContextContai
 
 export declare type IRankingContext = Readonly<IRankingBodyContext>;
 
+export enum EMode {
+  ITEM = 'item',
+  BAND = 'band'
+}

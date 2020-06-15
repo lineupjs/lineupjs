@@ -6,59 +6,71 @@
   flex-direction: column;
   width: 20em;
   transform: translate3d(0, 0, 1px); // separate layer
+}
 
-  .#{$lu_css_prefix}-label {
-    padding: 0 0 0 0.2em;
+.#{$lu_css_prefix}-stats {
+  font-size: small;
+  padding: 1em 0.5em;
+
+  > span {
+    padding: 2px;
+    border: 1px solid $lu_selected_color;
+  }
+}
+
+.#{$lu_css_prefix}-stats-reset {
+  padding: 2px;
+  font-style: normal;
+  display: unset;
+  color: $lu_toolbar_color_base2;
+
+  &:hover {
+    color: $lu_toolbar_color_hover;
   }
 
-  > aside.#{$lu_css_prefix}-stats {
-    font-size: small;
-    padding: 1em 0.5em;
+  > span {
+    padding-left: 2px;
+  }
+}
 
-    span {
-      padding: 2px;
-      border: 1px solid $lu_selected_color;
-    }
+.#{$lu_css_prefix}-collapser {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 20;
+  padding: 0.7em 0.2em;
+  cursor: pointer;
+  border-radius: 0.4em 0 0 0.4em;
+  background: $lu_toolbar_color_base;
+  color: white;
+
+  &:hover {
+    background: darken($lu_toolbar_color_base, 10%);
+  }
+
+  &::before {
+    @include lu_icons();
+
+    content: $lu_icon_caret_right;
+    width: 0.8em;
+    text-align: center;
+  }
+}
+
+.#{$lu_css_prefix}-side-panel.#{$lu_css_prefix}-collapsed {
+  width: 0;
+  transform: unset;
+
+  > * {
+    display: none;
   }
 
   .#{$lu_css_prefix}-collapser {
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 20;
-    padding: 0.7em 0.2em;
-    cursor: pointer;
-    border-radius: 0.4em 0 0 0.4em;
-    background: $lu_toolbar_color_base;
-    color: white;
-
-    &:hover {
-      background: darken($lu_toolbar_color_base, 10%);
-    }
+    display: block;
+    border-right: 1px solid $lu_taggle_border_color;
 
     &::before {
-      @include lu_icons();
-
-      content: $lu_icon_caret_right;
-      width: 0.8em;
-      text-align: center;
-    }
-  }
-
-  &.#{$lu_css_prefix}-collapsed {
-    width: 0;
-    transform: unset;
-
-    > :not(.#{$lu_css_prefix}-collapser) {
-      display: none;
-    }
-
-    .#{$lu_css_prefix}-collapser {
-      border-right: 1px solid $lu_taggle_border_color;
-
-      &::before {
-        transform: scale(-1, 1);
-      }
+      transform: scale(-1, 1);
     }
   }
 }

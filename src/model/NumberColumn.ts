@@ -1,24 +1,14 @@
 import {format} from 'd3-format';
-import {equalArrays} from '../internal';
-import {Category, toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IDataRow, IGroup, IGroupData} from './interfaces';
-import {groupCompare} from './internal';
-import {
-  default as INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, isEqualNumberFilter,
-  isNumberIncluded, noNumberFilter, numberCompare, isDummyNumberFilter, restoreNumberFilter
-} from './INumberColumn';
-import {
-  createMappingFunction, IMapAbleColumn, IMappingFunction, restoreMapping,
-  ScaleMappingFunction
-} from './MappingFunction';
+import {equalArrays, IEventListener, ISequence} from '../internal';
+import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
+import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
+import {IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEFAULT_COLOR, ITypeFactory} from './interfaces';
+import {INumberColumn, EAdvancedSortMethod, INumberDesc, INumberFilter, IMappingFunction, IColorMappingFunction, IMapAbleColumn} from './INumberColumn';
+import {restoreMapping, ScaleMappingFunction} from './MappingFunction';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {IColorMappingFunction, createColorMappingFunction, restoreColorMapping} from './ColorMappingFunction';
-
-export {default as INumberColumn, isNumberColumn} from './INumberColumn';
-
+import ValueColumn, {dataLoaded} from './ValueColumn';
+import {noNumberFilter, isDummyNumberFilter, restoreNumberFilter, toCompareGroupValue, isEqualNumberFilter, isNumberIncluded} from './internalNumber';
+import {integrateDefaults} from './internal';
 
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
@@ -28,40 +18,40 @@ export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function mappingChanged(previous: IMappingFunction, current: IMappingFunction): void;
+export declare function mappingChanged_NC(previous: IMappingFunction, current: IMappingFunction): void;
 
 /**
  * emitted when the color mapping property changes
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function colorMappingChanged(previous: IColorMappingFunction, current: IColorMappingFunction): void;
+export declare function colorMappingChanged_NC(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
+export declare function filterChanged_NC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 /**
  * emitted when the sort method property changes
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function sortMethodChanged(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
+export declare function sortMethodChanged_NC(previous: EAdvancedSortMethod, current: EAdvancedSortMethod): void;
 
 /**
  * emitted when the grouping property changes
  * @asMemberOf NumberColumn
  * @event
  */
-export declare function groupingChanged(previous: number[], current: number[]): void;
+export declare function groupingChanged_NC(previous: number[], current: number[]): void;
 
 /**
  * a number column mapped from an original input scale to an output range
  */
-@toolbar('groupBy', 'sortGroupBy', 'filterNumber', 'colorMapped', 'editMapping')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'groupBy', 'sortGroupBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sortGroup', 'sortNumber')
 @dialogAddons('group', 'groupNumber')
 @Category('number')
@@ -72,8 +62,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
-
-  private readonly missingValue: number;
 
   private mapping: IMappingFunction;
   private colorMapping: IColorMappingFunction;
@@ -86,25 +74,24 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  private numberFormat: (n: number) => string = format('.2f');
+  private readonly numberFormat: (n: number) => string = format('.2f');
 
   private currentGroupThresholds: number[] = [];
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
-  constructor(id: string, desc: INumberColumnDesc) {
-    super(id, desc);
+  constructor(id: string, desc: INumberColumnDesc, factory: ITypeFactory) {
+    super(id, integrateDefaults(desc, {
+      groupRenderer: 'boxplot',
+      summaryRenderer: 'histogram'
+    }));
 
-    this.mapping = restoreMapping(desc);
+    this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
-    this.colorMapping = restoreColorMapping(desc);
+    this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
-    this.missingValue = desc.missingValue != null ? desc.missingValue : NaN;
-
-    this.setGroupRenderer('boxplot');
-    this.setDefaultSummaryRenderer('histogram');
   }
 
   getNumberFormat() {
@@ -113,8 +100,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
-    r.map = this.mapping.dump();
-    r.colorMapping = this.colorMapping.dump();
+    r.map = this.mapping.toJSON();
+    r.colorMapping = this.colorMapping.toJSON();
     r.filter = isDummyNumberFilter(this.currentFilter) ? null : this.currentFilter;
     r.groupSortMethod = this.groupSortMethod;
     if (this.currentGroupThresholds) {
@@ -123,15 +110,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (dump.map) {
-      this.mapping = createMappingFunction(dump.map);
+      this.mapping = factory.mappingFunction(dump.map);
     } else if (dump.domain) {
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
     if (dump.colorMapping) {
-      this.colorMapping = createColorMappingFunction(dump.colorMapping);
+      this.colorMapping = factory.colorMappingFunction(dump.colorMapping);
     }
     if (dump.groupSortMethod) {
       this.groupSortMethod = dump.groupSortMethod;
@@ -142,20 +129,17 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (dump.stratifyThreshholds) {
       this.currentGroupThresholds = dump.stratifyThresholds;
     }
-    if (dump.numberFormat) {
-      this.numberFormat = format(dump.numberFormat);
-    }
   }
 
   protected createEventList() {
     return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED, NumberColumn.EVENT_COLOR_MAPPING_CHANGED, NumberColumn.EVENT_FILTER_CHANGED, NumberColumn.EVENT_SORTMETHOD_CHANGED, NumberColumn.EVENT_GROUPING_CHANGED]);
   }
 
-  on(type: typeof NumberColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged | null): this;
-  on(type: typeof NumberColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
-  on(type: typeof NumberColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof NumberColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
-  on(type: typeof NumberColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof NumberColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_NC | null): this;
+  on(type: typeof NumberColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_NC | null): this;
+  on(type: typeof NumberColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_NC | null): this;
+  on(type: typeof NumberColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_NC | null): this;
+  on(type: typeof NumberColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_NC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -163,11 +147,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this;
+  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(<any>type, listener);
   }
@@ -196,10 +181,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.mapping.getRange(this.numberFormat);
   }
 
-  getRawValue(row: IDataRow, missingValue = this.missingValue) {
+  getRawValue(row: IDataRow) {
     const v: any = super.getValue(row);
     if (isMissingValue(v)) {
-      return missingValue;
+      return NaN;
     }
     return +v;
   }
@@ -208,32 +193,48 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
   }
 
-  isMissing(row: IDataRow) {
-    return isMissingValue(super.getValue(row));
+  getValue(row: IDataRow) {
+    const v = this.getNumber(row);
+    if (isNaN(v)) {
+      return null;
+    }
+    return v;
   }
 
-  getValue(row: IDataRow) {
+  getNumber(row: IDataRow) {
     const v = this.getRawValue(row);
     if (isNaN(v)) {
-      return v;
+      return NaN;
     }
     return this.mapping.apply(v);
   }
 
-  getNumber(row: IDataRow) {
-    return this.getValue(row);
+  iterNumber(row: IDataRow) {
+    return [this.getNumber(row)];
   }
 
-  getRawNumber(row: IDataRow, missingValue = this.missingValue) {
-    return this.getRawValue(row, missingValue);
+  iterRawNumber(row: IDataRow) {
+    return [this.getRawNumber(row)];
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    return numberCompare(this.getNumber(a), this.getNumber(b), this.isMissing(a), this.isMissing(b));
+  getRawNumber(row: IDataRow) {
+    return this.getRawValue(row);
   }
 
-  groupCompare(a: IGroupData, b: IGroupData): number {
-    return groupCompare(a.rows, b.rows, this, <any>this.groupSortMethod);
+  toCompareValue(row: IDataRow, valueCache?: any) {
+    return valueCache != null ? valueCache : this.getNumber(row);
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.FLOAT;
+  }
+
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
+    return toCompareGroupValue(rows, this, <any>this.groupSortMethod, valueCache);
+  }
+
+  toCompareGroupValueType() {
+    return ECompareValueType.FLOAT;
   }
 
   getOriginalMapping() {
@@ -248,13 +249,13 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   getColor(row: IDataRow) {
     const v = this.getNumber(row);
     if (isNaN(v)) {
-      return Column.DEFAULT_COLOR;
+      return DEFAULT_COLOR;
     }
     return this.colorMapping.apply(v);
   }
@@ -278,7 +279,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return Object.assign({}, this.currentFilter);
   }
 
-  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+  setFilter(value: INumberFilter | null) {
+    value = value || {min: -Infinity, max: +Infinity, filterMissing: false};
     if (isEqualNumberFilter(value, this.currentFilter)) {
       return;
     }
@@ -295,7 +297,13 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @returns {boolean}
    */
   filter(row: IDataRow) {
-    return isNumberIncluded(this.currentFilter, this.getRawNumber(row, NaN));
+    return isNumberIncluded(this.currentFilter, this.getRawNumber(row));
+  }
+
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
   }
 
   getGroupThresholds() {
@@ -313,8 +321,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
 
   group(row: IDataRow): IGroup {
-    if (this.isMissing(row)) {
-      return missingGroup;
+    const value = this.getRawNumber(row);
+    if (isNaN(value)) {
+      return Object.assign({}, missingGroup);
     }
 
     let threshold = this.currentGroupThresholds;
@@ -324,25 +333,24 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       threshold = [(d[1] - d[0]) / 2];
     }
 
-    const value = this.getRawNumber(row);
     const treshholdIndex = threshold.findIndex((t) => value <= t);
     // group by thresholds / bins
     switch (treshholdIndex) {
       case -1:
         //bigger than the last threshold
         return {
-          name: `${this.label} > ${threshold[threshold.length - 1]}`,
+          name: `${this.label} > ${this.numberFormat(threshold[threshold.length - 1])}`,
           color: this.colorMapping.apply(1)
         };
       case 0:
         //smallest
         return {
-          name: `${this.label} <= ${threshold[0]}`,
+          name: `${this.label} <= ${this.numberFormat(threshold[0])}`,
           color: this.colorMapping.apply(0)
         };
       default:
         return {
-          name: `${threshold[treshholdIndex - 1]} <= ${this.label} <= ${threshold[treshholdIndex]}`,
+          name: `${this.numberFormat(threshold[treshholdIndex - 1])} <= ${this.label} <= ${this.numberFormat(threshold[treshholdIndex])}`,
           color: this.colorMapping.apply(this.mapping.apply((threshold[treshholdIndex - 1] + threshold[treshholdIndex]) / 2))
         };
     }

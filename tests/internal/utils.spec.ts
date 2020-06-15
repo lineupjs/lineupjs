@@ -1,4 +1,5 @@
-import {equalArrays, fixCSS, equal} from '../../src/internal/utils';
+import {equalArrays, fixCSS, clear, concat} from '../../src/internal/utils';
+import {equal} from '../../src/internal/mathInterfaces';
 
 
 describe('equalArrays', () => {
@@ -68,5 +69,31 @@ describe('equal', () => {
     expect(equal({}, {a: 1})).toBe(false);
     expect(equal({a: 1}, {a: 2})).toBe(false);
     expect(equal({a: {a: 1}}, {a: {a: 2}})).toBe(false);
+  });
+});
+
+
+describe('clear', () => {
+  it('empty', () => {
+    const div = document.createElement('div');
+    expect(clear(div).children).toHaveLength(0);
+  });
+  it('non-empty', () => {
+    const div = document.createElement('div');
+    div.innerHTML = `<i></i><div></div>`;
+    expect(div.children).toHaveLength(2);
+    expect(clear(div).children).toHaveLength(0);
+  });
+});
+
+describe('concat', () => {
+  it('base', () => {
+    expect(concat([])).toEqual([]);
+    expect(concat([1])).toEqual([1]);
+    expect(concat([1, 2])).toEqual([1, 2]);
+  });
+  it('nested', () => {
+    expect(concat([1, [2, 3], 4])).toEqual([1, 2, 3, 4]);
+    expect(concat([[1, 2], [3, 4], [5, 6]])).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });

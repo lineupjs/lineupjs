@@ -1,14 +1,14 @@
-import {IDataRow, IGroup, isMissingValue} from '../model';
-import Column from '../model/Column';
-import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn} from '../model/IArrayColumn';
-import {ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
+import {IArrayColumn, IKeyValue, IMapColumn, isArrayColumn, isMapColumn, Column, IDataRow, isMissingValue, IOrderedGroup} from '../model';
+import {IRenderContext, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEach, noop} from './utils';
+import {cssClass} from '../styles';
+import {ISequence} from '../internal';
 
 export default class TableCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table';
 
-  canRender(col: Column): boolean {
+  canRender(col: Column) {
     return isMapColumn(col);
   }
 
@@ -18,20 +18,19 @@ export default class TableCellRenderer implements ICellRendererFactory {
       return this.createFixed(col);
     }
     return {
-      template: `<div></div>`,
+      template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
-        node.innerHTML = col.getMapLabel(d).map(({key, value}) => `<div>${key}</div><div>${value}</div>`).join('');
-      },
-      render: noop
+        node.innerHTML = col.getMapLabel(d).map(({key, value}) => `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${value}</div>`).join('');
+      }
     };
   }
 
   private static template(col: IArrayColumn<any>) {
     const labels = col.labels;
-    return `<div>${labels.map((l) => `<div>${l}</div><div data-v></div>`).join('\n')}</div>`;
+    return `<div>${labels.map((l) => `<div class="${cssClass('table-cell')}">${l}</div><div  class="${cssClass('table-cell')}" data-v></div>`).join('\n')}</div>`;
   }
 
   private createFixed(col: IArrayColumn<any>) {
@@ -45,8 +44,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
         forEach(node, '[data-v]', (n: HTMLElement, i) => {
           n.innerHTML = value[i];
         });
-      },
-      render: noop
+      }
     };
   }
 
@@ -55,42 +53,46 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return `${arr.slice(0, numExampleRows).map((d) => d.value).join(', ')}${numExampleRows < arr.length ? ', &hellip;' : ''}`;
   }
 
-  createGroup(col: IMapColumn<any>): IGroupCellRenderer {
+  createGroup(col: IMapColumn<any>, context: IRenderContext): IGroupCellRenderer {
     if (isArrayColumn(col) && col.dataLength) {
       // fixed length optimized rendering
-      return this.createFixedGroup(col);
+      return this.createFixedGroup(col, context);
     }
     return {
-      template: `<div></div>`,
-      update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getMapLabel(d));
-
-        const entries = groupByKey(vs);
-
-        node.innerHTML = entries.map(({key, values}) => `<div>${key}</div><div>${TableCellRenderer.example(values)}</div>`).join('');
+      template: `<div class="${cssClass('rtable')}"></div>`,
+      update: (node: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupRows(col, group, 'table', (rows) => groupByKey(rows.map((d) => col.getMapLabel(d)))).then((entries) => {
+          if (typeof entries === 'symbol') {
+            return;
+          }
+          node.innerHTML = entries.map(({key, values}) => `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${TableCellRenderer.example(values)}</div>`).join('');
+        });
       }
     };
   }
 
-  private createFixedGroup(col: IArrayColumn<any>) {
+  private createFixedGroup(col: IArrayColumn<any>, context: IRenderContext) {
     return {
       template: TableCellRenderer.template(col),
-      update: (node: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const numExampleRows = 5;
-        const vs = rows.filter((d) => !col.isMissing(d)).map((d) => col.getLabels(d));
-        forEach(node, '[data-v]', (n: HTMLElement, i) => {
-          const values = <string[]>[];
-          for (const v of vs) {
-            const vi = v[i];
-            if (isMissingValue(vi)) {
-              continue;
+      update: (node: HTMLElement, group: IOrderedGroup) => {
+        return context.tasks.groupExampleRows(col, group, 'table', (rows) => {
+          const values: string[][] = col.labels.map(() => []);
+          rows.forEach((row) => {
+            const labels = col.getLabels(row);
+            for (let i = 0; i < Math.min(values.length, labels.length); ++i) {
+              if (!isMissingValue(labels[i])) {
+                values[i].push(labels[i]);
+              }
             }
-            values.push(vi);
-            if (values.length >= numExampleRows) {
-              break;
-            }
+          });
+          return values;
+        }).then((values) => {
+          if (typeof values === 'symbol') {
+            return;
           }
-          n.innerHTML = `${values.join(', ')}${numExampleRows < vs.length ? ', &hellip;' : ''}`;
+          forEach(node, '[data-v]', (n: HTMLElement, i) => {
+            n.innerHTML = `${values[i].join(', ')}&hellip;`;
+          });
         });
       }
     };
@@ -98,14 +100,15 @@ export default class TableCellRenderer implements ICellRendererFactory {
 
   createSummary(): ISummaryRenderer {
     return {
-      template: `<div><div>Key</div><div>Value</div></div>`,
+      template: `<div class="${cssClass('rtable')}"><div>Key</div><div>Value</div></div>`,
       update: noop
     };
   }
 
 }
 
-export function groupByKey<T extends { key: string }>(arr: T[][]) {
+/** @internal */
+export function groupByKey<T extends {key: string}>(arr: ISequence<ISequence<T>>) {
   const m = new Map<string, T[]>();
   arr.forEach((a) => a.forEach((d) => {
     if (!m.has(d.key)) {

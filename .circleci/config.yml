@@ -1,20 +1,22 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/lineup
+    working_directory: ~/src
     docker:
-      - image: circleci/node:8-browsers
+      - image: circleci/node:10-browsers
     steps:
       - checkout
       - restore_cache:
-          key: deps3-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
-      - run:
-          name: install-npm-wee
-          command: npm install
+          keys:
+            - v3-deps-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
+            - v3-deps-{{ checksum "package.json" }}
+            - v3-deps-
+      - run: npm ci
       - save_cache:
-          key: deps3-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
+          key: v3-deps-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
           paths:
-          - ./node_modules
+            - ~/.npm
+            - ~/.cache
       - run:
           name: dist
           command: npm run dist
@@ -23,22 +25,53 @@ jobs:
       - run: #update build doc and readme
           name: update api
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ] ; then
-                git clone git@github.com:datavisyn/lineup.js.org.git
-                cd lineup.js.org
+            if [ "${CIRCLE_BRANCH}" == "master" ] || [ "${CIRCLE_BRANCH}" == "develop" ]; then
+                git clone git@github.com:lineupjs/lineupjs.github.io.git
+                cd lineupjs.github.io
                 rm -rf "${CIRCLE_BRANCH}/"
                 if [ "${CIRCLE_BRANCH}" == "develop" ] ; then
                   rm -rf ../build/docs
                 fi
                 mv ../build "${CIRCLE_BRANCH}"
-                cp ../demo/* "${CIRCLE_BRANCH}/"
-                git config user.email "samuel_gratzl@gmx.at"
+                cp -r ../demo/* "${CIRCLE_BRANCH}/"
+                git config user.email "sam@sgratzl.com"
                 git config user.name "Samuel Gratzl"
                 git add -A
                 git commit -m "auto updating ${CIRCLE_BRANCH}" -m "trigger: ${CIRCLE_BUILD_URL}"
                 git push origin master
             fi
-
+  e2e:
+    docker:
+      # the Docker image with Cypress dependencies
+      - image: cypress/base:8
+        environment:
+          ## this enables colors in the output
+          TERM: xterm
+    working_directory: ~/src
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v3-deps-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
+            - v3-deps-{{ checksum "package.json" }}
+            - v3-deps-
+      - run: npm ci
+      - save_cache:
+          key: v3-deps-{{ checksum "package.json" }}-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+            - ~/.cache
+      - run: npm run compile
+      - run: npm run build:prod
+      - run:
+          name: Running E2E tests with JUnit reporter
+          command: npm run cy:junit
+      - store_test_results:
+          path: junit-results
+      - store_artifacts:
+          path: cypress/videos
+      - store_artifacts:
+          path: cypress/screenshots
 workflows:
   version: 2
   build-branch:
@@ -47,9 +80,19 @@ workflows:
           filters:
             tags:
               ignore: /^v.*/
+      - e2e:
+          filters:
+            tags:
+              ignore: /^v.*/
   build-tag:
     jobs:
       - build:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+      - e2e:
           filters:
             branches:
               ignore: /.*/

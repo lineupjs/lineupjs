@@ -1,166 +1,145 @@
 @import '../vars';
 
-[data-agg=group] [data-renderer=categorical],
-.#{$lu_css_prefix}-summary[data-renderer=categorical],
-.#{$lu_css_prefix}-summary[data-renderer=interleaving],
-[data-renderer=histogram] {
+.#{$lu_css_prefix}-histogram {
   display: flex;
   flex-direction: row;
 
-  > div {
-    flex: 1 1 auto;
-    position: relative;
-    margin: 0 1px;
-    font-size: x-small;
-
-    &[data-filtered=filtered] {
-      opacity: 0.2;
-    }
-
-    > div {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      height: 0;
-      width: 100%;
-    }
-
-    > .#{$lu_css_prefix}-selected {
-      background-color: $lu_selected_color;
-    }
-  }
-
-  &[data-interactive] > div {
+  &.#{$lu_css_prefix}-histogram-i > .#{$lu_css_prefix}-histogram-bin {
     cursor: pointer;
   }
 
   .#{$lu_css_prefix}-checkbox {
     position: absolute;
-    bottom: -5em;
+    bottom: -45px;
   }
 
   &.#{$lu_css_prefix}-dense {
-    > div {
+    > .#{$lu_css_prefix}-histogram-bin {
       margin: 0;
     }
   }
 }
 
-[data-agg=group] [data-renderer=categorical],
-.#{$lu_css_prefix}-summary[data-renderer=categorical],
-.#{$lu_css_prefix}-summary[data-renderer=interleaving],
-.#{$lu_css_prefix}-summary[data-renderer=boxplot],
-[data-renderer=histogram] {
-  > span {
-    @include user_select_none();
+span.#{$lu_css_prefix}-mapping-hint {
+  @include user_select_none();
 
-    position: absolute;
-    bottom: -15px;
-    pointer-events: none;
-    line-height: 100%;
+  position: absolute;
+  bottom: -15px;
+  pointer-events: none;
+  line-height: 100%;
 
-    /*
-     * create axis tick as background image and position it left or right
-     */
-    background-image: linear-gradient(to bottom, #000 3px, transparent);
-    background-repeat: no-repeat;
-    background-size: 1px 3px;
-    padding-top: 5px;
+  /*
+    * create axis tick as background image and position it left or right
+    */
+  background-image: linear-gradient(to bottom, #000 3px, transparent);
+  background-repeat: no-repeat;
+  background-size: 1px 3px;
+  padding-top: 5px;
 
-    &:first-of-type {
-      left: 0;
-      background-position: left top;
-    }
+  &:first-of-type {
+    left: 0;
+    background-position: left top;
+  }
 
-    &:last-of-type {
-      right: 0;
-      text-align: right;
-      background-position: right top;
-    }
+  &:last-of-type {
+    right: 0;
+    text-align: right;
+    background-position: right top;
   }
 }
 
-[data-renderer=categorical],
-[data-renderer=histogram],
-[data-renderer=interleaving],
-[data-renderer=heatmap],
-[data-renderer=catheatmap] {
-  &:not(.#{$lu_css_prefix}-dense) > div[data-title]::before {
-    content: attr(data-title);
+.#{$lu_css_prefix}-histogram-bin {
+  flex: 1 1 auto;
+  position: relative;
+  margin: 0 1px 0 0;
+  font-size: x-small;
+
+  > div {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 0;
+    width: 100%;
+  }
+
+  > .#{$lu_css_prefix}-selected {
+    background-color: $lu_selected_color;
+  }
+}
+
+.#{$lu_css_prefix}-histogram:not(.#{$lu_css_prefix}-dense) > .#{$lu_css_prefix}-histogram-bin[data-title]::before,
+.#{$lu_css_prefix}-heatmap:not(.#{$lu_css_prefix}-dense) > .#{$lu_css_prefix}-heatmap-cell[data-title]::before {
+  content: attr(data-title);
+  position: absolute;
+  bottom: -15px;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.#{$lu_css_prefix}-histogram-min,
+.#{$lu_css_prefix}-histogram-max {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-right: 1px solid black;
+  transform: translate(-1px, 0);
+  transition: border-width 0.2s ease;
+  width: 1px;
+  cursor: ew-resize;
+
+  &::before {
+    content: attr(data-value);
     position: absolute;
     bottom: -15px;
-    left: 0;
-    width: 100%;
+    width: $lu_histogram_drag_hint_width;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    text-align: center;
   }
 }
 
-[data-interactive][data-renderer=histogram] {
-  margin-bottom: 2.75em;
-  position: relative;
+.#{$lu_css_prefix}-histogram-max {
+  right: 0;
+  border-right: none;
+  transform: translate(1px, 0);
+  border-left: 1px solid black;
+}
 
-  > [data-handle=min],
-  > [data-handle=max] {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    border-right: 1px solid black;
-    transition: border-width 0.2s ease;
-    width: 1px;
-    cursor: ew-resize;
-
-    &::before {
-      content: attr(data-value);
-      position: absolute;
-      bottom: -15px;
-      width: 7em;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
+.#{$lu_css_prefix}-histogram-min.#{$lu_css_prefix}-swap-hint,
+.#{$lu_css_prefix}-histogram-max:not(.#{$lu_css_prefix}-swap-hint) {
+  &::before {
+    left: -$lu_histogram_drag_hint_width;
+    text-align: right;
   }
+}
 
-  > [data-handle=max] {
-    right: 0;
-    border-right: none;
-    border-left: 1px solid black;
-  }
+.#{$lu_css_prefix}-histogram-min-hint,
+.#{$lu_css_prefix}-histogram-max-hint {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
+}
 
-  > [data-handle=min].#{$lu_css_prefix}-swap-hint,
-  > [data-handle=max]:not(.#{$lu_css_prefix}-swap-hint) {
-    &::before {
-      left: -7em;
-      text-align: right;
-    }
-  }
+.#{$lu_css_prefix}-histogram-max-hint {
+  right: 0;
+}
+
+.#{$lu_css_prefix}-histogram.#{$lu_css_prefix}-histogram-i {
+  margin-bottom: 3.75em;
 
   &:hover {
-    > [data-handle=min] {
+    > .#{$lu_css_prefix}-histogram-min {
       border-right-width: 5px;
     }
 
-    > [data-handle=max] {
+    > .#{$lu_css_prefix}-histogram-max {
       border-left-width: 5px;
     }
-  }
-
-  > [data-handle$=hint] {
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    height: 100%;
-    background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
-
-    &[data-handle=max-hint] {
-      right: 0;
-    }
-  }
-
-  .#{$lu_css_prefix}-checkbox {
-    position: absolute;
-    bottom: -5em;
   }
 }

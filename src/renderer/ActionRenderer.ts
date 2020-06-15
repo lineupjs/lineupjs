@@ -1,11 +1,10 @@
-import {IDataRow, IGroup} from '../model';
-import {default as ActionColumn} from '../model/ActionColumn';
-import Column from '../model/Column';
-import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {forEachChild, noop, noRenderer} from './utils';
+import {IDataRow, IOrderedGroup, ActionColumn, Column} from '../model';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
+import {forEachChild, noRenderer} from './utils';
+import {cssClass} from '../styles';
 
 export default class ActionRenderer implements ICellRendererFactory {
-  readonly title: string = 'Default';
+  readonly title = 'Default';
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return col instanceof ActionColumn && mode !== ERenderMode.SUMMARY;
@@ -14,30 +13,34 @@ export default class ActionRenderer implements ICellRendererFactory {
   create(col: ActionColumn): ICellRenderer {
     const actions = col.actions;
     return {
-      template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`).join('')}</div>`,
+      template: `<div class="${cssClass('actions')} ${cssClass('hover-only')}">${actions.map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`).join('')}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         forEachChild(n, (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            actions[i].action(d);
+            setTimeout(() => actions[i].action(d), 1); // async
           };
         });
-      },
-      render: noop
+      }
     };
   }
 
-  createGroup(col: ActionColumn): IGroupCellRenderer {
+  createGroup(col: ActionColumn, context: IRenderContext): IGroupCellRenderer {
     const actions = col.groupActions;
     return {
-      template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`).join('')}</div>`,
-      update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
+      template: `<div class="${cssClass('actions')} ${cssClass('hover-only')}">${actions.map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`).join('')}</div>`,
+      update: (n: HTMLElement, group: IOrderedGroup) => {
         forEachChild(n, (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            actions[i].action(group, rows);
+            context.tasks.groupRows(col, group, 'identity', (r) => r).then((rows) => {
+              if (typeof rows === 'symbol') {
+                return;
+              }
+              setTimeout(() => actions[i].action(group, Array.from(rows)), 1); // async
+            });
           };
         });
       }

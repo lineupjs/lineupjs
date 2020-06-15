@@ -1,12 +1,10 @@
-import {round} from '../../internal';
-import {
-  IMapAbleColumn, IMappingFunction, isMissingValue, ScaleMappingFunction,
-  ScriptMappingFunction,
-  isMapAbleColumn
-} from '../../model';
+import {ISequence, round} from '../../internal';
+import {IMapAbleColumn, IMappingFunction, isMissingValue, isMapAbleColumn} from '../../model';
 import {IRankingHeaderContext} from '../interfaces';
 import ADialog, {IDialogContext} from './ADialog';
 import {IMappingAdapter, MappingLine} from './MappingLineDialog';
+import {cssClass} from '../../styles';
+import {ScaleMappingFunction, ScriptMappingFunction} from '../../model/MappingFunction';
 
 /** @internal */
 export default class MappingDialog extends ADialog {
@@ -16,27 +14,32 @@ export default class MappingDialog extends ADialog {
   private readonly mappingLines: MappingLine[] = [];
   private rawDomain: [number, number];
 
-  private readonly data: Promise<number[]>;
+  private readonly data: Promise<ISequence<number>>;
   private readonly idPrefix: string;
-  private loadedData: number[] | null = null;
+
+  private readonly before: IMappingFunction;
 
   private readonly mappingAdapter: IMappingAdapter = {
     destroyed: (self: MappingLine) => {
       this.mappingLines.splice(this.mappingLines.indexOf(self), 1);
+      this.updateLines(this.computeScale());
     },
     updated: () => this.updateLines(this.computeScale()),
     domain: () => this.rawDomain,
     normalizeRaw: this.normalizeRaw.bind(this),
     unnormalizeRaw: this.unnormalizeRaw.bind(this),
-    dialog: this.dialog
+    dialog: this.dialog,
+    formatter: this.column.getNumberFormat()
   };
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'dataMapping',
+      cancelSubDialogs: true,
     });
 
     this.idPrefix = `me${ctx.idPrefix}`;
+    this.before = this.column.getMapping().clone();
     this.scale = this.column.getMapping().clone();
     const domain = this.scale.domain;
     this.rawDomain = [domain[0], domain[domain.length - 1]];
@@ -45,26 +48,29 @@ export default class MappingDialog extends ADialog {
   }
 
   private get scaleType() {
-    if (!(this.scale instanceof ScaleMappingFunction)) {
+    if ((this.scale instanceof ScriptMappingFunction)) {
       return 'script';
     }
-    const base = this.scale.scaleType;
-    if (base !== 'linear') {
-      return base;
+    if (this.scale instanceof ScaleMappingFunction) {
+      const base = this.scale.scaleType;
+      if (base !== 'linear') {
+        return base;
+      }
+      // check if invert or absolute
+      const r = this.scale.range;
+      if (r.length === 2 && r[0] === 1 && r[1] === 0) {
+        return 'linear_invert';
+      }
+      if (r.length === 3 && r[0] === 1 && r[1] === 0 && r[2] === 1) {
+        return 'linear_abs';
+      }
+      return 'linear';
     }
-    // check if invert or absolute
-    const r = this.scale.range;
-    if (r.length === 2 && r[0] === 1 && r[1] === 0) {
-      return 'linear_invert';
-    }
-    if (r.length === 3 && r[0] === 1 && r[1] === 0 && r[2] === 1) {
-      return 'linear_abs';
-    }
-    return 'linear';
+    return 'unknown';
   }
 
   build(node: HTMLElement) {
-    node.classList.add('lu-dialog-mapper');
+    node.classList.add(cssClass('dialog-mapper'));
 
     const r = this.column.findMyRanker();
     const others = !r ? [] : r.flatColumns.filter((d) => isMapAbleColumn(d) && d !== this.column);
@@ -80,28 +86,36 @@ export default class MappingDialog extends ADialog {
         <option value="pow3">Pow 3</option>
         <option value="sqrt">Sqrt</option>
         <option value="script">Custom Script</option>
+        <option value="unknown">Unknown</option>
         ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
       </select>
       </div>
-        <div class="lu-details"><strong>Domain (min - max): </strong><input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any"> - <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any"></div>
-        <strong class="lu-details" style="text-align: center">Input Domain (min - max)</strong>
-        <svg class="lu-details" viewBox="0 0 106 66">
-           <g transform="translate(3,3)">
-              <line x2="100"></line>
-              <rect y="-3" width="100" height="10"></rect>
-              <line y1="60" x2="100" y2="60"></line>
-              <rect y="36" width="100" height="10"></rect>
+        <div class=${cssClass('dialog-mapper-domain')}>
+          <input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any">
+          <span>Input Domain (min - max)</span>
+          <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any">
+        </div>
+        <svg class="${cssClass('dialog-mapper-details')}" viewBox="0 0 106 66">
+           <g transform="translate(3,7)">
+              <rect y="-3" width="100" height="10">
+                <title>Click to create a new mapping line</title>
+              </rect>
+              <rect y="49" width="100" height="10">
+                <title>Click to create a new mapping line</title>
+              </rect>
            </g>
         </svg>
-        <strong class="lu-details" style="text-align: center; margin-top: 0">Output Normalized Domain (0 - 1)</strong>
-        <div class="lu-script">
+        <div class=${cssClass('dialog-mapper-range')}>
+          <span>Output Normalized Domain (0 - 1)</span>
+        </div>
+        <div class="${cssClass('dialog-mapper-script')}">
           <strong>Custom Normalization Script</strong>
-          <textarea></textarea>
+          <textarea class="${cssClass('textarea')}"></textarea>
         </div>`);
 
-    const g = <SVGGElement>node.querySelector('.lu-details > g');
+    const g = <SVGGElement>node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
 
-    this.forEach('.lu-details rect', (d: SVGRectElement) => d.onclick = (evt) => {
+    this.forEach(`.${cssClass('dialog-mapper-details')} rect`, (d: SVGRectElement) => d.onclick = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
       const bb = d.getBoundingClientRect();
@@ -128,12 +142,16 @@ export default class MappingDialog extends ADialog {
             this.scale = s;
             textarea.value = s.code;
             break;
+          case 'unknown':
+            // clone original again
+            this.scale = this.column.getOriginalMapping().clone();
+            break;
           default:
             if (select.value.startsWith('copy_')) {
               this.copyMapping(select.value.slice('copy_'.length));
               return;
             }
-            this.scale = new ScaleMappingFunction(this.rawDomain.slice(), select.value);
+            this.scale = new ScaleMappingFunction(this.rawDomain.slice(), select.value, [0, 1]);
             break;
         }
         this.createMappings();
@@ -150,8 +168,8 @@ export default class MappingDialog extends ADialog {
     }
 
     {
-      this.forEach('.lu-details input[type=number]', (d: HTMLInputElement, i) => d.onchange = () => {
-        const v = parseFloat(d.value);
+      this.forEach(`#${this.idPrefix}min, #${this.idPrefix}max`, (d: HTMLInputElement, i) => d.onchange = () => {
+        const v = d.valueAsNumber;
         if (v === this.rawDomain[i]) {
           d.setCustomValidity('');
           return;
@@ -163,36 +181,39 @@ export default class MappingDialog extends ADialog {
         }
         d.setCustomValidity('');
         this.rawDomain[i] = v;
-        this.scale.domain = this.rawDomain.slice();
-
-        if (!this.loadedData) {
-          return;
-        }
-        this.applyMapping(this.scale);
+        this.scale = this.computeScale();
+        const patchedDomain = this.scale.domain.slice();
+        patchedDomain[0] = this.rawDomain[0];
+        patchedDomain[patchedDomain.length - 1] = this.rawDomain[1];
+        this.scale.domain = patchedDomain;
+        this.createMappings();
         this.updateLines();
+        if (this.showLivePreviews()) {
+          this.column.setMapping(this.scale);
+        }
       });
     }
 
     this.data.then((values) => {
-      this.loadedData = values;
-
-      Array.from(values).forEach((v) => {
+      values.forEach((v) => {
         if (!isMissingValue(v)) {
-          g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="60"></line>`);
+          g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="52"></line>`);
         }
       });
     });
   }
 
   private createMappings() {
-    this.mappingLines.splice(0, this.mappingLines.length).forEach((d) => d.destroy());
+    this.mappingLines.splice(0, this.mappingLines.length).forEach((d) => d.destroy(true));
     if (!(this.scale instanceof ScaleMappingFunction)) {
       return;
     }
-    const g = <SVGGElement>this.node.querySelector('.lu-details > g');
+    const g = <SVGGElement>this.node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
     const domain = this.scale.domain;
     const range = this.scale.range;
-    this.mappingLines.push(...domain.map((d, i) => new MappingLine(g, this.normalizeRaw(d), range[i] * 100, this.mappingAdapter)));
+    for (let i = 0; i < domain.length; ++i) {
+      this.mappingLines.push(new MappingLine(g, this.normalizeRaw(domain[i]), range[i] * 100, this.mappingAdapter));
+    }
   }
 
   private update() {
@@ -202,31 +223,26 @@ export default class MappingDialog extends ADialog {
     if (scaleType === 'script') {
       (<HTMLTextAreaElement>this.find('textarea')).value = (<ScriptMappingFunction>this.scale).code;
     }
-    const domain = this.scale.domain;
-    this.forEach('.lu-details input[type=number]', (d: HTMLInputElement, i) => {
-      d.value = String(domain[i]);
+    this.forEach(`input[type=number]`, (d: HTMLInputElement, i) => {
+      d.value = round(this.rawDomain[i], 3).toString();
     });
   }
 
   private updateLines(scale = this.scale) {
-    this.forEach('.lu-details > g > line[x1]', (d: SVGLineElement) => {
+    this.forEach(`.${cssClass('dialog-mapper-details')}  > g > line[x1]`, (d: SVGLineElement) => {
       const v = parseFloat(d.getAttribute('data-v')!);
       d.setAttribute('x1', round(this.normalizeRaw(v), 2).toString());
       d.setAttribute('x2', round(scale.apply(v) * 100, 2).toString());
     });
   }
 
-  private applyMapping(newScale: IMappingFunction) {
-    this.column.setMapping(newScale);
-  }
-
   protected reset() {
-    this.scale = this.column.getOriginalMapping();
-    this.rawDomain = <[number, number]>this.scale.domain.slice();
-    this.applyMapping(this.scale);
+    this.scale = this.column.getOriginalMapping().clone();
+    const domain = this.scale.domain;
+    this.rawDomain = [domain[0], domain[domain.length - 1]];
     this.update();
-    this.updateLines();
     this.createMappings();
+    this.updateLines();
   }
 
   private copyMapping(columnId: string) {
@@ -237,8 +253,8 @@ export default class MappingDialog extends ADialog {
     const ref = <IMapAbleColumn>r.find(columnId)!;
     this.scale = ref.getMapping().clone();
     this.rawDomain = <[number, number]>this.scale.domain.slice();
-    this.applyMapping(this.scale);
     this.update();
+    this.createMappings();
     this.updateLines();
   }
 
@@ -252,33 +268,26 @@ export default class MappingDialog extends ADialog {
   }
 
   private computeScale() {
-    const s = this.scale.clone();
-    if (this.scaleType === 'script') {
-      (<ScriptMappingFunction>s).code = this.node.querySelector('textarea')!.value;
-      s.domain = this.rawDomain.slice();
+    const type = this.scaleType;
+    if (type === 'script') {
+      return new ScriptMappingFunction(this.rawDomain.slice(), this.node.querySelector('textarea')!.value);
     }
-    if (s instanceof ScaleMappingFunction) {
-      this.mappingLines.sort((a, b) => a.domain - b.domain);
-      s.domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
-      s.range = this.mappingLines.map((d) => d.range / 100);
-    }
-    return s;
+    this.mappingLines.sort((a, b) => a.domain - b.domain);
+    const domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
+    const range = this.mappingLines.map((d) => d.range / 100);
+    return new ScaleMappingFunction(domain, type, range);
   }
 
   protected submit() {
     if (!this.node.checkValidity()) {
       return false;
     }
-    if (this.scaleType === 'script') {
-      (<ScriptMappingFunction>this.scale).code = this.node.querySelector('textarea')!.value;
-      this.scale.domain = this.rawDomain.slice();
-    }
-    if (this.scale instanceof ScaleMappingFunction) {
-      this.mappingLines.sort((a, b) => a.domain - b.domain);
-      this.scale.domain = this.mappingLines.map((d) => this.unnormalizeRaw(d.domain));
-      this.scale.range = this.mappingLines.map((d) => d.range / 100);
-    }
-    this.applyMapping(this.scale);
+    const scale = this.computeScale();
+    this.column.setMapping(scale);
     return true;
+  }
+
+  protected cancel() {
+    this.column.setMapping(this.before);
   }
 }

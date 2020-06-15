@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const cats = ['c1', 'c2', 'c3'];
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        s: 'Row ' + i,
+        a: Math.random() * 10,
+        cat: cats[Math.floor(Math.random() * 3)],
+        d: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
+      });
+    }
+    const builder = LineUpJS.builder(arr);
+
+    builder
+      .deriveColumns()
+      .column(LineUpJS.buildStringColumn('s').summary('Test'))
+      .column(LineUpJS.buildStringColumn('s').label('Long label that will take up space').summary('Test'))
+      .column(LineUpJS.buildStringColumn('s').label('Teset').summary('Long summary that will take up space'))
+      .column(LineUpJS.buildStringColumn('s').label('Long label that will take up space2').summary('Long summary that will take up space'))
+
+    const lineup = builder.build(document.body);
+
+  };
+</script>
+
+</body>
+</html>

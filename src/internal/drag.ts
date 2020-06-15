@@ -1,10 +1,27 @@
+import {cssClass} from '../styles';
 
+/** @internal */
 export interface IDragHandleOptions {
-  container: HTMLElement|SVGElement;
+  /**
+   * drag base container
+   * @default handle parentElement
+   */
+  container: HTMLElement | SVGElement;
+  /**
+   * filter to certain mouse events, e.g. shift only
+   */
   filter(evt: MouseEvent): boolean;
-  onStart(handle: HTMLElement|SVGElement, x: number, delta: number, evt: MouseEvent): void;
-  onDrag(handle: HTMLElement|SVGElement, x: number, delta: number, evt: MouseEvent): void;
-  onEnd(handle: HTMLElement|SVGElement, x: number, delta: number, evt: MouseEvent): void;
+
+  onStart(handle: HTMLElement | SVGElement, x: number, delta: number, evt: MouseEvent): void;
+
+  onDrag(handle: HTMLElement | SVGElement, x: number, delta: number, evt: MouseEvent): void;
+
+  onEnd(handle: HTMLElement | SVGElement, x: number, delta: number, evt: MouseEvent): void;
+
+  /**
+   * minimal pixel delta
+   * @default 2
+   */
   minDelta: number;
 }
 
@@ -12,7 +29,7 @@ export interface IDragHandleOptions {
  * allow to change the width of a column using dragging the handle
  * @internal
  */
-export function dragHandle(handle: HTMLElement|SVGElement, options: Partial<IDragHandleOptions> = {}) {
+export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<IDragHandleOptions> = {}) {
   const o: Readonly<IDragHandleOptions> = Object.assign({
     container: handle.parentElement!,
     filter: () => true,
@@ -22,7 +39,10 @@ export function dragHandle(handle: HTMLElement|SVGElement, options: Partial<IDra
     minDelta: 2
   }, options);
 
-  const toContainerRelative = (x: number, elem: HTMLElement|SVGElement) => {
+  let ueberElement: HTMLElement | null = null;
+
+  // converts the given x coordinate to be relative to the given element
+  const toContainerRelative = (x: number, elem: HTMLElement | SVGElement) => {
     const rect = elem.getBoundingClientRect();
     return x - rect.left - elem.clientLeft;
   };
@@ -30,17 +50,20 @@ export function dragHandle(handle: HTMLElement|SVGElement, options: Partial<IDra
   let start = 0;
   let last = 0;
   let handleShift = 0;
+
   const mouseMove = (evt: MouseEvent) => {
     if (!o.filter(evt)) {
       return;
     }
     evt.stopPropagation();
     evt.preventDefault();
+
     const end = toContainerRelative(evt.clientX, o.container) - handleShift;
     if (Math.abs(last - end) < o.minDelta) {
       //ignore
       return;
     }
+
     last = end;
     o.onDrag(handle, end, last - end, evt);
   };
@@ -51,28 +74,38 @@ export function dragHandle(handle: HTMLElement|SVGElement, options: Partial<IDra
     }
     evt.stopPropagation();
     evt.preventDefault();
+
     const end = toContainerRelative(evt.clientX, o.container) - handleShift;
-    o.container.removeEventListener('mousemove', <any>mouseMove);
-    o.container.removeEventListener('mouseup', <any>mouseUp);
-    o.container.removeEventListener('mouseleave', <any>mouseUp);
+    ueberElement!.removeEventListener('mousemove', <any>mouseMove);
+    ueberElement!.removeEventListener('mouseup', <any>mouseUp);
+    ueberElement!.removeEventListener('mouseleave', <any>mouseUp);
+    ueberElement!.classList.remove(cssClass('dragging'));
 
     if (Math.abs(start - end) < 2) {
       //ignore
       return;
     }
+
     o.onEnd(handle, end, start - end, evt);
   };
+
   handle.onmousedown = (evt) => {
     if (!o.filter(evt)) {
       return;
     }
     evt.stopPropagation();
     evt.preventDefault();
+
     handleShift = toContainerRelative(evt.clientX, handle);
     start = last = toContainerRelative(evt.clientX, o.container) - handleShift;
-    o.container.addEventListener('mousemove', <any>mouseMove);
-    o.container.addEventListener('mouseup', <any>mouseUp);
-    o.container.addEventListener('mouseleave', <any>mouseUp);
+
+    // register other event listeners
+    ueberElement = <HTMLElement>handle.closest('body') || <HTMLElement>handle.closest(`.${cssClass()}`)!; // take the whole body or root lineup
+    ueberElement.addEventListener('mousemove', <any>mouseMove);
+    ueberElement.addEventListener('mouseup', <any>mouseUp);
+    ueberElement.addEventListener('mouseleave', <any>mouseUp);
+    ueberElement.classList.add(cssClass('dragging'));
+
     o.onStart(handle, start, 0, evt);
   };
 }

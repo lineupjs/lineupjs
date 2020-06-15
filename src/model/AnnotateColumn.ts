@@ -1,9 +1,24 @@
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IDataRow} from './interfaces';
-import StringColumn, {filterChanged, groupingChanged} from './StringColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import {IDataRow, ITypeFactory} from './interfaces';
+import StringColumn from './StringColumn';
+import {IEventListener} from '../internal';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 
+
+/**
+ * emitted when the filter property changes
+ * @asMemberOf AnnotateColumn
+ * @event
+ */
+export declare function filterChanged_AC(previous: string | RegExp | null, current: string | RegExp | null): void;
+
+
+/**
+ * emitted when the grouping property changes
+ * @asMemberOf AnnotateColumn
+ * @event
+ */
+export declare function groupingChanged_AC(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * emitted when the value of a row changes
@@ -25,8 +40,8 @@ export default class AnnotateColumn extends StringColumn {
   }
 
   on(type: typeof AnnotateColumn.EVENT_VALUE_CHANGED, listener: typeof valueChanged | null): this;
-  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_AC | null): this;
+  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_AC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -34,6 +49,7 @@ export default class AnnotateColumn extends StringColumn {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -59,7 +75,7 @@ export default class AnnotateColumn extends StringColumn {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     if (!dump.annotations) {
       return;
@@ -79,7 +95,7 @@ export default class AnnotateColumn extends StringColumn {
     } else {
       this.annotations.set(row.i, value);
     }
-    this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], row.i, old, value);
+    this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], row.i, old, value);
     return true;
   }
 }

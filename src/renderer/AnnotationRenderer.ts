@@ -1,34 +1,33 @@
-import {IDataRow} from '../model';
-import AnnotateColumn from '../model/AnnotateColumn';
-import Column from '../model/Column';
+import {IDataRow, AnnotateColumn, Column} from '../model';
 import StringCellRenderer from './StringCellRenderer';
-import {noop} from './utils';
+import {cssClass} from '../styles';
 import {ICellRenderer} from './interfaces';
 
 export default class AnnotationRenderer extends StringCellRenderer {
   readonly title: string = 'Default';
 
-  canRender(col: Column): boolean {
+  canRender(col: Column) {
     return super.canRender(col) && col instanceof AnnotateColumn;
   }
 
   create(col: AnnotateColumn): ICellRenderer {
     return {
-      template: `<div class='annotations text'>
-        <input class='lu-hover-only'>
-        <span class='text lu-not-hover'></span>
+      template: `<div>
+        <span></span>
+        <input class="${cssClass('hover-only')} ${cssClass('annotate-input')}">
        </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        const input: HTMLInputElement = <HTMLInputElement>n.firstElementChild!;
+        const label = <HTMLElement>n.firstElementChild!;
+        const input = <HTMLInputElement>n.lastElementChild!;
         input.onchange = () => {
+          label.textContent = input.value;
           col.setValue(d, input.value);
         };
         input.onclick = (event) => {
           event.stopPropagation();
         };
-        n.lastElementChild!.textContent = input.value = col.getLabel(d);
-      },
-      render: noop
+        label.textContent = input.value = col.getLabel(d);
+      }
     };
   }
 }

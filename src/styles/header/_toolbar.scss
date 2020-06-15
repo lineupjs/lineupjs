@@ -7,222 +7,195 @@
   display: flex;
   justify-content: center;
   padding: 3px;
-
-  > i {
-    padding: 2px 4px;
-    cursor: pointer;
-    position: relative;
-    display: flex;
-
-    &:hover {
-      color: $lu_toolbar_color_hover;
-    }
-
-    &.hidden {
-      display: none;
-    }
-
-    &[title^='Group'][data-priority],
-    &[title^='Sort'][data-priority] {
-      padding-left: 10px;
-
-      &::after {
-        content: attr(data-priority) '.';
-        position: absolute;
-        right: 0;
-        z-index: 1;
-        margin-top: 2px;
-        margin-right: 65%;
-        text-align: right;
-        color: $lu_selected_color;
-        font-style: normal;
-        font-size: 10px;
-        font-weight: bold;
-        line-height: 1;
-        pointer-events: none;
-      }
-    }
-
-    &[title^='Group'][data-priority] {
-      padding-left: 15px;
-
-      &::after {
-        margin-right: 60%;
-      }
-    }
-  }
 }
 
 .#{$lu_css_prefix}-action {
+  padding: 2px 4px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+
+  &:hover {
+    color: $lu_toolbar_color_hover;
+  }
+
   &::before {
     @include lu_icons();
   }
+}
 
-  &[title^='Rename']::before {
-    content: $lu_icon_pencil_square_o;
-  }
+.#{$lu_css_prefix}-action-rename::before,
+.#{$lu_css_prefix}-action-rename---color::before {
+  content: $lu_icon_pencil_square_o;
+}
 
-  &[title='Clone']::before {
-    content: $lu_icon_code_fork;
-  }
+.#{$lu_css_prefix}-action-clone::before {
+  content: $lu_icon_code_fork;
+}
 
-  &[title^='Sort']::before {
-    content: $lu_icon_sort;
-  }
+.#{$lu_css_prefix}-action-sort-groups::before {
+  content: $lu_icon_sort;
+}
 
-  &[title^='Visualization']::before {
-    content: $lu_icon_exchange;
-  }
+.#{$lu_css_prefix}-action-visualization::before {
+  content: $lu_icon_exchange;
+}
 
-  &[title^='Color Mapping']::before {
-    content: $lu_icon_brush;
-  }
+.#{$lu_css_prefix}-action-edit-pattern::before {
+  content: $lu_icon_external_link;
+}
 
-  &[title^='Data Mapping']::before {
-    content: $lu_icon_sliders;
-  }
+.#{$lu_css_prefix}-action-color-mapping::before {
+  content: $lu_icon_brush;
+}
 
-  &[title^='Edit Pattern']::before {
-    content: $lu_icon_external_link;
-  }
+.#{$lu_css_prefix}-action-data-mapping::before {
+  content: $lu_icon_sliders;
+}
 
-  &[title^='Reduce by']::before,
-  &[title^='Edit Combine Script']::before,
-  &[title^='Customize']::before {
-    content: $lu_icon_gears;
-  }
+.#{$lu_css_prefix}-action-change-show-top-n::before,
+.#{$lu_css_prefix}-action-reduce-by::before,
+.#{$lu_css_prefix}-action-edit-combine-script::before,
+.#{$lu_css_prefix}-action-customize::before {
+  content: $lu_icon_gears;
+}
 
-  &[title='Split Combined Column']::before {
-    content: $lu_icon_window_restore;
-  }
+.#{$lu_css_prefix}-action-split-combined-column::before {
+  content: $lu_icon_window_restore;
+}
 
-  &[title^='Filter']::before {
-    content: $lu_icon_filter;
-  }
+.#{$lu_css_prefix}-action-filter::before {
+  content: $lu_icon_filter;
+}
 
-  &[title^='Filter'][data-active]::before {
-    color: $lu_selected_color;
-  }
+.#{$lu_css_prefix}-action-filter[data-active]::before {
+  color: $lu_selected_color;
+}
 
-  &[title^='Group']::before {
-    content: $lu_icon_columns;
-    transform: rotate(-90deg);
-    height: 14px;
-  }
+.#{$lu_css_prefix}-action-group::before {
+  content: $lu_icon_columns;
+  transform: rotate(-90deg);
+  height: 14px;
+}
 
-  &[title='Sort']::before,
-  &[title='Sort Group']::before {
+.#{$lu_css_prefix}-action-sort {
+  &::before {
     content: $lu_icon_sort_amount_asc;
   }
 
-  &[title='Sort'][data-sort='desc']::before,
-  &[title='Sort Group'][data-sort='desc']::before {
+  &[data-sort='desc']::before {
     content: $lu_icon_sort_amount_desc;
   }
 
-  &[title='Sort'][data-sort$='sc']::before,
-  &[title='Sort Group'][data-sort$='sc']::before,
-  &[title^='Group'][data-group='true']::before {
-    color: $lu_selected_color;
+  &[data-type=abc] {
+    &::before {
+      content: $lu_icon_sort_alpha_asc;
+    }
+
+    &[data-sort='desc']::before {
+      content: $lu_icon_sort_alpha_desc;
+    }
   }
 
-  &[title^='Set Cut Off']::before {
-    content: $lu_icon_scissors;
-  }
+  &[data-type=num] {
+    &::before {
+      content: $lu_icon_sort_numeric_asc;
+    }
 
-  &[title^='Search']::before {
-    content: $lu_icon_search;
-  }
-
-  &[title^='Edit Weights']::before {
-    content: $lu_icon_tasks;
-  }
-
-  &[title='UnCollapse']::before {
-    content: $lu_icon_toggle_right;
-  }
-
-  &[title='Collapse']::before {
-    content: $lu_icon_toggle_left;
-  }
-
-  &[title='Expand']::before {
-    content: $lu_icon_expand;
-  }
-
-  &[title='Compress']::before {
-    content: $lu_icon_compress;
-  }
-
-  &[title='Invert Selection']::before {
-    content: $lu_icon_check_square_o;
-  }
-
-  &[title^='Remove']::before {
-    content: $lu_icon_trash;
-  }
-
-  &[title^='Choose']::before {
-    content: $lu_icon_caret_down;
-  }
-
-  &[title^='More']::before {
-    content: $lu_icon_ellipsis_h;
-  }
-
-  &[title^='Contained Columns']::before {
-    content: $lu_icon_sitemap;
-  }
-
-  &[title='Move Up']::before {
-    content: $lu_icon_up_open;
-  }
-
-  &[title='Move Down']::before {
-    content: $lu_icon_down_open;
+    &[data-sort='desc']::before {
+      content: $lu_icon_sort_numeric_desc;
+    }
   }
 }
 
-.#{$lu_css_prefix} [data-col-id] {
-  /* Override alphabetical sort icons */
-  &[data-type='string'],
-  &[data-type='categorical'],
-  &[data-type='link'],
-  &[data-type='annotate'],
-  &[data-type='hierarchy'] {
-    .#{$lu_css_prefix}-action {
-      &[title='Sort']::before,
-      &[title='Sort Group']::before {
-        content: $lu_icon_sort-alpha-asc;
-      }
+.#{$lu_css_prefix}-action-sort[data-sort$='sc']::before,
+.#{$lu_css_prefix}-action-sort-groups[data-sort$='sc']::before,
+.#{$lu_css_prefix}-action-group[data-group='true']::before {
+  color: $lu_selected_color;
+}
 
-      &[title='Sort'][data-sort='desc']::before,
-      &[title='Sort Group'][data-sort='desc']::before {
-        content: $lu_icon_sort-alpha-desc;
-      }
-    }
+.#{$lu_css_prefix}-action-set-cut-off::before {
+  content: $lu_icon_scissors;
+}
+
+.#{$lu_css_prefix}-action-search::before {
+  content: $lu_icon_search;
+}
+
+.#{$lu_css_prefix}-action-edit-weights::before {
+  content: $lu_icon_tasks;
+}
+
+.#{$lu_css_prefix}-action-uncollapse::before {
+  content: $lu_icon_toggle_right;
+}
+
+.#{$lu_css_prefix}-action-collapse::before {
+  content: $lu_icon_toggle_left;
+}
+
+.#{$lu_css_prefix}-action-invert-selection::before {
+  content: $lu_icon_check_square_o;
+}
+
+.#{$lu_css_prefix}-action-expand::before {
+  content: $lu_icon_expand;
+}
+
+.#{$lu_css_prefix}-action-compress::before {
+  content: $lu_icon_compress;
+}
+
+.#{$lu_css_prefix}-action-remove::before {
+  content: $lu_icon_trash;
+}
+
+.#{$lu_css_prefix}-action-choose::before {
+  content: $lu_icon_caret_down;
+}
+
+.#{$lu_css_prefix}-action-more::before {
+  content: $lu_icon_ellipsis_h;
+}
+
+.#{$lu_css_prefix}-action-contained-columns::before {
+  content: $lu_icon_sitemap;
+}
+
+.#{$lu_css_prefix}-action-move-up::before {
+  content: $lu_icon_up_open;
+}
+
+.#{$lu_css_prefix}-action-move-down::before {
+  content: $lu_icon_down_open;
+}
+
+.#{$lu_css_prefix}-action-group[data-priority],
+.#{$lu_css_prefix}-action-sort[data-priority] {
+  padding-left: 10px;
+
+  &::after {
+    content: attr(data-priority) '.';
+    position: absolute;
+    right: 0;
+    z-index: 1;
+    margin-top: 2px;
+    margin-right: 65%;
+    text-align: right;
+    color: $lu_selected_color;
+    font-style: normal;
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 1;
+    pointer-events: none;
   }
+}
 
-  /* Override numerical sort icons */
-  &[data-type='rank'],
-  &[data-type='number'],
-  &[data-type='numbers'],
-  &[data-type='ordinal'],
-  &[data-type='boxplot'],
-  &[data-type='script'],
-  &[data-type='reduce'],
-  &[data-type='stack'] {
-    .#{$lu_css_prefix}-action {
-      &[title='Sort']::before,
-      &[title='Sort Group']::before {
-        content: $lu_icon_sort-numeric-asc;
-      }
+.#{$lu_css_prefix}-action-group[data-priority] {
+  padding-left: 15px;
 
-      &[title='Sort'][data-sort='desc']::before,
-      &[title='Sort Group'][data-sort='desc']::before {
-        content: $lu_icon_sort-numeric-desc;
-      }
-    }
+  &::after {
+    margin-right: 60%;
   }
 }
 
@@ -235,6 +208,7 @@
     padding: 5px 10px 5px 5px;
     align-items: center;
     cursor: pointer;
+    padding-left: 0;
 
     &:hover {
       background: $lu_hover_color;
@@ -248,6 +222,15 @@
     > span {
       font-style: normal;
       margin-left: 3px;
+    }
+  }
+
+  > .#{$lu_css_prefix}-action-sort,
+  > .#{$lu_css_prefix}-action-group {
+    padding-left: 0;
+
+    &::after {
+      display: none;
     }
   }
 }

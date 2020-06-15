@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const numCats = 60;
+    const arr = [];
+    const cats = (new Array(numCats)).fill(0).map((_, i) => `c${i + 1}`);
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        d: 'Row ' + i,
+        cat: cats[Math.floor(Math.random() * cats.length)]
+      })
+    }
+    const builder = LineUpJS.builder(arr);
+
+    // manually define columns
+    builder
+      .column(LineUpJS.buildStringColumn('d').label('Label').alignment('right').width(100))
+      .column(LineUpJS.buildCategoricalColumn('cat', cats).color('green'));
+
+    const lineup = builder.build(document.body);
+
+  };
+</script>
+
+</body>
+</html>

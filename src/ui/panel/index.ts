@@ -1,2 +1,5 @@
-export {default as SidePanel, ISidePanelOptions} from './SidePanel';
-export {default as SearchBox, IGroupSearchItem, IItem, ISearchBoxOptions} from './SearchBox';
+export {default as SearchBox} from './SearchBox';
+export * from './SearchBox';
+export {default as SidePanel} from './SidePanel';
+export * from './SidePanel';
+

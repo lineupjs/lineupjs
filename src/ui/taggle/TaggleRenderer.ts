@@ -1,14 +1,14 @@
-import {ILineUpOptions} from '../../interfaces';
-import AEventDispatcher, {IEventListener} from '../../internal/AEventDispatcher';
-import debounce from '../../internal/debounce';
-import {IGroupData, IGroupItem, isGroup} from '../../model';
-import Ranking from '../../model/Ranking';
-import DataProvider from '../../provider/ADataProvider';
+import {GridStyleManager} from 'lineupengine';
+import {ILineUpOptions} from '../../config';
+import {debounce, AEventDispatcher, IEventListener, suffix} from '../../internal';
+import {IGroupData, IGroupItem, isGroup, Ranking, IGroup} from '../../model';
+import {DataProvider} from '../../provider';
 import {IRenderContext} from '../../renderer';
 import {IEngineRankingContext} from '../EngineRanking';
 import EngineRenderer from '../EngineRenderer';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
-import {IRule} from './interfaces';
+import {IRule} from './rules';
+import {ADialog} from '../dialogs';
 
 /**
  * emitted when the highlight changes
@@ -17,6 +17,21 @@ import {IRule} from './interfaces';
  * @event
  */
 export declare function highlightChanged(dataIndex: number): void;
+/**
+ * emitted a dialog is opened
+ * @asMemberOf TaggleRenderer
+ * @param dialog the opened dialog
+ * @event
+ */
+export declare function dialogOpened(dialog: ADialog): void;
+/**
+ * emitted a dialog is closed
+ * @asMemberOf TaggleRenderer
+ * @param dialog the closed dialog
+ * @param action the action how the dialog was closed
+ * @event
+ */
+export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confirm'): void;
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
@@ -26,6 +41,8 @@ export interface ITaggleOptions {
 
 export default class TaggleRenderer extends AEventDispatcher {
   static readonly EVENT_HIGHLIGHT_CHANGED = EngineRenderer.EVENT_HIGHLIGHT_CHANGED;
+  static readonly EVENT_DIALOG_OPENED = EngineRenderer.EVENT_DIALOG_OPENED;
+  static readonly EVENT_DIALOG_CLOSED = EngineRenderer.EVENT_DIALOG_CLOSED;
 
   private isDynamicLeafHeight: boolean = false;
 
@@ -41,11 +58,11 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   constructor(public data: DataProvider, parent: HTMLElement, options: (Partial<ITaggleOptions> & Readonly<ILineUpOptions>)) {
     super();
-
+    Object.assign(this.options, options);
 
     this.renderer = new EngineRenderer(data, parent, Object.assign({}, options, {
       dynamicHeight: (data: (IGroupData | IGroupItem)[], ranking: Ranking) => {
-        const r = this.dynamicHeight(data);
+        const r = this.dynamicHeight(data, ranking);
         if (r) {
           return r;
         }
@@ -54,25 +71,20 @@ export default class TaggleRenderer extends AEventDispatcher {
       levelOfDetail: (rowIndex: number) => this.levelOfDetail ? this.levelOfDetail(rowIndex) : 'high'
     }));
 
-    //
-    this.renderer.style.addRule('taggle_lod_rule', `
-      #${this.renderer.idPrefix} [data-lod=low][data-agg=detail]:hover {
-        /* show regular height for hovered rows in low + medium LOD */
-        height: ${options.rowHeight}px !important;
-      }
-    `);
-
-
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, () => {
       if (this.isDynamicLeafHeight) {
         this.update();
       }
     });
-    this.forward(this.renderer, `${TaggleRenderer.EVENT_HIGHLIGHT_CHANGED}.main`);
+    this.forward(this.renderer, ...suffix('.main', EngineRenderer.EVENT_HIGHLIGHT_CHANGED, EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED));
 
     window.addEventListener('resize', this.resizeListener, {
       passive: true
     });
+  }
+
+  get style(): GridStyleManager {
+    return this.renderer.style;
   }
 
   get ctx(): IRankingHeaderContextContainer & IRenderContext & IEngineRankingContext {
@@ -83,14 +95,16 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.pushUpdateAble(updateAble);
   }
 
-  private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
+  private dynamicHeight(data: (IGroupData | IGroupItem)[], ranking: Ranking) {
     if (!this.rule) {
       this.levelOfDetail = null;
       return null;
     }
 
     const availableHeight = this.renderer ? this.renderer.node.querySelector('main')!.clientHeight : 100;
-    const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()));
+    const topNGetter = (group: IGroup) => this.data.getTopNAggregated(ranking, group);
+    const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()), topNGetter);
+
     this.isDynamicLeafHeight = typeof instance.item === 'function';
 
     this.options.violationChanged(this.rule, instance.violation || '');
@@ -124,10 +138,12 @@ export default class TaggleRenderer extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([TaggleRenderer.EVENT_HIGHLIGHT_CHANGED]);
+    return super.createEventList().concat([TaggleRenderer.EVENT_HIGHLIGHT_CHANGED, TaggleRenderer.EVENT_DIALOG_OPENED, TaggleRenderer.EVENT_DIALOG_CLOSED]);
   }
 
   on(type: typeof TaggleRenderer.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  on(type: typeof TaggleRenderer.EVENT_DIALOG_OPENED, listener: typeof dialogOpened | null): this;
+  on(type: typeof TaggleRenderer.EVENT_DIALOG_CLOSED, listener: typeof dialogClosed | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);

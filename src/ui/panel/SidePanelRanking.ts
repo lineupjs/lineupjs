@@ -1,19 +1,21 @@
-import {suffix} from '../../internal/AEventDispatcher';
-import {isSupportType} from '../../model';
-import Ranking from '../../model/Ranking';
+import {clear, suffix} from '../../internal';
+import {Ranking, isSupportType} from '../../model';
+import {aria, cssClass} from '../../styles';
+import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
+import {actionCSSClass} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
+import {dialogContext} from '../dialogs';
 import Hierarchy from './Hierarchy';
 import {ISidePanelOptions} from './SidePanel';
 import SidePanelEntryVis from './SidePanelEntryVis';
-import {dialogContext} from '../toolbar';
-import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
 
-
+/** @internal */
 export default class SidePanelRanking {
 
   readonly header: HTMLElement;
   readonly dropdown: HTMLElement;
   readonly node: HTMLElement;
+
   private readonly hierarchy: Hierarchy | null;
   private readonly entries = new Map<string, SidePanelEntryVis>();
 
@@ -22,9 +24,14 @@ export default class SidePanelRanking {
     this.header = document.createElement('div');
     this.dropdown = document.createElement('div');
 
-    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="lu-action" title="More &hellip;"><span aria-hidden="true">More &hellip;"></span></i>`;
+    this.node.classList.add(cssClass('side-panel-ranking'));
+    this.header.classList.add(cssClass('side-panel-ranking-header'), cssClass('side-panel-ranking-label'));
+    this.dropdown.classList.add(cssClass('side-panel-ranking-label'));
+
+    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${actionCSSClass('more')}" title="More &hellip;">${aria('More &hellip;')}</i>`;
     (<HTMLElement>this.header.lastElementChild!).onclick = (<HTMLElement>this.dropdown.lastElementChild!).onclick = (evt) => {
       evt.stopPropagation();
+      evt.preventDefault();
       const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, <any>evt), ctx);
       dialog.open();
     };
@@ -35,9 +42,7 @@ export default class SidePanelRanking {
   }
 
   private init() {
-    this.node.innerHTML = `
-      <div><main></main></div>
-    `;
+    this.node.innerHTML = `<main class="${cssClass('side-panel-ranking-main')}"></main>`;
     if (this.hierarchy) {
       this.node.insertBefore(this.hierarchy.node, this.node.firstChild);
     }
@@ -57,13 +62,13 @@ export default class SidePanelRanking {
   }
 
   get active() {
-    return this.node.classList.contains('lu-active');
+    return this.node.classList.contains(cssClass('active'));
   }
 
   set active(value: boolean) {
-    this.node.classList.toggle('lu-active', value);
-    this.header.classList.toggle('lu-active', value);
-    this.dropdown.classList.toggle('lu-active', value);
+    this.node.classList.toggle(cssClass('active'), value);
+    this.header.classList.toggle(cssClass('active'), value);
+    this.dropdown.classList.toggle(cssClass('active'), value);
     if (value) {
       return;
     }
@@ -92,13 +97,13 @@ export default class SidePanelRanking {
     const columns = this.ranking.flatColumns.filter((d) => !isSupportType(d));
 
     if (columns.length === 0) {
-      node.innerHTML = '';
+      clear(node);
       this.entries.forEach((d) => d.destroy());
       this.entries.clear();
       return;
     }
 
-    node.innerHTML = ``;
+    clear(node);
 
     const copy = new Map(this.entries);
     this.entries.clear();
@@ -113,7 +118,6 @@ export default class SidePanelRanking {
         return;
       }
 
-      console.assert(node.ownerDocument != null);
       const entry = new SidePanelEntryVis(col, this.ctx, node.ownerDocument!);
       node.appendChild(entry.node);
       this.entries.set(col.id, entry);

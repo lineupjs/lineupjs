@@ -1,13 +1,10 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {IDataRow, isMissingValue, isNumberColumn} from '../model';
-import Column from '../model/Column';
-import {IMapColumn, isMapColumn} from '../model/IArrayColumn';
-import {DEFAULT_FORMATTER} from '../model/INumberColumn';
-import {IMapAbleColumn, isMapAbleColumn} from '../model/MappingFunction';
+import {round} from '../internal';
+import {Column, IMapColumn, IMapAbleColumn, isMapAbleColumn, isMapColumn, IDataRow, isNumberColumn, INumberColumn} from '../model';
 import {colorOf} from './impose';
-import {ICellRendererFactory, IImposer, default as IRenderContext, ERenderMode, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
+import {ICellRendererFactory, IImposer, IRenderContext, ERenderMode, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer} from './utils';
+import {noRenderer} from './utils';
+import {cssClass} from '../styles';
 
 export default class MapBarCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Bar Table';
@@ -16,22 +13,28 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
     return isMapColumn(col) && isNumberColumn(col) && (mode === ERenderMode.CELL || (mode === ERenderMode.SUMMARY && isMapAbleColumn(col)));
   }
 
-  create(col: IMapColumn<number>, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer {
+  create(col: IMapColumn<number> & INumberColumn, _context: IRenderContext, imposer?: IImposer): ICellRenderer {
+    const formatter = col.getNumberFormat();
+
     return {
-      template: `<div></div>`,
+      template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
         node.innerHTML = col.getMap(d).map(({key, value}) => {
-          if (isMissingValue(value)) {
-            return `<div>${key}</div><div class="lu-missing"></div>`;
+          if (isNaN(value)) {
+            return `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')} ${cssClass('missing')}"></div>`;
           }
-          const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
-          return `<div>${key}</div><div title="${DEFAULT_FORMATTER(value)}"><div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}"><span class="lu-hover-only">${value}</span></div></div>`;
+          const w = round(value * 100, 2);
+          return `<div class="${cssClass('table-cell')}">${key}</div>
+            <div class="${cssClass('table-cell')}" title="${formatter(value)}">
+              <div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}">
+                <span class="${cssClass('hover-only')}">${value}</span>
+              </div>
+            </div>`;
         }).join('');
-      },
-      render: noop
+      }
     };
   }
 
@@ -41,7 +44,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
 
   createSummary(col: IMapColumn<number> & IMapAbleColumn): ISummaryRenderer {
     return {
-      template: `<div><div>Key</div><div><span></span><span></span>Value</div></div>`,
+      template: `<div class="${cssClass('rtable')}"><div>Key</div><div><span></span><span></span>Value</div></div>`,
       update: (node: HTMLElement) => {
         const range = col.getRange();
         const value = <HTMLElement>node.lastElementChild!;

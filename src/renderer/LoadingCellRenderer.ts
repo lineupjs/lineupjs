@@ -10,9 +10,8 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
 
   create() { // no typing because ICellRenderer would not be assignable to IGroupCellRenderer and ISummaryRenderer
     return {
-      template: `<div>Loading…</div>`,
-      update: noop,
-      render: noop
+      template: `<div>Loading &hellip;</div>`,
+      update: <() => void>noop
     };
   }
 

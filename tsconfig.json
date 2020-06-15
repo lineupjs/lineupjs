@@ -13,8 +13,7 @@
       "es2016.array.include",
       "es2017.object"
     ],
-    "declaration": true,
-    "removeComments": true,
+    "removeComments": false,
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
@@ -22,38 +21,32 @@
     "noUnusedLocals": true,
     "noImplicitThis": true,
     "noUnusedParameters": true,
-    "strictNullChecks": true,
+    "strict": true,
     "stripInternal": true,
-    "strictFunctionTypes": true,
-    "strictPropertyInitialization": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": [
+      "d3-color",
+      "d3-dispatch",
+      "d3-format",
+      "d3-scale",
+      "d3-scale-chromatic",
+      "d3-time",
+      "d3-time-format",
+      "detect-browser",
+      "lodash.get",
+      "jest"
+    ]
   },
   "compileOnSave": false,
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
     "tsd.d.ts"
   ],
-  "typedocOptions": {
-    "name": "LineUpJS",
-    "mode": "modules",
-    "modules": "umd",
-    "target": "es6",
-    "hideGenerator": true,
-    "ignoreCompilerErrors": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "moduleResolution": "node",
-    "preserveConstEnums": true,
-    "stripInternal": true,
-    "suppressExcessPropertyErrors": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "exclude": "**/*.(d.ts|js|test.ts|scss)",
-    "excludePrivate": true,
-    "excludeProtected": true,
-    "excludeExternals": true,
-    "excludeNotExported": true,
-    "listInvalidSymbolLinks": true,
-    "plugin": ["typedoc-plugin-as-member-of"]
-  }
+  "exclude": [
+    "src/**/*.d.ts",
+    "tests/**/*.d.ts",
+  ]
 }

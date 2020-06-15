@@ -1,51 +1,69 @@
 <!DOCTYPE html>
 <html>
-<head lang="en">
-  <meta charset="UTF-8">
-  <title>LineUp Complex Accessor</title>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <title>LineUp Builder Test</title>
 
-  <link href="./LineUpJS.css" rel="stylesheet">
-  <link href="./demo.css" rel="stylesheet">
-</head>
-<body>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="./LineUpJS.js"></script>
+    <link href="./LineUpJS.css" rel="stylesheet" />
+    <link href="./demo.css" rel="stylesheet" />
+  </head>
+  <body>
+    <script src="./LineUpJS.js"></script>
 
-<script>
-  window.onload = function () {
-    const data = [
-      {
-        a: 1,
-        b: {
-          b: 2,
-          b0: 3,
-          b0b: 4,
-          arr: [5]
-        }
-      },
-      {
-        a: 1,
-        b: {
-          b: 2,
-          b0: 3,
-          b0b: 4,
-          arr: [5]
-        }
-      }
-    ];
+    <script>
+      window.onload = function() {
+        const data = [
+          {
+            a: 1,
+            b: {
+              b: 2,
+              b0: 3,
+              b0b: 4,
+              arr: [5]
+            }
+          },
+          {
+            a: 1,
+            b: {
+              b: 2,
+              b0: 3,
+              b0b: 4,
+              arr: [5]
+            }
+          }
+        ];
 
-    const builder = LineUpJS.builder(data);
+        const builder = LineUpJS.builder(data);
 
-    builder
-      .column(LineUpJS.buildNumberColumn('a').label('A simple accessor').width(250))
-      .column(LineUpJS.buildNumberColumn('b.b').label('B complex accessor 1').width(250))
-      .column(LineUpJS.buildNumberColumn('b.b0').label('B complex accessor 2').width(250))
-      .column(LineUpJS.buildNumberColumn('b.b0b').label('B complex accessor 3').width(250))
-      .column(LineUpJS.buildNumberColumn('b.arr[0]').label('B complex accessor 4').width(250));
+        builder
+          .column(
+            LineUpJS.buildNumberColumn("a")
+              .label("A simple accessor")
+              .width(250)
+          )
+          .column(
+            LineUpJS.buildNumberColumn("b.b")
+              .label("B complex accessor 1")
+              .width(250)
+          )
+          .column(
+            LineUpJS.buildNumberColumn("b.b0")
+              .label("B complex accessor 2")
+              .width(250)
+          )
+          .column(
+            LineUpJS.buildNumberColumn("b.b0b")
+              .label("B complex accessor 3")
+              .width(250)
+          )
+          .column(
+            LineUpJS.buildNumberColumn("b.arr[0]")
+              .label("B complex accessor 4")
+              .width(250)
+          );
 
-    builder.build(document.body);
-  }
-</script>
-
-</body>
+        builder.build(document.body);
+      };
+    </script>
+  </body>
 </html>

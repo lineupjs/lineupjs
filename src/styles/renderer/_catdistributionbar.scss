@@ -1,22 +1,24 @@
 
-[data-renderer=catdistributionbar] {
+@import '../vars';
+
+.#{$lu_css_prefix}-renderer-catdistributionbar {
   display: flex;
+}
 
-  > * {
+.#{$lu_css_prefix}-distribution-bar {
+  overflow: hidden;
+  width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+
+  > span {
+    position: absolute;
+    left: 5px;
+    right: 3px;
     overflow: hidden;
-    width: 0;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    position: relative;
-
-    > span {
-      position: absolute;
-      left: 5px;
-      right: 3px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

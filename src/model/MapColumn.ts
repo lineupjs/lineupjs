@@ -1,7 +1,8 @@
 import {Category} from './annotations';
 import {IKeyValue, IMapColumn} from './IArrayColumn';
-import {IDataRow} from './interfaces';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {IDataRow, IValueColumnDesc} from './interfaces';
+import ValueColumn from './ValueColumn';
+import {integrateDefaults} from './internal';
 
 export interface IMapColumnDesc<T> extends IValueColumnDesc<IKeyValue<T>[]> {
   // dummy
@@ -11,21 +12,23 @@ export interface IMapColumnDesc<T> extends IValueColumnDesc<IKeyValue<T>[]> {
 export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements IMapColumn<T> {
 
   constructor(id: string, desc: Readonly<IMapColumnDesc<T>>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200
+    }));
   }
 
   getValue(row: IDataRow) {
-    return toKeyValue<T>(<any>super.getValue(row));
+    const r = this.getMap(row);
+    return r.length === 0 ? null : r;
   }
 
   getLabels(row: IDataRow): IKeyValue<string>[] {
-    const v = this.getValue(row);
+    const v = this.getMap(row);
     return v.map(({key, value}) => ({key, value: String(value)}));
   }
 
   getMap(row: IDataRow) {
-    return this.getValue(row);
+    return toKeyValue<T>(<any>super.getValue(row));
   }
 
   getMapLabel(row: IDataRow) {

@@ -1,99 +1,88 @@
 @import '../vars';
 @import '../icons/index';
 
-.#{$lu_css_prefix}-side-panel {
-  > header[data-count] {
-    border-bottom: 2px solid $lu_side_panel_bg_color;
-    display: flex;
-    overflow: hidden;
-    position: relative;
-    padding-right: 1em;
+.#{$lu_css_prefix}-side-panel-rankings {
+  border-bottom: 2px solid $lu_side_panel_bg_color;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  padding-right: 1em;
 
-    > i {
-      position: absolute;
-      right: 0;
-      top: 0;
-      padding: 0.3em 0.3em 0.25em 0.2em;
-      z-index: 2;
-      background: white;
-      color: $lu_toolbar_color_base2;
-      cursor: pointer;
-      font-size: $lu_toolbar_font_size;
+  > i {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0.3em 0.3em 0.25em 0.2em;
+    z-index: 2;
+    background: white;
+    color: $lu_toolbar_color_base2;
+    cursor: pointer;
+    font-size: $lu_toolbar_font_size;
 
-      &:hover {
-        color: $lu_toolbar_color_hover;
-      }
-    }
-
-    &[data-count='1'],
-    &[data-count='0'] {
-      display: none;
-    }
-
-    &[data-count='2'] > i {
-      display: none;
-    }
-
-    > div {
-      margin-right: 0.1em;
-      border: 1px solid $lu_side_panel_bg_color;
-      border-top-left-radius: 5px;
-      border-top-right-radius: 5px;
+    &:hover {
+      color: $lu_toolbar_color_hover;
     }
   }
 
-  > main {
-    flex: 1 1 0;
-    display: flex;
-    flex-direction: column;
+  &[data-count='1'],
+  &[data-count='0'] {
+    display: none;
+  }
 
-    > section {
-      display: none;
-      flex: 1 1 0;
-      flex-direction: column;
-
-      &.#{$lu_css_prefix}-active {
-        display: flex;
-      }
-
-      > header {
-        text-align: center;
-        padding: 1em 0.5em;
-        order: 1;
-
-        form {
-          position: relative;
-
-          select {
-            width: 100%;
-            font-size: 120%;
-          }
-        }
-      }
-
-      &::before {
-        content: 'Column summaries';
-        font-size: small;
-        display: block;
-        color: $lu_toolbar_color_base2;
-        padding: 0.5em;
-        order: 3;
-      }
-
-      > div {
-        order: 4;
-        flex: 1 1 0;
-        position: relative;
-        overflow: auto;
-      }
-    }
+  &[data-count='2'] > i {
+    display: none;
   }
 }
 
-.#{$lu_css_prefix}-side-panel > header[data-count] > div,
-.#{$lu_css_prefix}-choose-options > div {
+.#{$lu_css_prefix}-side-panel-ranking-header {
+  margin-right: 0.1em;
+  border: 1px solid $lu_side_panel_bg_color;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.#{$lu_css_prefix}-side-panel-main {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.#{$lu_css_prefix}-side-panel-ranking {
+  display: none;
+  flex: 1 1 0;
+  flex-direction: column;
+
+  &.#{$lu_css_prefix}-active {
+    display: flex;
+  }
+
+  &::before {
+    content: 'Column Summaries';
+    font-size: small;
+    display: block;
+    color: $lu_toolbar_color_base2;
+    padding: 0.5em;
+    order: 3;
+  }
+}
+
+.#{$lu_css_prefix}-side-panel-ranking-main {
+  order: 4;
+  flex: 1 1 0;
+  position: relative;
+  overflow: auto;
+}
+
+.#{$lu_css_prefix}-side-panel-chooser {
+  text-align: center;
+  padding: 1em 0.5em;
+  order: 1;
+}
+
+.#{$lu_css_prefix}-side-panel-ranking-label {
   padding: 0.2em 0.5em;
   cursor: pointer;
+  display: flex;
 
   > span {
     white-space: nowrap;

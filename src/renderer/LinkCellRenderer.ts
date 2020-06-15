@@ -1,9 +1,9 @@
-import {IDataRow, IGroup} from '../model';
-import Column from '../model/Column';
-import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
+import {LinkColumn, Column, IDataRow, IOrderedGroup} from '../model';
+import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer, setText} from './utils';
-import LinkColumn from '../model/LinkColumn';
+import {noRenderer, setText} from './utils';
+import {cssClass} from '../styles';
+import {ISequence} from '../internal';
 
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Link';
@@ -15,11 +15,9 @@ export default class LinkCellRenderer implements ICellRendererFactory {
   create(col: LinkColumn): ICellRenderer {
     const align = col.alignment || 'left';
     return {
-      template: `<a${align !== 'left' ? ` class="lu-${align}"` : ''} target="_blank" href=""></a>`,
+      template: `<a${align !== 'left' ? ` class="${cssClass(align)}"` : ''} target="_blank" rel="noopener" href=""></a>`,
       update: (n: HTMLAnchorElement, d: IDataRow) => {
-        if (renderMissingDOM(n, col, d)) {
-          return;
-        }
+        renderMissingDOM(n, col, d);
         const v = col.getLink(d);
         n.href = v ? v.href : '';
         if (col.escape) {
@@ -27,32 +25,38 @@ export default class LinkCellRenderer implements ICellRendererFactory {
         } else {
           n.innerHTML = v ? v.alt : '';
         }
-      },
-      render: noop
+      }
     };
   }
 
-  private static exampleText(col: LinkColumn, rows: IDataRow[]) {
+  private static exampleText(col: LinkColumn, rows: ISequence<IDataRow>) {
     const numExampleRows = 5;
     const examples = <string[]>[];
-    for (const row of rows) {
-      if (col.isMissing(row)) {
-        continue;
-      }
+    rows.every((row) => {
       const v = col.getLink(row);
-      examples.push(`<a target="_blank" href="${v ? v.href : ''}">${v ? v.alt : ''}</a>`);
-      if (examples.length >= numExampleRows) {
-        break;
+      if (!v) {
+        return true;
       }
+      examples.push(`<a target="_blank" rel="noopener"  href="${v.href}">${v.alt}</a>`);
+      return examples.length < numExampleRows;
+    });
+    if (examples.length === 0) {
+      return '';
     }
     return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
   }
 
-  createGroup(col: LinkColumn): IGroupCellRenderer {
+  createGroup(col: LinkColumn, context: IRenderContext): IGroupCellRenderer {
     return {
       template: `<div> </div>`,
-      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
-        n.innerHTML = LinkCellRenderer.exampleText(col, rows);
+      update: (n: HTMLDivElement, group: IOrderedGroup) => {
+        return context.tasks.groupExampleRows(col, group, 'link', (rows) => LinkCellRenderer.exampleText(col, rows)).then((text) => {
+          if (typeof text === 'symbol') {
+            return;
+          }
+          n.classList.toggle(cssClass('missing'), !text);
+          n.innerHTML = text;
+        });
       }
     };
   }

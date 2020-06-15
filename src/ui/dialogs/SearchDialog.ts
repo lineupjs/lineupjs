@@ -1,33 +1,35 @@
-import Column from '../../model/Column';
-import {IDataProvider} from '../../provider/ADataProvider';
+import {Column} from '../../model';
+import {IDataProvider} from '../../provider';
 import ADialog, { IDialogContext} from './ADialog';
-import {uniqueId} from './utils';
+import {cssClass} from '../../styles';
+import {debounce} from '../../internal';
 
 /** @internal */
 export default class SearchDialog extends ADialog {
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly provider: IDataProvider) {
-    super(dialog);
+    super(dialog, {
+      livePreview: 'search'
+    });
   }
 
   protected build(node: HTMLElement) {
-    const id = uniqueId(this.dialog.idPrefix);
-    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)"><div class="lu-checkbox"><input id="${id}" type="checkbox"><label for="${id}">Use regular expressions</label></div>`);
+    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)">
+      <label class="${cssClass('checkbox')}">
+        <input type="checkbox">
+        <span>Use regular expressions</span>
+      </label>
+    `);
 
     const input = <HTMLInputElement>node.querySelector('input[type="text"]')!;
     const checkbox = <HTMLInputElement>node.querySelector('input[type="checkbox"]')!;
     const update = () => {
-      let search: any = input.value;
+      const search: any = input.value;
       if (search.length < 3) {
         input.setCustomValidity('at least 3 characters');
         return;
       }
       input.setCustomValidity('');
-      const isRegex = checkbox.checked;
-      if (isRegex) {
-        search = new RegExp(search);
-      }
-      this.provider.searchAndJump(search, this.column);
     };
     input.addEventListener('input', update, {
       passive: true
@@ -35,5 +37,37 @@ export default class SearchDialog extends ADialog {
     checkbox.addEventListener('change', update, {
       passive: true
     });
+    this.enableLivePreviews([input, checkbox]);
+
+    if (!this.showLivePreviews()) {
+      return;
+    }
+    input.addEventListener('input', debounce(() => this.submit(), 100), {
+      passive: true
+    });
+  }
+
+  protected submit() {
+    const input = this.findInput('input[type="text"]')!;
+    const checkbox = this.findInput('input[type="checkbox"]')!;
+
+    let search: any = input.value;
+    const isRegex = checkbox.checked;
+    if (isRegex) {
+      search = new RegExp(search);
+    }
+    this.provider.searchAndJump(search, this.column);
+    return true;
+  }
+
+  protected reset() {
+    const input = this.findInput('input[type="text"]')!;
+    const checkbox = this.findInput('input[type="checkbox"]')!;
+    input.value = '';
+    checkbox.checked = false;
+  }
+
+  protected cancel() {
+    // nothing to do
   }
 }
