@@ -118,6 +118,12 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           const r = col.renderer!.update(cnode, d, i, group);
           if (stacked) {
             missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
+            if (ci < cols.length - 1) {
+              const span = cnode.querySelector('span');
+              if (span) {
+                span.style.overflow = 'hidden';
+              }
+            }
           }
           if (r) {
             toWait.push(r);

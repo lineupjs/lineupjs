@@ -64,7 +64,8 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const update = () => {
       const valid = input.value.trim();
       if (valid.length <= 0) {
-        col.setFilter({filter: null, filterMissing: filterMissing.checked});
+        const filter = filterMissing.checked ? {filter: null, filterMissing: filterMissing.checked} : null;
+        col.setFilter(filter);
         return;
       }
       col.setFilter({
@@ -109,7 +110,10 @@ export default class StringCellRenderer implements ICellRendererFactory {
     let update: (col: StringColumn) => void;
     return {
       template: `<form><input type="text" placeholder="Filter ${col.desc.label}..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}">
-          <label class="${cssClass('checkbox')}"><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}><span>Use regular expressions</span></label>
+          <label class="${cssClass('checkbox')}">
+            <input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>
+            <span>Use regular expressions</span>
+          </label>
           ${filterMissingMarkup(f.filterMissing)}</form>`,
       update: (node: HTMLElement) => {
         if (!update) {
