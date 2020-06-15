@@ -122,13 +122,13 @@
     "tslint": "^5.17.0",
     "tslint-consistent-codestyle": "^1.15.1",
     "tslint-eslint-rules": "^5.4.0",
-    "typedoc": "^0.14.2",
+    "typedoc": "^0.17.7",
     "typedoc-plugin-as-member-of": "^1.0.2",
     "typescript": "^3.5.2",
     "url-loader": "^2.0.0",
     "webpack": "^4.34.0",
-    "webpack-cli": "^3.3.4",
-    "webpack-dev-server": "^3.7.1"
+    "webpack-cli": "^3.3.5",
+    "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
     "@types/d3-color": "^1.2.2",
