@@ -1,12 +1,13 @@
-import {suffix} from '../../internal/AEventDispatcher';
-import debounce from '../../internal/debounce';
-import CompositeColumn from '../../model/CompositeColumn';
+import {debounce, clear, suffix} from '../../internal';
+import {CompositeColumn} from '../../model';
 import {createHeader, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {IDialogContext} from './ADialog';
+import {IDialogContext} from './ADialog';
+import {cssClass, engineCssClass} from '../../styles';
+import APopup from './APopup';
 
 /** @internal */
-export default class CompositeChildrenDialog extends ADialog {
+export default class CompositeChildrenDialog extends APopup {
 
   private readonly id: string;
 
@@ -15,28 +16,36 @@ export default class CompositeChildrenDialog extends ADialog {
     this.id = `.dialog${Math.random().toString(36).slice(-8).substr(0, 3)}`;
   }
 
-  destroy() {
+  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+    super.cleanUp(action);
     this.column.on(suffix(this.id, CompositeColumn.EVENT_ADD_COLUMN, CompositeColumn.EVENT_REMOVE_COLUMN), null);
-    super.destroy();
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-sub-nested');
+    node.classList.add(cssClass('dialog-sub-nested'));
     const createChildren = () => {
       this.column.children.forEach((c) => {
         const n = createHeader(c, this.ctx, {
           mergeDropAble: false,
           resizeable: false,
-          level: this.dialog.level + 1
+          level: this.dialog.level + 1,
+          extraPrefix: 'sub'
         });
-        n.className = `lu-header`;
+        n.className = cssClass('header');
         updateHeader(n, c);
         const summary = this.ctx.summaryRenderer(c, false);
-        n.insertAdjacentHTML('beforeend', summary.template);
-        const summaryNode = <HTMLElement>n.lastElementChild!;
+        const summaryNode = this.ctx.asElement(summary.template);
         summaryNode.dataset.renderer = c.getSummaryRenderer();
-        summaryNode.classList.add('lu-summary');
-        summary.update(summaryNode, this.ctx.statsOf(<any>c));
+        summaryNode.classList.add(cssClass('summary'), cssClass('renderer'), cssClass('th-summary'));
+
+        const r = summary.update(summaryNode);
+        if (r) {
+          summaryNode.classList.add(engineCssClass('loading'));
+          r.then(() => {
+            summaryNode.classList.remove(engineCssClass('loading'));
+          });
+        }
+        n.appendChild(summaryNode);
         node.appendChild(n);
       });
     };
@@ -48,7 +57,7 @@ export default class CompositeChildrenDialog extends ADialog {
         this.destroy();
         return;
       }
-      node.innerHTML = '';
+      clear(node);
       createChildren();
     }));
   }

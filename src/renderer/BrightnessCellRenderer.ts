@@ -1,11 +1,8 @@
 import {hsl} from 'd3-color';
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn} from '../model';
-import Column from '../model/Column';
-import {isNumbersColumn} from '../model/INumberColumn';
-import {CANVAS_HEIGHT} from '../styles';
+import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, isMapAbleColumn, DEFAULT_COLOR, SolidColorFunction} from '../model';
+import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {colorOf} from './impose';
-import {default as IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {noRenderer, setText} from './utils';
 
@@ -15,13 +12,13 @@ export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColu
   }
   if (imposer || !isMapAbleColumn(col)) {
     //hsl space encoding, encode in lightness
-    const color = hsl(colorOf(col, row, imposer, v) || Column.DEFAULT_COLOR);
+    const color = hsl(colorOf(col, row, imposer, v) || DEFAULT_COLOR);
     color.l = 1 - v; // largest value = darkest color
     return color.toString();
   }
   const map = col.getColorMapping();
   const valueColor = map.apply(v);
-  if (map.type === 'solid') {
+  if (map instanceof SolidColorFunction) {
     //hsl space encoding, encode in lightness
     const color = hsl(valueColor);
     color.l = 1 - v; // largest value = darkest color
@@ -38,11 +35,11 @@ export default class BrightnessCellRenderer implements ICellRendererFactory {
     return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);
   }
 
-  create(col: INumberColumn, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer {
+  create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
     return {
       template: `<div title="">
-        <div style="background-color: ${Column.DEFAULT_COLOR}"></div><div> </div>
+        <div class="${cssClass('cat-color')}" style="background-color: ${DEFAULT_COLOR}"></div><div class="${cssClass('cat-label')}"> </div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);

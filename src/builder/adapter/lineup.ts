@@ -1,38 +1,13 @@
-import {Column, IColumnDesc} from '../../model';
-import {Taggle, LineUp} from '../../ui';
-import {ILineUpOptions, ITaggleOptions} from '../../interfaces';
-import {IBuilderAdapterRankingProps, buildRanking} from './ranking';
-import {pick, isSame, equal} from './utils';
-import {LocalDataProvider, deriveColumnDescriptions, deriveColors} from '../../provider';
+import {IBuilderAdapter, IBuilderAdapterProps, IBuilderAdapterRankingProps, IChangeDetecter} from '.';
+import {IColumnDesc} from '../../model';
+import {deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider} from '../../provider';
+import {LineUp, Taggle} from '../../ui';
+import {buildRanking} from './ranking';
+import {equal, isSame, pick} from './utils';
 
 
-export interface IBuilderAdapterDataProps {
-  data: any[];
-  selection?: number[] | null;
-  highlight?: number | null;
-
-  onSelectionChanged?(selection: number[]): void;
-  onHighlightChanged?(highlight: number): void;
-
-  singleSelection?: boolean;
-  filterGlobally?: boolean;
-  noCriteriaLimits?: boolean;
-  maxGroupColumns?: number;
-  maxNestedSortingCriteria?: number;
-  columnTypes?: {[type: string]: typeof Column};
-
-  deriveColumns?: boolean | string[];
-  deriveColors?: boolean;
-
-  restore?: any;
-  defaultRanking?: boolean | 'noSupportTypes';
-}
-
-
-export declare type IBuilderAdapterProps = Partial<ITaggleOptions> & IBuilderAdapterDataProps;
-
-const providerOptions: (keyof IBuilderAdapterDataProps)[] = ['singleSelection', 'filterGlobally', 'noCriteriaLimits', 'maxGroupColumns', 'maxNestedSortingCriteria', 'columnTypes'];
-const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'toolbar', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser'];
+const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = ['singleSelection', 'filterGlobally', 'columnTypes', 'taskExecutor', 'jumpToSearchResult'];
+const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'canRender', 'toolbarActions', 'toolbarDialogAddons', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser', 'livePreviews'];
 
 interface IRankingContext {
   builders: IBuilderAdapterRankingProps[];
@@ -46,17 +21,6 @@ interface IColumnContext {
   deriveColumns: boolean;
   deriveColumnNames: string[];
   deriveColors: boolean;
-}
-
-export interface IChangeDetecter {
-  (prop: (keyof IBuilderAdapterProps)): boolean;
-}
-
-export interface IBuilderAdapter {
-  props(): Readonly<IBuilderAdapterProps>;
-  createInstance(data: LocalDataProvider, options: Partial<ILineUpOptions>): LineUp | Taggle;
-  rankingBuilders(): IBuilderAdapterRankingProps[];
-  columnDescs(data: any[]): IColumnDesc[];
 }
 
 export class Adapter {
@@ -126,7 +90,14 @@ export class Adapter {
     this.prevColumns = ctx;
     const columns = ctx.columns.map((d) => Object.assign({}, d)); // work on copy
     if (ctx.deriveColumns) {
-      columns.push(...deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames}));
+      const labels = new Set(columns.map((d) => `${d.type}@${d.label}`));
+      const derived = deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames});
+      for (const derive of derived) {
+        if (labels.has(`${derive.type}@${derive.label}`)) { // skip same name
+          continue;
+        }
+        columns.push(derive);
+      }
     }
     if (ctx.deriveColors) {
       deriveColors(columns);

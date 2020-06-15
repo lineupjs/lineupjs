@@ -1,28 +1,26 @@
 @import '../vars';
 
-.lineup-engine {
-  > hr {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 1px;
-    height: 2px;
-    margin: 0;
-    background-color: $lu_selected_color;
-    border: none;
-    transform-origin: left center;
-    display: none;
-    pointer-events: none;
+.#{$lu_css_prefix}-hr {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 2px;
+  margin: 0;
+  background-color: $lu_selected_color;
+  border: none;
+  transform-origin: left center;
+  display: none;
+  pointer-events: none;
 
-    @include user_select_none();
+  @include user_select_none();
 
-    &.#{$lu_css_prefix}-selection-active {
-      display: block;
-      z-index: 1000;
-    }
+  &.#{$lu_css_prefix}-selection-active {
+    display: block;
+    z-index: 1000;
   }
+}
 
-  article.#{$lu_css_prefix}-selection-active * {
-    @include user_select_none();
-  }
+.#{$engine_css_prefix}-tbody.#{$lu_css_prefix}-selection-active {
+  @include user_select_none();
 }

@@ -1,7 +1,6 @@
+@import '../vars';
 
-[data-renderer=table],
-[data-renderer=map],
-[data-renderer=mapbars] {
+.#{$lu_css_prefix}-rtable {
   font-size: 60%;
   padding: 0;
   margin: 0;
@@ -9,15 +8,15 @@
   display: grid;
   grid-template-columns: auto auto;
   grid-gap: 0.2em;
-
-  > div {
-    overflow: hidden;
-    min-height: 1.2em;
-    text-overflow: ellipsis;
-  }
 }
 
-[data-renderer=mapbars] > div[title] {
+.#{$lu_css_prefix}-table-cell {
+  overflow: hidden;
+  min-height: 1.2em;
+  text-overflow: ellipsis;
+}
+
+.#{$lu_css_prefix}-renderer-mapbars > div[title] {
   position: relative;
 
   > div {

@@ -1,13 +1,15 @@
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
-import {ICategoricalColumn, IDataRow, IGroup, INumberColumn} from '../model';
-import Column from '../model/Column';
-import {IDataProvider} from '../provider/ADataProvider';
+import {IAbortAblePromise} from 'lineupengine';
+import {Column, IDataRow, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn} from '../model';
+import {IDataProvider} from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
+import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../internal';
+
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
 }
 
+export declare type IRenderCallback = (ctx: CanvasRenderingContext2D) => void;
 
 /**
  * a cell renderer for rendering a cell of specific column
@@ -25,9 +27,13 @@ export interface ICellRenderer {
    * @param i the order relative index
    * @param group the group this row is part of
    */
-  update(node: HTMLElement, d: IDataRow, i: number, group: IGroup): void;
+  update(node: HTMLElement, d: IDataRow, i: number, group: IOrderedGroup): void | IAbortAblePromise<void> | null;
 
-  render(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup): void;
+  /**
+   * render a low detail canvas row
+   * @return true if a dom element is needed
+   */
+  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup): void | IAbortAblePromise<IRenderCallback> | boolean | null;
 }
 
 /**
@@ -43,9 +49,8 @@ export interface IGroupCellRenderer {
    * update a given node (create using the template) with the given data
    * @param node the node to update
    * @param group the group to render
-   * @param rows the data items
    */
-  update(node: HTMLElement, group: IGroup, rows: IDataRow[]): void;
+  update(node: HTMLElement, group: IOrderedGroup): void | IAbortAblePromise<void> | null;
 }
 
 export interface ISummaryRenderer {
@@ -54,14 +59,34 @@ export interface ISummaryRenderer {
    */
   readonly template: string;
 
-  update(node: HTMLElement, hist: IStatistics | ICategoricalStatistics | null): void;
+  update(node: HTMLElement): void | IAbortAblePromise<void> | null;
 }
 
+
+export interface IRenderTask<T> {
+  then<U = void>(onfullfilled: (value: T | symbol) => U): U | IAbortAblePromise<U>;
+}
+
+export interface IRenderTasks {
+  groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
+  groupExampleRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
+
+  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean): IRenderTask<{group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
+  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean): IRenderTask<{group: IStatistics, summary: IStatistics, data: IStatistics}>;
+  groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup): IRenderTask<{group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
+  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup): IRenderTask<{group: IDateStatistics, summary: IDateStatistics, data: IDateStatistics}>;
+
+  summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<{summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
+  summaryNumberStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<{summary: IStatistics, data: IStatistics}>;
+  summaryCategoricalStats(col: Column & ICategoricalLikeColumn): IRenderTask<{summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
+  summaryDateStats(col: Column & IDateColumn): IRenderTask<{summary: IDateStatistics, data: IDateStatistics}>;
+}
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */
 export interface IRenderContext {
+  readonly tasks: IRenderTasks;
   /**
    * render a column
    * @param col
@@ -76,21 +101,12 @@ export interface IRenderContext {
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 
-  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
-
   /**
    * prefix used for all generated id names
    */
   readonly idPrefix: string;
 
-  /**
-   * lookup custom options by key
-   * @param key key to lookup
-   * @param defaultValue default value
-   */
-  option<T>(key: string, defaultValue: T): T;
-
-  readonly totalNumberOfRows: number;
+  asElement(html: string): HTMLElement;
 
   colWidth(col: Column): number;
 
@@ -110,12 +126,9 @@ export interface ICellRendererFactory {
 
   canRender(col: Column, mode: ERenderMode): boolean;
 
-  create(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer;
+  create?(col: Column, context: IRenderContext, imposer?: IImposer): ICellRenderer;
 
-  createGroup(col: Column, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): IGroupCellRenderer;
+  createGroup?(col: Column, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer;
 
-  createSummary(col: Column, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
+  createSummary?(col: Column, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 }
-
-
-export default IRenderContext;

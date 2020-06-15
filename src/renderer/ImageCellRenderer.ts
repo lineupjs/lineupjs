@@ -1,9 +1,16 @@
-import {IDataRow} from '../model';
-import Column from '../model/Column';
+import {Column, IDataRow, LinkColumn} from '../model';
 import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer} from './utils';
-import LinkColumn from '../model/LinkColumn';
+import {noRenderer} from './utils';
+import {abortAble} from 'lineupengine';
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.src = src;
+  });
+}
 
 export default class ImageCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Image';
@@ -17,11 +24,23 @@ export default class ImageCellRenderer implements ICellRendererFactory {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);
+        n.style.backgroundImage = null;
+        if (missing) {
+          n.title = '';
+          return;
+        }
         const v = col.getLink(d);
         n.title = v ? v.alt : '';
-        n.style.backgroundImage = missing || !v ? null : `url('${v.href}')`;
-      },
-      render: noop
+        if (!v) {
+          return;
+        }
+        return abortAble(loadImage(v.href)).then((image) => {
+          if (typeof image === 'symbol') {
+            return;
+          }
+          n.style.backgroundImage = missing || !v ? null : `url('${image.src}')`;
+        });
+      }
     };
   }
 

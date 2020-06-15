@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    const cats = ['c1', 'c2', 'c3'];
+    const cat2 = ['a1', 'a2'];
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        s: 'Row ' + i,
+        a: Math.random() * 10,
+        cat: cats[Math.floor(Math.random() * cats.length)],
+        cat2: cat2[Math.floor(Math.random() * cat2.length)],
+        d: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
+      });
+    }
+    const b = LineUpJS.builder(arr);
+    b.deriveColumns()
+    b.aggregationStrategy('group+top+item')
+    b.ranking(LineUpJS.buildRanking()
+      .supportTypes()
+      .group()
+      .column('cat').column('cat2')
+      .groupBy('cat')
+      .groupBy('cat2')
+    )
+    b.build(document.body);
+  };
+</script>
+
+</body>
+</html>

@@ -8,8 +8,8 @@
   <link href="./demo.css" rel="stylesheet">
 </head>
 <body>
-<script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="./LineUpJS.js"></script>
+<script src="./helper/testRules.js"></script>
 
 <script>
   window.onload = function () {
@@ -24,7 +24,7 @@
       })
     }
     const builder = LineUpJS.builder(arr);
-    builder.deriveColumns();
+    builder.deriveColumns().animated(false);
     // and two rankings
     const ranking = LineUpJS.buildRanking()
       .supportTypes()
@@ -37,7 +37,7 @@
       .ranking(ranking);
 
 
-    builder.build(document.body);
+    builder.buildTaggle(document.body);
   };
 </script>
 

@@ -1,5 +1,6 @@
+@import '../vars';
 
-[data-renderer=verticalbar] {
+.#{$lu_css_prefix}-renderer-verticalbar {
   align-items: flex-end;
 
   > div {

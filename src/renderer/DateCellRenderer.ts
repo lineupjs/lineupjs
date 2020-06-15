@@ -1,9 +1,9 @@
-import {IDataRow, IGroup} from '../model';
-import Column from '../model/Column';
-import {ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
+import {Column, IDataRow, DateColumn, IOrderedGroup} from '../model';
+import {IRenderContext, ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {noop, noRenderer, setText, exampleText} from './utils';
-import DateColumn, {choose} from '../model/DateColumn';
+import {chooseAggregatedDate} from '../model/internalDate';
+import {cssClass} from '../styles';
 
 export default class DateCellRenderer implements ICellRendererFactory {
   title: string = 'Date';
@@ -25,18 +25,27 @@ export default class DateCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroup(col: DateColumn): IGroupCellRenderer {
-    const isGrouped = col.isGroupedBy() >= 0;
-    const grouper = col.getDateGrouper();
+  createGroup(col: DateColumn, context: IRenderContext): IGroupCellRenderer {
     return {
       template: `<div> </div>`,
-      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLDivElement, group: IOrderedGroup) => {
+        const isGrouped = col.isGroupedBy() >= 0;
         if (isGrouped) {
-          const chosen = choose(rows, grouper, col);
-          setText(n, chosen.name);
-          return;
+          return context.tasks.groupRows(col, group, 'date', (rows) => chooseAggregatedDate(rows, col.getDateGrouper(), col)).then((chosen) => {
+            if (typeof chosen === 'symbol') {
+              return;
+            }
+            n.classList.toggle(cssClass('missing'), !chosen);
+            setText(n, chosen ? chosen.name : '');
+          });
         }
-        setText(n, exampleText(col, rows));
+        return context.tasks.groupExampleRows(col, group, 'date', (sample) => exampleText(col, sample)).then((text) => {
+          if (typeof text === 'symbol') {
+            return;
+          }
+          n.classList.toggle(cssClass('missing'), !text);
+          setText(n, text);
+        });
       }
     };
   }

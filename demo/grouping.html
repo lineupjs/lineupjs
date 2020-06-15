@@ -15,12 +15,13 @@
   window.onload = function () {
     const arr = [];
     const cats = ['c1', 'c2', 'c3'];
+    const cats2 = ['a1', 'a2'];
     for (let i = 0; i < 100; ++i) {
       arr.push({
         a: Math.random() * 10,
         d: 'Row ' + i,
         cat: cats[Math.floor(Math.random() * 3)],
-        cat2: cats[Math.floor(Math.random() * 3)]
+        cat2: cats2[Math.floor(Math.random() * 2)]
       })
     }
     const builder = LineUpJS.builder(arr);
@@ -30,9 +31,8 @@
       .supportTypes()
       .group()
       .allColumns() // add all columns
-      .groupBy('cat')
-      .sortBy('a', 'desc')
-      .sortBy('d', 'asc')
+      .groupBy('cat', 'cat2')
+      .groupSortBy('a')
 
     builder
       .ranking(ranking);

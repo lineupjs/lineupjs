@@ -1,8 +1,6 @@
 @import '../vars';
 
-[data-renderer=dot] {
-  position: relative;
-
+.#{$lu_css_prefix}-renderer-dot {
   > div {
     background: $lu_renderer_dot_color;
     opacity: $lu_renderer_dot_opacity;

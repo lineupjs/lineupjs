@@ -1,7 +1,6 @@
-import {IDynamicHeight, ITaggleOptions} from '../interfaces';
-import {IGroupData, IGroupItem} from '../model';
-import Ranking from '../model/Ranking';
-import {ICellRendererFactory} from '../renderer';
+import {IDynamicHeight, ITaggleOptions, ILivePreviewOptions} from '../config';
+import Column, {IGroupData, IGroupItem, Ranking} from '../model';
+import {ICellRendererFactory, ERenderMode} from '../renderer';
 import {IToolbarAction, IToolbarDialogAddon} from '../ui';
 
 /**
@@ -10,7 +9,8 @@ import {IToolbarAction, IToolbarDialogAddon} from '../ui';
 export default class LineUpBuilder {
   protected readonly options: Partial<ITaggleOptions> = {
     renderers: {},
-    toolbar: {},
+    toolbarActions: {},
+    toolbarDialogAddons: {},
     flags: {}
   };
 
@@ -20,6 +20,11 @@ export default class LineUpBuilder {
    */
   animated(enable: boolean) {
     this.options.animated = enable;
+    return this;
+  }
+
+  livePreviews(options: Partial<ILivePreviewOptions>) {
+    this.options.livePreviews = options;
     return this;
   }
 
@@ -109,12 +114,20 @@ export default class LineUpBuilder {
   }
 
   /**
+   * custom function whether the given renderer should be allowed to render the give colum in the given mode
+   */
+  canRender(canRender: (type: string, renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
+    this.options.canRender = canRender;
+    return this;
+  }
+
+  /**
    * register another toolbar action which can be used within a model class
    * @param id toolbar id
    * @param action
    */
   registerToolbarAction(id: string, action: IToolbarAction) {
-    this.options.toolbar![id] = action;
+    this.options.toolbarActions![id] = action;
     return this;
   }
 
@@ -124,7 +137,7 @@ export default class LineUpBuilder {
    * @param addon addon description
    */
   registerToolbarDialogAddon(id: string, addon: IToolbarDialogAddon) {
-    this.options.toolbar![id] = addon;
+    this.options.toolbarDialogAddons![id] = addon;
     return this;
   }
 
@@ -132,7 +145,7 @@ export default class LineUpBuilder {
    * height and padding of a row
    * @default 18 and 2
    */
-  rowHeight(rowHeight: number, rowPadding: number) {
+  rowHeight(rowHeight: number, rowPadding: number = 2) {
     this.options.rowHeight = rowHeight;
     this.options.rowPadding = rowPadding;
     return this;
@@ -142,7 +155,7 @@ export default class LineUpBuilder {
    * height and padding of an aggregated group in pixel
    * @default 40 and 5
    */
-  groupRowHeight(groupHeight: number, groupPadding: number) {
+  groupRowHeight(groupHeight: number, groupPadding: number = 5) {
     this.options.groupHeight = groupHeight;
     this.options.groupPadding = groupPadding;
     return this;

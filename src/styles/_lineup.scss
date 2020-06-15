@@ -1,4 +1,7 @@
+@import './vars';
+
 @import './common';
+@import './icons/icon_style';
 @import './dialogs';
 @import './mappingeditor';
 @import './header/index';
@@ -9,10 +12,11 @@
 @import './datatypes';
 @import './taggle/index';
 @import './supported_browser';
-@import './vars';
+@import './safari';
 
 .#{$lu_css_prefix} {
   position: relative;
+  line-height: normal;
 
   > aside {
     float: right;

@@ -1,11 +1,12 @@
-import {IColumn} from 'lineupengine';
-import Column from '../model/Column';
+import {IColumn, IAbortAblePromise, IAsyncUpdate, isAbortAble} from 'lineupengine';
+import {Column} from '../model';
 import {ICellRenderer, IGroupCellRenderer} from '../renderer';
-import {ISummaryRenderer} from '../renderer/interfaces';
+import {ISummaryRenderer, IRenderCallback} from '../renderer';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
-import {ILineUpFlags} from '../interfaces';
-
+import {ILineUpFlags} from '../config';
+import {cssClass, engineCssClass} from '../styles';
+import {isPromiseLike} from '../internal';
 
 export interface IRenderers {
   singleId: string;
@@ -42,10 +43,11 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers || !this.renderers.single) {
       return null;
     }
-    if (this.renderers.singleTemplate)  {
+    if (this.renderers.singleTemplate) {
       return <HTMLElement>this.renderers.singleTemplate.cloneNode(true);
     }
-    const elem = asElement(this.ctx.document, this.renderers.single.template);
+    const elem = this.ctx.asElement(this.renderers.single.template);
+    elem.classList.add(cssClass(`renderer-${this.renderers.singleId}`), cssClass('detail'));
     elem.dataset.renderer = this.renderers.singleId;
     elem.dataset.group = 'd';
 
@@ -57,10 +59,11 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers || !this.renderers.group) {
       return null;
     }
-    if (this.renderers.groupTemplate)  {
+    if (this.renderers.groupTemplate) {
       return <HTMLElement>this.renderers.groupTemplate.cloneNode(true);
     }
-    const elem = asElement(this.ctx.document, this.renderers.group.template);
+    const elem = this.ctx.asElement(this.renderers.group.template);
+    elem.classList.add(cssClass(`renderer-${this.renderers.groupId}`), cssClass('group'));
     elem.dataset.renderer = this.renderers.groupId;
     elem.dataset.group = 'g';
 
@@ -72,40 +75,47 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers || !this.renderers.summary) {
       return null;
     }
-    if (this.renderers.summaryTemplate)  {
+    if (this.renderers.summaryTemplate) {
       return <HTMLElement>this.renderers.summaryTemplate.cloneNode(true);
     }
-    const elem = asElement(this.ctx.document, this.renderers.summary.template);
+    const elem = this.ctx.asElement(this.renderers.summary.template);
+    elem.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass(`renderer-${this.renderers.summaryId}`));
     elem.dataset.renderer = this.renderers.summaryId;
-    elem.classList.add('lu-summary');
+
     this.renderers.summaryTemplate = <HTMLElement>elem.cloneNode(true);
     return elem;
   }
 
-  createHeader() {
+  createHeader(): HTMLElement | IAsyncUpdate<HTMLElement> {
     const node = createHeader(this.c, this.ctx, {
+      extraPrefix: 'th',
       dragAble: this.flags.advancedUIFeatures,
       mergeDropAble: this.flags.advancedModelFeatures,
       rearrangeAble: this.flags.advancedUIFeatures,
       resizeable: this.flags.advancedUIFeatures
     });
-    node.className = `lu-header`;
-    node.classList.toggle('frozen', this.frozen);
+    node.classList.add(cssClass('header'));
+    if (!this.flags.disableFrozenColumns) {
+      node.classList.toggle(engineCssClass('frozen'), this.frozen);
+    }
 
     if (this.renderers && this.renderers.summary) {
       const summary = this.summaryRenderer()!;
       node.appendChild(summary);
     }
-    this.updateHeader(node);
-    return node;
+    return this.updateHeader(node);
   }
 
-  updateHeader(node: HTMLElement) {
+  hasSummaryLine() {
+    return Boolean(this.c.getMetaData().summary);
+  }
+
+  updateHeader(node: HTMLElement): HTMLElement | IAsyncUpdate<HTMLElement> {
     updateHeader(node, this.c);
     if (!this.renderers || !this.renderers.summary) {
-      return;
+      return node;
     }
-    let summary = <HTMLElement>node.querySelector('.lu-summary')!;
+    let summary = <HTMLElement>node.getElementsByClassName(cssClass('summary'))[0]!;
     const oldRenderer = summary.dataset.renderer;
     const currentRenderer = this.renderers.summaryId;
     if (oldRenderer !== currentRenderer) {
@@ -113,18 +123,23 @@ export default class RenderColumn implements IColumn {
       summary = this.summaryRenderer()!;
       node.appendChild(summary);
     }
-    this.renderers.summary.update(summary, this.ctx.statsOf(<any>this.c));
-  }
-
-  createCell(index: number) {
-    const isGroup = this.ctx.isGroup(index);
-    const node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
-    this.updateCell(node, index);
+    const ready = this.renderers.summary.update(summary);
+    if (ready) {
+      return {item: node, ready};
+    }
     return node;
   }
 
-  updateCell(node: HTMLElement, index: number): HTMLElement | void {
-    node.classList.toggle('frozen', this.frozen);
+  createCell(index: number): HTMLElement | IAsyncUpdate<HTMLElement> {
+    const isGroup = this.ctx.isGroup(index);
+    const node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
+    return this.updateCell(node, index);
+  }
+
+  updateCell(node: HTMLElement, index: number): HTMLElement | IAsyncUpdate<HTMLElement> {
+    if (!this.flags.disableFrozenColumns) {
+      node.classList.toggle(engineCssClass('frozen'), this.frozen);
+    }
     const isGroup = this.ctx.isGroup(index);
     // assert that we have the template of the right mode
     const oldRenderer = node.dataset.renderer;
@@ -134,26 +149,62 @@ export default class RenderColumn implements IColumn {
     if (oldRenderer !== currentRenderer || oldGroup !== currentGroup) {
       node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
     }
+    let ready: IAbortAblePromise<void> | void | null;
     if (isGroup) {
       const g = this.ctx.getGroup(index);
-      this.renderers!.group.update(node, g, g.rows);
+      ready = this.renderers!.group.update(node, g);
     } else {
       const r = this.ctx.getRow(index);
-      this.renderers!.single.update(node, r, r.relativeIndex, r.group);
+      const row = this.ctx.provider.getRow(r.dataIndex);
+      if (!isPromiseLike(row)) {
+        ready = this.renderers!.single.update(node, row, r.relativeIndex, r.group);
+      } else {
+        ready = chainAbortAble(row, (row) => this.renderers!.single.update(node, row, r.relativeIndex, r.group));
+      }
+    }
+    if (ready) {
+      return {item: node, ready};
     }
     return node;
   }
 
-  renderCell(ctx: CanvasRenderingContext2D, index: number) {
+  renderCell(ctx: CanvasRenderingContext2D, index: number): boolean | IAbortAblePromise<IRenderCallback> {
     const r = this.ctx.getRow(index);
-    this.renderers!.single.render(ctx, r, r.relativeIndex, r.group);
+    const s = this.renderers!.single;
+    if (!s.render) {
+      return false;
+    }
+    const row = this.ctx.provider.getRow(r.dataIndex);
+    if (!isPromiseLike(row)) {
+      return s.render(ctx, row, r.relativeIndex, r.group) || false;
+    }
+    return chainAbortAble(row, (row) => s.render!(ctx, row, r.relativeIndex, r.group) || false);
   }
+
 }
 
-function asElement(doc: Document, html: string): HTMLElement {
-  const helper = doc.createElement('div');
-  helper.innerHTML = html;
-  const s = <HTMLElement>helper.firstElementChild!;
-  helper.innerHTML = '';
-  return s;
+
+function chainAbortAble<T, U, V>(toWait: Promise<T>, mapper: (value: T) => IAbortAblePromise<U> | V): IAbortAblePromise<U> | V {
+  let aborted = false;
+  const p: any = new Promise<IAbortAblePromise<U> | null | void>((resolve) => {
+    if (aborted) {
+      return;
+    }
+    toWait.then((r) => {
+      if (aborted) {
+        return;
+      }
+      const mapped = mapper(r);
+      if (isAbortAble(<any>mapped)) {
+        p.abort = (<IAbortAblePromise<U>>mapped).abort.bind(mapped);
+        return p.then(resolve);
+      }
+      return resolve(<any>mapped);
+    });
+  });
+
+  p.abort = () => {
+    aborted = true;
+  };
+  return p;
 }

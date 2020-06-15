@@ -1,10 +1,11 @@
-closes <list issues here>
+Closes <list issues here>
 
-**prerequisites**: 
- * [ ] branch is up-to-date with the branch to be merged with, i.e. develop
- * [ ] build is successful
- * [ ] code is cleaned up and formatted 
- * [ ] tested with Firefox 52, Firefox 57+, Chrome 64+, MS Edge 16+
+**Prerequisites**:
+
+* [ ] Branch is up-to-date with the branch to be merged with, i.e. develop
+* [ ] Build is successful
+* [ ] Code is cleaned up and formatted 
+* [ ] Tested with Firefox ESR, latest Firefox, latest Chrome, Edge 18
 
 
 ### Summary

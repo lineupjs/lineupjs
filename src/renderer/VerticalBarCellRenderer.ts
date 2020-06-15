@@ -1,13 +1,9 @@
-import {IDataRow} from '../model';
-import Column from '../model/Column';
-import {DEFAULT_FORMATTER, INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
-import NumbersColumn from '../model/NumbersColumn';
-import {CANVAS_HEIGHT} from '../styles';
+import {Column, NumbersColumn, IDataRow, INumbersColumn, isNumbersColumn} from '../model';
+import {CANVAS_HEIGHT, cssClass} from '../styles';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {toHeatMapColor} from './BrightnessCellRenderer';
-import IRenderContext, {ERenderMode, ICellRendererFactory, IImposer} from './interfaces';
-import {attr, forEachChild, noRenderer} from './utils';
-import {ISummaryRenderer} from './interfaces';
+import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ISummaryRenderer} from './interfaces';
+import {forEachChild, noRenderer} from './utils';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Bar Chart';
@@ -31,24 +27,24 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer implem
     const range = 1;
     let templateRows = '';
     for (let i = 0; i < col.dataLength!; ++i) {
-      templateRows += `<div style="background-color: white" title=""></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}" style="background-color: white" title=""></div>`;
     }
+    const formatter = col.getNumberFormat();
+
     return {
+      clazz: cssClass('heatmap'),
       templateRow: templateRows,
-      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow) => {
+      update: (row: HTMLElement, data: number[], raw: number[], item: IDataRow, tooltipPrefix?: string) => {
         const zero = toHeatMapColor(0, item, col, imposer);
         const one = toHeatMapColor(1, item, col, imposer);
 
-        forEachChild(row, (d, i) => {
+        forEachChild(row, (d: HTMLElement, i) => {
           const v = data[i];
           const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, [0, 1]);
-          attr(<HTMLElement>d, {
-            title: DEFAULT_FORMATTER(raw[i])
-          }, {
-            'background-color': v < threshold ? zero : one,
-            bottom: `${Math.round((100 * bottom) / range)}%`,
-            height: `${Math.round((100 * height) / range)}%`
-          });
+          d.title = `${tooltipPrefix || ''}${formatter(raw[i])}`;
+          d.style.backgroundColor = v < threshold ? zero : one;
+          d.style.bottom = `${Math.round((100 * bottom) / range)}%`;
+          d.style.height = `${Math.round((100 * height) / range)}%`;
         });
       },
       render: (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow) => {

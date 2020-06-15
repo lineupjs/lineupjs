@@ -1,11 +1,9 @@
-import {similar} from '../internal/math';
+import {similar, IEventListener} from '../internal';
 import {toolbar} from './annotations';
-import Column, {IColumnDesc, IFlatColumn, widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn, addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow} from './interfaces';
-import {isNumberColumn} from './INumberColumn';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
+import {IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn, ITypeFactory} from './interfaces';
 import StackColumn from './StackColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
 
 
 /**
@@ -13,17 +11,17 @@ import {IEventListener} from '../internal/AEventDispatcher';
  * @asMemberOf MultiLevelCompositeColumn
  * @event
  */
-export declare function collapseChanged(previous: boolean, current: boolean): void;
+export declare function collapseChanged_MC(previous: boolean, current: boolean): void;
 
 /**
  * emitted when the ratios between the children changes
  * @asMemberOf MultiLevelCompositeColumn
  * @event
  */
-export declare function nestedChildRatio(previous: number, current: number): void;
+export declare function nestedChildRatio_MC(previous: number, current: number): void;
 
 
-@toolbar('collapse')
+@toolbar('compress', 'expand')
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
   static readonly EVENT_MULTI_LEVEL_CHANGED = StackColumn.EVENT_MULTI_LEVEL_CHANGED;
@@ -49,8 +47,8 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     return super.createEventList().concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED]);
   }
 
-  on(type: typeof MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged | null): this;
-  on(type: typeof MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, listener: typeof nestedChildRatio | null): this;
+  on(type: typeof MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged_MC | null): this;
+  on(type: typeof MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, listener: typeof nestedChildRatio_MC | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
@@ -61,6 +59,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -87,7 +86,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }
@@ -148,13 +147,6 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
       return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
     }
     return super.getRenderer();
-  }
-
-  isMissing(row: IDataRow) {
-    if (this.getCollapsed()) {
-      return this._children.some((c) => (isNumberColumn(c) || isMultiLevelColumn(c)) && c.isMissing(row));
-    }
-    return false;
   }
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {

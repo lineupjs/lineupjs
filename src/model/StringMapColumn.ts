@@ -1,27 +1,30 @@
 import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
 import {IDataRow} from './interfaces';
 import MapColumn, {IMapColumnDesc} from './MapColumn';
 import {EAlignment, IStringDesc} from './StringColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
+import {IEventListener} from '../internal';
+import {isMissingValue} from './missing';
+import {integrateDefaults} from './internal';
 
 export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
 
 /**
  * a string column with optional alignment
  */
-@toolbar('search')
+@toolbar('rename', 'search')
 export default class StringMapColumn extends MapColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<IStringMapColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200,
+      renderer: 'map'
+    }));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
-    this.setDefaultRenderer('map');
   }
 
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
@@ -31,6 +34,7 @@ export default class StringMapColumn extends MapColumn<string> {
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -41,9 +45,14 @@ export default class StringMapColumn extends MapColumn<string> {
   }
 
   getValue(row: IDataRow) {
-    return super.getValue(row).map(({key, value}) => ({
+    const r = this.getMapValue(row);
+    return r.every((d) => d.value === '') ? null : r;
+  }
+
+  getMapValue(row: IDataRow) {
+    return super.getMap(row).map(({key, value}) => ({
       key,
-      value: value == null ? '' : String(value)
+      value: isMissingValue(value) ? '' : String(value)
     }));
   }
 }

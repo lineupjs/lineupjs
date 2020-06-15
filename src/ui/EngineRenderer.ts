@@ -1,21 +1,18 @@
-import {nonUniformContext, MultiTableRowRenderer, GridStyleManager} from 'lineupengine';
-import {ILineUpOptions, ILineUpFlags} from '../interfaces';
-import {findOption, ICategoricalStatistics, IStatistics, round} from '../internal';
-import AEventDispatcher, {suffix, IEventListener} from '../internal/AEventDispatcher';
-import {
-  Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup,
-  isNumberColumn, INumberColumn
-} from '../model';
-import Ranking from '../model/Ranking';
-import ADataProvider from '../provider/ADataProvider';
-import {
-  chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, IImposer, IRenderContext, possibleGroupRenderer,
-  possibleRenderer, possibleSummaryRenderer
-} from '../renderer';
-import EngineRanking, {IEngineRankingContext} from './EngineRanking';
-import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
-import SlopeGraph, {EMode} from './SlopeGraph';
+import {GridStyleManager, MultiTableRowRenderer, nonUniformContext} from 'lineupengine';
+import {ILineUpFlags, ILineUpOptions} from '../config';
+import {AEventDispatcher, IEventListener, round, suffix} from '../internal';
+import {Column, IGroupData, IGroupItem, isGroup, Ranking, IGroup} from '../model';
+import {DataProvider} from '../provider';
+import {isSummaryGroup, groupEndLevel} from '../provider/internal';
+import {IImposer, IRenderContext} from '../renderer';
+import {chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer} from '../renderer/renderers';
+import {cssClass, engineCssClass} from '../styles';
 import DialogManager from './dialogs/DialogManager';
+import domElementCache from './domElementCache';
+import EngineRanking, {IEngineRankingContext} from './EngineRanking';
+import {EMode, IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
+import SlopeGraph from './SlopeGraph';
+import {ADialog} from './dialogs';
 
 /**
  * emitted when the highlight changes
@@ -25,12 +22,28 @@ import DialogManager from './dialogs/DialogManager';
  */
 export declare function highlightChanged(dataIndex: number): void;
 
+/**
+ * emitted a dialog is opened
+ * @asMemberOf EngineRenderer
+ * @param dialog the opened dialog
+ * @event
+ */
+export declare function dialogOpenedER(dialog: ADialog): void;
+/**
+ * emitted a dialog is closed
+ * @asMemberOf EngineRenderer
+ * @param dialog the closed dialog
+ * @param action the action how the dialog was closed
+ * @event
+ */
+export declare function dialogClosedER(dialog: ADialog, action: 'cancel' | 'confirm'): void;
+
 export default class EngineRenderer extends AEventDispatcher {
   static readonly EVENT_HIGHLIGHT_CHANGED = EngineRanking.EVENT_HIGHLIGHT_CHANGED;
+  static readonly EVENT_DIALOG_OPENED = DialogManager.EVENT_DIALOG_OPENED;
+  static readonly EVENT_DIALOG_CLOSED = DialogManager.EVENT_DIALOG_CLOSED;
 
   protected readonly options: Readonly<ILineUpOptions>;
-
-  private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics | null | Promise<IStatistics | ICategoricalStatistics>>();
 
   readonly node: HTMLElement;
   private readonly table: MultiTableRowRenderer;
@@ -45,46 +58,45 @@ export default class EngineRenderer extends AEventDispatcher {
 
   private enabledHighlightListening: boolean = false;
 
-  constructor(protected data: ADataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
+  constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
-    console.assert(parent.ownerDocument != null);
     this.node = parent.ownerDocument!.createElement('main');
     this.node.id = this.idPrefix;
-    this.node.classList.toggle('lu-whole-hover', options.expandLineOnHover);
+    // FIXME inline
+    this.node.classList.toggle(cssClass('whole-hover'), options.expandLineOnHover);
     parent.appendChild(this.node);
 
-    const statsOf = (col: Column) => {
-      const r = this.histCache.get(col.id);
-      if (r == null || r instanceof Promise) {
-        return null;
-      }
-      return r;
-    };
-    const dialogManager = new DialogManager(parent.ownerDocument!);
+    const dialogManager = new DialogManager({
+      doc: parent.ownerDocument!,
+      livePreviews: options.livePreviews,
+      onDialogBackgroundClick: options.onDialogBackgroundClick,
+    });
+    this.forward(dialogManager, ...suffix('.main', EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED));
+
     parent.appendChild(dialogManager.node);
     this.ctx = {
       idPrefix: this.idPrefix,
       document: parent.ownerDocument!,
       provider: data,
+      tasks: data.getTaskExecutor(),
       dialogManager,
-      toolbar: this.options.toolbar,
+      resolveToolbarActions: (col, keys) => this.options.resolveToolbarActions(col, keys, this.options.toolbarActions),
+      resolveToolbarDialogAddons: (col, keys) => this.options.resolveToolbarDialogAddons(col, keys, this.options.toolbarDialogAddons),
       flags: <ILineUpFlags>this.options.flags,
-      option: findOption(Object.assign({useGridLayout: true}, this.options)),
-      statsOf,
+      asElement: domElementCache(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {
         const r = chooseRenderer(col, this.options.renderers);
-        return r.create(col, this.ctx, statsOf(col), imposer);
+        return r.create!(col, this.ctx, imposer);
       },
       groupRenderer: (col: Column, imposer?: IImposer) => {
         const r = chooseGroupRenderer(col, this.options.renderers);
-        return r.createGroup(col, this.ctx, statsOf(col), imposer);
+        return r.createGroup!(col, this.ctx, imposer);
       },
       summaryRenderer: (col: Column, interactive: boolean, imposer?: IImposer) => {
         const r = chooseSummaryRenderer(col, this.options.renderers);
-        return r.createSummary(col, this.ctx, interactive, imposer);
+        return r.createSummary!(col, this.ctx, interactive, imposer);
       },
-      totalNumberOfRows: 0,
       createRenderer(col: Column, imposer?: IImposer) {
         const single = this.renderer(col, imposer);
         const group = this.groupRenderer(col, imposer);
@@ -101,51 +113,62 @@ export default class EngineRenderer extends AEventDispatcher {
           summaryTemplate: null
         };
       },
-      getPossibleRenderer: (col: Column) => ({
-        item: possibleRenderer(col, this.options.renderers),
-        group: possibleGroupRenderer(col, this.options.renderers),
-        summary: possibleSummaryRenderer(col, this.options.renderers)
-      }),
-      colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth()
+      getPossibleRenderer: (col: Column) => getPossibleRenderer(col, this.options.renderers, this.options.canRender),
+      colWidth: (col: Column) => !col.isVisible() ? 0 : col.getWidth(),
+      caches: {
+        toolbar: new Map(),
+        toolbarAddons: new Map()
+      }
     };
 
-    this.table = new MultiTableRowRenderer(this.node, `#${this.idPrefix}`);
+    this.table = new MultiTableRowRenderer(this.node, this.idPrefix);
+
+    {
+      // helper object for better resizing experience
+      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`)!;
+      const copy = <HTMLElement>footer.cloneNode(true);
+      copy.classList.add(cssClass('resize-helper'));
+      footer!.insertAdjacentElement('afterend', copy);
+    }
 
     //apply rules
     {
-      this.style.addRule('lineup_groupPadding', `
-       #${this.idPrefix} .lu-row[data-agg=group],
-       #${this.idPrefix} .lu-row[data-meta~=last] {
-        margin-bottom: ${options.groupPadding}px;
-       }`, false);
 
-      this.style.addRule('lineup_rowPadding', `
-       #${this.idPrefix} .lu-row[data-lod] {
-         padding-top: 0;
-       }`, false);
+      this.style.addRule('lineup_rowPadding0', `
+        .${this.style.cssClasses.tr}`, {
+          marginTop: `${options.rowPadding}px`
+        });
 
-       // padding in general and for hovered low detail rows + their afterwards
-       this.style.addRule('lineup_rowPadding2', `
-        #${this.idPrefix} .lu-row,
-        #${this.idPrefix} .lu-row[data-lod]:hover,
-        #${this.idPrefix} .lu-row[data-lod].le-highlighted,
-        #${this.idPrefix} .lu-row[data-lod].lu-selected,
-        #${this.idPrefix} .lu-row[data-lod]:hover + .lu-row,
-        #${this.idPrefix} .lu-row[data-lod].le-highlighted + .lu-row,
-        #${this.idPrefix} .lu-row[data-lod].lu-selected + .lu-row {
-          padding-top: ${options.rowPadding}px;
-        }`, false);
+      for (let level = 0; level < 4; ++level) {
+        this.style.addRule(`lineup_groupPadding${level}`, `
+        .${this.style.cssClasses.tr}[data-meta~=last${level === 0 ? '' : level}]`, {
+            marginBottom: `${options.groupPadding * (level + 1)}px`
+          });
+      }
 
+
+      this.style.addRule('lineup_rowPaddingAgg0', `
+        .${cssClass('agg-level')}::after`, {
+          top: `-${options.rowPadding}px`
+        });
+      for (let level = 1; level <= 4; ++level) {
+        this.style.addRule(`lineup_rowPaddingAgg${level}`, `
+        .${cssClass('agg-level')}[data-level='${level}']::after`, {
+            top: `-${options.rowPadding + options.groupPadding}px`
+          });
+      }
+
+      // FIXME flat
       this.style.addRule('lineup_rotation', `
-       #${this.idPrefix}.lu-rotated-label .lu-label.lu-rotated {
-           transform: rotate(${-this.options.labelRotation}deg);
-       }`);
+       #${this.idPrefix}.${cssClass('rotated-label')} .${cssClass('label')}.${cssClass('rotated')}`, {
+          transform: `rotate(${-this.options.labelRotation}deg)`
+        });
 
       const toDisable: string[] = [];
       if (!this.options.flags.advancedRankingFeatures) {
         toDisable.push('ranking');
       }
-       if (!this.options.flags.advancedModelFeatures) {
+      if (!this.options.flags.advancedModelFeatures) {
         toDisable.push('model');
       }
       if (!this.options.flags.advancedUIFeatures) {
@@ -153,9 +176,9 @@ export default class EngineRenderer extends AEventDispatcher {
       }
       if (toDisable.length > 0) {
         this.style.addRule('lineup_feature_disable', `
-        ${toDisable.map((d) => `.lu-feature-${d}.lu-feature-advanced`).join(', ')} {
-            display: none !important;
-        }`);
+        ${toDisable.map((d) => `.${cssClass('feature')}-${d}.${cssClass('feature-advanced')}`).join(', ')}`, {
+            display: 'none !important'
+          });
       }
     }
 
@@ -188,31 +211,36 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([EngineRenderer.EVENT_HIGHLIGHT_CHANGED]);
+    return super.createEventList().concat([EngineRenderer.EVENT_HIGHLIGHT_CHANGED, EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED]);
   }
 
   on(type: typeof EngineRenderer.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  on(type: typeof EngineRenderer.EVENT_DIALOG_OPENED, listener: typeof dialogOpenedER | null): this;
+  on(type: typeof EngineRenderer.EVENT_DIALOG_CLOSED, listener: typeof dialogClosedER | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 
 
-  setDataProvider(data: ADataProvider) {
+  setDataProvider(data: DataProvider) {
     this.takeDownProvider();
 
     this.data = data;
     (<any>this.ctx).provider = data;
+    (<any>this.ctx).tasks = data.getTaskExecutor();
 
     this.initProvider(data);
   }
 
   private takeDownProvider() {
-    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_ADD_RANKING}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
-    this.data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, null);
+    this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, null);
+    this.data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, null);
+    this.data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_SHOWTOPN_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.body`, null);
+    this.data.on(`${DataProvider.EVENT_BUSY}.body`, null);
 
     this.rankings.forEach((r) => this.table.remove(r));
     this.rankings.splice(0, this.rankings.length);
@@ -220,20 +248,25 @@ export default class EngineRenderer extends AEventDispatcher {
     this.slopeGraphs.splice(0, this.slopeGraphs.length);
   }
 
-  private initProvider(data: ADataProvider) {
-    data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.updateSelection(data.getSelection()));
-    data.on(`${ADataProvider.EVENT_ADD_RANKING}.body`, (ranking: Ranking) => {
+  private initProvider(data: DataProvider) {
+    data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.updateSelection(data.getSelection()));
+    data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, (ranking: Ranking) => {
       this.addRanking(ranking);
     });
-    data.on(`${ADataProvider.EVENT_REMOVE_RANKING}.body`, (ranking: Ranking) => {
+    data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, (ranking: Ranking) => {
       this.removeRanking(ranking);
     });
-    data.on(`${ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
+    data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
       this.update(this.rankings.filter((r) => r.ranking === ranking));
     });
-    data.on(`${ADataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
+    data.on(`${DataProvider.EVENT_SHOWTOPN_CHANGED}.body`, () => {
+      this.update(this.rankings);
+    });
+    data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.body`, (indices: number[]) => {
       this.setHighlightToNearest(indices, true);
     });
+
+    (<any>this.ctx).provider = data;
 
     this.data.getRankings().forEach((r) => this.addRanking(r));
   }
@@ -250,26 +283,16 @@ export default class EngineRenderer extends AEventDispatcher {
       return;
     }
     const rankings = ranking ? [ranking] : this.rankings;
-    rankings.forEach((r) => {
-      const ranking = r.ranking;
-      const order = ranking.getOrder();
-      const cols = col ? [col] : ranking.flatColumns;
-      const histo = order == null ? null : this.data.stats(order);
-      cols.filter((d) => d.isVisible() && isNumberColumn(d)).forEach((col: Column) => {
-        this.histCache.set(col.id, histo == null ? null : histo.stats(<INumberColumn>col));
-      });
-      cols.filter((d) => isCategoricalColumn(d) && d.isVisible()).forEach((col: Column) => {
-        this.histCache.set(col.id, histo == null ? null : histo.hist(<ICategoricalColumn>col));
-      });
+
+    for (const r of rankings) {
       if (col) {
         // single update
         r.updateHeaderOf(col);
       } else {
         r.updateHeaders();
       }
-    });
-
-    this.updateAbles.forEach((u) => u(this.ctx));
+    }
+    this.updateUpdateAbles();
   }
 
   private addRanking(ranking: Ranking) {
@@ -292,7 +315,7 @@ export default class EngineRenderer extends AEventDispatcher {
       this.table.widthChanged();
     });
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
-    r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
+    r.on(EngineRanking.EVENT_RECREATE, () => this.updateUpdateAbles());
     this.forward(r, EngineRanking.EVENT_HIGHLIGHT_CHANGED);
     if (this.enabledHighlightListening) {
       r.enableHighlightListening(true);
@@ -308,8 +331,8 @@ export default class EngineRenderer extends AEventDispatcher {
     if (this.options.labelRotation === 0) {
       return;
     }
-    const l = this.node.querySelector('.lu-label.lu-rotated');
-    this.node.classList.toggle('lu-rotated-label', Boolean(l));
+    const l = this.node.querySelector(`.${cssClass('label')}.${cssClass('rotated')}`);
+    this.node.classList.toggle(cssClass('rotated-label'), Boolean(l));
   }
 
   private removeRanking(ranking: Ranking | null) {
@@ -338,17 +361,6 @@ export default class EngineRenderer extends AEventDispatcher {
     if (rankings.length === 0) {
       return;
     }
-    const orders = rankings.map((r) => r.ranking.getOrder());
-    const data = this.data.fetch(orders);
-
-    (<any>this.ctx).totalNumberOfRows = Math.max(...data.map((d) => d.length));
-
-    // TODO support async
-    const localData = data.map((d) => d.map((d) => <IDataRow>d));
-
-    if (this.histCache.size === 0) {
-      this.updateHist();
-    }
 
     const round2 = (v: number) => round(v, 2);
     const rowPadding = round2(this.zoomFactor * this.options.rowPadding!);
@@ -375,30 +387,46 @@ export default class EngineRenderer extends AEventDispatcher {
       };
     };
 
-    rankings.forEach((r, i) => {
-      const grouped = r.groupData(localData[i]);
+    for (const r of rankings) {
+      const grouped = r.groupData();
 
+      // inline with creating the groupData
       const {height, defaultHeight, padding} = heightsFor(r.ranking, grouped);
 
+      const strategy = this.data.getAggregationStrategy();
+      const topNGetter = (group: IGroup) => this.data.getTopNAggregated(r.ranking, group);
+
+      // inline and create manually for better performance
       const rowContext = nonUniformContext(grouped.map(height), defaultHeight, (index) => {
         const pad = (typeof padding === 'number' ? padding : padding(grouped[index] || null));
-        if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last' || (<IGroupItem>grouped[index]).meta === 'first last')) {
-          return groupPadding + pad;
+        const v = grouped[index];
+
+        if (index < 0 || !v || (isGroup(v) && isSummaryGroup(v, strategy, topNGetter))) {
+          return pad;
         }
-        return pad;
+        return pad + groupPadding * groupEndLevel(v, topNGetter);
       });
       r.render(grouped, rowContext);
-    });
+    }
 
     this.updateSlopeGraphs(rankings);
 
+    this.updateUpdateAbles();
     this.updateRotatedHeaderState();
     this.table.widthChanged();
   }
 
+  private updateUpdateAbles() {
+    for (const u of this.updateAbles) {
+      u(this.ctx);
+    }
+  }
+
   private updateSlopeGraphs(rankings: EngineRanking[] = this.rankings) {
     const indices = new Set(rankings.map((d) => this.rankings.indexOf(d)));
-    this.slopeGraphs.forEach((s, i) => {
+
+    for (let i = 0; i < this.slopeGraphs.length; ++i) {
+      const s = this.slopeGraphs[i];
       if (s.hidden) {
         return;
       }
@@ -409,8 +437,8 @@ export default class EngineRenderer extends AEventDispatcher {
       }
       const leftRanking = this.rankings[left];
       const rightRanking = this.rankings[right];
-      s.rebuild(leftRanking.currentData, leftRanking.context, rightRanking.currentData, rightRanking.context);
-    });
+      s.rebuild(leftRanking.ranking, leftRanking.currentData, leftRanking.context, rightRanking.ranking, rightRanking.currentData, rightRanking.context);
+    }
   }
 
   setHighlight(dataIndex: number, scrollIntoView: boolean) {
@@ -448,7 +476,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
   enableHighlightListening(enable: boolean) {
     for (const ranking of this.rankings) {
-        ranking.enableHighlightListening(enable);
+      ranking.enableHighlightListening(enable);
     }
     this.enabledHighlightListening = enable;
   }

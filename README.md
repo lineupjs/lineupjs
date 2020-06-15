@@ -6,7 +6,7 @@ LineUp is an interactive technique designed to create, visualize and explore ran
 
 Key Features
 -----------
- * scalable (~100k rows)
+ * scalable (~1M rows)
  * heterogenous attribute types (string, numerical, categorical, boolean, date)
  * composite column types (weighted sum, min, max, mean, median, impose, nested, ...)
  * array (multi value) and map column types (strings, stringMap, numbers, numberMap, ...)
@@ -106,7 +106,7 @@ Supported Browsers
 Demo Application
 ----------------
 
-A demo application is located at [lineup_app](https://github.com/sgratzl/lineup_app). It support CSV Import, CSV Export, JSON Export, CodePen Export, and Github Gist Export. 
+A demo application is located at [lineup_app](https://github.com/lineupjs/lineup_app). It support CSV Import, CSV Export, JSON Export, CodePen Export, nad local data management. 
 
 The application is deployed at [https://lineup.js.org/app](https://lineup.js.org/app)
 
@@ -271,7 +271,7 @@ Result is same as the builder advanced example
 <a id="angular"></a>
 
 Angular 6 Support (nglineup)
---------------------------
+----------------------------
 
 An [Angular](https://angular.io/) wrapper is located at [nglineup](https://github.com/lineupjs/nglineup). 
 
@@ -348,7 +348,7 @@ Result is same as the builder minimal example
 
 `app.component.html`:
 ```html
-<lineup-lineup [data]="data" [defaultRanking]="true" style="height: 800px">
+<lineup-lineup [data]="data" [defaultRanking]="true" style="height: 800px;">
   <lineup-string-column-desc column="d" label="Label" [width]="100"></lineup-string-column-desc>
   <lineup-categorical-column-desc column="cat" [categories]="cats" color="green"></lineup-categorical-column-desc>
   <lineup-categorical-column-desc column="cat2" [categories]="cats" color="blue"></lineup-categorical-column-desc>
@@ -520,7 +520,7 @@ It can be used within standalone [R Shiny](https://shiny.rstudio.com/) apps or [
 ```R
 devtools::install_github("rstudio/crosstalk")
 devtools::install_github("lineupjs/lineup_htmlwidget")
-library(lineup)
+library(lineupjs)
 ```
 
 **Examples**
@@ -689,20 +689,20 @@ Related Publications
 **LineUp: Visual Analysis of Multi-Attribute Rankings** [Paper](http://data.caleydo.org/papers/2013_infovis_lineup.pdf) [Paper Website](http://caleydo.org/publications/2013_infovis_lineup/)
 
 Samuel Gratzl, Alexander Lex, Nils Gehlenborg, Hanspeter Pfister, and Marc Streit <br>
-IEEE Transactions on Visualization and Computer Graphics (InfoVis '13), 19(12), pp. 2277–2286, doi:10.1109/TVCG.2013.173, 2013.
+IEEE Transactions on Visualization and Computer Graphics (InfoVis '13), 19(12), pp. 2277–2286, [doi:10.1109/TVCG.2013.173](https://dx.doi.org/10.1109/TVCG.2013.173), 2013.
 
 :trophy: [IEEE VIS](http://ieeevis.org) InfoVis 2013 Best Paper Award 
 
-**Taggle: Scalable Visualization of Tabular Data through Aggregation** [Paper Preprint](http://sci.utah.edu/~vdl/papers/2017_preprint_taggle.pdf) [Paper Website](http://vdl.sci.utah.edu/publications/2017_preprint_taggle/)
+**Taggle: Scalable Visualization of Tabular Data through Aggregation** [Paper Preprint](http://data.caleydo.org/papers/2019_sage_infovis_taggle.pdf) [Paper Website](http://caleydo.org/publications/2019_sage_infovis_taggle/)
 
 Katarina Furmanova, Samuel Gratzl, Holger Stitz, Thomas Zichner, Miroslava Jaresova, Martin Ennemoser, Alexander Lex, and Marc Streit <br>
-arXiv preprint, 2017.
+Information Visualization, 19(2): 114-136, [doi:10.1177/1473871619878085](https://dx.doi.org/10.1177/1473871619878085), 2019. 
 
 Dependencies
 ------------
 
 LineUp.js depends on 
- * [LineUpEngine](https://github.com/sgratzl/lineupengine) table rendering engine
+ * [LineUpEngine](https://github.com/lineupjs/lineupengine) table rendering engine
  * [D3](http://d3js.org) utilities: scales, format, dragging
  * [Popper.js](https://popper.js.org) dialogs
 
@@ -714,6 +714,12 @@ LineUp.js depends on
 
 Development Environment
 -----------------------
+
+Try the Gitpod online IDE and start coding instantly in your browser.
+
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/lineupjs/lineupjs)
+
+Otherwise follow the steps to setup a local development environment.
 
 **Installation**
 
@@ -735,11 +741,40 @@ npm run build
 npm run lint
 ```
 
+**Run Unit Tests**
+
+```bash
+npm test
+```
 
 **Serve integrated webserver**
 
 ```bash
-npm run start
+npm start
+```
+
+**Run E2E Tests**
+
+via cypress.io
+
+Variant 1: with prebuilt LineUp
+
+```sh
+npm run compile
+npm run build:prod
+npm run cy:open
+```
+
+Variant 2: with webpack-dev-server
+
+first shell:
+```sh
+npm start
+```
+
+second shell:
+```sh
+npm run cy:start
 ```
 
 **Link develop version**
@@ -771,10 +806,10 @@ This repository was created as part of the **[The Caleydo Project](http://caleyd
 [npm-url]: https://npmjs.org/package/lineupjs
 [bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
 [bsd-url]: https://opensource.org/licenses/BSD-3-Clause
-[ci-image]: https://circleci.com/gh/datavisyn/lineupjs.svg?style=shield
-[ci-url]: https://circleci.com/gh/datavisyn/lineupjs
-[ci-image-dev]: https://circleci.com/gh/datavisyn/lineupjs/tree/develop.svg?style=shield
-[ci-url-dev]: https://circleci.com/gh/datavisyn/lineupjs/tree/develop
+[ci-image]: https://circleci.com/gh/lineupjs/lineupjs.svg?style=shield
+[ci-url]: https://circleci.com/gh/lineupjs/lineupjs
+[ci-image-dev]: https://circleci.com/gh/lineupjs/lineupjs/tree/develop.svg?style=shield
+[ci-url-dev]: https://circleci.com/gh/lineupjs/lineupjs/tree/develop
 
 
  

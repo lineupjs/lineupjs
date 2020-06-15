@@ -1,6 +1,9 @@
 import {dispatch, Dispatch} from 'd3-dispatch';
 
-/** @internal */
+/**
+ * helper function to suffix the given event types
+ * @internal
+ */
 export function suffix(suffix: string, ...prefix: string[]) {
   return prefix.map((p) => `${p}${suffix}`);
 }
@@ -11,13 +14,16 @@ export interface IEventContext {
    */
   readonly source: AEventDispatcher;
 
+  /**
+   * who was sending this event in case of forwarding
+   */
   readonly origin: AEventDispatcher;
   /**
    * the event type
    */
   readonly type: string;
   /**
-   * in case of multi propagation the 'main' event type
+   * in case of multi propagation the 'main' event type, aka the first one
    */
   readonly primaryType: string;
   /**
@@ -34,10 +40,10 @@ export interface IEventHandler {
   on(type: string | string[], listener: IEventListener | null): this;
 }
 
-declare const __DEBUG__: boolean;
+const __DEBUG = false;
 
 /**
- * base class for event dispatching using d3 event mechanism
+ * base class for event dispatching using d3 event mechanism, thus .suffix is supported for multiple registrations
  */
 export default class AEventDispatcher implements IEventHandler {
   private readonly listeners: Dispatch<any>;
@@ -61,19 +67,24 @@ export default class AEventDispatcher implements IEventHandler {
         if (this.listenerEvents.has(d.split('.')[0])) {
           this.listenersChanged(d, Boolean(listener!));
           this.listeners.on(d, listener!);
-        } else if (__DEBUG__ && !d.includes('.')) {
-           console.warn(this, 'invalid event type', d);
+        } else if (__DEBUG && !d.includes('.')) {
+          console.warn(this, 'invalid event type', d);
         }
       });
     } else if (this.listenerEvents.has((<string>type).split('.')[0])) {
       this.listenersChanged(<string>type, Boolean(listener!));
       this.listeners.on(<string>type, listener!);
-    } else if (__DEBUG__ && !type.includes('.')) {
+    } else if (__DEBUG && !type.includes('.')) {
       console.warn(this, 'invalid event type', type);
     }
     return this;
   }
 
+  /**
+   * helper function that will be called upon a listener has changed
+   * @param _type event type
+   * @param _active registered or deregistered
+   */
   protected listenersChanged(_type: string, _active: boolean) {
     // hook
   }
@@ -94,7 +105,7 @@ export default class AEventDispatcher implements IEventHandler {
   private fireImpl(type: string | string[], primaryType: string, origin: AEventDispatcher, ...args: any[]) {
     const fireImpl = (t: string) => {
       if (!this.listenerEvents.has(t)) {
-        if (__DEBUG__) {
+        if (__DEBUG) {
           console.warn(this, 'invalid event type', t);
         }
         return;
@@ -110,7 +121,7 @@ export default class AEventDispatcher implements IEventHandler {
       this.listeners.apply(t, context, args);
     };
     if (Array.isArray(type)) {
-      type.forEach(fireImpl.bind(this));
+      type.forEach(fireImpl);
     } else {
       fireImpl(<string>type);
     }

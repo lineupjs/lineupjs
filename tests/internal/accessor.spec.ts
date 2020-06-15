@@ -1,7 +1,7 @@
-import {resolveValue} from '../../src/internal/accessor';
+import {rowComplexGetter} from '../../src/internal/accessor';
 
 function get(v: any, column: string) {
-  return resolveValue(v, column);
+  return rowComplexGetter({i: 0, v}, {column});
 }
 
 test('simple', () => {

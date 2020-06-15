@@ -1,7 +1,5 @@
-import {IDataRow} from '../model';
-import Column from '../model/Column';
+import {Column, isMapAbleColumn, IDataRow, DEFAULT_COLOR} from '../model';
 import {IImposer} from './interfaces';
-import {isMapAbleColumn} from '../model/MappingFunction';
 
 export function colorOf(col: Column, row: IDataRow | null, imposer?: IImposer, valueHint?: number) {
   if (imposer && imposer.color) {
@@ -11,7 +9,7 @@ export function colorOf(col: Column, row: IDataRow | null, imposer?: IImposer, v
     if (isMapAbleColumn(col)) {
       return col.getColorMapping().apply(valueHint != null ? valueHint : 0);
     }
-    return Column.DEFAULT_COLOR;
+    return DEFAULT_COLOR;
   }
   return col.getColor(row);
 }

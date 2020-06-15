@@ -1,11 +1,10 @@
 import {Category, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IDataRow, IGroup} from './interfaces';
-import {FIRST_IS_MISSING, missingGroup} from './missing';
-import ValueColumn, {IValueColumnDesc, dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal/AEventDispatcher';
-import {equal} from '../internal';
-import {defaultGroup} from './Group';
+import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
+import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, othersGroup, ITypeFactory} from './interfaces';
+import {missingGroup, isMissingValue} from './missing';
+import ValueColumn, {dataLoaded} from './ValueColumn';
+import {equal, IEventListener, ISequence, isSeqEmpty} from '../internal';
+import {integrateDefaults} from './internal';
 
 export enum EAlignment {
   left = 'left',
@@ -40,12 +39,17 @@ export interface IStringDesc {
 
 export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 
+export interface IStringFilter {
+  filter: string | RegExp | null;
+  filterMissing: boolean;
+}
+
 /**
  * emitted when the filter property changes
  * @asMemberOf StringColumn
  * @event
  */
-export declare function filterChanged(previous: string | RegExp | null, current: string | RegExp | null): void;
+export declare function filterChanged_SC(previous: string | RegExp | null, current: string | RegExp | null): void;
 
 
 /**
@@ -53,12 +57,12 @@ export declare function filterChanged(previous: string | RegExp | null, current:
  * @asMemberOf StringColumn
  * @event
  */
-export declare function groupingChanged(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
+export declare function groupingChanged_SC(previous: (RegExp | string)[][], current: (RegExp | string)[][]): void;
 
 /**
  * a string column with optional alignment
  */
-@toolbar('search', 'groupBy', 'filterString')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'search', 'groupBy', 'sortGroupBy', 'filterString')
 @dialogAddons('group', 'groupString')
 @Category('string')
 export default class StringColumn extends ValueColumn<string> {
@@ -66,8 +70,8 @@ export default class StringColumn extends ValueColumn<string> {
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 
   //magic key for filtering missing ones
-  static readonly FILTER_MISSING = '__FILTER_MISSING';
-  private currentFilter: string | RegExp | null = null;
+  private static readonly FILTER_MISSING = '__FILTER_MISSING';
+  private currentFilter: IStringFilter | null = null;
 
   readonly alignment: EAlignment;
   readonly escape: boolean;
@@ -78,8 +82,9 @@ export default class StringColumn extends ValueColumn<string> {
   };
 
   constructor(id: string, desc: Readonly<IStringColumnDesc>) {
-    super(id, desc);
-    this.setDefaultWidth(200); //by default 200
+    super(id, integrateDefaults(desc, {
+      width: 200
+    }));
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
   }
@@ -89,15 +94,16 @@ export default class StringColumn extends ValueColumn<string> {
     return super.createEventList().concat([StringColumn.EVENT_GROUPING_CHANGED, StringColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SC | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged | null): this;
+  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_SC | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
   on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
   on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
   on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
   on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
   on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
   on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
@@ -107,9 +113,9 @@ export default class StringColumn extends ValueColumn<string> {
     return super.on(<any>type, listener);
   }
 
-  getValue(row: IDataRow) {
+  getValue(row: IDataRow): string | null {
     const v: any = super.getValue(row);
-    return v == null ? '' : String(v);
+    return isMissingValue(v) ? null : String(v);
   }
 
   getLabel(row: IDataRow) {
@@ -133,13 +139,38 @@ export default class StringColumn extends ValueColumn<string> {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column | null) {
+  restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
-    if (dump.filter && (<string>dump.filter).startsWith('REGEX:')) {
-      this.currentFilter = new RegExp(dump.filter.slice(6), 'gm');
+    if (dump.filter) {
+      const filter = dump.filter;
+      if (typeof filter === 'string') {
+        // compatibility case
+        if ((<string>filter).startsWith('REGEX:')) {
+          this.currentFilter = {
+            filter: new RegExp(filter.slice(6), 'gm'),
+            filterMissing: false
+          };
+        } else if (filter === StringColumn.FILTER_MISSING) {
+          this.currentFilter = {
+            filter: null,
+            filterMissing: true
+          };
+        } else {
+          this.currentFilter = {
+            filter,
+            filterMissing: false
+          };
+        }
+      } else {
+        this.currentFilter = {
+          filter: filter.filter && (<string>filter.filter).startsWith('REGEX:') ? new RegExp(filter.slice(6), 'gm') : filter.filter || '',
+          filterMissing: filter.filterMissing === true
+        };
+      }
     } else {
-      this.currentFilter = dump.filter || null;
+      this.currentFilter = null;
     }
+
     // tslint:disable-next-line: early-exit
     if (dump.groupCriteria) {
       const {type, values} = <IStringGroupCriteria>dump.groupCriteria;
@@ -159,32 +190,42 @@ export default class StringColumn extends ValueColumn<string> {
       return true;
     }
     const r = this.getLabel(row);
-    const filter = this.currentFilter;
+    const filter = this.currentFilter!;
+    const ff = filter.filter;
 
-    if (filter === StringColumn.FILTER_MISSING) { //filter empty
-      return r != null && r.trim() !== '';
+    if (r == null || r.trim() === '') {
+      return !filter.filterMissing;
     }
-    if (typeof filter === 'string' && filter.length > 0) {
-      return r !== '' && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+    if (!ff) {
+      return true;
     }
-    if (filter instanceof RegExp) {
-      return r !== '' && r.match(filter) != null; // You can not use RegExp.test(), because of https://stackoverflow.com/a/6891667
+    if (ff instanceof RegExp) {
+      return r !== '' && r.match(ff) != null; // You can not use RegExp.test(), because of https://stackoverflow.com/a/6891667
     }
-    return true;
+    return r !== '' && r.toLowerCase().includes(ff.toLowerCase());
   }
 
   getFilter() {
     return this.currentFilter;
   }
 
-  setFilter(filter: string | RegExp | null) {
-    if (filter === '') {
-      filter = null;
+  setFilter(filter: IStringFilter | null) {
+    if (filter === this.currentFilter) {
+      return;
     }
-    if (this.currentFilter === filter) {
+    const current = this.currentFilter || {filter: null, filterMissing: false};
+    const target = filter || {filter: null, filterMissing: false};
+    if (current.filterMissing === target.filterMissing && (current.filter === target.filter ||
+      (current.filter instanceof RegExp && target.filter instanceof RegExp && current.filter.source === target.filter.source))) {
       return;
     }
     this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+  }
+
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
   }
 
   getGroupCriteria(): IStringGroupCriteria {
@@ -192,7 +233,7 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   setGroupCriteria(value: IStringGroupCriteria) {
-    if (equal(this.currentGroupCriteria, value)) {
+    if (equal(this.currentGroupCriteria, value) || value == null) {
       return;
     }
     const bak = this.getGroupCriteria();
@@ -200,53 +241,71 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([StringColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  compare(a: IDataRow, b: IDataRow) {
-    const aValue = this.getLabel(a);
-    const bValue = this.getLabel(b);
-    if (aValue === '') {
-      return bValue === '' ? 0 : FIRST_IS_MISSING; //same = 0
-    }
-    if (bValue === '') {
-      return -FIRST_IS_MISSING;
-    }
-    return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
-  }
-
   group(row: IDataRow): IGroup {
-    if (this.isMissing(row)) {
-      return missingGroup;
+    if (this.getValue(row) == null) {
+      return Object.assign({}, missingGroup);
     }
 
-    const rowValue = this.getLabel(row);
+    if (!this.currentGroupCriteria) {
+      return Object.assign({}, othersGroup);
+    }
+    const value = this.getLabel(row);
 
-    if (!rowValue) {
-      return defaultGroup;
+    if (!value) {
+      return Object.assign({}, missingGroup);
     }
 
     const {type, values} = this.currentGroupCriteria;
     if (type === EStringGroupCriteriaType.value) {
       return {
-        name: rowValue,
+        name: value,
         color: defaultGroup.color
       };
     }
     for (const groupValue of values) {
-      if (type === EStringGroupCriteriaType.startsWith && typeof groupValue === 'string' && rowValue.startsWith(groupValue)) {
+      if (type === EStringGroupCriteriaType.startsWith && typeof groupValue === 'string' && value.startsWith(groupValue)) {
         return {
           name: groupValue,
           color: defaultGroup.color
         };
       }
       // tslint:disable-next-line: early-exit
-      if (type === EStringGroupCriteriaType.regex && groupValue instanceof RegExp && groupValue.test(rowValue)) {
+      if (type === EStringGroupCriteriaType.regex && groupValue instanceof RegExp && groupValue.test(value)) {
         return {
           name: groupValue.source,
           color: defaultGroup.color
         };
       }
     }
+    return Object.assign({}, othersGroup);
+  }
 
-    return defaultGroup;
+
+  toCompareValue(row: IDataRow) {
+    const v = this.getValue(row);
+    return v === '' || v == null ? null : v.toLowerCase();
+  }
+
+  toCompareValueType() {
+    return ECompareValueType.STRING;
+  }
+
+  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>) {
+    if (isSeqEmpty(rows)) {
+      return null;
+    }
+    // take the smallest one
+    if (valueCache) {
+      return valueCache.reduce((acc, v) => acc == null || v < acc ? v : acc, <null |string>null);
+    }
+    return rows.reduce((acc, d) => {
+      const v = this.getValue(d);
+      return acc == null || (v != null && v < acc) ? v : acc;
+    }, <null | string>null);
+  }
+
+  toCompareGroupValueType() {
+    return ECompareValueType.STRING;
   }
 }
 

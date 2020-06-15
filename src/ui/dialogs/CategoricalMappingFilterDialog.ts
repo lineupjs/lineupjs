@@ -1,9 +1,10 @@
 import {round} from '../../internal';
-import OrdinalColumn from '../../model/OrdinalColumn';
-import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
+import {OrdinalColumn, ICategoricalFilter} from '../../model';
+import {isCategoryIncluded} from '../../model/internalCategorical';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, uniqueId, forEach} from './utils';
+import {forEach} from './utils';
+import {cssClass} from '../../styles';
 
 /** @internal */
 export default class CategoricalMappingFilterDialog extends ADialog {
@@ -12,57 +13,72 @@ export default class CategoricalMappingFilterDialog extends ADialog {
 
   constructor(private readonly column: OrdinalColumn, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'filter'
     });
     this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-filter-table');
     const joint = this.column.categories.map((d) => Object.assign({
       range: round(d.value * 100, 2)
     }));
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
-    const id = uniqueId(this.dialog.idPrefix);
-    node.insertAdjacentHTML('beforeend', `<div>
-        <div class="lu-checkbox"><input id="${id}" type="checkbox" checked><label for="${id}"><div>Un/Select All</div></label></div>
-        ${joint.map(({name, color, label, range}) => `<input id="${id}${name}" data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
-        <div class="lu-checkbox"><input type="number" value="${range}" min="0" max="100" size="5"><label for="${id}${name}"><div><div style="background-color: ${color}; width: ${range}%"></div></div><div>${label}</div></label></div>`).join('')}
+    node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input type="checkbox" checked>
+          <span>
+            <div>Un/Select All</div>
+          </span>
+        </label>
+        ${joint.map(({name, color, label, range}) => `
+          <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+            <input data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
+            <span>
+              <input type="number" value="${range}" min="0" max="100" size="5">
+              <div class="${cssClass('dialog-filter-color-bar')}">
+                <span style="background-color: ${color}; width: ${range}%"></span>
+              </div>
+              <div>${label}</div>
+            </span>
+          </label>`).join('')}
     </div>`);
     // selectAll
-    this.findInput('input[type=checkbox]:not([data-cat])').onchange = function (this: GlobalEventHandlers) {
-      const input = <HTMLInputElement>this;
-      forEach(node, '[data-cat]', (n: HTMLInputElement) => n.checked = input.checked);
+    const selectAll = this.findInput('input[type=checkbox]:not([data-cat])');
+    selectAll.onchange = () => {
+      forEach(node, '[data-cat]', (n: HTMLInputElement) => n.checked = selectAll.checked);
     };
     this.forEach('input[type=number]', (d: HTMLInputElement) => {
       d.oninput = () => {
         (<HTMLElement>d.nextElementSibling!.firstElementChild).style.width = `${d.value}%`;
       };
     });
-    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing, this.dialog.idPrefix));
+    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
+
+    this.enableLivePreviews('input[type=checkbox], input[type=number]');
   }
 
-  private updateFilter(filter: string[] | null, filterMissing: boolean) {
+  private updateFilter(filter: string[] | null | string | RegExp, filterMissing: boolean) {
     const noFilter = filter == null && filterMissing === false;
-    updateFilterState(this.attachment, this.column, !noFilter);
     this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
   }
 
-  reset() {
+  protected cancel() {
+    this.updateFilter(this.before.filter, this.before.filterMissing);
+  }
+
+  protected reset() {
     this.forEach('[data-cat]', (n: HTMLInputElement) => {
       n.checked = false;
       (<HTMLInputElement>n.nextElementSibling!).value = '50';
     });
-    this.updateFilter(null, false);
-    this.column.setMapping(this.column.categories.map(() => 1));
   }
 
-  submit() {
+  protected submit() {
     const items = this.forEach('input[data-cat]', (n: HTMLInputElement) => ({
       checked: n.checked,
       cat: n.dataset.cat!,
-      range: parseFloat((<HTMLInputElement>n.nextElementSibling)!.value)
+      range: (<HTMLInputElement>n.nextElementSibling)!.valueAsNumber
     }));
     let f: string[] | null = items.filter((d) => d.checked).map((d) => d.cat);
     if (f.length === this.column.categories.length) { // all checked = no filter

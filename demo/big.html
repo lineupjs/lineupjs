@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head lang="en">
   <meta charset="UTF-8">
   <title>LineUp Taggle Test</title>
@@ -7,53 +8,88 @@
   <link href="./LineUpJS.css" rel="stylesheet">
   <link href="./demo.css" rel="stylesheet">
 </head>
+
 <body>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="./LineUpJS.js"></script>
+  <script src="./LineUpJS.js"></script>
 
-<script>
-  window.onload = function () {
-    const arr = [];
-    const cats = ['c1', 'c2', 'c3'];
-    for (let i = 0; i < 10000; ++i) {
-      arr.push({
-        a: Math.random() *10,
-        d: 'Row ' + i,
-        cat: cats[Math.floor(Math.random() * 3)],
-        cat2: cats[Math.floor(Math.random() * 3)]
-      })
-    }
-    const desc = [
-      {label: 'D', type: 'string', column: 'd'},
-      {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
-      {
-        label: 'Cat',
-        type: 'categorical',
-        column: 'cat',
-        categories: ['c1', 'c2', 'c3']
-      },
-      {
-        label: 'Cat Label',
-        type: 'categorical',
-        column: 'cat2',
-        categories: [{name: 'c1', label: 'C1', color: 'green'}, {name: 'c2', label: 'C2', color: 'blue'}, {
-          name: 'c3',
-          label: 'C3',
-          color: 'red'
-        }]
+  <script>
+    window.onload = function () {
+      const arr = [];
+      const cats = ['c1', 'c2', 'c3'];
+      const cat2 = ['a1', 'a2'];
+      const url = new URL(location.href);
+      const size = parseInt(url.searchParams.get('size') || '100000', 10);
+      for (let i = 0; i < size; ++i) {
+          arr.push({
+          label: 'Row ' + i,
+          number: Math.random() * 10,
+          number2: Math.random() * 10,
+          cat: cats[Math.floor(Math.random() * cats.length)],
+          cat2: cat2[Math.floor(Math.random() * cat2.length)],
+          date: new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
+        })
       }
-    ];
+      console.log('generated');
+      const desc = [{
+          label: 'Label',
+          type: 'string',
+          column: 'label'
+        },
+        {
+          label: 'Number',
+          type: 'number',
+          column: 'number',
+          domain: [0, 10]
+        },
+        {
+        label: 'Number2',
+        type: 'number',
+        column: 'number2',
+        domain: [0, 10]
+        },
+        {
+          label: 'Cat',
+          type: 'categorical',
+          column: 'cat',
+          categories: ['c1', 'c2', 'c3']
+        },
+        {
+          label: 'Cat2',
+          type: 'categorical',
+          column: 'cat2',
+          categories: [{
+            name: 'a1',
+            label: 'A1',
+            color: 'green'
+          }, {
+            name: 'a2',
+            label: 'A2',
+            color: 'blue'
+          }]
+        },
+        {
+          label: 'Date',
+          type: 'date',
+          column: 'date'
+        },
+      ];
+      LineUpJS.deriveColors(desc);
 
-    const p = new LineUpJS.LocalDataProvider(arr, desc, { grouping: true});
-    p.deriveDefault();
-    p.getLastRanking().insert(p.create({ type: 'selection', label: 'S'}), 0);
-    p.getLastRanking().insert(p.create({ type: 'aggregate', label: 'A'}), 0);
-    p.getLastRanking().push(p.create(desc[1]));
+      const p = new LineUpJS.LocalDataProvider(arr, desc, {
+        grouping: true,
+        // taskExecutor: 'direct',
+        taskExecutor: 'scheduled'
+      });
+      p.deriveDefault();
 
-    const instance = new LineUpJS.Taggle(document.body, p);
-    instance.update();
-  };
-</script>
+      const instance = new LineUpJS.Taggle(document.body, p, {
+        animated: false
+      });
+      instance.update();
+    };
+
+  </script>
 
 </body>
+
 </html>

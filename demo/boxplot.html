@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Boxplot Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+  <!--source of data-->
+  <link href="https://courses.lumenlearning.com/introstats1/chapter/box-plots/">
+  <link href="http://www.real-statistics.com/descriptive-statistics/box-plots-with-outliers/">
+</head>
+
+<body>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="./LineUpJS.js"></script>
+
+  <script>
+    window.onload = function () {
+      const arr = [];
+
+      /*
+       * expected values for data1:
+       * min = 59
+       * q1 = 64.75
+       * q2/median = 66
+       * q3 = 70
+       * max = 77
+       * mean = 67.175
+       *
+       */
+      const data1 = [59, 60, 61, 62, 62, 63, 63, 64, 64, 64, 65, 65, 65, 65, 65, 65, 65, 65, 65, 66, 66, 67, 67, 68, 68, 69, 70, 70, 70, 70, 70, 71, 71, 72, 72, 73, 74, 74, 75, 77];
+
+      /*
+       * expected values for data2:
+       * min = 32
+       * q1 = 56
+       * q2/median = 74.5
+       * q3 = 81.75
+       * max = 99
+       * mean = 69.4
+       */
+      const data2 = [99, 56, 78, 55.5, 32, 90, 80, 81, 56, 59, 45, 77, 84.5, 84, 70, 72, 68, 32, 79, 90];
+
+      /*
+       * expected values for data3:
+       * min = 25.5
+       * q1 = 78
+       * q2/median = 81
+       * q3 = 88.75
+       * max = 98
+       * mean = 79.0455
+       */
+      const data3 = [98, 78, 68, 83, 81, 89, 88, 76, 65, 45, 98, 90, 80, 84.5, 85, 79, 78, 98, 90, 79, 81, 25.5];
+
+      /*
+       * expected values for dataWithOutlier:
+       * min = 300
+       * q1 = 485
+       * q2/median = 705
+       * q3 = 825
+       * max = 1850
+       * mean = 756
+       */
+      const dataWithOutlier = [840, 940, 780, 650, 720, 430, 1850, 300, 360, 690];
+
+      for (let i = 0; i < data1.length; ++i) {
+        arr.push({
+          a: data1[i],
+          b: data2[i],
+          c: data3[i],
+          d: dataWithOutlier[i],
+          cat: 'A'
+        })
+      }
+
+      const builder = LineUpJS.builder(arr)
+        .deriveColors()
+        .column(LineUpJS.buildCategoricalColumn('cat'))
+
+        .column(LineUpJS.buildNumberColumn('a').label('A').renderer('number', 'boxplot', 'boxplot'))
+        .column(LineUpJS.buildNumberColumn('a').label('A inverted').mapping('linear', [Math.min(...data1), Math.max(...data1)], [1, 0]).renderer('number', 'boxplot', 'boxplot'))
+
+        .column(LineUpJS.buildNumberColumn('b').label('B').renderer('number', 'boxplot', 'boxplot'))
+        .column(LineUpJS.buildNumberColumn('b').label('B inverted').mapping('linear', [Math.min(...data2), Math.max(...data2)], [1, 0]).renderer('number', 'boxplot', 'boxplot'))
+
+        .column(LineUpJS.buildNumberColumn('c').renderer('number', 'boxplot', 'boxplot'))
+        .column(LineUpJS.buildNumberColumn('c').label('C inverted').mapping('linear', [Math.min(...data3), Math.max(...data3)], [1, 0]).renderer('number', 'boxplot', 'boxplot'))
+
+        .column(LineUpJS.buildNumberColumn('d').renderer('number', 'boxplot', 'boxplot'))
+        .column(LineUpJS.buildNumberColumn('d').label('D inverted').mapping('linear', [Math.min(...dataWithOutlier), Math.max(...dataWithOutlier)], [1, 0]).renderer('number', 'boxplot', 'boxplot'));
+
+      const ranking = LineUpJS.buildRanking()
+        .supportTypes()
+        .allColumns() // add all columns
+        .groupBy('cat');
+
+      builder
+        .ranking(ranking);
+
+      builder.buildTaggle(document.body);
+    };
+  </script>
+
+</body>
+
+</html>

@@ -1,4 +1,5 @@
-export {default, ITaggleOptions} from './Taggle';
+export * from './rules';
+export {default, default as Taggle} from './Taggle';
+export * from './Taggle';
 export {default as TaggleRenderer} from './TaggleRenderer';
-export {IRule, IRuleInstance} from './interfaces';
-export {default as spaceFillingRule} from './spaceFillingRule';
+

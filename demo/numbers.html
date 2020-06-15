@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp Builder Test</title>
+
+  <link href="./LineUpJS.css" rel="stylesheet">
+  <link href="./demo.css" rel="stylesheet">
+</head>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="./LineUpJS.js"></script>
+
+<script>
+  window.onload = function () {
+    const arr = [];
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        a: Math.random() * 10,
+        b: Math.random() * 10,
+        c: Math.random() * 10,
+        d: Math.random() * 10,
+        e: Math.random() * 10
+      })
+    }
+    const lineup = LineUpJS.asTaggle(document.body, arr);
+  };
+</script>
+
+</body>
+</html>

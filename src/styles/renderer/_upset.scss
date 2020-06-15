@@ -1,32 +1,27 @@
 @import '../vars';
 
-[data-renderer=upset] {
-  position: relative;
+.#{$lu_css_prefix}-renderer-upset {
   display: flex;
   align-items: center;
   justify-content: space-around;
+}
 
-  > div:first-child {
-    position: absolute;
-    top: 0;
-    height: 50%;
-    border-bottom: 1px solid $lu_renderer_upset_stroke; // line
-  }
+.#{$lu_css_prefix}-upset-line {
+  position: absolute;
+  top: 0;
+  height: 50%;
+  transform: translateY(-1px);
+  border-bottom: 3px solid $lu_renderer_upset_color; // line
+}
 
-  > div:nth-child(n + 2) { // circles
-    border-radius: 50%;
-    background-color: $lu_renderer_upset_circle_color;
-    opacity: $lu_renderer_upset_inactive_opacity;
-    width: 15px;
-    height: 15px;
+.#{$lu_css_prefix}-upset-dot {
+  border-radius: 50%;
+  background-color: $lu_renderer_upset_color;
+  opacity: $lu_renderer_upset_inactive_opacity;
+  width: 15px;
+  height: 15px;
 
-    &.enabled {
-      opacity: 1;
-    }
-  }
-
-  path {
-    stroke: $lu_renderer_upset_stroke;
-    fill: none;
+  &.#{$lu_css_prefix}-enabled {
+    opacity: 1;
   }
 }

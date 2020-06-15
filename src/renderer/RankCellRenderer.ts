@@ -1,41 +1,40 @@
-import {IDataRow, IGroup} from '../model';
-import Column from '../model/Column';
-import RankColumn from '../model/RankColumn';
-import {ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
+import {Column, RankColumn, IDataRow, IOrderedGroup} from '../model';
+import {ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
 import {renderMissingDOM} from './missing';
-import {noop, noRenderer, setText} from './utils';
+import {noRenderer, setText} from './utils';
+import {cssClass} from '../styles';
 
 export default class RankCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
 
-  canRender(col: Column): boolean {
+  canRender(col: Column) {
     return col instanceof RankColumn;
   }
 
   create(col: Column): ICellRenderer {
     return {
-      template: `<div class="lu-right"> </div>`,
+      template: `<div class="${cssClass('right')}"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         setText(n, col.getLabel(d));
-      },
-      render: noop
+      }
     };
   }
 
   createGroup(col: Column): IGroupCellRenderer {
+    const ranking = col.findMyRanker()!;
     return {
       template: `<div><div></div><div></div></div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+      update: (n: HTMLElement, group: IOrderedGroup) => {
         const fromTSpan = <HTMLElement>n.firstElementChild!;
         const toTSpan = <HTMLElement>n.lastElementChild!;
-        if (rows.length === 0) {
+        if (group.order.length === 0) {
           fromTSpan.textContent = '';
           toTSpan.textContent = '';
           return;
         }
-        fromTSpan.textContent = col.getLabel(rows[0]);
-        toTSpan.textContent = col.getLabel(rows[rows.length - 1],);
+        fromTSpan.textContent = ranking.getRank(group.order[0]).toString();
+        toTSpan.textContent = ranking.getRank(group.order[group.order.length - 1]).toString();
       }
     };
   }

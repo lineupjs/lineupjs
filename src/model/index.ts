@@ -1,109 +1,106 @@
-import ActionColumn from './ActionColumn';
-import AggregateGroupColumn from './AggregateGroupColumn';
-import AnnotateColumn from './AnnotateColumn';
-import BooleanColumn from './BooleanColumn';
-import BooleansColumn from './BooleansColumn';
-import BoxPlotColumn from './BoxPlotColumn';
-import CategoricalColumn from './CategoricalColumn';
-import CategoricalMapColumn from './CategoricalMapColumn';
-import CategoricalsColumn from './CategoricalsColumn';
 import Column from './Column';
-import DateColumn from './DateColumn';
-import DatesColumn from './DatesColumn';
-import DatesMapColumn from './DatesMapColumn';
-import GroupColumn from './GroupColumn';
-import HierarchyColumn from './HierarchyColumn';
-import ImpositionCompositeColumn from './ImpositionCompositeColumn';
-import ImpositionCompositesColumn from './ImpositionCompositesColumn';
-import NestedColumn from './NestedColumn';
-import NumberColumn from './NumberColumn';
-import NumberMapColumn from './NumberMapColumn';
-import NumbersColumn from './NumbersColumn';
-import OrdinalColumn from './OrdinalColumn';
-import RankColumn from './RankColumn';
-import ReduceColumn from './ReduceColumn';
-import ScriptColumn from './ScriptColumn';
-import SelectionColumn from './SelectionColumn';
-import SetColumn from './SetColumn';
-import StackColumn from './StackColumn';
-import StringColumn from './StringColumn';
-import StringMapColumn from './StringMapColumn';
-import StringsColumn from './StringsColumn';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import ImpositionBoxPlotColumn from './ImpositionBoxPlotColumn';
-import LinkColumn from './LinkColumn';
-import LinkMapColumn from './LinkMapColumn';
-import LinksColumn from './LinksColumn';
+import ValueColumn from './ValueColumn';
+import {IValueColumnDesc} from './interfaces';
 
-export {isSupportType, Category, SupportType, SortByDefault, Categories, toolbar, dialogAddons, categoryOfDesc, categoryOf, IColumnCategory} from './annotations';
+export * from './annotations';
 export {isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup} from './missing';
-export * from './Group';
 export * from './interfaces';
 export * from './ICategoricalColumn';
 export * from './INumberColumn';
 export * from './IDateColumn';
 export * from './IArrayColumn';
-export * from './MappingFunction';
+
+export {toCategories} from './internalCategorical';
+
+export {ScaleMappingFunction, ScriptMappingFunction, mappingFunctions} from './MappingFunction';
+export {DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacmentColorMappingFunction} from './CategoricalColorMappingFunction';
+export {CustomColorMappingFunction, DEFAULT_COLOR_FUNCTION, SequentialColorFunction, DivergentColorFunction, UnknownColorFunction, QuantizedColorFunction, SolidColorFunction} from './ColorMappingFunction';
 
 export {default as ActionColumn} from './ActionColumn';
 export * from './ActionColumn';
-export {default as AggregateGroupColumn, createAggregateDesc, IAggregateGroupColumnDesc} from './AggregateGroupColumn';
+export {default as AggregateGroupColumn} from './AggregateGroupColumn';
+export * from './AggregateGroupColumn';
 export {default as AnnotateColumn} from './AnnotateColumn';
-export {default as ArrayColumn, IArrayColumnDesc, IArrayDesc, ISplicer} from './ArrayColumn';
-export {default as BooleanColumn, IBooleanColumnDesc, IBooleanDesc} from './BooleanColumn';
-export * from './BooleansColumn';
+export * from './AnnotateColumn';
+export {default as ArrayColumn} from './ArrayColumn';
+export * from './ArrayColumn';
+export {default as BooleanColumn} from './BooleanColumn';
+export * from './BooleanColumn';
 export {default as BooleansColumn} from './BooleansColumn';
-export {default as BoxPlotColumn, IBoxPlotColumnDesc, IBoxPlotDesc} from './BoxPlotColumn';
+export * from './BooleansColumn';
+export {default as BoxPlotColumn} from './BoxPlotColumn';
+export * from './BoxPlotColumn';
 export {default as CategoricalColumn} from './CategoricalColumn';
-export * from './CategoricalMapColumn';
+export *from './CategoricalColumn';
 export {default as CategoricalMapColumn} from './CategoricalMapColumn';
-export * from './CategoricalsColumn';
+export * from './CategoricalMapColumn';
 export {default as CategoricalsColumn} from './CategoricalsColumn';
-export {default, default as Column, IFlatColumn, IColumnParent, IColumnMetaData, IColumnDesc} from './Column';
-export {default as CompositeColumn, isMultiLevelColumn, IMultiLevelColumn} from './CompositeColumn';
-export * from './CompositeNumberColumn';
+export * from './CategoricalsColumn';
+export {default, default as Column} from './Column';
+// no * export
+export {default as CompositeColumn} from './CompositeColumn';
+// no * export
 export {default as CompositeNumberColumn} from './CompositeNumberColumn';
-export {default as DateColumn, IDateColumnDesc} from './DateColumn';
-export {default as DatesMapColumn, IDateMapColumnDesc} from './DatesMapColumn';
-export {default as DatesColumn, IDatesDesc, IDatesColumnDesc} from './DatesColumn';
-export * from './DummyColumn';
-export {default as DummyColumn} from './DummyColumn';
-export {default as GroupColumn, createGroupDesc, EGroupSortMethod} from './GroupColumn';
-export {default as HierarchyColumn, ICategoryNode, IPartialCategoryNode, IHierarchyColumnDesc, IHierarchyDesc, ICategoryInternalNode, ICutOffNode, resolveInnerNodes, isHierarchical, deriveHierarchy} from './HierarchyColumn';
-export * from './ImpositionBoxPlotColumn';
+export * from './CompositeNumberColumn';
+export {default as DateColumn} from './DateColumn';
+export * from './DateColumn';
+export {default as DatesColumn} from './DatesColumn';
+export * from './DatesColumn';
+export {default as DatesMapColumn} from './DatesMapColumn';
+export * from './DatesMapColumn';
+export {default as GroupColumn} from './GroupColumn';
+export *from './GroupColumn';
+export {default as HierarchyColumn} from './HierarchyColumn';
+export * from './HierarchyColumn';
 export {default as ImpositionBoxPlotColumn} from './ImpositionBoxPlotColumn';
-export * from './ImpositionCompositeColumn';
+export * from './ImpositionBoxPlotColumn';
 export {default as ImpositionCompositeColumn} from './ImpositionCompositeColumn';
-export * from './ImpositionCompositesColumn';
+export * from './ImpositionCompositeColumn';
 export {default as ImpositionCompositesColumn} from './ImpositionCompositesColumn';
-export * from './MapColumn';
-export {default as MapColumn} from './MapColumn';
-export {default as MultiLevelCompositeColumn} from './MultiLevelCompositeColumn';
-export * from './NestedColumn';
-export {default as NestedColumn} from './NestedColumn';
-export {default as NumberColumn, INumberColumnDesc, INumberColumn, isNumberColumn} from './NumberColumn';
-export {default as NumberMapColumn, INumberMapDesc, INumberMapColumnDesc} from './NumberMapColumn';
-export {default as NumbersColumn, INumbersDesc, INumbersColumnDesc} from './NumbersColumn';
-export {default as OrdinalColumn, ICategoricalNumberColumnDesc} from './OrdinalColumn';
-export * from './RankColumn';
-export {default as RankColumn} from './RankColumn';
-export {default as Ranking, ISortCriteria} from './Ranking';
-export {default as ReduceColumn, createReduceDesc, IReduceDesc, IReduceColumnDesc} from './ReduceColumn';
-export {default as ScriptColumn, createScriptDesc, IScriptDesc, IScriptColumnDesc} from './ScriptColumn';
-export {default as SelectionColumn, createSelectionDesc, ISelectionColumnDesc} from './SelectionColumn';
-export {default as SetColumn, ISetColumnDesc, ISetDesc} from './SetColumn';
-export {default as StackColumn, createStackDesc} from './StackColumn';
-export {default as StringColumn, EAlignment, IStringDesc, IStringColumnDesc, EStringGroupCriteriaType, IStringGroupCriteria} from './StringColumn';
-export * from './StringMapColumn';
-export {default as StringMapColumn} from './StringMapColumn';
-export * from './StringsColumn';
-export {default as StringsColumn} from './StringsColumn';
-export {default as ValueColumn, IValueColumnDesc} from './ValueColumn';
-export {default as LinkColumn, ILinkDesc, ILinkColumnDesc, ILink} from './LinkColumn';
-export * from './LinkMapColumn';
+export * from './ImpositionCompositesColumn';
+export {default as LinkColumn} from './LinkColumn';
+export * from './LinkColumn';
 export {default as LinkMapColumn} from './LinkMapColumn';
-export * from './LinksColumn';
+export * from './LinkMapColumn';
 export {default as LinksColumn} from './LinksColumn';
+export * from './LinksColumn';
+export {default as MapColumn} from './MapColumn';
+export * from './MapColumn';
+export {default as MultiLevelCompositeColumn} from './MultiLevelCompositeColumn';
+export * from './MultiLevelCompositeColumn';
+export {default as NestedColumn} from './NestedColumn';
+export * from './NestedColumn';
+export {default as NumberColumn} from './NumberColumn';
+export * from './NumberColumn';
+export {default as NumberMapColumn} from './NumberMapColumn';
+export * from './NumberMapColumn';
+export {default as NumbersColumn} from './NumbersColumn';
+export * from './NumbersColumn';
+export {default as OrdinalColumn} from './OrdinalColumn';
+export * from './OrdinalColumn';
+export {default as RankColumn} from './RankColumn';
+export * from './RankColumn';
+export {default as Ranking, EDirtyReason} from './Ranking';
+// no * export
+export {default as ReduceColumn} from './ReduceColumn';
+export * from './ReduceColumn';
+export {default as ScriptColumn} from './ScriptColumn';
+export * from './ScriptColumn';
+export {default as SelectionColumn} from './SelectionColumn';
+export * from './SelectionColumn';
+export {default as SetColumn} from './SetColumn';
+export * from './SetColumn';
+export {default as StackColumn} from './StackColumn';
+export * from './StackColumn';
+export {default as StringColumn} from './StringColumn';
+export * from './StringColumn';
+export {default as StringsColumn} from './StringsColumn';
+export * from './StringsColumn';
+export {default as StringMapColumn} from './StringMapColumn';
+export * from './StringMapColumn';
+export {default as ValueColumn} from './ValueColumn';
+// no * export
+
 
 /**
  * defines a new column type
@@ -113,14 +110,14 @@ export {default as LinksColumn} from './LinksColumn';
  */
 export function defineColumn<T>(name: string, functions: any = {}): typeof Column {
   class CustomColumn extends ValueColumn<T> {
-    constructor(id: string, desc: IValueColumnDesc<T>) {
+    constructor(id: string, desc: IValueColumnDesc<T>, ...args: any[]) {
       super(id, desc);
       if (typeof (this.init) === 'function') {
-        this.init.apply(this, [].slice.apply(arguments));
+        this.init(id, desc, ...args);
       }
     }
 
-    init() {
+    init(..._args: any[]) {
       // dummy
     }
   }
@@ -129,47 +126,4 @@ export function defineColumn<T>(name: string, functions: any = {}): typeof Colum
   CustomColumn.prototype = Object.assign(CustomColumn.prototype, functions);
 
   return CustomColumn;
-}
-
-
-/**
- * a map of all known column types
- */
-export function models() {
-  return {
-    actions: ActionColumn,
-    aggregate: AggregateGroupColumn,
-    annotate: AnnotateColumn,
-    boolean: BooleanColumn,
-    booleans: BooleansColumn,
-    boxplot: BoxPlotColumn,
-    categorical: CategoricalColumn,
-    categoricalMap: CategoricalMapColumn,
-    categoricals: CategoricalsColumn,
-    date: DateColumn,
-    dateMap: DatesMapColumn,
-    dates: DatesColumn,
-    group: GroupColumn,
-    hierarchy: HierarchyColumn,
-    imposition: ImpositionCompositeColumn,
-    impositionBoxPlot: ImpositionBoxPlotColumn,
-    impositions: ImpositionCompositesColumn,
-    reduce: ReduceColumn,
-    nested: NestedColumn,
-    number: NumberColumn,
-    numbers: NumbersColumn,
-    numberMap: NumberMapColumn,
-    ordinal: OrdinalColumn,
-    rank: RankColumn,
-    script: ScriptColumn,
-    selection: SelectionColumn,
-    set: SetColumn,
-    stack: StackColumn,
-    string: StringColumn,
-    stringMap: StringMapColumn,
-    strings: StringsColumn,
-    link: LinkColumn,
-    linkMap: LinkMapColumn,
-    links: LinksColumn
-  };
 }

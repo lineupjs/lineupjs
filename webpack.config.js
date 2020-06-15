@@ -1,7 +1,7 @@
 const resolve = require('path').resolve;
 const pkg = require('./package.json');
 const webpack = require('webpack');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 const now = new Date();
@@ -10,20 +10,19 @@ const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix
 pkg.version = pkg.version.replace('SNAPSHOT', buildId);
 
 const year = (new Date()).getFullYear();
-const banner = '/*! ' + (pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + year + '\n' +
-  (pkg.homepage ? '* ' + pkg.homepage + '\n' : '') +
-  '* Copyright (c) ' + year + ' ' + pkg.author.name + ';' +
-  ' Licensed ' + pkg.license + '*/\n';
+const banner = `/*! ${pkg.title || pkg.name} - v${pkg.version} - ${year}\n` +
+  (pkg.homepage ? `* ${pkg.homepage}\n` : '') +
+  `* Copyright (c) ${year} ${pkg.author.name}; Licensed ${pkg.license} */\n`;
 
 /**
  * generate a webpack configuration
  */
-module.exports = (env, options) => {
+module.exports = (_env, options) => {
   const dev = options.mode.startsWith('d');
   return {
     node: false, // no polyfills
     entry: {
-      'LineUpJS': './src/index.ts'
+      'LineUpJS': './src/bundle.ts'
     },
     output: {
       path: resolve(__dirname, 'build'),
@@ -45,83 +44,94 @@ module.exports = (env, options) => {
       }),
       //define magic constants that are replaced
       new webpack.DefinePlugin({
-        __DEBUG__ : dev,
+        __DEBUG__: dev,
         __VERSION__: JSON.stringify(pkg.version),
         __LICENSE__: JSON.stringify(pkg.license),
         __BUILD_ID__: JSON.stringify(buildId)
       }),
-      new ExtractTextPlugin({
-        filename: `[name].css`
+      new MiniCssExtractPlugin({
+        // Options similar to the same options in webpackOptions.output
+        // both options are optional
+        filename: '[name].css',
+        chunkFilename: '[id].css'
       }),
       new ForkTsCheckerWebpackPlugin({
-        checkSyntacticErrors: true
+        checkSyntacticErrors: true,
+        silent: process.argv.includes('--json') // avoid output in profiling mode
       })
     ],
     externals: {},
     module: {
       rules: [{
-          test: /\.s?css$/,
-          use: ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: ['css-loader', 'sass-loader']
-          })
+        test: /\.s?css$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'sass-loader'
+        ]
+      },
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [{
+          loader: 'cache-loader'
         },
         {
-          test: /\.tsx?$/,
-          exclude: /node_modules/,
-          use: [{
-              loader: 'cache-loader'
-            },
-            {
-              loader: 'thread-loader',
-              options: {
-                // there should be 1 cpu for the fork-ts-checker-webpack-plugin
-                workers: require('os').cpus().length - 1,
-              },
-            },
-            {
-              loader: 'ts-loader',
-              options: {
-                configFile: dev ? 'tsconfig.dev.json' : 'tsconfig.json',
-                happyPackMode: true // IMPORTANT! use happyPackMode mode to speed-up  compilation and reduce errors reported to webpack
-              }
-            }
-          ].slice(process.env.CI || !dev ? 2 : 0) // no optimizations for CIs and in production mode
-        },
-        {
-          test: /\.(png|jpg)$/,
-          loader: 'url-loader',
+          loader: 'thread-loader',
           options: {
-            limit: 20000 //inline <= 10kb
-          }
+            // there should be 1 cpu for the fork-ts-checker-webpack-plugin
+            workers: require('os').cpus().length - 1,
+          },
         },
         {
-          test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          loader: 'url-loader',
+          loader: 'ts-loader',
           options: {
-            limit: 20000, //inline <= 20kb
-            mimetype: 'application/font-woff'
+            configFile: dev ? 'tsconfig.dev.json' : 'tsconfig.json',
+            happyPackMode: true // IMPORTANT! use happyPackMode mode to speed-up  compilation and reduce errors reported to webpack
           }
-        },
-        {
-          test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          loader: 'url-loader',
-          options: {
-            limit: 10000, //inline <= 10kb
-            mimetype: 'image/svg+xml'
-          }
-        },
-        {
-          test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          loader: 'file-loader'
         }
+        ].slice(process.env.CI || !dev ? 2 : 0) // no optimizations for CIs and in production mode
+      },
+      {
+        test: /\.(png|jpg)$/,
+        loader: 'url-loader',
+        options: {
+          limit: 20000 //inline <= 10kb
+        }
+      },
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'url-loader',
+        options: {
+          limit: 20000, //inline <= 20kb
+          mimetype: 'application/font-woff'
+        }
+      },
+      {
+        test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000, //inline <= 10kb
+          mimetype: 'image/svg+xml'
+        }
+      },
+      {
+        test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'file-loader'
+      },
+      {
+        test: /schema\.json$/,
+        type: 'javascript/auto',
+        loader: 'file-loader'
+      }
       ]
     },
     watchOptions: {
       // ignored: /node_modules/
     },
     devServer: {
-      contentBase: 'demo'
+      contentBase: 'demo',
+      disableHostCheck: true
     }
   };
 };

@@ -1,12 +1,12 @@
-import Ranking from '../../model/Ranking';
-import Column from '../../model/Column';
-import {ISortCriteria} from '../../model/Ranking';
-import {updateHeader} from '../header';
-import {IRankingHeaderContext} from '../interfaces';
-import SearchBox, {ISearchBoxOptions} from './SearchBox';
-import {isSupportType, categoryOf, isSortingAscByDefault} from '../../model/annotations';
-import {isSortAble, isGroupAble, getToolbarDialogAddons, IToolbarDialogAddon, dialogContext, isGroupSortAble} from '../toolbar';
+import {clear} from '../../internal';
+import {Column, Ranking, categoryOf, isSortingAscByDefault, ISortCriteria, isSupportType} from '../../model';
+import {aria, cssClass} from '../../styles';
 import AddonDialog from '../dialogs/AddonDialog';
+import {actionCSSClass, updateHeader} from '../header';
+import {IRankingHeaderContext, IToolbarDialogAddon} from '../interfaces';
+import {getToolbarDialogAddons, isGroupAble, isGroupSortAble, isSortAble} from '../toolbar';
+import SearchBox, {ISearchBoxOptions} from './SearchBox';
+import {dialogContext} from '../dialogs';
 
 interface IColumnItem {
   col: Column;
@@ -24,19 +24,20 @@ export default class Hierarchy {
 
   constructor(private readonly ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('aside');
-    this.node.classList.add('lu-hierarchy', 'lu-feature-advanced', 'lu-feature-ranking');
+    this.node.classList.add(cssClass('hierarchy'), cssClass('feature-advanced'), cssClass('feature-ranking'));
     this.node.innerHTML = `
-      <section class="lu-hierarchy-group">
+      <section class="${cssClass('group-hierarchy')}">
       </section>
-      <section class="lu-hierarchy-sort">
+      <section class="${cssClass('sort-hierarchy')}">
       </section>
-      <section class="lu-hierarchy-sortgroup">
+      <section class="${cssClass('sort-groups-hierarchy')}">
       </section>
     `;
     const options = <Partial<ISearchBoxOptions<IColumnItem>>>{
       doc: document,
       placeholder: 'Add Sort Criteria...',
       formatItem: (item: IColumnItem, node: HTMLElement) => {
+        node.classList.add(cssClass('typed-icon'));
         node.dataset.typeCat = categoryOf(item.col).name;
         node.dataset.type = item.col.desc.type;
         return item.text;
@@ -63,26 +64,26 @@ export default class Hierarchy {
     this.renderGroupSorting(ranking, <HTMLElement>this.node.lastElementChild!);
   }
 
-  private render<T>(node: HTMLElement, items: T[], toColumn: (item: T)=>Column, extras: (item: T, node: HTMLElement)=>void, addonKey: string, onChange: (item: T, delta: number)=>void) {
+  private render<T>(node: HTMLElement, items: T[], toColumn: (item: T) => Column, extras: (item: T, node: HTMLElement) => void, addonKey: string, onChange: (item: T, delta: number) => void) {
     const cache = new Map((<HTMLElement[]>Array.from(node.children)).map((d) => <[string, HTMLElement]>[d.dataset.id, d]));
-    node.innerHTML = '';
+    clear(node);
 
     items.forEach((d) => {
       const col = toColumn(d);
       const item = cache.get(col.id);
       if (item) {
         node.appendChild(item);
-        updateHeader(item, col);
+        updateHeader(item, col, 0);
         return;
       }
       const addons = getToolbarDialogAddons(col, addonKey, this.ctx);
 
-      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="lu-toolbar">
-      <div class="lu-label">${col.label}</div>
-      ${addons.length > 0 ? `<i title="Customize" class="lu-action"><span aria-hidden="true">Customize</span> </i>` : ''}
-      <i title="Move Up" class="lu-action"><span aria-hidden="true">Move Up</span> </i>
-      <i title="Move Down" class="lu-action"><span aria-hidden="true">Move Down</span> </i>
-      <i title="Remove from hierarchy" class="lu-action"><span aria-hidden="true">Remove from hierarchy</span> </i>
+      node.insertAdjacentHTML('beforeend', `<div data-id="${col.id}" class="${cssClass('toolbar')} ${cssClass('hierarchy-entry')}">
+      <div class="${cssClass('label')} ${cssClass('typed-icon')}">${col.label}</div>
+      ${addons.length > 0 ? `<i title="Customize" class="${actionCSSClass('customize')}">${aria('Customize')}</i>` : ''}
+      <i title="Move Up" class="${actionCSSClass('Move Up')}">${aria('Move Up')}</i>
+      <i title="Move Down" class="${actionCSSClass('Move Down')}">${aria('Move Down')}</i>
+      <i title="Remove from hierarchy" class="${actionCSSClass('Remove')}">${aria('Remove from hierarchy')}</i>
       </div>`);
       const last = <HTMLElement>node.lastElementChild!;
 
@@ -113,7 +114,7 @@ export default class Hierarchy {
 
       extras(d, last);
 
-      updateHeader(last, col);
+      updateHeader(last, col, 0);
     });
   }
 
@@ -121,7 +122,7 @@ export default class Hierarchy {
     const groups = ranking.getGroupCriteria();
 
     if (groups.length === 0) {
-      node.innerHTML = '';
+      clear(node);
       return;
     }
 
@@ -135,7 +136,7 @@ export default class Hierarchy {
     };
 
     const addButton = (_: Column, last: HTMLElement) => {
-      last.insertAdjacentHTML('afterbegin', `<i title="Group" class="lu-action" data-group="true"><span aria-hidden="true">Group</span> </i>`);
+      last.insertAdjacentHTML('afterbegin', `<i title="Group" class="${actionCSSClass('group')}" data-group="true">${aria('Group')}</i>`);
     };
 
     this.render(node, groups, (d) => d, addButton, 'group', click);
@@ -146,7 +147,7 @@ export default class Hierarchy {
     const sortCriterias = ranking.getSortCriteria();
 
     if (sortCriterias.length === 0) {
-      node.innerHTML = '';
+      clear(node);
       return;
     }
 
@@ -165,7 +166,7 @@ export default class Hierarchy {
 
     const addButton = (s: ISortCriteria, last: HTMLElement) => {
       last.insertAdjacentHTML('afterbegin', `
-      <i title="Sort" class="lu-action" data-sort="${s.asc ? 'asc' : 'desc'}"><span aria-hidden="true">Toggle Sorting</span> </i>`);
+      <i title="Sort" class="${actionCSSClass('sort')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria('Toggle Sorting')}</i>`);
       (<HTMLElement>last.querySelector('i[title=Sort]')!).onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
@@ -182,7 +183,7 @@ export default class Hierarchy {
     const sortCriterias = ranking.getGroupSortCriteria();
 
     if (sortCriterias.length === 0) {
-      node.innerHTML = '';
+      clear(node);
       return;
     }
 
@@ -201,7 +202,7 @@ export default class Hierarchy {
 
     const addButton = (s: ISortCriteria, last: HTMLElement) => {
       last.insertAdjacentHTML('afterbegin', `
-      <i title="Sort Group" class="lu-action" data-sort="${s.asc ? 'asc' : 'desc'}"><span aria-hidden="true">Toggle Sorting</span> </i>`);
+      <i title="Sort Group" class="${actionCSSClass('sort-groups')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria('Toggle Sorting')}</i>`);
       (<HTMLElement>last.querySelector('i[title="Sort Group"]')!).onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
@@ -214,7 +215,7 @@ export default class Hierarchy {
     this.addGroupSortAdder(ranking, sortCriterias, node);
   }
 
-  private addAdder(adder: SearchBox<IColumnItem>, ranking: Ranking, addonKey: string, current: Column[], node: HTMLElement, check: (col: Column)=>boolean, onSelect: (col: Column)=>void) {
+  private addAdder(adder: SearchBox<IColumnItem>, ranking: Ranking, addonKey: string, current: Column[], node: HTMLElement, check: (col: Column) => boolean, onSelect: (col: Column) => void) {
     const used = new Set(current);
 
     adder.data = ranking.children.filter((col) => !isSupportType(col) && !used.has(col) && check(col)).map((col) => ({col, id: col.id, text: col.label}));
@@ -222,7 +223,7 @@ export default class Hierarchy {
     adder.on(SearchBox.EVENT_SELECT, (item: IColumnItem) => {
       const addons = getToolbarDialogAddons(item.col, addonKey, this.ctx);
       if (addons.length > 0) {
-        this.customize(item.col, addons, { currentTarget: adder.node}, () => onSelect(item.col));
+        this.customize(item.col, addons, adder.node, () => onSelect(item.col));
       } else {
         onSelect(item.col);
       }
@@ -232,9 +233,9 @@ export default class Hierarchy {
       return;
     }
 
-    console.assert(node.ownerDocument != null);
     const wrapper = node.ownerDocument!.createElement('footer');
     wrapper.appendChild(adder.node);
+    wrapper.classList.add(cssClass('hierarchy-adder'));
     node.appendChild(wrapper);
   }
 
@@ -256,8 +257,8 @@ export default class Hierarchy {
     });
   }
 
-  private customize(col: Column, addons: IToolbarDialogAddon[], evt: { currentTarget: Element }, onClick?: ()=>void) {
-    const dialog = new AddonDialog(col, addons, dialogContext(this.ctx, 0, evt), this.ctx, onClick);
+  private customize(col: Column, addons: IToolbarDialogAddon[], attachment: HTMLElement, onClick?: () => void) {
+    const dialog = new AddonDialog(col, addons, dialogContext(this.ctx, 0, attachment), this.ctx, onClick);
     dialog.open();
   }
 }

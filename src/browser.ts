@@ -9,26 +9,26 @@ export const SUPPORTED_EDGE_VERSION = 16;
  */
 export function getUnsupportedBrowserError() {
   const info = detect();
-  if (!info) {
+  if (!info || !info.version) {
     return 'browser cannot be detected';
   }
   const prefix = `unsupported browser detected:`;
-  switch(info.name) {
+  switch (info.name) {
     case 'firefox':
       const fVersion = parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
-      if(fVersion <= SUPPORTED_FIREFOX_VERSION && fVersion !== 52) { // ESR
+      if (fVersion <= SUPPORTED_FIREFOX_VERSION && fVersion !== 52) { // ESR
         return `${prefix} Firefox ${info.version} (&lt; ${SUPPORTED_FIREFOX_VERSION})`;
       }
       return null;
     case 'edge':
       const eVersion = parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
-      if(eVersion <= SUPPORTED_EDGE_VERSION) {
+      if (eVersion <= SUPPORTED_EDGE_VERSION) {
         return `${prefix} Edge ${info.version} (&lt; ${SUPPORTED_EDGE_VERSION})`;
       }
       return null;
     case 'chrome':
       const cVersion = parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
-      if(cVersion <= SUPPORTED_CHROME_VERSION) {
+      if (cVersion <= SUPPORTED_CHROME_VERSION) {
         return `${prefix} Chrome ${info.version} (&lt; ${SUPPORTED_CHROME_VERSION})`;
       }
       return null;

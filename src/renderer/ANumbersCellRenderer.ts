@@ -1,44 +1,55 @@
-import {LazyBoxPlotData} from '../internal';
-import {IDataRow, IGroup, isMissingValue} from '../model';
-import {INumbersColumn} from '../model/INumberColumn';
-import {default as IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer} from './interfaces';
+import {IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup} from '../model';
+import {IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {ISequence, boxplotBuilder, getSortLabel} from '../internal';
 
 export abstract class ANumbersCellRenderer {
   abstract readonly title: string;
 
   protected abstract createContext(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): {
+    clazz: string,
     templateRow: string,
-    update: (row: HTMLElement, data: number[], raw: number[], d: IDataRow) => void,
+    update: (row: HTMLElement, data: number[], raw: number[], d: IDataRow, tooltipPrefix?: string) => void,
     render: (ctx: CanvasRenderingContext2D, data: number[], d: IDataRow) => void,
   };
 
-  static choose(col: INumbersColumn, rows: IDataRow[]) {
-    const data = rows.map((r) => ({n: col.getNumbers(r), raw: col.getRawNumbers(r)}));
+  static choose(col: INumbersColumn, rows: ISequence<IDataRow>) {
+    let row: IDataRow | null = null;
+    const data = rows.map((r, i) => {
+      if (i === 0) {
+        row = r;
+      }
+      return {n: col.getNumbers(r), raw: col.getRawNumbers(r)};
+    });
     const cols = col.dataLength!;
     const normalized = <number[]>[];
     const raw = <number[]>[];
     // mean column)
     for (let i = 0; i < cols; ++i) {
-      const vs = data.map((d) => ({n: d.n[i], raw: d.raw[i]})).filter((d) => !isMissingValue(d.n));
+      const vs = data.map((d) => ({n: d.n[i], raw: d.raw[i]})).filter((d) => !isNaN(d.n));
       if (vs.length === 0) {
         normalized.push(NaN);
         raw.push(NaN);
       } else {
-        const box = <any>new LazyBoxPlotData(vs.map((d) => d.n));
-        const boxRaw = <any>new LazyBoxPlotData(vs.map((d) => d.raw));
-        normalized.push(box[col.getSortMethod()]);
-        raw.push(boxRaw[col.getSortMethod()]);
+        const bbn = boxplotBuilder();
+        const bbr = boxplotBuilder();
+        const s: EAdvancedSortMethod = <any>col.getSortMethod();
+        vs.forEach((d) => {
+          bbn.push(d.n);
+          bbr.push(d.raw);
+        });
+        normalized.push(bbn.build()[s]!);
+        raw.push(bbr.build()[s]!);
       }
     }
-    return {normalized, raw};
+    return {normalized, raw, row};
   }
 
-  create(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer): ICellRenderer {
+  create(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
-    const {templateRow, render, update} = this.createContext(col, context, imposer);
+    const {templateRow, render, update, clazz} = this.createContext(col, context, imposer);
     return {
-      template: `<div>${templateRow}</div>`,
+      template: `<div class="${clazz}">${templateRow}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;
@@ -54,26 +65,29 @@ export abstract class ANumbersCellRenderer {
     };
   }
 
-  createGroup(col: INumbersColumn, context: IRenderContext, _hist: any, imposer?: IImposer): IGroupCellRenderer {
-    const {templateRow, update} = this.createContext(col, context, imposer);
+  createGroup(col: INumbersColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
+    const {templateRow, update, clazz} = this.createContext(col, context, imposer);
     return {
-      template: `<div>${templateRow}</div>`,
-      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
+      template: `<div class="${clazz}">${templateRow}</div>`,
+      update: (n: HTMLDivElement, group: IOrderedGroup) => {
         // render a heatmap
-        const {normalized, raw} = ANumbersCellRenderer.choose(col, rows);
-        update(n, normalized, raw, rows[0]);
+        return context.tasks.groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows)).then((data) => {
+          if (typeof data !== 'symbol') {
+            update(n, data.normalized, data.raw, data.row!, `${getSortLabel(col.getSortMethod())} `);
+          }
+        });
       }
     };
   }
 }
 
-
-export function matchRows(n: HTMLElement | SVGElement, rows: IDataRow[], template: string) {
+/** @internal */
+export function matchRows(n: HTMLElement | SVGElement, length: number, template: string) {
   // first match the number of rows
   const children = <(HTMLElement | SVGElement)[]>Array.from(n.children);
-  if (children.length > rows.length) {
-    children.slice(rows.length).forEach((c) => c.remove());
-  } else if (rows.length > children.length) {
-    n.insertAdjacentHTML('beforeend', template.repeat(rows.length - children.length));
+  if (children.length > length) {
+    children.slice(length).forEach((c) => c.remove());
+  } else if (length > children.length) {
+    n.insertAdjacentHTML('beforeend', template.repeat(length - children.length));
   }
 }

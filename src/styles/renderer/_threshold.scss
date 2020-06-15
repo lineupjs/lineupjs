@@ -1,5 +1,6 @@
+@import '../vars';
 
-[data-renderer=threshold] {
+.#{$lu_css_prefix}-renderer-threshold {
   align-items: flex-start;
 
   > div {

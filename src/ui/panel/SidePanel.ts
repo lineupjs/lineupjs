@@ -1,27 +1,16 @@
-import {suffix} from '../../internal/AEventDispatcher';
-import {
-  createImpositionDesc,
-  createNestedDesc,
-  createReduceDesc,
-  createScriptDesc,
-  createStackDesc,
-  createRankDesc,
-  createGroupDesc,
-  createAggregateDesc,
-  createSelectionDesc,
-  IColumnDesc
-} from '../../model';
-import {categoryOfDesc, IColumnCategory} from '../../model/annotations';
-import Ranking from '../../model/Ranking';
-import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
+import {suffix} from '../../internal';
+import {categoryOfDesc, IColumnCategory, createAggregateDesc, createGroupDesc, createImpositionDesc, createNestedDesc, createRankDesc, createReduceDesc, createScriptDesc, createSelectionDesc, createStackDesc, IColumnDesc, Ranking} from '../../model';
+import {DataProvider, IDataProvider} from '../../provider';
+import {aria, cssClass} from '../../styles';
+import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
 import {IRankingHeaderContext} from '../interfaces';
+import {dialogContext} from '../dialogs';
 import SearchBox, {IGroupSearchItem, ISearchBoxOptions} from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
-import {dialogContext} from '../toolbar';
-import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
+import {format} from 'd3-format';
 
 
-interface IColumnWrapper {
+export interface IColumnWrapper {
   desc: IColumnDesc;
   category: IColumnCategory;
   id: string;
@@ -59,13 +48,14 @@ export default class SidePanel {
     formatItem: (item: IColumnWrapper | IGroupSearchItem<IColumnWrapper>, node: HTMLElement) => {
       const w: IColumnWrapper = isWrapper(item) ? item : (<IColumnWrapper>item.children[0]);
       node.dataset.typeCat = w.category.name;
+      node.classList.add(cssClass('typed-icon'));
       if (isWrapper(item)) {
         node.dataset.type = w.desc.type;
       }
       if (node.parentElement) {
-        node.parentElement.classList.add('lu-feature-model');
-        node.parentElement.classList.toggle('lu-feature-advanced', w.category.featureLevel === 'advanced');
-        node.parentElement.classList.toggle('lu-feature-basic', w.category.featureLevel === 'basic');
+        node.parentElement.classList.add(cssClass('feature-model'));
+        node.parentElement.classList.toggle(cssClass('feature-advanced'), w.category.featureLevel === 'advanced');
+        node.parentElement.classList.toggle(cssClass('feature-basic'), w.category.featureLevel === 'basic');
       }
       return item.text;
     },
@@ -83,7 +73,7 @@ export default class SidePanel {
     Object.assign(this.options, options);
 
     this.node = document.createElement('aside');
-    this.node.classList.add('lu-side-panel');
+    this.node.classList.add(cssClass('side-panel'));
 
     this.search = this.options.chooser ? new SearchBox<IColumnWrapper>(this.options) : null;
 
@@ -94,11 +84,11 @@ export default class SidePanel {
 
   private init() {
     this.node.innerHTML = `
-      <aside class="lu-stats"></aside>
-      <header>
-        <i class="lu-action" title="Choose &hellip;"><span aria-hidden="true">Choose &hellip;</span></i>
+      <aside class="${cssClass('stats')}"></aside>
+      <header class="${cssClass('side-panel-rankings')}">
+        <i class="${cssClass('action')}" title="Choose &hellip;">${aria('Choose &hellip;')}</i>
       </header>
-      <main></main>
+      <main class="${cssClass('side-panel-main')}"></main>
     `;
 
     {
@@ -111,7 +101,7 @@ export default class SidePanel {
     }
 
     if (this.options.collapseable) {
-      this.node.insertAdjacentHTML('beforeend', `<div class="lu-collapser" title="Collapse Panel"></div>`);
+      this.node.insertAdjacentHTML('beforeend', `<div class="${cssClass('collapser')}" title="Collapse Panel">${aria('Collapse Panel')}</div>`);
       const last = <HTMLElement>this.node.lastElementChild;
       last.onclick = () => this.collapsed = !this.collapsed;
       this.collapsed = this.options.collapseable === 'collapsed';
@@ -124,9 +114,9 @@ export default class SidePanel {
     if (!this.search) {
       return;
     }
-    console.assert(this.node.ownerDocument != null);
     this.chooser = this.node.ownerDocument!.createElement('header');
-    this.chooser.innerHTML = '<form></form>';
+    this.chooser.appendChild(this.chooser.ownerDocument!.createElement('form'));
+    this.chooser.classList.add(cssClass('side-panel-chooser'));
     this.chooser.firstElementChild!.appendChild(this.search.node);
     this.search.on(SearchBox.EVENT_SELECT, (panel: IColumnWrapper) => {
       const col = this.data.create(panel.desc);
@@ -152,11 +142,11 @@ export default class SidePanel {
     this.data = data;
 
     const wrapDesc = (desc: IColumnDesc) => ({
-        desc,
-        category: categoryOfDesc(desc, data.columnTypes),
-        id: `${desc.type}@${desc.label}`,
-        text: desc.label
-      });
+      desc,
+      category: categoryOfDesc(desc, data.columnTypes),
+      id: `${desc.type}@${desc.label}`,
+      text: desc.label
+    });
     this.descs.splice(0, this.descs.length, ...data.getColumns().concat(this.options.additionalDescs).map(wrapDesc));
 
     data.on(`${DataProvider.EVENT_ADD_DESC}.panel`, (desc) => {
@@ -206,7 +196,6 @@ export default class SidePanel {
   }
 
   private createEntry(ranking: Ranking, index: number) {
-    console.assert(this.node.ownerDocument != null);
     const entry = new SidePanelRanking(ranking, this.ctx, this.node.ownerDocument!, this.options);
 
     const header = this.node.querySelector('header')!;
@@ -233,11 +222,11 @@ export default class SidePanel {
   }
 
   get collapsed() {
-    return this.node.classList.contains('lu-collapsed');
+    return this.node.classList.contains(cssClass('collapsed'));
   }
 
   set collapsed(value: boolean) {
-    this.node.classList.toggle('lu-collapsed', value);
+    this.node.classList.toggle(cssClass('collapsed'), value);
     if (value) {
       return;
     }
@@ -253,7 +242,7 @@ export default class SidePanel {
     if (active && this.chooser) {
       active.node.insertAdjacentElement('afterbegin', this.chooser);
       // scroll to body
-      const parent = <HTMLElement>this.node.closest('.lu')!;
+      const parent = <HTMLElement>this.node.closest(`.${cssClass()}`)!;
       const body = parent ? parent.querySelector(`article[data-ranking="${active.ranking.id}"]`) : null;
       if (body) {
         body.scrollIntoView();
@@ -288,11 +277,23 @@ export default class SidePanel {
     if (this.collapsed) {
       return;
     }
-    const stats = <HTMLElement>this.node.querySelector('aside.lu-stats');
+    const stats = <HTMLElement>this.node.querySelector(`.${cssClass('stats')}`);
     const s = this.data.getSelection();
     const r = this.data.getFirstRanking();
+    const f = format(',d');
     const visible = r ? r.getGroups().reduce((a, b) => a + b.order.length, 0) : 0;
-    stats.innerHTML = `Showing <strong>${visible}</strong> of ${this.data.getTotalNumberOfRows()} items${s.length > 0 ? `; <span>${s.length} selected</span>` : ''}`;
+    const total = this.data.getTotalNumberOfRows();
+    stats.innerHTML = `Showing <strong>${f(visible)}</strong> of ${f(total)} items${s.length > 0 ? `; <span>${f(s.length)} selected</span>` : ''}${visible < total ? ` <i class="${cssClass('action')} ${cssClass('action-filter')} ${cssClass('stats-reset')}" title="Reset filters"><span>Reset</span></i>` : ''}`;
+
+    const resetButton = stats.querySelector<HTMLElement>(`.${cssClass('stats-reset')}`);
+    if (!resetButton) {
+      return;
+    }
+    resetButton.onclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.data.clearFilters();
+    };
   }
 
   destroy() {
@@ -306,7 +307,7 @@ export default class SidePanel {
       DataProvider.EVENT_ADD_DESC), null);
   }
 
-  private static groupByType(entries: IColumnWrapper[]): { text: string, children: IColumnWrapper[] }[] {
+  private static groupByType(entries: IColumnWrapper[]): {text: string, children: IColumnWrapper[]}[] {
     const map = new Map<IColumnCategory, IColumnWrapper[]>();
     entries.forEach((entry) => {
       if (!map.has(entry.category)) {

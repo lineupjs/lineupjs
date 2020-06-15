@@ -1,9 +1,9 @@
-import CategoricalColumn from '../../model/CategoricalColumn';
-import {ICategoricalFilter, isCategoryIncluded} from '../../model/ICategoricalColumn';
-import SetColumn from '../../model/SetColumn';
+import {SetColumn, CategoricalColumn, ICategoricalFilter, ISetCategoricalFilter} from '../../model';
 import {filterMissingMarkup, findFilterMissing} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
-import {updateFilterState, uniqueId, forEach} from './utils';
+import {forEach} from './utils';
+import {cssClass} from '../../styles';
+import {isCategoryIncluded} from '../../model/internalCategorical';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {
@@ -12,46 +12,80 @@ export default class CategoricalFilterDialog extends ADialog {
 
   constructor(private readonly column: CategoricalColumn | SetColumn, dialog: IDialogContext) {
     super(dialog, {
-      fullDialog: true
+      livePreview: 'filter'
     });
-    this.before = this.column.getFilter() || {filter: this.column.categories.map((d) => d.name), filterMissing: false};
+    this.before = this.column.getFilter() || {filter: '', filterMissing: false};
   }
 
   protected build(node: HTMLElement) {
-    node.classList.add('lu-filter-table');
-
-    const id = uniqueId(this.dialog.idPrefix);
-
-    node.insertAdjacentHTML('beforeend', `<div>
-        <div class="lu-checkbox"><input id="${id}" type="checkbox" checked><label for="${id}"><span></span><div>Un/Select All</div></label></div>
-        ${this.column.categories.map((c) => `<div class="lu-checkbox"><input id="${id}${c.name}" data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}><label for="${id}${c.name}"><span style="background-color: ${c.color}"></span><div>${c.label}</div></label></div>`).join('')}
+    node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input type="checkbox" checked>
+          <span>
+            <span class="${cssClass('dialog-filter-table-color')}"></span>
+            <div>Un/Select All</div>
+          </span>
+        </label>
+        ${this.column.categories.map((c) => `<label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
+          <span>
+            <span class="${cssClass('dialog-filter-table-color')}" style="background-color: ${c.color}"></span>
+            <div>${c.label}</div>
+          </span>
+        </label>`).join('')}
     </div>`);
     // selectAll
-    this.findInput('input:not([data-cat])').onchange = function (this: GlobalEventHandlers) {
-      const input = <HTMLInputElement>this;
-      forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = input.checked);
+    const selectAll = this.findInput('input:not([data-cat])');
+    selectAll.onchange =  () => {
+      forEach(node, 'input[data-cat]', (n: HTMLInputElement) => n.checked = selectAll.checked);
     };
-    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing, this.dialog.idPrefix));
+    if (this.column instanceof SetColumn) {
+      const some = (<ISetCategoricalFilter>this.before).mode !== 'every';
+      node.insertAdjacentHTML('beforeend', `<strong>Show rows where</strong>`);
+      node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}">
+        <input type="radio" ${!some ? 'checked="checked"' : ''} name="mode" value="every">
+        <span>all are selected</span>
+      </label>`);
+      node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}" style="padding-bottom: 0.6em">
+        <input type="radio" ${some ? 'checked="checked"' : ''} name="mode" value="some">
+        <span>some are selected</span>
+      </label>`);
+    }
+    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
+
+    this.enableLivePreviews('input[type=checkbox],input[type=radio]');
   }
 
-  private updateFilter(filter: string[] | null, filterMissing: boolean) {
+  private updateFilter(filter: string[] | null | RegExp | string, filterMissing: boolean, someMode = false) {
     const noFilter = filter == null && filterMissing === false;
-    updateFilterState(this.attachment, this.column, !noFilter);
-    this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
+    const f: ISetCategoricalFilter = {filter: filter!, filterMissing};
+    if (this.column instanceof SetColumn) {
+      f.mode = someMode ? 'some' : 'every';
+    }
+    this.column.setFilter(noFilter ? null : f);
   }
 
-  reset() {
+  protected reset() {
     this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked = true);
-    this.updateFilter(null, false);
+    findFilterMissing(this.node).checked = false;
+    const mode = this.findInput('input[value=every]');
+    if (mode) {
+      mode.checked = true;
+    }
   }
 
-  submit() {
+  protected cancel() {
+    this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing, (<ISetCategoricalFilter>this.before).mode === 'some');
+  }
+
+  protected submit() {
     let f: string[] | null = this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked ? n.dataset.cat! : '').filter(Boolean);
     if (f.length === this.column.categories.length) { // all checked = no filter
       f = null;
     }
     const filterMissing = findFilterMissing(this.node).checked;
-    this.updateFilter(f, filterMissing);
+    const mode = this.findInput('input[value=some]');
+    this.updateFilter(f, filterMissing, mode != null && mode.checked);
     return true;
   }
 }

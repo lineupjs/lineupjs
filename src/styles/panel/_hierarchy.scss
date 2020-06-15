@@ -3,112 +3,112 @@
 .#{$lu_css_prefix}-hierarchy {
   position: relative;
   order: 2;
+}
 
-  > section {
-    counter-reset: hierarchy-counter;
-    margin-bottom: 0.5em;
+.#{$lu_css_prefix}-group-hierarchy,
+.#{$lu_css_prefix}-sort-hierarchy,
+.#{$lu_css_prefix}-sort-groups-hierarchy {
+  counter-reset: hierarchy-counter;
+  margin-bottom: 0.5em;
 
-    &::before {
-      content: '';
-      display: block;
-      font-size: small;
-      color: $lu_toolbar_color_base2;
-      padding: 0.5em;
-    }
-
-    &:empty {
-      display: none;
-    }
-
-    > div,
-    > footer {
-      padding: 6px 0.5em 0 0.5em;
-      display: flex;
-      color: $lu_toolbar_color_base2;
-      border-top: 1px solid $lu_side_panel_separator_color;
-      font-size: $lu_toolbar_font_size;
-      font-weight: 500;
-      counter-increment: hierarchy-counter;
-
-      > div {
-        color: inherit;
-        flex: 1 1 0;
-      }
-
-      &::before {
-        color: $lu_toolbar_color_base2;
-        padding-right: 0.2em;
-        content: counter(hierarchy-counter);
-      }
-    }
-
-    > div {
-      i {
-        opacity: 0;
-        transition: opacity 0.1s linear;
-      }
-
-      &:hover {
-        i {
-          opacity: 1;
-        }
-      }
-
-      i:first-of-type {
-        padding: 0 4px !important;
-        opacity: 1;
-
-        &::after {
-          display: none;
-        }
-      }
-
-      &:first-of-type i[title="Move Up"],
-      &:last-of-type i[title="Move Down"] {
-        visibility: hidden;
-      }
-    }
+  &::before {
+    content: '';
+    display: block;
+    font-size: small;
+    color: $lu_toolbar_color_base2;
+    padding: 0.5em;
   }
 
-  // groups
-  > section.#{$lu_css_prefix}-hierarchy-group {
-    &::before {
-      content: 'Grouping hierarchy';
-    }
-
-    i[title=Group] {
-      pointer-events: none;
-    }
-  }
-
-  > section:empty + hr {
+  &:empty {
     display: none;
   }
+}
 
-  > section.#{$lu_css_prefix}-hierarchy-sort {
-    &::before {
-      content: 'Sorting hierarchy';
+.#{$lu_css_prefix}-group-hierarchy {
+  &::before {
+    content: 'Grouping Hierarchy';
+  }
+
+  i[title=Group] {
+    pointer-events: none;
+  }
+}
+
+.#{$lu_css_prefix}-sort-hierarchy {
+  &::before {
+    content: 'Sorting Hierarchy';
+  }
+}
+
+.#{$lu_css_prefix}-sort-groups-hierarchy {
+  &::before {
+    content: 'Group Sorting Hierarchy';
+  }
+}
+
+.#{$lu_css_prefix}-hierarchy-entry,
+.#{$lu_css_prefix}-hierarchy-adder {
+  padding: 6px 0.5em 0 0.5em;
+  display: flex;
+  color: $lu_toolbar_color_base2;
+  border-top: 1px solid $lu_side_panel_separator_color;
+  font-size: $lu_toolbar_font_size;
+  font-weight: 500;
+  counter-increment: hierarchy-counter;
+
+  &::before {
+    color: $lu_toolbar_color_base2;
+    padding-right: 0.2em;
+    content: counter(hierarchy-counter);
+  }
+}
+
+.#{$lu_css_prefix}-hierarchy-entry {
+  i {
+    opacity: 0;
+    transition: opacity 0.1s linear;
+  }
+
+  > .#{$lu_css_prefix}-label {
+    color: inherit;
+    flex: 1 1 0;
+  }
+
+  &:hover {
+    i {
+      opacity: 1;
     }
   }
 
-  > section.#{$lu_css_prefix}-hierarchy-sortgroup {
-    &::before {
-      content: 'Group Sorting hierarchy';
+  i:first-of-type {
+    padding: 0 4px !important;
+    opacity: 1;
+
+    &::after {
+      display: none;
     }
   }
 
-  .#{$lu_css_prefix}-search {
-    > input {
-      height: 19px;
-      font-size: x-small;
-    }
+  &:first-of-type i[title="Move Up"],
+  &:last-of-type i[title="Move Down"] {
+    visibility: hidden;
+  }
+}
+
+.#{$lu_css_prefix}-hierarchy-adder > .#{$lu_css_prefix}-search {
+  color: inherit;
+  flex: 1 1 0;
+
+  > input {
+    height: 19px;
+    font-size: x-small;
 
     > ul {
       top: 19px;
     }
   }
 
-  ul {
+  > ul {
     color: black;
     background: white;
   }
