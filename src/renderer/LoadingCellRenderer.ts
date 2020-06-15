@@ -4,7 +4,7 @@ import {noop} from './utils';
 export default class LoadingCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Loading';
 
-  canRender() {
+  canRender(): boolean {
     return false; // just direct selection
   }
 

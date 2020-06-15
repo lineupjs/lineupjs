@@ -2,6 +2,7 @@ import {ISequence} from '../internal';
 import {Column, IDataRow, IOrderedGroup} from '../model';
 import {ERenderMode, ICellRenderer, ICellRendererFactory, IGroupCellRenderer, IImposer, IRenderContext} from './interfaces';
 import {noRenderer} from './utils';
+import {ISummaryRenderer} from './interfaces';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item
@@ -29,12 +30,9 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
     };
   }
 
-  createSummary() {
+  createSummary(): ISummaryRenderer {
     return noRenderer;
   }
 }
 
-/**
- * @internal
- */
 export default AAggregatedGroupRenderer;
