@@ -264,22 +264,24 @@ export default class StringColumn extends ValueColumn<string> {
     }
     if (type === EStringGroupCriteriaType.startsWith) {
       for (const groupValue of values) {
-        if (typeof groupValue === 'string' && value.startsWith(groupValue)) {
-          return {
-            name: groupValue,
-            color: defaultGroup.color
-          };
+        if (typeof groupValue !== 'string' || !value.startsWith(groupValue)) {
+          continue;
         }
+        return {
+          name: groupValue,
+          color: defaultGroup.color
+        };
       }
       return Object.assign({}, othersGroup);
     }
     for (const groupValue of values) {
-      if (groupValue instanceof RegExp && groupValue.test(value)) {
-        return {
-          name: groupValue.source,
-          color: defaultGroup.color
-        };
+      if (!(groupValue instanceof RegExp) || !groupValue.test(value)) {
+        continue;
       }
+      return {
+        name: groupValue.source,
+        color: defaultGroup.color
+      };
     }
     return Object.assign({}, othersGroup);
   }
