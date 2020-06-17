@@ -10,7 +10,7 @@ function toInput(text: string, isRegex: boolean) {
   if (v === '') {
     return null;
   }
-  return isRegex ? new RegExp(v, 'gm') : v;
+  return isRegex ? new RegExp(v, 'm') : v;
 }
 
 

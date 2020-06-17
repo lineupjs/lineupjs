@@ -21,7 +21,7 @@ export default function groupString(col: StringColumn, node: HTMLElement, dialog
       <input type="radio" name="${dialog.idPrefix}groupString" value="${EStringGroupCriteriaType.regex}" id="${dialog.idPrefix}RE" ${type === EStringGroupCriteriaType.regex ? 'checked' : ''}>
       <span>Use regular expressions</span>
     </label>
-    <textarea required rows="5" placeholder="e.g. Test,a.*" id="${dialog.idPrefix}T">${values.map((value) => value instanceof RegExp ? value.source : value).join('\n')}</textarea>
+    <textarea rows="5" placeholder="one value per row, e.g., \nA\nB" id="${dialog.idPrefix}T">${values.map((value) => value instanceof RegExp ? value.source : value).join('\n')}</textarea>
   `);
 
   const valueRadioButton = node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}VAL`)!;
@@ -38,11 +38,6 @@ export default function groupString(col: StringColumn, node: HTMLElement, dialog
   startsWithRadioButton.onchange = () => showOrHideTextarea(startsWithRadioButton.checked);
   regexRadioButton.onchange = () => showOrHideTextarea(regexRadioButton.checked);
 
-  text.addEventListener('change', () => {
-    const items: (string | RegExp)[] = text.value.trim().split('\n').map((d) => d.trim()).filter((d) => d.length > 0);
-    text.setCustomValidity(!valueRadioButton.checked && items.length === 0 ? 'At least one entry is required' : '');
-  });
-
   return {
     elems: [text, valueRadioButton, startsWithRadioButton, regexRadioButton],
     submit() {
@@ -50,16 +45,8 @@ export default function groupString(col: StringColumn, node: HTMLElement, dialog
       const newType = <EStringGroupCriteriaType>checkedNode.value;
       let items: (string | RegExp)[] = text.value.trim().split('\n').map((d) => d.trim()).filter((d) => d.length > 0);
 
-      if (newType !== EStringGroupCriteriaType.value) {
-        const invalid = items.length === 0;
-        text.setCustomValidity(invalid ? 'At least one entry is required' : '');
-        if (invalid) {
-          (<any>text).reportValidity(); // typedoc not uptodate
-          return false;
-        }
-      }
       if (newType === EStringGroupCriteriaType.regex) {
-        items = items.map((d) => new RegExp(d.toString(), 'gm'));
+        items = items.map((d) => new RegExp(d.toString(), 'm'));
       }
       col.setGroupCriteria({
         type: newType,

@@ -147,7 +147,7 @@ export default class StringColumn extends ValueColumn<string> {
         // compatibility case
         if ((<string>filter).startsWith('REGEX:')) {
           this.currentFilter = {
-            filter: new RegExp(filter.slice(6), 'gm'),
+            filter: new RegExp(filter.slice(6), 'm'),
             filterMissing: false
           };
         } else if (filter === StringColumn.FILTER_MISSING) {
@@ -163,7 +163,7 @@ export default class StringColumn extends ValueColumn<string> {
         }
       } else {
         this.currentFilter = {
-          filter: filter.filter && (<string>filter.filter).startsWith('REGEX:') ? new RegExp(filter.slice(6), 'gm') : filter.filter || '',
+          filter: filter.filter && (<string>filter.filter).startsWith('REGEX:') ? new RegExp(filter.slice(6), 'm') : filter.filter || '',
           filterMissing: filter.filterMissing === true
         };
       }
@@ -176,7 +176,7 @@ export default class StringColumn extends ValueColumn<string> {
       const {type, values} = <IStringGroupCriteria>dump.groupCriteria;
       this.currentGroupCriteria = {
         type,
-        values: values.map((value) => type === EStringGroupCriteriaType.regex ? new RegExp(<string>value, 'gm') : value)
+        values: values.map((value) => type === EStringGroupCriteriaType.regex ? new RegExp(<string>value, 'm') : value)
       };
     }
   }
@@ -262,20 +262,26 @@ export default class StringColumn extends ValueColumn<string> {
         color: defaultGroup.color
       };
     }
-    for (const groupValue of values) {
-      if (type === EStringGroupCriteriaType.startsWith && typeof groupValue === 'string' && value.startsWith(groupValue)) {
+    if (type === EStringGroupCriteriaType.startsWith) {
+      for (const groupValue of values) {
+        if (typeof groupValue !== 'string' || !value.startsWith(groupValue)) {
+          continue;
+        }
         return {
           name: groupValue,
           color: defaultGroup.color
         };
       }
-      // tslint:disable-next-line: early-exit
-      if (type === EStringGroupCriteriaType.regex && groupValue instanceof RegExp && groupValue.test(value)) {
-        return {
-          name: groupValue.source,
-          color: defaultGroup.color
-        };
+      return Object.assign({}, othersGroup);
+    }
+    for (const groupValue of values) {
+      if (!(groupValue instanceof RegExp) || !groupValue.test(value)) {
+        continue;
       }
+      return {
+        name: groupValue.source,
+        color: defaultGroup.color
+      };
     }
     return Object.assign({}, othersGroup);
   }
