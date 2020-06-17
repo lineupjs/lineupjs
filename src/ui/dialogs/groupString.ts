@@ -30,9 +30,6 @@ export default function groupString(col: StringColumn, node: HTMLElement, dialog
   const text = node.querySelector<HTMLTextAreaElement>(`#${dialog.idPrefix}T`)!;
 
   const showOrHideTextarea = (show: boolean) => {
-    if (!show) {
-      text.setCustomValidity(''); // clear error
-    }
     text.style.display = show ? null : 'none';
   };
 
@@ -41,11 +38,6 @@ export default function groupString(col: StringColumn, node: HTMLElement, dialog
   startsWithRadioButton.onchange = () => showOrHideTextarea(startsWithRadioButton.checked);
   regexRadioButton.onchange = () => showOrHideTextarea(regexRadioButton.checked);
 
-  text.addEventListener('input', () => {
-    const items: string[] = text.value.trim().split('\n').map((d) => d.trim()).filter((d) => d.length > 0);
-    text.setCustomValidity(!valueRadioButton.checked && items.length === 0 ? 'At least one entry is required' : '');
-  });
-
   return {
     elems: [text, valueRadioButton, startsWithRadioButton, regexRadioButton],
     submit() {
@@ -53,14 +45,6 @@ export default function groupString(col: StringColumn, node: HTMLElement, dialog
       const newType = <EStringGroupCriteriaType>checkedNode.value;
       let items: (string | RegExp)[] = text.value.trim().split('\n').map((d) => d.trim()).filter((d) => d.length > 0);
 
-      if (newType !== EStringGroupCriteriaType.value) {
-        const invalid = items.length === 0;
-        text.setCustomValidity(invalid ? 'At least one entry is required' : '');
-        if (invalid) {
-          (<any>text).reportValidity(); // typedoc not up to date
-          return false;
-        }
-      }
       if (newType === EStringGroupCriteriaType.regex) {
         items = items.map((d) => new RegExp(d.toString(), 'm'));
       }
