@@ -19,3 +19,17 @@ export function openMoreDialog(column: string, action?: string) {
   }
   return cy.get('.lu-dialog').last().as('dialog');
 }
+
+export function groupByString(aggregate = true) {
+  // open more menu
+  openMoreDialog('[data-type=string]');
+  // open group by dialog
+  cy.get('.lu-more-options .lu-action-group').click();
+
+  cy.get('.lu-dialog input[name=grouped][value=true]').click();
+  cy.get('.lu-dialog textarea').type('Row 1\nRow 2');
+  closeDialog();
+  if (aggregate) {
+    aggregateAll();
+  }
+}

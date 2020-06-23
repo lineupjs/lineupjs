@@ -1,6 +1,6 @@
 import {withLineUp, waitReady, LineUpJSType} from './utils/lineup';
 import {generateData} from './utils/data';
-import {openMoreDialog, closeDialog, aggregateAll} from './utils/ui';
+import {groupByString} from './utils/ui';
 
 describe('restore_ranking', () => {
   let lineUpJS: LineUpJSType;
@@ -10,18 +10,6 @@ describe('restore_ranking', () => {
     lineUpJS = l;
     doc = document;
   }));
-
-  function groupByString() {
-    // open more menu
-    openMoreDialog('[data-type=string]');
-    // open group by dialog
-    cy.get('.lu-more-options .lu-action-group').click();
-
-    cy.get('.lu-dialog input[name=grouped][value=true]').click();
-    cy.get('.lu-dialog textarea').type('Row 1\nRow 2');
-    closeDialog();
-    aggregateAll();
-  }
 
   it('build and restore', () => {
     const lineup = lineUpJS.asLineUp(doc.body, arr);

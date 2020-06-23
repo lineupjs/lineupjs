@@ -122,7 +122,7 @@ export declare function jumpToNearest(dataIndices: number[]): void;
  * @asMemberOf ADataProvider
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, state: EAggregationState): void;
+export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, topN: number): void;
 
 
 /**
@@ -794,7 +794,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     } else {
       this.aggregations.delete(key);
     }
-    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value >= 0, value);
   }
 
   aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState, groups = ranking.getGroups()) {
