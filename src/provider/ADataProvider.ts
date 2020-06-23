@@ -811,12 +811,15 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       v = aggregateAll;
     }
 
+    const changed: IOrderedGroup[] = [];
+
     for(const group of groups) {
       this.unaggregateParents(ranking, group);
       const current = this.getTopNAggregated(ranking, group);
       if (current === v) {
         continue;
       }
+      changed.push(group);
       const key = `${ranking.id}@${toGroupID(group)}`;
       if (v >= 0) {
         this.aggregations.set(key, v);
@@ -824,7 +827,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
         this.aggregations.delete(key);
       }
     }
-    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, v >= 0, v);
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, changed, v >= 0, v);
   }
 
   getShowTopN() {
