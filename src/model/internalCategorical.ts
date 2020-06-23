@@ -150,7 +150,7 @@ export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICateg
   if (a == null || b == null) {
     return isEmptyFilter(a) === isEmptyFilter(b);
   }
-  if (a.filterMissing !== b.filterMissing || (typeof a.filter !== typeof b.filter)) {
+  if (a.filterMissing !== b.filterMissing || (typeof a.filter !== typeof b.filter) || (Array.isArray(a.filter) !== Array.isArray(b.filter))) {
     return false;
   }
   if (Array.isArray(a.filter)) {
