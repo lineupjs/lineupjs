@@ -133,7 +133,7 @@ export default class StringColumn extends ValueColumn<string> {
       const {type, values} = this.currentGroupCriteria;
       r.groupCriteria = {
         type,
-        values: values.map((value) => `${type}:${value instanceof RegExp && type === EStringGroupCriteriaType.regex ? value.source : value}`)
+        values: values.map((value) => value instanceof RegExp && type === EStringGroupCriteriaType.regex ? value.source : value)
       };
     }
     return r;

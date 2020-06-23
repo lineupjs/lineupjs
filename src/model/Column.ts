@@ -443,6 +443,7 @@ export default class Column extends AEventDispatcher {
    * @param _factory helper for creating columns
    */
   restore(dump: IColumnDump, _factory: ITypeFactory) {
+    this.uid = dump.id;
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
