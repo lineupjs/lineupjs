@@ -1,5 +1,5 @@
 export function aggregateAll() {
-  cy.get('.lu-summary .lu-agg-expand').first().click();
+  cy.get('.lu-summary .lu-agg-expand').first().click().wait(200);
 }
 
 export function closeDialog(action: 'cancel' | 'confirm' = 'confirm') {
