@@ -104,7 +104,7 @@ describe('restore_aggregation_state', () => {
     cy.get('.lu-agg-level.lu-agg-expand').first().click();
     cy.get('.lu-renderer-string.lu-group').first().should('contain', 'Row 17, Row 23');
     // click 2nd level of group 2
-    cy.get('.lu-agg-level.lu-agg-expand[data-level="0"]').eq(1).click();
+    cy.wait(100).get('.lu-agg-level.lu-agg-expand[data-level="0"]').eq(1).click();
     cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 1, Row 5');
 
     const data = lineup.data;
