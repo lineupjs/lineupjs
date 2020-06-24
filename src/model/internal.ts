@@ -80,7 +80,7 @@ export function isOrderedGroup(g: IOrderedGroup | Readonly<IGroupParent>): g is 
 
 
 /** @internal */
-function isGroupParent(g: IOrderedGroup | Readonly<IGroupParent>): g is IGroupParent {
+function isGroupParent(g: IGroup | Readonly<IGroupParent>): g is IGroupParent {
   return (<IGroupParent>g).subGroups != null;
 }
 
@@ -149,6 +149,19 @@ export function groupRoots(groups: IOrderedGroup[]) {
   return Array.from(roots);
 }
 
+/** @internal */
+export function traverseGroupsDFS(groups: IOrderedGroup[], f: (v: IGroup | IGroupParent) => boolean | void) {
+  const traverse = (v: IGroup | IGroupParent) => {
+    if (f(v) === false) {
+      return;
+    }
+    if (isGroupParent(v)) {
+      v.subGroups.forEach(traverse);
+    }
+  }
+  const roots = groupRoots(groups);
+  roots.forEach(traverse);
+}
 
 // based on https://github.com/d3/d3-scale-chromatic#d3-scale-chromatic
 const colors = schemeCategory10.concat(schemeSet3);

@@ -2,8 +2,8 @@ import {equalArrays, fixCSS, IEventListener, suffix, joinIndexArrays, AEventDisp
 import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent, ITypeFactory} from './interfaces';
-import {groupRoots} from './internal';
+import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent, ITypeFactory, IGroup} from './interfaces';
+import {groupRoots, traverseGroupsDFS} from './internal';
 
 export enum EDirtyReason {
   UNKNOWN = 'unknown',
@@ -262,6 +262,17 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   getGroups() {
     return this.groups.slice();
+  }
+
+  /**
+   * returns the flat group tree in DFS
+   */
+  getFlatGroups() {
+    const r: Readonly<(IGroup | IGroupParent)>[] = [];
+    traverseGroupsDFS(this.groups, (v) => {
+      r.push(v);
+    });
+    return r;
   }
 
   dump(toDescRef: (desc: any) => any): IRankingDump {
