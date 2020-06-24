@@ -724,11 +724,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return n < 0 ? EAggregationState.EXPAND : (n === 0 ? EAggregationState.COLLAPSE : EAggregationState.EXPAND_TOP_N);
   }
 
-  setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+  setAggregated(ranking: Ranking, group: IGroup | IGroup[], value: boolean) {
     return this.setAggregationState(ranking, group, value ? EAggregationState.COLLAPSE : EAggregationState.EXPAND);
   }
 
-  setAggregationState(ranking: Ranking, group: IGroup, value: EAggregationState) {
+  setAggregationState(ranking: Ranking, group: IGroup | IGroup[], value: EAggregationState) {
     this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? this.showTopN  : -1));
   }
 
@@ -749,10 +749,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   private unaggregateParents(ranking: Ranking, group: IGroup) {
     let g: IGroup | undefined | null = group.parent;
+    let changed = false;
     while (g) {
-      this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`);
+      changed = this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`) || changed;
       g = g.parent;
     }
+    return changed;
   }
 
   getAggregationStrategy() {
@@ -783,41 +785,43 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }
   }
 
-  setTopNAggregated(ranking: Ranking, group: IGroup, value: number) {
-    this.unaggregateParents(ranking, group);
-    const key = `${ranking.id}@${toGroupID(group)}`;
-    const current = this.getTopNAggregated(ranking, group);
-    if (current === value) {
-      return;
-    }
-    if (value >= 0) {
-      this.aggregations.set(key, value);
-    } else {
-      this.aggregations.delete(key);
-    }
-    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value >= 0, value, current);
-  }
+  setTopNAggregated(ranking: Ranking, group: IGroup | IGroup[], value: number) {
+    const groups = Array.isArray(group) ? group : [group];
+    const changed: IGroup[] = [];
+    const previous: number[] = [];
 
-  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState, groups = ranking.getGroups()) {
-    const v = convertAggregationState(aggregateAll, this.showTopN);
+    let changedParents = false;
 
-    const changed: IOrderedGroup[] = [];
-
-    for(const group of groups) {
-      this.unaggregateParents(ranking, group);
+    for (const group of groups) {
+      changedParents = this.unaggregateParents(ranking, group) || changedParents;
       const current = this.getTopNAggregated(ranking, group);
-      if (current === v) {
+      if (current === value) {
         continue;
       }
       changed.push(group);
+      previous.push(current);
       const key = `${ranking.id}@${toGroupID(group)}`;
-      if (v >= 0) {
-        this.aggregations.set(key, v);
+      if (value >= 0) {
+        this.aggregations.set(key, value);
       } else {
         this.aggregations.delete(key);
       }
     }
-    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, changed, v >= 0, v);
+    if (!changedParents && changed.length === 0) {
+      // no change
+      return;
+    }
+    if (!Array.isArray(group)) {
+      // single change
+      this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, previous.length === 0 ? value : previous[0], value);
+    } else {
+      this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, previous, value);
+    }
+  }
+
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState, groups = ranking.getGroups()) {
+    const value = convertAggregationState(aggregateAll, this.showTopN);
+    this.setTopNAggregated(ranking, groups, value);
   }
 
   getShowTopN() {

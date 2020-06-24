@@ -158,7 +158,7 @@ export function traverseGroupsDFS(groups: IOrderedGroup[], f: (v: IGroup | IGrou
     if (isGroupParent(v)) {
       v.subGroups.forEach(traverse);
     }
-  }
+  };
   const roots = groupRoots(groups);
   roots.forEach(traverse);
 }

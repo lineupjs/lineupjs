@@ -1,37 +1,66 @@
 import {withLineUp, waitReady, LineUpJSType, LineUp} from './utils/lineup';
 import {generateData} from './utils/data';
 import {groupByString} from './utils/ui';
+// import {aggregateAll} from './utils/ui';
 
 describe('restore_aggregation_state', () => {
   let lineup: LineUp;
   let lineUpJS: LineUpJSType;
+  let logs: {
+    ranking: number,
+    group: string | string[],
+    previous: number | number[],
+    current: number;
+  }[] = [];
+
+  function restoreLogs() {
+    const data = lineup.data;
+    logs.forEach((log) => {
+      const ranking = data.getRankings()[log.ranking];
+      if (Array.isArray(log.group)) {
+        const groups = ranking.getFlatGroups().filter((d) => log.group.includes(d.name));
+        data.setTopNAggregated(ranking, groups, log.current);
+      } else {
+        const group = ranking.getFlatGroups().find((d) => d.name === log.group);
+        if (group) {
+          data.setTopNAggregated(ranking, group, log.current);
+        }
+      }
+    });
+  }
 
   before(withLineUp((l, document) => {
     lineUpJS = l;
-    const arr = generateData();
+    const arr = generateData({
+      cat: 2,
+      categories: ['c1', 'c2'],
+      count: 30,
+    });
 
-    lineup = lineUpJS.asLineUp(document.body, arr);
+    lineup = lineUpJS.builder(arr).deriveColumns().deriveColors().animated(false).build(document.body);
+
+    // persist aggregation state in logs
+    lineup.data.on('aggregate', (r, g, previous, current) => {
+      console.log('on aggregate', r, g, previous, current);
+      logs.push({
+        ranking: lineup.data.getRankings().indexOf(r),
+        group: Array.isArray(g) ? g.map((g) => g.name) : g.name,
+        previous,
+        current,
+      });
+    });
     waitReady(lineup);
   }));
+  beforeEach(() => {
+    logs = [];
+  });
+  afterEach(() => {
+    lineup.data.clearRankings();
+    lineup.data.deriveDefault();
+  })
 
   it('build and restore', () => {
     const data = lineup.data;
-    const logs: {
-      ranking: number,
-      group: string | string[],
-      topN: any;
-    }[] = [];
-
-    // persist aggregation state in logs
-    data.on('aggregate', (r, g, value, state) => {
-      console.log('on aggregate', r, g, value, state);
-      logs.push({
-        ranking: data.getRankings().indexOf(r),
-        group: Array.isArray(g) ? g.map((g) => g.name) : g.name,
-        topN: state,
-      });
-    });
-
     groupByString();
 
     cy.get('.lu-renderer-string.lu-group').first().should('contain', 'Row 0, Row 3');
@@ -41,7 +70,7 @@ describe('restore_aggregation_state', () => {
     let old: any[];
     cy.get('.lu').wait(200).then(() => {
       const r = data.getFirstRanking();
-      old = r.getGroups().map((g) => data.getAggregationState(r, g));
+      old = r.getFlatGroups().map((g) => data.getAggregationState(r, g));
 
       data.clearRankings();
       data.deriveDefault();
@@ -52,28 +81,56 @@ describe('restore_aggregation_state', () => {
     // restore aggregation state from logs
     cy.get('.lu').wait(200).then(() => {
       console.log('logs', logs);
-      logs.forEach((log) => {
-        const ranking = data.getRankings()[log.ranking];
-        if (Array.isArray(log.group)) {
-          const groups = ranking.getGroups().filter((g) => log.group.includes(g.name));
-          console.log('groups', groups);
-          for (const group of groups) {
-            data.setTopNAggregated(ranking, group, log.topN);
-          }
-        } else {
-          const group = ranking.getGroups().find((g) => g.name == log.group);
-          if (group) {
-            data.setTopNAggregated(ranking, group, log.topN);
-          }
-        }
-      });
+      restoreLogs();
 
       // test aggregation state after restore
       const r = data.getFirstRanking();
-      expect(r.getGroups().map((g) => data.getAggregationState(r, g))).to.members(old);
+      expect(r.getFlatGroups().map((g) => data.getAggregationState(r, g))).to.members(old);
     });
 
     cy.get('.lu-renderer-string.lu-group').first().should('contain', 'Row 0, Row 3');
     cy.get('.lu-renderer-string.lu-group').last().should('contain', 'Row 2, Row 20');
+  });
+
+
+  it('build and restore multi', () => {
+    // const data = lineup.data;
+    cy.get('[data-type=categorical] .lu-action-group').first().click();
+    cy.get('body').type('{ctrl}', {release: false});
+    cy.get('[data-type=categorical] .lu-action-group').last().click({});
+    cy.get('body').type('{ctrl}');
+
+    // click top level of group 1
+    cy.get('.lu-agg-level.lu-agg-expand').first().click();
+    cy.get('.lu-renderer-string.lu-group').first().should('contain', 'Row 17, Row 23');
+    // click 2nd level of group 2
+    cy.get('.lu-agg-level.lu-agg-expand[data-level="0"]').eq(1).click();
+    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 1, Row 5');
+
+    const data = lineup.data;
+    // store current aggregation state (to test correct restore)
+    let old: any[];
+    cy.get('.lu').then(() => {
+      const r = data.getFirstRanking();
+      old = r.getFlatGroups().map((g) => data.getAggregationState(r, g));
+
+      // clear and rebuild
+      data.clearRankings();
+      data.deriveDefault();
+    });
+
+    cy.get('[data-type=categorical] .lu-action-group').first().click();
+    cy.get('body').type('{ctrl}', {release: false});
+    cy.get('[data-type=categorical] .lu-action-group').last().click({});
+    cy.get('body').type('{ctrl}');
+
+    cy.get('.lu').then(() => {
+      restoreLogs();
+      // test aggregation state after restore
+      const r = data.getFirstRanking();
+      expect(r.getFlatGroups().map((g) => data.getAggregationState(r, g))).to.members(old);
+    });
+    cy.get('.lu-renderer-string.lu-group').first().should('contain', 'Row 17, Row 23');
+    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 1, Row 5');
   });
 });
