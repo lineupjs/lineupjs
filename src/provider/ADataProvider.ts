@@ -8,6 +8,7 @@ import {IRenderTasks} from '../renderer';
 import {restoreCategoricalColorMapping} from '../model/CategoricalColorMappingFunction';
 import {createColorMappingFunction, colorMappingFunctions} from '../model/ColorMappingFunction';
 import {createMappingFunction, mappingFunctions} from '../model/MappingFunction';
+import {convertAggregationState} from './internal';
 
 
 
@@ -122,7 +123,7 @@ export declare function jumpToNearest(dataIndices: number[]): void;
  * @asMemberOf ADataProvider
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, topN: number): void;
+export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], previousTopN: number | number[], currentTopN: number): void;
 
 
 /**
@@ -794,22 +795,11 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     } else {
       this.aggregations.delete(key);
     }
-    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value >= 0, value);
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value >= 0, value, current);
   }
 
   aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState, groups = ranking.getGroups()) {
-    let v: number;
-    if (typeof aggregateAll === 'boolean') {
-      v = aggregateAll ? 0 : -1;
-    } else if (aggregateAll === EAggregationState.COLLAPSE) {
-      v = 0;
-    } else if (aggregateAll === EAggregationState.EXPAND) {
-      v = -1;
-    } else if (aggregateAll === EAggregationState.EXPAND_TOP_N) {
-      v = this.showTopN;
-    } else {
-      v = aggregateAll;
-    }
+    const v = convertAggregationState(aggregateAll, this.showTopN);
 
     for(const group of groups) {
       this.unaggregateParents(ranking, group);
