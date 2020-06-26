@@ -149,7 +149,14 @@ export function groupRoots(groups: IOrderedGroup[]) {
   return Array.from(roots);
 }
 
-/** @internal */
+/**
+ * Traverse the tree of given groups in depth first search (DFS)
+ * 
+ * @param groups Groups to travserse
+ * @param f Function to check each group. Travsering subgroups can be stopped when returning `false`.
+ *  
+ * @internal
+ */
 export function traverseGroupsDFS(groups: IOrderedGroup[], f: (v: IGroup | IGroupParent) => boolean | void) {
   const traverse = (v: IGroup | IGroupParent) => {
     if (f(v) === false) {

@@ -265,7 +265,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   /**
-   * returns the flat group tree in DFS
+   * Returns the flat group tree in depth first search (DFS).
    */
   getFlatGroups() {
     const r: Readonly<(IGroup | IGroupParent)>[] = [];
