@@ -96,42 +96,6 @@ describe('restore_aggregation_state', () => {
   });
 
 
-  it('build and restore missing', () => {
-    const data = lineup.data;
-    groupByString();
-
-    cy.get('.lu-renderer-string.lu-group').first().should('be', '');
-    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 0, Row 3');
-    cy.get('.lu-renderer-string.lu-group').last().should('contain', 'Row 2, Row 20');
-
-    // store current aggregation state (to test correct restore)
-    let old: any[];
-    cy.get('.lu').wait(200).then(() => {
-      const r = data.getFirstRanking();
-      old = r.getFlatGroups().map((g) => data.getAggregationState(r, g));
-
-      data.clearRankings();
-      data.deriveDefault();
-    });
-
-    groupByString(false); // don't aggregate
-
-    // restore aggregation state from logs
-    cy.get('.lu').wait(200).then(() => {
-      console.log('logs', logs);
-      restoreLogs();
-
-      // test aggregation state after restore
-      const r = data.getFirstRanking();
-      expect(r.getFlatGroups().map((g) => data.getAggregationState(r, g))).to.members(old);
-    });
-
-    cy.get('.lu-renderer-string.lu-group').first().should('be', '');
-    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 0, Row 3');
-    cy.get('.lu-renderer-string.lu-group').last().should('contain', 'Row 2, Row 20');
-  });
-
-
   it('build and restore multi', () => {
     // const data = lineup.data;
     cy.get('[data-type=categorical] .lu-action-group').first().click();
@@ -141,10 +105,10 @@ describe('restore_aggregation_state', () => {
 
     // click top level of group 1
     cy.wait(100).get('.lu-agg-level.lu-agg-expand').first().click();
-    cy.get('.lu-renderer-string.lu-group').first().should('contain', 'Row 8, Row 13');
+    cy.get('.lu-renderer-string.lu-group').first().should('contain', 'Row 4, Row 10');
     // click 2nd level of group 2
     cy.wait(100).get('.lu-agg-level.lu-agg-expand[data-level="0"]').eq(1).click();
-    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 0, Row 1');
+    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 3, Row 8');
 
     const data = lineup.data;
     // store current aggregation state (to test correct restore)
@@ -169,7 +133,7 @@ describe('restore_aggregation_state', () => {
       const r = data.getFirstRanking();
       expect(r.getFlatGroups().map((g) => data.getAggregationState(r, g))).to.members(old);
     });
-    cy.wait(100).get('.lu-renderer-string.lu-group').first().should('contain', 'Row 8, Row 13');
-    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 0, Row 1');
+    cy.wait(100).get('.lu-renderer-string.lu-group').first().should('contain', 'Row 4, Row 10');
+    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 3, Row 8');
   });
 });
