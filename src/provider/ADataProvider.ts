@@ -11,7 +11,6 @@ import {createMappingFunction, mappingFunctions} from '../model/MappingFunction'
 import {convertAggregationState} from './internal';
 
 
-
 /**
  * emitted when a column has been added
  * @asMemberOf ADataProvider
@@ -123,7 +122,7 @@ export declare function jumpToNearest(dataIndices: number[]): void;
  * @asMemberOf ADataProvider
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], previousTopN: number | number[], currentTopN: number): void;
+export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], previousTopN: number | number[], currentTopN: number | number[]): void;
 
 
 /**
@@ -377,7 +376,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.forward(r, ...ADataProvider.FORWARD_RANKING_EVENTS);
     //delayed reordering per ranking
     const that = this;
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function(this: IEventContext) {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: IEventContext) {
       that.triggerReorder(r, toDirtyReason(this));
     }, 100, mergeDirtyOrderContext));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
@@ -729,7 +728,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   setAggregationState(ranking: Ranking, group: IGroup | IGroup[], value: EAggregationState) {
-    this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? this.showTopN  : -1));
+    this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? this.showTopN : -1));
   }
 
   getTopNAggregated(ranking: Ranking, group: IGroup) {
@@ -763,7 +762,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   private initAggregateState(ranking: Ranking, groups: IGroup[]) {
     let initial = -1;
-    switch(this.getAggregationStrategy()) {
+    switch (this.getAggregationStrategy()) {
       case 'group':
         initial = 0;
         break;
@@ -785,24 +784,26 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }
   }
 
-  setTopNAggregated(ranking: Ranking, group: IGroup | IGroup[], value: number) {
+  setTopNAggregated(ranking: Ranking, group: IGroup | IGroup[], value: number | number[]) {
     const groups = Array.isArray(group) ? group : [group];
     const changed: IGroup[] = [];
     const previous: number[] = [];
 
     let changedParents = false;
 
-    for (const group of groups) {
+    for (let i = 0; i < groups.length; i++) {
+      const group = groups[i];
+      const target = typeof value === 'number' ? value : value[i];
       changedParents = this.unaggregateParents(ranking, group) || changedParents;
       const current = this.getTopNAggregated(ranking, group);
-      if (current === value) {
+      if (current === target) {
         continue;
       }
       changed.push(group);
       previous.push(current);
       const key = `${ranking.id}@${toGroupID(group)}`;
-      if (value >= 0) {
-        this.aggregations.set(key, value);
+      if (target >= 0) {
+        this.aggregations.set(key, target);
       } else {
         this.aggregations.delete(key);
       }

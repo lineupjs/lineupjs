@@ -10,7 +10,7 @@ describe('restore_aggregation_state', () => {
     ranking: number,
     group: string | string[],
     previous: number | number[],
-    current: number;
+    current: number | number[];
   }[] = [];
 
   function restoreLogs() {
@@ -61,6 +61,42 @@ describe('restore_aggregation_state', () => {
   })
 
   it('build and restore', () => {
+    const data = lineup.data;
+    groupByString();
+
+    cy.get('.lu-renderer-string.lu-group').first().should('be', '');
+    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 0, Row 3');
+    cy.get('.lu-renderer-string.lu-group').last().should('contain', 'Row 2, Row 20');
+
+    // store current aggregation state (to test correct restore)
+    let old: any[];
+    cy.get('.lu').wait(200).then(() => {
+      const r = data.getFirstRanking();
+      old = r.getFlatGroups().map((g) => data.getAggregationState(r, g));
+
+      data.clearRankings();
+      data.deriveDefault();
+    });
+
+    groupByString(false); // don't aggregate
+
+    // restore aggregation state from logs
+    cy.get('.lu').wait(200).then(() => {
+      console.log('logs', logs);
+      restoreLogs();
+
+      // test aggregation state after restore
+      const r = data.getFirstRanking();
+      expect(r.getFlatGroups().map((g) => data.getAggregationState(r, g))).to.members(old);
+    });
+
+    cy.get('.lu-renderer-string.lu-group').first().should('be', '');
+    cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 0, Row 3');
+    cy.get('.lu-renderer-string.lu-group').last().should('contain', 'Row 2, Row 20');
+  });
+
+
+  it('build and restore missing', () => {
     const data = lineup.data;
     groupByString();
 
