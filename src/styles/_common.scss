@@ -97,7 +97,7 @@
   background-repeat: no-repeat;
 
   > * {
-    display: none;
+    display: none !important;
   }
 }
 

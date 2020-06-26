@@ -194,6 +194,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
           const subGroups = <IOrderedGroup[]>gparents.map((d) => d[i] ? d[i].group : null).filter((d) => d != null);
 
           const isCollapsed = subGroups.every((d) => context.provider.getAggregationState(ranking, d) === EAggregationState.COLLAPSE);
+
           child.classList.toggle(cssClass('agg-collapse'), isCollapsed);
           child.title = isCollapsed ? 'Expand All Groups' : 'Collapse All Groups';
 
