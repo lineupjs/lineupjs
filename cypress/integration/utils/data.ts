@@ -94,7 +94,7 @@ export function generateData(options: IGenerateDataOptions = {}) {
   }, options);
   const arr = [];
   const s = rnd(o.seed);
-  const isMissing = (v: number) => v >= 0 && s() <= v;
+  const isMissing = (v: number) => v > 0 && s() <= v;
   const f = timeFormat('%x');
   for (let i = 0; i < o.count; ++i) {
     let r: any = {};
