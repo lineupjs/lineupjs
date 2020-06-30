@@ -387,7 +387,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.fireBusy(true);
     const reason = dirtyReason || [EDirtyReason.UNKNOWN];
     Promise.resolve(this.sort(ranking, reason)).then(({groups, index2pos}) => {
-      groups = unifyParents(groups);
+      if (ranking.getGroupSortCriteria().length === 0) {
+        groups = unifyParents(groups);
+      }
       this.initAggregateState(ranking, groups);
       ranking.setGroups(groups, index2pos, reason);
       this.fireBusy(false);
