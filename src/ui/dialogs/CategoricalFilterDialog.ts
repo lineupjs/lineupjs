@@ -1,16 +1,17 @@
-import {SetColumn, CategoricalColumn, ICategoricalFilter, ISetCategoricalFilter} from '../../model';
-import {filterMissingMarkup, findFilterMissing} from '../missing';
+import {SetColumn, CategoricalColumn, ICategoricalFilter, ISetCategoricalFilter, Ranking} from '../../model';
+import {findFilterMissing, updateFilterMissingNumberMarkup, filterMissingNumberMarkup} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {forEach} from './utils';
-import {cssClass} from '../../styles';
+import {cssClass, engineCssClass} from '../../styles';
 import {isCategoryIncluded} from '../../model/internalCategorical';
+import {IRankingHeaderContext} from '../interfaces';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;
 
-  constructor(private readonly column: CategoricalColumn | SetColumn, dialog: IDialogContext) {
+  constructor(private readonly column: CategoricalColumn | SetColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
       livePreview: 'filter'
     });
@@ -51,9 +52,43 @@ export default class CategoricalFilterDialog extends ADialog {
         <span>some are selected</span>
       </label>`);
     }
-    node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
+    node.insertAdjacentHTML('beforeend', filterMissingNumberMarkup(this.before.filterMissing, 0));
 
     this.enableLivePreviews('input[type=checkbox],input[type=radio]');
+
+    const ranking = this.column.findMyRanker()!;
+    if (ranking) {
+      ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.catFilter`, () => this.updateStats());
+    }
+    this.updateStats();
+  }
+
+  private updateStats() {
+    const ready = this.ctx.provider.getTaskExecutor().summaryCategoricalStats(this.column).then((r) => {
+      if (typeof r === 'symbol') {
+        return;
+      }
+      const {summary, data} = r;
+      const missing = data ? data.missing : (summary ? summary.missing : 0);
+      updateFilterMissingNumberMarkup(<HTMLElement>findFilterMissing(this.node).parentElement, missing);
+      if (!summary || !data) {
+        return;
+      }
+      const cats = this.column.categories;
+      this.forEach('input[data-cat]', (n: HTMLElement, i) => {
+        const bin = summary.hist[i];
+        const raw = data.hist[i];
+        const cat = cats[i];
+        n.nextElementSibling!.lastElementChild!.textContent = `${cat.label} (${bin.count}/${raw.count})`;
+      });
+    });
+    if (!ready) {
+      return;
+    }
+    this.node.classList.add(engineCssClass('loading'));
+    ready.then(() => {
+      this.node.classList.remove(engineCssClass('loading'));
+    });
   }
 
   private updateFilter(filter: string[] | null | RegExp | string, filterMissing: boolean, someMode = false) {
@@ -87,5 +122,13 @@ export default class CategoricalFilterDialog extends ADialog {
     const mode = this.findInput('input[value=some]');
     this.updateFilter(f, filterMissing, mode != null && mode.checked);
     return true;
+  }
+
+  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+    super.cleanUp(action);
+    const ranking = this.column.findMyRanker()!;
+    if (ranking) {
+      ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.catFilter`, null);
+    }
   }
 }
