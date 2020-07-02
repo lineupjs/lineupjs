@@ -53,6 +53,20 @@ abstract class ACommonDataProvider extends ADataProvider {
     this.fire(ADataProvider.EVENT_CLEAR_DESC);
   }
 
+  removeDesc(column: IColumnDesc, ignoreBeingUsed = false) {
+    const i = this.columns.indexOf(column);
+    if (i < 0) {
+      return false;
+    }
+    const isUsed = ignoreBeingUsed ? false : this.getRankings().some((d) => d.flatColumns.some((c) => c.desc === column));
+    if (isUsed) {
+      return false;
+    }
+    this.columns.splice(i, 1);
+    this.fire(ADataProvider.EVENT_REMOVE_DESC, column);
+    return true;
+  }
+
   getColumns(): IColumnDesc[] {
     return this.columns.slice();
   }
