@@ -103,6 +103,11 @@ export declare function addDesc(desc: IColumnDesc): void;
  * @asMemberOf ADataProvider
  * @event
  */
+export declare function removeDesc(desc: IColumnDesc): void;
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
 export declare function clearDesc(): void;
 
 /**
@@ -183,6 +188,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_SHOWTOPN_CHANGED = 'showTopNChanged';
   static readonly EVENT_ADD_DESC = 'addDesc';
   static readonly EVENT_CLEAR_DESC = 'clearDesc';
+  static readonly EVENT_REMOVE_DESC = 'removeDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
   static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
   static readonly EVENT_BUSY = 'busy';
@@ -301,6 +307,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   on(type: typeof ADataProvider.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof ADataProvider.EVENT_ORDER_CHANGED, listener: typeof orderChanged | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_DESC, listener: typeof addDesc | null): this;
+  on(type: typeof ADataProvider.EVENT_REMOVE_DESC, listener: typeof removeDesc | null): this;
   on(type: typeof ADataProvider.EVENT_CLEAR_DESC, listener: typeof clearDesc | null): this;
   on(type: typeof ADataProvider.EVENT_JUMP_TO_NEAREST, listener: typeof jumpToNearest | null): this;
   on(type: typeof ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, listener: typeof aggregate | null): this;
