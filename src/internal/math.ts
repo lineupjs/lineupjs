@@ -408,7 +408,7 @@ function computeGranularity(min: Date | null, max: Date | null): {histGranularit
 
   if ((max.getTime() - min.getTime()) <= 1000 * 60 * 60 * 24 * 31) {
     // less than a month use day
-    let x0 = new Date(min.getFullYear(), min.getMonth(), min.getDay());
+    let x0 = new Date(min.getFullYear(), min.getMonth(), min.getDate());
     while (x0 <= max) {
       const x1 = new Date(x0);
       x1.setDate(x1.getDate() + 1);
