@@ -216,7 +216,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     mappingFunctionTypes: {},
     singleSelection: false,
     showTopN: 10,
-    aggregationStrategy: 'item'
+    aggregationStrategy: 'item',
+    propagateAggregationState: true,
   };
 
   /**
@@ -738,7 +739,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       if (this.aggregations.has(key)) {
         // propagate to leaf
         const v = this.aggregations.get(key)!;
-        this.aggregations.set(`${ranking.id}@${toGroupID(group)}`, v);
+        if (this.options.propagateAggregationState && group !== g) {
+          this.aggregations.set(`${ranking.id}@${toGroupID(group)}`, v);
+        }
         return v;
       }
       g = g.parent;

@@ -49,6 +49,15 @@ export class DataBuilder extends LineUpBuilder {
   }
 
   /**
+   * whether to propagate a collapse operation to its children
+   * @default true
+   */
+  propagateAggregationState(value: boolean) {
+    this.providerOptions.propagateAggregationState = value;
+    return this;
+  }
+
+  /**
    * allow just a single selection
    */
   singleSelection() {

@@ -30,6 +30,12 @@ export interface IDataProviderOptions {
    * @default 'item'
    */
   aggregationStrategy: IAggregationStrategy;
+
+  /**
+   * whether to propagate a collapse operation to its children
+   * @default true
+   */
+  propagateAggregationState: boolean;
 }
 
 export interface IDataProvider extends AEventDispatcher {
