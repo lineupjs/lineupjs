@@ -53,7 +53,15 @@ abstract class ACommonDataProvider extends ADataProvider {
     this.fire(ADataProvider.EVENT_CLEAR_DESC);
   }
 
-  removeDesc(column: IColumnDesc, ignoreBeingUsed = false) {
+  /**
+   * Remove the given column description from the data provider.
+   * Column descriptions that are in use (i.e., has column instances in a ranking) cannot be removed by default.
+   * Skip the check by setting the `ignoreBeingUsed` parameter to `true`.
+   *
+   * @param column Column description
+   * @param ignoreBeingUsed Flag whether to ignore the usage of the column descriptions in rankings
+   */
+  removeDesc(column: IColumnDesc, ignoreBeingUsed = false): boolean {
     const i = this.columns.indexOf(column);
     if (i < 0) {
       return false;
