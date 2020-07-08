@@ -129,7 +129,7 @@
 }
 
 .#{$lu_css_prefix}-dialog-filter-table-entry {
-  display: block;
+  display: flex;
 
   > input[type=checkbox]:not(:checked) + span {
     opacity: 0.5;
@@ -137,6 +137,7 @@
 
   > span {
     transition: opacity 0.25s ease;
+    flex-grow: 1;
   }
 }
 
@@ -157,6 +158,14 @@
 .#{$lu_css_prefix}-dialog-filter-table-color {
   width: 1.2em;
   margin: 0 0.5em;
+}
+
+.#{$lu_css_prefix}-dialog-filter-table-entry-label {
+  flex-grow: 1;
+}
+
+.#{$lu_css_prefix}-dialog-filter-table-entry-stats {
+  color: $lu_toolbar_color_base;
 }
 
 .#{$lu_css_prefix}-dialog-filter-color-bar {

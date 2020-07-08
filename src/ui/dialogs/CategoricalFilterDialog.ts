@@ -31,7 +31,8 @@ export default class CategoricalFilterDialog extends ADialog {
           <input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
           <span>
             <span class="${cssClass('dialog-filter-table-color')}" style="background-color: ${c.color}"></span>
-            <div>${c.label}</div>
+            <div class="${cssClass('dialog-filter-table-entry-label')}">${c.label}</div>
+            <div class="${cssClass('dialog-filter-table-entry-stats')}"></div>
           </span>
         </label>`).join('')}
     </div>`);
@@ -74,12 +75,10 @@ export default class CategoricalFilterDialog extends ADialog {
       if (!summary || !data) {
         return;
       }
-      const cats = this.column.categories;
-      this.forEach('input[data-cat]', (n: HTMLElement, i) => {
+      this.forEach(`.${cssClass('dialog-filter-table-entry-stats')}`, (n: HTMLElement, i) => {
         const bin = summary.hist[i];
         const raw = data.hist[i];
-        const cat = cats[i];
-        n.nextElementSibling!.lastElementChild!.textContent = `${cat.label} (${bin.count}/${raw.count})`;
+        n.textContent = `${bin.count}/${raw.count}`;
       });
     });
     if (!ready) {
