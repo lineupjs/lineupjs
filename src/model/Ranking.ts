@@ -4,6 +4,8 @@ import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, labelChanged, visi
 import CompositeColumn from './CompositeColumn';
 import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent, ITypeFactory, IGroup} from './interfaces';
 import {groupRoots, traverseGroupsDFS} from './internal';
+import {AggregateGroupColumn} from '.';
+import {AGGREGATION_LEVEL_WIDTH} from '../styles';
 
 export enum EDirtyReason {
   UNKNOWN = 'unknown',
@@ -473,8 +475,23 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     });
 
     this.fire([Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
-    Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY_CACHES, Ranking.EVENT_DIRTY], bak, this.getGroupCriteria());
+      Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY_CACHES, Ranking.EVENT_DIRTY], bak, this.getGroupCriteria());
+
+    this.autoAdaptAggregationColumn();
+
     return true;
+  }
+
+  private autoAdaptAggregationColumn() {
+    const length = this.groupColumns.length;
+    const col = this.children.find((d) => d instanceof AggregateGroupColumn);
+    if (!col) {
+      return;
+    }
+    const targetWidth = length * (AGGREGATION_LEVEL_WIDTH - 2);
+    if (targetWidth > col.getWidth()) {
+      col.setWidth(targetWidth);
+    }
   }
 
   toggleGroupSorting(col: Column) {
