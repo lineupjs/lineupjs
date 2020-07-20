@@ -4,7 +4,7 @@ import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, labelChanged, visi
 import CompositeColumn from './CompositeColumn';
 import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent, ITypeFactory, IGroup} from './interfaces';
 import {groupRoots, traverseGroupsDFS} from './internal';
-import {AggregateGroupColumn} from '.';
+import {AggregateGroupColumn, SetColumn} from '.';
 import {AGGREGATION_LEVEL_WIDTH} from '../styles';
 
 export enum EDirtyReason {
@@ -483,12 +483,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   private autoAdaptAggregationColumn() {
-    const length = this.groupColumns.length;
+    // set column auto adds two levels
+    const length = this.groupColumns.reduce((acc, c) => acc + (c instanceof SetColumn ? 2 : 1), 0);
     const col = this.children.find((d) => d instanceof AggregateGroupColumn);
     if (!col) {
       return;
     }
-    const targetWidth = length * (AGGREGATION_LEVEL_WIDTH - 2);
+    const targetWidth = length * AGGREGATION_LEVEL_WIDTH;
     if (targetWidth > col.getWidth()) {
       col.setWidth(targetWidth);
     }

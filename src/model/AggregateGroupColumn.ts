@@ -4,6 +4,7 @@ import {IGroup, IColumnDesc} from './interfaces';
 import Ranking from './Ranking';
 import {IEventListener} from '../internal';
 import {integrateDefaults} from './internal';
+import {AGGREGATION_LEVEL_WIDTH} from '../styles';
 
 
 export enum EAggregationState {
@@ -46,7 +47,7 @@ export default class AggregateGroupColumn extends Column {
 
   constructor(id: string, desc: Readonly<IAggregateGroupColumnDesc>) {
     super(id, integrateDefaults(desc, {
-      width: 40
+      width: AGGREGATION_LEVEL_WIDTH * 2
     }));
   }
 
