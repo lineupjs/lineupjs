@@ -103,6 +103,11 @@ export declare function addDesc(desc: IColumnDesc): void;
  * @asMemberOf ADataProvider
  * @event
  */
+export declare function removeDesc(desc: IColumnDesc): void;
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
 export declare function clearDesc(): void;
 
 /**
@@ -183,6 +188,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_SHOWTOPN_CHANGED = 'showTopNChanged';
   static readonly EVENT_ADD_DESC = 'addDesc';
   static readonly EVENT_CLEAR_DESC = 'clearDesc';
+  static readonly EVENT_REMOVE_DESC = 'removeDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
   static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
   static readonly EVENT_BUSY = 'busy';
@@ -216,7 +222,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     mappingFunctionTypes: {},
     singleSelection: false,
     showTopN: 10,
-    aggregationStrategy: 'item'
+    aggregationStrategy: 'item',
+    propagateAggregationState: true,
   };
 
   /**
@@ -300,6 +307,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   on(type: typeof ADataProvider.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof ADataProvider.EVENT_ORDER_CHANGED, listener: typeof orderChanged | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_DESC, listener: typeof addDesc | null): this;
+  on(type: typeof ADataProvider.EVENT_REMOVE_DESC, listener: typeof removeDesc | null): this;
   on(type: typeof ADataProvider.EVENT_CLEAR_DESC, listener: typeof clearDesc | null): this;
   on(type: typeof ADataProvider.EVENT_JUMP_TO_NEAREST, listener: typeof jumpToNearest | null): this;
   on(type: typeof ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, listener: typeof aggregate | null): this;
@@ -387,7 +395,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.fireBusy(true);
     const reason = dirtyReason || [EDirtyReason.UNKNOWN];
     Promise.resolve(this.sort(ranking, reason)).then(({groups, index2pos}) => {
-      groups = unifyParents(groups);
+      if (ranking.getGroupSortCriteria().length === 0) {
+        groups = unifyParents(groups);
+      }
       this.initAggregateState(ranking, groups);
       ranking.setGroups(groups, index2pos, reason);
       this.fireBusy(false);
@@ -738,7 +748,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       if (this.aggregations.has(key)) {
         // propagate to leaf
         const v = this.aggregations.get(key)!;
-        this.aggregations.set(`${ranking.id}@${toGroupID(group)}`, v);
+        if (this.options.propagateAggregationState && group !== g) {
+          this.aggregations.set(`${ranking.id}@${toGroupID(group)}`, v);
+        }
         return v;
       }
       g = g.parent;
