@@ -21,7 +21,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
   protected build(node: HTMLElement) {
     const joint = this.column.categories.map((d) => Object.assign({
       range: round(d.value * 100, 2)
-    }));
+    }, d));
     joint.sort((a, b) => a.label.localeCompare(b.label));
 
     node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
@@ -31,15 +31,15 @@ export default class CategoricalMappingFilterDialog extends ADialog {
             <div>Un/Select All</div>
           </span>
         </label>
-        ${joint.map(({name, color, label, range}) => `
+        ${joint.map((cat) => `
           <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
-            <input data-cat="${name}" type="checkbox"${isCategoryIncluded(this.before, name) ? 'checked' : ''}>
+            <input data-cat="${cat.name}" type="checkbox"${isCategoryIncluded(this.before, cat) ? 'checked' : ''}>
             <span>
-              <input type="number" value="${range}" min="0" max="100" size="5">
+              <input type="number" value="${cat.range}" min="0" max="100" size="5">
               <div class="${cssClass('dialog-filter-color-bar')}">
-                <span style="background-color: ${color}; width: ${range}%"></span>
+                <span style="background-color: ${cat.color}; width: ${cat.range}%"></span>
               </div>
-              <div>${label}</div>
+              <div>${cat.label}</div>
             </span>
           </label>`).join('')}
     </div>`);
