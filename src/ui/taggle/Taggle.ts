@@ -82,7 +82,12 @@ export default class Taggle extends ALineUp {
     violation = violation || '';
     if (this.spaceFilling) {
       this.spaceFilling.classList.toggle(cssClass('violated'), Boolean(violation));
-      this.spaceFilling.querySelector(`.${cssClass('rule-violation')}`)!.innerHTML = violation.replace(/\n/g, '<br>');
+      const elem = this.spaceFilling.querySelector(`.${cssClass('rule-violation')}`)!;
+      if (!violation) {
+        elem.textContent = '';
+      } else {
+        elem.innerHTML = violation.replace(/\n/g, '<br>');
+      }
     }
   }
 
