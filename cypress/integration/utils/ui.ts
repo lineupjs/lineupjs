@@ -1,5 +1,5 @@
 export function aggregateAll() {
-  cy.get('.lu-summary .lu-agg-expand').first().click();
+  cy.get('.lu-summary .lu-agg-expand').first().wait(200).click();
 }
 
 export function closeDialog(action: 'cancel' | 'confirm' = 'confirm') {
@@ -18,4 +18,18 @@ export function openMoreDialog(column: string, action?: string) {
     cy.get(`.lu-more-options .lu-action-${action}`).click();
   }
   return cy.get('.lu-dialog').last().as('dialog');
+}
+
+export function groupByString(aggregate = true) {
+  // open more menu
+  openMoreDialog('[data-type=string]');
+  // open group by dialog
+  cy.get('.lu-more-options .lu-action-group').click();
+
+  cy.get('.lu-dialog input[name=grouped][value=true]').click();
+  cy.get('.lu-dialog textarea').type('Row 1\nRow 2');
+  closeDialog();
+  if (aggregate) {
+    aggregateAll();
+  }
 }

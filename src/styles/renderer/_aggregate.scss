@@ -12,6 +12,11 @@
 .#{$lu_css_prefix}-renderer-group {
   &.#{$engine_css_prefix}-td {
     overflow: visible;
+
+    > div {
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+    }
   }
 }
 

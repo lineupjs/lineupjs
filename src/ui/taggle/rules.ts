@@ -42,14 +42,14 @@ export function spaceFillingRule(config: {groupHeight: number, rowHeight: number
     if (height < 1) {
       return {
         height: 1,
-        violation: `Not possible to fit all rows on the screen. Set filters or aggregate groups to make it fit again.`
+        violation: `Not possible to fit all rows on the screen.`
       };
     }
     // clamp to max height
     if (height > config.rowHeight) {
       return {
         height: config.rowHeight,
-        violation: ``
+        violation: ''
       };
     }
     return {height, violation: ''};

@@ -29,11 +29,18 @@ jobs:
                 git clone git@github.com:lineupjs/lineupjs.github.io.git
                 cd lineupjs.github.io
                 rm -rf "${CIRCLE_BRANCH}/"
+                APP_DIR="app"
                 if [ "${CIRCLE_BRANCH}" == "develop" ] ; then
+                  APP_DIR="app_develop"
                   rm -rf ../build/docs
                 fi
                 mv ../build "${CIRCLE_BRANCH}"
                 cp -r ../demo/* "${CIRCLE_BRANCH}/"
+
+                # update the app
+                rm ${APP_DIR}/*.ttf ${APP_DIR}/*.svg ${APP_DIR}/*.eot
+                cp -t ${APP_DIR}/ ${CIRCLE_BRANCH}/LineUpJS.* ${CIRCLE_BRANCH}/*.ttf ${CIRCLE_BRANCH}/*.eot ${CIRCLE_BRANCH}/*.svg
+
                 git config user.email "sam@sgratzl.com"
                 git config user.name "Samuel Gratzl"
                 git add -A

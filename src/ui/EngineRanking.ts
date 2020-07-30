@@ -476,7 +476,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
     }
 
-    const existing = new Map((<HTMLElement[]>Array.from(node.children)).slice(1).map((d) => <[string, HTMLElement]>[d.dataset.col, d]));
+    const existing = new Map((<HTMLElement[]>Array.from(node.children)).slice(1).map((d) => <[string, HTMLElement]>[d.dataset.id, d]));
     for (const col of domColumns) {
       const elem = existing.get(col.id);
       if (elem && !isLoadingCell(elem)) {
@@ -522,7 +522,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (needDOM !== true && node.childElementCount === 1) { // just canvas
       return;
     }
-    const elem = <HTMLElement>node.querySelector(`[data-col-id="${column.id}"]`);
+    const elem = <HTMLElement>node.querySelector(`[data-id="${column.id}"]`);
     if (elem && !needDOM) {
       elem.remove();
       this.recycleCell(elem, column.index);

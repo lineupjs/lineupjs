@@ -74,6 +74,9 @@ export const RESIZE_SPACE = parseInt(getStyle('lu_engine_resize_space', '50px'),
 export const RESIZE_ANIMATION_DURATION = parseInt(getStyle('lu_engine_resize_animation_duration', '1000ms'), 10);
 
 /** @internal */
+export const AGGREGATION_LEVEL_WIDTH = parseInt(getStyle('lu_aggregate_level_width', '22px'), 10);
+
+/** @internal */
 export function cssClass(suffix?: string) {
   return suffix? `${CSS_PREFIX}-${suffix}` : CSS_PREFIX;
 }

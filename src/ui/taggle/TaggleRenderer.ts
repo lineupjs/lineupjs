@@ -13,7 +13,7 @@ import {ADialog} from '../dialogs';
 /**
  * emitted when the highlight changes
  * @asMemberOf TaggleRenderer
- * @param dataIndex the highlghted data index or -1 for none
+ * @param dataIndex the highlighted data index or -1 for none
  * @event
  */
 export declare function highlightChanged(dataIndex: number): void;
@@ -34,7 +34,7 @@ export declare function dialogOpened(dialog: ADialog): void;
 export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confirm'): void;
 
 export interface ITaggleOptions {
-  violationChanged(rule: IRule, violation: string): void;
+  violationChanged(rule: IRule| null, violation: string): void;
 
   rowPadding: number;
 }
@@ -98,6 +98,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   private dynamicHeight(data: (IGroupData | IGroupItem)[], ranking: Ranking) {
     if (!this.rule) {
       this.levelOfDetail = null;
+      this.options.violationChanged(null, '');
       return null;
     }
 

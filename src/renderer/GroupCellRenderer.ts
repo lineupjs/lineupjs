@@ -18,7 +18,9 @@ export default class GroupCellRenderer implements ICellRendererFactory {
     return {
       template: `<div><div></div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IOrderedGroup) {
-        (<HTMLElement>node.firstElementChild!).textContent = isDummyGroup(group) || i > 0 ? '' : `${group.name} (${group.order.length})`;
+        const text = isDummyGroup(group) || i > 0 ? '' : `${group.name} (${group.order.length})`;
+        (<HTMLElement>node.firstElementChild!).textContent = text;
+        node.title = text;
       },
       render(_ctx: CanvasRenderingContext2D, _row: IDataRow, i: number) {
         return i === 0;
@@ -30,7 +32,9 @@ export default class GroupCellRenderer implements ICellRendererFactory {
     return {
       template: `<div><div></div></div>`,
       update(node: HTMLElement, group: IOrderedGroup) {
-        (<HTMLElement>node.firstElementChild!).textContent = isDummyGroup(group) ? '' : `${group.name} (${group.order.length})`;
+        const text = isDummyGroup(group) ? '' : `${group.name} (${group.order.length})`;
+        (<HTMLElement>node.firstElementChild!).textContent = text;
+        node.title = text;
       }
     };
   }

@@ -5,8 +5,6 @@
     "target": "es5",
     "types": [
       "cypress",
-      "mocha",
-      "chai",
       "d3-color",
       "d3-dispatch",
       "d3-format",

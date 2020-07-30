@@ -8,7 +8,7 @@ import {IRenderTasks} from '../renderer';
 import {restoreCategoricalColorMapping} from '../model/CategoricalColorMappingFunction';
 import {createColorMappingFunction, colorMappingFunctions} from '../model/ColorMappingFunction';
 import {createMappingFunction, mappingFunctions} from '../model/MappingFunction';
-
+import {convertAggregationState} from './internal';
 
 
 /**
@@ -103,6 +103,11 @@ export declare function addDesc(desc: IColumnDesc): void;
  * @asMemberOf ADataProvider
  * @event
  */
+export declare function removeDesc(desc: IColumnDesc): void;
+/**
+ * @asMemberOf ADataProvider
+ * @event
+ */
 export declare function clearDesc(): void;
 
 /**
@@ -122,7 +127,7 @@ export declare function jumpToNearest(dataIndices: number[]): void;
  * @asMemberOf ADataProvider
  * @event
  */
-export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], value: boolean, state: EAggregationState): void;
+export declare function aggregate(ranking: Ranking, group: IGroup | IGroup[], previousTopN: number | number[], currentTopN: number | number[]): void;
 
 
 /**
@@ -183,6 +188,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_SHOWTOPN_CHANGED = 'showTopNChanged';
   static readonly EVENT_ADD_DESC = 'addDesc';
   static readonly EVENT_CLEAR_DESC = 'clearDesc';
+  static readonly EVENT_REMOVE_DESC = 'removeDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
   static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
   static readonly EVENT_BUSY = 'busy';
@@ -216,7 +222,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     mappingFunctionTypes: {},
     singleSelection: false,
     showTopN: 10,
-    aggregationStrategy: 'item'
+    aggregationStrategy: 'item',
+    propagateAggregationState: true,
   };
 
   /**
@@ -300,6 +307,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   on(type: typeof ADataProvider.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
   on(type: typeof ADataProvider.EVENT_ORDER_CHANGED, listener: typeof orderChanged | null): this;
   on(type: typeof ADataProvider.EVENT_ADD_DESC, listener: typeof addDesc | null): this;
+  on(type: typeof ADataProvider.EVENT_REMOVE_DESC, listener: typeof removeDesc | null): this;
   on(type: typeof ADataProvider.EVENT_CLEAR_DESC, listener: typeof clearDesc | null): this;
   on(type: typeof ADataProvider.EVENT_JUMP_TO_NEAREST, listener: typeof jumpToNearest | null): this;
   on(type: typeof ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, listener: typeof aggregate | null): this;
@@ -376,7 +384,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.forward(r, ...ADataProvider.FORWARD_RANKING_EVENTS);
     //delayed reordering per ranking
     const that = this;
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function(this: IEventContext) {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: IEventContext) {
       that.triggerReorder(r, toDirtyReason(this));
     }, 100, mergeDirtyOrderContext));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
@@ -387,7 +395,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.fireBusy(true);
     const reason = dirtyReason || [EDirtyReason.UNKNOWN];
     Promise.resolve(this.sort(ranking, reason)).then(({groups, index2pos}) => {
-      groups = unifyParents(groups);
+      if (ranking.getGroupSortCriteria().length === 0) {
+        groups = unifyParents(groups);
+      }
       this.initAggregateState(ranking, groups);
       ranking.setGroups(groups, index2pos, reason);
       this.fireBusy(false);
@@ -723,12 +733,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return n < 0 ? EAggregationState.EXPAND : (n === 0 ? EAggregationState.COLLAPSE : EAggregationState.EXPAND_TOP_N);
   }
 
-  setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+  setAggregated(ranking: Ranking, group: IGroup | IGroup[], value: boolean) {
     return this.setAggregationState(ranking, group, value ? EAggregationState.COLLAPSE : EAggregationState.EXPAND);
   }
 
-  setAggregationState(ranking: Ranking, group: IGroup, value: EAggregationState) {
-    this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? this.showTopN  : -1));
+  setAggregationState(ranking: Ranking, group: IGroup | IGroup[], value: EAggregationState) {
+    this.setTopNAggregated(ranking, group, value === EAggregationState.COLLAPSE ? 0 : (value === EAggregationState.EXPAND_TOP_N ? this.showTopN : -1));
   }
 
   getTopNAggregated(ranking: Ranking, group: IGroup) {
@@ -738,7 +748,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       if (this.aggregations.has(key)) {
         // propagate to leaf
         const v = this.aggregations.get(key)!;
-        this.aggregations.set(`${ranking.id}@${toGroupID(group)}`, v);
+        if (this.options.propagateAggregationState && group !== g) {
+          this.aggregations.set(`${ranking.id}@${toGroupID(group)}`, v);
+        }
         return v;
       }
       g = g.parent;
@@ -748,10 +760,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   private unaggregateParents(ranking: Ranking, group: IGroup) {
     let g: IGroup | undefined | null = group.parent;
+    let changed = false;
     while (g) {
-      this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`);
+      changed = this.aggregations.delete(`${ranking.id}@${toGroupID(g)}`) || changed;
       g = g.parent;
     }
+    return changed;
   }
 
   getAggregationStrategy() {
@@ -760,7 +774,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   private initAggregateState(ranking: Ranking, groups: IGroup[]) {
     let initial = -1;
-    switch(this.getAggregationStrategy()) {
+    switch (this.getAggregationStrategy()) {
       case 'group':
         initial = 0;
         break;
@@ -782,49 +796,45 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }
   }
 
-  setTopNAggregated(ranking: Ranking, group: IGroup, value: number) {
-    this.unaggregateParents(ranking, group);
-    const key = `${ranking.id}@${toGroupID(group)}`;
-    const current = this.getTopNAggregated(ranking, group);
-    if (current === value) {
-      return;
-    }
-    if (value >= 0) {
-      this.aggregations.set(key, value);
-    } else {
-      this.aggregations.delete(key);
-    }
-    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
-  }
+  setTopNAggregated(ranking: Ranking, group: IGroup | IGroup[], value: number | number[]) {
+    const groups = Array.isArray(group) ? group : [group];
+    const changed: IGroup[] = [];
+    const previous: number[] = [];
 
-  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState, groups = ranking.getGroups()) {
-    let v: number;
-    if (typeof aggregateAll === 'boolean') {
-      v = aggregateAll ? 0 : -1;
-    } else if (aggregateAll === EAggregationState.COLLAPSE) {
-      v = 0;
-    } else if (aggregateAll === EAggregationState.EXPAND) {
-      v = -1;
-    } else if (aggregateAll === EAggregationState.EXPAND_TOP_N) {
-      v = this.showTopN;
-    } else {
-      v = aggregateAll;
-    }
+    let changedParents = false;
 
-    for(const group of groups) {
-      this.unaggregateParents(ranking, group);
+    for (let i = 0; i < groups.length; i++) {
+      const group = groups[i];
+      const target = typeof value === 'number' ? value : value[i];
+      changedParents = this.unaggregateParents(ranking, group) || changedParents;
       const current = this.getTopNAggregated(ranking, group);
-      if (current === v) {
+      if (current === target) {
         continue;
       }
+      changed.push(group);
+      previous.push(current);
       const key = `${ranking.id}@${toGroupID(group)}`;
-      if (v >= 0) {
-        this.aggregations.set(key, v);
+      if (target >= 0) {
+        this.aggregations.set(key, target);
       } else {
         this.aggregations.delete(key);
       }
     }
-    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, v >= 0, v);
+    if (!changedParents && changed.length === 0) {
+      // no change
+      return;
+    }
+    if (!Array.isArray(group)) {
+      // single change
+      this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, previous.length === 0 ? value : previous[0], value);
+    } else {
+      this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, previous, value);
+    }
+  }
+
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean | number | EAggregationState, groups = ranking.getGroups()) {
+    const value = convertAggregationState(aggregateAll, this.showTopN);
+    this.setTopNAggregated(ranking, groups, value);
   }
 
   getShowTopN() {

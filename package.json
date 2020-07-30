@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "author": {
     "name": "Samuel Gratzl",
     "email": "sam@sgratzl.com",
@@ -97,7 +97,7 @@
     "cache-loader": "^4.0.0",
     "cross-zip-cli": "^1.0.0",
     "css-loader": "^3.0.0",
-    "cypress": "^4.5.0",
+    "cypress": "^4.11.0",
     "extract-loader": "^3.1.0",
     "file-loader": "^4.0.0",
     "font-awesome": "^4.7.0",
@@ -152,6 +152,7 @@
     "lineupengine": "^2.1.0",
     "lodash.get": "^4.4.2",
     "popper.js": "^1.15.0",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "tslib": "^1.9.0"
   }
 }

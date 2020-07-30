@@ -2,8 +2,10 @@ import {equalArrays, fixCSS, IEventListener, suffix, joinIndexArrays, AEventDisp
 import {isSortingAscByDefault} from './annotations';
 import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, labelChanged, visibilityChanged, widthChanged} from './Column';
 import CompositeColumn from './CompositeColumn';
-import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent, ITypeFactory} from './interfaces';
-import {groupRoots} from './internal';
+import {IRankingDump, defaultGroup, IndicesArray, IOrderedGroup, IDataRow, IColumnParent, IFlatColumn, ISortCriteria, UIntTypedArray, IGroupParent, ITypeFactory, IGroup} from './interfaces';
+import {groupRoots, traverseGroupsDFS} from './internal';
+import {AggregateGroupColumn, SetColumn} from '.';
+import {AGGREGATION_LEVEL_WIDTH} from '../styles';
 
 export enum EDirtyReason {
   UNKNOWN = 'unknown',
@@ -264,6 +266,17 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.groups.slice();
   }
 
+  /**
+   * Returns the flat group tree in depth first search (DFS).
+   */
+  getFlatGroups() {
+    const r: Readonly<(IGroup | IGroupParent)>[] = [];
+    traverseGroupsDFS(this.groups, (v) => {
+      r.push(v);
+    });
+    return r;
+  }
+
   dump(toDescRef: (desc: any) => any): IRankingDump {
     const r: IRankingDump = {};
     r.columns = this.columns.map((d) => d.dump(toDescRef));
@@ -462,8 +475,24 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     });
 
     this.fire([Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
-    Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY_CACHES, Ranking.EVENT_DIRTY], bak, this.getGroupCriteria());
+      Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY_CACHES, Ranking.EVENT_DIRTY], bak, this.getGroupCriteria());
+
+    this.autoAdaptAggregationColumn();
+
     return true;
+  }
+
+  private autoAdaptAggregationColumn() {
+    // set column auto adds two levels
+    const length = this.groupColumns.reduce((acc, c) => acc + (c instanceof SetColumn ? 2 : 1), 0);
+    const col = this.children.find((d) => d instanceof AggregateGroupColumn);
+    if (!col) {
+      return;
+    }
+    const targetWidth = length * AGGREGATION_LEVEL_WIDTH;
+    if (targetWidth > col.getWidth()) {
+      col.setWidth(targetWidth);
+    }
   }
 
   toggleGroupSorting(col: Column) {

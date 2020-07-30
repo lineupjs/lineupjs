@@ -1,5 +1,5 @@
 import {IAggregationStrategy} from './interfaces';
-import {IOrderedGroup, IGroup, IGroupParent, IGroupData, IGroupItem, isGroup} from '../model';
+import {IOrderedGroup, IGroup, IGroupParent, IGroupData, IGroupItem, isGroup, EAggregationState} from '../model';
 
 export function isAlwaysShowingGroupStrategy(strategy: IAggregationStrategy) {
   return strategy === 'group+item' || strategy === 'group+item+top' || strategy === 'group+top+item';
@@ -7,6 +7,22 @@ export function isAlwaysShowingGroupStrategy(strategy: IAggregationStrategy) {
 
 export function hasTopNStrategy(strategy: IAggregationStrategy) {
   return strategy === 'group+item+top' || strategy === 'group+top+item';
+}
+
+export function convertAggregationState(state: boolean | number | EAggregationState, topN: number) {
+  if (typeof state === 'boolean') {
+    return state ? 0 : -1;
+  }
+  if (state === EAggregationState.COLLAPSE) {
+    return 0;
+  }
+  if (state === EAggregationState.EXPAND) {
+    return -1;
+  }
+  if (state === EAggregationState.EXPAND_TOP_N) {
+    return topN;
+  }
+  return state;
 }
 
 export declare type IGroupMeta = 'first' | 'last' | 'first last' | null;
