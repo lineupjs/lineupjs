@@ -151,7 +151,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
     this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
 
-    if ('filter' in dump) {
+    if (typeof dump.filter == 'undefined') {
       this.currentFilter = null;
       return;
     }
