@@ -7,6 +7,7 @@ import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './int
 import {IEventListener} from '../internal';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import {integrateDefaults} from './internal';
+import {missingGroup} from './missing';
 
 export interface IBooleanDesc {
   /**
@@ -35,7 +36,21 @@ export declare function colorMappingChanged_BC(previous: ICategoricalColorMappin
  * @asMemberOf BooleanColumn
  * @event
  */
-export declare function filterChanged_BC(previous: boolean | null, current: boolean | null): void;
+export declare function filterChanged_BC(previous: IBooleanFilter | null, current: boolean | null): void;
+
+export interface IBooleanFilter {
+  filter: boolean | null;
+  filterMissing: boolean;
+}
+
+function isEqualBooleanFilter(a: IBooleanFilter | null, b: IBooleanFilter | null) {
+  if (a === b) {
+    return true;
+  }
+  const an = a == null ? {filterMissing: false, filter: null} : a;
+  const bn = b == null ? {filterMissing: false, filter: null} : b;
+  return an.filterMissing === bn.filterMissing && an.filter === bn.filter;
+}
 
 /**
  * a string column with optional alignment
@@ -49,7 +64,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   static readonly GROUP_TRUE = {name: 'True', color: 'black'};
   static readonly GROUP_FALSE = {name: 'False', color: 'white'};
 
-  private currentFilter: boolean | null = null;
+  private currentFilter: IBooleanFilter | null = null;
 
   private colorMapping: ICategoricalColorMappingFunction;
   readonly categories: ICategory[];
@@ -110,14 +125,14 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   getValue(row: IDataRow) {
     const v: any = super.getValue(row);
     if (typeof (v) === 'undefined' || v == null) {
-      return false;
+      return null;
     }
     return v === true || v === 'true' || v === 'yes' || v === 'x';
   }
 
   getCategory(row: IDataRow) {
     const v = this.getValue(row);
-    return this.categories[v ? 0 : 1];
+    return v == null ? null : this.categories[v ? 0 : 1];
   }
 
   getCategories(row: IDataRow) {
@@ -155,7 +170,9 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   getSet(row: IDataRow) {
     const v = this.getValue(row);
     const r = new Set<ICategory>();
-    r.add(this.categories[v ? 0 : 1]);
+    if (v != null) {
+      r.add(this.categories[v ? 0 : 1]);
+    }
     return r;
   }
 
@@ -171,7 +188,12 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
-    if (typeof dump.filter !== 'undefined') {
+    if (typeof dump.filter === 'boolean') {
+      this.currentFilter = {
+        filter: dump.filter,
+        filterMissing: false
+      };
+    } else if (typeof dump.filter !== 'undefined') {
       this.currentFilter = dump.filter;
     }
   }
@@ -192,22 +214,27 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   }
 
   filter(row: IDataRow) {
-    if (!this.isFiltered()) {
+    const f = this.currentFilter;
+    if (f == null) {
       return true;
     }
     const r = this.getValue(row);
-    return r === this.currentFilter;
+    if (r == null) {
+      return !f.filterMissing;
+    }
+    return f.filter == null || r === f.filter;
   }
 
   getFilter() {
-    return this.currentFilter;
+    return this.currentFilter == null ? null : Object.assign({}, this.currentFilter);
   }
 
-  setFilter(filter: boolean | null) {
-    if (this.currentFilter === filter) {
+  setFilter(filter: boolean | null | IBooleanFilter) {
+    const f: IBooleanFilter | null = typeof filter === 'boolean' ? {filter, filterMissing: false} : filter;
+    if (isEqualBooleanFilter(this.currentFilter, f)) {
       return;
     }
-    this.fire([BooleanColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    this.fire([BooleanColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = f);
   }
 
   clearFilter() {
@@ -229,7 +256,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   }
 
   group(row: IDataRow) {
-    const enabled = this.getValue(row);
-    return Object.assign({}, enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE);
+    const v = this.getValue(row);
+    if (v == null) {
+      return Object.assign({}, missingGroup);
+    }
+    return Object.assign({}, v ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE);
   }
 }
