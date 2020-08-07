@@ -1,6 +1,6 @@
 import {DENSE_HISTOGRAM} from '../constants';
 import {ICategoricalStatistics, round} from '../internal';
-import {OrdinalColumn, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory, Column, CategoricalColumn, ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn} from '../model';
+import {OrdinalColumn, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory, Column, CategoricalColumn, ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn, BooleanColumn} from '../model';
 import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
 import {IRenderContext, ICellRendererFactory, ERenderMode, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
@@ -9,7 +9,7 @@ import {setText, wideEnough, forEach} from './utils';
 import {color} from 'd3-color';
 
 /** @internal */
-export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn;
+export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn | BooleanColumn;
 
 export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Color';
@@ -63,7 +63,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   }
 
   createSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
-    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn || col instanceof SetColumn) ? interactiveSummary(col, context, interactive) : staticSummary(col, context, interactive);
+    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn || col instanceof SetColumn || col instanceof BooleanColumn) ? interactiveSummary(col, context, interactive) : staticSummary(col, context, interactive);
   }
 }
 

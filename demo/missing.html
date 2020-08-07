@@ -23,7 +23,8 @@
         cat: i >= 2 && isMissing() ? null : cats[Math.floor(Math.random() * 3)],
         cat2: i >= 2 && isMissing() ? null : cats[Math.floor(Math.random() * 3)],
         as: i >= 2 && isMissing() ? null : l.map((d) => Math.random() * 10),
-        date: i >= 2 && isMissing() ? null : new Date(Date.now() - Math.floor(Math.random() * 1000000000000))
+        date: i >= 2 && isMissing() ? null : new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
+        boolean:  i >= 2 && isMissing() ? null : Math.random() >= 0.5
       })
     }
     const builder = LineUpJS.builder(arr);

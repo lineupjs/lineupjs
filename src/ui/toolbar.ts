@@ -2,7 +2,6 @@ import {getAllToolbarActions, getAllToolbarDialogAddons} from '../model/internal
 import {Column, EDateSort, EAdvancedSortMethod, ESortMethod, isSupportType, CompositeColumn, IMultiLevelColumn, isSortingAscByDefault} from '../model';
 import {cssClass} from '../styles';
 import ADialog, {IDialogContext, dialogContext} from './dialogs/ADialog';
-import BooleanFilterDialog from './dialogs/BooleanFilterDialog';
 import CategoricalColorMappingDialog from './dialogs/CategoricalColorMappingDialog';
 import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
 import CategoricalMappingFilterDialog from './dialogs/CategoricalMappingFilterDialog';
@@ -283,7 +282,6 @@ export const toolbarActions: {[key: string]: IToolbarAction} = {
   filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
   filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, (ctx) => [ctx], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
   filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
-  filterBoolean: uiDialog('Filter &hellip;', BooleanFilterDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'ranking', featureLevel: 'basic'}),
   colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, (ctx) => [ctx], {mode: 'menu', featureCategory: 'ui', featureLevel: 'advanced'}),
   colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], {mode: 'menu', featureCategory: 'ui', featureLevel: 'advanced'}),
   script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {mode: 'menu+shortcut', featureCategory: 'model', featureLevel: 'advanced'}),
