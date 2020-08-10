@@ -48,8 +48,8 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_COLOR_MAPPING_CHANGED = 'colorMappingChanged';
 
-  static readonly GROUP_TRUE = {name: 'True', color: 'black'};
-  static readonly GROUP_FALSE = {name: 'False', color: 'white'};
+  static readonly GROUP_TRUE = {name: 'True', color: '#444444'};
+  static readonly GROUP_FALSE = {name: 'False', color: '#eeeeee'};
 
   private currentFilter: ICategoricalFilter | null = null;
 
