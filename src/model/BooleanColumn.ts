@@ -49,7 +49,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   static readonly EVENT_COLOR_MAPPING_CHANGED = 'colorMappingChanged';
 
   static readonly GROUP_TRUE = {name: 'True', color: '#444444'};
-  static readonly GROUP_FALSE = {name: 'False', color: '#eeeeee'};
+  static readonly GROUP_FALSE = {name: 'False', color: '#dddddd'};
 
   private currentFilter: ICategoricalFilter | null = null;
 
@@ -59,6 +59,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   constructor(id: string, desc: Readonly<IBooleanColumnDesc>) {
     super(id, integrateDefaults(desc, {
       width: 30,
+      renderer: 'categorical',
       groupRenderer: 'categorical',
       summaryRenderer: 'categorical'
     }));
