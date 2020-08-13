@@ -2,11 +2,13 @@ import {Category, toolbar} from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
 import ValueColumn, {dataLoaded} from './ValueColumn';
-import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
+import {ICategoricalColumn, ICategory, ICategoricalColorMappingFunction, ICategoricalFilter} from './ICategoricalColumn';
 import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
 import {IEventListener} from '../internal';
 import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
 import {integrateDefaults} from './internal';
+import {missingGroup} from './missing';
+import {isCategoryIncluded, isEqualCategoricalFilter} from './internalCategorical';
 
 export interface IBooleanDesc {
   /**
@@ -35,28 +37,31 @@ export declare function colorMappingChanged_BC(previous: ICategoricalColorMappin
  * @asMemberOf BooleanColumn
  * @event
  */
-export declare function filterChanged_BC(previous: boolean | null, current: boolean | null): void;
+export declare function filterChanged_BC(previous: ICategoricalFilter | null, current: ICategoricalFilter | null): void;
 
 /**
  * a string column with optional alignment
  */
-@toolbar('rename', 'clone', 'sort', 'sortBy', 'group', 'groupBy', 'filterBoolean', 'colorMappedCategorical')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'group', 'groupBy', 'filterCategorical', 'colorMappedCategorical')
 @Category('categorical')
 export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_COLOR_MAPPING_CHANGED = 'colorMappingChanged';
 
-  static readonly GROUP_TRUE = {name: 'True', color: 'black'};
-  static readonly GROUP_FALSE = {name: 'False', color: 'white'};
+  static readonly GROUP_TRUE = {name: 'True', color: '#444444'};
+  static readonly GROUP_FALSE = {name: 'False', color: '#dddddd'};
 
-  private currentFilter: boolean | null = null;
+  private currentFilter: ICategoricalFilter | null = null;
 
   private colorMapping: ICategoricalColorMappingFunction;
   readonly categories: ICategory[];
 
   constructor(id: string, desc: Readonly<IBooleanColumnDesc>) {
     super(id, integrateDefaults(desc, {
-      width: 30
+      width: 30,
+      renderer: 'categorical',
+      groupRenderer: 'categorical',
+      summaryRenderer: 'categorical'
     }));
     this.categories = [
       {
@@ -66,7 +71,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
         value: 0
       },
       {
-        name: desc.trueMarker || '',
+        name: desc.falseMarker || '',
         color: BooleanColumn.GROUP_FALSE.color,
         label: BooleanColumn.GROUP_FALSE.name,
         value: 1
@@ -110,14 +115,18 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   getValue(row: IDataRow) {
     const v: any = super.getValue(row);
     if (typeof (v) === 'undefined' || v == null) {
-      return false;
+      return null;
     }
     return v === true || v === 'true' || v === 'yes' || v === 'x';
   }
 
+  getCategoryOfBoolean(v: boolean | null) {
+    return v == null ? null : this.categories[v ? 0 : 1];
+  }
+
   getCategory(row: IDataRow) {
     const v = this.getValue(row);
-    return this.categories[v ? 0 : 1];
+    return v == null ? null : this.categories[v ? 0 : 1];
   }
 
   getCategories(row: IDataRow) {
@@ -155,7 +164,9 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   getSet(row: IDataRow) {
     const v = this.getValue(row);
     const r = new Set<ICategory>();
-    r.add(this.categories[v ? 0 : 1]);
+    if (v != null) {
+      r.add(this.categories[v ? 0 : 1]);
+    }
     return r;
   }
 
@@ -171,7 +182,12 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
-    if (typeof dump.filter !== 'undefined') {
+    if (typeof dump.filter === 'boolean') {
+      this.currentFilter = {
+        filter: [this.getCategoryOfBoolean(dump.filter)!.name],
+        filterMissing: false
+      };
+    } else if (typeof dump.filter !== 'undefined') {
       this.currentFilter = dump.filter;
     }
   }
@@ -192,22 +208,19 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   }
 
   filter(row: IDataRow) {
-    if (!this.isFiltered()) {
-      return true;
-    }
-    const r = this.getValue(row);
-    return r === this.currentFilter;
+    return isCategoryIncluded(this.currentFilter, this.getCategory(row));
   }
 
   getFilter() {
-    return this.currentFilter;
+    return this.currentFilter == null ? null : Object.assign({}, this.currentFilter);
   }
 
-  setFilter(filter: boolean | null) {
-    if (this.currentFilter === filter) {
+  setFilter(filter: boolean | null | ICategoricalFilter) {
+    const f: ICategoricalFilter | null = typeof filter === 'boolean' ? {filter: [this.getCategoryOfBoolean(filter)!.name], filterMissing: false} : filter;
+    if (isEqualCategoricalFilter(this.currentFilter, f)) {
       return;
     }
-    this.fire([BooleanColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    this.fire([BooleanColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = f);
   }
 
   clearFilter() {
@@ -229,7 +242,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   }
 
   group(row: IDataRow) {
-    const enabled = this.getValue(row);
-    return Object.assign({}, enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE);
+    const v = this.getValue(row);
+    if (v == null) {
+      return Object.assign({}, missingGroup);
+    }
+    return Object.assign({}, v ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE);
   }
 }

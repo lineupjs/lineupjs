@@ -1,4 +1,4 @@
-import {SetColumn, CategoricalColumn, ICategoricalFilter, ISetCategoricalFilter, Ranking} from '../../model';
+import {SetColumn, CategoricalColumn, ICategoricalFilter, ISetCategoricalFilter, Ranking, BooleanColumn} from '../../model';
 import {findFilterMissing, updateFilterMissingNumberMarkup, filterMissingNumberMarkup} from '../missing';
 import ADialog, {IDialogContext} from './ADialog';
 import {forEach} from './utils';
@@ -11,7 +11,7 @@ export default class CategoricalFilterDialog extends ADialog {
 
   private readonly before: ICategoricalFilter;
 
-  constructor(private readonly column: CategoricalColumn | SetColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
+  constructor(private readonly column: CategoricalColumn | SetColumn | BooleanColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
       livePreview: 'filter'
     });
@@ -113,7 +113,7 @@ export default class CategoricalFilterDialog extends ADialog {
   }
 
   protected submit() {
-    let f: string[] | null = this.forEach('input[data-cat]', (n: HTMLInputElement) => n.checked ? n.dataset.cat! : '').filter(Boolean);
+    let f: string[] | null = this.forEach('input[data-cat]:checked', (n: HTMLInputElement) => n.dataset.cat!);
     if (f.length === this.column.categories.length) { // all checked = no filter
       f = null;
     }
