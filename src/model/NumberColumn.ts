@@ -69,10 +69,16 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   /**
    * currently active filter
-   * @type {{min: number, max: number}}
    * @private
    */
   private currentFilter: INumberFilter = noNumberFilter();
+
+  /**
+   * The accuracy defines the deviation of values to the applied filter boundary.
+   * Use an accuracy closer to 0 for columns with smaller numbers (e.g., 1e-9).
+   * @private
+   */
+  private readonly filterAccuracy: number = 0.001;
 
   private readonly numberFormat: (n: number) => string = format('.2f');
 
@@ -91,6 +97,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
+    }
+
+    if (desc.filterAccuracy) {
+      this.filterAccuracy = desc.filterAccuracy;
     }
   }
 
@@ -281,7 +291,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   setFilter(value: INumberFilter | null) {
     value = value || {min: -Infinity, max: +Infinity, filterMissing: false};
-    if (isEqualNumberFilter(value, this.currentFilter)) {
+    if (isEqualNumberFilter(value, this.currentFilter, this.filterAccuracy)) {
       return;
     }
     const bak = this.getFilter();

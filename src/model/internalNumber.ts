@@ -60,8 +60,8 @@ export function noNumberFilter() {
 }
 
 /** @internal */
-export function isEqualNumberFilter(a: INumberFilter, b: INumberFilter) {
-  return similar(a.min, b.min, 0.001) && similar(a.max, b.max, 0.001) && a.filterMissing === b.filterMissing;
+export function isEqualNumberFilter(a: INumberFilter, b: INumberFilter, delta = 0.001) {
+  return similar(a.min, b.min, delta) && similar(a.max, b.max, delta) && a.filterMissing === b.filterMissing;
 }
 
 /** @internal */
