@@ -190,7 +190,7 @@ function deriveType(label: string, value: any, column: number | string, all: () 
 
   // check boxplot
   const bs = ['min', 'max', 'median', 'q1', 'q3'];
-  if (typeof value === 'object' && bs.every((b) => typeof value[b] === 'number')) {
+  if (value !== null && typeof value === 'object' && bs.every((b) => typeof value[b] === 'number')) {
     //  boxplot
     const vs = all();
     return Object.assign(base, {
@@ -202,7 +202,7 @@ function deriveType(label: string, value: any, column: number | string, all: () 
     });
   }
 
-  if (typeof value === 'object') {
+  if (value !== null && typeof value === 'object') {
     // object map
     const first = Object.keys(value).map((k) => value[k]).filter((d) => !isEmpty(d));
     const mapAll = () => {
