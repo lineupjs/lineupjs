@@ -107,6 +107,13 @@ export interface INumberDesc extends IMapAbleDesc {
    * @default .3n
    */
   numberFormat?: string;
+
+  /**
+   * The accuracy defines the deviation of values to the applied filter boundary.
+   * Use an accuracy closer to 0 for columns with smaller numbers (e.g., 1e-9).
+   * @default 0.001
+   */
+  filterAccuracy?: number;
 }
 
 /**

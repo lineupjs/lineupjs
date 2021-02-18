@@ -68,7 +68,8 @@
           .label('Column with small numbers')
           .width(250)
           .mapping('log', [minN, maxN], [1, 0])
-          .custom('numberFormat', 'e'),
+          .custom('numberFormat', 'e')
+          .custom('filterAccuracy', 0.00001),
       );
 
 
