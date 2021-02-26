@@ -1,4 +1,4 @@
-import {dispatch, Dispatch} from 'd3-dispatch';
+import { dispatch, Dispatch } from 'd3-dispatch';
 
 /**
  * helper function to suffix the given event types
@@ -116,7 +116,7 @@ export default class AEventDispatcher implements IEventHandler {
         origin,
         type: t, //the event type
         primaryType, //in case of multi propagation the 'main' event type
-        args //the arguments to the listener
+        args, //the arguments to the listener
       };
       this.listeners.apply(t, context, args);
     };

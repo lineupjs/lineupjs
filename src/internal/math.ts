@@ -1,8 +1,16 @@
-import {ICategory, IndicesArray, UIntTypedArray} from '../model';
-import {IForEachAble, ISequence, isIndicesAble} from './interable';
-import {createWorkerCodeBlob, IPoorManWorkerScope, toFunctionBody} from './worker';
-import {IAdvancedBoxPlotData, IStatistics, INumberBin, IDateBin, IDateStatistics, ICategoricalStatistics, ICategoricalBin, IDateHistGranularity} from './mathInterfaces';
-
+import { ICategory, IndicesArray, UIntTypedArray } from '../model';
+import { IForEachAble, ISequence, isIndicesAble } from './interable';
+import { createWorkerCodeBlob, IPoorManWorkerScope, toFunctionBody } from './worker';
+import {
+  IAdvancedBoxPlotData,
+  IStatistics,
+  INumberBin,
+  IDateBin,
+  IDateStatistics,
+  ICategoricalStatistics,
+  ICategoricalBin,
+  IDateHistGranularity,
+} from './mathInterfaces';
 
 /**
  * computes the optimal number of bins for a given array length
@@ -26,7 +34,7 @@ export function min<T>(values: T[], acc: (v: T) => number): number;
 export function min<T>(values: T[], acc?: (v: T) => number) {
   let min = Number.POSITIVE_INFINITY;
   for (const d of values) {
-    const v = acc ? acc(d) : <number><any>d;
+    const v = acc ? acc(d) : <number>(<any>d);
     if (v < min) {
       min = v;
     }
@@ -42,7 +50,7 @@ export function max<T>(values: T[], acc: (v: T) => number): number;
 export function max<T>(values: T[], acc?: (v: T) => number) {
   let max = Number.NEGATIVE_INFINITY;
   for (const d of values) {
-    const v = acc ? acc(d) : <number><any>d;
+    const v = acc ? acc(d) : <number>(<any>d);
     if (v > max) {
       max = v;
     }
@@ -59,7 +67,7 @@ export function extent<T>(values: T[], acc?: (v: T) => number) {
   let max = Number.NEGATIVE_INFINITY;
   let min = Number.POSITIVE_INFINITY;
   for (const d of values) {
-    const v = acc ? acc(d) : <number><any>d;
+    const v = acc ? acc(d) : <number>(<any>d);
     if (v < min) {
       min = v;
     }
@@ -115,8 +123,8 @@ export function quantile(values: ArrayLike<number>, quantile: number, length = v
 export function median(values: number[]): number;
 export function median<T>(values: T[], acc: (v: T) => number): number;
 export function median<T>(values: T[], acc?: (v: T) => number) {
-  const arr = acc ? values.map(acc) : (<number[]><any>values).slice();
-  arr.sort((a, b) => (a < b ? -1 : (a > b ? 1 : 0)));
+  const arr = acc ? values.map(acc) : (<number[]>(<any>values)).slice();
+  arr.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   return quantile(arr, 0.5);
 }
 
@@ -156,7 +164,9 @@ export interface IBuilder<T, R> {
 /**
  * @internal
  */
-export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvancedBoxPlotData> & {buildArr: (s: Float32Array) => IAdvancedBoxPlotData} {
+export function boxplotBuilder(
+  fixedLength?: number
+): IBuilder<number, IAdvancedBoxPlotData> & { buildArr: (s: Float32Array) => IAdvancedBoxPlotData } {
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
   let sum = 0;
@@ -191,7 +201,6 @@ export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvanced
     }
   };
 
-
   const invalid = {
     min: NaN,
     max: NaN,
@@ -203,7 +212,7 @@ export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvanced
     outlier: [],
     median: NaN,
     q1: NaN,
-    q3: NaN
+    q3: NaN,
   };
 
   const buildImpl = (s: ArrayLike<number>) => {
@@ -255,7 +264,7 @@ export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvanced
       outlier,
       median,
       q1,
-      q3
+      q3,
     };
   };
 
@@ -284,7 +293,7 @@ export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvanced
     push: pushAndSave,
     build,
     buildArr,
-    pushAll: pushAll(pushAndSave)
+    pushAll: pushAll(pushAndSave),
   };
 }
 
@@ -292,16 +301,15 @@ export function boxplotBuilder(fixedLength?: number): IBuilder<number, IAdvanced
  * @internal
  */
 export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, IStatistics> {
-
   const hist: INumberBin[] = [];
 
   let x0 = 0;
-  const binWidth = 1. / numberOfBins;
+  const binWidth = 1 / numberOfBins;
   for (let i = 0; i < numberOfBins; ++i, x0 += binWidth) {
     hist.push({
       x0,
       x1: x0 + binWidth,
-      count: 0
+      count: 0,
     });
   }
 
@@ -366,7 +374,7 @@ export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, I
         max: NaN,
         mean: NaN,
         hist,
-        maxBin: 0
+        maxBin: 0,
       };
     }
     return {
@@ -376,19 +384,22 @@ export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, I
       mean: sum / valid,
       missing,
       hist,
-      maxBin: hist.reduce((a, b) => Math.max(a, b.count), 0)
+      maxBin: hist.reduce((a, b) => Math.max(a, b.count), 0),
     };
   };
 
-  return {push, build, pushAll: pushAll(push)};
+  return { push, build, pushAll: pushAll(push) };
 }
 
 /**
  * guesses the histogram granularity to use based on min and max date
  */
-function computeGranularity(min: Date | null, max: Date | null): {histGranularity: IDateHistGranularity, hist: IDateBin[]} {
+function computeGranularity(
+  min: Date | null,
+  max: Date | null
+): { histGranularity: IDateHistGranularity; hist: IDateBin[] } {
   if (min == null || max == null) {
-    return {histGranularity: 'year', hist: []};
+    return { histGranularity: 'year', hist: [] };
   }
   const hist: IDateBin[] = [];
 
@@ -400,13 +411,13 @@ function computeGranularity(min: Date | null, max: Date | null): {histGranularit
       hist.push({
         x0: new Date(i, 0, 1),
         x1: new Date(i + 1, 0, 1),
-        count: 0
+        count: 0,
       });
     }
-    return {hist, histGranularity: 'year'};
+    return { hist, histGranularity: 'year' };
   }
 
-  if ((max.getTime() - min.getTime()) <= 1000 * 60 * 60 * 24 * 31) {
+  if (max.getTime() - min.getTime() <= 1000 * 60 * 60 * 24 * 31) {
     // less than a month use day
     let x0 = new Date(min.getFullYear(), min.getMonth(), min.getDate());
     while (x0 <= max) {
@@ -415,11 +426,11 @@ function computeGranularity(min: Date | null, max: Date | null): {histGranularit
       hist.push({
         x0,
         x1,
-        count: 0
+        count: 0,
       });
       x0 = x1;
     }
-    return {hist, histGranularity: 'day'};
+    return { hist, histGranularity: 'day' };
   }
 
   // by month
@@ -430,14 +441,14 @@ function computeGranularity(min: Date | null, max: Date | null): {histGranularit
     hist.push({
       x0,
       x1,
-      count: 0
+      count: 0,
     });
     x0 = x1;
   }
-  return {hist, histGranularity: 'month'};
+  return { hist, histGranularity: 'month' };
 }
 
-function pushDateHist(hist: IDateBin[], v: Date, count: number = 1) {
+function pushDateHist(hist: IDateBin[], v: Date, count = 1) {
   if (v < hist[0].x1) {
     hist[0].count += count;
     return;
@@ -475,8 +486,8 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
   let missing = 0;
 
   // yyyymmdd, count
-  const byDay = new Map<number, {x: Date, count: number}>();
-  const templateHist = template ? template.hist.map((d) => ({x0: d.x0, x1: d.x1, count: 0})) : null;
+  const byDay = new Map<number, { x: Date; count: number }>();
+  const templateHist = template ? template.hist.map((d) => ({ x0: d.x0, x1: d.x1, count: 0 })) : null;
 
   const push = (v: Date | null) => {
     count += 1;
@@ -498,7 +509,7 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
     if (byDay.has(key)) {
       byDay.get(key)!.count++;
     } else {
-      byDay.set(key, {count: 1, x: v});
+      byDay.set(key, { count: 1, x: v });
     }
   };
 
@@ -511,11 +522,11 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
         count,
         maxBin: templateHist.reduce((acc, h) => Math.max(acc, h.count), 0),
         hist: templateHist,
-        histGranularity: template!.histGranularity
+        histGranularity: template!.histGranularity,
       };
     }
     // copy template else derive
-    const {histGranularity, hist} = computeGranularity(min, max);
+    const { histGranularity, hist } = computeGranularity(min, max);
 
     byDay.forEach((v) => pushDateHist(hist, v.x, v.count));
 
@@ -526,11 +537,11 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
       count,
       maxBin: hist.reduce((acc, h) => Math.max(acc, h.count), 0),
       hist,
-      histGranularity
+      histGranularity,
     };
   };
 
-  return {push, build, pushAll: pushAll(push)};
+  return { push, build, pushAll: pushAll(push) };
 }
 
 /**
@@ -540,7 +551,9 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
  * @returns {{hist: {cat: string, y: number}[]}}
  * @internal
  */
-export function categoricalStatsBuilder(categories: {name: string}[]): IBuilder<{name: string} | null, ICategoricalStatistics> {
+export function categoricalStatsBuilder(
+  categories: { name: string }[]
+): IBuilder<{ name: string } | null, ICategoricalStatistics> {
   const m = new Map<string, number>();
   categories.forEach((cat) => m.set(cat.name, 0));
 
@@ -557,18 +570,18 @@ export function categoricalStatsBuilder(categories: {name: string}[]): IBuilder<
   };
 
   const build = () => {
-    const entries: ICategoricalBin[] = categories.map((d) => ({cat: d.name, count: m.get(d.name)!}));
+    const entries: ICategoricalBin[] = categories.map((d) => ({ cat: d.name, count: m.get(d.name)! }));
     const maxBin = entries.reduce((a, b) => Math.max(a, b.count), Number.NEGATIVE_INFINITY);
 
     return {
       maxBin,
       hist: entries,
       count,
-      missing
+      missing,
     };
   };
 
-  return {push, build, pushAll: pushAll(push)};
+  return { push, build, pushAll: pushAll(push) };
 }
 
 /**
@@ -578,7 +591,7 @@ export function categoricalStatsBuilder(categories: {name: string}[]): IBuilder<
  * @returns {number}
  * @internal
  */
-export function round(v: number, precision: number = 0) {
+export function round(v: number, precision = 0) {
   if (precision === 0) {
     return Math.round(v);
   }
@@ -601,14 +614,12 @@ export function similar(a: number, b: number, delta = 0.5) {
   return Math.abs(a - b) < delta;
 }
 
-
 /**
  * @internal
  */
 export function isPromiseLike<T>(value: any): value is PromiseLike<T> {
   return value instanceof Promise || typeof value.then === 'function';
 }
-
 
 /**
  * @internal
@@ -674,23 +685,30 @@ export function joinIndexArrays(groups: IndicesArray[], maxDataIndex?: number) {
   }
 }
 
-
 function asc(a: any, b: any) {
-  return a < b ? -1 : ((a > b) ? 1 : 0);
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 function desc(a: any, b: any) {
-  return a < b ? 1 : ((a > b) ? -1 : 0);
+  return a < b ? 1 : a > b ? -1 : 0;
 }
 
-
-export declare type ILookUpArray = Uint8Array | Uint16Array | Uint32Array | Int8Array | Int16Array | Int32Array | string[] | Float32Array | Float64Array;
+export declare type ILookUpArray =
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | string[]
+  | Float32Array
+  | Float64Array;
 
 /**
  * sort the given index array based on the lookup array
  * @internal
  */
-export function sortComplex(indices: UIntTypedArray | number[], comparators: {asc: boolean, lookup: ILookUpArray}[]) {
+export function sortComplex(indices: UIntTypedArray | number[], comparators: { asc: boolean; lookup: ILookUpArray }[]) {
   if (indices.length < 2) {
     return indices;
   }
@@ -718,7 +736,7 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: {as
       });
     default:
       const l = comparators.length;
-      const fs = comparators.map((d) => d.asc ? asc : desc);
+      const fs = comparators.map((d) => (d.asc ? asc : desc));
       return indices.sort((a, b) => {
         for (let i = 0; i < l; ++i) {
           const l = comparators[i].lookup;
@@ -769,7 +787,7 @@ export interface ISortMessageRequest {
 
   ref: string;
   indices: UIntTypedArray;
-  sortOrders?: {asc: boolean, lookup: ILookUpArray}[];
+  sortOrders?: { asc: boolean; lookup: ILookUpArray }[];
 }
 
 /**
@@ -913,8 +931,8 @@ export function dateValueCacheBuilder(length: number) {
   const vs = new Float64Array(length);
   let i = 0;
   return {
-    push: (d: Date | null) => vs[i++] = d == null ? NaN : d.getTime(),
-    cache: vs
+    push: (d: Date | null) => (vs[i++] = d == null ? NaN : d.getTime()),
+    cache: vs,
   };
 }
 
@@ -928,7 +946,7 @@ export function dateValueCache2Value(v: number) {
 /**
  * @internal
  */
-export function categoricalValueCacheBuilder(length: number, categories: {name: string}[]) {
+export function categoricalValueCacheBuilder(length: number, categories: { name: string }[]) {
   const vs = createIndexArray(length, categories.length + 1);
   const name2index = new Map<string, number>();
   for (let i = 0; i < categories.length; ++i) {
@@ -936,21 +954,20 @@ export function categoricalValueCacheBuilder(length: number, categories: {name: 
   }
   let i = 0;
   return {
-    push: (d: {name: string} | null) => vs[i++] = d == null ? 0 : name2index.get(d.name) || 0,
-    cache: vs
+    push: (d: { name: string } | null) => (vs[i++] = d == null ? 0 : name2index.get(d.name) || 0),
+    cache: vs,
   };
 }
 
 /**
  * @internal
  */
-export function categoricalValueCache2Value<T extends {name: string}>(v: number, categories: T[]) {
+export function categoricalValueCache2Value<T extends { name: string }>(v: number, categories: T[]) {
   return v === 0 ? null : categories[v - 1];
 }
 
-
 function sortWorkerMain() {
-  const wself = <IPoorManWorkerScope><any>self;
+  const wself = <IPoorManWorkerScope>(<any>self);
 
   // stored refs to avoid duplicate copy
   const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array | Float64Array>();
@@ -961,12 +978,15 @@ function sortWorkerMain() {
     }
     const order = r.indices;
 
-    wself.postMessage(<ISortMessageResponse>{
-      type: r.type,
-      uid: r.uid,
-      ref: r.ref,
-      order
-    }, [r.indices.buffer]);
+    wself.postMessage(
+      <ISortMessageResponse>{
+        type: r.type,
+        uid: r.uid,
+        ref: r.ref,
+        order,
+      },
+      [r.indices.buffer]
+    );
   };
 
   const setRef = (r: ISetRefMessageRequest) => {
@@ -993,19 +1013,19 @@ function sortWorkerMain() {
   const resolveRefs = <T extends UIntTypedArray | Float32Array | Int32Array>(r: IStatsWorkerMessage) => {
     // resolve refs or save the new data
 
-    const data: T = r.data ? <T><any>r.data : <T><any>refs.get(r.refData)!;
-    const indices = r.indices ? r.indices : (r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined);
+    const data: T = r.data ? <T>(<any>r.data) : <T>(<any>refs.get(r.refData)!);
+    const indices = r.indices ? r.indices : r.refIndices ? <UIntTypedArray>refs.get(r.refIndices)! : undefined;
     if (r.refData) {
       refs.set(r.refData, data);
     }
     if (r.refIndices) {
       refs.set(r.refIndices, indices!);
     }
-    return {data, indices};
+    return { data, indices };
   };
 
   const dateStats = (r: IDateStatsMessageRequest) => {
-    const {data, indices} = resolveRefs<Int32Array>(r);
+    const { data, indices } = resolveRefs<Int32Array>(r);
 
     const b = dateStatsBuilder(r.template);
     if (indices) {
@@ -1023,14 +1043,14 @@ function sortWorkerMain() {
     wself.postMessage(<IDateStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
-      stats: b.build()
+      stats: b.build(),
     });
   };
 
   const categoricalStats = (r: ICategoricalStatsMessageRequest) => {
-    const {data, indices} = resolveRefs<UIntTypedArray>(r);
+    const { data, indices } = resolveRefs<UIntTypedArray>(r);
 
-    const cats = r.categories.map((name) => ({name}));
+    const cats = r.categories.map((name) => ({ name }));
     const b = categoricalStatsBuilder(cats);
     if (indices) {
       // tslint:disable-next-line:prefer-for-of
@@ -1047,12 +1067,12 @@ function sortWorkerMain() {
     wself.postMessage(<ICategoricalStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
-      stats: b.build()
+      stats: b.build(),
     });
   };
 
   const numberStats = (r: INumberStatsMessageRequest) => {
-    const {data, indices} = resolveRefs<Float32Array>(r);
+    const { data, indices } = resolveRefs<Float32Array>(r);
 
     const b = normalizedStatsBuilder(r.numberOfBins);
 
@@ -1071,12 +1091,12 @@ function sortWorkerMain() {
     wself.postMessage(<INumberStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
-      stats: b.build()
+      stats: b.build(),
     });
   };
 
   const boxplotStats = (r: IBoxPlotStatsMessageRequest) => {
-    const {data, indices} = resolveRefs<Float32Array>(r);
+    const { data, indices } = resolveRefs<Float32Array>(r);
 
     const b = boxplotBuilder(indices ? indices.length : undefined);
 
@@ -1094,19 +1114,19 @@ function sortWorkerMain() {
     wself.postMessage(<IBoxPlotStatsMessageResponse>{
       type: r.type,
       uid: r.uid,
-      stats
+      stats,
     });
   };
 
   // message type to handler function
-  const msgHandlers: {[key: string]: (r: any) => void} = {
+  const msgHandlers: { [key: string]: (r: any) => void } = {
     sort,
     setRef,
     deleteRef,
     dateStats,
     categoricalStats,
     numberStats,
-    boxplotStats
+    boxplotStats,
   };
 
   wself.addEventListener('message', (evt) => {
@@ -1142,6 +1162,6 @@ export function createWorkerBlob() {
     sortComplex.toString(),
     dateValueCache2Value.toString(),
     categoricalValueCache2Value.toString(),
-    toFunctionBody(sortWorkerMain)
+    toFunctionBody(sortWorkerMain),
   ]);
 }

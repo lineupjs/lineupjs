@@ -1,21 +1,50 @@
-import {ICategoricalColumn, CategoricalsColumn, CategoricalMapColumn, ICategory, ICategoricalColorMappingFunction} from '../../model';
-import ADialog, {IDialogContext} from './ADialog';
-import {uniqueId} from './utils';
-import {cssClass} from '../../styles';
-import {color} from 'd3-color';
-import {schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3} from 'd3-scale-chromatic';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacmentColorMappingFunction} from '../../model/CategoricalColorMappingFunction';
+import {
+  ICategoricalColumn,
+  CategoricalsColumn,
+  CategoricalMapColumn,
+  ICategory,
+  ICategoricalColorMappingFunction,
+} from '../../model';
+import ADialog, { IDialogContext } from './ADialog';
+import { uniqueId } from './utils';
+import { cssClass } from '../../styles';
+import { color } from 'd3-color';
+import {
+  schemeCategory10,
+  schemeAccent,
+  schemeDark2,
+  schemePastel1,
+  schemePastel2,
+  schemeSet1,
+  schemeSet2,
+  schemeSet3,
+} from 'd3-scale-chromatic';
+import {
+  DEFAULT_CATEGORICAL_COLOR_FUNCTION,
+  ReplacmentColorMappingFunction,
+} from '../../model/CategoricalColorMappingFunction';
 
-const sets: {[key: string]: ReadonlyArray<string>} = {schemeCategory10, schemeAccent, schemeDark2, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3};
+const sets: { [key: string]: ReadonlyArray<string> } = {
+  schemeCategory10,
+  schemeAccent,
+  schemeDark2,
+  schemePastel1,
+  schemePastel2,
+  schemeSet1,
+  schemeSet2,
+  schemeSet3,
+};
 
 /** @internal */
 export default class CategoricalColorMappingDialog extends ADialog {
-
   private readonly before: ICategoricalColorMappingFunction;
 
-  constructor(private readonly column: ICategoricalColumn | CategoricalsColumn | CategoricalMapColumn, dialog: IDialogContext) {
+  constructor(
+    private readonly column: ICategoricalColumn | CategoricalsColumn | CategoricalMapColumn,
+    dialog: IDialogContext
+  ) {
     super(dialog, {
-      livePreview: 'colorMapping'
+      livePreview: 'colorMapping',
     });
 
     this.before = column.getColorMapping().clone();
@@ -24,7 +53,9 @@ export default class CategoricalColorMappingDialog extends ADialog {
   protected build(node: HTMLElement) {
     const id = uniqueId(this.dialog.idPrefix);
     const mapping = this.column.getColorMapping();
-    node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
+    node.insertAdjacentHTML(
+      'beforeend',
+      `<div class="${cssClass('dialog-table')}">
       <div class="${cssClass('dialog-color-table-entry')}">
         <select id="${id}Chooser">
           <option value="">Apply Color Scheme...</option>
@@ -38,12 +69,17 @@ export default class CategoricalColorMappingDialog extends ADialog {
           <option value="schemePastel2">Pastel 2 (${schemePastel2.length})</option>
         </select>
       </div>
-      ${this.column.categories.map((d) => `
+      ${this.column.categories
+        .map(
+          (d) => `
         <label class="${cssClass('checkbox')} ${cssClass('dialog-color-table-entry')}">
           <input data-cat="${d.name}" type="color" value="${color(mapping.apply(d))!.hex()}">
           <span>${d.label}</span>
-        </label>`).join('')}
-    </div>`);
+        </label>`
+        )
+        .join('')}
+    </div>`
+    );
 
     this.findInput('select').onchange = (evt) => {
       const scheme = sets[(<HTMLInputElement>evt.currentTarget).value];

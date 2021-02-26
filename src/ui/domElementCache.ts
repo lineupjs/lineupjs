@@ -1,5 +1,3 @@
-
-
 /**
  * caches parsing of html strings in a dom element cache
  * @param doc the doc to create the elements under

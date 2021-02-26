@@ -1,17 +1,29 @@
-import {timeFormat, timeParse} from 'd3-time-format';
-import {IDateColumn, IDateFilter} from './IDateColumn';
-import {IKeyValue} from './IArrayColumn';
-import {IDataRow, ITypeFactory} from './interfaces';
-import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {isMissingValue} from './missing';
-import DatesColumn, {EDateSort, IDatesDesc} from './DatesColumn';
+import { timeFormat, timeParse } from 'd3-time-format';
+import { IDateColumn, IDateFilter } from './IDateColumn';
+import { IKeyValue } from './IArrayColumn';
+import { IDataRow, ITypeFactory } from './interfaces';
+import MapColumn, { IMapColumnDesc } from './MapColumn';
+import { isMissingValue } from './missing';
+import DatesColumn, { EDateSort, IDatesDesc } from './DatesColumn';
 import DateColumn from './DateColumn';
-import {dialogAddons, toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal';
-import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';
-import {integrateDefaults} from './internal';
+import { dialogAddons, toolbar } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import { IEventListener } from '../internal';
+import { noDateFilter, isDummyDateFilter, restoreDateFilter } from './internalDate';
+import { integrateDefaults } from './internal';
 
 export declare type IDateMapColumnDesc = IDatesDesc & IMapColumnDesc<Date | null>;
 
@@ -29,7 +41,6 @@ export declare function sortMethodChanged_DMC(previous: EDateSort, current: EDat
  */
 export declare function filterChanged_DMC(previous: IDateFilter | null, current: IDateFilter | null): void;
 
-
 @toolbar('rename', 'filterDate')
 @dialogAddons('sort', 'sortDates')
 export default class DatesMapColumn extends MapColumn<Date | null> implements IDateColumn {
@@ -42,12 +53,17 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
   private currentFilter: IDateFilter = noDateFilter();
 
   constructor(id: string, desc: Readonly<IDateMapColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'default'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'default',
+      })
+    );
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
-    this.format = (v) => (v instanceof Date) ? f(v) : '';
-    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
+    this.format = (v) => (v instanceof Date ? f(v) : '');
+    this.parse = desc.dateParse
+      ? timeParse(desc.dateParse)
+      : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.sort = desc.sort || EDateSort.median;
   }
 
@@ -56,7 +72,9 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
   }
 
   protected createEventList() {
-    return super.createEventList().concat([DatesMapColumn.EVENT_SORTMETHOD_CHANGED, DatesMapColumn.EVENT_FILTER_CHANGED]);
+    return super
+      .createEventList()
+      .concat([DatesMapColumn.EVENT_SORTMETHOD_CHANGED, DatesMapColumn.EVENT_FILTER_CHANGED]);
   }
 
   on(type: typeof DatesMapColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_DMC | null): this;
@@ -89,9 +107,9 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
   }
 
   getDateMap(row: IDataRow) {
-    return super.getMap(row).map(({key, value}) => ({
+    return super.getMap(row).map(({ key, value }) => ({
       key,
-      value: this.parseValue(value)
+      value: this.parseValue(value),
     }));
   }
 
@@ -106,9 +124,9 @@ export default class DatesMapColumn extends MapColumn<Date | null> implements ID
   }
 
   getLabels(row: IDataRow): IKeyValue<string>[] {
-    return this.getDateMap(row).map(({key, value}) => ({
+    return this.getDateMap(row).map(({ key, value }) => ({
       key,
-      value: (value instanceof Date) ? this.format(value) : ''
+      value: value instanceof Date ? this.format(value) : '',
     }));
   }
 

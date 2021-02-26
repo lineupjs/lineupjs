@@ -1,7 +1,7 @@
-import {IDataRow, AnnotateColumn, Column} from '../model';
+import { IDataRow, AnnotateColumn, Column } from '../model';
 import StringCellRenderer from './StringCellRenderer';
-import {cssClass} from '../styles';
-import {ICellRenderer} from './interfaces';
+import { cssClass } from '../styles';
+import { ICellRenderer } from './interfaces';
 
 export default class AnnotationRenderer extends StringCellRenderer {
   readonly title: string = 'Default';
@@ -27,7 +27,7 @@ export default class AnnotationRenderer extends StringCellRenderer {
           event.stopPropagation();
         };
         label.textContent = input.value = col.getLabel(d);
-      }
+      },
     };
   }
 }

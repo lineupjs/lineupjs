@@ -1,8 +1,17 @@
-import {IGroup} from './interfaces';
-
+import { IGroup } from './interfaces';
 
 export function isMissingValue(v: any): boolean {
-  if(v == null || v === undefined || v === '' || v === 'NA' || v === 'na' || v === 'Na' || v === 'nA' || v === 'NaN' || (typeof v === 'number' && isNaN(v))) {
+  if (
+    v == null ||
+    v === undefined ||
+    v === '' ||
+    v === 'NA' ||
+    v === 'na' ||
+    v === 'Na' ||
+    v === 'nA' ||
+    v === 'NaN' ||
+    (typeof v === 'number' && isNaN(v))
+  ) {
     return true;
   }
   if (!Array.isArray(v)) {
@@ -23,8 +32,7 @@ export function isUnknown(v?: number | null) {
 export const FIRST_IS_NAN = -1;
 export const FIRST_IS_MISSING = 1;
 
-
 export const missingGroup: IGroup = {
   name: 'Missing values',
-  color: 'gray'
+  color: 'gray',
 };

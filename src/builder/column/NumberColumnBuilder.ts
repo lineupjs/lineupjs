@@ -1,10 +1,9 @@
-import {min, max, resolveValue} from '../../internal';
-import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, ITypedDump} from '../../model';
+import { min, max, resolveValue } from '../../internal';
+import { EAdvancedSortMethod, ESortMethod, INumberColumnDesc, ITypedDump } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
-import {IScriptMappingFunctionType} from '../../model/MappingFunction';
+import { IScriptMappingFunctionType } from '../../model/MappingFunction';
 
 export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc> {
-
   constructor(column: string) {
     super('number', column);
   }
@@ -24,7 +23,9 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
       return this;
     }
     this.desc.map = {
-      type, domain, range: range || [0, 1]
+      type,
+      domain,
+      range: range || [0, 1],
     };
     return this;
   }
@@ -37,7 +38,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     return this.colorMapping(color);
   }
 
-  colorMapping(type: string | ((v: number)=>string) | ITypedDump) {
+  colorMapping(type: string | ((v: number) => string) | ITypedDump) {
     this.desc.colorMapping = type;
     return this;
   }
@@ -57,10 +58,9 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    * @param {[number , number]} domain the input data domain [min, max]
    */
   scripted(code: string | IScriptMappingFunctionType, domain: [number, number]) {
-    this.desc.map = {domain, code, type: 'script'};
+    this.desc.map = { domain, code, type: 'script' };
     return this;
   }
-
 
   /**
    * @inheritDoc
@@ -128,7 +128,6 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     });
     return <[number, number]>[minv, maxv];
   }
-
 
   build(data: any[]): INumberColumnDesc {
     if (!this.desc.map && !this.desc.domain) {

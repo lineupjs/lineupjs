@@ -1,11 +1,18 @@
-import {round} from '../internal';
-import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAULT_COLOR} from '../model';
-import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
-import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-
+import { round } from '../internal';
+import { Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAULT_COLOR } from '../model';
+import { setText, adaptDynamicColorToBgColor, noRenderer } from './utils';
+import { CANVAS_HEIGHT, cssClass } from '../styles';
+import { colorOf } from './impose';
+import {
+  IRenderContext,
+  ERenderMode,
+  ICellRendererFactory,
+  IImposer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+  ICellRenderer,
+} from './interfaces';
+import { renderMissingCanvas, renderMissingDOM } from './missing';
 
 export default class BarCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Bar';
@@ -15,8 +22,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
    * @type {boolean}
    */
 
-  constructor(private readonly renderValue: boolean = false) {
-  }
+  constructor(private readonly renderValue: boolean = false) {}
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return mode === ERenderMode.CELL && isNumberColumn(col) && !isNumbersColumn(col);
@@ -54,8 +60,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         ctx.fillStyle = colorOf(col, d, imposer, value) || DEFAULT_COLOR;
         const w = width * value;
         ctx.fillRect(0, 0, isNaN(w) ? 0 : w, CANVAS_HEIGHT);
-
-      }
+      },
     };
   }
 

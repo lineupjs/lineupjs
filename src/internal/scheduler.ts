@@ -1,5 +1,5 @@
-import {IAbortAblePromise, ABORTED, IAbortAblePromiseBase} from 'lineupengine';
-export {ABORTED} from 'lineupengine';
+import { IAbortAblePromise, ABORTED, IAbortAblePromiseBase } from 'lineupengine';
+export { ABORTED } from 'lineupengine';
 
 /**
  * @internal
@@ -14,7 +14,7 @@ export interface IPoorManIdleDeadline {
  * @internal
  */
 export interface IPoorManIdleCallback {
-  requestIdleCallback(callback: (deadline: IPoorManIdleDeadline) => void, options?: {timeout: number}): number;
+  requestIdleCallback(callback: (deadline: IPoorManIdleDeadline) => void, options?: { timeout: number }): number;
 
   clearIdleCallback(callbackId: number): void;
 }
@@ -54,7 +54,7 @@ export interface ITask<T> {
  */
 export const ANOTHER_ROUND = {
   value: null,
-  done: false
+  done: false,
 };
 
 /**
@@ -63,18 +63,20 @@ export const ANOTHER_ROUND = {
  */
 export function oneShotIterator<T>(calc: () => T): Iterator<T> {
   return {
-    next: () => ({done: true, value: calc()})
+    next: () => ({ done: true, value: calc() }),
   };
 }
 
-
 function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void, isAborted: () => boolean) {
-  function then<TResult1 = T | symbol, TResult2 = never>(onfulfilled?: ((value: T | symbol) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): IAbortAblePromiseBase<TResult1 | TResult2> {
+  function then<TResult1 = T | symbol, TResult2 = never>(
+    onfulfilled?: ((value: T | symbol) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+  ): IAbortAblePromiseBase<TResult1 | TResult2> {
     const r = wrappee.then(onfulfilled, onrejected);
     return {
       then: <any>thenFactory(r, abort, isAborted),
       abort,
-      isAborted
+      isAborted,
     };
   }
   return then;
@@ -87,7 +89,7 @@ function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void, isAborted: (
 export default class TaskScheduler {
   private tasks: ITask<any>[] = [];
   // idle callback id
-  private taskId: number = -1;
+  private taskId = -1;
 
   private runTasks = (deadline: IPoorManIdleDeadline) => {
     // while more tasks and not timed out
@@ -111,14 +113,14 @@ export default class TaskScheduler {
 
     this.taskId = -1;
     this.reSchedule();
-  }
+  };
 
   private reSchedule() {
     if (this.tasks.length === 0 || this.taskId > -1) {
       return;
     }
 
-    const ww = (<IPoorManIdleCallback><any>self);
+    const ww = <IPoorManIdleCallback>(<any>self);
     if (ww.requestIdleCallback) {
       this.taskId = ww.requestIdleCallback(this.runTasks);
     } else {
@@ -167,7 +169,7 @@ export default class TaskScheduler {
       result: p,
       abort,
       isAborted: false,
-      resolve: resolve!
+      resolve: resolve!,
     };
     const isAborted = () => task.isAborted;
 
@@ -181,7 +183,7 @@ export default class TaskScheduler {
     return {
       then: thenFactory(p, abortOrDummy, isAbortedOrDummy),
       abort: abortOrDummy,
-      isAborted: isAbortedOrDummy
+      isAborted: isAbortedOrDummy,
     };
   }
 
@@ -224,7 +226,7 @@ export default class TaskScheduler {
     if (this.taskId === -1) {
       return;
     }
-    const ww = (<IPoorManIdleCallback><any>self);
+    const ww = <IPoorManIdleCallback>(<any>self);
     if (ww.requestIdleCallback) {
       ww.clearIdleCallback(this.taskId);
     } else {

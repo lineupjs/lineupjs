@@ -1,12 +1,42 @@
-import {normalizedStatsBuilder, IStatistics, getNumberOfBins} from '../internal';
-import {Column, IDataRow, IOrderedGroup, INumberColumn, INumbersColumn, isNumberColumn, isNumbersColumn, IMapAbleColumn, isMapAbleColumn, Ranking} from '../model';
+import { normalizedStatsBuilder, IStatistics, getNumberOfBins } from '../internal';
+import {
+  Column,
+  IDataRow,
+  IOrderedGroup,
+  INumberColumn,
+  INumbersColumn,
+  isNumberColumn,
+  isNumbersColumn,
+  IMapAbleColumn,
+  isMapAbleColumn,
+  Ranking,
+} from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
-import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IRenderTasks, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {cssClass, engineCssClass} from '../styles';
-import {histogramUpdate, histogramTemplate, IHistogramLike, mappingHintTemplate, mappingHintUpdate, IFilterInfo, filteredHistTemplate, IFilterContext, initFilter} from './histogram';
-import {noNumberFilter} from '../model/internalNumber';
+import { colorOf } from './impose';
+import {
+  IRenderContext,
+  ERenderMode,
+  ICellRendererFactory,
+  IImposer,
+  IRenderTasks,
+  ICellRenderer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+} from './interfaces';
+import { renderMissingDOM } from './missing';
+import { cssClass, engineCssClass } from '../styles';
+import {
+  histogramUpdate,
+  histogramTemplate,
+  IHistogramLike,
+  mappingHintTemplate,
+  mappingHintUpdate,
+  IFilterInfo,
+  filteredHistTemplate,
+  IFilterContext,
+  initFilter,
+} from './histogram';
+import { noNumberFilter } from '../model/internalNumber';
 import DialogManager from '../ui/dialogs/DialogManager';
 
 export default class HistogramCellRenderer implements ICellRendererFactory {
@@ -17,7 +47,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
   }
 
   create(col: INumbersColumn, _context: IRenderContext, imposer?: IImposer): ICellRenderer {
-    const {template, render, guessedBins} = getHistDOMRenderer(col, imposer);
+    const { template, render, guessedBins } = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, row: IDataRow) => {
@@ -30,12 +60,12 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
         }
         const hist = b.build();
         render(n, hist);
-      }
+      },
     };
   }
 
   createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
-    const {template, render} = getHistDOMRenderer(col, imposer);
+    const { template, render } = getHistDOMRenderer(col, imposer);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -49,23 +79,34 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
             return;
           }
 
-          const {summary, group} = r;
+          const { summary, group } = r;
           render(n, group, summary);
         });
-      }
+      },
     };
   }
 
-  createSummary(col: INumberColumn, context: IRenderContext, interactive: boolean, imposer?: IImposer): ISummaryRenderer {
+  createSummary(
+    col: INumberColumn,
+    context: IRenderContext,
+    interactive: boolean,
+    imposer?: IImposer
+  ): ISummaryRenderer {
     const r = getHistDOMRenderer(col, imposer);
 
     const staticHist = !interactive || !isMapAbleColumn(col);
-    return staticHist ? staticSummary(col, context, r.template, r.render) : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render);
+    return staticHist
+      ? staticSummary(col, context, r.template, r.render)
+      : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render);
   }
 }
 
-
-function staticSummary(col: INumberColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void) {
+function staticSummary(
+  col: INumberColumn,
+  context: IRenderContext,
+  template: string,
+  render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void
+) {
   if (isMapAbleColumn(col)) {
     template += mappingHintTemplate(col.getRange());
   }
@@ -87,11 +128,16 @@ function staticSummary(col: INumberColumn, context: IRenderContext, template: st
         }
         render(node, r.summary);
       });
-    }
+    },
   };
 }
 
-function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, template: string, render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void) {
+function interactiveSummary(
+  col: IMapAbleColumn,
+  context: IRenderContext,
+  template: string,
+  render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void
+) {
   const fContext = createFilterContext(col, context);
   template += filteredHistTemplate(fContext, createFilterInfo(col));
 
@@ -107,9 +153,9 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary, data} = r;
+        const { summary, data } = r;
 
-        updateFilter(data ? data.missing : (summary ? summary.missing : 0), createFilterInfo(col));
+        updateFilter(data ? data.missing : summary ? summary.missing : 0, createFilterInfo(col));
 
         node.classList.add(cssClass('histogram-i'));
         node.classList.toggle(cssClass('missing'), !summary);
@@ -118,12 +164,17 @@ function interactiveSummary(col: IMapAbleColumn, context: IRenderContext, templa
         }
         render(node, summary, data);
       });
-    }
+    },
   };
 }
 
 /** @internal */
-export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: HTMLElement, context: {idPrefix: string, dialogManager: DialogManager, tasks: IRenderTasks}, livePreviews: boolean) {
+export function createNumberFilter(
+  col: INumberColumn & IMapAbleColumn,
+  parent: HTMLElement,
+  context: { idPrefix: string; dialogManager: DialogManager; tasks: IRenderTasks },
+  livePreviews: boolean
+) {
   const renderer = getHistDOMRenderer(col);
   const fContext = createFilterContext(col, context);
 
@@ -137,7 +188,7 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
   const applyFilter = fContext.setFilter;
   let currentFilter = createFilterInfo(col);
   fContext.setFilter = (filterMissing, min, max) => {
-    currentFilter = {filterMissing, filterMin: min, filterMax: max};
+    currentFilter = { filterMissing, filterMin: min, filterMax: max };
     if (livePreviews) {
       applyFilter(filterMissing, min, max);
     }
@@ -150,8 +201,8 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
       if (typeof r === 'symbol') {
         return;
       }
-      const {summary, data} = r;
-      updateFilter(data ? data.missing : (summary ? summary.missing : 0), currentFilter);
+      const { summary, data } = r;
+      updateFilter(data ? data.missing : summary ? summary.missing : 0, currentFilter);
       summaryNode.classList.toggle(cssClass('missing'), !summary);
       if (!summary) {
         return;
@@ -186,7 +237,7 @@ export function createNumberFilter(col: INumberColumn & IMapAbleColumn, parent: 
     },
     submit() {
       applyFilter(currentFilter.filterMissing, currentFilter.filterMin, currentFilter.filterMax);
-    }
+    },
   };
 }
 
@@ -197,12 +248,18 @@ export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
   const formatter = col.getNumberFormat();
 
   const render = (n: HTMLElement, stats: IHistogramLike<number>, unfiltered?: IHistogramLike<number>) => {
-    return histogramUpdate(n, stats, unfiltered || null, formatter, (bin) => colorOf(col, null, imposer, (bin.x1 + bin.x0) / 2)!);
+    return histogramUpdate(
+      n,
+      stats,
+      unfiltered || null,
+      formatter,
+      (bin) => colorOf(col, null, imposer, (bin.x1 + bin.x0) / 2)!
+    );
   };
   return {
     template: histogramTemplate(guessedBins),
     render,
-    guessedBins
+    guessedBins,
   };
 }
 
@@ -213,16 +270,19 @@ function createFilterInfo(col: IMapAbleColumn, filter = col.getFilter()): IFilte
   return {
     filterMissing: filter.filterMissing,
     filterMin,
-    filterMax
+    filterMax,
   };
 }
 
-function createFilterContext(col: IMapAbleColumn, context: {idPrefix: string, dialogManager: DialogManager}): IFilterContext<number> {
+function createFilterContext(
+  col: IMapAbleColumn,
+  context: { idPrefix: string; dialogManager: DialogManager }
+): IFilterContext<number> {
   const domain = col.getMapping().domain;
   const format = col.getNumberFormat();
   const clamp = (v: number) => Math.max(0, Math.min(100, v));
-  const percent = (v: number) => clamp(Math.round(100 * (v - domain[0]) / (domain[1] - domain[0])));
-  const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
+  const percent = (v: number) => clamp(Math.round((100 * (v - domain[0])) / (domain[1] - domain[0])));
+  const unpercent = (v: number) => (v / 100) * (domain[1] - domain[0]) + domain[0];
   return {
     percent,
     unpercent,
@@ -230,24 +290,27 @@ function createFilterContext(col: IMapAbleColumn, context: {idPrefix: string, di
     format,
     formatRaw: String,
     parseRaw: Number.parseFloat,
-    setFilter: (filterMissing, minValue, maxValue) => col.setFilter({
-      filterMissing,
-      min: minValue === domain[0] ? Number.NEGATIVE_INFINITY : minValue,
-      max: maxValue === domain[1] ? Number.POSITIVE_INFINITY : maxValue
-    }),
+    setFilter: (filterMissing, minValue, maxValue) =>
+      col.setFilter({
+        filterMissing,
+        min: minValue === domain[0] ? Number.NEGATIVE_INFINITY : minValue,
+        max: maxValue === domain[1] ? Number.POSITIVE_INFINITY : maxValue,
+      }),
     edit: (value, attachment) => {
       return new Promise((resolve) => {
         const dialogCtx = {
           attachment,
           manager: context.dialogManager,
           level: context.dialogManager.maxLevel + 1,
-          idPrefix: context.idPrefix
+          idPrefix: context.idPrefix,
         };
         const dialog = new InputNumberDialog(dialogCtx, resolve, {
-            value, min: domain[0], max: domain[1]
-          });
+          value,
+          min: domain[0],
+          max: domain[1],
+        });
         dialog.open();
       });
-    }
+    },
   };
 }

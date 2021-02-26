@@ -1,11 +1,11 @@
-import {IExceptionContext, ITableSection, range} from 'lineupengine';
-import {IGroupData, IGroupItem, IOrderedGroup, isGroup, Ranking} from '../model';
-import {aria, cssClass, engineCssClass, SLOPEGRAPH_WIDTH} from '../styles';
-import {IRankingHeaderContextContainer, EMode} from './interfaces';
-import {forEachIndices, filterIndices} from '../model/internal';
+import { IExceptionContext, ITableSection, range } from 'lineupengine';
+import { IGroupData, IGroupItem, IOrderedGroup, isGroup, Ranking } from '../model';
+import { aria, cssClass, engineCssClass, SLOPEGRAPH_WIDTH } from '../styles';
+import { IRankingHeaderContextContainer, EMode } from './interfaces';
+import { forEachIndices, filterIndices } from '../model/internal';
 
 interface ISlope {
-  isSelected(selection: {has(dataIndex: number): boolean}): boolean;
+  isSelected(selection: { has(dataIndex: number): boolean }): boolean;
 
   update(path: SVGPathElement, width: number): void;
 
@@ -13,12 +13,12 @@ interface ISlope {
 }
 
 class ItemSlope implements ISlope {
-  constructor(private readonly left: number, private readonly right: number, public readonly dataIndices: number[]) {
+  constructor(private readonly left: number, private readonly right: number, public readonly dataIndices: number[]) {}
 
-  }
-
-  isSelected(selection: {has(dataIndex: number): boolean}) {
-    return this.dataIndices.length === 1 ? selection.has(this.dataIndices[0]) : this.dataIndices.some((s) => selection.has(s));
+  isSelected(selection: { has(dataIndex: number): boolean }) {
+    return this.dataIndices.length === 1
+      ? selection.has(this.dataIndices[0])
+      : this.dataIndices.some((s) => selection.has(s));
   }
 
   update(path: SVGPathElement, width: number) {
@@ -29,11 +29,13 @@ class ItemSlope implements ISlope {
 }
 
 class GroupSlope implements ISlope {
-  constructor(private readonly left: [number, number], private readonly right: [number, number], public readonly dataIndices: number[]) {
+  constructor(
+    private readonly left: [number, number],
+    private readonly right: [number, number],
+    public readonly dataIndices: number[]
+  ) {}
 
-  }
-
-  isSelected(selection: {has(dataIndex: number): boolean}) {
+  isSelected(selection: { has(dataIndex: number): boolean }) {
     return this.dataIndices.some((s) => selection.has(s));
   }
 
@@ -64,7 +66,7 @@ export default class SlopeGraph implements ITableSection {
   private rightSlopes: ISlope[][] = [];
   private readonly pool: SVGPathElement[] = [];
 
-  private scrollListener: ((act: {top: number, height: number}) => void) | null = null;
+  private scrollListener: ((act: { top: number; height: number }) => void) | null = null;
 
   readonly width = SLOPEGRAPH_WIDTH;
   readonly height = 0;
@@ -83,7 +85,13 @@ export default class SlopeGraph implements ITableSection {
 
   private _mode: EMode = EMode.ITEM;
 
-  constructor(public readonly header: HTMLElement, public readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer, options: Partial<ISlopeGraphOptions> = {}) {
+  constructor(
+    public readonly header: HTMLElement,
+    public readonly body: HTMLElement,
+    public readonly id: string,
+    private readonly ctx: IRankingHeaderContextContainer,
+    options: Partial<ISlopeGraphOptions> = {}
+  ) {
     this.node = header.ownerDocument!.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add(cssClass('slopegraph-header'));
@@ -102,14 +110,17 @@ export default class SlopeGraph implements ITableSection {
     //sync scrolling of header and body
     // use internals from lineup engine
     const scroll = (<any>scroller).__le_scroller__;
-    let old: {top: number, height: number} = scroll.asInfo();
-    scroll.push('animation', this.scrollListener = (act: {top: number, height: number}) => {
-      if (Math.abs(old.top - act.top) < 5) {
-        return;
-      }
-      old = act;
-      this.onScrolledVertically(act.top, act.height);
-    });
+    let old: { top: number; height: number } = scroll.asInfo();
+    scroll.push(
+      'animation',
+      (this.scrollListener = (act: { top: number; height: number }) => {
+        if (Math.abs(old.top - act.top) < 5) {
+          return;
+        }
+        old = act;
+        this.onScrolledVertically(act.top, act.height);
+      })
+    );
   }
 
   private initHeader(header: HTMLElement) {
@@ -141,7 +152,14 @@ export default class SlopeGraph implements ITableSection {
     }
     this._mode = value;
     if (this.current) {
-      this.rebuild(this.current.leftRanking, this.current.left, this.current.leftContext, this.current.rightRanking, this.current.right, this.current.rightContext);
+      this.rebuild(
+        this.current.leftRanking,
+        this.current.left,
+        this.current.leftContext,
+        this.current.rightRanking,
+        this.current.right,
+        this.current.rightContext
+      );
     }
   }
 
@@ -177,8 +195,15 @@ export default class SlopeGraph implements ITableSection {
     this.body.remove();
   }
 
-  rebuild(leftRanking: Ranking, left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, rightRanking: Ranking, right: (IGroupItem | IGroupData)[], rightContext: IExceptionContext) {
-    this.current = {leftRanking, left, leftContext, right, rightRanking, rightContext};
+  rebuild(
+    leftRanking: Ranking,
+    left: (IGroupItem | IGroupData)[],
+    leftContext: IExceptionContext,
+    rightRanking: Ranking,
+    right: (IGroupItem | IGroupData)[],
+    rightContext: IExceptionContext
+  ) {
+    this.current = { leftRanking, left, leftContext, right, rightRanking, rightContext };
 
     const lookup: Map<number, IPos> = this.prepareRightSlopes(right, rightContext);
     this.computeSlopes(left, leftContext, lookup);
@@ -200,20 +225,19 @@ export default class SlopeGraph implements ITableSection {
           break;
         }
         count++;
-        height += (leftContext.exceptionsLookup.get(i) || leftContext.defaultRowHeight);
+        height += leftContext.exceptionsLookup.get(i) || leftContext.defaultRowHeight;
       }
 
       const padded = height - leftContext.padding(first + count - 1);
 
       const gr = group;
 
-      return {gr, padded, height};
+      return { gr, padded, height };
     };
 
     let acc = 0;
     this.leftSlopes = left.map((r, i) => {
-
-      let height = (leftContext.exceptionsLookup.get(i) || leftContext.defaultRowHeight);
+      let height = leftContext.exceptionsLookup.get(i) || leftContext.defaultRowHeight;
       let padded = height - 0; //leftContext.padding(i);
       const slopes = <ISlope[]>[];
       const start = acc;
@@ -238,11 +262,12 @@ export default class SlopeGraph implements ITableSection {
       if (isGroup(r)) {
         gr = r;
       } else {
-        const item = (<IGroupItem>r);
+        const item = <IGroupItem>r;
         const dataIndex = item.dataIndex;
         const right = lookup.get(dataIndex);
 
-        if (!right) { // no match
+        if (!right) {
+          // no match
           return slopes;
         }
         if (mode === EMode.ITEM) {
@@ -284,12 +309,22 @@ export default class SlopeGraph implements ITableSection {
         const common = intersection.length;
         let s: ISlope;
         if (common === 1) {
-          s = new ItemSlope(start + offset + heightPerRow / 2, right.start + right.offset + right.heightPerRow / 2, [d]);
+          s = new ItemSlope(start + offset + heightPerRow / 2, right.start + right.offset + right.heightPerRow / 2, [
+            d,
+          ]);
         } else if (mode === EMode.ITEM) {
           // fake item
-          s = new ItemSlope(start + offset + heightPerRow * common / 2, right.start + right.offset + right.heightPerRow * common / 2, intersection);
+          s = new ItemSlope(
+            start + offset + (heightPerRow * common) / 2,
+            right.start + right.offset + (right.heightPerRow * common) / 2,
+            intersection
+          );
         } else {
-          s = new GroupSlope([start + offset, start + offset + heightPerRow * common], [right.start + right.offset, right.start + right.offset + right.heightPerRow * common], intersection);
+          s = new GroupSlope(
+            [start + offset, start + offset + heightPerRow * common],
+            [right.start + right.offset, right.start + right.offset + right.heightPerRow * common],
+            intersection
+          );
         }
         push(s, right, common, heightPerRow);
       });
@@ -305,7 +340,7 @@ export default class SlopeGraph implements ITableSection {
     let acc = 0;
 
     this.rightSlopes = right.map((r, i) => {
-      const height = (rightContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight);
+      const height = rightContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight;
       const padded = height - 0; //rightContext.padding(i);
       const start = acc;
       acc += height;
@@ -314,26 +349,26 @@ export default class SlopeGraph implements ITableSection {
       const base = {
         start,
         offset: 0,
-        ref: [i]
+        ref: [i],
       };
       if (isGroup(r)) {
         const p = Object.assign(base, {
           rows: Array.from(r.order),
           heightPerRow: padded / r.order.length,
-          group: r
+          group: r,
         });
 
         forEachIndices(r.order, (ri) => lookup.set(ri, p));
         return slopes;
       }
       // item
-      const item = (<IGroupItem>r);
+      const item = <IGroupItem>r;
       const dataIndex = r.dataIndex;
 
       let p = Object.assign(base, {
         rows: [dataIndex],
         heightPerRow: padded,
-        group: item.group
+        group: item.group,
       });
 
       if (mode === EMode.ITEM) {
@@ -346,7 +381,8 @@ export default class SlopeGraph implements ITableSection {
         p.heightPerRow = height; // include padding
         // TODO just support uniform item height
         fakeGroups.set(item.group, p);
-      } else { // reuse old
+      } else {
+        // reuse old
         p = fakeGroups.get(item.group)!;
         p.rows.push(dataIndex);
         p.ref.push(i);
@@ -365,7 +401,6 @@ export default class SlopeGraph implements ITableSection {
     const p = this.body.parentElement!;
     this.onScrolledVertically(p.scrollTop, p.clientHeight);
   }
-
 
   highlight(dataIndex: number) {
     const highlight = engineCssClass('highlighted');
@@ -389,9 +424,21 @@ export default class SlopeGraph implements ITableSection {
     }
 
     // which lines are currently shown
-    const {leftContext, rightContext} = this.current;
-    const left = range(scrollTop, clientHeight, leftContext.defaultRowHeight, leftContext.exceptions, leftContext.numberOfRows);
-    const right = range(scrollTop, clientHeight, rightContext.defaultRowHeight, rightContext.exceptions, rightContext.numberOfRows);
+    const { leftContext, rightContext } = this.current;
+    const left = range(
+      scrollTop,
+      clientHeight,
+      leftContext.defaultRowHeight,
+      leftContext.exceptions,
+      leftContext.numberOfRows
+    );
+    const right = range(
+      scrollTop,
+      clientHeight,
+      rightContext.defaultRowHeight,
+      rightContext.exceptions,
+      rightContext.numberOfRows
+    );
 
     const start = Math.min(left.firstRowPos, right.firstRowPos);
     const end = Math.max(left.endPos, right.endPos);
@@ -399,13 +446,18 @@ export default class SlopeGraph implements ITableSection {
     // move to right position
     this.body.style.transform = `translate(0, ${start.toFixed(0)}px)`;
     this.body.style.height = `${(end - start).toFixed(0)}px`;
-    (this.node.firstElementChild!).setAttribute('transform', `translate(0,-${start.toFixed(0)})`);
+    this.node.firstElementChild!.setAttribute('transform', `translate(0,-${start.toFixed(0)})`);
 
     this.chosen = this.choose(left.first, left.last, right.first, right.last);
     this.render(this.chosen, this.chooseSelection(left.first, left.last, this.chosen));
   }
 
-  private choose(leftVisibleFirst: number, leftVisibleLast: number, rightVisibleFirst: number, rightVisibleLast: number) {
+  private choose(
+    leftVisibleFirst: number,
+    leftVisibleLast: number,
+    rightVisibleFirst: number,
+    rightVisibleLast: number
+  ) {
     // assume no separate scrolling
 
     const slopes = new Set<ISlope>();
@@ -431,7 +483,7 @@ export default class SlopeGraph implements ITableSection {
       return slopes;
     }
 
-    const selectionLookup = {has: (dataIndex: number) => p.isSelected(dataIndex)};
+    const selectionLookup = { has: (dataIndex: number) => p.isSelected(dataIndex) };
 
     // try all not visible ones
     for (let i = 0; i < leftVisibleFirst; ++i) {
@@ -451,7 +503,13 @@ export default class SlopeGraph implements ITableSection {
     return slopes;
   }
 
-  private updatePath(p: SVGPathElement, g: SVGGElement, s: ISlope, width: number, selection: {has(dataIndex: number): boolean}) {
+  private updatePath(
+    p: SVGPathElement,
+    g: SVGGElement,
+    s: ISlope,
+    width: number,
+    selection: { has(dataIndex: number): boolean }
+  ) {
     s.update(p, width);
     (<any>p).__data__ = s; // data binding
     const selected = s.isSelected(selection);
@@ -467,7 +525,7 @@ export default class SlopeGraph implements ITableSection {
     const paths = this.matchLength(visible.size + selectionSlopes.size, g);
 
     const p = this.ctx.provider;
-    const selectionLookup = {has: (dataIndex: number) => p.isSelected(dataIndex)};
+    const selectionLookup = { has: (dataIndex: number) => p.isSelected(dataIndex) };
 
     // update paths
     let i = 0;

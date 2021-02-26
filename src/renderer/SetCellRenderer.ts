@@ -1,9 +1,15 @@
-import {Column, ICategoricalLikeColumn, IDataRow, IOrderedGroup, ISetColumn, isSetColumn} from '../model';
-import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {ICellRendererFactory, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {forEachChild, noop, wideEnoughCat} from './utils';
-import {round} from '../internal';
+import { Column, ICategoricalLikeColumn, IDataRow, IOrderedGroup, ISetColumn, isSetColumn } from '../model';
+import { CANVAS_HEIGHT, cssClass } from '../styles';
+import {
+  ICellRendererFactory,
+  IRenderContext,
+  ICellRenderer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+} from './interfaces';
+import { renderMissingCanvas, renderMissingDOM } from './missing';
+import { forEachChild, noop, wideEnoughCat } from './utils';
+import { round } from '../internal';
 
 export default class SetCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Matrix';
@@ -17,7 +23,9 @@ export default class SetCellRenderer implements ICellRendererFactory {
     const mapping = col.getColorMapping();
     let templateRows = '';
     for (const cat of categories) {
-      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}" style="background-color: ${mapping.apply(cat)}"></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${
+        cat.label
+      }" style="background-color: ${mapping.apply(cat)}"></div>`;
     }
     return {
       templateRow: templateRows,
@@ -26,12 +34,12 @@ export default class SetCellRenderer implements ICellRendererFactory {
           const v = value[i];
           d.style.opacity = typeof v === 'boolean' ? (v ? '1' : '0') : round(v, 2).toString();
         });
-      }
+      },
     };
   }
 
   create(col: ISetColumn, context: IRenderContext): ICellRenderer {
-    const {templateRow, render} = SetCellRenderer.createDOMContext(col);
+    const { templateRow, render } = SetCellRenderer.createDOMContext(col);
     const width = context.colWidth(col);
     const cellDimension = width / col.dataLength!;
     const cats = col.categories;
@@ -57,18 +65,18 @@ export default class SetCellRenderer implements ICellRendererFactory {
           if (!data[j]) {
             return;
           }
-          const posx = (j * cellDimension);
+          const posx = j * cellDimension;
           ctx.fillStyle = mapping.apply(d);
           ctx.fillRect(posx, 0, cellDimension, CANVAS_HEIGHT);
         });
 
         ctx.restore();
-      }
+      },
     };
   }
 
   createGroup(col: ISetColumn, context: IRenderContext): IGroupCellRenderer {
-    const {templateRow, render} = SetCellRenderer.createDOMContext(col);
+    const { templateRow, render } = SetCellRenderer.createDOMContext(col);
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -81,9 +89,12 @@ export default class SetCellRenderer implements ICellRendererFactory {
           if (isMissing) {
             return;
           }
-          render(n, r.group.hist.map((d) => d.count / r.group.maxBin));
+          render(
+            n,
+            r.group.hist.map((d) => d.count / r.group.maxBin)
+          );
         });
-      }
+      },
     };
   }
 
@@ -93,12 +104,14 @@ export default class SetCellRenderer implements ICellRendererFactory {
     let templateRows = `<div class="${cssClass('heatmap')}">`;
     const labels = wideEnoughCat(col);
     for (const cat of categories) {
-      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}"${labels ? ` data-title="${cat.label}"` : ''} style="background-color: ${mapping.apply(cat)}"></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}"${
+        labels ? ` data-title="${cat.label}"` : ''
+      } style="background-color: ${mapping.apply(cat)}"></div>`;
     }
     templateRows += '</div>';
     return {
       template: templateRows,
-      update: noop
+      update: noop,
     };
   }
 }

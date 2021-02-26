@@ -1,8 +1,8 @@
-import {Column, RankColumn, IDataRow, IOrderedGroup} from '../model';
-import {ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {noRenderer, setText} from './utils';
-import {cssClass} from '../styles';
+import { Column, RankColumn, IDataRow, IOrderedGroup } from '../model';
+import { ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer } from './interfaces';
+import { renderMissingDOM } from './missing';
+import { noRenderer, setText } from './utils';
+import { cssClass } from '../styles';
 
 export default class RankCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
@@ -17,7 +17,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         setText(n, col.getLabel(d));
-      }
+      },
     };
   }
 
@@ -35,7 +35,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
         }
         fromTSpan.textContent = ranking.getRank(group.order[0]).toString();
         toTSpan.textContent = ranking.getRank(group.order[group.order.length - 1]).toString();
-      }
+      },
     };
   }
 

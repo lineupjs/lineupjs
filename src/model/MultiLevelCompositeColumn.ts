@@ -1,10 +1,21 @@
-import {similar, IEventListener} from '../internal';
-import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn, ITypeFactory} from './interfaces';
+import { similar, IEventListener } from '../internal';
+import { toolbar } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
+import { IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn, ITypeFactory } from './interfaces';
 import StackColumn from './StackColumn';
-
 
 /**
  * emitted when the collapse property changes
@@ -19,7 +30,6 @@ export declare function collapseChanged_MC(previous: boolean, current: boolean):
  * @event
  */
 export declare function nestedChildRatio_MC(previous: number, current: number): void;
-
 
 @toolbar('compress', 'expand')
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
@@ -44,11 +54,16 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   }
 
   protected createEventList() {
-    return super.createEventList().concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED]);
+    return super
+      .createEventList()
+      .concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED]);
   }
 
   on(type: typeof MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged_MC | null): this;
-  on(type: typeof MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, listener: typeof nestedChildRatio_MC | null): this;
+  on(
+    type: typeof MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED,
+    listener: typeof nestedChildRatio_MC | null
+  ): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
   on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
@@ -73,7 +88,11 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     if (this.collapsed === value) {
       return;
     }
-    this.fire([StackColumn.EVENT_COLLAPSE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.collapsed, this.collapsed = value);
+    this.fire(
+      [StackColumn.EVENT_COLLAPSE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.collapsed,
+      (this.collapsed = value)
+    );
   }
 
   getCollapsed() {
@@ -103,7 +122,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   insert(col: Column, index: number) {
     col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
     //increase my width
-    super.setWidth(this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+    super.setWidth(this.length === 0 ? col.getWidth() : this.getWidth() + col.getWidth());
 
     return super.insert(col, index);
   }
@@ -119,7 +138,11 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     }
     const act = this.getWidth();
     const next = act + (newValue - oldValue);
-    this.fire([MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], act, next);
+    this.fire(
+      [MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY],
+      act,
+      next
+    );
     super.setWidth(next);
   }
 
@@ -137,7 +160,11 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
       child.setWidthImpl(child.getWidth() * factor);
     });
     if (!similar(act, value, 0.5)) {
-      this.fire([MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], act, value);
+      this.fire(
+        [MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY],
+        act,
+        value
+      );
     }
     super.setWidth(value);
   }
@@ -152,7 +179,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       return {
-        children: this.children.map((d) => d.getExportValue(row, format))
+        children: this.children.map((d) => d.getExportValue(row, format)),
       };
     }
     return super.getExportValue(row, format);

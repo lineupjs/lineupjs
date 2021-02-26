@@ -1,4 +1,4 @@
-import {cssClass} from '../styles';
+import { cssClass } from '../styles';
 
 /** @internal */
 export const filterMissingText = 'Filter rows containing missing values';
@@ -15,13 +15,17 @@ export function filterMissingMarkup(bakMissing: boolean) {
 export function filterMissingNumberMarkup(bakMissing: boolean, count: number) {
   return `<label class="${cssClass('checkbox')}">
     <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''}>
-    <span class="${cssClass('filter-missing')} ${count === 0 ? cssClass('disabled') : ''}">Filter ${count} missing value rows</span>
+    <span class="${cssClass('filter-missing')} ${
+    count === 0 ? cssClass('disabled') : ''
+  }">Filter ${count} missing value rows</span>
   </label>`;
 }
 
 /** @internal */
 export function findFilterMissing(node: HTMLElement) {
-  return <HTMLInputElement>(<HTMLElement>node.getElementsByClassName(cssClass('filter-missing'))[0]!).previousElementSibling!;
+  return <HTMLInputElement>(
+    (<HTMLElement>node.getElementsByClassName(cssClass('filter-missing'))[0]!).previousElementSibling!
+  );
 }
 
 /** @internal */

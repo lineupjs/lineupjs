@@ -2,11 +2,10 @@
  * main module of LineUp.js containing the main class and exposes all other modules
  */
 
-import {IColumnDesc} from './model';
-import {DataProvider, LocalDataProvider, ILocalDataProviderOptions} from './provider';
-import {LineUp, Taggle} from './ui';
-import {ILineUpOptions, ITaggleOptions} from './config';
-
+import { IColumnDesc } from './model';
+import { DataProvider, LocalDataProvider, ILocalDataProviderOptions } from './provider';
+import { LineUp, Taggle } from './ui';
+import { ILineUpOptions, ITaggleOptions } from './config';
 
 export * from './builder';
 export * from './config';
@@ -15,10 +14,13 @@ export * from './model';
 export * from './provider';
 export * from './renderer';
 export * from './ui';
-export {LineUp as default} from './ui';
+export { LineUp as default } from './ui';
 
-
-export function createLocalDataProvider(data: any[], columns: IColumnDesc[], options: Partial<ILocalDataProviderOptions> = {}) {
+export function createLocalDataProvider(
+  data: any[],
+  columns: IColumnDesc[],
+  options: Partial<ILocalDataProviderOptions> = {}
+) {
   return new LocalDataProvider(data, columns, options);
 }
 

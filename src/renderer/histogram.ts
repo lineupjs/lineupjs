@@ -1,8 +1,8 @@
-import {DENSE_HISTOGRAM} from '../constants';
-import {IBin, round, IDragHandleOptions, dragHandle} from '../internal';
-import {cssClass, FILTERED_OPACITY} from '../styles';
-import {color} from 'd3-color';
-import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
+import { DENSE_HISTOGRAM } from '../constants';
+import { IBin, round, IDragHandleOptions, dragHandle } from '../internal';
+import { cssClass, FILTERED_OPACITY } from '../styles';
+import { color } from 'd3-color';
+import { filterMissingNumberMarkup, updateFilterMissingNumberMarkup } from '../ui/missing';
 
 function filteredColor(input: string) {
   const c = color(input)!;
@@ -13,7 +13,9 @@ function filteredColor(input: string) {
 export function histogramTemplate(guessedBins: number) {
   let bins = '';
   for (let i = 0; i < guessedBins; ++i) {
-    bins += `<div class="${cssClass('histogram-bin')}" title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`;
+    bins += `<div class="${cssClass(
+      'histogram-bin'
+    )}" title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`;
   }
   // no closing div to be able to append things
   return `<div class="${cssClass('histogram')} ${guessedBins > DENSE_HISTOGRAM ? cssClass('dense') : ''}">${bins}`;
@@ -26,7 +28,10 @@ function matchBins(n: HTMLElement, bins: number) {
     nodes.splice(bins, nodes.length - bins).forEach((d) => d.remove());
   } else if (nodes.length < bins) {
     for (let i = nodes.length; i < bins; ++i) {
-      n.insertAdjacentHTML('afterbegin', `<div class="${cssClass('histogram-bin')}" title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`);
+      n.insertAdjacentHTML(
+        'afterbegin',
+        `<div class="${cssClass('histogram-bin')}" title="Bin ${i}: 0" data-x=""><div style="height: 0" ></div></div>`
+      );
     }
     nodes = Array.from(n.querySelectorAll('[data-x]'));
   }
@@ -40,7 +45,13 @@ export interface IHistogramLike<T> {
 }
 
 /** @internal */
-export function histogramUpdate<T>(n: HTMLElement, stats: IHistogramLike<T>, unfiltered: IHistogramLike<T> | null, formatter: (v: T) => string, colorOf: (bin: IBin<T>) => string) {
+export function histogramUpdate<T>(
+  n: HTMLElement,
+  stats: IHistogramLike<T>,
+  unfiltered: IHistogramLike<T> | null,
+  formatter: (v: T) => string,
+  colorOf: (bin: IBin<T>) => string
+) {
   const hist = stats.hist;
   const nodes = matchBins(n, hist.length);
 
@@ -52,19 +63,24 @@ export function histogramUpdate<T>(n: HTMLElement, stats: IHistogramLike<T>, unf
       return;
     }
 
-    const {x0, x1, count} = bin;
+    const { x0, x1, count } = bin;
     const color = colorOf(bin);
     d.dataset.x = formatter(x0);
 
     if (unfiltered) {
-      const gCount = (unfiltered.hist[i] || {count}).count;
+      const gCount = (unfiltered.hist[i] || { count }).count;
       d.title = `${formatter(x0)} - ${formatter(x1)} (${count} of ${gCount})`;
-      inner.style.height = `${round(gCount * 100 / unfiltered.maxBin, 2)}%`;
-      const relY = 100 - round(count * 100 / gCount, 2);
-      inner.style.background = relY === 0 ? color : (relY === 100 ? filteredColor(color) : `linear-gradient(${filteredColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`);
+      inner.style.height = `${round((gCount * 100) / unfiltered.maxBin, 2)}%`;
+      const relY = 100 - round((count * 100) / gCount, 2);
+      inner.style.background =
+        relY === 0
+          ? color
+          : relY === 100
+          ? filteredColor(color)
+          : `linear-gradient(${filteredColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`;
     } else {
       d.title = `${formatter(x0)} - ${formatter(x1)} (${count})`;
-      inner.style.height = `${round(count * 100 / stats.maxBin, 2)}%`;
+      inner.style.height = `${round((count * 100) / stats.maxBin, 2)}%`;
       inner.style.backgroundColor = color;
     }
   });
@@ -74,16 +90,17 @@ export function histogramUpdate<T>(n: HTMLElement, stats: IHistogramLike<T>, unf
  * @internal
  */
 export function mappingHintTemplate(range: [string, string]) {
-  return `<span class="${cssClass('mapping-hint')}" title="${range[0]}">${range[0]}</span><span class="${cssClass('mapping-hint')}" title="${range[1]}">${range[1]}</span>`;
+  return `<span class="${cssClass('mapping-hint')}" title="${range[0]}">${range[0]}</span><span class="${cssClass(
+    'mapping-hint'
+  )}" title="${range[1]}">${range[1]}</span>`;
 }
 
 /**
  * @internal
  */
 export function mappingHintUpdate(n: HTMLElement, range: [string, string]) {
-  Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
+  Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
 }
-
 
 export interface IFilterContext<T> {
   percent(v: T): number;
@@ -103,17 +120,19 @@ export interface IFilterInfo<T> {
   filterMax: T;
 }
 
-
 export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>) {
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
-    <div class="${cssClass('histogram-min')}" data-value="${c.format(f.filterMin)}" data-raw="${c.formatRaw(f.filterMin)}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
-    <div class="${cssClass('histogram-max')}" data-value="${c.format(f.filterMax)}" data-raw="${c.formatRaw(f.filterMax)}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
+    <div class="${cssClass('histogram-min')}" data-value="${c.format(f.filterMin)}" data-raw="${c.formatRaw(
+    f.filterMin
+  )}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
+    <div class="${cssClass('histogram-max')}" data-value="${c.format(f.filterMax)}" data-raw="${c.formatRaw(
+    f.filterMax
+  )}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
     ${filterMissingNumberMarkup(f.filterMissing, 0)}
   `;
 }
-
 
 export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   const min = <HTMLElement>node.getElementsByClassName(cssClass('histogram-min'))[0];
@@ -185,7 +204,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     onDrag: (handle, x) => {
       const total = node.clientWidth;
       const px = Math.max(0, Math.min(x, total));
-      const percent = Math.round(100 * px / total);
+      const percent = Math.round((100 * px) / total);
       (<HTMLElement>handle).dataset.value = context.format(context.unpercent(percent));
       (<HTMLElement>handle).dataset.raw = context.formatRaw(context.unpercent(percent));
 
@@ -202,7 +221,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     onEnd: (handle) => {
       handle.classList.remove(cssClass('hist-dragging'));
       setFilter();
-    }
+    },
   };
   dragHandle(min, options);
   dragHandle(max, options);

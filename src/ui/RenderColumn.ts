@@ -1,12 +1,12 @@
-import {IColumn, IAbortAblePromise, IAsyncUpdate, isAbortAble} from 'lineupengine';
-import {Column} from '../model';
-import {ICellRenderer, IGroupCellRenderer} from '../renderer';
-import {ISummaryRenderer, IRenderCallback} from '../renderer';
-import {createHeader, updateHeader} from './header';
-import {IRankingContext} from './interfaces';
-import {ILineUpFlags} from '../config';
-import {cssClass, engineCssClass} from '../styles';
-import {isPromiseLike} from '../internal';
+import { IColumn, IAbortAblePromise, IAsyncUpdate, isAbortAble } from 'lineupengine';
+import { Column } from '../model';
+import { ICellRenderer, IGroupCellRenderer } from '../renderer';
+import { ISummaryRenderer, IRenderCallback } from '../renderer';
+import { createHeader, updateHeader } from './header';
+import { IRankingContext } from './interfaces';
+import { ILineUpFlags } from '../config';
+import { cssClass, engineCssClass } from '../styles';
+import { isPromiseLike } from '../internal';
 
 export interface IRenderers {
   singleId: string;
@@ -23,9 +23,12 @@ export interface IRenderers {
 export default class RenderColumn implements IColumn {
   renderers: IRenderers | null = null;
 
-  constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext, protected readonly flags: ILineUpFlags) {
-
-  }
+  constructor(
+    public readonly c: Column,
+    public index: number,
+    protected ctx: IRankingContext,
+    protected readonly flags: ILineUpFlags
+  ) {}
 
   get width() {
     return this.c.getWidth();
@@ -92,7 +95,7 @@ export default class RenderColumn implements IColumn {
       dragAble: this.flags.advancedUIFeatures,
       mergeDropAble: this.flags.advancedModelFeatures,
       rearrangeAble: this.flags.advancedUIFeatures,
-      resizeable: this.flags.advancedUIFeatures
+      resizeable: this.flags.advancedUIFeatures,
     });
     node.classList.add(cssClass('header'));
     if (!this.flags.disableFrozenColumns) {
@@ -125,7 +128,7 @@ export default class RenderColumn implements IColumn {
     }
     const ready = this.renderers.summary.update(summary);
     if (ready) {
-      return {item: node, ready};
+      return { item: node, ready };
     }
     return node;
   }
@@ -145,7 +148,7 @@ export default class RenderColumn implements IColumn {
     const oldRenderer = node.dataset.renderer;
     const currentRenderer = isGroup ? this.renderers!.groupId : this.renderers!.singleId;
     const oldGroup = node.dataset.group;
-    const currentGroup = (isGroup ? 'g' : 'd');
+    const currentGroup = isGroup ? 'g' : 'd';
     if (oldRenderer !== currentRenderer || oldGroup !== currentGroup) {
       node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
     }
@@ -163,7 +166,7 @@ export default class RenderColumn implements IColumn {
       }
     }
     if (ready) {
-      return {item: node, ready};
+      return { item: node, ready };
     }
     return node;
   }
@@ -180,11 +183,12 @@ export default class RenderColumn implements IColumn {
     }
     return chainAbortAble(row, (row) => s.render!(ctx, row, r.relativeIndex, r.group) || false);
   }
-
 }
 
-
-function chainAbortAble<T, U, V>(toWait: Promise<T>, mapper: (value: T) => IAbortAblePromise<U> | V): IAbortAblePromise<U> | V {
+function chainAbortAble<T, U, V>(
+  toWait: Promise<T>,
+  mapper: (value: T) => IAbortAblePromise<U> | V
+): IAbortAblePromise<U> | V {
   let aborted = false;
   const p: any = new Promise<IAbortAblePromise<U> | null | void>((resolve) => {
     if (aborted) {

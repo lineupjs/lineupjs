@@ -1,15 +1,26 @@
-import {DateColumn, IDateGranularity} from '../../model';
-import {cssClass} from '../../styles';
-import {IToolbarDialogAddonHandler} from '../interfaces';
-import {defaultDateGrouper} from '../../model/internalDate';
-
+import { DateColumn, IDateGranularity } from '../../model';
+import { cssClass } from '../../styles';
+import { IToolbarDialogAddonHandler } from '../interfaces';
+import { defaultDateGrouper } from '../../model/internalDate';
 
 /** @internal */
 export default function appendDate(col: DateColumn, node: HTMLElement): IToolbarDialogAddonHandler {
   const before = col.getDateGrouper();
 
   let html = '';
-  for (const g of ['century', 'decade', 'year', 'month', 'week', 'day_of_week', 'day_of_month', 'day_of_year', 'hour', 'minute', 'second']) {
+  for (const g of [
+    'century',
+    'decade',
+    'year',
+    'month',
+    'week',
+    'day_of_week',
+    'day_of_month',
+    'day_of_year',
+    'hour',
+    'minute',
+    'second',
+  ]) {
     html += `<label class="${cssClass('checkbox')}">
     <input type="radio" name="granularity" value="${g}" ${before.granularity === g ? 'checked' : ''}>
     <span> by ${g} </span>
@@ -26,10 +37,12 @@ export default function appendDate(col: DateColumn, node: HTMLElement): IToolbar
   return {
     elems: 'input[name=granularity],input[name=circular]',
     submit() {
-      const granularity = <IDateGranularity> node.querySelector<HTMLInputElement>('input[name=granularity]:checked')!.value;
+      const granularity = <IDateGranularity>(
+        node.querySelector<HTMLInputElement>('input[name=granularity]:checked')!.value
+      );
       col.setDateGrouper({
         granularity,
-        circular: circular.checked
+        circular: circular.checked,
       });
       return true;
     },
@@ -41,6 +54,6 @@ export default function appendDate(col: DateColumn, node: HTMLElement): IToolbar
       circular.checked = r.circular;
       const g = node.querySelector<HTMLInputElement>(`input[name=granularity][value="${r.granularity}"]`)!;
       g.checked = true;
-    }
+    },
   };
 }

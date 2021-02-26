@@ -1,7 +1,7 @@
-export * from './';
-export {default} from './';
 import '!file-loader?name=schema.4.0.0.json!./provider/schema.json';
 import './style.scss';
+export * from './';
+export { default } from './';
 
 declare const __VERSION__: string;
 declare const __BUILD_ID__: string;

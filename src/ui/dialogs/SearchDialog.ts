@@ -1,25 +1,27 @@
-import {Column} from '../../model';
-import {IDataProvider} from '../../provider';
-import ADialog, { IDialogContext} from './ADialog';
-import {cssClass} from '../../styles';
-import {debounce} from '../../internal';
+import { Column } from '../../model';
+import { IDataProvider } from '../../provider';
+import ADialog, { IDialogContext } from './ADialog';
+import { cssClass } from '../../styles';
+import { debounce } from '../../internal';
 
 /** @internal */
 export default class SearchDialog extends ADialog {
-
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly provider: IDataProvider) {
     super(dialog, {
-      livePreview: 'search'
+      livePreview: 'search',
     });
   }
 
   protected build(node: HTMLElement) {
-    node.insertAdjacentHTML('beforeend', `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)">
+    node.insertAdjacentHTML(
+      'beforeend',
+      `<input type="text" size="20" value="" required autofocus placeholder="search... (>= 3 chars)">
       <label class="${cssClass('checkbox')}">
         <input type="checkbox">
         <span>Use regular expressions</span>
       </label>
-    `);
+    `
+    );
 
     const input = <HTMLInputElement>node.querySelector('input[type="text"]')!;
     const checkbox = <HTMLInputElement>node.querySelector('input[type="checkbox"]')!;
@@ -32,19 +34,23 @@ export default class SearchDialog extends ADialog {
       input.setCustomValidity('');
     };
     input.addEventListener('input', update, {
-      passive: true
+      passive: true,
     });
     checkbox.addEventListener('change', update, {
-      passive: true
+      passive: true,
     });
     this.enableLivePreviews([input, checkbox]);
 
     if (!this.showLivePreviews()) {
       return;
     }
-    input.addEventListener('input', debounce(() => this.submit(), 100), {
-      passive: true
-    });
+    input.addEventListener(
+      'input',
+      debounce(() => this.submit(), 100),
+      {
+        passive: true,
+      }
+    );
   }
 
   protected submit() {

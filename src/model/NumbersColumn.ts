@@ -1,18 +1,43 @@
-import {format} from 'd3-format';
-import {boxplotBuilder, IAdvancedBoxPlotData, IEventListener} from '../internal';
-import {dialogAddons, SortByDefault, toolbar} from './annotations';
-import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IArrayDesc} from './IArrayColumn';
-import {IDataRow, ECompareValueType, ITypeFactory} from './interfaces';
-import {DEFAULT_FORMATTER, getBoxPlotNumber, isDummyNumberFilter, noNumberFilter, restoreNumberFilter, toCompareBoxPlotValue} from './internalNumber';
-import {EAdvancedSortMethod, IColorMappingFunction, IMappingFunction, INumberDesc, INumberFilter, INumbersColumn} from './INumberColumn';
-import {restoreMapping} from './MappingFunction';
-import {isMissingValue} from './missing';
+import { format } from 'd3-format';
+import { boxplotBuilder, IAdvancedBoxPlotData, IEventListener } from '../internal';
+import { dialogAddons, SortByDefault, toolbar } from './annotations';
+import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import Column, {
+  dirty,
+  dirtyCaches,
+  dirtyHeader,
+  dirtyValues,
+  groupRendererChanged,
+  labelChanged,
+  metaDataChanged,
+  rendererTypeChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  widthChanged,
+} from './Column';
+import { IArrayDesc } from './IArrayColumn';
+import { IDataRow, ECompareValueType, ITypeFactory } from './interfaces';
+import {
+  DEFAULT_FORMATTER,
+  getBoxPlotNumber,
+  isDummyNumberFilter,
+  noNumberFilter,
+  restoreNumberFilter,
+  toCompareBoxPlotValue,
+} from './internalNumber';
+import {
+  EAdvancedSortMethod,
+  IColorMappingFunction,
+  IMappingFunction,
+  INumberDesc,
+  INumberFilter,
+  INumbersColumn,
+} from './INumberColumn';
+import { restoreMapping } from './MappingFunction';
+import { isMissingValue } from './missing';
 import NumberColumn from './NumberColumn';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {integrateDefaults} from './internal';
-
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import { integrateDefaults } from './internal';
 
 export interface INumbersDesc extends IArrayDesc, INumberDesc {
   readonly sort?: EAdvancedSortMethod;
@@ -72,14 +97,25 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   private currentFilter: INumberFilter = noNumberFilter();
 
   constructor(id: string, desc: Readonly<INumbersColumnDesc>, factory: ITypeFactory) {
-    super(id, integrateDefaults(desc, Object.assign({
-      renderer: 'heatmap',
-      groupRenderer: 'heatmap',
-      summaryRenderer: 'histogram'
-    }, desc.dataLength != null && !Number.isNaN(desc.dataLength) ? {
-      // better initialize the default with based on the data length
-      width: Math.min(Math.max(100, desc.dataLength! * 10), 500)
-    } : {})));
+    super(
+      id,
+      integrateDefaults(
+        desc,
+        Object.assign(
+          {
+            renderer: 'heatmap',
+            groupRenderer: 'heatmap',
+            summaryRenderer: 'histogram',
+          },
+          desc.dataLength != null && !Number.isNaN(desc.dataLength)
+            ? {
+                // better initialize the default with based on the data length
+                width: Math.min(Math.max(100, desc.dataLength! * 10), 500),
+              }
+            : {}
+        )
+      )
+    );
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
@@ -153,7 +189,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   getValues(row: IDataRow) {
-    return this.getRawValue(row).map((d) => isNaN(d) ? NaN : this.mapping.apply(d));
+    return this.getRawValue(row).map((d) => (isNaN(d) ? NaN : this.mapping.apply(d)));
   }
 
   iterNumber(row: IDataRow) {
@@ -176,7 +212,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
 
   getRawValue(row: IDataRow) {
     const r = super.getRaw(row);
-    return r == null ? [] : r.map((d) => isMissingValue(d) ? NaN : +d);
+    return r == null ? [] : r.map((d) => (isMissingValue(d) ? NaN : +d));
   }
 
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
@@ -195,7 +231,17 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.sort === sort) {
       return;
     }
-    this.fire([NumbersColumn.EVENT_SORTMETHOD_CHANGED, NumberColumn.EVENT_DIRTY_HEADER, NumberColumn.EVENT_DIRTY_VALUES, NumbersColumn.EVENT_DIRTY_CACHES, NumberColumn.EVENT_DIRTY], this.sort, this.sort = sort);
+    this.fire(
+      [
+        NumbersColumn.EVENT_SORTMETHOD_CHANGED,
+        NumberColumn.EVENT_DIRTY_HEADER,
+        NumberColumn.EVENT_DIRTY_VALUES,
+        NumbersColumn.EVENT_DIRTY_CACHES,
+        NumberColumn.EVENT_DIRTY,
+      ],
+      this.sort,
+      (this.sort = sort)
+    );
     // sort by me if not already sorted by me
     if (!this.isSortedByMe().asc) {
       this.sortByMe();
@@ -228,7 +274,14 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SORTMETHOD_CHANGED, NumbersColumn.EVENT_FILTER_CHANGED]);
+    return super
+      .createEventList()
+      .concat([
+        NumbersColumn.EVENT_COLOR_MAPPING_CHANGED,
+        NumbersColumn.EVENT_MAPPING_CHANGED,
+        NumbersColumn.EVENT_SORTMETHOD_CHANGED,
+        NumbersColumn.EVENT_FILTER_CHANGED,
+      ]);
   }
 
   on(type: typeof NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_NCS | null): this;
@@ -264,7 +317,17 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumbersColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire(
+      [
+        NumbersColumn.EVENT_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      this.mapping.clone(),
+      (this.mapping = mapping)
+    );
   }
 
   getColor(row: IDataRow) {
@@ -279,7 +342,17 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire(
+      [
+        NumbersColumn.EVENT_COLOR_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      this.colorMapping.clone(),
+      (this.colorMapping = mapping)
+    );
   }
 
   isFiltered() {
@@ -302,4 +375,3 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return NumberColumn.prototype.clearFilter.call(this);
   }
 }
-

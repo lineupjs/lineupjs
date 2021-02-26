@@ -59,7 +59,7 @@
     "fix": "yarn run eslint:fix && yarn run prettier:write",
     "prettier:write": "prettier \"*\" \"*/**\" --write",
     "prettier": "prettier \"*\" \"*/**\" --check",
-    "eslint": "eslint src demo --ext .ts,.tsx",
+    "eslint": "eslint src --ext .ts,.tsx",
     "eslint:fix": "yarn run eslint --fix",
     "stylelint": "stylelint \"src/**/*.scss\"",
     "lint": "yarn run eslint && yarn run prettier && yarn run stylelint",

@@ -1,12 +1,12 @@
-import {GridStyleManager} from 'lineupengine';
-import {defaultOptions} from '../../config';
-import {ITaggleOptions} from '../../config';
-import {merge, suffix} from '../../internal';
-import {DataProvider} from '../../provider';
-import {cssClass, engineCssClass} from '../../styles';
-import {ALineUp} from '../ALineUp';
+import { GridStyleManager } from 'lineupengine';
+import { defaultOptions } from '../../config';
+import { ITaggleOptions } from '../../config';
+import { merge, suffix } from '../../internal';
+import { DataProvider } from '../../provider';
+import { cssClass, engineCssClass } from '../../styles';
+import { ALineUp } from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
-import {spaceFillingRule} from './rules';
+import { spaceFillingRule } from './rules';
 import TaggleRenderer from './TaggleRenderer';
 
 export default class Taggle extends ALineUp {
@@ -21,12 +21,11 @@ export default class Taggle extends ALineUp {
 
   private readonly options = defaultOptions();
 
-
   constructor(node: HTMLElement, data: DataProvider, options: Partial<ITaggleOptions> = {}) {
     super(node, data, options && options.ignoreUnsupportedBrowser === true);
     merge(this.options, options);
     merge(this.options, {
-      violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
+      violationChanged: (_rule: any, violation?: string) => this.setViolation(violation),
     });
 
     if (!this.isBrowserSupported) {
@@ -41,16 +40,21 @@ export default class Taggle extends ALineUp {
     this.renderer = new TaggleRenderer(data, this.node, this.options);
     this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument!, {
       collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true,
-      hierarchy: this.options.hierarchyIndicator && this.options.flags.advancedRankingFeatures
+      hierarchy: this.options.hierarchyIndicator && this.options.flags.advancedRankingFeatures,
     });
     this.renderer.pushUpdateAble((ctx) => this.panel!.update(ctx));
     this.node.insertBefore(this.panel.node, this.node.firstChild);
     {
-      this.panel.node.insertAdjacentHTML('afterbegin', `<div class="${cssClass('rule-button-chooser')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"><label>
+      this.panel.node.insertAdjacentHTML(
+        'afterbegin',
+        `<div class="${cssClass('rule-button-chooser')} ${cssClass('feature-advanced')} ${cssClass(
+          'feature-ui'
+        )}"><label>
             <input type="checkbox">
             <span>Overview</span>
             <div class="${cssClass('rule-violation')}"></div>
-          </label></div>`);
+          </label></div>`
+      );
       const spaceFilling = spaceFillingRule(this.options);
       this.spaceFilling = <HTMLElement>this.panel.node.querySelector(`.${cssClass('rule-button-chooser')}`)!;
       const input = <HTMLInputElement>this.spaceFilling.querySelector('input');
@@ -68,7 +72,15 @@ export default class Taggle extends ALineUp {
         this.renderer.switchRule(spaceFilling);
       }
     }
-    this.forward(this.renderer, ...suffix('.main', TaggleRenderer.EVENT_HIGHLIGHT_CHANGED, TaggleRenderer.EVENT_DIALOG_OPENED, TaggleRenderer.EVENT_DIALOG_CLOSED));
+    this.forward(
+      this.renderer,
+      ...suffix(
+        '.main',
+        TaggleRenderer.EVENT_HIGHLIGHT_CHANGED,
+        TaggleRenderer.EVENT_DIALOG_OPENED,
+        TaggleRenderer.EVENT_DIALOG_CLOSED
+      )
+    );
   }
 
   private updateLodRules(overviewMode: boolean) {
@@ -109,7 +121,7 @@ export default class Taggle extends ALineUp {
     }
   }
 
-  setHighlight(dataIndex: number, scrollIntoView: boolean = true) {
+  setHighlight(dataIndex: number, scrollIntoView = true) {
     return this.renderer != null && this.renderer.setHighlight(dataIndex, scrollIntoView);
   }
 
@@ -142,27 +154,41 @@ export function updateLodRules(style: GridStyleManager, overviewMode: boolean, o
     return;
   }
 
-  style.updateRule('taggle_lod_rule', `
-  .${engineCssClass('tr')}.${cssClass('low')}[data-agg=detail]:hover`, {
-    /* show regular height for hovered rows in low + medium LOD */
-    height: `${options.rowHeight}px !important`
-  });
+  style.updateRule(
+    'taggle_lod_rule',
+    `
+  .${engineCssClass('tr')}.${cssClass('low')}[data-agg=detail]:hover`,
+    {
+      /* show regular height for hovered rows in low + medium LOD */
+      height: `${options.rowHeight}px !important`,
+    }
+  );
 
-  style.updateRule('lineup_rowPadding1', `
-  .${engineCssClass('tr')}.${cssClass('low')}`, {
-      marginTop: '0'
-    });
+  style.updateRule(
+    'lineup_rowPadding1',
+    `
+  .${engineCssClass('tr')}.${cssClass('low')}`,
+    {
+      marginTop: '0',
+    }
+  );
 
   // no margin for hovered low level row otherwise everything will be shifted down and the hover is gone again
   // .${engineCssClass('tr')}.${cssClass('low')}:hover,
 
   // padding in general and for hovered low detail rows + their afterwards
-  style.updateRule('lineup_rowPadding2', `
+  style.updateRule(
+    'lineup_rowPadding2',
+    `
   .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')},
   .${engineCssClass('tr')}.${cssClass('selected')},
   .${engineCssClass('tr')}.${cssClass('low')}:hover + .${engineCssClass('tr')}.${cssClass('low')},
-  .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')} + .${engineCssClass('tr')}.${cssClass('low')},
-  .${engineCssClass('tr')}.${cssClass('selected')} + .${engineCssClass('tr')}.${cssClass('low')}`, {
-      marginTop: `${options.rowPadding}px !important`
-    });
+  .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')} + .${engineCssClass('tr')}.${cssClass(
+      'low'
+    )},
+  .${engineCssClass('tr')}.${cssClass('selected')} + .${engineCssClass('tr')}.${cssClass('low')}`,
+    {
+      marginTop: `${options.rowPadding}px !important`,
+    }
+  );
 }

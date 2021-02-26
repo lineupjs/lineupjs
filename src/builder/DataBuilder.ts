@@ -1,9 +1,17 @@
-import {IColumnDesc, IColumnConstructor} from '../model';
-import {DataProvider, LocalDataProvider, deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions, IAggregationStrategy} from '../provider';
-import {LineUp, Taggle} from '../ui';
+import { IColumnDesc, IColumnConstructor } from '../model';
+import {
+  DataProvider,
+  LocalDataProvider,
+  deriveColors,
+  deriveColumnDescriptions,
+  IDataProviderOptions,
+  ILocalDataProviderOptions,
+  IAggregationStrategy,
+} from '../provider';
+import { LineUp, Taggle } from '../ui';
 import ColumnBuilder from './column/ColumnBuilder';
 import LineUpBuilder from './LineUpBuilder';
-import {RankingBuilder} from './RankingBuilder';
+import { RankingBuilder } from './RankingBuilder';
 
 export * from './column';
 export * from './RankingBuilder';
@@ -14,11 +22,11 @@ export * from './RankingBuilder';
 export class DataBuilder extends LineUpBuilder {
   private readonly columns: (IColumnDesc | ((data: any[]) => IColumnDesc))[] = [];
   private readonly providerOptions: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {
-    columnTypes: {}
+    columnTypes: {},
   };
 
   private readonly rankBuilders: ((data: DataProvider) => void)[] = [];
-  private _deriveColors: boolean = false;
+  private _deriveColors = false;
 
   constructor(private readonly data: object[]) {
     super();
@@ -79,7 +87,7 @@ export class DataBuilder extends LineUpBuilder {
    */
   deriveColumns(...columns: (string | string[])[]) {
     const cols = (<string[]>[]).concat(...columns);
-    for (const c of deriveColumnDescriptions(this.data, {columns: cols})) {
+    for (const c of deriveColumnDescriptions(this.data, { columns: cols })) {
       this.columns.push(c);
     }
     return this;
@@ -125,7 +133,7 @@ export class DataBuilder extends LineUpBuilder {
    * add the default ranking (all columns) to this data provider
    * @param {boolean} addSupportTypes add support types, too, default: true
    */
-  defaultRanking(addSupportTypes: boolean = true) {
+  defaultRanking(addSupportTypes = true) {
     this.rankBuilders.push((data) => data.deriveDefault(addSupportTypes));
     return this;
   }
@@ -188,7 +196,6 @@ export class DataBuilder extends LineUpBuilder {
   }
 }
 
-
 /**
  * creates a new builder instance for the given data
  * @param {object[]} arr data to visualize
@@ -198,7 +205,6 @@ export function builder(arr: object[]) {
   return new DataBuilder(arr);
 }
 
-
 /**
  * build a new Taggle instance in the given node for the given data
  * @param {HTMLElement} node DOM node to attach to
@@ -207,11 +213,7 @@ export function builder(arr: object[]) {
  * @returns {Taggle}
  */
 export function asTaggle(node: HTMLElement, data: any[], ...columns: string[]): Taggle {
-  return builder(data)
-    .deriveColumns(columns)
-    .deriveColors()
-    .defaultRanking()
-    .buildTaggle(node);
+  return builder(data).deriveColumns(columns).deriveColors().defaultRanking().buildTaggle(node);
 }
 
 /**
@@ -222,9 +224,5 @@ export function asTaggle(node: HTMLElement, data: any[], ...columns: string[]): 
  * @returns {LineUp}
  */
 export function asLineUp(node: HTMLElement, data: any[], ...columns: string[]): LineUp {
-  return builder(data)
-    .deriveColumns(columns)
-    .deriveColors()
-    .defaultRanking()
-    .build(node);
+  return builder(data).deriveColumns(columns).deriveColors().defaultRanking().build(node);
 }

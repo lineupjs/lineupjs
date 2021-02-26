@@ -1,20 +1,32 @@
-import {timeFormat, timeParse} from 'd3-time-format';
-import {median, min, max, IEventListener} from '../internal';
-import {dialogAddons, toolbar} from './annotations';
-import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDateDesc, IDatesColumn, IDateFilter} from './IDateColumn';
-import {IDataRow, ECompareValueType, ITypeFactory} from './interfaces';
-import {isMissingValue} from './missing';
+import { timeFormat, timeParse } from 'd3-time-format';
+import { median, min, max, IEventListener } from '../internal';
+import { dialogAddons, toolbar } from './annotations';
+import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import { IDateDesc, IDatesColumn, IDateFilter } from './IDateColumn';
+import { IDataRow, ECompareValueType, ITypeFactory } from './interfaces';
+import { isMissingValue } from './missing';
 import DateColumn from './DateColumn';
-import {noDateFilter, isDummyDateFilter, restoreDateFilter} from './internalDate';
-import {chooseUIntByDataLength, integrateDefaults} from './internal';
+import { noDateFilter, isDummyDateFilter, restoreDateFilter } from './internalDate';
+import { chooseUIntByDataLength, integrateDefaults } from './internal';
 
 export enum EDateSort {
   min = 'min',
   max = 'max',
-  median = 'median'
+  median = 'median',
 }
 
 export interface IDatesDesc extends IDateDesc {
@@ -49,14 +61,19 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   private currentFilter: IDateFilter = noDateFilter();
 
   constructor(id: string, desc: Readonly<IDatesColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'datehistogram',
-      groupRenderer: 'datehistogram',
-      summaryRenderer: 'datehistogram'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'datehistogram',
+        groupRenderer: 'datehistogram',
+        summaryRenderer: 'datehistogram',
+      })
+    );
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
-    this.format = (v) => (v instanceof Date) ? f(v) : '';
-    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
+    this.format = (v) => (v instanceof Date ? f(v) : '');
+    this.parse = desc.dateParse
+      ? timeParse(desc.dateParse)
+      : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
     this.sort = desc.sort || EDateSort.median;
   }
 
@@ -93,7 +110,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   }
 
   getLabels(row: IDataRow) {
-    return this.getDates(row).map((v) => (v instanceof Date) ? this.format(v) : '');
+    return this.getDates(row).map((v) => (v instanceof Date ? this.format(v) : ''));
   }
 
   getDates(row: IDataRow): (Date | null)[] {
@@ -128,7 +145,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
     if (this.sort === sort) {
       return;
     }
-    this.fire([DatesColumn.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
+    this.fire([DatesColumn.EVENT_SORTMETHOD_CHANGED], this.sort, (this.sort = sort));
     // sort by me if not already sorted by me
     if (!this.isSortedByMe().asc) {
       this.sortByMe();

@@ -1,9 +1,8 @@
-import {StringColumn, IStringFilter} from '../../model';
-import {filterMissingMarkup, findFilterMissing} from '../missing';
-import ADialog, {IDialogContext} from './ADialog';
-import {cssClass} from '../../styles';
-import {debounce} from '../../internal';
-
+import { StringColumn, IStringFilter } from '../../model';
+import { filterMissingMarkup, findFilterMissing } from '../missing';
+import ADialog, { IDialogContext } from './ADialog';
+import { cssClass } from '../../styles';
+import { debounce } from '../../internal';
 
 function toInput(text: string, isRegex: boolean) {
   const v = text.trim();
@@ -13,15 +12,13 @@ function toInput(text: string, isRegex: boolean) {
   return isRegex ? new RegExp(v, 'm') : v;
 }
 
-
 /** @internal */
 export default class StringFilterDialog extends ADialog {
-
   private readonly before: IStringFilter | null;
 
   constructor(private readonly column: StringColumn, dialog: IDialogContext) {
     super(dialog, {
-      livePreview: 'filter'
+      livePreview: 'filter',
     });
 
     this.before = this.column.getFilter();
@@ -31,13 +28,13 @@ export default class StringFilterDialog extends ADialog {
     if (filter == null && !filterMissing) {
       this.column.setFilter(null);
     } else {
-      this.column.setFilter({filter, filterMissing});
+      this.column.setFilter({ filter, filterMissing });
     }
   }
 
   protected reset() {
     this.findInput('input[type="text"]').value = '';
-    this.forEach('input[type=checkbox]', (n: HTMLInputElement) => n.checked = false);
+    this.forEach('input[type=checkbox]', (n: HTMLInputElement) => (n.checked = false));
   }
 
   protected cancel() {
@@ -57,13 +54,18 @@ export default class StringFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    const bak = this.column.getFilter() || {filter: '', filterMissing: false};
-    node.insertAdjacentHTML('beforeend', `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${(bak.filter instanceof RegExp) ? bak.filter.source : bak.filter || ''}" style="width: 100%">
+    const bak = this.column.getFilter() || { filter: '', filterMissing: false };
+    node.insertAdjacentHTML(
+      'beforeend',
+      `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus value="${
+        bak.filter instanceof RegExp ? bak.filter.source : bak.filter || ''
+      }" style="width: 100%">
     <label class="${cssClass('checkbox')}">
-      <input type="checkbox" ${(bak.filter instanceof RegExp) ? 'checked="checked"' : ''}>
+      <input type="checkbox" ${bak.filter instanceof RegExp ? 'checked="checked"' : ''}>
       <span>Use regular expressions</span>
     </label>
-    ${filterMissingMarkup(bak.filterMissing)}`);
+    ${filterMissingMarkup(bak.filterMissing)}`
+    );
 
     const filterMissing = findFilterMissing(node);
     const input = <HTMLInputElement>node.querySelector('input[type="text"]');
@@ -74,8 +76,12 @@ export default class StringFilterDialog extends ADialog {
     if (!this.showLivePreviews()) {
       return;
     }
-    input.addEventListener('input', debounce(() => this.submit(), 100), {
-      passive: true
-    });
+    input.addEventListener(
+      'input',
+      debounce(() => this.submit(), 100),
+      {
+        passive: true,
+      }
+    );
   }
 }

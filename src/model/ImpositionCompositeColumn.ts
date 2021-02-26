@@ -1,23 +1,42 @@
-import {suffix, IEventListener, ISequence} from '../internal';
-import {toolbar, SortByDefault} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR} from './interfaces';
-import {isNumberColumn, INumberColumn, isMapAbleColumn, IColorMappingFunction, IMappingFunction, IMapAbleColumn, INumberFilter} from './INumberColumn';
+import { suffix, IEventListener, ISequence } from '../internal';
+import { toolbar, SortByDefault } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
+import { IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR } from './interfaces';
+import {
+  isNumberColumn,
+  INumberColumn,
+  isMapAbleColumn,
+  IColorMappingFunction,
+  IMappingFunction,
+  IMapAbleColumn,
+  INumberFilter,
+} from './INumberColumn';
 import NumberColumn from './NumberColumn';
-import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
-import {ScaleMappingFunction} from './MappingFunction';
-import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
-import {integrateDefaults} from './internal';
-
+import { DEFAULT_FORMATTER, noNumberFilter } from './internalNumber';
+import { ScaleMappingFunction } from './MappingFunction';
+import { DEFAULT_COLOR_FUNCTION } from './ColorMappingFunction';
+import { integrateDefaults } from './internal';
 
 /**
  *  factory for creating a description creating a max column
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createImpositionDesc(label: string = 'Imposition') {
-  return {type: 'imposition', label};
+export function createImpositionDesc(label = 'Imposition') {
+  return { type: 'imposition', label };
 }
 
 /**
@@ -44,11 +63,14 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumberColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'number',
-      groupRenderer: 'boxplot',
-      summaryRenderer: 'histogram'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'number',
+        groupRenderer: 'boxplot',
+        summaryRenderer: 'histogram',
+      })
+    );
   }
 
   get label() {
@@ -75,10 +97,15 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ImpositionCompositeColumn.EVENT_MAPPING_CHANGED, ImpositionCompositeColumn.EVENT_COLOR_MAPPING_CHANGED]);
+    return super
+      .createEventList()
+      .concat([ImpositionCompositeColumn.EVENT_MAPPING_CHANGED, ImpositionCompositeColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof ImpositionCompositeColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_ICC | null): this;
+  on(
+    type: typeof ImpositionCompositeColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_ICC | null
+  ): this;
   on(type: typeof ImpositionCompositeColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_ICC | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
@@ -162,7 +189,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
       return {
         label: this.getLabel(row),
         color: this.getColor(row),
-        value
+        value,
       };
     }
     return super.getExportValue(row, format);

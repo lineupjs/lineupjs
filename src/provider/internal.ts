@@ -1,5 +1,5 @@
-import {IAggregationStrategy} from './interfaces';
-import {IOrderedGroup, IGroup, IGroupParent, IGroupData, IGroupItem, isGroup, EAggregationState} from '../model';
+import { IAggregationStrategy } from './interfaces';
+import { IOrderedGroup, IGroup, IGroupParent, IGroupData, IGroupItem, isGroup, EAggregationState } from '../model';
 
 export function isAlwaysShowingGroupStrategy(strategy: IAggregationStrategy) {
   return strategy === 'group+item' || strategy === 'group+item+top' || strategy === 'group+top+item';
@@ -31,30 +31,33 @@ export function toItemMeta(relativeIndex: number, group: IOrderedGroup, topN: nu
   if (relativeIndex === 0) {
     return group.order.length === 1 ? 'first last' : 'first';
   }
-  if ((relativeIndex === (group.order.length - 1)) || (topN > 0 && relativeIndex === (topN - 1))) {
+  if (relativeIndex === group.order.length - 1 || (topN > 0 && relativeIndex === topN - 1)) {
     return 'last';
   }
   return null;
 }
 
 export function groupParents(group: IGroup, meta: IGroupMeta) {
-  const parents: {group: IGroup, meta: IGroupMeta}[] = [{group, meta}];
+  const parents: { group: IGroup; meta: IGroupMeta }[] = [{ group, meta }];
 
   let prev = group;
   let prevMeta = meta;
   let parent: IGroupParent | undefined | null = group.parent;
 
   while (parent) {
-    if (parent.subGroups.length === 1 && (prevMeta === 'first last')) {
+    if (parent.subGroups.length === 1 && prevMeta === 'first last') {
       meta = 'first last';
     } else if (parent.subGroups[0] === prev && (prevMeta === 'first last' || prevMeta === 'first')) {
       meta = 'first';
-    } else if (parent.subGroups[parent.subGroups.length - 1] === prev && (prevMeta === 'last' || prevMeta === 'first last')) {
+    } else if (
+      parent.subGroups[parent.subGroups.length - 1] === prev &&
+      (prevMeta === 'last' || prevMeta === 'first last')
+    ) {
       meta = 'last';
     } else {
       meta = null;
     }
-    parents.unshift({group: parent, meta});
+    parents.unshift({ group: parent, meta });
 
     prev = parent;
     prevMeta = meta;
@@ -82,7 +85,7 @@ export function groupEndLevel(item: IGroupData | IGroupItem, topNGetter: ITopNGe
   let i = 1;
 
   while (parent) {
-    if (!(parent.subGroups.length === 1 || (parent.subGroups[parent.subGroups.length - 1] === prev))) {
+    if (!(parent.subGroups.length === 1 || parent.subGroups[parent.subGroups.length - 1] === prev)) {
       // not last of group - end
       return i;
     }
@@ -99,7 +102,11 @@ export function isSummaryGroup(group: IGroup, strategy: IAggregationStrategy, to
   return isAlwaysShowingGroupStrategy(strategy) && topN !== 0;
 }
 
-export function toRowMeta(item: IGroupData | IGroupItem, strategy: IAggregationStrategy, topNGetter: ITopNGetter): string | null {
+export function toRowMeta(
+  item: IGroupData | IGroupItem,
+  strategy: IAggregationStrategy,
+  topNGetter: ITopNGetter
+): string | null {
   if (isGroup(item)) {
     if (isSummaryGroup(item, strategy, topNGetter)) {
       return 'first';
@@ -111,7 +118,7 @@ export function toRowMeta(item: IGroupData | IGroupItem, strategy: IAggregationS
     return `first last${level === 1 ? '' : level - 1}`;
   }
 
-  const last =  toItemMeta(item.relativeIndex, item.group, topNGetter(item.group));
+  const last = toItemMeta(item.relativeIndex, item.group, topNGetter(item.group));
   if (last == null) {
     return null;
   }

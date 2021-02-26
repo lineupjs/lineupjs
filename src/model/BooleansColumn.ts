@@ -1,15 +1,26 @@
-import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, DEFAULT_COLOR, ITypeFactory, ECompareValueType} from './interfaces';
+import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import { ISetColumn, ICategoricalColorMappingFunction } from './ICategoricalColumn';
+import { IDataRow, DEFAULT_COLOR, ITypeFactory, ECompareValueType } from './interfaces';
 import CategoricalColumn from './CategoricalColumn';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
-import {IEventListener} from '../internal';
-import {chooseUIntByDataLength, integrateDefaults} from './internal';
-import {toCategory} from './internalCategorical';
-import {toolbar} from './annotations';
-
+import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import Column, {
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  widthChanged,
+  dirtyCaches,
+} from './Column';
+import { IEventListener } from '../internal';
+import { chooseUIntByDataLength, integrateDefaults } from './internal';
+import { toCategory } from './internalCategorical';
+import { toolbar } from './annotations';
 
 export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
 
@@ -18,7 +29,10 @@ export declare type IBooleansColumnDesc = IArrayColumnDesc<boolean>;
  * @asMemberOf BooleansColumn
  * @event
  */
-export declare function colorMappingChanged_BCS(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_BCS(
+  previous: ICategoricalColorMappingFunction,
+  current: ICategoricalColorMappingFunction
+): void;
 
 @toolbar('rename', 'clone', 'sort', 'sortBy')
 export default class BooleansColumn extends ArrayColumn<boolean> implements ISetColumn {
@@ -27,9 +41,12 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   private colorMapping: ICategoricalColorMappingFunction;
 
   constructor(id: string, desc: Readonly<IBooleansColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'upset'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'upset',
+      })
+    );
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
@@ -66,9 +83,8 @@ export default class BooleansColumn extends ArrayColumn<boolean> implements ISet
   }
 
   getColors(row: IDataRow) {
-    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : DEFAULT_COLOR);
+    return this.getCategories(row).map((d) => (d ? this.colorMapping.apply(d) : DEFAULT_COLOR));
   }
-
 
   protected createEventList() {
     return super.createEventList().concat([BooleansColumn.EVENT_COLOR_MAPPING_CHANGED]);

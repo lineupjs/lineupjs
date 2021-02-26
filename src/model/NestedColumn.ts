@@ -1,15 +1,15 @@
-import {IDataRow, ECompareValueType} from './interfaces';
+import { IDataRow, ECompareValueType } from './interfaces';
 import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
-import {concat} from '../internal';
-import {toolbar} from './annotations';
+import { concat } from '../internal';
+import { toolbar } from './annotations';
 
 /**
  * factory for creating a description creating a mean column
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createNestedDesc(label: string = 'Nested') {
-  return {type: 'nested', label};
+export function createNestedDesc(label = 'Nested') {
+  return { type: 'nested', label };
 }
 
 /**
@@ -18,7 +18,6 @@ export function createNestedDesc(label: string = 'Nested') {
  */
 @toolbar('rename', 'clone', 'sort', 'sortBy')
 export default class NestedColumn extends MultiLevelCompositeColumn {
-
   toCompareValue(row: IDataRow) {
     return concat(this.children.map((d) => d.toCompareValue(row)));
   }

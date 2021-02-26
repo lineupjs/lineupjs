@@ -1,12 +1,33 @@
-import {MIN_LABEL_WIDTH} from '../constants';
-import {equalArrays, dragAble, dropAble, hasDnDType, IDropResult} from '../internal';
-import {categoryOf, getSortType} from '../model';
-import {createNestedDesc, createReduceDesc, createStackDesc, IColumnDesc, isArrayColumn, isBoxPlotColumn, isCategoricalColumn, isMapColumn, isNumberColumn, isNumbersColumn, Column, ImpositionCompositeColumn, ImpositionCompositesColumn, createImpositionDesc, createImpositionsDesc, ImpositionBoxPlotColumn, createImpositionBoxPlotDesc, CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model';
-import {aria, cssClass, engineCssClass, RESIZE_ANIMATION_DURATION, RESIZE_SPACE} from '../styles';
+import { MIN_LABEL_WIDTH } from '../constants';
+import { equalArrays, dragAble, dropAble, hasDnDType, IDropResult } from '../internal';
+import { categoryOf, getSortType } from '../model';
+import {
+  createNestedDesc,
+  createReduceDesc,
+  createStackDesc,
+  IColumnDesc,
+  isArrayColumn,
+  isBoxPlotColumn,
+  isCategoricalColumn,
+  isMapColumn,
+  isNumberColumn,
+  isNumbersColumn,
+  Column,
+  ImpositionCompositeColumn,
+  ImpositionCompositesColumn,
+  createImpositionDesc,
+  createImpositionsDesc,
+  ImpositionBoxPlotColumn,
+  createImpositionBoxPlotDesc,
+  CompositeColumn,
+  IMultiLevelColumn,
+  isMultiLevelColumn,
+} from '../model';
+import { aria, cssClass, engineCssClass, RESIZE_ANIMATION_DURATION, RESIZE_SPACE } from '../styles';
 import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
-import {IRankingHeaderContext, IToolbarAction, IOnClickHandler} from './interfaces';
-import {getToolbar} from './toolbar';
-import {dialogContext} from './dialogs';
+import { IRankingHeaderContext, IToolbarAction, IOnClickHandler } from './interfaces';
+import { getToolbar } from './toolbar';
+import { dialogContext } from './dialogs';
 
 /** @internal */
 export interface IHeaderOptions {
@@ -20,20 +41,27 @@ export interface IHeaderOptions {
 
 /** @internal */
 export function createHeader(col: Column, ctx: IRankingHeaderContext, options: Partial<IHeaderOptions> = {}) {
-  options = Object.assign({
-    dragAble: true,
-    mergeDropAble: true,
-    rearrangeAble: true,
-    resizeable: true,
-    level: 0,
-    extraPrefix: ''
-  }, options);
+  options = Object.assign(
+    {
+      dragAble: true,
+      mergeDropAble: true,
+      rearrangeAble: true,
+      resizeable: true,
+      level: 0,
+      extraPrefix: '',
+    },
+    options
+  );
   const node = ctx.document.createElement('section');
 
-  const extra = options.extraPrefix ? (name: string) => `${cssClass(name)} ${cssClass(`${options.extraPrefix}-${name}`)}` : cssClass;
+  const extra = options.extraPrefix
+    ? (name: string) => `${cssClass(name)} ${cssClass(`${options.extraPrefix}-${name}`)}`
+    : cssClass;
   const summary = col.getMetaData().summary;
   node.innerHTML = `
-    <div class="${extra('label')} ${cssClass('typed-icon')}">${col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label}</div>
+    <div class="${extra('label')} ${cssClass('typed-icon')}">${
+    col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label
+  }</div>
     <div class="${extra('sublabel')}">${col.getWidth() < MIN_LABEL_WIDTH || !summary ? '&nbsp;' : summary}</div>
     <div class="${extra('toolbar')}"></div>
     <div class="${extra('spacing')}"></div>
@@ -42,7 +70,13 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
   // addTooltip(node, col);
 
-  createShortcutMenuItems(<HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0]!, options.level!, col, ctx, 'header');
+  createShortcutMenuItems(
+    <HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0]!,
+    options.level!,
+    col,
+    ctx,
+    'header'
+  );
 
   toggleToolbarIcons(node, col);
 
@@ -60,7 +94,6 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   }
   return node;
 }
-
 
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
@@ -101,12 +134,11 @@ function updateMoreDialogIcons(node: HTMLElement, col: Column) {
   updateIconState(dialog, col);
 }
 
-
 /** @internal */
 export function updateIconState(node: HTMLElement, col: Column) {
   const sort = <HTMLElement>node.getElementsByClassName(cssClass('action-sort'))[0]!;
   if (sort) {
-    const {asc, priority} = col.isSortedByMe();
+    const { asc, priority } = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
     sort.dataset.type = getSortType(col);
     if (priority !== undefined) {
@@ -118,7 +150,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
 
   const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sort-groups'))[0]!;
   if (sortGroups) {
-    const {asc, priority} = col.isGroupSortedByMe();
+    const { asc, priority } = col.isGroupSortedByMe();
     sortGroups.dataset.sort = asc !== undefined ? asc : '';
     sortGroups.dataset.type = getSortType(col);
     if (priority !== undefined) {
@@ -158,14 +190,32 @@ export function actionCSSClass(title: string) {
   if (title.endsWith('By')) {
     title = title.slice(0, -3);
   }
-  const clean = title.toLowerCase().replace(/[ +-]/mg, '-');
+  const clean = title.toLowerCase().replace(/[ +-]/gm, '-');
   return `${cssClass('action')} ${cssClass(`action-${clean}`)}`;
 }
 
-function addIconDOM(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, level: number, showLabel: boolean, mode: 'header' | 'sidePanel') {
+function addIconDOM(
+  node: HTMLElement,
+  col: Column,
+  ctx: IRankingHeaderContext,
+  level: number,
+  showLabel: boolean,
+  mode: 'header' | 'sidePanel'
+) {
   return (action: IToolbarAction) => {
-    const m = isActionMode(col, action, mode, 'shortcut') ? 'o' : isActionMode(col, action, mode, 'menu+shortcut') ? 's' : 'r';
-    node.insertAdjacentHTML('beforeend', `<i data-a="${m}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(`feature-${action.options.featureLevel || 'basic'}`)} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${!showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''}>${action.title}</span> </i>`);
+    const m = isActionMode(col, action, mode, 'shortcut')
+      ? 'o'
+      : isActionMode(col, action, mode, 'menu+shortcut')
+      ? 's'
+      : 'r';
+    node.insertAdjacentHTML(
+      'beforeend',
+      `<i data-a="${m}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(
+        `feature-${action.options.featureLevel || 'basic'}`
+      )} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${
+        !showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''
+      }>${action.title}</span> </i>`
+    );
     const i = <HTMLElement>node.lastElementChild;
     i.onclick = (evt) => {
       evt.stopPropagation();
@@ -181,7 +231,12 @@ export interface IAddIcon {
   (title: string, onClick: IOnClickHandler): void;
 }
 
-function isActionMode(col: Column, d: IToolbarAction, mode: 'header' | 'sidePanel', value: 'menu' | 'menu+shortcut' | 'shortcut') {
+function isActionMode(
+  col: Column,
+  d: IToolbarAction,
+  mode: 'header' | 'sidePanel',
+  value: 'menu' | 'menu+shortcut' | 'shortcut'
+) {
   const s = d.options.mode === undefined ? 'menu' : d.options.mode;
   if (s === value) {
     return true;
@@ -193,7 +248,14 @@ function isActionMode(col: Column, d: IToolbarAction, mode: 'header' | 'sidePane
 }
 
 /** @internal */
-export function createShortcutMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, mode: 'header' | 'sidePanel', willAutoHide: boolean = true) {
+export function createShortcutMenuItems(
+  node: HTMLElement,
+  level: number,
+  col: Column,
+  ctx: IRankingHeaderContext,
+  mode: 'header' | 'sidePanel',
+  willAutoHide = true
+) {
   const addIcon = addIconDOM(node, col, ctx, level, false, mode);
   const toolbar = getToolbar(col, ctx);
   const shortcuts = toolbar.filter((d) => !isActionMode(col, d, mode, 'menu'));
@@ -208,7 +270,12 @@ export function createShortcutMenuItems(node: HTMLElement, level: number, col: C
   }
 
   // need a more entry
-  node.insertAdjacentHTML('beforeend', `<i data-a="m" data-m="${moreEntries}" title="More &hellip;" class="${actionCSSClass('More')}">${aria('More &hellip;')}</i>`);
+  node.insertAdjacentHTML(
+    'beforeend',
+    `<i data-a="m" data-m="${moreEntries}" title="More &hellip;" class="${actionCSSClass('More')}">${aria(
+      'More &hellip;'
+    )}</i>`
+  );
   const i = <HTMLElement>node.lastElementChild;
   i.onclick = (evt) => {
     evt.stopPropagation();
@@ -219,9 +286,17 @@ export function createShortcutMenuItems(node: HTMLElement, level: number, col: C
 }
 
 /** @internal */
-export function createToolbarMenuItems(node: HTMLElement, level: number, col: Column, ctx: IRankingHeaderContext, mode: 'header' | 'sidePanel') {
+export function createToolbarMenuItems(
+  node: HTMLElement,
+  level: number,
+  col: Column,
+  ctx: IRankingHeaderContext,
+  mode: 'header' | 'sidePanel'
+) {
   const addIcon = addIconDOM(node, col, ctx, level, true, mode);
-  getToolbar(col, ctx).filter((d) => !isActionMode(col, d, mode, 'shortcut')).forEach(addIcon);
+  getToolbar(col, ctx)
+    .filter((d) => !isActionMode(col, d, mode, 'shortcut'))
+    .forEach(addIcon);
 }
 
 /** @internal */
@@ -233,7 +308,10 @@ function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClien
     return;
   }
   const width = label.clientWidth;
-  const rotated = width <= 0 ? (col.label.length * defaultVisibleClientWidth / 3 * 0.6 > col.getWidth()) : (label.scrollWidth * 0.6 > label.clientWidth);
+  const rotated =
+    width <= 0
+      ? ((col.label.length * defaultVisibleClientWidth) / 3) * 0.6 > col.getWidth()
+      : label.scrollWidth * 0.6 > label.clientWidth;
   label.classList.toggle(`.${cssClass('rotated')}`, rotated);
 }
 
@@ -246,7 +324,10 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
     return;
   }
   const availableWidth = col.getWidth();
-  const actions = Array.from(toolbar.children).map((d) => ({node: <HTMLElement>d, width: d.clientWidth > 0 ? d.clientWidth : defaultVisibleClientWidth}));
+  const actions = Array.from(toolbar.children).map((d) => ({
+    node: <HTMLElement>d,
+    width: d.clientWidth > 0 ? d.clientWidth : defaultVisibleClientWidth,
+  }));
 
   const shortCuts = actions.filter((d) => d.node.dataset.a === 'o');
   const hybrids = actions.filter((d) => d.node.dataset.a === 's');
@@ -265,13 +346,14 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
   if (total < availableWidth) {
     return;
   }
-  if (moreIcon && !needMore && (total - moreIcon.width) < availableWidth) {
+  if (moreIcon && !needMore && total - moreIcon.width < availableWidth) {
     // available space is enougth we can skip the "more" and then it fits
     moreIcon.node.classList.add(cssClass('hidden'));
     return;
   }
 
-  for (const action of hybrids.reverse().concat(shortCuts.reverse())) { // back to forth and hybrids earlier than pure shortcuts
+  for (const action of hybrids.reverse().concat(shortCuts.reverse())) {
+    // back to forth and hybrids earlier than pure shortcuts
     // hide and check if enough
     action.node.classList.add(cssClass('hidden'));
     total -= action.width;
@@ -280,7 +362,6 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
     }
   }
 }
-
 
 /**
  * allow to change the width of a column using dragging the handle
@@ -291,7 +372,6 @@ export function dragWidth(col: Column, node: HTMLElement) {
   let sizeHelper: HTMLElement;
   let currentFooterTransformation = '';
   const handle = <HTMLElement>node.getElementsByClassName(cssClass('handle'))[0];
-
 
   let start = 0;
   let originalWidth = 0;
@@ -310,7 +390,9 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
     sizeHelper.classList.toggle(cssClass('resize-animated'), width < originalWidth);
     // no idea why shifted by the size compared to the other footer element
-    sizeHelper.style.transform = `${currentFooterTransformation} translate(${width - originalWidth - RESIZE_SPACE}px, 0px)`;
+    sizeHelper.style.transform = `${currentFooterTransformation} translate(${
+      width - originalWidth - RESIZE_SPACE
+    }px, 0px)`;
 
     node.style.width = `${width}px`;
     col.setWidth(width);
@@ -354,7 +436,9 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.addEventListener('mouseleave', mouseUp);
     ueberElement.classList.add(cssClass('resizing'));
 
-    sizeHelper = <HTMLElement>node.closest(`.${engineCssClass()}`)!.querySelector<HTMLElement>(`.${cssClass('resize-helper')}`);
+    sizeHelper = <HTMLElement>(
+      node.closest(`.${engineCssClass()}`)!.querySelector<HTMLElement>(`.${cssClass('resize-helper')}`)
+    );
     currentFooterTransformation = (<HTMLElement>sizeHelper.previousElementSibling!).style.transform!;
     sizeHelper.style.transform = `${currentFooterTransformation} translate(${-RESIZE_SPACE}px, 0px)`;
     sizeHelper.classList.add(cssClass('resizing'));
@@ -374,42 +458,46 @@ export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
  * @internal
  */
 export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
-  dragAble(node, () => {
-    const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
-    const data: any = {
-      'text/plain': column.label,
-      [`${MIMETYPE_PREFIX}-ref`]: column.id,
-      [MIMETYPE_PREFIX]: ref
-    };
-    if (isNumberColumn(column)) {
-      data[`${MIMETYPE_PREFIX}-number`] = ref;
-      data[`${MIMETYPE_PREFIX}-number-ref`] = column.id;
-    }
-    if (isCategoricalColumn(column)) {
-      data[`${MIMETYPE_PREFIX}-categorical`] = ref;
-      data[`${MIMETYPE_PREFIX}-categorical-ref`] = column.id;
-    }
-    if (isBoxPlotColumn(column)) {
-      data[`${MIMETYPE_PREFIX}-boxplot`] = ref;
-      data[`${MIMETYPE_PREFIX}-boxplot-ref`] = column.id;
-    }
-    if (isMapColumn(column)) {
-      data[`${MIMETYPE_PREFIX}-map`] = ref;
-      data[`${MIMETYPE_PREFIX}-map-ref`] = column.id;
-    }
-    if (isArrayColumn(column)) {
-      data[`${MIMETYPE_PREFIX}-array`] = ref;
-      data[`${MIMETYPE_PREFIX}-array-ref`] = column.id;
-    }
-    if (isNumbersColumn(column)) {
-      data[`${MIMETYPE_PREFIX}-numbers`] = ref;
-      data[`${MIMETYPE_PREFIX}-numbers-ref`] = column.id;
-    }
-    return {
-      effectAllowed: 'copyMove',
-      data
-    };
-  }, true);
+  dragAble(
+    node,
+    () => {
+      const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
+      const data: any = {
+        'text/plain': column.label,
+        [`${MIMETYPE_PREFIX}-ref`]: column.id,
+        [MIMETYPE_PREFIX]: ref,
+      };
+      if (isNumberColumn(column)) {
+        data[`${MIMETYPE_PREFIX}-number`] = ref;
+        data[`${MIMETYPE_PREFIX}-number-ref`] = column.id;
+      }
+      if (isCategoricalColumn(column)) {
+        data[`${MIMETYPE_PREFIX}-categorical`] = ref;
+        data[`${MIMETYPE_PREFIX}-categorical-ref`] = column.id;
+      }
+      if (isBoxPlotColumn(column)) {
+        data[`${MIMETYPE_PREFIX}-boxplot`] = ref;
+        data[`${MIMETYPE_PREFIX}-boxplot-ref`] = column.id;
+      }
+      if (isMapColumn(column)) {
+        data[`${MIMETYPE_PREFIX}-map`] = ref;
+        data[`${MIMETYPE_PREFIX}-map-ref`] = column.id;
+      }
+      if (isArrayColumn(column)) {
+        data[`${MIMETYPE_PREFIX}-array`] = ref;
+        data[`${MIMETYPE_PREFIX}-array-ref`] = column.id;
+      }
+      if (isNumbersColumn(column)) {
+        data[`${MIMETYPE_PREFIX}-numbers`] = ref;
+        data[`${MIMETYPE_PREFIX}-numbers-ref`] = column.id;
+      }
+      return {
+        effectAllowed: 'copyMove',
+        data,
+      };
+    },
+    true
+  );
 }
 
 /**
@@ -417,108 +505,129 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
  * @internal
  */
 export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
-  dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
-    let col: Column | null = null;
-    const data = result.data;
-    if (!(`${MIMETYPE_PREFIX}-ref` in data)) {
-      const desc = JSON.parse(data[MIMETYPE_PREFIX]);
-      col = ctx.provider.create(ctx.provider.fromDescRef(desc));
-      return col != null && column.insertAfterMe(col) != null;
-    }
+  dropAble(
+    node,
+    [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX],
+    (result) => {
+      let col: Column | null = null;
+      const data = result.data;
+      if (!(`${MIMETYPE_PREFIX}-ref` in data)) {
+        const desc = JSON.parse(data[MIMETYPE_PREFIX]);
+        col = ctx.provider.create(ctx.provider.fromDescRef(desc));
+        return col != null && column.insertAfterMe(col) != null;
+      }
 
-    // find by reference
-    const id = data[`${MIMETYPE_PREFIX}-ref`];
-    col = ctx.provider.find(id);
-    if (!col || (col === column && !result.effect.startsWith('copy'))) {
-      return false;
-    }
-    if (result.effect.startsWith('copy')) {
-      col = ctx.provider.clone(col!);
-      return col != null && column.insertAfterMe(col) != null;
-    }
-    // detect whether it is an internal move operation or an real remove/insert operation
-    const toInsertParent = col.parent;
-    if (!toInsertParent) { // no parent will always be a move
+      // find by reference
+      const id = data[`${MIMETYPE_PREFIX}-ref`];
+      col = ctx.provider.find(id);
+      if (!col || (col === column && !result.effect.startsWith('copy'))) {
+        return false;
+      }
+      if (result.effect.startsWith('copy')) {
+        col = ctx.provider.clone(col!);
+        return col != null && column.insertAfterMe(col) != null;
+      }
+      // detect whether it is an internal move operation or an real remove/insert operation
+      const toInsertParent = col.parent;
+      if (!toInsertParent) {
+        // no parent will always be a move
+        return column.insertAfterMe(col) != null;
+      }
+      if (toInsertParent === column.parent) {
+        // move operation
+        return toInsertParent.moveAfter(col, column) != null;
+      }
+      col.removeMe();
       return column.insertAfterMe(col) != null;
-    }
-    if (toInsertParent === column.parent) {
-      // move operation
-      return toInsertParent.moveAfter(col, column) != null;
-    }
-    col.removeMe();
-    return column.insertAfterMe(col) != null;
-  }, null, true);
+    },
+    null,
+    true
+  );
 }
 
 /**
  * dropper for allowing to change the order by dropping it at a certain position
  * @internal
  */
-export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before' | 'after', autoGroup: boolean) {
-  dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
-    let col: Column | null = null;
-    const data = result.data;
-    if (`${MIMETYPE_PREFIX}-ref` in data) {
-      const id = data[`${MIMETYPE_PREFIX}-ref`];
-      col = ctx.provider.find(id);
-      if (!col || col === column) {
+export function resortDropAble(
+  node: HTMLElement,
+  column: Column,
+  ctx: IRankingHeaderContext,
+  where: 'before' | 'after',
+  autoGroup: boolean
+) {
+  dropAble(
+    node,
+    [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX],
+    (result) => {
+      let col: Column | null = null;
+      const data = result.data;
+      if (`${MIMETYPE_PREFIX}-ref` in data) {
+        const id = data[`${MIMETYPE_PREFIX}-ref`];
+        col = ctx.provider.find(id);
+        if (!col || col === column) {
+          return false;
+        }
+      } else {
+        const desc = JSON.parse(data[MIMETYPE_PREFIX]);
+        col = ctx.provider.create(ctx.provider.fromDescRef(desc));
+        if (col) {
+          column.findMyRanker()!.push(col);
+        }
+      }
+      const ranking = column.findMyRanker()!;
+      if (!col || col === column || !ranking) {
         return false;
       }
-    } else {
-      const desc = JSON.parse(data[MIMETYPE_PREFIX]);
-      col = ctx.provider.create(ctx.provider.fromDescRef(desc));
-      if (col) {
-        column.findMyRanker()!.push(col);
-      }
-    }
-    const ranking = column.findMyRanker()!;
-    if (!col || col === column || !ranking) {
-      return false;
-    }
 
-    const criteria = ranking.getSortCriteria();
-    const groups = ranking.getGroupCriteria();
+      const criteria = ranking.getSortCriteria();
+      const groups = ranking.getGroupCriteria();
 
-    const removeFromSort = (col: Column) => {
-      const existing = criteria.findIndex((d) => d.col === col);
-      if (existing >= 0) { // remove existing column but keep asc state
-        return criteria.splice(existing, 1)[0].asc;
-      }
-      return false;
-    };
+      const removeFromSort = (col: Column) => {
+        const existing = criteria.findIndex((d) => d.col === col);
+        if (existing >= 0) {
+          // remove existing column but keep asc state
+          return criteria.splice(existing, 1)[0].asc;
+        }
+        return false;
+      };
 
-    // remove the one to add
-    const asc = removeFromSort(col);
+      // remove the one to add
+      const asc = removeFromSort(col);
 
-    const groupIndex = groups.indexOf(column);
-    const index = criteria.findIndex((d) => d.col === column);
+      const groupIndex = groups.indexOf(column);
+      const index = criteria.findIndex((d) => d.col === column);
 
-    if (autoGroup && groupIndex >= 0) {
-      // before the grouping, so either ungroup or regroup
-      removeFromSort(column);
-      if (isCategoricalColumn(col)) { // we can group by it
-        groups.splice(groupIndex + (where === 'after' ? 1 : 0), 0, col);
+      if (autoGroup && groupIndex >= 0) {
+        // before the grouping, so either ungroup or regroup
+        removeFromSort(column);
+        if (isCategoricalColumn(col)) {
+          // we can group by it
+          groups.splice(groupIndex + (where === 'after' ? 1 : 0), 0, col);
+        } else {
+          // remove all before and shift to sorting + sorting
+          const removed = groups.splice(0, groups.length - groupIndex);
+          criteria.unshift(...removed.reverse().map((d) => ({ asc: false, col: d }))); // now a first sorting criteria
+          criteria.unshift({ asc, col });
+        }
+      } else if (index < 0) {
+        criteria.push({ asc, col });
+      } else if (index === 0 && autoGroup && isCategoricalColumn(col)) {
+        // make group criteria
+        groups.push(col);
       } else {
-        // remove all before and shift to sorting + sorting
-        const removed = groups.splice(0, groups.length - groupIndex);
-        criteria.unshift(...removed.reverse().map((d) => ({asc: false, col: d}))); // now a first sorting criteria
-        criteria.unshift({asc, col});
+        criteria.splice(index + (where === 'after' ? 1 : 0), 0, { asc, col });
       }
-    } else if (index < 0) {
-      criteria.push({asc, col});
-    } else if (index === 0 && autoGroup && isCategoricalColumn(col)) {
-      // make group criteria
-      groups.push(col);
-    } else {
-      criteria.splice(index + (where === 'after' ? 1 : 0), 0, {asc, col});
-    }
 
-    if (!equalArrays(groups, ranking.getGroupCriteria())) {
-      ranking.setGroupCriteria(groups);
-    }
-    ranking.setSortCriteria(criteria);
-    return true;
-  }, null, true);
+      if (!equalArrays(groups, ranking.getGroupCriteria())) {
+        ranking.setGroupCriteria(groups);
+      }
+      ranking.setSortCriteria(criteria);
+      return true;
+    },
+    null,
+    true
+  );
 }
 
 /**
@@ -582,37 +691,58 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
 
   node.dataset.draginfo = '+';
   if (column instanceof ImpositionCompositeColumn) {
-    return dropAble(node, categorical.concat(numberish), pushChild, (e) => {
-      if (hasDnDType(e, ...categorical)) {
-        node.dataset.draginfo = 'Color by';
-        return;
-      }
-      if (hasDnDType(e, ...numberish)) {
-        node.dataset.draginfo = 'Wrap';
-      }
-    }, false, () => column.children.length < 2);
+    return dropAble(
+      node,
+      categorical.concat(numberish),
+      pushChild,
+      (e) => {
+        if (hasDnDType(e, ...categorical)) {
+          node.dataset.draginfo = 'Color by';
+          return;
+        }
+        if (hasDnDType(e, ...numberish)) {
+          node.dataset.draginfo = 'Wrap';
+        }
+      },
+      false,
+      () => column.children.length < 2
+    );
   }
   if (column instanceof ImpositionBoxPlotColumn) {
-    return dropAble(node, categorical.concat(boxplot), pushChild, (e) => {
-      if (hasDnDType(e, ...categorical)) {
-        node.dataset.draginfo = 'Color by';
-        return;
-      }
-      if (hasDnDType(e, ...boxplot)) {
-        node.dataset.draginfo = 'Wrap';
-      }
-    }, false, () => column.children.length < 2);
+    return dropAble(
+      node,
+      categorical.concat(boxplot),
+      pushChild,
+      (e) => {
+        if (hasDnDType(e, ...categorical)) {
+          node.dataset.draginfo = 'Color by';
+          return;
+        }
+        if (hasDnDType(e, ...boxplot)) {
+          node.dataset.draginfo = 'Wrap';
+        }
+      },
+      false,
+      () => column.children.length < 2
+    );
   }
   if (column instanceof ImpositionCompositesColumn) {
-    return dropAble(node, categorical.concat(numbers), pushChild, (e) => {
-      if (hasDnDType(e, ...categorical)) {
-        node.dataset.draginfo = 'Color by';
-        return;
-      }
-      if (hasDnDType(e, ...numbers)) {
-        node.dataset.draginfo = 'Wrap';
-      }
-    }, false, () => column.children.length < 2);
+    return dropAble(
+      node,
+      categorical.concat(numbers),
+      pushChild,
+      (e) => {
+        if (hasDnDType(e, ...categorical)) {
+          node.dataset.draginfo = 'Color by';
+          return;
+        }
+        if (hasDnDType(e, ...numbers)) {
+          node.dataset.draginfo = 'Wrap';
+        }
+      },
+      false,
+      () => column.children.length < 2
+    );
   }
   if (isMultiLevelColumn(column)) {
     // stack column or nested
@@ -631,27 +761,32 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
   }
   if (isNumberColumn(column)) {
     node.dataset.draginfo = 'Merge';
-    return dropAble(node, categorical.concat(numberish), (result: IDropResult, evt: DragEvent) => {
-      const col: Column | null = resolveDrop(result);
-      if (col == null) {
+    return dropAble(
+      node,
+      categorical.concat(numberish),
+      (result: IDropResult, evt: DragEvent) => {
+        const col: Column | null = resolveDrop(result);
+        if (col == null) {
+          return false;
+        }
+        if (isCategoricalColumn(col)) {
+          return mergeImpl(col, createImpositionDesc());
+        }
+        if (isNumberColumn(col)) {
+          return mergeImpl(col, evt.shiftKey ? createReduceDesc() : createStackDesc());
+        }
         return false;
+      },
+      (e) => {
+        if (hasDnDType(e, ...categorical)) {
+          node.dataset.draginfo = 'Color by';
+          return;
+        }
+        if (hasDnDType(e, ...numberish)) {
+          node.dataset.draginfo = e.shiftKey ? 'Min/Max' : 'Sum';
+        }
       }
-      if (isCategoricalColumn(col)) {
-        return mergeImpl(col, createImpositionDesc());
-      }
-      if (isNumberColumn(col)) {
-        return mergeImpl(col, evt.shiftKey ? createReduceDesc() : createStackDesc());
-      }
-      return false;
-    }, (e) => {
-      if (hasDnDType(e, ...categorical)) {
-        node.dataset.draginfo = 'Color by';
-        return;
-      }
-      if (hasDnDType(e, ...numberish)) {
-        node.dataset.draginfo = e.shiftKey ? 'Min/Max' : 'Sum';
-      }
-    });
+    );
   }
   node.dataset.draginfo = 'Group';
   return dropAble(node, all, mergeWith(createNestedDesc()));

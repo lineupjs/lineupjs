@@ -1,8 +1,7 @@
-import {schemeCategory10, schemeSet3} from 'd3-scale-chromatic';
-import Column, {defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType} from '.';
-import {OrderedSet} from '../internal';
-import {DEFAULT_COLOR} from './interfaces';
-
+import { schemeCategory10, schemeSet3 } from 'd3-scale-chromatic';
+import Column, { defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType } from '.';
+import { OrderedSet } from '../internal';
+import { DEFAULT_COLOR } from './interfaces';
 
 /** @internal */
 export function integrateDefaults<T>(desc: T, defaults: Partial<T> = {}) {
@@ -17,20 +16,23 @@ export function integrateDefaults<T>(desc: T, defaults: Partial<T> = {}) {
 
 /** @internal */
 export function patternFunction(pattern: string, ...args: string[]) {
-  return new Function('value', ...args, `
+  return new Function(
+    'value',
+    ...args,
+    `
   const escapedValue = encodeURIComponent(String(value));
   return \`${pattern}\`;
- `);
+ `
+  );
 }
-
 
 /** @internal */
 export function joinGroups(groups: IGroup[]): IGroup {
   if (groups.length === 0) {
-    return {...defaultGroup}; //copy
+    return { ...defaultGroup }; //copy
   }
   if (groups.length === 1 && !groups[0].parent) {
-    return {...groups[0]}; //copy
+    return { ...groups[0] }; //copy
   }
   // create a chain
   const parents: IGroupParent[] = [];
@@ -43,7 +45,7 @@ export function joinGroups(groups: IGroup[]): IGroup {
       g = g.parent;
     }
     parents.push(...gparents);
-    parents.push(Object.assign({subGroups: []}, group));
+    parents.push(Object.assign({ subGroups: [] }, group));
   }
   parents.slice(1).forEach((g, i) => {
     g.parent = parents[i];
@@ -78,7 +80,6 @@ export function isOrderedGroup(g: IOrderedGroup | Readonly<IGroupParent>): g is 
   return (<IOrderedGroup>g).order != null;
 }
 
-
 /** @internal */
 function isGroupParent(g: IGroup | Readonly<IGroupParent>): g is IGroupParent {
   return (<IGroupParent>g).subGroups != null;
@@ -104,26 +105,27 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
   };
   const paths = groups.map(toPath);
 
-  const isSame = (a: IGroupParent, b: (IGroupParent | T)) => {
-    return (b.name === a.name && b.parent === a.parent && isGroupParent(b) && b.subGroups.length > 0);
+  const isSame = (a: IGroupParent, b: IGroupParent | T) => {
+    return b.name === a.name && b.parent === a.parent && isGroupParent(b) && b.subGroups.length > 0;
   };
 
   const removeDuplicates = (level: (IGroupParent | T)[], i: number) => {
     const real: (IGroupParent | T)[] = [];
     while (level.length > 0) {
       const node = level.shift()!;
-      if (!isGroupParent(node) || node.subGroups.length === 0) { // cannot share leaves
+      if (!isGroupParent(node) || node.subGroups.length === 0) {
+        // cannot share leaves
         real.push(node);
         continue;
       }
-      const root = {...node};
+      const root = { ...node };
       real.push(root);
       // remove duplicates that directly follow
       while (level.length > 0 && isSame(root, level[0]!)) {
         root.subGroups.push(...(<IGroupParent>level.shift()!).subGroups);
       }
       for (const child of root.subGroups) {
-        (<(IGroupParent | T)>child).parent = root;
+        (<IGroupParent | T>child).parent = root;
       }
       // cleanup children duplicates
       root.subGroups = removeDuplicates(<(IGroupParent | T)[]>root.subGroups, i + 1);
@@ -131,7 +133,10 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
     return real;
   };
 
-  removeDuplicates(paths.map((p) => p[0]), 0);
+  removeDuplicates(
+    paths.map((p) => p[0]),
+    0
+  );
 
   return groups;
 }
@@ -179,9 +184,8 @@ export const MAX_COLORS = colors.length;
 /** @internal */
 export function colorPool() {
   let act = 0;
-  return () => colors[(act++) % colors.length];
+  return () => colors[act++ % colors.length];
 }
-
 
 /**
  * @internal
@@ -219,7 +223,6 @@ export function filterIndices(arr: IndicesArray, callback: (value: number, i: nu
   return r;
 }
 
-
 /**
  * @internal
  */
@@ -233,7 +236,7 @@ export function forEachIndices(arr: IndicesArray, callback: (value: number, i: n
  * @internal
  */
 export function chooseUIntByDataLength(dataLength?: number | null) {
-  if (dataLength == null || typeof dataLength !== 'number' && !isNaN(dataLength)) {
+  if (dataLength == null || (typeof dataLength !== 'number' && !isNaN(dataLength))) {
     return ECompareValueType.UINT32; // worst case
   }
   if (length <= 255) {
@@ -262,7 +265,6 @@ export function getAllToolbarActions(col: Column) {
   } while (obj);
   return Array.from(actions);
 }
-
 
 export function getAllToolbarDialogAddons(col: Column, key: string) {
   const actions = new OrderedSet<string>();

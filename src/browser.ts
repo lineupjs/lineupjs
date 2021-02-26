@@ -1,4 +1,4 @@
-import {detect} from 'detect-browser';
+import { detect } from 'detect-browser';
 
 export const SUPPORTED_FIREFOX_VERSION = 57;
 export const SUPPORTED_CHROME_VERSION = 64;
@@ -16,7 +16,8 @@ export function getUnsupportedBrowserError() {
   switch (info.name) {
     case 'firefox':
       const fVersion = parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
-      if (fVersion <= SUPPORTED_FIREFOX_VERSION && fVersion !== 52) { // ESR
+      if (fVersion <= SUPPORTED_FIREFOX_VERSION && fVersion !== 52) {
+        // ESR
         return `${prefix} Firefox ${info.version} (&lt; ${SUPPORTED_FIREFOX_VERSION})`;
       }
       return null;
@@ -45,4 +46,3 @@ export function getUnsupportedBrowserError() {
 export function isBrowserSupported() {
   return getUnsupportedBrowserError() == null;
 }
-

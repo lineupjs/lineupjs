@@ -1,6 +1,18 @@
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, dirtyCaches, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged} from './Column';
-import {IValueColumnDesc, IDataRow, ITypeFactory} from './interfaces';
-import {IEventListener} from '../internal';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  dirtyCaches,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+} from './Column';
+import { IValueColumnDesc, IDataRow, ITypeFactory } from './interfaces';
+import { IEventListener } from '../internal';
 
 /**
  * emitted when the data of this column has been loaded
@@ -53,7 +65,6 @@ export default class ValueColumn<T> extends Column {
     return super.on(<any>type, listener);
   }
 
-
   getLabel(row: IDataRow) {
     if (!this.isLoaded()) {
       return '';
@@ -81,7 +92,17 @@ export default class ValueColumn<T> extends Column {
     if (this.loaded === loaded) {
       return;
     }
-    this.fire([ValueColumn.EVENT_DATA_LOADED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.loaded, this.loaded = loaded);
+    this.fire(
+      [
+        ValueColumn.EVENT_DATA_LOADED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      this.loaded,
+      (this.loaded = loaded)
+    );
   }
 
   getRenderer(): string {

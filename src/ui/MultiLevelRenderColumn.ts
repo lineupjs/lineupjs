@@ -1,12 +1,12 @@
-import {abortAbleAll, IAbortAblePromise, IAsyncUpdate, isAsyncUpdate, StyleManager} from 'lineupengine';
-import {ILineUpFlags} from '../config';
-import {round} from '../internal';
-import {Column, IMultiLevelColumn} from '../model';
-import {ISummaryRenderer} from '../renderer';
-import {multiLevelGridCSSClass} from '../renderer/utils';
-import {COLUMN_PADDING, cssClass} from '../styles';
-import {createHeader, updateHeader} from './header';
-import {IRankingContext} from './interfaces';
+import { abortAbleAll, IAbortAblePromise, IAsyncUpdate, isAsyncUpdate, StyleManager } from 'lineupengine';
+import { ILineUpFlags } from '../config';
+import { round } from '../internal';
+import { Column, IMultiLevelColumn } from '../model';
+import { ISummaryRenderer } from '../renderer';
+import { multiLevelGridCSSClass } from '../renderer/utils';
+import { COLUMN_PADDING, cssClass } from '../styles';
+import { createHeader, updateHeader } from './header';
+import { IRankingContext } from './interfaces';
 import RenderColumn from './RenderColumn';
 
 /** @internal */
@@ -52,8 +52,14 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       return;
     }
 
-    const lookup = new Map((<HTMLElement[]>Array.from(wrapper.children)).map((n: HTMLElement, i) =>
-      (<[string, {node: HTMLElement, summary: ISummaryRenderer}]>[n.dataset.colId!, {node: n, summary: this.summaries[i]}]))
+    const lookup = new Map(
+      (<HTMLElement[]>Array.from(wrapper.children)).map(
+        (n: HTMLElement, i) =>
+          <[string, { node: HTMLElement; summary: ISummaryRenderer }]>[
+            n.dataset.colId!,
+            { node: n, summary: this.summaries[i] },
+          ]
+      )
     );
 
     // reset summaries array
@@ -61,7 +67,8 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
     children.forEach((cc, i) => {
       const existing = lookup.get(cc.id);
-      if (existing) { // reuse existing
+      if (existing) {
+        // reuse existing
         lookup.delete(cc.id);
         const n = existing.node;
         (<any>n.style).gridColumnStart = (i + 1).toString();
@@ -75,7 +82,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
         mergeDropAble: false,
         dragAble: this.flags.advancedModelFeatures,
         rearrangeAble: this.flags.advancedModelFeatures,
-        resizeable: this.flags.advancedModelFeatures
+        resizeable: this.flags.advancedModelFeatures,
       });
       n.classList.add(cssClass('header'), cssClass('nested-th'));
       (<any>n.style).gridColumnStart = (i + 1).toString();
@@ -86,7 +93,11 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       }
       const summary = this.ctx.summaryRenderer(cc, false);
       const summaryNode = this.ctx.asElement(summary.template);
-      summaryNode.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass(`renderer-${cc.getSummaryRenderer()}`));
+      summaryNode.classList.add(
+        cssClass('summary'),
+        cssClass('th-summary'),
+        cssClass(`renderer-${cc.getSummaryRenderer()}`)
+      );
       summaryNode.dataset.renderer = cc.getSummaryRenderer();
       n.appendChild(summaryNode);
       this.summaries[i] = summary;
@@ -119,7 +130,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     const clazz = multiLevelGridCSSClass(this.ctx.idPrefix, this.c);
     style.updateRule(`stacked-${this.c.id}`, `.${clazz}`, <any>{
       display: 'grid',
-      gridTemplateColumns: widths.join(' ')
+      gridTemplateColumns: widths.join(' '),
     });
     return clazz;
   }
@@ -169,7 +180,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     }
     return {
       item: header,
-      ready: <IAbortAblePromise<void>>abortAbleAll(toWait)
+      ready: <IAbortAblePromise<void>>abortAbleAll(toWait),
     };
   }
 }

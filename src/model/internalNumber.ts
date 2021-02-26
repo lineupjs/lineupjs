@@ -1,7 +1,6 @@
-import {format} from 'd3-format';
-import {IBoxPlotData, similar, ISequence, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
-import {FIRST_IS_NAN, IDataRow, IBoxPlotColumn, INumberFilter, INumberColumn} from '.';
-
+import { format } from 'd3-format';
+import { IBoxPlotData, similar, ISequence, IAdvancedBoxPlotData, boxplotBuilder } from '../internal';
+import { FIRST_IS_NAN, IDataRow, IBoxPlotColumn, INumberFilter, INumberColumn } from '.';
 
 /** @internal */
 export const DEFAULT_FORMATTER = format('.3n');
@@ -45,7 +44,8 @@ export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw'
 export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
   aMissing = aMissing || a == null || isNaN(a);
   bMissing = bMissing || b == null || isNaN(b);
-  if (aMissing) { //NaN are smaller
+  if (aMissing) {
+    //NaN are smaller
     return bMissing ? 0 : FIRST_IS_NAN;
   }
   if (bMissing) {
@@ -56,7 +56,7 @@ export function numberCompare(a: number | null, b: number | null, aMissing = fal
 
 /** @internal */
 export function noNumberFilter() {
-  return ({min: -Infinity, max: Infinity, filterMissing: false});
+  return { min: -Infinity, max: Infinity, filterMissing: false };
 }
 
 /** @internal */
@@ -85,25 +85,29 @@ export function restoreNumberFilter(v: INumberFilter): INumberFilter {
   return {
     min: v.min != null && isFinite(v.min) ? v.min : -Infinity,
     max: v.max != null && isFinite(v.max) ? v.max : +Infinity,
-    filterMissing: v.filterMissing
+    filterMissing: v.filterMissing,
   };
 }
-
 
 /** @internal */
 export function medianIndex(rows: ISequence<IDataRow>, col: INumberColumn) {
   //return the median row
-  const data = rows.map((r, i) => ({r, i, v: col.getNumber(r)}));
+  const data = rows.map((r, i) => ({ r, i, v: col.getNumber(r) }));
   const sorted = Array.from(data.filter((r) => !isNaN(r.v))).sort((a, b) => numberCompare(a.v, b.v));
   const index = sorted[Math.floor(sorted.length / 2.0)];
   if (index === undefined) {
-    return {index: 0, row: sorted[0]!.r}; //error case
+    return { index: 0, row: sorted[0]!.r }; //error case
   }
-  return {index: index.i, row: index.r};
+  return { index: index.i, row: index.r };
 }
 
 /** @internal */
-export function toCompareGroupValue(rows: ISequence<IDataRow>, col: INumberColumn, sortMethod: keyof IAdvancedBoxPlotData, valueCache?: ISequence<number>) {
+export function toCompareGroupValue(
+  rows: ISequence<IDataRow>,
+  col: INumberColumn,
+  sortMethod: keyof IAdvancedBoxPlotData,
+  valueCache?: ISequence<number>
+) {
   const b = boxplotBuilder();
   if (valueCache) {
     b.pushAll(valueCache);

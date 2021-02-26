@@ -1,7 +1,7 @@
-import {Column, BooleanColumn} from '../model';
-import {DefaultCellRenderer} from './DefaultCellRenderer';
-import {ERenderMode, ICellRenderer} from './interfaces';
-import {cssClass} from '../styles';
+import { Column, BooleanColumn } from '../model';
+import { DefaultCellRenderer } from './DefaultCellRenderer';
+import { ERenderMode, ICellRenderer } from './interfaces';
+import { cssClass } from '../styles';
 
 export default class BooleanCellRenderer extends DefaultCellRenderer {
   readonly title: string = 'Default';

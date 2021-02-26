@@ -1,8 +1,13 @@
-import {IGroupData, IGroupItem, isGroup} from '../../model';
-import {groupEndLevel, ITopNGetter} from '../../provider/internal';
+import { IGroupData, IGroupItem, isGroup } from '../../model';
+import { groupEndLevel, ITopNGetter } from '../../provider/internal';
 
 export interface IRule {
-  apply(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>, topNGetter: ITopNGetter): IRuleInstance;
+  apply(
+    data: (IGroupData | IGroupItem)[],
+    availableHeight: number,
+    selection: Set<number>,
+    topNGetter: ITopNGetter
+  ): IRuleInstance;
 
   levelOfDetail(item: IGroupData | IGroupItem, height: number): 'high' | 'low';
 }
@@ -13,8 +18,7 @@ export interface IRuleInstance {
   violation?: string;
 }
 
-
-export function spaceFillingRule(config: {groupHeight: number, rowHeight: number, groupPadding: number}) {
+export function spaceFillingRule(config: { groupHeight: number; rowHeight: number; groupPadding: number }) {
   function levelOfDetail(item: IGroupData | IGroupItem, height: number): 'high' | 'low' {
     const group = isGroup(item);
     const maxHeight = group ? config.groupHeight : config.rowHeight;
@@ -24,7 +28,12 @@ export function spaceFillingRule(config: {groupHeight: number, rowHeight: number
     return 'low';
   }
 
-  function itemHeight(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>, topNGetter: ITopNGetter) {
+  function itemHeight(
+    data: (IGroupData | IGroupItem)[],
+    availableHeight: number,
+    selection: Set<number>,
+    topNGetter: ITopNGetter
+  ) {
     const visibleHeight = availableHeight - config.rowHeight - 5; // some padding for hover
     const items = <IGroupItem[]>data.filter((d) => !isGroup(d));
     const groups = data.length - items.length;
@@ -34,31 +43,36 @@ export function spaceFillingRule(config: {groupHeight: number, rowHeight: number
 
     if (unselected <= 0) {
       // doesn't matter since all are selected anyhow
-      return {height: config.rowHeight, violation: ''};
+      return { height: config.rowHeight, violation: '' };
     }
-    const available = visibleHeight - groups * config.groupHeight - groupSeparators * config.groupPadding - selected * config.rowHeight;
+    const available =
+      visibleHeight - groups * config.groupHeight - groupSeparators * config.groupPadding - selected * config.rowHeight;
 
     const height = Math.floor(available / unselected); // round to avoid sub pixel issues
     if (height < 1) {
       return {
         height: 1,
-        violation: `Not possible to fit all rows on the screen.`
+        violation: `Not possible to fit all rows on the screen.`,
       };
     }
     // clamp to max height
     if (height > config.rowHeight) {
       return {
         height: config.rowHeight,
-        violation: ''
+        violation: '',
       };
     }
-    return {height, violation: ''};
+    return { height, violation: '' };
   }
 
   return <IRule>{
-    apply: (data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>, topNGetter: ITopNGetter) => {
-
-      const {violation, height} = itemHeight(data, availableHeight, selection, topNGetter);
+    apply: (
+      data: (IGroupData | IGroupItem)[],
+      availableHeight: number,
+      selection: Set<number>,
+      topNGetter: ITopNGetter
+    ) => {
+      const { violation, height } = itemHeight(data, availableHeight, selection, topNGetter);
 
       const item = (item: IGroupItem) => {
         if (selection.has(item.dataIndex)) {
@@ -66,8 +80,8 @@ export function spaceFillingRule(config: {groupHeight: number, rowHeight: number
         }
         return height;
       };
-      return {item, group: config.groupHeight, violation};
+      return { item, group: config.groupHeight, violation };
     },
-    levelOfDetail
+    levelOfDetail,
   };
 }

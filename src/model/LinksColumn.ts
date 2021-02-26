@@ -1,12 +1,24 @@
-import {toolbar} from './annotations';
-import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDataRow, ITypeFactory} from './interfaces';
-import {patternFunction, integrateDefaults} from './internal';
-import {EAlignment} from './StringColumn';
-import {IEventListener} from '../internal';
-import LinkColumn, {ILink, ILinkDesc} from './LinkColumn';
+import { toolbar } from './annotations';
+import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import { IDataRow, ITypeFactory } from './interfaces';
+import { patternFunction, integrateDefaults } from './internal';
+import { EAlignment } from './StringColumn';
+import { IEventListener } from '../internal';
+import LinkColumn, { ILink, ILinkDesc } from './LinkColumn';
 
 export declare type ILinksColumnDesc = ILinkDesc & IArrayColumnDesc<string | ILink>;
 
@@ -28,9 +40,12 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<ILinksColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      width: 200
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: 200,
+      })
+    );
     this.alignment = <any>desc.alignment || EAlignment.left;
     this.escape = desc.escape !== false;
     this.pattern = desc.pattern || '';
@@ -68,11 +83,11 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
   }
 
   getValues(row: IDataRow) {
-    return this.getLinks(row).map((d) => d ? d.href : '');
+    return this.getLinks(row).map((d) => (d ? d.href : ''));
   }
 
   getLabels(row: IDataRow) {
-    return this.getLinks(row).map((d) => d ? d.alt : '');
+    return this.getLinks(row).map((d) => (d ? d.alt : ''));
   }
 
   private transformValue(v: any, row: IDataRow, i: number) {
@@ -83,7 +98,7 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
       if (!this.pattern) {
         return {
           alt: v,
-          href: v
+          href: v,
         };
       }
       if (!this.patternFunction) {
@@ -91,7 +106,7 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
       }
       return {
         alt: v,
-        href: this.patternFunction.call(this, v, row.v, i)
+        href: this.patternFunction.call(this, v, row.v, i),
       };
     }
     return v;

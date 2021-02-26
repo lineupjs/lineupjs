@@ -1,10 +1,9 @@
-import {ICategoricalColumnDesc, ICategory} from '../../model';
+import { ICategoricalColumnDesc, ICategory } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
-import {cleanCategories} from '../../provider/utils';
-import {resolveValue} from '../../internal';
+import { cleanCategories } from '../../provider/utils';
+import { resolveValue } from '../../internal';
 
 export default class CategoricalColumnBuilder extends ColumnBuilder<ICategoricalColumnDesc> {
-
   constructor(column: string) {
     super('categorical', column);
   }

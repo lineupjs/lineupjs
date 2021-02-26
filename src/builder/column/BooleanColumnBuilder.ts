@@ -1,8 +1,7 @@
-import {IBooleanColumnDesc} from '../../model';
+import { IBooleanColumnDesc } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class BooleanColumnBuilder extends ColumnBuilder<IBooleanColumnDesc> {
-
   constructor(column: string) {
     super('boolean', column);
   }

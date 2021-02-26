@@ -1,10 +1,28 @@
-import {IBoxPlotData, IAdvancedBoxPlotData, round} from '../internal';
-import {NumberColumn, IBoxPlotColumn, INumberColumn, isBoxPlotColumn, Column, IDataRow, isNumberColumn, isMapAbleColumn, IOrderedGroup} from '../model';
-import {BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass} from '../styles';
-import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {renderMissingCanvas} from './missing';
-import {tasksAll} from '../provider';
+import { IBoxPlotData, IAdvancedBoxPlotData, round } from '../internal';
+import {
+  NumberColumn,
+  IBoxPlotColumn,
+  INumberColumn,
+  isBoxPlotColumn,
+  Column,
+  IDataRow,
+  isNumberColumn,
+  isMapAbleColumn,
+  IOrderedGroup,
+} from '../model';
+import { BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass } from '../styles';
+import { colorOf } from './impose';
+import {
+  IRenderContext,
+  ERenderMode,
+  ICellRendererFactory,
+  IImposer,
+  ICellRenderer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+} from './interfaces';
+import { renderMissingCanvas } from './missing';
+import { tasksAll } from '../provider';
 
 const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
@@ -23,14 +41,14 @@ const MAPPED_BOXPLOT = `<div title="">
   <span class="${cssClass('mapping-hint')}"></span><span class="${cssClass('mapping-hint')}"></span>
 </div>`;
 
-
 /** @internal */
 export function computeLabel(col: INumberColumn, v: IBoxPlotData | IAdvancedBoxPlotData) {
   if (v == null) {
     return '';
   }
   const f = col.getNumberFormat();
-  const mean = (<IAdvancedBoxPlotData>v).mean != null ? `mean = ${f((<IAdvancedBoxPlotData>v).mean)} (dashed line)\n` : '';
+  const mean =
+    (<IAdvancedBoxPlotData>v).mean != null ? `mean = ${f((<IAdvancedBoxPlotData>v).mean)} (dashed line)\n` : '';
   return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\n${mean}q3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
 
@@ -38,7 +56,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Box Plot';
 
   canRender(col: Column, mode: ERenderMode): boolean {
-    return (isBoxPlotColumn(col) && mode === ERenderMode.CELL || (isNumberColumn(col) && mode !== ERenderMode.CELL));
+    return (isBoxPlotColumn(col) && mode === ERenderMode.CELL) || (isNumberColumn(col) && mode !== ERenderMode.CELL);
   }
 
   create(col: IBoxPlotColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
@@ -76,64 +94,92 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           max: data.max * width,
           outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined,
           whiskerLow: data.whiskerLow != null ? data.whiskerLow * width : undefined,
-          whiskerHigh: data.whiskerHigh != null ? data.whiskerHigh * width : undefined
+          whiskerHigh: data.whiskerHigh != null ? data.whiskerHigh * width : undefined,
         };
         renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), CANVAS_HEIGHT, 0);
-      }
+      },
     };
   }
 
   createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
-    const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
+    const sort = col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined ? col.getSortMethod() : '';
     return {
       template: BOXPLOT,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return tasksAll([context.tasks.groupBoxPlotStats(col, group, false), context.tasks.groupBoxPlotStats(col, group, true)]).then((data) => {
+        return tasksAll([
+          context.tasks.groupBoxPlotStats(col, group, false),
+          context.tasks.groupBoxPlotStats(col, group, true),
+        ]).then((data) => {
           if (typeof data === 'symbol') {
             return;
           }
           // render
-          const isMissing = data == null || data[0] == null || data[0].group.count === 0 || data[0].group.count === data[0].group.missing;
+          const isMissing =
+            data == null ||
+            data[0] == null ||
+            data[0].group.count === 0 ||
+            data[0].group.count === data[0].group.missing;
           n.classList.toggle(cssClass('missing'), isMissing);
           if (isMissing) {
             return;
           }
           renderDOMBoxPlot(col, n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
         });
-      }
+      },
     };
   }
 
-  createSummary(col: INumberColumn, context: IRenderContext, _interactive: boolean, imposer?: IImposer): ISummaryRenderer {
+  createSummary(
+    col: INumberColumn,
+    context: IRenderContext,
+    _interactive: boolean,
+    imposer?: IImposer
+  ): ISummaryRenderer {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement) => {
-        return tasksAll([context.tasks.summaryBoxPlotStats(col, false), context.tasks.summaryBoxPlotStats(col, true)]).then((data) => {
+        return tasksAll([
+          context.tasks.summaryBoxPlotStats(col, false),
+          context.tasks.summaryBoxPlotStats(col, true),
+        ]).then((data) => {
           if (typeof data === 'symbol') {
             return;
           }
-          const isMissing = data == null || data[0] == null || data[0].summary.count === 0 || data[0].summary.count === data[0].summary.missing;
+          const isMissing =
+            data == null ||
+            data[0] == null ||
+            data[0].summary.count === 0 ||
+            data[0].summary.count === data[0].summary.missing;
           n.classList.toggle(cssClass('missing'), isMissing);
           if (isMissing) {
             return;
           }
           const mappedSummary = data[0].summary;
           const rawSummary = data[1].summary;
-          const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
+          const sort =
+            col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined ? col.getSortMethod() : '';
 
           if (isMapAbleColumn(col)) {
             const range = col.getRange();
-            Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => d.textContent = range[i]);
+            Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
           }
 
           renderDOMBoxPlot(col, n, mappedSummary, rawSummary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
         });
-      }
+      },
     };
   }
 }
 
-function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData | IAdvancedBoxPlotData, label: IBoxPlotData | IAdvancedBoxPlotData, sort: string, color: string | null, hasRange: boolean = false) {
+function renderDOMBoxPlot(
+  col: INumberColumn,
+  n: HTMLElement,
+  data: IBoxPlotData | IAdvancedBoxPlotData,
+  label: IBoxPlotData | IAdvancedBoxPlotData,
+  sort: string,
+  color: string | null,
+  hasRange = false
+) {
   n.title = computeLabel(col, label);
 
   const whiskers = <HTMLElement>n.firstElementChild;
@@ -141,21 +187,23 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
   const median = <HTMLElement>box.nextElementSibling;
   const mean = <HTMLElement>whiskers.lastElementChild;
 
-  const leftWhisker = data.whiskerLow != null ? data.whiskerLow : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
-  const rightWhisker = data.whiskerHigh != null ? data.whiskerHigh : Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
+  const leftWhisker =
+    data.whiskerLow != null ? data.whiskerLow : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
+  const rightWhisker =
+    data.whiskerHigh != null ? data.whiskerHigh : Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
   whiskers.style.left = `${round(leftWhisker * 100, 2)}%`;
   const range = rightWhisker - leftWhisker;
   whiskers.style.width = `${round(range * 100, 2)}%`;
 
   //relative within the whiskers
-  box.style.left = `${round((data.q1 - leftWhisker) / range * 100, 2)}%`;
-  box.style.width = `${round((data.q3 - data.q1) / range * 100, 2)}%`;
+  box.style.left = `${round(((data.q1 - leftWhisker) / range) * 100, 2)}%`;
+  box.style.width = `${round(((data.q3 - data.q1) / range) * 100, 2)}%`;
   box.style.backgroundColor = color;
 
   //relative within the whiskers
-  median.style.left = `${round((data.median - leftWhisker) / range * 100, 2)}%`;
+  median.style.left = `${round(((data.median - leftWhisker) / range) * 100, 2)}%`;
   if ((<IAdvancedBoxPlotData>data).mean != null) {
-    mean.style.left = `${round(((<IAdvancedBoxPlotData>data).mean - leftWhisker) / range * 100, 2)}%`;
+    mean.style.left = `${round((((<IAdvancedBoxPlotData>data).mean - leftWhisker) / range) * 100, 2)}%`;
     mean.style.display = null;
   } else {
     mean.style.display = 'none';
@@ -198,9 +246,16 @@ function renderDOMBoxPlot(col: INumberColumn, n: HTMLElement, data: IBoxPlotData
   }
 }
 
-function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, color: string | null, height: number, topPadding: number) {
-  const left = box.whiskerLow != null ? box.whiskerLow : Math.max((box.q1 - 1.5 * (box.q3 - box.q1)), box.min);
-  const right = box.whiskerHigh != null ? box.whiskerHigh : Math.min((box.q3 + 1.5 * (box.q3 - box.q1)), box.max);
+function renderBoxPlot(
+  ctx: CanvasRenderingContext2D,
+  box: IBoxPlotData,
+  sort: string,
+  color: string | null,
+  height: number,
+  topPadding: number
+) {
+  const left = box.whiskerLow != null ? box.whiskerLow : Math.max(box.q1 - 1.5 * (box.q3 - box.q1), box.min);
+  const right = box.whiskerHigh != null ? box.whiskerHigh : Math.min(box.q3 + 1.5 * (box.q3 - box.q1), box.max);
 
   ctx.fillStyle = color || BOX_PLOT.box;
   ctx.strokeStyle = BOX_PLOT.stroke;

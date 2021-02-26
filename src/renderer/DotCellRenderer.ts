@@ -1,12 +1,27 @@
-import {GUESSES_GROUP_HEIGHT} from '../constants';
-import {concatSeq, ISequence, round} from '../internal';
-import {Column, DEFAULT_COLOR, IDataRow, INumberColumn, IOrderedGroup, isNumberColumn, isNumbersColumn} from '../model';
-import {CANVAS_HEIGHT, DOT, cssClass} from '../styles';
-import {colorOf} from './impose';
-import {ERenderMode, ICellRendererFactory, IImposer, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {noRenderer} from './utils';
-
+import { GUESSES_GROUP_HEIGHT } from '../constants';
+import { concatSeq, ISequence, round } from '../internal';
+import {
+  Column,
+  DEFAULT_COLOR,
+  IDataRow,
+  INumberColumn,
+  IOrderedGroup,
+  isNumberColumn,
+  isNumbersColumn,
+} from '../model';
+import { CANVAS_HEIGHT, DOT, cssClass } from '../styles';
+import { colorOf } from './impose';
+import {
+  ERenderMode,
+  ICellRendererFactory,
+  IImposer,
+  IRenderContext,
+  ICellRenderer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+} from './interfaces';
+import { renderMissingCanvas, renderMissingDOM } from './missing';
+import { noRenderer } from './utils';
 
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Dot';
@@ -20,7 +35,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     const pi2 = Math.PI * 2;
     const radius = DOT.size / 2;
-    const render = (ctx: CanvasRenderingContext2D, vs: {value: number, color: (string | null)}[], width: number) => {
+    const render = (ctx: CanvasRenderingContext2D, vs: { value: number; color: string | null }[], width: number) => {
       ctx.save();
       ctx.globalAlpha = DOT.opacity;
       for (const v of vs) {
@@ -37,7 +52,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {
       template: `<canvas height="${GUESSES_GROUP_HEIGHT}"></canvas>`,
       render,
-      width
+      width,
     };
   }
 
@@ -48,7 +63,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
       tmp += `<div style='background-color: ${DEFAULT_COLOR}' title=''></div>`;
     }
 
-    const update = (n: HTMLElement, data: ISequence<{value: number, label: string, color: string | null}>) => {
+    const update = (n: HTMLElement, data: ISequence<{ value: number; label: string; color: string | null }>) => {
       //adapt the number of children
       const l = data.length;
       if (n.children.length !== l) {
@@ -78,11 +93,11 @@ export default class DotCellRenderer implements ICellRendererFactory {
       ctx.restore();
     };
 
-    return {template: `<div>${tmp}</div>`, update, render};
+    return { template: `<div>${tmp}</div>`, update, render };
   }
 
   create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
-    const {template, render, update} = DotCellRenderer.getDOMRenderer(col);
+    const { template, render, update } = DotCellRenderer.getDOMRenderer(col);
     const width = context.colWidth(col);
     const formatter = col.getNumberFormat();
     return {
@@ -94,9 +109,12 @@ export default class DotCellRenderer implements ICellRendererFactory {
         const color = colorOf(col, d, imposer);
         if (!isNumbersColumn(col)) {
           const v = col.getNumber(d);
-          return update(n, [{value: v, label: col.getLabel(d), color}]);
+          return update(n, [{ value: v, label: col.getLabel(d), color }]);
         }
-        const data = col.getNumbers(d).filter((vi: number) => !isNaN(vi)).map((value) => ({value, label: formatter(value), color}));
+        const data = col
+          .getNumbers(d)
+          .filter((vi: number) => !isNaN(vi))
+          .map((value) => ({ value, label: formatter(value), color }));
         return update(n, data);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
@@ -109,46 +127,54 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return render(ctx, [v], [color], width);
         }
         const vs: number[] = col.getNumbers(d).filter((vi: number) => !isNaN(vi));
-        return render(ctx, vs, vs.map((_: any) => color), width);
-      }
+        return render(
+          ctx,
+          vs,
+          vs.map((_: any) => color),
+          width
+        );
+      },
     };
   }
 
   createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
-    const {template, render, width} = DotCellRenderer.getCanvasRenderer(col, context);
+    const { template, render, width } = DotCellRenderer.getCanvasRenderer(col, context);
 
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, 'dot', (rows) => {
-          //value, color, label,
+        return context.tasks
+          .groupRows(col, group, 'dot', (rows) => {
+            //value, color, label,
 
-          if (!isNumbersColumn(col)) {
-            return Array.from(rows.map((r) => ({value: col.getNumber(r), color: colorOf(col, r, imposer)})));
-          }
-          // concatenate all columns
-          const vs = rows.map((r) => {
-            const color = colorOf(col, r, imposer);
-            return col.getNumbers(r)
-              .filter((vi: number) => !isNaN(vi))
-              .map((value) => ({value, color}));
+            if (!isNumbersColumn(col)) {
+              return Array.from(rows.map((r) => ({ value: col.getNumber(r), color: colorOf(col, r, imposer) })));
+            }
+            // concatenate all columns
+            const vs = rows.map((r) => {
+              const color = colorOf(col, r, imposer);
+              return col
+                .getNumbers(r)
+                .filter((vi: number) => !isNaN(vi))
+                .map((value) => ({ value, color }));
+            });
+            return Array.from(concatSeq(vs));
+          })
+          .then((data) => {
+            if (typeof data === 'symbol') {
+              return;
+            }
+            const isMissing = !data || data.length === 0 || data.every((v) => Number.isNaN(v.value));
+            n.classList.toggle(cssClass('missing'), isMissing);
+            if (isMissing) {
+              return;
+            }
+            const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+            ctx.canvas.width = width;
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            render(ctx, data, width);
           });
-          return Array.from(concatSeq(vs));
-        }).then((data) => {
-          if (typeof data === 'symbol') {
-            return;
-          }
-          const isMissing = !data || data.length === 0 || data.every((v) => Number.isNaN(v.value));
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
-          ctx.canvas.width = width;
-          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-          render(ctx, data, width);
-        });
-      }
+      },
     };
   }
 

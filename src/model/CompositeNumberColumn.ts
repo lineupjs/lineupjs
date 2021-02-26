@@ -1,11 +1,11 @@
-import {format} from 'd3-format';
+import { format } from 'd3-format';
 import CompositeColumn from './CompositeColumn';
-import {IDataRow, IGroup, IColumnDesc} from './interfaces';
-import {isMissingValue} from './missing';
+import { IDataRow, IGroup, IColumnDesc } from './interfaces';
+import { isMissingValue } from './missing';
 import NumberColumn from './NumberColumn';
-import {SortByDefault, toolbar} from './annotations';
-import {ISequence} from '../internal';
-import {INumberColumn} from './INumberColumn';
+import { SortByDefault, toolbar } from './annotations';
+import { ISequence } from '../internal';
+import { INumberColumn } from './INumberColumn';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -83,7 +83,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     if (format === 'json') {
       return {
         value: this.getRawNumber(row),
-        children: this.children.map((d) => d.getExportValue(row, format))
+        children: this.children.map((d) => d.getExportValue(row, format)),
       };
     }
     return super.getExportValue(row, format);

@@ -1,8 +1,7 @@
-import {Column, IDataRow, isMissingValue} from '../model';
-import {CANVAS_HEIGHT, DASH, cssClass} from '../styles';
+import { Column, IDataRow, isMissingValue } from '../model';
+import { CANVAS_HEIGHT, DASH, cssClass } from '../styles';
 
 export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
-
   const dashX = Math.max(0, x + (width - DASH.width) / 2); // center horizontally
   const dashY = Math.max(0, y + (height - DASH.height) / 2); // center vertically
   ctx.fillStyle = DASH.color;
@@ -15,7 +14,14 @@ export function renderMissingDOM(node: HTMLElement, col: Column, d: IDataRow) {
   return missing;
 }
 
-export function renderMissingCanvas(ctx: CanvasRenderingContext2D, col: Column, d: IDataRow, width: number, x = 0, y = 0) {
+export function renderMissingCanvas(
+  ctx: CanvasRenderingContext2D,
+  col: Column,
+  d: IDataRow,
+  width: number,
+  x = 0,
+  y = 0
+) {
   const missing = isMissingValue(col.getValue(d));
   if (missing) {
     renderMissingValue(ctx, width, CANVAS_HEIGHT, x, y);

@@ -1,24 +1,43 @@
-import {suffix, IEventListener, IAdvancedBoxPlotData} from '../internal';
-import {toolbar, dialogAddons, SortByDefault} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import {IKeyValue} from './IArrayColumn';
-import {IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR} from './interfaces';
-import {EAdvancedSortMethod, INumberFilter, INumbersColumn, isNumbersColumn, IMappingFunction, IColorMappingFunction, isMapAbleColumn} from './INumberColumn';
-import {ScaleMappingFunction} from './MappingFunction';
+import { suffix, IEventListener, IAdvancedBoxPlotData } from '../internal';
+import { toolbar, dialogAddons, SortByDefault } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
+import { IKeyValue } from './IArrayColumn';
+import { IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR } from './interfaces';
+import {
+  EAdvancedSortMethod,
+  INumberFilter,
+  INumbersColumn,
+  isNumbersColumn,
+  IMappingFunction,
+  IColorMappingFunction,
+  isMapAbleColumn,
+} from './INumberColumn';
+import { ScaleMappingFunction } from './MappingFunction';
 import NumbersColumn from './NumbersColumn';
-import {DEFAULT_COLOR_FUNCTION} from './ColorMappingFunction';
-import {DEFAULT_FORMATTER, noNumberFilter} from './internalNumber';
-import {integrateDefaults} from './internal';
-
+import { DEFAULT_COLOR_FUNCTION } from './ColorMappingFunction';
+import { DEFAULT_FORMATTER, noNumberFilter } from './internalNumber';
+import { integrateDefaults } from './internal';
 
 /**
  *  factory for creating a description creating a max column
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createImpositionsDesc(label: string = 'Imposition') {
-  return {type: 'impositions', label};
+export function createImpositionsDesc(label = 'Imposition') {
+  return { type: 'impositions', label };
 }
 
 /**
@@ -46,11 +65,14 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   static readonly EVENT_COLOR_MAPPING_CHANGED = NumbersColumn.EVENT_COLOR_MAPPING_CHANGED;
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'numbers',
-      groupRenderer: 'numbers',
-      summaryRenderer: 'histogram'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'numbers',
+        groupRenderer: 'numbers',
+        summaryRenderer: 'histogram',
+      })
+    );
   }
 
   get label() {
@@ -102,10 +124,18 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED]);
+    return super
+      .createEventList()
+      .concat([
+        ImpositionCompositesColumn.EVENT_MAPPING_CHANGED,
+        ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED,
+      ]);
   }
 
-  on(type: typeof ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_ICCS | null): this;
+  on(
+    type: typeof ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_ICCS | null
+  ): this;
   on(type: typeof ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_ICCS | null): this;
   on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
   on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
@@ -165,7 +195,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
       }
       return {
         label: this.getLabels(row),
-        color: this.getColor(row)
+        color: this.getColor(row),
       };
     }
     return super.getExportValue(row, format);

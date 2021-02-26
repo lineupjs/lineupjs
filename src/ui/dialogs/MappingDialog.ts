@@ -1,14 +1,13 @@
-import {ISequence, round} from '../../internal';
-import {IMapAbleColumn, IMappingFunction, isMissingValue, isMapAbleColumn} from '../../model';
-import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {IDialogContext} from './ADialog';
-import {IMappingAdapter, MappingLine} from './MappingLineDialog';
-import {cssClass} from '../../styles';
-import {ScaleMappingFunction, ScriptMappingFunction} from '../../model/MappingFunction';
+import { ISequence, round } from '../../internal';
+import { IMapAbleColumn, IMappingFunction, isMissingValue, isMapAbleColumn } from '../../model';
+import { IRankingHeaderContext } from '../interfaces';
+import ADialog, { IDialogContext } from './ADialog';
+import { IMappingAdapter, MappingLine } from './MappingLineDialog';
+import { cssClass } from '../../styles';
+import { ScaleMappingFunction, ScriptMappingFunction } from '../../model/MappingFunction';
 
 /** @internal */
 export default class MappingDialog extends ADialog {
-
   private scale: IMappingFunction;
 
   private readonly mappingLines: MappingLine[] = [];
@@ -29,7 +28,7 @@ export default class MappingDialog extends ADialog {
     normalizeRaw: this.normalizeRaw.bind(this),
     unnormalizeRaw: this.unnormalizeRaw.bind(this),
     dialog: this.dialog,
-    formatter: this.column.getNumberFormat()
+    formatter: this.column.getNumberFormat(),
   };
 
   constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
@@ -48,7 +47,7 @@ export default class MappingDialog extends ADialog {
   }
 
   private get scaleType() {
-    if ((this.scale instanceof ScriptMappingFunction)) {
+    if (this.scale instanceof ScriptMappingFunction) {
       return 'script';
     }
     if (this.scale instanceof ScaleMappingFunction) {
@@ -75,8 +74,12 @@ export default class MappingDialog extends ADialog {
     const r = this.column.findMyRanker();
     const others = !r ? [] : r.flatColumns.filter((d) => isMapAbleColumn(d) && d !== this.column);
 
-    node.insertAdjacentHTML('beforeend', `
-        <div><label for="${this.idPrefix}mapping_type"><strong>Normalization Scaling:</strong></label><select id="${this.idPrefix}mapping_type" class="browser-default">
+    node.insertAdjacentHTML(
+      'beforeend',
+      `
+        <div><label for="${this.idPrefix}mapping_type"><strong>Normalization Scaling:</strong></label><select id="${
+        this.idPrefix
+      }mapping_type" class="browser-default">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -87,7 +90,13 @@ export default class MappingDialog extends ADialog {
         <option value="sqrt">Sqrt</option>
         <option value="script">Custom Script</option>
         <option value="unknown">Unknown</option>
-        ${others.length > 0 ? `<optgroup label="Copy From">${others.map((d) => `<option value="copy_${d.id}">${d.label}</option>`).join('')}</optgroup>`: ''}
+        ${
+          others.length > 0
+            ? `<optgroup label="Copy From">${others
+                .map((d) => `<option value="copy_${d.id}">${d.label}</option>`)
+                .join('')}</optgroup>`
+            : ''
+        }
       </select>
       </div>
         <div class=${cssClass('dialog-mapper-domain')}>
@@ -111,21 +120,25 @@ export default class MappingDialog extends ADialog {
         <div class="${cssClass('dialog-mapper-script')}">
           <strong>Custom Normalization Script</strong>
           <textarea class="${cssClass('textarea')}"></textarea>
-        </div>`);
+        </div>`
+    );
 
     const g = <SVGGElement>node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
 
-    this.forEach(`.${cssClass('dialog-mapper-details')} rect`, (d: SVGRectElement) => d.onclick = (evt) => {
-      evt.preventDefault();
-      evt.stopPropagation();
-      const bb = d.getBoundingClientRect();
-      const x = round((evt.x - bb.left) * 100 / bb.width, 2);
-      const m = new MappingLine(g, x, x, this.mappingAdapter);
-      this.mappingLines.push(m);
-    });
+    this.forEach(
+      `.${cssClass('dialog-mapper-details')} rect`,
+      (d: SVGRectElement) =>
+        (d.onclick = (evt) => {
+          evt.preventDefault();
+          evt.stopPropagation();
+          const bb = d.getBoundingClientRect();
+          const x = round(((evt.x - bb.left) * 100) / bb.width, 2);
+          const m = new MappingLine(g, x, x, this.mappingAdapter);
+          this.mappingLines.push(m);
+        })
+    );
 
     {
-
       const select = <HTMLSelectElement>this.find('select');
       const textarea = <HTMLTextAreaElement>this.find('textarea');
       select.onchange = (evt) => {
@@ -135,7 +148,11 @@ export default class MappingDialog extends ADialog {
             this.scale = new ScaleMappingFunction(this.rawDomain.slice(), 'linear', [1, 0]);
             break;
           case 'linear_abs':
-            this.scale = new ScaleMappingFunction([this.rawDomain[0], (this.rawDomain[1] - this.rawDomain[0]) / 2, this.rawDomain[1]], 'linear', [1, 0, 1]);
+            this.scale = new ScaleMappingFunction(
+              [this.rawDomain[0], (this.rawDomain[1] - this.rawDomain[0]) / 2, this.rawDomain[1]],
+              'linear',
+              [1, 0, 1]
+            );
             break;
           case 'script':
             const s = new ScriptMappingFunction(this.rawDomain.slice());
@@ -158,7 +175,7 @@ export default class MappingDialog extends ADialog {
         node.dataset.scale = select.value;
         this.updateLines();
       };
-      const scaleType = node.dataset.scale = this.scaleType;
+      const scaleType = (node.dataset.scale = this.scaleType);
       select.selectedIndex = Array.from(select.options).findIndex((d) => d.value === scaleType);
 
       if (scaleType === 'script') {
@@ -168,36 +185,46 @@ export default class MappingDialog extends ADialog {
     }
 
     {
-      this.forEach(`#${this.idPrefix}min, #${this.idPrefix}max`, (d: HTMLInputElement, i) => d.onchange = () => {
-        const v = d.valueAsNumber;
-        if (v === this.rawDomain[i]) {
-          d.setCustomValidity('');
-          return;
-        }
-        const other = this.rawDomain[1 - i];
-        if (isNaN(v) || (i === 0 && v >= other) || (i === 1 && v <= other)) {
-          d.setCustomValidity(`value has to be ${i === 0 ? '<= max' : '>= min'}`);
-          return;
-        }
-        d.setCustomValidity('');
-        this.rawDomain[i] = v;
-        this.scale = this.computeScale();
-        const patchedDomain = this.scale.domain.slice();
-        patchedDomain[0] = this.rawDomain[0];
-        patchedDomain[patchedDomain.length - 1] = this.rawDomain[1];
-        this.scale.domain = patchedDomain;
-        this.createMappings();
-        this.updateLines();
-        if (this.showLivePreviews()) {
-          this.column.setMapping(this.scale);
-        }
-      });
+      this.forEach(
+        `#${this.idPrefix}min, #${this.idPrefix}max`,
+        (d: HTMLInputElement, i) =>
+          (d.onchange = () => {
+            const v = d.valueAsNumber;
+            if (v === this.rawDomain[i]) {
+              d.setCustomValidity('');
+              return;
+            }
+            const other = this.rawDomain[1 - i];
+            if (isNaN(v) || (i === 0 && v >= other) || (i === 1 && v <= other)) {
+              d.setCustomValidity(`value has to be ${i === 0 ? '<= max' : '>= min'}`);
+              return;
+            }
+            d.setCustomValidity('');
+            this.rawDomain[i] = v;
+            this.scale = this.computeScale();
+            const patchedDomain = this.scale.domain.slice();
+            patchedDomain[0] = this.rawDomain[0];
+            patchedDomain[patchedDomain.length - 1] = this.rawDomain[1];
+            this.scale.domain = patchedDomain;
+            this.createMappings();
+            this.updateLines();
+            if (this.showLivePreviews()) {
+              this.column.setMapping(this.scale);
+            }
+          })
+      );
     }
 
     this.data.then((values) => {
       values.forEach((v) => {
         if (!isMissingValue(v)) {
-          g.insertAdjacentHTML('afterbegin', `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(this.scale.apply(v) * 100, 2)}" y2="52"></line>`);
+          g.insertAdjacentHTML(
+            'afterbegin',
+            `<line data-v="${v}" x1="${round(this.normalizeRaw(v), 2)}" x2="${round(
+              this.scale.apply(v) * 100,
+              2
+            )}" y2="52"></line>`
+          );
         }
       });
     });
@@ -217,7 +244,7 @@ export default class MappingDialog extends ADialog {
   }
 
   private update() {
-    const scaleType = this.node.dataset.scale = this.scaleType;
+    const scaleType = (this.node.dataset.scale = this.scaleType);
     const select = <HTMLSelectElement>this.find('select');
     select.selectedIndex = Array.from(select.options).findIndex((d) => d.value === scaleType);
     if (scaleType === 'script') {
@@ -259,12 +286,12 @@ export default class MappingDialog extends ADialog {
   }
 
   private normalizeRaw(d: number) {
-    const v = (d - this.rawDomain[0]) * 100 / (this.rawDomain[1] - this.rawDomain[0]);
+    const v = ((d - this.rawDomain[0]) * 100) / (this.rawDomain[1] - this.rawDomain[0]);
     return Math.max(Math.min(v, 100), 0); // clamp
   }
 
   private unnormalizeRaw(d: number) {
-    return (d) * (this.rawDomain[1] - this.rawDomain[0]) / 100 + this.rawDomain[0];
+    return (d * (this.rawDomain[1] - this.rawDomain[0])) / 100 + this.rawDomain[0];
   }
 
   private computeScale() {

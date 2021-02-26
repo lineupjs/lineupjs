@@ -1,5 +1,5 @@
-import {clear, AEventDispatcher, IEventListener} from '../../internal';
-import {cssClass} from '../../styles';
+import { clear, AEventDispatcher, IEventListener } from '../../internal';
+import { cssClass } from '../../styles';
 
 export interface IItem {
   id: string;
@@ -29,7 +29,6 @@ export interface ISearchBoxOptions<T extends IItem> {
  */
 export declare function select(item: any): void;
 
-
 export default class SearchBox<T extends IItem> extends AEventDispatcher {
   static readonly EVENT_SELECT = 'select';
 
@@ -54,7 +53,9 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
     this.node = this.options.doc.createElement('div');
     this.node.classList.add(cssClass('search'));
-    this.node.innerHTML = `<input class="${cssClass('search-input')}" type="search" placeholder="${this.options.placeholder}">
+    this.node.innerHTML = `<input class="${cssClass('search-input')}" type="search" placeholder="${
+      this.options.placeholder
+    }">
     <ul class="${cssClass('search-list')}"></ul>`;
 
     this.search = <HTMLInputElement>this.node.firstElementChild!;
@@ -64,7 +65,6 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     this.search.onblur = () => this.blur();
     this.search.oninput = () => this.filter();
     this.search.onkeydown = (evt) => this.handleKey(evt);
-
 
     this.itemTemplate = this.options.doc.createElement('li');
     this.itemTemplate.classList.add(cssClass('search-item'));
@@ -94,8 +94,8 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
           evt.preventDefault();
         };
         li.onclick = () => this.select(v);
-        li.onmouseenter = () => this.highlighted = li;
-        li.onmouseleave = () => this.highlighted = null;
+        li.onmouseenter = () => (this.highlighted = li);
+        li.onmouseleave = () => (this.highlighted = null);
         node.appendChild(li);
       } else {
         li = <HTMLElement>this.groupTemplate.cloneNode(true);
@@ -112,7 +112,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
       ESC: 27,
       ENTER: 13,
       UP: 38,
-      DOWN: 40
+      DOWN: 40,
     };
     switch (evt.which) {
       case KEYS.ESC:
@@ -165,18 +165,23 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private highlightNext() {
     const h = this.highlighted;
     if (!h || h.classList.contains(cssClass('hidden'))) {
-      this.highlighted = <HTMLElement>this.body.querySelector(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`) || null;
+      this.highlighted =
+        <HTMLElement>this.body.querySelector(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`) || null;
       return;
     }
 
-    const items = <HTMLElement[]>Array.from(this.body.querySelectorAll(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`));
+    const items = <HTMLElement[]>(
+      Array.from(this.body.querySelectorAll(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`))
+    );
     const index = items.indexOf(h);
     this.highlighted = items[index + 1] || null;
   }
 
   private highlightPrevious() {
     const h = this.highlighted;
-    const items = <HTMLElement[]>Array.from(this.body.querySelectorAll(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`));
+    const items = <HTMLElement[]>(
+      Array.from(this.body.querySelectorAll(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`))
+    );
 
     if (!h || h.classList.contains(cssClass('hidden'))) {
       this.highlighted = items[items.length - 1] || null;
@@ -201,7 +206,9 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private filterResults(node: HTMLElement, text: string) {
     if (text === '') {
       // show all
-      (<HTMLElement[]>Array.from(node.getElementsByClassName(cssClass('hidden')))).forEach((d: HTMLElement) => d.classList.remove(cssClass('hidden')));
+      (<HTMLElement[]>Array.from(node.getElementsByClassName(cssClass('hidden')))).forEach((d: HTMLElement) =>
+        d.classList.remove(cssClass('hidden'))
+      );
       return false;
     }
     const children = Array.from(node.children);

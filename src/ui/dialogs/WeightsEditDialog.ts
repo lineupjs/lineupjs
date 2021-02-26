@@ -1,12 +1,11 @@
-import {round} from '../../internal';
-import {StackColumn} from '../../model';
-import ADialog, {IDialogContext} from './ADialog';
-import {forEach, colorOf} from './utils';
-import {cssClass} from '../../styles';
+import { round } from '../../internal';
+import { StackColumn } from '../../model';
+import ADialog, { IDialogContext } from './ADialog';
+import { forEach, colorOf } from './utils';
+import { cssClass } from '../../styles';
 
 /** @internal */
 export default class WeightsEditDialog extends ADialog {
-
   private readonly weights: number[];
 
   constructor(private readonly column: StackColumn, dialog: IDialogContext) {
@@ -29,17 +28,23 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-
     const children = this.column.children;
-    node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-table')}">
-        ${this.weights.map((weight, i) => `<div class="${cssClass('dialog-weights-table-entry')}">
+    node.insertAdjacentHTML(
+      'beforeend',
+      `<div class="${cssClass('dialog-table')}">
+        ${this.weights
+          .map(
+            (weight, i) => `<div class="${cssClass('dialog-weights-table-entry')}">
           <input type="number" value="${round(weight * 100, 2)}" min="0" max="100" step="any" required>
           <span class="${cssClass('dialog-filter-color-bar')}">
             <span style="background-color: ${colorOf(children[i])}; width: ${round(weight * 100, 2)}%"></span>
           </span>
           ${children[i].label}
-        </div>`).join('')}
-    </div>`);
+        </div>`
+          )
+          .join('')}
+    </div>`
+    );
     const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]'));
     inputs.forEach((d, i) => {
       d.oninput = () => {
@@ -76,7 +81,10 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   private distributeWeights() {
-    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({input: d, weight: d.value ? d.valueAsNumber : NaN}));
+    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({
+      input: d,
+      weight: d.value ? d.valueAsNumber : NaN,
+    }));
     const hasMissing = inputs.some((d) => isNaN(d.weight));
     if (hasMissing) {
       // compute missing ones
@@ -108,7 +116,7 @@ export default class WeightsEditDialog extends ADialog {
     // pure distribute the sum
     const sum = weights.reduce((a, b) => a + b, 0);
     for (const input of inputs) {
-      input.input.value = round(input.weight * 100 / sum, 2).toString();
+      input.input.value = round((input.weight * 100) / sum, 2).toString();
       this.updateBar(input.input);
     }
   }
@@ -116,7 +124,12 @@ export default class WeightsEditDialog extends ADialog {
   protected appendDialogButtons() {
     super.appendDialogButtons();
     const buttons = this.node.querySelector<HTMLElement>(`.${cssClass('dialog-buttons')}`)!;
-    buttons.insertAdjacentHTML('beforeend', `<button class="${cssClass('dialog-button')} ${cssClass('dialog-weights-distribute-button')}" type="button" title="distribute weights"></button>`);
+    buttons.insertAdjacentHTML(
+      'beforeend',
+      `<button class="${cssClass('dialog-button')} ${cssClass(
+        'dialog-weights-distribute-button'
+      )}" type="button" title="distribute weights"></button>`
+    );
 
     const last = <HTMLElement>buttons.lastElementChild!;
     last.onclick = (evt) => {
@@ -127,7 +140,10 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   submit() {
-    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({input: d, weight: d.valueAsNumber}));
+    const inputs = Array.from(this.node.querySelectorAll<HTMLInputElement>('input[type=number]')).map((d) => ({
+      input: d,
+      weight: d.valueAsNumber,
+    }));
     let invalid = false;
     for (const input of inputs) {
       if (input.weight <= 0) {
@@ -139,7 +155,9 @@ export default class WeightsEditDialog extends ADialog {
     }
     const weights = inputs.map((d) => d.weight);
     if (!invalid && !validWeights(weights)) {
-      inputs[inputs.length - 1].input.setCustomValidity('sum of weights has to be 100, change weights or use the redistribute button to fix');
+      inputs[inputs.length - 1].input.setCustomValidity(
+        'sum of weights has to be 100, change weights or use the redistribute button to fix'
+      );
       invalid = true;
     }
     if (invalid) {

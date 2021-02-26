@@ -1,4 +1,3 @@
-
 /** @internal */
 export function equalArrays<T>(a: T[], b: T[]) {
   if (a.length !== b.length) {
@@ -6,7 +5,6 @@ export function equalArrays<T>(a: T[], b: T[]) {
   }
   return a.every((ai, i) => ai === b[i]);
 }
-
 
 /**
  * converts a given id to css compatible one
@@ -48,7 +46,6 @@ export function concat<T>(arrs: (T[] | T)[]): T[] {
   }
   return r;
 }
-
 
 /**
  * generates a label for the given sort method

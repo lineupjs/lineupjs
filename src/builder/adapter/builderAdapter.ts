@@ -1,6 +1,5 @@
-
-import {build, buildCategorical, buildDate, buildHierarchy, buildNumber, buildString, buildActions} from './column';
-import {Adapter} from './lineup';
+import { build, buildCategorical, buildDate, buildHierarchy, buildNumber, buildString, buildActions } from './column';
+import { Adapter } from './lineup';
 import {
   buildAllColumnsRanking,
   buildGeneric,
@@ -10,9 +9,9 @@ import {
   buildReduceRanking,
   buildScriptRanking,
   buildSupportRanking,
-  buildWeightedSumRanking
+  buildWeightedSumRanking,
 } from './ranking';
-import {equal, isSame, isTypeInstance} from './utils';
+import { equal, isSame, isTypeInstance } from './utils';
 
 export const builderAdapter = {
   buildString,
@@ -34,5 +33,5 @@ export const builderAdapter = {
   equal,
   isSame,
   isTypeInstance,
-  Adapter
+  Adapter,
 };

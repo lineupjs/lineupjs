@@ -1,17 +1,16 @@
-import {clear, suffix} from '../../internal';
-import {Ranking, isSupportType} from '../../model';
-import {aria, cssClass} from '../../styles';
+import { clear, suffix } from '../../internal';
+import { Ranking, isSupportType } from '../../model';
+import { aria, cssClass } from '../../styles';
 import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
-import {actionCSSClass} from '../header';
-import {IRankingHeaderContext} from '../interfaces';
-import {dialogContext} from '../dialogs';
+import { actionCSSClass } from '../header';
+import { IRankingHeaderContext } from '../interfaces';
+import { dialogContext } from '../dialogs';
 import Hierarchy from './Hierarchy';
-import {ISidePanelOptions} from './SidePanel';
+import { ISidePanelOptions } from './SidePanel';
 import SidePanelEntryVis from './SidePanelEntryVis';
 
 /** @internal */
 export default class SidePanelRanking {
-
   readonly header: HTMLElement;
   readonly dropdown: HTMLElement;
   readonly node: HTMLElement;
@@ -19,7 +18,12 @@ export default class SidePanelRanking {
   private readonly hierarchy: Hierarchy | null;
   private readonly entries = new Map<string, SidePanelEntryVis>();
 
-  constructor(public readonly ranking: Ranking, private ctx: IRankingHeaderContext, document: Document, private readonly options: Readonly<ISidePanelOptions>) {
+  constructor(
+    public readonly ranking: Ranking,
+    private ctx: IRankingHeaderContext,
+    document: Document,
+    private readonly options: Readonly<ISidePanelOptions>
+  ) {
     this.node = document.createElement('section');
     this.header = document.createElement('div');
     this.dropdown = document.createElement('div');
@@ -28,8 +32,12 @@ export default class SidePanelRanking {
     this.header.classList.add(cssClass('side-panel-ranking-header'), cssClass('side-panel-ranking-label'));
     this.dropdown.classList.add(cssClass('side-panel-ranking-label'));
 
-    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${actionCSSClass('more')}" title="More &hellip;">${aria('More &hellip;')}</i>`;
-    (<HTMLElement>this.header.lastElementChild!).onclick = (<HTMLElement>this.dropdown.lastElementChild!).onclick = (evt) => {
+    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${actionCSSClass(
+      'more'
+    )}" title="More &hellip;">${aria('More &hellip;')}</i>`;
+    (<HTMLElement>this.header.lastElementChild!).onclick = (<HTMLElement>this.dropdown.lastElementChild!).onclick = (
+      evt
+    ) => {
       evt.stopPropagation();
       evt.preventDefault();
       const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, <any>evt), ctx);
@@ -48,14 +56,25 @@ export default class SidePanelRanking {
     }
 
     if (this.hierarchy) {
-      this.ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED), () => {
-        this.updateHierarchy();
-      });
+      this.ranking.on(
+        suffix(
+          '.panel',
+          Ranking.EVENT_GROUP_CRITERIA_CHANGED,
+          Ranking.EVENT_SORT_CRITERIA_CHANGED,
+          Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED
+        ),
+        () => {
+          this.updateHierarchy();
+        }
+      );
     }
-    this.ranking.on(suffix('.panel', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_MOVE_COLUMN), () => {
-      this.updateList();
-      this.updateHierarchy();
-    });
+    this.ranking.on(
+      suffix('.panel', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_MOVE_COLUMN),
+      () => {
+        this.updateList();
+        this.updateHierarchy();
+      }
+    );
     this.ranking.on(suffix('.panel', Ranking.EVENT_LABEL_CHANGED), () => {
       this.dropdown.firstElementChild!.textContent = this.header.firstElementChild!.textContent = this.ranking.getLabel();
     });
@@ -129,7 +148,19 @@ export default class SidePanelRanking {
   destroy() {
     this.header.remove();
     this.node.remove();
-    this.ranking.on(suffix('.panel', Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED, Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_LABEL_CHANGED), null);
+    this.ranking.on(
+      suffix(
+        '.panel',
+        Ranking.EVENT_GROUP_CRITERIA_CHANGED,
+        Ranking.EVENT_SORT_CRITERIA_CHANGED,
+        Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED,
+        Ranking.EVENT_ADD_COLUMN,
+        Ranking.EVENT_MOVE_COLUMN,
+        Ranking.EVENT_REMOVE_COLUMN,
+        Ranking.EVENT_LABEL_CHANGED
+      ),
+      null
+    );
 
     this.entries.forEach((d) => d.destroy());
     this.entries.clear();

@@ -1,10 +1,10 @@
-import {IArrayDesc, IColumnDesc} from '../../model';
+import { IArrayDesc, IColumnDesc } from '../../model';
 
 export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
   protected readonly desc: T;
 
   constructor(type: string, column: string) {
-    this.desc = <any>{column, type, label: column ? column[0].toUpperCase() + column.slice(1): type};
+    this.desc = <any>{ column, type, label: column ? column[0].toUpperCase() + column.slice(1) : type };
   }
 
   /**

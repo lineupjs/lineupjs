@@ -1,7 +1,6 @@
-import {Column, GroupColumn, IOrderedGroup, IGroup, defaultGroup, IDataRow} from '../model';
-import {ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {noRenderer} from './utils';
-
+import { Column, GroupColumn, IOrderedGroup, IGroup, defaultGroup, IDataRow } from '../model';
+import { ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer } from './interfaces';
+import { noRenderer } from './utils';
 
 function isDummyGroup(group: IGroup) {
   return group.parent == null && group.name === defaultGroup.name;
@@ -24,7 +23,7 @@ export default class GroupCellRenderer implements ICellRendererFactory {
       },
       render(_ctx: CanvasRenderingContext2D, _row: IDataRow, i: number) {
         return i === 0;
-      }
+      },
     };
   }
 
@@ -35,7 +34,7 @@ export default class GroupCellRenderer implements ICellRendererFactory {
         const text = isDummyGroup(group) ? '' : `${group.name} (${group.order.length})`;
         (<HTMLElement>node.firstElementChild!).textContent = text;
         node.title = text;
-      }
+      },
     };
   }
 

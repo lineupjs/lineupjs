@@ -1,16 +1,20 @@
-import {ILineUpFlags} from '../config';
-import {Column, IGroupData, IGroupItem} from '../model';
-import {IDataProvider} from '../provider';
-import {IImposer, IRenderContext, ISummaryRenderer} from '../renderer';
+import { ILineUpFlags } from '../config';
+import { Column, IGroupData, IGroupItem } from '../model';
+import { IDataProvider } from '../provider';
+import { IImposer, IRenderContext, ISummaryRenderer } from '../renderer';
 import DialogManager from './dialogs/DialogManager';
-import {IDialogContext} from './dialogs';
+import { IDialogContext } from './dialogs';
 
 export interface IUIOptions {
   /**
    * whether to show this action as a shortcut action
    * @default 'menu'
    */
-  mode: 'menu' | 'menu+shortcut' | 'shortcut' | ((col: Column, mode: 'sidePanel' | 'header') => 'menu' | 'menu+shortcut' | 'shortcut');
+  mode:
+    | 'menu'
+    | 'menu+shortcut'
+    | 'shortcut'
+    | ((col: Column, mode: 'sidePanel' | 'header') => 'menu' | 'menu+shortcut' | 'shortcut');
 
   /**
    * order hint for sorting actions
@@ -48,9 +52,13 @@ export interface IToolbarDialogAddon {
 
   order: number;
 
-  append(col: Column, node: HTMLElement, dialog: IDialogContext, ctx: IRankingHeaderContext): IToolbarDialogAddonHandler;
+  append(
+    col: Column,
+    node: HTMLElement,
+    dialog: IDialogContext,
+    ctx: IRankingHeaderContext
+  ): IToolbarDialogAddonHandler;
 }
-
 
 export interface IRenderInfo {
   type: string;
@@ -71,13 +79,13 @@ export interface IRankingHeaderContextContainer {
 
   readonly flags: ILineUpFlags;
 
-  getPossibleRenderer(col: Column): {item: IRenderInfo[], group: IRenderInfo[], summary: IRenderInfo[]};
+  getPossibleRenderer(col: Column): { item: IRenderInfo[]; group: IRenderInfo[]; summary: IRenderInfo[] };
 
   summaryRenderer(co: Column, interactive: boolean, imposer?: IImposer): ISummaryRenderer;
 
   readonly caches: {
-    toolbar: Map<string, IToolbarAction[]>,
-    toolbarAddons: Map<string, IToolbarDialogAddon[]>
+    toolbar: Map<string, IToolbarAction[]>;
+    toolbarAddons: Map<string, IToolbarDialogAddon[]>;
   };
 }
 
@@ -95,5 +103,5 @@ export declare type IRankingContext = Readonly<IRankingBodyContext>;
 
 export enum EMode {
   ITEM = 'item',
-  BAND = 'band'
+  BAND = 'band',
 }

@@ -1,13 +1,30 @@
-import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {ICategoricalDesc, ICategory, ICategoricalColorMappingFunction, ICategoricalsColumn} from './ICategoricalColumn';
-import {IDataRow, DEFAULT_COLOR, ITypeFactory} from './interfaces';
-import {toolbar} from './annotations';
+import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import {
+  ICategoricalDesc,
+  ICategory,
+  ICategoricalColorMappingFunction,
+  ICategoricalsColumn,
+} from './ICategoricalColumn';
+import { IDataRow, DEFAULT_COLOR, ITypeFactory } from './interfaces';
+import { toolbar } from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
-import {IEventListener} from '../internal';
-import {toCategories} from './internalCategorical';
+import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import Column, {
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  widthChanged,
+  dirtyCaches,
+} from './Column';
+import { IEventListener } from '../internal';
+import { toCategories } from './internalCategorical';
 
 export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string | null>;
 
@@ -16,7 +33,10 @@ export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDes
  * @asMemberOf CategoricalsColumn
  * @event
  */
-export declare function colorMappingChanged_CCS(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_CCS(
+  previous: ICategoricalColorMappingFunction,
+  current: ICategoricalColorMappingFunction
+): void;
 
 /**
  * a string column with optional alignment
@@ -42,7 +62,10 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     return super.createEventList().concat([CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_CCS | null): this;
+  on(
+    type: typeof CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_CCS | null
+  ): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -71,7 +94,7 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
   }
 
   getColors(row: IDataRow) {
-    return this.getCategories(row).map((d) => d ? this.colorMapping.apply(d) : DEFAULT_COLOR);
+    return this.getCategories(row).map((d) => (d ? this.colorMapping.apply(d) : DEFAULT_COLOR));
   }
 
   iterCategory(row: IDataRow) {
@@ -79,11 +102,11 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
   }
 
   getValues(row: IDataRow) {
-    return this.getCategories(row).map((v) => v ? v.name : null);
+    return this.getCategories(row).map((v) => (v ? v.name : null));
   }
 
   getLabels(row: IDataRow) {
-    return this.getCategories(row).map((v) => v ? v.label : '');
+    return this.getCategories(row).map((v) => (v ? v.label : ''));
   }
 
   getColorMapping() {

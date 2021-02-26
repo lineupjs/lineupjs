@@ -1,4 +1,4 @@
-import {cssClass} from '../styles';
+import { cssClass } from '../styles';
 
 /** @internal */
 export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
@@ -21,12 +21,11 @@ export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
   return false;
 }
 
-
 /**
  * helper storage for dnd in edge since edge doesn't support custom mime-types
  * @type {Map<number, {[p: string]: string}>}
  */
-const dndTransferStorage = new Map<number, {[key: string]: string}>();
+const dndTransferStorage = new Map<number, { [key: string]: string }>();
 
 function isEdgeDnD(e: DragEvent) {
   return dndTransferStorage.size > 0 && hasDnDType(e, 'text/plain');
@@ -40,7 +39,7 @@ function isEdgeDnD(e: DragEvent) {
  */
 export function copyDnD(e: DragEvent) {
   const dT = e.dataTransfer!;
-  return Boolean((e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || (!dT.effectAllowed.match(/move/gi)));
+  return Boolean((e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || !dT.effectAllowed.match(/move/gi));
 }
 
 /**
@@ -63,13 +62,13 @@ export type IDragEffect = 'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | '
 /** @internal */
 export interface IDragStartResult {
   effectAllowed: IDragEffect;
-  data: {[mimeType: string]: string};
+  data: { [mimeType: string]: string };
 }
 
 /** @internal */
 export interface IDropResult {
   effect: IDragEffect;
-  data: {[mimeType: string]: string};
+  data: { [mimeType: string]: string };
 }
 
 let idCounter = 0;
@@ -81,7 +80,7 @@ let idCounter = 0;
  * @param {boolean} stopPropagation whether to stop propagation in case of success
  * @internal
  */
-export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult, stopPropagation: boolean = false) {
+export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult, stopPropagation = false) {
   const id = ++idCounter;
 
   node.classList.add(cssClass('dragable'));
@@ -145,7 +144,14 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
  * @param {() => boolean} optional whether to enable dropping at all
  * @internal
  */
-export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result: IDropResult, e: DragEvent) => boolean, onDragOver: null | ((e: DragEvent) => void) = null, stopPropagation: boolean = false, canDrop: () => boolean = (() => true)) {
+export function dropAble(
+  node: HTMLElement,
+  mimeTypes: string[],
+  onDrop: (result: IDropResult, e: DragEvent) => boolean,
+  onDragOver: null | ((e: DragEvent) => void) = null,
+  stopPropagation = false,
+  canDrop: () => boolean = () => true
+) {
   node.addEventListener('dragenter', (e) => {
     //var xy = mouse($node.node());
     if (node.classList.contains(cssClass('dragging')) || !(hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) || !canDrop()) {
@@ -204,7 +210,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
       if (dndTransferStorage.has(id)) {
         const data = dndTransferStorage.get(id)!;
         dndTransferStorage.delete(id);
-        return !onDrop({effect, data}, e);
+        return !onDrop({ effect, data }, e);
       }
       return;
     }
@@ -222,6 +228,6 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
         data[mime] = value;
       }
     });
-    return !onDrop({effect, data}, e);
+    return !onDrop({ effect, data }, e);
   });
 }

@@ -1,9 +1,9 @@
-import {MIN_LABEL_WIDTH} from '../constants';
-import {Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn, DEFAULT_COLOR} from '../model';
-import {hsl} from 'd3-color';
-import {cssClass} from '../styles';
-import {IRenderContext} from '.';
-import {ISequence} from '../internal';
+import { MIN_LABEL_WIDTH } from '../constants';
+import { Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn, DEFAULT_COLOR } from '../model';
+import { hsl } from 'd3-color';
+import { cssClass } from '../styles';
+import { IRenderContext } from '.';
+import { ISequence } from '../internal';
 
 /** @internal */
 export function noop() {
@@ -12,7 +12,7 @@ export function noop() {
 
 export const noRenderer = {
   template: `<div></div>`,
-  update: <() => void>noop
+  update: <() => void>noop,
 };
 
 /** @internal */
@@ -55,7 +55,11 @@ export function forEachChild<T extends Element>(node: Element, callback: (d: T, 
  * @param columns columns to check
  * @internal
  */
-export function matchColumns(node: HTMLElement, columns: {column: Column, template: string, rendererId: string}[], ctx: IRenderContext) {
+export function matchColumns(
+  node: HTMLElement,
+  columns: { column: Column; template: string; rendererId: string }[],
+  ctx: IRenderContext
+) {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.template).join('');
@@ -71,7 +75,7 @@ export function matchColumns(node: HTMLElement, columns: {column: Column, templa
     return;
   }
 
-  function matches(c: {column: Column, rendererId: string}, i: number) {
+  function matches(c: { column: Column; rendererId: string }, i: number) {
     //do both match?
     const n = <HTMLElement>node.children[i];
     return n != null && n.dataset.columnId === c.column.id && n.dataset.renderer === c.rendererId;
@@ -113,10 +117,8 @@ export function wideEnoughCat(col: ICategoricalLikeColumn) {
   return w / col.categories.length > MIN_LABEL_WIDTH; // at least 30 pixel
 }
 
-
-
 // side effect
-const adaptColorCache: {[bg: string]: string} = {};
+const adaptColorCache: { [bg: string]: string } = {};
 /**
  * Adapts the text color for a given background color
  * @param {string} bgColor as `#ff0000`
@@ -127,9 +129,8 @@ export function adaptTextColorToBgColor(bgColor: string): string {
   if (bak) {
     return bak;
   }
-  return adaptColorCache[bgColor] = hsl(bgColor).l > 0.5 ? 'black' : 'white';
+  return (adaptColorCache[bgColor] = hsl(bgColor).l > 0.5 ? 'black' : 'white');
 }
-
 
 /**
  *
@@ -141,7 +142,8 @@ export function adaptTextColorToBgColor(bgColor: string): string {
  */
 export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, title: string, width: number) {
   const adapt = adaptTextColorToBgColor(bgColor);
-  if ((width <= 0.05 || adapt === 'black') || width > 0.9) { // almost empty or full
+  if (width <= 0.05 || adapt === 'black' || width > 0.9) {
+    // almost empty or full
     node.style.color = adapt === 'black' || width <= 0.05 ? null : adapt; // null = black
     // node.classList.remove('lu-gradient-text');
     // node.style.backgroundImage = null;
@@ -158,14 +160,12 @@ export function adaptDynamicColorToBgColor(node: HTMLElement, bgColor: string, t
   node.appendChild(span);
 }
 
-
 /** @internal */
 export const uniqueId: (prefix: string) => string = (function () {
   // side effect but just within the function itself, so good for the library
   let idCounter = 0;
   return (prefix: string) => `${prefix}${(idCounter++).toString(36)}`;
 })();
-
 
 const NUM_EXAMPLE_VALUES = 5;
 
@@ -186,12 +186,10 @@ export function exampleText(col: Column, rows: ISequence<IDataRow>) {
   return `${examples.join(', ')}${examples.length < rows.length ? ', ...' : ''}`;
 }
 
-
 /** @internal */
 export function multiLevelGridCSSClass(idPrefix: string, column: Column) {
   return cssClass(`stacked-${idPrefix}-${column.id}`);
 }
-
 
 /** @internal */
 export function colorOf(col: Column) {

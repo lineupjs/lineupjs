@@ -1,12 +1,15 @@
-import {LinkColumn, LinkMapColumn, LinksColumn} from '../../model';
-import ADialog, {IDialogContext} from './ADialog';
+import { LinkColumn, LinkMapColumn, LinksColumn } from '../../model';
+import ADialog, { IDialogContext } from './ADialog';
 
 /** @internal */
 export default class EditPatternDialog extends ADialog {
-
   private readonly before: string;
 
-  constructor(private readonly column: LinkColumn | LinksColumn | LinkMapColumn, dialog: IDialogContext, private readonly idPrefix: string) {
+  constructor(
+    private readonly column: LinkColumn | LinksColumn | LinkMapColumn,
+    dialog: IDialogContext,
+    private readonly idPrefix: string
+  ) {
     super(dialog);
 
     this.before = this.column.getPattern();
@@ -14,7 +17,9 @@ export default class EditPatternDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     const templates = this.column.patternTemplates;
-    node.insertAdjacentHTML('beforeend', `<strong>Edit Pattern (access via $\{value}, $\{item})</strong><input
+    node.insertAdjacentHTML(
+      'beforeend',
+      `<strong>Edit Pattern (access via $\{value}, $\{item})</strong><input
         type="text"
         size="30"
         value="${this.before}"
@@ -22,9 +27,13 @@ export default class EditPatternDialog extends ADialog {
         autofocus
         placeholder="pattern (access via $\{value}, $\{item})"
         ${templates.length > 0 ? `list="ui${this.idPrefix}lineupPatternList"` : ''}
-      >`);
+      >`
+    );
     if (templates.length > 0) {
-      node.insertAdjacentHTML('beforeend', `<datalist id="ui${this.idPrefix}lineupPatternList">${templates.map((t) => `<option value="${t}">`)}</datalist>`);
+      node.insertAdjacentHTML(
+        'beforeend',
+        `<datalist id="ui${this.idPrefix}lineupPatternList">${templates.map((t) => `<option value="${t}">`)}</datalist>`
+      );
     }
 
     this.enableLivePreviews('input');

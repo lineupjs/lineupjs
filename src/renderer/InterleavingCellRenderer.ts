@@ -1,14 +1,20 @@
-import {INumberBin, IStatistics} from '../internal';
-import {Column, CompositeNumberColumn, IDataRow, IOrderedGroup, INumberColumn} from '../model';
-import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {getHistDOMRenderer} from './HistogramCellRenderer';
-import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {createData} from './MultiLevelCellRenderer';
-import {colorOf, matchColumns, forEachChild} from './utils';
-import {tasksAll} from '../provider';
-import {IHistogramLike} from './histogram';
-
+import { INumberBin, IStatistics } from '../internal';
+import { Column, CompositeNumberColumn, IDataRow, IOrderedGroup, INumberColumn } from '../model';
+import { CANVAS_HEIGHT, cssClass } from '../styles';
+import { getHistDOMRenderer } from './HistogramCellRenderer';
+import {
+  IRenderContext,
+  ERenderMode,
+  ICellRendererFactory,
+  ISummaryRenderer,
+  IGroupCellRenderer,
+  ICellRenderer,
+} from './interfaces';
+import { renderMissingCanvas, renderMissingDOM } from './missing';
+import { createData } from './MultiLevelCellRenderer';
+import { colorOf, matchColumns, forEachChild } from './utils';
+import { tasksAll } from '../provider';
+import { IHistogramLike } from './histogram';
 
 export default class InterleavingCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Interleaved';
@@ -18,7 +24,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
   }
 
   create(col: CompositeNumberColumn, context: IRenderContext): ICellRenderer {
-    const {cols} = createData(col, context, false, ERenderMode.CELL);
+    const { cols } = createData(col, context, false, ERenderMode.CELL);
     const width = context.colWidth(col);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
@@ -47,12 +53,12 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
           ctx.translate(0, CANVAS_HEIGHT);
         });
         ctx.restore();
-      }
+      },
     };
   }
 
   createGroup(col: CompositeNumberColumn, context: IRenderContext): IGroupCellRenderer {
-    const {cols} = createData(col, context, false, ERenderMode.GROUP);
+    const { cols } = createData(col, context, false, ERenderMode.GROUP);
     return {
       template: `<div>${cols.map((r) => r.template).join('')}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -60,15 +66,15 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
         forEachChild(n, (ni: HTMLElement, j) => {
           cols[j].groupRenderer!.update(ni, group);
         });
-      }
+      },
     };
   }
 
   createSummary(col: CompositeNumberColumn, context: IRenderContext, _interactive: boolean): ISummaryRenderer {
     const cols = col.children;
     let acc = 0;
-    const {template, render} = getHistDOMRenderer(col, {
-      color: () => colorOf(cols[(acc++) % cols.length])
+    const { template, render } = getHistDOMRenderer(col, {
+      color: () => colorOf(cols[acc++ % cols.length]),
     });
     return {
       template,
@@ -88,7 +94,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
           const grouped = groupedHist(summaries)!;
           render(n, grouped);
         });
-      }
+      },
     };
   }
 }
@@ -96,7 +102,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
 const dummyBin: INumberBin = {
   count: 0,
   x0: 0,
-  x1: 0
+  x1: 0,
 };
 
 function groupedHist(stats: (IStatistics | null)[]): IHistogramLike<number> | null {
@@ -124,6 +130,6 @@ function groupedHist(stats: (IStatistics | null)[]): IHistogramLike<number> | nu
   }
   return {
     maxBin,
-    hist
+    hist,
   };
 }

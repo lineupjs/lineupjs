@@ -1,4 +1,4 @@
-import {cssClass} from '../styles';
+import { cssClass } from '../styles';
 
 /** @internal */
 export interface IDragHandleOptions {
@@ -30,14 +30,17 @@ export interface IDragHandleOptions {
  * @internal
  */
 export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<IDragHandleOptions> = {}) {
-  const o: Readonly<IDragHandleOptions> = Object.assign({
-    container: handle.parentElement!,
-    filter: () => true,
-    onStart: () => undefined,
-    onDrag: () => undefined,
-    onEnd: () => undefined,
-    minDelta: 2
-  }, options);
+  const o: Readonly<IDragHandleOptions> = Object.assign(
+    {
+      container: handle.parentElement!,
+      filter: () => true,
+      onStart: () => undefined,
+      onDrag: () => undefined,
+      onEnd: () => undefined,
+      minDelta: 2,
+    },
+    options
+  );
 
   let ueberElement: HTMLElement | null = null;
 

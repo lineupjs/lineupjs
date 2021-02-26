@@ -1,8 +1,7 @@
-import {IDateColumnDesc} from '../../model';
+import { IDateColumnDesc } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class DateColumnBuilder extends ColumnBuilder<IDateColumnDesc> {
-
   constructor(column: string) {
     super('date', column);
   }
@@ -19,7 +18,6 @@ export default class DateColumnBuilder extends ColumnBuilder<IDateColumnDesc> {
     }
     return this;
   }
-
 }
 
 /**

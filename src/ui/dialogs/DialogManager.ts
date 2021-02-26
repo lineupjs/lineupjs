@@ -1,8 +1,8 @@
 import ADialog from './ADialog';
 import Column from '../../model';
-import {cssClass} from '../../styles';
-import {ILivePreviewOptions} from '../../config';
-import {AEventDispatcher, IEventListener} from '../../internal';
+import { cssClass } from '../../styles';
+import { ILivePreviewOptions } from '../../config';
+import { AEventDispatcher, IEventListener } from '../../internal';
 
 /**
  * emitted a dialog is opened
@@ -21,7 +21,6 @@ export declare function dialogOpened(dialog: ADialog): void;
  */
 export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confirm'): void;
 
-
 export default class DialogManager extends AEventDispatcher {
   static readonly EVENT_DIALOG_OPENED = 'dialogOpened';
   static readonly EVENT_DIALOG_CLOSED = 'dialogClosed';
@@ -30,14 +29,18 @@ export default class DialogManager extends AEventDispatcher {
     if (evt.which === 27) {
       this.removeLast();
     }
-  }
+  };
 
   private readonly openDialogs: ADialog[] = [];
   readonly node: HTMLElement;
   readonly livePreviews: Partial<ILivePreviewOptions>;
   readonly onDialogBackgroundClick: 'cancel' | 'confirm';
 
-  constructor(options: {doc: Document, livePreviews: Partial<ILivePreviewOptions>, onDialogBackgroundClick: 'cancel' | 'confirm'}) {
+  constructor(options: {
+    doc: Document;
+    livePreviews: Partial<ILivePreviewOptions>;
+    onDialogBackgroundClick: 'cancel' | 'confirm';
+  }) {
     super();
     const doc = options.doc;
     this.livePreviews = options.livePreviews;
@@ -65,8 +68,7 @@ export default class DialogManager extends AEventDispatcher {
     return this.openDialogs.reduce((acc, a) => Math.max(acc, a.level), 0);
   }
 
-
-  setHighlight(mask: {left: number, top: number, width: number, height: number}) {
+  setHighlight(mask: { left: number; top: number; width: number; height: number }) {
     const area = <HTMLElement>this.node.firstElementChild;
     // @see http://bennettfeely.com/clippy/ -> select `Frame` example
     // use webkit prefix for safari
@@ -101,7 +103,7 @@ export default class DialogManager extends AEventDispatcher {
       left: base.left - offset.left,
       top: base.top - offset.top,
       width: base.width,
-      height: offset.height
+      height: offset.height,
     });
   }
 
@@ -151,7 +153,10 @@ export default class DialogManager extends AEventDispatcher {
 
   removeAboveLevel(level: number) {
     // hide all dialogs which have a higher or equal level to the newly opened one
-    this.openDialogs.filter((d) => d.level >= level).reverse().forEach((d) => this.remove(d));
+    this.openDialogs
+      .filter((d) => d.level >= level)
+      .reverse()
+      .forEach((d) => this.remove(d));
   }
 
   removeLike(dialog: ADialog) {
@@ -165,7 +170,7 @@ export default class DialogManager extends AEventDispatcher {
 
   private setUp() {
     this.node.ownerDocument!.addEventListener('keyup', this.escKeyListener, {
-      passive: true
+      passive: true,
     });
     this.node.style.display = 'block';
   }

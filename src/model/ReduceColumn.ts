@@ -1,25 +1,36 @@
-import {median, quantile, IEventListener} from '../internal';
-import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
-import {IDataRow, DEFAULT_COLOR, ITypeFactory} from './interfaces';
-import {EAdvancedSortMethod} from './INumberColumn';
-import {integrateDefaults} from './internal';
+import { median, quantile, IEventListener } from '../internal';
+import { toolbar } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
+import CompositeNumberColumn, { ICompositeNumberColumnDesc } from './CompositeNumberColumn';
+import { IDataRow, DEFAULT_COLOR, ITypeFactory } from './interfaces';
+import { EAdvancedSortMethod } from './INumberColumn';
+import { integrateDefaults } from './internal';
 
 /**
  *  factory for creating a description creating a max column
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createReduceDesc(label: string = 'Reduce') {
-  return {type: 'reduce', label};
+export function createReduceDesc(label = 'Reduce') {
+  return { type: 'reduce', label };
 }
 
 export interface IReduceDesc {
   readonly reduce?: EAdvancedSortMethod;
 }
-
 
 export declare type IReduceColumnDesc = IReduceDesc & ICompositeNumberColumnDesc;
 
@@ -40,11 +51,14 @@ export default class ReduceColumn extends CompositeNumberColumn {
   private reduce: EAdvancedSortMethod;
 
   constructor(id: string, desc: Readonly<IReduceColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'interleaving',
-      groupRenderer: 'interleaving',
-      summaryRenderer: 'interleaving'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'interleaving',
+        groupRenderer: 'interleaving',
+        summaryRenderer: 'interleaving',
+      })
+    );
     this.reduce = desc.reduce || EAdvancedSortMethod.max;
   }
 
@@ -59,7 +73,12 @@ export default class ReduceColumn extends CompositeNumberColumn {
   getColor(row: IDataRow) {
     //compute the index of the maximal one
     const c = this._children;
-    if (c.length === 0 || this.reduce === EAdvancedSortMethod.q1 || this.reduce === EAdvancedSortMethod.q3 || this.reduce === EAdvancedSortMethod.mean) {
+    if (
+      c.length === 0 ||
+      this.reduce === EAdvancedSortMethod.q1 ||
+      this.reduce === EAdvancedSortMethod.q3 ||
+      this.reduce === EAdvancedSortMethod.mean
+    ) {
       return DEFAULT_COLOR;
     }
     const v = this.compute(row);
@@ -82,9 +101,15 @@ export default class ReduceColumn extends CompositeNumberColumn {
       case EAdvancedSortMethod.median:
         return median(vs)!;
       case EAdvancedSortMethod.q1:
-        return quantile(vs.sort((a, b) => a - b), 0.25)!;
+        return quantile(
+          vs.sort((a, b) => a - b),
+          0.25
+        )!;
       case EAdvancedSortMethod.q3:
-        return quantile(vs.sort((a, b) => a - b), 0.75)!;
+        return quantile(
+          vs.sort((a, b) => a - b),
+          0.75
+        )!;
     }
   }
 
@@ -121,7 +146,11 @@ export default class ReduceColumn extends CompositeNumberColumn {
     if (this.reduce === reduce) {
       return;
     }
-    this.fire([ReduceColumn.EVENT_REDUCE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.reduce, this.reduce = reduce);
+    this.fire(
+      [ReduceColumn.EVENT_REDUCE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY],
+      this.reduce,
+      (this.reduce = reduce)
+    );
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -143,7 +172,7 @@ export default class ReduceColumn extends CompositeNumberColumn {
     if (format === 'json') {
       return {
         value: this.getRawNumber(row),
-        children: this.children.map((d) => d.getExportValue(row, format))
+        children: this.children.map((d) => d.getExportValue(row, format)),
       };
     }
     return super.getExportValue(row, format);

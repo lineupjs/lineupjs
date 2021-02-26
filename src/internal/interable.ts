@@ -1,4 +1,3 @@
-
 export interface IForEachAble<T> extends Iterable<T> {
   forEach(callback: (v: T, i: number) => void): void;
 }
@@ -35,7 +34,17 @@ export function isSeqEmpty(seq: ISequence<any>) {
  * @internal
  */
 export function isIndicesAble<T>(it: Iterable<T>): it is ArrayLike<T> & Iterable<T> {
-  return Array.isArray(it) || it instanceof Uint8Array || it instanceof Uint16Array || it instanceof Uint32Array || it instanceof Float32Array || it instanceof Int8Array || it instanceof Int16Array || it instanceof Int32Array || it instanceof Float64Array;
+  return (
+    Array.isArray(it) ||
+    it instanceof Uint8Array ||
+    it instanceof Uint16Array ||
+    it instanceof Uint32Array ||
+    it instanceof Float32Array ||
+    it instanceof Int8Array ||
+    it instanceof Int16Array ||
+    it instanceof Int32Array ||
+    it instanceof Float64Array
+  );
 }
 
 declare type ISequenceBase<T> = ISequence<T> | (ArrayLike<T> & Iterable<T>);
@@ -46,9 +55,7 @@ declare type ISequenceBase<T> = ISequence<T> | (ArrayLike<T> & Iterable<T>);
 class LazyFilter<T> implements ISequence<T> {
   private _length = -1;
 
-  constructor(private readonly it: ISequenceBase<T>, private readonly filters: ((v: T, i: number) => boolean)[]) {
-
-  }
+  constructor(private readonly it: ISequenceBase<T>, private readonly filters: ((v: T, i: number) => boolean)[]) {}
 
   get length() {
     // cached
@@ -125,7 +132,7 @@ class LazyFilter<T> implements ISequence<T> {
       }
       return v;
     };
-    return {next};
+    return { next };
   }
 
   some(callback: (v: T, i: number) => boolean) {
@@ -249,9 +256,7 @@ class LazyFilter<T> implements ISequence<T> {
  * lazy mapping operation
  */
 abstract class ALazyMap<T, T2> implements ISequence<T2> {
-  constructor(protected readonly it: ISequenceBase<T>) {
-
-  }
+  constructor(protected readonly it: ISequenceBase<T>) {}
 
   get length() {
     return this.it.length;
@@ -263,7 +268,6 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
 
   abstract map<U>(callback: (v: T2, i: number) => U): ISequence<U>;
   protected abstract mapV(v: T, i: number): T2;
-
 
   forEach(callback: (v: T2, i: number) => void) {
     if (isIndicesAble(this.it)) {
@@ -285,18 +289,18 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
       const v = it.next();
       if (v.done) {
         return {
-          value: <T2><any>undefined,
-          done: true
+          value: <T2>(<any>undefined),
+          done: true,
         };
       }
       const value = this.mapV(v.value, i);
       i++;
       return {
         value,
-        done: false
+        done: false,
       };
     };
-    return {next};
+    return { next };
   }
 
   some(callback: (v: T2, i: number) => boolean) {
@@ -370,7 +374,11 @@ class LazyMap1<T1, T2> extends ALazyMap<T1, T2> implements ISequence<T2> {
 }
 
 class LazyMap2<T1, T2, T3> extends ALazyMap<T1, T3> implements ISequence<T3> {
-  constructor(it: ISequenceBase<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3) {
+  constructor(
+    it: ISequenceBase<T1>,
+    private readonly map12: (v: T1, i: number) => T2,
+    private readonly map23: (v: T2, i: number) => T3
+  ) {
     super(it);
   }
 
@@ -383,9 +391,13 @@ class LazyMap2<T1, T2, T3> extends ALazyMap<T1, T3> implements ISequence<T3> {
   }
 }
 
-
 class LazyMap3<T1, T2, T3, T4> extends ALazyMap<T1, T4> implements ISequence<T4> {
-  constructor(it: ISequenceBase<T1>, private readonly map12: (v: T1, i: number) => T2, private readonly map23: (v: T2, i: number) => T3, private readonly map34: (v: T3, i: number) => T4) {
+  constructor(
+    it: ISequenceBase<T1>,
+    private readonly map12: (v: T1, i: number) => T2,
+    private readonly map23: (v: T2, i: number) => T3,
+    private readonly map34: (v: T3, i: number) => T4
+  ) {
     super(it);
   }
 
@@ -402,9 +414,7 @@ class LazyMap3<T1, T2, T3, T4> extends ALazyMap<T1, T4> implements ISequence<T4>
 class LazySeq<T> implements ISequence<T> {
   private _arr: ISequenceBase<T> | null = null;
 
-  constructor(private readonly iterable: Iterable<T>) {
-
-  }
+  constructor(private readonly iterable: Iterable<T>) {}
 
   get arr() {
     if (this._arr) {
@@ -517,7 +527,6 @@ export function lazySeq<T>(iterable: Iterable<T>): ISequence<T> {
   return new LazySeq(iterable);
 }
 
-
 class ConcatSequence<T> implements ISequence<T> {
   constructor(private readonly seqs: ISequence<ISequence<T>>) {
     //
@@ -526,7 +535,7 @@ class ConcatSequence<T> implements ISequence<T> {
   [Symbol.iterator]() {
     const seqs = Array.from(this.seqs);
     let it = seqs.shift()![Symbol.iterator]();
-    const next = (): {value: T, done: boolean} => {
+    const next = (): { value: T; done: boolean } => {
       const v = it.next();
       if (!v.done) {
         return v;
@@ -539,7 +548,7 @@ class ConcatSequence<T> implements ISequence<T> {
       it = seqs.shift()![Symbol.iterator]();
       return next();
     };
-    return {next};
+    return { next };
   }
 
   filter(callback: (v: T, i: number) => boolean): ISequence<T> {
@@ -576,7 +585,11 @@ class ConcatSequence<T> implements ISequence<T> {
  */
 export function concatSeq<T>(seqs: ISequence<ISequence<T>>): ISequence<T>;
 export function concatSeq<T>(seq1: ISequence<T>, seq2: ISequence<T>, ...seqs: ISequence<T>[]): ISequence<T>;
-export function concatSeq<T>(seq1: ISequence<T>[] | ISequence<T>, seq2?: ISequence<T>, ...seqs: ISequence<T>[]): ISequence<T> {
+export function concatSeq<T>(
+  seq1: ISequence<T>[] | ISequence<T>,
+  seq2?: ISequence<T>,
+  ...seqs: ISequence<T>[]
+): ISequence<T> {
   if (seq2) {
     return new ConcatSequence([<ISequence<T>>seq1, seq2].concat(seqs));
   }
