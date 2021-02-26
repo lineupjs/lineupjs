@@ -1,11 +1,11 @@
 {
   "hooks": {
-    "before:init": "npm test",
-    "before:release": "npm run dist",
+    "before:init": "yarn run lint && yarn test",
+    "before:release": "yarn compile && yarn run build && yarn run dist && yarn run postdist",
     "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
   },
   "git": {
-    "tagName": "v%s"
+    "tagName": "v${version}"
   },
   "npm": {
     "publish": true

@@ -2,16 +2,17 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "es6",
-    "outDir": "build"
+    "outDir": "build/src"
   },
   "typedocOptions": {
     "name": "LineUpJS",
+    "out": "./docs",
+    "theme": "default",
+    "excludeExternals": true,
+    "excludePrivate": true,
+    "includeVersion": true,
     "hideGenerator": true,
     "exclude": "**/*.(d.ts|js|spec.ts|scss)",
-    "excludePrivate": true,
-    "excludeProtected": true,
-    "excludeExternals": true,
-    "listInvalidSymbolLinks": true,
-    "plugin": ["typedoc-plugin-as-member-of"]
+    "plugin": ["typedoc-plugin-as-member-of"],
   }
 }

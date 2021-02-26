@@ -1,52 +1,34 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    "target": "es5",
+    "module": "ESNext",
+    "target": "ES5",
     "importHelpers": true,
     "sourceMap": true,
+    "lib": ["DOM", "ES2015", "es2016.array.include", "es2017.object"],
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "importsNotUsedAsValues": "remove",
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictBindCallApply": true,
+    "stripInternal": true,
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
     "jsx": "react",
-    "experimentalDecorators": true,
-    "lib": [
-      "dom",
-      "es2015",
-      "es2016.array.include",
-      "es2017.object"
-    ],
-    "removeComments": false,
-    "noImplicitAny": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noImplicitThis": true,
-    "noUnusedParameters": true,
-    "strict": true,
-    "stripInternal": true,
     "esModuleInterop": true,
-    "types": [
-      "d3-color",
-      "d3-dispatch",
-      "d3-format",
-      "d3-scale",
-      "d3-scale-chromatic",
-      "d3-time",
-      "d3-time-format",
-      "detect-browser",
-      "lodash.get",
-      "jest"
-    ]
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "noEmit": true,
+    "paths": {
+      "@": ["./src"],
+      "*": ["*", "node_modules/*"]
+    }
   },
-  "compileOnSave": false,
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "tests/**/*.ts",
-    "tests/**/*.tsx",
-    "tsd.d.ts"
-  ],
-  "exclude": [
-    "src/**/*.d.ts",
-    "tests/**/*.d.ts",
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tsd.d.ts"],
+  "exclude": ["src/**/*.d.ts"]
 }
