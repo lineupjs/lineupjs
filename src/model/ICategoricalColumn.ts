@@ -36,8 +36,8 @@ export interface ICategoricalLikeColumn extends Column {
 
 export function isCategoricalLikeColumn(col: Column): col is ICategoricalLikeColumn {
   return (
-    typeof (<ICategoricalLikeColumn>col).categories !== 'undefined' &&
-    typeof (<ICategoricalLikeColumn>col).iterCategory === 'function'
+    typeof (col as ICategoricalLikeColumn).categories !== 'undefined' &&
+    typeof (col as ICategoricalLikeColumn).iterCategory === 'function'
   );
 }
 
@@ -46,7 +46,7 @@ export interface ISetColumn extends IArrayColumn<boolean>, ICategoricalLikeColum
 }
 
 export function isSetColumn(col: Column): col is ISetColumn {
-  return isCategoricalLikeColumn(col) && typeof (<ISetColumn>col).getSet === 'function';
+  return isCategoricalLikeColumn(col) && typeof (col as ISetColumn).getSet === 'function';
 }
 
 export interface ICategoricalColumn extends ISetColumn {
@@ -77,8 +77,8 @@ export function isCategoricalColumn(col: Column): col is ICategoricalColumn;
 export function isCategoricalColumn(col: IColumnDesc): col is ICategoricalColumnDesc & IColumnDesc;
 export function isCategoricalColumn(col: Column | IColumnDesc) {
   return (
-    (col instanceof Column && typeof (<ICategoricalColumn>col).getCategory === 'function') ||
-    (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null)
+    (col instanceof Column && typeof (col as ICategoricalColumn).getCategory === 'function') ||
+    (!(col instanceof Column) && (col as IColumnDesc).type.match(/(categorical|ordinal|hierarchy)/) != null)
   );
 }
 

@@ -1,13 +1,13 @@
-import {setupLineUp, waitReady} from './utils/lineup';
-import {generateData, DEFAULT_CATEGORIES} from './utils/data';
+import { setupLineUp, waitReady } from './utils/lineup';
+import { generateData, DEFAULT_CATEGORIES } from './utils/data';
 
 describe('builder2', () => {
   it('builder2', async () => {
     // LineUpJS
-    const {LineUpJS, document} = await setupLineUp();
+    const { LineUpJS, document } = await setupLineUp();
 
     const arr = generateData({
-      cat: 2
+      cat: 2,
     });
     const builder = LineUpJS.builder(arr);
 
@@ -27,9 +27,7 @@ describe('builder2', () => {
       .sortBy('a', 'desc')
       .impose('number', 'a', 'cat2'); // create composite column
 
-    builder
-      .defaultRanking()
-      .ranking(ranking);
+    builder.defaultRanking().ranking(ranking);
 
     const l = builder.build(document.body);
     waitReady(l);

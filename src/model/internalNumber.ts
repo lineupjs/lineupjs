@@ -9,20 +9,20 @@ export const DEFAULT_FORMATTER = format('.3n');
 export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
   const aVal = col.getBoxPlotData(a);
   const bVal = col.getBoxPlotData(b);
-  const method = <keyof IBoxPlotData>col.getSortMethod();
+  const method = col.getSortMethod() as keyof IBoxPlotData;
   if (aVal == null) {
     return bVal == null ? 0 : FIRST_IS_NAN;
   }
   if (bVal == null) {
     return FIRST_IS_NAN * -1;
   }
-  return numberCompare(<number>aVal[method], <number>bVal[method]);
+  return numberCompare(aVal[method] as number, bVal[method] as number);
 }
 
 export function toCompareBoxPlotValue(col: IBoxPlotColumn, row: IDataRow) {
   const v = col.getBoxPlotData(row);
-  const method = <keyof IBoxPlotData>col.getSortMethod();
-  return v == null ? NaN : <number>v[method];
+  const method = col.getSortMethod() as keyof IBoxPlotData;
+  return v == null ? NaN : (v[method] as number);
 }
 
 export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw' | 'normalized'): number {
@@ -30,7 +30,7 @@ export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw'
   if (data == null) {
     return NaN;
   }
-  return <number>data[<keyof IBoxPlotData>col.getSortMethod()];
+  return data[col.getSortMethod() as keyof IBoxPlotData] as number;
 }
 /**
  * save number comparison
@@ -115,5 +115,5 @@ export function toCompareGroupValue(
     b.pushAll(rows.map((d) => col.getNumber(d)));
   }
   const vs = b.build();
-  return <number>vs[sortMethod];
+  return vs[sortMethod] as number;
 }

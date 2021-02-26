@@ -234,7 +234,7 @@ export declare function filterChanged(previous: INumberFilter | null, current: I
 
 /**
  * column combiner which uses a custom JavaScript function to combined the values
- * The script iteslf can be any valid JavaScript code. It will be embedded in a function.
+ * The script itself can be any valid JavaScript code. It will be embedded in a function.
  * Therefore the last statement has to return a value.
  *
  * In case of a single line statement the code piece statement <code>return</code> will be automatically prefixed.
@@ -282,7 +282,14 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
-  private f: Function | null = null;
+  private f: (
+    children,
+    values: number[],
+    raws: any[],
+    col: ColumnContext,
+    row: any,
+    index: number
+  ) => number | null = null;
   private mapping: IMappingFunction;
   private original: IMappingFunction;
   private colorMapping: IColorMappingFunction;
@@ -384,11 +391,12 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
 
   protected compute(row: IDataRow) {
     if (this.f == null) {
-      this.f = new Function('children', 'values', 'raws', 'col', 'row', 'index', wrapWithContext(this.script));
+      // eslint-disable-next-line no-new-func
+      this.f = new Function('children', 'values', 'raws', 'col', 'row', 'index', wrapWithContext(this.script)) as any;
     }
     const children = this._children;
     const values = this._children.map((d) => d.getValue(row));
-    const raws = <number[]>this._children.map((d) => (isNumberColumn(d) ? d.getRawNumber(row) : null));
+    const raws = this._children.map((d) => (isNumberColumn(d) ? d.getRawNumber(row) : null)) as number[];
     const col = new ColumnContext(
       children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])),
       () => {

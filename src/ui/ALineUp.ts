@@ -15,7 +15,7 @@ import { ADialog } from './dialogs';
 /**
  * emitted when the highlight changes
  * @asMemberOf ALineUp
- * @param dataIndex the highlghted data index or -1 for none
+ * @param dataIndex the highlighted data index or -1 for none
  * @event
  */
 export declare function highlightChanged(dataIndex: number): void;

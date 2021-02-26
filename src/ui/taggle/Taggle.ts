@@ -56,11 +56,11 @@ export default class Taggle extends ALineUp {
           </label></div>`
       );
       const spaceFilling = spaceFillingRule(this.options);
-      this.spaceFilling = <HTMLElement>this.panel.node.querySelector(`.${cssClass('rule-button-chooser')}`)!;
-      const input = <HTMLInputElement>this.spaceFilling.querySelector('input');
+      this.spaceFilling = this.panel.node.querySelector<HTMLElement>(`.${cssClass('rule-button-chooser')}`)!;
+      const input = this.spaceFilling.querySelector<HTMLInputElement>('input');
       input.onchange = () => {
         const selected = this.spaceFilling!.classList.toggle(cssClass('chosen'));
-        self.setTimeout(() => {
+        setTimeout(() => {
           this.updateLodRules(selected);
           this.renderer!.switchRule(selected ? spaceFilling : null);
         });

@@ -21,7 +21,7 @@ import {
 } from 'd3-scale-chromatic';
 import {
   DEFAULT_CATEGORICAL_COLOR_FUNCTION,
-  ReplacmentColorMappingFunction,
+  ReplacementColorMappingFunction,
 } from '../../model/CategoricalColorMappingFunction';
 
 const sets: { [key: string]: ReadonlyArray<string> } = {
@@ -82,7 +82,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
     );
 
     this.findInput('select').onchange = (evt) => {
-      const scheme = sets[(<HTMLInputElement>evt.currentTarget).value];
+      const scheme = sets[(evt.currentTarget as HTMLInputElement).value];
       if (!scheme) {
         return;
       }
@@ -116,7 +116,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
     if (map.size === 0) {
       this.column.setColorMapping(DEFAULT_CATEGORICAL_COLOR_FUNCTION);
     } else {
-      this.column.setColorMapping(new ReplacmentColorMappingFunction(map));
+      this.column.setColorMapping(new ReplacementColorMappingFunction(map));
     }
     return true;
   }

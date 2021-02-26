@@ -44,7 +44,7 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
 
   private static example(arr: IKeyValue<ILink>[]) {
     const numExampleRows = 5;
-    const examples = <string[]>[];
+    const examples: string[] = [];
     for (const row of arr) {
       if (!row || !row.value.href) {
         continue;

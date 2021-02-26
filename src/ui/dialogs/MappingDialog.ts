@@ -123,7 +123,7 @@ export default class MappingDialog extends ADialog {
         </div>`
     );
 
-    const g = <SVGGElement>node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
+    const g = node.querySelector<SVGGElement>(`.${cssClass('dialog-mapper-details')} > g`);
 
     this.forEach(
       `.${cssClass('dialog-mapper-details')} rect`,
@@ -139,10 +139,10 @@ export default class MappingDialog extends ADialog {
     );
 
     {
-      const select = <HTMLSelectElement>this.find('select');
-      const textarea = <HTMLTextAreaElement>this.find('textarea');
+      const select = this.find<HTMLSelectElement>('select');
+      const textarea = this.find<HTMLSelectElement>('textarea');
       select.onchange = (evt) => {
-        const select = <HTMLSelectElement>evt.currentTarget;
+        const select = evt.currentTarget as HTMLSelectElement;
         switch (select.value) {
           case 'linear_invert':
             this.scale = new ScaleMappingFunction(this.rawDomain.slice(), 'linear', [1, 0]);
@@ -179,41 +179,37 @@ export default class MappingDialog extends ADialog {
       select.selectedIndex = Array.from(select.options).findIndex((d) => d.value === scaleType);
 
       if (scaleType === 'script') {
-        textarea.value = (<ScriptMappingFunction>this.scale).code;
+        textarea.value = (this.scale as ScriptMappingFunction).code;
       }
       this.createMappings();
     }
 
-    {
-      this.forEach(
-        `#${this.idPrefix}min, #${this.idPrefix}max`,
-        (d: HTMLInputElement, i) =>
-          (d.onchange = () => {
-            const v = d.valueAsNumber;
-            if (v === this.rawDomain[i]) {
-              d.setCustomValidity('');
-              return;
-            }
-            const other = this.rawDomain[1 - i];
-            if (isNaN(v) || (i === 0 && v >= other) || (i === 1 && v <= other)) {
-              d.setCustomValidity(`value has to be ${i === 0 ? '<= max' : '>= min'}`);
-              return;
-            }
-            d.setCustomValidity('');
-            this.rawDomain[i] = v;
-            this.scale = this.computeScale();
-            const patchedDomain = this.scale.domain.slice();
-            patchedDomain[0] = this.rawDomain[0];
-            patchedDomain[patchedDomain.length - 1] = this.rawDomain[1];
-            this.scale.domain = patchedDomain;
-            this.createMappings();
-            this.updateLines();
-            if (this.showLivePreviews()) {
-              this.column.setMapping(this.scale);
-            }
-          })
-      );
-    }
+    this.forEach(`#${this.idPrefix}min, #${this.idPrefix}max`, (d: HTMLInputElement, i) => {
+      d.onchange = () => {
+        const v = d.valueAsNumber;
+        if (v === this.rawDomain[i]) {
+          d.setCustomValidity('');
+          return;
+        }
+        const other = this.rawDomain[1 - i];
+        if (isNaN(v) || (i === 0 && v >= other) || (i === 1 && v <= other)) {
+          d.setCustomValidity(`value has to be ${i === 0 ? '<= max' : '>= min'}`);
+          return;
+        }
+        d.setCustomValidity('');
+        this.rawDomain[i] = v;
+        this.scale = this.computeScale();
+        const patchedDomain = this.scale.domain.slice();
+        patchedDomain[0] = this.rawDomain[0];
+        patchedDomain[patchedDomain.length - 1] = this.rawDomain[1];
+        this.scale.domain = patchedDomain;
+        this.createMappings();
+        this.updateLines();
+        if (this.showLivePreviews()) {
+          this.column.setMapping(this.scale);
+        }
+      };
+    });
 
     this.data.then((values) => {
       values.forEach((v) => {
@@ -235,7 +231,7 @@ export default class MappingDialog extends ADialog {
     if (!(this.scale instanceof ScaleMappingFunction)) {
       return;
     }
-    const g = <SVGGElement>this.node.querySelector(`.${cssClass('dialog-mapper-details')} > g`);
+    const g = this.node.querySelector<SVGGElement>(`.${cssClass('dialog-mapper-details')} > g`);
     const domain = this.scale.domain;
     const range = this.scale.range;
     for (let i = 0; i < domain.length; ++i) {
@@ -245,10 +241,10 @@ export default class MappingDialog extends ADialog {
 
   private update() {
     const scaleType = (this.node.dataset.scale = this.scaleType);
-    const select = <HTMLSelectElement>this.find('select');
+    const select = this.find<HTMLSelectElement>('select');
     select.selectedIndex = Array.from(select.options).findIndex((d) => d.value === scaleType);
     if (scaleType === 'script') {
-      (<HTMLTextAreaElement>this.find('textarea')).value = (<ScriptMappingFunction>this.scale).code;
+      this.find<HTMLTextAreaElement>('textarea').value = (this.scale as ScriptMappingFunction).code;
     }
     this.forEach(`input[type=number]`, (d: HTMLInputElement, i) => {
       d.value = round(this.rawDomain[i], 3).toString();
@@ -277,9 +273,9 @@ export default class MappingDialog extends ADialog {
     if (!r) {
       return;
     }
-    const ref = <IMapAbleColumn>r.find(columnId)!;
+    const ref = r.find(columnId)! as IMapAbleColumn;
     this.scale = ref.getMapping().clone();
-    this.rawDomain = <[number, number]>this.scale.domain.slice();
+    this.rawDomain = this.scale.domain.slice() as [number, number];
     this.update();
     this.createMappings();
     this.updateLines();

@@ -119,7 +119,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
           const r = add(`${prefix}${name}${s}`, child);
           if (!r.color) {
             //hack to inject the next color
-            (<any>r).color = colors();
+            (r as any).color = colors();
           }
           return r;
         }
@@ -157,7 +157,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -182,6 +182,10 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
       const path = dump.cutOffNode.split(this.hierarchySeparator);
       let node: Readonly<ICategoryInternalNode> | null = this.hierarchy;
 
+      const findName = (act: string) => {
+        return (d: { name: string }) => d.name === act;
+      };
+
       let act = path.shift();
       while (act && node) {
         if (node.name !== act) {
@@ -193,7 +197,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
           break;
         }
         act = next;
-        node = node.children.find((d) => d.name === act) || null;
+        node = node.children.find(findName(act)) || null;
       }
       this.currentNode = node || this.hierarchy;
     }
@@ -378,7 +382,7 @@ export function isHierarchical(categories: (string | Partial<ICategory>)[]) {
     return false;
   }
   // check if any has a given parent name
-  return categories.some((c) => (<any>c).parent != null);
+  return categories.some((c) => (c as any).parent != null);
 }
 
 export function deriveHierarchy(categories: (Partial<ICategory> & { parent: string | null })[]) {
@@ -387,13 +391,13 @@ export function deriveHierarchy(categories: (Partial<ICategory> & { parent: stri
     const p = c.parent || '';
     // set and fill up proxy
     const item = Object.assign(
-      <ICategoryNode>{
+      {
         children: [],
         label: c.name!,
         name: c.name!,
         color: DEFAULT_COLOR,
         value: 0,
-      },
+      } as ICategoryNode,
       lookup.get(c.name!) || {},
       c
     );

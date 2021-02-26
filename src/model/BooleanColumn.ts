@@ -34,7 +34,7 @@ export interface IBooleanDesc {
    */
   trueMarker?: string;
   /**
-   * strint to show for false
+   * string to show for false
    * @default (empty)
    */
   falseMarker?: string;
@@ -88,13 +88,13 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     );
     this.categories = [
       {
-        name: desc.trueMarker || '✓',
+        name: desc.trueMarker ?? '✓',
         color: BooleanColumn.GROUP_TRUE.color,
         label: BooleanColumn.GROUP_TRUE.name,
         value: 0,
       },
       {
-        name: desc.falseMarker || '',
+        name: desc.falseMarker ?? '',
         color: BooleanColumn.GROUP_FALSE.color,
         label: BooleanColumn.GROUP_FALSE.name,
         value: 1,
@@ -125,7 +125,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   get dataLength() {

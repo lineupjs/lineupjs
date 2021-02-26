@@ -87,7 +87,7 @@ export default class EngineRenderer extends AEventDispatcher {
       resolveToolbarActions: (col, keys) => this.options.resolveToolbarActions(col, keys, this.options.toolbarActions),
       resolveToolbarDialogAddons: (col, keys) =>
         this.options.resolveToolbarDialogAddons(col, keys, this.options.toolbarDialogAddons),
-      flags: <ILineUpFlags>this.options.flags,
+      flags: this.options.flags as ILineUpFlags,
       asElement: domElementCache(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {
         const r = chooseRenderer(col, this.options.renderers);
@@ -130,7 +130,7 @@ export default class EngineRenderer extends AEventDispatcher {
     {
       // helper object for better resizing experience
       const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`)!;
-      const copy = <HTMLElement>footer.cloneNode(true);
+      const copy = footer.cloneNode(true) as HTMLElement;
       copy.classList.add(cssClass('resize-helper'));
       footer!.insertAdjacentElement('afterend', copy);
     }
@@ -228,7 +228,7 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   private updateZoomFactor() {
-    const body = <HTMLElement>this.node.querySelector('main')!;
+    const body = this.node.querySelector<HTMLElement>('main')!;
     body.style.fontSize = `${this.zoomFactor * 100}%`;
   }
 
@@ -258,8 +258,8 @@ export default class EngineRenderer extends AEventDispatcher {
     this.takeDownProvider();
 
     this.data = data;
-    (<any>this.ctx).provider = data;
-    (<any>this.ctx).tasks = data.getTaskExecutor();
+    (this.ctx as any).provider = data;
+    (this.ctx as any).tasks = data.getTaskExecutor();
 
     this.initProvider(data);
   }
@@ -297,7 +297,7 @@ export default class EngineRenderer extends AEventDispatcher {
       this.setHighlightToNearest(indices, true);
     });
 
-    (<any>this.ctx).provider = data;
+    (this.ctx as any).provider = data;
 
     this.data.getRankings().forEach((r) => this.addRanking(r));
   }
@@ -344,7 +344,7 @@ export default class EngineRenderer extends AEventDispatcher {
           animation: this.options.animated,
           customRowUpdate: this.options.customRowUpdate || (() => undefined),
           levelOfDetail: this.options.levelOfDetail || (() => 'high'),
-          flags: <ILineUpFlags>this.options.flags,
+          flags: this.options.flags as ILineUpFlags,
         })
     );
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {

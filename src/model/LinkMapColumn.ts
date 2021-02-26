@@ -41,7 +41,7 @@ export default class LinkMapColumn extends MapColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
-  private patternFunction: Function | null = null;
+  private patternFunction: (value: string, raw: any, key: string) => string | null = null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<ILinkMapColumnDesc>) {
@@ -52,10 +52,10 @@ export default class LinkMapColumn extends MapColumn<string> {
         renderer: 'map',
       })
     );
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
-    this.pattern = desc.pattern || '';
-    this.patternTemplates = desc.patternTemplates || [];
+    this.pattern = desc.pattern ?? '';
+    this.patternTemplates = desc.patternTemplates ?? [];
   }
 
   setPattern(pattern: string) {
@@ -85,7 +85,7 @@ export default class LinkMapColumn extends MapColumn<string> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow) {
@@ -136,7 +136,7 @@ export default class LinkMapColumn extends MapColumn<string> {
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    if (this.pattern !== (<any>this.desc).pattern) {
+    if (this.pattern !== (this.desc as any).pattern) {
       r.pattern = this.pattern;
     }
     return r;

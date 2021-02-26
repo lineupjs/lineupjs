@@ -35,7 +35,7 @@ export default function debounce(
     // compute current context
     ctx = ctx && choose ? choose(ctx, next) : next;
 
-    tm = self.setTimeout(() => {
+    tm = setTimeout(() => {
       console.assert(ctx != null);
       callback.apply(ctx!.self, ctx!.args);
       ctx = null;

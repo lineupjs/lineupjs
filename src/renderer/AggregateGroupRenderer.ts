@@ -33,7 +33,7 @@ function preventDefault(event: Event) {
 
 function matchNodes(node: HTMLElement, length: number, clazz = 'agg-level', addTopN = false) {
   const doc = node.ownerDocument!;
-  const children = <HTMLElement[]>Array.from(node.children);
+  const children = Array.from(node.children) as HTMLElement[];
   if (addTopN) {
     // top N buttons
     length = length + 1;
@@ -70,7 +70,8 @@ function renderGroups(
   const topNGetter = (group: IGroup) => provider.getTopNAggregated(ranking, group);
 
   const isRow = relativeIndex >= 0;
-  const isLeafGroup = !(<IGroupParent>(<any>group)).subGroups || (<IGroupParent>(<any>group)).subGroups.length === 0;
+  const isLeafGroup =
+    !((group as any) as IGroupParent).subGroups || ((group as any) as IGroupParent).subGroups.length === 0;
 
   const alwaysShowGroup = isAlwaysShowingGroupStrategy(strategy);
   const isSummary = !isRow && isSummaryGroup(group, strategy, topNGetter);
@@ -187,7 +188,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       },
       render(ctx: CanvasRenderingContext2D, _row: IDataRow, i: number, group: IOrderedGroup) {
         if (isDummyGroup(group)) {
-          return;
+          return undefined;
         }
         const parents = groupParents(
           group,
@@ -229,7 +230,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
         for (let i = 0; i < max; ++i) {
           const child = children[i];
-          const subGroups = <IOrderedGroup[]>gparents.map((d) => (d[i] ? d[i].group : null)).filter((d) => d != null);
+          const subGroups = gparents.map((d) => (d[i] ? d[i].group : null)).filter((d) => d != null) as IOrderedGroup[];
 
           const isCollapsed = subGroups.every(
             (d) => context.provider.getAggregationState(ranking, d) === EAggregationState.COLLAPSE

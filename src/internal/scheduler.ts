@@ -74,7 +74,7 @@ function thenFactory<T>(wrappee: PromiseLike<T>, abort: () => void, isAborted: (
   ): IAbortAblePromiseBase<TResult1 | TResult2> {
     const r = wrappee.then(onfulfilled, onrejected);
     return {
-      then: <any>thenFactory(r, abort, isAborted),
+      then: thenFactory(r, abort, isAborted) as any,
       abort,
       isAborted,
     };
@@ -120,11 +120,12 @@ export default class TaskScheduler {
       return;
     }
 
-    const ww = <IPoorManIdleCallback>(<any>self);
+    // eslint-disable-next-line no-restricted-globals
+    const ww = (self as any) as IPoorManIdleCallback;
     if (ww.requestIdleCallback) {
       this.taskId = ww.requestIdleCallback(this.runTasks);
     } else {
-      this.taskId = self.setTimeout(this.runTasks, 1);
+      this.taskId = setTimeout(this.runTasks, 1);
     }
   }
 
@@ -226,11 +227,12 @@ export default class TaskScheduler {
     if (this.taskId === -1) {
       return;
     }
-    const ww = <IPoorManIdleCallback>(<any>self);
+    // eslint-disable-next-line no-restricted-globals
+    const ww = (self as any) as IPoorManIdleCallback;
     if (ww.requestIdleCallback) {
       ww.clearIdleCallback(this.taskId);
     } else {
-      self.clearTimeout(this.taskId);
+      clearTimeout(this.taskId);
     }
     this.taskId = -1;
 

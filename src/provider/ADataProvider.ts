@@ -51,7 +51,7 @@ import { convertAggregationState } from './internal';
 export declare function addColumn(col: Column, index: number): void;
 
 /**
- * emitted when a column has been moved within this composite columm
+ * emitted when a column has been moved within this composite column
  * @asMemberOf ADataProvider
  * @event
  */
@@ -295,7 +295,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   private createTypeFactory() {
-    const factory = <ITypeFactory>(<any>((d: IColumnDump) => {
+    const factory = ((d: IColumnDump) => {
       const desc = this.fromDescRef(d.desc);
       if (!desc || !desc.type) {
         console.warn('cannot restore column dump', d);
@@ -310,7 +310,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       const c = this.instantiateColumn(type, '', desc, this.typeFactory);
       c.restore(d, factory);
       return c;
-    }));
+    }) as ITypeFactory;
     factory.colorMappingFunction = createColorMappingFunction(this.colorMappingFunctionTypes, factory);
     factory.mappingFunction = createMappingFunction(this.mappingFunctionTypes);
     factory.categoricalColorMappingFunction = restoreCategoricalColorMapping;
@@ -446,6 +446,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.rankings.splice(index, 0, r);
     this.forward(r, ...ADataProvider.FORWARD_RANKING_EVENTS);
     //delayed reordering per ranking
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     r.on(
       `${Ranking.EVENT_DIRTY_ORDER}.provider`,
@@ -629,15 +630,15 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
     if (desc.type === 'selection') {
-      (<ISelectionColumnDesc>desc).accessor = (row: IDataRow) => this.isSelected(row.i);
-      (<ISelectionColumnDesc>desc).setter = (index: number, value: boolean) =>
+      (desc as ISelectionColumnDesc).accessor = (row: IDataRow) => this.isSelected(row.i);
+      (desc as ISelectionColumnDesc).setter = (index: number, value: boolean) =>
         value ? this.select(index) : this.deselect(index);
-      (<ISelectionColumnDesc>desc).setterAll = (indices: IndicesArray, value: boolean) =>
+      (desc as ISelectionColumnDesc).setterAll = (indices: IndicesArray, value: boolean) =>
         value ? this.selectAll(indices) : this.deselectAll(indices);
     } else if (desc.type === 'aggregate') {
-      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) =>
+      (desc as IAggregateGroupColumnDesc).isAggregated = (ranking: Ranking, group: IGroup) =>
         this.getAggregationState(ranking, group);
-      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: EAggregationState) =>
+      (desc as IAggregateGroupColumnDesc).setAggregated = (ranking: Ranking, group: IGroup, value: EAggregationState) =>
         this.setAggregationState(ranking, group, value);
     }
     return desc;
@@ -646,12 +647,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   protected cleanDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
     if (desc.type === 'selection') {
-      delete (<ISelectionColumnDesc>desc).accessor;
-      delete (<ISelectionColumnDesc>desc).setter;
-      delete (<ISelectionColumnDesc>desc).setterAll;
+      delete (desc as ISelectionColumnDesc).accessor;
+      delete (desc as ISelectionColumnDesc).setter;
+      delete (desc as ISelectionColumnDesc).setterAll;
     } else if (desc.type === 'aggregate') {
-      delete (<IAggregateGroupColumnDesc>desc).isAggregated;
-      delete (<IAggregateGroupColumnDesc>desc).setAggregated;
+      delete (desc as IAggregateGroupColumnDesc).isAggregated;
+      delete (desc as IAggregateGroupColumnDesc).setAggregated;
     }
     return desc;
   }

@@ -78,7 +78,7 @@ function sortOrder(
     } ><span>Ascending</span></label>
         <label class="${cssClass('checkbox')}"><input type="radio" name="sortorder" value="desc"  ${
       order.asc === 'desc' ? 'checked' : ''
-    } ><span>Decending</span></label>
+    } ><span>Descending</span></label>
         <label class="${cssClass('checkbox')}"><input type="radio" name="sortorder" value="none"  ${
       order.asc === undefined ? 'checked' : ''
     } ><span>Unsorted</span></label>

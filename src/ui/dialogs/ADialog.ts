@@ -32,9 +32,9 @@ export function dialogContext(
 ): IDialogContext {
   return {
     attachment:
-      (<MouseEvent>attachment).currentTarget != null
-        ? <HTMLElement>(<MouseEvent>attachment).currentTarget
-        : <HTMLElement>attachment,
+      (attachment as MouseEvent).currentTarget != null
+        ? ((attachment as MouseEvent).currentTarget as HTMLElement)
+        : (attachment as HTMLElement),
     level,
     manager: ctx.dialogManager,
     idPrefix: ctx.idPrefix,
@@ -124,7 +124,7 @@ abstract class ADialog {
     if (this.build(this.node) === false) {
       return;
     }
-    const parent = <HTMLElement>this.attachment.closest(`.${cssClass()}`)!;
+    const parent = this.attachment.closest<HTMLElement>(`.${cssClass()}`)!;
 
     if (this.options.title) {
       this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
@@ -152,7 +152,7 @@ abstract class ADialog {
     const auto = this.find<HTMLInputElement>('input[autofocus]');
     if (auto) {
       // delay such that it works
-      self.setTimeout(() => auto.focus());
+      setTimeout(() => auto.focus());
     }
 
     const reset = this.find<HTMLButtonElement>('button[type=reset]');
@@ -201,7 +201,7 @@ abstract class ADialog {
   }
 
   protected find<T extends HTMLElement>(selector: string): T {
-    return <T>this.node.querySelector(selector);
+    return this.node.querySelector<T>(selector);
   }
 
   protected findInput(selector: string) {
@@ -209,7 +209,7 @@ abstract class ADialog {
   }
 
   protected forEach<M extends Element, T>(selector: string, callback: (d: M, i: number) => T): T[] {
-    return (<M[]>Array.from(this.node.querySelectorAll(selector))).map(callback);
+    return Array.from(this.node.querySelectorAll<M>(selector)).map(callback);
   }
 
   protected abstract reset(): void;

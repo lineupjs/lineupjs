@@ -23,8 +23,8 @@ export default class SearchDialog extends ADialog {
     `
     );
 
-    const input = <HTMLInputElement>node.querySelector('input[type="text"]')!;
-    const checkbox = <HTMLInputElement>node.querySelector('input[type="checkbox"]')!;
+    const input = node.querySelector<HTMLInputElement>('input[type="text"]')!;
+    const checkbox = node.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
     const update = () => {
       const search: any = input.value;
       if (search.length < 3) {

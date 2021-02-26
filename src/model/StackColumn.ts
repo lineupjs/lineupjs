@@ -78,6 +78,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       })
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     this.adaptChange = function (this: { source: Column }, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);

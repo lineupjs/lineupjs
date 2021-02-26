@@ -38,10 +38,7 @@
             "items": {
               "type": "object",
               "title": "a column dump",
-              "required": [
-                "id",
-                "desc"
-              ],
+              "required": ["id", "desc"],
               "additionalProperties": true,
               "properties": {
                 "id": {
@@ -50,18 +47,12 @@
                 },
                 "desc": {
                   "title": "column desc",
-                  "examples": [
-                    "rank",
-                    "string",
-                    "number"
-                  ]
+                  "examples": ["rank", "string", "number"]
                 },
                 "width": {
                   "type": "integer",
                   "title": "column width",
-                  "examples": [
-                    100
-                  ]
+                  "examples": [100]
                 },
                 "label": {
                   "type": "string",
@@ -88,10 +79,7 @@
             "items": {
               "type": "object",
               "title": "sort criteria",
-              "required": [
-                "sortBy",
-                "asc"
-              ],
+              "required": ["sortBy", "asc"],
               "properties": {
                 "sortBy": {
                   "type": "string",
@@ -109,10 +97,7 @@
             "items": {
               "type": "object",
               "title": "sort criteria",
-              "required": [
-                "sortBy",
-                "asc"
-              ],
+              "required": ["sortBy", "asc"],
               "properties": {
                 "sortBy": {
                   "type": "string",

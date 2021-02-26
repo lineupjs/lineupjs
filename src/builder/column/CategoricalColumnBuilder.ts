@@ -31,7 +31,7 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
    */
   asSet(separator?: string) {
     if (separator) {
-      (<any>this.desc).separator = separator;
+      (this.desc as any).separator = separator;
     }
     this.desc.type = 'set';
     return this;
@@ -41,7 +41,7 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
     // derive categories
     const categories = new Set<string>();
     const isSet = this.desc.type === 'set';
-    const separator = (<any>this.desc).separator || ';';
+    const separator = (this.desc as any).separator || ';';
     const val = (vi: any) => {
       if (typeof vi === 'string' && vi !== '') {
         return vi;
@@ -51,7 +51,7 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
       }
       return null;
     };
-    const col = (<any>this.desc).column;
+    const col = (this.desc as any).column;
     data.forEach((d) => {
       const v = resolveValue(d, col);
       if (Array.isArray(v)) {

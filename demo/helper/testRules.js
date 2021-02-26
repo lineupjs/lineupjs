@@ -19,7 +19,9 @@ function shuffle(array) {
 }
 
 function verify() {
-  const rules = [].concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules))).filter((d) => d.selectorText);
+  const rules = []
+    .concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules)))
+    .filter((d) => d.selectorText);
   const m = new Map();
   for (const rule of rules) {
     if (rule.styleMap.size === 0) {
@@ -27,14 +29,21 @@ function verify() {
     }
 
     if (m.has(rule.selectorText)) {
-      console.warn('duplicate selector detected: ', rule.selectorText, rule, rules.find((d) => d.selectorText === rule.selectorText));
+      console.warn(
+        'duplicate selector detected: ',
+        rule.selectorText,
+        rule,
+        rules.find((d) => d.selectorText === rule.selectorText)
+      );
     }
     m.set(rule.selectorText, []);
   }
 }
 
 function test(outer = 10, inner = 100) {
-  const rules = [].concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules))).filter((d) => d.selectorText);
+  const rules = []
+    .concat(...Array.from(document.styleSheets).map((d) => Array.from(d.cssRules)))
+    .filter((d) => d.selectorText);
 
   const m = new Map();
   for (const rule of rules) {
@@ -72,7 +81,7 @@ function test(outer = 10, inner = 100) {
       time: total,
       selector: s,
       min: Math.min(...times),
-      max: Math.max(...times)
+      max: Math.max(...times),
     });
   }
   data.sort((a, b) => b.time - a.time);

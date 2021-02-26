@@ -84,10 +84,10 @@ export function isMapAbleColumn(col: Column): col is IMapAbleColumn;
 export function isMapAbleColumn(col: IColumnDesc): col is IMapAbleDesc & IColumnDesc;
 export function isMapAbleColumn(col: Column | IColumnDesc) {
   return (
-    (col instanceof Column && typeof (<IMapAbleColumn>col).getMapping === 'function') ||
+    (col instanceof Column && typeof (col as IMapAbleColumn).getMapping === 'function') ||
     (!(col instanceof Column) &&
       isNumberColumn(col) &&
-      ((<IColumnDesc>col).type.startsWith('number') || (<IColumnDesc>col).type.startsWith('boxplot')))
+      ((col as IColumnDesc).type.startsWith('number') || (col as IColumnDesc).type.startsWith('boxplot')))
   );
 }
 
@@ -126,8 +126,8 @@ export function isNumberColumn(col: Column): col is INumberColumn;
 export function isNumberColumn(col: IColumnDesc): col is INumberDesc & IColumnDesc;
 export function isNumberColumn(col: Column | IColumnDesc) {
   return (
-    (col instanceof Column && typeof (<INumberColumn>col).getNumber === 'function') ||
-    (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null)
+    (col instanceof Column && typeof (col as INumberColumn).getNumber === 'function') ||
+    (!(col instanceof Column) && (col as IColumnDesc).type.match(/(number|stack|ordinal)/) != null)
   );
 }
 
@@ -152,7 +152,7 @@ export interface IBoxPlotColumn extends INumberColumn, IMapAbleColumn {
 }
 
 export function isBoxPlotColumn(col: Column): col is IBoxPlotColumn {
-  return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
+  return typeof (col as IBoxPlotColumn).getBoxPlotData === 'function';
 }
 
 export enum EAdvancedSortMethod {
@@ -177,7 +177,7 @@ export interface INumbersColumn extends IAdvancedBoxPlotColumn, IArrayColumn<num
 }
 
 export function isNumbersColumn(col: Column): col is INumbersColumn {
-  return isBoxPlotColumn(col) && typeof (<INumbersColumn>col).getNumbers === 'function';
+  return isBoxPlotColumn(col) && typeof (col as INumbersColumn).getNumbers === 'function';
 }
 
 export interface INumberFilter {

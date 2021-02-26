@@ -23,7 +23,7 @@ export function histogramTemplate(guessedBins: number) {
 
 function matchBins(n: HTMLElement, bins: number) {
   //adapt the number of children
-  let nodes = <HTMLElement[]>Array.from(n.querySelectorAll('[data-x]'));
+  let nodes = Array.from(n.querySelectorAll<HTMLElement>('[data-x]'));
   if (nodes.length > bins) {
     nodes.splice(bins, nodes.length - bins).forEach((d) => d.remove());
   } else if (nodes.length < bins) {
@@ -57,7 +57,7 @@ export function histogramUpdate<T>(
 
   nodes.forEach((d: HTMLElement, i) => {
     const bin = hist[i];
-    const inner = <HTMLElement>d.firstElementChild!;
+    const inner = d.firstElementChild! as HTMLElement;
     if (!bin) {
       inner.style.height = '0%';
       return;
@@ -135,11 +135,11 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
 }
 
 export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
-  const min = <HTMLElement>node.getElementsByClassName(cssClass('histogram-min'))[0];
-  const max = <HTMLElement>node.getElementsByClassName(cssClass('histogram-max'))[0];
-  const minHint = <HTMLElement>node.getElementsByClassName(cssClass('histogram-min-hint'))[0];
-  const maxHint = <HTMLElement>node.getElementsByClassName(cssClass('histogram-max-hint'))[0];
-  const filterMissing = <HTMLInputElement>node.getElementsByTagName('input')[0];
+  const min = node.getElementsByClassName(cssClass('histogram-min'))[0] as HTMLElement;
+  const max = node.getElementsByClassName(cssClass('histogram-max'))[0] as HTMLElement;
+  const minHint = node.getElementsByClassName(cssClass('histogram-min-hint'))[0] as HTMLElement;
+  const maxHint = node.getElementsByClassName(cssClass('histogram-max-hint'))[0] as HTMLElement;
+  const filterMissing = node.getElementsByTagName('input')[0] as HTMLInputElement;
 
   const setFilter = () => {
     const minValue = context.parseRaw(min.dataset.raw!);
@@ -205,10 +205,10 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
       const total = node.clientWidth;
       const px = Math.max(0, Math.min(x, total));
       const percent = Math.round((100 * px) / total);
-      (<HTMLElement>handle).dataset.value = context.format(context.unpercent(percent));
-      (<HTMLElement>handle).dataset.raw = context.formatRaw(context.unpercent(percent));
+      (handle as HTMLElement).dataset.value = context.format(context.unpercent(percent));
+      (handle as HTMLElement).dataset.raw = context.formatRaw(context.unpercent(percent));
 
-      if ((<HTMLElement>handle).classList.contains(cssClass('histogram-min'))) {
+      if ((handle as HTMLElement).classList.contains(cssClass('histogram-min'))) {
         handle.style.left = `${percent}%`;
         handle.classList.toggle(cssClass('swap-hint'), percent > 15);
         minHint.style.width = `${percent}%`;
@@ -238,6 +238,6 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     min.classList.toggle(cssClass('swap-hint'), context.percent(f.filterMin) > 15);
     max.classList.toggle(cssClass('swap-hint'), context.percent(f.filterMax) < 85);
     filterMissing.checked = f.filterMissing;
-    updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, missing);
+    updateFilterMissingNumberMarkup(filterMissing.parentElement as HTMLElement, missing);
   };
 }

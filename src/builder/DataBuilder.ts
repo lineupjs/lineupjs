@@ -28,7 +28,7 @@ export class DataBuilder extends LineUpBuilder {
   private readonly rankBuilders: ((data: DataProvider) => void)[] = [];
   private _deriveColors = false;
 
-  constructor(private readonly data: object[]) {
+  constructor(private readonly data: Record<string, unknown>[]) {
     super();
   }
 
@@ -86,7 +86,7 @@ export class DataBuilder extends LineUpBuilder {
    * @param {string} columns optional enforced order of columns
    */
   deriveColumns(...columns: (string | string[])[]) {
-    const cols = (<string[]>[]).concat(...columns);
+    const cols = [].concat(...columns);
     for (const c of deriveColumnDescriptions(this.data, { columns: cols })) {
       this.columns.push(c);
     }
@@ -152,7 +152,7 @@ export class DataBuilder extends LineUpBuilder {
    * @returns {LocalDataProvider}
    */
   buildData() {
-    // last come survived separted by label to be able to override columns
+    // last come survived separated by label to be able to override columns
     const columns: IColumnDesc[] = [];
     const contained = new Set<string>();
     for (const col of this.columns) {
@@ -198,10 +198,10 @@ export class DataBuilder extends LineUpBuilder {
 
 /**
  * creates a new builder instance for the given data
- * @param {object[]} arr data to visualize
+ * @param {Record<string, unknown>[]} arr data to visualize
  * @returns {DataBuilder}
  */
-export function builder(arr: object[]) {
+export function builder(arr: Record<string, unknown>[]) {
   return new DataBuilder(arr);
 }
 

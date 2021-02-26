@@ -47,7 +47,7 @@ export enum EDirtyReason {
 export declare function addColumn(col: Column, index: number): void;
 
 /**
- * emitted when a column has been moved within this composite columm
+ * emitted when a column has been moved within this composite column
  * @asMemberOf Ranking
  * @event
  */
@@ -60,25 +60,25 @@ export declare function moveColumn(col: Column, index: number, oldIndex: number)
  */
 export declare function removeColumn(col: Column, index: number): void;
 /**
- * emitted when the sort criteria propery changes
+ * emitted when the sort criteria property changes
  * @asMemberOf Ranking
  * @event
  */
 export declare function sortCriteriaChanged(previous: ISortCriteria[], current: ISortCriteria[]): void;
 /**
- * emitted when the sort criteria propery changes
+ * emitted when the sort criteria property changes
  * @asMemberOf Ranking
  * @event
  */
 export declare function groupCriteriaChanged(previous: Column[], current: Column[]): void;
 /**
- * emitted when the sort criteria propery changes
+ * emitted when the sort criteria property changes
  * @asMemberOf Ranking
  * @event
  */
 export declare function groupSortCriteriaChanged(previous: ISortCriteria[], current: ISortCriteria[]): void;
 /**
- * emitted when the sort criteria propery changes
+ * emitted when the sort criteria property changes
  * @asMemberOf Ranking
  * @event
  */
@@ -176,7 +176,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * the current ordering as an sorted array of indices
    * @type {Array}
    */
-  private groups: IOrderedGroup[] = [Object.assign({ order: <number[]>[] }, defaultGroup)];
+  private groups: IOrderedGroup[] = [Object.assign({ order: [] as number[] }, defaultGroup)];
   private order: IndicesArray = [];
   private index2pos: IndicesArray = [];
 
@@ -261,7 +261,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       // propagate to the top
       let p = groups[0].parent;
       while (p) {
-        (<IOrderedGroup>(<any>p)).order = this.order;
+        ((p as any) as IOrderedGroup).order = this.order;
         p = p.parent;
       }
     }
@@ -277,7 +277,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   private unifyGroups(groups: IOrderedGroup[]) {
     let offset = 0;
-    const order = <UIntTypedArray>this.order;
+    const order = this.order as UIntTypedArray;
     const offsets = new Map<
       Readonly<IGroupParent> | IOrderedGroup,
       {
@@ -291,7 +291,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       offsets.set(group, { offset, size });
       offset += size;
     }
-    // propgate also to the top with views
+    // propagate also to the top with views
     const roots = groupRoots(groups);
     const resolve = (
       g: Readonly<IGroupParent> | IOrderedGroup
@@ -303,12 +303,12 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         // leaf
         return offsets.get(g)!;
       }
-      const subs = (<IGroupParent>g).subGroups.map((gi) => resolve(<Readonly<IGroupParent> | IOrderedGroup>gi));
+      const subs = (g as IGroupParent).subGroups.map((gi) => resolve(gi as Readonly<IGroupParent> | IOrderedGroup));
       const offset = subs.length > 0 ? subs[0].offset : 0;
       const size = subs.reduce((a, b) => a + b.size, 0);
       const r = { offset, size };
       offsets.set(g, r);
-      (<IOrderedGroup>(<any>g)).order = order.subarray(offset, offset + size);
+      ((g as any) as IOrderedGroup).order = order.subarray(offset, offset + size);
       return r;
     };
     for (const root of roots) {
@@ -358,7 +358,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   restore(dump: IRankingDump, factory: ITypeFactory) {
     this.clear();
-    (dump.columns || []).map((child: any) => {
+    (dump.columns || []).forEach((child: any) => {
       const c = factory(child);
       if (c) {
         this.push(c);
@@ -372,9 +372,9 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       }
     }
     if (dump.groupColumns) {
-      const groupColumns = <Column[]>(
-        dump.groupColumns.map((id: string) => this.columns.find((d) => d.id === id)).filter((d) => d != null)
-      );
+      const groupColumns = dump.groupColumns
+        .map((id: string) => this.columns.find((d) => d.id === id))
+        .filter((d) => d != null) as Column[];
       this.setGroupCriteria(groupColumns);
     }
 
@@ -726,13 +726,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   findByPath(fqpath: string): Column {
-    let p: IColumnParent | Column = <any>this;
+    let p: IColumnParent | Column = this as any;
     const indices = fqpath.split('@').map(Number).slice(1); //ignore the first entry = ranking
     while (indices.length > 0) {
       const i = indices.shift()!;
-      p = (<IColumnParent>p).at(i);
+      p = (p as IColumnParent).at(i);
     }
-    return <Column>p;
+    return p as Column;
   }
 
   indexOf(col: Column) {

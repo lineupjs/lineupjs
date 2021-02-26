@@ -12,7 +12,7 @@ export function noop() {
 
 export const noRenderer = {
   template: `<div></div>`,
-  update: <() => void>noop,
+  update: noop as () => void,
 };
 
 /** @internal */
@@ -41,12 +41,12 @@ export function setText<T extends Node>(node: T, text?: string): T {
  * @internal
  */
 export function forEach<T extends Element>(node: Element, selector: string, callback: (d: T, i: number) => void) {
-  (<T[]>Array.from(node.querySelectorAll(selector))).forEach(callback);
+  Array.from(node.querySelectorAll<T>(selector)).forEach(callback);
 }
 
 /** @internal */
 export function forEachChild<T extends Element>(node: Element, callback: (d: T, i: number) => void) {
-  (<T[]>Array.from(node.children)).forEach(callback);
+  (Array.from(node.children) as T[]).forEach(callback);
 }
 
 /**
@@ -65,7 +65,7 @@ export function matchColumns(
     node.innerHTML = columns.map((c) => c.template).join('');
     const children = Array.from(node.children);
     columns.forEach((col, i) => {
-      const cnode = <HTMLElement>children[i];
+      const cnode = children[i] as HTMLElement;
       // set attribute for finding again
       cnode.dataset.columnId = col.column.id;
       // store current renderer
@@ -77,7 +77,7 @@ export function matchColumns(
 
   function matches(c: { column: Column; rendererId: string }, i: number) {
     //do both match?
-    const n = <HTMLElement>node.children[i];
+    const n = node.children[i] as HTMLElement;
     return n != null && n.dataset.columnId === c.column.id && n.dataset.renderer === c.rendererId;
   }
 
@@ -96,7 +96,7 @@ export function matchColumns(
     }
   });
   columns.forEach((col) => {
-    let cnode = <HTMLElement>node.querySelector(`[data-column-id="${col.column.id}"]`);
+    let cnode = node.querySelector<HTMLElement>(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
       cnode = ctx.asElement(col.template);
       cnode.dataset.columnId = col.column.id;
@@ -171,7 +171,7 @@ const NUM_EXAMPLE_VALUES = 5;
 
 /** @internal */
 export function exampleText(col: Column, rows: ISequence<IDataRow>) {
-  const examples = <string[]>[];
+  const examples: string[] = [];
   rows.every((row) => {
     if (col.getValue(row) == null) {
       return true;

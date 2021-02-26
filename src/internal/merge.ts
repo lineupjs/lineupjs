@@ -12,7 +12,7 @@ export default function merge<T1, T2>(target: T1, source: T2): T1 | T2 {
     return result;
   }
 
-  const bKeys: (keyof T2)[] = <(keyof T2)[]>Object.keys(source);
+  const bKeys = Object.keys(source) as (keyof T2)[];
   if (bKeys.length === 0) {
     return result;
   }

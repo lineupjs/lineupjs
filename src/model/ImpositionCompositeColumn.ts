@@ -88,7 +88,7 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
   }
 
   private get wrapper(): INumberColumn | null {
-    return <INumberColumn>this._children.find(isNumberColumn) || null;
+    return (this._children.find(isNumberColumn) as INumberColumn) ?? null;
   }
 
   private get rest() {

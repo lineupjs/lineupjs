@@ -105,11 +105,11 @@ export default class SlopeGraph implements ITableSection {
   init() {
     this.hide(); // hide by default
 
-    const scroller = <any>this.body.parentElement!;
+    const scroller = this.body.parentElement! as any;
 
     //sync scrolling of header and body
     // use internals from lineup engine
-    const scroll = (<any>scroller).__le_scroller__;
+    const scroll = scroller.__le_scroller__;
     let old: { top: number; height: number } = scroll.asInfo();
     scroll.push(
       'animation',
@@ -128,7 +128,7 @@ export default class SlopeGraph implements ITableSection {
     header.innerHTML = `<i title="Item" class="${this._mode === EMode.ITEM ? active : ''}">${aria('Item')}</i>
         <i title="Band" class="${this._mode === EMode.BAND ? active : ''}">${aria('Band')}</i>`;
 
-    const icons = <HTMLElement[]>Array.from(header.children);
+    const icons = Array.from(header.children) as HTMLElement[];
     icons.forEach((n: HTMLElement, i) => {
       n.onclick = (evt) => {
         evt.preventDefault();
@@ -189,7 +189,7 @@ export default class SlopeGraph implements ITableSection {
     if (this.scrollListener) {
       //sync scrolling of header and body
       // use internals from lineup engine
-      const scroll = (<any>this.body.parentElement!).__le_scroller__;
+      const scroll = (this.body.parentElement! as any).__le_scroller__;
       scroll.remove(this.scrollListener);
     }
     this.body.remove();
@@ -221,7 +221,7 @@ export default class SlopeGraph implements ITableSection {
       // find all items in this group, assuming that they are in order
       for (let i = first; i < left.length; ++i) {
         const item = left[i];
-        if (isGroup(item) || (<IGroupItem>item).group !== group) {
+        if (isGroup(item) || (item as IGroupItem).group !== group) {
           break;
         }
         count++;
@@ -239,7 +239,7 @@ export default class SlopeGraph implements ITableSection {
     this.leftSlopes = left.map((r, i) => {
       let height = leftContext.exceptionsLookup.get(i) || leftContext.defaultRowHeight;
       let padded = height - 0; //leftContext.padding(i);
-      const slopes = <ISlope[]>[];
+      const slopes: ISlope[] = [];
       const start = acc;
 
       // shift by item height
@@ -262,7 +262,7 @@ export default class SlopeGraph implements ITableSection {
       if (isGroup(r)) {
         gr = r;
       } else {
-        const item = <IGroupItem>r;
+        const item = r as IGroupItem;
         const dataIndex = item.dataIndex;
         const right = lookup.get(dataIndex);
 
@@ -344,7 +344,7 @@ export default class SlopeGraph implements ITableSection {
       const padded = height - 0; //rightContext.padding(i);
       const start = acc;
       acc += height;
-      const slopes = <ISlope[]>[];
+      const slopes: ISlope[] = [];
 
       const base = {
         start,
@@ -362,7 +362,7 @@ export default class SlopeGraph implements ITableSection {
         return slopes;
       }
       // item
-      const item = <IGroupItem>r;
+      const item = r as IGroupItem;
       const dataIndex = r.dataIndex;
 
       let p = Object.assign(base, {
@@ -409,7 +409,7 @@ export default class SlopeGraph implements ITableSection {
       old.classList.remove(highlight);
     }
     if (dataIndex < 0) {
-      return;
+      return false;
     }
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
@@ -511,7 +511,7 @@ export default class SlopeGraph implements ITableSection {
     selection: { has(dataIndex: number): boolean }
   ) {
     s.update(p, width);
-    (<any>p).__data__ = s; // data binding
+    (p as any).__data__ = s; // data binding
     const selected = s.isSelected(selection);
     p.classList.toggle(cssClass('selected'), selected);
     if (selected) {
@@ -520,7 +520,7 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private render(visible: Set<ISlope>, selectionSlopes: Set<ISlope>) {
-    const g = <SVGGElement>this.node.firstElementChild!;
+    const g = this.node.firstElementChild! as SVGGElement;
     const width = g.ownerSVGElement!.getBoundingClientRect()!.width;
     const paths = this.matchLength(visible.size + selectionSlopes.size, g);
 
@@ -547,7 +547,7 @@ export default class SlopeGraph implements ITableSection {
     const path = g.ownerDocument!.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.onclick = (evt) => {
       // d3 style
-      const s: ISlope = (<any>path).__data__;
+      const s: ISlope = (path as any).__data__;
       const p = this.ctx.provider;
       const ids = s.dataIndices;
       if (evt.ctrlKey) {
@@ -563,7 +563,7 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private matchLength(slopes: number, g: SVGGElement) {
-    const paths = <SVGPathElement[]>Array.from(g.children);
+    const paths = Array.from(g.children) as SVGPathElement[];
     for (let i = slopes; i < paths.length; ++i) {
       const elem = paths[i];
       this.pool.push(elem);
@@ -577,15 +577,15 @@ export default class SlopeGraph implements ITableSection {
   }
 
   updateSelection(selectedDataIndices: Set<number>) {
-    const g = <SVGGElement>this.node.firstElementChild!;
-    const paths = <SVGPathElement[]>Array.from(g.children);
+    const g = this.node.firstElementChild! as SVGGElement;
+    const paths = Array.from(g.children) as SVGPathElement[];
 
     const openDataIndices = new Set(selectedDataIndices);
 
     if (selectedDataIndices.size === 0) {
       // clear
       for (const p of paths) {
-        const s: ISlope = (<any>p).__data__;
+        const s: ISlope = (p as any).__data__;
         p.classList.toggle(cssClass('selected'), false);
         if (this.chosenSelectionOnly.has(s)) {
           p.remove();
@@ -596,7 +596,7 @@ export default class SlopeGraph implements ITableSection {
     }
 
     for (const p of paths) {
-      const s: ISlope = (<any>p).__data__;
+      const s: ISlope = (p as any).__data__;
       const selected = s.isSelected(selectedDataIndices);
       p.classList.toggle(cssClass('selected'), selected);
       if (!selected) {

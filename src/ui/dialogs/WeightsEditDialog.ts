@@ -23,7 +23,7 @@ export default class WeightsEditDialog extends ADialog {
     forEach(this.node, 'input[type=number]', (n: HTMLInputElement) => {
       const v = round(weight, 2);
       n.value = String(v);
-      (<HTMLElement>n.nextElementSibling!.firstElementChild!).style.width = `${v}%`;
+      (n.nextElementSibling!.firstElementChild! as HTMLElement).style.width = `${v}%`;
     });
   }
 
@@ -77,7 +77,7 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   private updateBar(input: HTMLInputElement) {
-    (<HTMLElement>input.nextElementSibling!.firstElementChild!).style.width = `${input.value}%`;
+    (input.nextElementSibling!.firstElementChild! as HTMLElement).style.width = `${input.value}%`;
   }
 
   private distributeWeights() {
@@ -131,7 +131,7 @@ export default class WeightsEditDialog extends ADialog {
       )}" type="button" title="distribute weights"></button>`
     );
 
-    const last = <HTMLElement>buttons.lastElementChild!;
+    const last = buttons.lastElementChild! as HTMLElement;
     last.onclick = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
@@ -161,8 +161,8 @@ export default class WeightsEditDialog extends ADialog {
       invalid = true;
     }
     if (invalid) {
-      if (typeof (<any>this.node).reportValidity === 'function') {
-        (<any>this.node).reportValidity();
+      if (typeof this.node.reportValidity === 'function') {
+        this.node.reportValidity();
       }
       return false;
     }

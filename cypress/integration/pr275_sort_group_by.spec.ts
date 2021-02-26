@@ -1,17 +1,19 @@
-import {withLineUp, waitReady, LineUpJSType, LineUp} from './utils/lineup';
-import {generateData} from './utils/data';
-import {openMoreDialog, closeDialog, groupByString} from './utils/ui';
+import { withLineUp, waitReady, LineUpJSType, LineUp } from './utils/lineup';
+import { generateData } from './utils/data';
+import { openMoreDialog, closeDialog, groupByString } from './utils/ui';
 
 describe('pr275_sort_group', () => {
   let lineup: LineUp;
   let lineUpJS: LineUpJSType;
-  before(withLineUp((l, document) => {
-    lineUpJS = l;
-    const arr = generateData();
+  before(
+    withLineUp((l, document) => {
+      lineUpJS = l;
+      const arr = generateData();
 
-    lineup = lineUpJS.asLineUp(document.body, arr);
-    waitReady(lineup);
-  }));
+      lineup = lineUpJS.asLineUp(document.body, arr);
+      waitReady(lineup);
+    })
+  );
 
   it('has sort by', () => {
     groupByString();

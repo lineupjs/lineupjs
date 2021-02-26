@@ -9,8 +9,8 @@ import { IDataProvider, IDeriveOptions, IExportOptions } from './interfaces';
  */
 export function cleanCategories(categories: Set<string>) {
   // remove missing values
-  categories.delete(<any>null);
-  categories.delete(<any>undefined);
+  categories.delete(null);
+  categories.delete(undefined);
   categories.delete('');
   categories.delete('NA');
   categories.delete('NaN');
@@ -75,7 +75,7 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
   const treatAsCategorical =
     typeof options.categoricalThreshold === 'function'
       ? options.categoricalThreshold
-      : (u: number, t: number) => u < t * <number>options.categoricalThreshold;
+      : (u: number, t: number) => u < t * (options.categoricalThreshold as number);
 
   if (typeof value === 'string') {
     //maybe a categorical
@@ -334,7 +334,7 @@ export function deriveColors(columns: IColumnDesc[]) {
  * @returns {Promise<string>}
  */
 export function exportRanking(ranking: Ranking, data: any[], options: Partial<IExportOptions> = {}) {
-  const opts = <IExportOptions>Object.assign(
+  const opts: IExportOptions = Object.assign(
     {
       separator: '\t',
       newline: '\n',
@@ -409,7 +409,7 @@ export function rangeSelection(
     return false; // no other or deselect
   }
   const order = ranking.getOrder();
-  const lookup = new Map(Array.from(order).map((d, i) => <[number, number]>[d, i]));
+  const lookup = new Map(Array.from(order).map((d, i) => [d, i]));
   const distances = selection.map((d) => {
     const index = lookup.has(d) ? lookup.get(d)! : Infinity;
     return { s: d, index, distance: Math.abs(relIndex - index) };

@@ -17,7 +17,7 @@ export function SortByDefault(order: 'ascending' | 'descending' = 'ascending') {
 }
 
 export function isSortingAscByDefault(col: Column) {
-  const clazz = (<any>col).constructor;
+  const clazz = (col as any).constructor;
   return !Reflect.hasMetadata(Symbol.for('sortDescendingByDefault'), clazz);
 }
 
@@ -61,7 +61,7 @@ export function dialogAddons(key: string, ...keys: string[]) {
 }
 
 export function isSupportType(col: Column) {
-  const clazz = (<any>col).constructor;
+  const clazz = (col as any).constructor;
   return Reflect.hasMetadata(supportType, clazz);
 }
 
@@ -73,11 +73,9 @@ export interface IColumnCategory {
 }
 
 export function categoryOf(col: IColumnConstructor | Column): IColumnCategory {
-  const cat =
-    <keyof Categories>(
-      Reflect.getMetadata(category, col instanceof Column ? Object.getPrototypeOf(col).constructor : col)
-    ) || 'other';
-  return <IColumnCategory>categories[cat] || categories.other;
+  const cat = (Reflect.getMetadata(category, col instanceof Column ? Object.getPrototypeOf(col).constructor : col) ??
+    'other') as keyof Categories;
+  return (categories[cat] ?? categories.other) as IColumnCategory;
 }
 
 export function categoryOfDesc(
@@ -86,5 +84,5 @@ export function categoryOfDesc(
 ): IColumnCategory {
   const type = typeof col === 'string' ? col : col.type;
   const clazz = models[type];
-  return clazz ? categoryOf(clazz) : <IColumnCategory>categories.other;
+  return clazz ? categoryOf(clazz) : (categories.other as IColumnCategory);
 }

@@ -31,7 +31,7 @@ export interface IColumnWrapper {
 }
 
 function isWrapper(item: IColumnWrapper | IGroupSearchItem<IColumnWrapper>): item is IColumnWrapper {
-  return (<IColumnWrapper>item).desc != null;
+  return (item as IColumnWrapper).desc != null;
 }
 
 export interface ISidePanelOptions extends Partial<ISearchBoxOptions<IColumnWrapper>> {
@@ -58,7 +58,7 @@ export default class SidePanel {
     hierarchy: true,
     placeholder: 'Add Column...',
     formatItem: (item: IColumnWrapper | IGroupSearchItem<IColumnWrapper>, node: HTMLElement) => {
-      const w: IColumnWrapper = isWrapper(item) ? item : <IColumnWrapper>item.children[0];
+      const w: IColumnWrapper = isWrapper(item) ? item : (item.children[0] as IColumnWrapper);
       node.dataset.typeCat = w.category.name;
       node.classList.add(cssClass('typed-icon'));
       if (isWrapper(item)) {
@@ -104,12 +104,12 @@ export default class SidePanel {
     `;
 
     {
-      const choose = <HTMLElement>this.node.querySelector('header > i');
+      const choose = this.node.querySelector<HTMLElement>('header > i');
       choose.onclick = (evt) => {
         evt.stopPropagation();
         const dialog = new ChooseRankingDialog(
           this.rankings.map((d) => d.dropdown),
-          dialogContext(this.ctx, 1, <any>evt)
+          dialogContext(this.ctx, 1, evt)
         );
         dialog.open();
       };
@@ -120,7 +120,7 @@ export default class SidePanel {
         'beforeend',
         `<div class="${cssClass('collapser')}" title="Collapse Panel">${aria('Collapse Panel')}</div>`
       );
-      const last = <HTMLElement>this.node.lastElementChild;
+      const last = this.node.lastElementChild as HTMLElement;
       last.onclick = () => (this.collapsed = !this.collapsed);
       this.collapsed = this.options.collapseable === 'collapsed';
     }
@@ -270,7 +270,7 @@ export default class SidePanel {
     if (active && this.chooser) {
       active.node.insertAdjacentElement('afterbegin', this.chooser);
       // scroll to body
-      const parent = <HTMLElement>this.node.closest(`.${cssClass()}`)!;
+      const parent = this.node.closest<HTMLElement>(`.${cssClass()}`)!;
       const body = parent ? parent.querySelector(`article[data-ranking="${active.ranking.id}"]`) : null;
       if (body) {
         body.scrollIntoView();
@@ -305,7 +305,7 @@ export default class SidePanel {
     if (this.collapsed) {
       return;
     }
-    const stats = <HTMLElement>this.node.querySelector(`.${cssClass('stats')}`);
+    const stats = this.node.querySelector<HTMLElement>(`.${cssClass('stats')}`);
     const s = this.data.getSelection();
     const r = this.data.getFirstRanking();
     const f = format(',d');

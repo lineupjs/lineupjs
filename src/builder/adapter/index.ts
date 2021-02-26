@@ -4,7 +4,7 @@ import { EAdvancedSortMethod, IAction, ICategory, IColumnDesc, IGroupAction, IPa
 import { IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider } from '../../provider';
 import { LineUp, Taggle } from '../../ui';
 
-export * from './builderAdapter';
+export * as builderAdapter from './builderAdapter';
 
 export interface IBuilderAdapterRankingProps {
   sortBy?:

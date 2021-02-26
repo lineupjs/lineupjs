@@ -6,7 +6,7 @@ import * as equalImpl from 'fast-deep-equal';
  * deep equal comparison
  */
 export const equal: (a: any, b: any) => boolean =
-  typeof equalImpl === 'function' ? equalImpl : (<any>equalImpl).default;
+  typeof equalImpl === 'function' ? equalImpl : (equalImpl as any).default;
 
 export interface IBin<T> {
   /**

@@ -50,7 +50,7 @@ export interface IPoorManWorkerScope {
 /**
  * @internal
  */
-export function toFunctionBody(f: Function) {
+export function toFunctionBody(f: () => any) {
   const source = f.toString();
   return source.slice(source.indexOf('{') + 1, source.lastIndexOf('}'));
 }
@@ -59,7 +59,7 @@ export function toFunctionBody(f: Function) {
  * create a blob out of the given function or string
  * @internal
  */
-export function createWorkerCodeBlob(fs: (string | Function)[]) {
+export function createWorkerCodeBlob(fs: (string | (() => any))[]) {
   const sources = fs.map((d) => d.toString()).join('\n\n');
 
   const blob = new Blob([sources], { type: 'application/javascript' });
@@ -124,7 +124,7 @@ export class WorkerTaskScheduler {
       w.worker.terminate();
     }
     // maybe reschedule
-    this.finshedTask();
+    this.finishedTask();
   };
 
   private checkOutWorker() {
@@ -143,7 +143,7 @@ export class WorkerTaskScheduler {
       // find the one with the fewest tasks
       return this.workers.reduce(
         (a, b) => (a == null || a.tasks.size > b.tasks.size ? b : a),
-        <ITaskWorker | null>null
+        null as ITaskWorker | null
       )!;
     }
 
@@ -158,9 +158,9 @@ export class WorkerTaskScheduler {
     return r;
   }
 
-  private finshedTask() {
+  private finishedTask() {
     if (this.cleanUpWorkerTimer === -1 && this.workers.length > MIN_WORKER_THREADS) {
-      this.cleanUpWorkerTimer = self.setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME);
+      this.cleanUpWorkerTimer = setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME);
     }
   }
 
@@ -209,15 +209,15 @@ export class WorkerTaskScheduler {
       const { worker, tasks, refs } = this.checkOutWorker();
 
       const receiver = (msg: MessageEvent) => {
-        const r = <IWorkerMessage>msg.data;
+        const r = msg.data as IWorkerMessage;
         if (r.uid !== uid || r.type !== type) {
           return;
         }
         // console.log('worker', index, uid, 'finish', r);
         worker.removeEventListener('message', receiver);
         tasks.delete(uid);
-        this.finshedTask();
-        resolve((<any>r).stats);
+        this.finishedTask();
+        resolve((r as any).stats);
       };
 
       worker.addEventListener('message', receiver);
@@ -265,15 +265,15 @@ export class WorkerTaskScheduler {
       const { worker, tasks } = this.checkOutWorker();
 
       const receiver = (msg: MessageEvent) => {
-        const r = <IWorkerMessage>msg.data;
+        const r = msg.data as IWorkerMessage;
         if (r.uid !== uid || r.type !== type) {
           return;
         }
         // console.log('worker', index, uid, 'finish', r);
         worker.removeEventListener('message', receiver);
         tasks.delete(uid);
-        this.finshedTask();
-        resolve(toResult ? toResult(<any>r) : <any>r);
+        this.finishedTask();
+        resolve(toResult ? toResult(r as any) : (r as any));
       };
 
       worker.addEventListener('message', receiver);

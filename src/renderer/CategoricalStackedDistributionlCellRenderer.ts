@@ -142,7 +142,7 @@ function stackedBar(col: ISetColumn) {
     update: (n: HTMLElement, hist: ICategoricalStatistics, gHist?: ICategoricalStatistics) => {
       const bins: { count: number }[] = hist.hist.slice();
       bins.push({ count: hist.missing });
-      const children = <HTMLElement[]>Array.from(n.children);
+      const children = Array.from(n.children) as HTMLElement[];
 
       if (!gHist) {
         const total = bins.reduce((acc, { count }) => acc + count, 0);

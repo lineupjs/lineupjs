@@ -62,10 +62,10 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 
   private static interactiveSummary(col: StringColumn, node: HTMLElement) {
-    const form = <HTMLFormElement>node;
+    const form = node as HTMLFormElement;
     const filterMissing = findFilterMissing(node);
-    const input = <HTMLInputElement>node.querySelector('input[type="text"]');
-    const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
+    const input = node.querySelector<HTMLInputElement>('input[type="text"]');
+    const isRegex = node.querySelector<HTMLInputElement>('input[type="checkbox"]');
 
     const update = () => {
       const valid = input.value.trim();

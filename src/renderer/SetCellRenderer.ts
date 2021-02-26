@@ -65,9 +65,9 @@ export default class SetCellRenderer implements ICellRendererFactory {
           if (!data[j]) {
             return;
           }
-          const posx = j * cellDimension;
+          const posX = j * cellDimension;
           ctx.fillStyle = mapping.apply(d);
-          ctx.fillRect(posx, 0, cellDimension, CANVAS_HEIGHT);
+          ctx.fillRect(posX, 0, cellDimension, CANVAS_HEIGHT);
         });
 
         ctx.restore();

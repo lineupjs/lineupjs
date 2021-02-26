@@ -60,7 +60,7 @@
     display: none;
   }
 
-  &[data-renderer=selection] {
+  &[data-renderer='selection'] {
     display: block; // have just a before element
   }
 }

@@ -59,7 +59,7 @@ export default class CategoricalFilterDialog extends ADialog {
       forEach(node, 'input[data-cat]', (n: HTMLInputElement) => (n.checked = selectAll.checked));
     };
     if (this.column instanceof SetColumn) {
-      const some = (<ISetCategoricalFilter>this.before).mode !== 'every';
+      const some = (this.before as ISetCategoricalFilter).mode !== 'every';
       node.insertAdjacentHTML('beforeend', `<strong>Show rows where</strong>`);
       node.insertAdjacentHTML(
         'beforeend',
@@ -97,7 +97,7 @@ export default class CategoricalFilterDialog extends ADialog {
         }
         const { summary, data } = r;
         const missing = data ? data.missing : summary ? summary.missing : 0;
-        updateFilterMissingNumberMarkup(<HTMLElement>findFilterMissing(this.node).parentElement, missing);
+        updateFilterMissingNumberMarkup(findFilterMissing(this.node).parentElement, missing);
         if (!summary || !data) {
           return;
         }
@@ -138,7 +138,7 @@ export default class CategoricalFilterDialog extends ADialog {
     this.updateFilter(
       this.before.filter === '' ? null : this.before.filter,
       this.before.filterMissing,
-      (<ISetCategoricalFilter>this.before).mode === 'some'
+      (this.before as ISetCategoricalFilter).mode === 'some'
     );
   }
 

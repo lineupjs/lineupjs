@@ -35,7 +35,7 @@ export function spaceFillingRule(config: { groupHeight: number; rowHeight: numbe
     topNGetter: ITopNGetter
   ) {
     const visibleHeight = availableHeight - config.rowHeight - 5; // some padding for hover
-    const items = <IGroupItem[]>data.filter((d) => !isGroup(d));
+    const items = data.filter((d) => !isGroup(d)) as IGroupItem[];
     const groups = data.length - items.length;
     const selected = items.reduce((a, d) => a + (selection.has(d.dataIndex) ? 1 : 0), 0);
     const unselected = items.length - selected;
@@ -65,7 +65,7 @@ export function spaceFillingRule(config: { groupHeight: number; rowHeight: numbe
     return { height, violation: '' };
   }
 
-  return <IRule>{
+  return {
     apply: (
       data: (IGroupData | IGroupItem)[],
       availableHeight: number,
@@ -83,5 +83,5 @@ export function spaceFillingRule(config: { groupHeight: number; rowHeight: numbe
       return { item, group: config.groupHeight, violation };
     },
     levelOfDetail,
-  };
+  } as IRule;
 }

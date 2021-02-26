@@ -22,7 +22,7 @@ export default class StringsColumn extends ArrayColumn<string> {
         width: 200,
       })
     );
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
   }
 

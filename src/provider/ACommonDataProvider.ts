@@ -81,7 +81,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   }
 
   findDesc(ref: string) {
-    return this.columns.filter((c) => (<any>c).column === ref)[0];
+    return this.columns.filter((c) => (c as any).column === ref)[0];
   }
 
   /**
@@ -98,7 +98,7 @@ abstract class ACommonDataProvider extends ADataProvider {
       return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef || d.type === descRef);
     }
     const existing = this.columns.find(
-      (d) => descRef.column === (<any>d).column && descRef.label === d.label && descRef.type === d.type
+      (d) => descRef.column === (d as any).column && descRef.label === d.label && descRef.type === d.type
     );
     if (existing) {
       return existing;

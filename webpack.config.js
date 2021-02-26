@@ -49,6 +49,7 @@ module.exports = (_env, options) => {
       }),
       //define magic constants that are replaced
       new webpack.DefinePlugin({
+        __DEBUG__: dev,
         __VERSION__: JSON.stringify(pkg.version),
         __LICENSE__: JSON.stringify(pkg.license),
         __BUILD_ID__: JSON.stringify(buildId),
@@ -59,9 +60,7 @@ module.exports = (_env, options) => {
         filename: '[name].css',
         chunkFilename: '[id].css',
       }),
-      new ForkTsCheckerWebpackPlugin({
-        silent: process.argv.includes('--json'), // avoid output in profiling mode
-      }),
+      new ForkTsCheckerWebpackPlugin(),
     ],
     externals: {},
     module: {
@@ -91,23 +90,12 @@ module.exports = (_env, options) => {
           ].slice(process.env.CI || !dev ? 1 : 0), // no optimizations for CIs and in production mode
         },
         {
-          test: /\.svg?$/,
+          test: /\.(png|jpg)$/,
           type: 'asset',
         },
         {
-          test: /\.(png|jpg)$/,
-          loader: 'url-loader',
-          options: {
-            limit: 20000, //inline <= 10kb
-          },
-        },
-        {
           test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          loader: 'url-loader',
-          options: {
-            limit: 20000, //inline <= 20kb
-            mimetype: 'application/font-woff',
-          },
+          type: 'asset',
         },
         {
           test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -119,12 +107,11 @@ module.exports = (_env, options) => {
         },
         {
           test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          loader: 'file-loader',
+          type: 'asset/resource',
         },
         {
           test: /schema\.json$/,
-          type: 'javascript/auto',
-          loader: 'file-loader',
+          type: 'asset/resource',
         },
       ],
     },

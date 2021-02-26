@@ -77,8 +77,8 @@ export default class SelectionRenderer implements ICellRendererFactory {
       update: (node: HTMLElement) => {
         node.onclick = (evt) => {
           evt.stopPropagation();
-          const isunchecked = node.classList.contains(unchecked);
-          if (isunchecked) {
+          const isUnchecked = node.classList.contains(unchecked);
+          if (isUnchecked) {
             context.provider.selectAllOf(col.findMyRanker()!);
             node.classList.remove(unchecked);
             node.classList.add(checked);

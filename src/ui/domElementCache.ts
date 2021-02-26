@@ -10,13 +10,13 @@ export default function domElementCache(doc: Document): (html: string) => HTMLEl
 
   return (html: string) => {
     if (cache.has(html)) {
-      return <HTMLElement>cache.get(html)!.cloneNode(true);
+      return cache.get(html)!.cloneNode(true) as HTMLElement;
     }
 
     helper.innerHTML = html;
-    const node = <HTMLElement>helper.firstElementChild!;
+    const node = helper.firstElementChild! as HTMLElement;
     // keep a copy
-    cache.set(html, <HTMLElement>node.cloneNode(true));
+    cache.set(html, node.cloneNode(true) as HTMLElement);
 
     return node;
   };

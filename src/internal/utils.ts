@@ -13,7 +13,7 @@ export function equalArrays<T>(a: T[], b: T[]) {
  * @internal
  */
 export function fixCSS(id: string) {
-  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]+/g, '_'); //replace non css stuff to _
+  return id.replace(/[\s!#$%&'()*+,./:;<=>?@[\\\]^`{|}~]+/g, '_'); //replace non css stuff to _
 }
 
 /**
@@ -55,7 +55,7 @@ export function concat<T>(arrs: (T[] | T)[]): T[] {
 export function getSortLabel(method: string) {
   switch (method) {
     case 'min':
-      return 'Mininum';
+      return 'Minimum';
     case 'max':
       return 'Maximum';
     case 'median':

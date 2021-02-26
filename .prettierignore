@@ -16,3 +16,11 @@
 /.yarnrc.yml
 /.vscode
 *.lock
+*.png
+*.txt
+*.eot
+*.ttf
+*.woff
+*.woff2
+*.mp4
+*.csv

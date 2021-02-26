@@ -129,7 +129,7 @@ export class MappingLine {
       <title>Drag the anchor circle to change the mapping, double click to edit</title>
     </g>`
     );
-    this.node = <SVGGElement>g.lastElementChild!;
+    this.node = g.lastElementChild! as SVGGElement;
 
     // freeze 0 and 100 domain = raw domain ones
     this.node.classList.toggle(cssClass('frozen'), similar(0, domain) || similar(domain, 100));
@@ -202,7 +202,7 @@ export class MappingLine {
     const ctx = {
       manager: this.adapter.dialog.manager,
       level: this.adapter.dialog.level + 1,
-      attachment: <any>this.node,
+      attachment: this.node as any,
       idPrefix: this.adapter.dialog.idPrefix,
     };
     const dialog = new MappingLineDialog(this, ctx, this.adapter);

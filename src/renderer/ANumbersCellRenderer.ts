@@ -26,8 +26,8 @@ export abstract class ANumbersCellRenderer {
       return { n: col.getNumbers(r), raw: col.getRawNumbers(r) };
     });
     const cols = col.dataLength!;
-    const normalized = <number[]>[];
-    const raw = <number[]>[];
+    const normalized: number[] = [];
+    const raw: number[] = [];
     // mean column)
     for (let i = 0; i < cols; ++i) {
       const vs = data.map((d) => ({ n: d.n[i], raw: d.raw[i] })).filter((d) => !isNaN(d.n));
@@ -37,7 +37,7 @@ export abstract class ANumbersCellRenderer {
       } else {
         const bbn = boxplotBuilder();
         const bbr = boxplotBuilder();
-        const s: EAdvancedSortMethod = <any>col.getSortMethod();
+        const s: EAdvancedSortMethod = (col as any).getSortMethod();
         vs.forEach((d) => {
           bbn.push(d.n);
           bbr.push(d.raw);
@@ -90,7 +90,7 @@ export abstract class ANumbersCellRenderer {
 /** @internal */
 export function matchRows(n: HTMLElement | SVGElement, length: number, template: string) {
   // first match the number of rows
-  const children = <(HTMLElement | SVGElement)[]>Array.from(n.children);
+  const children = Array.from(n.children) as (HTMLElement | SVGElement)[];
   if (children.length > length) {
     children.slice(length).forEach((c) => c.remove());
   } else if (length > children.length) {

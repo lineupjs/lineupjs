@@ -13,6 +13,6 @@
     "includeVersion": true,
     "hideGenerator": true,
     "exclude": "**/*.(d.ts|js|spec.ts|scss)",
-    "plugin": ["typedoc-plugin-as-member-of"],
+    "plugin": ["typedoc-plugin-as-member-of"]
   }
 }

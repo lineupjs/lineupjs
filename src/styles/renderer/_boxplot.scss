@@ -7,7 +7,6 @@
 }
 
 .#{$lu_css_prefix}-boxplot-whisker {
-
   // whiskers + contains everything
   position: relative;
   border-left: 1px solid $lu_renderer_boxplot_stroke;
@@ -16,7 +15,6 @@
   max-height: 30px;
 
   &::before {
-
     // whiskers line
     content: '';
     position: absolute;
@@ -27,16 +25,16 @@
     border-bottom: 1px solid $lu_renderer_boxplot_stroke;
   }
 
-  &[data-sort=min] {
+  &[data-sort='min'] {
     border-left-color: $lu_renderer_boxplot_sort_indicator;
   }
 
-  &[data-sort=max] {
+  &[data-sort='max'] {
     border-right-color: $lu_renderer_boxplot_sort_indicator;
   }
 
-  &[data-sort=q1],
-  &[data-sort=q3] {
+  &[data-sort='q1'],
+  &[data-sort='q3'] {
     > .#{$lu_css_prefix}-boxplot-box {
       &::after {
         content: '';
@@ -47,27 +45,34 @@
     }
   }
 
-  &[data-sort=q1] > .#{$lu_css_prefix}-boxplot-box::after {
+  &[data-sort='q1'] > .#{$lu_css_prefix}-boxplot-box::after {
     left: -1px;
     border-left: 1px solid $lu_renderer_boxplot_sort_indicator;
   }
 
-  &[data-sort=q3] > .#{$lu_css_prefix}-boxplot-box::after {
+  &[data-sort='q3'] > .#{$lu_css_prefix}-boxplot-box::after {
     right: -1px;
     border-right: 1px solid $lu_renderer_boxplot_sort_indicator;
   }
 
-  &[data-sort=median] > .#{$lu_css_prefix}-boxplot-median {
+  &[data-sort='median'] > .#{$lu_css_prefix}-boxplot-median {
     background-color: $lu_renderer_boxplot_sort_indicator;
   }
 
-  &[data-sort=mean] > .#{$lu_css_prefix}-boxplot-mean {
-    background: repeating-linear-gradient(to bottom, transparent 0%, transparent 5%, $lu_renderer_boxplot_sort_indicator 5%, $lu_renderer_boxplot_sort_indicator 15%, transparent 15%, transparent 20%);
+  &[data-sort='mean'] > .#{$lu_css_prefix}-boxplot-mean {
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 5%,
+      $lu_renderer_boxplot_sort_indicator 5%,
+      $lu_renderer_boxplot_sort_indicator 15%,
+      transparent 15%,
+      transparent 20%
+    );
   }
 }
 
 .#{$lu_css_prefix}-boxplot-box {
-
   // box
   position: absolute;
   top: 10%;
@@ -89,7 +94,15 @@
   top: 10%;
   height: 80%;
   width: 1px;
-  background: repeating-linear-gradient(to bottom, transparent 0%, transparent 5%, $lu_renderer_boxplot_stroke 5%, $lu_renderer_boxplot_stroke 15%, transparent 15%, transparent 20%);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 5%,
+    $lu_renderer_boxplot_stroke 5%,
+    $lu_renderer_boxplot_stroke 15%,
+    transparent 15%,
+    transparent 20%
+  );
 }
 
 /**

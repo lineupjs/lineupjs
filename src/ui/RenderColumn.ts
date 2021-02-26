@@ -47,14 +47,14 @@ export default class RenderColumn implements IColumn {
       return null;
     }
     if (this.renderers.singleTemplate) {
-      return <HTMLElement>this.renderers.singleTemplate.cloneNode(true);
+      return this.renderers.singleTemplate.cloneNode(true) as HTMLElement;
     }
     const elem = this.ctx.asElement(this.renderers.single.template);
     elem.classList.add(cssClass(`renderer-${this.renderers.singleId}`), cssClass('detail'));
     elem.dataset.renderer = this.renderers.singleId;
     elem.dataset.group = 'd';
 
-    this.renderers.singleTemplate = <HTMLElement>elem.cloneNode(true);
+    this.renderers.singleTemplate = elem.cloneNode(true) as HTMLElement;
     return elem;
   }
 
@@ -63,14 +63,14 @@ export default class RenderColumn implements IColumn {
       return null;
     }
     if (this.renderers.groupTemplate) {
-      return <HTMLElement>this.renderers.groupTemplate.cloneNode(true);
+      return this.renderers.groupTemplate.cloneNode(true) as HTMLElement;
     }
     const elem = this.ctx.asElement(this.renderers.group.template);
     elem.classList.add(cssClass(`renderer-${this.renderers.groupId}`), cssClass('group'));
     elem.dataset.renderer = this.renderers.groupId;
     elem.dataset.group = 'g';
 
-    this.renderers.groupTemplate = <HTMLElement>elem.cloneNode(true);
+    this.renderers.groupTemplate = elem.cloneNode(true) as HTMLElement;
     return elem;
   }
 
@@ -79,13 +79,13 @@ export default class RenderColumn implements IColumn {
       return null;
     }
     if (this.renderers.summaryTemplate) {
-      return <HTMLElement>this.renderers.summaryTemplate.cloneNode(true);
+      return this.renderers.summaryTemplate.cloneNode(true) as HTMLElement;
     }
     const elem = this.ctx.asElement(this.renderers.summary.template);
     elem.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass(`renderer-${this.renderers.summaryId}`));
     elem.dataset.renderer = this.renderers.summaryId;
 
-    this.renderers.summaryTemplate = <HTMLElement>elem.cloneNode(true);
+    this.renderers.summaryTemplate = elem.cloneNode(true) as HTMLElement;
     return elem;
   }
 
@@ -118,7 +118,7 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers || !this.renderers.summary) {
       return node;
     }
-    let summary = <HTMLElement>node.getElementsByClassName(cssClass('summary'))[0]!;
+    let summary = node.getElementsByClassName(cssClass('summary'))[0]! as HTMLElement;
     const oldRenderer = summary.dataset.renderer;
     const currentRenderer = this.renderers.summaryId;
     if (oldRenderer !== currentRenderer) {
@@ -199,11 +199,11 @@ function chainAbortAble<T, U, V>(
         return;
       }
       const mapped = mapper(r);
-      if (isAbortAble(<any>mapped)) {
-        p.abort = (<IAbortAblePromise<U>>mapped).abort.bind(mapped);
+      if (isAbortAble(mapped)) {
+        p.abort = (mapped as IAbortAblePromise<U>).abort.bind(mapped);
         return p.then(resolve);
       }
-      return resolve(<any>mapped);
+      return resolve(mapped as any);
     });
   });
 

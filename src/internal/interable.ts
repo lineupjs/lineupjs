@@ -26,7 +26,7 @@ export interface ISequence<T> extends IForEachAble<T> {
  * @internal
  */
 export function isSeqEmpty(seq: ISequence<any>) {
-  return seq.every(() => false); // more efficent than counting length
+  return seq.every(() => false); // more efficient than counting length
 }
 
 /**
@@ -289,7 +289,7 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
       const v = it.next();
       if (v.done) {
         return {
-          value: <T2>(<any>undefined),
+          value: (undefined as unknown) as T2,
           done: true,
         };
       }
@@ -538,7 +538,7 @@ class ConcatSequence<T> implements ISequence<T> {
     const next = (): { value: T; done: boolean } => {
       const v = it.next();
       if (!v.done) {
-        return v;
+        return v as { value: T; done: boolean };
       }
       if (seqs.length === 0) {
         // last last
@@ -591,7 +591,7 @@ export function concatSeq<T>(
   ...seqs: ISequence<T>[]
 ): ISequence<T> {
   if (seq2) {
-    return new ConcatSequence([<ISequence<T>>seq1, seq2].concat(seqs));
+    return new ConcatSequence([seq1 as ISequence<T>, seq2].concat(seqs));
   }
-  return new ConcatSequence(<ISequence<T>[]>seq1);
+  return new ConcatSequence(seq1 as ISequence<T>[]);
 }

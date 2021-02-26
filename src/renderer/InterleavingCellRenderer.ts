@@ -79,7 +79,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement) => {
-        const tasks = cols.map((col) => context.tasks.summaryNumberStats(<INumberColumn>col));
+        const tasks = cols.map((col) => context.tasks.summaryNumberStats(col as INumberColumn));
 
         return tasksAll(tasks).then((vs) => {
           if (typeof vs === 'symbol') {
@@ -113,20 +113,20 @@ function groupedHist(stats: (IStatistics | null)[]): IHistogramLike<number> | nu
 
   const bins = sample.hist.length;
   // assert all have the same bin size
-  const hist = <INumberBin[]>[];
+  const hist: INumberBin[] = [];
   let maxBin = 0;
   for (let i = 0; i < bins; ++i) {
-    stats.forEach((s) => {
+    for (const s of stats) {
       const bin = s ? s.hist[i] : null;
       if (!bin) {
         hist.push(dummyBin);
-        return;
+        continue;
       }
       if (bin.count > maxBin) {
         maxBin = bin.count;
       }
       hist.push(bin);
-    });
+    }
   }
   return {
     maxBin,

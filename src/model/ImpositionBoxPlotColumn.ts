@@ -91,7 +91,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
   }
 
   private get wrapper(): IBoxPlotColumn | null {
-    return <IBoxPlotColumn>this._children.find(isBoxPlotColumn) || null;
+    return this._children.find(isBoxPlotColumn) ?? null;
   }
 
   private get rest() {

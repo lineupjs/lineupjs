@@ -55,6 +55,7 @@ export default class AEventDispatcher implements IEventHandler {
     this.listenerEvents = new Set(events);
     this.listeners = dispatch(...events);
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     this.forwarder = function (this: IEventContext, ...args: any[]) {
       that.fireImpl(this.type, this.primaryType, this.origin, ...args);
@@ -71,9 +72,9 @@ export default class AEventDispatcher implements IEventHandler {
           console.warn(this, 'invalid event type', d);
         }
       });
-    } else if (this.listenerEvents.has((<string>type).split('.')[0])) {
-      this.listenersChanged(<string>type, Boolean(listener!));
-      this.listeners.on(<string>type, listener!);
+    } else if (this.listenerEvents.has((type as string).split('.')[0])) {
+      this.listenersChanged(type as string, Boolean(listener!));
+      this.listeners.on(type as string, listener!);
     } else if (__DEBUG && !type.includes('.')) {
       console.warn(this, 'invalid event type', type);
     }
@@ -83,7 +84,7 @@ export default class AEventDispatcher implements IEventHandler {
   /**
    * helper function that will be called upon a listener has changed
    * @param _type event type
-   * @param _active registered or deregistered
+   * @param _active registered or de registered
    */
   protected listenersChanged(_type: string, _active: boolean) {
     // hook
@@ -123,7 +124,7 @@ export default class AEventDispatcher implements IEventHandler {
     if (Array.isArray(type)) {
       type.forEach(fireImpl);
     } else {
-      fireImpl(<string>type);
+      fireImpl(type as string);
     }
   }
 

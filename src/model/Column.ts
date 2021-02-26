@@ -574,7 +574,7 @@ export default class Column extends AEventDispatcher {
 
   /**
    * clear the filter
-   * @return {boolean} whether the filtered needed to be reseted
+   * @return {boolean} whether the filtered needed to be reset
    */
   clearFilter() {
     // hook to clear the filter

@@ -35,7 +35,7 @@ export default class SelectionManager extends AEventDispatcher {
   constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement) {
     super();
     const root = body.parentElement!.parentElement!;
-    let hr = <HTMLHRElement>root.querySelector('hr');
+    let hr = root.querySelector('hr');
     if (!hr) {
       hr = root.ownerDocument!.createElement('hr');
       root.appendChild(hr);
@@ -57,11 +57,11 @@ export default class SelectionManager extends AEventDispatcher {
       const row = engineCssClass('tr');
       const startNode = this.start.node.classList.contains(row)
         ? this.start.node
-        : <HTMLElement>this.start.node.closest(`.${row}`);
+        : this.start.node.closest<HTMLElement>(`.${row}`);
       // somehow on firefox the mouseUp will be triggered on the original node
       // thus search the node explicitly
-      const end = <HTMLElement>this.body.ownerDocument!.elementFromPoint(evt.clientX, evt.clientY);
-      const endNode = end.classList.contains(row) ? end : <HTMLElement>end.closest(`.${row}`);
+      const end = this.body.ownerDocument!.elementFromPoint(evt.clientX, evt.clientY) as HTMLElement;
+      const endNode = end.classList.contains(row) ? end : end.closest<HTMLElement>(`.${row}`);
       this.start = null;
 
       this.body.classList.remove(cssClass('selection-active'));
@@ -74,7 +74,7 @@ export default class SelectionManager extends AEventDispatcher {
       'mousedown',
       (evt) => {
         const r = root.getBoundingClientRect();
-        this.start = { x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target };
+        this.start = { x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: evt.target as HTMLElement };
 
         this.body.classList.add(cssClass('selection-active'));
         body.addEventListener('mousemove', mouseMove, {
@@ -133,7 +133,7 @@ export default class SelectionManager extends AEventDispatcher {
   }
 
   remove(node: HTMLElement) {
-    node.onclick = <any>undefined;
+    node.onclick = undefined;
   }
 
   add(node: HTMLElement) {

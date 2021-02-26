@@ -180,7 +180,7 @@ export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICateg
     return false;
   }
   if (Array.isArray(a.filter)) {
-    return arrayEquals(<string[]>a.filter, <string[]>b.filter);
+    return arrayEquals(a.filter, b.filter as string[]);
   }
   return String(a.filter) === String(b.filter);
 }

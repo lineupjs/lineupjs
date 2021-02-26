@@ -28,7 +28,7 @@ export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements
   }
 
   getMap(row: IDataRow) {
-    return toKeyValue<T>(<any>super.getValue(row));
+    return toKeyValue<T>(super.getValue(row));
   }
 
   getMapLabel(row: IDataRow) {

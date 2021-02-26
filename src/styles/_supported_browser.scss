@@ -30,16 +30,16 @@
     font-size: 250%;
   }
 
-  &[data-browser=chrome]::before {
+  &[data-browser='chrome']::before {
     content: $lu_icon_chrome;
     color: black;
   }
 
-  &[data-browser=firefox]::before {
+  &[data-browser='firefox']::before {
     content: $lu_icon_firefox;
   }
 
-  &[data-browser=edge]::before {
+  &[data-browser='edge']::before {
     content: $lu_icon_edge;
   }
 

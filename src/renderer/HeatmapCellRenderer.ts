@@ -55,7 +55,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, d: IDataRow) => {
-        const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+        const ctx = (n as HTMLCanvasElement).getContext('2d')!;
         ctx.canvas.width = width;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -85,7 +85,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
             if (typeof data === 'symbol') {
               return;
             }
-            const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+            const ctx = (n as HTMLCanvasElement).getContext('2d')!;
             ctx.canvas.width = width;
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 

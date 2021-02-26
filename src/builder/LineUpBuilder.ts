@@ -105,7 +105,7 @@ export default class LineUpBuilder {
 
   /**
    * register a new renderer factory function
-   * @param id the rederer id
+   * @param id the renderer id
    * @param factory factory class implementing the renderer
    */
   registerRenderer(id: string, factory: ICellRendererFactory) {

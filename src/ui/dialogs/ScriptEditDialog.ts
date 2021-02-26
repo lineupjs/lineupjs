@@ -25,7 +25,7 @@ export default class ScriptEditDialog extends ADialog {
   }
 
   protected reset() {
-    this.node.querySelector('textarea')!.value = (<any>this.column.desc).script || ScriptColumn.DEFAULT_SCRIPT;
+    this.node.querySelector('textarea')!.value = (this.column.desc as any).script || ScriptColumn.DEFAULT_SCRIPT;
   }
 
   protected submit() {

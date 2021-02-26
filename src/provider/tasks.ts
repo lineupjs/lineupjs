@@ -78,12 +78,12 @@ export function taskLater<T>(v: IAbortAblePromise<T>) {
  */
 export function tasksAll<T>(tasks: IRenderTask<T>[]): IRenderTask<T[]> {
   if (tasks.every((t) => t instanceof TaskNow)) {
-    return taskNow(tasks.map((d) => (<TaskNow<T>>d).v));
+    return taskNow(tasks.map((d) => (d as TaskNow<T>).v));
   }
-  return taskLater(abortAbleAll((<(TaskNow<T> | TaskLater<T>)[]>tasks).map((d) => d.v)));
+  return taskLater(abortAbleAll((tasks as (TaskNow<T> | TaskLater<T>)[]).map((d) => d.v)));
 }
 
-export interface IRenderTaskExectutor extends IRenderTasks {
+export interface IRenderTaskExecutor extends IRenderTasks {
   setData(data: IDataRow[]): void;
 
   dirtyColumn(col: Column, type: 'data' | 'summary' | 'group'): void;
@@ -179,7 +179,7 @@ export class ARenderTasks {
       // done
       return {
         done: true,
-        value: build ? build(builder.build()) : <R>(<any>builder.build()),
+        value: build ? build(builder.build()) : ((builder.build() as unknown) as R),
       };
     };
 
@@ -204,7 +204,7 @@ export class ARenderTasks {
       }
       return {
         done: true,
-        value: build ? build(builder.build()) : <R>(<any>builder.build()),
+        value: build ? build(builder.build()) : ((builder.build() as unknown) as R),
       };
     };
     return { next: order == null ? nextData : nextOrder };

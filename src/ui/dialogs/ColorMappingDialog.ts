@@ -54,7 +54,7 @@ export default class ColorMappingDialog extends ADialog {
     {
       const refColor = current instanceof SolidColorFunction ? current.color : '';
       let has = refColor === DEFAULT_COLOR;
-      const colorsets = [
+      const colorSets = [
         schemeCategory10,
         schemeAccent,
         schemeDark2,
@@ -68,7 +68,7 @@ export default class ColorMappingDialog extends ADialog {
         <input name="color" type="radio" value="${d}" ${d === refColor ? 'checked="checked"' : ''}>
         <span style="background: ${d}"></span>
       </label>`;
-      colorsets.forEach((colors, i) => {
+      colorSets.forEach((colors, i) => {
         has = has || colors.includes(refColor);
         h += `<div class="${cssClass('color-line')}">
           ${colors.map(renderColor).join('')}
@@ -206,7 +206,7 @@ export default class ColorMappingDialog extends ADialog {
     const id = this.id;
     node.innerHTML = this.createTemplate(id, value);
 
-    const toggles = <HTMLElement[]>Array.from(node.querySelectorAll('strong[data-toggle]'));
+    const toggles = Array.from(node.querySelectorAll<HTMLElement>('strong[data-toggle]'));
 
     for (const toggle of toggles) {
       toggle.onclick = (evt) => {
@@ -251,7 +251,7 @@ export default class ColorMappingDialog extends ADialog {
     // upon changing custom parameter trigger an update
     this.forEach(`.${cssClass('color-custom')} input[type=color]`, (d: HTMLInputElement) => {
       d.onchange = () => {
-        const item = <HTMLInputElement>d.parentElement!.previousElementSibling!;
+        const item = d.parentElement!.previousElementSibling! as HTMLInputElement;
         updateColor(item);
       };
     });
@@ -265,7 +265,7 @@ export default class ColorMappingDialog extends ADialog {
     const steps2 = this.findInput(`#${id}KQS_D`);
 
     continuouos.onchange = continuouos2.onchange = (evt) => {
-      continuouos.checked = continuouos2.checked = (<HTMLInputElement>evt.currentTarget).checked;
+      continuouos.checked = continuouos2.checked = (evt.currentTarget as HTMLInputElement).checked;
       steps.disabled = steps2.disabled = !quantized.checked;
       if (continuouos.checked) {
         this.updateGradients(-1);
@@ -273,12 +273,12 @@ export default class ColorMappingDialog extends ADialog {
       }
     };
     steps.onchange = steps2.onchange = (evt) => {
-      steps.value = steps2.value = (<HTMLInputElement>evt.currentTarget).value;
+      steps.value = steps2.value = (evt.currentTarget as HTMLInputElement).value;
       this.updateGradients(Number.parseInt(steps.value, 10));
       updateSelectedColor();
     };
     quantized.onchange = quantized2.onchange = (evt) => {
-      quantized.checked = quantized2.checked = (<HTMLInputElement>evt.currentTarget).checked;
+      quantized.checked = quantized2.checked = (evt.currentTarget as HTMLInputElement).checked;
       steps.disabled = steps2.disabled = !quantized.checked;
       if (quantized.checked) {
         this.updateGradients(Number.parseInt(steps.value, 10));
@@ -288,7 +288,7 @@ export default class ColorMappingDialog extends ADialog {
   }
 
   protected reset() {
-    const desc = <IMapAbleDesc>this.column.desc;
+    const desc = this.column.desc as IMapAbleDesc;
     const colorMapping = this.ctx.provider.getTypeFactory().colorMappingFunction(desc.colorMapping || desc.color);
     this.render(this.node.querySelector<HTMLElement>(`.${cssClass('dialog-color')}`)!, colorMapping);
   }
@@ -322,18 +322,18 @@ export default class ColorMappingDialog extends ADialog {
 function toColor(input: HTMLInputElement, node: HTMLElement) {
   switch (input.value) {
     case 'custom:solid':
-      return new SolidColorFunction((<HTMLInputElement>node.querySelector('input[name=solid]')!).value);
+      return new SolidColorFunction(node.querySelector<HTMLInputElement>('input[name=solid]')!.value);
     case 'custom:sequential':
-      const s0 = (<HTMLInputElement>node.querySelector('input[name=interpolate0]')!).value;
-      const s1 = (<HTMLInputElement>node.querySelector('input[name=interpolate1]')!).value;
+      const s0 = node.querySelector<HTMLInputElement>('input[name=interpolate0]')!.value;
+      const s1 = node.querySelector<HTMLInputElement>('input[name=interpolate1]')!.value;
       return new CustomColorMappingFunction([
         { color: s0, value: 0 },
         { color: s1, value: 1 },
       ]);
     case 'custom:diverging':
-      const dm1 = (<HTMLInputElement>node.querySelector('input[name=divergentm1]')!).value;
-      const d0 = (<HTMLInputElement>node.querySelector('input[name=divergent0]')!).value;
-      const d1 = (<HTMLInputElement>node.querySelector('input[name=divergent1]')!).value;
+      const dm1 = node.querySelector<HTMLInputElement>('input[name=divergentm1]')!.value;
+      const d0 = node.querySelector<HTMLInputElement>('input[name=divergent0]')!.value;
+      const d1 = node.querySelector<HTMLInputElement>('input[name=divergent1]')!.value;
       return new CustomColorMappingFunction([
         { color: dm1, value: 0 },
         { color: d0, value: 0.5 },

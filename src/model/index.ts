@@ -13,7 +13,7 @@ export * from './IArrayColumn';
 export { toCategories } from './internalCategorical';
 
 export { ScaleMappingFunction, ScriptMappingFunction, mappingFunctions } from './MappingFunction';
-export { DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacmentColorMappingFunction } from './CategoricalColorMappingFunction';
+export { DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacementColorMappingFunction } from './CategoricalColorMappingFunction';
 export {
   CustomColorMappingFunction,
   DEFAULT_COLOR_FUNCTION,

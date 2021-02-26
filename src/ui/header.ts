@@ -71,7 +71,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   // addTooltip(node, col);
 
   createShortcutMenuItems(
-    <HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0]!,
+    node.getElementsByClassName(cssClass('toolbar'))[0]! as HTMLElement,
     options.level!,
     col,
     ctx,
@@ -87,7 +87,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     mergeDropAble(node, col, ctx);
   }
   if (options.rearrangeAble) {
-    rearrangeDropAble(<HTMLElement>node.getElementsByClassName(cssClass('handle'))[0]!, col, ctx);
+    rearrangeDropAble(node.getElementsByClassName(cssClass('handle'))[0]! as HTMLElement, col, ctx);
   }
   if (options.resizeable) {
     dragWidth(col, node);
@@ -97,12 +97,12 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
-  const label = <HTMLElement>node.getElementsByClassName(cssClass('label'))[0]!;
+  const label = node.getElementsByClassName(cssClass('label'))[0]! as HTMLElement;
   label.innerHTML = col.getWidth() < minWidth ? '&nbsp;' : col.label;
   const summary = col.getMetaData().summary;
-  const sublabel = <HTMLElement>node.getElementsByClassName(cssClass('sublabel'))[0];
-  if (sublabel) {
-    sublabel.innerHTML = col.getWidth() < minWidth || !summary ? '&nbsp;' : summary;
+  const subLabel = node.getElementsByClassName(cssClass('sublabel'))[0] as HTMLElement;
+  if (subLabel) {
+    subLabel.innerHTML = col.getWidth() < minWidth || !summary ? '&nbsp;' : summary;
   }
 
   let title = col.label;
@@ -136,7 +136,7 @@ function updateMoreDialogIcons(node: HTMLElement, col: Column) {
 
 /** @internal */
 export function updateIconState(node: HTMLElement, col: Column) {
-  const sort = <HTMLElement>node.getElementsByClassName(cssClass('action-sort'))[0]!;
+  const sort = node.getElementsByClassName(cssClass('action-sort'))[0]! as HTMLElement;
   if (sort) {
     const { asc, priority } = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
@@ -148,7 +148,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const sortGroups = <HTMLElement>node.getElementsByClassName(cssClass('action-sort-groups'))[0]!;
+  const sortGroups = node.getElementsByClassName(cssClass('action-sort-groups'))[0]! as HTMLElement;
   if (sortGroups) {
     const { asc, priority } = col.isGroupSortedByMe();
     sortGroups.dataset.sort = asc !== undefined ? asc : '';
@@ -160,7 +160,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const group = <HTMLElement>node.getElementsByClassName(cssClass('action-group'))[0]!;
+  const group = node.getElementsByClassName(cssClass('action-group'))[0]! as HTMLElement;
   if (group) {
     const groupedBy = col.isGroupedBy();
     group.dataset.group = groupedBy >= 0 ? 'true' : 'false';
@@ -171,7 +171,7 @@ export function updateIconState(node: HTMLElement, col: Column) {
     }
   }
 
-  const filter = <HTMLElement>node.getElementsByClassName(cssClass('action-filter'))[0]!;
+  const filter = node.getElementsByClassName(cssClass('action-filter'))[0]! as HTMLElement;
   if (!filter) {
     return;
   }
@@ -216,11 +216,11 @@ function addIconDOM(
         !showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''
       }>${action.title}</span> </i>`
     );
-    const i = <HTMLElement>node.lastElementChild;
+    const i = node.lastElementChild as HTMLElement;
     i.onclick = (evt) => {
       evt.stopPropagation();
       ctx.dialogManager.setHighlightColumn(col);
-      action.onClick(col, <any>evt, ctx, level, !showLabel);
+      action.onClick(col, evt as any, ctx, level, !showLabel);
     };
     return i;
   };
@@ -276,11 +276,11 @@ export function createShortcutMenuItems(
       'More &hellip;'
     )}</i>`
   );
-  const i = <HTMLElement>node.lastElementChild;
+  const i = node.lastElementChild as HTMLElement;
   i.onclick = (evt) => {
     evt.stopPropagation();
     ctx.dialogManager.setHighlightColumn(col);
-    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, <any>evt), mode, ctx);
+    const dialog = new MoreColumnOptionsDialog(col, dialogContext(ctx, level, evt), mode, ctx);
     dialog.open();
   };
 }
@@ -302,7 +302,7 @@ export function createToolbarMenuItems(
 /** @internal */
 function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClientWidth: number) {
   // rotate header flag if needed
-  const label = <HTMLElement>node.getElementsByClassName(cssClass('label'))[0];
+  const label = node.getElementsByClassName(cssClass('label'))[0] as HTMLElement;
   if (col.getWidth() < MIN_LABEL_WIDTH) {
     label.classList.remove(`.${cssClass('rotated')}`);
     return;
@@ -319,13 +319,13 @@ function toggleRotatedHeader(node: HTMLElement, col: Column, defaultVisibleClien
 function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
   toggleRotatedHeader(node, col, defaultVisibleClientWidth);
 
-  const toolbar = <HTMLElement>node.getElementsByClassName(cssClass('toolbar'))[0];
+  const toolbar = node.getElementsByClassName(cssClass('toolbar'))[0] as HTMLElement;
   if (toolbar.childElementCount === 0) {
     return;
   }
   const availableWidth = col.getWidth();
   const actions = Array.from(toolbar.children).map((d) => ({
-    node: <HTMLElement>d,
+    node: d as HTMLElement,
     width: d.clientWidth > 0 ? d.clientWidth : defaultVisibleClientWidth,
   }));
 
@@ -347,7 +347,7 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
     return;
   }
   if (moreIcon && !needMore && total - moreIcon.width < availableWidth) {
-    // available space is enougth we can skip the "more" and then it fits
+    // available space is enough we can skip the "more" and then it fits
     moreIcon.node.classList.add(cssClass('hidden'));
     return;
   }
@@ -371,7 +371,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
   let sizeHelper: HTMLElement;
   let currentFooterTransformation = '';
-  const handle = <HTMLElement>node.getElementsByClassName(cssClass('handle'))[0];
+  const handle = node.getElementsByClassName(cssClass('handle'))[0] as HTMLElement;
 
   let start = 0;
   let originalWidth = 0;
@@ -430,16 +430,16 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
     originalWidth = col.getWidth();
     start = evt.clientX;
-    ueberElement = <HTMLElement>node.closest('body') || <HTMLElement>node.closest(`.${cssClass()}`)!; // take the whole body or root lineup
+    ueberElement = node.closest<HTMLElement>('body') || node.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
     ueberElement.addEventListener('mousemove', mouseMove);
     ueberElement.addEventListener('mouseup', mouseUp);
     ueberElement.addEventListener('mouseleave', mouseUp);
     ueberElement.classList.add(cssClass('resizing'));
 
-    sizeHelper = <HTMLElement>(
-      node.closest(`.${engineCssClass()}`)!.querySelector<HTMLElement>(`.${cssClass('resize-helper')}`)
-    );
-    currentFooterTransformation = (<HTMLElement>sizeHelper.previousElementSibling!).style.transform!;
+    sizeHelper = node
+      .closest<HTMLElement>(`.${engineCssClass()}`)!
+      .querySelector<HTMLElement>(`.${cssClass('resize-helper')}`);
+    currentFooterTransformation = (sizeHelper.previousElementSibling! as HTMLElement).style.transform!;
     sizeHelper.style.transform = `${currentFooterTransformation} translate(${-RESIZE_SPACE}px, 0px)`;
     sizeHelper.classList.add(cssClass('resizing'));
   };
@@ -599,7 +599,7 @@ export function resortDropAble(
       const index = criteria.findIndex((d) => d.col === column);
 
       if (autoGroup && groupIndex >= 0) {
-        // before the grouping, so either ungroup or regroup
+        // before the grouping, so either un group or regroup
         removeFromSort(column);
         if (isCategoricalColumn(col)) {
           // we can group by it
@@ -662,7 +662,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
 
   const pushChild = (result: IDropResult) => {
     const col: Column | null = resolveDrop(result);
-    return col != null && (<CompositeColumn>column).push(col) != null;
+    return col != null && (column as CompositeColumn).push(col) != null;
   };
 
   const mergeImpl = (col: Column | null, desc: IColumnDesc) => {
@@ -671,7 +671,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
     }
     const ranking = column.findMyRanker()!;
     const index = ranking.indexOf(column);
-    const parent = <CompositeColumn>ctx.provider.create(desc);
+    const parent = ctx.provider.create(desc) as CompositeColumn;
     column.removeMe();
     parent.push(column);
     parent.push(col);
@@ -746,10 +746,10 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
   }
   if (isMultiLevelColumn(column)) {
     // stack column or nested
-    return dropAble(node, (<IMultiLevelColumn>column).canJustAddNumbers ? numberish : all, pushChild);
+    return dropAble(node, (column as IMultiLevelColumn).canJustAddNumbers ? numberish : all, pushChild);
   }
   if (column instanceof CompositeColumn) {
-    return dropAble(node, (<CompositeColumn>column).canJustAddNumbers ? numberish : all, pushChild);
+    return dropAble(node, (column as CompositeColumn).canJustAddNumbers ? numberish : all, pushChild);
   }
   if (isNumbersColumn(column)) {
     node.dataset.draginfo = 'Color by';

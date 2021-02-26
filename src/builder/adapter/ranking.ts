@@ -48,7 +48,7 @@ export function buildGeneric(props: { column: '*' | string }) {
 }
 
 export function buildImposeRanking(props: IBuilderAdapterImposeColumnProps) {
-  return <any>Object.assign(
+  return Object.assign(
     {
       type: 'impose',
     },

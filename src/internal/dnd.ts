@@ -5,7 +5,7 @@ export function hasDnDType(e: DragEvent, ...typesToCheck: string[]) {
   const available: any = e.dataTransfer!.types;
 
   /*
-   * In Chrome datatransfer.types is an Array,
+   * In Chrome data transfer.types is an Array,
    * while in Firefox it is a DOMStringList
    * that only implements a contains-method!
    */
@@ -43,7 +43,7 @@ export function copyDnD(e: DragEvent) {
 }
 
 /**
- * updates the drop effect accoriding to the current copyDnD state
+ * updates the drop effect according to the current copyDnD state
  * @param e
  * @internal
  */
@@ -97,7 +97,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
 
     // copy all data transfer objects
     const keys = Object.keys(payload.data);
-    const allSucceded = keys.every((k) => {
+    const allSucceeded = keys.every((k) => {
       try {
         e.dataTransfer!.setData(k, payload.data[k]);
         return true;
@@ -105,7 +105,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
         return false;
       }
     });
-    if (allSucceded) {
+    if (allSucceeded) {
       return;
     }
     //compatibility mode for edge
@@ -127,7 +127,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     }
 
     // remove all
-    const over = <HTMLElement>node.ownerDocument!.getElementsByClassName(cssClass('dragover'))[0];
+    const over = node.ownerDocument!.getElementsByClassName(cssClass('dragover'))[0] as HTMLElement;
     if (over) {
       over.classList.remove(cssClass('dragover'));
     }
@@ -157,7 +157,7 @@ export function dropAble(
     if (node.classList.contains(cssClass('dragging')) || !(hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) || !canDrop()) {
       // not a valid mime type
       node.classList.remove(cssClass('dragover'));
-      return;
+      return undefined;
     }
     node.classList.add(cssClass('dragover'));
     if (stopPropagation) {
@@ -170,7 +170,7 @@ export function dropAble(
   node.addEventListener('dragover', (e) => {
     if (node.classList.contains(cssClass('dragging')) || !(hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) || !canDrop()) {
       // not a valid mime type
-      return;
+      return undefined;
     }
 
     e.preventDefault();
@@ -189,7 +189,7 @@ export function dropAble(
 
   node.addEventListener('dragleave', (evt) => {
     // same fix as in phovea
-    (<HTMLElement>evt.target).classList.remove(cssClass('dragover'));
+    (evt.target as HTMLElement).classList.remove(cssClass('dragover'));
   });
 
   node.addEventListener('drop', (e) => {
@@ -199,7 +199,7 @@ export function dropAble(
     }
     updateDropEffect(e);
 
-    const effect = <IDragEffect>e.dataTransfer!.dropEffect;
+    const effect = e.dataTransfer!.dropEffect as IDragEffect;
 
     node.classList.remove(cssClass('dragover'));
 
@@ -212,11 +212,11 @@ export function dropAble(
         dndTransferStorage.delete(id);
         return !onDrop({ effect, data }, e);
       }
-      return;
+      return undefined;
     }
 
     if (!hasDnDType(e, ...mimeTypes)) {
-      return;
+      return undefined;
     }
 
     // copy sub mime types

@@ -128,7 +128,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   restore(dump: any, factory: ITypeFactory) {
-    dump.children.map((child: any) => {
+    dump.children.forEachb((child: any) => {
       const c = factory(child);
       if (c) {
         this.push(c);
@@ -298,7 +298,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.every(
       (c) =>
         !(c instanceof ValueColumn || c instanceof CompositeColumn) ||
-        (<ValueColumn<any> | CompositeColumn>c).isLoaded()
+        (c as ValueColumn<any> | CompositeColumn).isLoaded()
     );
   }
 

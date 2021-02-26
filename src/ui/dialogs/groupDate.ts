@@ -37,9 +37,8 @@ export default function appendDate(col: DateColumn, node: HTMLElement): IToolbar
   return {
     elems: 'input[name=granularity],input[name=circular]',
     submit() {
-      const granularity = <IDateGranularity>(
-        node.querySelector<HTMLInputElement>('input[name=granularity]:checked')!.value
-      );
+      const granularity = node.querySelector<HTMLInputElement>('input[name=granularity]:checked')!
+        .value as IDateGranularity;
       col.setDateGrouper({
         granularity,
         circular: circular.checked,

@@ -40,7 +40,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
 
   private static exampleText(col: LinkColumn, rows: ISequence<IDataRow>) {
     const numExampleRows = 5;
-    const examples = <string[]>[];
+    const examples: string[] = [];
     rows.every((row) => {
       const v = col.getLink(row);
       if (!v) {

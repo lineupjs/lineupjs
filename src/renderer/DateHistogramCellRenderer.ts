@@ -188,7 +188,7 @@ export function createDateFilter(
     }
   };
   parent.innerHTML = `${renderer.template}${filteredHistTemplate(fContext, createFilterInfo(col, domain))}</div>`;
-  const summaryNode = <HTMLElement>parent.firstElementChild!;
+  const summaryNode = parent.firstElementChild! as HTMLElement;
   summaryNode.classList.add(cssClass('summary'), cssClass('renderer'));
   summaryNode.dataset.renderer = 'histogram';
   summaryNode.dataset.interactive = '';

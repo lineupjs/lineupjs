@@ -135,21 +135,21 @@ export default class MultiLevelCellRenderer
         matchColumns(n, cols, context);
 
         const toWait: IAbortAblePromise<void>[] = [];
-        const children = <HTMLElement[]>Array.from(n.children);
+        const children = Array.from(n.children) as HTMLElement[];
         const total = col.getWidth();
         let missingWeight = 0;
         cols.forEach((col, ci) => {
           const weight = col.column.getWidth() / total;
-          const cnode = children[ci];
-          cnode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('detail'));
-          cnode.dataset.group = 'd';
-          cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
-          (<any>cnode.style).gridColumnStart = (ci + 1).toString();
-          const r = col.renderer!.update(cnode, d, i, group);
+          const cNode = children[ci];
+          cNode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('detail'));
+          cNode.dataset.group = 'd';
+          cNode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
+          cNode.style.gridColumnStart = (ci + 1).toString();
+          const r = col.renderer!.update(cNode, d, i, group);
           if (stacked) {
-            missingWeight += (1 - (<INumberColumn>col.column).getNumber(d)) * weight;
+            missingWeight += (1 - (col.column as INumberColumn).getNumber(d)) * weight;
             if (ci < cols.length - 1) {
-              const span = cnode.querySelector('span');
+              const span = cNode.querySelector('span');
               if (span) {
                 span.style.overflow = 'hidden';
               }
@@ -161,7 +161,7 @@ export default class MultiLevelCellRenderer
         });
 
         if (toWait.length > 0) {
-          return <IAbortAblePromise<void>>abortAbleAll(toWait);
+          return abortAbleAll(toWait) as IAbortAblePromise<void>;
         }
         return null;
       },
@@ -183,7 +183,7 @@ export default class MultiLevelCellRenderer
             ctx.translate(-shift, 0);
           }
           if (stacked) {
-            stackShift += col.width * (1 - (<INumberColumn>col.column).getNumber(d));
+            stackShift += col.width * (1 - (col.column as INumberColumn).getNumber(d));
           }
         }
 
@@ -226,12 +226,12 @@ export default class MultiLevelCellRenderer
         matchColumns(n, cols, context);
 
         const toWait: IAbortAblePromise<void>[] = [];
-        const children = <HTMLElement[]>Array.from(n.children);
+        const children = Array.from(n.children) as HTMLElement[];
         cols.forEach((col, ci) => {
           const cnode = children[ci];
           cnode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('group'));
           cnode.dataset.group = 'g';
-          (<any>cnode.style).gridColumnStart = (ci + 1).toString();
+          cnode.style.gridColumnStart = (ci + 1).toString();
           const r = col.groupRenderer!.update(cnode, group);
           if (r) {
             toWait.push(r);
@@ -239,7 +239,7 @@ export default class MultiLevelCellRenderer
         });
 
         if (toWait.length > 0) {
-          return <IAbortAblePromise<void>>abortAbleAll(toWait);
+          return abortAbleAll(toWait) as IAbortAblePromise<void>;
         }
         return null;
       },
@@ -248,6 +248,6 @@ export default class MultiLevelCellRenderer
 
   protected aggregatedIndex(rows: ISequence<IDataRow>, col: IMultiLevelColumn & Column) {
     console.assert(isNumberColumn(col));
-    return medianIndex(rows, <INumberColumn>(<any>col));
+    return medianIndex(rows, (col as any) as INumberColumn);
   }
 }

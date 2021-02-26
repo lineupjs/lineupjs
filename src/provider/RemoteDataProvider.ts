@@ -42,7 +42,7 @@ export interface IRemoteDataProviderOptions {
 }
 
 function createIndex2Pos(order: IndicesArray) {
-  const index2pos = <number[]>[];
+  const index2pos: number[] = [];
   for (let i = 0; i < order.length; ++i) {
     index2pos[order[i]] = i + 1;
   }
@@ -153,11 +153,11 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   }
 
   mappingSample(col: Column): Promise<number[]> {
-    return this.server.mappingSample((<any>col.desc).column);
+    return this.server.mappingSample((col as any).desc.column);
   }
 
   searchAndJump(search: string | RegExp, col: Column) {
-    this.server.search(search, (<any>col.desc).column).then((indices) => {
+    this.server.search(search, (col as any).desc.column).then((indices) => {
       this.jumpToNearest(indices);
     });
   }

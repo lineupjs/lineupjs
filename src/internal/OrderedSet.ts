@@ -5,7 +5,7 @@
 export default class OrderedSet<T> implements Iterable<T> {
   readonly [Symbol.toStringTag] = Symbol('OrderedSet');
   private readonly set = new Set<T>();
-  private readonly list = <T[]>[];
+  private readonly list: T[] = [];
 
   constructor(values: Iterable<T> = []) {
     this.addAll(Array.isArray(values) ? values : Array.from(values));
@@ -55,7 +55,7 @@ export default class OrderedSet<T> implements Iterable<T> {
 
   forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any) {
     this.list.forEach(function (this: any, v: T) {
-      callbackfn.call(this, v, v, <any>this);
+      callbackfn.call(this, v, v, this);
     }, thisArg);
   }
 

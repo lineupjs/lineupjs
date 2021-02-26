@@ -57,7 +57,7 @@ export default function groupString(
     elems: [text, valueRadioButton, startsWithRadioButton, regexRadioButton],
     submit() {
       const checkedNode = node.querySelector<HTMLInputElement>(`input[name="${dialog.idPrefix}groupString"]:checked`)!;
-      const newType = <EStringGroupCriteriaType>checkedNode.value;
+      const newType = checkedNode.value as EStringGroupCriteriaType;
       let items: (string | RegExp)[] = text.value
         .trim()
         .split('\n')

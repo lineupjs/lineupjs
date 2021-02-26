@@ -47,6 +47,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
 
   constructor(id: string, desc: Readonly<IColumnDesc>) {
     super(id, desc);
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     this.adaptChange = function (old, newValue) {
       that.adaptWidthChange(old, newValue);

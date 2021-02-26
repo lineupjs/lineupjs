@@ -208,9 +208,9 @@ export function chooseAggregatedDate(
   col: IDateColumn,
   valueCache?: ISequence<Date | null>
 ): { value: number | null; name: string } {
-  const vs = <ISequence<Date>>(
-    (valueCache ? valueCache : rows.map((d) => col.getDate(d))).filter((d) => d instanceof Date)
-  );
+  const vs = (valueCache ? valueCache : rows.map((d) => col.getDate(d))).filter(
+    (d) => d instanceof Date
+  ) as ISequence<Date>;
   if (isSeqEmpty(vs)) {
     return { value: null, name: '' };
   }

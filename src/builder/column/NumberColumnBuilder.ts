@@ -25,7 +25,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     this.desc.map = {
       type,
       domain,
-      range: range || [0, 1],
+      range: range ?? [0, 1],
     };
     return this;
   }
@@ -69,7 +69,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    */
   asArray(labels?: string[] | number, sort?: EAdvancedSortMethod) {
     if (sort) {
-      (<any>this.desc).sort = sort;
+      (this.desc as any).sort = sort;
     }
     return super.asArray(labels);
   }
@@ -80,7 +80,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    */
   asMap(sort?: EAdvancedSortMethod) {
     if (sort) {
-      (<any>this.desc).sort = sort;
+      (this.desc as any).sort = sort;
     }
     return super.asMap();
   }
@@ -91,14 +91,14 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    */
   asBoxPlot(sort?: ESortMethod) {
     if (sort) {
-      (<any>this.desc).sort = sort;
+      (this.desc as any).sort = sort;
     }
     this.desc.type = 'boxplot';
     return this;
   }
 
-  private derive(data: any[]) {
-    const col = (<any>this.desc).column;
+  private derive(data: any[]): [number, number] {
+    const col = (this.desc as any).column;
 
     const asArray = (v: any, extra: string) => {
       const vs: number[] = [];
@@ -116,17 +116,17 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
       return vs;
     };
 
-    const minv = min(data, (d) => {
+    const minValue = min(data, (d) => {
       const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'min');
       return vs.length === 0 ? Infinity : min(vs);
     });
-    const maxv = max(data, (d) => {
+    const maxValue = max(data, (d) => {
       const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'max');
       return vs.length === 0 ? -Infinity : max(vs);
     });
-    return <[number, number]>[minv, maxv];
+    return [minValue, maxValue];
   }
 
   build(data: any[]): INumberColumnDesc {

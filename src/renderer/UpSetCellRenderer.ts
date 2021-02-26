@@ -42,7 +42,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
             d.classList.toggle(cssClass('enabled'), v);
           });
 
-        const line = <HTMLElement>n.firstElementChild;
+        const line = n.firstElementChild as HTMLElement;
         const left = value.findIndex((d) => d);
         const right = value.length - 1 - value.reverse().findIndex((d) => d);
 
@@ -91,10 +91,10 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         }
 
         data.forEach((d, j) => {
-          const posx = j * cellDimension;
+          const posX = j * cellDimension;
           ctx.beginPath();
           ctx.globalAlpha = d ? 1 : UPSET.inactive;
-          ctx.fillRect(posx, 0, cellDimension, CANVAS_HEIGHT);
+          ctx.fillRect(posX, 0, cellDimension, CANVAS_HEIGHT);
           ctx.fill();
         });
 

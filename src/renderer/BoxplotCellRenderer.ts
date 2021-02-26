@@ -48,7 +48,7 @@ export function computeLabel(col: INumberColumn, v: IBoxPlotData | IAdvancedBoxP
   }
   const f = col.getNumberFormat();
   const mean =
-    (<IAdvancedBoxPlotData>v).mean != null ? `mean = ${f((<IAdvancedBoxPlotData>v).mean)} (dashed line)\n` : '';
+    (v as IAdvancedBoxPlotData).mean != null ? `mean = ${f((v as IAdvancedBoxPlotData).mean)} (dashed line)\n` : '';
   return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\n${mean}q3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
 
@@ -60,7 +60,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   }
 
   create(col: IBoxPlotColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
-    const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
+    const sortMethod = col.getSortMethod() as keyof IBoxPlotData;
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
     return {
@@ -88,7 +88,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         const scaled = {
           min: data.min * width,
           median: data.median * width,
-          mean: (<IAdvancedBoxPlotData>data).mean != null ? (<IAdvancedBoxPlotData>data).mean * width : undefined,
+          mean: (data as IAdvancedBoxPlotData).mean != null ? (data as IAdvancedBoxPlotData).mean * width : undefined,
           q1: data.q1 * width,
           q3: data.q3 * width,
           max: data.max * width,
@@ -182,10 +182,10 @@ function renderDOMBoxPlot(
 ) {
   n.title = computeLabel(col, label);
 
-  const whiskers = <HTMLElement>n.firstElementChild;
-  const box = <HTMLElement>whiskers.firstElementChild;
-  const median = <HTMLElement>box.nextElementSibling;
-  const mean = <HTMLElement>whiskers.lastElementChild;
+  const whiskers = n.firstElementChild as HTMLElement;
+  const box = whiskers.firstElementChild as HTMLElement;
+  const median = box.nextElementSibling as HTMLElement;
+  const mean = whiskers.lastElementChild as HTMLElement;
 
   const leftWhisker =
     data.whiskerLow != null ? data.whiskerLow : Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
@@ -202,15 +202,15 @@ function renderDOMBoxPlot(
 
   //relative within the whiskers
   median.style.left = `${round(((data.median - leftWhisker) / range) * 100, 2)}%`;
-  if ((<IAdvancedBoxPlotData>data).mean != null) {
-    mean.style.left = `${round((((<IAdvancedBoxPlotData>data).mean - leftWhisker) / range) * 100, 2)}%`;
+  if ((data as IAdvancedBoxPlotData).mean != null) {
+    mean.style.left = `${round((((data as IAdvancedBoxPlotData).mean - leftWhisker) / range) * 100, 2)}%`;
     mean.style.display = null;
   } else {
     mean.style.display = 'none';
   }
 
   // match lengths
-  const outliers = <HTMLElement[]>Array.from(n.children).slice(1, hasRange ? -2 : undefined);
+  const outliers = Array.from(n.children).slice(1, hasRange ? -2 : undefined) as HTMLElement[];
   const numOutliers = data.outlier ? data.outlier.length : 0;
   outliers.splice(numOutliers, outliers.length - numOutliers).forEach((v) => v.remove());
 
@@ -285,8 +285,8 @@ function renderBoxPlot(
   if (sort !== '') {
     ctx.strokeStyle = BOX_PLOT.sort;
     ctx.beginPath();
-    ctx.moveTo(<number>box[<keyof IBoxPlotData>sort], topPadding);
-    ctx.lineTo(<number>box[<keyof IBoxPlotData>sort], height - topPadding);
+    ctx.moveTo(box[sort as keyof IBoxPlotData] as number, topPadding);
+    ctx.lineTo(box[sort as keyof IBoxPlotData] as number, height - topPadding);
     ctx.stroke();
     ctx.fill();
   }

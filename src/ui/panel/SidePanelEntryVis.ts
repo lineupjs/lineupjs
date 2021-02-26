@@ -40,14 +40,14 @@ export default class SidePanelEntryVis {
         <div class="${cssClass('toolbar')} ${cssClass('side-panel-toolbar')}"></div>
       </header>`;
     createShortcutMenuItems(
-      <HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`),
+      this.node.querySelector<HTMLElement>(`.${cssClass('toolbar')}`),
       0,
       this.column,
       this.ctx,
       'sidePanel',
       false
     );
-    dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
+    dragAbleColumn(this.node.querySelector<HTMLElement>('header'), this.column, this.ctx);
     this.appendSummary();
   }
 
@@ -58,7 +58,7 @@ export default class SidePanelEntryVis {
   }
 
   private updateSummary() {
-    const summaryNode = <HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!;
+    const summaryNode = this.node.querySelector<HTMLElement>(`.${cssClass('summary')}`)!;
     if (this.summaryUpdater) {
       this.summaryUpdater.abort();
       summaryNode.classList.remove(engineCssClass('loading'));

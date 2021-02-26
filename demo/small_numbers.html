@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Document</title>
-    <link href="./LineUpJS.css" rel="stylesheet">
+    <link href="./LineUpJS.css" rel="stylesheet" />
 
     <style>
       body {
@@ -27,7 +27,7 @@
   <body>
     <script src="./LineUpJS.js"></script>
     <script>
-    const testData = [
+      const testData = [
         { n: 0.000054921, m: 1.234 },
         { n: 0.0000417014, m: 2.342342523 },
         { n: 1.265e-7, m: 12.312412 },
@@ -58,8 +58,8 @@
         { n: 0.0000153442, m: 6.4234532523 },
       ];
 
-      const minN = Math.min(...testData.map(d => d.n));
-      const maxN = Math.max(...testData.map(d => d.n));
+      const minN = Math.min(...testData.map((d) => d.n));
+      const maxN = Math.max(...testData.map((d) => d.n));
 
       const builder = LineUpJS.builder(testData);
 
@@ -69,18 +69,14 @@
           .width(250)
           .mapping('log', [minN, maxN], [1, 0])
           .custom('numberFormat', 'e')
-          .custom('filterAccuracy', 0.00001),
+          .custom('filterAccuracy', 0.00001)
       );
 
-
-      const minM = Math.min(...testData.map(d => d.m));
-      const maxM = Math.max(...testData.map(d => d.m));
+      const minM = Math.min(...testData.map((d) => d.m));
+      const maxM = Math.max(...testData.map((d) => d.m));
 
       builder.column(
-        LineUpJS.buildNumberColumn('m')
-          .label('Column with numbers > 1')
-          .width(250)
-          .mapping('log', [minM, maxM], [1, 0])
+        LineUpJS.buildNumberColumn('m').label('Column with numbers > 1').width(250).mapping('log', [minM, maxM], [1, 0])
       );
 
       builder.build(document.body);

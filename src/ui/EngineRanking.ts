@@ -72,7 +72,7 @@ export declare function recreate(): void;
 /**
  * emitted when the highlight changes
  * @asMemberOf EngineRanking
- * @param dataIndex the highlghted data index or -1 for none
+ * @param dataIndex the highlighted data index or -1 for none
  * @event
  */
 export declare function highlightChanged(dataIndex: number): void;
@@ -151,7 +151,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     cleanUp: () => {
       const c = this.canvasMouseHandler;
       c.timer.forEach((timer) => {
-        self.clearTimeout(timer);
+        clearTimeout(timer);
       });
       c.timer.clear();
       for (const row of Array.from(c.hoveredRows)) {
@@ -161,10 +161,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     enter: (evt: MouseEvent) => {
       const c = this.canvasMouseHandler;
       c.cleanUp();
-      const row = <HTMLElement>evt.currentTarget;
+      const row = evt.currentTarget as HTMLElement;
       row.addEventListener('mouseleave', c.leave, PASSIVE);
       c.timer.add(
-        self.setTimeout(() => {
+        setTimeout(() => {
           c.hoveredRows.add(row);
           this.updateHoveredRow(row, true);
         }, HOVER_DELAY_SHOW_DETAIL)
@@ -173,9 +173,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     leave: (evt: MouseEvent | HTMLElement) => {
       // on row to survive canvas removal
       const c = this.canvasMouseHandler;
-      const row = <HTMLElement>(
-        (typeof (<MouseEvent>evt).currentTarget !== 'undefined' ? (<MouseEvent>evt).currentTarget : evt)
-      );
+      const row = (typeof (evt as MouseEvent).currentTarget !== 'undefined'
+        ? (evt as MouseEvent).currentTarget
+        : evt) as HTMLElement;
       c.unhover(row);
 
       c.cleanUp();
@@ -187,7 +187,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       row.removeEventListener('mouseleave', c.leave);
       if (!EngineRanking.isCanvasRenderedRow(row) && row.parentElement) {
         // and part of dom
-        self.setTimeout(() => this.updateHoveredRow(row, false));
+        setTimeout(() => this.updateHoveredRow(row, false));
       }
     },
   };
@@ -202,7 +202,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         }
         this.highlight = -1;
       }
-      const row = <HTMLElement>evt.currentTarget;
+      const row = evt.currentTarget as HTMLElement;
       const dataIndex = parseInt(row.dataset.i || '-1', 10);
       this.events.fire(EngineRanking.EVENT_HIGHLIGHT_CHANGED, dataIndex);
     },
@@ -231,6 +231,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     Object.assign(this.roptions, roptions);
     body.dataset.ranking = ranking.id;
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     this.delayedUpdate = debounce(
       function (this: { type: string; primaryType: string }) {
@@ -304,8 +305,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.renderCtx = Object.assign(
       {
         isGroup: (index: number) => isGroup(this.data[index]),
-        getRow: (index: number) => <IGroupItem>this.data[index],
-        getGroup: (index: number) => <IGroupData>this.data[index],
+        getRow: (index: number) => this.data[index] as IGroupItem,
+        getGroup: (index: number) => this.data[index] as IGroupData,
       },
       ctx
     );
@@ -506,7 +507,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
-    const domColumns = <RenderColumn[]>[];
+    const domColumns: RenderColumn[] = [];
 
     let x = 0;
     const renderCellImpl = (col: number) => {
@@ -534,7 +535,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     if (domColumns.length === 0) {
       while (node.lastElementChild !== node.firstElementChild) {
-        const n = <HTMLElement>node.lastElementChild!;
+        const n = node.lastElementChild! as HTMLElement;
         node.removeChild(n);
         this.recycleCell(n);
       }
@@ -548,7 +549,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         node.appendChild(item);
         return;
       }
-      const firstDOM = <HTMLElement>node.lastElementChild!;
+      const firstDOM = node.lastElementChild! as HTMLElement;
       if (visibleElements === 1 && firstDOM.dataset.colId === first.id) {
         const isLoading = isLoadingCell(firstDOM);
         if (isLoading) {
@@ -557,14 +558,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
           this.recycleCell(firstDOM, first.index);
           return;
         }
-        this.updateCellImpl(first, <HTMLElement>node.lastElementChild, index);
+        this.updateCellImpl(first, node.lastElementChild as HTMLElement, index);
         return;
       }
     }
 
-    const existing = new Map(
-      (<HTMLElement[]>Array.from(node.children)).slice(1).map((d) => <[string, HTMLElement]>[d.dataset.id, d])
-    );
+    const existing = new Map((Array.from(node.children) as HTMLElement[]).slice(1).map((d) => [d.dataset.id, d]));
     for (const col of domColumns) {
       const elem = existing.get(col.id);
       if (elem && !isLoadingCell(elem)) {
@@ -619,7 +618,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       // just canvas
       return;
     }
-    const elem = <HTMLElement>node.querySelector(`[data-id="${column.id}"]`);
+    const elem = node.querySelector<HTMLElement>(`[data-id="${column.id}"]`);
     if (elem && !needDOM) {
       elem.remove();
       this.recycleCell(elem, column.index);
@@ -674,7 +673,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (i < 0) {
       return false;
     }
-    const node = <HTMLElement>this.header.children[i]!;
+    const node = this.header.children[i]! as HTMLElement;
     const column = this._context.columns[i];
     if (node && column) {
       this.updateHeader(node, column);
@@ -782,7 +781,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     const canvas =
       wasLow && node.firstElementChild!.nodeName.toLowerCase() === 'canvas'
-        ? <HTMLCanvasElement>node.firstElementChild!
+        ? (node.firstElementChild! as HTMLCanvasElement)
         : null;
     if (!low || this.ctx.provider.isSelected(dataIndex)) {
       if (canvas) {
@@ -812,7 +811,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.updateCanvasRule();
     super.forEachRow((row, index) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.renderRow(<HTMLCanvasElement>row.firstElementChild!, row, index);
+        this.renderRow(row.firstElementChild! as HTMLCanvasElement, row, index);
       }
     });
   }
@@ -911,7 +910,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   updateColumnWidths() {
     // update the column context in place
-    (<any>this._context).column = nonUniformContext(
+    (this._context as any).column = nonUniformContext(
       this._context.columns.map((w) => w.width),
       100,
       COLUMN_PADDING
@@ -940,10 +939,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
     super.forEachRow((row, rowIndex) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.updateCanvasCell(<HTMLCanvasElement>row.firstElementChild!, row, rowIndex, column, x);
+        this.updateCanvasCell(row.firstElementChild! as HTMLCanvasElement, row, rowIndex, column, x);
         return;
       }
-      this.updateCellImpl(column, <HTMLElement>row.children[index], rowIndex);
+      this.updateCellImpl(column, row.children[index] as HTMLElement, rowIndex);
     });
     return true;
   }
@@ -984,7 +983,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const strategy = provider.getAggregationStrategy();
     const alwaysShowGroup = isAlwaysShowingGroupStrategy(strategy);
 
-    const r = <(IGroupItem | IGroupData)[]>[];
+    const r: (IGroupItem | IGroupData)[] = [];
 
     if (groups.length === 0) {
       return r;
@@ -1013,8 +1012,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const n = provider.getTopNAggregated(this.ranking, group);
 
       // all are IOrderedGroup since propagated
-      const ordered = <IOrderedGroup>group;
-      const gparent = <IGroupParent>group;
+      const ordered = group as IOrderedGroup;
+      const gparent = group as IGroupParent;
 
       if (n === 0 || alwaysShowGroup) {
         r.push(ordered);
@@ -1022,7 +1021,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
       if (n !== 0 && Array.isArray(gparent.subGroups) && gparent.subGroups.length > 0) {
         for (const g of gparent.subGroups) {
-          pushGroup(<IOrderedGroup | Readonly<IGroupParent>>g);
+          pushGroup(g as IOrderedGroup | Readonly<IGroupParent>);
         }
         return;
       }
@@ -1076,7 +1075,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       old.classList.remove(engineCssClass('highlighted'));
     }
     if (dataIndex < 0) {
-      return;
+      return false;
     }
     const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
@@ -1118,7 +1117,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       firstBeforePos >= 0 && visible.first - firstBeforePos < firstAfterPos - visible.last
         ? firstBeforePos
         : firstAfterPos;
-    return (<IGroupItem>this.data[nearestPos]).dataIndex;
+    return (this.data[nearestPos] as IGroupItem).dataIndex;
   }
 
   scrollIntoView(dataIndex: number) {
@@ -1169,7 +1168,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   getHighlight() {
-    const item = <HTMLElement>this.body.querySelector(`[data-i]:hover, [data-i].${engineCssClass('highlighted')}`);
+    const item = this.body.querySelector<HTMLElement>(`[data-i]:hover, [data-i].${engineCssClass('highlighted')}`);
     if (item) {
       return parseInt(item.dataset.i!, 10);
     }
@@ -1198,6 +1197,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       col.renderers = this.ctx.createRenderer(c);
       debounceUpdate();
     });
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     c.on(`${Column.EVENT_DIRTY_HEADER}.body`, function (this: IEventContext) {
       const valid = that.updateHeaderOf(col.c);
@@ -1226,9 +1226,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         this.delayedUpdateAll();
       });
       if (!c.getCollapsed()) {
-        (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
+        (col as MultiLevelRenderColumn).updateWidthRule(this.style);
         c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
-          (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
+          (col as MultiLevelRenderColumn).updateWidthRule(this.style);
         });
         c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounceUpdate);
       }

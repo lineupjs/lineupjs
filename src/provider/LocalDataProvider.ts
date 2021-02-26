@@ -17,7 +17,7 @@ import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import { IDataProviderOptions } from './interfaces';
 import { CompareLookup } from './sort';
-import { IRenderTaskExectutor } from './tasks';
+import { IRenderTaskExecutor } from './tasks';
 import { DirectRenderTasks } from './DirectRenderTasks';
 import { ScheduleRenderTasks } from './ScheduledTasks';
 import { joinGroups, mapIndices, duplicateGroup } from '../model/internal';
@@ -64,7 +64,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private readonly tasks: IRenderTaskExectutor;
+  private readonly tasks: IRenderTaskExecutor;
 
   constructor(
     private _data: any[],
@@ -77,6 +77,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     this.tasks = this.ooptions.taskExecutor === 'direct' ? new DirectRenderTasks() : new ScheduleRenderTasks();
     this.tasks.setData(this._dataRows);
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     this.reorderAll = function (this: { source?: Ranking; type: string }) {
       //fire for all other rankings a dirty order event, too
@@ -169,6 +170,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   private trackRanking(ranking: Ranking, existing?: Ranking) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     ranking.on(`${Column.EVENT_DIRTY_CACHES}.cache`, function (this: IEventContext) {
       let col: any = this.origin;
@@ -294,7 +296,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const pushGroup = (group: IGroup, r: IDataRow) => {
       const groupKey = group.name.toLowerCase();
       if (groups.has(groupKey)) {
-        (<number[]>groups.get(groupKey)!.rows).push(r.i);
+        (groups.get(groupKey)!.rows as number[]).push(r.i);
         return;
       }
       const s = { group, rows: [r.i] };
@@ -345,7 +347,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         groupOrder.push({ group: clone, rows: order });
 
         if (!lookups) {
-          maxDataIndex = (<ReadonlyArray<number>>order).reduce((a, b) => Math.max(a, b), maxDataIndex);
+          maxDataIndex = (order as readonly number[]).reduce((a, b) => Math.max(a, b), maxDataIndex);
           continue;
         }
         // sort
@@ -398,7 +400,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     // compute sort group value as task
     const groupSortTask = groupLookup
       ? this.tasks.groupCompare(ranking, group, g.rows).then((r) => r)
-      : <ICompareValue[]>[];
+      : ([] as ICompareValue[]);
 
     // trigger task for groups to compute for this group
 
@@ -570,9 +572,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f =
       typeof search === 'string'
-        ? (v: string) => v.toLowerCase().indexOf(<string>search) >= 0
-        : (<RegExp>search).test.bind(search);
-    const indices = <number[]>[];
+        ? (v: string) => v.toLowerCase().indexOf(search as string) >= 0
+        : (search as RegExp).test.bind(search);
+    const indices: number[] = [];
     for (let i = 0; i < this._dataRows.length; ++i) {
       if (f(col.getLabel(this._dataRows[i]))) {
         indices.push(i);

@@ -26,8 +26,8 @@ export default class RankCellRenderer implements ICellRendererFactory {
     return {
       template: `<div><div></div><div></div></div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        const fromTSpan = <HTMLElement>n.firstElementChild!;
-        const toTSpan = <HTMLElement>n.lastElementChild!;
+        const fromTSpan = n.firstElementChild! as HTMLElement;
+        const toTSpan = n.lastElementChild! as HTMLElement;
         if (group.order.length === 0) {
           fromTSpan.textContent = '';
           toTSpan.textContent = '';

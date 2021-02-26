@@ -67,7 +67,7 @@ function uiSortMethod(methods: string[]): IToolbarDialogAddon {
     title: 'Sort By',
     order: 2,
     append(col, node) {
-      return sortMethods(node, <any>col, methods);
+      return sortMethods(node, col as any, methods);
     },
   };
 }
@@ -223,11 +223,11 @@ const groupBy = ui(
 
 function toggleCompressExpand(col: Column, evt: MouseEvent, ctx: IRankingHeaderContext, level: number) {
   ctx.dialogManager.removeAboveLevel(level);
-  const mcol = <IMultiLevelColumn>col;
+  const mcol = col as IMultiLevelColumn;
   mcol.setCollapsed(!mcol.getCollapsed());
 
   const collapsed = mcol.getCollapsed();
-  const i = <HTMLElement>evt.currentTarget;
+  const i = evt.currentTarget as HTMLElement;
   i.title = collapsed ? 'Expand' : 'Compress';
   i.classList.toggle(cssClass('action-compress'), !collapsed);
   i.classList.toggle(cssClass('action-expand'), collapsed);
@@ -269,21 +269,21 @@ export const toolbarDialogAddons: { [key: string]: IToolbarDialogAddon } = {
   sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
   sortDates: uiSortMethod(Object.keys(EDateSort)),
   sortGroups: uiSortMethod(['count', 'name']),
-  groupNumber: <IToolbarDialogAddon>{
+  groupNumber: {
     title: 'Split',
     order: 2,
     append: appendNumber,
-  },
-  groupString: <IToolbarDialogAddon>{
+  } as IToolbarDialogAddon,
+  groupString: {
     title: 'Groups',
     order: 2,
     append: appendString,
-  },
-  groupDate: <IToolbarDialogAddon>{
+  } as IToolbarDialogAddon,
+  groupDate: {
     title: 'Granularity',
     order: 2,
     append: appendDate,
-  },
+  } as IToolbarDialogAddon,
 };
 
 export const toolbarActions: { [key: string]: IToolbarAction } = {
@@ -375,7 +375,7 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
     (col, _evt, ctx, level) => {
       ctx.dialogManager.removeAboveLevel(level - 1); // close itself
       // split the combined column into its children
-      (<CompositeColumn>col).children.reverse().forEach((c) => col.insertAfterMe(c));
+      (col as CompositeColumn).children.reverse().forEach((c) => col.insertAfterMe(c));
       col.removeMe();
     },
     { featureCategory: 'model', featureLevel: 'advanced' }

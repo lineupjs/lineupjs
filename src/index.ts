@@ -27,7 +27,7 @@ export function createLocalDataProvider(
 /**
  *
  * @param container the html element lineup should be built in
- * @param data {DataProvider} the data providier
+ * @param data {DataProvider} the data provider
  * @param config {Partial<ILineUpOptions>} lineup configuration overrides
  * @returns {LineUp} the created lineup instance
  */

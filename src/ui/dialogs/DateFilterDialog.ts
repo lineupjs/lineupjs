@@ -19,7 +19,7 @@ export default class DateFilterDialog extends ADialog {
       livePreview: 'filter',
       cancelSubDialogs: true,
     });
-    this.before = this.column.getFilter() || noDateFilter();
+    this.before = this.column.getFilter() ?? noDateFilter();
   }
 
   protected build(node: HTMLElement) {

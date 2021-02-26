@@ -97,7 +97,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   setValue(row: IDataRow, value: boolean) {
@@ -110,18 +110,18 @@ export default class SelectionColumn extends ValueColumn<boolean> {
 
   setValues(rows: IndicesArray, value: boolean) {
     if (rows.length === 0) {
-      return;
+      return false;
     }
-    if ((<ISelectionColumnDesc>this.desc).setterAll) {
-      (<ISelectionColumnDesc>this.desc).setterAll(rows, value);
+    if ((this.desc as ISelectionColumnDesc).setterAll) {
+      (this.desc as ISelectionColumnDesc).setterAll(rows, value);
     }
     this.fire(SelectionColumn.EVENT_SELECT, rows[0], value, rows);
     return true;
   }
 
   private setImpl(row: IDataRow, value: boolean) {
-    if ((<ISelectionColumnDesc>this.desc).setter) {
-      (<ISelectionColumnDesc>this.desc).setter(row.i, value);
+    if ((this.desc as ISelectionColumnDesc).setter) {
+      (this.desc as ISelectionColumnDesc).setter(row.i, value);
     }
     this.fire(SelectionColumn.EVENT_SELECT, row.i, value);
     return true;

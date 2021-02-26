@@ -66,7 +66,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     if (!domain || Array.isArray(domain)) {
       this.type = type;
       this.s = toScale(type)
-        .domain(fixDomain(domain || [0, 1], this.type))
+        .domain(fixDomain((domain as number[]) ?? [0, 1], this.type))
         .range(range);
     } else {
       const dump = domain;
@@ -119,7 +119,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     if (!(other instanceof ScaleMappingFunction)) {
       return false;
     }
-    const that = <ScaleMappingFunction>other;
+    const that = other as ScaleMappingFunction;
     return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
   }
 
@@ -156,14 +156,15 @@ export class ScriptMappingFunction implements IMappingFunction {
     code: string | IScriptMappingFunctionType = 'return this.linear(value,this.value_min,this.value_max);'
   ) {
     if (!domain || Array.isArray(domain)) {
-      this.domain = domain || [0, 1];
+      this.domain = (domain as number[]) ?? [0, 1];
     } else {
       const dump = domain;
       this.domain = dump.domain;
       code = dump.code;
     }
     this.code = typeof code === 'string' ? code : code.toString();
-    this.f = typeof code === 'function' ? code : <any>new Function('value', code);
+    // eslint-disable-next-line no-new-func
+    this.f = typeof code === 'function' ? code : (new Function('value', code) as any);
   }
 
   getRange(): [string, string] {
@@ -202,7 +203,7 @@ export class ScriptMappingFunction implements IMappingFunction {
     if (!(other instanceof ScriptMappingFunction)) {
       return false;
     }
-    const that = <ScriptMappingFunction>other;
+    const that = other as ScriptMappingFunction;
     return that.code === this.code || that.f === this.f;
   }
 

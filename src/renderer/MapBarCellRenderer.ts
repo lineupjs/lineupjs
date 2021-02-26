@@ -73,7 +73,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
       template: `<div class="${cssClass('rtable')}"><div>Key</div><div><span></span><span></span>Value</div></div>`,
       update: (node: HTMLElement) => {
         const range = col.getRange();
-        const value = <HTMLElement>node.lastElementChild!;
+        const value = node.lastElementChild! as HTMLElement;
         value.firstElementChild!.textContent = range[0];
         value.children[1]!.textContent = range[1];
       },

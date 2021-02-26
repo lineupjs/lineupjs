@@ -34,7 +34,7 @@ function toKey(item: IGroupItem | IGroupData) {
   if (isGroup(item)) {
     return item.name;
   }
-  return (<IGroupItem>item).dataIndex.toString();
+  return (item as IGroupItem).dataIndex.toString();
 }
 
 /** @internal */

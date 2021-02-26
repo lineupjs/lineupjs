@@ -33,7 +33,7 @@ export default class Hierarchy {
       <section class="${cssClass('sort-groups-hierarchy')}">
       </section>
     `;
-    const options = <Partial<ISearchBoxOptions<IColumnItem>>>{
+    const options: Partial<ISearchBoxOptions<IColumnItem>> = {
       doc: document,
       placeholder: 'Add Sort Criteria...',
       formatItem: (item: IColumnItem, node: HTMLElement) => {
@@ -62,9 +62,9 @@ export default class Hierarchy {
       return;
     }
     this.node.style.display = null;
-    this.renderGroups(ranking, <HTMLElement>this.node.firstElementChild!);
-    this.renderSorting(ranking, <HTMLElement>this.node.children[1]!);
-    this.renderGroupSorting(ranking, <HTMLElement>this.node.lastElementChild!);
+    this.renderGroups(ranking, this.node.firstElementChild! as HTMLElement);
+    this.renderSorting(ranking, this.node.children[1]! as HTMLElement);
+    this.renderGroupSorting(ranking, this.node.lastElementChild! as HTMLElement);
   }
 
   private render<T>(
@@ -75,9 +75,7 @@ export default class Hierarchy {
     addonKey: string,
     onChange: (item: T, delta: number) => void
   ) {
-    const cache = new Map(
-      (<HTMLElement[]>Array.from(node.children)).map((d) => <[string, HTMLElement]>[d.dataset.id, d])
-    );
+    const cache = new Map((Array.from(node.children) as HTMLElement[]).map((d) => [d.dataset.id, d]));
     clear(node);
 
     items.forEach((d) => {
@@ -100,30 +98,30 @@ export default class Hierarchy {
       <i title="Remove from hierarchy" class="${actionCSSClass('Remove')}">${aria('Remove from hierarchy')}</i>
       </div>`
       );
-      const last = <HTMLElement>node.lastElementChild!;
+      const last = node.lastElementChild! as HTMLElement;
 
       function prevent(evt: Event) {
         evt.preventDefault();
         evt.stopPropagation();
       }
 
-      (<HTMLElement>last.querySelector('i[title="Move Down"]')!).onclick = (evt) => {
+      last.querySelector<HTMLElement>('i[title="Move Down"]')!.onclick = (evt) => {
         prevent(evt);
         onChange(d, +1);
       };
-      (<HTMLElement>last.querySelector('i[title="Move Up"]')!).onclick = (evt) => {
+      last.querySelector<HTMLElement>('i[title="Move Up"]')!.onclick = (evt) => {
         prevent(evt);
         onChange(d, -1);
       };
-      (<HTMLElement>last.querySelector('i[title^=Remove]')!).onclick = (evt) => {
+      last.querySelector<HTMLElement>('i[title^=Remove]')!.onclick = (evt) => {
         prevent(evt);
         onChange(d, 0);
       };
 
       if (addons.length > 0) {
-        (<HTMLElement>last.querySelector('i[title=Customize]')!).onclick = (evt) => {
+        last.querySelector<HTMLElement>('i[title=Customize]')!.onclick = (evt) => {
           prevent(evt);
-          this.customize(col, addons, <any>evt);
+          this.customize(col, addons, evt as any);
         };
       }
 
@@ -190,7 +188,7 @@ export default class Hierarchy {
           'Toggle Sorting'
         )}</i>`
       );
-      (<HTMLElement>last.querySelector('i[title=Sort]')!).onclick = (evt) => {
+      last.querySelector<HTMLElement>('i[title=Sort]')!.onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
         click(s, Infinity);
@@ -231,7 +229,7 @@ export default class Hierarchy {
           'Toggle Sorting'
         )}</i>`
       );
-      (<HTMLElement>last.querySelector('i[title="Sort Group"]')!).onclick = (evt) => {
+      last.querySelector<HTMLElement>('i[title="Sort Group"]')!.onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
         click(s, Infinity);

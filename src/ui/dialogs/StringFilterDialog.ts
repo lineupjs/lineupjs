@@ -68,8 +68,8 @@ export default class StringFilterDialog extends ADialog {
     );
 
     const filterMissing = findFilterMissing(node);
-    const input = <HTMLInputElement>node.querySelector('input[type="text"]');
-    const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]');
+    const input = node.querySelector<HTMLInputElement>('input[type="text"]');
+    const isRegex = node.querySelector<HTMLInputElement>('input[type="checkbox"]');
 
     this.enableLivePreviews([filterMissing, input, isRegex]);
 

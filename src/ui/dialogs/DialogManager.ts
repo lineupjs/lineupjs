@@ -69,10 +69,10 @@ export default class DialogManager extends AEventDispatcher {
   }
 
   setHighlight(mask: { left: number; top: number; width: number; height: number }) {
-    const area = <HTMLElement>this.node.firstElementChild;
+    const area = this.node.firstElementChild as HTMLElement;
     // @see http://bennettfeely.com/clippy/ -> select `Frame` example
     // use webkit prefix for safari
-    area.style.clipPath = (<any>area.style).webkitClipPath = `polygon(
+    area.style.clipPath = (area.style as any).webkitClipPath = `polygon(
       0% 0%,
       0% 100%,
       ${mask.left}px 100%,
@@ -87,12 +87,12 @@ export default class DialogManager extends AEventDispatcher {
   }
 
   setHighlightColumn(column: Column) {
-    const root = <HTMLElement>this.node.parentElement!;
+    const root = this.node.parentElement!;
     if (!root) {
       this.clearHighlight();
       return;
     }
-    const header = <HTMLElement>root.querySelector(`.${cssClass('header')}[data-col-id="${column.id}"]`);
+    const header = root.querySelector<HTMLElement>(`.${cssClass('header')}[data-col-id="${column.id}"]`);
     if (!header) {
       this.clearHighlight();
       return;
@@ -108,7 +108,7 @@ export default class DialogManager extends AEventDispatcher {
   }
 
   clearHighlight() {
-    const area = <HTMLElement>this.node.firstElementChild;
+    const area = this.node.firstElementChild as HTMLElement;
     area.style.clipPath = null;
   }
 

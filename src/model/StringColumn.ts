@@ -106,7 +106,7 @@ export default class StringColumn extends ValueColumn<string> {
         width: 200,
       })
     );
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
   }
 
@@ -130,7 +130,7 @@ export default class StringColumn extends ValueColumn<string> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow): string | null {
@@ -145,7 +145,7 @@ export default class StringColumn extends ValueColumn<string> {
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     if (this.currentFilter instanceof RegExp) {
-      r.filter = `REGEX:${(<RegExp>this.currentFilter).source}`;
+      r.filter = `REGEX:${(this.currentFilter as RegExp).source}`;
     } else {
       r.filter = this.currentFilter;
     }
@@ -167,7 +167,7 @@ export default class StringColumn extends ValueColumn<string> {
       const filter = dump.filter;
       if (typeof filter === 'string') {
         // compatibility case
-        if ((<string>filter).startsWith('REGEX:')) {
+        if (filter.startsWith('REGEX:')) {
           this.currentFilter = {
             filter: new RegExp(filter.slice(6), 'm'),
             filterMissing: false,
@@ -186,7 +186,7 @@ export default class StringColumn extends ValueColumn<string> {
       } else {
         this.currentFilter = {
           filter:
-            filter.filter && (<string>filter.filter).startsWith('REGEX:')
+            filter.filter && (filter.filter as string).startsWith('REGEX:')
               ? new RegExp(filter.slice(6), 'm')
               : filter.filter || '',
           filterMissing: filter.filterMissing === true,
@@ -198,11 +198,11 @@ export default class StringColumn extends ValueColumn<string> {
 
     // tslint:disable-next-line: early-exit
     if (dump.groupCriteria) {
-      const { type, values } = <IStringGroupCriteria>dump.groupCriteria;
+      const { type, values } = dump.groupCriteria as IStringGroupCriteria;
       this.currentGroupCriteria = {
         type,
         values: values.map((value) =>
-          type === EStringGroupCriteriaType.regex ? new RegExp(<string>value, 'm') : value
+          type === EStringGroupCriteriaType.regex ? new RegExp(value as string, 'm') : value
         ),
       };
     }
@@ -337,12 +337,12 @@ export default class StringColumn extends ValueColumn<string> {
     }
     // take the smallest one
     if (valueCache) {
-      return valueCache.reduce((acc, v) => (acc == null || v < acc ? v : acc), <null | string>null);
+      return valueCache.reduce((acc, v) => (acc == null || v < acc ? v : acc), null as null | string);
     }
     return rows.reduce((acc, d) => {
       const v = this.getValue(d);
       return acc == null || (v != null && v < acc) ? v : acc;
-    }, <null | string>null);
+    }, null as null | string);
   }
 
   toCompareGroupValueType() {

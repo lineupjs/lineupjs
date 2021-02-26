@@ -97,7 +97,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     const staticHist = !interactive || !isMapAbleColumn(col);
     return staticHist
       ? staticSummary(col, context, r.template, r.render)
-      : interactiveSummary(<IMapAbleColumn>col, context, r.template, r.render);
+      : interactiveSummary(col as IMapAbleColumn, context, r.template, r.render);
   }
 }
 
@@ -179,7 +179,7 @@ export function createNumberFilter(
   const fContext = createFilterContext(col, context);
 
   parent.innerHTML = `${renderer.template}${filteredHistTemplate(fContext, createFilterInfo(col))}</div>`;
-  const summaryNode = <HTMLElement>parent.firstElementChild!;
+  const summaryNode = parent.firstElementChild! as HTMLElement;
   summaryNode.classList.add(cssClass('summary'), cssClass('renderer'));
   summaryNode.dataset.renderer = 'histogram';
   summaryNode.dataset.interactive = '';
@@ -286,7 +286,7 @@ function createFilterContext(
   return {
     percent,
     unpercent,
-    domain: <[number, number]>domain,
+    domain: domain as [number, number],
     format,
     formatRaw: String,
     parseRaw: Number.parseFloat,

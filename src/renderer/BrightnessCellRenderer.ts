@@ -63,10 +63,10 @@ export default class BrightnessCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);
         n.title = col.getLabel(d);
-        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = missing
+        (n.firstElementChild! as HTMLDivElement).style.backgroundColor = missing
           ? null
           : toHeatMapColor(col.getNumber(d), d, col, imposer);
-        setText(<HTMLSpanElement>n.lastElementChild!, n.title);
+        setText(n.lastElementChild!, n.title);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {

@@ -1,65 +1,68 @@
 <!DOCTYPE html>
 <html>
-<head lang="en">
-  <meta charset="UTF-8">
-  <title>LineUp MultiValue Test</title>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <title>LineUp MultiValue Test</title>
 
-  <link href="./LineUpJS.css" rel="stylesheet">
-  <link href="./demo.css" rel="stylesheet">
-</head>
-<body>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="./LineUpJS.js"></script>
+    <link href="./LineUpJS.css" rel="stylesheet" />
+    <link href="./demo.css" rel="stylesheet" />
+  </head>
+  <body>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="./LineUpJS.js"></script>
 
-<script>
-  window.onload = function () {
-  fetch('./multivalue.json' + location.search).then((r) => r.json()).then((data)  => {
+    <script>
+      window.onload = function () {
+        fetch('./multivalue.json' + location.search)
+          .then((r) => r.json())
+          .then((data) => {
+            const years = [2012, 2013, 2014, 2015];
+            const groups = ['pi_score', 'eco_score', 'eo_score', 'health_score', 'ss_score', 'pf_score', 'sk_score'];
 
-    const years = [2012, 2013, 2014, 2015];
-    const groups = ['pi_score', 'eco_score', 'eo_score', 'health_score', 'ss_score', 'pf_score', 'sk_score'];
+            data.forEach((row) => {
+              groups.forEach((group) => {
+                row[group] = years.map((year) => row[group + year]);
+              });
+            });
 
-    data.forEach((row) => {
-      groups.forEach((group) => {
-        row[group] = years.map((year) => row[group + year]);
-      });
-    });
+            const desc = [
+              { label: 'Country', type: 'string', column: 'country' },
+              // {label: 'ISO', type: 'string', column: 'iso'},
+              // {label: 'Region', type: 'categorical', column: 'region', categories: Array.from(new Set(data.map((d) => d.region)))},
+              // {label: 'PI Region', type: 'categorical', column: 'piregion', categories: Array.from(new Set(data.map((d) => d.piregion)))},
+            ].concat(
+              ...groups.slice(0, 1).map((group, i) => {
+                return ['boxplot', 'threshold', 'sparkline', 'numbers', 'verticalbar', 'table', 'heatmap'].map(
+                  (renderer) => ({
+                    label: group,
+                    type: 'numbers',
+                    dataLength: years.length,
+                    renderer,
+                    column: group,
+                    domain: d3.extent([].concat(...data.map((d) => d[group]))),
+                    labels: years,
+                  })
+                );
+              })
+            );
 
-    const desc = [
-      {label: 'Country', type: 'string', column: 'country'},
-      // {label: 'ISO', type: 'string', column: 'iso'},
-      // {label: 'Region', type: 'categorical', column: 'region', categories: Array.from(new Set(data.map((d) => d.region)))},
-      // {label: 'PI Region', type: 'categorical', column: 'piregion', categories: Array.from(new Set(data.map((d) => d.piregion)))},
-    ].concat(...groups.slice(0, 1).map((group, i) => {
-      return  ['boxplot', 'threshold', 'sparkline', 'numbers', 'verticalbar', 'table', 'heatmap'].map((renderer) => ({
-        label: group,
-        type: 'numbers',
-        dataLength: years.length,
-        renderer,
-        column: group,
-        domain: d3.extent([].concat(...data.map((d) => d[group]))),
-        labels: years
-      }));
-    }));
+            //artificial booleans column
+            desc.push({
+              label: groups[0] + ' >= 0',
+              type: 'booleans',
+              column: groups[0],
+              dataLength: years.length,
+              accessor: (row) => (row.v[groups[0]] || []).map((d) => d >= 0),
+              labels: years,
+            });
 
-    //artificial booleans column
-    desc.push({
-      label: groups[0] + ' >= 0',
-      type: 'booleans',
-      column: groups[0],
-      dataLength: years.length,
-      accessor: (row) => (row.v[groups[0]] || []).map((d) => d >= 0),
-      labels: years
-    });
+            const p = new LineUpJS.LocalDataProvider(data, desc);
+            p.deriveDefault();
 
-    const p = new LineUpJS.LocalDataProvider(data, desc);
-    p.deriveDefault();
-
-    const lineup = new LineUpJS.LineUp(document.body, p, { expandLineOnHover: true});
-    lineup.update();
-  })
-};
-
-</script>
-
-</body>
+            const lineup = new LineUpJS.LineUp(document.body, p, { expandLineOnHover: true });
+            lineup.update();
+          });
+      };
+    </script>
+  </body>
 </html>

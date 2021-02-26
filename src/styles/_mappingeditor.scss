@@ -9,11 +9,11 @@
     margin: 0.5em 3px 0;
   }
 
-  input[type=number] {
+  input[type='number'] {
     width: 5em;
   }
 
-  &[data-scale=script] .#{$lu_css_prefix}-dialog-mapper-script {
+  &[data-scale='script'] .#{$lu_css_prefix}-dialog-mapper-script {
     display: block;
   }
 }
@@ -128,6 +128,6 @@ g.#{$lu_css_prefix}-dialog-mapper-mapping {
   text-anchor: middle;
 }
 
-.#{$lu_css_prefix}-dialog-mapper[data-scale=script] div.#{$lu_css_prefix}-dialog-mapper-script {
+.#{$lu_css_prefix}-dialog-mapper[data-scale='script'] div.#{$lu_css_prefix}-dialog-mapper-script {
   display: block;
 }

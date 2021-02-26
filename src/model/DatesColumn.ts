@@ -101,7 +101,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow): (Date | null)[] | null {
@@ -126,7 +126,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   }
 
   getDate(row: IDataRow) {
-    const av = <Date[]>this.getDates(row).filter(Boolean);
+    const av = this.getDates(row).filter(Boolean);
     if (av.length === 0) {
       return null;
     }
@@ -170,7 +170,7 @@ export default class DatesColumn extends ArrayColumn<Date | null> implements IDa
   }
 
   toCompareValue(row: IDataRow) {
-    const vs = <Date[]>this.getDates(row).filter(Boolean);
+    const vs = this.getDates(row).filter(Boolean);
     if (!vs) {
       return [0, 0];
     }

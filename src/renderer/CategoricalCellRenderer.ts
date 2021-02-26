@@ -48,8 +48,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         const v = col.getCategory(d);
-        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = v ? col.getColor(d) : null;
-        setText(<HTMLSpanElement>n.lastElementChild!, col.getLabel(d));
+        (n.firstElementChild! as HTMLDivElement).style.backgroundColor = v ? col.getColor(d) : null;
+        setText(n.lastElementChild! as HTMLSpanElement, col.getLabel(d));
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
@@ -170,7 +170,7 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
       forEach(n, '[data-cat]', (d: HTMLElement, i) => {
         const cat = col.categories[i];
         const { count } = hist.hist[i];
-        const inner = <HTMLElement>d.firstElementChild!;
+        const inner = d.firstElementChild! as HTMLElement;
         if (gHist) {
           const { count: gCount } = gHist.hist[i];
           d.title = `${cat.label}: ${count} of ${gCount}`;
@@ -184,7 +184,7 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
               : `linear-gradient(${selected[i]} ${relY}%, ${mapping.apply(cat)} ${relY}%, ${mapping.apply(cat)} 100%)`;
         } else {
           d.title = `${col.categories[i].label}: ${count}`;
-          const inner = <HTMLElement>d.firstElementChild!;
+          const inner = d.firstElementChild! as HTMLElement;
           inner.style.height = `${Math.round((count * 100) / maxBin)}%`;
           inner.style.background = mapping.apply(cat);
         }
@@ -212,11 +212,11 @@ function setCategoricalFilter(col: HasCategoricalFilter, filter: string | RegExp
 
 /** @internal */
 export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
-  const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
+  const bins = Array.from(node.querySelectorAll<HTMLElement>('[data-cat]'));
 
   const markFilter = (bin: HTMLElement, cat: ICategory, value: boolean) => {
     // update filter highlight eagerly for better user feedback
-    const inner = <HTMLElement>bin.firstElementChild!;
+    const inner = bin.firstElementChild! as HTMLElement;
     const base = col.getColorMapping().apply(cat);
     if (value) {
       inner.style.background = base;
@@ -268,7 +268,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
     };
   });
 
-  const filterMissing = <HTMLInputElement>node.getElementsByTagName('input')[0]!;
+  const filterMissing = node.getElementsByTagName('input')[0]!;
 
   if (filterMissing) {
     filterMissing.onchange = () => {
@@ -299,7 +299,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
     const f = col.getFilter();
     if (filterMissing) {
       filterMissing.checked = f != null && f.filterMissing;
-      updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, missing);
+      updateFilterMissingNumberMarkup(filterMissing.parentElement, missing);
     }
   };
 }

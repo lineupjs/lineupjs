@@ -77,7 +77,7 @@ export class RankingBuilder {
     if (column.includes(':')) {
       // encoded sorting order
       const index = column.indexOf(':');
-      asc = <'asc' | 'desc'>column.slice(index + 1);
+      asc = column.slice(index + 1) as 'asc' | 'desc';
       column = column.slice(0, index);
     }
     this.sort.push({ column, asc: asc === true || String(asc)[0] === 'a' });
@@ -108,7 +108,7 @@ export class RankingBuilder {
     if (column.includes(':')) {
       // encoded sorting order
       const index = column.indexOf(':');
-      asc = <'asc' | 'desc'>column.slice(index + 1);
+      asc = column.slice(index + 1) as 'asc' | 'desc';
       column = column.slice(0, index);
     }
     this.groupSort.push({ column, asc: asc === true || String(asc)[0] === 'a' });
@@ -159,7 +159,7 @@ export class RankingBuilder {
       case 'median':
       case 'mean':
         console.assert(column.columns.length >= 2);
-        return this.reduce(label, <any>column.type, column.columns[0], column.columns[1], ...column.columns.slice(2));
+        return this.reduce(label, column.type as any, column.columns[0], column.columns[1], ...column.columns.slice(2));
       case 'nested':
         console.assert(column.columns.length >= 1);
         return this.nested(label, column.columns[0], ...column.columns.slice(1));
@@ -195,7 +195,7 @@ export class RankingBuilder {
   impose(label: string | null, numberColumn: string, colorColumn: string) {
     this.columns.push({
       desc: (data) => {
-        const base = data.getColumns().find((d) => d.label === numberColumn || (<any>d).column === numberColumn);
+        const base = data.getColumns().find((d) => d.label === numberColumn || (d as any).column === numberColumn);
         switch (base ? base.type : '') {
           case 'boxplot':
             return createImpositionBoxPlotDesc(label ? label : undefined);
@@ -253,12 +253,12 @@ export class RankingBuilder {
     weight2: number,
     ...numberColumnAndWeights: (string | number)[]
   ) {
-    const weights = [weight1, weight2].concat(<number[]>numberColumnAndWeights.filter((_, i) => i % 2 === 1));
+    const weights = [weight1, weight2].concat(numberColumnAndWeights.filter((_, i) => i % 2 === 1) as number[]);
     this.columns.push({
       desc: createStackDesc(label ? label : undefined),
-      columns: [numberColumn1, numberColumn2].concat(<string[]>numberColumnAndWeights.filter((_, i) => i % 2 === 0)),
+      columns: [numberColumn1, numberColumn2].concat(numberColumnAndWeights.filter((_, i) => i % 2 === 0) as string[]),
       post: (col) => {
-        (<StackColumn>col).setWeights(weights);
+        (col as StackColumn).setWeights(weights);
       },
     });
     return this;
@@ -283,7 +283,7 @@ export class RankingBuilder {
       desc: createReduceDesc(label ? label : undefined),
       columns: [numberColumn1, numberColumn2].concat(numberColumns),
       post: (col) => {
-        (<ReduceColumn>col).setReduce(operation);
+        (col as ReduceColumn).setReduce(operation);
       },
     });
     return this;
@@ -366,7 +366,7 @@ export class RankingBuilder {
     const r = data.pushRanking();
     const cols = data.getColumns();
 
-    const findDesc = (c: string) => cols.find((d) => d.label === c || (<any>d).column === c);
+    const findDesc = (c: string) => cols.find((d) => d.label === c || (d as any).column === c);
 
     const addColumn = (c: string) => {
       const desc = findDesc(c);
@@ -395,7 +395,7 @@ export class RankingBuilder {
           console.warn('invalid column: ', ci);
           return;
         }
-        (<CompositeColumn>col).push(child);
+        (col as CompositeColumn).push(child);
       });
       if (c.post) {
         c.post(col);
@@ -406,7 +406,7 @@ export class RankingBuilder {
     {
       const groups: Column[] = [];
       this.groups.forEach((column) => {
-        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+        const col = children.find((d) => d.desc.label === column || (d as any).desc.column === column);
         if (col) {
           groups.push(col);
           return;
@@ -430,7 +430,7 @@ export class RankingBuilder {
     {
       const sorts: ISortCriteria[] = [];
       this.sort.forEach(({ column, asc }) => {
-        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+        const col = children.find((d) => d.desc.label === column || (d as any).desc.column === column);
         if (col) {
           sorts.push({ col, asc });
           return;
@@ -454,7 +454,7 @@ export class RankingBuilder {
     {
       const sorts: ISortCriteria[] = [];
       this.groupSort.forEach(({ column, asc }) => {
-        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+        const col = children.find((d) => d.desc.label === column || (d as any).desc.column === column);
         if (col) {
           sorts.push({ col, asc });
           return;

@@ -43,12 +43,12 @@ export default class BarCellRenderer implements ICellRendererFactory {
         const title = col.getLabel(d);
         n.title = title;
 
-        const bar = <HTMLElement>n.firstElementChild!;
+        const bar = n.firstElementChild! as HTMLElement;
         bar.style.width = missing ? '100%' : `${w}%`;
         const color = colorOf(col, d, imposer, value);
         bar.style.backgroundColor = missing ? null : color;
         setText(bar.firstElementChild!, title);
-        const item = <HTMLElement>bar.firstElementChild!;
+        const item = bar.firstElementChild! as HTMLElement;
         setText(item, title);
         adaptDynamicColorToBgColor(item, color || DEFAULT_COLOR, title, w / 100);
       },

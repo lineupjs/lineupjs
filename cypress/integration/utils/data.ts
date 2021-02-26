@@ -1,4 +1,4 @@
-import {timeFormat} from 'd3-time-format';
+import { timeFormat } from 'd3-time-format';
 
 export function rnd(seed = 0) {
   // Adapted from http://indiegamr.com/generate-repeatable-random-numbers-in-js/
@@ -78,20 +78,23 @@ export interface IGenerateDataOptions {
 export const DEFAULT_CATEGORIES = ['c1', 'c2', 'c3'];
 
 export function generateData(options: IGenerateDataOptions = {}) {
-  const o: Required<IGenerateDataOptions> = Object.assign({
-    count: 100,
-    string: 1,
-    number: 1,
-    cat: 1,
-    categories: DEFAULT_CATEGORIES,
-    date: 0,
-    seed: 0,
-    missing: 0,
-    missingString: options.missing == null ? 0 : options.missing,
-    missingNumber: options.missing == null ? 0 : options.missing,
-    missingCat: options.missing == null ? 0 : options.missing,
-    missingDate: options.missing == null ? 0 : options.missing,
-  }, options);
+  const o: Required<IGenerateDataOptions> = Object.assign(
+    {
+      count: 100,
+      string: 1,
+      number: 1,
+      cat: 1,
+      categories: DEFAULT_CATEGORIES,
+      date: 0,
+      seed: 0,
+      missing: 0,
+      missingString: options.missing == null ? 0 : options.missing,
+      missingNumber: options.missing == null ? 0 : options.missing,
+      missingCat: options.missing == null ? 0 : options.missing,
+      missingDate: options.missing == null ? 0 : options.missing,
+    },
+    options
+  );
   const arr = [];
   const s = rnd(o.seed);
   const isMissing = (v: number) => v > 0 && s() <= v;
@@ -106,12 +109,16 @@ export function generateData(options: IGenerateDataOptions = {}) {
       r[`number${j === 0 ? '' : j}`] = isMissing(o.missingNumber) ? null : s() * 10;
     }
     for (let j = 0; j < o.cat; ++j) {
-      r[`cat${j === 0 ? '' : j}`] = isMissing(o.missingCat) ? null : o.categories[Math.floor(s() * o.categories.length)];
+      r[`cat${j === 0 ? '' : j}`] = isMissing(o.missingCat)
+        ? null
+        : o.categories[Math.floor(s() * o.categories.length)];
     }
     for (let j = 0; j < o.date; ++j) {
-      r[`date${j === 0 ? '' : j}`] = isMissing(o.missingDate) ? null : f(new Date(Date.now() - Math.floor(s() * 1000000000000)));
+      r[`date${j === 0 ? '' : j}`] = isMissing(o.missingDate)
+        ? null
+        : f(new Date(Date.now() - Math.floor(s() * 1000000000000)));
     }
     arr.push(r);
-  };
+  }
   return arr;
 }

@@ -8,11 +8,11 @@ export const DEFAULT_CATEGORICAL_COLOR_FUNCTION: ICategoricalColorMappingFunctio
   eq: (other) => other === DEFAULT_CATEGORICAL_COLOR_FUNCTION,
 };
 
-export class ReplacmentColorMappingFunction implements ICategoricalColorMappingFunction {
+export class ReplacementColorMappingFunction implements ICategoricalColorMappingFunction {
   public readonly map: ReadonlyMap<string, string>;
   constructor(map: Map<ICategory | string, string>) {
     this.map = new Map(
-      Array.from(map.entries()).map(([k, v]) => <[string, string]>[typeof k === 'string' ? k : k.name, v])
+      Array.from(map.entries()).map(([k, v]) => [typeof k === 'string' ? k : k.name, v] as [string, string])
     );
   }
 
@@ -30,11 +30,11 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
   }
 
   clone() {
-    return new ReplacmentColorMappingFunction(new Map(this.map.entries()));
+    return new ReplacementColorMappingFunction(new Map(this.map.entries()));
   }
 
   eq(other: ICategoricalColorMappingFunction): boolean {
-    if (!(other instanceof ReplacmentColorMappingFunction)) {
+    if (!(other instanceof ReplacementColorMappingFunction)) {
       return false;
     }
     if (other.map.size !== this.map.size) {
@@ -48,14 +48,14 @@ export class ReplacmentColorMappingFunction implements ICategoricalColorMappingF
       // new dump format
       dump = dump.map;
     }
-    const lookup = new Map(categories.map((d) => <[string, ICategory]>[d.name, d]));
+    const lookup = new Map(categories.map((d) => [d.name, d]));
     const r = new Map<ICategory, string>();
     for (const key of Object.keys(dump)) {
       if (lookup.has(key)) {
         r.set(lookup.get(key)!, dump[key]);
       }
     }
-    return new ReplacmentColorMappingFunction(r);
+    return new ReplacementColorMappingFunction(r);
   }
 }
 
@@ -69,5 +69,5 @@ export function restoreCategoricalColorMapping(
   if (!dump) {
     return DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
-  return ReplacmentColorMappingFunction.restore(dump, categories);
+  return ReplacementColorMappingFunction.restore(dump, categories);
 }

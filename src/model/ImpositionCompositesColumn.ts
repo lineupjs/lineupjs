@@ -90,7 +90,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   }
 
   private get wrapper(): INumbersColumn | null {
-    return <INumbersColumn>this._children.find(isNumbersColumn) || null;
+    return (this._children.find(isNumbersColumn) as INumbersColumn) || null;
   }
 
   private get rest() {

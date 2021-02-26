@@ -38,7 +38,7 @@ export default class StringMapColumn extends MapColumn<string> {
         renderer: 'map',
       })
     );
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
   }
 
@@ -56,7 +56,7 @@ export default class StringMapColumn extends MapColumn<string> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow) {

@@ -23,9 +23,8 @@ export function filterMissingNumberMarkup(bakMissing: boolean, count: number) {
 
 /** @internal */
 export function findFilterMissing(node: HTMLElement) {
-  return <HTMLInputElement>(
-    (<HTMLElement>node.getElementsByClassName(cssClass('filter-missing'))[0]!).previousElementSibling!
-  );
+  return (node.getElementsByClassName(cssClass('filter-missing'))[0]! as HTMLElement)
+    .previousElementSibling! as HTMLInputElement;
 }
 
 /** @internal */

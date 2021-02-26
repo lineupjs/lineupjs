@@ -17,8 +17,8 @@ export default class AnnotationRenderer extends StringCellRenderer {
         <input class="${cssClass('hover-only')} ${cssClass('annotate-input')}">
        </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        const label = <HTMLElement>n.firstElementChild!;
-        const input = <HTMLInputElement>n.lastElementChild!;
+        const label = n.firstElementChild! as HTMLElement;
+        const input = n.lastElementChild! as HTMLInputElement;
         input.onchange = () => {
           label.textContent = input.value;
           col.setValue(d, input.value);

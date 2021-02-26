@@ -73,7 +73,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
       }
       const children = n.children;
       data.forEach((v, i) => {
-        const d = <HTMLElement>children[i];
+        const d = children[i] as HTMLElement;
         d.title = v.label;
         d.style.display = isNaN(v.value) ? 'none' : null;
         d.style.left = `${round(v.value * 100, 2)}%`;
@@ -169,7 +169,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
             if (isMissing) {
               return;
             }
-            const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+            const ctx = (n as HTMLCanvasElement).getContext('2d')!;
             ctx.canvas.width = width;
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             render(ctx, data, width);

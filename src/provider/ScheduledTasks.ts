@@ -31,9 +31,9 @@ import Column, {
 import { IRenderTask } from '../renderer';
 import { sortDirect } from './DirectRenderTasks';
 import { CompareLookup } from './sort';
-import { ARenderTasks, IRenderTaskExectutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow } from './tasks';
+import { ARenderTasks, IRenderTaskExecutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow } from './tasks';
 
-export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
+export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExecutor {
   private readonly cache = new Map<string, IRenderTask<any>>();
   private readonly tasks = new TaskScheduler();
   private readonly workers = new WorkerTaskScheduler(createWorkerBlob());
@@ -148,7 +148,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       return;
     }
 
-    const ogroups = groups.map(({ rows, group }) => Object.assign({ order: rows }, group));
+    const orderedGroups = groups.map(({ rows, group }) => Object.assign({ order: rows }, group));
     const full = new MultiIndices(
       groups.map((d) => d.rows),
       maxDataIndex
@@ -156,18 +156,18 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     for (const col of cols) {
       if (isCategoricalLikeColumn(col)) {
         this.summaryCategoricalStats(col, full);
-        for (const g of ogroups) {
+        for (const g of orderedGroups) {
           this.groupCategoricalStats(col, g);
         }
       } else if (isDateColumn(col)) {
         this.summaryDateStats(col, full);
-        for (const g of ogroups) {
+        for (const g of orderedGroups) {
           this.groupDateStats(col, g);
         }
       } else if (isNumberColumn(col)) {
         this.summaryNumberStats(col, false, full);
         this.summaryNumberStats(col, true, full);
-        for (const g of ogroups) {
+        for (const g of orderedGroups) {
           this.groupNumberStats(col, g, false);
           this.groupNumberStats(col, g, true);
         }
@@ -267,8 +267,8 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       if (!key.startsWith(fromPrefix)) {
         continue;
       }
-      const tkey = `${col.id}:${key.slice(fromPrefix.length)}`;
-      this.chainCopy(tkey, this.cache.get(key)!, (data: any) => data);
+      const chainKey = `${col.id}:${key.slice(fromPrefix.length)}`;
+      this.chainCopy(chainKey, this.cache.get(key)!, (data: any) => data);
     }
   }
 
@@ -323,7 +323,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
                 'boxplotStats',
                 {},
                 key,
-                <Float32Array>this.valueCacheData.get(key),
+                this.valueCacheData.get(key) as Float32Array,
                 `${ranking.id}:${group.name}`,
                 group.order
               )
@@ -349,7 +349,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
                 'numberStats',
                 { numberOfBins: summary.hist.length },
                 key,
-                <Float32Array>this.valueCacheData.get(key),
+                this.valueCacheData.get(key) as Float32Array,
                 `${ranking.id}:${group.name}`,
                 group.order
               )
@@ -375,7 +375,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               'categoricalStats',
               { categories: col.categories.map((d) => d.name) },
               col.id,
-              <UIntTypedArray>this.valueCacheData.get(col.id),
+              this.valueCacheData.get(col.id) as UIntTypedArray,
               `${ranking.id}:${group.name}`,
               group.order
             )
@@ -397,7 +397,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               'dateStats',
               { template: summary },
               col.id,
-              <Float64Array>this.valueCacheData.get(col.id),
+              this.valueCacheData.get(col.id) as Float64Array,
               `${ranking.id}:${group.name}`,
               group.order
             )
@@ -419,7 +419,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               'boxplotStats',
               {},
               key,
-              <Float32Array>this.valueCacheData.get(key),
+              this.valueCacheData.get(key) as Float32Array,
               ranking.id,
               order ? order.joined : ranking.getOrder()
             )
@@ -441,7 +441,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               'numberStats',
               { numberOfBins: data.hist.length },
               key,
-              <Float32Array>this.valueCacheData.get(key),
+              this.valueCacheData.get(key) as Float32Array,
               ranking.id,
               order ? order.joined : ranking.getOrder()
             )
@@ -465,7 +465,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               'categoricalStats',
               { categories: col.categories.map((d) => d.name) },
               col.id,
-              <UIntTypedArray>this.valueCacheData.get(col.id),
+              this.valueCacheData.get(col.id) as UIntTypedArray,
               ranking.id,
               order ? order.joined : ranking.getOrder()
             )
@@ -486,7 +486,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               'dateStats',
               { template: data },
               col.id,
-              <Float64Array>this.valueCacheData.get(col.id),
+              this.valueCacheData.get(col.id) as Float64Array,
               ranking.id,
               order ? order.joined : ranking.getOrder()
             )
@@ -537,7 +537,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       return this.cached(key, true, creator(task.v));
     }
 
-    const v = (<TaskLater<T>>task).v;
+    const v = (task as TaskLater<T>).v;
     const subTask = v.then((data) => {
       if (typeof data === 'symbol') {
         return ABORTED;
@@ -587,7 +587,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       return subTask;
     }
 
-    const v = (<TaskLater<T>>task).v;
+    const v = (task as TaskLater<T>).v;
     const subTask = v.then((data) => {
       if (typeof data === 'symbol') {
         return ABORTED;
@@ -615,7 +615,12 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     if (this.valueCacheData.has(valueCacheKey) && this.data.length > 0) {
       // use webworker
       return this.cached(key, false, () =>
-        this.workers.pushStats('boxplotStats', {}, valueCacheKey, <Float32Array>this.valueCacheData.get(valueCacheKey)!)
+        this.workers.pushStats(
+          'boxplotStats',
+          {},
+          valueCacheKey,
+          this.valueCacheData.get(valueCacheKey)! as Float32Array
+        )
       );
     }
     return this.cached(key, false, this.boxplotBuilder<IAdvancedBoxPlotData>(null, col, raw));

@@ -23,13 +23,13 @@ import {
 
 export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?: any[]): IColumnDesc {
   const { column } = props;
-  const desc = <any>{
+  const desc = {
     column,
     type: props.type,
     label: column ? column[0].toUpperCase() + column.slice(1) : props.type,
-  };
+  } as any;
 
-  (<(keyof IBuilderAdapterColumnDescProps)[]>[
+  ([
     'label',
     'description',
     'frozen',
@@ -39,7 +39,7 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
     'summaryRenderer',
     'visible',
     'fixed',
-  ]).forEach((key) => {
+  ] as (keyof IBuilderAdapterColumnDescProps)[]).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -58,7 +58,7 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
   if (props.asArray != null) {
     console.assert(['boolean', 'categorical', 'date', 'number', 'string', 'link'].includes(desc.type!));
     desc.type += 's';
-    const a = <IArrayDesc>desc;
+    const a = desc as IArrayDesc;
     const labels = props.asArray;
     if (Array.isArray(labels)) {
       a.labels = labels;
@@ -68,7 +68,7 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
     }
   }
 
-  return <any>desc;
+  return desc as any;
 }
 
 export function buildCategorical(
@@ -85,14 +85,14 @@ export function buildCategorical(
   }
   if (props.asSet) {
     if (typeof props.asSet === 'string') {
-      (<any>desc).separator = props.asSet;
+      (desc as any).separator = props.asSet;
     }
     desc.type = 'set';
   }
 
   if (!props.categories) {
     // derive categories
-    const categories = new Set(data.map((d) => <string>resolveValue(d, (<any>desc).column)));
+    const categories = new Set(data.map((d) => resolveValue(d, (desc as any).column) as string));
     desc.categories = Array.from(categories).sort();
   } else {
     desc.categories = props.categories;
@@ -103,7 +103,7 @@ export function buildCategorical(
 export function buildDate(props: IBuilderAdapterDateColumnDescProps): IDateColumnDesc {
   const desc: any = build({ ...props, type: 'date' });
 
-  (<(keyof IBuilderAdapterDateColumnDescProps)[]>['dateFormat', 'dateParse']).forEach((key) => {
+  (['dateFormat', 'dateParse'] as const).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -112,9 +112,9 @@ export function buildDate(props: IBuilderAdapterDateColumnDescProps): IDateColum
 }
 
 export function buildHierarchy(props: Partial<IBuilderAdapterHierarchyColumnDescProps>): IHierarchyColumnDesc {
-  const desc: any = build({ ...(<any>props), type: 'hierarchy' });
+  const desc: any = build({ ...(props as any), type: 'hierarchy' });
 
-  (<(keyof IBuilderAdapterHierarchyColumnDescProps)[]>['hierarchy', 'hierarchySeparator']).forEach((key) => {
+  (['hierarchy', 'hierarchySeparator'] as const).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -125,14 +125,12 @@ export function buildHierarchy(props: Partial<IBuilderAdapterHierarchyColumnDesc
 export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: any[]): INumberColumnDesc {
   const desc: any = build({ ...props, type: 'number' });
 
-  const domain = props.domain
-    ? props.domain
-    : <[number, number]>extent(data, (d) => <number>resolveValue(d, (<any>desc).column));
+  const domain = props.domain ? props.domain : extent(data, (d) => resolveValue(d, (desc as any).column) as number);
 
   if (props.hasOwnProperty('color')) {
     desc.colorMapping = props.color;
   }
-  (<(keyof IBuilderAdapterNumberColumnDescProps)[]>['sort', 'colorMapping']).forEach((key) => {
+  (['sort', 'colorMapping'] as const).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -157,7 +155,7 @@ export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: a
 export function buildString(props: IBuilderAdapterStringColumnDescProps): ILinkColumnDesc {
   const desc: any = build({ ...props, type: 'string' });
 
-  (<(keyof IBuilderAdapterStringColumnDescProps)[]>['pattern', 'patternTemplate', 'alignment']).forEach((key) => {
+  (['pattern', 'patternTemplate', 'alignment'] as const).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -177,7 +175,7 @@ export function buildString(props: IBuilderAdapterStringColumnDescProps): ILinkC
 export function buildBoolean(props: IBuilderAdapterBooleanColumnDescProps): IBooleanColumnDesc {
   const desc: any = build({ ...props, type: 'boolean' });
 
-  (<(keyof IBuilderAdapterBooleanColumnDescProps)[]>['trueMarker', 'falseMarker']).forEach((key) => {
+  (['trueMarker', 'falseMarker'] as const).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }
@@ -188,7 +186,7 @@ export function buildBoolean(props: IBuilderAdapterBooleanColumnDescProps): IBoo
 export function buildActions(props: IBuilderAdapterActionsColumnDescProps): IActionColumnDesc {
   const desc: any = build({ ...props, type: 'actions' });
 
-  (<(keyof IBuilderAdapterActionsColumnDescProps)[]>['actions', 'groupActions']).forEach((key) => {
+  (['actions', 'groupActions'] as const).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }

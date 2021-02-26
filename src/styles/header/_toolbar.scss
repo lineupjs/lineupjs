@@ -87,7 +87,7 @@
     content: $lu_icon_sort_amount_desc;
   }
 
-  &[data-type=abc] {
+  &[data-type='abc'] {
     &::before {
       content: $lu_icon_sort_alpha_asc;
     }
@@ -97,7 +97,7 @@
     }
   }
 
-  &[data-type=num] {
+  &[data-type='num'] {
     &::before {
       content: $lu_icon_sort_numeric_asc;
     }

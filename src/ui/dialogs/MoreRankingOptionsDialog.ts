@@ -19,7 +19,7 @@ export default class MoreRankingOptionsDialog extends APopup {
       'beforeend',
       `<i title="${title}" class="${actionCSSClass(title)}"><span>${title}</span> </i>`
     );
-    const i = <HTMLElement>node.lastElementChild;
+    const i = node.lastElementChild as HTMLElement;
     i.onclick = (evt) => {
       evt.stopPropagation();
       onClick(evt);
@@ -31,7 +31,7 @@ export default class MoreRankingOptionsDialog extends APopup {
     this.addIcon(node, 'Rename', (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
-      const dialog = new RenameRankingDialog(this.ranking, dialogContext(this.ctx, this.level + 1, <any>evt));
+      const dialog = new RenameRankingDialog(this.ranking, dialogContext(this.ctx, this.level + 1, evt as any));
       dialog.open();
     });
     this.addIcon(node, 'Remove', (evt) => {

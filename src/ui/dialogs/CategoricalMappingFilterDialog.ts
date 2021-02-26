@@ -64,7 +64,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     };
     this.forEach('input[type=number]', (d: HTMLInputElement) => {
       d.oninput = () => {
-        (<HTMLElement>d.nextElementSibling!.firstElementChild).style.width = `${d.value}%`;
+        (d.nextElementSibling!.firstElementChild as HTMLElement).style.width = `${d.value}%`;
       };
     });
     node.insertAdjacentHTML('beforeend', filterMissingMarkup(this.before.filterMissing));
@@ -84,7 +84,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
   protected reset() {
     this.forEach('[data-cat]', (n: HTMLInputElement) => {
       n.checked = false;
-      (<HTMLInputElement>n.nextElementSibling!).value = '50';
+      (n.nextElementSibling! as HTMLInputElement).value = '50';
     });
   }
 
@@ -92,7 +92,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
     const items = this.forEach('input[data-cat]', (n: HTMLInputElement) => ({
       checked: n.checked,
       cat: n.dataset.cat!,
-      range: (<HTMLInputElement>n.nextElementSibling)!.valueAsNumber,
+      range: (n.nextElementSibling as HTMLInputElement)!.valueAsNumber,
     }));
     let f: string[] | null = items.filter((d) => d.checked).map((d) => d.cat);
     if (f.length === this.column.categories.length) {

@@ -6,16 +6,17 @@ import { DEFAULT_COLOR } from './interfaces';
 /** @internal */
 export function integrateDefaults<T>(desc: T, defaults: Partial<T> = {}) {
   Object.keys(defaults).forEach((key) => {
-    const typed = <keyof T>key;
+    const typed = key as keyof T;
     if (typeof desc[typed] === 'undefined') {
-      (<any>desc)[typed] = defaults[typed];
+      (desc as any)[typed] = defaults[typed];
     }
   });
   return desc;
 }
 
 /** @internal */
-export function patternFunction(pattern: string, ...args: string[]) {
+export function patternFunction(pattern: string, ...args: string[]): (value: string) => string {
+  // eslint-disable-next-line no-new-func
   return new Function(
     'value',
     ...args,
@@ -23,7 +24,7 @@ export function patternFunction(pattern: string, ...args: string[]) {
   const escapedValue = encodeURIComponent(String(value));
   return \`${pattern}\`;
  `
-  );
+  ) as any;
 }
 
 /** @internal */
@@ -58,10 +59,10 @@ export function joinGroups(groups: IGroup[]): IGroup {
 }
 
 export function duplicateGroup<T extends IOrderedGroup | IGroupParent>(group: T) {
-  const clone = <T>Object.assign({}, group);
-  delete (<IOrderedGroup>clone).order;
-  if (isGroupParent(<any>clone)) {
-    (<any>clone).subGroups = [];
+  const clone = Object.assign({}, group) as T;
+  delete (clone as IOrderedGroup).order;
+  if (isGroupParent(clone)) {
+    clone.subGroups = [];
   }
   if (clone.parent) {
     clone.parent = duplicateGroup(clone.parent);
@@ -77,12 +78,12 @@ export function toGroupID(group: IGroup) {
 
 /** @internal */
 export function isOrderedGroup(g: IOrderedGroup | Readonly<IGroupParent>): g is IOrderedGroup {
-  return (<IOrderedGroup>g).order != null;
+  return (g as IOrderedGroup).order != null;
 }
 
 /** @internal */
 function isGroupParent(g: IGroup | Readonly<IGroupParent>): g is IGroupParent {
-  return (<IGroupParent>g).subGroups != null;
+  return (g as IGroupParent).subGroups != null;
 }
 
 /**
@@ -122,13 +123,13 @@ export function unifyParents<T extends IOrderedGroup>(groups: T[]) {
       real.push(root);
       // remove duplicates that directly follow
       while (level.length > 0 && isSame(root, level[0]!)) {
-        root.subGroups.push(...(<IGroupParent>level.shift()!).subGroups);
+        root.subGroups.push(...(level.shift()! as IGroupParent).subGroups);
       }
       for (const child of root.subGroups) {
-        (<IGroupParent | T>child).parent = root;
+        (child as IGroupParent | T).parent = root;
       }
       // cleanup children duplicates
-      root.subGroups = removeDuplicates(<(IGroupParent | T)[]>root.subGroups, i + 1);
+      root.subGroups = removeDuplicates(root.subGroups as (IGroupParent | T)[], i + 1);
     }
     return real;
   };
@@ -157,8 +158,8 @@ export function groupRoots(groups: IOrderedGroup[]) {
 /**
  * Traverse the tree of given groups in depth first search (DFS)
  *
- * @param groups Groups to travserse
- * @param f Function to check each group. Travsering subgroups can be stopped when returning `false`.
+ * @param groups Groups to traverse
+ * @param f Function to check each group. Traversing subgroups can be stopped when returning `false`.
  *
  * @internal
  */
@@ -239,10 +240,10 @@ export function chooseUIntByDataLength(dataLength?: number | null) {
   if (dataLength == null || (typeof dataLength !== 'number' && !isNaN(dataLength))) {
     return ECompareValueType.UINT32; // worst case
   }
-  if (length <= 255) {
+  if (dataLength <= 255) {
     return ECompareValueType.UINT8;
   }
-  if (length <= 65535) {
+  if (dataLength <= 65535) {
     return ECompareValueType.UINT16;
   }
   return ECompareValueType.UINT32;
@@ -252,10 +253,10 @@ export function getAllToolbarActions(col: Column) {
   const actions = new OrderedSet<string>();
 
   // walk up the prototype chain
-  let obj = <any>col;
+  let obj = col as any;
   const toolbarIcon = Symbol.for('toolbarIcon');
   do {
-    const m = <string[]>Reflect.getOwnMetadata(toolbarIcon, obj.constructor);
+    const m = Reflect.getOwnMetadata(toolbarIcon, obj.constructor) as string[];
     if (m) {
       for (const mi of m) {
         actions.add(mi);
@@ -270,10 +271,10 @@ export function getAllToolbarDialogAddons(col: Column, key: string) {
   const actions = new OrderedSet<string>();
 
   // walk up the prototype chain
-  let obj = <any>col;
+  let obj = col as any;
   const symbol = Symbol.for(`toolbarDialogAddon${key}`);
   do {
-    const m = <string[]>Reflect.getOwnMetadata(symbol, obj.constructor);
+    const m = Reflect.getOwnMetadata(symbol, obj.constructor) as string[];
     if (m) {
       for (const mi of m) {
         actions.add(mi);

@@ -42,13 +42,13 @@ export function isDateColumn(col: Column): col is IDateColumn;
 export function isDateColumn(col: IColumnDesc): col is IDateDesc & IColumnDesc;
 export function isDateColumn(col: Column | IColumnDesc) {
   return (
-    (col instanceof Column && typeof (<IDateColumn>col).getDate === 'function') ||
-    (!(col instanceof Column) && (<IColumnDesc>col).type.startsWith('date'))
+    (col instanceof Column && typeof (col as IDateColumn).getDate === 'function') ||
+    (!(col instanceof Column) && (col as IColumnDesc).type.startsWith('date'))
   );
 }
 
 export function isDatesColumn(col: Column): col is IDatesColumn {
-  return typeof (<IDatesColumn>col).getDates === 'function';
+  return typeof (col as IDatesColumn).getDates === 'function';
 }
 
 export declare type IDateFilter = INumberFilter;
@@ -68,7 +68,7 @@ export declare type IDateGranularity =
 
 export interface IDateGrouper {
   /**
-   * granuality level for the grouping
+   * granularity level for the grouping
    */
   granularity: IDateGranularity;
   /**

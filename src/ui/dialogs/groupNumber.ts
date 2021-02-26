@@ -37,8 +37,8 @@ export default function groupNumber(
   `
   );
 
-  const threshold = <HTMLInputElement>node.querySelector(`#${dialog.idPrefix}N1`);
-  const bins = <HTMLInputElement>node.querySelector(`#${dialog.idPrefix}N2`);
+  const threshold = node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}N1`);
+  const bins = node.querySelector<HTMLInputElement>(`#${dialog.idPrefix}N2`);
 
   forEach(node, 'input[name=threshold]', (d: HTMLInputElement) => {
     d.addEventListener(

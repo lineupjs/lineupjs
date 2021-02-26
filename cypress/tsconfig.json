@@ -16,7 +16,5 @@
       "lodash.get"
     ]
   },
-  "include": [
-    "**/*.ts"
-  ]
+  "include": ["**/*.ts"]
 }

@@ -183,7 +183,7 @@ export interface IGroupItem {
 export declare type IGroupData = Readonly<IOrderedGroup>;
 
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
-  return item && (<IGroupItem>item).group == null; // use .group as separator
+  return item && (item as IGroupItem).group == null; // use .group as separator
 }
 
 export declare type UIntTypedArray = Uint8Array | Uint16Array | Uint32Array;
@@ -273,7 +273,7 @@ export interface IMultiLevelColumn extends CompositeColumn {
 }
 
 export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {
-  return typeof (<IMultiLevelColumn>col).getCollapsed === 'function';
+  return typeof (col as IMultiLevelColumn).getCollapsed === 'function';
 }
 
 export interface ISortCriteria {

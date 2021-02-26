@@ -71,7 +71,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   static readonly EVENT_PATTERN_CHANGED = 'patternChanged';
 
   private pattern: string;
-  private patternFunction: Function | null = null;
+  private patternFunction: (value: string, raw: any) => string | null = null;
   readonly patternTemplates: string[];
 
   private currentFilter: string | RegExp | null = null;
@@ -101,7 +101,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
         )
       )
     );
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
 
     this.pattern = desc.pattern || '';
@@ -153,7 +153,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow) {
@@ -195,7 +195,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
 
   dump(toDescRef: (desc: any) => any): any {
     const r = StringColumn.prototype.dump.call(this, toDescRef);
-    if (this.pattern !== (<any>this.desc).pattern) {
+    if (this.pattern !== (this.desc as any).pattern) {
       r.pattern = this.pattern;
     }
     return r;

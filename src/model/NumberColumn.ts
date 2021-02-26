@@ -144,7 +144,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     r.filter = isDummyNumberFilter(this.currentFilter) ? null : this.currentFilter;
     r.groupSortMethod = this.groupSortMethod;
     if (this.currentGroupThresholds) {
-      r.stratifyThreshholds = this.currentGroupThresholds;
+      r.stratifyThresholds = this.currentGroupThresholds;
     }
     return r;
   }
@@ -165,8 +165,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (dump.filter) {
       this.currentFilter = restoreNumberFilter(dump.filter);
     }
-    if (dump.stratifyThreshholds) {
+    if (dump.stratifyThresholds) {
       this.currentGroupThresholds = dump.stratifyThresholds;
+    }
+    if (dump.stratifyThreshholds) {
+      this.currentGroupThresholds = dump.stratifyThreshholds;
     }
   }
 
@@ -201,11 +204,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getLabel(row: IDataRow) {
-    if ((<any>this.desc).numberFormat) {
+    if ((this.desc as any).numberFormat) {
       const raw = this.getRawValue(row);
       //if a dedicated format and a number use the formatter in any case
       if (isNaN(raw)) {
@@ -277,7 +280,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
-    return toCompareGroupValue(rows, this, <any>this.groupSortMethod, valueCache);
+    return toCompareGroupValue(rows, this, this.groupSortMethod, valueCache);
   }
 
   toCompareGroupValueType() {
@@ -402,9 +405,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       threshold = [(d[1] - d[0]) / 2];
     }
 
-    const treshholdIndex = threshold.findIndex((t) => value <= t);
+    const thresholdIndex = threshold.findIndex((t) => value <= t);
     // group by thresholds / bins
-    switch (treshholdIndex) {
+    switch (thresholdIndex) {
       case -1:
         //bigger than the last threshold
         return {
@@ -419,11 +422,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
         };
       default:
         return {
-          name: `${this.numberFormat(threshold[treshholdIndex - 1])} <= ${this.label} <= ${this.numberFormat(
-            threshold[treshholdIndex]
+          name: `${this.numberFormat(threshold[thresholdIndex - 1])} <= ${this.label} <= ${this.numberFormat(
+            threshold[thresholdIndex]
           )}`,
           color: this.colorMapping.apply(
-            this.mapping.apply((threshold[treshholdIndex - 1] + threshold[treshholdIndex]) / 2)
+            this.mapping.apply((threshold[thresholdIndex - 1] + threshold[thresholdIndex]) / 2)
           ),
         };
     }

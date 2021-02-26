@@ -165,12 +165,12 @@ export class QuantizedColorFunction implements IColorMappingFunction {
   constructor(dump: ITypedDump, factory: ITypeFactory);
   constructor(base: IColorMappingFunction, steps: number);
   constructor(base: IColorMappingFunction | ITypedDump, steps: number | ITypeFactory) {
-    if (typeof (<any>base).apply === 'function') {
-      this.base = <IColorMappingFunction>base;
-      this.steps = steps == null ? 5 : <number>steps;
+    if (typeof (base as any).apply === 'function') {
+      this.base = base as IColorMappingFunction;
+      this.steps = steps == null ? 5 : (steps as number);
     } else {
-      const dump = <ITypedDump>base;
-      this.base = (<ITypeFactory>steps).colorMappingFunction(dump.base);
+      const dump = base as ITypedDump;
+      this.base = (steps as ITypeFactory).colorMappingFunction(dump.base);
       this.steps = dump.steps;
     }
   }

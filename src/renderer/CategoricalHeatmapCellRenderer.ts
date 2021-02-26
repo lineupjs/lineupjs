@@ -52,7 +52,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     return {
       template,
       update: (n: HTMLElement, d: IDataRow) => {
-        const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+        const ctx = (n as HTMLCanvasElement).getContext('2d')!;
         ctx.canvas.width = width;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -81,7 +81,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
             if (typeof data === 'symbol') {
               return;
             }
-            const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+            const ctx = (n as HTMLCanvasElement).getContext('2d')!;
             ctx.canvas.width = width;
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
