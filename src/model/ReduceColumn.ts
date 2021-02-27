@@ -87,7 +87,7 @@ export default class ReduceColumn extends CompositeNumberColumn {
   }
 
   protected compute(row: IDataRow) {
-    const vs = this._children.map((d) => d.getValue(row)).filter((d) => !isNaN(d));
+    const vs = this._children.map((d) => d.getValue(row)).filter((d) => !Number.isNaN(d));
     if (vs.length === 0) {
       return NaN;
     }

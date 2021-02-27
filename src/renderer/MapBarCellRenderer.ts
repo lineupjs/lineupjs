@@ -46,7 +46,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
         node.innerHTML = col
           .getMap(d)
           .map(({ key, value }) => {
-            if (isNaN(value)) {
+            if (Number.isNaN(value)) {
               return `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass(
                 'table-cell'
               )} ${cssClass('missing')}"></div>`;

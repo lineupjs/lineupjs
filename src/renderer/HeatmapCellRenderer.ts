@@ -29,7 +29,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     const render = (ctx: CanvasRenderingContext2D, data: number[], item: IDataRow, height: number) => {
       data.forEach((d: number, j: number) => {
         const x = j * cellDimension;
-        if (isNaN(d)) {
+        if (Number.isNaN(d)) {
           renderMissingValue(ctx, cellDimension, height, x, 0);
           return;
         }

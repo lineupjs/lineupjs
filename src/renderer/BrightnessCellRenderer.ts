@@ -24,7 +24,7 @@ import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';
 
 export function toHeatMapColor(v: number | null, row: IDataRow, col: INumberColumn, imposer?: IImposer) {
-  if (v == null || isNaN(v)) {
+  if (v == null || Number.isNaN(v)) {
     v = 1; // max = brightest
   }
   if (imposer || !isMapAbleColumn(col)) {

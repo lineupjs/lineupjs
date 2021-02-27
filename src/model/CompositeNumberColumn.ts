@@ -43,7 +43,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     }
     const v = this.getValue(row);
     //keep non number if it is not a number else convert using formatter
-    return String(typeof v === 'number' && !isNaN(v) && isFinite(v) ? this.numberFormat(v) : v);
+    return String(typeof v === 'number' && !Number.isNaN(v) && isFinite(v) ? this.numberFormat(v) : v);
   }
 
   getValue(row: IDataRow) {

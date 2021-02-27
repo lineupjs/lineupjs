@@ -296,7 +296,7 @@ function createFilterContext(
     percent,
     unpercent,
     domain,
-    format: (v) => (isNaN(v) ? '' : col.getFormatter()(new Date(v))),
+    format: (v) => (Number.isNaN(v) ? '' : col.getFormatter()(new Date(v))),
     formatRaw: String,
     parseRaw: (v) => Number.parseInt(v, 10),
     setFilter: (filterMissing, minValue, maxValue) =>
@@ -316,7 +316,7 @@ function createFilterContext(
         const dialog = new InputDateDialog(
           dialogCtx,
           (d) => resolve(d == null ? NaN : shiftFilterDateDay(d.getTime(), type)),
-          { value: isNaN(value) ? null : new Date(value) }
+          { value: Number.isNaN(value) ? null : new Date(value) }
         );
         dialog.open();
       });

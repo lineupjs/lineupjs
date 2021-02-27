@@ -103,13 +103,13 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     const asArray = (v: any, extra: string) => {
       const vs: number[] = [];
       (Array.isArray(v) ? v : [v]).forEach((vi) => {
-        if (typeof vi === 'number' && !isNaN(vi)) {
+        if (typeof vi === 'number' && !Number.isNaN(vi)) {
           vs.push(vi);
         }
-        if (vi != null && typeof vi.value === 'number' && !isNaN(vi.value)) {
+        if (vi != null && typeof vi.value === 'number' && !Number.isNaN(vi.value)) {
           vs.push(vi.value);
         }
-        if (vi != null && typeof vi[extra] === 'number' && !isNaN(vi[extra])) {
+        if (vi != null && typeof vi[extra] === 'number' && !Number.isNaN(vi[extra])) {
           vs.push(vi[extra]);
         }
       });
@@ -135,12 +135,12 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
       this.mapping('linear', this.derive(data));
     } else {
       const d = this.desc.domain || this.desc.map!.domain;
-      if (isNaN(d[0]) || isNaN(d[1])) {
+      if (Number.isNaN(d[0]) || Number.isNaN(d[1])) {
         const ext = this.derive(data);
-        if (isNaN(d[0])) {
+        if (Number.isNaN(d[0])) {
           d[0] = ext[0];
         }
-        if (isNaN(d[1])) {
+        if (Number.isNaN(d[1])) {
           d[1] = ext[1];
         }
       }

@@ -190,7 +190,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       const value = this.getRawNumber(row);
-      if (isNaN(value)) {
+      if (Number.isNaN(value)) {
         return null;
       }
       return {

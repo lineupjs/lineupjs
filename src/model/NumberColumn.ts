@@ -211,7 +211,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if ((this.desc as any).numberFormat) {
       const raw = this.getRawValue(row);
       //if a dedicated format and a number use the formatter in any case
-      if (isNaN(raw)) {
+      if (Number.isNaN(raw)) {
         return 'NaN';
       }
       if (!isFinite(raw)) {
@@ -245,7 +245,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   getValue(row: IDataRow) {
     const v = this.getNumber(row);
-    if (isNaN(v)) {
+    if (Number.isNaN(v)) {
       return null;
     }
     return v;
@@ -253,7 +253,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   getNumber(row: IDataRow) {
     const v = this.getRawValue(row);
-    if (isNaN(v)) {
+    if (Number.isNaN(v)) {
       return NaN;
     }
     return this.mapping.apply(v);
@@ -314,7 +314,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   getColor(row: IDataRow) {
     const v = this.getNumber(row);
-    if (isNaN(v)) {
+    if (Number.isNaN(v)) {
       return DEFAULT_COLOR;
     }
     return this.colorMapping.apply(v);
@@ -394,7 +394,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   group(row: IDataRow): IGroup {
     const value = this.getRawNumber(row);
-    if (isNaN(value)) {
+    if (Number.isNaN(value)) {
       return Object.assign({}, missingGroup);
     }
 

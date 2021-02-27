@@ -85,11 +85,11 @@ export default class WeightsEditDialog extends ADialog {
       input: d,
       weight: d.value ? d.valueAsNumber : NaN,
     }));
-    const hasMissing = inputs.some((d) => isNaN(d.weight));
+    const hasMissing = inputs.some((d) => Number.isNaN(d.weight));
     if (hasMissing) {
       // compute missing ones
-      const missingIndices = inputs.filter((d) => isNaN(d.weight));
-      const correct = inputs.filter((d) => !isNaN(d.weight));
+      const missingIndices = inputs.filter((d) => Number.isNaN(d.weight));
+      const correct = inputs.filter((d) => !Number.isNaN(d.weight));
       const sum = correct.reduce((a, b) => a + b.weight, 0);
 
       if (sum < 100) {

@@ -189,7 +189,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
    * inserts a column at a the given position
    */
   insert(col: Column, index: number, weight = NaN) {
-    if (!isNaN(weight)) {
+    if (!Number.isNaN(weight)) {
       col.setWidth((weight / (1 - weight)) * this.getWidth());
     }
     col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
@@ -232,7 +232,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
         return newValue;
       }
       const guess = c.getWidth() * factor;
-      const w = isNaN(guess) || guess < 1 ? 0 : guess;
+      const w = Number.isNaN(guess) || guess < 1 ? 0 : guess;
       c.setWidthImpl(w);
       return w;
     });
