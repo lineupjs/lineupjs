@@ -16,6 +16,14 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
   }
 
   /**
+   * hide this column by default
+   */
+  hidden() {
+    this.desc.visible = false;
+    return this;
+  }
+
+  /**
    * column summary text (subtitle)
    */
   summary(summary: string) {
