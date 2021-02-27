@@ -179,7 +179,7 @@ export function boxplotBuilder(
 
   const push = (v: number) => {
     length += 1;
-    if (v == null || isNaN(v)) {
+    if (v == null || Number.isNaN(v)) {
       missing += 1;
       return;
     }
@@ -349,7 +349,7 @@ export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, I
 
   const push = (v: number) => {
     length += 1;
-    if (v == null || isNaN(v)) {
+    if (v == null || Number.isNaN(v)) {
       missing += 1;
       return;
     }
@@ -940,7 +940,7 @@ export function dateValueCacheBuilder(length: number) {
  * @internal
  */
 export function dateValueCache2Value(v: number) {
-  return isNaN(v) ? null : new Date(v);
+  return Number.isNaN(v) ? null : new Date(v);
 }
 
 /**

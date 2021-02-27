@@ -10,7 +10,7 @@ export function isMissingValue(v: any): boolean {
     v === 'Na' ||
     v === 'nA' ||
     v === 'NaN' ||
-    (typeof v === 'number' && isNaN(v))
+    (typeof v === 'number' && Number.isNaN(v))
   ) {
     return true;
   }
@@ -26,7 +26,7 @@ export function isMissingValue(v: any): boolean {
 }
 
 export function isUnknown(v?: number | null) {
-  return v == null || v === undefined || isNaN(v);
+  return v == null || v === undefined || Number.isNaN(v);
 }
 
 export const FIRST_IS_NAN = -1;

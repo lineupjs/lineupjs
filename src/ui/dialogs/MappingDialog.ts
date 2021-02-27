@@ -192,7 +192,7 @@ export default class MappingDialog extends ADialog {
           return;
         }
         const other = this.rawDomain[1 - i];
-        if (isNaN(v) || (i === 0 && v >= other) || (i === 1 && v <= other)) {
+        if (Number.isNaN(v) || (i === 0 && v >= other) || (i === 1 && v <= other)) {
           d.setCustomValidity(`value has to be ${i === 0 ? '<= max' : '>= min'}`);
           return;
         }

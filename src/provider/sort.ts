@@ -66,29 +66,29 @@ function createSetter(
 ): (index: number, v: ICompareValue) => void {
   switch (type) {
     case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=-Infinity 1 2 255=+Infinity
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingBinary : (v as number) + 1);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingBinary : (v as number) + 1);
     case ECompareValueType.COUNT: // uint32
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingCount : (v as number) + 1);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingCount : (v as number) + 1);
     case ECompareValueType.UINT8: // shift by one to have 0 for -Inf
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingInt8 : (v as number) + 1);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt8 : (v as number) + 1);
     case ECompareValueType.UINT16: // shift by one to have 0 for -Inf
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingInt16 : (v as number) + 1);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt16 : (v as number) + 1);
     case ECompareValueType.UINT32: // shift by one to have 0 for -Inf
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingInt32 : (v as number) + 1);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt32 : (v as number) + 1);
     case ECompareValueType.INT8:
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingInt8 : (v as number));
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt8 : (v as number));
     case ECompareValueType.INT16:
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingInt16 : (v as number));
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt16 : (v as number));
     case ECompareValueType.INT32:
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingInt32 : (v as number));
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt32 : (v as number));
     case ECompareValueType.STRING:
       return (index, v) => (lookup[index] = v == null || v === '' ? missingString : v);
     case ECompareValueType.FLOAT:
     case ECompareValueType.DOUBLE:
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingFloat : v);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingFloat : v);
     case ECompareValueType.FLOAT_ASC:
     case ECompareValueType.DOUBLE_ASC:
-      return (index, v) => (lookup[index] = v == null || isNaN(v as number) ? missingFloatAsc : v);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingFloatAsc : v);
   }
 }
 

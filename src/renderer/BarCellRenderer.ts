@@ -39,7 +39,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow) => {
         const value = col.getNumber(d);
         const missing = renderMissingDOM(n, col, d);
-        const w = isNaN(value) ? 0 : round(value * 100, 2);
+        const w = Number.isNaN(value) ? 0 : round(value * 100, 2);
         const title = col.getLabel(d);
         n.title = title;
 
@@ -59,7 +59,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         const value = col.getNumber(d);
         ctx.fillStyle = colorOf(col, d, imposer, value) || DEFAULT_COLOR;
         const w = width * value;
-        ctx.fillRect(0, 0, isNaN(w) ? 0 : w, CANVAS_HEIGHT);
+        ctx.fillRect(0, 0, Number.isNaN(w) ? 0 : w, CANVAS_HEIGHT);
       },
     };
   }

@@ -237,7 +237,7 @@ export function forEachIndices(arr: IndicesArray, callback: (value: number, i: n
  * @internal
  */
 export function chooseUIntByDataLength(dataLength?: number | null) {
-  if (dataLength == null || (typeof dataLength !== 'number' && !isNaN(dataLength))) {
+  if (dataLength == null || (typeof dataLength !== 'number' && !Number.isNaN(dataLength))) {
     return ECompareValueType.UINT32; // worst case
   }
   if (dataLength <= 255) {

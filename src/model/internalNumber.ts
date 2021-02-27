@@ -42,8 +42,8 @@ export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw'
  * @internal
  */
 export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
-  aMissing = aMissing || a == null || isNaN(a);
-  bMissing = bMissing || b == null || isNaN(b);
+  aMissing = aMissing || a == null || Number.isNaN(a);
+  bMissing = bMissing || b == null || Number.isNaN(b);
   if (aMissing) {
     //NaN are smaller
     return bMissing ? 0 : FIRST_IS_NAN;
@@ -69,7 +69,7 @@ export function isNumberIncluded(filter: INumberFilter | null, value: number) {
   if (!filter) {
     return true;
   }
-  if (isNaN(value)) {
+  if (Number.isNaN(value)) {
     return !filter.filterMissing;
   }
   return !((isFinite(filter.min) && value < filter.min) || (isFinite(filter.max) && value > filter.max));
@@ -93,7 +93,7 @@ export function restoreNumberFilter(v: INumberFilter): INumberFilter {
 export function medianIndex(rows: ISequence<IDataRow>, col: INumberColumn) {
   //return the median row
   const data = rows.map((r, i) => ({ r, i, v: col.getNumber(r) }));
-  const sorted = Array.from(data.filter((r) => !isNaN(r.v))).sort((a, b) => numberCompare(a.v, b.v));
+  const sorted = Array.from(data.filter((r) => !Number.isNaN(r.v))).sort((a, b) => numberCompare(a.v, b.v));
   const index = sorted[Math.floor(sorted.length / 2.0)];
   if (index === undefined) {
     return { index: 0, row: sorted[0]!.r }; //error case

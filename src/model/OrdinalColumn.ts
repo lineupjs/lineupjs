@@ -131,7 +131,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   getValue(row: IDataRow) {
     const v = this.getNumber(row);
-    return isNaN(v) ? null : v;
+    return Number.isNaN(v) ? null : v;
   }
 
   getCategory(row: IDataRow) {
@@ -199,7 +199,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       const value = this.getNumber(row);
-      if (isNaN(value)) {
+      if (Number.isNaN(value)) {
         return null;
       }
       return {

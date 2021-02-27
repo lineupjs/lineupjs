@@ -185,16 +185,16 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
 
   getValue(row: IDataRow) {
     const v = this.getValues(row);
-    return v.every(isNaN) ? null : v;
+    return v.every(Number.isNaN) ? null : v;
   }
 
   getValues(row: IDataRow) {
-    return this.getRawValue(row).map((d) => (isNaN(d) ? NaN : this.mapping.apply(d)));
+    return this.getRawValue(row).map((d) => (Number.isNaN(d) ? NaN : this.mapping.apply(d)));
   }
 
   iterNumber(row: IDataRow) {
     const v = this.getNumbers(row);
-    if (v.every(isNaN)) {
+    if (v.every(Number.isNaN)) {
       // missing row
       return [NaN];
     }
@@ -203,7 +203,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
 
   iterRawNumber(row: IDataRow) {
     const v = this.getRawNumbers(row);
-    if (v.every(isNaN)) {
+    if (v.every(Number.isNaN)) {
       // missing row
       return [NaN];
     }

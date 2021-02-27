@@ -135,8 +135,8 @@ export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECom
 
 /** @internal */
 function compareCategory(a: ICategory | null, b: ICategory | null) {
-  const aNull = a == null || isNaN(a.value);
-  const bNull = b == null || isNaN(b.value);
+  const aNull = a == null || Number.isNaN(a.value);
+  const bNull = b == null || Number.isNaN(b.value);
   if (aNull || a == null) {
     return bNull ? 0 : FIRST_IS_MISSING;
   }
@@ -212,7 +212,7 @@ export function isCategoryIncluded(filter: ICategoricalFilter | null, category: 
   if (filter == null) {
     return true;
   }
-  if (category == null || isNaN(category.value)) {
+  if (category == null || Number.isNaN(category.value)) {
     return !filter.filterMissing;
   }
   const filterObj = filter.filter;
