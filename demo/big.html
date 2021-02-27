@@ -17,7 +17,7 @@
         const cats = ['c1', 'c2', 'c3'];
         const cat2 = ['a1', 'a2'];
         const url = new URL(location.href);
-        const size = parseInt(url.searchParams.get('size') || '100000', 10);
+        const size = Number.parseInt(url.searchParams.get('size') || '100000', 10);
         for (let i = 0; i < size; ++i) {
           arr.push({
             label: 'Row ' + i,

@@ -108,8 +108,8 @@ export default class SelectionManager extends AEventDispatcher {
       return; // no single
     }
 
-    const startIndex = parseInt(startNode.dataset.index!, 10);
-    const endIndex = parseInt(endNode.dataset.index!, 10);
+    const startIndex = Number.parseInt(startNode.dataset.index!, 10);
+    const endIndex = Number.parseInt(endNode.dataset.index!, 10);
 
     const from = Math.min(startIndex, endIndex);
     const end = Math.max(startIndex, endIndex);
@@ -138,9 +138,9 @@ export default class SelectionManager extends AEventDispatcher {
 
   add(node: HTMLElement) {
     node.onclick = (evt) => {
-      const dataIndex = parseInt(node.dataset.i!, 10);
+      const dataIndex = Number.parseInt(node.dataset.i!, 10);
       if (evt.shiftKey) {
-        const relIndex = parseInt(node.dataset.index!, 10);
+        const relIndex = Number.parseInt(node.dataset.index!, 10);
         const ranking = node.parentElement!.dataset.ranking!;
         if (rangeSelection(this.ctx.provider, ranking, dataIndex, relIndex, evt.ctrlKey)) {
           return;
@@ -178,7 +178,7 @@ export default class SelectionManager extends AEventDispatcher {
   }
 
   update(node: HTMLElement, selectedDataIndices: { has(dataIndex: number): boolean }) {
-    const dataIndex = parseInt(node.dataset.i!, 10);
+    const dataIndex = Number.parseInt(node.dataset.i!, 10);
     if (selectedDataIndices.has(dataIndex)) {
       node.classList.add(cssClass('selected'));
     } else {

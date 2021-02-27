@@ -206,7 +206,7 @@ export function dropAble(
     if (isEdgeDnD(e)) {
       // retrieve from helper
       const base = e.dataTransfer!.getData('text/plain');
-      const id = parseInt(base.indexOf(':') >= 0 ? base.substring(0, base.indexOf(':')) : base, 10);
+      const id = Number.parseInt(base.indexOf(':') >= 0 ? base.substring(0, base.indexOf(':')) : base, 10);
       if (dndTransferStorage.has(id)) {
         const data = dndTransferStorage.get(id)!;
         dndTransferStorage.delete(id);
