@@ -19,10 +19,10 @@ jobs:
         with:
           path: |
             ./.yarn
-            ./.cache/Cypress
-          key: ${{ runner.os }}-yarn2-v2-${{ hashFiles('**/yarn.lock') }}
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-yarn2-v3-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn2-v2
+            ${{ runner.os }}-yarn2-v3
       - run: yarn install
       - run: yarn clean
       - run: yarn compile
