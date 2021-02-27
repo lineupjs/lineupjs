@@ -35,6 +35,6 @@ describe('builder', () => {
     cy.get('.le-tr[data-i="0"]').first().click();
     cy.get('.lu-stats span').should('contain', '1 selected');
     cy.get('.le-tr[data-i="0"]').first().click();
-    cy.get('.lu-stats span').should('not.contain', '1 selected');
+    cy.get('.lu-stats').should('not.contain', '1 selected');
   });
 });

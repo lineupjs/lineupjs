@@ -22,7 +22,7 @@ describe('issue373', () => {
   it('has proper width', () => {
     cy.get('.lu-header[data-type=aggregate]')
       .then((d) => d.width())
-      .should('be', 40);
+      .should('equal', 44);
 
     openMoreDialog('[data-type=categorical]', 'group');
     cy.get('.lu-dialog input[name=grouped][value=true]').click();
@@ -30,7 +30,7 @@ describe('issue373', () => {
 
     cy.get('.lu-header[data-type=aggregate]')
       .then((d) => d.width())
-      .should('be', 60);
+      .should('equal', 66);
 
     openMoreDialog('[data-type=categorical]', 'group');
     cy.get('.lu-dialog input[name=grouped][value=false]').click();
@@ -38,6 +38,6 @@ describe('issue373', () => {
 
     cy.get('.lu-header[data-type=aggregate]')
       .then((d) => d.width())
-      .should('be', 60);
+      .should('equal', 66);
   });
 });

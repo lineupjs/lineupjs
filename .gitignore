@@ -8,8 +8,8 @@ node_modules/
 /src/**/*.d.ts
 /demo/**/*.js
 /tests/**/*.js
-/cypress/integration/*.js
-/cypress/integration/*.d.ts
+/cypress/integration/**/*.js
+/cypress/integration/**/*.d.ts
 *.map
 *.css
 *.log

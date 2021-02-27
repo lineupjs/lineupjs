@@ -1,35 +1,41 @@
-import { setupLineUp, waitReady } from './utils/lineup';
+import { LineUpJSType, waitReady, withLineUp, LineUp } from './utils/lineup';
 import { generateData, DEFAULT_CATEGORIES } from './utils/data';
 
 describe('builder2', () => {
-  it('builder2', async () => {
-    // LineUpJS
-    const { LineUpJS, document } = await setupLineUp();
+  let lineup: LineUp;
+  let lineUpJS: LineUpJSType;
+  before(
+    withLineUp((l, document) => {
+      lineUpJS = l;
+      const arr = generateData();
 
-    const arr = generateData({
-      cat: 2,
-    });
-    const builder = LineUpJS.builder(arr);
+      const builder = lineUpJS.builder(arr);
 
-    // manually define columns
-    builder
-      .sidePanel(true, true)
-      .column(LineUpJS.buildStringColumn('d').label('Label').alignment(LineUpJS.EAlignment.right).width(100))
-      .column(LineUpJS.buildCategoricalColumn('cat', DEFAULT_CATEGORIES).color('green'))
-      .column(LineUpJS.buildCategoricalColumn('cat2', DEFAULT_CATEGORIES).color('blue'))
-      .column(LineUpJS.buildNumberColumn('a', [0, 10]).color('blue'));
+      // manually define columns
+      builder
+        // .sidePanel(true, true)
+        .column(lineUpJS.buildStringColumn('d').label('Label').alignment(lineUpJS.EAlignment.right).width(100))
+        .column(lineUpJS.buildCategoricalColumn('cat', DEFAULT_CATEGORIES).color('green'))
+        .column(lineUpJS.buildCategoricalColumn('cat2', DEFAULT_CATEGORIES).color('blue'))
+        .column(lineUpJS.buildNumberColumn('a', [0, 10]).color('blue'));
 
-    // and two rankings
-    const ranking = LineUpJS.buildRanking()
-      .supportTypes()
-      .allColumns() // add all columns
-      .groupBy('cat')
-      .sortBy('a', 'desc')
-      .impose('number', 'a', 'cat2'); // create composite column
+      // and two rankings
+      const ranking = lineUpJS
+        .buildRanking()
+        .supportTypes()
+        .allColumns() // add all columns
+        .groupBy('cat')
+        .sortBy('a', 'desc')
+        .impose('number', 'a', 'cat2'); // create composite column
 
-    builder.defaultRanking().ranking(ranking);
+      builder.defaultRanking().ranking(ranking);
 
-    const l = builder.build(document.body);
-    waitReady(l);
+      lineup = builder.build(document.body);
+      waitReady(lineup);
+    })
+  );
+
+  it('builder2', () => {
+    cy.get('.lu-stats strong').should('contain', '100');
   });
 });

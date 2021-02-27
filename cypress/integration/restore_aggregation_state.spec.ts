@@ -66,7 +66,9 @@ describe('restore_aggregation_state', () => {
     const data = lineup.data;
     groupByString();
 
-    cy.get('.lu-renderer-string.lu-group').first().should('be', '');
+    cy.get('.lu-renderer-string.lu-group')
+      .first()
+      .should((el) => expect(el.text().trim()).equal(''));
     cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 0, Row 3');
     cy.get('.lu-renderer-string.lu-group').last().should('contain', 'Row 2, Row 20');
 
@@ -96,7 +98,9 @@ describe('restore_aggregation_state', () => {
         expect(r.getFlatGroups().map((g) => data.getAggregationState(r, g))).to.members(old);
       });
 
-    cy.get('.lu-renderer-string.lu-group').first().should('be', '');
+    cy.get('.lu-renderer-string.lu-group')
+      .first()
+      .should((el) => expect(el.text().trim()).equal(''));
     cy.get('.lu-renderer-string.lu-group').eq(1).should('contain', 'Row 0, Row 3');
     cy.get('.lu-renderer-string.lu-group').last().should('contain', 'Row 2, Row 20');
   });
