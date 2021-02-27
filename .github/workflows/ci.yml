@@ -29,56 +29,48 @@ jobs:
       - run: yarn test:coverage
       - run: yarn docs
       - run: yarn cy:compile
-      - uses: cypress-io/github-action@v2
-        # with:
-        # start: npm run serve
-      # after the test run completes
-      # store videos and any screenshots
-      # NOTE: screenshots will be generated only if E2E test failed
-      # thus we store screenshots only on failures
-      # Alternative: create and commit an empty cypress/screenshots folder
-      # to always have something to upload
+      - run: yarn cy:junit
       - uses: actions/upload-artifact@v1
         if: failure()
         with:
-          name: cypress-screenshots
-          path: cypress/screenshots
-      # Test run video was always captured, so this action uses "always()" condition
-      - uses: actions/upload-artifact@v1
-        if: always()
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots
+            cypress/videos
+
+      - run: |
+          mkdir -p public/main
+          cp -rt public/main/ docs demo/* build/*
+          mkdir -p public/app
+          cp -rt public/app/ build/LineUpJS.* build/*.ttf build/*.eot build/*.svg
+
+          mkdir -p public_dev/develop
+          cp -rt public_dev/develop/ demo/* build/*
+          mkdir -p public_dev/app_develop
+          cp -rt public_dev/app_develop/ build/LineUpJS.* build/*.ttf build/*.eot build/*.svg
+
+      - name: Deploy Main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: upsetjs/actions-gh-pages@sgratzl
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
-          name: cypress-videos
-          path: cypress/videos
+          personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+          external_repository: lineupjs/lineup.js.org
+          publish_branch: main
+          publish_dir: ./public
+          enable_jekyll: true
+          remove_path_spec: 'main,app/LineUpJS.*,app/*.eot,app/*.ttf,app/*.svg'
 
-      # - run: |
-      #     mkdir -p public/main
-      #     cp -r build/* public/main
-      #     mv README.md public/
-      #     mkdir -p public_dev/develop
-      #     cp -r build/* public_dev/develop
-
-      # - name: Deploy Main
-      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      #   uses: upsetjs/actions-gh-pages@sgratzl
-      #   env:
-      #     ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      #   with:
-      #     personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-      #     external_repository: lineupjs/lineup.js.org
-      #     publish_branch: main
-      #     publish_dir: ./public
-      #     enable_jekyll: true
-      #     remove_path_spec: 'README.md,main'
-
-      # - name: Deploy Develop
-      #   if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-      #   uses: upsetjs/actions-gh-pages@sgratzl
-      #   env:
-      #     ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      #   with:
-      #     personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-      #     external_repository: lineupjs/lineup.js.org
-      #     publish_branch: main
-      #     publish_dir: ./public_dev
-      #     enable_jekyll: true
-      #     remove_path_spec: 'develop'
+      - name: Deploy Develop
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+        uses: upsetjs/actions-gh-pages@sgratzl
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        with:
+          personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+          external_repository: lineupjs/lineup.js.org
+          publish_branch: main
+          publish_dir: ./public_dev
+          enable_jekyll: true
+          remove_path_spec: 'develop,app_develop/LineUpJS.*,app_develop/*.eot,app_develop/*.ttf,app_develop/*.svg'
