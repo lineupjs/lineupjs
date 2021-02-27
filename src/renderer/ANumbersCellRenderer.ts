@@ -30,7 +30,7 @@ export abstract class ANumbersCellRenderer {
     const raw: number[] = [];
     // mean column)
     for (let i = 0; i < cols; ++i) {
-      const vs = data.map((d) => ({ n: d.n[i], raw: d.raw[i] })).filter((d) => !isNaN(d.n));
+      const vs = data.map((d) => ({ n: d.n[i], raw: d.raw[i] })).filter((d) => !Number.isNaN(d.n));
       if (vs.length === 0) {
         normalized.push(NaN);
         raw.push(NaN);

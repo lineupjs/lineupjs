@@ -321,7 +321,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return -1;
     }
     const v = this.index2pos[dataIndex];
-    return v != null && !isNaN(v) && v > 0 ? v : -1;
+    return v != null && !Number.isNaN(v) && v > 0 ? v : -1;
   }
 
   getOrder() {

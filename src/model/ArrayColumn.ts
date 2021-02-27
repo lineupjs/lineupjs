@@ -16,7 +16,7 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> implements IArrayCo
 
   constructor(id: string, desc: Readonly<IArrayColumnDesc<T>>) {
     super(id, desc);
-    this._dataLength = desc.dataLength == null || isNaN(desc.dataLength) ? null : desc.dataLength;
+    this._dataLength = desc.dataLength == null || Number.isNaN(desc.dataLength) ? null : desc.dataLength;
     this.originalLabels =
       desc.labels || empty(this._dataLength == null ? 0 : this._dataLength).map((_d, i) => `Column ${i}`);
   }

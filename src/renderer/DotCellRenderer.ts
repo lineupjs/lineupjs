@@ -75,7 +75,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
       data.forEach((v, i) => {
         const d = children[i] as HTMLElement;
         d.title = v.label;
-        d.style.display = isNaN(v.value) ? 'none' : null;
+        d.style.display = Number.isNaN(v.value) ? 'none' : null;
         d.style.left = `${round(v.value * 100, 2)}%`;
         // jitter
         d.style.top = l > 1 ? `${round(Math.random() * 80 + 10, 2)}%` : null;
@@ -113,7 +113,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         }
         const data = col
           .getNumbers(d)
-          .filter((vi: number) => !isNaN(vi))
+          .filter((vi: number) => !Number.isNaN(vi))
           .map((value) => ({ value, label: formatter(value), color }));
         return update(n, data);
       },
@@ -126,7 +126,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
           const v = col.getNumber(d);
           return render(ctx, [v], [color], width);
         }
-        const vs: number[] = col.getNumbers(d).filter((vi: number) => !isNaN(vi));
+        const vs: number[] = col.getNumbers(d).filter((vi: number) => !Number.isNaN(vi));
         return render(
           ctx,
           vs,
@@ -155,7 +155,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
               const color = colorOf(col, r, imposer);
               return col
                 .getNumbers(r)
-                .filter((vi: number) => !isNaN(vi))
+                .filter((vi: number) => !Number.isNaN(vi))
                 .map((value) => ({ value, color }));
             });
             return Array.from(concatSeq(vs));

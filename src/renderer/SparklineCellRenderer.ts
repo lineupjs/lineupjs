@@ -30,7 +30,7 @@ export function line(data: ISequence<number>) {
   let moveNext = true;
 
   data.forEach((d, i) => {
-    if (isNaN(d)) {
+    if (Number.isNaN(d)) {
       moveNext = true;
     } else if (moveNext) {
       p += `M${i},${1 - d} `;
