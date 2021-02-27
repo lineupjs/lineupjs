@@ -411,7 +411,7 @@ export function rangeSelection(
   const order = ranking.getOrder();
   const lookup = new Map(Array.from(order).map((d, i) => [d, i]));
   const distances = selection.map((d) => {
-    const index = lookup.has(d) ? lookup.get(d)! : Infinity;
+    const index = lookup.has(d) ? lookup.get(d)! : Number.POSITIVE_INFINITY;
     return { s: d, index, distance: Math.abs(relIndex - index) };
   });
   const nearest = distances.sort((a, b) => a.distance - b.distance)[0]!;

@@ -56,7 +56,7 @@ export function numberCompare(a: number | null, b: number | null, aMissing = fal
 
 /** @internal */
 export function noNumberFilter() {
-  return { min: -Infinity, max: Infinity, filterMissing: false };
+  return { min: Number.NEGATIVE_INFINITY, max: Number.POSITIVE_INFINITY, filterMissing: false };
 }
 
 /** @internal */
@@ -83,8 +83,8 @@ export function isDummyNumberFilter(filter: INumberFilter) {
 /** @internal */
 export function restoreNumberFilter(v: INumberFilter): INumberFilter {
   return {
-    min: v.min != null && isFinite(v.min) ? v.min : -Infinity,
-    max: v.max != null && isFinite(v.max) ? v.max : +Infinity,
+    min: v.min != null && isFinite(v.min) ? v.min : Number.NEGATIVE_INFINITY,
+    max: v.max != null && isFinite(v.max) ? v.max : Number.POSITIVE_INFINITY,
     filterMissing: v.filterMissing,
   };
 }
