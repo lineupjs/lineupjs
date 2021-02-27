@@ -125,7 +125,7 @@ export default class TaskScheduler {
     if (ww.requestIdleCallback) {
       this.taskId = ww.requestIdleCallback(this.runTasks);
     } else {
-      this.taskId = setTimeout(this.runTasks, 1);
+      this.taskId = (setTimeout(this.runTasks, 1) as unknown) as number;
     }
   }
 

@@ -27,12 +27,12 @@ export default class ImageCellRenderer implements ICellRendererFactory {
         n.style.backgroundImage = null;
         if (missing) {
           n.title = '';
-          return;
+          return undefined;
         }
         const v = col.getLink(d);
         n.title = v ? v.alt : '';
         if (!v) {
-          return;
+          return undefined;
         }
         return abortAble(loadImage(v.href)).then((image) => {
           if (typeof image === 'symbol') {

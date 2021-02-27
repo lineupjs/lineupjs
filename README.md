@@ -1,6 +1,6 @@
 # LineUp.js: Visual Analysis of Multi-Attribute Rankings
 
-[![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![CircleCI][ci-image]][ci-url] [![CircleCI][ci-image-dev]][ci-url-dev] <sup>(dev)</sup>
+[![License][bsd-image]][bsd-url] [![NPM version][npm-image]][npm-url] [![Github Actions][github-actions-image]][github-actions-url]
 
 LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.
 
@@ -25,7 +25,7 @@ LineUp is an interactive technique designed to create, visualize and explore ran
 **Installation**
 
 ```bash
-npm install --save lineupjs
+npm install lineupjs
 ```
 
 ```html
@@ -690,31 +690,26 @@ Otherwise follow the steps to setup a local development environment.
 ```bash
 git clone https://github.com/lineupjs/lineupjs.git -b develop
 cd lineupjs
-npm install
+npm i -g yarn
+yarn set version latest
+cat .yarnrc_patch.yml >> .yarnrc.yml
+yarn install
+yarn pnpify --sdk vscode
 ```
 
-**Build distribution packages**
+### Common commands
 
-```bash
-npm run build
-```
-
-**Run Linting**
-
-```bash
-npm run lint
-```
-
-**Run Unit Tests**
-
-```bash
-npm test
-```
-
-**Serve integrated webserver**
-
-```bash
-npm start
+```sh
+yarn start
+yarn clean
+yarn compile
+yarn test
+yarn lint
+yarn fix
+yarn build
+yarn docs
+yarn release
+yarn release:pre
 ```
 
 **Run E2E Tests**
@@ -724,9 +719,9 @@ via cypress.io
 Variant 1: with prebuilt LineUp
 
 ```sh
-npm run compile
-npm run build:prod
-npm run cy:open
+yarn run compile
+yarn run build:prod
+yarn run cy:open
 ```
 
 Variant 2: with webpack-dev-server
@@ -734,13 +729,13 @@ Variant 2: with webpack-dev-server
 first shell:
 
 ```sh
-npm start
+yarn start
 ```
 
 second shell:
 
 ```sh
-npm run cy:start
+yarn run cy:start
 ```
 
 **Link develop version**
@@ -749,8 +744,8 @@ In order to use the library during development in another repository, one need t
 
 ```bash
 ln -s . <target_project>/node_modules/lineupjs
-npm run compile:dev
-npm run watch
+yarn run compile:dev
+yarn run watch
 ```
 
 The development typings are needed cause during production the are located at `/src`. That causes problems cause during compilation of a dependent project the Typescript compiler will first find the original TypeScript file e.g. `config.ts` before looking for `config.d.ts`, will complain that the library owner should deliver JavaScript files and won't compile the file. Thus the typings have to lie at a different location in this scenario.
@@ -771,7 +766,5 @@ This repository was created as part of the **[The Caleydo Project](http://caleyd
 [npm-url]: https://npmjs.org/package/lineupjs
 [bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
 [bsd-url]: https://opensource.org/licenses/BSD-3-Clause
-[ci-image]: https://circleci.com/gh/lineupjs/lineupjs.svg?style=shield
-[ci-url]: https://circleci.com/gh/lineupjs/lineupjs
-[ci-image-dev]: https://circleci.com/gh/lineupjs/lineupjs/tree/develop.svg?style=shield
-[ci-url-dev]: https://circleci.com/gh/lineupjs/lineupjs/tree/develop
+[github-actions-image]: https://github.com/lineupjs/lineupengine/workflows/ci/badge.svg
+[github-actions-url]: https://github.com/lineupjs/lineupengine/actions

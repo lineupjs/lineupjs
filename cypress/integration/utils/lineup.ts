@@ -1,5 +1,6 @@
+import type { LineUp as L, Taggle as T } from '../../../build/src';
+
 export declare type LineUpJSType = typeof import('../../../build/src');
-import { LineUp as L, Taggle as T } from '../../../build/src';
 
 export declare type LineUp = L;
 export declare type Taggle = T;

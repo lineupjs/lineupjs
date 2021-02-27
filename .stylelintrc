@@ -6,6 +6,7 @@
   "extends": "stylelint-config-standard",
   "rules": {
     "prettier/prettier": true,
+    "value-list-comma-newline-after": null,
     "declaration-colon-newline-after": null,
     "at-rule-no-unknown": null,
     "at-rule-empty-line-before": null,

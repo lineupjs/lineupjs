@@ -91,11 +91,19 @@ module.exports = (_env, options) => {
         },
         {
           test: /\.(png|jpg)$/,
-          type: 'asset',
+          loader: 'url-loader',
+          options: {
+            limit: 20000, //inline <= 20kb
+            mimetype: 'application/font-woff',
+          },
         },
         {
           test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          type: 'asset',
+          loader: 'url-loader',
+          options: {
+            limit: 20000, //inline <= 20kb
+            mimetype: 'application/font-woff',
+          },
         },
         {
           test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -111,7 +119,7 @@ module.exports = (_env, options) => {
         },
         {
           test: /schema\.json$/,
-          type: 'asset/resource',
+          type: 'javascript/auto',
         },
       ],
     },

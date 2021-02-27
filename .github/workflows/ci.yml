@@ -27,36 +27,37 @@ jobs:
       - run: yarn build
       - run: yarn lint
       - run: yarn test:coverage
+      - run: yarn cy:junit
       - run: yarn docs
-      - run: |
-          mkdir -p public/main
-          cp -r build/* public/main
-          mv README.md public/
-          mkdir -p public_dev/develop
-          cp -r build/* public_dev/develop
+      # - run: |
+      #     mkdir -p public/main
+      #     cp -r build/* public/main
+      #     mv README.md public/
+      #     mkdir -p public_dev/develop
+      #     cp -r build/* public_dev/develop
 
-      - name: Deploy Main
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: upsetjs/actions-gh-pages@sgratzl
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        with:
-          personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-          external_repository: lineupjs/lineup.js.org
-          publish_branch: main
-          publish_dir: ./public
-          enable_jekyll: true
-          remove_path_spec: 'README.md,main'
+      # - name: Deploy Main
+      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      #   uses: upsetjs/actions-gh-pages@sgratzl
+      #   env:
+      #     ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      #   with:
+      #     personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+      #     external_repository: lineupjs/lineup.js.org
+      #     publish_branch: main
+      #     publish_dir: ./public
+      #     enable_jekyll: true
+      #     remove_path_spec: 'README.md,main'
 
-      - name: Deploy Develop
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-        uses: upsetjs/actions-gh-pages@sgratzl
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        with:
-          personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-          external_repository: lineupjs/lineup.js.org
-          publish_branch: main
-          publish_dir: ./public_dev
-          enable_jekyll: true
-          remove_path_spec: 'develop'
+      # - name: Deploy Develop
+      #   if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+      #   uses: upsetjs/actions-gh-pages@sgratzl
+      #   env:
+      #     ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      #   with:
+      #     personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+      #     external_repository: lineupjs/lineup.js.org
+      #     publish_branch: main
+      #     publish_dir: ./public_dev
+      #     enable_jekyll: true
+      #     remove_path_spec: 'develop'

@@ -3,8 +3,8 @@
 /docs
 /coverage
 /.gitattributes
-/.gitignore
-/.prettierignore
+.gitignore
+.prettierignore
 /LICENSE
 /.vscode
 *.svg

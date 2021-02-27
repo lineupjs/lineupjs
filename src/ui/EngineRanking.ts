@@ -164,10 +164,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const row = evt.currentTarget as HTMLElement;
       row.addEventListener('mouseleave', c.leave, PASSIVE);
       c.timer.add(
-        setTimeout(() => {
+        (setTimeout(() => {
           c.hoveredRows.add(row);
           this.updateHoveredRow(row, true);
-        }, HOVER_DELAY_SHOW_DETAIL)
+        }, HOVER_DELAY_SHOW_DETAIL) as unknown) as number
       );
     },
     leave: (evt: MouseEvent | HTMLElement) => {
