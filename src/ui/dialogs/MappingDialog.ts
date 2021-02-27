@@ -253,7 +253,7 @@ export default class MappingDialog extends ADialog {
 
   private updateLines(scale = this.scale) {
     this.forEach(`.${cssClass('dialog-mapper-details')}  > g > line[x1]`, (d: SVGLineElement) => {
-      const v = parseFloat(d.getAttribute('data-v')!);
+      const v = Number.parseFloat(d.getAttribute('data-v')!);
       d.setAttribute('x1', round(this.normalizeRaw(v), 2).toString());
       d.setAttribute('x2', round(scale.apply(v) * 100, 2).toString());
     });

@@ -60,7 +60,7 @@ export default function groupNumber(
         col.setGroupThresholds([threshold.valueAsNumber]);
         return true;
       }
-      const count = parseInt(bins.value, 10);
+      const count = Number.parseInt(bins.value, 10);
       const delta = (domain[1] - domain[0]) / count;
       let act = domain[0] + delta;
       const thresholds = [act];

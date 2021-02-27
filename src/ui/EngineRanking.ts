@@ -203,7 +203,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         this.highlight = -1;
       }
       const row = evt.currentTarget as HTMLElement;
-      const dataIndex = parseInt(row.dataset.i || '-1', 10);
+      const dataIndex = Number.parseInt(row.dataset.i || '-1', 10);
       this.events.fire(EngineRanking.EVENT_HIGHLIGHT_CHANGED, dataIndex);
     },
     leave: () => {
@@ -894,7 +894,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (isCanvas !== hover) {
       return; // good nothing to do
     }
-    const index = parseInt(row.dataset.index!, 10);
+    const index = Number.parseInt(row.dataset.index!, 10);
     this.updateRow(row, index, hover ? 'high' : 'low');
   }
 
@@ -1182,7 +1182,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   getHighlight() {
     const item = this.body.querySelector<HTMLElement>(`[data-i]:hover, [data-i].${engineCssClass('highlighted')}`);
     if (item) {
-      return parseInt(item.dataset.i!, 10);
+      return Number.parseInt(item.dataset.i!, 10);
     }
     return this.highlight;
   }
