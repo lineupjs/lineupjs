@@ -74,6 +74,14 @@ export class DataBuilder extends LineUpBuilder {
   }
 
   /**
+   * allow multiple selections
+   */
+  multiSelection() {
+    this.providerOptions.singleSelection = false;
+    return this;
+  }
+
+  /**
    * filter all rankings by all filters in LineUp
    */
   filterGlobally() {
