@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "4.1.3-SNAPSHOT",
+  "version": "4.1.3",
   "author": {
     "name": "Samuel Gratzl",
     "email": "sam@sgratzl.com",
@@ -27,11 +27,16 @@
     "url": "https://github.com/lineupjs/lineupjs/issues"
   },
   "homepage": "https://lineup.js.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lineupjs/lineupjs.git"
+  },
   "global": "LineUpJS",
   "main": "build/LineUpJS.js",
   "unpkg": "build/LineUpJS.js",
-  "module": "src/index.js",
+  "module": "build/src/index.js",
   "types": "build/src/index.d.ts",
+  "exports": "./build/src/index.js",
   "sideEffects": [
     "*.scss",
     "*.css"
@@ -43,17 +48,13 @@
   ],
   "files": [
     "build",
-    "!build/docs",
+    "src",
     "!build/tests",
-    "!build/demo",
-    "src/**/*.js",
-    "src/**/*.d.ts",
-    "src/assets",
-    "src/**/*.scss"
+    "!build/demo"
   ],
   "scripts": {
-    "clean": "rimraf build dist \"*.tgz\" && yarn run clean:compile",
-    "clean:compile": "rimraf node_modules/.cache/cache-loader  \"*.tsbuildinfo\" \"src/**/*.map\" \"src/**/*.js\" \"src/**/*.d.ts\" \"tests/**/*.js\" \"tests/**/*.map\" \"tests/**/*.d.ts\" \"demo/*.js\" \"demo/*.map\" \"demo/*.d.ts\"",
+    "clean": "rimraf build dist docs \"*.tgz\" && yarn run clean:compile",
+    "clean:compile": "rimraf build/src \"build/*.tsbuildinfo\" \"*.tsbuildinfo\" ",
     "compile": "tsc",
     "compile:dev": "tsc -p ./tsconfig.dev.json",
     "fix": "yarn run eslint:fix && yarn run prettier:write",
@@ -63,7 +64,7 @@
     "eslint:fix": "yarn run eslint --fix",
     "stylelint": "stylelint \"src/**/*.scss\"",
     "lint": "yarn run eslint && yarn run prettier && yarn run stylelint",
-    "docs": "yarn run clean:compile && typedoc --tsconfig tsconfig.dev.json --out ./build/docs/ --plugin typedoc-plugin-as-member-of src tsd.d.ts",
+    "docs": "yarn run clean:compile && typedoc --tsconfig tsconfig.dev.json --out ./docs/ --plugin typedoc-plugin-as-member-of src tsd.d.ts",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --passWithNoTests --watch",
     "test:coverage": "jest --passWithNoTests --coverage",
@@ -72,20 +73,14 @@
     "dev": "yarn run clean && yarn run compile:dev && yarn run build:dev",
     "watch": "webpack --mode development --watch --devtool source-map",
     "start": "webpack serve --mode development --devtool source-map",
-    "dist": "mkdirp dist && jszip -o ./dist/lineupjs.zip ./build",
-    "postdist": "yarn run docs && jszip -o ../dist/lineupjs_docs.zip ./build/docs",
     "prepare": "echo 'dummy prepare since prepack has no dev dependencies'",
-    "prepack": "yarn run clean && yarn run compile && yarn run build:prod",
+    "prepack": "yarn run clean && yarn run compile && yarn run build",
     "release": "release-it --disable-metrics --npm.skipChecks",
     "release:pre": "release-it --disable-metrics --npm.skipChecks --preRelease=alpha --npm.tag=next",
     "cy:open": "cypress open",
     "cy:start": "cypress open --config baseUrl=http://localhost:8080",
     "cy:run": "cypress run",
     "cy:junit": "cypress run --reporter junit --reporter-options 'mochaFile=junit-results/my-test-output.xml'"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lineupjs/lineupjs.git"
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",
@@ -109,7 +104,6 @@
     "font-awesome": "^4.7.0",
     "fork-ts-checker-webpack-plugin": "^6.1.0",
     "jest": "^26.6.3",
-    "jszip-cli": "^1.4.24",
     "mini-css-extract-plugin": "^1.3.9",
     "mkdirp": "^1.0.4",
     "mocha-junit-reporter": "^2.0.0",

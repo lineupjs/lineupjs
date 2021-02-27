@@ -9,6 +9,15 @@
 /.vscode
 *.svg
 *.tsbuildinfo
+/src/**/*.map
+/src/**/*.d.ts
+/src/**/*.js
+/tests/**/*.map
+/tests/**/*.d.ts
+/tests/**/*.js
+/demo/**/*.map
+/demo/**/*.d.ts
+/demo/**/*.js
 /.stylelintrc
 /.editorconfig
 /.yarn
@@ -16,6 +25,7 @@
 /.yarnrc.yml
 /.vscode
 *.lock
+*.tgz
 *.png
 *.txt
 *.eot

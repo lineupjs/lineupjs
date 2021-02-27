@@ -22,13 +22,12 @@
     "jsx": "react",
     "esModuleInterop": true,
     "rootDir": "./src",
+    "outDir": "build/src",
     "baseUrl": "./",
-    "noEmit": true,
     "paths": {
       "@": ["./src"],
       "*": ["*", "node_modules/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tsd.d.ts"],
-  "exclude": ["src/**/*.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tsd.d.ts"]
 }

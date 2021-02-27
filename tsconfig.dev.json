@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "target": "es6",
-    "outDir": "build/src"
+    "target": "es6"
   },
   "typedocOptions": {
     "name": "LineUpJS",

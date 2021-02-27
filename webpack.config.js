@@ -94,7 +94,6 @@ module.exports = (_env, options) => {
           loader: 'url-loader',
           options: {
             limit: 20000, //inline <= 20kb
-            mimetype: 'application/font-woff',
           },
         },
         {

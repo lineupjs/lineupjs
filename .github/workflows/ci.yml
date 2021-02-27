@@ -12,7 +12,7 @@ jobs:
           node-version: '14.x'
       - run: npm i -g yarn
       - run: yarn set version berry
-      # - run: cat .yarnrc_patch.yml >> .yarnrc.yml
+      - run: cat .yarnrc_patch.yml >> .yarnrc.yml
       - run: yarn config set checksumBehavior ignore
       - name: Cache Node.js modules
         uses: actions/cache@v2.1.4

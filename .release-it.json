@@ -1,7 +1,7 @@
 {
   "hooks": {
     "before:init": "yarn run lint && yarn test",
-    "before:release": "yarn compile && yarn run build && yarn run dist && yarn run postdist",
+    "before:release": "yarn pack && yarn docs",
     "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
   },
   "git": {
@@ -12,6 +12,6 @@
   },
   "github": {
     "release": true,
-    "assets": ["dist/*.zip"]
+    "assets": ["*.tgz"]
   }
 }
