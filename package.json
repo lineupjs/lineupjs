@@ -77,7 +77,7 @@
     "prepack": "yarn run clean && yarn run compile && yarn run build",
     "release": "release-it --disable-metrics --npm.skipChecks",
     "release:pre": "release-it --disable-metrics --npm.skipChecks --preRelease=alpha --npm.tag=next",
-    "cy:compile": "cd cypress && tsc",
+    "cy:compile": "yarn run compile && cd cypress && tsc",
     "cy:clean": "rimraf \"cypress/*.tsbuildinfo\" \"cypress/integration/**/*.+(js|d.ts)\"",
     "cy:open": "cypress open",
     "cy:start": "cypress open --config baseUrl=http://localhost:8080",
