@@ -31,7 +31,7 @@ jobs:
       - run: yarn cy:compile
       - uses: cypress-io/github-action@v2
         # with:
-          # start: npm run serve
+        # start: npm run serve
       # after the test run completes
       # store videos and any screenshots
       # NOTE: screenshots will be generated only if E2E test failed
