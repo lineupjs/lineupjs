@@ -149,12 +149,11 @@ function interactiveSummary(
       if (!updateFilter) {
         updateFilter = initFilter(node, fContext);
       }
-      return context.tasks.summaryNumberStats(col, true).then((r) => {
+      return context.tasks.summaryNumberStats(col).then((r) => {
         if (typeof r === 'symbol') {
           return;
         }
         const { summary, data } = r;
-
 
         updateFilter(data ? data.missing : summary ? summary.missing : 0, createFilterInfo(col));
 
