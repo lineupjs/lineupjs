@@ -117,8 +117,8 @@ export default class MultiLevelCellRenderer
     this.title = this.stacked ? 'Stacked Bar' : 'Nested';
   }
 
-  canRender(col: Column, mode: ERenderMode): boolean {
-    return isMultiLevelColumn(col) && mode !== ERenderMode.SUMMARY;
+  canRender(col: Column): boolean {
+    return isMultiLevelColumn(col);
   }
 
   create(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer): ICellRenderer {

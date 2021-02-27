@@ -130,7 +130,9 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   }
 
   private updateNested(wrapper: HTMLElement, r: HTMLElement | IAsyncUpdate<HTMLElement>) {
-    const sub = this.mc.children;
+    // hide the children when not the default summary is shown = which is none
+    const sub = this.mc.getSummaryRenderer() !== this.mc.desc.summaryRenderer ? [] : this.mc.children;
+
     this.matchChildren(wrapper, sub);
 
     const children = Array.from(wrapper.children) as HTMLElement[];

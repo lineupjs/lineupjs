@@ -74,7 +74,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       integrateDefaults(desc, {
         renderer: 'stack',
         groupRenderer: 'stack',
-        summaryRenderer: 'default',
+        summaryRenderer: 'stack',
       })
     );
 
