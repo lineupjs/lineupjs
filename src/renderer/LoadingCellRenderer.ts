@@ -12,7 +12,7 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
     // no typing because ICellRenderer would not be assignable to IGroupCellRenderer and ISummaryRenderer
     return {
       template: `<div>Loading &hellip;</div>`,
-      update: noop,
+      update: noop as () => void,
     };
   }
 

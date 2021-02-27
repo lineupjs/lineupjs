@@ -77,10 +77,12 @@
     "prepack": "yarn run clean && yarn run compile && yarn run build",
     "release": "release-it --disable-metrics --npm.skipChecks",
     "release:pre": "release-it --disable-metrics --npm.skipChecks --preRelease=alpha --npm.tag=next",
+    "cy:compile": "cd cypress && tsc",
+    "cy:clean": "rimraf \"cypress/*.tsbuildinfo\" \"cypress/integration/**/*.+(js|d.ts)\"",
     "cy:open": "cypress open",
     "cy:start": "cypress open --config baseUrl=http://localhost:8080",
-    "cy:run": "cypress run",
-    "cy:junit": "cypress run --reporter junit --reporter-options 'mochaFile=junit-results/my-test-output.xml'"
+    "cy:run": "yarn run cy:compile && cypress run",
+    "cy:junit": "yarn run cy:compile && cypress run --reporter junit --reporter-options 'mochaFile=junit-results/my-test-output.xml'"
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",
