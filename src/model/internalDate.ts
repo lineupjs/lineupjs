@@ -150,7 +150,7 @@ export function toDateGroup(grouper: IDateGrouper, value: Date): { value: number
         // %j = day of year
         const v = timeFormat('%j')(value);
         return {
-          value: parseInt(v, 10),
+          value: Number.parseInt(v, 10),
           name: v,
         };
       }

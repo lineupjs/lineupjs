@@ -332,7 +332,7 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
   const shortCuts = actions.filter((d) => d.node.dataset.a === 'o');
   const hybrids = actions.filter((d) => d.node.dataset.a === 's');
   const moreIcon = actions.find((d) => d.node.dataset.a === 'm');
-  const moreEntries = moreIcon ? parseInt(moreIcon.node.dataset.m!, 10) : 0;
+  const moreEntries = moreIcon ? Number.parseInt(moreIcon.node.dataset.m!, 10) : 0;
   const needMore = moreEntries > hybrids.length;
 
   let total = actions.reduce((a, b) => a + b.width, 0);

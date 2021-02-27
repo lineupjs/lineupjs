@@ -67,7 +67,7 @@ export default class CutOffHierarchyDialog extends ADialog {
     const newNodeIndex = this.innerNodePaths.indexOf(newNode);
     const node = this.innerNodes[newNodeIndex];
     const maxDepthText = this.findInput('input[type="number"]').value;
-    const maxDepth = maxDepthText === '' ? Number.POSITIVE_INFINITY : parseInt(maxDepthText, 10);
+    const maxDepth = maxDepthText === '' ? Number.POSITIVE_INFINITY : Number.parseInt(maxDepthText, 10);
     this.column.setCutOff({ node, maxDepth });
     return true;
   }
