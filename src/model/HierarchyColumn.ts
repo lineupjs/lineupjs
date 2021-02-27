@@ -76,7 +76,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   readonly hierarchy: Readonly<ICategoryInternalNode>;
 
   private currentNode: Readonly<ICategoryInternalNode>;
-  private currentMaxDepth = Infinity;
+  private currentMaxDepth = Number.POSITIVE_INFINITY;
   private currentLeaves: Readonly<ICategoryInternalNode>[] = [];
   private readonly currentLeavesNameCache = new Map<string, Readonly<ICategoryInternalNode>>();
   private readonly currentLeavesPathCache = new Map<string, Readonly<ICategoryInternalNode>>();
@@ -236,7 +236,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   setCutOff(value: ICutOffNode) {
-    const maxDepth = value.maxDepth == null ? Infinity : value.maxDepth;
+    const maxDepth = value.maxDepth == null ? Number.POSITIVE_INFINITY : value.maxDepth;
     if (this.currentNode === value.node && this.currentMaxDepth === maxDepth) {
       return;
     }
@@ -348,7 +348,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 }
 
-function computeLeaves(node: ICategoryInternalNode, maxDepth = Infinity) {
+function computeLeaves(node: ICategoryInternalNode, maxDepth = Number.POSITIVE_INFINITY) {
   const leaves: ICategoryInternalNode[] = [];
   //depth first
   const visit = (node: ICategoryInternalNode, depth: number) => {

@@ -191,7 +191,7 @@ export default class Hierarchy {
       last.querySelector<HTMLElement>('i[title=Sort]')!.onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
-        click(s, Infinity);
+        click(s, Number.POSITIVE_INFINITY);
       };
     };
 
@@ -232,7 +232,7 @@ export default class Hierarchy {
       last.querySelector<HTMLElement>('i[title="Sort Group"]')!.onclick = (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
-        click(s, Infinity);
+        click(s, Number.POSITIVE_INFINITY);
       };
     };
 

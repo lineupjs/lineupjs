@@ -65,7 +65,7 @@ function createSetter(
   missingCount: number
 ): (index: number, v: ICompareValue) => void {
   switch (type) {
-    case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=-Infinity 1 2 255=+Infinity
+    case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=Number.NEGATIVE_INFINITY 1 2 255=Number.POSITIVE_INFINITY
       return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingBinary : (v as number) + 1);
     case ECompareValueType.COUNT: // uint32
       return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingCount : (v as number) + 1);
