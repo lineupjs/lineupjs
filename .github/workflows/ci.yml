@@ -17,10 +17,12 @@ jobs:
       - name: Cache Node.js modules
         uses: actions/cache@v2.1.4
         with:
-          path: ./.yarn
-          key: ${{ runner.os }}-yarn2-${{ hashFiles('**/yarn.lock') }}
+          path: |
+            ./.yarn
+            ./.cache/Cypress
+          key: ${{ runner.os }}-yarn2-v2-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn2-
+            ${{ runner.os }}-yarn2-v2
       - run: yarn install
       - run: yarn clean
       - run: yarn compile
