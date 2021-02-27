@@ -349,13 +349,13 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   setFilter(value: INumberFilter | null) {
-    value = value || { min: -Infinity, max: +Infinity, filterMissing: false };
+    value = value || { min: Number.NEGATIVE_INFINITY, max: Number.POSITIVE_INFINITY, filterMissing: false };
     if (isEqualNumberFilter(value, this.currentFilter, this.filterAccuracy)) {
       return;
     }
     const bak = this.getFilter();
-    this.currentFilter.min = isUnknown(value.min) ? -Infinity : value.min;
-    this.currentFilter.max = isUnknown(value.max) ? Infinity : value.max;
+    this.currentFilter.min = isUnknown(value.min) ? Number.NEGATIVE_INFINITY : value.min;
+    this.currentFilter.max = isUnknown(value.max) ? Number.POSITIVE_INFINITY : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
     this.fire(
       [NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],

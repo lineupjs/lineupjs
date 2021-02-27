@@ -119,12 +119,12 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     const minValue = min(data, (d) => {
       const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'min');
-      return vs.length === 0 ? Infinity : min(vs);
+      return vs.length === 0 ? Number.POSITIVE_INFINITY : min(vs);
     });
     const maxValue = max(data, (d) => {
       const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'max');
-      return vs.length === 0 ? -Infinity : max(vs);
+      return vs.length === 0 ? Number.NEGATIVE_INFINITY : max(vs);
     });
     return [minValue, maxValue];
   }
