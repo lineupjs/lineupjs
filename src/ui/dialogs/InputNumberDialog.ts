@@ -37,9 +37,7 @@ export default class InputNumberDialog extends APopup {
      <input type="number" value="${Number.isNaN(o.value) ? '' : String(o.value)}" required autofocus placeholder="${
         o.label ? o.label : 'enter number'
       }" ${Number.isNaN(o.min) ? '' : ` min="${o.min}"`} ${Number.isNaN(o.max) ? '' : ` max="${o.max}"`} step="${
-        
         o.step
-      
       }">
     `
     );
