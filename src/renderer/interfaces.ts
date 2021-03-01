@@ -1,8 +1,23 @@
 import { IAbortAblePromise } from 'lineupengine';
-import { Column, IDataRow, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn } from '../model';
+import {
+  Column,
+  IDataRow,
+  IOrderedGroup,
+  INumberColumn,
+  ICategoricalLikeColumn,
+  IDateColumn,
+  StringColumn,
+} from '../model';
 import { IDataProvider } from '../provider';
 import DialogManager from '../ui/dialogs/DialogManager';
-import { ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics } from '../internal';
+import {
+  ISequence,
+  IDateStatistics,
+  ICategoricalStatistics,
+  IAdvancedBoxPlotData,
+  IStatistics,
+  IStringStatistics,
+} from '../internal';
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
@@ -102,6 +117,10 @@ export interface IRenderTasks {
     col: Column & IDateColumn,
     group: IOrderedGroup
   ): IRenderTask<{ group: IDateStatistics; summary: IDateStatistics; data: IDateStatistics }>;
+  groupStringStats(
+    col: StringColumn,
+    group: IOrderedGroup
+  ): IRenderTask<{ group: IStringStatistics; summary: IStringStatistics; data: IStringStatistics }>;
 
   summaryBoxPlotStats(
     col: Column & INumberColumn,
@@ -115,6 +134,7 @@ export interface IRenderTasks {
     col: Column & ICategoricalLikeColumn
   ): IRenderTask<{ summary: ICategoricalStatistics; data: ICategoricalStatistics }>;
   summaryDateStats(col: Column & IDateColumn): IRenderTask<{ summary: IDateStatistics; data: IDateStatistics }>;
+  summaryStringStats(col: StringColumn): IRenderTask<{ summary: IStringStatistics; data: IStringStatistics }>;
 }
 
 /**

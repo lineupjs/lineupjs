@@ -10,6 +10,7 @@ import {
   ICategoricalStatistics,
   ICategoricalBin,
   IDateHistGranularity,
+  IStringStatistics,
 } from './mathInterfaces';
 
 /**
@@ -134,7 +135,7 @@ function pushAll<T>(push: (v: T) => void) {
       vs.forEach(push);
       return;
     }
-    // tslint:disable-next-line:prefer-for-of
+
     for (let j = 0; j < vs.length; ++j) {
       push(vs[j]);
     }
@@ -228,7 +229,7 @@ export function boxplotBuilder(
     let outlier: number[] = [];
     // look for the closest value which is bigger than the computed left
     let whiskerLow = left;
-    // tslint:disable-next-line:prefer-for-of
+
     for (let i = 0; i < valid; ++i) {
       const v = s[i];
       if (left < v) {
@@ -281,7 +282,7 @@ export function boxplotBuilder(
 
   const buildArr = (vs: Float32Array) => {
     const s = vs.slice().sort();
-    // tslint:disable-next-line:prefer-for-of
+
     for (let j = 0; j < vs.length; ++j) {
       push(vs[j]);
     }
@@ -554,8 +555,8 @@ export function dateStatsBuilder(template?: IDateStatistics): IBuilder<Date | nu
 export function categoricalStatsBuilder(
   categories: { name: string }[]
 ): IBuilder<{ name: string } | null, ICategoricalStatistics> {
-  const m = new Map<string, number>();
-  categories.forEach((cat) => m.set(cat.name, 0));
+  const m = new Map<string, ICategoricalBin>();
+  categories.forEach((cat) => m.set(cat.name, { cat: cat.name, count: 0 }));
 
   let missing = 0;
   let count = 0;
@@ -565,12 +566,17 @@ export function categoricalStatsBuilder(
     if (v == null) {
       missing += 1;
     } else {
-      m.set(v.name, (m.get(v.name) || 0) + 1);
+      const entry = m.get(v.name);
+      if (entry) {
+        entry.count++;
+      } else {
+        m.set(v.name, { cat: v.name, count: 1 });
+      }
     }
   };
 
   const build = () => {
-    const entries: ICategoricalBin[] = categories.map((d) => ({ cat: d.name, count: m.get(d.name)! }));
+    const entries: ICategoricalBin[] = categories.map((d) => m.get(d.name)!);
     const maxBin = entries.reduce((a, b) => Math.max(a, b.count), Number.NEGATIVE_INFINITY);
 
     return {
@@ -578,6 +584,50 @@ export function categoricalStatsBuilder(
       hist: entries,
       count,
       missing,
+    };
+  };
+
+  return { push, build, pushAll: pushAll(push) };
+}
+
+/**
+ * computes a categorical histogram
+ * @param arr the data array
+ * @param categories the list of known categories
+ * @returns {{hist: {cat: string, y: number}[]}}
+ * @internal
+ */
+export function stringStatsBuilder(topN: number): IBuilder<string | null, IStringStatistics> {
+  let missing = 0;
+  let count = 0;
+  const m = new Map<string, { value: string; count: number }>();
+
+  const push = (v: string | null) => {
+    count += 1;
+    if (v == null) {
+      missing += 1;
+    } else {
+      const entry = m.get(v);
+      if (entry) {
+        entry.count++;
+      } else {
+        m.set(v, { value: v, count: 1 });
+      }
+    }
+  };
+
+  const build = (): IStringStatistics => {
+    const byFrequency = Array.from(m.values()).sort((a, b) => {
+      if (a.count === b.count) {
+        return a.value.localeCompare(b.value);
+      }
+      return b.count - a.count;
+    });
+    return {
+      count,
+      missing,
+      topN: byFrequency.slice(0, Math.min(byFrequency.length, topN)),
+      unique: m.size,
     };
   };
 
@@ -775,7 +825,7 @@ export interface IStatsWorkerMessage extends IWorkerMessage {
    * reference key for the data indices
    */
   refData: string;
-  data?: UIntTypedArray | Float32Array | Int32Array | Float64Array;
+  data?: UIntTypedArray | Float32Array | Int32Array | Float64Array | readonly string[];
 }
 
 /**
@@ -818,7 +868,7 @@ export interface ISetRefMessageRequest {
   uid: number;
 
   ref: string;
-  data: UIntTypedArray | Float32Array | Int32Array | Float64Array | null;
+  data: UIntTypedArray | Float32Array | Int32Array | Float64Array | readonly string[] | null;
 }
 
 /**
@@ -924,6 +974,32 @@ export interface ICategoricalStatsMessageResponse {
 }
 
 /**
+ * @internal
+ */
+export interface IStringStatsMessageRequest {
+  type: 'stringStats';
+  uid: number;
+
+  refIndices: string | null;
+  indices?: UIntTypedArray;
+
+  refData: string;
+  data?: readonly string[];
+
+  topN: number;
+}
+
+/**
+ * @internal
+ */
+export interface IStringStatsMessageResponse {
+  type: 'stringStats';
+  uid: number;
+
+  stats: IStringStatistics;
+}
+
+/**
  * helper to build a value cache for dates, use dateValueCache2Value to convert back
  * @internal
  */
@@ -968,10 +1044,10 @@ export function categoricalValueCache2Value<T extends { name: string }>(v: numbe
 
 function sortWorkerMain() {
   // eslint-disable-next-line no-restricted-globals
-  const wself = (self as any) as IPoorManWorkerScope;
+  const workerSelf = (self as any) as IPoorManWorkerScope;
 
   // stored refs to avoid duplicate copy
-  const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array | Float64Array>();
+  const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array | Float64Array | readonly string[]>();
 
   const sort = (r: ISortMessageRequest) => {
     if (r.sortOrders) {
@@ -979,7 +1055,7 @@ function sortWorkerMain() {
     }
     const order = r.indices;
 
-    wself.postMessage(
+    workerSelf.postMessage(
       {
         type: r.type,
         uid: r.uid,
@@ -1011,7 +1087,9 @@ function sortWorkerMain() {
     }
   };
 
-  const resolveRefs = <T extends UIntTypedArray | Float32Array | Int32Array>(r: IStatsWorkerMessage) => {
+  const resolveRefs = <T extends UIntTypedArray | Float32Array | Int32Array | readonly string[]>(
+    r: IStatsWorkerMessage
+  ) => {
     // resolve refs or save the new data
 
     const data: T = r.data ? ((r.data as any) as T) : ((refs.get(r.refData)! as any) as T);
@@ -1030,18 +1108,16 @@ function sortWorkerMain() {
 
     const b = dateStatsBuilder(r.template);
     if (indices) {
-      // tslint:disable-next-line:prefer-for-of
       for (let ii = 0; ii < indices.length; ++ii) {
         const v = data[indices[ii]];
         b.push(dateValueCache2Value(v));
       }
     } else {
-      // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < data.length; ++i) {
         b.push(dateValueCache2Value(data[i]));
       }
     }
-    wself.postMessage({
+    workerSelf.postMessage({
       type: r.type,
       uid: r.uid,
       stats: b.build(),
@@ -1054,22 +1130,41 @@ function sortWorkerMain() {
     const cats = r.categories.map((name) => ({ name }));
     const b = categoricalStatsBuilder(cats);
     if (indices) {
-      // tslint:disable-next-line:prefer-for-of
       for (let ii = 0; ii < indices.length; ++ii) {
         b.push(categoricalValueCache2Value(data[indices[ii]], cats));
       }
     } else {
-      // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < data.length; ++i) {
         b.push(categoricalValueCache2Value(data[i], cats));
       }
     }
 
-    wself.postMessage({
+    workerSelf.postMessage({
       type: r.type,
       uid: r.uid,
       stats: b.build(),
     } as ICategoricalStatsMessageResponse);
+  };
+
+  const stringStats = (r: IStringStatsMessageRequest) => {
+    const { data, indices } = resolveRefs<readonly string[]>(r);
+
+    const b = stringStatsBuilder(r.topN ?? 10);
+    if (indices) {
+      for (let ii = 0; ii < indices.length; ++ii) {
+        b.push(data[indices[ii]]);
+      }
+    } else {
+      for (let i = 0; i < data.length; ++i) {
+        b.push(data[i]);
+      }
+    }
+
+    workerSelf.postMessage({
+      type: r.type,
+      uid: r.uid,
+      stats: b.build(),
+    } as IStringStatsMessageResponse);
   };
 
   const numberStats = (r: INumberStatsMessageRequest) => {
@@ -1078,18 +1173,16 @@ function sortWorkerMain() {
     const b = normalizedStatsBuilder(r.numberOfBins);
 
     if (indices) {
-      // tslint:disable-next-line:prefer-for-of
       for (let ii = 0; ii < indices.length; ++ii) {
         b.push(data[indices[ii]]);
       }
     } else {
-      // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < data.length; ++i) {
         b.push(data[i]);
       }
     }
 
-    wself.postMessage({
+    workerSelf.postMessage({
       type: r.type,
       uid: r.uid,
       stats: b.build(),
@@ -1105,14 +1198,13 @@ function sortWorkerMain() {
     if (!indices) {
       stats = b.buildArr(data);
     } else {
-      // tslint:disable-next-line:prefer-for-of
       for (let ii = 0; ii < indices.length; ++ii) {
         b.push(data[indices[ii]]);
       }
       stats = b.build();
     }
 
-    wself.postMessage({
+    workerSelf.postMessage({
       type: r.type,
       uid: r.uid,
       stats,
@@ -1128,9 +1220,10 @@ function sortWorkerMain() {
     categoricalStats,
     numberStats,
     boxplotStats,
+    stringStats,
   };
 
-  wself.addEventListener('message', (evt) => {
+  workerSelf.addEventListener('message', (evt) => {
     const r = evt.data;
     if (typeof r.uid !== 'number' || typeof r.type !== 'string') {
       return;
@@ -1157,6 +1250,7 @@ export function createWorkerBlob() {
     pushDateHist.toString(),
     dateStatsBuilder.toString(),
     categoricalStatsBuilder.toString(),
+    stringStatsBuilder.toString(),
     createIndexArray.toString(),
     asc.toString(),
     desc.toString(),

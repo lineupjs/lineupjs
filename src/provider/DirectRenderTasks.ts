@@ -8,6 +8,7 @@ import Column, {
   IDateColumn,
   ICategoricalLikeColumn,
   ICompareValue,
+  StringColumn,
 } from '../model';
 import { ARenderTasks, IRenderTaskExecutor, taskNow } from './tasks';
 import { ISequence, toIndexArray, sortComplex, getNumberOfBins } from '../internal';
@@ -177,6 +178,15 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     });
   }
 
+  groupStringStats(col: StringColumn, group: IOrderedGroup) {
+    const { summary, data } = this.summaryStringStatsD(col);
+    return taskNow({
+      group: this.stringStatsBuilder(group.order, col, summary).next(Number.POSITIVE_INFINITY as any).value!,
+      summary,
+      data,
+    });
+  }
+
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
     return taskNow(this.summaryBoxPlotStatsD(col, raw));
   }
@@ -191,6 +201,10 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
 
   summaryDateStats(col: Column & IDateColumn) {
     return taskNow(this.summaryDateStatsD(col));
+  }
+
+  summaryStringStats(col: StringColumn) {
+    return taskNow(this.summaryStringStatsD(col));
   }
 
   private summaryNumberStatsD(col: Column & INumberColumn, raw?: boolean) {
@@ -260,6 +274,23 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
+  private summaryStringStatsD(col: StringColumn) {
+    return this.cached(
+      'summary',
+      col,
+      () => {
+        const ranking = col.findMyRanker()!.getOrder();
+        const data = this.stringDateStats(col);
+        return {
+          summary: this.stringStatsBuilder(ranking, col, data).next(Number.POSITIVE_INFINITY as any).value!,
+          data,
+        };
+      },
+      '',
+      col.findMyRanker()!.getOrderLength() === 0
+    );
+  }
+
   private cached<T>(prefix: string, col: Column, creator: () => T, suffix = '', dontCache = false): T {
     const key = `${col.id}:${prefix}${suffix}`;
     if (this.cache.has(key)) {
@@ -308,6 +339,14 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
       'data',
       col,
       () => this.dateStatsBuilder(null, col).next(Number.POSITIVE_INFINITY as any).value!
+    );
+  }
+
+  stringDateStats(col: StringColumn) {
+    return this.cached(
+      'data',
+      col,
+      () => this.stringStatsBuilder(null, col).next(Number.POSITIVE_INFINITY as any).value!
     );
   }
 
