@@ -436,6 +436,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     const key = `${col.id}:a:group:${group.name}`;
     return this.chain(key, this.summaryStringStats(col), ({ summary, data }) => {
       const ranking = col.findMyRanker()!;
+      const topN = summary.topN.map((d) => d.value);
       if (this.valueCacheData.has(col.id) && group.order.length > 0) {
         // web worker version
         return () =>
@@ -450,7 +451,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
             )
             .then((group) => ({ group, summary, data }));
       }
-      return this.stringStatsBuilder(group.order, col, (group) => ({ group, summary, data }));
+      return this.stringStatsBuilder(group.order, col, topN, (group) => ({ group, summary, data }));
     });
   }
 
@@ -560,7 +561,10 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
             )
             .then((summary) => ({ summary, data }));
       }
-      return this.stringStatsBuilder(order ? order : ranking.getOrder(), col, (summary) => ({ summary, data }));
+      return this.stringStatsBuilder(order ? order : ranking.getOrder(), col, undefined, (summary) => ({
+        summary,
+        data,
+      }));
     });
   }
 

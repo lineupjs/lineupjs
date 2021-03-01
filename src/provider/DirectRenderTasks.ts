@@ -11,7 +11,17 @@ import Column, {
   StringColumn,
 } from '../model';
 import { ARenderTasks, IRenderTaskExecutor, taskNow } from './tasks';
-import { ISequence, toIndexArray, sortComplex, getNumberOfBins } from '../internal';
+import {
+  ISequence,
+  toIndexArray,
+  sortComplex,
+  getNumberOfBins,
+  IDateStatistics,
+  IStringStatistics,
+  ICategoricalStatistics,
+  IAdvancedBoxPlotData,
+  IStatistics,
+} from '../internal';
 import { CompareLookup } from './sort';
 import { IRenderTask } from '..';
 
@@ -181,7 +191,11 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
   groupStringStats(col: StringColumn, group: IOrderedGroup) {
     const { summary, data } = this.summaryStringStatsD(col);
     return taskNow({
-      group: this.stringStatsBuilder(group.order, col).next(Number.POSITIVE_INFINITY as any).value!,
+      group: this.stringStatsBuilder(
+        group.order,
+        col,
+        summary.topN.map((d) => d.value)
+      ).next(Number.POSITIVE_INFINITY as any).value!,
       summary,
       data,
     });
@@ -207,7 +221,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     return taskNow(this.summaryStringStatsD(col));
   }
 
-  private summaryNumberStatsD(col: Column & INumberColumn, raw?: boolean) {
+  private summaryNumberStatsD(col: Column & INumberColumn, raw?: boolean): { summary: IStatistics; data: IStatistics } {
     return this.cached(
       'summary',
       col,
@@ -226,7 +240,10 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  private summaryBoxPlotStatsD(col: Column & INumberColumn, raw?: boolean) {
+  private summaryBoxPlotStatsD(
+    col: Column & INumberColumn,
+    raw?: boolean
+  ): { summary: IAdvancedBoxPlotData; data: IAdvancedBoxPlotData } {
     return this.cached(
       'summary',
       col,
@@ -240,7 +257,9 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  private summaryCategoricalStatsD(col: Column & ICategoricalLikeColumn) {
+  private summaryCategoricalStatsD(
+    col: Column & ICategoricalLikeColumn
+  ): { summary: ICategoricalStatistics; data: ICategoricalStatistics } {
     return this.cached(
       'summary',
       col,
@@ -257,7 +276,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  private summaryDateStatsD(col: Column & IDateColumn) {
+  private summaryDateStatsD(col: Column & IDateColumn): { summary: IDateStatistics; data: IDateStatistics } {
     return this.cached(
       'summary',
       col,
@@ -274,15 +293,15 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  private summaryStringStatsD(col: StringColumn) {
+  private summaryStringStatsD(col: StringColumn): { summary: IStringStatistics; data: IStringStatistics } {
     return this.cached(
       'summary',
       col,
       () => {
         const ranking = col.findMyRanker()!.getOrder();
-        const data = this.stringDateStats(col);
+        const data = this.dataStringStats(col);
         return {
-          summary: this.stringStatsBuilder(ranking, col).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.stringStatsBuilder(ranking, col, undefined).next(Number.POSITIVE_INFINITY as any).value!,
           data,
         };
       },
@@ -303,7 +322,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     return s;
   }
 
-  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
+  dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean): IAdvancedBoxPlotData {
     return this.cached(
       'data',
       col,
@@ -312,7 +331,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
+  dataNumberStats(col: Column & INumberColumn, raw?: boolean): IStatistics {
     return this.cached(
       'data',
       col,
@@ -324,7 +343,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  dataCategoricalStats(col: Column & ICategoricalLikeColumn) {
+  dataCategoricalStats(col: Column & ICategoricalLikeColumn): ICategoricalStatistics {
     return this.cached(
       'data',
 
@@ -334,7 +353,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  dataDateStats(col: Column & IDateColumn) {
+  dataDateStats(col: Column & IDateColumn): IDateStatistics {
     return this.cached(
       'data',
       col,
@@ -342,7 +361,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  stringDateStats(col: StringColumn) {
+  dataStringStats(col: StringColumn): IStringStatistics {
     return this.cached(
       'data',
       col,

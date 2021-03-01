@@ -591,16 +591,18 @@ export function categoricalStatsBuilder(
 }
 
 /**
- * computes a categorical histogram
- * @param arr the data array
- * @param categories the list of known categories
- * @returns {{hist: {cat: string, y: number}[]}}
+ * computes a string statistics
  * @internal
  */
-export function stringStatsBuilder(topN: number): IBuilder<string | null, IStringStatistics> {
+export function stringStatsBuilder(topN: number | readonly string[]): IBuilder<string | null, IStringStatistics> {
   let missing = 0;
   let count = 0;
   const m = new Map<string, { value: string; count: number }>();
+  if (Array.isArray(topN)) {
+    for (const t of topN) {
+      m.set(t, { value: t, count: 0 });
+    }
+  }
 
   const push = (v: string | null) => {
     count += 1;
@@ -617,16 +619,18 @@ export function stringStatsBuilder(topN: number): IBuilder<string | null, IStrin
   };
 
   const build = (): IStringStatistics => {
-    const byFrequency = Array.from(m.values()).sort((a, b) => {
-      if (a.count === b.count) {
-        return a.value.localeCompare(b.value);
-      }
-      return b.count - a.count;
-    });
+    const byFrequency = Array.isArray(topN)
+      ? topN.map((d) => m.get(d)!)
+      : Array.from(m.values()).sort((a, b) => {
+          if (a.count === b.count) {
+            return a.value.localeCompare(b.value);
+          }
+          return b.count - a.count;
+        });
     return {
       count,
       missing,
-      topN: byFrequency.slice(0, Math.min(byFrequency.length, topN)),
+      topN: byFrequency.slice(0, Math.min(byFrequency.length, Array.isArray(topN) ? topN.length : (topN as number))),
       unique: m.size,
     };
   };
@@ -986,7 +990,7 @@ export interface IStringStatsMessageRequest {
   refData: string;
   data?: readonly string[];
 
-  topN: number;
+  topN: number | readonly string[];
 }
 
 /**

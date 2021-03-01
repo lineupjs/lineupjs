@@ -139,7 +139,7 @@ export class MultiIndices {
 const CHUNK_SIZE = 100;
 
 export interface ARenderTaskOptions {
-  stringTopNCount: number;
+  stringTopNCount: number | readonly string[];
 }
 
 export class ARenderTasks {
@@ -386,9 +386,10 @@ export class ARenderTasks {
   protected stringStatsBuilder<R = IStringStatistics>(
     order: IndicesArray | null | MultiIndices,
     col: StringColumn,
+    topN?: number | readonly string[],
     build?: (stat: IStringStatistics) => R
   ) {
-    const b = stringStatsBuilder(this.options.stringTopNCount);
+    const b = stringStatsBuilder(topN ?? this.options.stringTopNCount);
     if (order == null) {
       // build and valueCache
       let i = 0;
