@@ -181,7 +181,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
   groupStringStats(col: StringColumn, group: IOrderedGroup) {
     const { summary, data } = this.summaryStringStatsD(col);
     return taskNow({
-      group: this.stringStatsBuilder(group.order, col, summary).next(Number.POSITIVE_INFINITY as any).value!,
+      group: this.stringStatsBuilder(group.order, col).next(Number.POSITIVE_INFINITY as any).value!,
       summary,
       data,
     });
@@ -282,7 +282,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
         const ranking = col.findMyRanker()!.getOrder();
         const data = this.stringDateStats(col);
         return {
-          summary: this.stringStatsBuilder(ranking, col, data).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.stringStatsBuilder(ranking, col).next(Number.POSITIVE_INFINITY as any).value!,
           data,
         };
       },
