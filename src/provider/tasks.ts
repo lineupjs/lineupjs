@@ -12,7 +12,7 @@ import {
   ICategoricalStatistics,
   IDateStatistics,
   IStatistics,
-  normalizedStatsBuilder,
+  numberStatsBuilder,
   dateValueCache2Value,
   categoricalValueCache2Value,
   joinIndexArrays,
@@ -36,6 +36,7 @@ import {
   Ranking,
   UIntTypedArray,
   ICategory,
+  isMapAbleColumn,
 } from '../model';
 import { IRenderTask, IRenderTasks } from '../renderer';
 import { CompareLookup } from './sort';
@@ -237,14 +238,19 @@ export class ARenderTasks {
     return this.numberStatsBuilder(b, order, col, raw, build);
   }
 
-  protected normalizedStatsBuilder<R = IStatistics>(
+  protected resolveDomain(col: INumberColumn, raw: boolean): [number, number] {
+    const domain = raw && isMapAbleColumn(col) ? col.getMapping().domain : [0, 1];
+    return [domain[0], domain[domain.length - 1]];
+  }
+
+  protected statsBuilder<R = IStatistics>(
     order: IndicesArray | null | MultiIndices,
     col: INumberColumn,
     numberOfBins: number,
     raw?: boolean,
     build?: (stat: IStatistics) => R
   ) {
-    const b = normalizedStatsBuilder(numberOfBins);
+    const b = numberStatsBuilder(this.resolveDomain(col, raw ?? false), numberOfBins);
     return this.numberStatsBuilder(b, order, col, raw, build);
   }
 

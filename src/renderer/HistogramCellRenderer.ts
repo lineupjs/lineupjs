@@ -1,4 +1,4 @@
-import { normalizedStatsBuilder, IStatistics, getNumberOfBins } from '../internal';
+import { numberStatsBuilder, IStatistics, getNumberOfBins } from '../internal';
 import {
   Column,
   IDataRow,
@@ -54,7 +54,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, row)) {
           return;
         }
-        const b = normalizedStatsBuilder(guessedBins);
+        const b = numberStatsBuilder([0, 1], guessedBins);
         for (const n of col.getNumbers(row)) {
           b.push(n);
         }

@@ -151,9 +151,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     const { summary, data } = this.summaryNumberStatsD(col, raw);
     return taskNow({
-      group: this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw).next(
-        Number.POSITIVE_INFINITY as any
-      ).value!,
+      group: this.statsBuilder(group.order, col, summary.hist.length, raw).next(Number.POSITIVE_INFINITY as any).value!,
       summary,
       data,
     });
@@ -201,9 +199,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
         const ranking = col.findMyRanker()!.getOrder();
         const data = this.dataNumberStats(col, raw);
         return {
-          summary: this.normalizedStatsBuilder(ranking, col, data.hist.length, raw).next(
-            Number.POSITIVE_INFINITY as any
-          ).value!,
+          summary: this.statsBuilder(ranking, col, data.hist.length, raw).next(Number.POSITIVE_INFINITY as any).value!,
           data,
         };
       },
@@ -286,9 +282,8 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
       'data',
       col,
       () =>
-        this.normalizedStatsBuilder(null, col, getNumberOfBins(this.data.length), raw).next(
-          Number.POSITIVE_INFINITY as any
-        ).value!,
+        this.statsBuilder(null, col, getNumberOfBins(this.data.length), raw).next(Number.POSITIVE_INFINITY as any)
+          .value!,
       raw ? ':raw' : ''
     );
   }
