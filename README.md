@@ -766,5 +766,5 @@ This repository was created as part of the **[The Caleydo Project](http://caleyd
 [npm-url]: https://npmjs.org/package/lineupjs
 [bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
 [bsd-url]: https://opensource.org/licenses/BSD-3-Clause
-[github-actions-image]: https://github.com/lineupjs/lineupengine/workflows/ci/badge.svg
-[github-actions-url]: https://github.com/lineupjs/lineupengine/actions
+[github-actions-image]: https://github.com/lineupjs/lineupjs/workflows/ci/badge.svg
+[github-actions-url]: https://github.com/lineupjs/lineupjs/actions
