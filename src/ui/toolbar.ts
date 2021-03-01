@@ -35,6 +35,7 @@ import SortDialog from './dialogs/SortDialog';
 import StringFilterDialog from './dialogs/StringFilterDialog';
 import { sortMethods } from './dialogs/utils';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
+import SelectionFilterDialog from './dialogs/SelectionFilterDialog';
 import { IRankingHeaderContext, IOnClickHandler, IUIOptions, IToolbarAction, IToolbarDialogAddon } from './interfaces';
 
 interface IDialogClass {
@@ -316,6 +317,11 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
     featureLevel: 'basic',
   }),
   filterString: uiDialog('Filter &hellip;', StringFilterDialog, () => [], {
+    mode: 'menu+shortcut',
+    featureCategory: 'ranking',
+    featureLevel: 'basic',
+  }),
+  filterSelection: uiDialog('Filter &hellip;', SelectionFilterDialog, (ctx) => [ctx], {
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
