@@ -810,7 +810,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (addSupportType) {
       r.push(this.create(createAggregateDesc())!);
       r.push(this.create(createRankDesc())!);
-      if (this.options.singleSelection !== false) {
+      if (this.options.singleSelection !== true) {
         r.push(this.create(createSelectionDesc())!);
       }
     }
