@@ -691,6 +691,7 @@ Otherwise follow the steps to setup a local development environment.
 git clone https://github.com/lineupjs/lineupjs.git -b develop
 cd lineupjs
 npm i -g yarn
+yarn set version berry
 yarn set version latest
 cat .yarnrc_patch.yml >> .yarnrc.yml
 yarn install
