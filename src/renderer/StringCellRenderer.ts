@@ -122,7 +122,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
             <span>Use regular expressions</span>
           </label>
           ${filterMissingMarkup(f.filterMissing)}
-          <datalist id="${context.idPrefix}${col.id}_dl"></datalist>/form>`,
+          <datalist id="${context.idPrefix}${col.id}_dl"></datalist></form>`,
       update: (node: HTMLElement) => {
         if (!update) {
           update = StringCellRenderer.interactiveSummary(col, node);
