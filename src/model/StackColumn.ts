@@ -23,8 +23,8 @@ import { integrateDefaults } from './internal';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createStackDesc(label = 'Weighted Sum') {
-  return { type: 'stack', label };
+export function createStackDesc(label = 'Weighted Sum', showNestedSummaries = true): IStackColumnColumnDesc {
+  return { type: 'stack', label, showNestedSummaries };
 }
 
 /**
@@ -48,6 +48,14 @@ export declare function weightsChanged(previous: number[], current: number[]): v
  */
 export declare function nestedChildRatio(previous: number[], current: number[]): void;
 
+export declare type IStackColumnColumnDesc = ICompositeNumberDesc & {
+  /**
+   * show nested summaries
+   * @default true
+   */
+  showNestedSummaries?: boolean;
+};
+
 /**
  * implementation of the stacked column
  */
@@ -68,7 +76,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
    */
   private collapsed = false;
 
-  constructor(id: string, desc: ICompositeNumberDesc) {
+  constructor(id: string, desc: IStackColumnColumnDesc) {
     super(
       id,
       integrateDefaults(desc, {
@@ -141,6 +149,10 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   getCollapsed() {
     return this.collapsed;
+  }
+
+  isShowNestedSummaries() {
+    return (this.desc as IStackColumnColumnDesc).showNestedSummaries !== false;
   }
 
   get canJustAddNumbers() {

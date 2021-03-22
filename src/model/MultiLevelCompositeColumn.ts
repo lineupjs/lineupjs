@@ -32,6 +32,14 @@ export declare function collapseChanged_MC(previous: boolean, current: boolean):
  */
 export declare function nestedChildRatio_MC(previous: number, current: number): void;
 
+export declare type IMultiLevelCompositeColumnDesc = IColumnDesc & {
+  /**
+   * show nested summaries
+   * @default true
+   */
+  showNestedSummaries?: boolean;
+};
+
 @toolbar('compress', 'expand')
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
@@ -48,7 +56,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    */
   private collapsed = false;
 
-  constructor(id: string, desc: Readonly<IColumnDesc>) {
+  constructor(id: string, desc: Readonly<IMultiLevelCompositeColumnDesc>) {
     super(
       id,
       integrateDefaults(desc, {
@@ -106,6 +114,10 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
 
   getCollapsed() {
     return this.collapsed;
+  }
+
+  isShowNestedSummaries() {
+    return (this.desc as IMultiLevelCompositeColumnDesc).showNestedSummaries !== false;
   }
 
   dump(toDescRef: (desc: any) => any) {
