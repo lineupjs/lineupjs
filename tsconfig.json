@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ES5",
-    "importHelpers": true,
+    "importHelpers": false,
     "sourceMap": true,
     "lib": ["DOM", "ES2015", "es2016.array.include", "es2017.object"],
     "composite": true,
