@@ -150,7 +150,7 @@
     "d3-time-format": "^3.0.0",
     "detect-browser": "^5.2.0",
     "fast-deep-equal": "^3.1.3",
-    "lineupengine": "^2.2.0",
+    "lineupengine": "^2.3.0",
     "lodash.get": "^4.4.2",
     "popper.js": "^1.15.0",
     "reflect-metadata": "^0.1.13",

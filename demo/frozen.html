@@ -14,10 +14,19 @@
       window.onload = function () {
         const arr = [];
         const cats = ['c1', 'c2', 'c3'];
-        for (let i = 0; i < 100; ++i) {
+        for (let i = 0; i < 1000; ++i) {
           arr.push({
             s: 'Row ' + i,
             a: Math.random() * 10,
+            test1: Array(1000)
+              .fill(null)
+              .map(() => Math.random() * 10),
+            test2: Array(1000)
+              .fill(null)
+              .map(() => Math.random() * 10),
+            test3: Array(1000)
+              .fill(null)
+              .map(() => Math.random() * 10),
             cat: cats[Math.floor(Math.random() * 3)],
             d: new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
           });
