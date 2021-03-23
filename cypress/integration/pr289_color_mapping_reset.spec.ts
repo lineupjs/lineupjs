@@ -1,21 +1,23 @@
-import {withLineUp, waitReady, LineUpJSType, LineUp} from './utils/lineup';
-import {generateData} from './utils/data';
-import {openMoreDialog, closeDialog, resetDialog} from './utils/ui';
+import { withLineUp, waitReady, LineUpJSType, LineUp } from './utils/lineup';
+import { generateData } from './utils/data';
+import { openMoreDialog, closeDialog, resetDialog } from './utils/ui';
 
 describe('pr275_sort_group', () => {
   let lineup: LineUp;
   let lineUpJS: LineUpJSType;
-  before(withLineUp((l, document) => {
-    lineUpJS = l;
-    const arr = generateData({
-      string: 0,
-      number: 1,
-      date: 0,
-      cat: 0
-    });
-    lineup = lineUpJS.asLineUp(document.body, arr);
-    waitReady(lineup);
-  }));
+  before(
+    withLineUp((l, document) => {
+      lineUpJS = l;
+      const arr = generateData({
+        string: 0,
+        number: 1,
+        date: 0,
+        cat: 0,
+      });
+      lineup = lineUpJS.asLineUp(document.body, arr);
+      waitReady(lineup);
+    })
+  );
 
   function openColorMappingDialog() {
     return openMoreDialog('[data-type=number]', 'color-mapping');

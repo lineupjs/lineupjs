@@ -1,14 +1,39 @@
-import {abortAble} from 'lineupengine';
-import {getNumberOfBins, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, ISequence, ISortMessageResponse, IStatistics, lazySeq, toIndexArray, WorkerTaskScheduler, createWorkerBlob} from '../internal';
-import TaskScheduler, {ABORTED, oneShotIterator} from '../internal/scheduler';
-import Column, {ICategoricalLikeColumn, ICompareValue, IDataRow, IDateColumn, IGroup, IndicesArray, INumberColumn, IOrderedGroup, isCategoricalLikeColumn, isDateColumn, isNumberColumn, Ranking, UIntTypedArray} from '../model';
-import {IRenderTask} from '../renderer';
-import {sortDirect} from './DirectRenderTasks';
-import {CompareLookup} from './sort';
-import {ARenderTasks, IRenderTaskExectutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow} from './tasks';
+import { abortAble } from 'lineupengine';
+import {
+  getNumberOfBins,
+  IAdvancedBoxPlotData,
+  ICategoricalStatistics,
+  IDateStatistics,
+  ISequence,
+  ISortMessageResponse,
+  IStatistics,
+  lazySeq,
+  toIndexArray,
+  WorkerTaskScheduler,
+  createWorkerBlob,
+} from '../internal';
+import TaskScheduler, { ABORTED, oneShotIterator } from '../internal/scheduler';
+import Column, {
+  ICategoricalLikeColumn,
+  ICompareValue,
+  IDataRow,
+  IDateColumn,
+  IGroup,
+  IndicesArray,
+  INumberColumn,
+  IOrderedGroup,
+  isCategoricalLikeColumn,
+  isDateColumn,
+  isNumberColumn,
+  Ranking,
+  UIntTypedArray,
+} from '../model';
+import { IRenderTask } from '../renderer';
+import { sortDirect } from './DirectRenderTasks';
+import { CompareLookup } from './sort';
+import { ARenderTasks, IRenderTaskExecutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow } from './tasks';
 
-export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExectutor {
-
+export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExecutor {
   private readonly cache = new Map<string, IRenderTask<any>>();
   private readonly tasks = new TaskScheduler();
   private readonly workers = new WorkerTaskScheduler(createWorkerBlob());
@@ -29,9 +54,11 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       // data = all
       // summary = summary + group
       // group = group only
-      if ((type === 'data' && key.startsWith(`${col.id}:`) ||
+      if (
+        (type === 'data' && key.startsWith(`${col.id}:`)) ||
         (type === 'summary' && key.startsWith(`${col.id}:b:summary:`)) ||
-        (key.startsWith(`${col.id}:a:group`)))) {
+        key.startsWith(`${col.id}:a:group`)
+      ) {
         this.cache.delete(key);
         this.tasks.abort(key);
       }
@@ -54,7 +81,9 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
         checker = cols.map((col) => (key: string) => key.startsWith(`${col.id}:a:group`));
         break;
       case 'summary':
-        checker = cols.map((col) => (key: string) => key.startsWith(`${col.id}:b:summary`) || key.startsWith(`${col.id}:a:group`));
+        checker = cols.map((col) => (key: string) =>
+          key.startsWith(`${col.id}:b:summary`) || key.startsWith(`${col.id}:a:group`)
+        );
         break;
       case 'data':
       default:
@@ -83,13 +112,13 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
   }
 
-  preCompute(ranking: Ranking, groups: {rows: IndicesArray, group: IGroup}[], maxDataIndex: number) {
+  preCompute(ranking: Ranking, groups: { rows: IndicesArray; group: IGroup }[], maxDataIndex: number) {
     if (groups.length === 0) {
       return;
     }
     const cols = ranking.flatColumns;
     if (groups.length === 1) {
-      const {group, rows} = groups[0];
+      const { group, rows } = groups[0];
       const multi = new MultiIndices([rows], maxDataIndex);
       for (const col of cols) {
         if (isCategoricalLikeColumn(col)) {
@@ -103,31 +132,42 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
           continue;
         }
         // copy from summary to group and create proper structure
-        this.chainCopy(`${col.id}:a:group:${group.name}`, this.cache.get(`${col.id}:b:summary`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
+        this.chainCopy(
+          `${col.id}:a:group:${group.name}`,
+          this.cache.get(`${col.id}:b:summary`)!,
+          (v: { summary: any; data: any }) => ({ group: v.summary, summary: v.summary, data: v.data })
+        );
         if (isNumberColumn(col)) {
-          this.chainCopy(`${col.id}:a:group:${group.name}:raw`, this.cache.get(`${col.id}:b:summary:raw`)!, (v: {summary: any, data: any}) => ({group: v.summary, summary: v.summary, data: v.data}));
+          this.chainCopy(
+            `${col.id}:a:group:${group.name}:raw`,
+            this.cache.get(`${col.id}:b:summary:raw`)!,
+            (v: { summary: any; data: any }) => ({ group: v.summary, summary: v.summary, data: v.data })
+          );
         }
       }
       return;
     }
 
-    const ogroups = groups.map(({rows, group}) => Object.assign({order: rows}, group));
-    const full = new MultiIndices(groups.map((d) => d.rows), maxDataIndex);
+    const orderedGroups = groups.map(({ rows, group }) => Object.assign({ order: rows }, group));
+    const full = new MultiIndices(
+      groups.map((d) => d.rows),
+      maxDataIndex
+    );
     for (const col of cols) {
       if (isCategoricalLikeColumn(col)) {
         this.summaryCategoricalStats(col, full);
-        for (const g of ogroups) {
+        for (const g of orderedGroups) {
           this.groupCategoricalStats(col, g);
         }
       } else if (isDateColumn(col)) {
         this.summaryDateStats(col, full);
-        for (const g of ogroups) {
+        for (const g of orderedGroups) {
           this.groupDateStats(col, g);
         }
       } else if (isNumberColumn(col)) {
         this.summaryNumberStats(col, false, full);
         this.summaryNumberStats(col, true, full);
-        for (const g of ogroups) {
+        for (const g of orderedGroups) {
           this.groupNumberStats(col, g, false);
           this.groupNumberStats(col, g, true);
         }
@@ -207,9 +247,15 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
         continue;
       }
       // copy from data to summary and create proper structure
-      this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({summary: data, data}));
+      this.chainCopy(`${col.id}:b:summary`, this.cache.get(`${col.id}:c:data`)!, (data: any) => ({
+        summary: data,
+        data,
+      }));
       if (isNumberColumn(col)) {
-        this.chainCopy(`${col.id}:b:summary:raw`, this.cache.get(`${col.id}:c:data:raw`)!, (data: any) => ({summary: data, data}));
+        this.chainCopy(`${col.id}:b:summary:raw`, this.cache.get(`${col.id}:c:data:raw`)!, (data: any) => ({
+          summary: data,
+          data,
+        }));
       }
     }
   }
@@ -221,35 +267,41 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       if (!key.startsWith(fromPrefix)) {
         continue;
       }
-      const tkey = `${col.id}:${key.slice(fromPrefix.length)}`;
-      this.chainCopy(tkey, this.cache.get(key)!, (data: any) => data);
+      const chainKey = `${col.id}:${key.slice(fromPrefix.length)}`;
+      this.chainCopy(chainKey, this.cache.get(key)!, (data: any) => data);
     }
   }
 
   groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray) {
-    return taskLater(this.tasks.push(`r${ranking.id}:${group.name}`, () => {
-      const rg = ranking.getGroupSortCriteria();
-      if (rg.length === 0) {
-        return [group.name.toLowerCase()];
-      }
-      const o = this.byOrder(rows);
-      const vs: ICompareValue[] = [];
-      for (const s of rg) {
-        const cache = this.valueCache(s.col);
-        const r = s.col.toCompareGroupValue(o, group, cache ? lazySeq(rows).map((d) => cache(d)) : undefined);
-        if (Array.isArray(r)) {
-          vs.push(...r);
-        } else {
-          vs.push(r);
+    return taskLater(
+      this.tasks.push(`r${ranking.id}:${group.name}`, () => {
+        const rg = ranking.getGroupSortCriteria();
+        if (rg.length === 0) {
+          return [group.name.toLowerCase()];
         }
-      }
-      vs.push(group.name.toLowerCase());
-      return vs;
-    }));
+        const o = this.byOrder(rows);
+        const vs: ICompareValue[] = [];
+        for (const s of rg) {
+          const cache = this.valueCache(s.col);
+          const r = s.col.toCompareGroupValue(o, group, cache ? lazySeq(rows).map((d) => cache(d)) : undefined);
+          if (Array.isArray(r)) {
+            vs.push(...r);
+          } else {
+            vs.push(r);
+          }
+        }
+        vs.push(group.name.toLowerCase());
+        return vs;
+      })
+    );
   }
 
   groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T) {
-    return this.cached(`${col.id}:a:group:${group.name}:${key}`, true, oneShotIterator(() => compute(this.byOrder(group.order))));
+    return this.cached(
+      `${col.id}:a:group:${group.name}:${key}`,
+      true,
+      oneShotIterator(() => compute(this.byOrder(group.order)))
+    );
   }
 
   groupExampleRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T) {
@@ -257,53 +309,101 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    return this.chain(`${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`, this.summaryBoxPlotStats(col, raw), ({summary, data}) => {
-      const ranking = col.findMyRanker()!;
-      const key = raw ? `${col.id}:r` : col.id;
-      if (this.valueCacheData.has(key) && group.order.length > 0) {
-        // web worker version
-        return () => this.workers.pushStats('boxplotStats', {}, key, <Float32Array>this.valueCacheData.get(key), `${ranking.id}:${group.name}`, group.order)
-          .then((group) => ({group, summary, data}));
+    return this.chain(
+      `${col.id}:a:group:${group.name}${raw ? ':braw' : ':b'}`,
+      this.summaryBoxPlotStats(col, raw),
+      ({ summary, data }) => {
+        const ranking = col.findMyRanker()!;
+        const key = raw ? `${col.id}:r` : col.id;
+        if (this.valueCacheData.has(key) && group.order.length > 0) {
+          // web worker version
+          return () =>
+            this.workers
+              .pushStats(
+                'boxplotStats',
+                {},
+                key,
+                this.valueCacheData.get(key) as Float32Array,
+                `${ranking.id}:${group.name}`,
+                group.order
+              )
+              .then((group) => ({ group, summary, data }));
+        }
+        return this.boxplotBuilder(group.order, col, raw, (group) => ({ group, summary, data }));
       }
-      return this.boxplotBuilder(group.order, col, raw, (group) => ({group, summary, data}));
-    });
+    );
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    return this.chain(`${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`, this.summaryNumberStats(col, raw), ({summary, data}) => {
-      const ranking = col.findMyRanker()!;
-      const key = raw ? `${col.id}:r` : col.id;
-      if (this.valueCacheData.has(key) && group.order.length > 0) {
-        // web worker version
-        return () => this.workers.pushStats('numberStats', {numberOfBins: summary.hist.length}, key, <Float32Array>this.valueCacheData.get(key), `${ranking.id}:${group.name}`, group.order)
-          .then((group) => ({group, summary, data}));
+    return this.chain(
+      `${col.id}:a:group:${group.name}${raw ? ':raw' : ''}`,
+      this.summaryNumberStats(col, raw),
+      ({ summary, data }) => {
+        const ranking = col.findMyRanker()!;
+        const key = raw ? `${col.id}:r` : col.id;
+        if (this.valueCacheData.has(key) && group.order.length > 0) {
+          // web worker version
+          return () =>
+            this.workers
+              .pushStats(
+                'numberStats',
+                { numberOfBins: summary.hist.length, domain: this.resolveDomain(col, raw) },
+                key,
+                this.valueCacheData.get(key) as Float32Array,
+                `${ranking.id}:${group.name}`,
+                group.order
+              )
+              .then((group) => ({ group, summary, data }));
+        }
+        return this.statsBuilder(group.order, col, summary.hist.length, raw, (group) => ({
+          group,
+          summary,
+          data,
+        }));
       }
-      return this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw, (group) => ({group, summary, data}));
-    });
+    );
   }
 
   groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup) {
-    return this.chain(`${col.id}:a:group:${group.name}`, this.summaryCategoricalStats(col), ({summary, data}) => {
+    return this.chain(`${col.id}:a:group:${group.name}`, this.summaryCategoricalStats(col), ({ summary, data }) => {
       const ranking = col.findMyRanker()!;
       if (this.valueCacheData.has(col.id) && group.order.length > 0) {
         // web worker version
-        return () => this.workers.pushStats('categoricalStats', {categories: col.categories.map((d) => d.name)}, col.id, <UIntTypedArray>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
-          .then((group) => ({group, summary, data}));
+        return () =>
+          this.workers
+            .pushStats(
+              'categoricalStats',
+              { categories: col.categories.map((d) => d.name) },
+              col.id,
+              this.valueCacheData.get(col.id) as UIntTypedArray,
+              `${ranking.id}:${group.name}`,
+              group.order
+            )
+            .then((group) => ({ group, summary, data }));
       }
-      return this.categoricalStatsBuilder(group.order, col, (group) => ({group, summary, data}));
+      return this.categoricalStatsBuilder(group.order, col, (group) => ({ group, summary, data }));
     });
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
     const key = `${col.id}:a:group:${group.name}`;
-    return this.chain(key, this.summaryDateStats(col), ({summary, data}) => {
+    return this.chain(key, this.summaryDateStats(col), ({ summary, data }) => {
       const ranking = col.findMyRanker()!;
       if (this.valueCacheData.has(col.id) && group.order.length > 0) {
         // web worker version
-        return () => this.workers.pushStats('dateStats', {template: summary}, col.id, <Float64Array>this.valueCacheData.get(col.id), `${ranking.id}:${group.name}`, group.order)
-          .then((group) => ({group, summary, data}));
+        return () =>
+          this.workers
+            .pushStats(
+              'dateStats',
+              { template: summary },
+              col.id,
+              this.valueCacheData.get(col.id) as Float64Array,
+              `${ranking.id}:${group.name}`,
+              group.order
+            )
+            .then((group) => ({ group, summary, data }));
       }
-      return this.dateStatsBuilder(group.order, col, summary, (group) => ({group, summary, data}));
+      return this.dateStatsBuilder(group.order, col, summary, (group) => ({ group, summary, data }));
     });
   }
 
@@ -313,10 +413,19 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       const key = raw ? `${col.id}:r` : col.id;
       if (this.valueCacheData.has(key)) {
         // web worker version
-        return () => this.workers.pushStats('boxplotStats', {}, key, <Float32Array>this.valueCacheData.get(key), ranking.id, order ? order.joined : ranking.getOrder())
-          .then((summary) => ({summary, data}));
+        return () =>
+          this.workers
+            .pushStats(
+              'boxplotStats',
+              {},
+              key,
+              this.valueCacheData.get(key) as Float32Array,
+              ranking.id,
+              order ? order.joined : ranking.getOrder()
+            )
+            .then((summary) => ({ summary, data }));
       }
-      return this.boxplotBuilder(order ? order : ranking.getOrder(), col, raw, (summary) => ({summary, data}));
+      return this.boxplotBuilder(order ? order : ranking.getOrder(), col, raw, (summary) => ({ summary, data }));
     });
   }
 
@@ -326,10 +435,22 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       const key = raw ? `${col.id}:r` : col.id;
       if (this.valueCacheData.has(key)) {
         // web worker version
-        return () => this.workers.pushStats('numberStats', {numberOfBins: data.hist.length}, key, <Float32Array>this.valueCacheData.get(key), ranking.id, order ? order.joined : ranking.getOrder())
-          .then((summary) => ({summary, data}));
+        return () =>
+          this.workers
+            .pushStats(
+              'numberStats',
+              { numberOfBins: data.hist.length, domain: this.resolveDomain(col, raw) },
+              key,
+              this.valueCacheData.get(key) as Float32Array,
+              ranking.id,
+              order ? order.joined : ranking.getOrder()
+            )
+            .then((summary) => ({ summary, data }));
       }
-      return this.normalizedStatsBuilder(order ? order : ranking.getOrder(), col, data.hist.length, raw, (summary) => ({summary, data}));
+      return this.statsBuilder(order ? order : ranking.getOrder(), col, data.hist.length, raw, (summary) => ({
+        summary,
+        data,
+      }));
     });
   }
 
@@ -338,10 +459,19 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       const ranking = col.findMyRanker()!;
       if (this.valueCacheData.has(col.id)) {
         // web worker version
-        return () => this.workers.pushStats('categoricalStats', {categories: col.categories.map((d) => d.name)}, col.id, <UIntTypedArray>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
-          .then((summary) => ({summary, data}));
+        return () =>
+          this.workers
+            .pushStats(
+              'categoricalStats',
+              { categories: col.categories.map((d) => d.name) },
+              col.id,
+              this.valueCacheData.get(col.id) as UIntTypedArray,
+              ranking.id,
+              order ? order.joined : ranking.getOrder()
+            )
+            .then((summary) => ({ summary, data }));
       }
-      return this.categoricalStatsBuilder(order ? order : ranking.getOrder(), col, (summary) => ({summary, data}));
+      return this.categoricalStatsBuilder(order ? order : ranking.getOrder(), col, (summary) => ({ summary, data }));
     });
   }
 
@@ -350,10 +480,19 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       const ranking = col.findMyRanker()!;
       if (this.valueCacheData.has(col.id)) {
         // web worker version
-        return () => this.workers.pushStats('dateStats', {template: data}, col.id, <Float64Array>this.valueCacheData.get(col.id), ranking.id, order ? order.joined : ranking.getOrder())
-          .then((summary) => ({summary, data}));
+        return () =>
+          this.workers
+            .pushStats(
+              'dateStats',
+              { template: data },
+              col.id,
+              this.valueCacheData.get(col.id) as Float64Array,
+              ranking.id,
+              order ? order.joined : ranking.getOrder()
+            )
+            .then((summary) => ({ summary, data }));
       }
-      return this.dateStatsBuilder(order ? order : ranking.getOrder(), col, data, (summary) => ({summary, data}));
+      return this.dateStatsBuilder(order ? order : ranking.getOrder(), col, data, (summary) => ({ summary, data }));
     });
   }
 
@@ -382,7 +521,11 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     return s;
   }
 
-  private chain<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => Iterator<U | null> | (() => Promise<U>)): IRenderTask<U> {
+  private chain<T, U>(
+    key: string,
+    task: IRenderTask<T>,
+    creator: (data: T) => Iterator<U | null> | (() => Promise<U>)
+  ): IRenderTask<U> {
     if (this.isValidCacheEntry(key)) {
       return this.cache.get(key)!;
     }
@@ -394,7 +537,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       return this.cached(key, true, creator(task.v));
     }
 
-    const v = (<TaskLater<T>>task).v;
+    const v = (task as TaskLater<T>).v;
     const subTask = v.then((data) => {
       if (typeof data === 'symbol') {
         return ABORTED;
@@ -427,7 +570,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
     const v = this.cache.get(key);
     // not an aborted task
-    return !((v instanceof TaskNow) && typeof v.v === 'symbol') && !(v instanceof TaskLater && v.v.isAborted());
+    return !(v instanceof TaskNow && typeof v.v === 'symbol') && !(v instanceof TaskLater && v.v.isAborted());
   }
 
   private chainCopy<T, U>(key: string, task: IRenderTask<T>, creator: (data: T) => U): IRenderTask<U> {
@@ -444,7 +587,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       return subTask;
     }
 
-    const v = (<TaskLater<T>>task).v;
+    const v = (task as TaskLater<T>).v;
     const subTask = v.then((data) => {
       if (typeof data === 'symbol') {
         return ABORTED;
@@ -471,13 +614,24 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     const valueCacheKey = raw ? `${col.id}:r` : col.id;
     if (this.valueCacheData.has(valueCacheKey) && this.data.length > 0) {
       // use webworker
-      return this.cached(key, false, () => this.workers.pushStats('boxplotStats', {}, valueCacheKey, <Float32Array>this.valueCacheData.get(valueCacheKey)!));
+      return this.cached(key, false, () =>
+        this.workers.pushStats(
+          'boxplotStats',
+          {},
+          valueCacheKey,
+          this.valueCacheData.get(valueCacheKey)! as Float32Array
+        )
+      );
     }
     return this.cached(key, false, this.boxplotBuilder<IAdvancedBoxPlotData>(null, col, raw));
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.cached(`${col.id}:c:data${raw ? ':raw' : ''}`, false, this.normalizedStatsBuilder<IStatistics>(null, col, getNumberOfBins(this.data.length), raw));
+    return this.cached(
+      `${col.id}:c:data${raw ? ':raw' : ''}`,
+      false,
+      this.statsBuilder<IStatistics>(null, col, getNumberOfBins(this.data.length), raw)
+    );
   }
 
   dataCategoricalStats(col: Column & ICategoricalLikeColumn) {
@@ -488,7 +642,14 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     return this.cached(`${col.id}:c:data`, false, this.dateStatsBuilder<IDateStatistics>(null, col));
   }
 
-  sort(ranking: Ranking, group: IGroup, indices: IndicesArray, singleCall: boolean, maxDataIndex: number, lookups?: CompareLookup) {
+  sort(
+    ranking: Ranking,
+    group: IGroup,
+    indices: IndicesArray,
+    singleCall: boolean,
+    maxDataIndex: number,
+    lookups?: CompareLookup
+  ) {
     if (!lookups || indices.length < 1000) {
       // no thread needed
       const order = sortDirect(indices, maxDataIndex, lookups);
@@ -503,11 +664,16 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
       toTransfer.push(...lookups.transferAbles);
     }
 
-    return this.workers.push('sort', {
-      ref: `${ranking.id}:${group.name}`,
-      indices: indexArray,
-      sortOrders: lookups.sortOrders
-    }, toTransfer, (r: ISortMessageResponse) => r.order);
+    return this.workers.push(
+      'sort',
+      {
+        ref: `${ranking.id}:${group.name}`,
+        indices: indexArray,
+        sortOrders: lookups.sortOrders,
+      },
+      toTransfer,
+      (r: ISortMessageResponse) => r.order
+    );
   }
 
   terminate() {

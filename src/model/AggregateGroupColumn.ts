@@ -1,16 +1,27 @@
-import {Category, SupportType, toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IGroup, IColumnDesc} from './interfaces';
+import { Category, SupportType, toolbar } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import { IGroup, IColumnDesc } from './interfaces';
 import Ranking from './Ranking';
-import {IEventListener} from '../internal';
-import {integrateDefaults} from './internal';
-import {AGGREGATION_LEVEL_WIDTH} from '../styles';
-
+import { IEventListener } from '../internal';
+import { integrateDefaults } from './internal';
+import { AGGREGATION_LEVEL_WIDTH } from '../styles';
 
 export enum EAggregationState {
   COLLAPSE = 'collapse',
   EXPAND = 'expand',
-  EXPAND_TOP_N = 'expand_top'
+  EXPAND_TOP_N = 'expand_top',
 }
 
 /**
@@ -18,8 +29,8 @@ export enum EAggregationState {
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createAggregateDesc(label: string = 'Aggregate Groups') {
-  return {type: 'aggregate', label, fixed: true};
+export function createAggregateDesc(label = 'Aggregate Groups') {
+  return { type: 'aggregate', label, fixed: true };
 }
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {
@@ -30,7 +41,7 @@ export interface IAggregateGroupColumnDesc extends IColumnDesc {
 
 /**
  * emitted upon changing of the aggregate attribute
- * @aparam value -1 = no, 0 = fully aggregated, N = show top N
+ * @param value -1 = no, 0 = fully aggregated, N = show top N
  * @asMemberOf AggregateGroupColumn
  * @event
  */
@@ -46,9 +57,12 @@ export default class AggregateGroupColumn extends Column {
   static readonly EVENT_AGGREGATE = 'aggregate';
 
   constructor(id: string, desc: Readonly<IAggregateGroupColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      width: AGGREGATION_LEVEL_WIDTH * 2
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: AGGREGATION_LEVEL_WIDTH * 2,
+      })
+    );
   }
 
   get frozen() {
@@ -73,27 +87,30 @@ export default class AggregateGroupColumn extends Column {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   isAggregated(group: IGroup) {
     const ranking = this.findMyRanker()!;
-    if ((<IAggregateGroupColumnDesc>this.desc).isAggregated) {
-      return (<IAggregateGroupColumnDesc>this.desc).isAggregated(ranking, group);
+    if ((this.desc as IAggregateGroupColumnDesc).isAggregated) {
+      return (this.desc as IAggregateGroupColumnDesc).isAggregated(ranking, group);
     }
     return false;
   }
 
   setAggregated(group: IGroup, value: boolean | EAggregationState) {
-    const n: EAggregationState = typeof value === 'boolean' ? (value ? EAggregationState.EXPAND : EAggregationState.COLLAPSE): value;
+    const n: EAggregationState =
+      typeof value === 'boolean' ? (value ? EAggregationState.EXPAND : EAggregationState.COLLAPSE) : value;
     const ranking = this.findMyRanker()!;
-    const current = ((<IAggregateGroupColumnDesc>this.desc).isAggregated) && (<IAggregateGroupColumnDesc>this.desc).isAggregated(ranking, group);
+    const current =
+      (this.desc as IAggregateGroupColumnDesc).isAggregated &&
+      (this.desc as IAggregateGroupColumnDesc).isAggregated(ranking, group);
     if (current === n) {
       return true;
     }
 
-    if ((<IAggregateGroupColumnDesc>this.desc).setAggregated) {
-      (<IAggregateGroupColumnDesc>this.desc).setAggregated(ranking, group, n);
+    if ((this.desc as IAggregateGroupColumnDesc).setAggregated) {
+      (this.desc as IAggregateGroupColumnDesc).setAggregated(ranking, group, n);
     }
     this.fire(AggregateGroupColumn.EVENT_AGGREGATE, ranking, group, n !== EAggregationState.COLLAPSE, n);
     return false;

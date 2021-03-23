@@ -1,21 +1,45 @@
-import {format} from 'd3-format';
-import {IBoxPlotData, IEventListener} from '../internal';
-import {Category, dialogAddons, SortByDefault, toolbar} from './annotations';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory} from './interfaces';
-import {ESortMethod, IBoxPlotColumn, INumberDesc, INumberFilter, IColorMappingFunction, IMappingFunction} from './INumberColumn';
-import {restoreMapping} from './MappingFunction';
+import { format } from 'd3-format';
+import { IBoxPlotData, IEventListener } from '../internal';
+import { Category, dialogAddons, SortByDefault, toolbar } from './annotations';
+import Column, {
+  dirty,
+  dirtyCaches,
+  dirtyHeader,
+  dirtyValues,
+  groupRendererChanged,
+  labelChanged,
+  metaDataChanged,
+  rendererTypeChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  widthChanged,
+} from './Column';
+import { IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
+import {
+  ESortMethod,
+  IBoxPlotColumn,
+  INumberDesc,
+  INumberFilter,
+  IColorMappingFunction,
+  IMappingFunction,
+} from './INumberColumn';
+import { restoreMapping } from './MappingFunction';
 import NumberColumn from './NumberColumn';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
-
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import {
+  DEFAULT_FORMATTER,
+  noNumberFilter,
+  toCompareBoxPlotValue,
+  getBoxPlotNumber,
+  isDummyNumberFilter,
+  restoreNumberFilter,
+} from './internalNumber';
 
 export interface IBoxPlotDesc extends INumberDesc {
   sort?: ESortMethod;
 }
 
 export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
-
 
 /**
  * emitted when the sort method property changes
@@ -45,7 +69,6 @@ export declare function colorMappingChanged_BPC(previous: IColorMappingFunction,
  */
 export declare function filterChanged_BPC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
-
 @toolbar('rename', 'clone', 'sort', 'sortBy', 'filterNumber', 'colorMapped', 'editMapping')
 @dialogAddons('sort', 'sortBoxPlot')
 @Category('array')
@@ -70,7 +93,6 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
    * @private
    */
   private currentFilter: INumberFilter = noNumberFilter();
-
 
   constructor(id: string, desc: Readonly<IBoxPlotColumnDesc>, factory: ITypeFactory) {
     super(id, desc);
@@ -127,21 +149,21 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
       max: this.mapping.apply(v.max),
       median: this.mapping.apply(v.median),
       q1: this.mapping.apply(v.q1),
-      q3: this.mapping.apply(v.q3)
+      q3: this.mapping.apply(v.q3),
     };
     if (v.outlier) {
       Object.assign(r, {
-        outlier: v.outlier.map((d) => this.mapping.apply(d))
+        outlier: v.outlier.map((d) => this.mapping.apply(d)),
       });
     }
     if (v.whiskerLow != null) {
       Object.assign(r, {
-        whiskerLow: this.mapping.apply(v.whiskerLow)
+        whiskerLow: this.mapping.apply(v.whiskerLow),
       });
     }
     if (v.whiskerHigh != null) {
       Object.assign(r, {
-        whiskerHigh: this.mapping.apply(v.whiskerHigh)
+        whiskerHigh: this.mapping.apply(v.whiskerHigh),
       });
     }
     return r;
@@ -180,7 +202,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.sort === sort) {
       return;
     }
-    this.fire(BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, this.sort, this.sort = sort);
+    this.fire(BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, this.sort, (this.sort = sort));
     // sort by me if not already sorted by me
     if (!this.isSortedByMe().asc) {
       this.sortByMe();
@@ -213,7 +235,14 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   }
 
   protected createEventList() {
-    return super.createEventList().concat([BoxPlotColumn.EVENT_SORTMETHOD_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, BoxPlotColumn.EVENT_MAPPING_CHANGED, BoxPlotColumn.EVENT_FILTER_CHANGED]);
+    return super
+      .createEventList()
+      .concat([
+        BoxPlotColumn.EVENT_SORTMETHOD_CHANGED,
+        BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED,
+        BoxPlotColumn.EVENT_MAPPING_CHANGED,
+        BoxPlotColumn.EVENT_FILTER_CHANGED,
+      ]);
   }
 
   on(type: typeof BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_BPC | null): this;
@@ -234,7 +263,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getOriginalMapping() {
@@ -249,7 +278,17 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([BoxPlotColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire(
+      [
+        BoxPlotColumn.EVENT_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      this.mapping.clone(),
+      (this.mapping = mapping)
+    );
   }
 
   getColor(row: IDataRow) {
@@ -264,7 +303,17 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire(
+      [
+        BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      this.colorMapping.clone(),
+      (this.colorMapping = mapping)
+    );
   }
 
   isFiltered() {
@@ -287,4 +336,3 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return NumberColumn.prototype.clearFilter.call(this);
   }
 }
-

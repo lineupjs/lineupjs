@@ -1,20 +1,31 @@
-import {round, IEventListener, similar} from '../internal';
-import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import CompositeColumn, {addColumn, filterChanged, moveColumn, removeColumn} from './CompositeColumn';
-import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IDataRow, IFlatColumn, IMultiLevelColumn, ITypeFactory} from './interfaces';
-import {integrateDefaults} from './internal';
+import { round, IEventListener, similar } from '../internal';
+import { toolbar } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
+import CompositeNumberColumn, { ICompositeNumberDesc } from './CompositeNumberColumn';
+import { IDataRow, IFlatColumn, IMultiLevelColumn, ITypeFactory } from './interfaces';
+import { integrateDefaults } from './internal';
 
 /**
  * factory for creating a description creating a stacked column
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createStackDesc(label: string = 'Weighted Sum') {
-  return {type: 'stack', label};
+export function createStackDesc(label = 'Weighted Sum') {
+  return { type: 'stack', label };
 }
-
 
 /**
  * emitted when the collapse property changes
@@ -23,14 +34,12 @@ export function createStackDesc(label: string = 'Weighted Sum') {
  */
 export declare function collapseChanged(previous: boolean, current: boolean): void;
 
-
 /**
  * emitted when the weights change
  * @asMemberOf StackColumn
  * @event
  */
 export declare function weightsChanged(previous: number[], current: number[]): void;
-
 
 /**
  * emitted when the ratios between the children changes
@@ -60,14 +69,18 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   private collapsed = false;
 
   constructor(id: string, desc: ICompositeNumberDesc) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'stack',
-      groupRenderer: 'stack',
-      summaryRenderer: 'default'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'stack',
+        groupRenderer: 'stack',
+        summaryRenderer: 'default',
+      })
+    );
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
-    this.adaptChange = function (this: {source: Column}, oldValue, newValue) {
+    this.adaptChange = function (this: { source: Column }, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
   }
@@ -83,7 +96,13 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   }
 
   protected createEventList() {
-    return super.createEventList().concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED]);
+    return super
+      .createEventList()
+      .concat([
+        StackColumn.EVENT_COLLAPSE_CHANGED,
+        StackColumn.EVENT_WEIGHTS_CHANGED,
+        StackColumn.EVENT_MULTI_LEVEL_CHANGED,
+      ]);
   }
 
   on(type: typeof StackColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged | null): this;
@@ -113,7 +132,11 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     if (this.collapsed === value) {
       return;
     }
-    this.fire([StackColumn.EVENT_COLLAPSE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.collapsed, this.collapsed = value);
+    this.fire(
+      [StackColumn.EVENT_COLLAPSE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.collapsed,
+      (this.collapsed = value)
+    );
   }
 
   getCollapsed() {
@@ -126,14 +149,15 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     let self = null;
-    const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => c.isVisible());
+    const children =
+      levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => c.isVisible());
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       let w = this.getWidth();
       if (!this.collapsed) {
         w += (children.length - 1) * padding;
       }
-      r.push(self = {col: this, offset, width: w});
+      r.push((self = { col: this, offset, width: w }));
       if (levelsToGo === 0) {
         return w;
       }
@@ -143,7 +167,8 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     children.forEach((c) => {
       acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
     });
-    if (self) { //nesting my even increase my width
+    if (self) {
+      //nesting my even increase my width
       self.width = acc - offset - padding;
     }
     return acc - offset - padding;
@@ -164,12 +189,12 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
    * inserts a column at a the given position
    */
   insert(col: Column, index: number, weight = NaN) {
-    if (!isNaN(weight)) {
-      col.setWidth((weight / (1 - weight) * this.getWidth()));
+    if (!Number.isNaN(weight)) {
+      col.setWidth((weight / (1 - weight)) * this.getWidth());
     }
     col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
     //increase my width
-    super.setWidth(this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+    super.setWidth(this.length === 0 ? col.getWidth() : this.getWidth() + col.getWidth());
 
     return super.insert(col, index);
   }
@@ -207,14 +232,25 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
         return newValue;
       }
       const guess = c.getWidth() * factor;
-      const w = isNaN(guess) || guess < 1 ? 0 : guess;
+      const w = Number.isNaN(guess) || guess < 1 ? 0 : guess;
       c.setWidthImpl(w);
       return w;
     });
     //adapt width if needed
     super.setWidth(widths.reduce((a, b) => a + b, 0));
 
-    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], bak, this.getWeights());
+    this.fire(
+      [
+        StackColumn.EVENT_WEIGHTS_CHANGED,
+        StackColumn.EVENT_MULTI_LEVEL_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      bak,
+      this.getWeights()
+    );
   }
 
   getWeights() {
@@ -245,8 +281,18 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     this._children.forEach((c, i) => {
       c.setWidthImpl(weights[i]);
     });
-    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], bak, weights);
-
+    this.fire(
+      [
+        StackColumn.EVENT_WEIGHTS_CHANGED,
+        StackColumn.EVENT_MULTI_LEVEL_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      bak,
+      weights
+    );
   }
 
   removeImpl(child: Column, index: number) {
@@ -280,7 +326,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     if (format === 'json') {
       return {
         value: this.getRawNumber(row),
-        children: this.children.map((d) => d.getExportValue(row, format))
+        children: this.children.map((d) => d.getExportValue(row, format)),
       };
     }
     return super.getExportValue(row, format);

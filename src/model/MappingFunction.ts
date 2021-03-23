@@ -1,8 +1,8 @@
-import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
-import {similar} from '../internal';
-import {IMappingFunction, IMapAbleDesc} from '.';
-import {ITypeFactory, ITypedDump} from './interfaces';
-import {IMappingFunctionConstructor} from './INumberColumn';
+import { scaleLinear, scaleLog, scalePow, scaleSqrt } from 'd3-scale';
+import { similar } from '../internal';
+import { IMappingFunction, IMapAbleDesc } from '.';
+import { ITypeFactory, ITypedDump } from './interfaces';
+import { IMappingFunctionConstructor } from './INumberColumn';
 
 /**
  * interface of a d3 scale
@@ -45,7 +45,6 @@ function isSame(a: number[], b: number[]) {
   return a.every((ai, i) => similar(ai, b[i], 0.0001));
 }
 
-
 function fixDomain(domain: number[], type: string) {
   if (type === 'log' && domain[0] === 0) {
     domain[0] = 0.0000001; //0 is bad
@@ -63,10 +62,12 @@ export class ScaleMappingFunction implements IMappingFunction {
   constructor();
   constructor(dump: ITypedDump);
   constructor(domain: number[], type: string, range: number[]);
-  constructor(domain: ITypedDump|number[] = [0, 1], type = 'linear', range: number[] = [0, 1]) {
+  constructor(domain: ITypedDump | number[] = [0, 1], type = 'linear', range: number[] = [0, 1]) {
     if (!domain || Array.isArray(domain)) {
       this.type = type;
-      this.s = toScale(type).domain(fixDomain(domain || [0, 1], this.type)).range(range);
+      this.s = toScale(type)
+        .domain(fixDomain((domain as number[]) ?? [0, 1], this.type))
+        .range(range);
     } else {
       const dump = domain;
       this.type = dump.type;
@@ -110,7 +111,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     return {
       type: this.type,
       domain: this.domain,
-      range: this.range
+      range: this.range,
     };
   }
 
@@ -118,7 +119,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     if (!(other instanceof ScaleMappingFunction)) {
       return false;
     }
-    const that = <ScaleMappingFunction>other;
+    const that = other as ScaleMappingFunction;
     return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
   }
 
@@ -150,16 +151,20 @@ export class ScriptMappingFunction implements IMappingFunction {
   constructor();
   constructor(dump: ITypedDump);
   constructor(domain: number[], code?: string | IScriptMappingFunctionType);
-  constructor(domain: ITypedDump | number[] = [0, 1], code: string | IScriptMappingFunctionType = 'return this.linear(value,this.value_min,this.value_max);') {
+  constructor(
+    domain: ITypedDump | number[] = [0, 1],
+    code: string | IScriptMappingFunctionType = 'return this.linear(value,this.value_min,this.value_max);'
+  ) {
     if (!domain || Array.isArray(domain)) {
-      this.domain = domain || [0, 1];
+      this.domain = (domain as number[]) ?? [0, 1];
     } else {
       const dump = domain;
       this.domain = dump.domain;
       code = dump.code;
     }
     this.code = typeof code === 'string' ? code : code.toString();
-    this.f = typeof code === 'function' ? code : <any>(new Function('value', code));
+    // eslint-disable-next-line no-new-func
+    this.f = typeof code === 'function' ? code : (new Function('value', code) as any);
   }
 
   getRange(): [string, string] {
@@ -169,13 +174,16 @@ export class ScriptMappingFunction implements IMappingFunction {
   apply(v: number): number {
     const min = this.domain[0],
       max = this.domain[this.domain.length - 1];
-    const r = this.f.call({
-      value_min: min,
-      value_max: max,
-      value_range: max - min,
-      value_domain: this.domain.slice(),
-      linear: (v: number, mi: number, ma: number) => (v - mi) / (ma - mi)
-    }, v);
+    const r = this.f.call(
+      {
+        value_min: min,
+        value_max: max,
+        value_range: max - min,
+        value_domain: this.domain.slice(),
+        linear: (v: number, mi: number, ma: number) => (v - mi) / (ma - mi),
+      },
+      v
+    );
 
     if (typeof r === 'number') {
       return Math.max(Math.min(r, 1), 0);
@@ -187,7 +195,7 @@ export class ScriptMappingFunction implements IMappingFunction {
     return {
       type: 'script',
       code: this.code,
-      domain: this.domain
+      domain: this.domain,
     };
   }
 
@@ -195,7 +203,7 @@ export class ScriptMappingFunction implements IMappingFunction {
     if (!(other instanceof ScriptMappingFunction)) {
       return false;
     }
-    const that = <ScriptMappingFunction>other;
+    const that = other as ScriptMappingFunction;
     return that.code === this.code || that.f === this.f;
   }
 
@@ -207,7 +215,7 @@ export class ScriptMappingFunction implements IMappingFunction {
 /**
  * @internal
  */
-export function createMappingFunction(types: {[key: string]: IMappingFunctionConstructor}) {
+export function createMappingFunction(types: { [key: string]: IMappingFunctionConstructor }) {
   return (dump: ITypedDump | IScriptMappingFunctionType): IMappingFunction => {
     if (typeof dump === 'function') {
       return new ScriptMappingFunction([0, 1], dump);
@@ -232,7 +240,6 @@ export function restoreMapping(desc: IMapAbleDesc, factory: ITypeFactory): IMapp
   return new ScaleMappingFunction(desc.domain || [0, 1], 'linear', desc.range || [0, 1]);
 }
 
-
 export function mappingFunctions() {
   return {
     script: ScriptMappingFunction,
@@ -240,6 +247,6 @@ export function mappingFunctions() {
     log: ScaleMappingFunction,
     'pow1.1': ScaleMappingFunction,
     pow2: ScaleMappingFunction,
-    pow3: ScaleMappingFunction
+    pow3: ScaleMappingFunction,
   };
 }

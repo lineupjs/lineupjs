@@ -1,5 +1,5 @@
-import {clear, AEventDispatcher, IEventListener} from '../../internal';
-import {cssClass} from '../../styles';
+import { clear, AEventDispatcher, IEventListener } from '../../internal';
+import { cssClass } from '../../styles';
 
 export interface IItem {
   id: string;
@@ -12,7 +12,7 @@ export interface IGroupSearchItem<T extends IItem> {
 }
 
 function isItem<T extends IItem>(v: T | IGroupSearchItem<T>): v is T {
-  return (<T>v).id !== undefined;
+  return (v as T).id !== undefined;
 }
 
 export interface ISearchBoxOptions<T extends IItem> {
@@ -28,7 +28,6 @@ export interface ISearchBoxOptions<T extends IItem> {
  * @event
  */
 export declare function select(item: any): void;
-
 
 export default class SearchBox<T extends IItem> extends AEventDispatcher {
   static readonly EVENT_SELECT = 'select';
@@ -54,17 +53,18 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
     this.node = this.options.doc.createElement('div');
     this.node.classList.add(cssClass('search'));
-    this.node.innerHTML = `<input class="${cssClass('search-input')}" type="search" placeholder="${this.options.placeholder}">
+    this.node.innerHTML = `<input class="${cssClass('search-input')}" type="search" placeholder="${
+      this.options.placeholder
+    }">
     <ul class="${cssClass('search-list')}"></ul>`;
 
-    this.search = <HTMLInputElement>this.node.firstElementChild!;
-    this.body = <HTMLElement>this.node.lastElementChild!;
+    this.search = this.node.firstElementChild! as HTMLInputElement;
+    this.body = this.node.lastElementChild! as HTMLElement;
 
     this.search.onfocus = () => this.focus();
     this.search.onblur = () => this.blur();
     this.search.oninput = () => this.filter();
     this.search.onkeydown = (evt) => this.handleKey(evt);
-
 
     this.itemTemplate = this.options.doc.createElement('li');
     this.itemTemplate.classList.add(cssClass('search-item'));
@@ -88,21 +88,21 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     for (const v of values) {
       let li: HTMLElement;
       if (isItem(v)) {
-        li = <HTMLElement>this.itemTemplate.cloneNode(true);
+        li = this.itemTemplate.cloneNode(true) as HTMLElement;
         li.onmousedown = (evt) => {
           // see https://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event#10653160
           evt.preventDefault();
         };
         li.onclick = () => this.select(v);
-        li.onmouseenter = () => this.highlighted = li;
-        li.onmouseleave = () => this.highlighted = null;
+        li.onmouseenter = () => (this.highlighted = li);
+        li.onmouseleave = () => (this.highlighted = null);
         node.appendChild(li);
       } else {
-        li = <HTMLElement>this.groupTemplate.cloneNode(true);
-        this.buildDialog(<HTMLElement>li.lastElementChild!, v.children);
+        li = this.groupTemplate.cloneNode(true) as HTMLElement;
+        this.buildDialog(li.lastElementChild! as HTMLElement, v.children);
         node.appendChild(li);
       }
-      const item = <HTMLElement>li.firstElementChild!;
+      const item = li.firstElementChild! as HTMLElement;
       item.innerHTML = this.options.formatItem(v, item);
     }
   }
@@ -112,7 +112,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
       ESC: 27,
       ENTER: 13,
       UP: 38,
-      DOWN: 40
+      DOWN: 40,
     };
     switch (evt.which) {
       case KEYS.ESC:
@@ -141,12 +141,12 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
   focus() {
     this.body.style.width = `${this.search.offsetWidth}px`;
-    this.highlighted = <HTMLElement>this.body.firstElementChild || null;
+    this.highlighted = (this.body.firstElementChild as HTMLElement) ?? null;
     this.node.classList.add(cssClass('search-open'));
   }
 
   private get highlighted() {
-    return <HTMLElement>this.body.getElementsByClassName(cssClass('search-highlighted'))[0] || null;
+    return (this.body.getElementsByClassName(cssClass('search-highlighted'))[0] as HTMLElement) ?? null;
   }
 
   private set highlighted(value: HTMLElement | null) {
@@ -165,18 +165,23 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private highlightNext() {
     const h = this.highlighted;
     if (!h || h.classList.contains(cssClass('hidden'))) {
-      this.highlighted = <HTMLElement>this.body.querySelector(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`) || null;
+      this.highlighted =
+        this.body.querySelector<HTMLElement>(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`) || null;
       return;
     }
 
-    const items = <HTMLElement[]>Array.from(this.body.querySelectorAll(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`));
+    const items = Array.from(
+      this.body.querySelectorAll<HTMLElement>(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`)
+    );
     const index = items.indexOf(h);
     this.highlighted = items[index + 1] || null;
   }
 
   private highlightPrevious() {
     const h = this.highlighted;
-    const items = <HTMLElement[]>Array.from(this.body.querySelectorAll(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`));
+    const items = Array.from(
+      this.body.querySelectorAll<HTMLElement>(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`)
+    );
 
     if (!h || h.classList.contains(cssClass('hidden'))) {
       this.highlighted = items[items.length - 1] || null;
@@ -201,7 +206,9 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private filterResults(node: HTMLElement, text: string) {
     if (text === '') {
       // show all
-      (<HTMLElement[]>Array.from(node.getElementsByClassName(cssClass('hidden')))).forEach((d: HTMLElement) => d.classList.remove(cssClass('hidden')));
+      (Array.from(node.getElementsByClassName(cssClass('hidden'))) as HTMLElement[]).forEach((d: HTMLElement) =>
+        d.classList.remove(cssClass('hidden'))
+      );
       return false;
     }
     const children = Array.from(node.children);
@@ -209,7 +216,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
       const content = d.firstElementChild!.innerHTML.toLowerCase();
       let hidden = !content.includes(text);
       if (d.classList.contains(cssClass('search-group'))) {
-        const ul = <HTMLElement>d.lastElementChild!;
+        const ul = d.lastElementChild! as HTMLElement;
         const allChildrenHidden = this.filterResults(ul, text);
         hidden = hidden && allChildrenHidden;
       }

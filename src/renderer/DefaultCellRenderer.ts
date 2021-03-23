@@ -1,15 +1,15 @@
-import {Column, IDataRow} from '../model';
-import {ERenderMode, ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {noRenderer, setText} from './utils';
+import { Column, IDataRow } from '../model';
+import { ERenderMode, ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer } from './interfaces';
+import { renderMissingDOM } from './missing';
+import { noRenderer, setText } from './utils';
 
 /**
  * default renderer instance rendering the value as a text
  */
 export class DefaultCellRenderer implements ICellRendererFactory {
-  title: string = 'String';
-  groupTitle: string = 'None';
-  summaryTitle: string = 'None';
+  title = 'String';
+  groupTitle = 'None';
+  summaryTitle = 'None';
 
   canRender(_col: Column, _mode: ERenderMode): boolean {
     return true;
@@ -23,7 +23,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         const l = col.getLabel(d);
         setText(n, l);
         n.title = l;
-      }
+      },
     };
   }
 

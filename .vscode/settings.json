@@ -1,26 +1,31 @@
 {
-  "files.exclude": {
-      "**/.git": true,
-      "**/.svn": true,
-      "**/.hg": true,
-      "**/CVS": true,
-      "**/.DS_Store": true,
-      "src/**/*.js": true,
-      "src/**/*.d.ts": true,
-      "**/*.map": true,
-      ".cache-loader": true
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "beautify.options": {
-      "editorconfig": true,
-      "end_with_newline": true,
-      "preserve_newlines": true,
-      "space_in_paren": true,
-      "space_around_selector_separator": true
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "beautify.tabSize": 2,
-  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
-  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
-  "typescript.tsdk": "node_modules\\typescript\\lib",
-  "editor.formatOnPaste": true,
-  "editor.formatOnType": true
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.eol": "\n",
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "search.exclude": {
+    "**/.yarn": true,
+    "**/.pnp.*": true
+  },
+  "eslint.nodePath": ".yarn/sdks",
+  "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
+  "typescript.tsdk": ".yarn/sdks/typescript/lib",
+  "stylelint.stylelintPath": ".yarn/sdks/stylelint/lib/index.js"
 }

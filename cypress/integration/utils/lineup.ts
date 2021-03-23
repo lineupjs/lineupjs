@@ -1,24 +1,24 @@
+import type { LineUp as L, Taggle as T } from '../../../build/src';
+
 export declare type LineUpJSType = typeof import('../../../build/src');
-import {LineUp as L, Taggle as T} from '../../../build/src';
 
 export declare type LineUp = L;
 export declare type Taggle = T;
 
 export function setupLineUp() {
   // LineUpJS
-  return new Promise<{LineUpJS: LineUpJSType, document: Document}>((resolve) => {
+  return new Promise<{ LineUpJS: LineUpJSType; document: Document }>((resolve) => {
     cy.visit('/cypress/index.html').then((win) => {
       const LineUpJS: LineUpJSType = (win as any).LineUpJS;
       const doc = win.document;
-      resolve({LineUpJS, document: doc});
-
+      resolve({ LineUpJS, document: doc });
     });
   });
 }
 
 export function withLineUp(test: (LineUpJS: LineUpJSType, document: Document) => any) {
   return () => {
-    setupLineUp().then(({LineUpJS, document}) => test(LineUpJS, document))
+    setupLineUp().then(({ LineUpJS, document }) => test(LineUpJS, document));
   };
 }
 
@@ -39,7 +39,7 @@ export function waitReady(lineup: LineUp | Taggle) {
     lineup.data.on('orderChanged', () => {
       markReady();
       lineup.data.on('orderChanged', null);
-    })
+    });
     // use cypress to wait for the ready state
     return cy.get('.lu[data-ready]').should('have.class', 'lu');
   });

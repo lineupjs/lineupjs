@@ -1,16 +1,14 @@
-import {DataBuilder} from '../../src/builder/DataBuilder';
-import {IColumnDesc, Column, ITypeFactory} from '../../src/model';
+import { DataBuilder } from '../../src/builder/DataBuilder';
+import { IColumnDesc, Column, ITypeFactory } from '../../src/model';
 
 interface IMyCustomDesc extends IColumnDesc {
   test: string;
 }
 
-
 describe('DataBuilder', () => {
   describe('registerColumnType', () => {
     it('simple constructor', () => {
-      class CustomColumn extends Column {
-      }
+      class CustomColumn extends Column {}
       expect(new DataBuilder([]).registerColumnType('custom', CustomColumn)).toBeDefined();
     });
     it('simple constructor', () => {

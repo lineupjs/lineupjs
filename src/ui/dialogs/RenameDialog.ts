@@ -1,10 +1,9 @@
-import {Column, IColumnMetaData} from '../../model';
-import ADialog, {IDialogContext} from './ADialog';
-import {cssClass} from '../../styles';
+import { Column, IColumnMetaData } from '../../model';
+import ADialog, { IDialogContext } from './ADialog';
+import { cssClass } from '../../styles';
 
 /** @internal */
 export default class RenameDialog extends ADialog {
-
   private readonly before: IColumnMetaData;
 
   constructor(private readonly column: Column, dialog: IDialogContext) {
@@ -14,10 +13,15 @@ export default class RenameDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     node.classList.add(cssClass('dialog-rename'));
-    node.insertAdjacentHTML('beforeend', `
+    node.insertAdjacentHTML(
+      'beforeend',
+      `
       <input type="text" value="${this.column.label}" required autofocus placeholder="name">
       <input type="text" value="${this.column.getMetaData().summary}" placeholder="summary" name="summary">
-      <textarea class="${cssClass('textarea')}" rows="5" placeholder="description">${this.column.description}</textarea>`);
+      <textarea class="${cssClass('textarea')}" rows="5" placeholder="description">${
+        this.column.description
+      }</textarea>`
+    );
   }
 
   protected reset() {
@@ -25,7 +29,7 @@ export default class RenameDialog extends ADialog {
     const meta = {
       label: desc.label || this.column.id,
       summary: desc.summary || '',
-      description: desc.description || ''
+      description: desc.description || '',
     };
     this.findInput('input[type="text"]').value = meta.label;
     this.findInput('input[name="summary"]').value = meta.summary;
@@ -36,7 +40,7 @@ export default class RenameDialog extends ADialog {
     const label = this.findInput('input[type="text"]').value;
     const summary = this.findInput('input[name="summary"]').value.trim();
     const description = this.node.querySelector('textarea')!.value;
-    this.column.setMetaData({label, description, summary});
+    this.column.setMetaData({ label, description, summary });
     return true;
   }
 

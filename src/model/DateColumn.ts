@@ -1,14 +1,43 @@
-import {timeFormat, timeParse} from 'd3-time-format';
-import {ISequence, equal, IEventListener} from '../internal';
-import {Category, dialogAddons, toolbar} from './annotations';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {IDateColumn, IDateDesc, IDateFilter, IDateGrouper} from './IDateColumn';
-import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEFAULT_COLOR, ITypeFactory} from './interfaces';
-import {isMissingValue, isUnknown, missingGroup} from './missing';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {noDateFilter, defaultDateGrouper, isDummyDateFilter, isDefaultDateGrouper, restoreDateFilter, isEqualDateFilter, isDateIncluded, toDateGroup, chooseAggregatedDate} from './internalDate';
-import {integrateDefaults} from './internal';
-
+import { timeFormat, timeParse } from 'd3-time-format';
+import { ISequence, equal, IEventListener } from '../internal';
+import { Category, dialogAddons, toolbar } from './annotations';
+import Column, {
+  dirty,
+  dirtyCaches,
+  dirtyHeader,
+  dirtyValues,
+  groupRendererChanged,
+  labelChanged,
+  metaDataChanged,
+  rendererTypeChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  widthChanged,
+} from './Column';
+import { IDateColumn, IDateDesc, IDateFilter, IDateGrouper } from './IDateColumn';
+import {
+  defaultGroup,
+  IDataRow,
+  IGroup,
+  ECompareValueType,
+  IValueColumnDesc,
+  DEFAULT_COLOR,
+  ITypeFactory,
+} from './interfaces';
+import { isMissingValue, isUnknown, missingGroup } from './missing';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import {
+  noDateFilter,
+  defaultDateGrouper,
+  isDummyDateFilter,
+  isDefaultDateGrouper,
+  restoreDateFilter,
+  isEqualDateFilter,
+  isDateIncluded,
+  toDateGroup,
+  chooseAggregatedDate,
+} from './internalDate';
+import { integrateDefaults } from './internal';
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
 
@@ -47,13 +76,18 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   private currentGrouper: IDateGrouper = defaultDateGrouper();
 
   constructor(id: string, desc: Readonly<IDateColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      groupRenderer: 'datehistogram',
-      summaryRenderer: 'datehistogram'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        groupRenderer: 'datehistogram',
+        summaryRenderer: 'datehistogram',
+      })
+    );
     const f = timeFormat(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
-    this.format = (v) => (v instanceof Date) ? f(v) : '';
-    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
+    this.format = (v) => (v instanceof Date ? f(v) : '');
+    this.parse = desc.dateParse
+      ? timeParse(desc.dateParse)
+      : timeParse(desc.dateFormat || DateColumn.DEFAULT_DATE_FORMAT);
   }
 
   getFormatter() {
@@ -99,7 +133,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow): Date | null {
@@ -141,13 +175,13 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
   }
 
   setFilter(value: IDateFilter | null) {
-    value = value || {min: -Infinity, max: +Infinity, filterMissing: false};
+    value = value || { min: Number.NEGATIVE_INFINITY, max: Number.POSITIVE_INFINITY, filterMissing: false };
     if (isEqualDateFilter(value, this.currentFilter)) {
       return;
     }
     const bak = this.getFilter();
-    this.currentFilter.min = isUnknown(value.min) ? -Infinity : value.min;
-    this.currentFilter.max = isUnknown(value.max) ? Infinity : value.max;
+    this.currentFilter.min = isUnknown(value.min) ? Number.NEGATIVE_INFINITY : value.min;
+    this.currentFilter.max = isUnknown(value.max) ? Number.POSITIVE_INFINITY : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
     this.fire([DateColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
@@ -197,7 +231,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     const g = toDateGroup(this.currentGrouper, v);
     return {
       name: g.name,
-      color: DEFAULT_COLOR
+      color: DEFAULT_COLOR,
     };
   }
 

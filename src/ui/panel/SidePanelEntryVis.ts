@@ -1,10 +1,10 @@
-import {Column, isMapAbleColumn, NumberColumn} from '../../model';
-import {IAbortAblePromise} from '../../provider';
-import {ISummaryRenderer} from '../../renderer';
-import {cssClass, engineCssClass} from '../../styles';
-import {createShortcutMenuItems, dragAbleColumn, updateHeader} from '../header';
-import {IRankingHeaderContext} from '../interfaces';
-import {suffix} from '../../internal';
+import { Column, isMapAbleColumn, NumberColumn } from '../../model';
+import { IAbortAblePromise } from '../../provider';
+import { ISummaryRenderer } from '../../renderer';
+import { cssClass, engineCssClass } from '../../styles';
+import { createShortcutMenuItems, dragAbleColumn, updateHeader } from '../header';
+import { IRankingHeaderContext } from '../interfaces';
+import { suffix } from '../../internal';
 
 /** @internal */
 export default class SidePanelEntryVis {
@@ -23,13 +23,12 @@ export default class SidePanelEntryVis {
     this.column.on(suffix('.panel', NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_HEADER), () => {
       this.update();
     });
-    this.column.on(suffix('.panel',Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES), () => {
+    this.column.on(suffix('.panel', Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES), () => {
       this.recreateSummary();
     });
     this.init();
     this.update();
   }
-
 
   private init() {
     this.node.innerHTML = `
@@ -40,8 +39,15 @@ export default class SidePanelEntryVis {
         </div>
         <div class="${cssClass('toolbar')} ${cssClass('side-panel-toolbar')}"></div>
       </header>`;
-    createShortcutMenuItems(<HTMLElement>this.node.querySelector(`.${cssClass('toolbar')}`), 0, this.column, this.ctx, 'sidePanel', false);
-    dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
+    createShortcutMenuItems(
+      this.node.querySelector<HTMLElement>(`.${cssClass('toolbar')}`),
+      0,
+      this.column,
+      this.ctx,
+      'sidePanel',
+      false
+    );
+    dragAbleColumn(this.node.querySelector<HTMLElement>('header'), this.column, this.ctx);
     this.appendSummary();
   }
 
@@ -52,7 +58,7 @@ export default class SidePanelEntryVis {
   }
 
   private updateSummary() {
-    const summaryNode = <HTMLElement>this.node.querySelector(`.${cssClass('summary')}`)!;
+    const summaryNode = this.node.querySelector<HTMLElement>(`.${cssClass('summary')}`)!;
     if (this.summaryUpdater) {
       this.summaryUpdater.abort();
       summaryNode.classList.remove(engineCssClass('loading'));
@@ -75,7 +81,12 @@ export default class SidePanelEntryVis {
 
   private appendSummary() {
     const summary = this.ctx.asElement(this.summary.template);
-    summary.classList.add(cssClass('summary'), cssClass('side-panel-summary'), cssClass('renderer'), cssClass(`renderer-${this.column.getSummaryRenderer()}`));
+    summary.classList.add(
+      cssClass('summary'),
+      cssClass('side-panel-summary'),
+      cssClass('renderer'),
+      cssClass(`renderer-${this.column.getSummaryRenderer()}`)
+    );
     summary.dataset.renderer = this.column.getSummaryRenderer();
     summary.dataset.interactive = isMapAbleColumn(this.column).toString();
     this.node.appendChild(summary);
@@ -83,7 +94,7 @@ export default class SidePanelEntryVis {
 
   private recreateSummary() {
     // remove old summary
-    this.node.removeChild(this.node.querySelector(`.${cssClass('summary')}`)!!);
+    this.node.removeChild(this.node.querySelector(`.${cssClass('summary')}`)!);
 
     this.summary = this.ctx.summaryRenderer(this.column, true);
     this.appendSummary();
@@ -91,7 +102,16 @@ export default class SidePanelEntryVis {
   }
 
   destroy() {
-    this.column.on(suffix('.panel', NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_CACHES), null);
+    this.column.on(
+      suffix(
+        '.panel',
+        NumberColumn.EVENT_FILTER_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+        Column.EVENT_DIRTY_CACHES
+      ),
+      null
+    );
     this.node.remove();
   }
 }

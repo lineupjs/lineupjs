@@ -1,17 +1,17 @@
 {
   "hooks": {
-    "before:init": "npm test",
-    "before:release": "npm run dist",
+    "before:init": "yarn run lint && yarn test",
+    "before:release": "yarn pack && yarn docs",
     "after:release": "echo Successfully released ${name} v${version} to ${repo.repository}."
   },
   "git": {
-    "tagName": "v%s"
+    "tagName": "v${version}"
   },
   "npm": {
     "publish": true
   },
   "github": {
     "release": true,
-    "assets": ["dist/*.zip"]
+    "assets": ["*.tgz"]
   }
 }

@@ -1,16 +1,18 @@
-import {withLineUp, waitReady, LineUpJSType, Taggle} from './utils/lineup';
-import {generateData} from './utils/data';
+import { withLineUp, waitReady, LineUpJSType, Taggle } from './utils/lineup';
+import { generateData } from './utils/data';
 
 describe('builder', () => {
   let lineup: Taggle;
   let lineUpJS: LineUpJSType;
-  before(withLineUp((l, document) => {
-    lineUpJS = l;
-    const arr = generateData();
+  before(
+    withLineUp((l, document) => {
+      lineUpJS = l;
+      const arr = generateData();
 
-    lineup = lineUpJS.asTaggle(document.body, arr);
-    waitReady(lineup);
-  }));
+      lineup = lineUpJS.asTaggle(document.body, arr);
+      waitReady(lineup);
+    })
+  );
 
   it('default', () => {
     cy.get('.lu-stats strong').should('contain', '100');
@@ -33,6 +35,6 @@ describe('builder', () => {
     cy.get('.le-tr[data-i="0"]').first().click();
     cy.get('.lu-stats span').should('contain', '1 selected');
     cy.get('.le-tr[data-i="0"]').first().click();
-    cy.get('.lu-stats span').should('not.contain', '1 selected');
+    cy.get('.lu-stats').should('not.contain', '1 selected');
   });
 });

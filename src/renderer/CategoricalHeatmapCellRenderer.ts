@@ -1,10 +1,16 @@
-import {Column, ICategoricalsColumn, ICategory, IDataRow, IOrderedGroup, isCategoricalsColumn} from '../model';
-import {toMostFrequentCategoricals} from '../model/internalCategorical';
-import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {ICellRendererFactory, IRenderContext, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {renderMissingDOM, renderMissingValue} from './missing';
-import {noop, wideEnough} from './utils';
-import {GUESSED_ROW_HEIGHT} from '../constants';
+import { Column, ICategoricalsColumn, ICategory, IDataRow, IOrderedGroup, isCategoricalsColumn } from '../model';
+import { toMostFrequentCategoricals } from '../model/internalCategorical';
+import { CANVAS_HEIGHT, cssClass } from '../styles';
+import {
+  ICellRendererFactory,
+  IRenderContext,
+  ICellRenderer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+} from './interfaces';
+import { renderMissingDOM, renderMissingValue } from './missing';
+import { noop, wideEnough } from './utils';
+import { GUESSED_ROW_HEIGHT } from '../constants';
 
 export default class CategoricalHeatmapCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Heatmap';
@@ -36,17 +42,17 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
         const percent = evt.offsetX / width;
         const index = Math.max(0, Math.min(col.dataLength! - 1, Math.floor(percent * (col.dataLength! - 1) + 0.5)));
         n.title = `${labels[index]}: ${values[index]}`;
-      }
+      },
     };
   }
 
   create(col: ICategoricalsColumn, context: IRenderContext): ICellRenderer {
-    const {template, render, mover, width} = this.createContext(col, context);
+    const { template, render, mover, width } = this.createContext(col, context);
 
     return {
       template,
       update: (n: HTMLElement, d: IDataRow) => {
-        const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
+        const ctx = (n as HTMLCanvasElement).getContext('2d')!;
         ctx.canvas.width = width;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -54,39 +60,44 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
           return;
         }
         n.onmousemove = mover(n, col.getLabels(d));
-        n.onmouseleave = () => n.title = '';
+        n.onmouseleave = () => (n.title = '');
         render(ctx, col.getCategories(d), GUESSED_ROW_HEIGHT);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         render(ctx, col.getCategories(d), CANVAS_HEIGHT);
-      }
+      },
     };
   }
 
   createGroup(col: ICategoricalsColumn, context: IRenderContext): IGroupCellRenderer {
-    const {template, render, mover, width} = this.createContext(col, context);
+    const { template, render, mover, width } = this.createContext(col, context);
 
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, this.title, (rows) => toMostFrequentCategoricals(rows, col)).then((data) => {
-          if (typeof data === 'symbol') {
-            return;
-          }
-          const ctx = (<HTMLCanvasElement>n).getContext('2d')!;
-          ctx.canvas.width = width;
-          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        return context.tasks
+          .groupRows(col, group, this.title, (rows) => toMostFrequentCategoricals(rows, col))
+          .then((data) => {
+            if (typeof data === 'symbol') {
+              return;
+            }
+            const ctx = (n as HTMLCanvasElement).getContext('2d')!;
+            ctx.canvas.width = width;
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-          const isMissing = !data || data.length === 0 || data.every((d) => d == null);
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          n.onmousemove = mover(n, data.map((d) => d ? d.label : 'missing'));
-          n.onmouseleave = () => n.title = '';
-          render(ctx, data, GUESSED_ROW_HEIGHT);
-        });
-      }
+            const isMissing = !data || data.length === 0 || data.every((d) => d == null);
+            n.classList.toggle(cssClass('missing'), isMissing);
+            if (isMissing) {
+              return;
+            }
+            n.onmousemove = mover(
+              n,
+              data.map((d) => (d ? d.label : 'missing'))
+            );
+            n.onmouseleave = () => (n.title = '');
+            render(ctx, data, GUESSED_ROW_HEIGHT);
+          });
+      },
     };
   }
 
@@ -102,7 +113,7 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     templateRows += '</div>';
     return {
       template: templateRows,
-      update: noop
+      update: noop,
     };
   }
 }

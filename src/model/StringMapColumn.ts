@@ -1,12 +1,24 @@
-import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDataRow} from './interfaces';
-import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {EAlignment, IStringDesc} from './StringColumn';
-import {IEventListener} from '../internal';
-import {isMissingValue} from './missing';
-import {integrateDefaults} from './internal';
+import { toolbar } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import { IDataRow } from './interfaces';
+import MapColumn, { IMapColumnDesc } from './MapColumn';
+import { EAlignment, IStringDesc } from './StringColumn';
+import { IEventListener } from '../internal';
+import { isMissingValue } from './missing';
+import { integrateDefaults } from './internal';
 
 export declare type IStringMapColumnDesc = IStringDesc & IMapColumnDesc<string>;
 
@@ -19,11 +31,14 @@ export default class StringMapColumn extends MapColumn<string> {
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<IStringMapColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      width: 200,
-      renderer: 'map'
-    }));
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: 200,
+        renderer: 'map',
+      })
+    );
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
   }
 
@@ -41,7 +56,7 @@ export default class StringMapColumn extends MapColumn<string> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow) {
@@ -50,9 +65,9 @@ export default class StringMapColumn extends MapColumn<string> {
   }
 
   getMapValue(row: IDataRow) {
-    return super.getMap(row).map(({key, value}) => ({
+    return super.getMap(row).map(({ key, value }) => ({
       key,
-      value: isMissingValue(value) ? '' : String(value)
+      value: isMissingValue(value) ? '' : String(value),
     }));
   }
 }

@@ -29,7 +29,7 @@
     content: 'Grouping Hierarchy';
   }
 
-  i[title=Group] {
+  i[title='Group'] {
     pointer-events: none;
   }
 }
@@ -89,8 +89,8 @@
     }
   }
 
-  &:first-of-type i[title="Move Up"],
-  &:last-of-type i[title="Move Down"] {
+  &:first-of-type i[title='Move Up'],
+  &:last-of-type i[title='Move Down'] {
     visibility: hidden;
   }
 }

@@ -1,4 +1,39 @@
-import {ActionColumn, AggregateGroupColumn, AnnotateColumn, BooleanColumn, BooleansColumn, BoxPlotColumn, CategoricalColumn, CategoricalMapColumn, CategoricalsColumn, DateColumn, DatesColumn, DatesMapColumn, GroupColumn, HierarchyColumn, ImpositionBoxPlotColumn, ImpositionCompositeColumn, ImpositionCompositesColumn, LinkColumn, LinkMapColumn, LinksColumn, NestedColumn, NumberColumn, NumberMapColumn, NumbersColumn, OrdinalColumn, RankColumn, ReduceColumn, ScriptColumn, SelectionColumn, SetColumn, StackColumn, StringColumn, StringMapColumn, StringsColumn} from './';
+import {
+  ActionColumn,
+  AggregateGroupColumn,
+  AnnotateColumn,
+  BooleanColumn,
+  BooleansColumn,
+  BoxPlotColumn,
+  CategoricalColumn,
+  CategoricalMapColumn,
+  CategoricalsColumn,
+  DateColumn,
+  DatesColumn,
+  DatesMapColumn,
+  GroupColumn,
+  HierarchyColumn,
+  ImpositionBoxPlotColumn,
+  ImpositionCompositeColumn,
+  ImpositionCompositesColumn,
+  LinkColumn,
+  LinkMapColumn,
+  LinksColumn,
+  NestedColumn,
+  NumberColumn,
+  NumberMapColumn,
+  NumbersColumn,
+  OrdinalColumn,
+  RankColumn,
+  ReduceColumn,
+  ScriptColumn,
+  SelectionColumn,
+  SetColumn,
+  StackColumn,
+  StringColumn,
+  StringMapColumn,
+  StringsColumn,
+} from './';
 
 /**
  * a map of all known column types
@@ -38,6 +73,6 @@ export function models() {
     strings: StringsColumn,
     link: LinkColumn,
     linkMap: LinkMapColumn,
-    links: LinksColumn
+    links: LinksColumn,
   };
 }

@@ -1,14 +1,33 @@
-import {NumberColumn} from '.';
-import {IEventListener} from '../internal';
-import {SortByDefault, toolbar} from './annotations';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import CompositeColumn, {addColumn, moveColumn, removeColumn} from './CompositeColumn';
-import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IDataRow, ITypeFactory} from './interfaces';
-import {isDummyNumberFilter, noNumberFilter, restoreNumberFilter} from './internalNumber';
-import {IColorMappingFunction, IMapAbleColumn, IMapAbleDesc, IMappingFunction, INumberFilter, isNumberColumn} from './INumberColumn';
-import {restoreMapping} from './MappingFunction';
-import {integrateDefaults} from './internal';
+import { NumberColumn } from '.';
+import { IEventListener } from '../internal';
+import { SortByDefault, toolbar } from './annotations';
+import Column, {
+  dirty,
+  dirtyCaches,
+  dirtyHeader,
+  dirtyValues,
+  groupRendererChanged,
+  labelChanged,
+  metaDataChanged,
+  rendererTypeChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  widthChanged,
+} from './Column';
+import CompositeColumn, { addColumn, moveColumn, removeColumn } from './CompositeColumn';
+import CompositeNumberColumn, { ICompositeNumberDesc } from './CompositeNumberColumn';
+import { IDataRow, ITypeFactory } from './interfaces';
+import { isDummyNumberFilter, noNumberFilter, restoreNumberFilter } from './internalNumber';
+import {
+  IColorMappingFunction,
+  IMapAbleColumn,
+  IMapAbleDesc,
+  IMappingFunction,
+  INumberFilter,
+  isNumberColumn,
+} from './INumberColumn';
+import { restoreMapping } from './MappingFunction';
+import { integrateDefaults } from './internal';
 
 const DEFAULT_SCRIPT = `let s = 0;
 col.forEach((c) => s += c.v);
@@ -19,10 +38,9 @@ return s / col.length`;
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createScriptDesc(label: string = 'script') {
-  return {type: 'script', label, script: DEFAULT_SCRIPT};
+export function createScriptDesc(label = 'script') {
+  return { type: 'script', label, script: DEFAULT_SCRIPT };
 }
-
 
 function wrapWithContext(code: string) {
   let clean = code.trim();
@@ -71,9 +89,7 @@ interface IColumnWrapper {
  * wrapper class for simpler column accessing
  */
 class ColumnWrapper implements IColumnWrapper {
-  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number | null) {
-
-  }
+  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number | null) {}
 
   get type() {
     return this.c.desc.type;
@@ -89,9 +105,7 @@ class ColumnWrapper implements IColumnWrapper {
 }
 
 class LazyColumnWrapper implements IColumnWrapper {
-  constructor(private readonly c: Column, private readonly row: IDataRow) {
-
-  }
+  constructor(private readonly c: Column, private readonly row: IDataRow) {}
 
   get type() {
     return this.c.desc.type;
@@ -157,7 +171,7 @@ class ColumnContext {
     return this.children[index];
   }
 
-  forEach(callback: ((c: IColumnWrapper, index: number) => void)) {
+  forEach(callback: (c: IColumnWrapper, index: number) => void) {
     return this.children.forEach(callback);
   }
 
@@ -180,7 +194,6 @@ class ColumnContext {
     return this._all!;
   }
 }
-
 
 export interface IScriptDesc extends ICompositeNumberDesc, IMapAbleDesc {
   /**
@@ -219,11 +232,9 @@ export declare function colorMappingChanged(previous: IColorMappingFunction, cur
  */
 export declare function filterChanged(previous: INumberFilter | null, current: INumberFilter | null): void;
 
-
-
 /**
  * column combiner which uses a custom JavaScript function to combined the values
- * The script iteslf can be any valid JavaScript code. It will be embedded in a function.
+ * The script itself can be any valid JavaScript code. It will be embedded in a function.
  * Therefore the last statement has to return a value.
  *
  * In case of a single line statement the code piece statement <code>return</code> will be automatically prefixed.
@@ -271,7 +282,14 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
-  private f: Function | null = null;
+  private f: (
+    children,
+    values: number[],
+    raws: any[],
+    col: ColumnContext,
+    row: any,
+    index: number
+  ) => number | null = null;
   private mapping: IMappingFunction;
   private original: IMappingFunction;
   private colorMapping: IColorMappingFunction;
@@ -282,13 +300,15 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-
   constructor(id: string, desc: Readonly<IScriptColumnDesc>, factory: ITypeFactory) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'number',
-      groupRenderer: 'boxplot',
-      summaryRenderer: 'histogram'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'number',
+        groupRenderer: 'boxplot',
+        summaryRenderer: 'histogram',
+      })
+    );
     this.script = desc.script || this.script;
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
@@ -296,7 +316,13 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ScriptColumn.EVENT_SCRIPT_CHANGED, ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, ScriptColumn.EVENT_MAPPING_CHANGED]);
+    return super
+      .createEventList()
+      .concat([
+        ScriptColumn.EVENT_SCRIPT_CHANGED,
+        ScriptColumn.EVENT_COLOR_MAPPING_CHANGED,
+        ScriptColumn.EVENT_MAPPING_CHANGED,
+      ]);
   }
 
   on(type: typeof ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged | null): this;
@@ -328,7 +354,11 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
       return;
     }
     this.f = null;
-    this.fire([ScriptColumn.EVENT_SCRIPT_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.script, this.script = script);
+    this.fire(
+      [ScriptColumn.EVENT_SCRIPT_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY],
+      this.script,
+      (this.script = script)
+    );
   }
 
   getScript() {
@@ -361,15 +391,19 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
 
   protected compute(row: IDataRow) {
     if (this.f == null) {
-      this.f = new Function('children', 'values', 'raws', 'col', 'row', 'index', wrapWithContext(this.script));
+      // eslint-disable-next-line no-new-func
+      this.f = new Function('children', 'values', 'raws', 'col', 'row', 'index', wrapWithContext(this.script)) as any;
     }
     const children = this._children;
     const values = this._children.map((d) => d.getValue(row));
-    const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row) : null);
-    const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])), () => {
-      const cols = this.findMyRanker()!.flatColumns; // all except myself
-      return new ColumnContext(cols.map((c) => new LazyColumnWrapper(c, row)));
-    });
+    const raws = this._children.map((d) => (isNumberColumn(d) ? d.getRawNumber(row) : null)) as number[];
+    const col = new ColumnContext(
+      children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])),
+      () => {
+        const cols = this.findMyRanker()!.flatColumns; // all except myself
+        return new ColumnContext(cols.map((c) => new LazyColumnWrapper(c, row)));
+      }
+    );
     return this.f.call(this, children, values, raws, col, row.v, row.i);
   }
 
@@ -377,7 +411,7 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
     if (format === 'json') {
       return {
         value: this.getRawNumber(row),
-        children: this.children.map((d) => d.getExportValue(row, format))
+        children: this.children.map((d) => d.getExportValue(row, format)),
       };
     }
     return super.getExportValue(row, format);
@@ -399,7 +433,17 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([ScriptColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire(
+      [
+        ScriptColumn.EVENT_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      this.mapping.clone(),
+      (this.mapping = mapping)
+    );
   }
 
   getColor(row: IDataRow) {
@@ -414,7 +458,17 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([ScriptColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire(
+      [
+        ScriptColumn.EVENT_COLOR_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      this.colorMapping.clone(),
+      (this.colorMapping = mapping)
+    );
   }
 
   isFiltered() {

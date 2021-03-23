@@ -4,4 +4,4 @@
  * this file is not used during production, in those scenarios the "types" field of package.json is responsible for typing location
  */
 export * from './build/src';
-export {default} from './build/src';
+export { default } from './build/src';

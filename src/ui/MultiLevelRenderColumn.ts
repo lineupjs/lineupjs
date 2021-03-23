@@ -1,24 +1,18 @@
-import {abortAbleAll, IAbortAblePromise, IAsyncUpdate, isAsyncUpdate, StyleManager} from 'lineupengine';
-import {ILineUpFlags} from '../config';
-import {round} from '../internal';
-import {Column, IMultiLevelColumn} from '../model';
-import {ISummaryRenderer} from '../renderer';
-import {multiLevelGridCSSClass} from '../renderer/utils';
-import {COLUMN_PADDING, cssClass} from '../styles';
-import {createHeader, updateHeader} from './header';
-import {IRankingContext} from './interfaces';
+import { abortAbleAll, IAbortAblePromise, IAsyncUpdate, isAsyncUpdate, StyleManager } from 'lineupengine';
+import { round } from '../internal';
+import { Column, IMultiLevelColumn } from '../model';
+import { ISummaryRenderer } from '../renderer';
+import { multiLevelGridCSSClass } from '../renderer/utils';
+import { COLUMN_PADDING, cssClass } from '../styles';
+import { createHeader, updateHeader } from './header';
 import RenderColumn from './RenderColumn';
 
 /** @internal */
 export default class MultiLevelRenderColumn extends RenderColumn {
   private summaries: ISummaryRenderer[] = [];
 
-  constructor(c: IMultiLevelColumn & Column, index: number, ctx: IRankingContext, flags: ILineUpFlags) {
-    super(c, index, ctx, flags);
-  }
-
   private get mc() {
-    return <IMultiLevelColumn & Column>this.c;
+    return this.c as IMultiLevelColumn & Column;
   }
 
   get width() {
@@ -43,7 +37,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   private matchChildren(wrapper: HTMLElement, children: Column[]) {
     function matches(col: Column, i: number) {
       //do both match?
-      const n = <HTMLElement>wrapper.children[i];
+      const n = wrapper.children[i] as HTMLElement;
       return n != null && n.dataset.colId === col.id;
     }
 
@@ -52,8 +46,14 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       return;
     }
 
-    const lookup = new Map((<HTMLElement[]>Array.from(wrapper.children)).map((n: HTMLElement, i) =>
-      (<[string, {node: HTMLElement, summary: ISummaryRenderer}]>[n.dataset.colId!, {node: n, summary: this.summaries[i]}]))
+    const lookup = new Map(
+      (Array.from(wrapper.children) as HTMLElement[]).map(
+        (n: HTMLElement, i) =>
+          [n.dataset.colId!, { node: n, summary: this.summaries[i] }] as [
+            string,
+            { node: HTMLElement; summary: ISummaryRenderer }
+          ]
+      )
     );
 
     // reset summaries array
@@ -61,10 +61,11 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
     children.forEach((cc, i) => {
       const existing = lookup.get(cc.id);
-      if (existing) { // reuse existing
+      if (existing) {
+        // reuse existing
         lookup.delete(cc.id);
         const n = existing.node;
-        (<any>n.style).gridColumnStart = (i + 1).toString();
+        n.style.gridColumnStart = (i + 1).toString();
         wrapper.appendChild(n);
         this.summaries[i] = existing.summary;
         return;
@@ -75,10 +76,10 @@ export default class MultiLevelRenderColumn extends RenderColumn {
         mergeDropAble: false,
         dragAble: this.flags.advancedModelFeatures,
         rearrangeAble: this.flags.advancedModelFeatures,
-        resizeable: this.flags.advancedModelFeatures
+        resizeable: this.flags.advancedModelFeatures,
       });
       n.classList.add(cssClass('header'), cssClass('nested-th'));
-      (<any>n.style).gridColumnStart = (i + 1).toString();
+      n.style.gridColumnStart = (i + 1).toString();
       wrapper.appendChild(n);
 
       if (!this.renderers || !this.renderers.summary) {
@@ -86,7 +87,11 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       }
       const summary = this.ctx.summaryRenderer(cc, false);
       const summaryNode = this.ctx.asElement(summary.template);
-      summaryNode.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass(`renderer-${cc.getSummaryRenderer()}`));
+      summaryNode.classList.add(
+        cssClass('summary'),
+        cssClass('th-summary'),
+        cssClass(`renderer-${cc.getSummaryRenderer()}`)
+      );
       summaryNode.dataset.renderer = cc.getSummaryRenderer();
       n.appendChild(summaryNode);
       this.summaries[i] = summary;
@@ -100,7 +105,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   updateHeader(node: HTMLElement) {
     const r = super.updateHeader(node);
     node = isAsyncUpdate(r) ? r.item : r;
-    const wrapper = <HTMLElement>node.getElementsByClassName(cssClass('nested'))[0];
+    const wrapper = node.getElementsByClassName(cssClass('nested'))[0] as HTMLElement;
     if (!wrapper) {
       return r; // too early
     }
@@ -117,9 +122,9 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     // need this for chrome to work properly
     const widths = mc.children.map((c) => `minmax(0, ${round(c.getWidth())}fr)`);
     const clazz = multiLevelGridCSSClass(this.ctx.idPrefix, this.c);
-    style.updateRule(`stacked-${this.c.id}`, `.${clazz}`, <any>{
+    style.updateRule(`stacked-${this.c.id}`, `.${clazz}`, {
       display: 'grid',
-      gridTemplateColumns: widths.join(' ')
+      gridTemplateColumns: widths.join(' '),
     });
     return clazz;
   }
@@ -128,7 +133,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     const sub = this.mc.children;
     this.matchChildren(wrapper, sub);
 
-    const children = <HTMLElement[]>Array.from(wrapper.children);
+    const children = Array.from(wrapper.children) as HTMLElement[];
 
     const toWait: IAbortAblePromise<void>[] = [];
     let header: HTMLElement;
@@ -146,7 +151,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
       if (!this.renderers || !this.renderers.summary) {
         return;
       }
-      let summary = <HTMLElement>node.getElementsByClassName(cssClass('summary'))[0];
+      let summary = node.getElementsByClassName(cssClass('summary'))[0] as HTMLElement;
       const oldRenderer = summary.dataset.renderer;
       const currentRenderer = c.getSummaryRenderer();
       if (oldRenderer !== currentRenderer) {
@@ -169,7 +174,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     }
     return {
       item: header,
-      ready: <IAbortAblePromise<void>>abortAbleAll(toWait)
+      ready: abortAbleAll(toWait) as IAbortAblePromise<void>,
     };
   }
 }

@@ -1,15 +1,24 @@
-export * from './builderAdapter';
+import { IImposeColumnBuilder, INestedBuilder, IReduceBuilder, IScriptedBuilder, IWeightedSumBuilder } from '..';
+import { ILineUpOptions, ITaggleOptions } from '../../config';
+import { EAdvancedSortMethod, IAction, ICategory, IColumnDesc, IGroupAction, IPartialCategoryNode } from '../../model';
+import { IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider } from '../../provider';
+import { LineUp, Taggle } from '../../ui';
 
-import {IImposeColumnBuilder, INestedBuilder, IReduceBuilder, IScriptedBuilder, IWeightedSumBuilder} from '..';
-import {ILineUpOptions, ITaggleOptions} from '../../config';
-import {EAdvancedSortMethod, IAction, ICategory, IColumnDesc, IGroupAction, IPartialCategoryNode} from '../../model';
-import {IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider} from '../../provider';
-import {LineUp, Taggle} from '../../ui';
+export * as builderAdapter from './builderAdapter';
 
 export interface IBuilderAdapterRankingProps {
-  sortBy?: (string | {column: string, asc: 'asc' | 'desc' | boolean}) | ((string | {column: string, asc: 'asc' | 'desc' | boolean})[]);
+  sortBy?:
+    | (string | { column: string; asc: 'asc' | 'desc' | boolean })
+    | (string | { column: string; asc: 'asc' | 'desc' | boolean })[];
   groupBy?: string[] | string;
-  columns?: (string | IImposeColumnBuilder | INestedBuilder | IWeightedSumBuilder | IReduceBuilder | IScriptedBuilder)[];
+  columns?: (
+    | string
+    | IImposeColumnBuilder
+    | INestedBuilder
+    | IWeightedSumBuilder
+    | IReduceBuilder
+    | IScriptedBuilder
+  )[];
 }
 
 export interface IBuilderAdapterImposeColumnProps {
@@ -40,8 +49,6 @@ export interface IBuilderAdapterSupportColumnProps {
   type: 'rank' | 'selection' | 'group' | 'aggregate' | '*';
 }
 
-
-
 export interface IBuilderAdapterDataProps extends Partial<IDataProviderOptions>, Partial<ILocalDataProviderOptions> {
   data: any[];
   selection?: number[] | null;
@@ -60,7 +67,7 @@ export interface IBuilderAdapterDataProps extends Partial<IDataProviderOptions>,
 export declare type IBuilderAdapterProps = Partial<ITaggleOptions> & IBuilderAdapterDataProps;
 
 export interface IChangeDetecter {
-  (prop: (keyof IBuilderAdapterProps)): boolean;
+  (prop: keyof IBuilderAdapterProps): boolean;
 }
 
 export interface IBuilderAdapter {
@@ -70,18 +77,17 @@ export interface IBuilderAdapter {
   columnDescs(data: any[]): IColumnDesc[];
 }
 
-
 export interface IBuilderAdapterColumnDescProps extends Partial<IColumnDesc> {
   column: string;
   asMap?: boolean;
   asArray?: string[] | number | boolean;
-  custom?: {[key: string]: any};
+  custom?: { [key: string]: any };
 }
 
 export interface IBuilderAdapterCategoricalColumnDescProps extends IBuilderAdapterColumnDescProps {
   asOrdinal?: boolean;
   categories?: (string | Partial<ICategory>)[];
-  missingCategory?: (string | Partial<ICategory>);
+  missingCategory?: string | Partial<ICategory>;
   asSet?: boolean | string;
 }
 

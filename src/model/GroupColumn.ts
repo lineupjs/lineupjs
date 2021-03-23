@@ -1,16 +1,28 @@
-import {Category, SupportType, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IDataRow, IGroup, ECompareValueType} from './interfaces';
-import {missingGroup} from './missing';
-import {IEventListener, ISequence} from '../internal';
+import { Category, SupportType, toolbar, dialogAddons } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import { IDataRow, IGroup, ECompareValueType } from './interfaces';
+import { missingGroup } from './missing';
+import { IEventListener, ISequence } from '../internal';
 
 export function createGroupDesc(label = 'Group Name') {
-  return {type: 'group', label};
+  return { type: 'group', label };
 }
 
 export enum EGroupSortMethod {
   name = 'name',
-  count = 'count'
+  count = 'count',
 }
 
 /**
@@ -19,7 +31,6 @@ export enum EGroupSortMethod {
  * @event
  */
 export declare function sortMethodChanged(previous: EGroupSortMethod, current: EGroupSortMethod): void;
-
 
 @SupportType()
 @toolbar('rename', 'sortGroupBy')
@@ -52,7 +63,7 @@ export default class GroupColumn extends Column {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getLabel() {
@@ -71,7 +82,7 @@ export default class GroupColumn extends Column {
     if (this.groupSortMethod === sortMethod) {
       return;
     }
-    this.fire(GroupColumn.EVENT_SORTMETHOD_CHANGED, this.groupSortMethod, this.groupSortMethod = sortMethod);
+    this.fire(GroupColumn.EVENT_SORTMETHOD_CHANGED, this.groupSortMethod, (this.groupSortMethod = sortMethod));
     // sort by me if not already sorted by me
     if (!this.isGroupSortedByMe().asc) {
       this.toggleMyGroupSorting();

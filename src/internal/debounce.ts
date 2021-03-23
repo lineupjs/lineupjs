@@ -17,7 +17,11 @@ export interface IDebounceContext {
  * @return {(...args: any[]) => any} a function that can be called with the same interface as the callback but delayed
  * @internal
  */
-export default function debounce(callback: (...args: any[]) => void, timeToDelay = 100, choose?: (current: IDebounceContext, next: IDebounceContext) => IDebounceContext) {
+export default function debounce(
+  callback: (...args: any[]) => void,
+  timeToDelay = 100,
+  choose?: (current: IDebounceContext, next: IDebounceContext) => IDebounceContext
+) {
   let tm = -1;
   let ctx: IDebounceContext | null = null;
 
@@ -27,14 +31,14 @@ export default function debounce(callback: (...args: any[]) => void, timeToDelay
       tm = -1;
     }
 
-    const next = {self: this, args};
+    const next = { self: this, args };
     // compute current context
     ctx = ctx && choose ? choose(ctx, next) : next;
 
-    tm = self.setTimeout(() => {
+    tm = (setTimeout(() => {
       console.assert(ctx != null);
       callback.apply(ctx!.self, ctx!.args);
       ctx = null;
-    }, timeToDelay);
+    }, timeToDelay) as unknown) as number;
   };
 }

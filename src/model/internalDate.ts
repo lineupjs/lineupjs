@@ -1,12 +1,16 @@
-import {timeDay, timeHour, timeMinute, timeMonth, timeSecond, timeWeek} from 'd3-time';
-import {timeFormat} from 'd3-time-format';
-import {equal, ISequence, isSeqEmpty} from '../internal';
-import {INumberFilter, IDateGrouper, IDataRow, IDateColumn} from '.';
-import {isNumberIncluded} from './internalNumber';
+import { timeDay, timeHour, timeMinute, timeMonth, timeSecond, timeWeek } from 'd3-time';
+import { timeFormat } from 'd3-time-format';
+import { equal, ISequence, isSeqEmpty } from '../internal';
+import { INumberFilter, IDateGrouper, IDataRow, IDateColumn } from '.';
+import { isNumberIncluded } from './internalNumber';
 
 /** @internal */
-export {isDummyNumberFilter as isDummyDateFilter, isEqualNumberFilter as isEqualDateFilter, noNumberFilter as noDateFilter, restoreNumberFilter as restoreDateFilter} from './internalNumber';
-
+export {
+  isDummyNumberFilter as isDummyDateFilter,
+  isEqualNumberFilter as isEqualDateFilter,
+  noNumberFilter as noDateFilter,
+  restoreNumberFilter as restoreDateFilter,
+} from './internalNumber';
 
 /** @internal */
 export function isDateIncluded(filter: INumberFilter | null, value: Date | null) {
@@ -43,7 +47,7 @@ export function shiftFilterDateDay(date: number, type: 'min' | 'max') {
  * @internal
  */
 export function defaultDateGrouper(): IDateGrouper {
-  return {granularity: 'month', circular: false};
+  return { granularity: 'month', circular: false };
 }
 
 /**
@@ -57,7 +61,7 @@ export function isDefaultDateGrouper(grouper: IDateGrouper) {
  * convert the given date to the desired grouper
  * @internal
  */
-export function toDateGroup(grouper: IDateGrouper, value: Date): {value: number, name: string} {
+export function toDateGroup(grouper: IDateGrouper, value: Date): { value: number; name: string } {
   switch (grouper.granularity) {
     case 'century':
       const centuryP = Math.floor(value.getFullYear() / 100);
@@ -65,12 +69,12 @@ export function toDateGroup(grouper: IDateGrouper, value: Date): {value: number,
         const century = centuryP % 10;
         return {
           value: century,
-          name: `*${century}00`
+          name: `*${century}00`,
         };
       }
       return {
         value: centuryP,
-        name: `${centuryP}00`
+        name: `${centuryP}00`,
       };
     case 'decade':
       const decadeP = Math.floor(value.getFullYear() / 10);
@@ -78,135 +82,141 @@ export function toDateGroup(grouper: IDateGrouper, value: Date): {value: number,
         const decade = decadeP % 10;
         return {
           value: decade,
-          name: `**${decade}0`
+          name: `**${decade}0`,
         };
       }
       return {
         value: decadeP,
-        name: `${decadeP}0`
+        name: `${decadeP}0`,
       };
     case 'year':
       if (grouper.circular) {
         const year = value.getFullYear() % 10;
         return {
           value: year,
-          name: `***${year}`
+          name: `***${year}`,
         };
       }
       return {
         value: value.getFullYear(),
-        name: String(value.getFullYear())
+        name: String(value.getFullYear()),
       };
     case 'month':
       if (grouper.circular) {
         return {
           value: value.getMonth(),
-          name: timeFormat('%B')(value)
+          name: timeFormat('%B')(value),
         };
       }
       return {
         value: timeMonth(value).getTime(),
-        name: timeFormat('%B %Y')(value)
+        name: timeFormat('%B %Y')(value),
       };
     case 'week':
       if (grouper.circular) {
         return {
           value: value.getMonth(),
-          name: timeFormat('%W')(value)
+          name: timeFormat('%W')(value),
         };
       }
       return {
         value: timeWeek(value).getTime(),
-        name: timeFormat('%W %Y')(value)
+        name: timeFormat('%W %Y')(value),
       };
     case 'day_of_week':
       if (grouper.circular) {
         return {
           value: value.getDay(),
-          name: timeFormat('%A')(value)
+          name: timeFormat('%A')(value),
         };
       }
       return {
         value: timeDay(value).getTime(),
-        name: timeFormat('%x')(value)
+        name: timeFormat('%x')(value),
       };
     case 'day_of_month':
       if (grouper.circular) {
         return {
           value: value.getDate(),
-          name: timeFormat('%d')(value)
+          name: timeFormat('%d')(value),
         };
       }
       return {
         value: timeDay(value).getTime(),
-        name: timeFormat('%x')(value)
+        name: timeFormat('%x')(value),
       };
     case 'day_of_year':
       if (grouper.circular) {
         // %j = day of year
         const v = timeFormat('%j')(value);
         return {
-          value: parseInt(v, 10),
-          name: v
+          value: Number.parseInt(v, 10),
+          name: v,
         };
       }
       return {
         value: timeDay(value).getTime(),
-        name: timeFormat('%x')(value)
+        name: timeFormat('%x')(value),
       };
     case 'hour':
       if (grouper.circular) {
         return {
           value: value.getHours(),
-          name: timeFormat('%A')(value)
+          name: timeFormat('%A')(value),
         };
       }
       return {
         value: timeHour(value).getTime(),
-        name: timeFormat('%x')(value)
+        name: timeFormat('%x')(value),
       };
     case 'minute':
       if (grouper.circular) {
         return {
           value: value.getMinutes(),
-          name: timeFormat('%A')(value)
+          name: timeFormat('%A')(value),
         };
       }
       return {
         value: timeMinute(value).getTime(),
-        name: timeFormat('%x')(value)
+        name: timeFormat('%x')(value),
       };
     case 'second':
       if (grouper.circular) {
         return {
           value: value.getSeconds(),
-          name: timeFormat('%A')(value)
+          name: timeFormat('%A')(value),
         };
       }
       return {
         value: timeSecond(value).getTime(),
-        name: timeFormat('%x')(value)
+        name: timeFormat('%x')(value),
       };
   }
 
   return {
     value: value.getTime(),
-    name: value.toString()
+    name: value.toString(),
   };
 }
-
 
 /**
  * @internal
  */
-export function chooseAggregatedDate(rows: ISequence<IDataRow>, grouper: IDateGrouper | null, col: IDateColumn, valueCache?: ISequence<Date | null>): {value: number | null, name: string} {
-  const vs = <ISequence<Date>>(valueCache ? valueCache : rows.map((d) => col.getDate(d))).filter((d) => d instanceof Date);
+export function chooseAggregatedDate(
+  rows: ISequence<IDataRow>,
+  grouper: IDateGrouper | null,
+  col: IDateColumn,
+  valueCache?: ISequence<Date | null>
+): { value: number | null; name: string } {
+  const vs = (valueCache ? valueCache : rows.map((d) => col.getDate(d))).filter(
+    (d) => d instanceof Date
+  ) as ISequence<Date>;
   if (isSeqEmpty(vs)) {
-    return {value: null, name: ''};
+    return { value: null, name: '' };
   }
   const median = trueMedian(vs.map((d) => d.getTime()))!;
   if (!grouper) {
-    return {value: median, name: (new Date(median)).toString()};
+    return { value: median, name: new Date(median).toString() };
   }
   return toDateGroup(grouper, new Date(median));
 }

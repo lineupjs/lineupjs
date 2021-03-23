@@ -1,10 +1,10 @@
-import {IArrayDesc, IColumnDesc} from '../../model';
+import { IArrayDesc, IColumnDesc } from '../../model';
 
 export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
   protected readonly desc: T;
 
   constructor(type: string, column: string) {
-    this.desc = <any>{column, type, label: column ? column[0].toUpperCase() + column.slice(1): type};
+    this.desc = { column, type, label: column ? column[0].toUpperCase() + column.slice(1) : type } as any;
   }
 
   /**
@@ -64,7 +64,7 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
    * @param value its value
    */
   custom(key: string, value: any) {
-    (<any>this.desc)[key] = value;
+    (this.desc as any)[key] = value;
     return this;
   }
 
@@ -91,7 +91,7 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
   asArray(labels?: string[] | number) {
     console.assert(['boolean', 'categorical', 'date', 'number', 'string', 'link'].includes(this.desc.type!));
     this.desc.type += 's';
-    const a = <IArrayDesc>this.desc;
+    const a = this.desc as IArrayDesc;
     if (Array.isArray(labels)) {
       a.labels = labels;
       a.dataLength = labels.length;
@@ -114,7 +114,7 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
    * build the column description
    */
   build(_data: any[]): T {
-    return <any>this.desc;
+    return this.desc as any;
   }
 }
 

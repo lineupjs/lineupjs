@@ -1,17 +1,21 @@
-import {getUnsupportedBrowserError, SUPPORTED_CHROME_VERSION, SUPPORTED_EDGE_VERSION, SUPPORTED_FIREFOX_VERSION} from '../browser';
-import {ILineUpLike} from '../config';
-import {AEventDispatcher, IEventListener, clear} from '../internal';
-import {Column} from '../model';
-import {DataProvider, IDataProviderDump} from '../provider';
-import {cssClass} from '../styles';
+import {
+  getUnsupportedBrowserError,
+  SUPPORTED_CHROME_VERSION,
+  SUPPORTED_EDGE_VERSION,
+  SUPPORTED_FIREFOX_VERSION,
+} from '../browser';
+import { ILineUpLike } from '../config';
+import { AEventDispatcher, IEventListener, clear } from '../internal';
+import { Column } from '../model';
+import { DataProvider, IDataProviderDump } from '../provider';
+import { cssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
-import {ADialog} from './dialogs';
-
+import { ADialog } from './dialogs';
 
 /**
  * emitted when the highlight changes
  * @asMemberOf ALineUp
- * @param dataIndex the highlghted data index or -1 for none
+ * @param dataIndex the highlighted data index or -1 for none
  * @event
  */
 export declare function highlightChanged(dataIndex: number): void;
@@ -70,7 +74,14 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([ALineUp.EVENT_HIGHLIGHT_CHANGED, ALineUp.EVENT_SELECTION_CHANGED, ALineUp.EVENT_DIALOG_OPENED, ALineUp.EVENT_DIALOG_CLOSED]);
+    return super
+      .createEventList()
+      .concat([
+        ALineUp.EVENT_HIGHLIGHT_CHANGED,
+        ALineUp.EVENT_SELECTION_CHANGED,
+        ALineUp.EVENT_DIALOG_OPENED,
+        ALineUp.EVENT_DIALOG_CLOSED,
+      ]);
   }
 
   on(type: typeof ALineUp.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
@@ -149,12 +160,14 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     }
     if (enabled) {
       this.highlightListeners++;
-      if (this.highlightListeners === 1) { // first
+      if (this.highlightListeners === 1) {
+        // first
         this.enableHighlightListening(true);
       }
     } else {
       this.highlightListeners -= 1;
-      if (this.highlightListeners === 0) { // last
+      if (this.highlightListeners === 0) {
+        // last
         this.enableHighlightListening(false);
       }
     }

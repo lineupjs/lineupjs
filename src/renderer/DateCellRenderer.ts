@@ -1,14 +1,20 @@
-import {Column, IDataRow, DateColumn, IOrderedGroup} from '../model';
-import {IRenderContext, ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {noop, noRenderer, setText, exampleText} from './utils';
-import {chooseAggregatedDate} from '../model/internalDate';
-import {cssClass} from '../styles';
+import { Column, IDataRow, DateColumn, IOrderedGroup } from '../model';
+import {
+  IRenderContext,
+  ICellRendererFactory,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+  ICellRenderer,
+} from './interfaces';
+import { renderMissingDOM } from './missing';
+import { noop, noRenderer, setText, exampleText } from './utils';
+import { chooseAggregatedDate } from '../model/internalDate';
+import { cssClass } from '../styles';
 
 export default class DateCellRenderer implements ICellRendererFactory {
-  title: string = 'Date';
-  groupTitle: string = 'Date';
-  summaryTitle: string = 'Date';
+  title = 'Date';
+  groupTitle = 'Date';
+  summaryTitle = 'Date';
 
   canRender(col: Column): boolean {
     return col instanceof DateColumn;
@@ -21,7 +27,7 @@ export default class DateCellRenderer implements ICellRendererFactory {
         renderMissingDOM(n, col, d);
         setText(n, col.getLabel(d));
       },
-      render: noop
+      render: noop,
     };
   }
 
@@ -31,22 +37,26 @@ export default class DateCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
         const isGrouped = col.isGroupedBy() >= 0;
         if (isGrouped) {
-          return context.tasks.groupRows(col, group, 'date', (rows) => chooseAggregatedDate(rows, col.getDateGrouper(), col)).then((chosen) => {
-            if (typeof chosen === 'symbol') {
+          return context.tasks
+            .groupRows(col, group, 'date', (rows) => chooseAggregatedDate(rows, col.getDateGrouper(), col))
+            .then((chosen) => {
+              if (typeof chosen === 'symbol') {
+                return;
+              }
+              n.classList.toggle(cssClass('missing'), !chosen);
+              setText(n, chosen ? chosen.name : '');
+            });
+        }
+        return context.tasks
+          .groupExampleRows(col, group, 'date', (sample) => exampleText(col, sample))
+          .then((text) => {
+            if (typeof text === 'symbol') {
               return;
             }
-            n.classList.toggle(cssClass('missing'), !chosen);
-            setText(n, chosen ? chosen.name : '');
+            n.classList.toggle(cssClass('missing'), !text);
+            setText(n, text);
           });
-        }
-        return context.tasks.groupExampleRows(col, group, 'date', (sample) => exampleText(col, sample)).then((text) => {
-          if (typeof text === 'symbol') {
-            return;
-          }
-          n.classList.toggle(cssClass('missing'), !text);
-          setText(n, text);
-        });
-      }
+      },
     };
   }
 

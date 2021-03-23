@@ -1,8 +1,7 @@
-import {IAdvancedBoxPlotData, IBoxPlotData, IForEachAble} from '../internal';
+import { IAdvancedBoxPlotData, IBoxPlotData, IForEachAble } from '../internal';
 import Column from './Column';
-import {IArrayColumn} from './IArrayColumn';
-import {IColumnDesc, IDataRow, ITypedDump, ITypeFactory} from './interfaces';
-
+import { IArrayColumn } from './IArrayColumn';
+import { IColumnDesc, IDataRow, ITypedDump, ITypeFactory } from './interfaces';
 
 export interface IColorMappingFunction {
   apply(v: number): string;
@@ -15,7 +14,7 @@ export interface IColorMappingFunction {
 }
 
 export interface IColorMappingFunctionConstructor {
-  new(dump: ITypedDump | string, factory: ITypeFactory): IColorMappingFunction;
+  new (dump: ITypedDump | string, factory: ITypeFactory): IColorMappingFunction;
 }
 
 export interface IMappingFunction {
@@ -35,9 +34,8 @@ export interface IMappingFunction {
 }
 
 export interface IMappingFunctionConstructor {
-  new(dump: ITypedDump): IMappingFunction;
+  new (dump: ITypedDump): IMappingFunction;
 }
-
 
 export interface IMapAbleDesc {
   /**
@@ -64,7 +62,6 @@ export interface IMapAbleDesc {
   colorMapping?: string | ((v: number) => string) | ITypedDump;
 }
 
-
 export interface IMapAbleColumn extends INumberColumn {
   getOriginalMapping(): IMappingFunction;
 
@@ -86,9 +83,13 @@ export interface IMapAbleColumn extends INumberColumn {
 export function isMapAbleColumn(col: Column): col is IMapAbleColumn;
 export function isMapAbleColumn(col: IColumnDesc): col is IMapAbleDesc & IColumnDesc;
 export function isMapAbleColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<IMapAbleColumn>col).getMapping === 'function' || (!(col instanceof Column) && isNumberColumn(col) && ((<IColumnDesc>col).type.startsWith('number') || (<IColumnDesc>col).type.startsWith('boxplot'))));
+  return (
+    (col instanceof Column && typeof (col as IMapAbleColumn).getMapping === 'function') ||
+    (!(col instanceof Column) &&
+      isNumberColumn(col) &&
+      ((col as IColumnDesc).type.startsWith('number') || (col as IColumnDesc).type.startsWith('boxplot')))
+  );
 }
-
 
 export interface INumberColumn extends Column {
   getNumber(row: IDataRow): number;
@@ -124,16 +125,18 @@ export interface INumberDesc extends IMapAbleDesc {
 export function isNumberColumn(col: Column): col is INumberColumn;
 export function isNumberColumn(col: IColumnDesc): col is INumberDesc & IColumnDesc;
 export function isNumberColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<INumberColumn>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
+  return (
+    (col instanceof Column && typeof (col as INumberColumn).getNumber === 'function') ||
+    (!(col instanceof Column) && (col as IColumnDesc).type.match(/(number|stack|ordinal)/) != null)
+  );
 }
-
 
 export enum ESortMethod {
   min = 'min',
   max = 'max',
   median = 'median',
   q1 = 'q1',
-  q3 = 'q3'
+  q3 = 'q3',
 }
 
 export interface IBoxPlotColumn extends INumberColumn, IMapAbleColumn {
@@ -149,7 +152,7 @@ export interface IBoxPlotColumn extends INumberColumn, IMapAbleColumn {
 }
 
 export function isBoxPlotColumn(col: Column): col is IBoxPlotColumn {
-  return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
+  return typeof (col as IBoxPlotColumn).getBoxPlotData === 'function';
 }
 
 export enum EAdvancedSortMethod {
@@ -158,7 +161,7 @@ export enum EAdvancedSortMethod {
   median = 'median',
   q1 = 'q1',
   q3 = 'q3',
-  mean = 'mean'
+  mean = 'mean',
 }
 
 export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
@@ -174,9 +177,8 @@ export interface INumbersColumn extends IAdvancedBoxPlotColumn, IArrayColumn<num
 }
 
 export function isNumbersColumn(col: Column): col is INumbersColumn {
-  return isBoxPlotColumn(col) && typeof (<INumbersColumn>col).getNumbers === 'function';
+  return isBoxPlotColumn(col) && typeof (col as INumbersColumn).getNumbers === 'function';
 }
-
 
 export interface INumberFilter {
   min: number;

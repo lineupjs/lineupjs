@@ -1,14 +1,30 @@
-import {ICategoricalDesc, ICategory, ICategoricalLikeColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, DEFAULT_COLOR, ITypeFactory} from './interfaces';
-import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import {
+  ICategoricalDesc,
+  ICategory,
+  ICategoricalLikeColumn,
+  ICategoricalColorMappingFunction,
+} from './ICategoricalColumn';
+import { IDataRow, DEFAULT_COLOR, ITypeFactory } from './interfaces';
+import MapColumn, { IMapColumnDesc } from './MapColumn';
+import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import Column, {labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, widthChanged, dirtyCaches} from './Column';
-import {IEventListener} from '../internal';
-import {toolbar} from './annotations';
-import {toCategories} from './internalCategorical';
-
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import Column, {
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  widthChanged,
+  dirtyCaches,
+} from './Column';
+import { IEventListener } from '../internal';
+import { toolbar } from './annotations';
+import { toCategories } from './internalCategorical';
 
 export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDesc<string | null>;
 
@@ -17,7 +33,10 @@ export declare type ICategoricalMapColumnDesc = ICategoricalDesc & IMapColumnDes
  * @asMemberOf CategoricalMapColumn
  * @event
  */
-export declare function colorMappingChanged_CMC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_CMC(
+  previous: ICategoricalColorMappingFunction,
+  current: ICategoricalColorMappingFunction
+): void;
 
 @toolbar('rename', 'colorMappedCategorical')
 export default class CategoricalMapColumn extends MapColumn<string | null> implements ICategoricalLikeColumn {
@@ -39,7 +58,10 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
     return super.createEventList().concat([CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_CMC | null): this;
+  on(
+    type: typeof CategoricalMapColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_CMC | null
+  ): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -54,9 +76,8 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
-
 
   private parseValue(v: any) {
     if (!v) {
@@ -67,9 +88,9 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
   }
 
   getCategoryMap(row: IDataRow) {
-    return super.getMap(row).map(({key, value}) => ({
+    return super.getMap(row).map(({ key, value }) => ({
       key,
-      value: this.parseValue(value)
+      value: this.parseValue(value),
     }));
   }
 
@@ -78,21 +99,26 @@ export default class CategoricalMapColumn extends MapColumn<string | null> imple
   }
 
   getColors(row: IDataRow) {
-    return this.getCategoryMap(row).map(({key, value}) => ({key, value: value ? this.colorMapping.apply(value) : DEFAULT_COLOR}));
+    return this.getCategoryMap(row).map(({ key, value }) => ({
+      key,
+      value: value ? this.colorMapping.apply(value) : DEFAULT_COLOR,
+    }));
   }
 
   getValue(row: IDataRow) {
     const r = this.getCategoryMap(row);
-    return r.length === 0 ? null : r.map(({key, value}) => ({
-      key,
-      value: value ? value.name : null
-    }));
+    return r.length === 0
+      ? null
+      : r.map(({ key, value }) => ({
+          key,
+          value: value ? value.name : null,
+        }));
   }
 
   getLabels(row: IDataRow) {
-    return this.getCategoryMap(row).map(({key, value}) => ({
+    return this.getCategoryMap(row).map(({ key, value }) => ({
       key,
-      value: value ? value.label : ''
+      value: value ? value.label : '',
     }));
   }
 

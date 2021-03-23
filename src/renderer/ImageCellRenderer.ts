@@ -1,8 +1,8 @@
-import {Column, IDataRow, LinkColumn} from '../model';
-import {ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {noRenderer} from './utils';
-import {abortAble} from 'lineupengine';
+import { Column, IDataRow, LinkColumn } from '../model';
+import { ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer } from './interfaces';
+import { renderMissingDOM } from './missing';
+import { noRenderer } from './utils';
+import { abortAble } from 'lineupengine';
 
 function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve) => {
@@ -27,12 +27,12 @@ export default class ImageCellRenderer implements ICellRendererFactory {
         n.style.backgroundImage = null;
         if (missing) {
           n.title = '';
-          return;
+          return undefined;
         }
         const v = col.getLink(d);
         n.title = v ? v.alt : '';
         if (!v) {
-          return;
+          return undefined;
         }
         return abortAble(loadImage(v.href)).then((image) => {
           if (typeof image === 'symbol') {
@@ -40,7 +40,7 @@ export default class ImageCellRenderer implements ICellRendererFactory {
           }
           n.style.backgroundImage = missing || !v ? null : `url('${image.src}')`;
         });
-      }
+      },
     };
   }
 

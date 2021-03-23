@@ -11,7 +11,7 @@
     <script src="./LineUpJS.js"></script>
 
     <script>
-      window.onload = function() {
+      window.onload = function () {
         const data = [
           {
             a: 1,
@@ -19,8 +19,8 @@
               b: 2,
               b0: 3,
               b0b: 4,
-              arr: [5]
-            }
+              arr: [5],
+            },
           },
           {
             a: 1,
@@ -28,39 +28,19 @@
               b: 2,
               b0: 3,
               b0b: 4,
-              arr: [5]
-            }
-          }
+              arr: [5],
+            },
+          },
         ];
 
         const builder = LineUpJS.builder(data);
 
         builder
-          .column(
-            LineUpJS.buildNumberColumn("a")
-              .label("A simple accessor")
-              .width(250)
-          )
-          .column(
-            LineUpJS.buildNumberColumn("b.b")
-              .label("B complex accessor 1")
-              .width(250)
-          )
-          .column(
-            LineUpJS.buildNumberColumn("b.b0")
-              .label("B complex accessor 2")
-              .width(250)
-          )
-          .column(
-            LineUpJS.buildNumberColumn("b.b0b")
-              .label("B complex accessor 3")
-              .width(250)
-          )
-          .column(
-            LineUpJS.buildNumberColumn("b.arr[0]")
-              .label("B complex accessor 4")
-              .width(250)
-          );
+          .column(LineUpJS.buildNumberColumn('a').label('A simple accessor').width(250))
+          .column(LineUpJS.buildNumberColumn('b.b').label('B complex accessor 1').width(250))
+          .column(LineUpJS.buildNumberColumn('b.b0').label('B complex accessor 2').width(250))
+          .column(LineUpJS.buildNumberColumn('b.b0b').label('B complex accessor 3').width(250))
+          .column(LineUpJS.buildNumberColumn('b.arr[0]').label('B complex accessor 4').width(250));
 
         builder.build(document.body);
       };

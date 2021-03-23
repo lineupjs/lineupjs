@@ -1,9 +1,9 @@
 import Popper from 'popper.js';
 import DialogManager from './DialogManager';
-import {merge} from '../../internal';
-import {cssClass} from '../../styles';
-import {IRankingHeaderContext} from '../interfaces';
-import {ILivePreviewOptions} from '../../config';
+import { merge } from '../../internal';
+import { cssClass } from '../../styles';
+import { IRankingHeaderContext } from '../interfaces';
+import { ILivePreviewOptions } from '../../config';
 
 export interface IDialogOptions {
   title: string;
@@ -25,17 +25,23 @@ export interface IDialogContext {
   idPrefix: string;
 }
 
-export function dialogContext(ctx: IRankingHeaderContext, level: number, attachment: HTMLElement | MouseEvent): IDialogContext {
+export function dialogContext(
+  ctx: IRankingHeaderContext,
+  level: number,
+  attachment: HTMLElement | MouseEvent
+): IDialogContext {
   return {
-    attachment: (<MouseEvent>attachment).currentTarget != null ? <HTMLElement>(<MouseEvent>attachment).currentTarget : <HTMLElement>attachment,
+    attachment:
+      (attachment as MouseEvent).currentTarget != null
+        ? ((attachment as MouseEvent).currentTarget as HTMLElement)
+        : (attachment as HTMLElement),
     level,
     manager: ctx.dialogManager,
-    idPrefix: ctx.idPrefix
+    idPrefix: ctx.idPrefix,
   };
 }
 
 abstract class ADialog {
-
   private readonly options: Readonly<IDialogOptions> = {
     title: '',
     livePreview: false,
@@ -44,8 +50,7 @@ abstract class ADialog {
     toggleDialog: true,
     cancelSubDialogs: false,
     autoClose: false,
-    modifiers: {
-    }
+    modifiers: {},
   };
 
   readonly node: HTMLFormElement;
@@ -72,7 +77,11 @@ abstract class ADialog {
   protected abstract build(node: HTMLElement): boolean | void;
 
   protected showLivePreviews() {
-    return this.options.livePreview === true || (typeof this.options.livePreview === 'string' && this.dialog.manager.livePreviews[this.options.livePreview] === true);
+    return (
+      this.options.livePreview === true ||
+      (typeof this.options.livePreview === 'string' &&
+        this.dialog.manager.livePreviews[this.options.livePreview] === true)
+    );
   }
 
   protected enableLivePreviews(selector: string | (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[]) {
@@ -84,11 +93,11 @@ abstract class ADialog {
     };
     if (typeof selector === 'string') {
       this.forEach(selector, (n: HTMLInputElement | HTMLSelectElement) => {
-        n.addEventListener('change', submitter, {passive: true});
+        n.addEventListener('change', submitter, { passive: true });
       });
     } else {
       selector.forEach((n) => {
-        n.addEventListener('change', submitter, {passive: true});
+        n.addEventListener('change', submitter, { passive: true });
       });
     }
   }
@@ -98,11 +107,14 @@ abstract class ADialog {
   }
 
   protected appendDialogButtons() {
-    this.node.insertAdjacentHTML('beforeend', `<div class="${cssClass('dialog-buttons')}">
+    this.node.insertAdjacentHTML(
+      'beforeend',
+      `<div class="${cssClass('dialog-buttons')}">
       <button class="${cssClass('dialog-button')}" type="submit" title="Apply"></button>
       <button class="${cssClass('dialog-button')}" type="button" title="Cancel"></button>
       <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values"></button>
-    </div>`);
+    </div>`
+    );
   }
 
   open() {
@@ -112,7 +124,7 @@ abstract class ADialog {
     if (this.build(this.node) === false) {
       return;
     }
-    const parent = <HTMLElement>this.attachment.closest(`.${cssClass()}`)!;
+    const parent = this.attachment.closest<HTMLElement>(`.${cssClass()}`)!;
 
     if (this.options.title) {
       this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
@@ -122,18 +134,25 @@ abstract class ADialog {
     }
 
     parent.appendChild(this.node);
-    this.popper = new Popper(this.attachment, this.node, merge({
-      modifiers: {
-        preventOverflow: {
-          boundariesElement: parent
-        }
-      }
-    }, this.options));
+    this.popper = new Popper(
+      this.attachment,
+      this.node,
+      merge(
+        {
+          modifiers: {
+            preventOverflow: {
+              boundariesElement: parent,
+            },
+          },
+        },
+        this.options
+      )
+    );
 
     const auto = this.find<HTMLInputElement>('input[autofocus]');
     if (auto) {
       // delay such that it works
-      self.setTimeout(() => auto.focus());
+      setTimeout(() => auto.focus());
     }
 
     const reset = this.find<HTMLButtonElement>('button[type=reset]');
@@ -182,7 +201,7 @@ abstract class ADialog {
   }
 
   protected find<T extends HTMLElement>(selector: string): T {
-    return <T>this.node.querySelector(selector);
+    return this.node.querySelector<T>(selector);
   }
 
   protected findInput(selector: string) {
@@ -190,7 +209,7 @@ abstract class ADialog {
   }
 
   protected forEach<M extends Element, T>(selector: string, callback: (d: M, i: number) => T): T[] {
-    return (<M[]>Array.from(this.node.querySelectorAll(selector))).map(callback);
+    return Array.from(this.node.querySelectorAll<M>(selector)).map(callback);
   }
 
   protected abstract reset(): void;

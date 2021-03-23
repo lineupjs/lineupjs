@@ -1,23 +1,25 @@
-import {Ranking} from '../../model';
-import ADialog, {IDialogContext} from './ADialog';
-import {cssClass} from '../../styles';
+import { Ranking } from '../../model';
+import ADialog, { IDialogContext } from './ADialog';
+import { cssClass } from '../../styles';
 
 /** @internal */
 export default class RenameRankingDialog extends ADialog {
-
   private readonly before: string;
 
   constructor(private readonly ranking: Ranking, dialog: IDialogContext) {
     super(dialog, {
-      livePreview: 'rename'
+      livePreview: 'rename',
     });
     this.before = ranking.getLabel();
   }
 
   protected build(node: HTMLElement) {
     node.classList.add(cssClass('dialog-rename'));
-    node.insertAdjacentHTML('beforeend', `
-      <input type="text" value="${this.ranking.getLabel()}" required autofocus placeholder="name">`);
+    node.insertAdjacentHTML(
+      'beforeend',
+      `
+      <input type="text" value="${this.ranking.getLabel()}" required autofocus placeholder="name">`
+    );
   }
 
   protected reset() {

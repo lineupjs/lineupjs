@@ -1,9 +1,9 @@
-import {OrderedSet, AEventDispatcher, IEventListener} from '../internal';
-import {IGroupData, IGroupItem, isGroup} from '../model';
-import {IDataProvider} from '../provider';
-import {cssClass, engineCssClass} from '../styles';
-import {forEachIndices} from '../model/internal';
-import {rangeSelection} from '../provider/utils';
+import { OrderedSet, AEventDispatcher, IEventListener } from '../internal';
+import { IGroupData, IGroupItem, isGroup } from '../model';
+import { IDataProvider } from '../provider';
+import { cssClass, engineCssClass } from '../styles';
+import { forEachIndices } from '../model/internal';
+import { rangeSelection } from '../provider/utils';
 
 interface IPoint {
   x: number;
@@ -32,10 +32,10 @@ export default class SelectionManager extends AEventDispatcher {
 
   private start: (IPoint & IShift) | null = null;
 
-  constructor(private readonly ctx: {provider: IDataProvider}, private readonly body: HTMLElement) {
+  constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement) {
     super();
     const root = body.parentElement!.parentElement!;
-    let hr = <HTMLHRElement>root.querySelector('hr');
+    let hr = root.querySelector('hr');
     if (!hr) {
       hr = root.ownerDocument!.createElement('hr');
       root.appendChild(hr);
@@ -55,11 +55,13 @@ export default class SelectionManager extends AEventDispatcher {
         return;
       }
       const row = engineCssClass('tr');
-      const startNode = this.start.node.classList.contains(row) ? this.start.node : <HTMLElement>this.start.node.closest(`.${row}`);
+      const startNode = this.start.node.classList.contains(row)
+        ? this.start.node
+        : this.start.node.closest<HTMLElement>(`.${row}`);
       // somehow on firefox the mouseUp will be triggered on the original node
       // thus search the node explicitly
-      const end = <HTMLElement>this.body.ownerDocument!.elementFromPoint(evt.clientX, evt.clientY);
-      const endNode = end.classList.contains(row) ? end : <HTMLElement>(end.closest(`.${row}`));
+      const end = this.body.ownerDocument!.elementFromPoint(evt.clientX, evt.clientY) as HTMLElement;
+      const endNode = end.classList.contains(row) ? end : end.closest<HTMLElement>(`.${row}`);
       this.start = null;
 
       this.body.classList.remove(cssClass('selection-active'));
@@ -68,23 +70,27 @@ export default class SelectionManager extends AEventDispatcher {
       this.select(evt.ctrlKey, startNode, endNode);
     };
 
-    body.addEventListener('mousedown', (evt) => {
-      const r = root.getBoundingClientRect();
-      this.start = {x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: <HTMLElement>evt.target};
+    body.addEventListener(
+      'mousedown',
+      (evt) => {
+        const r = root.getBoundingClientRect();
+        this.start = { x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: evt.target as HTMLElement };
 
-      this.body.classList.add(cssClass('selection-active'));
-      body.addEventListener('mousemove', mouseMove, {
-        passive: true
-      });
-      body.addEventListener('mouseup', mouseUp, {
-        passive: true
-      });
-      body.addEventListener('mouseleave', mouseUp, {
-        passive: true
-      });
-    }, {
-        passive: true
-      });
+        this.body.classList.add(cssClass('selection-active'));
+        body.addEventListener('mousemove', mouseMove, {
+          passive: true,
+        });
+        body.addEventListener('mouseup', mouseUp, {
+          passive: true,
+        });
+        body.addEventListener('mouseleave', mouseUp, {
+          passive: true,
+        });
+      },
+      {
+        passive: true,
+      }
+    );
   }
 
   protected createEventList() {
@@ -102,8 +108,8 @@ export default class SelectionManager extends AEventDispatcher {
       return; // no single
     }
 
-    const startIndex = parseInt(startNode.dataset.index!, 10);
-    const endIndex = parseInt(endNode.dataset.index!, 10);
+    const startIndex = Number.parseInt(startNode.dataset.index!, 10);
+    const endIndex = Number.parseInt(endNode.dataset.index!, 10);
 
     const from = Math.min(startIndex, endIndex);
     const end = Math.max(startIndex, endIndex);
@@ -121,18 +127,20 @@ export default class SelectionManager extends AEventDispatcher {
 
     const visible = Math.abs(sy - ey) > SelectionManager.MIN_DISTANCE;
     this.hr.classList.toggle(cssClass('selection-active'), visible);
-    this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(ey - sy)})rotate(${ey > sy ? 90 : -90}deg)`;
+    this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(
+      ey - sy
+    )})rotate(${ey > sy ? 90 : -90}deg)`;
   }
 
   remove(node: HTMLElement) {
-    node.onclick = <any>undefined;
+    node.onclick = undefined;
   }
 
   add(node: HTMLElement) {
     node.onclick = (evt) => {
-      const dataIndex = parseInt(node.dataset.i!, 10);
+      const dataIndex = Number.parseInt(node.dataset.i!, 10);
       if (evt.shiftKey) {
-        const relIndex = parseInt(node.dataset.index!, 10);
+        const relIndex = Number.parseInt(node.dataset.index!, 10);
         const ranking = node.parentElement!.dataset.ranking!;
         if (rangeSelection(this.ctx.provider, ranking, dataIndex, relIndex, evt.ctrlKey)) {
           return;
@@ -142,7 +150,7 @@ export default class SelectionManager extends AEventDispatcher {
     };
   }
 
-  selectRange(rows: {forEach: (c: (item: (IGroupItem | IGroupData)) => void) => void}, additional: boolean = false) {
+  selectRange(rows: { forEach: (c: (item: IGroupItem | IGroupData) => void) => void }, additional = false) {
     const current = new OrderedSet<number>(additional ? this.ctx.provider.getSelection() : []);
     const toggle = (dataIndex: number) => {
       if (current.has(dataIndex)) {
@@ -169,8 +177,8 @@ export default class SelectionManager extends AEventDispatcher {
     }
   }
 
-  update(node: HTMLElement, selectedDataIndices: {has(dataIndex: number): boolean}) {
-    const dataIndex = parseInt(node.dataset.i!, 10);
+  update(node: HTMLElement, selectedDataIndices: { has(dataIndex: number): boolean }) {
+    const dataIndex = Number.parseInt(node.dataset.i!, 10);
     if (selectedDataIndices.has(dataIndex)) {
       node.classList.add(cssClass('selected'));
     } else {

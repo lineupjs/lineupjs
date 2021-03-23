@@ -1,12 +1,24 @@
-import {toolbar} from './annotations';
-import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDataRow, ITypeFactory} from './interfaces';
-import {patternFunction, integrateDefaults} from './internal';
-import {EAlignment} from './StringColumn';
-import {IEventListener} from '../internal';
-import LinkColumn, {ILink, ILinkDesc} from './LinkColumn';
+import { toolbar } from './annotations';
+import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import { IDataRow, ITypeFactory } from './interfaces';
+import { patternFunction, integrateDefaults } from './internal';
+import { EAlignment } from './StringColumn';
+import { IEventListener } from '../internal';
+import LinkColumn, { ILink, ILinkDesc } from './LinkColumn';
 
 export declare type ILinksColumnDesc = ILinkDesc & IArrayColumnDesc<string | ILink>;
 
@@ -24,17 +36,20 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
-  private patternFunction: Function | null = null;
+  private patternFunction: (value: string, raw: any, index: number) => string | null = null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<ILinksColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      width: 200
-    }));
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: 200,
+      })
+    );
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
-    this.pattern = desc.pattern || '';
-    this.patternTemplates = desc.patternTemplates || [];
+    this.pattern = desc.pattern ?? '';
+    this.patternTemplates = desc.patternTemplates ?? [];
   }
 
   setPattern(pattern: string) {
@@ -64,15 +79,15 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValues(row: IDataRow) {
-    return this.getLinks(row).map((d) => d ? d.href : '');
+    return this.getLinks(row).map((d) => (d ? d.href : ''));
   }
 
   getLabels(row: IDataRow) {
-    return this.getLinks(row).map((d) => d ? d.alt : '');
+    return this.getLinks(row).map((d) => (d ? d.alt : ''));
   }
 
   private transformValue(v: any, row: IDataRow, i: number) {
@@ -83,7 +98,7 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
       if (!this.pattern) {
         return {
           alt: v,
-          href: v
+          href: v,
         };
       }
       if (!this.patternFunction) {
@@ -91,7 +106,7 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
       }
       return {
         alt: v,
-        href: this.patternFunction.call(this, v, row.v, i)
+        href: this.patternFunction.call(this, v, row.v, i),
       };
     }
     return v;
@@ -105,7 +120,7 @@ export default class LinksColumn extends ArrayColumn<string | ILink> {
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    if (this.pattern !== (<any>this.desc).pattern) {
+    if (this.pattern !== (this.desc as any).pattern) {
       r.pattern = this.pattern;
     }
     return r;

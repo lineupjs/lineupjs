@@ -1,56 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head lang="en">
-  <meta charset="UTF-8">
-  <title>LineUp Lazy Loading Test</title>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <title>LineUp Lazy Loading Test</title>
 
-  <link href="./LineUpJS.css" rel="stylesheet">
-  <link href="./demo.css" rel="stylesheet">
-</head>
-<body>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="./LineUpJS.js"></script>
+    <link href="./LineUpJS.css" rel="stylesheet" />
+    <link href="./demo.css" rel="stylesheet" />
+  </head>
+  <body>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="./LineUpJS.js"></script>
 
-<script>
-  window.onload = function () {
-    const arr = [
-      {a: 10},
-      {a: 5},
-      {a: 2},
-      {a: 7},
-      {a: 2},
-      {a: NaN}
-    ];
-    const desc = [
-      {label: 'Lazy', type: 'number', column: 'a', 'domain': [0, 10], lazyLoaded: true}
-    ];
+    <script>
+      window.onload = function () {
+        const arr = [{ a: 10 }, { a: 5 }, { a: 2 }, { a: 7 }, { a: 2 }, { a: NaN }];
+        const desc = [{ label: 'Lazy', type: 'number', column: 'a', domain: [0, 10], lazyLoaded: true }];
 
-    const p = new LineUpJS.LocalDataProvider(arr, desc);
-    const lazy = p.create(desc[0]);
-    {
-      const r = p.pushRanking();
-      r.insert(p.create(LineUpJS.createSelectionDesc()), 0);
-      r.push(lazy);
-    }
+        const p = new LineUpJS.LocalDataProvider(arr, desc);
+        const lazy = p.create(desc[0]);
+        {
+          const r = p.pushRanking();
+          r.insert(p.create(LineUpJS.createSelectionDesc()), 0);
+          r.push(lazy);
+        }
 
-    const instance = new LineUpJS.LineUp(document.body, p);
-    instance.update();
+        const instance = new LineUpJS.LineUp(document.body, p);
+        instance.update();
 
-    // create animation in canvas case through regular updates
-    const update = setInterval(instance.update.bind(instance), 200);
-    // load in 5 sec
-    setTimeout(function () {
-      p.rankings.forEach((ranking) => {
-
-        // find all columns, which where cloned from the original lazy column and set their loaded property to true
-        const lazyColumns = ranking.flatColumns.filter((col) => col.desc === lazy.desc);
-        lazyColumns.forEach((col) => col.setLoaded(true));
-      });
-      lazy.setLoaded(true);
-      clearInterval(update);
-    }, 5000);
-  };
-</script>
-
-</body>
+        // create animation in canvas case through regular updates
+        const update = setInterval(instance.update.bind(instance), 200);
+        // load in 5 sec
+        setTimeout(function () {
+          p.rankings.forEach((ranking) => {
+            // find all columns, which where cloned from the original lazy column and set their loaded property to true
+            const lazyColumns = ranking.flatColumns.filter((col) => col.desc === lazy.desc);
+            lazyColumns.forEach((col) => col.setLoaded(true));
+          });
+          lazy.setLoaded(true);
+          clearInterval(update);
+        }, 5000);
+      };
+    </script>
+  </body>
 </html>

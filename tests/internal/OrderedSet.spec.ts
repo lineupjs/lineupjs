@@ -1,6 +1,5 @@
 import OrderedSet from '../../src/internal/OrderedSet';
 
-
 describe('OrderedSet', () => {
   it('empty', () => {
     expect(Array.from(new OrderedSet())).toEqual([]);

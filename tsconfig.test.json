@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es5",
-    "outDir": "build"
+    "target": "es5"
   }
 }

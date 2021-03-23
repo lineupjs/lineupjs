@@ -1,9 +1,20 @@
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IDataRow, ITypeFactory} from './interfaces';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import { IDataRow, ITypeFactory } from './interfaces';
 import StringColumn from './StringColumn';
-import {IEventListener} from '../internal';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-
+import { IEventListener } from '../internal';
+import ValueColumn, { dataLoaded } from './ValueColumn';
 
 /**
  * emitted when the filter property changes
@@ -11,7 +22,6 @@ import ValueColumn, {dataLoaded} from './ValueColumn';
  * @event
  */
 export declare function filterChanged_AC(previous: string | RegExp | null, current: string | RegExp | null): void;
-
 
 /**
  * emitted when the grouping property changes
@@ -56,7 +66,7 @@ export default class AnnotateColumn extends StringColumn {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow) {
@@ -95,7 +105,12 @@ export default class AnnotateColumn extends StringColumn {
     } else {
       this.annotations.set(row.i, value);
     }
-    this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], row.i, old, value);
+    this.fire(
+      [AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY],
+      row.i,
+      old,
+      value
+    );
     return true;
   }
 }

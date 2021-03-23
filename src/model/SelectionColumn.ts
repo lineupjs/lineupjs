@@ -1,17 +1,29 @@
-import {Category, SupportType, toolbar} from './annotations';
-import {IndicesArray, IDataRow, IGroup, ECompareValueType, IValueColumnDesc} from './interfaces';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal';
-import {integrateDefaults} from './internal';
+import { Category, SupportType, toolbar } from './annotations';
+import { IndicesArray, IDataRow, IGroup, ECompareValueType, IValueColumnDesc } from './interfaces';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import { IEventListener } from '../internal';
+import { integrateDefaults } from './internal';
 
 /**
  * factory for creating a description creating a rank column
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createSelectionDesc(label: string = 'Selection Checkboxes') {
-  return {type: 'selection', label, fixed: true};
+export function createSelectionDesc(label = 'Selection Checkboxes') {
+  return { type: 'selection', label, fixed: true };
 }
 
 export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
@@ -25,7 +37,6 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
    */
   setterAll(indices: IndicesArray, value: boolean): void;
 }
-
 
 /**
  * emitted when rows are selected
@@ -46,18 +57,21 @@ export declare function select_SC(dataIndex: number, value: boolean, dataIndices
 export default class SelectionColumn extends ValueColumn<boolean> {
   private static SELECTED_GROUP: IGroup = {
     name: 'Selected',
-    color: 'orange'
+    color: 'orange',
   };
   private static NOT_SELECTED_GROUP: IGroup = {
     name: 'Unselected',
-    color: 'gray'
+    color: 'gray',
   };
   static readonly EVENT_SELECT = 'select';
 
   constructor(id: string, desc: Readonly<ISelectionColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      width: 20
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: 20,
+      })
+    );
   }
 
   get frozen() {
@@ -83,7 +97,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   setValue(row: IDataRow, value: boolean) {
@@ -96,18 +110,18 @@ export default class SelectionColumn extends ValueColumn<boolean> {
 
   setValues(rows: IndicesArray, value: boolean) {
     if (rows.length === 0) {
-      return;
+      return false;
     }
-    if ((<ISelectionColumnDesc>this.desc).setterAll) {
-      (<ISelectionColumnDesc>this.desc).setterAll(rows, value);
+    if ((this.desc as ISelectionColumnDesc).setterAll) {
+      (this.desc as ISelectionColumnDesc).setterAll(rows, value);
     }
     this.fire(SelectionColumn.EVENT_SELECT, rows[0], value, rows);
     return true;
   }
 
   private setImpl(row: IDataRow, value: boolean) {
-    if ((<ISelectionColumnDesc>this.desc).setter) {
-      (<ISelectionColumnDesc>this.desc).setter(row.i, value);
+    if ((this.desc as ISelectionColumnDesc).setter) {
+      (this.desc as ISelectionColumnDesc).setter(row.i, value);
     }
     this.fire(SelectionColumn.EVENT_SELECT, row.i, value);
     return true;

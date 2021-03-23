@@ -34,7 +34,7 @@
   }
 }
 
-.#{$engine-css_prefix}-td[data-group=d] {
+.#{$engine-css_prefix}-td[data-group='d'] {
   white-space: nowrap;
   overflow-x: hidden;
   text-overflow: ellipsis;

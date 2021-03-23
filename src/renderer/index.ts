@@ -1,23 +1,19 @@
-export {colorOf} from './impose';
-export * from './interfaces';
-export {renderMissingCanvas, renderMissingDOM} from './missing';
-
-import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {ANumbersCellRenderer} from './ANumbersCellRenderer';
+import { AAggregatedGroupRenderer } from './AAggregatedGroupRenderer';
+import { ANumbersCellRenderer } from './ANumbersCellRenderer';
 import ActionRenderer from './ActionRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
 import AnnotationRenderer from './AnnotationRenderer';
 import BarCellRenderer from './BarCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
-import BrightnessCellRenderer, {toHeatMapColor} from './BrightnessCellRenderer';
+import BrightnessCellRenderer, { toHeatMapColor } from './BrightnessCellRenderer';
 import CategoricalCellRenderer from './CategoricalCellRenderer';
 import CategoricalHeatmapCellRenderer from './CategoricalHeatmapCellRenderer';
 import CategoricalStackedDistributionlCellRenderer from './CategoricalStackedDistributionlCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
 import DateCellRenderer from './DateCellRenderer';
 import DateHistogramCellRenderer from './DateHistogramCellRenderer';
-import {DefaultCellRenderer} from './DefaultCellRenderer';
+import { DefaultCellRenderer } from './DefaultCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
 import GroupCellRenderer from './GroupCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
@@ -37,7 +33,11 @@ import StringCellRenderer from './StringCellRenderer';
 import TableCellRenderer from './TableCellRenderer';
 import UpSetCellRenderer from './UpSetCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
-import {noRenderer, wideEnough, wideEnoughCat, adaptTextColorToBgColor, adaptDynamicColorToBgColor} from './utils';
+import { noRenderer, wideEnough, wideEnoughCat, adaptTextColorToBgColor, adaptDynamicColorToBgColor } from './utils';
+
+export { colorOf } from './impose';
+export * from './interfaces';
+export { renderMissingCanvas, renderMissingDOM } from './missing';
 
 export const rendererClasses = {
   AAggregatedGroupRenderer,
@@ -74,7 +74,7 @@ export const rendererClasses = {
   StringCellRenderer,
   TableCellRenderer,
   UpSetCellRenderer,
-  VerticalBarCellRenderer
+  VerticalBarCellRenderer,
 };
 
 export const rendererUtils = {

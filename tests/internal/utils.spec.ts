@@ -1,6 +1,5 @@
-import {equalArrays, fixCSS, clear, concat} from '../../src/internal/utils';
-import {equal} from '../../src/internal/mathInterfaces';
-
+import { equalArrays, fixCSS, clear, concat } from '../../src/internal/utils';
+import { equal } from '../../src/internal/mathInterfaces';
 
 describe('equalArrays', () => {
   it('empty', () => {
@@ -63,15 +62,14 @@ describe('equal', () => {
 
   it('object', () => {
     expect(equal({}, {})).toBe(true);
-    expect(equal({a: 1}, {a: 1})).toBe(true);
-    expect(equal({a: {a: 1}}, {a: {a: 1}})).toBe(true);
+    expect(equal({ a: 1 }, { a: 1 })).toBe(true);
+    expect(equal({ a: { a: 1 } }, { a: { a: 1 } })).toBe(true);
 
-    expect(equal({}, {a: 1})).toBe(false);
-    expect(equal({a: 1}, {a: 2})).toBe(false);
-    expect(equal({a: {a: 1}}, {a: {a: 2}})).toBe(false);
+    expect(equal({}, { a: 1 })).toBe(false);
+    expect(equal({ a: 1 }, { a: 2 })).toBe(false);
+    expect(equal({ a: { a: 1 } }, { a: { a: 2 } })).toBe(false);
   });
 });
-
 
 describe('clear', () => {
   it('empty', () => {
@@ -94,6 +92,12 @@ describe('concat', () => {
   });
   it('nested', () => {
     expect(concat([1, [2, 3], 4])).toEqual([1, 2, 3, 4]);
-    expect(concat([[1, 2], [3, 4], [5, 6]])).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(
+      concat([
+        [1, 2],
+        [3, 4],
+        [5, 6],
+      ])
+    ).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });

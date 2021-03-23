@@ -1,9 +1,9 @@
-import {toolbar} from './annotations';
-import ArrayColumn, {IArrayColumnDesc} from './ArrayColumn';
-import {IDataRow} from './interfaces';
-import {EAlignment, IStringDesc} from './StringColumn';
-import {isMissingValue} from './missing';
-import {integrateDefaults} from './internal';
+import { toolbar } from './annotations';
+import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import { IDataRow } from './interfaces';
+import { EAlignment, IStringDesc } from './StringColumn';
+import { isMissingValue } from './missing';
+import { integrateDefaults } from './internal';
 
 export declare type IStringsColumnDesc = IStringDesc & IArrayColumnDesc<string>;
 
@@ -16,10 +16,13 @@ export default class StringsColumn extends ArrayColumn<string> {
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<IStringsColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      width: 200
-    }));
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: 200,
+      })
+    );
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
   }
 

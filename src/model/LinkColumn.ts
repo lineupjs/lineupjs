@@ -1,10 +1,22 @@
-import {Category, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IDataRow, IGroup, IValueColumnDesc, ITypeFactory} from './interfaces';
-import {patternFunction, integrateDefaults} from './internal';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IEventListener, ISequence} from '../internal';
-import {IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType, IStringFilter} from './StringColumn';
+import { Category, toolbar, dialogAddons } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import { IDataRow, IGroup, IValueColumnDesc, ITypeFactory } from './interfaces';
+import { patternFunction, integrateDefaults } from './internal';
+import ValueColumn, { dataLoaded } from './ValueColumn';
+import { IEventListener, ISequence } from '../internal';
+import { IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType, IStringFilter } from './StringColumn';
 import StringColumn from './StringColumn';
 
 export interface ILinkDesc extends IStringDesc {
@@ -33,7 +45,6 @@ export declare type ILinkColumnDesc = ILinkDesc & IValueColumnDesc<string | ILin
  */
 export declare function filterChanged_LC(previous: string | RegExp | null, current: string | RegExp | null): void;
 
-
 /**
  * emitted when the grouping property changes
  * @asMemberOf LinkColumn
@@ -60,26 +71,37 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   static readonly EVENT_PATTERN_CHANGED = 'patternChanged';
 
   private pattern: string;
-  private patternFunction: Function | null = null;
+  private patternFunction: (value: string, raw: any) => string | null = null;
   readonly patternTemplates: string[];
 
   private currentFilter: string | RegExp | null = null;
   private currentGroupCriteria: IStringGroupCriteria = {
     type: EStringGroupCriteriaType.startsWith,
-    values: []
+    values: [],
   };
 
   readonly alignment: EAlignment;
   readonly escape: boolean;
 
   constructor(id: string, desc: Readonly<ILinkColumnDesc>) {
-    super(id, integrateDefaults(desc, Object.assign({
-      width: 200
-    }, desc.pattern ? {
-        renderer: 'link',
-        groupRenderer: 'link'
-      } : {})));
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    super(
+      id,
+      integrateDefaults(
+        desc,
+        Object.assign(
+          {
+            width: 200,
+          },
+          desc.pattern
+            ? {
+                renderer: 'link',
+                groupRenderer: 'link',
+              }
+            : {}
+        )
+      )
+    );
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
 
     this.pattern = desc.pattern || '';
@@ -91,7 +113,17 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
       return;
     }
     this.patternFunction = null; // reset cache
-    this.fire([LinkColumn.EVENT_PATTERN_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], this.pattern, this.pattern = pattern);
+    this.fire(
+      [
+        LinkColumn.EVENT_PATTERN_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      this.pattern,
+      (this.pattern = pattern)
+    );
   }
 
   getPattern() {
@@ -99,7 +131,9 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([LinkColumn.EVENT_PATTERN_CHANGED, LinkColumn.EVENT_GROUPING_CHANGED, LinkColumn.EVENT_FILTER_CHANGED]);
+    return super
+      .createEventList()
+      .concat([LinkColumn.EVENT_PATTERN_CHANGED, LinkColumn.EVENT_GROUPING_CHANGED, LinkColumn.EVENT_FILTER_CHANGED]);
   }
 
   on(type: typeof LinkColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged_LC | null): this;
@@ -119,7 +153,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow) {
@@ -140,7 +174,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
       if (!this.pattern) {
         return {
           alt: v,
-          href: v
+          href: v,
         };
       }
       if (!this.patternFunction) {
@@ -148,7 +182,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
       }
       return {
         alt: v,
-        href: this.patternFunction.call(this, v, row.v)
+        href: this.patternFunction.call(this, v, row.v),
       };
     }
     return v;
@@ -161,7 +195,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
 
   dump(toDescRef: (desc: any) => any): any {
     const r = StringColumn.prototype.dump.call(this, toDescRef);
-    if (this.pattern !== (<any>this.desc).pattern) {
+    if (this.pattern !== (this.desc as any).pattern) {
       r.pattern = this.pattern;
     }
     return r;
@@ -222,4 +256,3 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return StringColumn.prototype.group.call(this, row);
   }
 }
-

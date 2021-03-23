@@ -1,17 +1,16 @@
-import {Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleColumn, DEFAULT_COLOR} from '../model';
-import {colorPool, MAX_COLORS} from '../model/internal';
-import {concat, equal, extent, range, resolveValue} from '../internal';
-import {timeParse} from 'd3-time-format';
-import {IDataProvider, IDeriveOptions, IExportOptions} from './interfaces';
-
+import { Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleColumn, DEFAULT_COLOR } from '../model';
+import { colorPool, MAX_COLORS } from '../model/internal';
+import { concat, equal, extent, range, resolveValue } from '../internal';
+import { timeParse } from 'd3-time-format';
+import { IDataProvider, IDeriveOptions, IExportOptions } from './interfaces';
 
 /**
  * @internal
  */
 export function cleanCategories(categories: Set<string>) {
   // remove missing values
-  categories.delete(<any>null);
-  categories.delete(<any>undefined);
+  categories.delete(null);
+  categories.delete(undefined);
   categories.delete('');
   categories.delete('NA');
   categories.delete('NaN');
@@ -30,7 +29,13 @@ function hasDifferentSizes(data: any[][]) {
 }
 
 function isEmpty(v: any) {
-  return v == null || (Array.isArray(v) && v.length === 0) || (v instanceof Set && v.size === 0) || (v instanceof Map && v.size === 0) || equal({}, v);
+  return (
+    v == null ||
+    (Array.isArray(v) && v.length === 0) ||
+    (v instanceof Set && v.size === 0) ||
+    (v instanceof Map && v.size === 0) ||
+    equal({}, v)
+  );
 }
 
 function deriveBaseType(value: any, all: () => any[], column: number | string, options: IDeriveOptions) {
@@ -42,18 +47,18 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
   if (typeof value === 'number') {
     return {
       type: 'number',
-      domain: extent(all())
+      domain: extent(all()),
     };
   }
   if (typeof value === 'boolean') {
     return {
-      type: 'boolean'
+      type: 'boolean',
     };
   }
 
   if (value instanceof Date) {
     return {
-      type: 'date'
+      type: 'date',
     };
   }
   const formats = Array.isArray(options.datePattern) ? options.datePattern : [options.datePattern];
@@ -64,10 +69,13 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
     }
     return {
       type: 'date',
-      dateParse: format
+      dateParse: format,
     };
   }
-  const treatAsCategorical = typeof options.categoricalThreshold === 'function' ? options.categoricalThreshold : (u: number, t: number) => u < t * (<number>options.categoricalThreshold);
+  const treatAsCategorical =
+    typeof options.categoricalThreshold === 'function'
+      ? options.categoricalThreshold
+      : (u: number, t: number) => u < t * (options.categoricalThreshold as number);
 
   if (typeof value === 'string') {
     //maybe a categorical
@@ -76,28 +84,34 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
     if (treatAsCategorical(categories.size, values.length)) {
       return {
         type: 'categorical',
-        categories: cleanCategories(categories)
+        categories: cleanCategories(categories),
       };
     }
     return {
-      type: 'string'
+      type: 'string',
     };
   }
 
   if (typeof value === 'object' && value.alt != null && value.href != null) {
     return {
-      type: 'link'
+      type: 'link',
     };
   }
 
   return null;
 }
 
-function deriveType(label: string, value: any, column: number | string, all: () => any[], options: IDeriveOptions): IColumnDesc {
+function deriveType(
+  label: string,
+  value: any,
+  column: number | string,
+  all: () => any[],
+  options: IDeriveOptions
+): IColumnDesc {
   const base: any = {
     type: 'string',
     label,
-    column
+    column,
   };
 
   const primitive = deriveBaseType(value, all, column, options);
@@ -112,13 +126,13 @@ function deriveType(label: string, value: any, column: number | string, all: () 
       if (!(value instanceof Set)) {
         continue;
       }
-      value.forEach((vi) =>  {
+      value.forEach((vi) => {
         cats.add(String(vi));
       });
     }
     return Object.assign(base, {
       type: 'set',
-      categories: cleanCategories(cats)
+      categories: cleanCategories(cats),
     });
   }
 
@@ -141,7 +155,7 @@ function deriveType(label: string, value: any, column: number | string, all: () 
     };
     const p = deriveBaseType(first, mapAll, column, options);
     return Object.assign(base, p || {}, {
-      type: p ? `${p.type}Map` : 'stringMap'
+      type: p ? `${p.type}Map` : 'stringMap',
     });
   }
 
@@ -156,12 +170,12 @@ function deriveType(label: string, value: any, column: number | string, all: () 
     const p = deriveBaseType(first, () => concat(values).filter((d) => !isEmpty(d)), column, options);
     if (p && p.type === 'categorical' && !sameLength) {
       return Object.assign(base, p, {
-        type : 'set'
+        type: 'set',
       });
     }
     if (p || isEmpty(first)) {
       return Object.assign(base, p || {}, {
-        type: p ? `${p.type}s` : 'strings'
+        type: p ? `${p.type}s` : 'strings',
       });
     }
 
@@ -183,7 +197,7 @@ function deriveType(label: string, value: any, column: number | string, all: () 
       };
       const p = deriveBaseType(first.value, mapAll, column, options);
       return Object.assign(base, p || {}, {
-        type: p ? `${p.type}Map` : 'stringMap'
+        type: p ? `${p.type}Map` : 'stringMap',
       });
     }
   }
@@ -197,14 +211,16 @@ function deriveType(label: string, value: any, column: number | string, all: () 
       type: 'boxplot',
       domain: [
         vs.reduce((a, b) => Math.min(a, b.min), Number.POSITIVE_INFINITY),
-        vs.reduce((a, b) => Math.max(a, b.max), Number.NEGATIVE_INFINITY)
-      ]
+        vs.reduce((a, b) => Math.max(a, b.max), Number.NEGATIVE_INFINITY),
+      ],
     });
   }
 
   if (value !== null && typeof value === 'object') {
     // object map
-    const first = Object.keys(value).map((k) => value[k]).filter((d) => !isEmpty(d));
+    const first = Object.keys(value)
+      .map((k) => value[k])
+      .filter((d) => !isEmpty(d));
     const mapAll = () => {
       const r: any[] = [];
       for (const vi of all()) {
@@ -222,7 +238,7 @@ function deriveType(label: string, value: any, column: number | string, all: () 
     };
     const p = deriveBaseType(first, mapAll, column, options);
     return Object.assign(base, p || {}, {
-      type: p ? `${p.type}Map` : 'stringMap'
+      type: p ? `${p.type}Map` : 'stringMap',
     });
   }
 
@@ -242,22 +258,28 @@ function selectColumns(existing: string[], columns: string[]) {
 }
 
 function toLabel(key: string | number) {
-  if (typeof(key) === 'number') {
+  if (typeof key === 'number') {
     return `Col ${key + 1}`;
   }
   key = key.trim();
   if (key.length === 0) {
     return 'Unknown';
   }
-  return key.split(/[\s]+/gm).map((k) => k.length === 0 ? k : `${k[0]!.toUpperCase()}${k.slice(1)}`).join(' ');
+  return key
+    .split(/[\s]+/gm)
+    .map((k) => (k.length === 0 ? k : `${k[0]!.toUpperCase()}${k.slice(1)}`))
+    .join(' ');
 }
 
 export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOptions> = {}) {
-  const config = Object.assign({
-    categoricalThreshold: (u: number, n: number) => u <= MAX_COLORS && u < n * 0.7, //70% unique and less equal to 22 categories
-    columns: [],
-    datePattern: ['%x', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S.%LZ']
-  }, options);
+  const config = Object.assign(
+    {
+      categoricalThreshold: (u: number, n: number) => u <= MAX_COLORS && u < n * 0.7, //70% unique and less equal to 22 categories
+      columns: [],
+      datePattern: ['%x', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S.%LZ'],
+    },
+    options
+  );
 
   const r: IColumnDesc[] = [];
   if (data.length === 0) {
@@ -266,7 +288,11 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
   }
 
   const first = data[0];
-  const columns: (number|string)[] = Array.isArray(first) ? range(first.length) : (config.columns.length > 0 ? selectColumns(Object.keys(first), config.columns) : Object.keys(first));
+  const columns: (number | string)[] = Array.isArray(first)
+    ? range(first.length)
+    : config.columns.length > 0
+    ? selectColumns(Object.keys(first), config.columns)
+    : Object.keys(first);
 
   return columns.map((key) => {
     let v = resolveValue(first, key);
@@ -275,10 +301,15 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
       const foundRow = data.find((row) => !isEmpty(resolveValue(row, key)));
       v = foundRow ? foundRow[key] : null;
     }
-    return deriveType(toLabel(key), v, key, () => data.map((d) => resolveValue(d, key)).filter((d) => !isEmpty(d)), config);
+    return deriveType(
+      toLabel(key),
+      v,
+      key,
+      () => data.map((d) => resolveValue(d, key)).filter((d) => !isEmpty(d)),
+      config
+    );
   });
 }
-
 
 /**
  * assigns colors to columns if they are numbers and not yet defined
@@ -295,7 +326,6 @@ export function deriveColors(columns: IColumnDesc[]) {
   return columns;
 }
 
-
 /**
  * utility to export a ranking to a table with the given separator
  * @param ranking
@@ -304,15 +334,18 @@ export function deriveColors(columns: IColumnDesc[]) {
  * @returns {Promise<string>}
  */
 export function exportRanking(ranking: Ranking, data: any[], options: Partial<IExportOptions> = {}) {
-  const opts = <IExportOptions>Object.assign({
-    separator: '\t',
-    newline: '\n',
-    header: true,
-    quote: false,
-    quoteChar: '"',
-    filter: (c: Column) => !isSupportType(c),
-    verboseColumnHeaders: false
-  }, options);
+  const opts: IExportOptions = Object.assign(
+    {
+      separator: '\t',
+      newline: '\n',
+      header: true,
+      quote: false,
+      quoteChar: '"',
+      filter: (c: Column) => !isSupportType(c),
+      verboseColumnHeaders: false,
+    },
+    options
+  );
 
   //optionally quote not numbers
   const escape = new RegExp(`[${opts.quoteChar}]`, 'g');
@@ -330,24 +363,27 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
 
   const r: string[] = [];
   if (opts.header) {
-    r.push(columns.map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`)).join(opts.separator));
+    r.push(
+      columns
+        .map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`))
+        .join(opts.separator)
+    );
   }
   data.forEach((row, i) => {
-    r.push(columns.map((c) => quote(c.getExportValue({v: row, i: order[i]}, 'text'), c)).join(opts.separator));
+    r.push(columns.map((c) => quote(c.getExportValue({ v: row, i: order[i] }, 'text'), c)).join(opts.separator));
   });
   return r.join(opts.newline);
 }
 
-
 /** @internal */
 export function map2Object<T>(map: Map<string, T>) {
-  const r : { [key: string]: T} = {};
-  map.forEach((v, k) => r[k] = v);
+  const r: { [key: string]: T } = {};
+  map.forEach((v, k) => (r[k] = v));
   return r;
 }
 
 /** @internal */
-export function object2Map<T>(obj: { [key: string]: T}) {
+export function object2Map<T>(obj: { [key: string]: T }) {
   const r = new Map<string, T>();
   for (const k of Object.keys(obj)) {
     r.set(k, obj[k]);
@@ -355,11 +391,17 @@ export function object2Map<T>(obj: { [key: string]: T}) {
   return r;
 }
 
-
 /** @internal */
-export function rangeSelection(provider: IDataProvider, rankingId: string, dataIndex: number, relIndex: number, ctrlKey: boolean) {
+export function rangeSelection(
+  provider: IDataProvider,
+  rankingId: string,
+  dataIndex: number,
+  relIndex: number,
+  ctrlKey: boolean
+) {
   const ranking = provider.getRankings().find((d) => d.id === rankingId);
-  if (!ranking) { // no known reference
+  if (!ranking) {
+    // no known reference
     return false;
   }
   const selection = provider.getSelection();
@@ -367,10 +409,10 @@ export function rangeSelection(provider: IDataProvider, rankingId: string, dataI
     return false; // no other or deselect
   }
   const order = ranking.getOrder();
-  const lookup = new Map(Array.from(order).map((d, i) => <[number, number]>[d, i]));
+  const lookup = new Map(Array.from(order).map((d, i) => [d, i]));
   const distances = selection.map((d) => {
-    const index = (lookup.has(d) ? lookup.get(d)! : Infinity);
-    return {s: d, index, distance: Math.abs(relIndex - index)};
+    const index = lookup.has(d) ? lookup.get(d)! : Number.POSITIVE_INFINITY;
+    return { s: d, index, distance: Math.abs(relIndex - index) };
   });
   const nearest = distances.sort((a, b) => a.distance - b.distance)[0]!;
   if (!isFinite(nearest.distance)) {

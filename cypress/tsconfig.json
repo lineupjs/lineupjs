@@ -1,8 +1,12 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "../node_modules",
     "target": "es5",
+    "outDir": "./integration",
+    "rootDir": "./integration",
+    "declaration": false,
+    "declarationMap": false,
+    "composite": false,
     "types": [
       "cypress",
       "d3-color",
@@ -16,7 +20,6 @@
       "lodash.get"
     ]
   },
-  "include": [
-    "**/*.ts"
-  ]
+  "include": ["**/*.ts"],
+  "exclude": ["**/*.d.ts"]
 }

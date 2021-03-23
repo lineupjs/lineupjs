@@ -1,5 +1,15 @@
-import {IWorkerMessage, INumberStatsMessageRequest, IAdvancedBoxPlotData, ICategoricalStatistics, IDateStatistics, IStatistics, ICategoricalStatsMessageRequest, IDateStatsMessageRequest, IBoxPlotStatsMessageRequest} from './';
-import {UIntTypedArray, IndicesArray} from '../model';
+import {
+  IWorkerMessage,
+  INumberStatsMessageRequest,
+  IAdvancedBoxPlotData,
+  ICategoricalStatistics,
+  IDateStatistics,
+  IStatistics,
+  ICategoricalStatsMessageRequest,
+  IDateStatsMessageRequest,
+  IBoxPlotStatsMessageRequest,
+} from './';
+import { UIntTypedArray, IndicesArray } from '../model';
 
 /**
  * @internal
@@ -19,8 +29,16 @@ export interface IPoorManWorkerScope {
   onerror: ((this: IPoorManWorkerScope, ev: ErrorEvent) => any) | null;
   close(): void;
   postMessage(message: any, transfer?: IPoorManTransferAble[]): void;
-  addEventListener<K extends keyof IPoorManWorkerScopeEventMap>(type: K, listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-  removeEventListener<K extends keyof IPoorManWorkerScopeEventMap>(type: K, listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+  addEventListener<K extends keyof IPoorManWorkerScopeEventMap>(
+    type: K,
+    listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  removeEventListener<K extends keyof IPoorManWorkerScopeEventMap>(
+    type: K,
+    listener: (this: IPoorManWorkerScope, ev: IPoorManWorkerScopeEventMap[K]) => any,
+    options?: boolean | AddEventListenerOptions
+  ): void;
 }
 
 // function workerMain(self: IPoorManWorkerScope) {
@@ -32,7 +50,7 @@ export interface IPoorManWorkerScope {
 /**
  * @internal
  */
-export function toFunctionBody(f: Function) {
+export function toFunctionBody(f: () => any) {
   const source = f.toString();
   return source.slice(source.indexOf('{') + 1, source.lastIndexOf('}'));
 }
@@ -41,10 +59,10 @@ export function toFunctionBody(f: Function) {
  * create a blob out of the given function or string
  * @internal
  */
-export function createWorkerCodeBlob(fs: (string | Function)[]) {
+export function createWorkerCodeBlob(fs: (string | (() => any))[]) {
   const sources = fs.map((d) => d.toString()).join('\n\n');
 
-  const blob = new Blob([sources], {type: 'application/javascript'});
+  const blob = new Blob([sources], { type: 'application/javascript' });
   return URL.createObjectURL(blob);
 }
 
@@ -78,7 +96,7 @@ interface ITaskWorker {
  */
 export class WorkerTaskScheduler {
   private readonly workers: ITaskWorker[] = [];
-  private cleanUpWorkerTimer: number = -1;
+  private cleanUpWorkerTimer = -1;
   /**
    * worker task id
    */
@@ -87,7 +105,7 @@ export class WorkerTaskScheduler {
   constructor(private readonly blob: string) {
     for (let i = 0; i < MIN_WORKER_THREADS; ++i) {
       const w = new Worker(blob);
-      this.workers.push({worker: w, tasks: new Set(), refs: new Set(), index: i});
+      this.workers.push({ worker: w, tasks: new Set(), refs: new Set(), index: i });
     }
   }
 
@@ -97,7 +115,7 @@ export class WorkerTaskScheduler {
 
   private readonly cleanUpWorker = () => {
     // delete workers when they are not needed anymore and empty
-    while(this.workers.length > MIN_WORKER_THREADS) {
+    while (this.workers.length > MIN_WORKER_THREADS) {
       const toFree = this.workers.findIndex((d) => d.tasks.size === 0);
       if (toFree < 0) {
         break;
@@ -106,8 +124,8 @@ export class WorkerTaskScheduler {
       w.worker.terminate();
     }
     // maybe reschedule
-    this.finshedTask();
-  }
+    this.finishedTask();
+  };
 
   private checkOutWorker() {
     if (this.cleanUpWorkerTimer >= 0) {
@@ -123,7 +141,10 @@ export class WorkerTaskScheduler {
 
     if (this.workers.length >= MAX_WORKER_THREADS) {
       // find the one with the fewest tasks
-      return this.workers.reduce((a, b) => a == null || a.tasks.size > b.tasks.size ? b : a, <ITaskWorker | null>null)!;
+      return this.workers.reduce(
+        (a, b) => (a == null || a.tasks.size > b.tasks.size ? b : a),
+        null as ITaskWorker | null
+      )!;
     }
 
     // create new one
@@ -137,48 +158,87 @@ export class WorkerTaskScheduler {
     return r;
   }
 
-  private finshedTask() {
+  private finishedTask() {
     if (this.cleanUpWorkerTimer === -1 && this.workers.length > MIN_WORKER_THREADS) {
-      this.cleanUpWorkerTimer = self.setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME);
+      this.cleanUpWorkerTimer = (setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME) as unknown) as number;
     }
   }
 
-  pushStats(type: 'numberStats', args: Partial<INumberStatsMessageRequest>, refData: string, data: Float32Array, refIndices?: string, indices?: IndicesArray): Promise<IStatistics>;
-  pushStats(type: 'boxplotStats', args: Partial<IBoxPlotStatsMessageRequest>, refData: string, data: Float32Array, refIndices?: string, indices?: IndicesArray): Promise<IAdvancedBoxPlotData>;
-  pushStats(type: 'categoricalStats', args: Partial<ICategoricalStatsMessageRequest>, refData: string, data: UIntTypedArray, refIndices?: string, indices?: IndicesArray): Promise<ICategoricalStatistics>;
-  pushStats(type: 'dateStats', args: Partial<IDateStatsMessageRequest>, refData: string, data: Float64Array, refIndices?: string, indices?: IndicesArray): Promise<IDateStatistics>;
-  pushStats(type: 'numberStats' | 'boxplotStats' | 'categoricalStats' | 'dateStats', args: any, refData: string, data: Float32Array | UIntTypedArray | Float64Array, refIndices?: string, indices?: IndicesArray) {
+  pushStats(
+    type: 'numberStats',
+    args: Partial<INumberStatsMessageRequest>,
+    refData: string,
+    data: Float32Array,
+    refIndices?: string,
+    indices?: IndicesArray
+  ): Promise<IStatistics>;
+  pushStats(
+    type: 'boxplotStats',
+    args: Partial<IBoxPlotStatsMessageRequest>,
+    refData: string,
+    data: Float32Array,
+    refIndices?: string,
+    indices?: IndicesArray
+  ): Promise<IAdvancedBoxPlotData>;
+  pushStats(
+    type: 'categoricalStats',
+    args: Partial<ICategoricalStatsMessageRequest>,
+    refData: string,
+    data: UIntTypedArray,
+    refIndices?: string,
+    indices?: IndicesArray
+  ): Promise<ICategoricalStatistics>;
+  pushStats(
+    type: 'dateStats',
+    args: Partial<IDateStatsMessageRequest>,
+    refData: string,
+    data: Float64Array,
+    refIndices?: string,
+    indices?: IndicesArray
+  ): Promise<IDateStatistics>;
+  pushStats(
+    type: 'numberStats' | 'boxplotStats' | 'categoricalStats' | 'dateStats',
+    args: any,
+    refData: string,
+    data: Float32Array | UIntTypedArray | Float64Array,
+    refIndices?: string,
+    indices?: IndicesArray
+  ) {
     return new Promise((resolve) => {
       const uid = this.workerTaskCounter++;
-      const {worker, tasks, refs} = this.checkOutWorker();
+      const { worker, tasks, refs } = this.checkOutWorker();
 
       const receiver = (msg: MessageEvent) => {
-        const r = <IWorkerMessage>msg.data;
+        const r = msg.data as IWorkerMessage;
         if (r.uid !== uid || r.type !== type) {
           return;
         }
         // console.log('worker', index, uid, 'finish', r);
         worker.removeEventListener('message', receiver);
         tasks.delete(uid);
-        this.finshedTask();
-        resolve((<any>r).stats);
+        this.finishedTask();
+        resolve((r as any).stats);
       };
 
       worker.addEventListener('message', receiver);
 
       tasks.add(uid);
 
-      const msg: any = Object.assign({
-        type,
-        uid,
-        refData,
-        refIndices: refIndices || null
-      }, args);
+      const msg: any = Object.assign(
+        {
+          type,
+          uid,
+          refData,
+          refIndices: refIndices || null,
+        },
+        args
+      );
 
       if (!refData || !refs.has(refData)) {
         // need to transfer to worker
         msg.data = data;
-        if (refData) { // save that this worker has this ref
+        if (refData) {
+          // save that this worker has this ref
           refs.add(refData);
         }
         // console.log(index, 'set ref (i)', refData);
@@ -202,26 +262,29 @@ export class WorkerTaskScheduler {
   push<M, R, T>(type: string, args: M, transferAbles: ArrayBuffer[], toResult?: (r: R) => T): Promise<T> {
     return new Promise<T>((resolve) => {
       const uid = this.workerTaskCounter++;
-      const {worker, tasks} = this.checkOutWorker();
+      const { worker, tasks } = this.checkOutWorker();
 
       const receiver = (msg: MessageEvent) => {
-        const r = <IWorkerMessage>msg.data;
+        const r = msg.data as IWorkerMessage;
         if (r.uid !== uid || r.type !== type) {
           return;
         }
         // console.log('worker', index, uid, 'finish', r);
         worker.removeEventListener('message', receiver);
         tasks.delete(uid);
-        this.finshedTask();
-        resolve(toResult ? toResult(<any>r) : <any>r);
+        this.finishedTask();
+        resolve(toResult ? toResult(r as any) : (r as any));
       };
 
       worker.addEventListener('message', receiver);
       tasks.add(uid);
-      const msg = Object.assign({
-        type,
-        uid
-      }, args);
+      const msg = Object.assign(
+        {
+          type,
+          uid,
+        },
+        args
+      );
       // console.log('worker', index, uid, msg);
 
       worker.postMessage(msg, transferAbles);
@@ -234,7 +297,7 @@ export class WorkerTaskScheduler {
     }
     this.broadCast('setRef', {
       ref,
-      data
+      data,
     });
   }
 
@@ -244,7 +307,7 @@ export class WorkerTaskScheduler {
       type: 'deleteRef',
       uid,
       ref,
-      startsWith
+      startsWith,
     };
     for (const w of this.workers) {
       // console.log(w.index, 'delete ref', ref, startsWith);
@@ -267,7 +330,7 @@ export class WorkerTaskScheduler {
       type: 'deleteRef',
       uid,
       ref: '',
-      startsWith: true
+      startsWith: true,
     };
     for (const w of this.workers) {
       // console.log(w.index, 'delete refs');
@@ -279,14 +342,16 @@ export class WorkerTaskScheduler {
   broadCast<T>(type: string, args: T) {
     const uid = this.workerTaskCounter++;
     // don't store in tasks queue since there is no response
-    const msg = Object.assign({
-      type,
-      uid
-    }, args);
+    const msg = Object.assign(
+      {
+        type,
+        uid,
+      },
+      args
+    );
     // console.log('broadcast', msg);
     for (const w of this.workers) {
       w.worker.postMessage(msg);
     }
   }
-
 }

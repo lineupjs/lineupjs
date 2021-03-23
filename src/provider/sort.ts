@@ -1,6 +1,14 @@
-import {createIndexArray, ILookUpArray} from '../internal';
-import {FIRST_IS_MISSING, FIRST_IS_NAN, ECompareValueType, ICompareValue, Column, UIntTypedArray, Ranking, IDataRow} from '../model';
-
+import { createIndexArray, ILookUpArray } from '../internal';
+import {
+  FIRST_IS_MISSING,
+  FIRST_IS_NAN,
+  ECompareValueType,
+  ICompareValue,
+  Column,
+  UIntTypedArray,
+  Ranking,
+  IDataRow,
+} from '../model';
 
 const missingUInt8 = FIRST_IS_MISSING > 0 ? 255 : 0;
 const missingBinary = missingUInt8;
@@ -13,7 +21,6 @@ const missingFloat = FIRST_IS_NAN > 0 ? Number.POSITIVE_INFINITY : Number.NEGATI
 const missingFloatAsc = FIRST_IS_MISSING > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 const missingString = FIRST_IS_MISSING > 0 ? '\uffff' : '\u0000'; // first or last character
 
-
 function chooseMissingByLength(length: number) {
   if (length <= 255) {
     return missingBinary;
@@ -23,7 +30,6 @@ function chooseMissingByLength(length: number) {
   }
   return missingUInt32;
 }
-
 
 function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArray {
   switch (type) {
@@ -43,7 +49,7 @@ function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArr
     case ECompareValueType.INT32:
       return new Int32Array(rawLength);
     case ECompareValueType.STRING:
-      return <string[]>[];
+      return [] as string[];
     case ECompareValueType.FLOAT_ASC:
     case ECompareValueType.FLOAT:
       return new Float32Array(rawLength);
@@ -53,54 +59,68 @@ function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArr
   }
 }
 
-function createSetter(type: ECompareValueType, lookup: ILookUpArray, missingCount: number): ((index: number, v: ICompareValue) => void) {
+function createSetter(
+  type: ECompareValueType,
+  lookup: ILookUpArray,
+  missingCount: number
+): (index: number, v: ICompareValue) => void {
   switch (type) {
-    case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=-Ininity 1 2 255=+Infinity
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingBinary : (<number>v) + 1;
+    case ECompareValueType.BINARY: // just 0 or 1 -> convert to 0=Number.NEGATIVE_INFINITY 1 2 255=Number.POSITIVE_INFINITY
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingBinary : (v as number) + 1);
     case ECompareValueType.COUNT: // uint32
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingCount : (<number>v) + 1;
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingCount : (v as number) + 1);
     case ECompareValueType.UINT8: // shift by one to have 0 for -Inf
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v) + 1;
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt8 : (v as number) + 1);
     case ECompareValueType.UINT16: // shift by one to have 0 for -Inf
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v) + 1;
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt16 : (v as number) + 1);
     case ECompareValueType.UINT32: // shift by one to have 0 for -Inf
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v) + 1;
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt32 : (v as number) + 1);
     case ECompareValueType.INT8:
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt8 : (<number>v);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt8 : (v as number));
     case ECompareValueType.INT16:
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt16 : (<number>v);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt16 : (v as number));
     case ECompareValueType.INT32:
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingInt32 : (<number>v);
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingInt32 : (v as number));
     case ECompareValueType.STRING:
-      return (index, v) => lookup[index] = v == null || v === '' ? missingString : v;
+      return (index, v) => (lookup[index] = v == null || v === '' ? missingString : v);
     case ECompareValueType.FLOAT:
     case ECompareValueType.DOUBLE:
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingFloat : v;
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingFloat : v);
     case ECompareValueType.FLOAT_ASC:
     case ECompareValueType.DOUBLE_ASC:
-      return (index, v) => lookup[index] = v == null || isNaN(<number>v) ? missingFloatAsc : v;
+      return (index, v) => (lookup[index] = v == null || Number.isNaN(v as number) ? missingFloatAsc : v);
   }
 }
 
 export class CompareLookup {
-  private readonly criteria: {col: Column, valueCache?(dataIndex: number): any}[] = [];
-  private readonly data: {asc: boolean, v: ECompareValueType, lookup: ILookUpArray, setter: (dataIndex: number, value: ICompareValue) => void}[] = [];
+  private readonly criteria: { col: Column; valueCache?(dataIndex: number): any }[] = [];
+  private readonly data: {
+    asc: boolean;
+    v: ECompareValueType;
+    lookup: ILookUpArray;
+    setter: (dataIndex: number, value: ICompareValue) => void;
+  }[] = [];
 
-  constructor(rawLength: number, isSorting: boolean, ranking: Ranking, valueCaches?: (col: Column) => (undefined | ((i: number) => any))) {
+  constructor(
+    rawLength: number,
+    isSorting: boolean,
+    ranking: Ranking,
+    valueCaches?: (col: Column) => undefined | ((i: number) => any)
+  ) {
     const missingCount = chooseMissingByLength(rawLength + 1); // + 1 for the value shift to have 0 as start
 
-    for (const c of (isSorting ? ranking.getSortCriteria() : ranking.getGroupSortCriteria())) {
-      const v = (isSorting ? c.col.toCompareValueType() : c.col.toCompareGroupValueType());
+    for (const c of isSorting ? ranking.getSortCriteria() : ranking.getGroupSortCriteria()) {
+      const v = isSorting ? c.col.toCompareValueType() : c.col.toCompareGroupValueType();
       const valueCache = valueCaches ? valueCaches(c.col) : undefined;
-      this.criteria.push({col: c.col, valueCache});
+      this.criteria.push({ col: c.col, valueCache });
       if (!Array.isArray(v)) {
         const lookup = toCompareLookUp(rawLength, v);
-        this.data.push({asc: c.asc, v, lookup, setter: createSetter(v, lookup, missingCount)});
+        this.data.push({ asc: c.asc, v, lookup, setter: createSetter(v, lookup, missingCount) });
         continue;
       }
       for (const vi of v) {
         const lookup = toCompareLookUp(rawLength, vi);
-        this.data.push({asc: c.asc, v: vi, lookup, setter: createSetter(vi, lookup, missingCount)});
+        this.data.push({ asc: c.asc, v: vi, lookup, setter: createSetter(vi, lookup, missingCount) });
       }
     }
 
@@ -111,17 +131,20 @@ export class CompareLookup {
     {
       const v = ECompareValueType.STRING;
       const lookup = toCompareLookUp(rawLength, v);
-      this.data.push({asc: true, v, lookup, setter: createSetter(v, lookup, missingCount)});
+      this.data.push({ asc: true, v, lookup, setter: createSetter(v, lookup, missingCount) });
     }
   }
 
   get sortOrders() {
-    return this.data.map((d) => ({asc: d.asc, lookup: d.lookup}));
+    return this.data.map((d) => ({ asc: d.asc, lookup: d.lookup }));
   }
 
   get transferAbles() {
     // so a typed array
-    return this.data.map((d) => d.lookup).filter((d): d is UIntTypedArray | Float32Array => !Array.isArray(d)).map((d) => d.buffer);
+    return this.data
+      .map((d) => d.lookup)
+      .filter((d): d is UIntTypedArray | Float32Array => !Array.isArray(d))
+      .map((d) => d.buffer);
   }
 
   push(row: IDataRow) {

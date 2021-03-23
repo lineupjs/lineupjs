@@ -1,9 +1,9 @@
-import {Column} from '../../model';
-import ADialog, {IDialogContext} from './ADialog';
-import {uniqueId, forEach} from './utils';
-import {getToolbarDialogAddons} from '../toolbar';
-import {IRankingHeaderContext, IToolbarDialogAddonHandler} from '../interfaces';
-import {cssClass} from '../../styles';
+import { Column } from '../../model';
+import ADialog, { IDialogContext } from './ADialog';
+import { uniqueId, forEach } from './utils';
+import { getToolbarDialogAddons } from '../toolbar';
+import { IRankingHeaderContext, IToolbarDialogAddonHandler } from '../interfaces';
+import { cssClass } from '../../styles';
 
 /** @internal */
 export default class GroupDialog extends ADialog {
@@ -11,13 +11,13 @@ export default class GroupDialog extends ADialog {
 
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
-      livePreview: 'group'
+      livePreview: 'group',
     });
   }
 
   protected build(node: HTMLElement) {
     const addons = getToolbarDialogAddons(this.column, 'group', this.ctx);
-    for(const addon of addons) {
+    for (const addon of addons) {
       this.node.insertAdjacentHTML('beforeend', `<strong>${addon.title}</strong>`);
       this.handlers.push(addon.append(this.column, this.node, this.dialog, this.ctx));
     }
@@ -62,28 +62,43 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string): IToolba
   }
 
   const id = uniqueId(idPrefix);
-  node.insertAdjacentHTML('afterbegin', `
+  node.insertAdjacentHTML(
+    'afterbegin',
+    `
         <strong>Group By</strong>
-        <label class="${cssClass('checkbox')}"><input type="radio" name="grouped" value="true" ${enabled ? 'checked' : ''} ><span>Enabled</span></label>
-        <label class="${cssClass('checkbox')}"><input type="radio" name="grouped" value="false" ${!enabled ? 'checked' : ''} ><span>Disabled</span></label>
+        <label class="${cssClass('checkbox')}"><input type="radio" name="grouped" value="true" ${
+      enabled ? 'checked' : ''
+    } ><span>Enabled</span></label>
+        <label class="${cssClass('checkbox')}"><input type="radio" name="grouped" value="false" ${
+      !enabled ? 'checked' : ''
+    } ><span>Disabled</span></label>
         <strong>Group Priority</strong>
         <input type="number" id="${id}P" step="1" min="1" max="${current.length + 1}" value="${order + 1}">
-    `);
+    `
+  );
 
   const updateDisabled = (disable: boolean) => {
-    forEach(node, 'input:not([name=grouped]), select, textarea', (d: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => {
-      d.disabled = disable;
-    });
+    forEach(
+      node,
+      'input:not([name=grouped]), select, textarea',
+      (d: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => {
+        d.disabled = disable;
+      }
+    );
   };
   updateDisabled(!enabled);
 
   forEach(node, 'input[name=grouped]', (n: HTMLInputElement) => {
-    n.addEventListener('change', () => {
-      const enabled = n.value === 'true';
-      updateDisabled(!enabled);
-    }, {
-      passive: true
-    });
+    n.addEventListener(
+      'change',
+      () => {
+        const enabled = n.value === 'true';
+        updateDisabled(!enabled);
+      },
+      {
+        passive: true,
+      }
+    );
   });
 
   return {
@@ -101,6 +116,6 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string): IToolba
     },
     cancel() {
       ranking.groupBy(column, current.indexOf(column));
-    }
+    },
   };
 }
