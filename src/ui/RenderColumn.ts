@@ -199,7 +199,7 @@ function chainAbortAble<T, U, V>(
         return;
       }
       const mapped = mapper(r);
-      if (isAbortAble(mapped)) {
+      if (isAbortAble(mapped as any)) {
         p.abort = (mapped as IAbortAblePromise<U>).abort.bind(mapped);
         return p.then(resolve);
       }
