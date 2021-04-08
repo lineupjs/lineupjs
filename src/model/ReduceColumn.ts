@@ -12,10 +12,12 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
   dirtyCaches,
+  DEFAULT_COLOR,
 } from './Column';
-import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
+import type CompositeColumn from './CompositeColumn';
+import type { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
 import CompositeNumberColumn, { ICompositeNumberColumnDesc } from './CompositeNumberColumn';
-import { IDataRow, DEFAULT_COLOR, ITypeFactory } from './interfaces';
+import type { IDataRow, ITypeFactory } from './interfaces';
 import { EAdvancedSortMethod } from './INumberColumn';
 import { integrateDefaults } from './internal';
 

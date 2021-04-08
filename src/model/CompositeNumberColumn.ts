@@ -1,11 +1,11 @@
 import { format } from 'd3-format';
 import CompositeColumn from './CompositeColumn';
-import { IDataRow, IGroup, IColumnDesc } from './interfaces';
+import type { IDataRow, IGroup, IColumnDesc } from './interfaces';
 import { isMissingValue } from './missing';
 import NumberColumn from './NumberColumn';
 import { SortByDefault, toolbar } from './annotations';
-import { ISequence } from '../internal';
-import { INumberColumn } from './INumberColumn';
+import type { ISequence } from '../internal';
+import type { INumberColumn } from './INumberColumn';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**

@@ -1,4 +1,4 @@
-import { IColumnDesc, IColumnConstructor } from '../model';
+import type { IColumnDesc, IColumnConstructor } from '../model';
 import {
   DataProvider,
   LocalDataProvider,

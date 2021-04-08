@@ -3,7 +3,7 @@ import { Column, Ranking, categoryOf, isSortingAscByDefault, ISortCriteria, isSu
 import { aria, cssClass } from '../../styles';
 import AddonDialog from '../dialogs/AddonDialog';
 import { actionCSSClass, updateHeader } from '../header';
-import { IRankingHeaderContext, IToolbarDialogAddon } from '../interfaces';
+import type { IRankingHeaderContext, IToolbarDialogAddon } from '../interfaces';
 import { getToolbarDialogAddons, isGroupAble, isGroupSortAble, isSortAble } from '../toolbar';
 import SearchBox, { ISearchBoxOptions } from './SearchBox';
 import { dialogContext } from '../dialogs';

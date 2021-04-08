@@ -1,5 +1,5 @@
 import { Column, GroupColumn, IOrderedGroup, IGroup, defaultGroup, IDataRow } from '../model';
-import { ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer } from './interfaces';
+import type { ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer } from './interfaces';
 import { noRenderer } from './utils';
 
 function isDummyGroup(group: IGroup) {

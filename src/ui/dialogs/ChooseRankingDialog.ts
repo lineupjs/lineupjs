@@ -1,4 +1,4 @@
-import { IDialogContext } from './ADialog';
+import type { IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 import APopup from './APopup';
 

@@ -1,15 +1,17 @@
-import {
+import type {
   ICategoricalDesc,
   ICategory,
   ICategoricalLikeColumn,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import { IDataRow, DEFAULT_COLOR, ITypeFactory } from './interfaces';
+import type { IDataRow, ITypeFactory } from './interfaces';
 import MapColumn, { IMapColumnDesc } from './MapColumn';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import Column, {
+import type ValueColumn from './ValueColumn';
+import type { dataLoaded } from './ValueColumn';
+import {
+  DEFAULT_COLOR,
   labelChanged,
   metaDataChanged,
   dirty,
@@ -22,7 +24,8 @@ import Column, {
   widthChanged,
   dirtyCaches,
 } from './Column';
-import { IEventListener } from '../internal';
+import type Column from './Column';
+import type { IEventListener } from '../internal';
 import { toolbar } from './annotations';
 import { toCategories } from './internalCategorical';
 

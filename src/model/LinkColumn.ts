@@ -12,10 +12,11 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import { IDataRow, IGroup, IValueColumnDesc, ITypeFactory } from './interfaces';
+import type { IDataRow, IGroup, IValueColumnDesc, ITypeFactory } from './interfaces';
 import { patternFunction, integrateDefaults } from './internal';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import { IEventListener, ISequence } from '../internal';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import type { IEventListener, ISequence } from '../internal';
 import { IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType, IStringFilter } from './StringColumn';
 import StringColumn from './StringColumn';
 

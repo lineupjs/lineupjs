@@ -1,7 +1,7 @@
 import { abortAbleAll, IAbortAblePromise, IAsyncUpdate, isAsyncUpdate, StyleManager } from 'lineupengine';
 import { round } from '../internal';
-import { Column, IMultiLevelColumn } from '../model';
-import { ISummaryRenderer } from '../renderer';
+import type { Column, IMultiLevelColumn } from '../model';
+import type { ISummaryRenderer } from '../renderer';
 import { multiLevelGridCSSClass } from '../renderer/utils';
 import { COLUMN_PADDING, cssClass } from '../styles';
 import { createHeader, updateHeader } from './header';

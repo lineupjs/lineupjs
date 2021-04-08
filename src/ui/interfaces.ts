@@ -1,9 +1,9 @@
-import { ILineUpFlags } from '../config';
-import { Column, IGroupData, IGroupItem } from '../model';
-import { IDataProvider } from '../provider';
-import { IImposer, IRenderContext, ISummaryRenderer } from '../renderer';
-import DialogManager from './dialogs/DialogManager';
-import { IDialogContext } from './dialogs';
+import type { ILineUpFlags } from '../config';
+import type { Column, IGroupData, IGroupItem } from '../model';
+import type { IDataProvider } from '../provider';
+import type { IImposer, IRenderContext, ISummaryRenderer } from '../renderer';
+import type DialogManager from './dialogs/DialogManager';
+import type { IDialogContext } from './dialogs';
 
 export interface IUIOptions {
   /**

@@ -1,5 +1,5 @@
 import { extent, resolveValue } from '../../internal';
-import {
+import type {
   IActionColumnDesc,
   IArrayDesc,
   IBooleanColumnDesc,
@@ -10,7 +10,7 @@ import {
   ILinkColumnDesc,
   INumberColumnDesc,
 } from '../../model';
-import {
+import type {
   IBuilderAdapterActionsColumnDescProps,
   IBuilderAdapterBooleanColumnDescProps,
   IBuilderAdapterCategoricalColumnDescProps,

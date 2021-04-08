@@ -1,7 +1,7 @@
-import { IDialogContext } from './ADialog';
+import type { IDialogContext } from './ADialog';
 import { StringColumn, EStringGroupCriteriaType } from '../../model';
 import { cssClass } from '../../styles';
-import { IToolbarDialogAddonHandler } from '../interfaces';
+import type { IToolbarDialogAddonHandler } from '../interfaces';
 
 /** @internal */
 export default function groupString(

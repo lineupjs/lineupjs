@@ -14,7 +14,7 @@ import Column, {
 } from './Column';
 import { IDataRow, IGroup, ECompareValueType } from './interfaces';
 import { missingGroup } from './missing';
-import { IEventListener, ISequence } from '../internal';
+import type { IEventListener, ISequence } from '../internal';
 
 export function createGroupDesc(label = 'Group Name') {
   return { type: 'group', label };

@@ -1,4 +1,4 @@
-import { EAlignment, ILinkColumnDesc } from '../../model';
+import type { EAlignment, ILinkColumnDesc } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class StringColumnBuilder extends ColumnBuilder<ILinkColumnDesc> {

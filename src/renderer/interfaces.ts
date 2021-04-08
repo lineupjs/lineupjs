@@ -1,8 +1,14 @@
-import { IAbortAblePromise } from 'lineupengine';
-import { Column, IDataRow, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn } from '../model';
-import { IDataProvider } from '../provider';
-import DialogManager from '../ui/dialogs/DialogManager';
-import { ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics } from '../internal';
+import type { IAbortAblePromise } from 'lineupengine';
+import type { Column, IDataRow, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn } from '../model';
+import type { IDataProvider } from '../provider';
+import type DialogManager from '../ui/dialogs/DialogManager';
+import type {
+  ISequence,
+  IDateStatistics,
+  ICategoricalStatistics,
+  IAdvancedBoxPlotData,
+  IStatistics,
+} from '../internal';
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;

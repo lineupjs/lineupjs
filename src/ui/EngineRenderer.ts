@@ -1,10 +1,10 @@
 import { GridStyleManager, MultiTableRowRenderer, nonUniformContext } from 'lineupengine';
-import { ILineUpFlags, ILineUpOptions } from '../config';
+import type { ILineUpFlags, ILineUpOptions } from '../config';
 import { AEventDispatcher, IEventListener, round, suffix } from '../internal';
 import { Column, IGroupData, IGroupItem, isGroup, Ranking, IGroup } from '../model';
 import { DataProvider } from '../provider';
 import { isSummaryGroup, groupEndLevel } from '../provider/internal';
-import { IImposer, IRenderContext } from '../renderer';
+import type { IImposer, IRenderContext } from '../renderer';
 import { chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer } from '../renderer/renderers';
 import { cssClass, engineCssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
@@ -12,7 +12,7 @@ import domElementCache from './domElementCache';
 import EngineRanking, { IEngineRankingContext } from './EngineRanking';
 import { EMode, IRankingHeaderContext, IRankingHeaderContextContainer } from './interfaces';
 import SlopeGraph from './SlopeGraph';
-import { ADialog } from './dialogs';
+import type { ADialog } from './dialogs';
 
 /**
  * emitted when the highlight changes

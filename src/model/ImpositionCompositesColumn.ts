@@ -1,6 +1,7 @@
 import { suffix, IEventListener, IAdvancedBoxPlotData } from '../internal';
 import { toolbar, dialogAddons, SortByDefault } from './annotations';
-import Column, {
+import type Column from './Column';
+import {
   widthChanged,
   labelChanged,
   metaDataChanged,
@@ -12,10 +13,11 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
   dirtyCaches,
+  DEFAULT_COLOR,
 } from './Column';
 import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
-import { IKeyValue } from './IArrayColumn';
-import { IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR } from './interfaces';
+import type { IKeyValue } from './IArrayColumn';
+import type { IDataRow, IGroup, IColumnDesc } from './interfaces';
 import {
   EAdvancedSortMethod,
   INumberFilter,

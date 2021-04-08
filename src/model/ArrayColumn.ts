@@ -1,8 +1,8 @@
 import { Category } from './annotations';
 import ValueColumn from './ValueColumn';
 import { empty } from '../internal';
-import { IArrayColumn, IArrayDesc } from './IArrayColumn';
-import { IDataRow, IValueColumnDesc } from './interfaces';
+import type { IArrayColumn, IArrayDesc } from './IArrayColumn';
+import type { IDataRow, IValueColumnDesc } from './interfaces';
 
 export interface IArrayColumnDesc<T> extends IArrayDesc, IValueColumnDesc<T[]> {
   // dummy

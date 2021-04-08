@@ -2,8 +2,8 @@ import { MIN_LABEL_WIDTH } from '../constants';
 import { Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn, DEFAULT_COLOR } from '../model';
 import { hsl } from 'd3-color';
 import { cssClass } from '../styles';
-import { IRenderContext } from '.';
-import { ISequence } from '../internal';
+import type { IRenderContext } from '.';
+import type { ISequence } from '../internal';
 
 /** @internal */
 export function noop() {

@@ -18,7 +18,7 @@ import {
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { forEachChild, noRenderer } from './utils';
-import { ISequence } from '../internal';
+import type { ISequence } from '../internal';
 import { cssClass } from '../styles';
 
 /** @internal */

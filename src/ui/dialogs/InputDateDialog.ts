@@ -1,4 +1,4 @@
-import { IDialogContext } from './ADialog';
+import type { IDialogContext } from './ADialog';
 import { timeFormat } from 'd3-time-format';
 import APopup from './APopup';
 

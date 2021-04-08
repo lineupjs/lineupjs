@@ -1,5 +1,11 @@
-import { Column, IDataRow } from '../model';
-import { ERenderMode, ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer, ICellRenderer } from './interfaces';
+import type { Column, IDataRow } from '../model';
+import type {
+  ERenderMode,
+  ICellRendererFactory,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+  ICellRenderer,
+} from './interfaces';
 import { renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';
 

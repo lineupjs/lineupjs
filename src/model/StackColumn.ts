@@ -13,9 +13,10 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
+import type CompositeColumn from './CompositeColumn';
+import type { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
 import CompositeNumberColumn, { ICompositeNumberDesc } from './CompositeNumberColumn';
-import { IDataRow, IFlatColumn, IMultiLevelColumn, ITypeFactory } from './interfaces';
+import type { IDataRow, IFlatColumn, IMultiLevelColumn, ITypeFactory } from './interfaces';
 import { integrateDefaults } from './internal';
 
 /**

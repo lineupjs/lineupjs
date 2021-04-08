@@ -1,7 +1,7 @@
-import { IMapAbleColumn, INumberFilter } from '../../model';
+import type { IMapAbleColumn, INumberFilter } from '../../model';
 import { createNumberFilter } from '../../renderer/HistogramCellRenderer';
 import { cssClass } from '../../styles';
-import { IRankingHeaderContext } from '../interfaces';
+import type { IRankingHeaderContext } from '../interfaces';
 import ADialog, { IDialogContext } from './ADialog';
 
 /** @internal */

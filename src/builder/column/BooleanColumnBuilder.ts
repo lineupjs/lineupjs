@@ -1,4 +1,4 @@
-import { IBooleanColumnDesc } from '../../model';
+import type { IBooleanColumnDesc } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class BooleanColumnBuilder extends ColumnBuilder<IBooleanColumnDesc> {

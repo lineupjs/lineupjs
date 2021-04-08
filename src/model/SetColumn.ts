@@ -12,18 +12,20 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
   dirtyCaches,
+  DEFAULT_COLOR,
 } from './Column';
-import { IArrayColumn } from './IArrayColumn';
-import {
+import type { IArrayColumn } from './IArrayColumn';
+import type {
   ICategoricalDesc,
   ISetCategoricalFilter,
   ICategory,
   ISetColumn,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import { IDataRow, ECompareValueType, IValueColumnDesc, IGroup, DEFAULT_COLOR, ITypeFactory } from './interfaces';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import { IEventListener } from '../internal';
+import { IDataRow, ECompareValueType, IValueColumnDesc, IGroup, ITypeFactory } from './interfaces';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import type { IEventListener } from '../internal';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import { toCategories, isCategoryIncluded, isEqualSetCategoricalFilter } from './internalCategorical';
 import { chooseUIntByDataLength, integrateDefaults } from './internal';
