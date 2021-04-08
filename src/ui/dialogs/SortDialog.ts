@@ -1,7 +1,7 @@
 import type { Column } from '../../model';
 import ADialog, { IDialogContext } from './ADialog';
 import { uniqueId, forEach } from './utils';
-import { getToolbarDialogAddons } from '../toolbar';
+import { getToolbarDialogAddons } from '../toolbarResolvers';
 import type { IRankingHeaderContext, IToolbarDialogAddonHandler } from '../interfaces';
 import { cssClass } from '../../styles';
 

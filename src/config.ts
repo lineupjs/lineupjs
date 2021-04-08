@@ -1,5 +1,5 @@
 import { renderers } from './renderer/renderers';
-import { toolbarActions, toolbarDialogAddons } from './ui/toolbar';
+import { toolbarDialogAddons, toolbarActions } from './ui/toolbar';
 import type { Column, Ranking, IGroupData, IGroupItem } from './model';
 import type { IDataProvider } from './provider';
 import type { ICellRendererFactory, ERenderMode } from './renderer';

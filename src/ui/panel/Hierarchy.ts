@@ -4,7 +4,7 @@ import { aria, cssClass } from '../../styles';
 import AddonDialog from '../dialogs/AddonDialog';
 import { actionCSSClass, updateHeader } from '../header';
 import type { IRankingHeaderContext, IToolbarDialogAddon } from '../interfaces';
-import { getToolbarDialogAddons, isGroupAble, isGroupSortAble, isSortAble } from '../toolbar';
+import { getToolbarDialogAddons, isGroupAble, isGroupSortAble, isSortAble } from '../toolbarResolvers';
 import SearchBox, { ISearchBoxOptions } from './SearchBox';
 import { dialogContext } from '../dialogs';
 
