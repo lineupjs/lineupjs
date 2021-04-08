@@ -1,5 +1,5 @@
 import type { Column } from '../../model';
-import { createToolbarMenuItems, updateIconState } from '../header';
+import { createToolbarMenuItems, updateIconState } from '../headerTooltip';
 import type { IRankingHeaderContext } from '../interfaces';
 import type { IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
