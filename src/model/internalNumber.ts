@@ -1,6 +1,8 @@
 import { format } from 'd3-format';
 import { IBoxPlotData, similar, ISequence, IAdvancedBoxPlotData, boxplotBuilder } from '../internal';
-import { FIRST_IS_NAN, IDataRow, IBoxPlotColumn, INumberFilter, INumberColumn } from '.';
+import type { IDataRow } from './interfaces';
+import type { IBoxPlotColumn, INumberFilter, INumberColumn } from './INumberColumn';
+import { FIRST_IS_NAN } from './missing';
 
 /** @internal */
 export const DEFAULT_FORMATTER = format('.3n');

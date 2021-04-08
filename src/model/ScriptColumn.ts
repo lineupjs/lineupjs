@@ -1,4 +1,4 @@
-import { NumberColumn } from '.';
+import NumberColumn from './NumberColumn';
 import type { IEventListener } from '../internal';
 import { SortByDefault, toolbar } from './annotations';
 import Column, {

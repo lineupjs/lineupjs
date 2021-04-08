@@ -1,8 +1,10 @@
 import { timeDay, timeHour, timeMinute, timeMonth, timeSecond, timeWeek } from 'd3-time';
 import { timeFormat } from 'd3-time-format';
 import { equal, ISequence, isSeqEmpty } from '../internal';
-import type { INumberFilter, IDateGrouper, IDataRow, IDateColumn } from '.';
+import type { INumberFilter } from './INumberColumn';
 import { isNumberIncluded } from './internalNumber';
+import type { IDateColumn, IDateGrouper } from './IDateColumn';
+import type { IDataRow } from './interfaces';
 
 /** @internal */
 export {
