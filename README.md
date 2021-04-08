@@ -691,6 +691,7 @@ Otherwise follow the steps to setup a local development environment.
 git clone https://github.com/lineupjs/lineupjs.git -b develop
 cd lineupjs
 npm i -g yarn
+yarn set version berry
 yarn set version latest
 cat .yarnrc_patch.yml >> .yarnrc.yml
 yarn install
@@ -701,15 +702,15 @@ yarn pnpify --sdk vscode
 
 ```sh
 yarn start
-yarn clean
-yarn compile
+yarn run clean
+yarn run compile
 yarn test
-yarn lint
-yarn fix
-yarn build
-yarn docs
-yarn release
-yarn release:pre
+yarn run lint
+yarn run fix
+yarn run build
+yarn run docs
+yarn run release
+yarn run release:pre
 ```
 
 **Run E2E Tests**
@@ -720,7 +721,8 @@ Variant 1: with prebuilt LineUp
 
 ```sh
 yarn run compile
-yarn run build:prod
+yarn run build
+yarn run cy:compile
 yarn run cy:open
 ```
 
@@ -735,20 +737,9 @@ yarn start
 second shell:
 
 ```sh
+yarn run cy:compile
 yarn run cy:start
 ```
-
-**Link develop version**
-
-In order to use the library during development in another repository, one need to build and watch the library and produce development typings.
-
-```bash
-ln -s . <target_project>/node_modules/lineupjs
-yarn run compile:dev
-yarn run watch
-```
-
-The development typings are needed cause during production the are located at `/src`. That causes problems cause during compilation of a dependent project the Typescript compiler will first find the original TypeScript file e.g. `config.ts` before looking for `config.d.ts`, will complain that the library owner should deliver JavaScript files and won't compile the file. Thus the typings have to lie at a different location in this scenario.
 
 ## Authors
 
@@ -766,5 +757,5 @@ This repository was created as part of the **[The Caleydo Project](http://caleyd
 [npm-url]: https://npmjs.org/package/lineupjs
 [bsd-image]: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
 [bsd-url]: https://opensource.org/licenses/BSD-3-Clause
-[github-actions-image]: https://github.com/lineupjs/lineupengine/workflows/ci/badge.svg
-[github-actions-url]: https://github.com/lineupjs/lineupengine/actions
+[github-actions-image]: https://github.com/lineupjs/lineupjs/workflows/ci/badge.svg
+[github-actions-url]: https://github.com/lineupjs/lineupjs/actions
