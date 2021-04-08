@@ -22,7 +22,7 @@
           arr.push({
             label: 'Row ' + i,
             number: Math.random() * 10,
-            number2: Math.random() * 10,
+            number2: Math.random() * 10 * (Math.random() < 0.4 ? 0.5 : 1),
             cat: cats[Math.floor(Math.random() * cats.length)],
             cat2: cat2[Math.floor(Math.random() * cat2.length)],
             date: new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
@@ -46,6 +46,7 @@
             type: 'number',
             column: 'number2',
             domain: [0, 10],
+            range: [1, 0],
           },
           {
             label: 'Cat',
