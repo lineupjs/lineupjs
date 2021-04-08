@@ -1,6 +1,13 @@
 import { ISequence, isSeqEmpty, empty } from '../internal';
 import { colorPool } from './internal';
-import type { ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategoricalsColumn, ICategory, ISetCategoricalFilter } from './ICategoricalColumn';
+import type {
+  ICategoricalColumn,
+  ICategoricalDesc,
+  ICategoricalFilter,
+  ICategoricalsColumn,
+  ICategory,
+  ISetCategoricalFilter,
+} from './ICategoricalColumn';
 import { DEFAULT_COLOR } from './Column';
 import { ECompareValueType, ICompareValue, IDataRow } from './interfaces';
 import { FIRST_IS_MISSING } from './missing';

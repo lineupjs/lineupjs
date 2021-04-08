@@ -7,7 +7,15 @@ import {
   IWeightedSumBuilder,
   buildRanking as buildRankingImpl,
 } from '../RankingBuilder';
-import type { IBuilderAdapterImposeColumnProps, IBuilderAdapterNestedColumnProps, IBuilderAdapterRankingProps, IBuilderAdapterReduceColumnProps, IBuilderAdapterScriptColumnProps, IBuilderAdapterSupportColumnProps, IBuilderAdapterWeightedSumColumnProps } from './interfaces';
+import type {
+  IBuilderAdapterImposeColumnProps,
+  IBuilderAdapterNestedColumnProps,
+  IBuilderAdapterRankingProps,
+  IBuilderAdapterReduceColumnProps,
+  IBuilderAdapterScriptColumnProps,
+  IBuilderAdapterSupportColumnProps,
+  IBuilderAdapterWeightedSumColumnProps,
+} from './interfaces';
 
 /*
  * build the column description
