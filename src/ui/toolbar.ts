@@ -1,16 +1,15 @@
-import { getAllToolbarActions, getAllToolbarDialogAddons } from '../model/internal';
 import {
   Column,
-  EDateSort,
-  EAdvancedSortMethod,
-  ESortMethod,
-  isSupportType,
   CompositeColumn,
+  EAdvancedSortMethod,
+  EDateSort,
+  ESortMethod,
   IMultiLevelColumn,
   isSortingAscByDefault,
+  isSupportType,
 } from '../model';
 import { cssClass } from '../styles';
-import ADialog, { IDialogContext, dialogContext } from './dialogs/ADialog';
+import ADialog, { dialogContext, IDialogContext } from './dialogs/ADialog';
 import CategoricalColorMappingDialog from './dialogs/CategoricalColorMappingDialog';
 import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
 import CategoricalMappingFilterDialog from './dialogs/CategoricalMappingFilterDialog';
@@ -20,10 +19,7 @@ import CompositeChildrenDialog from './dialogs/CompositeChildrenDialog';
 import CutOffHierarchyDialog from './dialogs/CutOffHierarchyDialog';
 import DateFilterDialog from './dialogs/DateFilterDialog';
 import EditPatternDialog from './dialogs/EditPatternDialog';
-import appendDate from './dialogs/groupDate';
 import GroupDialog from './dialogs/GroupDialog';
-import appendNumber from './dialogs/groupNumber';
-import appendString from './dialogs/groupString';
 import MappingDialog from './dialogs/MappingDialog';
 import NumberFilterDialog from './dialogs/NumberFilterDialog';
 import ReduceDialog from './dialogs/ReduceDialog';
@@ -33,15 +29,18 @@ import SearchDialog from './dialogs/SearchDialog';
 import ShowTopNDialog from './dialogs/ShowTopNDialog';
 import SortDialog from './dialogs/SortDialog';
 import StringFilterDialog from './dialogs/StringFilterDialog';
-import { sortMethods } from './dialogs/utils';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
 import type {
-  IRankingHeaderContext,
   IOnClickHandler,
-  IUIOptions,
+  IRankingHeaderContext,
   IToolbarAction,
   IToolbarDialogAddon,
+  IUIOptions,
 } from './interfaces';
+import appendDate from './dialogs/groupDate';
+import appendNumber from './dialogs/groupNumber';
+import appendString from './dialogs/groupString';
+import { sortMethods } from './dialogs/utils';
 
 interface IDialogClass {
   new (col: any, dialog: IDialogContext, ...args: any[]): ADialog;
@@ -64,17 +63,6 @@ function uiDialog(
       dialog.open();
     },
     options,
-  };
-}
-
-function uiSortMethod(methods: string[]): IToolbarDialogAddon {
-  methods = methods.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-  return {
-    title: 'Sort By',
-    order: 2,
-    append(col, node) {
-      return sortMethods(node, col as any, methods);
-    },
   };
 }
 
@@ -269,29 +257,6 @@ const setShowTopN: IToolbarAction = {
   },
 };
 
-export const toolbarDialogAddons: { [key: string]: IToolbarDialogAddon } = {
-  sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
-  sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
-  sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
-  sortDates: uiSortMethod(Object.keys(EDateSort)),
-  sortGroups: uiSortMethod(['count', 'name']),
-  groupNumber: {
-    title: 'Split',
-    order: 2,
-    append: appendNumber,
-  } as IToolbarDialogAddon,
-  groupString: {
-    title: 'Groups',
-    order: 2,
-    append: appendString,
-  } as IToolbarDialogAddon,
-  groupDate: {
-    title: 'Granularity',
-    order: 2,
-    append: appendDate,
-  } as IToolbarDialogAddon,
-};
-
 export const toolbarActions: { [key: string]: IToolbarAction } = {
   vis,
   group,
@@ -404,103 +369,36 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   ),
 };
 
-function sortActions(a: IToolbarAction, b: IToolbarAction) {
-  if (a.options.order === b.options.order) {
-    return a.title.toString().localeCompare(b.title.toString());
-  }
-  return (a.options.order || 50) - (b.options.order || 50);
+function uiSortMethod(methods: string[]): IToolbarDialogAddon {
+  methods = methods.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  return {
+    title: 'Sort By',
+    order: 2,
+    append(col, node) {
+      return sortMethods(node, col as any, methods);
+    },
+  };
 }
 
-function getFullToolbar(col: Column, ctx: IRankingHeaderContext) {
-  const cache = ctx.caches.toolbar;
-  if (cache.has(col.desc.type)) {
-    return cache.get(col.desc.type)!;
-  }
-
-  const keys = getAllToolbarActions(col);
-
-  if (!col.fixed) {
-    keys.push('remove');
-  }
-  {
-    const possible = ctx.getPossibleRenderer(col);
-    if (possible.item.length > 2 || possible.group.length > 2 || possible.summary.length > 2) {
-      // default always possible
-      keys.push('vis');
-    }
-  }
-
-  const actions = ctx.resolveToolbarActions(col, keys);
-
-  const r = Array.from(new Set(actions)).sort(sortActions);
-  cache.set(col.desc.type, r);
-  return r;
-}
-
-/** @internal */
-export function getToolbar(col: Column, ctx: IRankingHeaderContext) {
-  const toolbar = getFullToolbar(col, ctx);
-  const flags = ctx.flags;
-
-  return toolbar.filter((a) => {
-    if (a.enabled && !a.enabled(col)) {
-      return false;
-    }
-    // level is basic or not one of disabled features
-    return (
-      a.options.featureLevel === 'basic' ||
-      !(
-        (flags.advancedModelFeatures === false && a.options.featureCategory === 'model') ||
-        (flags.advancedRankingFeatures === false && a.options.featureCategory === 'ranking') ||
-        (flags.advancedUIFeatures === false && a.options.featureCategory === 'ui')
-      )
-    );
-  });
-}
-
-/** @internal */
-export function getToolbarDialogAddons(col: Column, key: string, ctx: IRankingHeaderContext) {
-  const cacheKey = `${col.desc.type}@${key}`;
-  const cacheAddon = ctx.caches.toolbarAddons;
-  if (cacheAddon.has(cacheKey)) {
-    return cacheAddon.get(cacheKey)!;
-  }
-
-  const keys = getAllToolbarDialogAddons(col, key);
-  const actions = ctx.resolveToolbarDialogAddons(col, keys);
-
-  const r = Array.from(new Set(actions)).sort((a, b) => {
-    if (a.order === b.order) {
-      return a.title.localeCompare(b.title);
-    }
-    return (a.order || 50) - (b.order || 50);
-  });
-  cacheAddon.set(cacheKey, r);
-  return r;
-}
-
-/** @internal */
-export function isSortAble(col: Column, ctx: IRankingHeaderContext) {
-  const toolbar = getFullToolbar(col, ctx);
-  return (
-    toolbar.find((d) => d === sort || d === sortBy || d.title === sort.title || d.title.startsWith('Sort By')) != null
-  );
-}
-
-/** @internal */
-export function isGroupAble(col: Column, ctx: IRankingHeaderContext) {
-  const toolbar = getFullToolbar(col, ctx);
-  return (
-    toolbar.find((d) => d === group || d === groupBy || d.title === group.title || d.title.startsWith('Group By')) !=
-    null
-  );
-}
-
-/** @internal */
-export function isGroupSortAble(col: Column, ctx: IRankingHeaderContext) {
-  const toolbar = getFullToolbar(col, ctx);
-  return (
-    toolbar.find((d) => d === sortGroupBy || d.title === sortGroupBy.title || d.title.startsWith('Sort Groups By')) !=
-    null
-  );
-}
+export const toolbarDialogAddons: { [key: string]: IToolbarDialogAddon } = {
+  sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
+  sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
+  sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
+  sortDates: uiSortMethod(Object.keys(EDateSort)),
+  sortGroups: uiSortMethod(['count', 'name']),
+  groupNumber: {
+    title: 'Split',
+    order: 2,
+    append: appendNumber,
+  } as IToolbarDialogAddon,
+  groupString: {
+    title: 'Groups',
+    order: 2,
+    append: appendString,
+  } as IToolbarDialogAddon,
+  groupDate: {
+    title: 'Granularity',
+    order: 2,
+    append: appendDate,
+  } as IToolbarDialogAddon,
+};

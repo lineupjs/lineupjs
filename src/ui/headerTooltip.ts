@@ -1,7 +1,7 @@
 import Column, { getSortType } from '../model';
 import { cssClass } from '../styles';
 import type { IRankingHeaderContext, IToolbarAction } from './interfaces';
-import { getToolbar } from './toolbar';
+import { getToolbar } from './toolbarResolvers';
 
 /** @internal */
 export function actionCSSClass(title: string) {

@@ -26,7 +26,7 @@ import {
 import { aria, cssClass, engineCssClass, RESIZE_ANIMATION_DURATION, RESIZE_SPACE } from '../styles';
 import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
 import type { IRankingHeaderContext, IOnClickHandler } from './interfaces';
-import { getToolbar } from './toolbar';
+import { getToolbar } from './toolbarResolvers';
 import { dialogContext } from './dialogs';
 import { addIconDOM, actionCSSClass, isActionMode, updateIconState } from './headerTooltip';
 
