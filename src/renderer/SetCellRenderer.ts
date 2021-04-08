@@ -1,6 +1,6 @@
 import { Column, ICategoricalLikeColumn, IDataRow, IOrderedGroup, ISetColumn, isSetColumn } from '../model';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
-import {
+import type {
   ICellRendererFactory,
   IRenderContext,
   ICellRenderer,

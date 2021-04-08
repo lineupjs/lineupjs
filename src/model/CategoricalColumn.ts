@@ -1,4 +1,4 @@
-import { IEventListener, ISequence } from '../internal';
+import type { IEventListener, ISequence } from '../internal';
 import { Category, toolbar } from './annotations';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import Column, {
@@ -13,17 +13,19 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
   widthChanged,
+  DEFAULT_COLOR,
 } from './Column';
-import {
+import type {
   ICategoricalColumn,
   ICategoricalColumnDesc,
   ICategoricalFilter,
   ICategory,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import { IDataRow, IGroup, ICompareValue, DEFAULT_COLOR, ITypeFactory, ECompareValueType } from './interfaces';
+import type { IDataRow, IGroup, ICompareValue, ITypeFactory, ECompareValueType } from './interfaces';
 import { missingGroup } from './missing';
-import ValueColumn, { dataLoaded } from './ValueColumn';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
 import {
   toCategories,
   isCategoryIncluded,

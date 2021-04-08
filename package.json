@@ -56,8 +56,8 @@
   "scripts": {
     "clean": "rimraf build dist docs \"*.tgz\" && yarn run clean:compile",
     "clean:compile": "rimraf build/src \"build/*.tsbuildinfo\" \"*.tsbuildinfo\" ",
-    "compile": "tsc",
-    "compile:dev": "tsc -p ./tsconfig.dev.json",
+    "compile": "tsc -b ./tsconfig.json",
+    "compile:dev": "tsc -b ./tsconfig.dev.json",
     "fix": "yarn run eslint:fix && yarn run prettier:write",
     "prettier:write": "prettier \"*\" \"*/**\" --write",
     "prettier": "prettier \"*\" \"*/**\" --check",

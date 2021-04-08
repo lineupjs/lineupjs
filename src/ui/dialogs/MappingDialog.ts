@@ -1,6 +1,6 @@
 import { ISequence, round } from '../../internal';
 import { IMapAbleColumn, IMappingFunction, isMissingValue, isMapAbleColumn } from '../../model';
-import { IRankingHeaderContext } from '../interfaces';
+import type { IRankingHeaderContext } from '../interfaces';
 import ADialog, { IDialogContext } from './ADialog';
 import { IMappingAdapter, MappingLine } from './MappingLineDialog';
 import { cssClass } from '../../styles';

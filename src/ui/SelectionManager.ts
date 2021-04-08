@@ -1,6 +1,6 @@
 import { OrderedSet, AEventDispatcher, IEventListener } from '../internal';
 import { IGroupData, IGroupItem, isGroup } from '../model';
-import { IDataProvider } from '../provider';
+import type { IDataProvider } from '../provider';
 import { cssClass, engineCssClass } from '../styles';
 import { forEachIndices } from '../model/internal';
 import { rangeSelection } from '../provider/utils';

@@ -15,9 +15,9 @@ import {
 } from '../model';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
-import { IDataProviderOptions } from './interfaces';
+import type { IDataProviderOptions } from './interfaces';
 import { CompareLookup } from './sort';
-import { IRenderTaskExecutor } from './tasks';
+import type { IRenderTaskExecutor } from './tasks';
 import { DirectRenderTasks } from './DirectRenderTasks';
 import { ScheduleRenderTasks } from './ScheduledTasks';
 import { joinGroups, mapIndices, duplicateGroup } from '../model/internal';

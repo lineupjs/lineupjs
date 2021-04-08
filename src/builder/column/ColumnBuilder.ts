@@ -1,4 +1,4 @@
-import { IArrayDesc, IColumnDesc } from '../../model';
+import type { IArrayDesc, IColumnDesc } from '../../model';
 
 export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
   protected readonly desc: T;

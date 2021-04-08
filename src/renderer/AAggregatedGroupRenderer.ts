@@ -1,15 +1,15 @@
-import { ISequence } from '../internal';
-import { Column, IDataRow, IOrderedGroup } from '../model';
-import {
+import type { ISequence } from '../internal';
+import type { Column, IDataRow, IOrderedGroup } from '../model';
+import type {
   ERenderMode,
   ICellRenderer,
   ICellRendererFactory,
   IGroupCellRenderer,
   IImposer,
   IRenderContext,
+  ISummaryRenderer,
 } from './interfaces';
 import { noRenderer } from './utils';
-import { ISummaryRenderer } from './interfaces';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item

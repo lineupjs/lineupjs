@@ -5,9 +5,9 @@ import {
   IScriptedBuilder,
   IWeightedSumBuilder,
 } from '..';
-import { Ranking } from '../../model';
-import { LocalDataProvider } from '../../provider';
-import {
+import type { Ranking } from '../../model';
+import type { LocalDataProvider } from '../../provider';
+import type {
   IBuilderAdapterImposeColumnProps,
   IBuilderAdapterNestedColumnProps,
   IBuilderAdapterRankingProps,

@@ -1,5 +1,5 @@
 import { format } from 'd3-format';
-import { IBoxPlotData, IEventListener } from '../internal';
+import type { IBoxPlotData, IEventListener } from '../internal';
 import { Category, dialogAddons, SortByDefault, toolbar } from './annotations';
 import Column, {
   dirty,
@@ -25,7 +25,8 @@ import {
 } from './INumberColumn';
 import { restoreMapping } from './MappingFunction';
 import NumberColumn from './NumberColumn';
-import ValueColumn, { dataLoaded } from './ValueColumn';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
 import {
   DEFAULT_FORMATTER,
   noNumberFilter,

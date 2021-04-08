@@ -1,5 +1,5 @@
-import { IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup } from '../model';
-import { IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer } from './interfaces';
+import type { IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup } from '../model';
+import type { IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { ISequence, boxplotBuilder, getSortLabel } from '../internal';
 

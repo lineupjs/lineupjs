@@ -15,7 +15,7 @@ import Column, {
   visibilityChanged,
   widthChanged,
 } from './Column';
-import { IArrayDesc } from './IArrayColumn';
+import type { IArrayDesc } from './IArrayColumn';
 import { IDataRow, ECompareValueType, ITypeFactory } from './interfaces';
 import {
   DEFAULT_FORMATTER,
@@ -36,7 +36,8 @@ import {
 import { restoreMapping } from './MappingFunction';
 import { isMissingValue } from './missing';
 import NumberColumn from './NumberColumn';
-import ValueColumn, { dataLoaded } from './ValueColumn';
+import type { dataLoaded } from './ValueColumn';
+import type ValueColumn from './ValueColumn';
 import { integrateDefaults } from './internal';
 
 export interface INumbersDesc extends IArrayDesc, INumberDesc {

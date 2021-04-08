@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import Column from './Column';
-import { IColumnDesc, IColumnConstructor } from './interfaces';
+import type { IColumnDesc, IColumnConstructor } from './interfaces';
 
 const supportType = Symbol.for('SupportType');
 const category = Symbol.for('Category');

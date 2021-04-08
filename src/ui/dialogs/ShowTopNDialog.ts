@@ -1,6 +1,6 @@
 import ADialog, { IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
-import { IDataProvider } from '../../provider';
+import type { IDataProvider } from '../../provider';
 
 /** @internal */
 export default class ShowTopNDialog extends ADialog {

@@ -1,7 +1,7 @@
-import { IAdvancedBoxPlotData, IBoxPlotData, IForEachAble } from '../internal';
+import type { IAdvancedBoxPlotData, IBoxPlotData, IForEachAble } from '../internal';
 import Column from './Column';
-import { IArrayColumn } from './IArrayColumn';
-import { IColumnDesc, IDataRow, ITypedDump, ITypeFactory } from './interfaces';
+import type { IArrayColumn } from './IArrayColumn';
+import type { IColumnDesc, IDataRow, ITypedDump, ITypeFactory } from './interfaces';
 
 export interface IColorMappingFunction {
   apply(v: number): string;

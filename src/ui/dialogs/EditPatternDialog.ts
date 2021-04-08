@@ -1,4 +1,4 @@
-import { LinkColumn, LinkMapColumn, LinksColumn } from '../../model';
+import type { LinkColumn, LinkMapColumn, LinksColumn } from '../../model';
 import ADialog, { IDialogContext } from './ADialog';
 
 /** @internal */

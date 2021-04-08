@@ -1,8 +1,15 @@
-import { IImposeColumnBuilder, INestedBuilder, IReduceBuilder, IScriptedBuilder, IWeightedSumBuilder } from '..';
-import { ILineUpOptions, ITaggleOptions } from '../../config';
-import { EAdvancedSortMethod, IAction, ICategory, IColumnDesc, IGroupAction, IPartialCategoryNode } from '../../model';
-import { IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider } from '../../provider';
-import { LineUp, Taggle } from '../../ui';
+import type { IImposeColumnBuilder, INestedBuilder, IReduceBuilder, IScriptedBuilder, IWeightedSumBuilder } from '..';
+import type { ILineUpOptions, ITaggleOptions } from '../../config';
+import type {
+  EAdvancedSortMethod,
+  IAction,
+  ICategory,
+  IColumnDesc,
+  IGroupAction,
+  IPartialCategoryNode,
+} from '../../model';
+import type { IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider } from '../../provider';
+import type { LineUp, Taggle } from '../../ui';
 
 export * as builderAdapter from './builderAdapter';
 

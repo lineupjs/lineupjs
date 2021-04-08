@@ -15,17 +15,18 @@ import Column, {
   visibilityChanged,
   widthChanged,
 } from './Column';
-import {
+import type {
   ICategoricalColumn,
   ICategoricalDesc,
   ICategoricalFilter,
   ICategory,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import { IDataRow, IValueColumnDesc, ITypeFactory } from './interfaces';
+import type { IDataRow, IValueColumnDesc, ITypeFactory } from './interfaces';
 import NumberColumn from './NumberColumn';
-import { INumberColumn } from './INumberColumn';
-import ValueColumn, { dataLoaded } from './ValueColumn';
+import type { INumberColumn } from './INumberColumn';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
 import { toCategories } from './internalCategorical';
 import { DEFAULT_FORMATTER } from './internalNumber';
 import { integrateDefaults } from './internal';

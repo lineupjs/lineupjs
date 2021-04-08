@@ -33,7 +33,7 @@ import {
 } from './histogram';
 import InputDateDialog from '../ui/dialogs/InputDateDialog';
 import { shiftFilterDateDay, noDateFilter } from '../model/internalDate';
-import DialogManager from '../ui/dialogs/DialogManager';
+import type DialogManager from '../ui/dialogs/DialogManager';
 
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';

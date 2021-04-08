@@ -1,8 +1,8 @@
-import { GridStyleManager } from 'lineupengine';
+import type { GridStyleManager } from 'lineupengine';
 import { defaultOptions } from '../../config';
-import { ITaggleOptions } from '../../config';
+import type { ITaggleOptions } from '../../config';
 import { merge, suffix } from '../../internal';
-import { DataProvider } from '../../provider';
+import type { DataProvider } from '../../provider';
 import { cssClass, engineCssClass } from '../../styles';
 import { ALineUp } from '../ALineUp';
 import SidePanel from '../panel/SidePanel';

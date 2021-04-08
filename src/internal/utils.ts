@@ -1,3 +1,13 @@
+import * as equalImpl from 'fast-deep-equal';
+
+// keep here to have a "real" export for webpack not just interfaces
+
+/**
+ * deep equal comparison
+ */
+export const equal: (a: any, b: any) => boolean =
+  typeof equalImpl === 'function' ? equalImpl : (equalImpl as any).default;
+
 /** @internal */
 export function equalArrays<T>(a: T[], b: T[]) {
   if (a.length !== b.length) {

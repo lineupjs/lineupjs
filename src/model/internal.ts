@@ -1,7 +1,7 @@
 import { schemeCategory10, schemeSet3 } from 'd3-scale-chromatic';
-import Column, { defaultGroup, IGroup, IGroupParent, IndicesArray, IOrderedGroup, ECompareValueType } from '.';
 import { OrderedSet } from '../internal';
-import { DEFAULT_COLOR } from './interfaces';
+import Column, { DEFAULT_COLOR } from './Column';
+import { defaultGroup, ECompareValueType, IGroup, IGroupParent, IndicesArray, IOrderedGroup } from './interfaces';
 
 /** @internal */
 export function integrateDefaults<T>(desc: T, defaults: Partial<T> = {}) {

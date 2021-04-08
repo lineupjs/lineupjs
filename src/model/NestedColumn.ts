@@ -1,4 +1,4 @@
-import { IDataRow, ECompareValueType } from './interfaces';
+import type { IDataRow, ECompareValueType } from './interfaces';
 import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
 import { concat } from '../internal';
 import { toolbar } from './annotations';

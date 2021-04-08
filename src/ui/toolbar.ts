@@ -35,7 +35,13 @@ import SortDialog from './dialogs/SortDialog';
 import StringFilterDialog from './dialogs/StringFilterDialog';
 import { sortMethods } from './dialogs/utils';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
-import { IRankingHeaderContext, IOnClickHandler, IUIOptions, IToolbarAction, IToolbarDialogAddon } from './interfaces';
+import type {
+  IRankingHeaderContext,
+  IOnClickHandler,
+  IUIOptions,
+  IToolbarAction,
+  IToolbarDialogAddon,
+} from './interfaces';
 
 interface IDialogClass {
   new (col: any, dialog: IDialogContext, ...args: any[]): ADialog;

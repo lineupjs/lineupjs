@@ -1,4 +1,4 @@
-import { IDateColumnDesc } from '../../model';
+import type { IDateColumnDesc } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class DateColumnBuilder extends ColumnBuilder<IDateColumnDesc> {

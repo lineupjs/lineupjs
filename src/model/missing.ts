@@ -1,4 +1,4 @@
-import { IGroup } from './interfaces';
+import type { IGroup } from './interfaces';
 
 export function isMissingValue(v: any): boolean {
   if (

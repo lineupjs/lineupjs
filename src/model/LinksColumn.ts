@@ -1,6 +1,6 @@
 import { toolbar } from './annotations';
 import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
-import Column, {
+import type {
   widthChanged,
   labelChanged,
   metaDataChanged,
@@ -13,11 +13,13 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import { IDataRow, ITypeFactory } from './interfaces';
+import type Column from './Column';
+import type { dataLoaded } from './ValueColumn';
+import type ValueColumn from './ValueColumn';
+import type { IDataRow, ITypeFactory } from './interfaces';
 import { patternFunction, integrateDefaults } from './internal';
 import { EAlignment } from './StringColumn';
-import { IEventListener } from '../internal';
+import type { IEventListener } from '../internal';
 import LinkColumn, { ILink, ILinkDesc } from './LinkColumn';
 
 export declare type ILinksColumnDesc = ILinkDesc & IArrayColumnDesc<string | ILink>;

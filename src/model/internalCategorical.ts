@@ -1,17 +1,9 @@
 import { ISequence, isSeqEmpty, empty } from '../internal';
-import {
-  FIRST_IS_MISSING,
-  IDataRow,
-  ECompareValueType,
-  ICompareValue,
-  ICategory,
-  ICategoricalColumn,
-  ICategoricalDesc,
-  ICategoricalFilter,
-} from '.';
 import { colorPool } from './internal';
-import { DEFAULT_COLOR } from './interfaces';
-import { ICategoricalsColumn, ISetCategoricalFilter } from './ICategoricalColumn';
+import type { ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategoricalsColumn, ICategory, ISetCategoricalFilter } from './ICategoricalColumn';
+import { DEFAULT_COLOR } from './Column';
+import { ECompareValueType, ICompareValue, IDataRow } from './interfaces';
+import { FIRST_IS_MISSING } from './missing';
 
 /** @internal */
 export function toCategory(
