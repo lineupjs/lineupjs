@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "ES2015",
     "target": "ES5",
-    "importHelpers": true,
+    "importHelpers": false,
     "sourceMap": true,
     "lib": ["DOM", "ES2015", "es2016.array.include", "es2017.object"],
     "composite": true,
