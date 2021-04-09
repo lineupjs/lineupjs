@@ -12,11 +12,7 @@ describe('DataBuilder', () => {
       expect(new DataBuilder([]).registerColumnType('custom', CustomColumn)).toBeDefined();
     });
     it('simple constructor', () => {
-      class CustomColumn extends Column {
-        constructor(id: string, desc: Readonly<IColumnDesc>) {
-          super(id, desc);
-        }
-      }
+      class CustomColumn extends Column {}
       expect(new DataBuilder([]).registerColumnType('custom', CustomColumn)).toBeDefined();
     });
     it('full constructor', () => {

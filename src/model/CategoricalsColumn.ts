@@ -1,16 +1,19 @@
 import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
-import {
+import type {
   ICategoricalDesc,
   ICategory,
   ICategoricalColorMappingFunction,
   ICategoricalsColumn,
 } from './ICategoricalColumn';
-import { IDataRow, DEFAULT_COLOR, ITypeFactory } from './interfaces';
+import type { IDataRow, ITypeFactory } from './interfaces';
 import { toolbar } from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import Column, {
+import type { dataLoaded } from './ValueColumn';
+import type ValueColumn from './ValueColumn';
+import type Column from './Column';
+import {
+  DEFAULT_COLOR,
   labelChanged,
   metaDataChanged,
   dirty,
@@ -23,7 +26,7 @@ import Column, {
   widthChanged,
   dirtyCaches,
 } from './Column';
-import { IEventListener } from '../internal';
+import type { IEventListener } from '../internal';
 import { toCategories } from './internalCategorical';
 
 export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string | null>;

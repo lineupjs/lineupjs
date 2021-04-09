@@ -1,4 +1,4 @@
-import Column, {
+import type {
   IDataRow,
   Ranking,
   IndicesArray,
@@ -10,6 +10,7 @@ import Column, {
   ICompareValue,
   StringColumn,
 } from '../model';
+import type Column from '../model';
 import { ARenderTasks, IRenderTaskExecutor, taskNow } from './tasks';
 import {
   ISequence,
@@ -22,8 +23,8 @@ import {
   IAdvancedBoxPlotData,
   IStatistics,
 } from '../internal';
-import { CompareLookup } from './sort';
-import { IRenderTask } from '..';
+import type { CompareLookup } from './sort';
+import type { IRenderTask } from '../renderer';
 
 /**
  * @internal

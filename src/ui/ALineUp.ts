@@ -4,13 +4,13 @@ import {
   SUPPORTED_EDGE_VERSION,
   SUPPORTED_FIREFOX_VERSION,
 } from '../browser';
-import { ILineUpLike } from '../config';
+import type { ILineUpLike } from '../config';
 import { AEventDispatcher, IEventListener, clear } from '../internal';
-import { Column } from '../model';
+import type { Column } from '../model';
 import { DataProvider, IDataProviderDump } from '../provider';
 import { cssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
-import { ADialog } from './dialogs';
+import type { ADialog } from './dialogs';
 
 /**
  * emitted when the highlight changes

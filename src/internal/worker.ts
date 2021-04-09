@@ -1,4 +1,4 @@
-import {
+import type {
   IWorkerMessage,
   INumberStatsMessageRequest,
   IAdvancedBoxPlotData,
@@ -9,9 +9,9 @@ import {
   IDateStatsMessageRequest,
   IBoxPlotStatsMessageRequest,
 } from './';
-import { UIntTypedArray, IndicesArray } from '../model';
-import { IStringStatsMessageRequest } from './math';
-import { IStringStatistics } from './mathInterfaces';
+import type { UIntTypedArray, IndicesArray } from '../model';
+import type { IStringStatsMessageRequest } from './math';
+import type { IStringStatistics } from './mathInterfaces';
 
 /**
  * @internal

@@ -30,9 +30,9 @@ import Column, {
   StringColumn,
   UIntTypedArray,
 } from '../model';
-import { IRenderTask } from '../renderer';
+import type { IRenderTask } from '../renderer';
 import { sortDirect } from './DirectRenderTasks';
-import { CompareLookup } from './sort';
+import type { CompareLookup } from './sort';
 import { ARenderTasks, IRenderTaskExecutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow } from './tasks';
 
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExecutor {

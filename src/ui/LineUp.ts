@@ -1,6 +1,6 @@
 import { ILineUpOptions, defaultOptions } from '../config';
 import { merge, suffix } from '../internal';
-import { DataProvider } from '../provider';
+import type { DataProvider } from '../provider';
 import { cssClass } from '../styles';
 import { ALineUp } from './ALineUp';
 import EngineRenderer from './EngineRenderer';

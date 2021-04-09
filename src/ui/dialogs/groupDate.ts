@@ -1,6 +1,6 @@
-import { DateColumn, IDateGranularity } from '../../model';
+import type { DateColumn, IDateGranularity } from '../../model';
 import { cssClass } from '../../styles';
-import { IToolbarDialogAddonHandler } from '../interfaces';
+import type { IToolbarDialogAddonHandler } from '../interfaces';
 import { defaultDateGrouper } from '../../model/internalDate';
 
 /** @internal */

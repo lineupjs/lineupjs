@@ -1,6 +1,6 @@
 import { Category, SupportType } from './annotations';
 import Column from './Column';
-import { IDataRow, IColumnDesc } from './interfaces';
+import type { IDataRow, IColumnDesc } from './interfaces';
 import { integrateDefaults } from './internal';
 
 /**

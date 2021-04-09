@@ -41,8 +41,8 @@ import {
   StringColumn,
   isMapAbleColumn,
 } from '../model';
-import { IRenderTask, IRenderTasks } from '../renderer';
-import { CompareLookup } from './sort';
+import type { IRenderTask, IRenderTasks } from '../renderer';
+import type { CompareLookup } from './sort';
 
 /**
  * a render task that is already resolved

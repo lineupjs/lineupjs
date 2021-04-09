@@ -1,4 +1,4 @@
-import {
+import type {
   Column,
   Ranking,
   IColumnConstructor,
@@ -12,9 +12,9 @@ import {
   IMappingFunctionConstructor,
   ITypeFactory,
 } from '../model';
-import { AEventDispatcher, ISequence } from '../internal';
-import { IRenderTasks } from '../renderer';
-import { IAbortAblePromise as IAbortAblePromiseImpl } from 'lineupengine';
+import type { AEventDispatcher, ISequence } from '../internal';
+import type { IRenderTasks } from '../renderer';
+import type { IAbortAblePromise as IAbortAblePromiseImpl } from 'lineupengine';
 
 export { ABORTED } from 'lineupengine';
 export declare type IAbortAblePromise<T> = IAbortAblePromiseImpl<T>;

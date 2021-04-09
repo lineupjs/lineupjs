@@ -1,9 +1,9 @@
-import { DateColumn, IDateFilter } from '../../model';
+import type { DateColumn, IDateFilter } from '../../model';
 import { noDateFilter } from '../../model/internalDate';
 import { createDateFilter } from '../../renderer/DateHistogramCellRenderer';
 import { cssClass } from '../../styles';
 import ADialog, { IDialogContext } from './ADialog';
-import { IRankingHeaderContext } from '../interfaces';
+import type { IRankingHeaderContext } from '../interfaces';
 
 /** @internal */
 export default class DateFilterDialog extends ADialog {

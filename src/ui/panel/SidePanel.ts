@@ -17,7 +17,7 @@ import {
 import { DataProvider, IDataProvider } from '../../provider';
 import { aria, cssClass } from '../../styles';
 import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
-import { IRankingHeaderContext } from '../interfaces';
+import type { IRankingHeaderContext } from '../interfaces';
 import { dialogContext } from '../dialogs';
 import SearchBox, { IGroupSearchItem, ISearchBoxOptions } from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';

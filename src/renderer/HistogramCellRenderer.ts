@@ -37,7 +37,7 @@ import {
   initFilter,
 } from './histogram';
 import { noNumberFilter } from '../model/internalNumber';
-import DialogManager from '../ui/dialogs/DialogManager';
+import type DialogManager from '../ui/dialogs/DialogManager';
 
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';

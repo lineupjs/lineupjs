@@ -1,6 +1,6 @@
 import { Category, SupportType, toolbar } from './annotations';
 import { IndicesArray, IDataRow, IGroup, ECompareValueType, IValueColumnDesc } from './interfaces';
-import Column, {
+import type {
   widthChanged,
   labelChanged,
   metaDataChanged,
@@ -13,8 +13,10 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import { IEventListener } from '../internal';
+import type Column from './Column';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import type { IEventListener } from '../internal';
 import { integrateDefaults } from './internal';
 
 /**

@@ -3,10 +3,10 @@ import { Ranking, isSupportType } from '../../model';
 import { aria, cssClass } from '../../styles';
 import MoreRankingOptionsDialog from '../dialogs/MoreRankingOptionsDialog';
 import { actionCSSClass } from '../header';
-import { IRankingHeaderContext } from '../interfaces';
+import type { IRankingHeaderContext } from '../interfaces';
 import { dialogContext } from '../dialogs';
 import Hierarchy from './Hierarchy';
-import { ISidePanelOptions } from './SidePanel';
+import type { ISidePanelOptions } from './SidePanel';
 import SidePanelEntryVis from './SidePanelEntryVis';
 
 /** @internal */

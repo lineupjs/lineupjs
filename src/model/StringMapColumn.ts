@@ -1,5 +1,5 @@
 import { toolbar } from './annotations';
-import Column, {
+import type {
   widthChanged,
   labelChanged,
   metaDataChanged,
@@ -12,11 +12,13 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import { IDataRow } from './interfaces';
+import type Column from './Column';
+import type { dataLoaded } from './ValueColumn';
+import type ValueColumn from './ValueColumn';
+import type { IDataRow } from './interfaces';
 import MapColumn, { IMapColumnDesc } from './MapColumn';
 import { EAlignment, IStringDesc } from './StringColumn';
-import { IEventListener } from '../internal';
+import type { IEventListener } from '../internal';
 import { isMissingValue } from './missing';
 import { integrateDefaults } from './internal';
 

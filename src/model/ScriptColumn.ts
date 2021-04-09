@@ -1,5 +1,5 @@
-import { NumberColumn } from '.';
-import { IEventListener } from '../internal';
+import NumberColumn from './NumberColumn';
+import type { IEventListener } from '../internal';
 import { SortByDefault, toolbar } from './annotations';
 import Column, {
   dirty,
@@ -14,9 +14,10 @@ import Column, {
   visibilityChanged,
   widthChanged,
 } from './Column';
-import CompositeColumn, { addColumn, moveColumn, removeColumn } from './CompositeColumn';
+import type { addColumn, moveColumn, removeColumn } from './CompositeColumn';
+import type CompositeColumn from './CompositeColumn';
 import CompositeNumberColumn, { ICompositeNumberDesc } from './CompositeNumberColumn';
-import { IDataRow, ITypeFactory } from './interfaces';
+import type { IDataRow, ITypeFactory } from './interfaces';
 import { isDummyNumberFilter, noNumberFilter, restoreNumberFilter } from './internalNumber';
 import {
   IColorMappingFunction,

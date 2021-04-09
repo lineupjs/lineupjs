@@ -1,8 +1,8 @@
 import { debounce, clear, suffix } from '../../internal';
 import { CompositeColumn } from '../../model';
 import { createHeader, updateHeader } from '../header';
-import { IRankingHeaderContext } from '../interfaces';
-import { IDialogContext } from './ADialog';
+import type { IRankingHeaderContext } from '../interfaces';
+import type { IDialogContext } from './ADialog';
 import { cssClass, engineCssClass } from '../../styles';
 import APopup from './APopup';
 

@@ -13,15 +13,16 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import {
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import type {
   ICategoricalColumn,
   ICategory,
   ICategoricalColorMappingFunction,
   ICategoricalFilter,
 } from './ICategoricalColumn';
 import { IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
-import { IEventListener } from '../internal';
+import type { IEventListener } from '../internal';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import { integrateDefaults } from './internal';
 import { missingGroup } from './missing';

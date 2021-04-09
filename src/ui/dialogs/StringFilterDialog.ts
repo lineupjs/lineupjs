@@ -1,4 +1,4 @@
-import { StringColumn, IStringFilter } from '../../model';
+import type { StringColumn, IStringFilter } from '../../model';
 import { filterMissingMarkup, findFilterMissing } from '../missing';
 import ADialog, { IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';

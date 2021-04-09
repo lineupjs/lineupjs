@@ -14,7 +14,7 @@ import {
   uniformContext,
   IAsyncUpdate,
 } from 'lineupengine';
-import { ILineUpFlags } from '../config';
+import type { ILineUpFlags } from '../config';
 import { HOVER_DELAY_SHOW_DETAIL } from '../constants';
 import { AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener, suffix } from '../internal';
 import {
@@ -30,10 +30,10 @@ import {
   defaultGroup,
   IGroup,
 } from '../model';
-import { IImposer, IRenderCallback, IRenderContext } from '../renderer';
+import type { IImposer, IRenderCallback, IRenderContext } from '../renderer';
 import { CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass } from '../styles';
 import { lineupAnimation } from './animation';
-import { IRankingBodyContext, IRankingHeaderContextContainer } from './interfaces';
+import type { IRankingBodyContext, IRankingHeaderContextContainer } from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import RenderColumn, { IRenderers } from './RenderColumn';
 import SelectionManager from './SelectionManager';

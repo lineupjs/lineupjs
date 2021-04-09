@@ -1,4 +1,4 @@
-import { ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer } from './interfaces';
+import type { ICellRendererFactory, IGroupCellRenderer, ISummaryRenderer } from './interfaces';
 import { noop } from './utils';
 
 export default class LoadingCellRenderer implements ICellRendererFactory {

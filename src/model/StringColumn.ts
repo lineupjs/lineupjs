@@ -22,7 +22,8 @@ import {
   ITypeFactory,
 } from './interfaces';
 import { missingGroup, isMissingValue } from './missing';
-import ValueColumn, { dataLoaded } from './ValueColumn';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
 import { equal, IEventListener, ISequence, isSeqEmpty } from '../internal';
 import { integrateDefaults } from './internal';
 

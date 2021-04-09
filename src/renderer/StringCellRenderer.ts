@@ -1,6 +1,6 @@
 import { StringColumn, Column, IDataRow, IOrderedGroup, IStringFilter } from '../model';
 import { filterMissingMarkup, findFilterMissing } from '../ui/missing';
-import {
+import type {
   IRenderContext,
   ICellRendererFactory,
   ISummaryRenderer,

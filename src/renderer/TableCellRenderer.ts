@@ -9,7 +9,7 @@ import {
   isMissingValue,
   IOrderedGroup,
 } from '../model';
-import {
+import type {
   IRenderContext,
   ICellRendererFactory,
   ISummaryRenderer,
@@ -19,7 +19,7 @@ import {
 import { renderMissingDOM } from './missing';
 import { forEach, noop } from './utils';
 import { cssClass } from '../styles';
-import { ISequence } from '../internal';
+import type { ISequence } from '../internal';
 
 export default class TableCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table';

@@ -1,14 +1,14 @@
-import { GridStyleManager } from 'lineupengine';
-import { ILineUpOptions } from '../../config';
+import type { GridStyleManager } from 'lineupengine';
+import type { ILineUpOptions } from '../../config';
 import { debounce, AEventDispatcher, IEventListener, suffix } from '../../internal';
 import { IGroupData, IGroupItem, isGroup, Ranking, IGroup } from '../../model';
 import { DataProvider } from '../../provider';
-import { IRenderContext } from '../../renderer';
-import { IEngineRankingContext } from '../EngineRanking';
+import type { IRenderContext } from '../../renderer';
+import type { IEngineRankingContext } from '../EngineRanking';
 import EngineRenderer from '../EngineRenderer';
-import { IRankingHeaderContext, IRankingHeaderContextContainer } from '../interfaces';
-import { IRule } from './rules';
-import { ADialog } from '../dialogs';
+import type { IRankingHeaderContext, IRankingHeaderContextContainer } from '../interfaces';
+import type { IRule } from './rules';
+import type { ADialog } from '../dialogs';
 
 /**
  * emitted when the highlight changes

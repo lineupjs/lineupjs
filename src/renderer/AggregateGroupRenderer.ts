@@ -9,14 +9,14 @@ import {
   defaultGroup,
 } from '../model';
 import { AGGREGATE, CANVAS_HEIGHT, cssClass } from '../styles';
-import {
+import type {
   IRenderContext,
   ICellRendererFactory,
   ICellRenderer,
   IGroupCellRenderer,
   ISummaryRenderer,
 } from './interfaces';
-import { IDataProvider } from '../provider';
+import type { IDataProvider } from '../provider';
 import {
   groupParents,
   toItemMeta,

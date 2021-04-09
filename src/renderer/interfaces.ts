@@ -1,5 +1,5 @@
-import { IAbortAblePromise } from 'lineupengine';
-import {
+import type { IAbortAblePromise } from 'lineupengine';
+import type {
   Column,
   IDataRow,
   IOrderedGroup,
@@ -8,9 +8,9 @@ import {
   IDateColumn,
   StringColumn,
 } from '../model';
-import { IDataProvider } from '../provider';
-import DialogManager from '../ui/dialogs/DialogManager';
-import {
+import type { IDataProvider } from '../provider';
+import type DialogManager from '../ui/dialogs/DialogManager';
+import type {
   ISequence,
   IDateStatistics,
   ICategoricalStatistics,
