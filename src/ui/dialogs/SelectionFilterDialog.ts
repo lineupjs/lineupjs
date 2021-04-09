@@ -1,7 +1,7 @@
-import { SelectionColumn } from '../../model';
+import type { SelectionColumn } from '../../model';
 import ADialog, { IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
-import { IRankingHeaderContext } from '..';
+import type { IRankingHeaderContext } from '../interfaces';
 
 /** @internal */
 export default class SelectionFilterDialog extends ADialog {

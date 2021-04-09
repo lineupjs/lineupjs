@@ -38,6 +38,10 @@ import type {
   IToolbarAction,
   IToolbarDialogAddon,
 } from './interfaces';
+import appendDate from './dialogs/groupDate';
+import appendNumber from './dialogs/groupNumber';
+import appendString from './dialogs/groupString';
+import { sortMethods } from './dialogs/utils';
 
 interface IDialogClass {
   new (col: any, dialog: IDialogContext, ...args: any[]): ADialog;

@@ -13,7 +13,7 @@ import type {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import type Column from './Column';
+import Column from './Column';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
 import type { IEventListener } from '../internal';
