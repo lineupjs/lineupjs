@@ -1,7 +1,7 @@
-import ADialog from './ADialog';
-import Column from '../../model';
+import type ADialog from './ADialog';
+import type Column from '../../model';
 import { cssClass } from '../../styles';
-import { ILivePreviewOptions } from '../../config';
+import type { ILivePreviewOptions } from '../../config';
 import { AEventDispatcher, IEventListener } from '../../internal';
 
 /**

@@ -1,5 +1,5 @@
-import { Column } from '../../model';
-import { IRankingHeaderContext, IRenderInfo } from '../interfaces';
+import type { Column } from '../../model';
+import type { IRankingHeaderContext, IRenderInfo } from '../interfaces';
 import ADialog, { IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 

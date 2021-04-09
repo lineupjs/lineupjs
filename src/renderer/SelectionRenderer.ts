@@ -1,5 +1,5 @@
 import { Column, SelectionColumn, IDataRow, IOrderedGroup } from '../model';
-import {
+import type {
   IRenderContext,
   ICellRendererFactory,
   ISummaryRenderer,

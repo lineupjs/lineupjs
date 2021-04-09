@@ -1,4 +1,4 @@
-import { normalizedStatsBuilder, IStatistics, getNumberOfBins } from '../internal';
+import { numberStatsBuilder, IStatistics, getNumberOfBins } from '../internal';
 import {
   Column,
   IDataRow,
@@ -37,7 +37,7 @@ import {
   initFilter,
 } from './histogram';
 import { noNumberFilter } from '../model/internalNumber';
-import DialogManager from '../ui/dialogs/DialogManager';
+import type DialogManager from '../ui/dialogs/DialogManager';
 
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';
@@ -54,7 +54,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, row)) {
           return;
         }
-        const b = normalizedStatsBuilder(guessedBins);
+        const b = numberStatsBuilder([0, 1], guessedBins);
         for (const n of col.getNumbers(row)) {
           b.push(n);
         }
@@ -149,7 +149,7 @@ function interactiveSummary(
       if (!updateFilter) {
         updateFilter = initFilter(node, fContext);
       }
-      return context.tasks.summaryNumberStats(col).then((r) => {
+      return context.tasks.summaryNumberStats(col, true /* raw */).then((r) => {
         if (typeof r === 'symbol') {
           return;
         }
@@ -197,7 +197,7 @@ export function createNumberFilter(
   const updateFilter = initFilter(summaryNode, fContext);
 
   const rerender = () => {
-    const ready = context.tasks.summaryNumberStats(col).then((r) => {
+    const ready = context.tasks.summaryNumberStats(col, true /* raw */).then((r) => {
       if (typeof r === 'symbol') {
         return;
       }

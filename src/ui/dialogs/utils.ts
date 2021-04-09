@@ -1,7 +1,7 @@
 import { forEach } from '../../renderer/utils';
 import { cssClass } from '../../styles';
 import { getSortLabel } from '../../internal';
-import { IToolbarDialogAddonHandler } from '../interfaces';
+import type { IToolbarDialogAddonHandler } from '../interfaces';
 
 /** @internal */
 export function sortMethods(

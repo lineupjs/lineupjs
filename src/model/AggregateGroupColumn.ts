@@ -12,9 +12,9 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import { IGroup, IColumnDesc } from './interfaces';
-import Ranking from './Ranking';
-import { IEventListener } from '../internal';
+import type { IGroup, IColumnDesc } from './interfaces';
+import type Ranking from './Ranking';
+import type { IEventListener } from '../internal';
 import { integrateDefaults } from './internal';
 import { AGGREGATION_LEVEL_WIDTH } from '../styles';
 

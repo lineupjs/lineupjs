@@ -2,7 +2,7 @@ import { Column, INumbersColumn, isNumbersColumn, IDataRow, IOrderedGroup } from
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import { ANumbersCellRenderer } from './ANumbersCellRenderer';
 import { toHeatMapColor } from './BrightnessCellRenderer';
-import {
+import type {
   IRenderContext,
   ICellRendererFactory,
   IImposer,

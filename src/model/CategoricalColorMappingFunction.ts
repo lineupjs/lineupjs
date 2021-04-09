@@ -1,5 +1,6 @@
-import { ICategory, ICategoricalColorMappingFunction } from '.';
-import { DEFAULT_COLOR, ITypedDump } from './interfaces';
+import type { ICategory, ICategoricalColorMappingFunction } from './ICategoricalColumn';
+import type { ITypedDump } from './interfaces';
+import { DEFAULT_COLOR } from './Column';
 
 export const DEFAULT_CATEGORICAL_COLOR_FUNCTION: ICategoricalColorMappingFunction = {
   apply: (v) => (v ? v.color : DEFAULT_COLOR),

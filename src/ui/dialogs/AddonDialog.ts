@@ -1,6 +1,6 @@
-import { Column } from '../../model';
+import type { Column } from '../../model';
 import ADialog, { IDialogContext } from './ADialog';
-import { IToolbarDialogAddon, IRankingHeaderContext, IToolbarDialogAddonHandler } from '../interfaces';
+import type { IToolbarDialogAddon, IRankingHeaderContext, IToolbarDialogAddonHandler } from '../interfaces';
 
 /** @internal */
 export default class AddonDialog extends ADialog {

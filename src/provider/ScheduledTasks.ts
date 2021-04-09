@@ -28,9 +28,9 @@ import Column, {
   Ranking,
   UIntTypedArray,
 } from '../model';
-import { IRenderTask } from '../renderer';
+import type { IRenderTask } from '../renderer';
 import { sortDirect } from './DirectRenderTasks';
-import { CompareLookup } from './sort';
+import type { CompareLookup } from './sort';
 import { ARenderTasks, IRenderTaskExecutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow } from './tasks';
 
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExecutor {
@@ -347,7 +347,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
             this.workers
               .pushStats(
                 'numberStats',
-                { numberOfBins: summary.hist.length },
+                { numberOfBins: summary.hist.length, domain: this.resolveDomain(col, raw) },
                 key,
                 this.valueCacheData.get(key) as Float32Array,
                 `${ranking.id}:${group.name}`,
@@ -355,7 +355,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               )
               .then((group) => ({ group, summary, data }));
         }
-        return this.normalizedStatsBuilder(group.order, col, summary.hist.length, raw, (group) => ({
+        return this.statsBuilder(group.order, col, summary.hist.length, raw, (group) => ({
           group,
           summary,
           data,
@@ -439,7 +439,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
           this.workers
             .pushStats(
               'numberStats',
-              { numberOfBins: data.hist.length },
+              { numberOfBins: data.hist.length, domain: this.resolveDomain(col, raw) },
               key,
               this.valueCacheData.get(key) as Float32Array,
               ranking.id,
@@ -447,7 +447,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
             )
             .then((summary) => ({ summary, data }));
       }
-      return this.normalizedStatsBuilder(order ? order : ranking.getOrder(), col, data.hist.length, raw, (summary) => ({
+      return this.statsBuilder(order ? order : ranking.getOrder(), col, data.hist.length, raw, (summary) => ({
         summary,
         data,
       }));
@@ -630,7 +630,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     return this.cached(
       `${col.id}:c:data${raw ? ':raw' : ''}`,
       false,
-      this.normalizedStatsBuilder<IStatistics>(null, col, getNumberOfBins(this.data.length), raw)
+      this.statsBuilder<IStatistics>(null, col, getNumberOfBins(this.data.length), raw)
     );
   }
 

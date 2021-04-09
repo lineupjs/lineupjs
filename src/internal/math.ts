@@ -1,7 +1,7 @@
-import { ICategory, IndicesArray, UIntTypedArray } from '../model';
+import type { ICategory, IndicesArray, UIntTypedArray } from '../model';
 import { IForEachAble, ISequence, isIndicesAble } from './interable';
 import { createWorkerCodeBlob, IPoorManWorkerScope, toFunctionBody } from './worker';
-import {
+import type {
   IAdvancedBoxPlotData,
   IStatistics,
   INumberBin,
@@ -300,11 +300,12 @@ export function boxplotBuilder(
 /**
  * @internal
  */
-export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, IStatistics> {
+export function numberStatsBuilder(domain: [number, number], numberOfBins: number): IBuilder<number, IStatistics> {
   const hist: INumberBin[] = [];
 
-  let x0 = 0;
-  const binWidth = 1 / numberOfBins;
+  let x0 = domain[0];
+  const range = domain[1] - domain[0];
+  const binWidth = range / numberOfBins;
   for (let i = 0; i < numberOfBins; ++i, x0 += binWidth) {
     hist.push({
       x0,
@@ -313,8 +314,8 @@ export function normalizedStatsBuilder(numberOfBins: number): IBuilder<number, I
     });
   }
 
-  const bin1 = 0 + binWidth;
-  const binN = 1 - binWidth;
+  const bin1 = domain[0] + binWidth;
+  const binN = domain[1] - binWidth;
 
   const toBin = (v: number) => {
     if (v < bin1) {
@@ -860,6 +861,7 @@ export interface INumberStatsMessageRequest {
   refData: string;
   data?: Float32Array;
 
+  domain: [number, number];
   numberOfBins: number;
 }
 
@@ -1075,7 +1077,7 @@ function sortWorkerMain() {
   const numberStats = (r: INumberStatsMessageRequest) => {
     const { data, indices } = resolveRefs<Float32Array>(r);
 
-    const b = normalizedStatsBuilder(r.numberOfBins);
+    const b = numberStatsBuilder(r.domain ?? [0, 1], r.numberOfBins);
 
     if (indices) {
       // tslint:disable-next-line:prefer-for-of
@@ -1151,7 +1153,7 @@ export function createWorkerBlob() {
   return createWorkerCodeBlob([
     pushAll.toString(),
     quantile.toString(),
-    normalizedStatsBuilder.toString(),
+    numberStatsBuilder.toString(),
     boxplotBuilder.toString(),
     computeGranularity.toString(),
     pushDateHist.toString(),

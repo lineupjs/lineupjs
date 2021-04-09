@@ -2,10 +2,10 @@
  * main module of LineUp.js containing the main class and exposes all other modules
  */
 
-import { IColumnDesc } from './model';
+import type { IColumnDesc } from './model';
 import { DataProvider, LocalDataProvider, ILocalDataProviderOptions } from './provider';
 import { LineUp, Taggle } from './ui';
-import { ILineUpOptions, ITaggleOptions } from './config';
+import type { ILineUpOptions, ITaggleOptions } from './config';
 
 export * from './builder';
 export * from './config';

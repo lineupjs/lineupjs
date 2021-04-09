@@ -1,4 +1,4 @@
-import { IColumnDesc, IColumnConstructor } from '../model';
+import type { IColumnDesc, IColumnConstructor } from '../model';
 import {
   DataProvider,
   LocalDataProvider,
@@ -70,6 +70,14 @@ export class DataBuilder extends LineUpBuilder {
    */
   singleSelection() {
     this.providerOptions.singleSelection = true;
+    return this;
+  }
+
+  /**
+   * allow multiple selections
+   */
+  multiSelection() {
+    this.providerOptions.singleSelection = false;
     return this;
   }
 

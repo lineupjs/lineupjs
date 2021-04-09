@@ -37,7 +37,7 @@ import { models } from '../model/models';
 import { forEachIndices, everyIndices, toGroupID, unifyParents } from '../model/internal';
 import { IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions } from './interfaces';
 import { exportRanking, map2Object, object2Map } from './utils';
-import { IRenderTasks } from '../renderer';
+import type { IRenderTasks } from '../renderer';
 import { restoreCategoricalColorMapping } from '../model/CategoricalColorMappingFunction';
 import { createColorMappingFunction, colorMappingFunctions } from '../model/ColorMappingFunction';
 import { createMappingFunction, mappingFunctions } from '../model/MappingFunction';
@@ -810,7 +810,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (addSupportType) {
       r.push(this.create(createAggregateDesc())!);
       r.push(this.create(createRankDesc())!);
-      if (this.options.singleSelection !== false) {
+      if (this.options.singleSelection !== true) {
         r.push(this.create(createSelectionDesc())!);
       }
     }

@@ -1,13 +1,13 @@
 import { timeFormat, timeParse } from 'd3-time-format';
-import { IDateColumn, IDateFilter } from './IDateColumn';
-import { IKeyValue } from './IArrayColumn';
-import { IDataRow, ITypeFactory } from './interfaces';
+import type { IDateColumn, IDateFilter } from './IDateColumn';
+import type { IKeyValue } from './IArrayColumn';
+import type { IDataRow, ITypeFactory } from './interfaces';
 import MapColumn, { IMapColumnDesc } from './MapColumn';
 import { isMissingValue } from './missing';
 import DatesColumn, { EDateSort, IDatesDesc } from './DatesColumn';
 import DateColumn from './DateColumn';
 import { dialogAddons, toolbar } from './annotations';
-import Column, {
+import type {
   widthChanged,
   labelChanged,
   metaDataChanged,
@@ -20,8 +20,10 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import { IEventListener } from '../internal';
+import type Column from './Column';
+import type { dataLoaded } from './ValueColumn';
+import type ValueColumn from './ValueColumn';
+import type { IEventListener } from '../internal';
 import { noDateFilter, isDummyDateFilter, restoreDateFilter } from './internalDate';
 import { integrateDefaults } from './internal';
 

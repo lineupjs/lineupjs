@@ -1,5 +1,5 @@
 import { Column, IDataRow, DateColumn, IOrderedGroup } from '../model';
-import {
+import type {
   IRenderContext,
   ICellRendererFactory,
   IGroupCellRenderer,

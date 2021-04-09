@@ -1,5 +1,5 @@
 import { round } from '../../internal';
-import { OrdinalColumn, ICategoricalFilter } from '../../model';
+import type { OrdinalColumn, ICategoricalFilter } from '../../model';
 import { isCategoryIncluded } from '../../model/internalCategorical';
 import { filterMissingMarkup, findFilterMissing } from '../missing';
 import ADialog, { IDialogContext } from './ADialog';

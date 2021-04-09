@@ -12,9 +12,10 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
   dirtyCaches,
+  DEFAULT_COLOR,
 } from './Column';
 import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
-import { IDataRow, IGroup, IColumnDesc, DEFAULT_COLOR } from './interfaces';
+import type { IDataRow, IGroup, IColumnDesc } from './interfaces';
 import {
   isNumberColumn,
   INumberColumn,

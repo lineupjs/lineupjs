@@ -1,5 +1,5 @@
-import { Ranking } from '../../model';
-import { IRankingHeaderContext } from '../interfaces';
+import type { Ranking } from '../../model';
+import type { IRankingHeaderContext } from '../interfaces';
 import { dialogContext, IDialogContext } from './ADialog';
 import RenameRankingDialog from './RenameRankingDialog';
 import { cssClass } from '../../styles';
