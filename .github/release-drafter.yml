@@ -12,7 +12,7 @@ categories:
   - title: 'Documentation'
     labels:
       - 'documentation'
-  - title: '🧰 Development'
+  - title: '🧰 Maintenance'
     labels:
       - 'chore'
 change-template: '- #$NUMBER $TITLE'
