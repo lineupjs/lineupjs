@@ -243,7 +243,7 @@ export interface IRankingDump {
   groupColumns?: string[];
 
   /**
-   * compatability
+   * compatibility
    * @deprecated
    */
   sortColumn?: { sortBy: string; asc: boolean };
@@ -264,6 +264,11 @@ export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
 
   setCollapsed(value: boolean): void;
+
+  /**
+   * whether to show nested summaries or not
+   */
+  isShowNestedSummaries(): boolean;
 }
 
 export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {

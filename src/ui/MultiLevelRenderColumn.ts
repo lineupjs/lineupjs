@@ -130,7 +130,8 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   }
 
   private updateNested(wrapper: HTMLElement, r: HTMLElement | IAsyncUpdate<HTMLElement>) {
-    const sub = this.mc.children;
+    const sub = this.mc.isShowNestedSummaries() ? this.mc.children : [];
+
     this.matchChildren(wrapper, sub);
 
     const children = Array.from(wrapper.children) as HTMLElement[];

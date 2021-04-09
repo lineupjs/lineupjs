@@ -1,5 +1,5 @@
 import type { IDataRow, ECompareValueType } from './interfaces';
-import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
+import MultiLevelCompositeColumn, { IMultiLevelCompositeColumnDesc } from './MultiLevelCompositeColumn';
 import { concat } from '../internal';
 import { toolbar } from './annotations';
 
@@ -8,8 +8,8 @@ import { toolbar } from './annotations';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createNestedDesc(label = 'Nested') {
-  return { type: 'nested', label };
+export function createNestedDesc(label = 'Nested', showNestedSummaries = true): IMultiLevelCompositeColumnDesc {
+  return { type: 'nested', label, showNestedSummaries };
 }
 
 /**

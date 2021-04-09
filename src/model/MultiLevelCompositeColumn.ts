@@ -15,6 +15,7 @@ import Column, {
 } from './Column';
 import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
 import type { IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn, ITypeFactory } from './interfaces';
+import { integrateDefaults } from './internal';
 import StackColumn from './StackColumn';
 
 /**
@@ -31,10 +32,20 @@ export declare function collapseChanged_MC(previous: boolean, current: boolean):
  */
 export declare function nestedChildRatio_MC(previous: number, current: number): void;
 
+export declare type IMultiLevelCompositeColumnDesc = IColumnDesc & {
+  /**
+   * show nested summaries
+   * @default true
+   */
+  showNestedSummaries?: boolean;
+};
+
 @toolbar('compress', 'expand')
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
   static readonly EVENT_MULTI_LEVEL_CHANGED = StackColumn.EVENT_MULTI_LEVEL_CHANGED;
+
+  static readonly COLLAPSED_RENDERER = 'default';
 
   private readonly adaptChange: (old: number, newValue: number) => void;
 
@@ -45,8 +56,13 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    */
   private collapsed = false;
 
-  constructor(id: string, desc: Readonly<IColumnDesc>) {
-    super(id, desc);
+  constructor(id: string, desc: Readonly<IMultiLevelCompositeColumnDesc>) {
+    super(
+      id,
+      integrateDefaults(desc, {
+        summaryRenderer: 'nested',
+      })
+    );
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     this.adaptChange = function (old, newValue) {
@@ -98,6 +114,10 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
 
   getCollapsed() {
     return this.collapsed;
+  }
+
+  isShowNestedSummaries() {
+    return (this.desc as IMultiLevelCompositeColumnDesc).showNestedSummaries !== false;
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -172,7 +192,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
 
   getRenderer() {
     if (this.getCollapsed()) {
-      return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
+      return MultiLevelCompositeColumn.COLLAPSED_RENDERER;
     }
     return super.getRenderer();
   }
