@@ -1,5 +1,5 @@
 import Column from './Column';
-import { IDataRow, IColumnDesc } from './interfaces';
+import type { IDataRow, IColumnDesc } from './interfaces';
 
 export interface IArrayDesc {
   dataLength?: number;

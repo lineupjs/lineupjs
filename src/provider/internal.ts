@@ -1,4 +1,4 @@
-import { IAggregationStrategy } from './interfaces';
+import type { IAggregationStrategy } from './interfaces';
 import { IOrderedGroup, IGroup, IGroupParent, IGroupData, IGroupItem, isGroup, EAggregationState } from '../model';
 
 export function isAlwaysShowingGroupStrategy(strategy: IAggregationStrategy) {

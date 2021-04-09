@@ -10,7 +10,7 @@ import {
 import { renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';
 import { cssClass } from '../styles';
-import { ISequence } from '../internal';
+import type { ISequence } from '../internal';
 
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Link';

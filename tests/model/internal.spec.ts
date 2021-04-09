@@ -1,5 +1,5 @@
 import { unifyParents } from '../../src/model/internal';
-import { IGroupParent, IOrderedGroup } from '../../src/model';
+import type { IGroupParent, IOrderedGroup } from '../../src/model';
 
 function groupGen(name: string, parent?: IGroupParent): IOrderedGroup {
   const r = {

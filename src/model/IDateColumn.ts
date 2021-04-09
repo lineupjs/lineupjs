@@ -1,8 +1,8 @@
-import { IForEachAble } from '../internal';
+import type { IForEachAble } from '../internal';
 import Column from './Column';
-import { IColumnDesc, IDataRow } from './interfaces';
-import { INumberFilter } from './INumberColumn';
-import { IArrayColumn } from './IArrayColumn';
+import type { IColumnDesc, IDataRow } from './interfaces';
+import type { INumberFilter } from './INumberColumn';
+import type { IArrayColumn } from './IArrayColumn';
 
 export interface IDateColumn extends Column {
   getFormatter(): (v: Date | null) => string;

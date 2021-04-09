@@ -1,7 +1,7 @@
 import { Column, ICategoricalsColumn, ICategory, IDataRow, IOrderedGroup, isCategoricalsColumn } from '../model';
 import { toMostFrequentCategoricals } from '../model/internalCategorical';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
-import {
+import type {
   ICellRendererFactory,
   IRenderContext,
   ICellRenderer,

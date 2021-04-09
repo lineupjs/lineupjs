@@ -12,13 +12,15 @@ import Column, {
   groupRendererChanged,
   summaryRendererChanged,
   visibilityChanged,
+  DEFAULT_COLOR,
 } from './Column';
-import { ICategoricalColumn, ICategory, ICategoricalColorMappingFunction } from './ICategoricalColumn';
-import { IDataRow, IGroup, IValueColumnDesc, DEFAULT_COLOR, ITypeFactory } from './interfaces';
+import type { ICategoricalColumn, ICategory, ICategoricalColorMappingFunction } from './ICategoricalColumn';
+import type { IDataRow, IGroup, IValueColumnDesc, ITypeFactory } from './interfaces';
 import { colorPool, integrateDefaults } from './internal';
 import { missingGroup } from './missing';
-import ValueColumn, { dataLoaded } from './ValueColumn';
-import { IEventListener } from '../internal';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import type { IEventListener } from '../internal';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 
 export interface ICategoryNode extends ICategory {

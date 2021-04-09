@@ -11,7 +11,7 @@ import ADialog, { IDialogContext } from './ADialog';
 import { forEach } from './utils';
 import { cssClass, engineCssClass } from '../../styles';
 import { isCategoryIncluded } from '../../model/internalCategorical';
-import { IRankingHeaderContext } from '../interfaces';
+import type { IRankingHeaderContext } from '../interfaces';
 
 /** @internal */
 export default class CategoricalFilterDialog extends ADialog {

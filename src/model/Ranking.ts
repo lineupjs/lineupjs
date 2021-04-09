@@ -25,7 +25,8 @@ import {
   IGroup,
 } from './interfaces';
 import { groupRoots, traverseGroupsDFS } from './internal';
-import { AggregateGroupColumn, SetColumn } from '.';
+import AggregateGroupColumn from './AggregateGroupColumn';
+import SetColumn from './SetColumn';
 import { AGGREGATION_LEVEL_WIDTH } from '../styles';
 
 export enum EDirtyReason {

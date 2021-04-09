@@ -19,7 +19,7 @@ import {
   IColumnDesc,
   ISortCriteria,
 } from '../model';
-import { DataProvider } from '../provider';
+import type { DataProvider } from '../provider';
 
 export interface IImposeColumnBuilder {
   type: 'impose';
@@ -182,8 +182,6 @@ export class RankingBuilder {
           ...mixed
         );
     }
-    console.error('invalid column type: ', column);
-    return this;
   }
 
   /**

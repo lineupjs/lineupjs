@@ -1,6 +1,6 @@
-import Column from './Column';
+import type Column from './Column';
 import ValueColumn from './ValueColumn';
-import { IValueColumnDesc } from './interfaces';
+import type { IValueColumnDesc } from './interfaces';
 
 export * from './annotations';
 export { isMissingValue, isUnknown, FIRST_IS_NAN, FIRST_IS_MISSING, missingGroup } from './missing';
@@ -44,7 +44,7 @@ export { default as CategoricalMapColumn } from './CategoricalMapColumn';
 export * from './CategoricalMapColumn';
 export { default as CategoricalsColumn } from './CategoricalsColumn';
 export * from './CategoricalsColumn';
-export { default, default as Column } from './Column';
+export { default, default as Column, DEFAULT_COLOR } from './Column';
 // no * export
 export { default as CompositeColumn } from './CompositeColumn';
 // no * export

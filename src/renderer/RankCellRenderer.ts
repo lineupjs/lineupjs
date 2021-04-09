@@ -1,5 +1,5 @@
 import { Column, RankColumn, IDataRow, IOrderedGroup } from '../model';
-import { ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer } from './interfaces';
+import type { ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';
 import { cssClass } from '../styles';

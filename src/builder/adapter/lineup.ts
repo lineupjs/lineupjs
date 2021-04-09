@@ -1,5 +1,5 @@
-import { IBuilderAdapter, IBuilderAdapterProps, IBuilderAdapterRankingProps, IChangeDetecter } from '.';
-import { IColumnDesc } from '../../model';
+import type { IBuilderAdapter, IBuilderAdapterProps, IBuilderAdapterRankingProps, IChangeDetecter } from './interfaces';
+import type { IColumnDesc } from '../../model';
 import {
   deriveColors,
   deriveColumnDescriptions,

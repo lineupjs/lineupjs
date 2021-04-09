@@ -1,9 +1,9 @@
 import { Column, isMapAbleColumn, NumberColumn } from '../../model';
-import { IAbortAblePromise } from '../../provider';
-import { ISummaryRenderer } from '../../renderer';
+import type { IAbortAblePromise } from '../../provider';
+import type { ISummaryRenderer } from '../../renderer';
 import { cssClass, engineCssClass } from '../../styles';
 import { createShortcutMenuItems, dragAbleColumn, updateHeader } from '../header';
-import { IRankingHeaderContext } from '../interfaces';
+import type { IRankingHeaderContext } from '../interfaces';
 import { suffix } from '../../internal';
 
 /** @internal */

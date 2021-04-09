@@ -1,4 +1,4 @@
-import { ICategoricalColumnDesc, ICategory } from '../../model';
+import type { ICategoricalColumnDesc, ICategory } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 import { cleanCategories } from '../../provider/utils';
 import { resolveValue } from '../../internal';

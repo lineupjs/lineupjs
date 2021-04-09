@@ -1,9 +1,9 @@
-import Column from './Column';
-import Ranking from './Ranking';
-import CompositeColumn from './CompositeColumn';
-import { IColorMappingFunction, IMappingFunction } from './INumberColumn';
-import { ICategoricalColorMappingFunction, ICategory } from './ICategoricalColumn';
-import { IScriptMappingFunctionType } from './MappingFunction';
+import type Column from './Column';
+import type Ranking from './Ranking';
+import type CompositeColumn from './CompositeColumn';
+import type { IColorMappingFunction, IMappingFunction } from './INumberColumn';
+import type { ICategoricalColorMappingFunction, ICategory } from './ICategoricalColumn';
+import type { IScriptMappingFunctionType } from './MappingFunction';
 
 export interface IColumnConstructor {
   new (id: string, desc: Readonly<IColumnDesc> & any, factory: ITypeFactory): Column;
@@ -65,12 +65,6 @@ export interface IStyleColumn {
    */
   visible: boolean;
 }
-
-/**
- * default color that should be used
- * @type {string}
- */
-export const DEFAULT_COLOR = '#C1C1C1';
 
 export interface IColumnDesc extends Partial<IStyleColumn> {
   /**
@@ -249,7 +243,7 @@ export interface IRankingDump {
   groupColumns?: string[];
 
   /**
-   * compatability
+   * compatibility
    * @deprecated
    */
   sortColumn?: { sortBy: string; asc: boolean };
@@ -270,6 +264,11 @@ export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
 
   setCollapsed(value: boolean): void;
+
+  /**
+   * whether to show nested summaries or not
+   */
+  isShowNestedSummaries(): boolean;
 }
 
 export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {

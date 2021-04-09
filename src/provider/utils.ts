@@ -2,7 +2,7 @@ import { Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleC
 import { colorPool, MAX_COLORS } from '../model/internal';
 import { concat, equal, extent, range, resolveValue } from '../internal';
 import { timeParse } from 'd3-time-format';
-import { IDataProvider, IDeriveOptions, IExportOptions } from './interfaces';
+import type { IDataProvider, IDeriveOptions, IExportOptions } from './interfaces';
 
 /**
  * @internal

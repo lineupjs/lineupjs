@@ -1,4 +1,4 @@
-import { IDataRow } from '../model';
+import type { IDataRow } from '../model';
 import get from 'lodash.get';
 
 /**
