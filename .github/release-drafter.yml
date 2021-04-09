@@ -9,7 +9,7 @@ categories:
   - title: '🐛 Bugs Fixes'
     labels:
       - 'bug'
-  - title: 'Documentation'
+  - title: '📖 Documentation'
     labels:
       - 'documentation'
   - title: '🧰 Maintenance'
