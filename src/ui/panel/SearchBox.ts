@@ -31,6 +31,7 @@ export declare function select(item: any): void;
 
 export default class SearchBox<T extends IItem> extends AEventDispatcher {
   static readonly EVENT_SELECT = 'select';
+  private static readonly SEARCH_ITEM_SELECTOR = `.${cssClass('search-item')}:not(.${cssClass('hidden')})`;
 
   private readonly options: Readonly<ISearchBoxOptions<T>> = {
     formatItem: (item) => item.text,
@@ -108,26 +109,22 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   }
 
   private handleKey(evt: KeyboardEvent) {
-    const KEYS = {
-      ESC: 27,
-      ENTER: 13,
-      UP: 38,
-      DOWN: 40,
-    };
-    switch (evt.which) {
-      case KEYS.ESC:
+    switch (evt.key) {
+      case 'Escape':
         this.search.blur();
         break;
-      case KEYS.ENTER:
+      case 'Enter':
         const h = this.highlighted;
         if (h) {
           h.click();
+        } else {
+          evt.preventDefault();
         }
         break;
-      case KEYS.UP:
+      case 'ArrowUp':
         this.highlightPrevious();
         break;
-      case KEYS.DOWN:
+      case 'ArrowDown':
         this.highlightNext();
         break;
     }
@@ -141,7 +138,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
   focus() {
     this.body.style.width = `${this.search.offsetWidth}px`;
-    this.highlighted = (this.body.firstElementChild as HTMLElement) ?? null;
+    this.highlighted = this.body.querySelector<HTMLElement>(SearchBox.SEARCH_ITEM_SELECTOR) || null;
     this.node.classList.add(cssClass('search-open'));
   }
 
@@ -165,23 +162,18 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private highlightNext() {
     const h = this.highlighted;
     if (!h || h.classList.contains(cssClass('hidden'))) {
-      this.highlighted =
-        this.body.querySelector<HTMLElement>(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`) || null;
+      this.highlighted = this.body.querySelector<HTMLElement>(SearchBox.SEARCH_ITEM_SELECTOR) || null;
       return;
     }
 
-    const items = Array.from(
-      this.body.querySelectorAll<HTMLElement>(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`)
-    );
+    const items = Array.from(this.body.querySelectorAll<HTMLElement>(SearchBox.SEARCH_ITEM_SELECTOR));
     const index = items.indexOf(h);
     this.highlighted = items[index + 1] || null;
   }
 
   private highlightPrevious() {
     const h = this.highlighted;
-    const items = Array.from(
-      this.body.querySelectorAll<HTMLElement>(`.${cssClass('search-item')}:not(.${cssClass('hidden')})`)
-    );
+    const items = Array.from(this.body.querySelectorAll<HTMLElement>(SearchBox.SEARCH_ITEM_SELECTOR));
 
     if (!h || h.classList.contains(cssClass('hidden'))) {
       this.highlighted = items[items.length - 1] || null;
