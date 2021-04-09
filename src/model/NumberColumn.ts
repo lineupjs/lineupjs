@@ -13,8 +13,9 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
   widthChanged,
+  DEFAULT_COLOR,
 } from './Column';
-import { IDataRow, IGroup, ECompareValueType, IValueColumnDesc, DEFAULT_COLOR, ITypeFactory } from './interfaces';
+import { IDataRow, IGroup, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
 import {
   INumberColumn,
   EAdvancedSortMethod,
@@ -26,7 +27,8 @@ import {
 } from './INumberColumn';
 import { restoreMapping, ScaleMappingFunction } from './MappingFunction';
 import { isMissingValue, isUnknown, missingGroup } from './missing';
-import ValueColumn, { dataLoaded } from './ValueColumn';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
 import {
   noNumberFilter,
   isDummyNumberFilter,

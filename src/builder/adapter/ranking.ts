@@ -1,13 +1,13 @@
+import type { Ranking } from '../../model';
+import type { LocalDataProvider } from '../../provider';
 import {
-  buildRanking as buildRankingImpl,
   INestedBuilder,
   IReduceBuilder,
   IScriptedBuilder,
   IWeightedSumBuilder,
-} from '..';
-import { Ranking } from '../../model';
-import { LocalDataProvider } from '../../provider';
-import {
+  buildRanking as buildRankingImpl,
+} from '../RankingBuilder';
+import type {
   IBuilderAdapterImposeColumnProps,
   IBuilderAdapterNestedColumnProps,
   IBuilderAdapterRankingProps,
@@ -15,7 +15,7 @@ import {
   IBuilderAdapterScriptColumnProps,
   IBuilderAdapterSupportColumnProps,
   IBuilderAdapterWeightedSumColumnProps,
-} from '.';
+} from './interfaces';
 
 /*
  * build the column description

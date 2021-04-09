@@ -1,4 +1,4 @@
-import Column, {
+import type {
   IDataRow,
   Ranking,
   IndicesArray,
@@ -9,10 +9,11 @@ import Column, {
   ICategoricalLikeColumn,
   ICompareValue,
 } from '../model';
+import type Column from '../model';
 import { ARenderTasks, IRenderTaskExecutor, taskNow } from './tasks';
 import { ISequence, toIndexArray, sortComplex, getNumberOfBins } from '../internal';
-import { CompareLookup } from './sort';
-import { IRenderTask } from '..';
+import type { CompareLookup } from './sort';
+import type { IRenderTask } from '../renderer';
 
 /**
  * @internal

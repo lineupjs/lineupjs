@@ -1,7 +1,8 @@
-import { IDynamicHeight, ITaggleOptions, ILivePreviewOptions } from '../config';
-import Column, { IGroupData, IGroupItem, Ranking } from '../model';
-import { ICellRendererFactory, ERenderMode } from '../renderer';
-import { IToolbarAction, IToolbarDialogAddon } from '../ui';
+import type { IDynamicHeight, ITaggleOptions, ILivePreviewOptions } from '../config';
+import type { IGroupData, IGroupItem, Ranking } from '../model';
+import type Column from '../model';
+import type { ICellRendererFactory, ERenderMode } from '../renderer';
+import type { IToolbarAction, IToolbarDialogAddon } from '../ui';
 
 /**
  * builder for LineUp/Taggle instance

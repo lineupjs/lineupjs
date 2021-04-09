@@ -1,4 +1,4 @@
-import { INumberBin, IStatistics } from '../internal';
+import type { INumberBin, IStatistics } from '../internal';
 import { Column, CompositeNumberColumn, IDataRow, IOrderedGroup, INumberColumn } from '../model';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import { getHistDOMRenderer } from './HistogramCellRenderer';
@@ -14,7 +14,7 @@ import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { createData } from './MultiLevelCellRenderer';
 import { colorOf, matchColumns, forEachChild } from './utils';
 import { tasksAll } from '../provider';
-import { IHistogramLike } from './histogram';
+import type { IHistogramLike } from './histogram';
 
 export default class InterleavingCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Interleaved';

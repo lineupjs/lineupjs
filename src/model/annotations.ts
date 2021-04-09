@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import Column from './Column';
-import { IColumnDesc, IColumnConstructor } from './interfaces';
+import type Column from './Column';
+import type { IColumnDesc, IColumnConstructor } from './interfaces';
 
 const supportType = Symbol.for('SupportType');
 const category = Symbol.for('Category');
@@ -73,8 +73,10 @@ export interface IColumnCategory {
 }
 
 export function categoryOf(col: IColumnConstructor | Column): IColumnCategory {
-  const cat = (Reflect.getMetadata(category, col instanceof Column ? Object.getPrototypeOf(col).constructor : col) ??
-    'other') as keyof Categories;
+  const cat = (Reflect.getMetadata(
+    category,
+    typeof col === 'function' ? col : Object.getPrototypeOf(col).constructor
+  ) ?? 'other') as keyof Categories;
   return (categories[cat] ?? categories.other) as IColumnCategory;
 }
 

@@ -1,4 +1,4 @@
-import { IActionColumnDesc, IAction, IGroupAction } from '../../model';
+import type { IActionColumnDesc, IAction, IGroupAction } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class ActionsColumnBuilder extends ColumnBuilder<IActionColumnDesc> {

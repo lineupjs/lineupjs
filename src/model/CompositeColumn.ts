@@ -13,7 +13,7 @@ import Column, {
   dirtyCaches,
 } from './Column';
 import { Category, toolbar } from './annotations';
-import { IDataRow, IColumnParent, IFlatColumn, ITypeFactory } from './interfaces';
+import type { IDataRow, IColumnParent, IFlatColumn, ITypeFactory } from './interfaces';
 import { isNumberColumn } from './INumberColumn';
 import ValueColumn from './ValueColumn';
 

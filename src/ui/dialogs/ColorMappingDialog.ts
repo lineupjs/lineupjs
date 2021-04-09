@@ -20,7 +20,7 @@ import {
 } from '../../model/ColorMappingFunction';
 import { IMapAbleColumn, DEFAULT_COLOR, IColorMappingFunction, IMapAbleDesc } from '../../model';
 import { cssClass } from '../../styles';
-import { IRankingHeaderContext } from '../interfaces';
+import type { IRankingHeaderContext } from '../interfaces';
 
 export default class ColorMappingDialog extends ADialog {
   private readonly before: IColorMappingFunction;

@@ -1,6 +1,6 @@
 import { Category } from './annotations';
-import { IKeyValue, IMapColumn } from './IArrayColumn';
-import { IDataRow, IValueColumnDesc } from './interfaces';
+import type { IKeyValue, IMapColumn } from './IArrayColumn';
+import type { IDataRow, IValueColumnDesc } from './interfaces';
 import ValueColumn from './ValueColumn';
 import { integrateDefaults } from './internal';
 

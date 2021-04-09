@@ -11,8 +11,8 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
 } from './Column';
-import { IValueColumnDesc, IDataRow, ITypeFactory } from './interfaces';
-import { IEventListener } from '../internal';
+import type { IValueColumnDesc, IDataRow, ITypeFactory } from './interfaces';
+import type { IEventListener } from '../internal';
 
 /**
  * emitted when the data of this column has been loaded

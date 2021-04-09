@@ -1,9 +1,9 @@
-import { NumberColumn } from '../../model';
-import { IDialogContext } from './ADialog';
+import type { NumberColumn } from '../../model';
+import type { IDialogContext } from './ADialog';
 import { round, getNumberOfBins } from '../../internal';
 import { forEach } from '../../renderer/utils';
 import { cssClass } from '../../styles';
-import { IToolbarDialogAddonHandler } from '../interfaces';
+import type { IToolbarDialogAddonHandler } from '../interfaces';
 
 /** @internal */
 export default function groupNumber(

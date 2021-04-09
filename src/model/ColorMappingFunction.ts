@@ -37,9 +37,9 @@ import {
 } from 'd3-scale-chromatic';
 import { equal } from '../internal';
 import { scaleLinear } from 'd3-scale';
-import { IColorMappingFunction } from '.';
-import { DEFAULT_COLOR, ITypedDump, ITypeFactory } from './interfaces';
-import { IColorMappingFunctionConstructor } from './INumberColumn';
+import { DEFAULT_COLOR } from './Column';
+import type { ITypedDump, ITypeFactory } from './interfaces';
+import type { IColorMappingFunction, IColorMappingFunctionConstructor } from './INumberColumn';
 
 export class SequentialColorFunction implements IColorMappingFunction {
   public static readonly FUNCTIONS: { [key: string]: (v: number) => string } = {

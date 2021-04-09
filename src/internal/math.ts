@@ -1,7 +1,7 @@
-import { ICategory, IndicesArray, UIntTypedArray } from '../model';
+import type { ICategory, IndicesArray, UIntTypedArray } from '../model';
 import { IForEachAble, ISequence, isIndicesAble } from './interable';
 import { createWorkerCodeBlob, IPoorManWorkerScope, toFunctionBody } from './worker';
-import {
+import type {
   IAdvancedBoxPlotData,
   IStatistics,
   INumberBin,

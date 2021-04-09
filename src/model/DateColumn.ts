@@ -13,19 +13,13 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
   widthChanged,
-} from './Column';
-import { IDateColumn, IDateDesc, IDateFilter, IDateGrouper } from './IDateColumn';
-import {
-  defaultGroup,
-  IDataRow,
-  IGroup,
-  ECompareValueType,
-  IValueColumnDesc,
   DEFAULT_COLOR,
-  ITypeFactory,
-} from './interfaces';
+} from './Column';
+import type { IDateColumn, IDateDesc, IDateFilter, IDateGrouper } from './IDateColumn';
+import { defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
 import { isMissingValue, isUnknown, missingGroup } from './missing';
-import ValueColumn, { dataLoaded } from './ValueColumn';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
 import {
   noDateFilter,
   defaultDateGrouper,

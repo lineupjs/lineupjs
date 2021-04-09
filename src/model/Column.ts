@@ -12,10 +12,15 @@ import {
   IColumnMetaData,
   IFlatColumn,
   ICompareValue,
-  DEFAULT_COLOR,
   ITypeFactory,
 } from './interfaces';
-import Ranking from './Ranking';
+import type Ranking from './Ranking';
+
+/**
+ * default color that should be used
+ * @type {string}
+ */
+export const DEFAULT_COLOR = '#C1C1C1';
 
 /**
  * emitted when the width property changes

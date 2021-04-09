@@ -1,8 +1,7 @@
 import { scaleLinear, scaleLog, scalePow, scaleSqrt } from 'd3-scale';
 import { similar } from '../internal';
-import { IMappingFunction, IMapAbleDesc } from '.';
-import { ITypeFactory, ITypedDump } from './interfaces';
-import { IMappingFunctionConstructor } from './INumberColumn';
+import type { ITypeFactory, ITypedDump } from './interfaces';
+import type { IMappingFunction, IMapAbleDesc, IMappingFunctionConstructor } from './INumberColumn';
 
 /**
  * interface of a d3 scale
