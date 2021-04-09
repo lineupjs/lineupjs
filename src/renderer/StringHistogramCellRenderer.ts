@@ -2,8 +2,8 @@ import { color } from 'd3-color';
 import { IStringStatistics, round } from '../internal';
 import { DEFAULT_COLOR, StringColumn } from '../model';
 import { cssClass, FILTERED_OPACITY } from '../styles';
-import { IGroupCellRenderer, IRenderContext, ISummaryRenderer } from './interfaces';
-import { StringCellRenderer } from './rendererClasses';
+import type { IGroupCellRenderer, IRenderContext, ISummaryRenderer } from './interfaces';
+import StringCellRenderer from './StringCellRenderer';
 
 const DEFAULT_FILTERED_COLOR = (() => {
   const c = color(DEFAULT_COLOR);

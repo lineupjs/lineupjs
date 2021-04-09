@@ -3,7 +3,7 @@ import { filterMissingMarkup, findFilterMissing } from '../missing';
 import ADialog, { IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 import { debounce } from '../../internal';
-import { IRankingHeaderContext } from '..';
+import type { IRankingHeaderContext } from '../interfaces';
 import { filterToString, matchDataList } from '../../renderer/StringCellRenderer';
 
 function toInput(text: string, isRegex: boolean) {
