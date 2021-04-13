@@ -259,22 +259,30 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.delayedUpdateAll = debounce(() => this.updateAll(), 50);
     this.delayedUpdateColumnWidths = debounce(() => this.updateColumnWidths(), 50);
     ranking.on(`${Ranking.EVENT_ADD_COLUMN}.hist`, (col: Column, index: number) => {
-      this.columns.splice(index, 0, this.createCol(col, index));
+      // index doesn't consider the hidden columns
+      const hiddenOffset = this.ranking.children.slice(0, index).reduce((acc, c) => acc + (!c.isVisible() ? 1 : 0), 0);
+      const shiftedIndex = index - hiddenOffset;
+      this.columns.splice(shiftedIndex, 0, this.createCol(col, shiftedIndex));
       this.reindex();
       this.delayedUpdateAll();
     });
     ranking.on(`${Ranking.EVENT_REMOVE_COLUMN}.body`, (col: Column, index: number) => {
       EngineRanking.disableListener(col);
-      this.columns.splice(index, 1);
+      // index doesn't consider the hidden columns
+      const hiddenOffset = this.ranking.children.slice(0, index).reduce((acc, c) => acc + (!c.isVisible() ? 1 : 0), 0);
+      const shiftedIndex = index - hiddenOffset;
+      this.columns.splice(shiftedIndex, 1);
       this.reindex();
       this.delayedUpdateAll();
     });
-    ranking.on(`${Ranking.EVENT_MOVE_COLUMN}.body`, (col: Column, index: number, old: number) => {
+    ranking.on(`${Ranking.EVENT_MOVE_COLUMN}.body`, (col: Column, index: number) => {
       //delete first
-      const c = this.columns.splice(old, 1)[0];
-      console.assert(c.c === col);
+      const shiftedOld = this.columns.findIndex((d) => d.c === col);
+      const c = this.columns.splice(shiftedOld, 1)[0];
       // adapt target index based on previous index, i.e shift by one
-      this.columns.splice(old < index ? index - 1 : index, 0, c);
+      const hiddenOffset = this.ranking.children.slice(0, index).reduce((acc, c) => acc + (!c.isVisible() ? 1 : 0), 0);
+      const shiftedIndex = index - hiddenOffset;
+      this.columns.splice(shiftedOld < shiftedIndex ? shiftedIndex - 1 : shiftedIndex, 0, c);
       this.reindex();
       this.delayedUpdateAll();
     });
@@ -284,7 +292,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         if (newValue) {
           // become visible
           const index = ranking.children.indexOf(col);
-          this.columns.splice(index, 0, this.createCol(col, index));
+          const hiddenOffset = this.ranking.children
+            .slice(0, index)
+            .reduce((acc, c) => acc + (!c.isVisible() ? 1 : 0), 0);
+          const shiftedIndex = index - hiddenOffset;
+          this.columns.splice(shiftedIndex, 0, this.createCol(col, shiftedIndex));
         } else {
           // hide
           const index = this.columns.findIndex((d) => d.c === col);
