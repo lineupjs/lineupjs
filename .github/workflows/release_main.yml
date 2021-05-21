@@ -97,9 +97,8 @@ jobs:
           enable_jekyll: true
           remove_path_spec: 'main,app/LineUpJS.*,app/*.eot,app/*.ttf,app/*.svg'
       - name: Pack Publish
-        env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          yarn config set npmAuthToken "${{ secrets.NPM_TOKEN }}"
           yarn pack
           yarn npm publish --tag "${{ needs.create_release.outputs.npm_tag }}"
       - name: Upload Release Asset
