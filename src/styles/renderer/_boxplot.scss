@@ -1,5 +1,6 @@
-@use "sass:math";
 @import '../vars';
+
+@use "sass:math";
 
 .#{$lu_css_prefix}-renderer-boxplot {
   display: flex;

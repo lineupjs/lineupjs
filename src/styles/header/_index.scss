@@ -1,5 +1,8 @@
 @import '../vars';
 
+@import './summary';
+@import './toolbar';
+
 .#{$lu_css_prefix}-header,
 .#{$lu_css_prefix}-side-panel-entry {
   @include user_select_none();
@@ -54,6 +57,3 @@
   position: relative;
   font-size: x-small;
 }
-
-@import './summary';
-@import './toolbar';

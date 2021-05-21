@@ -1,6 +1,7 @@
-@use "sass:math";
 @import './vars';
 @import './icons/index';
+
+@use "sass:math";
 
 .#{$lu_css_prefix}-dialog-mapper {
   width: 25em;
