@@ -35,13 +35,13 @@ export default class SidePanelRanking {
     this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${actionCSSClass(
       'more'
     )}" title="More &hellip;">${aria('More &hellip;')}</i>`;
-    (this.header.lastElementChild! as HTMLElement).onclick = (this.dropdown
-      .lastElementChild! as HTMLElement).onclick = (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-      const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, evt), ctx);
-      dialog.open();
-    };
+    (this.header.lastElementChild! as HTMLElement).onclick = (this.dropdown.lastElementChild! as HTMLElement).onclick =
+      (evt) => {
+        evt.stopPropagation();
+        evt.preventDefault();
+        const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, evt), ctx);
+        dialog.open();
+      };
 
     this.hierarchy = this.options.hierarchy ? new Hierarchy(ctx, document) : null;
 
@@ -75,7 +75,8 @@ export default class SidePanelRanking {
       }
     );
     this.ranking.on(suffix('.panel', Ranking.EVENT_LABEL_CHANGED), () => {
-      this.dropdown.firstElementChild!.textContent = this.header.firstElementChild!.textContent = this.ranking.getLabel();
+      this.dropdown.firstElementChild!.textContent = this.header.firstElementChild!.textContent =
+        this.ranking.getLabel();
     });
   }
 

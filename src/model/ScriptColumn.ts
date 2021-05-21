@@ -283,14 +283,8 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
-  private f: (
-    children,
-    values: number[],
-    raws: any[],
-    col: ColumnContext,
-    row: any,
-    index: number
-  ) => number | null = null;
+  private f: (children, values: number[], raws: any[], col: ColumnContext, row: any, index: number) => number | null =
+    null;
   private mapping: IMappingFunction;
   private original: IMappingFunction;
   private colorMapping: IColorMappingFunction;

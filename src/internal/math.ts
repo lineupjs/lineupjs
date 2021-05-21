@@ -34,7 +34,7 @@ export function min<T>(values: T[], acc: (v: T) => number): number;
 export function min<T>(values: T[], acc?: (v: T) => number) {
   let min = Number.POSITIVE_INFINITY;
   for (const d of values) {
-    const v = acc ? acc(d) : ((d as any) as number);
+    const v = acc ? acc(d) : (d as any as number);
     if (v < min) {
       min = v;
     }
@@ -50,7 +50,7 @@ export function max<T>(values: T[], acc: (v: T) => number): number;
 export function max<T>(values: T[], acc?: (v: T) => number) {
   let max = Number.NEGATIVE_INFINITY;
   for (const d of values) {
-    const v = acc ? acc(d) : ((d as any) as number);
+    const v = acc ? acc(d) : (d as any as number);
     if (v > max) {
       max = v;
     }
@@ -67,7 +67,7 @@ export function extent<T>(values: T[], acc?: (v: T) => number) {
   let max = Number.NEGATIVE_INFINITY;
   let min = Number.POSITIVE_INFINITY;
   for (const d of values) {
-    const v = acc ? acc(d) : ((d as any) as number);
+    const v = acc ? acc(d) : (d as any as number);
     if (v < min) {
       min = v;
     }
@@ -123,7 +123,7 @@ export function quantile(values: ArrayLike<number>, quantile: number, length = v
 export function median(values: number[]): number;
 export function median<T>(values: T[], acc: (v: T) => number): number;
 export function median<T>(values: T[], acc?: (v: T) => number) {
-  const arr = acc ? values.map(acc) : ((values as any) as number[]).slice();
+  const arr = acc ? values.map(acc) : (values as any as number[]).slice();
   arr.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   return quantile(arr, 0.5);
 }
@@ -970,7 +970,7 @@ export function categoricalValueCache2Value<T extends { name: string }>(v: numbe
 
 function sortWorkerMain() {
   // eslint-disable-next-line no-restricted-globals
-  const wself = (self as any) as IPoorManWorkerScope;
+  const wself = self as any as IPoorManWorkerScope;
 
   // stored refs to avoid duplicate copy
   const refs = new Map<string, UIntTypedArray | Float32Array | Int32Array | Float64Array>();
@@ -1016,7 +1016,7 @@ function sortWorkerMain() {
   const resolveRefs = <T extends UIntTypedArray | Float32Array | Int32Array>(r: IStatsWorkerMessage) => {
     // resolve refs or save the new data
 
-    const data: T = r.data ? ((r.data as any) as T) : ((refs.get(r.refData)! as any) as T);
+    const data: T = r.data ? (r.data as any as T) : (refs.get(r.refData)! as any as T);
     const indices = r.indices ? r.indices : r.refIndices ? (refs.get(r.refIndices)! as UIntTypedArray) : undefined;
     if (r.refData) {
       refs.set(r.refData, data);
