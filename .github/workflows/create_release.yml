@@ -1,4 +1,5 @@
 name: Create Release
+
 on:
   workflow_dispatch:
     inputs:
@@ -6,6 +7,7 @@ on:
         description: 'Semantic Version Number (i.e., 5.5.0 or patch, minor, major, prepatch, preminor, premajor, prerelease)'
         required: true
         default: patch
+
 jobs:
   create_release:
     runs-on: ubuntu-latest
