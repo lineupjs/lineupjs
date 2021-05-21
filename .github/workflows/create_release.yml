@@ -7,6 +7,10 @@ on:
         description: 'Semantic Version Number (i.e., 5.5.0 or patch, minor, major, prepatch, preminor, premajor, prerelease)'
         required: true
         default: patch
+      preid:
+        description: 'Pre Release Identifier (i.e., alpha, beta)'
+        required: true
+        default: alpha
 
 jobs:
   create_release:
@@ -25,7 +29,7 @@ jobs:
         id: version
         run: |
           echo -n "::set-output name=next_tag::"
-          npm version --no-git-tag-version ${{ github.event.inputs.versionName }}
+          npm version --no-git-tag-version ${{ github.event.inputs.versionName }} --preid ${{ github.event.inputs.preid }}
       - name: Create pull request into main
         uses: peter-evans/create-pull-request@v3
         with:
