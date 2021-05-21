@@ -32,7 +32,6 @@ import {
   isEqualCategoricalFilter,
   toCompareCategoryValue,
   toGroupCompareCategoryValue,
-  COMPARE_GROUP_CATEGORY_VALUE_TYPES,
 } from './internalCategorical';
 
 /**
@@ -279,7 +278,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   toCompareGroupValueType() {
-    return COMPARE_GROUP_CATEGORY_VALUE_TYPES;
+    return [ECompareValueType.FLOAT, ECompareValueType.STRING];
   }
 
   getGroupRenderer() {
