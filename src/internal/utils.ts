@@ -10,7 +10,6 @@ export function equal(a: any, b: any): boolean {
   return f(a, b);
 }
 
-
 /** @internal */
 export function equalArrays<T>(a: T[], b: T[]) {
   if (a.length !== b.length) {
