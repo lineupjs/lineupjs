@@ -1,4 +1,4 @@
-import {cssClass} from '../styles';
+import { cssClass } from '../styles';
 
 /** @internal */
 export interface IDragHandleOptions {
@@ -30,14 +30,17 @@ export interface IDragHandleOptions {
  * @internal
  */
 export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<IDragHandleOptions> = {}) {
-  const o: Readonly<IDragHandleOptions> = Object.assign({
-    container: handle.parentElement!,
-    filter: () => true,
-    onStart: () => undefined,
-    onDrag: () => undefined,
-    onEnd: () => undefined,
-    minDelta: 2
-  }, options);
+  const o: Readonly<IDragHandleOptions> = Object.assign(
+    {
+      container: handle.parentElement!,
+      filter: () => true,
+      onStart: () => undefined,
+      onDrag: () => undefined,
+      onEnd: () => undefined,
+      minDelta: 2,
+    },
+    options
+  );
 
   let ueberElement: HTMLElement | null = null;
 
@@ -76,9 +79,9 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     evt.preventDefault();
 
     const end = toContainerRelative(evt.clientX, o.container) - handleShift;
-    ueberElement!.removeEventListener('mousemove', <any>mouseMove);
-    ueberElement!.removeEventListener('mouseup', <any>mouseUp);
-    ueberElement!.removeEventListener('mouseleave', <any>mouseUp);
+    ueberElement!.removeEventListener('mousemove', mouseMove);
+    ueberElement!.removeEventListener('mouseup', mouseUp);
+    ueberElement!.removeEventListener('mouseleave', mouseUp);
     ueberElement!.classList.remove(cssClass('dragging'));
 
     if (Math.abs(start - end) < 2) {
@@ -100,10 +103,10 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     start = last = toContainerRelative(evt.clientX, o.container) - handleShift;
 
     // register other event listeners
-    ueberElement = <HTMLElement>handle.closest('body') || <HTMLElement>handle.closest(`.${cssClass()}`)!; // take the whole body or root lineup
-    ueberElement.addEventListener('mousemove', <any>mouseMove);
-    ueberElement.addEventListener('mouseup', <any>mouseUp);
-    ueberElement.addEventListener('mouseleave', <any>mouseUp);
+    ueberElement = handle.closest('body') || handle.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
+    ueberElement.addEventListener('mousemove', mouseMove);
+    ueberElement.addEventListener('mouseup', mouseUp);
+    ueberElement.addEventListener('mouseleave', mouseUp);
     ueberElement.classList.add(cssClass('dragging'));
 
     o.onStart(handle, start, 0, evt);

@@ -1,9 +1,14 @@
-import {IAbortAblePromise} from 'lineupengine';
-import {Column, IDataRow, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn} from '../model';
-import {IDataProvider} from '../provider';
-import DialogManager from '../ui/dialogs/DialogManager';
-import {ISequence, IDateStatistics, ICategoricalStatistics, IAdvancedBoxPlotData, IStatistics} from '../internal';
-
+import type { IAbortAblePromise } from 'lineupengine';
+import type { Column, IDataRow, IOrderedGroup, INumberColumn, ICategoricalLikeColumn, IDateColumn } from '../model';
+import type { IDataProvider } from '../provider';
+import type DialogManager from '../ui/dialogs/DialogManager';
+import type {
+  ISequence,
+  IDateStatistics,
+  ICategoricalStatistics,
+  IAdvancedBoxPlotData,
+  IStatistics,
+} from '../internal';
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
@@ -33,7 +38,12 @@ export interface ICellRenderer {
    * render a low detail canvas row
    * @return true if a dom element is needed
    */
-  render?(ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IOrderedGroup): void | IAbortAblePromise<IRenderCallback> | boolean | null;
+  render?(
+    ctx: CanvasRenderingContext2D,
+    d: IDataRow,
+    i: number,
+    group: IOrderedGroup
+  ): void | IAbortAblePromise<IRenderCallback> | boolean | null;
 }
 
 /**
@@ -62,24 +72,55 @@ export interface ISummaryRenderer {
   update(node: HTMLElement): void | IAbortAblePromise<void> | null;
 }
 
-
 export interface IRenderTask<T> {
   then<U = void>(onfullfilled: (value: T | symbol) => U): U | IAbortAblePromise<U>;
 }
 
 export interface IRenderTasks {
-  groupRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
-  groupExampleRows<T>(col: Column, group: IOrderedGroup, key: string, compute: (rows: ISequence<IDataRow>) => T): IRenderTask<T>;
+  groupRows<T>(
+    col: Column,
+    group: IOrderedGroup,
+    key: string,
+    compute: (rows: ISequence<IDataRow>) => T
+  ): IRenderTask<T>;
+  groupExampleRows<T>(
+    col: Column,
+    group: IOrderedGroup,
+    key: string,
+    compute: (rows: ISequence<IDataRow>) => T
+  ): IRenderTask<T>;
 
-  groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean): IRenderTask<{group: IAdvancedBoxPlotData, summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
-  groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean): IRenderTask<{group: IStatistics, summary: IStatistics, data: IStatistics}>;
-  groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup): IRenderTask<{group: ICategoricalStatistics, summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
-  groupDateStats(col: Column & IDateColumn, group: IOrderedGroup): IRenderTask<{group: IDateStatistics, summary: IDateStatistics, data: IDateStatistics}>;
+  groupBoxPlotStats(
+    col: Column & INumberColumn,
+    group: IOrderedGroup,
+    raw?: boolean
+  ): IRenderTask<{ group: IAdvancedBoxPlotData; summary: IAdvancedBoxPlotData; data: IAdvancedBoxPlotData }>;
+  groupNumberStats(
+    col: Column & INumberColumn,
+    group: IOrderedGroup,
+    raw?: boolean
+  ): IRenderTask<{ group: IStatistics; summary: IStatistics; data: IStatistics }>;
+  groupCategoricalStats(
+    col: Column & ICategoricalLikeColumn,
+    group: IOrderedGroup
+  ): IRenderTask<{ group: ICategoricalStatistics; summary: ICategoricalStatistics; data: ICategoricalStatistics }>;
+  groupDateStats(
+    col: Column & IDateColumn,
+    group: IOrderedGroup
+  ): IRenderTask<{ group: IDateStatistics; summary: IDateStatistics; data: IDateStatistics }>;
 
-  summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<{summary: IAdvancedBoxPlotData, data: IAdvancedBoxPlotData}>;
-  summaryNumberStats(col: Column & INumberColumn, raw?: boolean): IRenderTask<{summary: IStatistics, data: IStatistics}>;
-  summaryCategoricalStats(col: Column & ICategoricalLikeColumn): IRenderTask<{summary: ICategoricalStatistics, data: ICategoricalStatistics}>;
-  summaryDateStats(col: Column & IDateColumn): IRenderTask<{summary: IDateStatistics, data: IDateStatistics}>;
+  summaryBoxPlotStats(
+    col: Column & INumberColumn,
+    raw?: boolean
+  ): IRenderTask<{ summary: IAdvancedBoxPlotData; data: IAdvancedBoxPlotData }>;
+  summaryNumberStats(
+    col: Column & INumberColumn,
+    raw?: boolean
+  ): IRenderTask<{ summary: IStatistics; data: IStatistics }>;
+  summaryCategoricalStats(
+    col: Column & ICategoricalLikeColumn
+  ): IRenderTask<{ summary: ICategoricalStatistics; data: ICategoricalStatistics }>;
+  summaryDateStats(col: Column & IDateColumn): IRenderTask<{ summary: IDateStatistics; data: IDateStatistics }>;
 }
 
 /**
@@ -115,9 +156,10 @@ export interface IRenderContext {
 }
 
 export enum ERenderMode {
-  CELL, GROUP, SUMMARY
+  CELL,
+  GROUP,
+  SUMMARY,
 }
-
 
 export interface ICellRendererFactory {
   readonly title: string;

@@ -1,0 +1,29 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'enhancement'
+      - 'feature'
+      - 'style'
+      - 'type: feature'
+  - title: '🐛 Bugs Fixes'
+    labels:
+      - 'bug'
+      - 'type: bug'
+  - title: '📖 Documentation'
+    labels:
+      - 'documentation'
+      - 'type: docs'
+  - title: '🧰 Maintenance'
+    labels:
+      - 'chore'
+      - 'type: refactor'
+      - 'type: technical dept'
+      - 'dependencies'
+change-template: '- #$NUMBER $TITLE'
+change-title-escapes: '\<*_&`#@'
+template: |
+  $CHANGES
+
+  Thanks to $CONTRIBUTORS

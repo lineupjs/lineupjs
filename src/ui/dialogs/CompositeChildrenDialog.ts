@@ -1,14 +1,13 @@
-import {debounce, clear, suffix} from '../../internal';
-import {CompositeColumn} from '../../model';
-import {createHeader, updateHeader} from '../header';
-import {IRankingHeaderContext} from '../interfaces';
-import {IDialogContext} from './ADialog';
-import {cssClass, engineCssClass} from '../../styles';
+import { debounce, clear, suffix } from '../../internal';
+import { CompositeColumn } from '../../model';
+import { createHeader, updateHeader } from '../header';
+import type { IRankingHeaderContext } from '../interfaces';
+import type { IDialogContext } from './ADialog';
+import { cssClass, engineCssClass } from '../../styles';
 import APopup from './APopup';
 
 /** @internal */
 export default class CompositeChildrenDialog extends APopup {
-
   private readonly id: string;
 
   constructor(private readonly column: CompositeColumn, dialog: IDialogContext, private ctx: IRankingHeaderContext) {
@@ -29,7 +28,7 @@ export default class CompositeChildrenDialog extends APopup {
           mergeDropAble: false,
           resizeable: false,
           level: this.dialog.level + 1,
-          extraPrefix: 'sub'
+          extraPrefix: 'sub',
         });
         n.className = cssClass('header');
         updateHeader(n, c);
@@ -51,14 +50,17 @@ export default class CompositeChildrenDialog extends APopup {
     };
     createChildren();
 
-    this.column.on(suffix(this.id, CompositeColumn.EVENT_ADD_COLUMN, CompositeColumn.EVENT_REMOVE_COLUMN), debounce(() => {
-      if (!node.parentElement) {
-        // already closed
-        this.destroy();
-        return;
-      }
-      clear(node);
-      createChildren();
-    }));
+    this.column.on(
+      suffix(this.id, CompositeColumn.EVENT_ADD_COLUMN, CompositeColumn.EVENT_REMOVE_COLUMN),
+      debounce(() => {
+        if (!node.parentElement) {
+          // already closed
+          this.destroy();
+          return;
+        }
+        clear(node);
+        createChildren();
+      })
+    );
   }
 }

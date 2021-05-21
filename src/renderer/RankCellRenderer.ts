@@ -1,8 +1,8 @@
-import {Column, RankColumn, IDataRow, IOrderedGroup} from '../model';
-import {ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {noRenderer, setText} from './utils';
-import {cssClass} from '../styles';
+import { Column, RankColumn, IDataRow, IOrderedGroup } from '../model';
+import type { ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer } from './interfaces';
+import { renderMissingDOM } from './missing';
+import { noRenderer, setText } from './utils';
+import { cssClass } from '../styles';
 
 export default class RankCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
@@ -17,7 +17,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         setText(n, col.getLabel(d));
-      }
+      },
     };
   }
 
@@ -26,8 +26,8 @@ export default class RankCellRenderer implements ICellRendererFactory {
     return {
       template: `<div><div></div><div></div></div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        const fromTSpan = <HTMLElement>n.firstElementChild!;
-        const toTSpan = <HTMLElement>n.lastElementChild!;
+        const fromTSpan = n.firstElementChild! as HTMLElement;
+        const toTSpan = n.lastElementChild! as HTMLElement;
         if (group.order.length === 0) {
           fromTSpan.textContent = '';
           toTSpan.textContent = '';
@@ -35,7 +35,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
         }
         fromTSpan.textContent = ranking.getRank(group.order[0]).toString();
         toTSpan.textContent = ranking.getRank(group.order[group.order.length - 1]).toString();
-      }
+      },
     };
   }
 

@@ -1,8 +1,14 @@
-import {Column, SelectionColumn, IDataRow, IOrderedGroup} from '../model';
-import {IRenderContext, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
-import {cssClass} from '../styles';
-import {everyIndices} from '../model/internal';
-import {rangeSelection} from '../provider/utils';
+import { Column, SelectionColumn, IDataRow, IOrderedGroup } from '../model';
+import type {
+  IRenderContext,
+  ICellRendererFactory,
+  ISummaryRenderer,
+  IGroupCellRenderer,
+  ICellRenderer,
+} from './interfaces';
+import { cssClass } from '../styles';
+import { everyIndices } from '../model/internal';
+import { rangeSelection } from '../provider/utils';
 
 export default class SelectionRenderer implements ICellRendererFactory {
   readonly title: string = 'Default';
@@ -27,7 +33,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
 
           col.toggleValue(d);
         };
-      }
+      },
     };
   }
 
@@ -59,7 +65,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
           const value = n.classList.toggle(cssClass('group-selected'));
           col.setValues(group.order, value);
         };
-      }
+      },
     };
   }
 
@@ -71,8 +77,8 @@ export default class SelectionRenderer implements ICellRendererFactory {
       update: (node: HTMLElement) => {
         node.onclick = (evt) => {
           evt.stopPropagation();
-          const isunchecked = node.classList.contains(unchecked);
-          if (isunchecked) {
+          const isUnchecked = node.classList.contains(unchecked);
+          if (isUnchecked) {
             context.provider.selectAllOf(col.findMyRanker()!);
             node.classList.remove(unchecked);
             node.classList.add(checked);
@@ -82,7 +88,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
             node.classList.add(unchecked);
           }
         };
-      }
+      },
     };
   }
 }

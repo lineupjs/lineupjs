@@ -1,22 +1,44 @@
-import {toolbar, SortByDefault, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IKeyValue} from './IArrayColumn';
-import {IDataRow, ECompareValueType, ITypeFactory} from './interfaces';
+import { toolbar, SortByDefault, dialogAddons } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import type { dataLoaded } from './ValueColumn';
+import type ValueColumn from './ValueColumn';
+import type { IKeyValue } from './IArrayColumn';
+import { IDataRow, ECompareValueType, ITypeFactory } from './interfaces';
 import {
-  EAdvancedSortMethod, IAdvancedBoxPlotColumn, INumberDesc,
+  EAdvancedSortMethod,
+  IAdvancedBoxPlotColumn,
+  INumberDesc,
   INumberFilter,
   IMappingFunction,
-  IColorMappingFunction} from './INumberColumn';
-import MapColumn, {IMapColumnDesc} from './MapColumn';
-import {restoreMapping} from './MappingFunction';
-import {isMissingValue} from './missing';
+  IColorMappingFunction,
+} from './INumberColumn';
+import MapColumn, { IMapColumnDesc } from './MapColumn';
+import { restoreMapping } from './MappingFunction';
+import { isMissingValue } from './missing';
 import NumberColumn from './NumberColumn';
-import {IEventListener, IAdvancedBoxPlotData, boxplotBuilder} from '../internal';
-import {format} from 'd3-format';
-import {DEFAULT_FORMATTER, noNumberFilter, toCompareBoxPlotValue, getBoxPlotNumber, isDummyNumberFilter, restoreNumberFilter} from './internalNumber';
-import {integrateDefaults} from './internal';
-
+import { IEventListener, IAdvancedBoxPlotData, boxplotBuilder } from '../internal';
+import { format } from 'd3-format';
+import {
+  DEFAULT_FORMATTER,
+  noNumberFilter,
+  toCompareBoxPlotValue,
+  getBoxPlotNumber,
+  isDummyNumberFilter,
+  restoreNumberFilter,
+} from './internalNumber';
+import { integrateDefaults } from './internal';
 
 export interface INumberMapDesc extends INumberDesc {
   readonly sort?: EAdvancedSortMethod;
@@ -74,9 +96,12 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   private currentFilter: INumberFilter = noNumberFilter();
 
   constructor(id: string, desc: Readonly<INumberMapColumnDesc>, factory: ITypeFactory) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'mapbars'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'mapbars',
+      })
+    );
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
@@ -148,7 +173,9 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
 
   getValue(row: IDataRow) {
     const values = this.getRawValue(row);
-    return values.length === 0 ? null : values.map(({key, value}) => ({key, value: isMissingValue(value) ? NaN : this.mapping.apply(value)}));
+    return values.length === 0
+      ? null
+      : values.map(({ key, value }) => ({ key, value: isMissingValue(value) ? NaN : this.mapping.apply(value) }));
   }
 
   getRawValue(row: IDataRow): IKeyValue<number>[] {
@@ -162,7 +189,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
 
   getLabels(row: IDataRow) {
     const v = this.getRawValue(row);
-    return v.map(({key, value}) => ({key, value: this.numberFormat(value)}));
+    return v.map(({ key, value }) => ({ key, value: this.numberFormat(value) }));
   }
 
   getSortMethod() {
@@ -173,7 +200,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (this.sort === sort) {
       return;
     }
-    this.fire([NumberMapColumn.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
+    this.fire([NumberMapColumn.EVENT_SORTMETHOD_CHANGED], this.sort, (this.sort = sort));
     // sort by me if not already sorted by me
     if (!this.isSortedByMe().asc) {
       this.sortByMe();
@@ -206,7 +233,14 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumberMapColumn.EVENT_COLOR_MAPPING_CHANGED, NumberMapColumn.EVENT_MAPPING_CHANGED, NumberMapColumn.EVENT_SORTMETHOD_CHANGED, NumberMapColumn.EVENT_FILTER_CHANGED]);
+    return super
+      .createEventList()
+      .concat([
+        NumberMapColumn.EVENT_COLOR_MAPPING_CHANGED,
+        NumberMapColumn.EVENT_MAPPING_CHANGED,
+        NumberMapColumn.EVENT_SORTMETHOD_CHANGED,
+        NumberMapColumn.EVENT_FILTER_CHANGED,
+      ]);
   }
 
   on(type: typeof NumberMapColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_NMC | null): this;
@@ -227,7 +261,7 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getOriginalMapping() {
@@ -242,7 +276,11 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumberMapColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire(
+      [NumberMapColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.mapping.clone(),
+      (this.mapping = mapping)
+    );
   }
 
   getColor(row: IDataRow) {
@@ -257,7 +295,11 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     if (this.colorMapping.eq(mapping)) {
       return;
     }
-    this.fire([NumberMapColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.colorMapping.clone(), this.colorMapping = mapping);
+    this.fire(
+      [NumberMapColumn.EVENT_COLOR_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.colorMapping.clone(),
+      (this.colorMapping = mapping)
+    );
   }
 
   isFiltered() {
@@ -280,4 +322,3 @@ export default class NumberMapColumn extends MapColumn<number> implements IAdvan
     return NumberColumn.prototype.clearFilter.call(this);
   }
 }
-

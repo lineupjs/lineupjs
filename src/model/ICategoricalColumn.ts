@@ -1,7 +1,7 @@
-import {IForEachAble} from '../internal';
+import type { IForEachAble } from '../internal';
 import Column from './Column';
-import {IArrayColumn, isArrayColumn} from './IArrayColumn';
-import {IValueColumnDesc, IColumnDesc, IDataRow, ITypedDump} from './interfaces';
+import { IArrayColumn, isArrayColumn } from './IArrayColumn';
+import type { IValueColumnDesc, IColumnDesc, IDataRow, ITypedDump } from './interfaces';
 
 export interface ICategoricalDesc {
   categories: (string | Partial<ICategory>)[];
@@ -20,7 +20,7 @@ export interface ICategoricalColorMappingFunction {
 }
 
 export interface ICategoricalColorMappingFunctionConstructor {
-  new(dump: ITypedDump): ICategoricalColorMappingFunction;
+  new (dump: ITypedDump): ICategoricalColorMappingFunction;
 }
 
 export interface ICategoricalLikeColumn extends Column {
@@ -35,7 +35,10 @@ export interface ICategoricalLikeColumn extends Column {
 }
 
 export function isCategoricalLikeColumn(col: Column): col is ICategoricalLikeColumn {
-  return typeof (<ICategoricalLikeColumn>col).categories !== 'undefined' && typeof (<ICategoricalLikeColumn>col).iterCategory === 'function';
+  return (
+    typeof (col as ICategoricalLikeColumn).categories !== 'undefined' &&
+    typeof (col as ICategoricalLikeColumn).iterCategory === 'function'
+  );
 }
 
 export interface ISetColumn extends IArrayColumn<boolean>, ICategoricalLikeColumn {
@@ -43,7 +46,7 @@ export interface ISetColumn extends IArrayColumn<boolean>, ICategoricalLikeColum
 }
 
 export function isSetColumn(col: Column): col is ISetColumn {
-  return isCategoricalLikeColumn(col) && typeof (<ISetColumn>col).getSet === 'function';
+  return isCategoricalLikeColumn(col) && typeof (col as ISetColumn).getSet === 'function';
 }
 
 export interface ICategoricalColumn extends ISetColumn {
@@ -73,7 +76,10 @@ export interface ICategory {
 export function isCategoricalColumn(col: Column): col is ICategoricalColumn;
 export function isCategoricalColumn(col: IColumnDesc): col is ICategoricalColumnDesc & IColumnDesc;
 export function isCategoricalColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<ICategoricalColumn>col).getCategory === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
+  return (
+    (col instanceof Column && typeof (col as ICategoricalColumn).getCategory === 'function') ||
+    (!(col instanceof Column) && (col as IColumnDesc).type.match(/(categorical|ordinal|hierarchy)/) != null)
+  );
 }
 
 export declare type ICategoricalsColumn = ICategoricalLikeColumn & IArrayColumn<string | null>;
@@ -81,7 +87,6 @@ export declare type ICategoricalsColumn = ICategoricalLikeColumn & IArrayColumn<
 export function isCategoricalsColumn(col: Column): col is ICategoricalsColumn {
   return isCategoricalLikeColumn(col) && isArrayColumn(col) && !isSetColumn(col);
 }
-
 
 export interface ICategoricalFilter {
   filter: string[] | string | RegExp;
@@ -93,5 +98,10 @@ export interface ISetCategoricalFilter extends ICategoricalFilter {
 }
 
 export function isCategory(v: any): v is ICategory {
-  return typeof v.name === 'string' && typeof v.label === 'string' && typeof v.color === 'string' && typeof v.value === 'number';
+  return (
+    typeof v.name === 'string' &&
+    typeof v.label === 'string' &&
+    typeof v.color === 'string' &&
+    typeof v.value === 'number'
+  );
 }

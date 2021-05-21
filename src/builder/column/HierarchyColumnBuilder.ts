@@ -1,8 +1,7 @@
-import {IHierarchyColumnDesc, IPartialCategoryNode} from '../../model';
+import type { IHierarchyColumnDesc, IPartialCategoryNode } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 export default class HierarchyColumnBuilder extends ColumnBuilder<IHierarchyColumnDesc> {
-
   constructor(column: string) {
     super('hierarchy', column);
   }

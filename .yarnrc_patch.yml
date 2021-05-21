@@ -1,0 +1,7 @@
+# packageExtensions:
+#   'cypress@*':
+#     dependencies:
+#       typescript: '~4.1.5'
+#   '@cypress/webpack-preprocessor@*':
+#     dependencies:
+#       typescript: '~4.1.5'

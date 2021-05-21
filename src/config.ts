@@ -1,9 +1,9 @@
-import {renderers} from './renderer/renderers';
-import {toolbarActions, toolbarDialogAddons} from './ui/toolbar';
-import {Column, Ranking, IGroupData, IGroupItem} from './model';
-import {IDataProvider} from './provider';
-import {ICellRendererFactory, ERenderMode} from './renderer';
-import {IToolbarAction, IToolbarDialogAddon} from './ui';
+import { renderers } from './renderer/renderers';
+import { toolbarDialogAddons, toolbarActions } from './ui/toolbar';
+import type { Column, Ranking, IGroupData, IGroupItem } from './model';
+import type { IDataProvider } from './provider';
+import type { ICellRendererFactory, ERenderMode } from './renderer';
+import type { IToolbarAction, IToolbarDialogAddon } from './ui';
 
 /**
  * custom height implementation logic
@@ -180,12 +180,16 @@ export interface ILineUpOptions {
   /**
    * hook for postprocess the toolbar dialog addons for a column
    */
-  resolveToolbarDialogAddons: (col: Column, keys: string[], lookup: IToolbarLookup<IToolbarDialogAddon>) => IToolbarDialogAddon[];
+  resolveToolbarDialogAddons: (
+    col: Column,
+    keys: string[],
+    lookup: IToolbarLookup<IToolbarDialogAddon>
+  ) => IToolbarDialogAddon[];
 
   /**
    * register custom renderer factories
    */
-  renderers: {[type: string]: ICellRendererFactory};
+  renderers: { [type: string]: ICellRendererFactory };
 
   /**
    * custom check whether a given renderer can render the given column in the given mode
@@ -247,7 +251,6 @@ function resolveToolbarDialogAddons(col: Column, keys: string[], lookup: IToolba
   return actions;
 }
 
-
 export function defaultOptions(): ITaggleOptions {
   return {
     toolbarActions,
@@ -274,7 +277,7 @@ export function defaultOptions(): ITaggleOptions {
       sort: true,
       group: true,
       groupSort: true,
-      colorMapping: true
+      colorMapping: true,
     },
     onDialogBackgroundClick: 'cancel',
 
@@ -294,6 +297,6 @@ export function defaultOptions(): ITaggleOptions {
       advancedUIFeatures: true,
     },
 
-    ignoreUnsupportedBrowser: false
+    ignoreUnsupportedBrowser: false,
   };
 }

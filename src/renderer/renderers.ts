@@ -1,4 +1,4 @@
-import {Column} from '../model';
+import type { Column } from '../model';
 import ActionRenderer from './ActionRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
 import AnnotationRenderer from './AnnotationRenderer';
@@ -10,13 +10,13 @@ import CategoricalCellRenderer from './CategoricalCellRenderer';
 import CategoricalHeatmapCellRenderer from './CategoricalHeatmapCellRenderer';
 import CategoricalStackedDistributionlCellRenderer from './CategoricalStackedDistributionlCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
-import {DefaultCellRenderer} from './DefaultCellRenderer';
+import { DefaultCellRenderer } from './DefaultCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
 import GroupCellRenderer from './GroupCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
 import HistogramCellRenderer from './HistogramCellRenderer';
 import ImageCellRenderer from './ImageCellRenderer';
-import {ERenderMode, ICellRendererFactory} from './interfaces';
+import { ERenderMode, ICellRendererFactory } from './interfaces';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import LinkCellRenderer from './LinkCellRenderer';
 import LinkMapCellRenderer from './LinkMapCellRenderer';
@@ -72,7 +72,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   string: new StringCellRenderer(),
   table: new TableCellRenderer(),
   upset: new UpSetCellRenderer(),
-  verticalbar: new VerticalBarCellRenderer()
+  verticalbar: new VerticalBarCellRenderer(),
 };
 
 export function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
@@ -80,12 +80,18 @@ export function chooseRenderer(col: Column, renderers: { [key: string]: ICellRen
   return r && typeof r.create === 'function' ? r : defaultCellRenderer;
 }
 
-export function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
+export function chooseGroupRenderer(
+  col: Column,
+  renderers: { [key: string]: ICellRendererFactory }
+): ICellRendererFactory {
   const r = renderers[col.getGroupRenderer()];
   return r && typeof r.createGroup === 'function' ? r : defaultCellRenderer;
 }
 
-export function chooseSummaryRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
+export function chooseSummaryRenderer(
+  col: Column,
+  renderers: { [key: string]: ICellRendererFactory }
+): ICellRendererFactory {
   const r = renderers[col.getSummaryRenderer()];
   return r && typeof r.createSummary === 'function' ? r : defaultCellRenderer;
 }
@@ -96,16 +102,40 @@ export function chooseSummaryRenderer(col: Column, renderers: { [key: string]: I
  * @param renderers map of possible renderers
  * @param canRender optional custom canRender function
  */
-export function getPossibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, canRender?: (type: string, renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean) {
-  const all = Object.keys(renderers).filter(Boolean).map((type) => ({type, factory: renderers[type]}));
+export function getPossibleRenderer(
+  col: Column,
+  renderers: { [key: string]: ICellRendererFactory },
+  canRender?: (type: string, renderer: ICellRendererFactory, col: Column, mode: ERenderMode) => boolean
+) {
+  const all = Object.keys(renderers)
+    .filter(Boolean)
+    .map((type) => ({ type, factory: renderers[type] }));
 
-  const item = all.filter(({type, factory}) => typeof factory.create === 'function' && factory.canRender(col, ERenderMode.CELL) && (!canRender || canRender(type, factory, col, ERenderMode.CELL)));
-  const group = all.filter(({type, factory}) => typeof factory.createGroup === 'function' && factory.canRender(col, ERenderMode.GROUP) && (!canRender || canRender(type, factory, col, ERenderMode.GROUP)));
-  const summary = all.filter(({type, factory}) => typeof factory.createSummary === 'function' && factory.canRender(col, ERenderMode.SUMMARY) && (!canRender || canRender(type, factory, col, ERenderMode.SUMMARY)));
+  const item = all.filter(
+    ({ type, factory }) =>
+      typeof factory.create === 'function' &&
+      factory.canRender(col, ERenderMode.CELL) &&
+      (!canRender || canRender(type, factory, col, ERenderMode.CELL))
+  );
+  const group = all.filter(
+    ({ type, factory }) =>
+      typeof factory.createGroup === 'function' &&
+      factory.canRender(col, ERenderMode.GROUP) &&
+      (!canRender || canRender(type, factory, col, ERenderMode.GROUP))
+  );
+  const summary = all.filter(
+    ({ type, factory }) =>
+      typeof factory.createSummary === 'function' &&
+      factory.canRender(col, ERenderMode.SUMMARY) &&
+      (!canRender || canRender(type, factory, col, ERenderMode.SUMMARY))
+  );
 
   return {
-    item: item.map(({type, factory}) => ({type, label: factory.title})),
-    group: group.map(({type, factory}) => ({type, label: factory.groupTitle || factory.title})),
-    summary: summary.map(({type, factory}) => ({type, label: factory.summaryTitle || factory.groupTitle || factory.title}))
+    item: item.map(({ type, factory }) => ({ type, label: factory.title })),
+    group: group.map(({ type, factory }) => ({ type, label: factory.groupTitle || factory.title })),
+    summary: summary.map(({ type, factory }) => ({
+      type,
+      label: factory.summaryTitle || factory.groupTitle || factory.title,
+    })),
   };
 }

@@ -4,7 +4,7 @@
  */
 export const DENSE_HISTOGRAM = 19;
 /**
- * minimal witdh of a column to show the label in the header
+ * minimal width of a column to show the label in the header
  * @internal
  */
 export const MIN_LABEL_WIDTH = 30;

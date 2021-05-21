@@ -34,12 +34,12 @@
     border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }
 
-  &[data-level][data-meta~=first]::after {
+  &[data-level][data-meta~='first']::after {
     top: 0;
     border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }
 
-  &[data-meta~=last]::after {
+  &[data-meta~='last']::after {
     border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
   }
 }
@@ -77,7 +77,7 @@
     border-left: 1px solid black;
   }
 
-  &[data-meta=last]::before {
+  &[data-meta='last']::before {
     bottom: 50%;
   }
 }

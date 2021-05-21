@@ -89,15 +89,15 @@
     @include lu_icons();
   }
 
-  &[type=submit]::before {
+  &[type='submit']::before {
     content: $lu_icon_check;
   }
 
-  &[title=Cancel]::before {
+  &[title='Cancel']::before {
     content: $lu_icon_times;
   }
 
-  &[type=reset]::before {
+  &[type='reset']::before {
     content: $lu_icon_undo;
   }
 
@@ -105,12 +105,12 @@
     content: $lu_icon_sliders;
   }
 
-  &[type=submit] {
+  &[type='submit'] {
     float: right;
     color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
   }
 
-  &[title=Remove] {
+  &[title='Remove'] {
     color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
   }
 }
@@ -123,7 +123,7 @@
   overflow-y: auto;
   max-height: 50vh;
 
-  input[type=number] {
+  input[type='number'] {
     width: 6em;
   }
 }
@@ -131,7 +131,7 @@
 .#{$lu_css_prefix}-dialog-filter-table-entry {
   display: flex;
 
-  > input[type=checkbox]:not(:checked) + span {
+  > input[type='checkbox']:not(:checked) + span {
     opacity: 0.5;
   }
 
@@ -201,7 +201,7 @@
       width: 0.8em;
     }
 
-    &[data-toggle=open]::before {
+    &[data-toggle='open']::before {
       content: $lu_icon_caret_down;
     }
   }
@@ -211,7 +211,7 @@
     opacity: 0.2;
   }
 
-  [data-toggle=""] + div {
+  [data-toggle=''] + div {
     display: none;
   }
 }
@@ -239,28 +239,28 @@
 
   $arrow_size: 5px;
 
-  &[x-placement=bottom] div[x-arrow] {
+  &[x-placement='bottom'] div[x-arrow] {
     border-left: $arrow_size solid transparent;
     border-right: $arrow_size solid transparent;
     border-bottom: $arrow_size solid black;
     top: -$arrow_size;
   }
 
-  &[x-placement=left] div[x-arrow] {
+  &[x-placement='left'] div[x-arrow] {
     border-top: $arrow_size solid transparent;
     border-bottom: $arrow_size solid transparent;
     border-left: $arrow_size solid black;
     right: -$arrow_size;
   }
 
-  &[x-placement=right] div[x-arrow] {
+  &[x-placement='right'] div[x-arrow] {
     border-top: $arrow_size solid transparent;
     border-bottom: $arrow_size solid transparent;
     border-right: $arrow_size solid black;
     left: -$arrow_size;
   }
 
-  &[x-placement=top] div[x-arrow] {
+  &[x-placement='top'] div[x-arrow] {
     border-left: $arrow_size solid transparent;
     border-right: $arrow_size solid transparent;
     border-top: $arrow_size solid black;

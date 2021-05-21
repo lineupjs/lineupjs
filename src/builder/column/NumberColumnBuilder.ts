@@ -1,10 +1,9 @@
-import {min, max, resolveValue} from '../../internal';
-import {EAdvancedSortMethod, ESortMethod, INumberColumnDesc, ITypedDump} from '../../model';
+import { min, max, resolveValue } from '../../internal';
+import type { EAdvancedSortMethod, ESortMethod, INumberColumnDesc, ITypedDump } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
-import {IScriptMappingFunctionType} from '../../model/MappingFunction';
+import type { IScriptMappingFunctionType } from '../../model/MappingFunction';
 
 export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc> {
-
   constructor(column: string) {
     super('number', column);
   }
@@ -24,7 +23,9 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
       return this;
     }
     this.desc.map = {
-      type, domain, range: range || [0, 1]
+      type,
+      domain,
+      range: range ?? [0, 1],
     };
     return this;
   }
@@ -37,7 +38,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     return this.colorMapping(color);
   }
 
-  colorMapping(type: string | ((v: number)=>string) | ITypedDump) {
+  colorMapping(type: string | ((v: number) => string) | ITypedDump) {
     this.desc.colorMapping = type;
     return this;
   }
@@ -57,10 +58,9 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    * @param {[number , number]} domain the input data domain [min, max]
    */
   scripted(code: string | IScriptMappingFunctionType, domain: [number, number]) {
-    this.desc.map = {domain, code, type: 'script'};
+    this.desc.map = { domain, code, type: 'script' };
     return this;
   }
-
 
   /**
    * @inheritDoc
@@ -69,7 +69,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    */
   asArray(labels?: string[] | number, sort?: EAdvancedSortMethod) {
     if (sort) {
-      (<any>this.desc).sort = sort;
+      (this.desc as any).sort = sort;
     }
     return super.asArray(labels);
   }
@@ -80,7 +80,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    */
   asMap(sort?: EAdvancedSortMethod) {
     if (sort) {
-      (<any>this.desc).sort = sort;
+      (this.desc as any).sort = sort;
     }
     return super.asMap();
   }
@@ -91,44 +91,43 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    */
   asBoxPlot(sort?: ESortMethod) {
     if (sort) {
-      (<any>this.desc).sort = sort;
+      (this.desc as any).sort = sort;
     }
     this.desc.type = 'boxplot';
     return this;
   }
 
-  private derive(data: any[]) {
-    const col = (<any>this.desc).column;
+  private derive(data: any[]): [number, number] {
+    const col = (this.desc as any).column;
 
     const asArray = (v: any, extra: string) => {
       const vs: number[] = [];
       (Array.isArray(v) ? v : [v]).forEach((vi) => {
-        if (typeof vi === 'number' && !isNaN(vi)) {
+        if (typeof vi === 'number' && !Number.isNaN(vi)) {
           vs.push(vi);
         }
-        if (vi != null && typeof vi.value === 'number' && !isNaN(vi.value)) {
+        if (vi != null && typeof vi.value === 'number' && !Number.isNaN(vi.value)) {
           vs.push(vi.value);
         }
-        if (vi != null && typeof vi[extra] === 'number' && !isNaN(vi[extra])) {
+        if (vi != null && typeof vi[extra] === 'number' && !Number.isNaN(vi[extra])) {
           vs.push(vi[extra]);
         }
       });
       return vs;
     };
 
-    const minv = min(data, (d) => {
+    const minValue = min(data, (d) => {
       const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'min');
-      return vs.length === 0 ? Infinity : min(vs);
+      return vs.length === 0 ? Number.POSITIVE_INFINITY : min(vs);
     });
-    const maxv = max(data, (d) => {
+    const maxValue = max(data, (d) => {
       const v = resolveValue(d, col);
       const vs: number[] = asArray(v, 'max');
-      return vs.length === 0 ? -Infinity : max(vs);
+      return vs.length === 0 ? Number.NEGATIVE_INFINITY : max(vs);
     });
-    return <[number, number]>[minv, maxv];
+    return [minValue, maxValue];
   }
-
 
   build(data: any[]): INumberColumnDesc {
     if (!this.desc.map && !this.desc.domain) {
@@ -136,12 +135,12 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
       this.mapping('linear', this.derive(data));
     } else {
       const d = this.desc.domain || this.desc.map!.domain;
-      if (isNaN(d[0]) || isNaN(d[1])) {
+      if (Number.isNaN(d[0]) || Number.isNaN(d[1])) {
         const ext = this.derive(data);
-        if (isNaN(d[0])) {
+        if (Number.isNaN(d[0])) {
           d[0] = ext[0];
         }
-        if (isNaN(d[1])) {
+        if (Number.isNaN(d[1])) {
           d[1] = ext[1];
         }
       }

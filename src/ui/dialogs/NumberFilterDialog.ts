@@ -1,15 +1,19 @@
-import {IMapAbleColumn, INumberFilter} from '../../model';
-import {createNumberFilter} from '../../renderer/HistogramCellRenderer';
-import {cssClass} from '../../styles';
-import {IRankingHeaderContext} from '../interfaces';
-import ADialog, {IDialogContext} from './ADialog';
+import type { IMapAbleColumn, INumberFilter } from '../../model';
+import { createNumberFilter } from '../../renderer/HistogramCellRenderer';
+import { cssClass } from '../../styles';
+import type { IRankingHeaderContext } from '../interfaces';
+import ADialog, { IDialogContext } from './ADialog';
 
 /** @internal */
 export default class NumberFilterDialog extends ADialog {
   private readonly before: INumberFilter;
-  private handler: {reset: () => void, submit: () => void, cleanUp: () => void} | null = null;
+  private handler: { reset: () => void; submit: () => void; cleanUp: () => void } | null = null;
 
-  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
+  constructor(
+    private readonly column: IMapAbleColumn,
+    dialog: IDialogContext,
+    private readonly ctx: IRankingHeaderContext
+  ) {
     super(dialog, {
       livePreview: 'filter',
       cancelSubDialogs: true,
@@ -21,11 +25,16 @@ export default class NumberFilterDialog extends ADialog {
   build(node: HTMLElement) {
     node.classList.add(cssClass('dialog-mapper'));
 
-    this.handler = createNumberFilter(this.column, node, {
-      dialogManager: this.ctx.dialogManager,
-      idPrefix: this.ctx.idPrefix,
-      tasks: this.ctx.provider.getTaskExecutor(),
-    }, this.showLivePreviews());
+    this.handler = createNumberFilter(
+      this.column,
+      node,
+      {
+        dialogManager: this.ctx.dialogManager,
+        idPrefix: this.ctx.idPrefix,
+        tasks: this.ctx.provider.getTaskExecutor(),
+      },
+      this.showLivePreviews()
+    );
   }
 
   cleanUp(action: 'cancel' | 'confirm' | 'handled') {

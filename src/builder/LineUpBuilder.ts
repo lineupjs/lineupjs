@@ -1,7 +1,8 @@
-import {IDynamicHeight, ITaggleOptions, ILivePreviewOptions} from '../config';
-import Column, {IGroupData, IGroupItem, Ranking} from '../model';
-import {ICellRendererFactory, ERenderMode} from '../renderer';
-import {IToolbarAction, IToolbarDialogAddon} from '../ui';
+import type { IDynamicHeight, ITaggleOptions, ILivePreviewOptions } from '../config';
+import type { IGroupData, IGroupItem, Ranking } from '../model';
+import type Column from '../model';
+import type { ICellRendererFactory, ERenderMode } from '../renderer';
+import type { IToolbarAction, IToolbarDialogAddon } from '../ui';
 
 /**
  * builder for LineUp/Taggle instance
@@ -11,7 +12,7 @@ export default class LineUpBuilder {
     renderers: {},
     toolbarActions: {},
     toolbarDialogAddons: {},
-    flags: {}
+    flags: {},
   };
 
   /**
@@ -43,7 +44,7 @@ export default class LineUpBuilder {
    * @param {boolean} enable enable flag
    * @param {boolean} collapsed whether collapsed by default
    */
-  sidePanel(enable: boolean, collapsed: boolean = false) {
+  sidePanel(enable: boolean, collapsed = false) {
     this.options.sidePanel = enable;
     this.options.sidePanelCollapsed = collapsed;
     return this;
@@ -105,7 +106,7 @@ export default class LineUpBuilder {
 
   /**
    * register a new renderer factory function
-   * @param id the rederer id
+   * @param id the renderer id
    * @param factory factory class implementing the renderer
    */
   registerRenderer(id: string, factory: ICellRendererFactory) {
@@ -145,7 +146,7 @@ export default class LineUpBuilder {
    * height and padding of a row
    * @default 18 and 2
    */
-  rowHeight(rowHeight: number, rowPadding: number = 2) {
+  rowHeight(rowHeight: number, rowPadding = 2) {
     this.options.rowHeight = rowHeight;
     this.options.rowPadding = rowPadding;
     return this;
@@ -155,7 +156,7 @@ export default class LineUpBuilder {
    * height and padding of an aggregated group in pixel
    * @default 40 and 5
    */
-  groupRowHeight(groupHeight: number, groupPadding: number = 5) {
+  groupRowHeight(groupHeight: number, groupPadding = 5) {
     this.options.groupHeight = groupHeight;
     this.options.groupPadding = groupPadding;
     return this;
@@ -165,7 +166,7 @@ export default class LineUpBuilder {
    * custom function to compute the height of a row (group or item)
    * @param {(data: (IGroupItem | IGroupData)[], ranking: Ranking) => (IDynamicHeight | null)} callback
    */
-  dynamicHeight(callback: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => (IDynamicHeight | null)) {
+  dynamicHeight(callback: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => IDynamicHeight | null) {
     this.options.dynamicHeight = callback;
     return this;
   }

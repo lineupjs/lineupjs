@@ -1,16 +1,35 @@
-import {equalArrays, extent, IEventListener} from '../internal';
-import {Category, toolbar} from './annotations';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
+import { equalArrays, extent, IEventListener } from '../internal';
+import { Category, toolbar } from './annotations';
+import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
-import Column, {dirty, dirtyCaches, dirtyHeader, dirtyValues, groupRendererChanged, labelChanged, metaDataChanged, rendererTypeChanged, summaryRendererChanged, visibilityChanged, widthChanged} from './Column';
-import {ICategoricalColumn, ICategoricalDesc, ICategoricalFilter, ICategory, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, IValueColumnDesc, ITypeFactory} from './interfaces';
+import Column, {
+  dirty,
+  dirtyCaches,
+  dirtyHeader,
+  dirtyValues,
+  groupRendererChanged,
+  labelChanged,
+  metaDataChanged,
+  rendererTypeChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  widthChanged,
+} from './Column';
+import type {
+  ICategoricalColumn,
+  ICategoricalDesc,
+  ICategoricalFilter,
+  ICategory,
+  ICategoricalColorMappingFunction,
+} from './ICategoricalColumn';
+import type { IDataRow, IValueColumnDesc, ITypeFactory } from './interfaces';
 import NumberColumn from './NumberColumn';
-import {INumberColumn} from './INumberColumn';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {toCategories} from './internalCategorical';
-import {DEFAULT_FORMATTER} from './internalNumber';
-import {integrateDefaults} from './internal';
+import type { INumberColumn } from './INumberColumn';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import { toCategories } from './internalCategorical';
+import { DEFAULT_FORMATTER } from './internalNumber';
+import { integrateDefaults } from './internal';
 
 export declare type IOrdinalColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
 
@@ -26,7 +45,10 @@ export declare function mappingChanged_OC(previous: number[], current: number[])
  * @asMemberOf OrdinalColumn
  * @event
  */
-export declare function colorMappingChanged_OC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
+export declare function colorMappingChanged_OC(
+  previous: ICategoricalColorMappingFunction,
+  current: ICategoricalColorMappingFunction
+): void;
 
 /**
  * emitted when the filter property changes
@@ -53,19 +75,27 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   private currentFilter: ICategoricalFilter | null = null;
 
-
   constructor(id: string, desc: Readonly<IOrdinalColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'number',
-      groupRenderer: 'boxplot'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'number',
+        groupRenderer: 'boxplot',
+      })
+    );
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
   protected createEventList() {
-    return super.createEventList().concat([OrdinalColumn.EVENT_COLOR_MAPPING_CHANGED, OrdinalColumn.EVENT_MAPPING_CHANGED, OrdinalColumn.EVENT_FILTER_CHANGED]);
+    return super
+      .createEventList()
+      .concat([
+        OrdinalColumn.EVENT_COLOR_MAPPING_CHANGED,
+        OrdinalColumn.EVENT_MAPPING_CHANGED,
+        OrdinalColumn.EVENT_FILTER_CHANGED,
+      ]);
   }
 
   on(type: typeof OrdinalColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_OC | null): this;
@@ -85,7 +115,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getNumberFormat() {
@@ -102,7 +132,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
 
   getValue(row: IDataRow) {
     const v = this.getNumber(row);
-    return isNaN(v) ? null : v;
+    return Number.isNaN(v) ? null : v;
   }
 
   getCategory(row: IDataRow) {
@@ -170,12 +200,12 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
   getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       const value = this.getNumber(row);
-      if (isNaN(value)) {
+      if (Number.isNaN(value)) {
         return null;
       }
       return {
         name: this.getLabel(row),
-        value
+        value,
       };
     }
     return super.getExportValue(row, format);
@@ -205,8 +235,18 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     if (equalArrays(bak, mapping)) {
       return;
     }
-    this.categories.forEach((d, i) => d.value = mapping[i] || 0);
-    this.fire([OrdinalColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY], bak, this.getMapping());
+    this.categories.forEach((d, i) => (d.value = mapping[i] || 0));
+    this.fire(
+      [
+        OrdinalColumn.EVENT_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      bak,
+      this.getMapping()
+    );
   }
 
   getColorMapping() {

@@ -1,5 +1,5 @@
-import {Category, SupportType} from './annotations';
-import {IDataRow, IColumnDesc, IGroup} from './interfaces';
+import { Category, SupportType } from './annotations';
+import type { IDataRow, IColumnDesc, IGroup } from './interfaces';
 import Column from './Column';
 
 export interface IAction {
@@ -25,8 +25,12 @@ export interface IGroupAction {
  * @param groupActions
  * @returns {{type: string, label: string}}
  */
-export function createActionDesc(label = 'actions', actions: Readonly<IAction>[] = [], groupActions: Readonly<IGroupAction>[] = []) {
-  return {type: 'actions', label, actions, groupActions, fixed: true};
+export function createActionDesc(
+  label = 'actions',
+  actions: Readonly<IAction>[] = [],
+  groupActions: Readonly<IGroupAction>[] = []
+) {
+  return { type: 'actions', label, actions, groupActions, fixed: true };
 }
 
 export interface IActionDesc {
@@ -42,7 +46,6 @@ export declare type IActionColumnDesc = IColumnDesc & IActionDesc;
 @SupportType()
 @Category('support')
 export default class ActionColumn extends Column {
-
   readonly actions: IAction[];
   readonly groupActions: IGroupAction[];
 

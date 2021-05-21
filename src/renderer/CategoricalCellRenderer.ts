@@ -1,12 +1,32 @@
-import {DENSE_HISTOGRAM} from '../constants';
-import {ICategoricalStatistics, round} from '../internal';
-import {OrdinalColumn, isCategoricalColumn, isCategoricalLikeColumn, ICategoricalLikeColumn, ICategory, Column, CategoricalColumn, ICategoricalColumn, IDataRow, IOrderedGroup, SetColumn, BooleanColumn} from '../model';
-import {CANVAS_HEIGHT, cssClass, FILTERED_OPACITY} from '../styles';
-import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../ui/missing';
-import {IRenderContext, ICellRendererFactory, ERenderMode, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {setText, wideEnough, forEach} from './utils';
-import {color} from 'd3-color';
+import { DENSE_HISTOGRAM } from '../constants';
+import { ICategoricalStatistics, round } from '../internal';
+import {
+  OrdinalColumn,
+  isCategoricalColumn,
+  isCategoricalLikeColumn,
+  ICategoricalLikeColumn,
+  ICategory,
+  Column,
+  CategoricalColumn,
+  ICategoricalColumn,
+  IDataRow,
+  IOrderedGroup,
+  SetColumn,
+  BooleanColumn,
+} from '../model';
+import { CANVAS_HEIGHT, cssClass, FILTERED_OPACITY } from '../styles';
+import { filterMissingNumberMarkup, updateFilterMissingNumberMarkup } from '../ui/missing';
+import {
+  IRenderContext,
+  ICellRendererFactory,
+  ERenderMode,
+  ICellRenderer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+} from './interfaces';
+import { renderMissingCanvas, renderMissingDOM } from './missing';
+import { setText, wideEnough, forEach } from './utils';
+import { color } from 'd3-color';
 
 /** @internal */
 export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn | BooleanColumn;
@@ -28,8 +48,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         const v = col.getCategory(d);
-        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = v ? col.getColor(d) : null;
-        setText(<HTMLSpanElement>n.lastElementChild!, col.getLabel(d));
+        (n.firstElementChild! as HTMLDivElement).style.backgroundColor = v ? col.getColor(d) : null;
+        setText(n.lastElementChild! as HTMLSpanElement, col.getLabel(d));
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
@@ -38,12 +58,12 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         const v = col.getCategory(d);
         ctx.fillStyle = v ? col.getColor(d) : '';
         ctx.fillRect(0, 0, width, CANVAS_HEIGHT);
-      }
+      },
     };
   }
 
   createGroup(col: ICategoricalLikeColumn, context: IRenderContext): IGroupCellRenderer {
-    const {template, update} = hist(col, false);
+    const { template, update } = hist(col, false);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -58,17 +78,22 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
           }
           update(n, r.group);
         });
-      }
+      },
     };
   }
 
   createSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
-    return (col instanceof CategoricalColumn || col instanceof OrdinalColumn || col instanceof SetColumn || col instanceof BooleanColumn) ? interactiveSummary(col, context, interactive) : staticSummary(col, context, interactive);
+    return col instanceof CategoricalColumn ||
+      col instanceof OrdinalColumn ||
+      col instanceof SetColumn ||
+      col instanceof BooleanColumn
+      ? interactiveSummary(col, context, interactive)
+      : staticSummary(col, context, interactive);
   }
 }
 
 function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean) {
-  const {template, update} = hist(col, interactive);
+  const { template, update } = hist(col, interactive);
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
@@ -83,12 +108,12 @@ function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, int
         }
         update(n, r.summary);
       });
-    }
+    },
   };
 }
 
 function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, interactive: boolean) {
-  const {template, update} = hist(col, interactive || wideEnough(col));
+  const { template, update } = hist(col, interactive || wideEnough(col));
   let filterUpdate: (missing: number, col: HasCategoricalFilter) => void;
   return {
     template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
@@ -102,8 +127,8 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
         if (typeof r === 'symbol') {
           return;
         }
-        const {summary, data} = r;
-        filterUpdate((interactive && data) ? data.missing : (summary ? summary.missing : 0), col);
+        const { summary, data } = r;
+        filterUpdate(interactive && data ? data.missing : summary ? summary.missing : 0, col);
 
         const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
         n.classList.toggle(cssClass('missing'), isMissing);
@@ -112,15 +137,23 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
         }
         update(n, summary, interactive ? data : undefined);
       });
-    }
+    },
   };
 }
 
 function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
   const mapping = col.getColorMapping();
-  const bins = col.categories.map((c) => `<div class="${cssClass('histogram-bin')}" title="${c.label}: 0" data-cat="${c.name}" ${showLabels ? `data-title="${c.label}"` : ''}><div style="height: 0; background-color: ${mapping.apply(c)}"></div></div>`).join('');
-  const template = `<div class="${cssClass('histogram')} ${col.categories.length! > DENSE_HISTOGRAM ? cssClass('dense') : ''}">${bins}`; // no closing div to be able to append things
-
+  const bins = col.categories
+    .map(
+      (c) =>
+        `<div class="${cssClass('histogram-bin')}" title="${c.label}: 0" data-cat="${c.name}" ${
+          showLabels ? `data-title="${c.label}"` : ''
+        }><div style="height: 0; background-color: ${mapping.apply(c)}"></div></div>`
+    )
+    .join('');
+  const template = `<div class="${cssClass('histogram')} ${
+    col.categories.length! > DENSE_HISTOGRAM ? cssClass('dense') : ''
+  }">${bins}`; // no closing div to be able to append things
 
   return {
     template,
@@ -136,22 +169,27 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
       const maxBin = gHist ? gHist.maxBin : hist.maxBin;
       forEach(n, '[data-cat]', (d: HTMLElement, i) => {
         const cat = col.categories[i];
-        const {count} = hist.hist[i];
-        const inner = <HTMLElement>d.firstElementChild!;
+        const { count } = hist.hist[i];
+        const inner = d.firstElementChild! as HTMLElement;
         if (gHist) {
-          const {count: gCount} = gHist.hist[i];
+          const { count: gCount } = gHist.hist[i];
           d.title = `${cat.label}: ${count} of ${gCount}`;
-          inner.style.height = `${round(gCount * 100 / maxBin, 2)}%`;
-          const relY = 100 - round(count * 100 / gCount, 2);
-          inner.style.background = relY === 0 ? mapping.apply(cat) : (relY === 100 ? selected[i] : `linear-gradient(${selected[i]} ${relY}%, ${mapping.apply(cat)} ${relY}%, ${mapping.apply(cat)} 100%)`);
+          inner.style.height = `${round((gCount * 100) / maxBin, 2)}%`;
+          const relY = 100 - round((count * 100) / gCount, 2);
+          inner.style.background =
+            relY === 0
+              ? mapping.apply(cat)
+              : relY === 100
+              ? selected[i]
+              : `linear-gradient(${selected[i]} ${relY}%, ${mapping.apply(cat)} ${relY}%, ${mapping.apply(cat)} 100%)`;
         } else {
           d.title = `${col.categories[i].label}: ${count}`;
-          const inner = <HTMLElement>d.firstElementChild!;
-          inner.style.height = `${Math.round(count * 100 / maxBin)}%`;
+          const inner = d.firstElementChild! as HTMLElement;
+          inner.style.height = `${Math.round((count * 100) / maxBin)}%`;
           inner.style.background = mapping.apply(cat);
         }
       });
-    }
+    },
   };
 }
 
@@ -160,22 +198,25 @@ function setCategoricalFilter(col: HasCategoricalFilter, filter: string | RegExp
     const f = col.getFilter();
     const mode = f ? f.mode : undefined;
     col.setFilter({
-      filter, filterMissing, mode
+      filter,
+      filterMissing,
+      mode,
     });
   } else {
     col.setFilter({
-      filter, filterMissing
+      filter,
+      filterMissing,
     });
   }
 }
 
 /** @internal */
 export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
-  const bins = <HTMLElement[]>Array.from(node.querySelectorAll('[data-cat]'));
+  const bins = Array.from(node.querySelectorAll<HTMLElement>('[data-cat]'));
 
   const markFilter = (bin: HTMLElement, cat: ICategory, value: boolean) => {
     // update filter highlight eagerly for better user feedback
-    const inner = <HTMLElement>bin.firstElementChild!;
+    const inner = bin.firstElementChild! as HTMLElement;
     const base = col.getColorMapping().apply(cat);
     if (value) {
       inner.style.background = base;
@@ -200,7 +241,11 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
         markFilter(bin, cat, false);
         const included = col.categories.slice();
         included.splice(i, 1);
-        setCategoricalFilter(col, included.map((d) => d.name), old ? old.filterMissing : false);
+        setCategoricalFilter(
+          col,
+          included.map((d) => d.name),
+          old ? old.filterMissing : false
+        );
         return;
       }
       const filter = old.filter.slice();
@@ -223,8 +268,7 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
     };
   });
 
-
-  const filterMissing = <HTMLInputElement>node.getElementsByTagName('input')[0]!;
+  const filterMissing = node.getElementsByTagName('input')[0]!;
 
   if (filterMissing) {
     filterMissing.onchange = () => {
@@ -233,7 +277,11 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
       const old = col.getFilter();
       if (old == null) {
         if (v) {
-          setCategoricalFilter(col, col.categories.map((d) => d.name), v);
+          setCategoricalFilter(
+            col,
+            col.categories.map((d) => d.name),
+            v
+          );
         } else {
           col.setFilter(null);
         }
@@ -246,13 +294,12 @@ export function interactiveHist(col: HasCategoricalFilter, node: HTMLElement) {
     };
   }
 
-
   return (missing: number, actCol: HasCategoricalFilter) => {
     col = actCol;
     const f = col.getFilter();
     if (filterMissing) {
       filterMissing.checked = f != null && f.filterMissing;
-      updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, missing);
+      updateFilterMissingNumberMarkup(filterMissing.parentElement, missing);
     }
   };
 }

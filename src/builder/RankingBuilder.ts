@@ -1,10 +1,25 @@
 import {
-  Column, CompositeColumn, Ranking, ReduceColumn, StackColumn,
-  createAggregateDesc, createGroupDesc, createImpositionBoxPlotDesc, createImpositionDesc, createImpositionsDesc,
-  createNestedDesc, createRankDesc, createReduceDesc, createScriptDesc, createSelectionDesc, createStackDesc,
-  EAdvancedSortMethod, IColumnDesc, ISortCriteria
+  Column,
+  CompositeColumn,
+  Ranking,
+  ReduceColumn,
+  StackColumn,
+  createAggregateDesc,
+  createGroupDesc,
+  createImpositionBoxPlotDesc,
+  createImpositionDesc,
+  createImpositionsDesc,
+  createNestedDesc,
+  createRankDesc,
+  createReduceDesc,
+  createScriptDesc,
+  createSelectionDesc,
+  createStackDesc,
+  EAdvancedSortMethod,
+  IColumnDesc,
+  ISortCriteria,
 } from '../model';
-import {DataProvider} from '../provider';
+import type { DataProvider } from '../provider';
 
 export interface IImposeColumnBuilder {
   type: 'impose';
@@ -45,9 +60,12 @@ export interface IScriptedBuilder {
 export class RankingBuilder {
   private static readonly ALL_MAGIC_FLAG = '*';
 
-  private readonly columns: (string | {desc: IColumnDesc | ((data: DataProvider) => IColumnDesc), columns: string[], post?: (col: Column) => void })[] = [];
-  private readonly sort: {column: string, asc: boolean}[] = [];
-  private readonly groupSort: {column: string, asc: boolean}[] = [];
+  private readonly columns: (
+    | string
+    | { desc: IColumnDesc | ((data: DataProvider) => IColumnDesc); columns: string[]; post?: (col: Column) => void }
+  )[] = [];
+  private readonly sort: { column: string; asc: boolean }[] = [];
+  private readonly groupSort: { column: string; asc: boolean }[] = [];
   private readonly groups: string[] = [];
 
   /**
@@ -59,10 +77,10 @@ export class RankingBuilder {
     if (column.includes(':')) {
       // encoded sorting order
       const index = column.indexOf(':');
-      asc = <'asc' | 'desc'>column.slice(index + 1);
+      asc = column.slice(index + 1) as 'asc' | 'desc';
       column = column.slice(0, index);
     }
-    this.sort.push({column, asc: asc === true || String(asc)[0] === 'a'});
+    this.sort.push({ column, asc: asc === true || String(asc)[0] === 'a' });
     return this;
   }
 
@@ -90,10 +108,10 @@ export class RankingBuilder {
     if (column.includes(':')) {
       // encoded sorting order
       const index = column.indexOf(':');
-      asc = <'asc' | 'desc'>column.slice(index + 1);
+      asc = column.slice(index + 1) as 'asc' | 'desc';
       column = column.slice(0, index);
     }
-    this.groupSort.push({column, asc: asc === true || String(asc)[0] === 'a'});
+    this.groupSort.push({ column, asc: asc === true || String(asc)[0] === 'a' });
     return this;
   }
 
@@ -110,7 +128,9 @@ export class RankingBuilder {
    * In addition build objects for combined columns are supported.
    * @param {string | IImposeColumnBuilder | INestedBuilder | IWeightedSumBuilder | IReduceBuilder | IScriptedBuilder} column
    */
-  column(column: string | IImposeColumnBuilder | INestedBuilder | IWeightedSumBuilder | IReduceBuilder | IScriptedBuilder) {
+  column(
+    column: string | IImposeColumnBuilder | INestedBuilder | IWeightedSumBuilder | IReduceBuilder | IScriptedBuilder
+  ) {
     if (typeof column === 'string') {
       switch (column) {
         case '_aggregate':
@@ -139,10 +159,10 @@ export class RankingBuilder {
       case 'median':
       case 'mean':
         console.assert(column.columns.length >= 2);
-        return this.reduce(label, <any>column.type, column.columns[0], column.columns[1], ...column.columns.slice(2));
+        return this.reduce(label, column.type as any, column.columns[0], column.columns[1], ...column.columns.slice(2));
       case 'nested':
         console.assert(column.columns.length >= 1);
-        return this.nested(label, column.columns[0], ... column.columns.slice(1));
+        return this.nested(label, column.columns[0], ...column.columns.slice(1));
       case 'script':
         return this.scripted(label, column.code, ...column.columns);
       case 'weightedSum':
@@ -153,10 +173,15 @@ export class RankingBuilder {
           mixed.push(c);
           mixed.push(column.weights[i + 2]);
         });
-        return this.weightedSum(label, column.columns[0], column.weights[0], column.columns[1], column.weights[1], ...mixed);
+        return this.weightedSum(
+          label,
+          column.columns[0],
+          column.weights[0],
+          column.columns[1],
+          column.weights[1],
+          ...mixed
+        );
     }
-    console.error('invalid column type: ', column);
-    return this;
   }
 
   /**
@@ -168,7 +193,7 @@ export class RankingBuilder {
   impose(label: string | null, numberColumn: string, colorColumn: string) {
     this.columns.push({
       desc: (data) => {
-        const base = data.getColumns().find((d) => d.label === numberColumn || (<any>d).column === numberColumn);
+        const base = data.getColumns().find((d) => d.label === numberColumn || (d as any).column === numberColumn);
         switch (base ? base.type : '') {
           case 'boxplot':
             return createImpositionBoxPlotDesc(label ? label : undefined);
@@ -178,7 +203,7 @@ export class RankingBuilder {
             return createImpositionDesc(label ? label : undefined);
         }
       },
-      columns: [numberColumn, colorColumn]
+      columns: [numberColumn, colorColumn],
     });
     return this;
   }
@@ -192,7 +217,7 @@ export class RankingBuilder {
   nested(label: string | null, column: string, ...columns: string[]) {
     this.columns.push({
       desc: createNestedDesc(label ? label : undefined),
-      columns: [column].concat(columns)
+      columns: [column].concat(columns),
     });
     return this;
   }
@@ -204,7 +229,7 @@ export class RankingBuilder {
   composite(desc: IColumnDesc, ...columns: string[]) {
     this.columns.push({
       desc,
-      columns
+      columns,
     });
     return this;
   }
@@ -218,14 +243,21 @@ export class RankingBuilder {
    * @param {number} weight2 its weight (0..1)
    * @param {string | number} numberColumnAndWeights alternating column weight references
    */
-  weightedSum(label: string | null, numberColumn1: string, weight1: number, numberColumn2: string, weight2: number, ...numberColumnAndWeights: (string | number)[]) {
-    const weights = [weight1, weight2].concat(<number[]>numberColumnAndWeights.filter((_, i) => i % 2 === 1));
+  weightedSum(
+    label: string | null,
+    numberColumn1: string,
+    weight1: number,
+    numberColumn2: string,
+    weight2: number,
+    ...numberColumnAndWeights: (string | number)[]
+  ) {
+    const weights = [weight1, weight2].concat(numberColumnAndWeights.filter((_, i) => i % 2 === 1) as number[]);
     this.columns.push({
       desc: createStackDesc(label ? label : undefined),
-      columns: [numberColumn1, numberColumn2].concat(<string[]>numberColumnAndWeights.filter((_, i) => i % 2 === 0)),
+      columns: [numberColumn1, numberColumn2].concat(numberColumnAndWeights.filter((_, i) => i % 2 === 0) as string[]),
       post: (col) => {
-        (<StackColumn>col).setWeights(weights);
-      }
+        (col as StackColumn).setWeights(weights);
+      },
     });
     return this;
   }
@@ -238,13 +270,19 @@ export class RankingBuilder {
    * @param {string} numberColumn2 second numerical column
    * @param {string} numberColumns additional numerical columns
    */
-  reduce(label: string | null, operation: EAdvancedSortMethod, numberColumn1: string, numberColumn2: string, ...numberColumns: string[]) {
+  reduce(
+    label: string | null,
+    operation: EAdvancedSortMethod,
+    numberColumn1: string,
+    numberColumn2: string,
+    ...numberColumns: string[]
+  ) {
     this.columns.push({
       desc: createReduceDesc(label ? label : undefined),
       columns: [numberColumn1, numberColumn2].concat(numberColumns),
       post: (col) => {
-        (<ReduceColumn>col).setReduce(operation);
-      }
+        (col as ReduceColumn).setReduce(operation);
+      },
     });
     return this;
   }
@@ -257,8 +295,8 @@ export class RankingBuilder {
    */
   scripted(label: string | null, code: string, ...numberColumns: string[]) {
     this.columns.push({
-      desc: Object.assign(createScriptDesc(label ? label : undefined), {script: code}),
-      columns: numberColumns
+      desc: Object.assign(createScriptDesc(label ? label : undefined), { script: code }),
+      columns: numberColumns,
     });
     return this;
   }
@@ -269,7 +307,7 @@ export class RankingBuilder {
   selection() {
     this.columns.push({
       desc: createSelectionDesc(),
-      columns: []
+      columns: [],
     });
     return this;
   }
@@ -280,7 +318,7 @@ export class RankingBuilder {
   group() {
     this.columns.push({
       desc: createGroupDesc(),
-      columns: []
+      columns: [],
     });
     return this;
   }
@@ -291,7 +329,7 @@ export class RankingBuilder {
   aggregate() {
     this.columns.push({
       desc: createAggregateDesc(),
-      columns: []
+      columns: [],
     });
     return this;
   }
@@ -302,7 +340,7 @@ export class RankingBuilder {
   rank() {
     this.columns.push({
       desc: createRankDesc(),
-      columns: []
+      columns: [],
     });
     return this;
   }
@@ -326,7 +364,7 @@ export class RankingBuilder {
     const r = data.pushRanking();
     const cols = data.getColumns();
 
-    const findDesc = (c: string) => cols.find((d) => d.label === c || (<any>d).column === c);
+    const findDesc = (c: string) => cols.find((d) => d.label === c || (d as any).column === c);
 
     const addColumn = (c: string) => {
       const desc = findDesc(c);
@@ -355,7 +393,7 @@ export class RankingBuilder {
           console.warn('invalid column: ', ci);
           return;
         }
-        (<CompositeColumn>col).push(child);
+        (col as CompositeColumn).push(child);
       });
       if (c.post) {
         c.post(col);
@@ -366,7 +404,7 @@ export class RankingBuilder {
     {
       const groups: Column[] = [];
       this.groups.forEach((column) => {
-        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+        const col = children.find((d) => d.desc.label === column || (d as any).desc.column === column);
         if (col) {
           groups.push(col);
           return;
@@ -389,10 +427,10 @@ export class RankingBuilder {
     }
     {
       const sorts: ISortCriteria[] = [];
-      this.sort.forEach(({column, asc}) => {
-        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+      this.sort.forEach(({ column, asc }) => {
+        const col = children.find((d) => d.desc.label === column || (d as any).desc.column === column);
         if (col) {
-          sorts.push({col, asc});
+          sorts.push({ col, asc });
           return;
         }
         const desc = findDesc(column);
@@ -402,7 +440,7 @@ export class RankingBuilder {
         }
         const col2 = data.push(r, desc);
         if (col2) {
-          sorts.push({col: col2, asc});
+          sorts.push({ col: col2, asc });
           return;
         }
         console.warn('invalid sort criteria column: ', column);
@@ -413,10 +451,10 @@ export class RankingBuilder {
     }
     {
       const sorts: ISortCriteria[] = [];
-      this.groupSort.forEach(({column, asc}) => {
-        const col = children.find((d) => d.desc.label === column || (<any>d).desc.column === column);
+      this.groupSort.forEach(({ column, asc }) => {
+        const col = children.find((d) => d.desc.label === column || (d as any).desc.column === column);
         if (col) {
-          sorts.push({col, asc});
+          sorts.push({ col, asc });
           return;
         }
         const desc = findDesc(column);
@@ -426,7 +464,7 @@ export class RankingBuilder {
         }
         const col2 = data.push(r, desc);
         if (col2) {
-          sorts.push({col: col2, asc});
+          sorts.push({ col: col2, asc });
           return;
         }
         console.warn('invalid group sort criteria column: ', column);

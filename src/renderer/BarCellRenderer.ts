@@ -1,11 +1,18 @@
-import {round} from '../internal';
-import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAULT_COLOR} from '../model';
-import {setText, adaptDynamicColorToBgColor, noRenderer} from './utils';
-import {CANVAS_HEIGHT, cssClass} from '../styles';
-import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, IGroupCellRenderer, ISummaryRenderer, ICellRenderer} from './interfaces';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-
+import { round } from '../internal';
+import { Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAULT_COLOR } from '../model';
+import { setText, adaptDynamicColorToBgColor, noRenderer } from './utils';
+import { CANVAS_HEIGHT, cssClass } from '../styles';
+import { colorOf } from './impose';
+import {
+  IRenderContext,
+  ERenderMode,
+  ICellRendererFactory,
+  IImposer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+  ICellRenderer,
+} from './interfaces';
+import { renderMissingCanvas, renderMissingDOM } from './missing';
 
 export default class BarCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Bar';
@@ -15,8 +22,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
    * @type {boolean}
    */
 
-  constructor(private readonly renderValue: boolean = false) {
-  }
+  constructor(private readonly renderValue: boolean = false) {}
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return mode === ERenderMode.CELL && isNumberColumn(col) && !isNumbersColumn(col);
@@ -33,16 +39,16 @@ export default class BarCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow) => {
         const value = col.getNumber(d);
         const missing = renderMissingDOM(n, col, d);
-        const w = isNaN(value) ? 0 : round(value * 100, 2);
+        const w = Number.isNaN(value) ? 0 : round(value * 100, 2);
         const title = col.getLabel(d);
         n.title = title;
 
-        const bar = <HTMLElement>n.firstElementChild!;
+        const bar = n.firstElementChild! as HTMLElement;
         bar.style.width = missing ? '100%' : `${w}%`;
         const color = colorOf(col, d, imposer, value);
         bar.style.backgroundColor = missing ? null : color;
         setText(bar.firstElementChild!, title);
-        const item = <HTMLElement>bar.firstElementChild!;
+        const item = bar.firstElementChild! as HTMLElement;
         setText(item, title);
         adaptDynamicColorToBgColor(item, color || DEFAULT_COLOR, title, w / 100);
       },
@@ -53,9 +59,8 @@ export default class BarCellRenderer implements ICellRendererFactory {
         const value = col.getNumber(d);
         ctx.fillStyle = colorOf(col, d, imposer, value) || DEFAULT_COLOR;
         const w = width * value;
-        ctx.fillRect(0, 0, isNaN(w) ? 0 : w, CANVAS_HEIGHT);
-
-      }
+        ctx.fillRect(0, 0, Number.isNaN(w) ? 0 : w, CANVAS_HEIGHT);
+      },
     };
   }
 

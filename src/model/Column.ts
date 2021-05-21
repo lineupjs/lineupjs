@@ -1,7 +1,26 @@
-import {AEventDispatcher, ISequence, similar, fixCSS, IEventListener} from '../internal';
-import {isSortingAscByDefault} from './annotations';
-import {IColumnDump, ISortCriteria, defaultGroup, ECompareValueType, IColumnDesc, IDataRow, IGroup, IColumnParent, IColumnMetaData, IFlatColumn, ICompareValue, DEFAULT_COLOR, ITypeFactory} from './interfaces';
-import Ranking from './Ranking';
+import { AEventDispatcher, ISequence, similar, fixCSS, IEventListener } from '../internal';
+import { isSortingAscByDefault } from './annotations';
+import {
+  IColumnDump,
+  ISortCriteria,
+  defaultGroup,
+  ECompareValueType,
+  IColumnDesc,
+  IDataRow,
+  IGroup,
+  IColumnParent,
+  IColumnMetaData,
+  IFlatColumn,
+  ICompareValue,
+  ITypeFactory,
+} from './interfaces';
+import type Ranking from './Ranking';
+
+/**
+ * default color that should be used
+ * @type {string}
+ */
+export const DEFAULT_COLOR = '#C1C1C1';
 
 /**
  * emitted when the width property changes
@@ -112,7 +131,7 @@ export default class Column extends AEventDispatcher {
    * @type {number}
    * @private
    */
-  private width: number = 100;
+  private width = 100;
 
   /**
    * parent column of this column, set when added to a ranking or combined column
@@ -137,7 +156,7 @@ export default class Column extends AEventDispatcher {
     this.metadata = {
       label: desc.label || this.id,
       summary: desc.summary || '',
-      description: desc.description || ''
+      description: desc.description || '',
     };
   }
 
@@ -178,10 +197,21 @@ export default class Column extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED,
-    Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
-    Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
-    Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES]);
+    return super
+      .createEventList()
+      .concat([
+        Column.EVENT_WIDTH_CHANGED,
+        Column.EVENT_LABEL_CHANGED,
+        Column.EVENT_METADATA_CHANGED,
+        Column.EVENT_VISIBILITY_CHANGED,
+        Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+        Column.EVENT_RENDERER_TYPE_CHANGED,
+        Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+        Column.EVENT_DIRTY,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+      ]);
   }
 
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
@@ -224,7 +254,11 @@ export default class Column extends AEventDispatcher {
     if (this.visible === value) {
       return;
     }
-    this.fire([Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.visible, this.visible = value);
+    this.fire(
+      [Column.EVENT_VISIBILITY_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.visible,
+      (this.visible = value)
+    );
   }
 
   /**
@@ -237,7 +271,7 @@ export default class Column extends AEventDispatcher {
    */
   flatten(r: IFlatColumn[], offset: number, _levelsToGo = 0, _padding = 0): number {
     const w = this.getWidth();
-    r.push({col: this, offset, width: w});
+    r.push({ col: this, offset, width: w });
     return w;
   }
 
@@ -245,7 +279,11 @@ export default class Column extends AEventDispatcher {
     if (similar(this.width, value, 0.5)) {
       return;
     }
-    this.fire([Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.width, this.width = value);
+    this.fire(
+      [Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.width,
+      (this.width = value)
+    );
   }
 
   setWidthImpl(value: number) {
@@ -253,7 +291,11 @@ export default class Column extends AEventDispatcher {
   }
 
   setMetaData(value: Readonly<IColumnMetaData>) {
-    if (value.label === this.label && this.description === value.description && this.metadata.summary === value.summary) {
+    if (
+      value.label === this.label &&
+      this.description === value.description &&
+      this.metadata.summary === value.summary
+    ) {
       return;
     }
     const bak = this.getMetaData();
@@ -261,10 +303,14 @@ export default class Column extends AEventDispatcher {
     this.metadata = {
       label: value.label,
       summary: value.summary,
-      description: value.description
+      description: value.description,
     };
 
-    this.fire([Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], bak, this.getMetaData());
+    this.fire(
+      [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY],
+      bak,
+      this.getMetaData()
+    );
   }
 
   getMetaData(): Readonly<IColumnMetaData> {
@@ -317,19 +363,21 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): {asc: 'asc' | 'desc' | undefined, priority: number | undefined} {
+  private isSortedByMeImpl(
+    selector: (r: Ranking) => ISortCriteria[]
+  ): { asc: 'asc' | 'desc' | undefined; priority: number | undefined } {
     const ranker = this.findMyRanker();
     if (!ranker) {
-      return {asc: undefined, priority: undefined};
+      return { asc: undefined, priority: undefined };
     }
     const criterias = selector(ranker);
     const index = criterias.findIndex((c) => c.col === this);
     if (index < 0) {
-      return {asc: undefined, priority: undefined};
+      return { asc: undefined, priority: undefined };
     }
     return {
       asc: criterias[index].asc ? 'asc' : 'desc',
-      priority: index
+      priority: index,
     };
   }
 
@@ -417,7 +465,7 @@ export default class Column extends AEventDispatcher {
     const r: IColumnDump = {
       id: this.id,
       desc: toDescRef(this.desc),
-      width: this.width
+      width: this.width,
     };
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
@@ -448,7 +496,7 @@ export default class Column extends AEventDispatcher {
     this.metadata = {
       label: dump.label || this.label,
       summary: dump.summary || '',
-      description: this.description
+      description: this.description,
     };
     if (dump.renderer || dump.rendererType) {
       this.renderer = dump.renderer || dump.rendererType || this.renderer;
@@ -509,7 +557,11 @@ export default class Column extends AEventDispatcher {
     return Object.assign({}, defaultGroup);
   }
 
-  toCompareGroupValue(_rows: ISequence<IDataRow>, group: IGroup, _valueCache?: ISequence<any>): ICompareValue | ICompareValue[] {
+  toCompareGroupValue(
+    _rows: ISequence<IDataRow>,
+    group: IGroup,
+    _valueCache?: ISequence<any>
+  ): ICompareValue | ICompareValue[] {
     return group.name.toLowerCase();
   }
 
@@ -527,7 +579,7 @@ export default class Column extends AEventDispatcher {
 
   /**
    * clear the filter
-   * @return {boolean} whether the filtered needed to be reseted
+   * @return {boolean} whether the filtered needed to be reset
    */
   clearFilter() {
     // hook to clear the filter
@@ -564,7 +616,11 @@ export default class Column extends AEventDispatcher {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderer, this.renderer = renderer);
+    this.fire(
+      [Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.renderer,
+      (this.renderer = renderer)
+    );
   }
 
   setGroupRenderer(renderer: string) {
@@ -572,7 +628,11 @@ export default class Column extends AEventDispatcher {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.groupRenderer, this.groupRenderer = renderer);
+    this.fire(
+      [Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.groupRenderer,
+      (this.groupRenderer = renderer)
+    );
   }
 
   setSummaryRenderer(renderer: string) {
@@ -580,7 +640,11 @@ export default class Column extends AEventDispatcher {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.summaryRenderer, this.summaryRenderer = renderer);
+    this.fire(
+      [Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY],
+      this.summaryRenderer,
+      (this.summaryRenderer = renderer)
+    );
   }
 
   /**
@@ -594,7 +658,12 @@ export default class Column extends AEventDispatcher {
       case 'values':
         return this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY]);
       default:
-        return this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_CACHES, Column.EVENT_DIRTY]);
+        return this.fire([
+          Column.EVENT_DIRTY_HEADER,
+          Column.EVENT_DIRTY_VALUES,
+          Column.EVENT_DIRTY_CACHES,
+          Column.EVENT_DIRTY,
+        ]);
     }
   }
 }

@@ -1,6 +1,6 @@
-import {round, similar, dragHandle, IDragHandleOptions} from '../../internal';
-import ADialog, {IDialogContext} from './ADialog';
-import {cssClass} from '../../styles';
+import { round, similar, dragHandle, IDragHandleOptions } from '../../internal';
+import ADialog, { IDialogContext } from './ADialog';
+import { cssClass } from '../../styles';
 
 function clamp(v: number) {
   return Math.max(Math.min(v, 100), 0);
@@ -25,34 +25,55 @@ export interface IMappingAdapter {
 
 /** @internal */
 export default class MappingLineDialog extends ADialog {
-  private readonly before: {domain: number, range: number};
+  private readonly before: { domain: number; range: number };
 
-  constructor(private readonly line: {destroy(): void, domain: number, range: number, frozen: boolean, update(domain: number, range: number, trigger: boolean): void}, dialog: IDialogContext, private readonly adapter: IMappingAdapter) {
+  constructor(
+    private readonly line: {
+      destroy(): void;
+      domain: number;
+      range: number;
+      frozen: boolean;
+      update(domain: number, range: number, trigger: boolean): void;
+    },
+    dialog: IDialogContext,
+    private readonly adapter: IMappingAdapter
+  ) {
     super(dialog, {
-      livePreview: 'dataMapping'
+      livePreview: 'dataMapping',
     });
     this.dialog.attachment.classList.add(cssClass('mapping-line-selected'));
     this.before = {
       domain: this.line.domain,
-      range: this.line.range
+      range: this.line.range,
     };
   }
 
   build(node: HTMLElement) {
     const domain = this.adapter.domain();
-    node.insertAdjacentHTML('beforeend', `
-        <button class="${cssClass('dialog-button')} lu-action-remove" title="Remove" type="button" ${this.line.frozen ? 'style="display: none"' : ''} ><span style="margin-left: 3px">Remove Mapping Line</span></button>
+    node.insertAdjacentHTML(
+      'beforeend',
+      `
+        <button class="${cssClass('dialog-button')} lu-action-remove" title="Remove" type="button" ${
+        this.line.frozen ? 'style="display: none"' : ''
+      } ><span style="margin-left: 3px">Remove Mapping Line</span></button>
         <strong>Input Domain Value (min ... max)</strong>
-        <input type="number" value="${this.adapter.formatter(this.adapter.unnormalizeRaw(this.line.domain))}" ${this.line.frozen ? 'readonly disabled' : ''} autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
+        <input type="number" value="${this.adapter.formatter(this.adapter.unnormalizeRaw(this.line.domain))}" ${
+        this.line.frozen ? 'readonly disabled' : ''
+      } autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
         <strong>Output Normalized Value (0 ... 1)</strong>
         <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
-      `);
-    this.find('button').addEventListener('click', () => {
-      this.destroy('confirm');
-      this.line.destroy();
-    }, {
-      passive: true
-      });
+      `
+    );
+    this.find('button').addEventListener(
+      'click',
+      () => {
+        this.destroy('confirm');
+        this.line.destroy();
+      },
+      {
+        passive: true,
+      }
+    );
     this.enableLivePreviews('input');
   }
 
@@ -88,20 +109,27 @@ export class MappingLine {
 
   constructor(g: SVGGElement, public domain: number, public range: number, private readonly adapter: IMappingAdapter) {
     const h = 52;
-    g.insertAdjacentHTML('beforeend', `<g class="${cssClass('dialog-mapper-mapping')}" transform="translate(${domain},0)">
+    g.insertAdjacentHTML(
+      'beforeend',
+      `<g class="${cssClass('dialog-mapper-mapping')}" transform="translate(${domain},0)">
       <line x1="0" x2="${range - domain}" y2="${h}"></line>
       <line x1="0" x2="${range - domain}" y2="${h}"></line>
       <circle r="2"></circle>
       <circle cx="${range - domain}" cy="${h}" r="2"></circle>
-      <text class="${cssClass('dialog-mapper-mapping-domain')} ${domain > 25 && domain < 75 ? cssClass('dialog-mapper-mapping-middle') : ''}${domain > 75 ? cssClass('dialog-mapper-mapping-right') : ''}" dy="-3">
+      <text class="${cssClass('dialog-mapper-mapping-domain')} ${
+        domain > 25 && domain < 75 ? cssClass('dialog-mapper-mapping-middle') : ''
+      }${domain > 75 ? cssClass('dialog-mapper-mapping-right') : ''}" dy="-3">
         ${this.adapter.formatter(this.adapter.unnormalizeRaw(domain))}
       </text>
-      <text class="${cssClass('dialog-mapper-mapping-range')} ${range > 25 && range < 75 ? cssClass('dialog-mapper-mapping-middle') : ''}${range > 50 ? cssClass('dialog-mapper-mapping-right') : ''}" dy="3" x="${range - domain}" y="${h}">
+      <text class="${cssClass('dialog-mapper-mapping-range')} ${
+        range > 25 && range < 75 ? cssClass('dialog-mapper-mapping-middle') : ''
+      }${range > 50 ? cssClass('dialog-mapper-mapping-right') : ''}" dy="3" x="${range - domain}" y="${h}">
         ${round(range / 100, 3)}
       </text>
       <title>Drag the anchor circle to change the mapping, double click to edit</title>
-    </g>`);
-    this.node = <SVGGElement>g.lastElementChild!;
+    </g>`
+    );
+    this.node = g.lastElementChild! as SVGGElement;
 
     // freeze 0 and 100 domain = raw domain ones
     this.node.classList.toggle(cssClass('frozen'), similar(0, domain) || similar(domain, 100));
@@ -111,9 +139,9 @@ export class MappingLine {
       let shiftDomain: number;
       let shiftRange: number;
 
-      const normalize = (x: number) => x * 100 / g.getBoundingClientRect().width;
+      const normalize = (x: number) => (x * 100) / g.getBoundingClientRect().width;
 
-      const common: Partial<IDragHandleOptions> =  {
+      const common: Partial<IDragHandleOptions> = {
         container: g.parentElement!,
         filter: (evt) => evt.button === 0 && !evt.shiftKey,
         onStart: (_, x) => {
@@ -122,16 +150,17 @@ export class MappingLine {
           const normalized = normalize(x);
           shiftDomain = this.domain - normalized;
           shiftRange = this.range - normalized;
-        } ,
+        },
         onEnd: () => {
           if (!similar(beforeDomain, this.domain) || !similar(beforeRange, this.range)) {
             this.adapter.updated(this);
           }
-        }
+        },
       };
 
       const line = this.node.querySelector<SVGLineElement>('line:first-of-type')!;
-      dragHandle(line, { // line
+      dragHandle(line, {
+        // line
         ...common,
         onDrag: (_, x) => {
           const normalized = normalize(x);
@@ -173,8 +202,8 @@ export class MappingLine {
     const ctx = {
       manager: this.adapter.dialog.manager,
       level: this.adapter.dialog.level + 1,
-      attachment: <any>this.node,
-      idPrefix: this.adapter.dialog.idPrefix
+      attachment: this.node as any,
+      idPrefix: this.adapter.dialog.idPrefix,
     };
     const dialog = new MappingLineDialog(this, ctx, this.adapter);
     dialog.open();

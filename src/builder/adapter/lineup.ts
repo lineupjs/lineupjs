@@ -1,13 +1,45 @@
-import {IBuilderAdapter, IBuilderAdapterProps, IBuilderAdapterRankingProps, IChangeDetecter} from '.';
-import {IColumnDesc} from '../../model';
-import {deriveColors, deriveColumnDescriptions, IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider} from '../../provider';
-import {LineUp, Taggle} from '../../ui';
-import {buildRanking} from './ranking';
-import {equal, isSame, pick} from './utils';
+import type { IBuilderAdapter, IBuilderAdapterProps, IBuilderAdapterRankingProps, IChangeDetecter } from './interfaces';
+import type { IColumnDesc } from '../../model';
+import {
+  deriveColors,
+  deriveColumnDescriptions,
+  IDataProviderOptions,
+  ILocalDataProviderOptions,
+  LocalDataProvider,
+} from '../../provider';
+import { LineUp, Taggle } from '../../ui';
+import { buildRanking } from './ranking';
+import { equal, isSame, pick } from './utils';
 
-
-const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = ['singleSelection', 'filterGlobally', 'columnTypes', 'taskExecutor', 'jumpToSearchResult'];
-const lineupOptions: (keyof IBuilderAdapterProps)[] = ['animated', 'sidePanel', 'sidePanelCollapsed', 'hierarchyIndicator', 'defaultSlopeGraphMode', 'summaryHeader', 'expandLineOnHover', 'overviewMode', 'renderers', 'canRender', 'toolbarActions', 'toolbarDialogAddons', 'rowHeight', 'rowPadding', 'groupHeight', 'groupPadding', 'dynamicHeight', 'labelRotation', 'ignoreUnsupportedBrowser', 'livePreviews'];
+const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = [
+  'singleSelection',
+  'filterGlobally',
+  'columnTypes',
+  'taskExecutor',
+  'jumpToSearchResult',
+];
+const lineupOptions: (keyof IBuilderAdapterProps)[] = [
+  'animated',
+  'sidePanel',
+  'sidePanelCollapsed',
+  'hierarchyIndicator',
+  'defaultSlopeGraphMode',
+  'summaryHeader',
+  'expandLineOnHover',
+  'overviewMode',
+  'renderers',
+  'canRender',
+  'toolbarActions',
+  'toolbarDialogAddons',
+  'rowHeight',
+  'rowPadding',
+  'groupHeight',
+  'groupPadding',
+  'dynamicHeight',
+  'labelRotation',
+  'ignoreUnsupportedBrowser',
+  'livePreviews',
+];
 
 interface IRankingContext {
   builders: IBuilderAdapterRankingProps[];
@@ -35,7 +67,7 @@ export class Adapter {
     if (this.props.onSelectionChanged && !equal(this.props.selection, indices)) {
       this.props.onSelectionChanged(indices);
     }
-  }
+  };
 
   private readonly onHighlightChanged = (highlight: number) => {
     const prev = this.prevHighlight != null ? this.prevHighlight : -1;
@@ -46,11 +78,9 @@ export class Adapter {
     if (this.props.onHighlightChanged) {
       this.props.onHighlightChanged(highlight);
     }
-  }
+  };
 
-  constructor(private readonly adapter: IBuilderAdapter) {
-
-  }
+  constructor(private readonly adapter: IBuilderAdapter) {}
 
   private get props() {
     return this.adapter.props();
@@ -71,7 +101,7 @@ export class Adapter {
       columns,
       deriveColors,
       deriveColumns,
-      deriveColumnNames
+      deriveColumnNames,
     };
   }
 
@@ -82,7 +112,7 @@ export class Adapter {
       builders,
       restore: this.props.restore,
       derive: (builders.length === 0 && !this.props.restore) || Boolean(this.props.defaultRanking),
-      supportTypes: this.props.defaultRanking !== 'noSupportTypes'
+      supportTypes: this.props.defaultRanking !== 'noSupportTypes',
     };
   }
 
@@ -91,9 +121,10 @@ export class Adapter {
     const columns = ctx.columns.map((d) => Object.assign({}, d)); // work on copy
     if (ctx.deriveColumns) {
       const labels = new Set(columns.map((d) => `${d.type}@${d.label}`));
-      const derived = deriveColumnDescriptions(data, {columns: ctx.deriveColumnNames});
+      const derived = deriveColumnDescriptions(data, { columns: ctx.deriveColumnNames });
       for (const derive of derived) {
-        if (labels.has(`${derive.type}@${derive.label}`)) { // skip same name
+        if (labels.has(`${derive.type}@${derive.label}`)) {
+          // skip same name
           continue;
         }
         columns.push(derive);

@@ -1,9 +1,30 @@
-import {IDataRow, Column, AggregateGroupColumn, EAggregationState, IOrderedGroup, IGroupParent, IGroup, defaultGroup} from '../model';
-import {AGGREGATE, CANVAS_HEIGHT, cssClass} from '../styles';
-import {IRenderContext, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {IDataProvider} from '../provider';
-import {groupParents, toItemMeta, isAlwaysShowingGroupStrategy, hasTopNStrategy, isSummaryGroup} from '../provider/internal';
-import {clear} from '../internal';
+import {
+  IDataRow,
+  Column,
+  AggregateGroupColumn,
+  EAggregationState,
+  IOrderedGroup,
+  IGroupParent,
+  IGroup,
+  defaultGroup,
+} from '../model';
+import { AGGREGATE, CANVAS_HEIGHT, cssClass } from '../styles';
+import type {
+  IRenderContext,
+  ICellRendererFactory,
+  ICellRenderer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+} from './interfaces';
+import type { IDataProvider } from '../provider';
+import {
+  groupParents,
+  toItemMeta,
+  isAlwaysShowingGroupStrategy,
+  hasTopNStrategy,
+  isSummaryGroup,
+} from '../provider/internal';
+import { clear } from '../internal';
 
 function preventDefault(event: Event) {
   event.preventDefault();
@@ -12,8 +33,9 @@ function preventDefault(event: Event) {
 
 function matchNodes(node: HTMLElement, length: number, clazz = 'agg-level', addTopN = false) {
   const doc = node.ownerDocument!;
-  const children = <HTMLElement[]>Array.from(node.children);
-  if (addTopN) { // top N buttons
+  const children = Array.from(node.children) as HTMLElement[];
+  if (addTopN) {
+    // top N buttons
     length = length + 1;
   }
 
@@ -36,19 +58,29 @@ function matchNodes(node: HTMLElement, length: number, clazz = 'agg-level', addT
   return children;
 }
 
-function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: number, col: AggregateGroupColumn, provider: IDataProvider) {
+function renderGroups(
+  node: HTMLElement,
+  group: IOrderedGroup,
+  relativeIndex: number,
+  col: AggregateGroupColumn,
+  provider: IDataProvider
+) {
   const strategy = provider.getAggregationStrategy();
   const ranking = col.findMyRanker()!;
   const topNGetter = (group: IGroup) => provider.getTopNAggregated(ranking, group);
 
   const isRow = relativeIndex >= 0;
-  const isLeafGroup = !(<IGroupParent><any>group).subGroups || (<IGroupParent><any>group).subGroups.length === 0;
+  const isLeafGroup =
+    !((group as any) as IGroupParent).subGroups || ((group as any) as IGroupParent).subGroups.length === 0;
 
   const alwaysShowGroup = isAlwaysShowingGroupStrategy(strategy);
   const isSummary = !isRow && isSummaryGroup(group, strategy, topNGetter);
   const hasTopN = isSummary && isLeafGroup && hasTopNStrategy(strategy);
 
-  const parents = groupParents(group, relativeIndex >= 0 ? toItemMeta(relativeIndex, group, provider.getTopNAggregated(ranking, group)) : 'first last');
+  const parents = groupParents(
+    group,
+    relativeIndex >= 0 ? toItemMeta(relativeIndex, group, provider.getTopNAggregated(ranking, group)) : 'first last'
+  );
   const children = matchNodes(node, parents.length, 'agg-level', hasTopN);
 
   const lastParent = parents.length - 1;
@@ -102,7 +134,8 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
         let nextState: EAggregationState;
         switch (strategy) {
           case 'group+top+item':
-            nextState = state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE;
+            nextState =
+              state === EAggregationState.COLLAPSE ? EAggregationState.EXPAND_TOP_N : EAggregationState.COLLAPSE;
             break;
           case 'group':
           case 'item':
@@ -124,7 +157,10 @@ function renderGroups(node: HTMLElement, group: IOrderedGroup, relativeIndex: nu
     childTopN.title = isShowAll ? `Show Top ${provider.getShowTopN()} Only` : 'Show All';
     childTopN.onclick = (evt) => {
       preventDefault(evt);
-      col.setAggregated(parent.group, state === EAggregationState.EXPAND ? EAggregationState.EXPAND_TOP_N : EAggregationState.EXPAND);
+      col.setAggregated(
+        parent.group,
+        state === EAggregationState.EXPAND ? EAggregationState.EXPAND_TOP_N : EAggregationState.EXPAND
+      );
     };
   }
 }
@@ -152,15 +188,18 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       },
       render(ctx: CanvasRenderingContext2D, _row: IDataRow, i: number, group: IOrderedGroup) {
         if (isDummyGroup(group)) {
-          return;
+          return undefined;
         }
-        const parents = groupParents(group, toItemMeta(i, group, context.provider.getTopNAggregated(col.findMyRanker()!, group)));
+        const parents = groupParents(
+          group,
+          toItemMeta(i, group, context.provider.getTopNAggregated(col.findMyRanker()!, group))
+        );
         ctx.fillStyle = AGGREGATE.color;
         for (let i = 0; i < parents.length; ++i) {
           ctx.fillRect(AGGREGATE.levelWidth * i + AGGREGATE.levelOffset, 0, AGGREGATE.strokeWidth, CANVAS_HEIGHT);
         }
         return parents.some((d) => d.meta != null);
-      }
+      },
     };
   }
 
@@ -169,7 +208,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
       template: `<div><div class="${cssClass('agg-level')}"></div></div>`,
       update(node: HTMLElement, group: IOrderedGroup) {
         renderGroups(node, group, -1, col, context.provider);
-      }
+      },
     };
   }
 
@@ -191,19 +230,25 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
         for (let i = 0; i < max; ++i) {
           const child = children[i];
-          const subGroups = <IOrderedGroup[]>gparents.map((d) => d[i] ? d[i].group : null).filter((d) => d != null);
+          const subGroups = gparents.map((d) => (d[i] ? d[i].group : null)).filter((d) => d != null) as IOrderedGroup[];
 
-          const isCollapsed = subGroups.every((d) => context.provider.getAggregationState(ranking, d) === EAggregationState.COLLAPSE);
+          const isCollapsed = subGroups.every(
+            (d) => context.provider.getAggregationState(ranking, d) === EAggregationState.COLLAPSE
+          );
 
           child.classList.toggle(cssClass('agg-collapse'), isCollapsed);
           child.title = isCollapsed ? 'Expand All Groups' : 'Collapse All Groups';
 
           child.onclick = (evt) => {
             preventDefault(evt);
-            context.provider.aggregateAllOf(ranking, isCollapsed ? EAggregationState.EXPAND : EAggregationState.COLLAPSE, subGroups);
+            context.provider.aggregateAllOf(
+              ranking,
+              isCollapsed ? EAggregationState.EXPAND : EAggregationState.COLLAPSE,
+              subGroups
+            );
           };
         }
-      }
+      },
     };
   }
 }

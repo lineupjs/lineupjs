@@ -1,24 +1,35 @@
-import {ISequence, isSeqEmpty, empty} from '../internal';
-import {FIRST_IS_MISSING, IDataRow, ECompareValueType, ICompareValue, ICategory, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter} from '.';
-import {colorPool} from './internal';
-import {DEFAULT_COLOR} from './interfaces';
-import {ICategoricalsColumn, ISetCategoricalFilter} from './ICategoricalColumn';
+import { ISequence, isSeqEmpty, empty } from '../internal';
+import { colorPool } from './internal';
+import type {
+  ICategoricalColumn,
+  ICategoricalDesc,
+  ICategoricalFilter,
+  ICategoricalsColumn,
+  ICategory,
+  ISetCategoricalFilter,
+} from './ICategoricalColumn';
+import { DEFAULT_COLOR } from './Column';
+import type { ICompareValue, IDataRow } from './interfaces';
+import { FIRST_IS_MISSING } from './missing';
 
 /** @internal */
-export function toCategory(cat: (string | Partial<ICategory>), value: number, nextColor: () => string = () => DEFAULT_COLOR) {
+export function toCategory(
+  cat: string | Partial<ICategory>,
+  value: number,
+  nextColor: () => string = () => DEFAULT_COLOR
+) {
   if (typeof cat === 'string') {
     //just the category value
-    return {name: cat, label: cat, color: nextColor(), value};
+    return { name: cat, label: cat, color: nextColor(), value };
   }
   const name = cat.name == null ? String(cat.value) : cat.name;
   return {
     name,
     label: cat.label || name,
     color: cat.color || nextColor(),
-    value: cat.value != null ? cat.value : value
+    value: cat.value != null ? cat.value : value,
   };
 }
-
 
 /** @internal */
 export function toCompareCategoryValue(v: ICategory | null) {
@@ -28,9 +39,10 @@ export function toCompareCategoryValue(v: ICategory | null) {
   return v.value;
 }
 
-export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT_ASC;
-
-function findMostFrequent(rows: ISequence<ICategory | null>, valueCache?: ISequence<ICategory | null>): {cat: ICategory | null, count: number} {
+function findMostFrequent(
+  rows: ISequence<ICategory | null>,
+  valueCache?: ISequence<ICategory | null>
+): { cat: ICategory | null; count: number } {
   const hist = new Map<ICategory | null, number>();
 
   if (valueCache) {
@@ -46,7 +58,7 @@ function findMostFrequent(rows: ISequence<ICategory | null>, valueCache?: ISeque
   if (hist.size === 0) {
     return {
       cat: null,
-      count: 0
+      count: 0,
     };
   }
   let topCat: ICategory | null = null;
@@ -59,7 +71,7 @@ function findMostFrequent(rows: ISequence<ICategory | null>, valueCache?: ISeque
   });
   return {
     cat: topCat,
-    count: topCount
+    count: topCount,
   };
 }
 
@@ -98,23 +110,28 @@ export function toMostFrequentCategoricals(rows: ISequence<IDataRow>, col: ICate
 }
 
 /** @internal */
-export function toGroupCompareCategoryValue(rows: ISequence<IDataRow>, col: ICategoricalColumn, valueCache?: ISequence<ICategory | null>): ICompareValue[] {
+export function toGroupCompareCategoryValue(
+  rows: ISequence<IDataRow>,
+  col: ICategoricalColumn,
+  valueCache?: ISequence<ICategory | null>
+): ICompareValue[] {
   if (isSeqEmpty(rows)) {
     return [NaN, null];
   }
-  const mostFrequent = findMostFrequent(rows.map((d) => col.getCategory(d)), valueCache);
+  const mostFrequent = findMostFrequent(
+    rows.map((d) => col.getCategory(d)),
+    valueCache
+  );
   if (mostFrequent.cat == null) {
     return [NaN, null];
   }
   return [mostFrequent.cat.value, mostFrequent.cat.name.toLowerCase()];
 }
 
-export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.STRING];
-
 /** @internal */
 function compareCategory(a: ICategory | null, b: ICategory | null) {
-  const aNull = a == null || isNaN(a.value);
-  const bNull = b == null || isNaN(b.value);
+  const aNull = a == null || Number.isNaN(a.value);
+  const bNull = b == null || Number.isNaN(b.value);
   if (aNull || a == null) {
     return bNull ? 0 : FIRST_IS_MISSING;
   }
@@ -150,11 +167,15 @@ export function isEqualCategoricalFilter(a: ICategoricalFilter | null, b: ICateg
   if (a == null || b == null) {
     return isEmptyFilter(a) === isEmptyFilter(b);
   }
-  if (a.filterMissing !== b.filterMissing || (typeof a.filter !== typeof b.filter) || (Array.isArray(a.filter) !== Array.isArray(b.filter))) {
+  if (
+    a.filterMissing !== b.filterMissing ||
+    typeof a.filter !== typeof b.filter ||
+    Array.isArray(a.filter) !== Array.isArray(b.filter)
+  ) {
     return false;
   }
   if (Array.isArray(a.filter)) {
-    return arrayEquals(<string[]>a.filter, <string[]>b.filter);
+    return arrayEquals(a.filter, b.filter as string[]);
   }
   return String(a.filter) === String(b.filter);
 }
@@ -186,17 +207,20 @@ export function isCategoryIncluded(filter: ICategoricalFilter | null, category: 
   if (filter == null) {
     return true;
   }
-  if (category == null || isNaN(category.value)) {
+  if (category == null || Number.isNaN(category.value)) {
     return !filter.filterMissing;
   }
   const filterObj = filter.filter;
-  if (Array.isArray(filterObj)) { //array mode
+  if (Array.isArray(filterObj)) {
+    //array mode
     return filterObj.includes(category.name);
   }
-  if (typeof filterObj === 'string' && filterObj.length > 0) { //search mode
+  if (typeof filterObj === 'string' && filterObj.length > 0) {
+    //search mode
     return category.name.toLowerCase().includes(filterObj.toLowerCase());
   }
-  if (filterObj instanceof RegExp) { //regex match mode
+  if (filterObj instanceof RegExp) {
+    //regex match mode
     return filterObj.test(category.name);
   }
   return true;

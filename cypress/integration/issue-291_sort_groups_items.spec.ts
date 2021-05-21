@@ -1,31 +1,34 @@
-import {withLineUp, waitReady, LineUpJSType, LineUp} from './utils/lineup';
-import {generateData} from './utils/data';
+import { withLineUp, waitReady, LineUpJSType, LineUp } from './utils/lineup';
+import { generateData } from './utils/data';
 
 describe('issue #291', () => {
   let lineup: LineUp;
   let lineUpJS: LineUpJSType;
-  before(withLineUp((l, document) => {
-    lineUpJS = l;
-    const arr = generateData({
-      cat: 2
-    });
+  before(
+    withLineUp((l, document) => {
+      lineUpJS = l;
+      const arr = generateData({
+        cat: 2,
+      });
 
-    const builder = lineUpJS.builder(arr).deriveColumns().deriveColors();
+      const builder = lineUpJS.builder(arr).deriveColumns().deriveColors();
 
-    const ranking = lineUpJS.buildRanking()
-      .aggregate()
-      .allColumns() // add all columns
-      .groupBy('cat')
-      .groupBy('cat1')
-      .sortBy('number', 'desc')
-      .groupSortBy('cat', 'desc')
-      .groupSortBy('cat1', 'desc');
-    builder.ranking(ranking);
+      const ranking = lineUpJS
+        .buildRanking()
+        .aggregate()
+        .allColumns() // add all columns
+        .groupBy('cat')
+        .groupBy('cat1')
+        .sortBy('number', 'desc')
+        .groupSortBy('cat', 'desc')
+        .groupSortBy('cat1', 'desc');
+      builder.ranking(ranking);
 
-    lineup = builder.build(document.body);
+      lineup = builder.build(document.body);
 
-    waitReady(lineup);
-  }));
+      waitReady(lineup);
+    })
+  );
 
   it('item sorting influences group sorting', () => {
     cy.get('.le-tr[data-index="0"] > .lu-renderer-categorical').should('contain', 'c3');

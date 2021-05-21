@@ -1,0 +1,136 @@
+name: Release Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  correct_repository:
+    runs-on: ubuntu-latest
+    steps:
+      - name: fail on fork
+        if: github.repository_owner != 'lineupjs'
+        run: exit 1
+
+  create_release:
+    needs: correct_repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Extract version
+        id: extract_version
+        run: |
+          node -pe "'::set-output name=version::' + require('./package.json').version"
+          node -pe "'::set-output name=npm_tag::' + (require('./package.json').version.includes('-') ? 'next' : 'latest')"
+      - name: Create Release
+        id: create_release
+        uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+        with:
+          version: ${{ steps.extract_version.outputs.version }}
+          publish: true
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
+      npm_tag: ${{ steps.extract_version.outputs.npm_tag }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      tag_name: ${{ steps.create_release.outputs.tag_name }}
+
+  npm_publish:
+    needs: create_release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.1.4
+        with:
+          node-version: '14.x'
+      - run: npm i -g yarn
+      - run: yarn set version berry && yarn set version latest
+      - run: cat .yarnrc_patch.yml >> .yarnrc.yml
+      - run: yarn config set checksumBehavior ignore
+      - name: Cache Node.js modules
+        uses: actions/cache@v2.1.4
+        with:
+          path: |
+            ./.yarn
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-yarn2-v3-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn2-v3
+      - run: yarn install
+      - run: yarn clean
+      - run: yarn compile
+      - run: yarn build
+      - run: yarn lint
+      - run: yarn test:coverage
+      - run: yarn docs
+      - run: yarn cy:compile
+      - run: yarn cy:junit
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots
+            cypress/videos
+
+      - run: |
+          mkdir -p public/main
+          cp -rt public/main/ docs demo/* build/*
+          mkdir -p public/app
+          cp -rt public/app/ build/LineUpJS.* build/*.ttf build/*.eot build/*.svg
+
+      - name: Deploy Main
+        uses: upsetjs/actions-gh-pages@sgratzl
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        with:
+          personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+          external_repository: lineupjs/lineup.js.org
+          publish_branch: main
+          publish_dir: ./public
+          enable_jekyll: true
+          remove_path_spec: 'main,app/LineUpJS.*,app/*.eot,app/*.ttf,app/*.svg'
+      - name: Pack Publish
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          yarn pack
+          yarn npm publish --tag "${{ needs.create_release.outputs.npm_tag }}"
+      - name: Upload Release Asset
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: '*.tgz'
+          repo-token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+          release-tag: ${{ needs.create_release.outputs.tag_name }}
+
+  sync_dev:
+    needs: correct_repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          ref: develop
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Reset develop branch
+        run: |
+          git fetch origin main:main
+          git reset --hard main
+      - name: Create pull request into develop
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: bot/sync-main-dev
+          commit-message: 'chore: sync main-dev'
+          base: develop
+          title: 'chore: sync main->dev'
+          labels: chore
+          reviewers: sgratzl
+          assignees: sgratzl
+          body: |
+            Syncing Main->Dev.

@@ -1,9 +1,16 @@
-import {IDataRow, LinkMapColumn, Column, ILink, IKeyValue, IOrderedGroup} from '../model';
-import {IRenderContext, ERenderMode, ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {groupByKey} from './TableCellRenderer';
-import {noRenderer, noop} from './utils';
-import {cssClass} from '../styles';
+import { IDataRow, LinkMapColumn, Column, ILink, IKeyValue, IOrderedGroup } from '../model';
+import {
+  IRenderContext,
+  ERenderMode,
+  ICellRendererFactory,
+  ISummaryRenderer,
+  IGroupCellRenderer,
+  ICellRenderer,
+} from './interfaces';
+import { renderMissingDOM } from './missing';
+import { groupByKey } from './TableCellRenderer';
+import { noRenderer, noop } from './utils';
+import { cssClass } from '../styles';
 
 export default class LinkMapCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table with Links';
@@ -20,19 +27,24 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
-        node.innerHTML = col.getLinkMap(d).map(({key, value}) => `
+        node.innerHTML = col
+          .getLinkMap(d)
+          .map(
+            ({ key, value }) => `
           <div class="${cssClass('table-cell')}">${key}</div>
           <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align) : ''}">
             <a href="${value.href}" target="_blank" rel="noopener">${value.alt}</a>
-          </div>`).join('');
+          </div>`
+          )
+          .join('');
       },
-      render: noop
+      render: noop,
     };
   }
 
   private static example(arr: IKeyValue<ILink>[]) {
     const numExampleRows = 5;
-    const examples = <string[]>[];
+    const examples: string[] = [];
     for (const row of arr) {
       if (!row || !row.value.href) {
         continue;
@@ -53,19 +65,23 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupRows(col, group, 'linkmap', (rows) => groupByKey(rows.map((d) => col.getLinkMap(d)))).then((entries) => {
-          if (typeof entries === 'symbol') {
-            return;
-          }
-          node.innerHTML = entries.map(({key, values}) => {
-            const data = LinkMapCellRenderer.example(values);
-            if (!data) {
-              return `<div>${key}</div><div class="${cssClass('missing')}"></div>`;
+        return context.tasks
+          .groupRows(col, group, 'linkmap', (rows) => groupByKey(rows.map((d) => col.getLinkMap(d))))
+          .then((entries) => {
+            if (typeof entries === 'symbol') {
+              return;
             }
-            return `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${data}</div>`;
-          }).join('');
-        });
-      }
+            node.innerHTML = entries
+              .map(({ key, values }) => {
+                const data = LinkMapCellRenderer.example(values);
+                if (!data) {
+                  return `<div>${key}</div><div class="${cssClass('missing')}"></div>`;
+                }
+                return `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${data}</div>`;
+              })
+              .join('');
+          });
+      },
     };
   }
 

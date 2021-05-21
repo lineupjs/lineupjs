@@ -1,34 +1,41 @@
-import {DateColumn, IDateFilter} from '../../model';
-import {noDateFilter} from '../../model/internalDate';
-import {createDateFilter} from '../../renderer/DateHistogramCellRenderer';
-import {cssClass} from '../../styles';
-import ADialog, {IDialogContext} from './ADialog';
-import {IRankingHeaderContext} from '../interfaces';
+import type { DateColumn, IDateFilter } from '../../model';
+import { noDateFilter } from '../../model/internalDate';
+import { createDateFilter } from '../../renderer/DateHistogramCellRenderer';
+import { cssClass } from '../../styles';
+import ADialog, { IDialogContext } from './ADialog';
+import type { IRankingHeaderContext } from '../interfaces';
 
 /** @internal */
 export default class DateFilterDialog extends ADialog {
   private readonly before: IDateFilter;
-  private handler: {reset: () => void, submit: () => void, cleanUp: () => void} | null = null;
+  private handler: { reset: () => void; submit: () => void; cleanUp: () => void } | null = null;
 
-
-  constructor(private readonly column: DateColumn, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
+  constructor(
+    private readonly column: DateColumn,
+    dialog: IDialogContext,
+    private readonly ctx: IRankingHeaderContext
+  ) {
     super(dialog, {
       livePreview: 'filter',
       cancelSubDialogs: true,
     });
-    this.before = this.column.getFilter() || noDateFilter();
+    this.before = this.column.getFilter() ?? noDateFilter();
   }
 
   protected build(node: HTMLElement) {
     node.classList.add(cssClass('dialog-mapper'));
 
-    this.handler = createDateFilter(this.column, node, {
-      dialogManager: this.ctx.dialogManager,
-      idPrefix: this.ctx.idPrefix,
-      tasks: this.ctx.provider.getTaskExecutor(),
-    }, this.showLivePreviews());
+    this.handler = createDateFilter(
+      this.column,
+      node,
+      {
+        dialogManager: this.ctx.dialogManager,
+        idPrefix: this.ctx.idPrefix,
+        tasks: this.ctx.provider.getTaskExecutor(),
+      },
+      this.showLivePreviews()
+    );
   }
-
 
   cleanUp(action: 'cancel' | 'confirm' | 'handled') {
     super.cleanUp(action);

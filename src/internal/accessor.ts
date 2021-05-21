@@ -1,4 +1,4 @@
-import {IDataRow} from '../model';
+import type { IDataRow } from '../model';
 import get from 'lodash.get';
 
 /**
@@ -13,7 +13,8 @@ export function isComplexAccessor(column: any) {
  * @internal
  */
 export function resolveValue(value: any, column: string | number) {
-  if (value != null && value.hasOwnProperty(column)) { // well complex but a direct hit
+  if (value != null && value.hasOwnProperty(column)) {
+    // well complex but a direct hit
     return value[column];
   }
   return get(value, column);
@@ -26,7 +27,6 @@ export function rowComplexGetter(row: IDataRow, desc: any) {
   return resolveValue(row.v, desc.column);
 }
 
-
 /**
  * simple row getter
  * @internal
@@ -34,7 +34,6 @@ export function rowComplexGetter(row: IDataRow, desc: any) {
 export function rowGetter(row: IDataRow, desc: any) {
   return row.v[desc.column];
 }
-
 
 /**
  * @internal
@@ -46,4 +45,3 @@ export function rowGuessGetter(row: IDataRow, desc: any) {
   }
   return rowGetter(row, desc);
 }
-

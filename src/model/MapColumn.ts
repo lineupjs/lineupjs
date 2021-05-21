@@ -1,20 +1,20 @@
-import {Category} from './annotations';
-import {IKeyValue, IMapColumn} from './IArrayColumn';
-import {IDataRow, IValueColumnDesc} from './interfaces';
+import { Category } from './annotations';
+import type { IKeyValue, IMapColumn } from './IArrayColumn';
+import type { IDataRow, IValueColumnDesc } from './interfaces';
 import ValueColumn from './ValueColumn';
-import {integrateDefaults} from './internal';
+import { integrateDefaults } from './internal';
 
-export interface IMapColumnDesc<T> extends IValueColumnDesc<IKeyValue<T>[]> {
-  // dummy
-}
+export type IMapColumnDesc<T> = IValueColumnDesc<IKeyValue<T>[]>;
 
 @Category('map')
 export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements IMapColumn<T> {
-
   constructor(id: string, desc: Readonly<IMapColumnDesc<T>>) {
-    super(id, integrateDefaults(desc, {
-      width: 200
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: 200,
+      })
+    );
   }
 
   getValue(row: IDataRow) {
@@ -24,11 +24,11 @@ export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements
 
   getLabels(row: IDataRow): IKeyValue<string>[] {
     const v = this.getMap(row);
-    return v.map(({key, value}) => ({key, value: String(value)}));
+    return v.map(({ key, value }) => ({ key, value: String(value) }));
   }
 
   getMap(row: IDataRow) {
-    return toKeyValue<T>(<any>super.getValue(row));
+    return toKeyValue<T>(super.getValue(row));
   }
 
   getMapLabel(row: IDataRow) {
@@ -37,7 +37,7 @@ export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements
 
   getLabel(row: IDataRow) {
     const v = this.getLabels(row);
-    return `{${v.map(({key, value}) => `${key}: ${value}`).join(', ')}}`;
+    return `{${v.map(({ key, value }) => `${key}: ${value}`).join(', ')}}`;
   }
 }
 
@@ -53,11 +53,15 @@ function toKeyValue<T>(v?: Map<string, T> | { [key: string]: T } | IKeyValue<T>[
     return [];
   }
   if (v instanceof Map) {
-    return Array.from(v.entries()).map(([key, value]) => ({key, value})).sort(byKey);
+    return Array.from(v.entries())
+      .map(([key, value]) => ({ key, value }))
+      .sort(byKey);
   }
   if (Array.isArray(v)) {
     return v; // keep original order
   }
   // object
-  return Object.keys(v).map((key) => ({key, value: v[key]})).sort(byKey);
+  return Object.keys(v)
+    .map((key) => ({ key, value: v[key] }))
+    .sort(byKey);
 }

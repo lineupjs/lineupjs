@@ -1,16 +1,27 @@
-import {forEach} from '../../renderer/utils';
-import {cssClass} from '../../styles';
-import {getSortLabel} from '../../internal';
-import {IToolbarDialogAddonHandler} from '../interfaces';
+import { forEach } from '../../renderer/utils';
+import { cssClass } from '../../styles';
+import { getSortLabel } from '../../internal';
+import type { IToolbarDialogAddonHandler } from '../interfaces';
 
 /** @internal */
-export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string): void, getSortMethod(): string}, methods: string[]): IToolbarDialogAddonHandler {
+export function sortMethods(
+  node: HTMLElement,
+  column: { setSortMethod(v: string): void; getSortMethod(): string },
+  methods: string[]
+): IToolbarDialogAddonHandler {
   const bak = column.getSortMethod();
-  methods.forEach((d) => node.insertAdjacentHTML('beforeend', `<label class="${cssClass('checkbox')}"><input type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} ><span>${getSortLabel(d)}</span></label>`));
+  methods.forEach((d) =>
+    node.insertAdjacentHTML(
+      'beforeend',
+      `<label class="${cssClass('checkbox')}"><input type="radio" name="multivaluesort" value="${d}"  ${
+        bak === d ? 'checked' : ''
+      } ><span>${getSortLabel(d)}</span></label>`
+    )
+  );
 
   forEach(node, 'input[name=multivaluesort]', (n: HTMLInputElement) => {
     n.addEventListener('change', () => column.setSortMethod(n.value), {
-      passive: true
+      passive: true,
     });
   });
 
@@ -26,10 +37,9 @@ export function sortMethods(node: HTMLElement, column: {setSortMethod(v: string)
     },
     reset() {
       node.querySelector<HTMLInputElement>(`input[name=multivaluesort][value="${bak}"]`)!.checked = true;
-    }
+    },
   };
 }
 
-
 /** @internal */
-export {uniqueId, forEach, forEachChild, colorOf} from '../../renderer/utils';
+export { uniqueId, forEach, forEachChild, colorOf } from '../../renderer/utils';

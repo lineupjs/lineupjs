@@ -1,5 +1,5 @@
-import {IDialogContext} from './ADialog';
-import {timeFormat} from 'd3-time-format';
+import type { IDialogContext } from './ADialog';
+import { timeFormat } from 'd3-time-format';
 import APopup from './APopup';
 
 /** @internal */
@@ -10,13 +10,16 @@ export interface IInputDateOptions {
 
 /** @internal */
 export default class InputDateDialog extends APopup {
-
   private readonly ioptions: Readonly<IInputDateOptions> = {
     value: null,
-    label: null
+    label: null,
   };
 
-  constructor(dialog: IDialogContext, private readonly callback: (value: Date | null) => void, options: Partial<IInputDateOptions> = {}) {
+  constructor(
+    dialog: IDialogContext,
+    private readonly callback: (value: Date | null) => void,
+    options: Partial<IInputDateOptions> = {}
+  ) {
     super(dialog);
     Object.assign(this.ioptions, options);
   }
@@ -26,9 +29,14 @@ export default class InputDateDialog extends APopup {
 
     const f = timeFormat('%Y-%m-%d');
 
-    node.insertAdjacentHTML('beforeend', `
-     <input type="date" value="${o.value ? f(o.value) : ''}" required autofocus placeholder="${o.label ? o.label : 'enter date'}">
-    `);
+    node.insertAdjacentHTML(
+      'beforeend',
+      `
+     <input type="date" value="${o.value ? f(o.value) : ''}" required autofocus placeholder="${
+        o.label ? o.label : 'enter date'
+      }">
+    `
+    );
     this.findInput('input[type=date]').addEventListener('keypress', (evt) => {
       if (evt.key === 'Enter') {
         this.triggerSubmit();

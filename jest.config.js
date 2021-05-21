@@ -1,19 +1,11 @@
+/* eslint-env node */
+
 module.exports = {
-  transform: {
-    '^.+\\.(t|j)sx?$': 'ts-jest'
-  },
-  testRegex: "tests/.*\\.spec\\.(ts|tsx)$",
-  moduleFileExtensions: [
-    'ts',
-    'tsx',
-    'js'
-  ],
-  verbose: true,
+  preset: 'ts-jest',
+  testRegex: '/tests/.*\\.spec\\.(ts|tsx|js)$',
   globals: {
     'ts-jest': {
-      tsConfig: 'tsconfig.test.json',
-      diagnostics: true,
-      babelConfig: false
-    }
-  }
+      tsconfig: 'tsconfig.test.json',
+    },
+  },
 };

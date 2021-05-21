@@ -1,8 +1,8 @@
-import {ILineUpOptions, defaultOptions} from '../config';
-import {merge, suffix} from '../internal';
-import {DataProvider} from '../provider';
-import {cssClass} from '../styles';
-import {ALineUp} from './ALineUp';
+import { ILineUpOptions, defaultOptions } from '../config';
+import { merge, suffix } from '../internal';
+import type { DataProvider } from '../provider';
+import { cssClass } from '../styles';
+import { ALineUp } from './ALineUp';
 import EngineRenderer from './EngineRenderer';
 import SidePanel from './panel/SidePanel';
 
@@ -30,19 +30,26 @@ export default class LineUp extends ALineUp {
 
     this.node.classList.add(cssClass());
 
-
     this.renderer = new EngineRenderer(data, this.node, this.options);
     if (this.options.sidePanel) {
       this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument!, {
         collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true,
-        hierarchy: this.options.hierarchyIndicator && this.options.flags.advancedRankingFeatures
+        hierarchy: this.options.hierarchyIndicator && this.options.flags.advancedRankingFeatures,
       });
       this.renderer.pushUpdateAble((ctx) => this.panel!.update(ctx));
       this.node.insertBefore(this.panel.node, this.node.firstChild);
     } else {
       this.panel = null;
     }
-    this.forward(this.renderer, ...suffix('.main', EngineRenderer.EVENT_HIGHLIGHT_CHANGED, EngineRenderer.EVENT_DIALOG_OPENED, EngineRenderer.EVENT_DIALOG_CLOSED));
+    this.forward(
+      this.renderer,
+      ...suffix(
+        '.main',
+        EngineRenderer.EVENT_HIGHLIGHT_CHANGED,
+        EngineRenderer.EVENT_DIALOG_OPENED,
+        EngineRenderer.EVENT_DIALOG_CLOSED
+      )
+    );
   }
 
   destroy() {
@@ -74,7 +81,7 @@ export default class LineUp extends ALineUp {
     }
   }
 
-  setHighlight(dataIndex: number, scrollIntoView: boolean = true) {
+  setHighlight(dataIndex: number, scrollIntoView = true) {
     return this.renderer != null && this.renderer.setHighlight(dataIndex, scrollIntoView);
   }
 

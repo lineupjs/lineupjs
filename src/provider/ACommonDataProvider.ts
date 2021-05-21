@@ -1,8 +1,7 @@
-import {IColumnDesc, Ranking} from '../model';
+import { IColumnDesc, Ranking } from '../model';
 import ADataProvider from './ADataProvider';
-import {IDataProviderDump, IDataProviderOptions} from './interfaces';
-import {isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter} from '../internal';
-
+import type { IDataProviderDump, IDataProviderOptions } from './interfaces';
+import { isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter } from '../internal';
 
 function injectAccessor(d: any) {
   d.accessor = d.accessor || (d.column ? (isComplexAccessor(d.column) ? rowComplexGetter : rowGetter) : rowGuessGetter);
@@ -14,7 +13,6 @@ function injectAccessor(d: any) {
  * common base implementation of a DataProvider with a fixed list of column descriptions
  */
 abstract class ACommonDataProvider extends ADataProvider {
-
   private rankingIndex = 0;
 
   constructor(private columns: IColumnDesc[] = [], options: Partial<IDataProviderOptions> = {}) {
@@ -27,7 +25,8 @@ abstract class ACommonDataProvider extends ADataProvider {
     const id = this.nextRankingId();
     const clone = new Ranking(id);
 
-    if (existing) { //copy the ranking of the other one
+    if (existing) {
+      //copy the ranking of the other one
       //TODO better cloning
       existing.children.forEach((child) => {
         this.push(clone, child.desc);
@@ -66,7 +65,9 @@ abstract class ACommonDataProvider extends ADataProvider {
     if (i < 0) {
       return false;
     }
-    const isUsed = ignoreBeingUsed ? false : this.getRankings().some((d) => d.flatColumns.some((c) => c.desc === column));
+    const isUsed = ignoreBeingUsed
+      ? false
+      : this.getRankings().some((d) => d.flatColumns.some((c) => c.desc === column));
     if (isUsed) {
       return false;
     }
@@ -80,7 +81,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   }
 
   findDesc(ref: string) {
-    return this.columns.filter((c) => (<any>c).column === ref)[0];
+    return this.columns.filter((c) => (c as any).column === ref)[0];
   }
 
   /**
@@ -93,10 +94,12 @@ abstract class ACommonDataProvider extends ADataProvider {
   }
 
   fromDescRef(descRef: any): any {
-    if (typeof (descRef) === 'string') {
+    if (typeof descRef === 'string') {
       return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef || d.type === descRef);
     }
-    const existing = this.columns.find((d) => descRef.column === (<any>d).column && descRef.label === d.label && descRef.type === d.type);
+    const existing = this.columns.find(
+      (d) => descRef.column === (d as any).column && descRef.label === d.label && descRef.type === d.type
+    );
     if (existing) {
       return existing;
     }

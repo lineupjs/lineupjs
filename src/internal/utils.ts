@@ -1,3 +1,14 @@
+import * as equalImpl from 'fast-deep-equal';
+
+// keep here to have a "real" export for webpack not just interfaces
+
+/**
+ * deep equal comparison
+ */
+export function equal(a: any, b: any): boolean {
+  const f = typeof equalImpl === 'function' ? equalImpl : (equalImpl as any).default;
+  return f(a, b);
+}
 
 /** @internal */
 export function equalArrays<T>(a: T[], b: T[]) {
@@ -7,7 +18,6 @@ export function equalArrays<T>(a: T[], b: T[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
-
 /**
  * converts a given id to css compatible one
  * @param id
@@ -15,7 +25,7 @@ export function equalArrays<T>(a: T[], b: T[]) {
  * @internal
  */
 export function fixCSS(id: string) {
-  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]+/g, '_'); //replace non css stuff to _
+  return id.replace(/[\s!#$%&'()*+,./:;<=>?@[\\\]^`{|}~]+/g, '_'); //replace non css stuff to _
 }
 
 /**
@@ -49,7 +59,6 @@ export function concat<T>(arrs: (T[] | T)[]): T[] {
   return r;
 }
 
-
 /**
  * generates a label for the given sort method
  * @internal
@@ -58,7 +67,7 @@ export function concat<T>(arrs: (T[] | T)[]): T[] {
 export function getSortLabel(method: string) {
   switch (method) {
     case 'min':
-      return 'Mininum';
+      return 'Minimum';
     case 'max':
       return 'Maximum';
     case 'median':

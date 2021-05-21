@@ -1,8 +1,8 @@
-import {IForEachAble} from '../internal';
+import type { IForEachAble } from '../internal';
 import Column from './Column';
-import {IColumnDesc, IDataRow} from './interfaces';
-import {INumberFilter} from './INumberColumn';
-import {IArrayColumn} from './IArrayColumn';
+import type { IColumnDesc, IDataRow } from './interfaces';
+import type { INumberFilter } from './INumberColumn';
+import type { IArrayColumn } from './IArrayColumn';
 
 export interface IDateColumn extends Column {
   getFormatter(): (v: Date | null) => string;
@@ -33,7 +33,6 @@ export interface IDateDesc {
   dateParse?: string;
 }
 
-
 /**
  * checks whether the given column or description is a date column, i.e. the value is a date
  * @param col
@@ -42,20 +41,34 @@ export interface IDateDesc {
 export function isDateColumn(col: Column): col is IDateColumn;
 export function isDateColumn(col: IColumnDesc): col is IDateDesc & IColumnDesc;
 export function isDateColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<IDateColumn>col).getDate === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.startsWith('date')));
+  return (
+    (col instanceof Column && typeof (col as IDateColumn).getDate === 'function') ||
+    (!(col instanceof Column) && (col as IColumnDesc).type.startsWith('date'))
+  );
 }
 
 export function isDatesColumn(col: Column): col is IDatesColumn {
-  return typeof (<IDatesColumn>col).getDates === 'function';
+  return typeof (col as IDatesColumn).getDates === 'function';
 }
 
 export declare type IDateFilter = INumberFilter;
 
-export declare type IDateGranularity = 'century' | 'decade' | 'year' | 'month' | 'week' | 'day_of_week' | 'day_of_month' | 'day_of_year' | 'hour' | 'minute' | 'second';
+export declare type IDateGranularity =
+  | 'century'
+  | 'decade'
+  | 'year'
+  | 'month'
+  | 'week'
+  | 'day_of_week'
+  | 'day_of_month'
+  | 'day_of_year'
+  | 'hour'
+  | 'minute'
+  | 'second';
 
 export interface IDateGrouper {
   /**
-   * granuality level for the grouping
+   * granularity level for the grouping
    */
   granularity: IDateGranularity;
   /**

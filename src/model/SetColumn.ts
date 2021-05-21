@@ -1,14 +1,34 @@
-import {Category, toolbar} from './annotations';
+import { Category, toolbar } from './annotations';
 import CategoricalColumn from './CategoricalColumn';
-import Column, {labelChanged, metaDataChanged, dirty, widthChanged, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {IArrayColumn} from './IArrayColumn';
-import {ICategoricalDesc, ISetCategoricalFilter, ICategory, ISetColumn, ICategoricalColorMappingFunction} from './ICategoricalColumn';
-import {IDataRow, ECompareValueType, IValueColumnDesc, IGroup, DEFAULT_COLOR, ITypeFactory} from './interfaces';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IEventListener} from '../internal';
-import {DEFAULT_CATEGORICAL_COLOR_FUNCTION} from './CategoricalColorMappingFunction';
-import {toCategories, isCategoryIncluded, isEqualSetCategoricalFilter} from './internalCategorical';
-import {chooseUIntByDataLength, integrateDefaults} from './internal';
+import Column, {
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  widthChanged,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+  DEFAULT_COLOR,
+} from './Column';
+import type { IArrayColumn } from './IArrayColumn';
+import type {
+  ICategoricalDesc,
+  ISetCategoricalFilter,
+  ICategory,
+  ISetColumn,
+  ICategoricalColorMappingFunction,
+} from './ICategoricalColumn';
+import { IDataRow, ECompareValueType, IValueColumnDesc, IGroup, ITypeFactory } from './interfaces';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import type { IEventListener } from '../internal';
+import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
+import { toCategories, isCategoryIncluded, isEqualSetCategoricalFilter } from './internalCategorical';
+import { chooseUIntByDataLength, integrateDefaults } from './internal';
 
 export interface ISetDesc extends ICategoricalDesc {
   separator?: string;
@@ -21,15 +41,20 @@ export declare type ISetColumnDesc = ISetDesc & IValueColumnDesc<string[]>;
  * @asMemberOf SetColumn
  * @event
  */
-export declare function colorMappingChanged_SSC(previous: ICategoricalColorMappingFunction, current: ICategoricalColorMappingFunction): void;
-
+export declare function colorMappingChanged_SSC(
+  previous: ICategoricalColorMappingFunction,
+  current: ICategoricalColorMappingFunction
+): void;
 
 /**
  * emitted when the filter property changes
  * @asMemberOf SetColumn
  * @event
  */
-export declare function filterChanged_SSC(previous: ISetCategoricalFilter | null, current: ISetCategoricalFilter | null): void;
+export declare function filterChanged_SSC(
+  previous: ISetCategoricalFilter | null,
+  current: ISetCategoricalFilter | null
+): void;
 
 /**
  * a string column with optional alignment
@@ -55,11 +80,14 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   private currentFilter: ISetCategoricalFilter | null = null;
 
   constructor(id: string, desc: Readonly<ISetColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      renderer: 'upset',
-      groupRenderer: 'upset',
-      summaryRenderer: 'categorical'
-    }));
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'upset',
+        groupRenderer: 'upset',
+        summaryRenderer: 'categorical',
+      })
+    );
     this.separator = new RegExp(desc.separator || ';');
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
@@ -86,7 +114,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   get labels() {
@@ -106,7 +134,9 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   getLabel(row: IDataRow) {
-    return `(${this.getSortedSet(row).map((d) => d.label).join(',')})`;
+    return `(${this.getSortedSet(row)
+      .map((d) => d.label)
+      .join(',')})`;
   }
 
   private normalize(v: any) {
@@ -135,7 +165,9 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   getSortedSet(row: IDataRow) {
-    return Array.from(this.getSet(row)).sort((a, b) => a.value === b.value ? a.label.localeCompare(b.label) : a.value - b.value);
+    return Array.from(this.getSet(row)).sort((a, b) =>
+      a.value === b.value ? a.label.localeCompare(b.label) : a.value - b.value
+    );
   }
 
   getCategories(row: IDataRow) {
@@ -154,7 +186,6 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return CategoricalColumn.prototype.setColorMapping.call(this, mapping);
   }
 
-
   getValues(row: IDataRow) {
     const s = this.getSet(row);
     return this.categories.map((d) => s.has(d));
@@ -165,11 +196,11 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
   }
 
   getMap(row: IDataRow) {
-    return this.getSortedSet(row).map((d) => ({key: d.label, value: true}));
+    return this.getSortedSet(row).map((d) => ({ key: d.label, value: true }));
   }
 
   getMapLabel(row: IDataRow) {
-    return this.getSortedSet(row).map((d) => ({key: d.label, value: 'true'}));
+    return this.getSortedSet(row).map((d) => ({ key: d.label, value: 'true' }));
   }
 
   iterCategory(row: IDataRow) {
@@ -196,7 +227,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     }
     const bak = dump.filter;
     if (typeof bak === 'string' || Array.isArray(bak)) {
-      this.currentFilter = {filter: bak, filterMissing: false, mode: 'some'};
+      this.currentFilter = { filter: bak, filterMissing: false, mode: 'some' };
     } else {
       this.currentFilter = bak;
     }
@@ -228,7 +259,11 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     if (isEqualSetCategoricalFilter(this.currentFilter, filter)) {
       return;
     }
-    this.fire([CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    this.fire(
+      [CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.currentFilter,
+      (this.currentFilter = filter)
+    );
   }
 
   clearFilter() {
@@ -258,13 +293,13 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
 
     const g: IGroup = {
       name: categories.length === 0 ? 'None' : categories.map((d) => d.name).join(', '),
-      color: categories.length === 1 ? categories[0].color : DEFAULT_COLOR
+      color: categories.length === 1 ? categories[0].color : DEFAULT_COLOR,
     };
 
     g.parent = {
       name: `#${cardinality}`,
       color: DEFAULT_COLOR,
-      subGroups: [g]
+      subGroups: [g],
     };
 
     return g;

@@ -1,17 +1,30 @@
-import {Column, Ranking, IColumnConstructor, IColumnDesc, IGroup, IndicesArray, IDataRow, IRankingDump, EAggregationState, IColorMappingFunctionConstructor, IMappingFunctionConstructor, ITypeFactory} from '../model';
-import {AEventDispatcher, ISequence} from '../internal';
-import {IRenderTasks} from '../renderer';
-import {IAbortAblePromise as IAbortAblePromiseImpl} from 'lineupengine';
+import type {
+  Column,
+  Ranking,
+  IColumnConstructor,
+  IColumnDesc,
+  IGroup,
+  IndicesArray,
+  IDataRow,
+  IRankingDump,
+  EAggregationState,
+  IColorMappingFunctionConstructor,
+  IMappingFunctionConstructor,
+  ITypeFactory,
+} from '../model';
+import type { AEventDispatcher, ISequence } from '../internal';
+import type { IRenderTasks } from '../renderer';
+import type { IAbortAblePromise as IAbortAblePromiseImpl } from 'lineupengine';
 
-export {ABORTED} from 'lineupengine';
+export { ABORTED } from 'lineupengine';
 export declare type IAbortAblePromise<T> = IAbortAblePromiseImpl<T>;
 
 export declare type IAggregationStrategy = 'group' | 'item' | 'group+item' | 'group+top+item' | 'group+item+top';
 
 export interface IDataProviderOptions {
-  columnTypes: {[columnType: string]: IColumnConstructor};
-  colorMappingFunctionTypes: {[colorMappingFunctionType: string]: IColorMappingFunctionConstructor};
-  mappingFunctionTypes: {[mappingFunctionType: string]: IMappingFunctionConstructor};
+  columnTypes: { [columnType: string]: IColumnConstructor };
+  colorMappingFunctionTypes: { [colorMappingFunctionType: string]: IColorMappingFunctionConstructor };
+  mappingFunctionTypes: { [mappingFunctionType: string]: IMappingFunctionConstructor };
 
   /**
    * allow just single selected rows
@@ -39,7 +52,7 @@ export interface IDataProviderOptions {
 }
 
 export interface IDataProvider extends AEventDispatcher {
-  readonly columnTypes: {[columnType: string]: IColumnConstructor};
+  readonly columnTypes: { [columnType: string]: IColumnConstructor };
 
   getTotalNumberOfRows(): number;
 
@@ -106,12 +119,10 @@ export interface IDataProvider extends AEventDispatcher {
   clearFilters(): void;
 }
 
-
-
 export const SCHEMA_REF = `https://lineup.js.org/develop/schema.4.0.0.json`;
 
 export interface IDataProviderDump {
-  '$schema'?: string;
+  $schema?: string;
   /**
    * base for generating new uids
    */
@@ -125,7 +136,7 @@ export interface IDataProviderDump {
   /**
    * list of aggregated group paths
    */
-  aggregations?: string[] | {[key: string]: number};
+  aggregations?: string[] | { [key: string]: number };
   /**
    * ranking dumps
    */
@@ -136,8 +147,6 @@ export interface IDataProviderDump {
    */
   showTopN?: number;
 }
-
-
 
 export interface IDeriveOptions {
   /**
@@ -153,7 +162,6 @@ export interface IDeriveOptions {
    */
   datePattern: string | string[];
 }
-
 
 export interface IExportOptions {
   /**

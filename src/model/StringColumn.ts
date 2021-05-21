@@ -1,21 +1,42 @@
-import {Category, toolbar, dialogAddons} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import {defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, othersGroup, ITypeFactory} from './interfaces';
-import {missingGroup, isMissingValue} from './missing';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {equal, IEventListener, ISequence, isSeqEmpty} from '../internal';
-import {integrateDefaults} from './internal';
+import { Category, toolbar, dialogAddons } from './annotations';
+import Column, {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import {
+  defaultGroup,
+  IDataRow,
+  IGroup,
+  ECompareValueType,
+  IValueColumnDesc,
+  othersGroup,
+  ITypeFactory,
+} from './interfaces';
+import { missingGroup, isMissingValue } from './missing';
+import type { dataLoaded } from './ValueColumn';
+import ValueColumn from './ValueColumn';
+import { equal, IEventListener, ISequence, isSeqEmpty } from '../internal';
+import { integrateDefaults } from './internal';
 
 export enum EAlignment {
   left = 'left',
   center = 'center',
-  right = 'right'
+  right = 'right',
 }
 
 export enum EStringGroupCriteriaType {
   value = 'value',
   startsWith = 'startsWith',
-  regex = 'regex'
+  regex = 'regex',
 }
 
 export interface IStringGroupCriteria {
@@ -36,7 +57,6 @@ export interface IStringDesc {
   escape?: boolean;
 }
 
-
 export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 
 export interface IStringFilter {
@@ -50,7 +70,6 @@ export interface IStringFilter {
  * @event
  */
 export declare function filterChanged_SC(previous: string | RegExp | null, current: string | RegExp | null): void;
-
 
 /**
  * emitted when the grouping property changes
@@ -78,17 +97,19 @@ export default class StringColumn extends ValueColumn<string> {
 
   private currentGroupCriteria: IStringGroupCriteria = {
     type: EStringGroupCriteriaType.startsWith,
-    values: []
+    values: [],
   };
 
   constructor(id: string, desc: Readonly<IStringColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      width: 200
-    }));
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: 200,
+      })
+    );
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
   }
-
 
   protected createEventList() {
     return super.createEventList().concat([StringColumn.EVENT_GROUPING_CHANGED, StringColumn.EVENT_FILTER_CHANGED]);
@@ -110,7 +131,7 @@ export default class StringColumn extends ValueColumn<string> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow): string | null {
@@ -125,15 +146,17 @@ export default class StringColumn extends ValueColumn<string> {
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     if (this.currentFilter instanceof RegExp) {
-      r.filter = `REGEX:${(<RegExp>this.currentFilter).source}`;
+      r.filter = `REGEX:${(this.currentFilter as RegExp).source}`;
     } else {
       r.filter = this.currentFilter;
     }
     if (this.currentGroupCriteria) {
-      const {type, values} = this.currentGroupCriteria;
+      const { type, values } = this.currentGroupCriteria;
       r.groupCriteria = {
         type,
-        values: values.map((value) => value instanceof RegExp && type === EStringGroupCriteriaType.regex ? value.source : value)
+        values: values.map((value) =>
+          value instanceof RegExp && type === EStringGroupCriteriaType.regex ? value.source : value
+        ),
       };
     }
     return r;
@@ -145,26 +168,29 @@ export default class StringColumn extends ValueColumn<string> {
       const filter = dump.filter;
       if (typeof filter === 'string') {
         // compatibility case
-        if ((<string>filter).startsWith('REGEX:')) {
+        if (filter.startsWith('REGEX:')) {
           this.currentFilter = {
             filter: new RegExp(filter.slice(6), 'm'),
-            filterMissing: false
+            filterMissing: false,
           };
         } else if (filter === StringColumn.FILTER_MISSING) {
           this.currentFilter = {
             filter: null,
-            filterMissing: true
+            filterMissing: true,
           };
         } else {
           this.currentFilter = {
             filter,
-            filterMissing: false
+            filterMissing: false,
           };
         }
       } else {
         this.currentFilter = {
-          filter: filter.filter && (<string>filter.filter).startsWith('REGEX:') ? new RegExp(filter.slice(6), 'm') : filter.filter || '',
-          filterMissing: filter.filterMissing === true
+          filter:
+            filter.filter && (filter.filter as string).startsWith('REGEX:')
+              ? new RegExp(filter.slice(6), 'm')
+              : filter.filter || '',
+          filterMissing: filter.filterMissing === true,
         };
       }
     } else {
@@ -173,10 +199,12 @@ export default class StringColumn extends ValueColumn<string> {
 
     // tslint:disable-next-line: early-exit
     if (dump.groupCriteria) {
-      const {type, values} = <IStringGroupCriteria>dump.groupCriteria;
+      const { type, values } = dump.groupCriteria as IStringGroupCriteria;
       this.currentGroupCriteria = {
         type,
-        values: values.map((value) => type === EStringGroupCriteriaType.regex ? new RegExp(<string>value, 'm') : value)
+        values: values.map((value) =>
+          type === EStringGroupCriteriaType.regex ? new RegExp(value as string, 'm') : value
+        ),
       };
     }
   }
@@ -213,13 +241,22 @@ export default class StringColumn extends ValueColumn<string> {
     if (filter === this.currentFilter) {
       return;
     }
-    const current = this.currentFilter || {filter: null, filterMissing: false};
-    const target = filter || {filter: null, filterMissing: false};
-    if (current.filterMissing === target.filterMissing && (current.filter === target.filter ||
-      (current.filter instanceof RegExp && target.filter instanceof RegExp && current.filter.source === target.filter.source))) {
+    const current = this.currentFilter || { filter: null, filterMissing: false };
+    const target = filter || { filter: null, filterMissing: false };
+    if (
+      current.filterMissing === target.filterMissing &&
+      (current.filter === target.filter ||
+        (current.filter instanceof RegExp &&
+          target.filter instanceof RegExp &&
+          current.filter.source === target.filter.source))
+    ) {
       return;
     }
-    this.fire([StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    this.fire(
+      [StringColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.currentFilter,
+      (this.currentFilter = filter)
+    );
   }
 
   clearFilter() {
@@ -255,11 +292,11 @@ export default class StringColumn extends ValueColumn<string> {
       return Object.assign({}, missingGroup);
     }
 
-    const {type, values} = this.currentGroupCriteria;
+    const { type, values } = this.currentGroupCriteria;
     if (type === EStringGroupCriteriaType.value) {
       return {
         name: value,
-        color: defaultGroup.color
+        color: defaultGroup.color,
       };
     }
     if (type === EStringGroupCriteriaType.startsWith) {
@@ -269,7 +306,7 @@ export default class StringColumn extends ValueColumn<string> {
         }
         return {
           name: groupValue,
-          color: defaultGroup.color
+          color: defaultGroup.color,
         };
       }
       return Object.assign({}, othersGroup);
@@ -280,12 +317,11 @@ export default class StringColumn extends ValueColumn<string> {
       }
       return {
         name: groupValue.source,
-        color: defaultGroup.color
+        color: defaultGroup.color,
       };
     }
     return Object.assign({}, othersGroup);
   }
-
 
   toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
@@ -302,16 +338,15 @@ export default class StringColumn extends ValueColumn<string> {
     }
     // take the smallest one
     if (valueCache) {
-      return valueCache.reduce((acc, v) => acc == null || v < acc ? v : acc, <null |string>null);
+      return valueCache.reduce((acc, v) => (acc == null || v < acc ? v : acc), null as null | string);
     }
     return rows.reduce((acc, d) => {
       const v = this.getValue(d);
       return acc == null || (v != null && v < acc) ? v : acc;
-    }, <null | string>null);
+    }, null as null | string);
   }
 
   toCompareGroupValueType() {
     return ECompareValueType.STRING;
   }
 }
-

@@ -1,22 +1,24 @@
-import {withLineUp, waitReady, LineUpJSType, LineUp} from './utils/lineup';
-import {generateData} from './utils/data';
-import {openMoreDialog, closeDialog, resetDialog} from './utils/ui';
+import { withLineUp, waitReady, LineUpJSType, LineUp } from './utils/lineup';
+import { generateData } from './utils/data';
+import { openMoreDialog, closeDialog, resetDialog } from './utils/ui';
 
 describe('pr292_data_mapping', () => {
   let lineup: LineUp;
   let lineUpJS: LineUpJSType;
-  before(withLineUp((l, document) => {
-    lineUpJS = l;
-    const arr = generateData({
-      number: 1,
-      string: 0,
-      date: 0,
-      cat: 0
-    });
+  before(
+    withLineUp((l, document) => {
+      lineUpJS = l;
+      const arr = generateData({
+        number: 1,
+        string: 0,
+        date: 0,
+        cat: 0,
+      });
 
-    lineup = lineUpJS.asLineUp(document.body, arr);
-    waitReady(lineup);
-  }));
+      lineup = lineUpJS.asLineUp(document.body, arr);
+      waitReady(lineup);
+    })
+  );
 
   function openDataMappingDialog() {
     // open more menu

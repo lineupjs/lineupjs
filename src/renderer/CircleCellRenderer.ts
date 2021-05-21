@@ -1,9 +1,17 @@
-import {Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn} from '../model';
-import {colorOf} from './impose';
-import {IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ICellRenderer, IGroupCellRenderer, ISummaryRenderer} from './interfaces';
-import {renderMissingDOM} from './missing';
-import {noRenderer, setText} from './utils';
-import {cssClass} from '../styles';
+import { Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn } from '../model';
+import { colorOf } from './impose';
+import {
+  IRenderContext,
+  ERenderMode,
+  ICellRendererFactory,
+  IImposer,
+  ICellRenderer,
+  IGroupCellRenderer,
+  ISummaryRenderer,
+} from './interfaces';
+import { renderMissingDOM } from './missing';
+import { noRenderer, setText } from './utils';
+import { cssClass } from '../styles';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Proportional Symbol';
@@ -21,9 +29,11 @@ export default class CircleCellRenderer implements ICellRendererFactory {
         const v = col.getNumber(d);
         const p = Math.round(v * 100);
         const missing = renderMissingDOM(n, col, d);
-        n.style.background = missing ? null : `radial-gradient(circle closest-side, ${colorOf(col, d, imposer)} ${p}%, transparent ${p}%)`;
+        n.style.background = missing
+          ? null
+          : `radial-gradient(circle closest-side, ${colorOf(col, d, imposer)} ${p}%, transparent ${p}%)`;
         setText(n.firstElementChild!, col.getLabel(d));
-      }
+      },
     };
   }
 

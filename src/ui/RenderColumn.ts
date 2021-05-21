@@ -1,12 +1,12 @@
-import {IColumn, IAbortAblePromise, IAsyncUpdate, isAbortAble} from 'lineupengine';
-import {Column} from '../model';
-import {ICellRenderer, IGroupCellRenderer} from '../renderer';
-import {ISummaryRenderer, IRenderCallback} from '../renderer';
-import {createHeader, updateHeader} from './header';
-import {IRankingContext} from './interfaces';
-import {ILineUpFlags} from '../config';
-import {cssClass, engineCssClass} from '../styles';
-import {isPromiseLike} from '../internal';
+import { IColumn, IAbortAblePromise, IAsyncUpdate, isAbortAble } from 'lineupengine';
+import type { Column } from '../model';
+import type { ICellRenderer, IGroupCellRenderer } from '../renderer';
+import type { ISummaryRenderer, IRenderCallback } from '../renderer';
+import { createHeader, updateHeader } from './header';
+import type { IRankingContext } from './interfaces';
+import type { ILineUpFlags } from '../config';
+import { cssClass, engineCssClass } from '../styles';
+import { isPromiseLike } from '../internal';
 
 export interface IRenderers {
   singleId: string;
@@ -23,9 +23,12 @@ export interface IRenderers {
 export default class RenderColumn implements IColumn {
   renderers: IRenderers | null = null;
 
-  constructor(public readonly c: Column, public index: number, protected ctx: IRankingContext, protected readonly flags: ILineUpFlags) {
-
-  }
+  constructor(
+    public readonly c: Column,
+    public index: number,
+    protected ctx: IRankingContext,
+    protected readonly flags: ILineUpFlags
+  ) {}
 
   get width() {
     return this.c.getWidth();
@@ -44,14 +47,14 @@ export default class RenderColumn implements IColumn {
       return null;
     }
     if (this.renderers.singleTemplate) {
-      return <HTMLElement>this.renderers.singleTemplate.cloneNode(true);
+      return this.renderers.singleTemplate.cloneNode(true) as HTMLElement;
     }
     const elem = this.ctx.asElement(this.renderers.single.template);
     elem.classList.add(cssClass(`renderer-${this.renderers.singleId}`), cssClass('detail'));
     elem.dataset.renderer = this.renderers.singleId;
     elem.dataset.group = 'd';
 
-    this.renderers.singleTemplate = <HTMLElement>elem.cloneNode(true);
+    this.renderers.singleTemplate = elem.cloneNode(true) as HTMLElement;
     return elem;
   }
 
@@ -60,14 +63,14 @@ export default class RenderColumn implements IColumn {
       return null;
     }
     if (this.renderers.groupTemplate) {
-      return <HTMLElement>this.renderers.groupTemplate.cloneNode(true);
+      return this.renderers.groupTemplate.cloneNode(true) as HTMLElement;
     }
     const elem = this.ctx.asElement(this.renderers.group.template);
     elem.classList.add(cssClass(`renderer-${this.renderers.groupId}`), cssClass('group'));
     elem.dataset.renderer = this.renderers.groupId;
     elem.dataset.group = 'g';
 
-    this.renderers.groupTemplate = <HTMLElement>elem.cloneNode(true);
+    this.renderers.groupTemplate = elem.cloneNode(true) as HTMLElement;
     return elem;
   }
 
@@ -76,13 +79,13 @@ export default class RenderColumn implements IColumn {
       return null;
     }
     if (this.renderers.summaryTemplate) {
-      return <HTMLElement>this.renderers.summaryTemplate.cloneNode(true);
+      return this.renderers.summaryTemplate.cloneNode(true) as HTMLElement;
     }
     const elem = this.ctx.asElement(this.renderers.summary.template);
     elem.classList.add(cssClass('summary'), cssClass('th-summary'), cssClass(`renderer-${this.renderers.summaryId}`));
     elem.dataset.renderer = this.renderers.summaryId;
 
-    this.renderers.summaryTemplate = <HTMLElement>elem.cloneNode(true);
+    this.renderers.summaryTemplate = elem.cloneNode(true) as HTMLElement;
     return elem;
   }
 
@@ -92,7 +95,7 @@ export default class RenderColumn implements IColumn {
       dragAble: this.flags.advancedUIFeatures,
       mergeDropAble: this.flags.advancedModelFeatures,
       rearrangeAble: this.flags.advancedUIFeatures,
-      resizeable: this.flags.advancedUIFeatures
+      resizeable: this.flags.advancedUIFeatures,
     });
     node.classList.add(cssClass('header'));
     if (!this.flags.disableFrozenColumns) {
@@ -115,7 +118,7 @@ export default class RenderColumn implements IColumn {
     if (!this.renderers || !this.renderers.summary) {
       return node;
     }
-    let summary = <HTMLElement>node.getElementsByClassName(cssClass('summary'))[0]!;
+    let summary = node.getElementsByClassName(cssClass('summary'))[0]! as HTMLElement;
     const oldRenderer = summary.dataset.renderer;
     const currentRenderer = this.renderers.summaryId;
     if (oldRenderer !== currentRenderer) {
@@ -125,7 +128,7 @@ export default class RenderColumn implements IColumn {
     }
     const ready = this.renderers.summary.update(summary);
     if (ready) {
-      return {item: node, ready};
+      return { item: node, ready };
     }
     return node;
   }
@@ -145,7 +148,7 @@ export default class RenderColumn implements IColumn {
     const oldRenderer = node.dataset.renderer;
     const currentRenderer = isGroup ? this.renderers!.groupId : this.renderers!.singleId;
     const oldGroup = node.dataset.group;
-    const currentGroup = (isGroup ? 'g' : 'd');
+    const currentGroup = isGroup ? 'g' : 'd';
     if (oldRenderer !== currentRenderer || oldGroup !== currentGroup) {
       node = isGroup ? this.groupRenderer()! : this.singleRenderer()!;
     }
@@ -163,7 +166,7 @@ export default class RenderColumn implements IColumn {
       }
     }
     if (ready) {
-      return {item: node, ready};
+      return { item: node, ready };
     }
     return node;
   }
@@ -180,11 +183,12 @@ export default class RenderColumn implements IColumn {
     }
     return chainAbortAble(row, (row) => s.render!(ctx, row, r.relativeIndex, r.group) || false);
   }
-
 }
 
-
-function chainAbortAble<T, U, V>(toWait: Promise<T>, mapper: (value: T) => IAbortAblePromise<U> | V): IAbortAblePromise<U> | V {
+function chainAbortAble<T, U, V>(
+  toWait: Promise<T>,
+  mapper: (value: T) => IAbortAblePromise<U> | V
+): IAbortAblePromise<U> | V {
   let aborted = false;
   const p: any = new Promise<IAbortAblePromise<U> | null | void>((resolve) => {
     if (aborted) {
@@ -195,11 +199,11 @@ function chainAbortAble<T, U, V>(toWait: Promise<T>, mapper: (value: T) => IAbor
         return;
       }
       const mapped = mapper(r);
-      if (isAbortAble(<any>mapped)) {
-        p.abort = (<IAbortAblePromise<U>>mapped).abort.bind(mapped);
+      if (isAbortAble(mapped as any)) {
+        p.abort = (mapped as IAbortAblePromise<U>).abort.bind(mapped);
         return p.then(resolve);
       }
-      return resolve(<any>mapped);
+      return resolve(mapped as any);
     });
   });
 

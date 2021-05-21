@@ -1,14 +1,28 @@
-import {toolbar} from './annotations';
-import Column, {widthChanged, labelChanged, metaDataChanged, dirty, dirtyHeader, dirtyValues, rendererTypeChanged, groupRendererChanged, summaryRendererChanged, visibilityChanged, dirtyCaches} from './Column';
-import ValueColumn, {dataLoaded} from './ValueColumn';
-import {IDataRow, ITypeFactory} from './interfaces';
-import {patternFunction, integrateDefaults} from './internal';
-import MapColumn, {IMapColumnDesc} from './MapColumn';
-import LinkColumn, {ILinkDesc} from './LinkColumn';
-import {IEventListener} from '../internal';
-import {EAlignment} from './StringColumn';
-import {IKeyValue} from './IArrayColumn';
-import {ILink} from './LinkColumn';
+import { toolbar } from './annotations';
+import type Column from './Column';
+import type {
+  widthChanged,
+  labelChanged,
+  metaDataChanged,
+  dirty,
+  dirtyHeader,
+  dirtyValues,
+  rendererTypeChanged,
+  groupRendererChanged,
+  summaryRendererChanged,
+  visibilityChanged,
+  dirtyCaches,
+} from './Column';
+import type { dataLoaded } from './ValueColumn';
+import type ValueColumn from './ValueColumn';
+import type { IDataRow, ITypeFactory } from './interfaces';
+import { patternFunction, integrateDefaults } from './internal';
+import MapColumn, { IMapColumnDesc } from './MapColumn';
+import LinkColumn, { ILinkDesc } from './LinkColumn';
+import type { IEventListener } from '../internal';
+import { EAlignment } from './StringColumn';
+import type { IKeyValue } from './IArrayColumn';
+import type { ILink } from './LinkColumn';
 
 export declare type ILinkMapColumnDesc = ILinkDesc & IMapColumnDesc<string>;
 
@@ -29,18 +43,21 @@ export default class LinkMapColumn extends MapColumn<string> {
   readonly alignment: EAlignment;
   readonly escape: boolean;
   private pattern: string;
-  private patternFunction: Function | null = null;
+  private patternFunction: (value: string, raw: any, key: string) => string | null = null;
   readonly patternTemplates: string[];
 
   constructor(id: string, desc: Readonly<ILinkMapColumnDesc>) {
-    super(id, integrateDefaults(desc, {
-      width: 200,
-      renderer: 'map'
-    }));
-    this.alignment = <any>desc.alignment || EAlignment.left;
+    super(
+      id,
+      integrateDefaults(desc, {
+        width: 200,
+        renderer: 'map',
+      })
+    );
+    this.alignment = desc.alignment ?? EAlignment.left;
     this.escape = desc.escape !== false;
-    this.pattern = desc.pattern || '';
-    this.patternTemplates = desc.patternTemplates || [];
+    this.pattern = desc.pattern ?? '';
+    this.patternTemplates = desc.patternTemplates ?? [];
   }
 
   setPattern(pattern: string) {
@@ -70,28 +87,30 @@ export default class LinkMapColumn extends MapColumn<string> {
   on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
   on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
   on(type: string | string[], listener: IEventListener | null): this {
-    return super.on(<any>type, listener);
+    return super.on(type as any, listener);
   }
 
   getValue(row: IDataRow) {
     const r = this.getLinkMap(row);
-    return r.every((d) => d.value == null) ? null : r.map(({key, value}) => ({
-      key,
-      value: value ? value.href : ''
-    }));
+    return r.every((d) => d.value == null)
+      ? null
+      : r.map(({ key, value }) => ({
+          key,
+          value: value ? value.href : '',
+        }));
   }
 
   getLabels(row: IDataRow) {
-    return this.getLinkMap(row).map(({key, value}) => ({
+    return this.getLinkMap(row).map(({ key, value }) => ({
       key,
-      value: value ? value.alt : ''
+      value: value ? value.alt : '',
     }));
   }
 
   getLinkMap(row: IDataRow): IKeyValue<ILink>[] {
-    return super.getMap(row).map(({key, value}) => ({
+    return super.getMap(row).map(({ key, value }) => ({
       key,
-      value: this.transformValue(value, row, key)
+      value: this.transformValue(value, row, key),
     }));
   }
 
@@ -103,7 +122,7 @@ export default class LinkMapColumn extends MapColumn<string> {
       if (!this.pattern) {
         return {
           alt: v,
-          href: v
+          href: v,
         };
       }
       if (!this.patternFunction) {
@@ -111,7 +130,7 @@ export default class LinkMapColumn extends MapColumn<string> {
       }
       return {
         alt: v,
-        href: this.patternFunction.call(this, v, row.v, key)
+        href: this.patternFunction.call(this, v, row.v, key),
       };
     }
     return v;
@@ -119,7 +138,7 @@ export default class LinkMapColumn extends MapColumn<string> {
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    if (this.pattern !== (<any>this.desc).pattern) {
+    if (this.pattern !== (this.desc as any).pattern) {
       r.pattern = this.pattern;
     }
     return r;

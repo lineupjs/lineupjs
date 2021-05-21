@@ -1,13 +1,12 @@
-import Column from './Column';
-import Ranking from './Ranking';
-import CompositeColumn from './CompositeColumn';
-import {IColorMappingFunction, IMappingFunction} from './INumberColumn';
-import {ICategoricalColorMappingFunction, ICategory} from './ICategoricalColumn';
-import {IScriptMappingFunctionType} from './MappingFunction';
-
+import type Column from './Column';
+import type Ranking from './Ranking';
+import type CompositeColumn from './CompositeColumn';
+import type { IColorMappingFunction, IMappingFunction } from './INumberColumn';
+import type { ICategoricalColorMappingFunction, ICategory } from './ICategoricalColumn';
+import type { IScriptMappingFunctionType } from './MappingFunction';
 
 export interface IColumnConstructor {
-  new(id: string, desc: Readonly<IColumnDesc> & any, factory: ITypeFactory): Column;
+  new (id: string, desc: Readonly<IColumnDesc> & any, factory: ITypeFactory): Column;
 }
 
 export interface IStyleColumn {
@@ -67,13 +66,6 @@ export interface IStyleColumn {
   visible: boolean;
 }
 
-/**
- * default color that should be used
- * @type {string}
- */
-export const DEFAULT_COLOR = '#C1C1C1';
-
-
 export interface IColumnDesc extends Partial<IStyleColumn> {
   /**
    * label of the column
@@ -126,9 +118,7 @@ export interface IColumnParent {
   at(index: number): Column;
 
   readonly fqpath: string;
-
 }
-
 
 export interface IColumnMetaData {
   label: string;
@@ -137,7 +127,6 @@ export interface IColumnMetaData {
 }
 
 export declare type ICompareValue = string | number | null;
-
 
 /**
  * a data row for rendering
@@ -153,7 +142,6 @@ export interface IDataRow {
   readonly i: number;
 }
 
-
 export interface IGroup {
   name: string;
   color: string;
@@ -168,14 +156,13 @@ export interface IOrderedGroup extends IGroup {
 
 export const defaultGroup: IGroup = {
   name: 'Default',
-  color: 'gray'
+  color: 'gray',
 };
 
 export const othersGroup: IGroup = {
   name: 'Others',
-  color: 'gray'
+  color: 'gray',
 };
-
 
 export interface IGroupParent extends IGroup {
   subGroups: (Readonly<IGroupParent> | Readonly<IGroup>)[];
@@ -190,7 +177,7 @@ export interface IGroupItem {
 export declare type IGroupData = Readonly<IOrderedGroup>;
 
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
-  return item && (<IGroupItem>item).group == null; // use .group as separator
+  return item && (item as IGroupItem).group == null; // use .group as separator
 }
 
 export declare type UIntTypedArray = Uint8Array | Uint16Array | Uint32Array;
@@ -208,15 +195,13 @@ export enum ECompareValueType {
   FLOAT_ASC,
   DOUBLE,
   DOUBLE_ASC,
-  STRING
+  STRING,
 }
-
 
 export interface ITypedDump {
   readonly type: string;
   [key: string]: any;
 }
-
 
 export interface IColumnDump {
   id: string;
@@ -245,12 +230,12 @@ export interface IRankingDump {
   /**
    * sort criteria
    */
-  sortCriteria?: {asc: boolean, sortBy: string}[];
+  sortCriteria?: { asc: boolean; sortBy: string }[];
 
   /**
    * group sort criteria
    */
-  groupSortCriteria?: {asc: boolean, sortBy: string}[];
+  groupSortCriteria?: { asc: boolean; sortBy: string }[];
 
   /**
    * uids of group columns
@@ -258,10 +243,10 @@ export interface IRankingDump {
   groupColumns?: string[];
 
   /**
-   * compatability
+   * compatibility
    * @deprecated
    */
-  sortColumn?: {sortBy: string, asc: boolean};
+  sortColumn?: { sortBy: string; asc: boolean };
 }
 
 export interface ITypeFactory {
@@ -269,17 +254,25 @@ export interface ITypeFactory {
 
   colorMappingFunction(dump?: ITypedDump | string | ((v: number) => string)): IColorMappingFunction;
   mappingFunction(dump?: ITypedDump | IScriptMappingFunctionType): IMappingFunction;
-  categoricalColorMappingFunction(dump: ITypedDump | undefined, categories: ICategory[]): ICategoricalColorMappingFunction;
+  categoricalColorMappingFunction(
+    dump: ITypedDump | undefined,
+    categories: ICategory[]
+  ): ICategoricalColorMappingFunction;
 }
 
 export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
 
   setCollapsed(value: boolean): void;
+
+  /**
+   * whether to show nested summaries or not
+   */
+  isShowNestedSummaries(): boolean;
 }
 
 export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn {
-  return typeof ((<IMultiLevelColumn>col).getCollapsed) === 'function';
+  return typeof (col as IMultiLevelColumn).getCollapsed === 'function';
 }
 
 export interface ISortCriteria {

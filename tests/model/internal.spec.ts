@@ -1,12 +1,12 @@
-import {unifyParents} from '../../src/model/internal';
-import {IGroupParent, IOrderedGroup} from '../../src/model';
+import { unifyParents } from '../../src/model/internal';
+import type { IGroupParent, IOrderedGroup } from '../../src/model';
 
 function groupGen(name: string, parent?: IGroupParent): IOrderedGroup {
   const r = {
     color: 'gray',
     name,
     order: [],
-    parent
+    parent,
   };
   if (parent) {
     parent.subGroups.push(r);
@@ -19,7 +19,7 @@ function parentGen(name: string, parent?: IGroupParent): IGroupParent {
     name,
     color: 'gray',
     parent,
-    subGroups: []
+    subGroups: [],
   };
   if (parent) {
     parent.subGroups.push(r);
