@@ -27,6 +27,9 @@ jobs:
         run: |
           node -pe "'::set-output name=version::' + require('./package.json').version"
           node -pe "'::set-output name=npm_tag::' + (require('./package.json').version.includes('-') ? 'next' : 'latest')"
+      - name: Print version
+        run: |
+          echo "releasing ${{ steps.extract_version.outputs.version }} with tag ${{ steps.extract_version.outputs.npm_tag }}"
       - name: Create Release
         id: create_release
         uses: release-drafter/release-drafter@v5
@@ -35,6 +38,7 @@ jobs:
         with:
           version: ${{ steps.extract_version.outputs.version }}
           publish: true
+          prerelease: ${{ steps.extract_version.outputs.npm_tag == 'next' }}
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
       npm_tag: ${{ steps.extract_version.outputs.npm_tag }}
