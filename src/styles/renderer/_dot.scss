@@ -1,14 +1,15 @@
+@use "sass:math";
 @import '../vars';
 
 .#{$lu_css_prefix}-renderer-dot {
   > div {
     background: $lu_renderer_dot_color;
     opacity: $lu_renderer_dot_opacity;
-    border-radius: $lu_renderer_dot_size / 2;
+    border-radius: math.div($lu_renderer_dot_size, 2);
     width: $lu_renderer_dot_size;
     height: $lu_renderer_dot_size;
-    margin-top: -$lu_renderer_dot_size / 2;
-    margin-left: -$lu_renderer_dot_size / 2;
+    margin-top: math.div($lu_renderer_dot_size, -2);
+    margin-left: math.div($lu_renderer_dot_size, -2);
     top: 50%;
     position: absolute;
   }
