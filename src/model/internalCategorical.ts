@@ -39,8 +39,6 @@ export function toCompareCategoryValue(v: ICategory | null) {
   return v.value;
 }
 
-export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT_ASC;
-
 function findMostFrequent(
   rows: ISequence<ICategory | null>,
   valueCache?: ISequence<ICategory | null>

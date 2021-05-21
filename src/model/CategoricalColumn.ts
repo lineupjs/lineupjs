@@ -22,7 +22,7 @@ import type {
   ICategory,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import type { IDataRow, IGroup, ICompareValue, ITypeFactory, ECompareValueType } from './interfaces';
+import { IDataRow, IGroup, ICompareValue, ITypeFactory, ECompareValueType } from './interfaces';
 import { missingGroup } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
@@ -31,7 +31,6 @@ import {
   isCategoryIncluded,
   isEqualCategoricalFilter,
   toCompareCategoryValue,
-  COMPARE_CATEGORY_VALUE_TYPES,
   toGroupCompareCategoryValue,
   COMPARE_GROUP_CATEGORY_VALUE_TYPES,
 } from './internalCategorical';
@@ -264,7 +263,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   toCompareValueType(): ECompareValueType {
-    return COMPARE_CATEGORY_VALUE_TYPES;
+    return ECompareValueType.FLOAT_ASC;
   }
 
   group(row: IDataRow, valueCache?: any): IGroup {
