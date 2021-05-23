@@ -45,8 +45,9 @@
       "sass": "./src/style.scss",
       "types": "./build/src/index.d.ts"
     },
-    "./src/*": "./build/src/*.js",
-    "./build/*": "./dist/*"
+    "./*": "./build/src/*.js",
+    "./build/*": "./build/*",
+    "./src/*": "./src/*"
   },
   "styles": "build/LineUpJS.css",
   "sideEffects": [
