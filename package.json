@@ -34,9 +34,21 @@
   "global": "LineUpJS",
   "main": "build/LineUpJS.js",
   "unpkg": "build/LineUpJS.js",
+  "jsdelivr": "build/LineUpJS.js",
   "module": "build/src/index.js",
   "types": "build/src/index.d.ts",
-  "exports": "./build/src/index.js",
+  "exports": {
+    ".": {
+      "import": "./build/src/index.js",
+      "require": "./build/LineUpJS.js",
+      "style": "./build/LineUpJS.css",
+      "sass": "./src/style.scss",
+      "types": "./build/src/index.d.ts"
+    },
+    "./*": "./build/src/*.js",
+    "./build/*": "./build/*",
+    "./src/*": "./src/*"
+  },
   "styles": "build/LineUpJS.css",
   "sideEffects": [
     "*.scss",
