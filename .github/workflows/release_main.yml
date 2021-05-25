@@ -1,4 +1,5 @@
 name: Release Main
+
 on:
   push:
     branches:
@@ -18,7 +19,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v2.1.5
         with:
           node-version: '14'
       - name: Extract version
@@ -26,6 +27,9 @@ jobs:
         run: |
           node -pe "'::set-output name=version::' + require('./package.json').version"
           node -pe "'::set-output name=npm_tag::' + (require('./package.json').version.includes('-') ? 'next' : 'latest')"
+      - name: Print version
+        run: |
+          echo "releasing ${{ steps.extract_version.outputs.version }} with tag ${{ steps.extract_version.outputs.npm_tag }}"
       - name: Create Release
         id: create_release
         uses: release-drafter/release-drafter@v5
@@ -34,6 +38,7 @@ jobs:
         with:
           version: ${{ steps.extract_version.outputs.version }}
           publish: true
+          prerelease: ${{ steps.extract_version.outputs.npm_tag == 'next' }}
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
       npm_tag: ${{ steps.extract_version.outputs.npm_tag }}
@@ -45,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.4
+      - uses: actions/setup-node@v2.1.5
         with:
           node-version: '14.x'
       - run: npm i -g yarn
@@ -53,7 +58,7 @@ jobs:
       - run: cat .yarnrc_patch.yml >> .yarnrc.yml
       - run: yarn config set checksumBehavior ignore
       - name: Cache Node.js modules
-        uses: actions/cache@v2.1.4
+        uses: actions/cache@v2.1.5
         with:
           path: |
             ./.yarn
@@ -70,7 +75,7 @@ jobs:
       - run: yarn docs
       - run: yarn cy:compile
       - run: yarn cy:junit
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2.2.3
         if: failure()
         with:
           name: cypress-artifacts
@@ -96,9 +101,8 @@ jobs:
           enable_jekyll: true
           remove_path_spec: 'main,app/LineUpJS.*,app/*.eot,app/*.ttf,app/*.svg'
       - name: Pack Publish
-        env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          yarn config set npmAuthToken "${{ secrets.NPM_TOKEN }}"
           yarn pack
           yarn npm publish --tag "${{ needs.create_release.outputs.npm_tag }}"
       - name: Upload Release Asset

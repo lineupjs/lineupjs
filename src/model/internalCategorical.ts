@@ -9,7 +9,7 @@ import type {
   ISetCategoricalFilter,
 } from './ICategoricalColumn';
 import { DEFAULT_COLOR } from './Column';
-import { ECompareValueType, ICompareValue, IDataRow } from './interfaces';
+import type { ICompareValue, IDataRow } from './interfaces';
 import { FIRST_IS_MISSING } from './missing';
 
 /** @internal */
@@ -38,8 +38,6 @@ export function toCompareCategoryValue(v: ICategory | null) {
   }
   return v.value;
 }
-
-export const COMPARE_CATEGORY_VALUE_TYPES = ECompareValueType.FLOAT_ASC;
 
 function findMostFrequent(
   rows: ISequence<ICategory | null>,
@@ -129,8 +127,6 @@ export function toGroupCompareCategoryValue(
   }
   return [mostFrequent.cat.value, mostFrequent.cat.name.toLowerCase()];
 }
-
-export const COMPARE_GROUP_CATEGORY_VALUE_TYPES = [ECompareValueType.FLOAT, ECompareValueType.STRING];
 
 /** @internal */
 function compareCategory(a: ICategory | null, b: ICategory | null) {
