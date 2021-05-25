@@ -81,8 +81,8 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
         checker = cols.map((col) => (key: string) => key.startsWith(`${col.id}:a:group`));
         break;
       case 'summary':
-        checker = cols.map((col) => (key: string) =>
-          key.startsWith(`${col.id}:b:summary`) || key.startsWith(`${col.id}:a:group`)
+        checker = cols.map(
+          (col) => (key: string) => key.startsWith(`${col.id}:b:summary`) || key.startsWith(`${col.id}:a:group`)
         );
         break;
       case 'data':

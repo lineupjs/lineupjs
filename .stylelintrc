@@ -41,6 +41,7 @@
     "scss/operator-no-unspaced": true,
     "scss/percent-placeholder-pattern": null,
     "scss/partial-no-import": null,
-    "scss/selector-no-redundant-nesting-selector": true
+    "scss/selector-no-redundant-nesting-selector": true,
+    "no-invalid-position-at-import-rule": null,
   }
 }
