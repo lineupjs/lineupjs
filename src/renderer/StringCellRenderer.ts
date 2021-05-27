@@ -115,7 +115,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const bak = f.filter || '';
     let update: (col: StringColumn) => void;
     return {
-      template: `<form><input type="text" placeholder="Filter ${col.desc.label}..." autofocus 
+      template: `<form><input type="text" placeholder="Filter ${col.desc.label}..." autofocus
       list="${context.idPrefix}${col.id}_dl" value="${filterToString(f)}">
           <label class="${cssClass('checkbox')}">
             <input type="checkbox" ${bak instanceof RegExp ? 'checked="checked"' : ''}>
@@ -129,7 +129,9 @@ export default class StringCellRenderer implements ICellRendererFactory {
         }
         update(col);
         const dl = node.querySelector('datalist')!;
-        return context.tasks.summaryStringStats(col).then((r) => {
+
+        // no return here = loading indicator since it won't affect the rendering
+        void context.tasks.summaryStringStats(col).then((r) => {
           if (typeof r === 'symbol') {
             return;
           }
