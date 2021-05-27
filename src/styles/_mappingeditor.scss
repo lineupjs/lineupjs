@@ -1,3 +1,5 @@
+@use "sass:math";
+
 @import './vars';
 @import './icons/index';
 
@@ -52,7 +54,7 @@ div.#{$lu_css_prefix}-dialog-mapper-script {
 svg.#{$lu_css_prefix}-dialog-mapper-details {
   shape-rendering: geometricPrecision;
   z-index: 1;
-  height: 25em * 6 / 10;
+  height: math.div(25em * 6, 10);
   background: transparent;
 
   rect {

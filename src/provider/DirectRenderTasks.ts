@@ -221,19 +221,20 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
   }
 
   private summaryNumberStatsD(col: Column & INumberColumn, raw?: boolean): { summary: IStatistics; data: IStatistics } {
+    const ranking = col.findMyRanker();
     return this.cached(
       'summary',
       col,
       () => {
-        const ranking = col.findMyRanker()!.getOrder();
+        const order = ranking ? ranking.getOrder() : [];
         const data = this.dataNumberStats(col, raw);
         return {
-          summary: this.statsBuilder(ranking, col, data.hist.length, raw).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.statsBuilder(order, col, data.hist.length, raw).next(Number.POSITIVE_INFINITY as any).value!,
           data,
         };
       },
       raw ? ':raw' : '',
-      col.findMyRanker()!.getOrderLength() === 0
+      ranking && ranking.getOrderLength() === 0
     );
   }
 
@@ -241,52 +242,55 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     col: Column & INumberColumn,
     raw?: boolean
   ): { summary: IAdvancedBoxPlotData; data: IAdvancedBoxPlotData } {
+    const ranking = col.findMyRanker();
     return this.cached(
       'summary',
       col,
       () => {
-        const ranking = col.findMyRanker()!.getOrder();
+        const order = ranking ? ranking.getOrder() : [];
         const data = this.dataBoxPlotStats(col, raw);
-        return { summary: this.boxplotBuilder(ranking, col, raw).next(Number.POSITIVE_INFINITY as any).value!, data };
+        return { summary: this.boxplotBuilder(order, col, raw).next(Number.POSITIVE_INFINITY as any).value!, data };
       },
       raw ? ':braw' : ':b',
-      col.findMyRanker()!.getOrderLength() === 0
+      ranking && ranking.getOrderLength() === 0
     );
   }
 
   private summaryCategoricalStatsD(
     col: Column & ICategoricalLikeColumn
   ): { summary: ICategoricalStatistics; data: ICategoricalStatistics } {
+    const ranking = col.findMyRanker();
     return this.cached(
       'summary',
       col,
       () => {
-        const ranking = col.findMyRanker()!.getOrder();
+        const order = ranking ? ranking.getOrder() : [];
         const data = this.dataCategoricalStats(col);
         return {
-          summary: this.categoricalStatsBuilder(ranking, col).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.categoricalStatsBuilder(order, col).next(Number.POSITIVE_INFINITY as any).value!,
           data,
         };
       },
       '',
-      col.findMyRanker()!.getOrderLength() === 0
+      ranking && ranking.getOrderLength() === 0
     );
   }
 
   private summaryDateStatsD(col: Column & IDateColumn): { summary: IDateStatistics; data: IDateStatistics } {
+    const ranking = col.findMyRanker();
     return this.cached(
       'summary',
       col,
       () => {
-        const ranking = col.findMyRanker()!.getOrder();
+        const order = ranking ? ranking.getOrder() : [];
         const data = this.dataDateStats(col);
         return {
-          summary: this.dateStatsBuilder(ranking, col, data).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.dateStatsBuilder(order, col, data).next(Number.POSITIVE_INFINITY as any).value!,
           data,
         };
       },
       '',
-      col.findMyRanker()!.getOrderLength() === 0
+      ranking && ranking.getOrderLength() === 0
     );
   }
 

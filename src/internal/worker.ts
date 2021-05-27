@@ -162,7 +162,7 @@ export class WorkerTaskScheduler {
 
   private finishedTask() {
     if (this.cleanUpWorkerTimer === -1 && this.workers.length > MIN_WORKER_THREADS) {
-      this.cleanUpWorkerTimer = (setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME) as unknown) as number;
+      this.cleanUpWorkerTimer = setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME) as unknown as number;
     }
   }
 

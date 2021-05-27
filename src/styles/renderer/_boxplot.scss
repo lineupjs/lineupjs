@@ -1,3 +1,5 @@
+@use "sass:math";
+
 @import '../vars';
 
 .#{$lu_css_prefix}-renderer-boxplot {
@@ -114,7 +116,7 @@ outlier
   top: 50%;
   width: $lu_renderer_dot_size;
   height: $lu_renderer_dot_size;
-  margin: -$lu_renderer_dot_size / 2;
+  margin: math.div($lu_renderer_dot_size, -2);
   background: $lu_renderer_boxplot_outlier;
   border-radius: 50%;
 

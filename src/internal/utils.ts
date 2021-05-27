@@ -5,8 +5,10 @@ import * as equalImpl from 'fast-deep-equal';
 /**
  * deep equal comparison
  */
-export const equal: (a: any, b: any) => boolean =
-  typeof equalImpl === 'function' ? equalImpl : (equalImpl as any).default;
+export function equal(a: any, b: any): boolean {
+  const f = typeof equalImpl === 'function' ? equalImpl : (equalImpl as any).default;
+  return f(a, b);
+}
 
 /** @internal */
 export function equalArrays<T>(a: T[], b: T[]) {

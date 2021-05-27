@@ -200,7 +200,7 @@ export class ARenderTasks {
       // done
       return {
         done: true,
-        value: build ? build(builder.build()) : ((builder.build() as unknown) as R),
+        value: build ? build(builder.build()) : (builder.build() as unknown as R),
       };
     };
 
@@ -225,7 +225,7 @@ export class ARenderTasks {
       }
       return {
         done: true,
-        value: build ? build(builder.build()) : ((builder.build() as unknown) as R),
+        value: build ? build(builder.build()) : (builder.build() as unknown as R),
       };
     };
     return { next: order == null ? nextData : nextOrder };

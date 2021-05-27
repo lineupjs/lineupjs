@@ -105,27 +105,25 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     const s = this.hierarchySeparator;
     const add = (prefix: string, node: IPartialCategoryNode): ICategoryInternalNode => {
       const name = node.name == null ? String(node.value) : node.name;
-      const children = (node.children || []).map(
-        (child: IPartialCategoryNode | string): ICategoryInternalNode => {
-          if (typeof child === 'string') {
-            const path = prefix + child;
-            return {
-              path,
-              name: child,
-              label: path,
-              color: colors(),
-              value: 0,
-              children: [],
-            };
-          }
-          const r = add(`${prefix}${name}${s}`, child);
-          if (!r.color) {
-            //hack to inject the next color
-            (r as any).color = colors();
-          }
-          return r;
+      const children = (node.children || []).map((child: IPartialCategoryNode | string): ICategoryInternalNode => {
+        if (typeof child === 'string') {
+          const path = prefix + child;
+          return {
+            path,
+            name: child,
+            label: path,
+            color: colors(),
+            value: 0,
+            children: [],
+          };
         }
-      );
+        const r = add(`${prefix}${name}${s}`, child);
+        if (!r.color) {
+          //hack to inject the next color
+          (r as any).color = colors();
+        }
+        return r;
+      });
       const path = prefix + name;
       const label = node.label ? node.label : path;
       return { path, name, children, label, color: node.color!, value: 0 };
