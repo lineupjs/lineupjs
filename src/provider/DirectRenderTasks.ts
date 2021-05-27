@@ -256,9 +256,10 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     );
   }
 
-  private summaryCategoricalStatsD(
-    col: Column & ICategoricalLikeColumn
-  ): { summary: ICategoricalStatistics; data: ICategoricalStatistics } {
+  private summaryCategoricalStatsD(col: Column & ICategoricalLikeColumn): {
+    summary: ICategoricalStatistics;
+    data: ICategoricalStatistics;
+  } {
     const ranking = col.findMyRanker();
     return this.cached(
       'summary',
