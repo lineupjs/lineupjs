@@ -74,7 +74,7 @@ export default class SidePanel {
           node.classList.toggle(cssClass('searchbox-summary-entry'), Boolean(summary));
           if (summary) {
             const label = node.ownerDocument.createElement('span');
-            label.textContent = summary;
+            label.textContent = w.desc.label;
             node.appendChild(label);
             const desc = node.ownerDocument.createElement('span');
             desc.textContent = summary;
