@@ -66,6 +66,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const filterMissing = findFilterMissing(node);
     const input = node.querySelector<HTMLInputElement>('input[type="text"]');
     const isRegex = node.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    let isInputFocused = false;
 
     const update = () => {
       const valid = input.value.trim();
@@ -83,6 +84,12 @@ export default class StringCellRenderer implements ICellRendererFactory {
     filterMissing.onchange = update;
     input.onchange = update;
     input.oninput = debounce(update, 100);
+    input.onfocus = () => {
+      isInputFocused = true;
+    };
+    input.onblur = () => {
+      isInputFocused = false;
+    };
     isRegex.onchange = update;
     form.onsubmit = (evt) => {
       evt.preventDefault();
@@ -92,6 +99,11 @@ export default class StringCellRenderer implements ICellRendererFactory {
     };
 
     return (actCol: StringColumn) => {
+      // skip update of form fields if search input is currently in focus
+      // otherwise this function sets an old value while typing
+      if (isInputFocused) {
+        return;
+      }
       col = actCol;
       const f = col.getFilter() || { filter: null, filterMissing: false };
       const bak = f.filter;
