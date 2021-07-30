@@ -164,5 +164,6 @@
     "popper.js": "^1.15.0",
     "reflect-metadata": "^0.1.13",
     "tslib": "^2.2.0"
-  }
+  },
+  "packageManager": "yarn@3.0.0"
 }
