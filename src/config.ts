@@ -279,7 +279,7 @@ export function defaultOptions(): ITaggleOptions {
       groupSort: true,
       colorMapping: true,
     },
-    onDialogBackgroundClick: 'cancel',
+    onDialogBackgroundClick: 'confirm',
 
     rowHeight: 18,
     groupHeight: 40,
