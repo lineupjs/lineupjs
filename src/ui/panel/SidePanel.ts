@@ -22,6 +22,7 @@ import { dialogContext } from '../dialogs';
 import SearchBox, { IGroupSearchItem, ISearchBoxOptions } from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
 import { format } from 'd3-format';
+import { setText } from '../../renderer/utils';
 
 export interface IColumnWrapper {
   desc: IColumnDesc;
@@ -83,7 +84,7 @@ export default class SidePanel {
           }
         }
       }
-      return item.text;
+      setText(node, item.text);
     },
     collapseable: true,
   };
