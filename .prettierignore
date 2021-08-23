@@ -22,6 +22,7 @@
 /.editorconfig
 /.yarn
 /.pnp.js
+/.pnp.cjs
 /.yarnrc.yml
 /.vscode
 *.lock

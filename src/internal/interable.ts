@@ -289,7 +289,7 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
       const v = it.next();
       if (v.done) {
         return {
-          value: (undefined as unknown) as T2,
+          value: undefined as unknown as T2,
           done: true,
         };
       }

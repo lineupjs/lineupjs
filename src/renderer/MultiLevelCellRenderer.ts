@@ -109,7 +109,8 @@ export function createData(
 
 export default class MultiLevelCellRenderer
   extends AAggregatedGroupRenderer<IMultiLevelColumn & Column>
-  implements ICellRendererFactory {
+  implements ICellRendererFactory
+{
   readonly title: string;
 
   constructor(private readonly stacked: boolean = true) {
@@ -248,6 +249,6 @@ export default class MultiLevelCellRenderer
 
   protected aggregatedIndex(rows: ISequence<IDataRow>, col: IMultiLevelColumn & Column) {
     console.assert(isNumberColumn(col));
-    return medianIndex(rows, (col as any) as INumberColumn);
+    return medianIndex(rows, col as any as INumberColumn);
   }
 }

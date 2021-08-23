@@ -325,6 +325,10 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   protected compute(row: IDataRow) {
     const w = this.getWidth();
+    // missing value for the stack column if at least one child value is missing
+    if (this._children.some((d) => d.getValue(row) === null)) {
+      return null;
+    }
     return this._children.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth() / w), 0);
   }
 

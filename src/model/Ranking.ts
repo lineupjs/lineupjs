@@ -262,7 +262,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       // propagate to the top
       let p = groups[0].parent;
       while (p) {
-        ((p as any) as IOrderedGroup).order = this.order;
+        (p as any as IOrderedGroup).order = this.order;
         p = p.parent;
       }
     }
@@ -309,7 +309,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       const size = subs.reduce((a, b) => a + b.size, 0);
       const r = { offset, size };
       offsets.set(g, r);
-      ((g as any) as IOrderedGroup).order = order.subarray(offset, offset + size);
+      (g as any as IOrderedGroup).order = order.subarray(offset, offset + size);
       return r;
     };
     for (const root of roots) {

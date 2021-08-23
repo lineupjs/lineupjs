@@ -164,18 +164,18 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const row = evt.currentTarget as HTMLElement;
       row.addEventListener('mouseleave', c.leave, PASSIVE);
       c.timer.add(
-        (setTimeout(() => {
+        setTimeout(() => {
           c.hoveredRows.add(row);
           this.updateHoveredRow(row, true);
-        }, HOVER_DELAY_SHOW_DETAIL) as unknown) as number
+        }, HOVER_DELAY_SHOW_DETAIL) as unknown as number
       );
     },
     leave: (evt: MouseEvent | HTMLElement) => {
       // on row to survive canvas removal
       const c = this.canvasMouseHandler;
-      const row = (typeof (evt as MouseEvent).currentTarget !== 'undefined'
-        ? (evt as MouseEvent).currentTarget
-        : evt) as HTMLElement;
+      const row = (
+        typeof (evt as MouseEvent).currentTarget !== 'undefined' ? (evt as MouseEvent).currentTarget : evt
+      ) as HTMLElement;
       c.unhover(row);
 
       c.cleanUp();

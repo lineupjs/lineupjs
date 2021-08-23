@@ -10,6 +10,8 @@ import type {
   IBoxPlotStatsMessageRequest,
 } from './';
 import type { UIntTypedArray, IndicesArray } from '../model';
+import type { IStringStatsMessageRequest } from './math';
+import type { IStringStatistics } from './mathInterfaces';
 
 /**
  * @internal
@@ -160,7 +162,7 @@ export class WorkerTaskScheduler {
 
   private finishedTask() {
     if (this.cleanUpWorkerTimer === -1 && this.workers.length > MIN_WORKER_THREADS) {
-      this.cleanUpWorkerTimer = (setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME) as unknown) as number;
+      this.cleanUpWorkerTimer = setTimeout(this.cleanUpWorker, THREAD_CLEANUP_TIME) as unknown as number;
     }
   }
 
@@ -197,10 +199,18 @@ export class WorkerTaskScheduler {
     indices?: IndicesArray
   ): Promise<IDateStatistics>;
   pushStats(
-    type: 'numberStats' | 'boxplotStats' | 'categoricalStats' | 'dateStats',
+    type: 'stringStats',
+    args: Partial<IStringStatsMessageRequest>,
+    refData: string,
+    data: readonly string[],
+    refIndices?: string,
+    indices?: IndicesArray
+  ): Promise<IStringStatistics>;
+  pushStats(
+    type: 'numberStats' | 'boxplotStats' | 'categoricalStats' | 'dateStats' | 'stringStats',
     args: any,
     refData: string,
-    data: Float32Array | UIntTypedArray | Float64Array,
+    data: Float32Array | UIntTypedArray | Float64Array | readonly string[],
     refIndices?: string,
     indices?: IndicesArray
   ) {
