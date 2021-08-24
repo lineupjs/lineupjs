@@ -1,5 +1,5 @@
 @import '../vars';
-@import '~font-awesome/scss/mixins';
+@import '~@fortawesome/fontawesome-free/scss/mixins';
 @import './font_awesome';
 
 $lu_icon_check_square_o: '\e800';
@@ -74,7 +74,25 @@ $lu_icon_window_restore: '\f2d2';
 
 @mixin lu_icons() {
   @if $lu_use_font_awesome == true {
-    @include fa_icon();
+    @include fa-icon;
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+  } @else {
+    display: inline-block;
+    font: normal normal normal 14px/1 lu-font, serif; // shortening font declaration
+    font-size: inherit; // can't have font-size inherit on line above, so need to override
+    text-rendering: auto; // optimizelegibility throws things off #1094
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+
+@mixin lu_icons_o() {
+  @if $lu_use_font_awesome == true {
+    @include fa-icon;
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 400;
   } @else {
     display: inline-block;
     font: normal normal normal 14px/1 lu-font, serif; // shortening font declaration

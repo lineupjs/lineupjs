@@ -7,7 +7,7 @@
   text-align: center;
 
   &::before {
-    @include lu_icons();
+    @include lu_icons_o();
 
     cursor: pointer;
     display: inline;

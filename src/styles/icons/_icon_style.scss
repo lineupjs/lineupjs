@@ -3,14 +3,14 @@
 @import './custom_font';
 
 .#{$lu_css_prefix}-icon-checked::before {
-  @include lu_icons();
+  @include lu_icons_o();
 
   text-align: center;
   content: $lu_icon_check_square_o;
 }
 
 .#{$lu_css_prefix}-icon-unchecked::before {
-  @include lu_icons();
+  @include lu_icons_o();
 
   text-align: center;
   content: $lu_icon_square_o;
