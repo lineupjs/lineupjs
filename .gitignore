@@ -15,7 +15,7 @@ node_modules/
 *.log
 *.tsbuildinfo
 /.yarn
-/.pnp.js
+/.pnp.*
 /.yarnrc.yml
 *.tgz
 *.zip

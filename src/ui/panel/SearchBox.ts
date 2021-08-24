@@ -100,7 +100,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
         node.appendChild(li);
       } else {
         li = this.groupTemplate.cloneNode(true) as HTMLElement;
-        this.buildDialog(li.lastElementChild! as HTMLElement, v.children);
+        this.buildDialog(li.lastElementChild! as HTMLElement, (v as IGroupSearchItem<T>).children);
         node.appendChild(li);
       }
       const item = li.firstElementChild! as HTMLElement;

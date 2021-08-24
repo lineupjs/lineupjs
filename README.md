@@ -695,7 +695,7 @@ yarn set version berry
 yarn set version latest
 cat .yarnrc_patch.yml >> .yarnrc.yml
 yarn install
-yarn pnpify --sdk vscode
+yarn dlx @yarnpkg/sdks
 ```
 
 ### Common commands
