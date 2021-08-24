@@ -21,8 +21,7 @@
 /.stylelintrc
 /.editorconfig
 /.yarn
-/.pnp.js
-/.pnp.cjs
+/.pnp.*
 /.yarnrc.yml
 /.vscode
 *.lock
