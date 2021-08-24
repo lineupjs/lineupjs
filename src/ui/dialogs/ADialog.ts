@@ -1,6 +1,5 @@
-import Popper from 'popper.js';
+import { createPopper, Placement, Instance } from '@popperjs/core';
 import type DialogManager from './DialogManager';
-import { merge } from '../../internal';
 import { cssClass } from '../../styles';
 import type { IRankingHeaderContext } from '../interfaces';
 import type { ILivePreviewOptions } from '../../config';
@@ -10,9 +9,8 @@ export interface IDialogOptions {
   livePreview: boolean | keyof ILivePreviewOptions;
   popup: boolean;
   // popper options
-  placement?: Popper.Placement;
+  placement?: Placement;
   eventsEnabled?: boolean;
-  modifiers?: Popper.Modifiers;
   toggleDialog: boolean;
   cancelSubDialogs?: boolean;
   autoClose?: boolean;
@@ -50,11 +48,10 @@ abstract class ADialog {
     toggleDialog: true,
     cancelSubDialogs: false,
     autoClose: false,
-    modifiers: {},
   };
 
   readonly node: HTMLFormElement;
-  private popper: Popper | null = null;
+  private popper: Instance | null = null;
 
   constructor(protected readonly dialog: Readonly<IDialogContext>, options: Partial<IDialogOptions> = {}) {
     Object.assign(this.options, options);
@@ -134,20 +131,17 @@ abstract class ADialog {
     }
 
     parent.appendChild(this.node);
-    this.popper = new Popper(
-      this.attachment,
-      this.node,
-      merge(
+    this.popper = createPopper(this.attachment, this.node, {
+      modifiers: [
         {
-          modifiers: {
-            preventOverflow: {
-              boundariesElement: parent,
-            },
+          name: 'preventOverflow',
+          options: {
+            boundariesElement: parent,
           },
         },
-        this.options
-      )
-    );
+      ],
+      ...this.options,
+    });
 
     const auto = this.find<HTMLInputElement>('input[autofocus]');
     if (auto) {
