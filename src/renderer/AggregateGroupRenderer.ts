@@ -71,7 +71,7 @@ function renderGroups(
 
   const isRow = relativeIndex >= 0;
   const isLeafGroup =
-    !((group as any) as IGroupParent).subGroups || ((group as any) as IGroupParent).subGroups.length === 0;
+    !(group as any as IGroupParent).subGroups || (group as any as IGroupParent).subGroups.length === 0;
 
   const alwaysShowGroup = isAlwaysShowingGroupStrategy(strategy);
   const isSummary = !isRow && isSummaryGroup(group, strategy, topNGetter);

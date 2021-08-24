@@ -1,6 +1,11 @@
 @import '../vars';
 @import '../icons/index';
 
+@import './search';
+@import './entry';
+@import './hierarchy';
+@import './ranking';
+
 .#{$lu_css_prefix}-side-panel {
   display: flex;
   flex-direction: column;
@@ -74,8 +79,3 @@
     }
   }
 }
-
-@import './search';
-@import './entry';
-@import './hierarchy';
-@import './ranking';

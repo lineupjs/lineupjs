@@ -22,6 +22,7 @@ import { dialogContext } from '../dialogs';
 import SearchBox, { IGroupSearchItem, ISearchBoxOptions } from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
 import { format } from 'd3-format';
+import { setText } from '../../renderer/utils';
 
 export interface IColumnWrapper {
   desc: IColumnDesc;
@@ -68,8 +69,22 @@ export default class SidePanel {
         node.parentElement.classList.add(cssClass('feature-model'));
         node.parentElement.classList.toggle(cssClass('feature-advanced'), w.category.featureLevel === 'advanced');
         node.parentElement.classList.toggle(cssClass('feature-basic'), w.category.featureLevel === 'basic');
+
+        if (isWrapper(item)) {
+          const summary = w.desc.summary || w.desc.description;
+          node.classList.toggle(cssClass('searchbox-summary-entry'), Boolean(summary));
+          if (summary) {
+            const label = node.ownerDocument.createElement('span');
+            label.textContent = w.desc.label;
+            node.appendChild(label);
+            const desc = node.ownerDocument.createElement('span');
+            desc.textContent = summary;
+            node.appendChild(desc);
+            return undefined;
+          }
+        }
       }
-      return item.text;
+      setText(node, item.text);
     },
     collapseable: true,
   };
@@ -160,6 +175,7 @@ export default class SidePanel {
           DataProvider.EVENT_ADD_RANKING,
           DataProvider.EVENT_REMOVE_RANKING,
           DataProvider.EVENT_ADD_DESC,
+          DataProvider.EVENT_REMOVE_DESC,
           DataProvider.EVENT_CLEAR_DESC,
           DataProvider.EVENT_ORDER_CHANGED,
           DataProvider.EVENT_SELECTION_CHANGED
@@ -175,16 +191,36 @@ export default class SidePanel {
       id: `${desc.type}@${desc.label}`,
       text: desc.label,
     });
-    this.descs.splice(0, this.descs.length, ...data.getColumns().concat(this.options.additionalDescs).map(wrapDesc));
+    this.descs.splice(
+      0,
+      this.descs.length,
+      ...data
+        .getColumns()
+        .filter((d) => d.visible !== false)
+        .concat(this.options.additionalDescs)
+        .map(wrapDesc)
+    );
 
-    data.on(`${DataProvider.EVENT_ADD_DESC}.panel`, (desc) => {
-      this.descs.push(wrapDesc(desc));
-      this.updateChooser();
+    data.on(`${DataProvider.EVENT_ADD_DESC}.panel`, (desc: IColumnDesc) => {
+      if (desc.visible !== false) {
+        this.descs.push(wrapDesc(desc));
+        this.updateChooser();
+      }
     });
 
     data.on(`${DataProvider.EVENT_CLEAR_DESC}.panel`, () => {
       this.descs.splice(0, this.descs.length);
       this.updateChooser();
+    });
+
+    data.on(`${DataProvider.EVENT_REMOVE_DESC}.panel`, (desc: IColumnDesc) => {
+      if (desc.visible !== false) {
+        const index = this.descs.findIndex((d) => d.desc === desc);
+        if (index >= 0) {
+          this.descs.splice(index, 1);
+          this.updateChooser();
+        }
+      }
     });
 
     data.on(suffix('.panel', DataProvider.EVENT_SELECTION_CHANGED, DataProvider.EVENT_ORDER_CHANGED), () => {

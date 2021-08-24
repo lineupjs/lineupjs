@@ -35,13 +35,13 @@ export default class SidePanelRanking {
     this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${actionCSSClass(
       'more'
     )}" title="More &hellip;">${aria('More &hellip;')}</i>`;
-    (this.header.lastElementChild! as HTMLElement).onclick = (this.dropdown
-      .lastElementChild! as HTMLElement).onclick = (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-      const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, evt), ctx);
-      dialog.open();
-    };
+    (this.header.lastElementChild! as HTMLElement).onclick = (this.dropdown.lastElementChild! as HTMLElement).onclick =
+      (evt) => {
+        evt.stopPropagation();
+        evt.preventDefault();
+        const dialog = new MoreRankingOptionsDialog(ranking, dialogContext(ctx, 1, evt), ctx);
+        dialog.open();
+      };
 
     this.hierarchy = this.options.hierarchy ? new Hierarchy(ctx, document) : null;
 
@@ -75,7 +75,8 @@ export default class SidePanelRanking {
       }
     );
     this.ranking.on(suffix('.panel', Ranking.EVENT_LABEL_CHANGED), () => {
-      this.dropdown.firstElementChild!.textContent = this.header.firstElementChild!.textContent = this.ranking.getLabel();
+      this.dropdown.firstElementChild!.textContent = this.header.firstElementChild!.textContent =
+        this.ranking.getLabel();
     });
   }
 
@@ -121,27 +122,31 @@ export default class SidePanelRanking {
       return;
     }
 
-    clear(node);
-
-    const copy = new Map(this.entries);
+    const currentEntries = new Map(this.entries);
     this.entries.clear();
 
-    columns.forEach((col) => {
-      const existing = copy.get(col.id);
+    columns.forEach((col, i) => {
+      const existing = currentEntries.get(col.id);
       if (existing) {
         existing.update(this.ctx);
-        node.appendChild(existing.node);
+        if (node.children[i] !== existing.node) {
+          // change node order if it doesn't match
+          node.appendChild(existing.node);
+        }
         this.entries.set(col.id, existing);
-        copy.delete(col.id);
+        currentEntries.delete(col.id);
         return;
       }
 
       const entry = new SidePanelEntryVis(col, this.ctx, node.ownerDocument!);
-      node.appendChild(entry.node);
+      node.insertBefore(entry.node, node.children[i]);
       this.entries.set(col.id, entry);
     });
 
-    copy.forEach((d) => d.destroy());
+    currentEntries.forEach((d) => {
+      d.node.remove();
+      d.destroy();
+    });
   }
 
   destroy() {

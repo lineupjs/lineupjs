@@ -29,17 +29,19 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
     label: column ? column[0].toUpperCase() + column.slice(1) : props.type,
   } as any;
 
-  ([
-    'label',
-    'description',
-    'frozen',
-    'width',
-    'renderer',
-    'groupRenderer',
-    'summaryRenderer',
-    'visible',
-    'fixed',
-  ] as (keyof IBuilderAdapterColumnDescProps)[]).forEach((key) => {
+  (
+    [
+      'label',
+      'description',
+      'frozen',
+      'width',
+      'renderer',
+      'groupRenderer',
+      'summaryRenderer',
+      'visible',
+      'fixed',
+    ] as (keyof IBuilderAdapterColumnDescProps)[]
+  ).forEach((key) => {
     if (props.hasOwnProperty(key)) {
       desc[key] = props[key];
     }

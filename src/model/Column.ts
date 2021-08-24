@@ -363,9 +363,10 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  private isSortedByMeImpl(
-    selector: (r: Ranking) => ISortCriteria[]
-  ): { asc: 'asc' | 'desc' | undefined; priority: number | undefined } {
+  private isSortedByMeImpl(selector: (r: Ranking) => ISortCriteria[]): {
+    asc: 'asc' | 'desc' | undefined;
+    priority: number | undefined;
+  } {
     const ranker = this.findMyRanker();
     if (!ranker) {
       return { asc: undefined, priority: undefined };

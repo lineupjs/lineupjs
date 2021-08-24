@@ -691,11 +691,8 @@ Otherwise follow the steps to setup a local development environment.
 git clone https://github.com/lineupjs/lineupjs.git -b develop
 cd lineupjs
 npm i -g yarn
-yarn set version berry
-yarn set version latest
-cat .yarnrc_patch.yml >> .yarnrc.yml
 yarn install
-yarn pnpify --sdk vscode
+yarn sdks vscode
 ```
 
 ### Common commands
@@ -709,8 +706,6 @@ yarn run lint
 yarn run fix
 yarn run build
 yarn run docs
-yarn run release
-yarn run release:pre
 ```
 
 **Run E2E Tests**

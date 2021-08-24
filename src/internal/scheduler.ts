@@ -121,11 +121,11 @@ export default class TaskScheduler {
     }
 
     // eslint-disable-next-line no-restricted-globals
-    const ww = (self as any) as IPoorManIdleCallback;
+    const ww = self as any as IPoorManIdleCallback;
     if (ww.requestIdleCallback) {
       this.taskId = ww.requestIdleCallback(this.runTasks);
     } else {
-      this.taskId = (setTimeout(this.runTasks, 1) as unknown) as number;
+      this.taskId = setTimeout(this.runTasks, 1) as unknown as number;
     }
   }
 
@@ -228,7 +228,7 @@ export default class TaskScheduler {
       return;
     }
     // eslint-disable-next-line no-restricted-globals
-    const ww = (self as any) as IPoorManIdleCallback;
+    const ww = self as any as IPoorManIdleCallback;
     if (ww.requestIdleCallback) {
       ww.clearIdleCallback(this.taskId);
     } else {
