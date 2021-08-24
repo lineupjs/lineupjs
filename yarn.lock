@@ -6545,6 +6545,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "lineupjs@workspace:."
   dependencies:
+    "@fortawesome/fontawesome-free": ^5.15.4
     "@popperjs/core": ^2.9.3
     "@types/d3-color": ^2.0.1
     "@types/d3-dispatch": ^2.0.0
