@@ -6612,9 +6612,6 @@ __metadata:
     webpack: ^5.51.1
     webpack-cli: ^4.8.0
     webpack-dev-server: ^4.0.0
-  dependenciesMeta:
-    "@fortawesome/fontawesome-free@5.15.4":
-      unplugged: true
   languageName: unknown
   linkType: soft
 
