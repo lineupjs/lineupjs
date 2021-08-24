@@ -87,7 +87,6 @@ $lu_icon_window_restore: '\f2d2';
   }
 }
 
-
 @mixin lu_icons_o() {
   @if $lu_use_font_awesome == true {
     @include fa-icon;

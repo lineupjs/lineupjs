@@ -1,7 +1,6 @@
 @import '~@fortawesome/fontawesome-free/scss/variables';
 
 @mixin lu_fontawesome_var_icons() {
-
   $lu_icon_pencil_square_o: fa-content($fa-var-edit) !global;
   $lu_icon_code_fork: fa-content($fa-var-code-branch) !global;
   $lu_icon_exchange: fa-content($fa-var-exchange-alt) !global;
