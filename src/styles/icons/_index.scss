@@ -97,12 +97,13 @@ $lu_icon_window_restore: '\f2d2';
 
 @mixin lu_custom_icons() {
   @if $lu_use_font_awesome == true {
-    content: '';
+    content: '\2003';
     display: inline;
     width: 1em;
     background-position: left center;
     background-repeat: no-repeat;
     background-size: 75%;
+    filter: contrast(0);
   } @else {
     @include lu_icons();
   }

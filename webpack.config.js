@@ -90,31 +90,9 @@ module.exports = (_env, options) => {
           ].slice(process.env.CI || !dev ? 1 : 0), // no optimizations for CIs and in production mode
         },
         {
-          test: /\.(png|jpg)$/,
-          loader: 'url-loader',
-          options: {
-            limit: 20000, //inline <= 20kb
-          },
-        },
-        {
-          test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          loader: 'url-loader',
-          options: {
-            limit: 20000, //inline <= 20kb
-            mimetype: 'application/font-woff',
-          },
-        },
-        {
-          test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          loader: 'url-loader',
-          options: {
-            limit: 10000, //inline <= 10kb
-            mimetype: 'image/svg+xml',
-          },
-        },
-        {
-          test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          type: 'asset/resource',
+          test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/i,
+          // More information here https://webpack.js.org/guides/asset-modules/
+          type: 'asset',
         },
         {
           test: /schema\.json$/,
