@@ -14,4 +14,14 @@
     top: 50%;
     position: absolute;
   }
+
+  &.#{$lu_css_prefix}-dot-single > div {
+    background: $lu_renderer_dot_single_color;
+    opacity: $lu_renderer_dot_single_opacity;
+    border-radius: math.div($lu_renderer_dot_single_size, 2);
+    width: $lu_renderer_dot_single_size;
+    height: $lu_renderer_dot_single_size;
+    margin-top: math.div($lu_renderer_dot_single_size, -2);
+    margin-left: math.div($lu_renderer_dot_single_size, -2);
+  }
 }

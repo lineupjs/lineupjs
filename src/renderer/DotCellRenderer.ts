@@ -57,13 +57,15 @@ export default class DotCellRenderer implements ICellRendererFactory {
   }
 
   private static getDOMRenderer(col: INumberColumn) {
-    const dots = isNumbersColumn(col) ? col.dataLength! : 1;
+    const single = !isNumbersColumn(col);
+    const dots = !isNumbersColumn(col) ? 1 : col.dataLength!;
     let tmp = '';
     for (let i = 0; i < dots; ++i) {
       tmp += `<div style='background-color: ${DEFAULT_COLOR}' title=''></div>`;
     }
 
     const update = (n: HTMLElement, data: ISequence<{ value: number; label: string; color: string | null }>) => {
+      n.classList.toggle(cssClass('dot-single'), single);
       //adapt the number of children
       const l = data.length;
       if (n.children.length !== l) {
