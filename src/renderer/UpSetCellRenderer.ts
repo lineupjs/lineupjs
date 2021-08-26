@@ -1,4 +1,4 @@
-import { Column, IDataRow, IOrderedGroup, ISetColumn, isSetColumn } from '../model';
+import { Column, IDataRow, IOrderedGroup, isCategoricalColumn, ISetColumn, isSetColumn } from '../model';
 import { CANVAS_HEIGHT, cssClass, UPSET } from '../styles';
 import type {
   ICellRendererFactory,
@@ -13,7 +13,8 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   readonly title: string = 'UpSet';
 
   canRender(col: Column) {
-    return isSetColumn(col);
+    // set but not a pure categorical one
+    return isSetColumn(col) && !isCategoricalColumn(col);
   }
 
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
