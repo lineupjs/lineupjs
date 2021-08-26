@@ -32,7 +32,7 @@ import { color } from 'd3-color';
 export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn | BooleanColumn;
 
 export default class CategoricalCellRenderer implements ICellRendererFactory {
-  readonly title: string = 'Color';
+  readonly title: string = 'Color & Label';
   readonly groupTitle: string = 'Histogram';
 
   canRender(col: Column, mode: ERenderMode): boolean {
