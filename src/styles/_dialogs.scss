@@ -231,7 +231,7 @@
   min-width: 15em;
   max-width: 50em;
 
-  div[x-arrow] {
+  div[data-popper-arrow] {
     position: absolute;
     width: 0;
     height: 0;
@@ -239,28 +239,28 @@
 
   $arrow_size: 5px;
 
-  &[x-placement='bottom'] div[x-arrow] {
+  &[data-popper-placement='bottom'] div[data-popper-arrow] {
     border-left: $arrow_size solid transparent;
     border-right: $arrow_size solid transparent;
     border-bottom: $arrow_size solid black;
     top: -$arrow_size;
   }
 
-  &[x-placement='left'] div[x-arrow] {
+  &[data-popper-placement='left'] div[data-popper-arrow] {
     border-top: $arrow_size solid transparent;
     border-bottom: $arrow_size solid transparent;
     border-left: $arrow_size solid black;
     right: -$arrow_size;
   }
 
-  &[x-placement='right'] div[x-arrow] {
+  &[data-popper-placement='right'] div[data-popper-arrow] {
     border-top: $arrow_size solid transparent;
     border-bottom: $arrow_size solid transparent;
     border-right: $arrow_size solid black;
     left: -$arrow_size;
   }
 
-  &[x-placement='top'] div[x-arrow] {
+  &[data-popper-placement='top'] div[data-popper-arrow] {
     border-left: $arrow_size solid transparent;
     border-right: $arrow_size solid transparent;
     border-top: $arrow_size solid black;

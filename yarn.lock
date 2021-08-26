@@ -785,6 +785,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@popperjs/core@npm:^2.9.3":
+  version: 2.9.3
+  resolution: "@popperjs/core@npm:2.9.3"
+  checksum: 4cb94c271eaa13416ab8169c6af778c5b6160614351a79c68e8219d6ee0a40b8f71080ca29e139591c7c0c8e08fc1627d0e18d40a64609713a42b58d683a009d
+  languageName: node
+  linkType: hard
+
 "@sindresorhus/is@npm:^4.0.0":
   version: 4.0.1
   resolution: "@sindresorhus/is@npm:4.0.1"
@@ -952,15 +959,6 @@ __metadata:
   version: 2.1.1
   resolution: "@types/d3-time@npm:2.1.1"
   checksum: 115048d0cd312a3172ef7c03615dfbdbd8b92a93fd7b6d9ca93c49c704fcdb9575f4c57955eb54eb757b9834acaaf47fc52eae103d06246c59ae120de4559cbc
-  languageName: node
-  linkType: hard
-
-"@types/detect-browser@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "@types/detect-browser@npm:4.0.0"
-  dependencies:
-    detect-browser: "*"
-  checksum: 990bdb815fe153469e9c795911a3da47cb4ad9a1869dda1eb2a7ce81495b5215170764437c7249cdeb52f9d73c57db227c7d03d382bd113f5cca5c2749b4a818
   languageName: node
   linkType: hard
 
@@ -3371,7 +3369,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detect-browser@npm:*, detect-browser@npm:^5.2.0":
+"detect-browser@npm:^5.2.0":
   version: 5.2.0
   resolution: "detect-browser@npm:5.2.0"
   checksum: 63b5c38fecc657ff12de01a41e6c8c97b3d610dffa37aef1983ec5bfb4314687d588c0c44c5ee03bd45ef15b7fe465bce9349c373369e6a7405f318e0aae56f9
@@ -6547,6 +6545,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "lineupjs@workspace:."
   dependencies:
+    "@popperjs/core": ^2.9.3
     "@types/d3-color": ^2.0.1
     "@types/d3-dispatch": ^2.0.0
     "@types/d3-format": ^2.0.0
@@ -6554,7 +6553,6 @@ __metadata:
     "@types/d3-scale-chromatic": ^2.0.0
     "@types/d3-time": ^2.0.0
     "@types/d3-time-format": ^3.0.0
-    "@types/detect-browser": ^4.0.0
     "@types/jest": ^27.0.1
     "@types/lodash": 4.14.172
     "@types/lodash.get": 4.4.6
@@ -6591,7 +6589,6 @@ __metadata:
     mini-css-extract-plugin: ^2.2.0
     mkdirp: ^1.0.4
     mocha-junit-reporter: ^2.0.0
-    popper.js: ^1.15.0
     prettier: ^2.3.2
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
@@ -7980,13 +7977,6 @@ __metadata:
   version: 7.0.0
   resolution: "pluralize@npm:7.0.0"
   checksum: e3f694924b7c8c03dc9fa40b2312e17787998ac6e20fccace11efa1146046eb9931541bfd247b3ec5535e730d902a5aee7c32681d5bf9a00fc74a72039a3e609
-  languageName: node
-  linkType: hard
-
-"popper.js@npm:^1.15.0":
-  version: 1.16.1
-  resolution: "popper.js@npm:1.16.1"
-  checksum: c56ae5001ec50a77ee297a8061a0221d99d25c7348d2e6bcd3e45a0d0f32a1fd81bca29d46cb0d4bdf13efb77685bd6a0ce93f9eb3c608311a461f945fffedbe
   languageName: node
   linkType: hard
 
