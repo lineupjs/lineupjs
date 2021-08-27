@@ -1025,14 +1025,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
       // all are IOrderedGroup since propagated
       const ordered = group as IOrderedGroup;
-      const gparent = group as IGroupParent;
+      const groupParent = group as IGroupParent;
 
       if (n === 0 || alwaysShowGroup) {
         r.push(ordered);
       }
 
-      if (n !== 0 && Array.isArray(gparent.subGroups) && gparent.subGroups.length > 0) {
-        for (const g of gparent.subGroups) {
+      if (n !== 0 && Array.isArray(groupParent.subGroups) && groupParent.subGroups.length > 0) {
+        for (const g of groupParent.subGroups) {
           pushGroup(g as IOrderedGroup | Readonly<IGroupParent>);
         }
         return;

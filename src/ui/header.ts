@@ -176,9 +176,7 @@ export function createShortcutMenuItems(
   // need a more entry
   node.insertAdjacentHTML(
     'beforeend',
-    `<i data-a="m" data-m="${moreEntries}" title="More &hellip;" class="${actionCSSClass('More')}">${aria(
-      'More &hellip;'
-    )}</i>`
+    `<i data-a="m" data-m="${moreEntries}" title="More …" class="${actionCSSClass('More')}">${aria('More …')}</i>`
   );
   const i = node.lastElementChild as HTMLElement;
   i.onclick = (evt) => {

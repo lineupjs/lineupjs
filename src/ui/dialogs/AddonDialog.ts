@@ -18,7 +18,7 @@ export default class AddonDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     for (const addon of this.addons) {
-      this.node.insertAdjacentHTML('beforeend', `<strong>${addon.title}</strong>`);
+      this.node.insertAdjacentHTML('beforeend', `<strong>${this.ctx.sanitize(addon.title)}</strong>`);
       this.handlers.push(addon.append(this.column, node, this.dialog, this.ctx));
     }
   }

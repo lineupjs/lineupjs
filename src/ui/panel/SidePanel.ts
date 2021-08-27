@@ -113,7 +113,7 @@ export default class SidePanel {
     this.node.innerHTML = `
       <aside class="${cssClass('stats')}"></aside>
       <header class="${cssClass('side-panel-rankings')}">
-        <i class="${cssClass('action')}" title="Choose &hellip;">${aria('Choose &hellip;')}</i>
+        <i class="${cssClass('action')}" title="Choose …">${aria('Choose …')}</i>
       </header>
       <main class="${cssClass('side-panel-main')}"></main>
     `;

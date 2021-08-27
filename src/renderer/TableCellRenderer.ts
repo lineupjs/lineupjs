@@ -1,6 +1,5 @@
 import {
   IArrayColumn,
-  IKeyValue,
   IMapColumn,
   isArrayColumn,
   isMapColumn,
@@ -92,8 +91,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
                 .map((d) => d.value)
                 .join(', ')}`;
               if (numExampleRows < values.length) {
-                n.textContent = `${v}, `;
-                n.insertAdjacentHTML('beforeend', '&hellip;');
+                n.textContent = `${v}, …`;
               } else {
                 n.textContent = v;
               }
@@ -125,8 +123,7 @@ export default class TableCellRenderer implements ICellRendererFactory {
               return;
             }
             forEach(node, '[data-v]', (n: HTMLElement, i) => {
-              n.textContent = `${values[i].join(', ')}`;
-              n.insertAdjacentHTML('beforeend', '&hellip;');
+              n.textContent = `${values[i].join(', ')}, …`;
             });
           });
       },

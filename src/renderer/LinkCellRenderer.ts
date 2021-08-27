@@ -92,6 +92,6 @@ export function updateLinkList(n: HTMLElement, links: ILink[], more: boolean) {
     n.appendChild(a);
   });
   if (more) {
-    n.insertAdjacentHTML('beforeend', ', &hellip;');
+    n.insertAdjacentText('beforeend', ', …');
   }
 }

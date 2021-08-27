@@ -170,7 +170,7 @@ function interactiveSummary(
 export function createDateFilter(
   col: IDateColumn,
   parent: HTMLElement,
-  context: { idPrefix: string; dialogManager: DialogManager; tasks: IRenderTasks },
+  context: { idPrefix: string; dialogManager: DialogManager; tasks: IRenderTasks; sanitize: (v: string) => string },
   livePreviews: boolean
 ) {
   const renderer = getHistDOMRenderer(col);
@@ -286,7 +286,7 @@ function createFilterInfo(col: IDateColumn, domain: [number, number], filter = c
 
 function createFilterContext(
   col: IDateColumn,
-  context: { idPrefix: string; dialogManager: DialogManager },
+  context: { idPrefix: string; dialogManager: DialogManager; sanitize: (v: string) => string },
   domain: [number, number]
 ): IFilterContext<number> {
   const clamp = (v: number) => Math.max(0, Math.min(100, v));
@@ -312,6 +312,7 @@ function createFilterContext(
           manager: context.dialogManager,
           level: context.dialogManager.maxLevel + 1,
           idPrefix: context.idPrefix,
+          sanitize: context.sanitize,
         };
         const dialog = new InputDateDialog(
           dialogCtx,

@@ -24,8 +24,23 @@
         }
         const b = LineUpJS.builder(arr)
           .deriveColumns()
-          .column(LineUpJS.buildStringColumn('s')
-          .label(`<img src="empty.gif" onerror="debugger;" />'`));
+          .column(
+            LineUpJS.buildStringColumn('s').label(
+              `<img src="empty.gif" onerror="alert();this.parentNode.removeChild(this);" />'`
+            )
+          )
+          .column(
+            LineUpJS.buildNumberColumn('a').label(
+              `<img src="empty.gif" onerror="alert();this.parentNode.removeChild(this);" />'`
+            )
+          )
+          .column(
+            LineUpJS.buildCategoricalColumn('cat', [
+              { name: 'c1', label: `<img src="empty.gif" onerror="alert();this.parentNode.removeChild(this);" />'` },
+              { name: 'c2', label: 'C2' },
+              { name: 'c3', label: 'C3' },
+            ]).label(`<img src="empty.gif" onerror="alert();this.parentNode.removeChild(this);" />'`)
+          );
         const lineup = b.build(document.body);
       };
     </script>

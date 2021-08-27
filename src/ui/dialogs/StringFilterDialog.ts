@@ -60,10 +60,11 @@ export default class StringFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
+    const s = this.ctx.sanitize;
     const bak = this.column.getFilter() || { filter: '', filterMissing: false };
     node.insertAdjacentHTML(
       'beforeend',
-      `<input type="text" placeholder="Filter ${this.column.desc.label}..." autofocus
+      `<input type="text" placeholder="Filter ${s(this.column.desc.label)}..." autofocus
          value="${filterToString(bak)}" list="${this.dialog.idPrefix}_sdl">
     <label class="${cssClass('checkbox')}">
       <input type="checkbox" ${bak.filter instanceof RegExp ? 'checked="checked"' : ''}>

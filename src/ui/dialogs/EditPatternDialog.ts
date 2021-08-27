@@ -1,3 +1,4 @@
+import type { IRankingHeaderContext } from '..';
 import type { LinkColumn, LinkMapColumn, LinksColumn } from '../../model';
 import ADialog, { IDialogContext } from './ADialog';
 
@@ -8,7 +9,7 @@ export default class EditPatternDialog extends ADialog {
   constructor(
     private readonly column: LinkColumn | LinksColumn | LinkMapColumn,
     dialog: IDialogContext,
-    private readonly idPrefix: string
+    private readonly ctx: IRankingHeaderContext
   ) {
     super(dialog);
 
@@ -17,22 +18,25 @@ export default class EditPatternDialog extends ADialog {
 
   protected build(node: HTMLElement) {
     const templates = this.column.patternTemplates;
+    const s = this.ctx.sanitize;
     node.insertAdjacentHTML(
       'beforeend',
       `<strong>Edit Pattern (access via $\{value}, $\{item})</strong><input
         type="text"
         size="30"
-        value="${this.before}"
+        value="${s(this.before)}"
         required
         autofocus
         placeholder="pattern (access via $\{value}, $\{item})"
-        ${templates.length > 0 ? `list="ui${this.idPrefix}lineupPatternList"` : ''}
+        ${templates.length > 0 ? `list="ui${this.ctx.idPrefix}lineupPatternList"` : ''}
       >`
     );
     if (templates.length > 0) {
       node.insertAdjacentHTML(
         'beforeend',
-        `<datalist id="ui${this.idPrefix}lineupPatternList">${templates.map((t) => `<option value="${t}">`)}</datalist>`
+        `<datalist id="ui${this.ctx.idPrefix}lineupPatternList">${templates.map(
+          (t) => `<option value="${s(t)}">`
+        )}</datalist>`
       );
     }
 

@@ -79,7 +79,7 @@ export default class ColorMappingDialog extends ADialog {
         'color-gradient'
       )}"><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
         <span class="${cssClass('color-custom')}"><input type="color" name="solid" list="${id}L" value="${
-        current instanceof SolidColorFunction ? current.color : DEFAULT_COLOR
+        current instanceof SolidColorFunction ? this.ctx.sanitize(current.color) : DEFAULT_COLOR
       }" ${refColor && !has ? '' : 'disabled'}></span>
       </label>`;
     }
@@ -165,12 +165,14 @@ export default class ColorMappingDialog extends ADialog {
         <input name="color" type="radio" value="custom:divergent" ${isCustom ? 'checked' : ''}>
         <span class="${cssClass('color-custom')}">
           <input type="color" name="divergingm1" list="${id}L" ${
-        !isCustom ? 'disabled' : `value="${entries[0].color}"`
+        !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[0].color)}"`
       }>
           <input type="color" name="diverging0" list="${id}LW" ${
-        !isCustom ? 'disabled' : `value="${entries[1].color}"`
+        !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[1].color)}"`
       }>
-          <input type="color" name="diverging1" list="${id}L" ${!isCustom ? 'disabled' : `value="${entries[2].color}"`}>
+          <input type="color" name="diverging1" list="${id}L" ${
+        !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[2].color)}"`
+      }>
         </span>
       </label>`;
     }
