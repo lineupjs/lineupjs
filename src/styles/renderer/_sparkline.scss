@@ -1,6 +1,9 @@
 @import '../vars';
 
 .#{$lu_css_prefix}-renderer-sparkline {
+  height: 100%;
+  display: block;
+
   > path {
     stroke: black;
     fill: none;
