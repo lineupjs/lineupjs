@@ -35,7 +35,7 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
   }
 
   createGroup(col: ICategoricalColumn, context: IRenderContext): IGroupCellRenderer {
-    const { template, update } = stackedBar(col);
+    const { template, update } = stackedBar(col, context.sanitize);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -62,7 +62,7 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
 }
 
 function staticSummary(col: ICategoricalColumn, context: IRenderContext) {
-  const { template, update } = stackedBar(col);
+  const { template, update } = stackedBar(col, context.sanitize);
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
@@ -82,7 +82,7 @@ function staticSummary(col: ICategoricalColumn, context: IRenderContext) {
 }
 
 function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, interactive: boolean) {
-  const { template, update } = stackedBar(col);
+  const { template, update } = stackedBar(col, context.sanitize);
   let filterUpdate: (missing: number, col: HasCategoricalFilter) => void;
   return {
     template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
@@ -116,7 +116,8 @@ function selectedCol(value: string) {
   return c.toString();
 }
 
-function stackedBar(col: ISetColumn) {
+function stackedBar(col: ISetColumn, sanitize: (v: string) => string) {
+  const s = sanitize;
   const mapping = col.getColorMapping();
   const cats = col.categories.map((c) => ({
     label: c.label,
@@ -129,11 +130,11 @@ function stackedBar(col: ISetColumn) {
   const bins = cats
     .map(
       (c) =>
-        `<div class="${cssClass('distribution-bar')}" style="background-color: ${
+        `<div class="${cssClass('distribution-bar')}" style="background-color: ${s(
           c.color
-        }; color: ${adaptTextColorToBgColor(c.color)}" title="${c.label}: 0" data-cat="${c.name}"><span>${
+        )}; color: ${adaptTextColorToBgColor(c.color)}" title="${s(c.label)}: 0" data-cat="${s(c.name)}"><span>${s(
           c.label
-        }</span></div>`
+        )}</span></div>`
     )
     .join('');
 

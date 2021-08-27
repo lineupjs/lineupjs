@@ -56,7 +56,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static getDOMRenderer(col: INumberColumn) {
+  private static getDOMRenderer(col: INumberColumn, sanitize: (v: string) => string) {
     const dots = isNumbersColumn(col) ? col.dataLength! : 1;
     let tmp = '';
     for (let i = 0; i < dots; ++i) {
@@ -68,7 +68,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
       const l = data.length;
       if (n.children.length !== l) {
         n.innerHTML = data.reduce((tmp, r) => {
-          return `${tmp}<div style='background-color: ${r.color}' title='${r.label}'></div>`;
+          return `${tmp}<div style='background-color: ${sanitize(r.color)}' title='${sanitize(r.label)}'></div>`;
         }, '');
       }
       const children = n.children;
@@ -97,7 +97,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
   }
 
   create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
-    const { template, render, update } = DotCellRenderer.getDOMRenderer(col);
+    const { template, render, update } = DotCellRenderer.getDOMRenderer(col, context.sanitize);
     const width = context.colWidth(col);
     const formatter = col.getNumberFormat();
     return {

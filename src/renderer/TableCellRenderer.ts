@@ -20,6 +20,7 @@ import { renderMissingDOM } from './missing';
 import { forEach, noop } from './utils';
 import { cssClass } from '../styles';
 import type { ISequence } from '../internal';
+import { renderTable } from './MapBarCellRenderer';
 
 export default class TableCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table';
@@ -39,13 +40,9 @@ export default class TableCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
-        node.innerHTML = col
-          .getMapLabel(d)
-          .map(
-            ({ key, value }) =>
-              `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass('table-cell')}">${value}</div>`
-          )
-          .join('');
+        renderTable(node, col.getMapLabel(d), (n, { value }) => {
+          n.textContent = value;
+        });
       },
     };
   }
@@ -68,18 +65,10 @@ export default class TableCellRenderer implements ICellRendererFactory {
         }
         const value = col.getLabels(d);
         forEach(node, '[data-v]', (n: HTMLElement, i) => {
-          n.innerHTML = value[i];
+          n.textContent = value[i];
         });
       },
     };
-  }
-
-  private static example(arr: IKeyValue<string>[]) {
-    const numExampleRows = 5;
-    return `${arr
-      .slice(0, numExampleRows)
-      .map((d) => d.value)
-      .join(', ')}${numExampleRows < arr.length ? ', &hellip;' : ''}`;
   }
 
   createGroup(col: IMapColumn<any>, context: IRenderContext): IGroupCellRenderer {
@@ -96,14 +85,19 @@ export default class TableCellRenderer implements ICellRendererFactory {
             if (typeof entries === 'symbol') {
               return;
             }
-            node.innerHTML = entries
-              .map(
-                ({ key, values }) =>
-                  `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass(
-                    'table-cell'
-                  )}">${TableCellRenderer.example(values)}</div>`
-              )
-              .join('');
+            renderTable(node, entries, (n, { values }) => {
+              const numExampleRows = 5;
+              const v = `${values
+                .slice(0, numExampleRows)
+                .map((d) => d.value)
+                .join(', ')}`;
+              if (numExampleRows < values.length) {
+                n.textContent = `${v}, `;
+                n.insertAdjacentHTML('beforeend', '&hellip;');
+              } else {
+                n.textContent = v;
+              }
+            });
           });
       },
     };
@@ -131,7 +125,8 @@ export default class TableCellRenderer implements ICellRendererFactory {
               return;
             }
             forEach(node, '[data-v]', (n: HTMLElement, i) => {
-              n.innerHTML = `${values[i].join(', ')}&hellip;`;
+              n.textContent = `${values[i].join(', ')}`;
+              n.insertAdjacentHTML('beforeend', '&hellip;');
             });
           });
       },

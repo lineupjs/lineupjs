@@ -73,6 +73,7 @@ export interface IRankingHeaderContextContainer {
   readonly dialogManager: DialogManager;
 
   asElement(html: string): HTMLElement;
+  sanitize(text: string): string;
 
   resolveToolbarActions(col: Column, keys: string[]): IToolbarAction[];
   resolveToolbarDialogAddons(col: Column, keys: string[]): IToolbarDialogAddon[];
