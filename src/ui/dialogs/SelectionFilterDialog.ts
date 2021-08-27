@@ -36,7 +36,7 @@ export default class SelectionFilterDialog extends ADialog {
   }
 
   protected submit() {
-    const chosen = this.findInput('input[name=mode]:checked').value as 'none' | 'keep' | 'update';
+    const chosen = (this.findInput('input[name=mode]:checked')?.value as 'none' | 'keep' | 'update') ?? 'keep';
     if (chosen === 'none') {
       this.updateFilter(null);
     } else if (chosen === 'update') {
@@ -46,29 +46,63 @@ export default class SelectionFilterDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
-    const bak = this.column.getFilter() ?? [];
-    const current = this.ctx.provider.getSelection().length;
-    node.insertAdjacentHTML(
-      'beforeend',
-      `<label class="${cssClass('checkbox')}">
-          <input type="radio" ${bak.length === 0 ? 'checked="checked"' : ''} name="mode" value="none">
-          <span>Remove filter</span>
-        </label>`
-    );
-    node.insertAdjacentHTML(
-      'beforeend',
-      `<label class="${cssClass('checkbox')}">
-          <input type="radio" ${bak.length > 0 ? 'checked="checked"' : ''} name="mode" value="keep">
-          <span>Keep current filter (${bak.length} rows)</span>
-        </label>`
-    );
-    node.insertAdjacentHTML(
-      'beforeend',
-      `<label class="${cssClass('checkbox')}" style="padding-bottom: 0.6em">
-          <input type="radio" name="mode" value="update" ${current === 0 ? 'disabled="disabled"' : ''}>
-          <span>Filter currently selected (${this.ctx.provider.getSelection().length} rows)</span>
-        </label>`
-    );
+    const filtered = this.column.getFilter() ?? [];
+    const selected = this.ctx.provider.getSelection().length;
+    const total = this.ctx.provider.getTotalNumberOfRows();
+    const visible = this.column.findMyRanker().getOrderLength();
+
+    if (selected === 0 && filtered.length === 0) {
+      // no rows selected and no filter set
+      node.insertAdjacentText('beforeend', 'Select rows to apply this filter');
+    } else if (selected > 0 && filtered.length === 0) {
+      // rows select but no filter yet
+      node.insertAdjacentHTML(
+        'beforeend',
+        `<div class="${cssClass('dialog-table')}">
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input type="radio" checked="checked" name="mode" value="none">
+          <span>
+            <div class="${cssClass('dialog-filter-table-entry-label')}">No filter</div>
+            <div class="${cssClass('dialog-filter-table-entry-stats')}">${visible}/${total}</div>
+          </span>
+        </label>
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input type="radio" name="mode" value="update">
+          <span>
+            <div class="${cssClass('dialog-filter-table-entry-label')}">Set filter to current selection</div>
+            <div class="${cssClass('dialog-filter-table-entry-stats')}">${selected}/${total}</div>
+          </span>
+        </label>
+      </div>`
+      );
+    } else {
+      node.insertAdjacentHTML(
+        'beforeend',
+        `<div class="${cssClass('dialog-table')}" >
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input type="radio" ${filtered.length === 0 ? 'checked="checked"' : ''} name="mode" value="none">
+          <span>
+            <div class="${cssClass('dialog-filter-table-entry-label')}">Remove filter</div>
+            <div class="${cssClass('dialog-filter-table-entry-stats')}">?/${total}</div>
+          </span>
+        </label>
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input type="radio" ${filtered.length > 0 ? 'checked="checked"' : ''} name="mode" value="keep">
+          <span>
+            <div class="${cssClass('dialog-filter-table-entry-label')}">Keep current filter</div>
+            <div class="${cssClass('dialog-filter-table-entry-stats')}">${filtered.length}/${total}</div>
+          </span>
+        </label>
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
+          <input type="radio" name="mode" value="update" ${selected === 0 ? 'disabled="disabled"' : ''}>
+          <span>
+            <div class="${cssClass('dialog-filter-table-entry-label')}">Set filter to current selection</div>
+            <div class="${cssClass('dialog-filter-table-entry-stats')}">${selected}/${total}</div>
+          </span>
+        </label>
+      </div>`
+      );
+    }
     const inputs = Array.from(node.querySelectorAll('input'));
 
     this.enableLivePreviews(inputs);
