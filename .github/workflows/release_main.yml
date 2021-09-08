@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.4.0
         with:
           node-version: '14'
       - name: Extract version
@@ -36,9 +36,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
         with:
+          name: v${{ steps.extract_version.outputs.version }}
+          tag: v${{ steps.extract_version.outputs.version }}
           version: ${{ steps.extract_version.outputs.version }}
+          prerelease: ${{ needs.create_release.outputs.tag_name == 'next' }}
           publish: true
-          prerelease: ${{ steps.extract_version.outputs.npm_tag == 'next' }}
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
       npm_tag: ${{ steps.extract_version.outputs.npm_tag }}
@@ -50,22 +52,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.4.0
         with:
           node-version: '14.x'
       - run: npm i -g yarn
-      - run: yarn set version berry && yarn set version latest
-      - run: cat .yarnrc_patch.yml >> .yarnrc.yml
       - run: yarn config set checksumBehavior ignore
       - name: Cache Node.js modules
         uses: actions/cache@v2.1.6
         with:
           path: |
-            ./.yarn
+            ./.yarn/cache
+            ./.yarn/unplugged
             ~/.cache/Cypress
-          key: ${{ runner.os }}-yarn2-v3-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-yarn2-v4-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn2-v3
+            ${{ runner.os }}-yarn2-v4
       - run: yarn install
       - run: yarn clean
       - run: yarn compile
@@ -75,7 +76,7 @@ jobs:
       - run: yarn docs
       - run: yarn cy:compile
       - run: yarn cy:junit
-      - uses: actions/upload-artifact@v2.2.3
+      - uses: actions/upload-artifact@v2.2.4
         if: failure()
         with:
           name: cypress-artifacts
@@ -121,19 +122,8 @@ jobs:
         with:
           ref: develop
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Reset develop branch
+      - name: Reset dev branch
         run: |
           git fetch origin main:main
-          git reset --hard main
-      - name: Create pull request into develop
-        uses: peter-evans/create-pull-request@v3
-        with:
-          branch: bot/sync-main-dev
-          commit-message: 'chore: sync main-dev'
-          base: develop
-          title: 'chore: sync main->dev'
-          labels: chore
-          reviewers: sgratzl
-          assignees: sgratzl
-          body: |
-            Syncing Main->Dev.
+          git merge main
+          git push

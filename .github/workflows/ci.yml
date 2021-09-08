@@ -7,22 +7,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.4.0
         with:
           node-version: '14.x'
       - run: npm i -g yarn
-      - run: yarn set version berry && yarn set version latest
-      - run: cat .yarnrc_patch.yml >> .yarnrc.yml
       - run: yarn config set checksumBehavior ignore
       - name: Cache Node.js modules
         uses: actions/cache@v2.1.6
         with:
           path: |
-            ./.yarn
+            ./.yarn/cache
+            ./.yarn/unplugged
             ~/.cache/Cypress
-          key: ${{ runner.os }}-yarn2-v3-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-yarn2-v4-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn2-v3
+            ${{ runner.os }}-yarn2-v4
       - run: yarn install
       - run: yarn clean
       - run: yarn compile
@@ -32,7 +31,7 @@ jobs:
       - run: yarn docs
       - run: yarn cy:compile
       - run: yarn cy:junit
-      - uses: actions/upload-artifact@v2.2.3
+      - uses: actions/upload-artifact@v2.2.4
         if: failure()
         with:
           name: cypress-artifacts
