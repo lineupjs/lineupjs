@@ -155,6 +155,10 @@
   }
 }
 
+.#{$lu_css_prefix}-dialog-table-entry-wide {
+  min-width: 19em;
+}
+
 .#{$lu_css_prefix}-dialog-filter-table-color {
   width: 1.2em;
   margin: 0 0.5em;
