@@ -11,6 +11,9 @@ import { renderMissingDOM } from './missing';
 import { groupByKey } from './TableCellRenderer';
 import { noRenderer, noop } from './utils';
 import { cssClass } from '../styles';
+import { clear } from '../internal';
+import { updateLinkList } from './LinkCellRenderer';
+import { renderTable } from './MapBarCellRenderer';
 
 export default class LinkMapCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Table with Links';
@@ -19,45 +22,55 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
     return col instanceof LinkMapColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: LinkMapColumn): ICellRenderer {
-    const align = col.alignment || 'left';
+  create(col: LinkMapColumn, context: IRenderContext): ICellRenderer {
+    const align = context.sanitize(col.alignment || 'left');
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
-        node.innerHTML = col
-          .getLinkMap(d)
-          .map(
-            ({ key, value }) => `
-          <div class="${cssClass('table-cell')}">${key}</div>
-          <div class="${cssClass('table-cell')} ${align !== 'left' ? cssClass(align) : ''}">
-            <a href="${value.href}" target="_blank" rel="noopener">${value.alt}</a>
-          </div>`
-          )
-          .join('');
+        clear(node);
+        const doc = node.ownerDocument;
+        for (const { key, value } of col.getLinkMap(d)) {
+          const keyNode = doc.createElement('div');
+          keyNode.classList.add(cssClass('table-cell'));
+          keyNode.textContent = key;
+          node.appendChild(keyNode);
+          const valueNode = doc.createElement('div');
+          valueNode.classList.add(cssClass('table-cell'));
+          if (align !== 'left') {
+            valueNode.classList.add(cssClass(align));
+          }
+          const valueA = doc.createElement('a');
+          valueA.href = value.href;
+          valueA.textContent = value.alt;
+          valueA.target = '_blank';
+          valueA.rel = 'noopener';
+          valueNode.appendChild(valueA);
+          node.appendChild(valueNode);
+        }
       },
       render: noop,
     };
   }
 
-  private static example(arr: IKeyValue<ILink>[]) {
+  private static example(arr: IKeyValue<ILink>[]): [ILink[], boolean] {
     const numExampleRows = 5;
-    const examples: string[] = [];
+    const examples: ILink[] = [];
     for (const row of arr) {
       if (!row || !row.value.href) {
         continue;
       }
-      examples.push(`<a target="_blank" rel="noopener" href="${row.value.href}">${row.value.alt}</a>`);
+      examples.push(row.value);
       if (examples.length >= numExampleRows) {
         break;
       }
     }
     if (examples.length === 0) {
-      return '';
+      return [[], false];
     }
-    return `${examples.join(', ')}${examples.length < arr.length} ? ', &hellip;': ''}`;
+    return [examples, examples.length < arr.length];
   }
 
   createGroup(col: LinkMapColumn, context: IRenderContext): IGroupCellRenderer {
@@ -71,15 +84,17 @@ export default class LinkMapCellRenderer implements ICellRendererFactory {
             if (typeof entries === 'symbol') {
               return;
             }
-            node.innerHTML = entries
-              .map(({ key, values }) => {
-                const data = LinkMapCellRenderer.example(values);
-                if (!data) {
-                  return `<div>${key}</div><div class="${cssClass('missing')}"></div>`;
-                }
-                return `<div>${key}</div><div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}>${data}</div>`;
-              })
-              .join('');
+            renderTable(node, entries, (n, { values }) => {
+              if (align !== 'left') {
+                n.classList.add(cssClass(align));
+              }
+              const [links, more] = LinkMapCellRenderer.example(values);
+              if (links.length === 0) {
+                n.classList.add(cssClass('missing'));
+              } else {
+                updateLinkList(n, links, more);
+              }
+            });
           });
       },
     };

@@ -5,6 +5,9 @@ import { getToolbar } from './toolbarResolvers';
 
 /** @internal */
 export function actionCSSClass(title: string) {
+  if (title.endsWith('…')) {
+    title = title.slice(0, -2);
+  }
   if (title.endsWith('&hellip;')) {
     title = title.slice(0, -'&hellip;'.length - 1);
   }
@@ -29,13 +32,14 @@ export function addIconDOM(
       : isActionMode(col, action, mode, 'menu+shortcut')
       ? 's'
       : 'r';
+    const title = ctx.sanitize(action.title);
     node.insertAdjacentHTML(
       'beforeend',
-      `<i data-a="${m}" title="${action.title}" class="${actionCSSClass(action.title.toString())} ${cssClass(
-        `feature-${action.options.featureLevel || 'basic'}`
-      )} ${cssClass(`feature-${action.options.featureCategory || 'others'}`)}"><span${
+      `<i data-a="${m}" title="${title}" class="${actionCSSClass(title)} ${cssClass(
+        `feature-${ctx.sanitize(action.options.featureLevel || 'basic')}`
+      )} ${cssClass(`feature-${ctx.sanitize(action.options.featureCategory || 'others')}`)}"><span${
         !showLabel ? ` class="${cssClass('aria')}" aria-hidden="true"` : ''
-      }>${action.title}</span> </i>`
+      }>${title}</span> </i>`
     );
     const i = node.lastElementChild as HTMLElement;
     i.onclick = (evt) => {

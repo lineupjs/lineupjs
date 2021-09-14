@@ -1,3 +1,4 @@
+import type { IRankingHeaderContext } from '..';
 import { HierarchyColumn, ICategoryInternalNode, ICutOffNode, resolveInnerNodes } from '../../model';
 import ADialog, { IDialogContext } from './ADialog';
 
@@ -8,7 +9,11 @@ export default class CutOffHierarchyDialog extends ADialog {
 
   private readonly before: ICutOffNode;
 
-  constructor(private readonly column: HierarchyColumn, dialog: IDialogContext, private readonly idPrefix: string) {
+  constructor(
+    private readonly column: HierarchyColumn,
+    dialog: IDialogContext,
+    private readonly ctx: IRankingHeaderContext
+  ) {
     super(dialog, {
       livePreview: 'cutOff',
     });
@@ -19,17 +24,18 @@ export default class CutOffHierarchyDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
+    const s = this.ctx.sanitize;
     node.insertAdjacentHTML(
       'beforeend',
       `
-        <input type="text" value="${this.before.node.label}" required="required" autofocus="autofocus" list="ui${
-        this.idPrefix
+        <input type="text" value="${s(this.before.node.label)}" required="required" autofocus="autofocus" list="ui${
+        this.ctx.idPrefix
       }lineupHierarchyList" placeholder="cut off node">
         <input type="number" value="${
           isFinite(this.before.maxDepth) ? this.before.maxDepth : ''
         }" placeholder="max depth (&infin;)">
-        <datalist id="ui${this.idPrefix}lineupHierarchyList">${this.innerNodes.map(
-        (node) => `<option value="${node.path}">${node.label}</option>`
+        <datalist id="ui${this.ctx.idPrefix}lineupHierarchyList">${this.innerNodes.map(
+        (node) => `<option value="${s(node.path)}">${s(node.label)}</option>`
       )}</datalist>`
     );
 

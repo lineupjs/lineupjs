@@ -17,11 +17,16 @@ export default class ActionRenderer implements ICellRendererFactory {
     return col instanceof ActionColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: ActionColumn): ICellRenderer {
+  create(col: ActionColumn, context: IRenderContext): ICellRenderer {
     const actions = col.actions;
     return {
       template: `<div class="${cssClass('actions')} ${cssClass('hover-only')}">${actions
-        .map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`)
+        .map(
+          (a) =>
+            `<span title='${context.sanitize(a.name)}' class='${context.sanitize(
+              a.className || ''
+            )}'>${context.sanitize(a.icon || '')}</span>`
+        )
         .join('')}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         forEachChild(n, (ni: HTMLSpanElement, i: number) => {
@@ -39,7 +44,12 @@ export default class ActionRenderer implements ICellRendererFactory {
     const actions = col.groupActions;
     return {
       template: `<div class="${cssClass('actions')} ${cssClass('hover-only')}">${actions
-        .map((a) => `<span title='${a.name}' class='${a.className || ''}'>${a.icon || ''}</span>`)
+        .map(
+          (a) =>
+            `<span title='${context.sanitize(a.name)}' class='${context.sanitize(
+              a.className || ''
+            )}'>${context.sanitize(a.icon || '')}</span>`
+        )
         .join('')}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
         forEachChild(n, (ni: HTMLSpanElement, i: number) => {

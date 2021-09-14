@@ -21,3 +21,19 @@ export default function domElementCache(doc: Document): (html: string) => HTMLEl
     return node;
   };
 }
+
+export function createSanitizer(doc: Document): (v: string) => string {
+  // prepare variables
+  // based on https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery/17546215#17546215
+  const textNode = doc.createTextNode('');
+  const wrapper = doc.createElement('div');
+  wrapper.appendChild(textNode);
+
+  return (v: string) => {
+    if (!v) {
+      return '';
+    }
+    textNode.nodeValue = v;
+    return wrapper.innerHTML;
+  };
+}

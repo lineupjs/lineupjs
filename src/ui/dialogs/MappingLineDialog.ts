@@ -204,6 +204,7 @@ export class MappingLine {
       level: this.adapter.dialog.level + 1,
       attachment: this.node as any,
       idPrefix: this.adapter.dialog.idPrefix,
+      sanitize: this.adapter.dialog.sanitize,
     };
     const dialog = new MappingLineDialog(this, ctx, this.adapter);
     dialog.open();

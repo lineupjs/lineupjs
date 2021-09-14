@@ -47,7 +47,9 @@ export default class DialogManager extends AEventDispatcher {
     this.onDialogBackgroundClick = options.onDialogBackgroundClick;
     this.node = doc.createElement('div');
     this.node.classList.add(cssClass('backdrop'));
-    this.node.innerHTML = `<div class="${cssClass('backdrop-bg')}"></div>`;
+    const backdrop = doc.createElement('div');
+    backdrop.classList.add(cssClass('backdrop-bg'));
+    this.node.appendChild(backdrop);
     this.node.onclick = () => {
       this.removeAll();
     };

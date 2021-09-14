@@ -71,14 +71,23 @@ export default class CategoricalColorMappingDialog extends ADialog {
       </div>
       ${this.column.categories
         .map(
-          (d) => `
+          () => `
         <label class="${cssClass('checkbox')} ${cssClass('dialog-color-table-entry')}">
-          <input data-cat="${d.name}" type="color" value="${color(mapping.apply(d))!.hex()}">
-          <span>${d.label}</span>
+          <input data-cat="" type="color" value="">
+          <span> </span>
         </label>`
         )
         .join('')}
     </div>`
+    );
+    const categories = this.column.categories;
+    Array.from(node.querySelectorAll(`label.${cssClass('checkbox')}.${cssClass('dialog-color-table-entry')}`)).forEach(
+      (n, i) => {
+        const cat = categories[i];
+        (n.firstElementChild as HTMLElement).dataset.cat = cat.name;
+        (n.firstElementChild as HTMLInputElement).value = color(mapping.apply(cat))!.formatHex();
+        n.lastElementChild.textContent = cat.label;
+      }
     );
 
     this.findInput('select').onchange = (evt) => {
@@ -100,7 +109,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
   reset() {
     const cats = this.column.categories;
     this.forEach('[data-cat]', (n: HTMLInputElement, i) => {
-      n.value = color(cats[i]!.color)!.hex();
+      n.value = color(cats[i]!.color)!.formatHex();
     });
   }
 
@@ -109,7 +118,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
     const map = new Map<ICategory, string>();
     this.forEach('input[data-cat]', (n: HTMLInputElement, i) => {
       const cat = cats[i];
-      if (color(cat.color)!.hex() !== n.value) {
+      if (color(cat.color)!.formatHex() !== n.value) {
         map.set(cat, n.value);
       }
     });
