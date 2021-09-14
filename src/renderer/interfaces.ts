@@ -162,6 +162,7 @@ export interface IRenderContext {
   readonly idPrefix: string;
 
   asElement(html: string): HTMLElement;
+  sanitize(text: string): string;
 
   colWidth(col: Column): number;
 

@@ -17,7 +17,7 @@ export default class ShowTopNDialog extends ADialog {
     node.insertAdjacentHTML(
       'beforeend',
       `
-      <input type="number" min="0" step="1" value="${this.before}">`
+      <input type="number" min="0" step="1" value="${this.dialog.sanitize(String(this.before))}">`
     );
 
     this.enableLivePreviews('input');

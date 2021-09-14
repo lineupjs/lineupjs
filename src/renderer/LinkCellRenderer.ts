@@ -1,4 +1,4 @@
-import { LinkColumn, Column, IDataRow, IOrderedGroup } from '../model';
+import { LinkColumn, Column, IDataRow, IOrderedGroup, ILink } from '../model';
 import {
   IRenderContext,
   ERenderMode,
@@ -10,7 +10,7 @@ import {
 import { renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';
 import { cssClass } from '../styles';
-import type { ISequence } from '../internal';
+import { clear, ISequence } from '../internal';
 
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Link';
@@ -19,8 +19,8 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return col instanceof LinkColumn && mode !== ERenderMode.SUMMARY;
   }
 
-  create(col: LinkColumn): ICellRenderer {
-    const align = col.alignment || 'left';
+  create(col: LinkColumn, context: IRenderContext): ICellRenderer {
+    const align = context.sanitize(col.alignment || 'left');
     return {
       template: `<a${
         align !== 'left' ? ` class="${cssClass(align)}"` : ''
@@ -38,21 +38,21 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static exampleText(col: LinkColumn, rows: ISequence<IDataRow>) {
+  private static exampleText(col: LinkColumn, rows: ISequence<IDataRow>): [ILink[], boolean] {
     const numExampleRows = 5;
-    const examples: string[] = [];
+    const examples: ILink[] = [];
     rows.every((row) => {
       const v = col.getLink(row);
       if (!v) {
         return true;
       }
-      examples.push(`<a target="_blank" rel="noopener"  href="${v.href}">${v.alt}</a>`);
+      examples.push(v);
       return examples.length < numExampleRows;
     });
     if (examples.length === 0) {
-      return '';
+      return [[], false];
     }
-    return `${examples.join(', ')}${examples.length < rows.length ? ', &hellip;' : ''}`;
+    return [examples, examples.length < rows.length];
   }
 
   createGroup(col: LinkColumn, context: IRenderContext): IGroupCellRenderer {
@@ -61,12 +61,12 @@ export default class LinkCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
         return context.tasks
           .groupExampleRows(col, group, 'link', (rows) => LinkCellRenderer.exampleText(col, rows))
-          .then((text) => {
-            if (typeof text === 'symbol') {
+          .then((out) => {
+            if (typeof out === 'symbol') {
               return;
             }
-            n.classList.toggle(cssClass('missing'), !text);
-            n.innerHTML = text;
+            const [links, more] = out;
+            updateLinkList(n, links, more);
           });
       },
     };
@@ -74,5 +74,24 @@ export default class LinkCellRenderer implements ICellRendererFactory {
 
   createSummary(): ISummaryRenderer {
     return noRenderer;
+  }
+}
+
+export function updateLinkList(n: HTMLElement, links: ILink[], more: boolean) {
+  n.classList.toggle(cssClass('missing'), links.length === 0);
+  clear(n);
+  links.forEach((l, i) => {
+    if (i > 0) {
+      n.appendChild(n.ownerDocument.createTextNode(', '));
+    }
+    const a = n.ownerDocument.createElement('a');
+    a.href = l.href;
+    a.textContent = l.alt;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    n.appendChild(a);
+  });
+  if (more) {
+    n.insertAdjacentText('beforeend', ', …');
   }
 }

@@ -28,6 +28,7 @@ export default class ChangeRendererDialog extends ADialog {
     console.assert(item.length > 1 || group.length > 1 || summary.length > 1); // otherwise no need to show this
 
     const byName = (a: IRenderInfo, b: IRenderInfo) => a.label.localeCompare(b.label);
+    const s = this.ctx.sanitize;
     node.insertAdjacentHTML(
       'beforeend',
       `
@@ -36,9 +37,9 @@ export default class ChangeRendererDialog extends ADialog {
         .sort(byName)
         .map(
           (d) =>
-            ` <label class="${cssClass('checkbox')}"><input type="radio" name="renderer" value="${d.type}" ${
+            ` <label class="${cssClass('checkbox')}"><input type="radio" name="renderer" value="${s(d.type)}" ${
               current === d.type ? 'checked' : ''
-            }><span>${d.label}</span></label>`
+            }><span>${s(d.label)}</span></label>`
         )
         .join('')}
       <strong>Group Visualization</strong>
@@ -46,9 +47,9 @@ export default class ChangeRendererDialog extends ADialog {
         .sort(byName)
         .map(
           (d) =>
-            ` <label class="${cssClass('checkbox')}"><input type="radio" name="group" value="${d.type}" ${
+            ` <label class="${cssClass('checkbox')}"><input type="radio" name="group" value="${s(d.type)}" ${
               currentGroup === d.type ? 'checked' : ''
-            }><span>${d.label}</span></label>`
+            }><span>${s(d.label)}</span></label>`
         )
         .join('')}
       <strong>Summary Visualization</strong>
@@ -56,9 +57,9 @@ export default class ChangeRendererDialog extends ADialog {
         .sort(byName)
         .map(
           (d) =>
-            ` <label class="${cssClass('checkbox')}"><input type="radio" name="summary" value="${d.type}" ${
+            ` <label class="${cssClass('checkbox')}"><input type="radio" name="summary" value="${s(d.type)}" ${
               currentSummary === d.type ? 'checked' : ''
-            }><span>${d.label}</span></label>`
+            }><span>${s(d.label)}</span></label>`
         )
         .join('')}
     `

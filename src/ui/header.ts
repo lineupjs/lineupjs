@@ -32,6 +32,15 @@ import { addIconDOM, actionCSSClass, isActionMode, updateIconState } from './hea
 
 export { createToolbarMenuItems, actionCSSClass } from './headerTooltip';
 
+function setTextOrEmpty(node: HTMLElement, condition: boolean, text: string) {
+  if (condition) {
+    node.innerHTML = '&nbsp;';
+  } else {
+    node.textContent = text;
+  }
+  return node;
+}
+
 /** @internal */
 export interface IHeaderOptions {
   dragAble: boolean;
@@ -62,14 +71,14 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     : cssClass;
   const summary = col.getMetaData().summary;
   node.innerHTML = `
-    <div class="${extra('label')} ${cssClass('typed-icon')}">${
-    col.getWidth() < MIN_LABEL_WIDTH ? '&nbsp;' : col.label
-  }</div>
-    <div class="${extra('sublabel')}">${col.getWidth() < MIN_LABEL_WIDTH || !summary ? '&nbsp;' : summary}</div>
+    <div class="${extra('label')} ${cssClass('typed-icon')}"></div>
+    <div class="${extra('sublabel')}"></div>
     <div class="${extra('toolbar')}"></div>
     <div class="${extra('spacing')}"></div>
     <div class="${extra('handle')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"></div>
   `;
+  setTextOrEmpty(node.firstElementChild as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH, col.label);
+  setTextOrEmpty(node.children[1] as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH || !summary, summary);
 
   // addTooltip(node, col);
 
@@ -101,11 +110,11 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
   const label = node.getElementsByClassName(cssClass('label'))[0]! as HTMLElement;
-  label.innerHTML = col.getWidth() < minWidth ? '&nbsp;' : col.label;
+  setTextOrEmpty(label, col.getWidth() < minWidth, col.label);
   const summary = col.getMetaData().summary;
   const subLabel = node.getElementsByClassName(cssClass('sublabel'))[0] as HTMLElement;
   if (subLabel) {
-    subLabel.innerHTML = col.getWidth() < minWidth || !summary ? '&nbsp;' : summary;
+    setTextOrEmpty(subLabel, col.getWidth() < minWidth || !summary, summary);
   }
 
   let title = col.label;
@@ -167,9 +176,7 @@ export function createShortcutMenuItems(
   // need a more entry
   node.insertAdjacentHTML(
     'beforeend',
-    `<i data-a="m" data-m="${moreEntries}" title="More &hellip;" class="${actionCSSClass('More')}">${aria(
-      'More &hellip;'
-    )}</i>`
+    `<i data-a="m" data-m="${moreEntries}" title="More …" class="${actionCSSClass('More')}">${aria('More …')}</i>`
   );
   const i = node.lastElementChild as HTMLElement;
   i.onclick = (evt) => {

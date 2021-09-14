@@ -27,11 +27,11 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return { left, right };
   }
 
-  private static createDOMContext(col: ISetColumn) {
+  private static createDOMContext(col: ISetColumn, sanitize: (v: string) => string) {
     const categories = col.categories;
     let templateRows = '';
     for (const cat of categories) {
-      templateRows += `<div class="${cssClass('upset-dot')}" title="${cat.label}"></div>`;
+      templateRows += `<div class="${cssClass('upset-dot')}" title="${sanitize(cat.label)}"></div>`;
     }
     return {
       template: `<div><div class="${cssClass('upset-line')}"></div>${templateRows}</div>`,
@@ -59,7 +59,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
   create(col: ISetColumn, context: IRenderContext): ICellRenderer {
-    const { template, render } = UpSetCellRenderer.createDOMContext(col);
+    const { template, render } = UpSetCellRenderer.createDOMContext(col, context.sanitize);
     const width = context.colWidth(col);
     const cellDimension = width / col.categories.length;
 
@@ -105,7 +105,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: ISetColumn, context: IRenderContext): IGroupCellRenderer {
-    const { template, render } = UpSetCellRenderer.createDOMContext(col);
+    const { template, render } = UpSetCellRenderer.createDOMContext(col, context.sanitize);
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -123,7 +123,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
   createSummary(col: ISetColumn, context: IRenderContext): ISummaryRenderer {
-    const { template, render } = UpSetCellRenderer.createDOMContext(col);
+    const { template, render } = UpSetCellRenderer.createDOMContext(col, context.sanitize);
     return {
       template,
       update: (n: HTMLElement) => {

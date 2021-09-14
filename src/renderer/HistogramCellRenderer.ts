@@ -172,7 +172,7 @@ function interactiveSummary(
 export function createNumberFilter(
   col: INumberColumn & IMapAbleColumn,
   parent: HTMLElement,
-  context: { idPrefix: string; dialogManager: DialogManager; tasks: IRenderTasks },
+  context: { idPrefix: string; dialogManager: DialogManager; tasks: IRenderTasks; sanitize: (v: string) => string },
   livePreviews: boolean
 ) {
   const renderer = getHistDOMRenderer(col);
@@ -276,7 +276,7 @@ function createFilterInfo(col: IMapAbleColumn, filter = col.getFilter()): IFilte
 
 function createFilterContext(
   col: IMapAbleColumn,
-  context: { idPrefix: string; dialogManager: DialogManager }
+  context: { idPrefix: string; dialogManager: DialogManager; sanitize: (v: string) => string }
 ): IFilterContext<number> {
   const domain = col.getMapping().domain;
   const format = col.getNumberFormat();
@@ -303,6 +303,7 @@ function createFilterContext(
           manager: context.dialogManager,
           level: context.dialogManager.maxLevel + 1,
           idPrefix: context.idPrefix,
+          sanitize: context.sanitize,
         };
         const dialog = new InputNumberDialog(dialogCtx, resolve, {
           value,

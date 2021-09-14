@@ -63,7 +63,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: ICategoricalLikeColumn, context: IRenderContext): IGroupCellRenderer {
-    const { template, update } = hist(col, false);
+    const { template, update } = hist(col, false, context.sanitize);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -93,7 +93,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
 }
 
 function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, interactive: boolean) {
-  const { template, update } = hist(col, interactive);
+  const { template, update } = hist(col, interactive, context.sanitize);
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
@@ -113,7 +113,7 @@ function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, int
 }
 
 function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, interactive: boolean) {
-  const { template, update } = hist(col, interactive || wideEnough(col));
+  const { template, update } = hist(col, interactive || wideEnough(col), context.sanitize);
   let filterUpdate: (missing: number, col: HasCategoricalFilter) => void;
   return {
     template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
@@ -141,13 +141,13 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
   };
 }
 
-function hist(col: ICategoricalLikeColumn, showLabels: boolean) {
+function hist(col: ICategoricalLikeColumn, showLabels: boolean, sanitize: (v: string) => string) {
   const mapping = col.getColorMapping();
   const bins = col.categories
     .map(
       (c) =>
-        `<div class="${cssClass('histogram-bin')}" title="${c.label}: 0" data-cat="${c.name}" ${
-          showLabels ? `data-title="${c.label}"` : ''
+        `<div class="${cssClass('histogram-bin')}" title="${sanitize(c.label)}: 0" data-cat="${sanitize(c.name)}" ${
+          showLabels ? `data-title="${sanitize(c.label)}"` : ''
         }><div style="height: 0; background-color: ${mapping.apply(c)}"></div></div>`
     )
     .join('');
