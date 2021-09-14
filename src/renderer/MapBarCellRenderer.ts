@@ -1,4 +1,4 @@
-import { round } from '../internal';
+import { clear, round } from '../internal';
 import {
   Column,
   IMapColumn,
@@ -43,23 +43,22 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(node, col, d)) {
           return;
         }
-        node.innerHTML = col
-          .getMap(d)
-          .map(({ key, value }) => {
-            if (Number.isNaN(value)) {
-              return `<div class="${cssClass('table-cell')}">${key}</div><div class="${cssClass(
-                'table-cell'
-              )} ${cssClass('missing')}"></div>`;
-            }
+        renderTable(node, col.getMap(d), (n, { value }) => {
+          if (Number.isNaN(value)) {
+            n.classList.add(cssClass('missing'));
+          } else {
             const w = round(value * 100, 2);
-            return `<div class="${cssClass('table-cell')}">${key}</div>
-            <div class="${cssClass('table-cell')}" title="${formatter(value)}">
-              <div style="width: ${w}%; background-color: ${colorOf(col, d, imposer)}">
-                <span class="${cssClass('hover-only')}">${value}</span>
-              </div>
-            </div>`;
-          })
-          .join('');
+            n.title = formatter(value);
+            const inner = n.ownerDocument.createElement('div');
+            inner.style.width = `${w}%`;
+            inner.style.backgroundColor = colorOf(col, d, imposer);
+            n.appendChild(inner);
+            const span = n.ownerDocument.createElement('span');
+            span.classList.add(cssClass('hover-only'));
+            span.textContent = formatter(value);
+            inner.appendChild(span);
+          }
+        });
       },
     };
   }
@@ -78,5 +77,22 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
         value.children[1]!.textContent = range[1];
       },
     };
+  }
+}
+
+export function renderTable<E extends { key: string }>(
+  node: HTMLElement,
+  arr: readonly E[],
+  renderValue: (v: HTMLElement, entry: E) => void
+) {
+  clear(node);
+  const doc = node.ownerDocument;
+  for (const entry of arr) {
+    const keyNode = doc.createElement('div');
+    keyNode.textContent = entry.key;
+    node.appendChild(keyNode);
+    const valueNode = doc.createElement('div');
+    renderValue(valueNode, entry);
+    node.appendChild(valueNode);
   }
 }

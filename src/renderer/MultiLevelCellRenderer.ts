@@ -229,11 +229,11 @@ export default class MultiLevelCellRenderer
         const toWait: IAbortAblePromise<void>[] = [];
         const children = Array.from(n.children) as HTMLElement[];
         cols.forEach((col, ci) => {
-          const cnode = children[ci];
-          cnode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('group'));
-          cnode.dataset.group = 'g';
-          cnode.style.gridColumnStart = (ci + 1).toString();
-          const r = col.groupRenderer!.update(cnode, group);
+          const childNode = children[ci];
+          childNode.classList.add(cssClass(this.stacked ? 'stack-sub' : 'nested-sub'), cssClass('group'));
+          childNode.dataset.group = 'g';
+          childNode.style.gridColumnStart = (ci + 1).toString();
+          const r = col.groupRenderer!.update(childNode, group);
           if (r) {
             toWait.push(r);
           }

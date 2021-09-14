@@ -39,7 +39,7 @@ export default class WeightsEditDialog extends ADialog {
           <span class="${cssClass('dialog-filter-color-bar')}">
             <span style="background-color: ${colorOf(children[i])}; width: ${round(weight * 100, 2)}%"></span>
           </span>
-          ${children[i].label}
+          ${this.dialog.sanitize(children[i].label)}
         </div>`
           )
           .join('')}

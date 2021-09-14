@@ -8,7 +8,7 @@ import type { IImposer, IRenderContext } from '../renderer';
 import { chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer } from '../renderer/renderers';
 import { cssClass, engineCssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
-import domElementCache from './domElementCache';
+import domElementCache, { createSanitizer } from './domElementCache';
 import EngineRanking, { IEngineRankingContext } from './EngineRanking';
 import { EMode, IRankingHeaderContext, IRankingHeaderContextContainer } from './interfaces';
 import SlopeGraph from './SlopeGraph';
@@ -89,6 +89,7 @@ export default class EngineRenderer extends AEventDispatcher {
         this.options.resolveToolbarDialogAddons(col, keys, this.options.toolbarDialogAddons),
       flags: this.options.flags as ILineUpFlags,
       asElement: domElementCache(parent.ownerDocument!),
+      sanitize: createSanitizer(parent.ownerDocument!),
       renderer: (col: Column, imposer?: IImposer) => {
         const r = chooseRenderer(col, this.options.renderers);
         return r.create!(col, this.ctx, imposer);

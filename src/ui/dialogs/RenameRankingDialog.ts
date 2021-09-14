@@ -18,7 +18,9 @@ export default class RenameRankingDialog extends ADialog {
     node.insertAdjacentHTML(
       'beforeend',
       `
-      <input type="text" value="${this.ranking.getLabel()}" required autofocus placeholder="name">`
+      <input type="text" value="${this.dialog.sanitize(
+        this.ranking.getLabel()
+      )}" required autofocus placeholder="name">`
     );
   }
 

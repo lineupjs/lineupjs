@@ -32,9 +32,9 @@ export default class SidePanelRanking {
     this.header.classList.add(cssClass('side-panel-ranking-header'), cssClass('side-panel-ranking-label'));
     this.dropdown.classList.add(cssClass('side-panel-ranking-label'));
 
-    this.dropdown.innerHTML = this.header.innerHTML = `<span>${ranking.getLabel()}</span><i class="${actionCSSClass(
-      'more'
-    )}" title="More &hellip;">${aria('More &hellip;')}</i>`;
+    this.dropdown.innerHTML = `<span></span><i class="${actionCSSClass('more')}" title="More …">${aria('More …')}</i>`;
+    this.header.innerHTML = this.dropdown.innerHTML;
+    this.header.firstElementChild.textContent = ranking.getLabel();
     (this.header.lastElementChild! as HTMLElement).onclick = (this.dropdown.lastElementChild! as HTMLElement).onclick =
       (evt) => {
         evt.stopPropagation();

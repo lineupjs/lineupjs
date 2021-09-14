@@ -21,6 +21,7 @@ export interface IDialogContext {
   level: number;
   manager: DialogManager;
   idPrefix: string;
+  sanitize(v: string): string;
 }
 
 export function dialogContext(
@@ -36,6 +37,7 @@ export function dialogContext(
     level,
     manager: ctx.dialogManager,
     idPrefix: ctx.idPrefix,
+    sanitize: ctx.sanitize,
   };
 }
 
@@ -124,7 +126,9 @@ abstract class ADialog {
     const parent = this.attachment.closest<HTMLElement>(`.${cssClass()}`)!;
 
     if (this.options.title) {
-      this.node.insertAdjacentHTML('afterbegin', `<strong>${this.options.title}</strong>`);
+      const title = this.node.ownerDocument!.createElement('strong');
+      title.textContent = this.options.title;
+      this.node.insertAdjacentElement('afterbegin', title);
     }
     if (!this.options.popup) {
       this.appendDialogButtons();
