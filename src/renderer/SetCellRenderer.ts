@@ -18,14 +18,14 @@ export default class SetCellRenderer implements ICellRendererFactory {
     return isSetColumn(col);
   }
 
-  private static createDOMContext(col: ICategoricalLikeColumn) {
+  private static createDOMContext(col: ICategoricalLikeColumn, sanitize: (v: string) => string) {
     const categories = col.categories;
     const mapping = col.getColorMapping();
     let templateRows = '';
     for (const cat of categories) {
-      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${
+      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${sanitize(
         cat.label
-      }" style="background-color: ${mapping.apply(cat)}"></div>`;
+      )}" style="background-color: ${mapping.apply(cat)}"></div>`;
     }
     return {
       templateRow: templateRows,
@@ -39,7 +39,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
   }
 
   create(col: ISetColumn, context: IRenderContext): ICellRenderer {
-    const { templateRow, render } = SetCellRenderer.createDOMContext(col);
+    const { templateRow, render } = SetCellRenderer.createDOMContext(col, context.sanitize);
     const width = context.colWidth(col);
     const cellDimension = width / col.dataLength!;
     const cats = col.categories;
@@ -76,7 +76,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: ISetColumn, context: IRenderContext): IGroupCellRenderer {
-    const { templateRow, render } = SetCellRenderer.createDOMContext(col);
+    const { templateRow, render } = SetCellRenderer.createDOMContext(col, context.sanitize);
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
@@ -98,14 +98,14 @@ export default class SetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: ICategoricalLikeColumn): ISummaryRenderer {
+  createSummary(col: ICategoricalLikeColumn, context: IRenderContext): ISummaryRenderer {
     const categories = col.categories;
     const mapping = col.getColorMapping();
     let templateRows = `<div class="${cssClass('heatmap')}">`;
     const labels = wideEnoughCat(col);
     for (const cat of categories) {
-      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${cat.label}"${
-        labels ? ` data-title="${cat.label}"` : ''
+      templateRows += `<div class="${cssClass('heatmap-cell')}" title="${context.sanitize(cat.label)}"${
+        labels ? ` data-title="${context.sanitize(cat.label)}"` : ''
       } style="background-color: ${mapping.apply(cat)}"></div>`;
     }
     templateRows += '</div>';

@@ -50,9 +50,9 @@ export default class Hierarchy {
           const desc = node.ownerDocument.createElement('span');
           desc.textContent = summary;
           node.appendChild(desc);
-          return undefined;
+        } else {
+          node.textContent = item.text;
         }
-        return item.text;
       },
     };
     this.groupAdder = new SearchBox(
@@ -103,7 +103,7 @@ export default class Hierarchy {
       node.insertAdjacentHTML(
         'beforeend',
         `<div data-id="${col.id}" class="${cssClass('toolbar')} ${cssClass('hierarchy-entry')}">
-      <div class="${cssClass('label')} ${cssClass('typed-icon')}">${col.label}</div>
+      <div class="${cssClass('label')} ${cssClass('typed-icon')}"> </div>
       ${addons.length > 0 ? `<i title="Customize" class="${actionCSSClass('customize')}">${aria('Customize')}</i>` : ''}
       <i title="Move Up" class="${actionCSSClass('Move Up')}">${aria('Move Up')}</i>
       <i title="Move Down" class="${actionCSSClass('Move Down')}">${aria('Move Down')}</i>
@@ -111,6 +111,7 @@ export default class Hierarchy {
       </div>`
       );
       const last = node.lastElementChild! as HTMLElement;
+      last.firstElementChild!.textContent = col.label;
 
       function prevent(evt: Event) {
         evt.preventDefault();

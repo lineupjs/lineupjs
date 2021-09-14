@@ -15,9 +15,10 @@ export default class MoreRankingOptionsDialog extends APopup {
   }
 
   private addIcon(node: HTMLElement, title: string, onClick: (evt: MouseEvent) => void) {
+    const sanitized = this.ctx.sanitize(title);
     node.insertAdjacentHTML(
       'beforeend',
-      `<i title="${title}" class="${actionCSSClass(title)}"><span>${title}</span> </i>`
+      `<i title="${sanitized}" class="${actionCSSClass(title)}"><span>${sanitized}</span> </i>`
     );
     const i = node.lastElementChild as HTMLElement;
     i.onclick = (evt) => {

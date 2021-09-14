@@ -25,7 +25,7 @@ export default function groupString(
       <input type="radio" name="${dialog.idPrefix}groupString" value="${EStringGroupCriteriaType.startsWith}" id="${
       dialog.idPrefix
     }RW" ${type === EStringGroupCriteriaType.startsWith ? 'checked' : ''}>
-      <span>Text starts with &hellip;</span>
+      <span>Text starts with …</span>
     </label>
     <label class="${cssClass('checkbox')}">
       <input type="radio" name="${dialog.idPrefix}groupString" value="${EStringGroupCriteriaType.regex}" id="${
