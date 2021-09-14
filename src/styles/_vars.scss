@@ -82,7 +82,8 @@ $lu_assets: './assets' !default;
 
 // $lu_use_font_awesome: true !default;
 $lu_use_font_awesome: false !default;
-
+// include font awesome files instead of manually adding them
+$lu_include_font_awesome: false !default;
 /**
  * Width of the drag handler text of the histogram filter
  */

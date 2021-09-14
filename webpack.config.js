@@ -28,6 +28,7 @@ module.exports = (_env, options) => {
     node: false, // no polyfills
     entry: {
       LineUpJS: './src/bundle.ts',
+      LineUpJS_fontawesome: './src/style_fontawesome.scss',
     },
     output: {
       path: resolve(__dirname, 'build'),

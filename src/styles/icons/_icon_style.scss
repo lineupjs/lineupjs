@@ -30,7 +30,7 @@
   content: $lu_icon_caret_right;
 }
 
-@if $lu_use_font_awesome == true {
+@if $lu_include_font_awesome == true {
   @font-face {
     font-family: 'Font Awesome 5 Free';
     font-style: normal;
