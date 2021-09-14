@@ -25,3 +25,7 @@
     margin-left: math.div($lu_renderer_dot_single_size, -2);
   }
 }
+
+.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-dot[data-group='d'] {
+  overflow-x: unset;
+}
