@@ -7200,7 +7200,6 @@ __metadata:
     ts-loader: ^9.2.6
     tslib: ^2.3.1
     typedoc: ^0.22.9
-    typedoc-plugin-as-member-of: ^1.0.2
     typescript: ~4.4
     url-loader: ^4.1.1
     webpack: ^5.64.1
@@ -10629,15 +10628,6 @@ resolve@^2.0.0-next.3:
   dependencies:
     is-typedarray: ^1.0.0
   checksum: 99c11aaa8f45189fcfba6b8a4825fd684a321caa9bd7a76a27cf0c7732c174d198b99f449c52c3818107430b5f41c0ccbbfb75cb2ee3ca4a9451710986d61a60
-  languageName: node
-  linkType: hard
-
-"typedoc-plugin-as-member-of@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "typedoc-plugin-as-member-of@npm:1.0.2"
-  peerDependencies:
-    typedoc: ">=0.7 <1.11.1"
-  checksum: 5d82e236c85b2dd4314952f2200223022f96e84ca330e4b4992b792f6762246259d17137305c98134e885042c85bea863d77ca8eaeaee4a6e05fa094d75b761a
   languageName: node
   linkType: hard
 
