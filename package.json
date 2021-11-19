@@ -78,7 +78,7 @@
     "eslint:fix": "yarn run eslint --fix",
     "stylelint": "stylelint \"src/**/*.scss\"",
     "lint": "yarn run eslint && yarn run prettier && yarn run stylelint",
-    "docs": "yarn run clean:compile && typedoc --tsconfig tsconfig.dev.json --out ./docs/ --plugin typedoc-plugin-as-member-of src tsd.d.ts",
+    "docs": "yarn run clean:compile && typedoc --tsconfig tsconfig.dev.json --out ./docs/ src tsd.d.ts",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --passWithNoTests --watch",
     "test:coverage": "jest --passWithNoTests --coverage",
