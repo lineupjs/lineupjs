@@ -206,6 +206,12 @@ export interface ILineUpOptions {
    * @default false
    */
   ignoreUnsupportedBrowser: boolean;
+
+  /**
+   * option to enable to copy selected rows using ctrl-c
+   * @default false
+   */
+  copyableRows: boolean;
 }
 
 export interface ITaggleOptions extends ILineUpOptions {
@@ -298,5 +304,6 @@ export function defaultOptions(): ITaggleOptions {
     },
 
     ignoreUnsupportedBrowser: false,
+    copyableRows: true,
   };
 }
