@@ -1,6 +1,15 @@
-import { Ranking, isNumberColumn, Column, IColumnDesc, isSupportType, isMapAbleColumn, DEFAULT_COLOR } from '../model';
+import {
+  Ranking,
+  isNumberColumn,
+  Column,
+  IColumnDesc,
+  isSupportType,
+  isMapAbleColumn,
+  DEFAULT_COLOR,
+  IDataRow,
+} from '../model';
 import { colorPool, MAX_COLORS } from '../model/internal';
-import { concat, equal, extent, range, resolveValue } from '../internal';
+import { concat, equal, extent, range, resolveValue, ISequence } from '../internal';
 import { timeParse } from 'd3-time-format';
 import type { IDataProvider, IDeriveOptions, IExportOptions } from './interfaces';
 
@@ -326,6 +335,44 @@ export function deriveColors(columns: IColumnDesc[]) {
   return columns;
 }
 
+const DEFAULT_EXPORT_OPTIONS: IExportOptions = {
+  separator: '\t',
+  newline: '\n',
+  header: true,
+  quote: false,
+  quoteChar: '"',
+  filter: (c: Column) => !isSupportType(c),
+  verboseColumnHeaders: false,
+};
+
+function createCSVExporter(columns: readonly Column[], options: IExportOptions) {
+  //optionally quote not numbers
+  const escape = new RegExp(`[${options.quoteChar}]`, 'g');
+
+  function quote(v: any, c?: Column) {
+    const l = String(v);
+    if ((options.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
+      return `${options.quoteChar}${l.replace(escape, options.quoteChar + options.quoteChar)}${options.quoteChar}`;
+    }
+    return l;
+  }
+
+  function addHeader() {
+    return columns
+      .map((d) => quote(`${d.label}${options.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`))
+      .join(options.separator);
+  }
+
+  function addRow(row: IDataRow) {
+    return columns.map((c) => quote(c.getExportValue(row, 'text'), c)).join(options.separator);
+  }
+
+  return {
+    addHeader,
+    addRow,
+  };
+}
+
 /**
  * utility to export a ranking to a table with the given separator
  * @param ranking
@@ -333,44 +380,46 @@ export function deriveColors(columns: IColumnDesc[]) {
  * @param options
  * @returns {Promise<string>}
  */
-export function exportRanking(ranking: Ranking, data: any[], options: Partial<IExportOptions> = {}) {
-  const opts: IExportOptions = Object.assign(
-    {
-      separator: '\t',
-      newline: '\n',
-      header: true,
-      quote: false,
-      quoteChar: '"',
-      filter: (c: Column) => !isSupportType(c),
-      verboseColumnHeaders: false,
-    },
-    options
-  );
-
-  //optionally quote not numbers
-  const escape = new RegExp(`[${opts.quoteChar}]`, 'g');
-
-  function quote(v: any, c?: Column) {
-    const l = String(v);
-    if ((opts.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
-      return `${opts.quoteChar}${l.replace(escape, opts.quoteChar + opts.quoteChar)}${opts.quoteChar}`;
-    }
-    return l;
-  }
-
+export function exportRanking(ranking: Ranking, data: any[], options: Partial<IExportOptions> = {}): string {
+  const opts: IExportOptions = Object.assign({}, DEFAULT_EXPORT_OPTIONS, options);
   const columns = ranking.flatColumns.filter((c) => opts.filter(c));
-  const order = ranking.getOrder();
 
+  const order = ranking.getOrder();
+  const exporter = createCSVExporter(columns, opts);
   const r: string[] = [];
+
   if (opts.header) {
-    r.push(
-      columns
-        .map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`))
-        .join(opts.separator)
-    );
+    r.push(exporter.addHeader());
   }
   data.forEach((row, i) => {
-    r.push(columns.map((c) => quote(c.getExportValue({ v: row, i: order[i] }, 'text'), c)).join(opts.separator));
+    r.push(exporter.addRow({ v: row, i: order[i] }));
+  });
+  return r.join(opts.newline);
+}
+
+/**
+ * export table helper
+ * @param columnsOrRanking
+ * @param data
+ * @param options
+ * @returns {string}
+ */
+export function exportTable(
+  columnsOrRanking: readonly Column[] | Ranking,
+  data: ISequence<IDataRow>,
+  options: Partial<IExportOptions> = {}
+): string {
+  const opts: IExportOptions = Object.assign({}, DEFAULT_EXPORT_OPTIONS, options);
+  const columns =
+    columnsOrRanking instanceof Ranking ? columnsOrRanking.flatColumns.filter((c) => opts.filter(c)) : columnsOrRanking;
+  const exporter = createCSVExporter(columns, opts);
+  const r: string[] = [];
+
+  if (opts.header) {
+    r.push(exporter.addHeader());
+  }
+  data.forEach((row) => {
+    r.push(exporter.addRow(row));
   });
   return r.join(opts.newline);
 }
