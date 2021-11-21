@@ -28,6 +28,10 @@ export default class Taggle extends ALineUp {
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation),
     });
 
+    if (this.options.copyableRows) {
+      this.addCopyListener();
+    }
+
     if (!this.isBrowserSupported) {
       this.spaceFilling = null;
       this.renderer = null;

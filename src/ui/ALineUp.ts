@@ -176,6 +176,28 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   protected enableHighlightListening(_enable: boolean) {
     // hook
   }
+
+  protected addCopyListener() {
+    this.node.addEventListener('copy', (e) => {
+      if (!this.data || !this.data.getFirstRanking()) {
+        return;
+      }
+      const selections = this.data.getSelection();
+      let data: Promise<string> | null = null;
+      if (selections.length === 0) {
+        // copy all
+        data = this.data.exportTable(this.data.getFirstRanking());
+      } else {
+        // copy subset
+        data = this.data.exportSelection();
+      }
+      e.preventDefault();
+      data.then((csv) => {
+        e.clipboardData.setData('text/plain', csv);
+        e.clipboardData.setData('text/tsv', csv);
+      });
+    });
+  }
 }
 
 export default ALineUp;
