@@ -112,7 +112,7 @@ export default class CategoricalFilterDialog extends ADialog {
         this.forEach(`.${cssClass('dialog-filter-table-entry-stats')}`, (n: HTMLElement, i) => {
           const bin = summary.hist[i];
           const raw = data.hist[i];
-          n.textContent = `${bin.count}/${raw.count}`;
+          n.textContent = `${bin.count.toLocaleString()}/${raw.count.toLocaleString()}`;
         });
       });
     if (!ready) {
