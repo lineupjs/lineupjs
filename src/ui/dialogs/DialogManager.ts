@@ -72,7 +72,7 @@ export default class DialogManager extends AEventDispatcher {
 
   setHighlight(mask: { left: number; top: number; width: number; height: number }) {
     const area = this.node.firstElementChild as HTMLElement;
-    // @see http://bennettfeely.com/clippy/ -> select `Frame` example
+    // @see https://bennettfeely.com/clippy/ -> select `Frame` example
     // use webkit prefix for safari
     area.style.clipPath = (area.style as any).webkitClipPath = `polygon(
       0% 0%,

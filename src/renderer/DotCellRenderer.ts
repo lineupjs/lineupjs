@@ -1,4 +1,4 @@
-import { GUESSES_GROUP_HEIGHT } from '../constants';
+import { GUESSES_GROUP_HEIGHT, GUESSED_ROW_HEIGHT } from '../constants';
 import { concatSeq, ISequence, round } from '../internal';
 import {
   Column,
@@ -23,6 +23,8 @@ import {
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { noRenderer } from './utils';
 
+const PADDED_HEIGHT = 0.8;
+
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Dot';
   readonly groupTitle: string = 'Dots';
@@ -35,13 +37,16 @@ export default class DotCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     const pi2 = Math.PI * 2;
     const radius = DOT.size / 2;
+    const availableHeight = GUESSES_GROUP_HEIGHT * PADDED_HEIGHT - radius * 2;
+    const shift = GUESSES_GROUP_HEIGHT * ((1 - PADDED_HEIGHT) / 2) + radius;
+
     const render = (ctx: CanvasRenderingContext2D, vs: { value: number; color: string | null }[], width: number) => {
       ctx.save();
       ctx.globalAlpha = DOT.opacity;
       for (const v of vs) {
         ctx.fillStyle = v.color || DOT.color;
         const x = Math.min(width - radius, Math.max(radius, v.value * width));
-        const y = round(Math.random() * (GUESSES_GROUP_HEIGHT - DOT.size) + radius, 2);
+        const y = round(Math.random() * availableHeight + shift, 2);
         ctx.beginPath();
         ctx.moveTo(x + radius, y);
         ctx.arc(x, y, radius, 0, pi2, true);
@@ -57,13 +62,15 @@ export default class DotCellRenderer implements ICellRendererFactory {
   }
 
   private static getDOMRenderer(col: INumberColumn, sanitize: (v: string) => string) {
-    const dots = isNumbersColumn(col) ? col.dataLength! : 1;
+    const single = !isNumbersColumn(col);
+    const dots = !isNumbersColumn(col) ? 1 : col.dataLength!;
     let tmp = '';
     for (let i = 0; i < dots; ++i) {
       tmp += `<div style='background-color: ${DEFAULT_COLOR}' title=''></div>`;
     }
 
     const update = (n: HTMLElement, data: ISequence<{ value: number; label: string; color: string | null }>) => {
+      n.classList.toggle(cssClass('dot-single'), single);
       //adapt the number of children
       const l = data.length;
       if (n.children.length !== l) {
@@ -72,13 +79,19 @@ export default class DotCellRenderer implements ICellRendererFactory {
         }, '');
       }
       const children = n.children;
+
+      const radius = DOT.size / 2;
+      const radiusPercentage = (100 * radius) / GUESSED_ROW_HEIGHT;
+      const availableHeight = 100 * PADDED_HEIGHT - radiusPercentage * 2;
+      const shift = 100 * ((1 - PADDED_HEIGHT) / 2) + radiusPercentage;
+
       data.forEach((v, i) => {
         const d = children[i] as HTMLElement;
         d.title = v.label;
         d.style.display = Number.isNaN(v.value) ? 'none' : null;
         d.style.left = `${round(v.value * 100, 2)}%`;
         // jitter
-        d.style.top = l > 1 ? `${round(Math.random() * 80 + 10, 2)}%` : null;
+        d.style.top = l > 1 ? `${round(Math.random() * availableHeight + shift, 2)}%` : null;
         d.style.backgroundColor = v.color;
       });
     };
