@@ -38,7 +38,7 @@
           {
             type: 'number',
             label: 'Lazy',
-            accessor: (row) => loaded ? row.v.a : undefined,
+            accessor: (row) => (loaded ? row.v.a : undefined),
             lazyLoaded: true,
             domain: [0, Number.NaN],
           },
