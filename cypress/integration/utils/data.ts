@@ -1,5 +1,5 @@
 export function rnd(seed = 0) {
-  // Adapted from http://indiegamr.com/generate-repeatable-random-numbers-in-js/
+  // Adapted from https://indiegamr.com/generate-repeatable-random-numbers-in-js/
   if (seed === undefined) {
     seed = Date.now();
   }
