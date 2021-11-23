@@ -765,6 +765,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fortawesome/fontawesome-free@npm:^5.15.4":
+  version: 5.15.4
+  resolution: "@fortawesome/fontawesome-free@npm:5.15.4"
+  checksum: 32281c3df4075290d9a96dfc22f72fadb3da7055d4117e48d34046b8c98032a55fa260ae351b0af5d6f6fb57a2f5d79a4abe52af456da35195f7cb7dda27b4a2
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.6.0":
   version: 0.6.0
   resolution: "@humanwhocodes/config-array@npm:0.6.0"
@@ -7134,6 +7141,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "lineupjs@workspace:."
   dependencies:
+    "@fortawesome/fontawesome-free": ^5.15.4
     "@popperjs/core": ^2.10.2
     "@types/d3-color": ^2.0.1
     "@types/d3-dispatch": ^2.0.0
@@ -7170,7 +7178,6 @@ __metadata:
     eslint-plugin-react-hooks: ^4.3.0
     fast-deep-equal: ^3.1.3
     file-loader: ^6.2.0
-    font-awesome: ^4.7.0
     fork-ts-checker-webpack-plugin: ^6.4.0
     jest: ^27.3.1
     lineupengine: ^2.4.0
@@ -7191,7 +7198,6 @@ __metadata:
     thread-loader: ^3.0.4
     ts-jest: ^27.0.7
     ts-loader: ^9.2.6
-    tslib: ^2.3.1
     typedoc: ^0.22.9
     typescript: ~4.4
     url-loader: ^4.1.1
@@ -10784,6 +10790,23 @@ typescript@~4.1.5:
   dependencies:
     punycode: ^2.1.0
   checksum: 7167432de6817fe8e9e0c9684f1d2de2bb688c94388f7569f7dbdb1587c9f4ca2a77962f134ec90be0cc4d004c939ff0d05acc9f34a0db39a3c797dada262633
+  languageName: node
+  linkType: hard
+
+"url-loader@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "url-loader@npm:4.1.1"
+  dependencies:
+    loader-utils: ^2.0.0
+    mime-types: ^2.1.27
+    schema-utils: ^3.0.0
+  peerDependencies:
+    file-loader: "*"
+    webpack: ^4.0.0 || ^5.0.0
+  peerDependenciesMeta:
+    file-loader:
+      optional: true
+  checksum: c1122a992c6cff70a7e56dfc2b7474534d48eb40b2cc75467cde0c6972e7597faf8e43acb4f45f93c2473645dfd803bcbc20960b57544dd1e4c96e77f72ba6fd
   languageName: node
   linkType: hard
 
