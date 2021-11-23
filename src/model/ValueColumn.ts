@@ -12,7 +12,7 @@ import Column, {
   visibilityChanged,
 } from './Column';
 import type { IValueColumnDesc, IDataRow, ITypeFactory } from './interfaces';
-import type { IEventListener } from '../internal';
+import type { IEventListener, ISequence } from '../internal';
 
 /**
  * emitted when the data of this column has been loaded
@@ -42,6 +42,10 @@ export default class ValueColumn<T> extends Column {
     //find accessor
     this.accessor = desc.accessor! || (() => null);
     this.loaded = desc.lazyLoaded !== true;
+  }
+
+  onDataUpdate(_rows: ISequence<IDataRow>): void {
+    // hook for listening todata updates
   }
 
   protected createEventList() {
