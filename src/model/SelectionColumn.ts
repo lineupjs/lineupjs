@@ -82,7 +82,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     super(
       id,
       integrateDefaults(desc, {
-        width: 20,
+        width: 50,
       })
     );
   }
