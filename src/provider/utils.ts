@@ -483,3 +483,7 @@ export function rangeSelection(
   provider.setSelection(selection);
   return true;
 }
+
+export function isPromiseLike<T>(promiseLike: Promise<T> | T): promiseLike is Promise<T> {
+  return promiseLike != null && typeof (promiseLike as Promise<T>).then === 'function';
+}

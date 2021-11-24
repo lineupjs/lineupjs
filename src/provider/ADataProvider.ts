@@ -36,7 +36,7 @@ import {
 import { models } from '../model/models';
 import { forEachIndices, everyIndices, toGroupID, unifyParents } from '../model/internal';
 import { IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions } from './interfaces';
-import { exportRanking, map2Object, object2Map, exportTable } from './utils';
+import { exportRanking, map2Object, object2Map, exportTable, isPromiseLike } from './utils';
 import type { IRenderTasks } from '../renderer';
 import { restoreCategoricalColorMapping } from '../model/CategoricalColorMappingFunction';
 import { createColorMappingFunction, colorMappingFunctions } from '../model/ColorMappingFunction';
@@ -1165,8 +1165,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: Ranking, options: Partial<IExportOptions> = {}): Promise<string> {
-    return Promise.resolve(this.view(ranking.getOrder())).then((data) => exportRanking(ranking, data, options));
+  exportTable(ranking: Ranking, options: Partial<IExportOptions> = {}): Promise<string> | string {
+    const data = this.view(ranking.getOrder());
+    if (isPromiseLike(data)) {
+      return data.then((dataImpl) => exportRanking(ranking, dataImpl, options));
+    }
+    return exportRanking(ranking, data, options);
   }
   /**
    * utility to export the selection within the given ranking to a table with the given separator
@@ -1174,15 +1178,19 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param options
    * @returns {Promise<string>}
    */
-  exportSelection(options: Partial<IExportOptions> & { ranking?: Ranking } = {}): Promise<string> {
+  exportSelection(options: Partial<IExportOptions> & { ranking?: Ranking } = {}): Promise<string> | string {
     const selection = this.getSelection();
     const ranking = options.ranking || this.getFirstRanking();
     if (!ranking) {
-      return Promise.resolve('');
+      return '';
     }
-    return Promise.all(selection.map((s) => this.getRow(s))).then((data) => {
-      return exportTable(ranking, data, options);
-    });
+    const rows = selection.map((s) => this.getRow(s));
+    if (rows.some((row) => isPromiseLike(row))) {
+      return Promise.all(rows).then((data) => {
+        return exportTable(ranking, data, options);
+      });
+    }
+    return exportTable(ranking, rows as IDataRow[], options);
   }
 }
 
