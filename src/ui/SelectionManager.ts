@@ -27,6 +27,7 @@ export declare function selectRange(from: number, to: number, additional: boolea
 export default class SelectionManager extends AEventDispatcher {
   static readonly EVENT_SELECT_RANGE = 'selectRange';
   private static readonly MIN_DISTANCE = 10;
+  private static readonly MAX_X_DISTANCE = 30;
 
   private readonly hr: HTMLHRElement;
 
@@ -51,21 +52,28 @@ export default class SelectionManager extends AEventDispatcher {
       this.body.removeEventListener('mouseup', mouseUp);
       this.body.removeEventListener('mouseleave', mouseUp);
 
-      if (!this.start) {
+      this.body.classList.remove(cssClass('selection-active'));
+      this.hr.classList.remove(cssClass('selection-active'));
+      const start = this.start;
+      this.start = null;
+
+      if (!start) {
         return;
       }
+
+      const valid = Math.abs(start.x - evt.clientX) < SelectionManager.MAX_X_DISTANCE;
+      if (!valid) {
+        return;
+      }
+
       const row = engineCssClass('tr');
-      const startNode = this.start.node.classList.contains(row)
-        ? this.start.node
-        : this.start.node.closest<HTMLElement>(`.${row}`);
+
+      const startNode = start.node.classList.contains(row) ? start.node : start.node.closest<HTMLElement>(`.${row}`);
+
       // somehow on firefox the mouseUp will be triggered on the original node
       // thus search the node explicitly
       const end = this.body.ownerDocument!.elementFromPoint(evt.clientX, evt.clientY) as HTMLElement;
       const endNode = end.classList.contains(row) ? end : end.closest<HTMLElement>(`.${row}`);
-      this.start = null;
-
-      this.body.classList.remove(cssClass('selection-active'));
-      this.hr.classList.remove(cssClass('selection-active'));
 
       this.select(evt.ctrlKey, startNode, endNode);
     };
@@ -76,7 +84,6 @@ export default class SelectionManager extends AEventDispatcher {
         const r = root.getBoundingClientRect();
         this.start = { x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: evt.target as HTMLElement };
 
-        this.body.classList.add(cssClass('selection-active'));
         body.addEventListener('mousemove', mouseMove, {
           passive: true,
         });
@@ -122,10 +129,15 @@ export default class SelectionManager extends AEventDispatcher {
 
   private showHint(end: MouseEvent) {
     const start = this.start!;
+    const sx = start.x;
     const sy = start.y;
+    const ex = end.clientX;
     const ey = end.clientY;
 
-    const visible = Math.abs(sy - ey) > SelectionManager.MIN_DISTANCE;
+    const visible =
+      Math.abs(sy - ey) > SelectionManager.MIN_DISTANCE && Math.abs(sx - ex) < SelectionManager.MAX_X_DISTANCE;
+
+    this.body.classList.toggle(cssClass('selection-active'), visible);
     this.hr.classList.toggle(cssClass('selection-active'), visible);
     this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(
       ey - sy
