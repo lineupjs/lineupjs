@@ -24,7 +24,7 @@ import { integrateDefaults } from './internal';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createSelectionDesc(label = 'Selection Checkboxes') {
+export function createSelectionDesc(label = 'Selections') {
   return { type: 'selection', label, fixed: true };
 }
 
