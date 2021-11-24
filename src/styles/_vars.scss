@@ -45,6 +45,10 @@ $lu_renderer_dot_single_color: $lu_renderer_dot_color !default;
 $lu_renderer_dot_single_size: 7px !default;
 $lu_renderer_dot_single_opacity: 0.75 !default;
 
+$lu_renderer_tick_color:$lu_renderer_dot_color !default;
+$lu_renderer_tick_size: 3px !default;
+$lu_renderer_tick_opacity: 0.75 !default;
+
 $lu_hist_color: #c1c1c1;
 
 $lu_engine_grip_gap: 5px !default;
