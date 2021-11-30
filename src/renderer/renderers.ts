@@ -34,6 +34,7 @@ import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 import DateCellRenderer from './DateCellRenderer';
 import DateHistogramCellRenderer from './DateHistogramCellRenderer';
 import StringHistogramCellRenderer from './StringHistogramCellRenderer';
+import ViolinPlotCellRenderer from './ViolinPlotCellRenderer';
 
 const defaultCellRenderer = new DefaultCellRenderer();
 /**
@@ -75,6 +76,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   table: new TableCellRenderer(),
   upset: new UpSetCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
+  violin: new ViolinPlotCellRenderer(),
 };
 
 export function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {

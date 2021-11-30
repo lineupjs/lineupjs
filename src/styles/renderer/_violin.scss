@@ -1,0 +1,9 @@
+@use 'sass:math';
+
+@import '../vars';
+
+.#{$lu_css_prefix}-renderer-violin {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
