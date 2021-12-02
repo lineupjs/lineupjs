@@ -24,7 +24,7 @@
         }
         const builder = LineUpJS.builder(arr);
         builder.deriveColumns();
-        builder.column(LineUpJS.buildNumberColumn('a').renderer('number', 'violin', 'violin'))
+        builder.column(LineUpJS.buildNumberColumn('a').renderer('number', 'violin', 'violin'));
         // and two rankings
         const ranking = LineUpJS.buildRanking()
           .supportTypes()
