@@ -162,7 +162,6 @@ export interface IBuilder<T, R> {
   build(): R;
 }
 
-
 const GAUSSIAN_CONST = Math.sqrt(2 * Math.PI);
 
 // See <http://en.wikipedia.org/wiki/Kernel_(statistics)>.
@@ -220,7 +219,7 @@ function computeKDE(
   };
   const step = (max - min) / (points - 1);
   return Array.from({ length: points }, (_, i) => {
-    const v = i == points - 1 ? max : min + i * step;
+    const v = i === points - 1 ? max : min + i * step;
     return {
       v,
       p: computePoint(v),
@@ -240,7 +239,7 @@ export function boxplotBuilder(
   let sum = 0;
   let length = 0;
   let missing = 0;
-  let kdePointCount = kdePoints ?? 100;
+  const kdePointCount = kdePoints ?? 100;
 
   // if fixed size use the typed array else a regular array
   const values: number[] = [];
