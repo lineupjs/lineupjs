@@ -218,9 +218,9 @@ function computeKDE(
     }
     return sum / bandwidth / len;
   };
-  const step = (max - min) / (len - 1);
-  return empty(points).map((_, i) => {
-    const v = i == len - 1 ? max : min + i * step;
+  const step = (max - min) / (points - 1);
+  return Array.from({ length: points }, (_, i) => {
+    const v = i == points - 1 ? max : min + i * step;
     return {
       v,
       p: computePoint(v),

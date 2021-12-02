@@ -1,4 +1,6 @@
-import type { IAdvancedBoxPlotData } from '../internal';
+import { scaleLinear } from 'd3-scale';
+import { GUESSES_GROUP_HEIGHT } from '../constants';
+import { IAdvancedBoxPlotData, extent } from '../internal';
 import { Column, INumberColumn, IOrderedGroup, isMapAbleColumn, isNumberColumn, NumberColumn } from '../model';
 import { tasksAll } from '../provider';
 import { cssClass } from '../styles';
@@ -15,17 +17,6 @@ import {
 } from './interfaces';
 import { noRenderer } from './utils';
 
-const VIOLIN = `<div title="">
-  <svg class="${cssClass('violin')}">
-  </svg>
-</div>`;
-
-const MAPPED_VIOLIN = `<div title="">
-  <svg class="${cssClass('violin')}">
-  </svg>
-  <span class="${cssClass('mapping-hint')}"></span><span class="${cssClass('mapping-hint')}"></span>
-</div>`;
-
 export default class ViolinPlotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Violin Plot';
 
@@ -40,7 +31,7 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
   createGroup(col: INumberColumn, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
     const sort = col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined ? col.getSortMethod() : '';
     return {
-      template: VIOLIN,
+      template: createViolinTemplate(col.getWidth(), false),
       update: (n: HTMLElement, group: IOrderedGroup) => {
         return tasksAll([
           context.tasks.groupBoxPlotStats(col, group, false),
@@ -59,6 +50,7 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
           if (isMissing) {
             return;
           }
+          console.log(data[0].group);
           renderViolin(col, n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
         });
       },
@@ -72,7 +64,7 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
     imposer?: IImposer
   ): ISummaryRenderer {
     return {
-      template: isMapAbleColumn(col) ? MAPPED_VIOLIN : VIOLIN,
+      template: createViolinTemplate(col.getWidth(), isMapAbleColumn(col)),
       update: (n: HTMLElement) => {
         return tasksAll([
           context.tasks.summaryBoxPlotStats(col, false),
@@ -100,21 +92,68 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
             Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
           }
 
-          renderViolin(col, n, mappedSummary, rawSummary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
+          renderViolin(col, n, mappedSummary, rawSummary, sort, colorOf(col, null, imposer));
         });
       },
     };
   }
 }
 
+function createViolinTemplate(width: number, isMapped: boolean) {
+  const mappedHelper = isMapped
+    ? `<span class="${cssClass('mapping-hint')}"></span><span class="${cssClass('mapping-hint')}"></span>`
+    : '';
+  const h = GUESSES_GROUP_HEIGHT;
+  return `<div title="">
+      <svg class="${cssClass('violin')}"
+           viewBox="0 0 ${width} ${h}" preserveAspectRatio="none meet">
+        <path class="${cssClass('violin-path')}" d="M0,0 L100,0"></path>
+        <line x1="0" x2="0" y1="${h / 2}" y2="${h / 2}" class="${cssClass('violin-iqr')}"></line>
+        <line x1="0" x2="0" y1="${h / 2 - h * 0.25}" y2="${h / 2 + h * 0.25}" class="${cssClass('violin-mean')}"></line>
+        <line x1="0" x2="0" y1="${h / 2 - h * 0.25}" y2="${h / 2 + h * 0.25}" class="${cssClass(
+    'violin-median'
+  )}"></line>
+      </svg>
+      ${mappedHelper}
+    </div>`;
+}
+
+function computePath(xScale: (v: number) => number, data: IAdvancedBoxPlotData) {
+  const halfH = GUESSES_GROUP_HEIGHT / 2;
+  const yScale = scaleLinear([0, halfH - 1]).domain(extent(data.kdePoints, (d) => d.p));
+  const pathF: string[] = [];
+  const pathB: string[] = [];
+  for (const point of data.kdePoints) {
+    const x = xScale(point.v);
+    const y = yScale(point.p);
+    pathF.push(`${pathF.length === 0 ? 'M' : 'L'}${x},${halfH - y}`);
+    pathB.push(`L${x},${halfH + y}`);
+  }
+  pathB.reverse();
+  return pathF.join(' ') + pathB.join(' ') + ' Z';
+}
+
 function renderViolin(
   col: INumberColumn,
   n: HTMLElement,
-  _data: IAdvancedBoxPlotData,
+  data: IAdvancedBoxPlotData,
   label: IAdvancedBoxPlotData,
   _sort: string,
-  _color: string | null,
-  _hasRange = false
+  color: string | null
 ) {
   n.title = computeLabel(col, label);
+  const svg = n.firstElementChild as SVGSVGElement;
+  svg.style.color = color;
+  const path = svg.firstElementChild as SVGPathElement;
+  const xScale = scaleLinear([0, col.getWidth()]).domain([0, 1]);
+  path.setAttribute('d', computePath(xScale, data));
+  const iqrLine = svg.children[1] as SVGLineElement;
+  const medianLine = svg.children[2] as SVGCircleElement;
+  const meanLine = svg.children[3] as SVGCircleElement;
+  medianLine.setAttribute('x1', xScale(data.median).toString());
+  medianLine.setAttribute('x2', xScale(data.median).toString());
+  meanLine.setAttribute('x1', xScale(data.mean).toString());
+  meanLine.setAttribute('x2', xScale(data.mean).toString());
+  iqrLine.setAttribute('x1', xScale(data.q1).toString());
+  iqrLine.setAttribute('x2', xScale(data.q3).toString());
 }

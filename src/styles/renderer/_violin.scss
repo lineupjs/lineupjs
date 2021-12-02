@@ -5,5 +5,26 @@
 .#{$lu_css_prefix}-renderer-violin {
   display: flex;
   flex-direction: row;
-  align-items: center;
+}
+
+.#{$lu_css_prefix}-violin {
+  flex: 1 1 0;
+}
+
+.#{$lu_css_prefix}-violin-path {
+  fill: currentColor;
+  fill-opacity: 0.5;
+  stroke: currentColor;
+  vector-effect: non-scaling-stroke;
+}
+
+.#{$lu_css_prefix}-violin-mean {
+  stroke-dasharray: 2 1;
+}
+
+.#{$lu_css_prefix}-violin-median,
+.#{$lu_css_prefix}-violin-mean,
+.#{$lu_css_prefix}-violin-iqr {
+  stroke: currentColor;
+  vector-effect: non-scaling-stroke;
 }
