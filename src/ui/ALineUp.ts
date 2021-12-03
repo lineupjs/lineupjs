@@ -11,6 +11,7 @@ import { DataProvider, IDataProviderDump } from '../provider';
 import { cssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import type { ADialog } from './dialogs';
+import { isPromiseLike } from '../provider/utils';
 
 /**
  * emitted when the highlight changes
@@ -175,6 +176,33 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
 
   protected enableHighlightListening(_enable: boolean) {
     // hook
+  }
+
+  protected addCopyListener() {
+    this.node.addEventListener('copy', (e) => {
+      if (!this.data || !this.data.getFirstRanking()) {
+        return;
+      }
+      const selections = this.data.getSelection();
+      let data: Promise<string> | string;
+      if (selections.length === 0) {
+        // copy all
+        data = this.data.exportTable(this.data.getFirstRanking());
+      } else {
+        // copy subset
+        data = this.data.exportSelection();
+      }
+      e.preventDefault();
+      if (isPromiseLike(data)) {
+        data.then((csv) => {
+          e.clipboardData.setData('text/plain', csv);
+          e.clipboardData.setData('text/tsv', csv);
+        });
+      } else {
+        e.clipboardData.setData('text/plain', data);
+        e.clipboardData.setData('text/tsv', data);
+      }
+    });
   }
 }
 
