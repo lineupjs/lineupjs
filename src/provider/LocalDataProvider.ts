@@ -13,13 +13,11 @@ import {
   IOrderedGroup,
   CompositeColumn,
 } from '../model';
-import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import type { IDataProviderOptions } from './interfaces';
 import { CompareLookup } from './sort';
 import type { ARenderTaskOptions, IRenderTaskExecutor } from './tasks';
 import { DirectRenderTasks } from './DirectRenderTasks';
-import { ScheduleRenderTasks } from './ScheduledTasks';
 import { joinGroups, mapIndices, duplicateGroup } from '../model/internal';
 
 export interface ILocalDataProviderOptions extends ARenderTaskOptions {
@@ -33,11 +31,6 @@ export interface ILocalDataProviderOptions extends ARenderTaskOptions {
    * default: false
    */
   jumpToSearchResult: boolean;
-
-  /**
-   * specify the task executor to use direct = no delay, scheduled = run when idle
-   */
-  taskExecutor: 'direct' | 'scheduled';
 }
 
 interface ISortHelper {
@@ -48,7 +41,7 @@ interface ISortHelper {
 /**
  * a data provider based on an local array
  */
-export default class LocalDataProvider extends ACommonDataProvider {
+export default class LocalDataProvider extends ADataProvider {
   private readonly ooptions: ILocalDataProviderOptions = {
     /**
      * whether the filter should be applied to all rankings regardless where they are
@@ -56,8 +49,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
     filterGlobally: false,
 
     jumpToSearchResult: false,
-
-    taskExecutor: 'direct',
 
     stringTopNCount: 10,
   };
@@ -76,10 +67,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     super(columns, options);
     Object.assign(this.ooptions, options);
     this._dataRows = toRows(_data);
-    this.tasks =
-      this.ooptions.taskExecutor === 'direct'
-        ? new DirectRenderTasks(this.ooptions)
-        : new ScheduleRenderTasks(this.ooptions);
+    this.tasks = new DirectRenderTasks(this.ooptions);
     this.tasks.setData(this._dataRows);
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias

@@ -33,14 +33,6 @@ export class DataBuilder extends LineUpBuilder {
   }
 
   /**
-   * use the schedulded task executor to asynchronously compute aggregations
-   */
-  scheduledTaskExecutor() {
-    this.providerOptions.taskExecutor = 'scheduled';
-    return this;
-  }
-
-  /**
    * when using a top-n strategy how many items should be shown
    */
   showTopN(n: number) {

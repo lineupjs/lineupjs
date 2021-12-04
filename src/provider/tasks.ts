@@ -1,5 +1,4 @@
 import { abortAbleAll, IAbortAblePromise } from 'lineupengine';
-import { ANOTHER_ROUND } from '../internal/scheduler';
 import {
   IForEachAble,
   lazySeq,
@@ -43,6 +42,15 @@ import {
 } from '../model';
 import type { IRenderTask, IRenderTasks } from '../renderer';
 import type { CompareLookup } from './sort';
+
+/**
+ * iterator result for another round
+ * @internal
+ */
+export const ANOTHER_ROUND = {
+  value: null,
+  done: false,
+};
 
 /**
  * a render task that is already resolved

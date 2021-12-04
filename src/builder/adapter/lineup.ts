@@ -15,7 +15,6 @@ const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOpt
   'singleSelection',
   'filterGlobally',
   'columnTypes',
-  'taskExecutor',
   'jumpToSearchResult',
 ];
 const lineupOptions: (keyof IBuilderAdapterProps)[] = [

@@ -42,6 +42,8 @@ import { restoreCategoricalColorMapping } from '../model/CategoricalColorMapping
 import { createColorMappingFunction, colorMappingFunctions } from '../model/ColorMappingFunction';
 import { createMappingFunction, mappingFunctions } from '../model/MappingFunction';
 import { convertAggregationState } from './internal';
+import { isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter } from '../internal';
+
 
 /**
  * emitted when a column has been added
@@ -176,6 +178,12 @@ export declare function aggregate(
  */
 export declare function busy(busy: boolean): void;
 
+function injectAccessor(d: any) {
+  d.accessor = d.accessor || (d.column ? (isComplexAccessor(d.column) ? rowComplexGetter : rowGetter) : rowGuessGetter);
+  d.label = d.label || d.column;
+  return d;
+}
+
 function toDirtyReason(ctx: IEventContext) {
   const primary = ctx.primaryType;
   switch (primary || '') {
@@ -283,7 +291,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   private showTopN: number;
 
-  constructor(options: Partial<IDataProviderOptions> = {}) {
+  private rankingIndex = 0;
+
+  constructor(private columns: IColumnDesc[] = [], options: Partial<IDataProviderOptions> = {}) {
     super();
     Object.assign(this.options, options);
     this.columnTypes = Object.assign(models(), this.options.columnTypes);
@@ -292,6 +302,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.showTopN = this.options.showTopN;
 
     this.typeFactory = this.createTypeFactory();
+    //generate the accessor
+    columns.forEach(injectAccessor);
   }
 
   private createTypeFactory() {
@@ -379,12 +391,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   abstract getTotalNumberOfRows(): number;
-
-  /**
-   * returns a list of all known column descriptions
-   * @returns {Array}
-   */
-  abstract getColumns(): IColumnDesc[];
 
   abstract getTaskExecutor(): IRenderTasks;
 
@@ -582,13 +588,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   /**
-   * abstract method for cloning a ranking
-   * @param existing
-   * @returns {null}
-   */
-  abstract cloneRanking(existing?: Ranking): Ranking;
-
-  /**
    * adds a column to a ranking described by its column description
    * @param ranking the ranking to add the column to
    * @param desc the description of the column
@@ -737,20 +736,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return col.dump(this.toDescRef.bind(this));
   }
 
-  /**
-   * for better dumping describe reference, by default just return the description
-   */
-  toDescRef(desc: any): any {
-    return desc;
-  }
-
-  /**
-   * inverse operation of toDescRef
-   */
-  fromDescRef(descRef: any): any {
-    return descRef;
-  }
-
   restoreRanking(dump: IRankingDump) {
     const ranking = this.cloneRanking();
     ranking.restore(dump, this.typeFactory);
@@ -798,9 +783,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.rankings.forEach((r) => {
       r.children.forEach((c) => c.assignNewId(idGenerator));
     });
-  }
 
-  abstract findDesc(ref: string): IColumnDesc | null;
+    this.rankingIndex = 1 + Math.max(...this.getRankings().map((r) => +r.id.substring(4)));
+  }
 
   /**
    * generates a default ranking by using all column descriptions ones
@@ -1191,6 +1176,95 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       });
     }
     return exportTable(ranking, rows as IDataRow[], options);
+  }
+
+  cloneRanking(existing?: Ranking) {
+    const id = this.nextRankingId();
+    const clone = new Ranking(id);
+
+    if (existing) {
+      //copy the ranking of the other one
+      //TODO better cloning
+      existing.children.forEach((child) => {
+        this.push(clone, child.desc);
+      });
+    }
+
+    return clone;
+  }
+
+  /**
+   * adds another column description to this data provider
+   * @param column
+   */
+  pushDesc(column: IColumnDesc) {
+    injectAccessor(column);
+    this.columns.push(column);
+    this.fire(ADataProvider.EVENT_ADD_DESC, column);
+  }
+
+  clearColumns() {
+    this.clearRankings();
+    this.columns.splice(0, this.columns.length);
+    this.fire(ADataProvider.EVENT_CLEAR_DESC);
+  }
+
+  /**
+   * Remove the given column description from the data provider.
+   * Column descriptions that are in use (i.e., has column instances in a ranking) cannot be removed by default.
+   * Skip the check by setting the `ignoreBeingUsed` parameter to `true`.
+   *
+   * @param column Column description
+   * @param ignoreBeingUsed Flag whether to ignore the usage of the column descriptions in rankings
+   */
+  removeDesc(column: IColumnDesc, ignoreBeingUsed = false): boolean {
+    const i = this.columns.indexOf(column);
+    if (i < 0) {
+      return false;
+    }
+    const isUsed = ignoreBeingUsed
+      ? false
+      : this.getRankings().some((d) => d.flatColumns.some((c) => c.desc === column));
+    if (isUsed) {
+      return false;
+    }
+    this.columns.splice(i, 1);
+    this.fire(ADataProvider.EVENT_REMOVE_DESC, column);
+    return true;
+  }
+
+  getColumns(): IColumnDesc[] {
+    return this.columns.slice();
+  }
+
+  findDesc(ref: string) {
+    return this.columns.filter((c) => (c as any).column === ref)[0];
+  }
+
+  /**
+   * identify by the tuple type@columnname
+   * @param desc
+   * @returns {string}
+   */
+  toDescRef(desc: any): any {
+    return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : this.cleanDesc(Object.assign({}, desc));
+  }
+
+  fromDescRef(descRef: any): any {
+    if (typeof descRef === 'string') {
+      return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef || d.type === descRef);
+    }
+    const existing = this.columns.find(
+      (d) => descRef.column === (d as any).column && descRef.label === d.label && descRef.type === d.type
+    );
+    if (existing) {
+      return existing;
+    }
+    return descRef;
+  }
+
+  nextRankingId() {
+    return `rank${this.rankingIndex++}`;
   }
 }
 
