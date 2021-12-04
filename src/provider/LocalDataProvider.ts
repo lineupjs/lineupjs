@@ -16,8 +16,7 @@ import {
 import ADataProvider from './ADataProvider';
 import type { IDataProviderOptions } from './interfaces';
 import { CompareLookup } from './sort';
-import type { ARenderTaskOptions, IRenderTaskExecutor } from './tasks';
-import { DirectRenderTasks } from './DirectRenderTasks';
+import { DirectRenderTasks, ARenderTaskOptions } from './DirectRenderTasks';
 import { joinGroups, mapIndices, duplicateGroup } from '../model/internal';
 
 export interface ILocalDataProviderOptions extends ARenderTaskOptions {
@@ -57,7 +56,7 @@ export default class LocalDataProvider extends ADataProvider {
 
   private _dataRows: IDataRow[];
   private filter: ((row: IDataRow) => boolean) | null = null;
-  private readonly tasks: IRenderTaskExecutor;
+  private readonly tasks: DirectRenderTasks;
 
   constructor(
     private _data: any[],
@@ -127,10 +126,6 @@ export default class LocalDataProvider extends ADataProvider {
   private dataChanged() {
     this.tasks.setData(this._dataRows);
 
-    for (const ranking of this.getRankings()) {
-      this.tasks.preComputeData(ranking);
-    }
-
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
     this.reorderAll.call({ type: Ranking.EVENT_FILTER_CHANGED });
   }
@@ -170,7 +165,6 @@ export default class LocalDataProvider extends ADataProvider {
       while (col instanceof Column) {
         // console.log(col.label, 'dirty data');
         that.tasks.dirtyColumn(col, 'data');
-        that.tasks.preComputeCol(col);
         col = col.parent;
       }
     });
@@ -188,7 +182,6 @@ export default class LocalDataProvider extends ADataProvider {
     };
 
     const addCol = (col: Column) => {
-      this.tasks.preComputeCol(col);
       if (col instanceof CompositeColumn) {
         col.on(addKey, addCol);
         col.on(removeKey, removeCol);
@@ -210,8 +203,6 @@ export default class LocalDataProvider extends ADataProvider {
         this.tasks.copyCache(cols[i], copy[i]);
       }
     }
-
-    this.tasks.preComputeData(ranking);
   }
 
   cleanUpRanking(ranking: Ranking) {
@@ -256,7 +247,7 @@ export default class LocalDataProvider extends ADataProvider {
     return filter;
   }
 
-  private noSorting(ranking: Ranking) {
+  private noSorting() {
     // initial no sorting required just index mapping
     const l = this._data.length;
     const order = createIndexArray(l, l - 1);
@@ -266,7 +257,6 @@ export default class LocalDataProvider extends ADataProvider {
       index2pos[i] = i + 1; // shift since default is 0
     }
 
-    this.tasks.preCompute(ranking, [{ rows: order, group: defaultGroup }], l - 1);
     return { groups: [Object.assign({ order }, defaultGroup)], index2pos };
   }
 
@@ -461,17 +451,12 @@ export default class LocalDataProvider extends ADataProvider {
     }
     // otherwise the summary and group summaries should still be valid
 
-    if (filter.length === 0) {
-      // all rows so summary = data
-      this.tasks.copyData2Summary(ranking);
-    }
-
     const isGroupedBy = ranking.getGroupCriteria().length > 0;
     const isSortedBy = ranking.getSortCriteria().length > 0;
     const isGroupedSortedBy = ranking.getGroupSortCriteria().length > 0;
 
     if (!isGroupedBy && !isSortedBy && filter.length === 0) {
-      return this.noSorting(ranking);
+      return this.noSorting();
     }
 
     const { maxDataIndex, lookups, groupOrder } = this.createSorter(
@@ -485,8 +470,6 @@ export default class LocalDataProvider extends ADataProvider {
     if (groupOrder.length === 0) {
       return { groups: [], index2pos: [] };
     }
-
-    this.tasks.preCompute(ranking, groupOrder, maxDataIndex);
 
     if (groupOrder.length === 1) {
       const g = groupOrder[0]!;
