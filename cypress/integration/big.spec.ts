@@ -44,10 +44,7 @@ describe('big', () => {
       ];
       lineUpJS.deriveColors(desc);
 
-      const p = new lineUpJS.DataProvider(arr, desc, {
-        // taskExecutor: 'direct',
-        taskExecutor: 'scheduled',
-      });
+      const p = new lineUpJS.DataProvider(arr, desc);
       p.deriveDefault();
 
       const instance = new lineUpJS.Taggle(document.body, p, {
