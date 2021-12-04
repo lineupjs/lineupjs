@@ -16,10 +16,10 @@ import {
 import ADataProvider from './ADataProvider';
 import type { IDataProviderOptions } from './interfaces';
 import { CompareLookup } from './sort';
-import { DirectRenderTasks, ARenderTaskOptions } from './DirectRenderTasks';
+import { DirectRenderTasks, RenderTaskOptions } from './DirectRenderTasks';
 import { joinGroups, mapIndices, duplicateGroup } from '../model/internal';
 
-export interface ILocalDataProviderOptions extends ARenderTaskOptions {
+export interface ILocalDataProviderOptions extends RenderTaskOptions {
   /**
    * whether the filter should be applied to all rankings regardless where they are
    * default: false

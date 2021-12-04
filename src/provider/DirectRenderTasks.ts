@@ -120,12 +120,7 @@ export class MultiIndices {
   }
 }
 
-/**
- * number of data points to build per iteration / chunk
- */
-const CHUNK_SIZE = 100;
-
-export interface ARenderTaskOptions {
+export interface RenderTaskOptions {
   stringTopNCount: number | readonly string[];
 }
 
@@ -153,10 +148,10 @@ export class DirectRenderTasks {
 
   protected readonly byIndex = (i: number) => this.data[i];
 
-  protected readonly options: ARenderTaskOptions;
+  protected readonly options: RenderTaskOptions;
   protected data: IDataRow[] = [];
 
-  constructor(options: Partial<ARenderTaskOptions> = {}) {
+  constructor(options: Partial<RenderTaskOptions> = {}) {
     this.options = Object.assign(
       {
         stringTopNCount: 10,
@@ -185,52 +180,23 @@ export class DirectRenderTasks {
     order: IndicesArray | null | MultiIndices,
     acc: (dataIndex: number) => T,
     build?: (r: BR) => R
-  ): Iterator<R | null> {
-    let i = 0;
-
+  ) {
     // no indices given over the whole data
-    const nextData = (currentChunkSize: number = CHUNK_SIZE) => {
-      let chunkCounter = currentChunkSize;
+    if (order == null) {
       const data = this.data;
-      for (; i < data.length && chunkCounter > 0; ++i, --chunkCounter) {
+      for (let i = 0; i < data.length; ++i) {
         builder.push(acc(i));
       }
-      if (i < data.length) {
-        // need another round
-        return ANOTHER_ROUND;
-      }
-      // done
-      return {
-        done: true,
-        value: build ? build(builder.build()) : (builder.build() as unknown as R),
-      };
-    };
+      return build ? build(builder.build()) : (builder.build() as unknown as R);
+    }
 
-    let o = 0;
     const orders = order instanceof MultiIndices ? order.indices : [order];
-
-    const nextOrder = (currentChunkSize: number = CHUNK_SIZE) => {
-      let chunkCounter = currentChunkSize;
-
-      while (o < orders.length) {
-        const actOrder = orders[o]!;
-        for (; i < actOrder.length && chunkCounter > 0; ++i, --chunkCounter) {
-          builder.push(acc(actOrder[i]));
-        }
-        if (i < actOrder.length) {
-          // need another round
-          return ANOTHER_ROUND;
-        }
-        // done with this order
-        o++;
-        i = 0;
+    for (const actOrder of orders) {
+      for (let i = 0; i < actOrder.length; ++i) {
+        builder.push(acc(actOrder[i]));
       }
-      return {
-        done: true,
-        value: build ? build(builder.build()) : (builder.build() as unknown as R),
-      };
-    };
-    return { next: order == null ? nextData : nextOrder };
+    }
+    return build ? build(builder.build()) : (builder.build() as unknown as R);
   }
 
   private builderForEach<T, BR, B extends { pushAll: (v: IForEachAble<T>) => void; build: () => BR }, R = BR>(
@@ -238,7 +204,7 @@ export class DirectRenderTasks {
     order: IndicesArray | null | MultiIndices,
     acc: (dataIndex: number) => IForEachAble<T>,
     build?: (r: BR) => R
-  ): Iterator<R | null> {
+  ) {
     return this.builder(
       {
         push: builder.pushAll,
@@ -544,7 +510,7 @@ export class DirectRenderTasks {
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     const { summary, data } = this.summaryBoxPlotStatsD(col, raw);
     return taskNow({
-      group: this.boxplotBuilder(group.order, col, raw).next(Number.POSITIVE_INFINITY as any).value!,
+      group: this.boxplotBuilder(group.order, col, raw),
       summary,
       data,
     });
@@ -553,7 +519,7 @@ export class DirectRenderTasks {
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     const { summary, data } = this.summaryNumberStatsD(col, raw);
     return taskNow({
-      group: this.statsBuilder(group.order, col, summary.hist.length, raw).next(Number.POSITIVE_INFINITY as any).value!,
+      group: this.statsBuilder(group.order, col, summary.hist.length, raw),
       summary,
       data,
     });
@@ -562,7 +528,7 @@ export class DirectRenderTasks {
   groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup) {
     const { summary, data } = this.summaryCategoricalStatsD(col);
     return taskNow({
-      group: this.categoricalStatsBuilder(group.order, col).next(Number.POSITIVE_INFINITY as any).value!,
+      group: this.categoricalStatsBuilder(group.order, col),
       summary,
       data,
     });
@@ -571,7 +537,7 @@ export class DirectRenderTasks {
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
     const { summary, data } = this.summaryDateStatsD(col);
     return taskNow({
-      group: this.dateStatsBuilder(group.order, col, summary).next(Number.POSITIVE_INFINITY as any).value!,
+      group: this.dateStatsBuilder(group.order, col, summary),
       summary,
       data,
     });
@@ -584,7 +550,7 @@ export class DirectRenderTasks {
         group.order,
         col,
         summary.topN.map((d) => d.value)
-      ).next(Number.POSITIVE_INFINITY as any).value!,
+      ),
       summary,
       data,
     });
@@ -619,7 +585,7 @@ export class DirectRenderTasks {
         const order = ranking ? ranking.getOrder() : [];
         const data = this.dataNumberStats(col, raw);
         return {
-          summary: this.statsBuilder(order, col, data.hist.length, raw).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.statsBuilder(order, col, data.hist.length, raw),
           data,
         };
       },
@@ -639,7 +605,7 @@ export class DirectRenderTasks {
       () => {
         const order = ranking ? ranking.getOrder() : [];
         const data = this.dataBoxPlotStats(col, raw);
-        return { summary: this.boxplotBuilder(order, col, raw).next(Number.POSITIVE_INFINITY as any).value!, data };
+        return { summary: this.boxplotBuilder(order, col, raw), data };
       },
       raw ? ':braw' : ':b',
       ranking && ranking.getOrderLength() === 0
@@ -658,7 +624,7 @@ export class DirectRenderTasks {
         const order = ranking ? ranking.getOrder() : [];
         const data = this.dataCategoricalStats(col);
         return {
-          summary: this.categoricalStatsBuilder(order, col).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.categoricalStatsBuilder(order, col),
           data,
         };
       },
@@ -676,7 +642,7 @@ export class DirectRenderTasks {
         const order = ranking ? ranking.getOrder() : [];
         const data = this.dataDateStats(col);
         return {
-          summary: this.dateStatsBuilder(order, col, data).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.dateStatsBuilder(order, col, data),
           data,
         };
       },
@@ -693,7 +659,7 @@ export class DirectRenderTasks {
         const ranking = col.findMyRanker()!.getOrder();
         const data = this.dataStringStats(col);
         return {
-          summary: this.stringStatsBuilder(ranking, col, undefined).next(Number.POSITIVE_INFINITY as any).value!,
+          summary: this.stringStatsBuilder(ranking, col, undefined),
           data,
         };
       },
@@ -718,7 +684,7 @@ export class DirectRenderTasks {
     return this.cached(
       'data',
       col,
-      () => this.boxplotBuilder(null, col, raw).next(Number.POSITIVE_INFINITY as any).value!,
+      () => this.boxplotBuilder(null, col, raw),
       raw ? ':braw' : ':b'
     );
   }
@@ -728,8 +694,7 @@ export class DirectRenderTasks {
       'data',
       col,
       () =>
-        this.statsBuilder(null, col, getNumberOfBins(this.data.length), raw).next(Number.POSITIVE_INFINITY as any)
-          .value!,
+        this.statsBuilder(null, col, getNumberOfBins(this.data.length), raw),
       raw ? ':raw' : ''
     );
   }
@@ -740,7 +705,7 @@ export class DirectRenderTasks {
 
       col,
 
-      () => this.categoricalStatsBuilder(null, col).next(Number.POSITIVE_INFINITY as any).value!
+      () => this.categoricalStatsBuilder(null, col)
     );
   }
 
@@ -748,7 +713,7 @@ export class DirectRenderTasks {
     return this.cached(
       'data',
       col,
-      () => this.dateStatsBuilder(null, col).next(Number.POSITIVE_INFINITY as any).value!
+      () => this.dateStatsBuilder(null, col)
     );
   }
 
@@ -756,7 +721,7 @@ export class DirectRenderTasks {
     return this.cached(
       'data',
       col,
-      () => this.stringStatsBuilder(null, col).next(Number.POSITIVE_INFINITY as any).value!
+      () => this.stringStatsBuilder(null, col)
     );
   }
 
