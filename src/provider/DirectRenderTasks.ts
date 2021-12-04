@@ -70,9 +70,6 @@ export interface RenderTaskOptions {
   stringTopNCount: number | readonly string[];
 }
 
-/**
- * @internal
- */
 export class DirectRenderTasks {
   protected readonly cache = new Map<string, any>();
 
