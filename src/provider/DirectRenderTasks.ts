@@ -391,9 +391,11 @@ export class DirectRenderTasks {
     }
   }
 
-  sort(indices: IndicesArray, maxDataIndex: number, lookups: CompareLookup) {
+  sort(indices: IndicesArray, maxDataIndex: number, lookups?: CompareLookup) {
     const order = toIndexArray(indices, maxDataIndex);
-    sortComplex(order, lookups.sortOrders);
+    if (lookups) {
+      sortComplex(order, lookups.sortOrders);
+    }
     return order;
   }
 
