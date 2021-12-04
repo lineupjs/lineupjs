@@ -70,16 +70,6 @@ export interface RenderTaskOptions {
   stringTopNCount: number | readonly string[];
 }
 
-/**
- * @internal
- */
-export function sortDirect(indices: IndicesArray, maxDataIndex: number, lookups?: CompareLookup) {
-  const order = toIndexArray(indices, maxDataIndex);
-  if (lookups) {
-    sortComplex(order, lookups.sortOrders);
-  }
-  return order;
-}
 
 /**
  * @internal
@@ -405,8 +395,10 @@ export class DirectRenderTasks {
     }
   }
 
-  sort(indices: IndicesArray, maxDataIndex: number, lookups?: CompareLookup) {
-    return Promise.resolve(sortDirect(indices, maxDataIndex, lookups));
+  sort(indices: IndicesArray, maxDataIndex: number, lookups: CompareLookup) {
+    const order = toIndexArray(indices, maxDataIndex);
+    sortComplex(order, lookups.sortOrders);
+    return order;
   }
 
   groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray): ICompareValue[] {
@@ -437,7 +429,7 @@ export class DirectRenderTasks {
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    const { summary, data } = this.summaryBoxPlotStatsD(col, raw);
+    const { summary, data } = this.summaryBoxPlotStats(col, raw);
     return {
       group: this.boxplotBuilder(group.order, col, raw),
       summary,
@@ -446,7 +438,7 @@ export class DirectRenderTasks {
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
-    const { summary, data } = this.summaryNumberStatsD(col, raw);
+    const { summary, data } = this.summaryNumberStats(col, raw);
     return {
       group: this.statsBuilder(group.order, col, summary.hist.length, raw),
       summary,
@@ -455,7 +447,7 @@ export class DirectRenderTasks {
   }
 
   groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup) {
-    const { summary, data } = this.summaryCategoricalStatsD(col);
+    const { summary, data } = this.summaryCategoricalStats(col);
     return {
       group: this.categoricalStatsBuilder(group.order, col),
       summary,
@@ -464,7 +456,7 @@ export class DirectRenderTasks {
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
-    const { summary, data } = this.summaryDateStatsD(col);
+    const { summary, data } = this.summaryDateStats(col);
     return {
       group: this.dateStatsBuilder(group.order, col, summary),
       summary,
@@ -473,7 +465,7 @@ export class DirectRenderTasks {
   }
 
   groupStringStats(col: StringColumn, group: IOrderedGroup) {
-    const { summary, data } = this.summaryStringStatsD(col);
+    const { summary, data } = this.summaryStringStats(col);
     return {
       group: this.stringStatsBuilder(
         group.order,
@@ -485,27 +477,7 @@ export class DirectRenderTasks {
     };
   }
 
-  summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.summaryBoxPlotStatsD(col, raw);
-  }
-
-  summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return this.summaryNumberStatsD(col, raw);
-  }
-
-  summaryCategoricalStats(col: Column & ICategoricalLikeColumn) {
-    return this.summaryCategoricalStatsD(col);
-  }
-
-  summaryDateStats(col: Column & IDateColumn) {
-    return this.summaryDateStatsD(col);
-  }
-
-  summaryStringStats(col: StringColumn) {
-    return this.summaryStringStatsD(col);
-  }
-
-  private summaryNumberStatsD(col: Column & INumberColumn, raw?: boolean): { summary: IStatistics; data: IStatistics } {
+  summaryNumberStats(col: Column & INumberColumn, raw?: boolean): { summary: IStatistics; data: IStatistics } {
     const ranking = col.findMyRanker();
     return this.cached(
       'summary',
@@ -523,7 +495,7 @@ export class DirectRenderTasks {
     );
   }
 
-  private summaryBoxPlotStatsD(
+  summaryBoxPlotStats(
     col: Column & INumberColumn,
     raw?: boolean
   ): { summary: IAdvancedBoxPlotData; data: IAdvancedBoxPlotData } {
@@ -541,7 +513,7 @@ export class DirectRenderTasks {
     );
   }
 
-  private summaryCategoricalStatsD(col: Column & ICategoricalLikeColumn): {
+  summaryCategoricalStats(col: Column & ICategoricalLikeColumn): {
     summary: ICategoricalStatistics;
     data: ICategoricalStatistics;
   } {
@@ -562,7 +534,7 @@ export class DirectRenderTasks {
     );
   }
 
-  private summaryDateStatsD(col: Column & IDateColumn): { summary: IDateStatistics; data: IDateStatistics } {
+  summaryDateStats(col: Column & IDateColumn): { summary: IDateStatistics; data: IDateStatistics } {
     const ranking = col.findMyRanker();
     return this.cached(
       'summary',
@@ -580,7 +552,7 @@ export class DirectRenderTasks {
     );
   }
 
-  private summaryStringStatsD(col: StringColumn): { summary: IStringStatistics; data: IStringStatistics } {
+  summaryStringStats(col: StringColumn): { summary: IStringStatistics; data: IStringStatistics } {
     return this.cached(
       'summary',
       col,
@@ -623,13 +595,7 @@ export class DirectRenderTasks {
   }
 
   dataCategoricalStats(col: Column & ICategoricalLikeColumn): ICategoricalStatistics {
-    return this.cached(
-      'data',
-
-      col,
-
-      () => this.categoricalStatsBuilder(null, col)
-    );
+    return this.cached('data', col, () => this.categoricalStatsBuilder(null, col));
   }
 
   dataDateStats(col: Column & IDateColumn): IDateStatistics {
