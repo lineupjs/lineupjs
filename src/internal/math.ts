@@ -804,7 +804,6 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: { a
   }
 }
 
-
 /**
  * helper to build a value cache for dates, use dateValueCache2Value to convert back
  * @internal

@@ -70,7 +70,6 @@ export interface RenderTaskOptions {
   stringTopNCount: number | readonly string[];
 }
 
-
 /**
  * @internal
  */
