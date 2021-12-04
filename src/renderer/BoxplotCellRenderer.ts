@@ -22,7 +22,6 @@ import {
   ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas } from './missing';
-import { tasksAll } from '../provider';
 
 const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
@@ -106,25 +105,18 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
       template: BOXPLOT,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return tasksAll([
+        const data = [
           context.tasks.groupBoxPlotStats(col, group, false),
           context.tasks.groupBoxPlotStats(col, group, true),
-        ]).then((data) => {
-          if (typeof data === 'symbol') {
-            return;
-          }
-          // render
-          const isMissing =
-            data == null ||
-            data[0] == null ||
-            data[0].group.count === 0 ||
-            data[0].group.count === data[0].group.missing;
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          renderDOMBoxPlot(col, n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
-        });
+        ];
+        // render
+        const isMissing =
+          data == null || data[0] == null || data[0].group.count === 0 || data[0].group.count === data[0].group.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        renderDOMBoxPlot(col, n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
       },
     };
   }
@@ -138,34 +130,27 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
       template: isMapAbleColumn(col) ? MAPPED_BOXPLOT : BOXPLOT,
       update: (n: HTMLElement) => {
-        return tasksAll([
-          context.tasks.summaryBoxPlotStats(col, false),
-          context.tasks.summaryBoxPlotStats(col, true),
-        ]).then((data) => {
-          if (typeof data === 'symbol') {
-            return;
-          }
-          const isMissing =
-            data == null ||
-            data[0] == null ||
-            data[0].summary.count === 0 ||
-            data[0].summary.count === data[0].summary.missing;
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          const mappedSummary = data[0].summary;
-          const rawSummary = data[1].summary;
-          const sort =
-            col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined ? col.getSortMethod() : '';
+        const data = [context.tasks.summaryBoxPlotStats(col, false), context.tasks.summaryBoxPlotStats(col, true)];
+        const isMissing =
+          data == null ||
+          data[0] == null ||
+          data[0].summary.count === 0 ||
+          data[0].summary.count === data[0].summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        const mappedSummary = data[0].summary;
+        const rawSummary = data[1].summary;
+        const sort =
+          col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined ? col.getSortMethod() : '';
 
-          if (isMapAbleColumn(col)) {
-            const range = col.getRange();
-            Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
-          }
+        if (isMapAbleColumn(col)) {
+          const range = col.getRange();
+          Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
+        }
 
-          renderDOMBoxPlot(col, n, mappedSummary, rawSummary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
-        });
+        renderDOMBoxPlot(col, n, mappedSummary, rawSummary, sort, colorOf(col, null, imposer), isMapAbleColumn(col));
       },
     };
   }

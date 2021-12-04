@@ -75,28 +75,22 @@ export default class CategoricalHeatmapCellRenderer implements ICellRendererFact
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks
-          .groupRows(col, group, this.title, (rows) => toMostFrequentCategoricals(rows, col))
-          .then((data) => {
-            if (typeof data === 'symbol') {
-              return;
-            }
-            const ctx = (n as HTMLCanvasElement).getContext('2d')!;
-            ctx.canvas.width = width;
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        const data = context.tasks.groupRows(col, group, this.title, (rows) => toMostFrequentCategoricals(rows, col));
+        const ctx = (n as HTMLCanvasElement).getContext('2d')!;
+        ctx.canvas.width = width;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-            const isMissing = !data || data.length === 0 || data.every((d) => d == null);
-            n.classList.toggle(cssClass('missing'), isMissing);
-            if (isMissing) {
-              return;
-            }
-            n.onmousemove = mover(
-              n,
-              data.map((d) => (d ? d.label : 'missing'))
-            );
-            n.onmouseleave = () => (n.title = '');
-            render(ctx, data, GUESSED_ROW_HEIGHT);
-          });
+        const isMissing = !data || data.length === 0 || data.every((d) => d == null);
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        n.onmousemove = mover(
+          n,
+          data.map((d) => (d ? d.label : 'missing'))
+        );
+        n.onmouseleave = () => (n.title = '');
+        render(ctx, data, GUESSED_ROW_HEIGHT);
       },
     };
   }

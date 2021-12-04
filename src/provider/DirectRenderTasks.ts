@@ -1,4 +1,3 @@
-import { abortAbleAll, IAbortAblePromise } from 'lineupengine';
 import {
   boxplotBuilder,
   categoricalStatsBuilder,
@@ -46,60 +45,7 @@ import {
   OrdinalColumn,
   UIntTypedArray,
 } from '../model';
-import type { IRenderTask } from '../renderer';
 import type { CompareLookup } from './sort';
-
-/**
- * iterator result for another round
- * @internal
- */
-export const ANOTHER_ROUND = {
-  value: null,
-  done: false,
-};
-
-/**
- * a render task that is already resolved
- */
-export class TaskNow<T> implements IRenderTask<T> {
-  constructor(public readonly v: T) {}
-
-  then<U = void>(onfullfilled: (value: T) => U) {
-    return onfullfilled(this.v);
-  }
-}
-
-/**
- * factory function for
- */
-export function taskNow<T>(v: T) {
-  return new TaskNow(v);
-}
-
-/**
- * a render task based on an abortable promise
- */
-export class TaskLater<T> implements IRenderTask<T> {
-  constructor(public readonly v: IAbortAblePromise<T>) {}
-
-  then<U = void>(onfullfilled: (value: T | symbol) => U): IAbortAblePromise<U> {
-    return this.v.then(onfullfilled);
-  }
-}
-
-export function taskLater<T>(v: IAbortAblePromise<T>) {
-  return new TaskLater(v);
-}
-
-/**
- * similar to Promise.all
- */
-export function tasksAll<T>(tasks: IRenderTask<T>[]): IRenderTask<T[]> {
-  if (tasks.every((t) => t instanceof TaskNow)) {
-    return taskNow(tasks.map((d) => (d as TaskNow<T>).v));
-  }
-  return taskLater(abortAbleAll((tasks as (TaskNow<T> | TaskLater<T>)[]).map((d) => d.v)));
-}
 
 export class MultiIndices {
   private _joined: IndicesArray | null = null;
@@ -459,21 +405,14 @@ export class DirectRenderTasks {
     }
   }
 
-  sort(
-    _ranking: Ranking,
-    _group: IGroup,
-    indices: IndicesArray,
-    _singleCall: boolean,
-    maxDataIndex: number,
-    lookups?: CompareLookup
-  ) {
+  sort(indices: IndicesArray, maxDataIndex: number, lookups?: CompareLookup) {
     return Promise.resolve(sortDirect(indices, maxDataIndex, lookups));
   }
 
-  groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray): IRenderTask<ICompareValue[]> {
+  groupCompare(ranking: Ranking, group: IGroup, rows: IndicesArray): ICompareValue[] {
     const rg = ranking.getGroupSortCriteria();
     if (rg.length === 0) {
-      return taskNow([group.name.toLowerCase()]);
+      return [group.name.toLowerCase()];
     }
     const o = this.byOrder(rows);
     const vs: ICompareValue[] = [];
@@ -486,66 +425,56 @@ export class DirectRenderTasks {
       }
     }
     vs.push(group.name.toLowerCase());
-    return taskNow(vs);
+    return vs;
   }
 
-  groupRows<T>(
-    _col: Column,
-    group: IOrderedGroup,
-    _key: string,
-    compute: (rows: ISequence<IDataRow>) => T
-  ): IRenderTask<T> {
-    return taskNow(compute(this.byOrder(group.order)));
+  groupRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T): T {
+    return compute(this.byOrder(group.order));
   }
 
-  groupExampleRows<T>(
-    _col: Column,
-    group: IOrderedGroup,
-    _key: string,
-    compute: (rows: ISequence<IDataRow>) => T
-  ): IRenderTask<T> {
-    return taskNow(compute(this.byOrder(group.order.slice(0, 5))));
+  groupExampleRows<T>(_col: Column, group: IOrderedGroup, _key: string, compute: (rows: ISequence<IDataRow>) => T): T {
+    return compute(this.byOrder(group.order.slice(0, 5)));
   }
 
   groupBoxPlotStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     const { summary, data } = this.summaryBoxPlotStatsD(col, raw);
-    return taskNow({
+    return {
       group: this.boxplotBuilder(group.order, col, raw),
       summary,
       data,
-    });
+    };
   }
 
   groupNumberStats(col: Column & INumberColumn, group: IOrderedGroup, raw?: boolean) {
     const { summary, data } = this.summaryNumberStatsD(col, raw);
-    return taskNow({
+    return {
       group: this.statsBuilder(group.order, col, summary.hist.length, raw),
       summary,
       data,
-    });
+    };
   }
 
   groupCategoricalStats(col: Column & ICategoricalLikeColumn, group: IOrderedGroup) {
     const { summary, data } = this.summaryCategoricalStatsD(col);
-    return taskNow({
+    return {
       group: this.categoricalStatsBuilder(group.order, col),
       summary,
       data,
-    });
+    };
   }
 
   groupDateStats(col: Column & IDateColumn, group: IOrderedGroup) {
     const { summary, data } = this.summaryDateStatsD(col);
-    return taskNow({
+    return {
       group: this.dateStatsBuilder(group.order, col, summary),
       summary,
       data,
-    });
+    };
   }
 
   groupStringStats(col: StringColumn, group: IOrderedGroup) {
     const { summary, data } = this.summaryStringStatsD(col);
-    return taskNow({
+    return {
       group: this.stringStatsBuilder(
         group.order,
         col,
@@ -553,27 +482,27 @@ export class DirectRenderTasks {
       ),
       summary,
       data,
-    });
+    };
   }
 
   summaryBoxPlotStats(col: Column & INumberColumn, raw?: boolean) {
-    return taskNow(this.summaryBoxPlotStatsD(col, raw));
+    return this.summaryBoxPlotStatsD(col, raw);
   }
 
   summaryNumberStats(col: Column & INumberColumn, raw?: boolean) {
-    return taskNow(this.summaryNumberStatsD(col, raw));
+    return this.summaryNumberStatsD(col, raw);
   }
 
   summaryCategoricalStats(col: Column & ICategoricalLikeColumn) {
-    return taskNow(this.summaryCategoricalStatsD(col));
+    return this.summaryCategoricalStatsD(col);
   }
 
   summaryDateStats(col: Column & IDateColumn) {
-    return taskNow(this.summaryDateStatsD(col));
+    return this.summaryDateStatsD(col);
   }
 
   summaryStringStats(col: StringColumn) {
-    return taskNow(this.summaryStringStatsD(col));
+    return this.summaryStringStatsD(col);
   }
 
   private summaryNumberStatsD(col: Column & INumberColumn, raw?: boolean): { summary: IStatistics; data: IStatistics } {
@@ -681,20 +610,14 @@ export class DirectRenderTasks {
   }
 
   dataBoxPlotStats(col: Column & INumberColumn, raw?: boolean): IAdvancedBoxPlotData {
-    return this.cached(
-      'data',
-      col,
-      () => this.boxplotBuilder(null, col, raw),
-      raw ? ':braw' : ':b'
-    );
+    return this.cached('data', col, () => this.boxplotBuilder(null, col, raw), raw ? ':braw' : ':b');
   }
 
   dataNumberStats(col: Column & INumberColumn, raw?: boolean): IStatistics {
     return this.cached(
       'data',
       col,
-      () =>
-        this.statsBuilder(null, col, getNumberOfBins(this.data.length), raw),
+      () => this.statsBuilder(null, col, getNumberOfBins(this.data.length), raw),
       raw ? ':raw' : ''
     );
   }
@@ -710,19 +633,11 @@ export class DirectRenderTasks {
   }
 
   dataDateStats(col: Column & IDateColumn): IDateStatistics {
-    return this.cached(
-      'data',
-      col,
-      () => this.dateStatsBuilder(null, col)
-    );
+    return this.cached('data', col, () => this.dateStatsBuilder(null, col));
   }
 
   dataStringStats(col: StringColumn): IStringStatistics {
-    return this.cached(
-      'data',
-      col,
-      () => this.stringStatsBuilder(null, col)
-    );
+    return this.cached('data', col, () => this.stringStatsBuilder(null, col));
   }
 
   terminate() {

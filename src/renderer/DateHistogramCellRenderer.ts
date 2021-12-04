@@ -9,7 +9,7 @@ import {
   isDatesColumn,
   Ranking,
 } from '../model';
-import { cssClass, engineCssClass } from '../styles';
+import { cssClass } from '../styles';
 import {
   ERenderMode,
   ICellRendererFactory,
@@ -65,17 +65,13 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupDateStats(col, group).then((r) => {
-          if (typeof r === 'symbol') {
-            return;
-          }
-          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          render(n, r.group);
-        });
+        const r = context.tasks.groupDateStats(col, group);
+        const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        render(n, r.group);
       },
     };
   }
@@ -100,21 +96,16 @@ function staticSummary(
   return {
     template: `${template}</div>`,
     update: (node: HTMLElement) => {
-      return context.tasks.summaryDateStats(col).then((r) => {
-        if (typeof r === 'symbol') {
-          return;
-        }
-        const { summary, data } = r;
+      const { summary, data } = context.tasks.summaryDateStats(col);
 
-        node.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
-          return;
-        }
-        const formatter = col.getFormatter();
-        mappingHintUpdate(node, [formatter(summary.min), formatter(summary.max)]);
+      node.classList.toggle(cssClass('missing'), !summary);
+      if (!summary) {
+        return;
+      }
+      const formatter = col.getFormatter();
+      mappingHintUpdate(node, [formatter(summary.min), formatter(summary.max)]);
 
-        render(node, summary, interactive ? data : undefined);
-      });
+      render(node, summary, interactive ? data : undefined);
     },
   };
 }
@@ -139,29 +130,24 @@ function interactiveSummary(
   return {
     template: `${template}</div>`,
     update: (node: HTMLElement) => {
-      return context.tasks.summaryDateStats(col).then((r) => {
-        if (typeof r === 'symbol') {
-          return;
-        }
-        const { summary, data } = r;
-        if (!updateFilter) {
-          const domain: [number, number] = [
-            data.min ? data.min.getTime() : Date.now(),
-            data.max ? data.max.getTime() : Date.now(),
-          ];
-          fContext = createFilterContext(col, context, domain);
-          updateFilter = initFilter(node, fContext);
-        }
+      const { summary, data } = context.tasks.summaryDateStats(col);
+      if (!updateFilter) {
+        const domain: [number, number] = [
+          data.min ? data.min.getTime() : Date.now(),
+          data.max ? data.max.getTime() : Date.now(),
+        ];
+        fContext = createFilterContext(col, context, domain);
+        updateFilter = initFilter(node, fContext);
+      }
 
-        updateFilter(data ? data.missing : summary ? summary.missing : 0, createFilterInfo(col, fContext.domain));
+      updateFilter(data ? data.missing : summary ? summary.missing : 0, createFilterInfo(col, fContext.domain));
 
-        node.classList.add(cssClass('histogram-i'));
-        node.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
-          return;
-        }
-        render(node, summary, data);
-      });
+      node.classList.add(cssClass('histogram-i'));
+      node.classList.toggle(cssClass('missing'), !summary);
+      if (!summary) {
+        return;
+      }
+      render(node, summary, data);
     },
   };
 }
@@ -211,28 +197,16 @@ export function createDateFilter(
   };
 
   const rerender = () => {
-    const ready = context.tasks.summaryDateStats(col).then((r) => {
-      if (typeof r === 'symbol') {
-        return;
-      }
-      const { summary, data } = r;
-      if (!updateFilter) {
-        updateFilter = prepareRender(data.min, data.max);
-      }
-      updateFilter(data ? data.missing : summary ? summary.missing : 0, currentFilter);
-      summaryNode.classList.toggle(cssClass('missing'), !summary);
-      if (!summary) {
-        return;
-      }
-      renderer.render(summaryNode, summary, data);
-    });
-    if (!ready) {
+    const { summary, data } = context.tasks.summaryDateStats(col);
+    if (!updateFilter) {
+      updateFilter = prepareRender(data.min, data.max);
+    }
+    updateFilter(data ? data.missing : summary ? summary.missing : 0, currentFilter);
+    summaryNode.classList.toggle(cssClass('missing'), !summary);
+    if (!summary) {
       return;
     }
-    summaryNode.classList.add(engineCssClass('loading'));
-    ready.then(() => {
-      summaryNode.classList.remove(engineCssClass('loading'));
-    });
+    renderer.render(summaryNode, summary, data);
   };
 
   const ranking = col.findMyRanker()!;

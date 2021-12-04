@@ -9,7 +9,7 @@ import {
 import { findFilterMissing, updateFilterMissingNumberMarkup, filterMissingNumberMarkup } from '../missing';
 import ADialog, { IDialogContext } from './ADialog';
 import { forEach } from './utils';
-import { cssClass, engineCssClass } from '../../styles';
+import { cssClass } from '../../styles';
 import { isCategoryIncluded } from '../../model/internalCategorical';
 import type { IRankingHeaderContext } from '../interfaces';
 
@@ -96,31 +96,16 @@ export default class CategoricalFilterDialog extends ADialog {
   }
 
   private updateStats() {
-    const ready = this.ctx.provider
-      .getTaskExecutor()
-      .summaryCategoricalStats(this.column)
-      .then((r) => {
-        if (typeof r === 'symbol') {
-          return;
-        }
-        const { summary, data } = r;
-        const missing = data ? data.missing : summary ? summary.missing : 0;
-        updateFilterMissingNumberMarkup(findFilterMissing(this.node).parentElement, missing);
-        if (!summary || !data) {
-          return;
-        }
-        this.forEach(`.${cssClass('dialog-filter-table-entry-stats')}`, (n: HTMLElement, i) => {
-          const bin = summary.hist[i];
-          const raw = data.hist[i];
-          n.textContent = `${bin.count.toLocaleString()}/${raw.count.toLocaleString()}`;
-        });
-      });
-    if (!ready) {
+    const { summary, data } = this.ctx.provider.getTaskExecutor().summaryCategoricalStats(this.column);
+    const missing = data ? data.missing : summary ? summary.missing : 0;
+    updateFilterMissingNumberMarkup(findFilterMissing(this.node).parentElement, missing);
+    if (!summary || !data) {
       return;
     }
-    this.node.classList.add(engineCssClass('loading'));
-    ready.then(() => {
-      this.node.classList.remove(engineCssClass('loading'));
+    this.forEach(`.${cssClass('dialog-filter-table-entry-stats')}`, (n: HTMLElement, i) => {
+      const bin = summary.hist[i];
+      const raw = data.hist[i];
+      n.textContent = `${bin.count.toLocaleString()}/${raw.count.toLocaleString()}`;
     });
   }
 

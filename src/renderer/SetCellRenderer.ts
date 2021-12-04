@@ -80,20 +80,16 @@ export default class SetCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass('heatmap')}">${templateRow}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupCategoricalStats(col, group).then((r) => {
-          if (typeof r === 'symbol') {
-            return;
-          }
-          const isMissing = !r || !r.group || r.group.count === 0 || r.group.count === r.group.missing;
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          render(
-            n,
-            r.group.hist.map((d) => d.count / r.group.maxBin)
-          );
-        });
+        const r = context.tasks.groupCategoricalStats(col, group);
+        const isMissing = !r || !r.group || r.group.count === 0 || r.group.count === r.group.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        render(
+          n,
+          r.group.hist.map((d) => d.count / r.group.maxBin)
+        );
       },
     };
   }

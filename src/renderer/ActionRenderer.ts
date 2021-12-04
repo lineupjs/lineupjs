@@ -56,14 +56,8 @@ export default class ActionRenderer implements ICellRendererFactory {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            context.tasks
-              .groupRows(col, group, 'identity', (r) => r)
-              .then((rows) => {
-                if (typeof rows === 'symbol') {
-                  return;
-                }
-                setTimeout(() => actions[i].action(group, Array.from(rows)), 1); // async
-              });
+            const rows = context.tasks.groupRows(col, group, 'identity', (r) => r);
+            setTimeout(() => actions[i].action(group, Array.from(rows)), 1); // async
           };
         });
       },

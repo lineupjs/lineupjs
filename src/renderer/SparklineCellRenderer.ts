@@ -76,21 +76,15 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, group: IOrderedGroup) => {
         //overlapping ones
         matchRows(n, group.order.length, `<path></path>`);
-        return context.tasks
-          .groupRows(col, group, 'numbers', (r) => Array.from(r.map((d) => col.getNumbers(d))))
-          .then((vs) => {
-            if (typeof vs === 'symbol') {
-              return;
-            }
-            const isMissing = vs.length === 0 || vs.every((v) => v.every(isMissingValue));
-            n.classList.toggle(cssClass('missing'), isMissing);
-            if (isMissing) {
-              return;
-            }
-            forEachChild(n, (row, i) => {
-              row.setAttribute('d', line(vs[i]));
-            });
-          });
+        const vs = context.tasks.groupRows(col, group, 'numbers', (r) => Array.from(r.map((d) => col.getNumbers(d))));
+        const isMissing = vs.length === 0 || vs.every((v) => v.every(isMissingValue));
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        forEachChild(n, (row, i) => {
+          row.setAttribute('d', line(vs[i]));
+        });
       },
     };
   }

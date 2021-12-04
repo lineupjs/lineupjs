@@ -44,7 +44,6 @@ import { createMappingFunction, mappingFunctions } from '../model/MappingFunctio
 import { convertAggregationState } from './internal';
 import { isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter } from '../internal';
 
-
 /**
  * emitted when a column has been added
  * @asMemberOf ADataProvider

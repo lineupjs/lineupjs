@@ -59,15 +59,11 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
-        return context.tasks
-          .groupExampleRows(col, group, 'link', (rows) => LinkCellRenderer.exampleText(col, rows))
-          .then((out) => {
-            if (typeof out === 'symbol') {
-              return;
-            }
-            const [links, more] = out;
-            updateLinkList(n, links, more);
-          });
+        const out = context.tasks.groupExampleRows(col, group, 'link', (rows) =>
+          LinkCellRenderer.exampleText(col, rows)
+        );
+        const [links, more] = out;
+        updateLinkList(n, links, more);
       },
     };
   }

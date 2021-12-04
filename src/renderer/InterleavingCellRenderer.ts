@@ -13,7 +13,6 @@ import {
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { createData } from './MultiLevelCellRenderer';
 import { colorOf, matchColumns, forEachChild } from './utils';
-import { tasksAll } from '../provider';
 import type { IHistogramLike } from './histogram';
 
 export default class InterleavingCellRenderer implements ICellRendererFactory {
@@ -79,21 +78,16 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement) => {
-        const tasks = cols.map((col) => context.tasks.summaryNumberStats(col as INumberColumn));
+        const vs = cols.map((col) => context.tasks.summaryNumberStats(col as INumberColumn));
 
-        return tasksAll(tasks).then((vs) => {
-          if (typeof vs === 'symbol') {
-            return;
-          }
-          const summaries = vs.map((d) => d.summary);
-          if (!summaries.some(Boolean)) {
-            n.classList.add(cssClass('missing'));
-            return;
-          }
-          n.classList.remove(cssClass('missing'));
-          const grouped = groupedHist(summaries)!;
-          render(n, grouped);
-        });
+        const summaries = vs.map((d) => d.summary);
+        if (!summaries.some(Boolean)) {
+          n.classList.add(cssClass('missing'));
+          return;
+        }
+        n.classList.remove(cssClass('missing'));
+        const grouped = groupedHist(summaries)!;
+        render(n, grouped);
       },
     };
   }

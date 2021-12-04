@@ -371,17 +371,14 @@ export default class LocalDataProvider extends ADataProvider {
     ranking: Ranking,
     lookups: CompareLookup | undefined,
     groupLookup: CompareLookup | undefined,
-    singleGroup: boolean,
     maxDataIndex: number
   ): Promise<IOrderedGroup> {
     const group = g.group;
 
-    const sortTask = this.tasks.sort(ranking, group, g.rows, singleGroup, maxDataIndex, lookups);
+    const sortTask = this.tasks.sort(g.rows, maxDataIndex, lookups);
 
     // compute sort group value as task
-    const groupSortTask = groupLookup
-      ? this.tasks.groupCompare(ranking, group, g.rows).then((r) => r)
-      : ([] as ICompareValue[]);
+    const groupSortTask = groupLookup ? this.tasks.groupCompare(ranking, group, g.rows) : ([] as ICompareValue[]);
 
     // trigger task for groups to compute for this group
 
@@ -475,7 +472,7 @@ export default class LocalDataProvider extends ADataProvider {
       const g = groupOrder[0]!;
 
       // not required if: group sort criteria changed -> lookups will be none
-      return this.sortGroup(g, 0, ranking, lookups, undefined, true, maxDataIndex).then((group) => {
+      return this.sortGroup(g, 0, ranking, lookups, undefined, maxDataIndex).then((group) => {
         return this.index2pos([group], maxDataIndex);
       });
     }
@@ -486,7 +483,7 @@ export default class LocalDataProvider extends ADataProvider {
     return Promise.all(
       groupOrder.map((g, i) => {
         // not required if: group sort criteria changed -> lookups will be none
-        return this.sortGroup(g, i, ranking, lookups, groupLookup, false, maxDataIndex);
+        return this.sortGroup(g, i, ranking, lookups, groupLookup, maxDataIndex);
       })
     ).then((groups) => {
       // not required if: sort criteria changed -> groupLookup will be none

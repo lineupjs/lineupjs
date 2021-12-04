@@ -78,25 +78,21 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass('rtable')}"></div>`,
       update: (node: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks
-          .groupRows(col, group, 'table', (rows) => groupByKey(rows.map((d) => col.getMapLabel(d))))
-          .then((entries) => {
-            if (typeof entries === 'symbol') {
-              return;
-            }
-            renderTable(node, entries, (n, { values }) => {
-              const numExampleRows = 5;
-              const v = `${values
-                .slice(0, numExampleRows)
-                .map((d) => d.value)
-                .join(', ')}`;
-              if (numExampleRows < values.length) {
-                n.textContent = `${v}, …`;
-              } else {
-                n.textContent = v;
-              }
-            });
-          });
+        const entries = context.tasks.groupRows(col, group, 'table', (rows) =>
+          groupByKey(rows.map((d) => col.getMapLabel(d)))
+        );
+        renderTable(node, entries, (n, { values }) => {
+          const numExampleRows = 5;
+          const v = `${values
+            .slice(0, numExampleRows)
+            .map((d) => d.value)
+            .join(', ')}`;
+          if (numExampleRows < values.length) {
+            n.textContent = `${v}, …`;
+          } else {
+            n.textContent = v;
+          }
+        });
       },
     };
   }
@@ -105,27 +101,21 @@ export default class TableCellRenderer implements ICellRendererFactory {
     return {
       template: TableCellRenderer.template(col),
       update: (node: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks
-          .groupExampleRows(col, group, 'table', (rows) => {
-            const values: string[][] = col.labels.map(() => []);
-            rows.forEach((row) => {
-              const labels = col.getLabels(row);
-              for (let i = 0; i < Math.min(values.length, labels.length); ++i) {
-                if (!isMissingValue(labels[i])) {
-                  values[i].push(labels[i]);
-                }
+        const values = context.tasks.groupExampleRows(col, group, 'table', (rows) => {
+          const values: string[][] = col.labels.map(() => []);
+          rows.forEach((row) => {
+            const labels = col.getLabels(row);
+            for (let i = 0; i < Math.min(values.length, labels.length); ++i) {
+              if (!isMissingValue(labels[i])) {
+                values[i].push(labels[i]);
               }
-            });
-            return values;
-          })
-          .then((values) => {
-            if (typeof values === 'symbol') {
-              return;
             }
-            forEach(node, '[data-v]', (n: HTMLElement, i) => {
-              n.textContent = `${values[i].join(', ')}, …`;
-            });
           });
+          return values;
+        });
+        forEach(node, '[data-v]', (n: HTMLElement, i) => {
+          n.textContent = `${values[i].join(', ')}, …`;
+        });
       },
     };
   }

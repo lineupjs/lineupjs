@@ -156,37 +156,32 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks
-          .groupRows(col, group, 'dot', (rows) => {
-            //value, color, label,
+        const data = context.tasks.groupRows(col, group, 'dot', (rows) => {
+          //value, color, label,
 
-            if (!isNumbersColumn(col)) {
-              return Array.from(rows.map((r) => ({ value: col.getNumber(r), color: colorOf(col, r, imposer) })));
-            }
-            // concatenate all columns
-            const vs = rows.map((r) => {
-              const color = colorOf(col, r, imposer);
-              return col
-                .getNumbers(r)
-                .filter((vi: number) => !Number.isNaN(vi))
-                .map((value) => ({ value, color }));
-            });
-            return Array.from(concatSeq(vs));
-          })
-          .then((data) => {
-            if (typeof data === 'symbol') {
-              return;
-            }
-            const isMissing = !data || data.length === 0 || data.every((v) => Number.isNaN(v.value));
-            n.classList.toggle(cssClass('missing'), isMissing);
-            if (isMissing) {
-              return;
-            }
-            const ctx = (n as HTMLCanvasElement).getContext('2d')!;
-            ctx.canvas.width = width;
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            render(ctx, data, width);
+          if (!isNumbersColumn(col)) {
+            return Array.from(rows.map((r) => ({ value: col.getNumber(r), color: colorOf(col, r, imposer) })));
+          }
+          // concatenate all columns
+          const vs = rows.map((r) => {
+            const color = colorOf(col, r, imposer);
+            return col
+              .getNumbers(r)
+              .filter((vi: number) => !Number.isNaN(vi))
+              .map((value) => ({ value, color }));
           });
+          return Array.from(concatSeq(vs));
+        });
+
+        const isMissing = !data || data.length === 0 || data.every((v) => Number.isNaN(v.value));
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        const ctx = (n as HTMLCanvasElement).getContext('2d')!;
+        ctx.canvas.width = width;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        render(ctx, data, width);
       },
     };
   }
