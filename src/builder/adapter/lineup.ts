@@ -1,17 +1,11 @@
 import type { IBuilderAdapter, IBuilderAdapterProps, IBuilderAdapterRankingProps, IChangeDetecter } from './interfaces';
 import type { IColumnDesc } from '../../model';
-import {
-  deriveColors,
-  deriveColumnDescriptions,
-  IDataProviderOptions,
-  ILocalDataProviderOptions,
-  LocalDataProvider,
-} from '../../provider';
+import { deriveColors, deriveColumnDescriptions, DataProviderOptions, DataProvider } from '../../provider';
 import { LineUp, Taggle } from '../../ui';
 import { buildRanking } from './ranking';
 import { equal, isSame, pick } from './utils';
 
-const providerOptions: (keyof IDataProviderOptions | keyof ILocalDataProviderOptions)[] = [
+const providerOptions: (keyof DataProviderOptions)[] = [
   'singleSelection',
   'filterGlobally',
   'columnTypes',
@@ -55,7 +49,7 @@ interface IColumnContext {
 }
 
 export class Adapter {
-  private data: LocalDataProvider | null = null;
+  private data: DataProvider | null = null;
   private instance: LineUp | Taggle | null = null;
 
   private prevRankings: IRankingContext | null = null;
@@ -135,7 +129,7 @@ export class Adapter {
     return columns;
   }
 
-  private buildRankings(data: LocalDataProvider, rankings: IRankingContext) {
+  private buildRankings(data: DataProvider, rankings: IRankingContext) {
     data.clearRankings();
     this.prevRankings = rankings;
     if (rankings.derive) {
@@ -149,12 +143,12 @@ export class Adapter {
 
   private buildProvider() {
     const columns = this.buildColumns(this.props.data, this.resolveColumnDescs(this.props.data));
-    const data = new LocalDataProvider(this.props.data, columns, pick(this.props, providerOptions));
+    const data = new DataProvider(this.props.data, columns, pick(this.props, providerOptions));
 
     this.buildRankings(data, this.resolveRankings());
 
     data.setSelection(this.props.selection || []);
-    data.on(LocalDataProvider.EVENT_SELECTION_CHANGED, this.onSelectionChanged);
+    data.on(DataProvider.EVENT_SELECTION_CHANGED, this.onSelectionChanged);
 
     return data;
   }
@@ -209,9 +203,9 @@ export class Adapter {
       this.buildRankings(this.data, rankings);
     }
 
-    this.data.on(LocalDataProvider.EVENT_SELECTION_CHANGED, null);
+    this.data.on(DataProvider.EVENT_SELECTION_CHANGED, null);
     this.data.setSelection(this.props.selection || []);
-    this.data.on(LocalDataProvider.EVENT_SELECTION_CHANGED, this.onSelectionChanged);
+    this.data.on(DataProvider.EVENT_SELECTION_CHANGED, this.onSelectionChanged);
     return false;
   }
 

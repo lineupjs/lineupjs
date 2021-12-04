@@ -56,7 +56,7 @@
               labels: years,
             });
 
-            const p = new LineUpJS.LocalDataProvider(data, desc);
+            const p = new LineUpJS.DataProvider(data, desc);
             p.deriveDefault();
 
             const lineup = new LineUpJS.LineUp(document.body, p, { expandLineOnHover: true });

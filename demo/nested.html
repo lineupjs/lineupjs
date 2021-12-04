@@ -25,7 +25,7 @@
           { label: 'C', type: 'number', column: 'c', domain: [0, 100], color: 'green' },
         ];
 
-        const p = new LineUpJS.LocalDataProvider(arr, desc);
+        const p = new LineUpJS.DataProvider(arr, desc);
         {
           const r = p.pushRanking();
           r.insert(p.create(LineUpJS.createSelectionDesc()), 0);

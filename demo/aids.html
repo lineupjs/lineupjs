@@ -79,7 +79,7 @@
             { column: 'World Share (%)', type: 'number', domain: [0, 18.5] },
           ];
 
-          const p = new LineUpJS.LocalDataProvider(data, desc);
+          const p = new LineUpJS.DataProvider(data, desc);
           p.deriveDefault();
           p.getLastRanking().insert(p.create(LineUpJS.createSelectionDesc()), 1);
 

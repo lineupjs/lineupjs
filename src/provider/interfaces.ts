@@ -15,13 +15,14 @@ import type {
 import type { AEventDispatcher, ISequence } from '../internal';
 import type { IRenderTasks } from '../renderer';
 import type { IAbortAblePromise as IAbortAblePromiseImpl } from 'lineupengine';
+import type { RenderTaskOptions } from './DirectRenderTasks';
 
 export { ABORTED } from 'lineupengine';
 export declare type IAbortAblePromise<T> = IAbortAblePromiseImpl<T>;
 
 export declare type IAggregationStrategy = 'group' | 'item' | 'group+item' | 'group+top+item' | 'group+item+top';
 
-export interface IDataProviderOptions {
+export interface DataProviderOptions extends RenderTaskOptions {
   columnTypes: { [columnType: string]: IColumnConstructor };
   colorMappingFunctionTypes: { [colorMappingFunctionType: string]: IColorMappingFunctionConstructor };
   mappingFunctionTypes: { [mappingFunctionType: string]: IMappingFunctionConstructor };
@@ -49,6 +50,16 @@ export interface IDataProviderOptions {
    * @default true
    */
   propagateAggregationState: boolean;
+  /**
+   * whether the filter should be applied to all rankings regardless where they are
+   * default: false
+   */
+  filterGlobally: boolean;
+  /**
+   * jump to search results such that they are visible
+   * default: false
+   */
+  jumpToSearchResult: boolean;
 }
 
 export interface IDataProvider extends AEventDispatcher {

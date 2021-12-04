@@ -1,11 +1,9 @@
 import type { IColumnDesc, IColumnConstructor } from '../model';
 import {
   DataProvider,
-  LocalDataProvider,
   deriveColors,
   deriveColumnDescriptions,
-  IDataProviderOptions,
-  ILocalDataProviderOptions,
+  DataProviderOptions,
   IAggregationStrategy,
 } from '../provider';
 import { LineUp, Taggle } from '../ui';
@@ -17,11 +15,11 @@ export * from './column';
 export * from './RankingBuilder';
 
 /**
- * builder for a LocalDataProvider along with LineUp configuration options
+ * builder for a DataProvider along with LineUp configuration options
  */
 export class DataBuilder extends LineUpBuilder {
   private readonly columns: (IColumnDesc | ((data: any[]) => IColumnDesc))[] = [];
-  private readonly providerOptions: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {
+  private readonly providerOptions: Partial<DataProviderOptions> = {
     columnTypes: {},
   };
 
@@ -149,7 +147,7 @@ export class DataBuilder extends LineUpBuilder {
 
   /**
    * builds the data provider itself
-   * @returns {LocalDataProvider}
+   * @returns {DataProvider}
    */
   buildData() {
     // last come survived separated by label to be able to override columns
@@ -169,7 +167,7 @@ export class DataBuilder extends LineUpBuilder {
     if (this._deriveColors) {
       deriveColors(columns);
     }
-    const r = new LocalDataProvider(this.data, columns, this.providerOptions);
+    const r = new DataProvider(this.data, columns, this.providerOptions);
     if (this.rankBuilders.length === 0) {
       this.defaultRanking();
     }

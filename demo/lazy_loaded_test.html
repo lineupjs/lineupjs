@@ -16,7 +16,7 @@
         const arr = [{ a: 10 }, { a: 5 }, { a: 2 }, { a: 7 }, { a: 2 }, { a: NaN }];
         const desc = [{ label: 'Lazy', type: 'number', column: 'a', domain: [0, 10], lazyLoaded: true }];
 
-        const p = new LineUpJS.LocalDataProvider(arr, desc);
+        const p = new LineUpJS.DataProvider(arr, desc);
         const lazy = p.create(desc[0]);
         {
           const r = p.pushRanking();

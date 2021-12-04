@@ -14,7 +14,7 @@ import type {
   IGroupAction,
   IPartialCategoryNode,
 } from '../../model';
-import type { IDataProviderOptions, ILocalDataProviderOptions, LocalDataProvider } from '../../provider';
+import type { DataProviderOptions, DataProvider } from '../../provider';
 import type { LineUp, Taggle } from '../../ui';
 
 export interface IBuilderAdapterRankingProps {
@@ -60,7 +60,7 @@ export interface IBuilderAdapterSupportColumnProps {
   type: 'rank' | 'selection' | 'group' | 'aggregate' | '*';
 }
 
-export interface IBuilderAdapterDataProps extends Partial<IDataProviderOptions>, Partial<ILocalDataProviderOptions> {
+export interface IBuilderAdapterDataProps extends Partial<DataProviderOptions> {
   data: any[];
   selection?: number[] | null;
   highlight?: number | null;
@@ -83,7 +83,7 @@ export interface IChangeDetecter {
 
 export interface IBuilderAdapter {
   props(): Readonly<IBuilderAdapterProps>;
-  createInstance(data: LocalDataProvider, options: Partial<ILineUpOptions>): LineUp | Taggle;
+  createInstance(data: DataProvider, options: Partial<ILineUpOptions>): LineUp | Taggle;
   rankingBuilders(): IBuilderAdapterRankingProps[];
   columnDescs(data: any[]): IColumnDesc[];
 }

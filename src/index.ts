@@ -3,7 +3,7 @@
  */
 
 import type { IColumnDesc } from './model';
-import { DataProvider, LocalDataProvider, ILocalDataProviderOptions } from './provider';
+import { DataProvider, DataProviderOptions } from './provider';
 import { LineUp, Taggle } from './ui';
 import type { ILineUpOptions, ITaggleOptions } from './config';
 
@@ -16,12 +16,8 @@ export * from './renderer';
 export * from './ui';
 export { LineUp as default } from './ui';
 
-export function createLocalDataProvider(
-  data: any[],
-  columns: IColumnDesc[],
-  options: Partial<ILocalDataProviderOptions> = {}
-) {
-  return new LocalDataProvider(data, columns, options);
+export function createDataProvider(data: any[], columns: IColumnDesc[], options: Partial<DataProviderOptions> = {}) {
+  return new DataProvider(data, columns, options);
 }
 
 /**

@@ -44,7 +44,7 @@ describe('big', () => {
       ];
       lineUpJS.deriveColors(desc);
 
-      const p = new lineUpJS.LocalDataProvider(arr, desc, {
+      const p = new lineUpJS.DataProvider(arr, desc, {
         // taskExecutor: 'direct',
         taskExecutor: 'scheduled',
       });
