@@ -45,7 +45,7 @@ export default class ValueColumn<T> extends Column {
   }
 
   onDataUpdate(_rows: ISequence<IDataRow>): void {
-    // hook for listening todata updates
+    // hook for listening to data updates
   }
 
   protected createEventList() {
