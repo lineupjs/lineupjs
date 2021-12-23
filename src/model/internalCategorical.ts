@@ -129,7 +129,7 @@ export function toGroupCompareCategoryValue(
 }
 
 /** @internal */
-function compareCategory(a: ICategory | null, b: ICategory | null) {
+export function compareCategory(a: ICategory | null, b: ICategory | null) {
   const aNull = a == null || Number.isNaN(a.value);
   const bNull = b == null || Number.isNaN(b.value);
   if (aNull || a == null) {
