@@ -167,7 +167,7 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean, sanitize: (v: st
       const bins = Array.from(n.querySelectorAll<HTMLElement>('[data-cat]'));
       let lastBin: HTMLElement | null = null;
       let changed = false;
-      for (let category of categories) {
+      for (const category of categories) {
         let bin = bins[0];
         if (bin && bin.dataset.cat === category.name) {
           lastBin = bin;
@@ -185,7 +185,7 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean, sanitize: (v: st
         }
         lastBin = bin;
       }
-      for (let toRemove of bins) {
+      for (const toRemove of bins) {
         // delete extra bins
         changed = true;
         toRemove.remove();
