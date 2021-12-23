@@ -29,7 +29,6 @@ const radiusPercentage = (100 * radius) / GUESSED_ROW_HEIGHT;
 const availableHeight = 100 * PADDED_HEIGHT - radiusPercentage * 2;
 const shift = 100 * ((1 - PADDED_HEIGHT) / 2) + radiusPercentage;
 
-
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Dot';
   readonly groupTitle: string = 'Dots';
