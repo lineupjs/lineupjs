@@ -21,7 +21,6 @@ export default class BarCellRenderer implements ICellRendererFactory {
    * flag to always render the value
    * @type {boolean}
    */
-
   constructor(private readonly renderValue: boolean = false) {}
 
   canRender(col: Column, mode: ERenderMode): boolean {

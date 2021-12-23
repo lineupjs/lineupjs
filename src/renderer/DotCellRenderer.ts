@@ -34,6 +34,12 @@ export default class DotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Dot';
   readonly groupTitle: string = 'Dots';
 
+  /**
+   * flag to always render the value for single dots
+   * @type {boolean}
+   */
+  constructor(private readonly renderValue: boolean = false) {}
+
   canRender(col: Column, mode: ERenderMode): boolean {
     return isNumberColumn(col) && mode !== ERenderMode.SUMMARY;
   }
@@ -106,7 +112,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return { template: `<div>${tmp}</div>`, update, render };
   }
 
-  private static getSingleDOMRenderer(sanitize: (v: string) => string) {
+  private static getSingleDOMRenderer(sanitize: (v: string) => string, renderValue: boolean) {
     const update = (n: HTMLElement, value: number, label: string, color: string) => {
       const sanitizedLabel = sanitize(label);
       n.title = sanitizedLabel;
@@ -129,9 +135,9 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${cssClass(
         'dot-single'
-      )}"><div style='background-color: ${DEFAULT_COLOR}' title=''></div><span class="${cssClass(
-        'hover-only'
-      )}"></span></div>`,
+      )}"><div style='background-color: ${DEFAULT_COLOR}' title=''></div><span ${
+        renderValue ? '' : `class="${cssClass('hover-only')}"`
+      }></span></div>`,
       update,
       render,
     };
@@ -143,7 +149,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
 
     if (!isNumbersColumn(col)) {
       // single
-      const { template, render, update } = DotCellRenderer.getSingleDOMRenderer(context.sanitize);
+      const { template, render, update } = DotCellRenderer.getSingleDOMRenderer(context.sanitize, this.renderValue);
       return {
         template,
         update: (n, d) => {
