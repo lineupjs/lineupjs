@@ -159,7 +159,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
-    this.reorderAll.call({ type: Ranking.EVENT_FILTER_CHANGED });
+    this.reorderAll.call({ type: 'data' });
   }
 
   clearData() {
