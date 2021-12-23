@@ -1,5 +1,5 @@
 import { format } from 'd3-format';
-import type { IBoxPlotData, IEventListener } from '../internal';
+import type { IBoxPlotData, IEventListener, ISequence } from '../internal';
 import { Category, dialogAddons, SortByDefault, toolbar } from './annotations';
 import Column, {
   dirty,
@@ -86,8 +86,9 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   private mapping: IMappingFunction;
   private colorMapping: IColorMappingFunction;
-
   private original: Readonly<IMappingFunction>;
+  private deriveMapping: readonly boolean[];
+
   /**
    * currently active filter
    * @type {{min: number, max: number}}
@@ -99,6 +100,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     super(id, desc);
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
+    this.deriveMapping = this.mapping.domain.map((d) => Number.isNaN(d));
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping);
 
     if (desc.numberFormat) {
@@ -106,6 +108,41 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     }
 
     this.sort = desc.sort || ESortMethod.min;
+  }
+
+  onDataUpdate(rows: ISequence<IDataRow>): void {
+    super.onDataUpdate(rows);
+    if (!this.deriveMapping.some(Boolean)) {
+      return;
+    }
+    // hook for listening to data updates
+    const minMax = rows
+      .map((row) => this.getRawValue(row))
+      .reduce(
+        (acc, v) => {
+          if (v == null) {
+            return acc;
+          }
+          if (v.min < acc.min) {
+            acc.min = v.min;
+          }
+          if (v.max > acc.max) {
+            acc.max = v.max;
+          }
+          return acc;
+        },
+        { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY }
+      );
+
+    const domain = this.mapping.domain.slice();
+    if (this.deriveMapping[0]) {
+      domain[0] = minMax.min;
+    }
+    if (this.deriveMapping[this.deriveMapping.length - 1]) {
+      domain[domain.length - 1] = minMax.max;
+    }
+    this.mapping.domain = domain;
+    (this.original as IMappingFunction).domain = domain;
   }
 
   getNumberFormat() {
@@ -279,6 +316,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.mapping.eq(mapping)) {
       return;
     }
+    this.deriveMapping = [];
     this.fire(
       [
         BoxPlotColumn.EVENT_MAPPING_CHANGED,
