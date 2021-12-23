@@ -24,6 +24,11 @@ import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { adaptColor, noRenderer, SMALL_MARK_LIGHTNESS_FACTOR } from './utils';
 
 const PADDED_HEIGHT = 0.8;
+const radius = DOT.size / 2;
+const radiusPercentage = (100 * radius) / GUESSED_ROW_HEIGHT;
+const availableHeight = 100 * PADDED_HEIGHT - radiusPercentage * 2;
+const shift = 100 * ((1 - PADDED_HEIGHT) / 2) + radiusPercentage;
+
 
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Dot';
@@ -62,7 +67,6 @@ export default class DotCellRenderer implements ICellRendererFactory {
   }
 
   private static getDOMRenderer(col: INumberColumn, sanitize: (v: string) => string) {
-    const single = !isNumbersColumn(col);
     const dots = !isNumbersColumn(col) ? 1 : col.dataLength!;
     let tmp = '';
     for (let i = 0; i < dots; ++i) {
@@ -70,7 +74,6 @@ export default class DotCellRenderer implements ICellRendererFactory {
     }
 
     const update = (n: HTMLElement, data: ISequence<{ value: number; label: string; color: string | null }>) => {
-      n.classList.toggle(cssClass('dot-single'), single);
       //adapt the number of children
       const l = data.length;
       if (n.children.length !== l) {
@@ -79,11 +82,6 @@ export default class DotCellRenderer implements ICellRendererFactory {
         }, '');
       }
       const children = n.children;
-
-      const radius = DOT.size / 2;
-      const radiusPercentage = (100 * radius) / GUESSED_ROW_HEIGHT;
-      const availableHeight = 100 * PADDED_HEIGHT - radiusPercentage * 2;
-      const shift = 100 * ((1 - PADDED_HEIGHT) / 2) + radiusPercentage;
 
       data.forEach((v, i) => {
         const d = children[i] as HTMLElement;
@@ -105,14 +103,64 @@ export default class DotCellRenderer implements ICellRendererFactory {
       });
       ctx.restore();
     };
-
     return { template: `<div>${tmp}</div>`, update, render };
   }
 
+  private static getSingleDOMRenderer(sanitize: (v: string) => string) {
+    const update = (n: HTMLElement, value: number, label: string, color: string) => {
+      const sanitizedLabel = sanitize(label);
+      n.title = sanitizedLabel;
+      const dot = n.firstElementChild as HTMLElement;
+      dot.style.display = Number.isNaN(value) ? 'none' : null;
+      dot.style.left = `${round(value * 100, 2)}%`;
+      dot.style.backgroundColor = sanitize(color);
+      const labelNode = n.lastElementChild as HTMLElement;
+      labelNode.textContent = sanitizedLabel;
+    };
+
+    const render = (ctx: CanvasRenderingContext2D, value: number, color: string, width: number) => {
+      ctx.save();
+      ctx.globalAlpha = DOT.opacity;
+      ctx.fillStyle = color || DOT.color;
+      ctx.fillRect(Math.max(0, value * width - DOT.size / 2), 0, DOT.size, CANVAS_HEIGHT);
+      ctx.restore();
+    };
+
+    return {
+      template: `<div class="${cssClass(
+        'dot-single'
+      )}"><div style='background-color: ${DEFAULT_COLOR}' title=''></div><span class="${cssClass(
+        'hover-only'
+      )}"></span></div>`,
+      update,
+      render,
+    };
+  }
+
   create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
-    const { template, render, update } = DotCellRenderer.getDOMRenderer(col, context.sanitize);
     const width = context.colWidth(col);
     const formatter = col.getNumberFormat();
+
+    if (!isNumbersColumn(col)) {
+      // single
+      const { template, render, update } = DotCellRenderer.getSingleDOMRenderer(context.sanitize);
+      return {
+        template,
+        update: (n, d) => {
+          if (renderMissingDOM(n, col, d)) {
+            return;
+          }
+          const color = adaptColor(colorOf(col, d, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
+          return update(n, col.getNumber(d), col.getLabel(d), color);
+        },
+        render: (ctx, d) => {
+          const color = adaptColor(colorOf(col, d, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
+          return render(ctx, col.getNumber(d), color, width);
+        },
+      };
+    }
+
+    const { template, render, update } = DotCellRenderer.getDOMRenderer(col, context.sanitize);
     return {
       template,
       update: (n: HTMLElement, d: IDataRow) => {
@@ -120,10 +168,6 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return;
         }
         const color = adaptColor(colorOf(col, d, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
-        if (!isNumbersColumn(col)) {
-          const v = col.getNumber(d);
-          return update(n, [{ value: v, label: col.getLabel(d), color }]);
-        }
         const data = col
           .getNumbers(d)
           .filter((vi: number) => !Number.isNaN(vi))
@@ -135,10 +179,6 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return;
         }
         const color = adaptColor(colorOf(col, d, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
-        if (!isNumbersColumn(col)) {
-          const v = col.getNumber(d);
-          return render(ctx, [v], [color], width);
-        }
         const vs: number[] = col.getNumbers(d).filter((vi: number) => !Number.isNaN(vi));
         return render(
           ctx,
