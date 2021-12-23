@@ -22,12 +22,12 @@ $lu_icon_down_open: fa-content($fa-var-angle-down) !global;
 $lu_icon_up_open: fa-content($fa-var-angle-up) !global;
 
 $lu_icon_external_link: fa-content($fa-var-external-link-alt) !global;
-$lu_icon_square_o: fa-content($fa-var-square) !global;;
+$lu_icon_square_o: fa-content($fa-var-square) !global;
 $lu_icon_tasks: fa-content($fa-var-tasks) !global;
 $lu_icon_filter: fa-content($fa-var-filter) !global;
 $lu_icon_bars: fa-content($fa-var-bars) !global;
 $lu_icon_columns: fa-content($fa-var-columns) !global;
-$lu_icon_sort: fa-content($fa-var-sort) !global;;
+$lu_icon_sort: fa-content($fa-var-sort) !global;
 $lu_icon_sort_desc: fa-content($fa-var-sort-up) !global;
 $lu_icon_sort_asc: fa-content($fa-var-sort-down) !global;
 $lu_icon_sitemap: fa-content($fa-var-sitemap) !global;
@@ -41,7 +41,7 @@ $lu_icon_sort_amount_desc: fa-content($fa-var-sort-amount-up-alt) !global;
 $lu_icon_sort_numeric_asc: fa-content($fa-var-sort-numeric-down) !global;
 $lu_icon_sort_numeric_desc: fa-content($fa-var-sort-numeric-up) !global;
 $lu_icon_toggle_left: fa-content($fa-var-caret-square-left) !global;
-$lu_icon_toggle_right: fa-content($fa-var-caret-square-right) !global;;
+$lu_icon_toggle_right: fa-content($fa-var-caret-square-right) !global;
 $lu_icon_sliders: fa-content($fa-var-sliders-h) !global;
 $lu_icon_trash: fa-content($fa-var-trash) !global;
 $lu_icon_brush: fa-content($fa-var-paint-brush) !global;
@@ -49,7 +49,6 @@ $lu_icon_chrome: fa-content($fa-var-chrome) !global;
 $lu_icon_firefox: fa-content($fa-var-firefox) !global;
 $lu_icon_edge: fa-content($fa-var-edge) !global;
 $lu_icon_window_restore: fa-content($fa-var-window-restore) !global;
-
 
 @mixin lu_icons() {
   @include fa-icon();
@@ -61,17 +60,19 @@ $lu_icon_window_restore: fa-content($fa-var-window-restore) !global;
 @mixin lu_brand_icons() {
   @include fa-icon();
 
-  font-family: 'Font Awesome 5 Brands';
+  font-family: 'Font Awesome 5 Brands', serif;
   font-weight: 400;
 }
 
 @mixin lu_icons_o() {
   @include lu_icons();
+
   font-weight: 400;
 }
 
 @mixin lu_icons_brands() {
   @include lu_icons();
+
   font-weight: 400;
 }
 
