@@ -23,7 +23,7 @@ import {
 } from './interfaces';
 import { renderMissingCanvas } from './missing';
 import { tasksAll } from '../provider';
-import { adaptColor, BIG_MARK_SATURATION_FACTOR, SMALL_MARK_SATURATION_FACTOR } from './utils';
+import { adaptColor, BIG_MARK_LIGHTNESS_FACTOR, SMALL_MARK_LIGHTNESS_FACTOR } from './utils';
 
 const BOXPLOT = `<div title="">
   <div class="${cssClass('boxplot-whisker')}">
@@ -199,7 +199,7 @@ function renderDOMBoxPlot(
   //relative within the whiskers
   box.style.left = `${round(((data.q1 - leftWhisker) / range) * 100, 2)}%`;
   box.style.width = `${round(((data.q3 - data.q1) / range) * 100, 2)}%`;
-  box.style.backgroundColor = adaptColor(color, BIG_MARK_SATURATION_FACTOR);
+  box.style.backgroundColor = adaptColor(color, BIG_MARK_LIGHTNESS_FACTOR);
 
   //relative within the whiskers
   median.style.left = `${round(((data.median - leftWhisker) / range) * 100, 2)}%`;
@@ -258,8 +258,8 @@ function renderBoxPlot(
   const left = box.whiskerLow != null ? box.whiskerLow : Math.max(box.q1 - 1.5 * (box.q3 - box.q1), box.min);
   const right = box.whiskerHigh != null ? box.whiskerHigh : Math.min(box.q3 + 1.5 * (box.q3 - box.q1), box.max);
 
-  ctx.fillStyle = adaptColor(color || BOX_PLOT.box, BIG_MARK_SATURATION_FACTOR);
-  ctx.strokeStyle = adaptColor(BOX_PLOT.stroke, SMALL_MARK_SATURATION_FACTOR);
+  ctx.fillStyle = adaptColor(color || BOX_PLOT.box, BIG_MARK_LIGHTNESS_FACTOR);
+  ctx.strokeStyle = adaptColor(BOX_PLOT.stroke, SMALL_MARK_LIGHTNESS_FACTOR);
   ctx.beginPath();
   ctx.rect(box.q1, 0, box.q3 - box.q1, height);
   ctx.fill();
