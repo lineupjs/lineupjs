@@ -1,5 +1,5 @@
 import type { IRankingHeaderContext } from '..';
-import type { LinkColumn, LinkMapColumn, LinksColumn } from '../../model';
+import type { LinkColumn } from '../../model';
 import ADialog, { IDialogContext } from './ADialog';
 
 /** @internal */
@@ -7,7 +7,7 @@ export default class EditPatternDialog extends ADialog {
   private readonly before: string;
 
   constructor(
-    private readonly column: LinkColumn | LinksColumn | LinkMapColumn,
+    private readonly column: LinkColumn,
     dialog: IDialogContext,
     private readonly ctx: IRankingHeaderContext
   ) {

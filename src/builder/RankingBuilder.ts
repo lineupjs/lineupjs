@@ -8,7 +8,6 @@ import {
   createGroupDesc,
   createImpositionBoxPlotDesc,
   createImpositionDesc,
-  createImpositionsDesc,
   createNestedDesc,
   createRankDesc,
   createReduceDesc,
@@ -197,8 +196,6 @@ export class RankingBuilder {
         switch (base ? base.type : '') {
           case 'boxplot':
             return createImpositionBoxPlotDesc(label ? label : undefined);
-          case 'numbers':
-            return createImpositionsDesc(label ? label : undefined);
           default:
             return createImpositionDesc(label ? label : undefined);
         }

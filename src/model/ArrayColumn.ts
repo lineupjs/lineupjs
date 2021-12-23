@@ -50,14 +50,4 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> implements IArrayCo
     }
     return v.toString();
   }
-
-  getMap(row: IDataRow) {
-    const labels = this.labels;
-    return this.getValues(row).map((value, i) => ({ key: labels[i], value }));
-  }
-
-  getMapLabel(row: IDataRow) {
-    const labels = this.labels;
-    return this.getLabels(row).map((value, i) => ({ key: labels[i], value }));
-  }
 }

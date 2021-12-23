@@ -1,7 +1,6 @@
 import type {
   ICategoricalColumn,
   CategoricalsColumn,
-  CategoricalMapColumn,
   ICategory,
   ICategoricalColorMappingFunction,
 } from '../../model';
@@ -40,7 +39,7 @@ export default class CategoricalColorMappingDialog extends ADialog {
   private readonly before: ICategoricalColorMappingFunction;
 
   constructor(
-    private readonly column: ICategoricalColumn | CategoricalsColumn | CategoricalMapColumn,
+    private readonly column: ICategoricalColumn | CategoricalsColumn,
     dialog: IDialogContext
   ) {
     super(dialog, {

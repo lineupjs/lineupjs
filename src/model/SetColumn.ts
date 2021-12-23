@@ -195,14 +195,6 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return this.getValues(row).map(String);
   }
 
-  getMap(row: IDataRow) {
-    return this.getSortedSet(row).map((d) => ({ key: d.label, value: true }));
-  }
-
-  getMapLabel(row: IDataRow) {
-    return this.getSortedSet(row).map((d) => ({ key: d.label, value: 'true' }));
-  }
-
   iterCategory(row: IDataRow) {
     const r = this.getSet(row);
     if (r.size > 0) {

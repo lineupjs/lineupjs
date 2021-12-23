@@ -2,7 +2,6 @@ import {
   Column,
   CompositeColumn,
   EAdvancedSortMethod,
-  EDateSort,
   ESortMethod,
   IMultiLevelColumn,
   isSortingAscByDefault,
@@ -390,7 +389,6 @@ export const toolbarDialogAddons: { [key: string]: IToolbarDialogAddon } = {
   sortNumber: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortNumbers: uiSortMethod(Object.keys(EAdvancedSortMethod)),
   sortBoxPlot: uiSortMethod(Object.keys(ESortMethod)),
-  sortDates: uiSortMethod(Object.keys(EDateSort)),
   sortGroups: uiSortMethod(['count', 'name']),
   groupNumber: {
     title: 'Split',

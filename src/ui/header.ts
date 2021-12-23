@@ -9,14 +9,11 @@ import {
   isArrayColumn,
   isBoxPlotColumn,
   isCategoricalColumn,
-  isMapColumn,
   isNumberColumn,
   isNumbersColumn,
   Column,
   ImpositionCompositeColumn,
-  ImpositionCompositesColumn,
   createImpositionDesc,
-  createImpositionsDesc,
   ImpositionBoxPlotColumn,
   createImpositionBoxPlotDesc,
   CompositeColumn,
@@ -367,10 +364,6 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
         data[`${MIMETYPE_PREFIX}-boxplot`] = ref;
         data[`${MIMETYPE_PREFIX}-boxplot-ref`] = column.id;
       }
-      if (isMapColumn(column)) {
-        data[`${MIMETYPE_PREFIX}-map`] = ref;
-        data[`${MIMETYPE_PREFIX}-map-ref`] = column.id;
-      }
       if (isArrayColumn(column)) {
         data[`${MIMETYPE_PREFIX}-array`] = ref;
         data[`${MIMETYPE_PREFIX}-array-ref`] = column.id;
@@ -575,7 +568,6 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
   const numberish = [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`];
   const categorical = [`${MIMETYPE_PREFIX}-categorical-ref`, `${MIMETYPE_PREFIX}-categorical`];
   const boxplot = [`${MIMETYPE_PREFIX}-boxplot-ref`, `${MIMETYPE_PREFIX}-boxplot`];
-  const numbers = [`${MIMETYPE_PREFIX}-numbers-ref`, `${MIMETYPE_PREFIX}-numbers`];
 
   node.dataset.draginfo = '+';
   if (column instanceof ImpositionCompositeColumn) {
@@ -614,24 +606,6 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
       () => column.children.length < 2
     );
   }
-  if (column instanceof ImpositionCompositesColumn) {
-    return dropAble(
-      node,
-      categorical.concat(numbers),
-      pushChild,
-      (e) => {
-        if (hasDnDType(e, ...categorical)) {
-          node.dataset.draginfo = 'Color by';
-          return;
-        }
-        if (hasDnDType(e, ...numbers)) {
-          node.dataset.draginfo = 'Wrap';
-        }
-      },
-      false,
-      () => column.children.length < 2
-    );
-  }
   if (isMultiLevelColumn(column)) {
     // stack column or nested
     return dropAble(node, (column as IMultiLevelColumn).canJustAddNumbers ? numberish : all, pushChild);
@@ -639,15 +613,11 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
   if (column instanceof CompositeColumn) {
     return dropAble(node, (column as CompositeColumn).canJustAddNumbers ? numberish : all, pushChild);
   }
-  if (isNumbersColumn(column)) {
-    node.dataset.draginfo = 'Color by';
-    return dropAble(node, categorical, mergeWith(createImpositionsDesc()));
-  }
   if (isBoxPlotColumn(column)) {
     node.dataset.draginfo = 'Color by';
     return dropAble(node, categorical, mergeWith(createImpositionBoxPlotDesc()));
   }
-  if (isNumberColumn(column)) {
+  if (isNumberColumn(column) && !isNumbersColumn(column)) {
     node.dataset.draginfo = 'Merge';
     return dropAble(
       node,

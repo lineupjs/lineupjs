@@ -97,7 +97,7 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
    * @param {string[] | number} labels labels to use for each array item or the expected length of an value
    */
   asArray(labels?: string[] | number) {
-    console.assert(['boolean', 'categorical', 'date', 'number', 'string', 'link'].includes(this.desc.type!));
+    console.assert(['categorical', 'number'].includes(this.desc.type!));
     this.desc.type += 's';
     const a = this.desc as IArrayDesc;
     if (Array.isArray(labels)) {
@@ -106,15 +106,6 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
     } else if (typeof labels === 'number') {
       a.dataLength = labels;
     }
-    return this;
-  }
-
-  /**
-   * converts the column type to be a map type, supports only base types: categorical, date, number, and string
-   */
-  asMap() {
-    console.assert(['categorical', 'date', 'number', 'string', 'link'].includes(this.desc.type!));
-    this.desc.type += 'Map';
     return this;
   }
 

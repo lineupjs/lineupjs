@@ -52,13 +52,8 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
     Object.assign(desc, props.custom);
   }
 
-  if (props.asMap) {
-    console.assert(['categorical', 'date', 'number', 'string', 'link'].includes(desc.type!));
-    desc.type += 'Map';
-  }
-
   if (props.asArray != null) {
-    console.assert(['boolean', 'categorical', 'date', 'number', 'string', 'link'].includes(desc.type!));
+    console.assert(['categorical', 'number'].includes(desc.type!));
     desc.type += 's';
     const a = desc as IArrayDesc;
     const labels = props.asArray;

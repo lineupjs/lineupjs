@@ -155,16 +155,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.getValues(row).map(String);
   }
 
-  getMap(row: IDataRow) {
-    const cats = this.categories;
-    return this.getValues(row).map((value, i) => ({ key: cats[i].label, value }));
-  }
-
-  getMapLabel(row: IDataRow) {
-    const cats = this.categories;
-    return this.getLabels(row).map((value, i) => ({ key: cats[i].label, value }));
-  }
-
   getSet(row: IDataRow) {
     const cat = this.getCategory(row);
     const r = new Set<ICategory>();
