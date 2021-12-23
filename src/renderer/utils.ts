@@ -118,18 +118,18 @@ export function wideEnoughCat(col: ICategoricalLikeColumn) {
 }
 
 // side effect
-const adaptColorCache: { [bg: string]: string } = {};
+const adaptTextColorToBgColorCache: { [bg: string]: string } = {};
 /**
  * Adapts the text color for a given background color
  * @param {string} bgColor as `#ff0000`
  * @returns {string} returns `black` or `white` for best contrast
  */
 export function adaptTextColorToBgColor(bgColor: string): string {
-  const bak = adaptColorCache[bgColor];
+  const bak = adaptTextColorToBgColorCache[bgColor];
   if (bak) {
     return bak;
   }
-  return (adaptColorCache[bgColor] = hsl(bgColor).l > 0.5 ? 'black' : 'white');
+  return (adaptTextColorToBgColorCache[bgColor] = hsl(bgColor).l > 0.5 ? 'black' : 'white');
 }
 
 /**
@@ -197,4 +197,24 @@ export function colorOf(col: Column) {
     return col.getColorMapping().apply(0);
   }
   return DEFAULT_COLOR;
+}
+
+// side effect
+const adaptColorCache: { [bg: string]: string } = {};
+
+export const BIG_MARK_SATURATION_FACTOR = 0.8;
+export const SMALL_MARK_SATURATION_FACTOR = 1.2;
+
+export function adaptColor(color: string, saturationFactor: number = 1, lightnessFactor: number = 1): string {
+  const key = `${color}-${saturationFactor}-${lightnessFactor}`;
+  const r = adaptColorCache[key];
+  if (r) {
+    return r;
+  }
+  const hslColor = hsl(color);
+  hslColor.s = Math.max(Math.min(hslColor.s * saturationFactor, 1), 0);
+  hslColor.l = Math.max(Math.min(hslColor.l * lightnessFactor, 1), 0);
+  const result = hslColor.formatHex();
+  adaptColorCache[key] = result;
+  return result;
 }

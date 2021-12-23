@@ -20,7 +20,7 @@ import {
   ICellRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
-import { noRenderer } from './utils';
+import { noRenderer, adaptColor, BIG_MARK_SATURATION_FACTOR } from './utils';
 import { cssClass } from '../styles';
 
 export default class MapBarCellRenderer implements ICellRendererFactory {
@@ -51,7 +51,7 @@ export default class MapBarCellRenderer implements ICellRendererFactory {
             n.title = formatter(value);
             const inner = n.ownerDocument.createElement('div');
             inner.style.width = `${w}%`;
-            inner.style.backgroundColor = colorOf(col, d, imposer);
+            inner.style.backgroundColor = adaptColor(colorOf(col, d, imposer), BIG_MARK_SATURATION_FACTOR);
             n.appendChild(inner);
             const span = n.ownerDocument.createElement('span');
             span.classList.add(cssClass('hover-only'));

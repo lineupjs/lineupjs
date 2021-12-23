@@ -10,7 +10,7 @@ import {
   ISummaryRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
-import { noRenderer, setText } from './utils';
+import { adaptColor, noRenderer, setText, SMALL_MARK_SATURATION_FACTOR } from './utils';
 import { cssClass } from '../styles';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
@@ -31,7 +31,10 @@ export default class CircleCellRenderer implements ICellRendererFactory {
         const missing = renderMissingDOM(n, col, d);
         n.style.background = missing
           ? null
-          : `radial-gradient(circle closest-side, ${colorOf(col, d, imposer)} ${p}%, transparent ${p}%)`;
+          : `radial-gradient(circle closest-side, ${adaptColor(
+              colorOf(col, d, imposer),
+              SMALL_MARK_SATURATION_FACTOR
+            )} ${p}%, transparent ${p}%)`;
         setText(n.firstElementChild!, col.getLabel(d));
       },
     };

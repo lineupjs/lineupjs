@@ -12,7 +12,7 @@ import {
   ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
-import { noRenderer } from './utils';
+import { adaptColor, noRenderer, SMALL_MARK_SATURATION_FACTOR } from './utils';
 
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Tick';
@@ -28,7 +28,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
       template: `<div><div></div></div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
-        const color = colorOf(col, d, imposer);
+        const color = adaptColor(colorOf(col, d, imposer), SMALL_MARK_SATURATION_FACTOR);
         const l = col.getLabel(d);
         const v = col.getNumber(d);
         n.title = l;
@@ -41,7 +41,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
-        const color = colorOf(col, d, imposer);
+        const color = adaptColor(colorOf(col, d, imposer), SMALL_MARK_SATURATION_FACTOR);
         const v = col.getNumber(d);
 
         ctx.save();

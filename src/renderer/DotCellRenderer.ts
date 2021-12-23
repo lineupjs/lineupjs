@@ -21,7 +21,7 @@ import {
   ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
-import { noRenderer } from './utils';
+import { adaptColor, noRenderer, SMALL_MARK_SATURATION_FACTOR } from './utils';
 
 const PADDED_HEIGHT = 0.8;
 
@@ -119,7 +119,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        const color = colorOf(col, d, imposer);
+        const color = adaptColor(colorOf(col, d, imposer), SMALL_MARK_SATURATION_FACTOR);
         if (!isNumbersColumn(col)) {
           const v = col.getNumber(d);
           return update(n, [{ value: v, label: col.getLabel(d), color }]);
@@ -134,7 +134,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
-        const color = colorOf(col, d, imposer);
+        const color = adaptColor(colorOf(col, d, imposer), SMALL_MARK_SATURATION_FACTOR);
         if (!isNumbersColumn(col)) {
           const v = col.getNumber(d);
           return render(ctx, [v], [color], width);
@@ -165,7 +165,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
             }
             // concatenate all columns
             const vs = rows.map((r) => {
-              const color = colorOf(col, r, imposer);
+              const color = adaptColor(colorOf(col, r, imposer), SMALL_MARK_SATURATION_FACTOR);
               return col
                 .getNumbers(r)
                 .filter((vi: number) => !Number.isNaN(vi))

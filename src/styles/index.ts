@@ -27,9 +27,9 @@ export const COLUMN_PADDING = Number.parseInt(getStyle('lu_engine_grip_gap', '5p
 export const FILTERED_OPACITY = Number.parseFloat(getStyle('lu_filtered_opacity', '0.2'));
 /** @internal */
 export const DASH = {
-  width: Number.parseInt(getStyle('lu_missing_dash_width', '3px'), 10),
+  width: Number.parseInt(getStyle('lu_missing_dash_width', '2px'), 10),
   height: Number.parseInt(getStyle('lu_missing_dash_height', '10px'), 10),
-  color: getStyle('lu_missing_dash_color', 'gray'),
+  color: getStyle('lu_missing_dash_color', '#dbdbdb'),
 };
 /** @internal */
 export const UPSET = {
