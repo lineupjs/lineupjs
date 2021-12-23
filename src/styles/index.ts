@@ -46,7 +46,7 @@ export const DOT = {
 export const TICK = {
   color: getStyle('lu_renderer_tick_color', 'gray'),
   size: Number.parseInt(getStyle('lu_renderer_tick_size', '3px'), 10),
-  opacity: Number.parseFloat(getStyle('lu_renderer_tick_opacity', '0.75')),
+  opacity: Number.parseFloat(getStyle('lu_renderer_tick_opacity', '1')),
 };
 /** @internal */
 export const BOX_PLOT = {
