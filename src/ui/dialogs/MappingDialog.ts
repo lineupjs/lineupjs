@@ -99,7 +99,10 @@ export default class MappingDialog extends ADialog {
         }
       </select>
       </div>
-        <div class=${cssClass('dialog-mapper-domain')}>
+        <div class="${cssClass('dialog-mapper-warning')}">
+          Warning: All items with values outside of the input domain will be set to the min/max value of the input domain.
+        </div>
+        <div class="${cssClass('dialog-mapper-domain')}">
           <input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any">
           <span>Input Domain (min - max)</span>
           <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any">
