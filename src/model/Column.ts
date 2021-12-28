@@ -447,6 +447,18 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
+   * inserts the given column before itself
+   * @param col the column to insert
+   * @returns {boolean} was successful
+   */
+  insertBeforeMe(col: Column) {
+    if (this.parent) {
+      return this.parent.insertBefore(col, this) != null;
+    }
+    return false;
+  }
+
+  /**
    * finds the underlying ranking column
    * @returns {Ranking|null} my current ranking
    */

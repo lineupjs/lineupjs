@@ -103,10 +103,13 @@ export interface IColumnParent {
 
   insert(col: Column, index?: number): Column | null;
 
+  insertBefore(col: Column, reference: Column): Column | null;
+
   insertAfter(col: Column, reference: Column): Column | null;
 
   move(col: Column, index?: number): Column | null;
 
+  moveBefore(col: Column, reference: Column): Column | null;
   moveAfter(col: Column, reference: Column): Column | null;
 
   findMyRanker(): Ranking | null;

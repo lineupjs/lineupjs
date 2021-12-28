@@ -2,7 +2,7 @@ import { Column, isMapAbleColumn, NumberColumn } from '../../model';
 import type { IAbortAblePromise } from '../../provider';
 import type { ISummaryRenderer } from '../../renderer';
 import { cssClass, engineCssClass } from '../../styles';
-import { createShortcutMenuItems, dragAbleColumn, updateHeader } from '../header';
+import { createShortcutMenuItems, updateHeader } from '../header';
 import type { IRankingHeaderContext } from '../interfaces';
 import { suffix } from '../../internal';
 
@@ -47,7 +47,6 @@ export default class SidePanelEntryVis {
       'sidePanel',
       false
     );
-    dragAbleColumn(this.node.querySelector<HTMLElement>('header'), this.column, this.ctx);
     this.appendSummary();
   }
 

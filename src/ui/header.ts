@@ -2,8 +2,6 @@ import { MIN_LABEL_WIDTH } from '../constants';
 import { dragAble, dropAble, hasDnDType, IDropResult } from '../internal';
 import { categoryOf } from '../model';
 import {
-  createNestedDesc,
-  createReduceDesc,
   createStackDesc,
   IColumnDesc,
   isArrayColumn,
@@ -13,11 +11,8 @@ import {
   isNumberColumn,
   isNumbersColumn,
   Column,
-  ImpositionCompositeColumn,
-  ImpositionCompositesColumn,
   createImpositionDesc,
   createImpositionsDesc,
-  ImpositionBoxPlotColumn,
   createImpositionBoxPlotDesc,
   CompositeColumn,
   IMultiLevelColumn,
@@ -76,6 +71,11 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="${extra('toolbar')}"></div>
     <div class="${extra('spacing')}"></div>
     <div class="${extra('handle')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"></div>
+    ${
+      options.rearrangeAble
+        ? `<div class="${extra('place-left')}"></div><div class="${extra('place-right')}"></div>`
+        : ''
+    }
   `;
   setTextOrEmpty(node.firstElementChild as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH, col.label);
   setTextOrEmpty(node.children[1] as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH || !summary, summary);
@@ -99,7 +99,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     mergeDropAble(node, col, ctx);
   }
   if (options.rearrangeAble) {
-    rearrangeDropAble(node.getElementsByClassName(cssClass('handle'))[0]! as HTMLElement, col, ctx);
+    rearrangeDropAble(node, col, ctx);
   }
   if (options.resizeable) {
     dragWidth(col, node);
@@ -349,6 +349,10 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
   dragAble(
     node,
     () => {
+      const header = node.closest(`.${engineCssClass('header')}`);
+      if (header) {
+        header.classList.add(cssClass('dragging-column'));
+      }
       const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
       const data: any = {
         'text/plain': column.label,
@@ -384,6 +388,12 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
         data,
       };
     },
+    () => {
+      const header = node.closest(`.${engineCssClass('header')}`);
+      if (header) {
+        header.classList.remove(cssClass('dragging-column'));
+      }
+    },
     true
   );
 }
@@ -394,7 +404,7 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
  */
 export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dropAble(
-    node,
+    node.querySelector(`.${cssClass('place-left')}`),
     [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX],
     (result) => {
       let col: Column | null = null;
@@ -402,6 +412,45 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
       if (!(`${MIMETYPE_PREFIX}-ref` in data)) {
         const desc = JSON.parse(data[MIMETYPE_PREFIX]);
         col = ctx.provider.create(ctx.provider.fromDescRef(desc));
+        return col != null && column.insertBeforeMe(col) != null;
+      }
+
+      // find by reference
+      const id = data[`${MIMETYPE_PREFIX}-ref`];
+      col = ctx.provider.find(id);
+      if (!col || (col === column && !result.effect.startsWith('copy'))) {
+        return false;
+      }
+      if (result.effect.startsWith('copy')) {
+        col = ctx.provider.clone(col!);
+        return col != null && column.insertBeforeMe(col) != null;
+      }
+      // detect whether it is an internal move operation or an real remove/insert operation
+      const toInsertParent = col.parent;
+      if (!toInsertParent) {
+        // no parent will always be a move
+        return column.insertBeforeMe(col) != null;
+      }
+      if (toInsertParent === column.parent) {
+        // move operation
+        return toInsertParent.moveBefore(col, column) != null;
+      }
+      col.removeMe();
+      return column.insertBeforeMe(col) != null;
+    },
+    null,
+    true
+  );
+  dropAble(
+    node.querySelector(`.${cssClass('place-right')}`),
+    [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX],
+    (result) => {
+      let col: Column | null = null;
+      const data = result.data;
+      if (!(`${MIMETYPE_PREFIX}-ref` in data)) {
+        const desc = JSON.parse(data[MIMETYPE_PREFIX]);
+        col = ctx.provider.create(ctx.provider.fromDescRef(desc));
+        column.insertAfterMe;
         return col != null && column.insertAfterMe(col) != null;
       }
 
@@ -487,72 +536,17 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
   };
 
   const all = [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX];
-  const numberish = [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`];
+  const numberlike = [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`];
   const categorical = [`${MIMETYPE_PREFIX}-categorical-ref`, `${MIMETYPE_PREFIX}-categorical`];
-  const boxplot = [`${MIMETYPE_PREFIX}-boxplot-ref`, `${MIMETYPE_PREFIX}-boxplot`];
-  const numbers = [`${MIMETYPE_PREFIX}-numbers-ref`, `${MIMETYPE_PREFIX}-numbers`];
 
-  node.dataset.draginfo = '+';
-  if (column instanceof ImpositionCompositeColumn) {
-    return dropAble(
-      node,
-      categorical.concat(numberish),
-      pushChild,
-      (e) => {
-        if (hasDnDType(e, ...categorical)) {
-          node.dataset.draginfo = 'Color by';
-          return;
-        }
-        if (hasDnDType(e, ...numberish)) {
-          node.dataset.draginfo = 'Wrap';
-        }
-      },
-      false,
-      () => column.children.length < 2
-    );
-  }
-  if (column instanceof ImpositionBoxPlotColumn) {
-    return dropAble(
-      node,
-      categorical.concat(boxplot),
-      pushChild,
-      (e) => {
-        if (hasDnDType(e, ...categorical)) {
-          node.dataset.draginfo = 'Color by';
-          return;
-        }
-        if (hasDnDType(e, ...boxplot)) {
-          node.dataset.draginfo = 'Wrap';
-        }
-      },
-      false,
-      () => column.children.length < 2
-    );
-  }
-  if (column instanceof ImpositionCompositesColumn) {
-    return dropAble(
-      node,
-      categorical.concat(numbers),
-      pushChild,
-      (e) => {
-        if (hasDnDType(e, ...categorical)) {
-          node.dataset.draginfo = 'Color by';
-          return;
-        }
-        if (hasDnDType(e, ...numbers)) {
-          node.dataset.draginfo = 'Wrap';
-        }
-      },
-      false,
-      () => column.children.length < 2
-    );
-  }
-  if (isMultiLevelColumn(column)) {
+  if (isMultiLevelColumn(column) || column instanceof CompositeColumn) {
     // stack column or nested
-    return dropAble(node, (column as IMultiLevelColumn).canJustAddNumbers ? numberish : all, pushChild);
-  }
-  if (column instanceof CompositeColumn) {
-    return dropAble(node, (column as CompositeColumn).canJustAddNumbers ? numberish : all, pushChild);
+    node.dataset.draginfo = '+';
+    return dropAble(
+      node,
+      (column as IMultiLevelColumn | CompositeColumn).canJustAddNumbers ? numberlike : all,
+      pushChild
+    );
   }
   if (isNumbersColumn(column)) {
     node.dataset.draginfo = 'Color by';
@@ -566,8 +560,8 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
     node.dataset.draginfo = 'Merge';
     return dropAble(
       node,
-      categorical.concat(numberish),
-      (result: IDropResult, evt: DragEvent) => {
+      categorical.concat(numberlike),
+      (result: IDropResult) => {
         const col: Column | null = resolveDrop(result);
         if (col == null) {
           return false;
@@ -576,7 +570,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
           return mergeImpl(col, createImpositionDesc());
         }
         if (isNumberColumn(col)) {
-          return mergeImpl(col, evt.shiftKey ? createReduceDesc() : createStackDesc());
+          return mergeImpl(col, createStackDesc());
         }
         return false;
       },
@@ -585,12 +579,10 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
           node.dataset.draginfo = 'Color by';
           return;
         }
-        if (hasDnDType(e, ...numberish)) {
-          node.dataset.draginfo = e.shiftKey ? 'Min/Max' : 'Sum';
+        if (hasDnDType(e, ...numberlike)) {
+          node.dataset.draginfo = 'Sum';
         }
       }
     );
   }
-  node.dataset.draginfo = 'Group';
-  return dropAble(node, all, mergeWith(createNestedDesc()));
 }
