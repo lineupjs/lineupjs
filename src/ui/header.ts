@@ -1,5 +1,5 @@
 import { MIN_LABEL_WIDTH } from '../constants';
-import { equalArrays, dragAble, dropAble, hasDnDType, IDropResult } from '../internal';
+import { dragAble, dropAble, hasDnDType, IDropResult } from '../internal';
 import { categoryOf } from '../model';
 import {
   createNestedDesc,
@@ -427,91 +427,6 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
       }
       col.removeMe();
       return column.insertAfterMe(col) != null;
-    },
-    null,
-    true
-  );
-}
-
-/**
- * dropper for allowing to change the order by dropping it at a certain position
- * @internal
- */
-export function resortDropAble(
-  node: HTMLElement,
-  column: Column,
-  ctx: IRankingHeaderContext,
-  where: 'before' | 'after',
-  autoGroup: boolean
-) {
-  dropAble(
-    node,
-    [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX],
-    (result) => {
-      let col: Column | null = null;
-      const data = result.data;
-      if (`${MIMETYPE_PREFIX}-ref` in data) {
-        const id = data[`${MIMETYPE_PREFIX}-ref`];
-        col = ctx.provider.find(id);
-        if (!col || col === column) {
-          return false;
-        }
-      } else {
-        const desc = JSON.parse(data[MIMETYPE_PREFIX]);
-        col = ctx.provider.create(ctx.provider.fromDescRef(desc));
-        if (col) {
-          column.findMyRanker()!.push(col);
-        }
-      }
-      const ranking = column.findMyRanker()!;
-      if (!col || col === column || !ranking) {
-        return false;
-      }
-
-      const criteria = ranking.getSortCriteria();
-      const groups = ranking.getGroupCriteria();
-
-      const removeFromSort = (col: Column) => {
-        const existing = criteria.findIndex((d) => d.col === col);
-        if (existing >= 0) {
-          // remove existing column but keep asc state
-          return criteria.splice(existing, 1)[0].asc;
-        }
-        return false;
-      };
-
-      // remove the one to add
-      const asc = removeFromSort(col);
-
-      const groupIndex = groups.indexOf(column);
-      const index = criteria.findIndex((d) => d.col === column);
-
-      if (autoGroup && groupIndex >= 0) {
-        // before the grouping, so either un group or regroup
-        removeFromSort(column);
-        if (isCategoricalColumn(col)) {
-          // we can group by it
-          groups.splice(groupIndex + (where === 'after' ? 1 : 0), 0, col);
-        } else {
-          // remove all before and shift to sorting + sorting
-          const removed = groups.splice(0, groups.length - groupIndex);
-          criteria.unshift(...removed.reverse().map((d) => ({ asc: false, col: d }))); // now a first sorting criteria
-          criteria.unshift({ asc, col });
-        }
-      } else if (index < 0) {
-        criteria.push({ asc, col });
-      } else if (index === 0 && autoGroup && isCategoricalColumn(col)) {
-        // make group criteria
-        groups.push(col);
-      } else {
-        criteria.splice(index + (where === 'after' ? 1 : 0), 0, { asc, col });
-      }
-
-      if (!equalArrays(groups, ranking.getGroupCriteria())) {
-        ranking.setGroupCriteria(groups);
-      }
-      ranking.setSortCriteria(criteria);
-      return true;
     },
     null,
     true
