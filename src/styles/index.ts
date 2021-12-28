@@ -20,7 +20,8 @@ export default function getStyle(key: string, defaultValue = '') {
   }
   return defaultValue;
 }
-
+/** @internal */
+export const SELECTED_COLOR = getStyle('lu_selected_color', '#ffa500');
 /** @internal */
 export const COLUMN_PADDING = Number.parseInt(getStyle('lu_engine_grip_gap', '5px'), 10);
 /** @internal */
