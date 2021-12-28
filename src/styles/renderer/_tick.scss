@@ -5,8 +5,8 @@
 .#{$lu_css_prefix}-renderer-tick {
   > div {
     background: $lu_renderer_tick_color;
-    opacity: $lu_renderer_tick_opacity;
     width: $lu_renderer_tick_size;
+    opacity: $lu_renderer_tick_opacity;
     height: 100%;
     top: 0%;
     transform: translate(-50%, 0);

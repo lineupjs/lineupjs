@@ -41,6 +41,7 @@ export const DOT = {
   color: getStyle('lu_renderer_dot_color', 'gray'),
   size: Number.parseInt(getStyle('lu_renderer_dot_size', '5px'), 10),
   opacity: Number.parseFloat(getStyle('lu_renderer_dot_opacity', '0.5')),
+  opacitySingle: Number.parseFloat(getStyle('lu_renderer_dot_opacity', '1')),
 };
 /** @internal */
 export const TICK = {

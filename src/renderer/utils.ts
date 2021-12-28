@@ -202,8 +202,8 @@ export function colorOf(col: Column) {
 // side effect
 const adaptColorCache: { [bg: string]: string } = {};
 
-export const BIG_MARK_LIGHTNESS_FACTOR = 1.2;
-export const SMALL_MARK_LIGHTNESS_FACTOR = 0.8;
+export const BIG_MARK_LIGHTNESS_FACTOR = 1.1;
+export const SMALL_MARK_LIGHTNESS_FACTOR = 0.9;
 
 export function adaptColor(color: string, lightnessFactor = 1, saturationFactor = 1): string {
   const key = `${color}-${saturationFactor}-${lightnessFactor}`;

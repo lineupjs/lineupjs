@@ -125,7 +125,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
 
     const render = (ctx: CanvasRenderingContext2D, value: number, color: string, width: number) => {
       ctx.save();
-      ctx.globalAlpha = DOT.opacity;
+      ctx.globalAlpha = DOT.opacitySingle;
       ctx.fillStyle = color || DOT.color;
       ctx.fillRect(Math.max(0, value * width - DOT.size / 2), 0, DOT.size, CANVAS_HEIGHT);
       ctx.restore();
