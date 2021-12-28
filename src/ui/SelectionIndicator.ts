@@ -86,6 +86,10 @@ export default class SelectionIndicator {
     if (!data || !rowContext || !selection || selection.size === 0 || !height) {
       return [];
     }
+    if (height > rowContext.totalHeight) {
+      // all rows visible
+      return [];
+    }
 
     const posOf = (index: number) => {
       if (rowContext.exceptions.length === 0 || index < rowContext.exceptions[0].index) {
@@ -165,17 +169,18 @@ export default class SelectionIndicator {
   }
 
   private render() {
+    const height = this.canvas.height;
     if (!this.selection || !this.data || !this.rowContext) {
       return;
     }
-    this.blocks = this.toSelectionBlocks(this.data, this.rowContext, this.selection, this.canvas.height);
+    this.blocks = this.toSelectionBlocks(this.data, this.rowContext, this.selection, height);
     this.node.classList.toggle(cssClass('some-selection'), this.blocks.length > 0);
     if (this.blocks.length === 0) {
       return;
     }
     const ctx = this.canvas.getContext('2d');
     ctx.resetTransform();
-    ctx.clearRect(0, 0, INDICATOR_WIDTH, this.canvas.height);
+    ctx.clearRect(0, 0, INDICATOR_WIDTH, height);
     ctx.fillStyle = SELECTED_COLOR;
     for (const block of this.blocks) {
       ctx.fillRect(0, block.y, INDICATOR_WIDTH, block.height);
