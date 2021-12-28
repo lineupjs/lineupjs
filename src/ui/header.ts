@@ -450,7 +450,6 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
       if (!(`${MIMETYPE_PREFIX}-ref` in data)) {
         const desc = JSON.parse(data[MIMETYPE_PREFIX]);
         col = ctx.provider.create(ctx.provider.fromDescRef(desc));
-        column.insertAfterMe;
         return col != null && column.insertAfterMe(col) != null;
       }
 
