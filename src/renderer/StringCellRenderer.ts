@@ -23,8 +23,8 @@ export default class StringCellRenderer implements ICellRendererFactory {
     return col instanceof StringColumn;
   }
 
-  create(col: StringColumn): ICellRenderer {
-    const align = col.alignment || 'left';
+  create(col: StringColumn, context: IRenderContext): ICellRenderer {
+    const align = context.sanitize(col.alignment || 'left');
     return {
       template: `<div${align !== 'left' ? ` class="${cssClass(align)}"` : ''}> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
@@ -127,8 +127,8 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const bak = f.filter || '';
     let update: (col: StringColumn) => void;
     return {
-      template: `<form><input type="text" placeholder="Filter ${col.desc.label}..." autofocus
-      list="${context.idPrefix}${col.id}_dl" value="${filterToString(f)}">
+      template: `<form><input type="text" placeholder="Filter ${context.sanitize(col.desc.label)}..." autofocus
+      list="${context.idPrefix}${col.id}_dl" value="${context.sanitize(filterToString(f))}">
           <label class="${cssClass('checkbox')}">
             <input type="checkbox" ${bak instanceof RegExp ? 'checked="checked"' : ''}>
             <span>Use regular expressions</span>
@@ -183,9 +183,7 @@ export function matchDataList(node: HTMLDataListElement, matches: readonly { val
       node.appendChild(child);
     }
     child.value = m.value;
-    if (m.count > 1) {
-      setText(child, `${m.value} (${m.count.toLocaleString()})`);
-    }
+    setText(child, m.count > 1 ? `${m.value} (${m.count.toLocaleString()})` : m.value);
   }
   // remove extra
   for (let i = children.length - 1; i >= matches.length; i--) {

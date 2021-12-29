@@ -18,7 +18,9 @@ export default class GroupDialog extends ADialog {
   protected build(node: HTMLElement) {
     const addons = getToolbarDialogAddons(this.column, 'group', this.ctx);
     for (const addon of addons) {
-      this.node.insertAdjacentHTML('beforeend', `<strong>${addon.title}</strong>`);
+      const strong = node.ownerDocument.createElement('strong');
+      strong.textContent = addon.title;
+      this.node.insertAdjacentElement('beforeend', strong);
       this.handlers.push(addon.append(this.column, this.node, this.dialog, this.ctx));
     }
 

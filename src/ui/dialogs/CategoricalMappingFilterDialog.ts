@@ -57,6 +57,7 @@ export default class CategoricalMappingFilterDialog extends ADialog {
           .join('')}
     </div>`
     );
+    // TODO sanitize
     // selectAll
     const selectAll = this.findInput('input[type=checkbox]:not([data-cat])');
     selectAll.onchange = () => {

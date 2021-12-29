@@ -103,14 +103,16 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createSummary(col: INumbersColumn): ISummaryRenderer {
+  createSummary(col: INumbersColumn, context: IRenderContext): ISummaryRenderer {
     let labels = col.labels.slice();
     while (labels.length > 0 && !wideEnough(col, labels.length)) {
       labels = labels.filter((_, i) => i % 2 === 0); // even
     }
     let templateRows = `<div class="${cssClass('heatmap')}">`;
     for (const label of labels) {
-      templateRows += `<div class="${cssClass('heatmap-cell')}"  title="${label}" data-title="${label}"></div>`;
+      templateRows += `<div class="${cssClass('heatmap-cell')}"  title="${context.sanitize(
+        label
+      )}" data-title="${context.sanitize(label)}"></div>`;
     }
     templateRows += '</div>';
     return {

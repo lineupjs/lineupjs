@@ -70,7 +70,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     const dataLength = col.dataLength!;
     const yPos = 1 - col.getMapping().apply(NumbersColumn.CENTER);
     return {
-      template: `<svg viewBox="0 0 ${dataLength} 1" preserveAspectRatio="none meet"><line x1="0" x2="${
+      template: `<svg viewBox="0 0 ${dataLength - 1} 1" preserveAspectRatio="none meet"><line x1="0" x2="${
         dataLength - 1
       }" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {

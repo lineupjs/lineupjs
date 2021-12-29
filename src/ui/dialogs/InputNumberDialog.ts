@@ -34,11 +34,11 @@ export default class InputNumberDialog extends APopup {
     node.insertAdjacentHTML(
       'beforeend',
       `
-     <input type="number" value="${Number.isNaN(o.value) ? '' : String(o.value)}" required autofocus placeholder="${
-        o.label ? o.label : 'enter number'
-      }" ${Number.isNaN(o.min) ? '' : ` min="${o.min}"`} ${Number.isNaN(o.max) ? '' : ` max="${o.max}"`} step="${
-        o.step
-      }">
+     <input type="number" value="${
+       Number.isNaN(o.value) ? '' : String(o.value)
+     }" required autofocus placeholder="${this.dialog.sanitize(o.label ? o.label : 'enter number')}" ${
+        Number.isNaN(o.min) ? '' : ` min="${o.min}"`
+      } ${Number.isNaN(o.max) ? '' : ` max="${o.max}"`} step="${o.step}">
     `
     );
     this.enableLivePreviews('input');

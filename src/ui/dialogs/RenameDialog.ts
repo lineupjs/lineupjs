@@ -16,11 +16,13 @@ export default class RenameDialog extends ADialog {
     node.insertAdjacentHTML(
       'beforeend',
       `
-      <input type="text" value="${this.column.label}" required autofocus placeholder="name">
-      <input type="text" value="${this.column.getMetaData().summary}" placeholder="summary" name="summary">
-      <textarea class="${cssClass('textarea')}" rows="5" placeholder="description">${
+      <input type="text" value="${this.dialog.sanitize(this.column.label)}" required autofocus placeholder="name">
+      <input type="text" value="${this.dialog.sanitize(
+        this.column.getMetaData().summary
+      )}" placeholder="summary" name="summary">
+      <textarea class="${cssClass('textarea')}" rows="5" placeholder="description">${this.dialog.sanitize(
         this.column.description
-      }</textarea>`
+      )}</textarea>`
     );
   }
 

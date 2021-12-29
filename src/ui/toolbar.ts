@@ -30,12 +30,13 @@ import ShowTopNDialog from './dialogs/ShowTopNDialog';
 import SortDialog from './dialogs/SortDialog';
 import StringFilterDialog from './dialogs/StringFilterDialog';
 import WeightsEditDialog from './dialogs/WeightsEditDialog';
+import SelectionFilterDialog from './dialogs/SelectionFilterDialog';
 import type {
-  IOnClickHandler,
   IRankingHeaderContext,
+  IOnClickHandler,
+  IUIOptions,
   IToolbarAction,
   IToolbarDialogAddon,
-  IUIOptions,
 } from './interfaces';
 import appendDate from './dialogs/groupDate';
 import appendNumber from './dialogs/groupNumber';
@@ -101,7 +102,7 @@ const sort: IToolbarAction = {
 };
 
 const sortBy: IToolbarAction = {
-  title: 'Sort By &hellip;', // advanced ranking
+  title: 'Sort By …', // advanced ranking
   onClick: (col, evt, ctx, level) => {
     const dialog = new SortDialog(col, false, dialogContext(ctx, level, evt), ctx);
     dialog.open();
@@ -115,7 +116,7 @@ const sortBy: IToolbarAction = {
 };
 
 const sortGroupBy: IToolbarAction = {
-  title: 'Sort Groups By &hellip;', // advanced ranking
+  title: 'Sort Groups By …', // advanced ranking
   onClick: (col, evt, ctx, level) => {
     const dialog = new SortDialog(col, true, dialogContext(ctx, level, evt), ctx);
     dialog.open();
@@ -129,7 +130,7 @@ const sortGroupBy: IToolbarAction = {
 };
 
 const rename: IToolbarAction = {
-  title: 'Rename &hellip;', // advanced
+  title: 'Rename …', // advanced
   onClick: (col, evt, ctx, level) => {
     const dialog = new RenameDialog(col, dialogContext(ctx, level, evt));
     dialog.open();
@@ -142,7 +143,7 @@ const rename: IToolbarAction = {
 };
 
 const vis: IToolbarAction = {
-  title: 'Visualization &hellip;', // advanced view
+  title: 'Visualization …', // advanced view
   onClick: (col, evt, ctx, level) => {
     const dialog = new ChangeRendererDialog(col, dialogContext(ctx, level, evt), ctx);
     dialog.open();
@@ -207,7 +208,7 @@ const group = ui(
 
 // advanced ranking
 const groupBy = ui(
-  'Group By &hellip;',
+  'Group By …',
   (col, evt, ctx, level) => {
     const dialog = new GroupDialog(col, dialogContext(ctx, level, evt), ctx);
     dialog.open();
@@ -270,74 +271,79 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   remove,
   rename,
   setShowTopN,
-  search: uiDialog('Search &hellip;', SearchDialog, (ctx) => [ctx.provider], {
+  search: uiDialog('Search …', SearchDialog, (ctx) => [ctx.provider], {
     mode: 'menu+shortcut',
     order: 4,
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
-  filterNumber: uiDialog('Filter &hellip;', NumberFilterDialog, (ctx) => [ctx], {
+  filterNumber: uiDialog('Filter …', NumberFilterDialog, (ctx) => [ctx], {
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
-  filterDate: uiDialog('Filter &hellip;', DateFilterDialog, (ctx) => [ctx], {
+  filterDate: uiDialog('Filter …', DateFilterDialog, (ctx) => [ctx], {
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
-  filterString: uiDialog('Filter &hellip;', StringFilterDialog, (ctx) => [ctx], {
+  filterString: uiDialog('Filter …', StringFilterDialog, (ctx) => [ctx], {
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
-  filterCategorical: uiDialog('Filter &hellip;', CategoricalFilterDialog, (ctx) => [ctx], {
+  filterSelection: uiDialog('Filter …', SelectionFilterDialog, (ctx) => [ctx], {
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
-  filterOrdinal: uiDialog('Filter &hellip;', CategoricalMappingFilterDialog, () => [], {
+  filterCategorical: uiDialog('Filter …', CategoricalFilterDialog, (ctx) => [ctx], {
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
-  colorMapped: uiDialog('Color Mapping &hellip;', ColorMappingDialog, (ctx) => [ctx], {
+  filterOrdinal: uiDialog('Filter …', CategoricalMappingFilterDialog, () => [], {
+    mode: 'menu+shortcut',
+    featureCategory: 'ranking',
+    featureLevel: 'basic',
+  }),
+  colorMapped: uiDialog('Color Mapping …', ColorMappingDialog, (ctx) => [ctx], {
     mode: 'menu',
     featureCategory: 'ui',
     featureLevel: 'advanced',
   }),
-  colorMappedCategorical: uiDialog('Color Mapping &hellip;', CategoricalColorMappingDialog, () => [], {
+  colorMappedCategorical: uiDialog('Color Mapping …', CategoricalColorMappingDialog, () => [], {
     mode: 'menu',
     featureCategory: 'ui',
     featureLevel: 'advanced',
   }),
-  script: uiDialog('Edit Combine Script &hellip;', ScriptEditDialog, () => [], {
+  script: uiDialog('Edit Combine Script …', ScriptEditDialog, () => [], {
     mode: 'menu+shortcut',
     featureCategory: 'model',
     featureLevel: 'advanced',
   }),
-  reduce: uiDialog('Reduce by &hellip;', ReduceDialog, () => [], {
+  reduce: uiDialog('Reduce by …', ReduceDialog, () => [], {
     featureCategory: 'model',
     featureLevel: 'advanced',
   }),
-  cutoff: uiDialog('Set Cut Off &hellip;', CutOffHierarchyDialog, (ctx) => [ctx.idPrefix], {
+  cutoff: uiDialog('Set Cut Off …', CutOffHierarchyDialog, (ctx) => [ctx], {
     featureCategory: 'model',
     featureLevel: 'advanced',
   }),
-  editMapping: uiDialog('Data Mapping &hellip;', MappingDialog, (ctx) => [ctx], {
+  editMapping: uiDialog('Data Mapping …', MappingDialog, (ctx) => [ctx], {
     featureCategory: 'model',
     featureLevel: 'advanced',
   }),
-  editPattern: uiDialog('Edit Pattern &hellip;', EditPatternDialog, (ctx) => [ctx.idPrefix], {
+  editPattern: uiDialog('Edit Pattern …', EditPatternDialog, (ctx) => [ctx], {
     featureCategory: 'model',
     featureLevel: 'advanced',
   }),
-  editWeights: uiDialog('Edit Weights &hellip;', WeightsEditDialog, () => [], {
+  editWeights: uiDialog('Edit Weights …', WeightsEditDialog, () => [], {
     mode: 'menu+shortcut',
     featureCategory: 'model',
     featureLevel: 'advanced',
   }),
-  compositeContained: uiDialog('Contained Columns &hellip;', CompositeChildrenDialog, (ctx) => [ctx], {
+  compositeContained: uiDialog('Contained Columns …', CompositeChildrenDialog, (ctx) => [ctx], {
     featureCategory: 'model',
     featureLevel: 'advanced',
   }),

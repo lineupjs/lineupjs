@@ -7,13 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.0
+      - uses: actions/setup-node@v2.5.0
         with:
           node-version: '14.x'
       - run: npm i -g yarn
       - run: yarn config set checksumBehavior ignore
       - name: Cache Node.js modules
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         with:
           path: |
             ./.yarn/cache
@@ -31,7 +31,7 @@ jobs:
       - run: yarn docs
       - run: yarn cy:compile
       - run: yarn cy:junit
-      - uses: actions/upload-artifact@v2.2.4
+      - uses: actions/upload-artifact@v2.3.1
         if: failure()
         with:
           name: cypress-artifacts

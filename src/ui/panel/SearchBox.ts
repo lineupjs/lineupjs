@@ -18,7 +18,7 @@ function isItem<T extends IItem>(v: T | IGroupSearchItem<T>): v is T {
 export interface ISearchBoxOptions<T extends IItem> {
   doc: Document;
 
-  formatItem(item: T | IGroupSearchItem<T>, node: HTMLElement): string | void;
+  formatItem(item: T | IGroupSearchItem<T>, node: HTMLElement): void;
 
   placeholder: string;
 }
@@ -34,7 +34,9 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private static readonly SEARCH_ITEM_SELECTOR = `.${cssClass('search-item')}:not(.${cssClass('hidden')})`;
 
   private readonly options: Readonly<ISearchBoxOptions<T>> = {
-    formatItem: (item) => item.text,
+    formatItem: (item, node) => {
+      node.textContent = item.text;
+    },
     doc: document,
     placeholder: 'Select...',
   };
@@ -54,12 +56,11 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
     this.node = this.options.doc.createElement('div');
     this.node.classList.add(cssClass('search'));
-    this.node.innerHTML = `<input class="${cssClass('search-input')}" type="search" placeholder="${
-      this.options.placeholder
-    }">
+    this.node.innerHTML = `<input class="${cssClass('search-input')}" type="search">
     <ul class="${cssClass('search-list')}"></ul>`;
 
     this.search = this.node.firstElementChild! as HTMLInputElement;
+    this.search.placeholder = this.options.placeholder;
     this.body = this.node.lastElementChild! as HTMLElement;
 
     this.search.onfocus = () => this.focus();
@@ -104,10 +105,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
         node.appendChild(li);
       }
       const item = li.firstElementChild! as HTMLElement;
-      const r = this.options.formatItem(v, item);
-      if (typeof r === 'string') {
-        item.innerHTML = r;
-      }
+      this.options.formatItem(v, item);
     }
   }
 

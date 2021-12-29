@@ -65,12 +65,12 @@ export function matchColumns(
     node.innerHTML = columns.map((c) => c.template).join('');
     const children = Array.from(node.children);
     columns.forEach((col, i) => {
-      const cnode = children[i] as HTMLElement;
+      const childNode = children[i] as HTMLElement;
       // set attribute for finding again
-      cnode.dataset.columnId = col.column.id;
+      childNode.dataset.columnId = col.column.id;
       // store current renderer
-      cnode.dataset.renderer = col.rendererId;
-      cnode.classList.add(cssClass(`renderer-${col.rendererId}`));
+      childNode.dataset.renderer = col.rendererId;
+      childNode.classList.add(cssClass(`renderer-${col.rendererId}`));
     });
     return;
   }
@@ -96,14 +96,14 @@ export function matchColumns(
     }
   });
   columns.forEach((col) => {
-    let cnode = node.querySelector<HTMLElement>(`[data-column-id="${col.column.id}"]`);
-    if (!cnode) {
-      cnode = ctx.asElement(col.template);
-      cnode.dataset.columnId = col.column.id;
-      cnode.dataset.renderer = col.rendererId;
-      cnode.classList.add(cssClass(`renderer-${col.rendererId}`));
+    let childNode = node.querySelector<HTMLElement>(`[data-column-id="${col.column.id}"]`);
+    if (!childNode) {
+      childNode = ctx.asElement(col.template);
+      childNode.dataset.columnId = col.column.id;
+      childNode.dataset.renderer = col.rendererId;
+      childNode.classList.add(cssClass(`renderer-${col.rendererId}`));
     }
-    node.appendChild(cnode);
+    node.appendChild(childNode);
   });
 }
 

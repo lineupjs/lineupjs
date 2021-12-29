@@ -23,7 +23,9 @@ export default class SortDialog extends ADialog {
   protected build(node: HTMLElement) {
     const addons = getToolbarDialogAddons(this.column, this.groupSortBy ? 'sortGroup' : 'sort', this.ctx);
     for (const addon of addons) {
-      this.node.insertAdjacentHTML('beforeend', `<strong>${addon.title}</strong>`);
+      const title = this.node.ownerDocument.createElement('strong');
+      title.textContent = addon.title;
+      this.node.insertAdjacentElement('beforeend', title);
       this.handlers.push(addon.append(this.column, this.node, this.dialog, this.ctx));
     }
 

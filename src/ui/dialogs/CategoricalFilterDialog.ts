@@ -41,11 +41,13 @@ export default class CategoricalFilterDialog extends ADialog {
         </label>
         ${this.column.categories
           .map(
-            (c) => `<label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
-          <input data-cat="${c.name}" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
+            (c) => `<label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}" data-cat="">
+          <input data-cat="" type="checkbox"${isCategoryIncluded(this.before, c) ? 'checked' : ''}>
           <span>
-            <span class="${cssClass('dialog-filter-table-color')}" style="background-color: ${c.color}"></span>
-            <div class="${cssClass('dialog-filter-table-entry-label')}">${c.label}</div>
+            <span class="${cssClass('dialog-filter-table-color')}" style="background-color: ${this.ctx.sanitize(
+              c.color
+            )}"></span>
+            <div class="${cssClass('dialog-filter-table-entry-label')}"> </div>
             <div class="${cssClass('dialog-filter-table-entry-stats')}"></div>
           </span>
         </label>`
@@ -53,6 +55,12 @@ export default class CategoricalFilterDialog extends ADialog {
           .join('')}
     </div>`
     );
+    const categories = this.column.categories;
+    Array.from(node.querySelectorAll(`label.${cssClass('checkbox')}[data-cat]`)).forEach((n, i) => {
+      const cat = categories[i];
+      (n.firstElementChild as HTMLElement).dataset.cat = cat.name;
+      n.querySelector(`.${cssClass('dialog-filter-table-entry-label')}`).textContent = cat.label;
+    });
     // selectAll
     const selectAll = this.findInput('input:not([data-cat])');
     selectAll.onchange = () => {
@@ -104,7 +112,7 @@ export default class CategoricalFilterDialog extends ADialog {
         this.forEach(`.${cssClass('dialog-filter-table-entry-stats')}`, (n: HTMLElement, i) => {
           const bin = summary.hist[i];
           const raw = data.hist[i];
-          n.textContent = `${bin.count}/${raw.count}`;
+          n.textContent = `${bin.count.toLocaleString()}/${raw.count.toLocaleString()}`;
         });
       });
     if (!ready) {

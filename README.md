@@ -112,7 +112,7 @@ The application is deployed at [https://lineup.js.org/app](https://lineup.js.org
 
 ## API Documentation
 
-LineUp is implemented in clean TypeScript in an object oriented manner. A fully generated API documentation based on [TypeDoc](http://typedoc.org) is available at https://lineup.js.org/master/docs
+LineUp is implemented in clean TypeScript in an object oriented manner. A fully generated API documentation based on [TypeDoc](https://typedoc.org) is available at https://lineup.js.org/master/docs
 
 LineUp can be build manually or using via the builder design pattern (see [Advanced Usage Example](#advanced_usage_example)). The builder design pattern in the more common way.
 
@@ -490,8 +490,8 @@ Result is same as the builder advanced example
 
 ## R, RShiny, and R Markdown Support
 
-A [HTMLWidget](http://www.htmlwidgets.org/) wrapper for R is located at [lineup_htmlwidget](https://github.com/lineupjs/lineup_htmlwidget).
-It can be used within standalone [R Shiny](https://shiny.rstudio.com/) apps or [R Markdown](http://rmarkdown.rstudio.com/) files. Integrated plotting does not work due to an outdated integrated Webkit version in RStudio.
+A [HTMLWidget](https://www.htmlwidgets.org/) wrapper for R is located at [lineup_htmlwidget](https://github.com/lineupjs/lineup_htmlwidget).
+It can be used within standalone [R Shiny](https://shiny.rstudio.com/) apps or [R Markdown](https://rmarkdown.rstudio.com/) files. Integrated plotting does not work due to an outdated integrated Webkit version in RStudio.
 [Crosstalk](https://rstudio.github.io/crosstalk/) is supported for synching selections and filtering among widgets.
 
 **Installation**
@@ -535,7 +535,7 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 [![Launch Binder][binder-image]][binder-url]
 
 [binder-image]: https://camo.githubusercontent.com/70c5b4d050d4019f4f20b170d75679a9316ac5e5/687474703a2f2f6d7962696e6465722e6f72672f62616467652e737667
-[binder-url]: http://mybinder.org/repo/lineupjs/lineup_widget/examples
+[binder-url]: https://mybinder.org/repo/lineupjs/lineup_widget/examples
 
 ```python
 import lineup_widget
@@ -653,14 +653,14 @@ See [Demos](https://lineup.js.org/master), [Develop Demos](https://lineup.js.org
 
 ## Related Publications
 
-**LineUp: Visual Analysis of Multi-Attribute Rankings** [Paper](http://data.caleydo.org/papers/2013_infovis_lineup.pdf) [Paper Website](http://caleydo.org/publications/2013_infovis_lineup/)
+**LineUp: Visual Analysis of Multi-Attribute Rankings** [Paper](https://data.caleydo.org/papers/2013_infovis_lineup.pdf) [Paper Website](https://caleydo.org/publications/2013_infovis_lineup/)
 
 Samuel Gratzl, Alexander Lex, Nils Gehlenborg, Hanspeter Pfister, and Marc Streit <br>
 IEEE Transactions on Visualization and Computer Graphics (InfoVis '13), 19(12), pp. 2277–2286, [doi:10.1109/TVCG.2013.173](https://dx.doi.org/10.1109/TVCG.2013.173), 2013.
 
-:trophy: [IEEE VIS](http://ieeevis.org) InfoVis 2013 Best Paper Award
+:trophy: [IEEE VIS](https://ieeevis.org) InfoVis 2013 Best Paper Award
 
-**Taggle: Scalable Visualization of Tabular Data through Aggregation** [Paper Preprint](http://data.caleydo.org/papers/2019_sage_infovis_taggle.pdf) [Paper Website](http://caleydo.org/publications/2019_sage_infovis_taggle/)
+**Taggle: Scalable Visualization of Tabular Data through Aggregation** [Paper Preprint](https://data.caleydo.org/papers/2019_sage_infovis_taggle.pdf) [Paper Website](https://caleydo.org/publications/2019_sage_infovis_taggle/)
 
 Katarina Furmanova, Samuel Gratzl, Holger Stitz, Thomas Zichner, Miroslava Jaresova, Martin Ennemoser, Alexander Lex, and Marc Streit <br>
 Information Visualization, 19(2): 114-136, [doi:10.1177/1473871619878085](https://dx.doi.org/10.1177/1473871619878085), 2019.
@@ -670,7 +670,7 @@ Information Visualization, 19(2): 114-136, [doi:10.1177/1473871619878085](https:
 LineUp.js depends on
 
 - [LineUpEngine](https://github.com/lineupjs/lineupengine) table rendering engine
-- [D3](http://d3js.org) utilities: scales, format, dragging
+- [D3](https://d3js.org) utilities: scales, format, dragging
 - [Popper.js](https://popper.js.org) dialogs
 
 **Development Dependencies**
@@ -745,8 +745,8 @@ yarn run cy:start
 
 ---
 
-<a href="http://caleydo.org"><img src="https://user-images.githubusercontent.com/4129778/34663868-5455cb76-f459-11e7-95db-f80db24026dc.png" align="left" width="200px" hspace="10" vspace="6"></a>
-This repository was created as part of the **[The Caleydo Project](http://caleydo.org/)**.
+<a href="https://caleydo.org"><img src="https://user-images.githubusercontent.com/4129778/34663868-5455cb76-f459-11e7-95db-f80db24026dc.png" align="left" width="200px" hspace="10" vspace="6"></a>
+This repository was created as part of the **[The Caleydo Project](https://caleydo.org/)**.
 
 [npm-image]: https://badge.fury.io/js/lineupjs.svg
 [npm-url]: https://npmjs.org/package/lineupjs
