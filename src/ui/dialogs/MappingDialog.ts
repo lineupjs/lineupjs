@@ -201,6 +201,8 @@ export default class MappingDialog extends ADialog {
         }
         d.setCustomValidity('');
         this.rawDomain[i] = v;
+        this.updateDomainWarning();
+
         this.scale = this.computeScale();
         const patchedDomain = this.scale.domain.slice();
         patchedDomain[0] = this.rawDomain[0];
@@ -227,6 +229,15 @@ export default class MappingDialog extends ADialog {
         }
       });
     });
+
+    this.updateDomainWarning();
+  }
+
+  private updateDomainWarning() {
+    const warningNode = this.node.querySelector<HTMLElement>(`.${cssClass('dialog-mapper-warning')}`);
+    const originalDomain = this.column.getOriginalMapping().domain;
+    const showWarning = this.rawDomain.some((d, i) => originalDomain[i] !== d);
+    warningNode.style.display = showWarning ? '' : 'none';
   }
 
   private createMappings() {
@@ -269,6 +280,7 @@ export default class MappingDialog extends ADialog {
     this.update();
     this.createMappings();
     this.updateLines();
+    this.updateDomainWarning();
   }
 
   private copyMapping(columnId: string) {
