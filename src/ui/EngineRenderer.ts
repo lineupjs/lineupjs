@@ -58,7 +58,7 @@ export default class EngineRenderer extends AEventDispatcher {
   readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
 
   private enabledHighlightListening = false;
-  private readonly selectionIndicator: SelectionIndicator;
+  readonly selectionIndicator: SelectionIndicator;
 
   constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
@@ -132,14 +132,9 @@ export default class EngineRenderer extends AEventDispatcher {
 
     {
       // helper object for better resizing experience
-      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`)!;
-      const copy = footer.cloneNode(true) as HTMLElement;
-      copy.classList.add(cssClass('resize-helper'));
-      footer!.insertAdjacentElement('afterend', copy);
-
-      this.selectionIndicator = new SelectionIndicator(footer!.parentElement);
-      this.selectionIndicator.node.classList.add(engineCssClass('footer'));
-      footer!.insertAdjacentElement('afterend', this.selectionIndicator.node);
+      const body = this.table.node.querySelector<HTMLElement>(`.${engineCssClass('body')}`)!;
+      this.selectionIndicator = new SelectionIndicator(body);
+      parent.insertBefore(this.selectionIndicator.node, this.node);
     }
 
     //apply rules
@@ -359,7 +354,6 @@ export default class EngineRenderer extends AEventDispatcher {
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
       this.updateRotatedHeaderState();
       this.table.widthChanged();
-      this.selectionIndicator.updatePosition();
     });
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
     r.on(EngineRanking.EVENT_RECREATE, () => this.updateUpdateAbles());
@@ -466,7 +460,6 @@ export default class EngineRenderer extends AEventDispatcher {
     this.updateUpdateAbles();
     this.updateRotatedHeaderState();
     this.table.widthChanged();
-    this.selectionIndicator.updatePosition();
   }
 
   private updateUpdateAbles() {

@@ -1,5 +1,5 @@
 import { IGroupData, IGroupItem, isGroup } from '../model';
-import { IExceptionContext, setTransform } from 'lineupengine';
+import type { IExceptionContext } from 'lineupengine';
 import { cssClass, SELECTED_COLOR } from '../styles';
 import { everyIndices } from '../model/internal';
 
@@ -37,44 +37,24 @@ const INDICATOR_WIDTH = 4;
 export default class SelectionIndicator {
   readonly node: HTMLElement;
   readonly canvas: HTMLCanvasElement;
-  private readonly scrollerNode: HTMLElement;
-  private readonly scroller: {
-    push(type: 'animation' | 'sync', cb: (act: { left: number; top: number; width: number; height: number }) => void);
-    asInfo(): { left: number; top: number; width: number; height: number };
-  };
 
   private selection: Set<number>;
   private data: readonly (IGroupItem | IGroupData)[];
   private rowContext: IExceptionContext;
   private blocks: ISelectionBlock[] = [];
 
-  constructor(body: HTMLElement) {
-    const node = body.ownerDocument.createElement('div');
+  constructor(private readonly scrollerNode: HTMLElement) {
+    const node = scrollerNode.ownerDocument.createElement('div');
     this.node = node;
     node.classList.add(cssClass('selection-indicator'));
-    const canvas = body.ownerDocument.createElement('canvas');
+    const canvas = scrollerNode.ownerDocument.createElement('canvas');
     node.appendChild(canvas);
     this.canvas = canvas;
     this.canvas.width = INDICATOR_WIDTH;
 
-    //sync scrolling of header and body
-    // use internals from lineup engine
-    this.scrollerNode = body;
-    this.scroller = (body as any).__le_scroller__;
-    this.scroller.push('sync', (act: { top: number; height: number; left: number; width: number }) => {
-      this.updatePosition(act);
-    });
-
     this.canvas.addEventListener('click', (e) => {
-      this.onClick(e.clientY - this.node.getBoundingClientRect().top);
+      this.onClick(e.clientY - this.canvas.getBoundingClientRect().top);
     });
-  }
-
-  updatePosition(act: { top: number; height: number; left: number; width: number } = this.scroller.asInfo()) {
-    if (this.canvas.height !== act.height) {
-      this.canvas.height = act.height;
-    }
-    setTransform(this.node, act.left + act.width - INDICATOR_WIDTH, act.top);
   }
 
   private toSelectionBlocks(
@@ -169,7 +149,8 @@ export default class SelectionIndicator {
   }
 
   private render() {
-    const height = this.canvas.height;
+    const height = this.scrollerNode.offsetHeight;
+    this.canvas.height = height;
     if (!this.selection || !this.data || !this.rowContext) {
       return;
     }

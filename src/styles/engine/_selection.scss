@@ -26,16 +26,19 @@
 }
 
 .#{$lu_css_prefix}-selection-indicator {
+  float: right;
   width: 4px;
-  position: absolute;
-  visibility: visible;
-  background: #efefef;
-  height: 100% !important;
   left: 0;
-  z-index: 1000;
+  height: 100%;
   display: none;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  > canvas {
+    background: #efefef;
+  }
 
   &.#{$lu_css_prefix}-some-selection {
-    display: block;
+    display: flex;
   }
 }
