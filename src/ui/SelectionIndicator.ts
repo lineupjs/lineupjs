@@ -39,7 +39,7 @@ export default class SelectionIndicator {
   readonly canvas: HTMLCanvasElement;
   private readonly scrollerNode: HTMLElement;
   private readonly scroller: {
-    push(type: 'animation', cb: (act: { left: number; top: number; width: number; height: number }) => void);
+    push(type: 'animation' | 'sync', cb: (act: { left: number; top: number; width: number; height: number }) => void);
     asInfo(): { left: number; top: number; width: number; height: number };
   };
 
@@ -61,7 +61,7 @@ export default class SelectionIndicator {
     // use internals from lineup engine
     this.scrollerNode = body;
     this.scroller = (body as any).__le_scroller__;
-    this.scroller.push('animation', (act: { top: number; height: number; left: number; width: number }) => {
+    this.scroller.push('sync', (act: { top: number; height: number; left: number; width: number }) => {
       this.updatePosition(act);
     });
 
