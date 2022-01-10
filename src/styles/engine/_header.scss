@@ -82,7 +82,6 @@
   opacity: 0;
 
   &::before {
-
     content: attr(data-draginfo);
     overflow: hidden;
   }
