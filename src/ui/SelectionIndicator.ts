@@ -126,6 +126,7 @@ export default class SelectionIndicator {
   updateData(data: readonly (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     this.data = data;
     this.rowContext = rowContext;
+    this.render();
   }
 
   updateSelection(selection: Set<number>) {
