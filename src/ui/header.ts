@@ -24,15 +24,12 @@ import type { IRankingHeaderContext, IOnClickHandler } from './interfaces';
 import { getToolbar } from './toolbarResolvers';
 import { dialogContext } from './dialogs';
 import { addIconDOM, actionCSSClass, isActionMode, updateIconState } from './headerTooltip';
+import { setText } from '../renderer/utils';
 
 export { createToolbarMenuItems, actionCSSClass } from './headerTooltip';
 
 function setTextOrEmpty(node: HTMLElement, condition: boolean, text: string) {
-  if (condition) {
-    node.innerHTML = '&nbsp;';
-  } else {
-    node.textContent = text;
-  }
+  setText(node, condition ? ' ' : text); // &nbsp;
   return node;
 }
 
