@@ -459,6 +459,30 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
+   * returns the next sibling
+   * @returns {Column | null}
+   */
+  nextSibling(): Column | null {
+    if (this.parent) {
+      const index = this.parent.indexOf(this);
+      return index < 0 ? null : this.parent.at(index + 1) ?? null;
+    }
+    return null;
+  }
+
+  /**
+   * returns the previous sibling
+   * @returns {Column | null}
+   */
+  previousSibling(): Column | null {
+    if (this.parent) {
+      const index = this.parent.indexOf(this);
+      return index < 1 ? null : this.parent.at(index - 1) ?? null;
+    }
+    return null;
+  }
+
+  /**
    * finds the underlying ranking column
    * @returns {Ranking|null} my current ranking
    */
