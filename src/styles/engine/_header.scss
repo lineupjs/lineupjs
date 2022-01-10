@@ -65,28 +65,10 @@
   }
 }
 
-.#{$lu_css_prefix}-header.#{$lu_css_prefix}-dragover::after {
+.#{$lu_css_prefix}-header-drop {
   @include user_select_none();
 
-  content: attr(data-draginfo);
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  background: lighten($lu_drag_over, 35%);
-  border: 2px dashed $lu_drag_over;
-}
-
-.#{$lu_css_prefix}-place-left,
-.#{$lu_css_prefix}-place-right {
-  position: absolute;
-  width: 32%;
   top: 0;
   height: 100%;
   z-index: 10;
@@ -95,40 +77,34 @@
   justify-content: center;
   background: lighten($lu_drag_over, 35%);
   border: 2px dashed $lu_drag_over;
+  font-size: small;
+  text-align: center;
   opacity: 0;
-  transition: opacity 0.25s ease;
+
+  &::before {
+
+    content: attr(data-draginfo);
+    overflow: hidden;
+  }
 
   &.#{$lu_css_prefix}-dragover {
+    transition: opacity 0.2s ease;
     opacity: 1;
   }
 }
 
-.#{$lu_css_prefix}-dragging-column :not(.#{$lu_css_prefix}-dragging) {
-  > .#{$lu_css_prefix}-place-left,
-  > .#{$lu_css_prefix}-place-right {
-    display: flex;
-  }
+.#{$lu_css_prefix}-merger {
+  left: 20%;
+  width: 60%;
 }
 
-.#{$lu_css_prefix}-header:not([data-draginfo]) > .#{$lu_css_prefix}-place-left,
-.#{$lu_css_prefix}-header:not([data-draginfo]) > .#{$lu_css_prefix}-place-right {
-  width: 50%;
+.#{$lu_css_prefix}-placer {
+  left: 80%;
+  width: 40%;
 }
 
-.#{$lu_css_prefix}-place-left {
-  left: 0;
-
-  &::after {
-    content: 'Place 🠔';
-  }
-}
-
-.#{$lu_css_prefix}-place-right {
-  right: -$lu-engine_grip_gap;
-
-  &::after {
-    content: 'Place 🠖';
-  }
+.#{$lu_css_prefix}-dragging-column .#{$lu_css_prefix}-header-drop {
+  display: flex;
 }
 
 .#{$lu_css_prefix}-handle {

@@ -68,9 +68,10 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="${extra('toolbar')}"></div>
     <div class="${extra('spacing')}"></div>
     <div class="${extra('handle')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"></div>
+    ${options.mergeDropAble ? `<div class="${extra('header-drop')} ${extra('merger')}"></div>` : ''}
     ${
       options.rearrangeAble
-        ? `<div class="${extra('place-left')}"></div><div class="${extra('place-right')}"></div>`
+        ? `<div class="${extra('header-drop')} ${extra('placer')}" data-draginfo="Place here"></div>`
         : ''
     }
   `;
@@ -93,10 +94,22 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     dragAbleColumn(node, col, ctx);
   }
   if (options.mergeDropAble) {
-    mergeDropAble(node, col, ctx);
+    const merger = node.getElementsByClassName(cssClass('merger'))[0]! as HTMLElement;
+    if (!options.rearrangeAble) {
+      merger.style.left = '0';
+      merger.style.width = '100%';
+    }
+    mergeDropAble(merger, col, ctx);
   }
   if (options.rearrangeAble) {
-    rearrangeDropAble(node, col, ctx);
+    const placer = node.getElementsByClassName(cssClass('placer'))[0]! as HTMLElement;
+    const nextSibling = col.nextSibling();
+    const widthFactor = !options.rearrangeAble ? 0.5 : 0.2;
+    if (!options.rearrangeAble) {
+      placer.style.left = '50%';
+    }
+    placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() / 2 ?? 50)}px`;
+    rearrangeDropAble(placer, col, ctx);
   }
   if (options.resizeable) {
     dragWidth(col, node);
@@ -129,6 +142,14 @@ export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABE
   updateIconState(node, col);
 
   updateMoreDialogIcons(node, col);
+
+  // update width for width of next sibling
+  const placer = node.getElementsByClassName(cssClass('placer'))[0]! as HTMLElement;
+  if (placer) {
+    const nextSibling = col.nextSibling();
+    const widthFactor = node.getElementsByClassName(cssClass('merger')).length === 0 ? 0.5 : 0.2;
+    placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() * widthFactor ?? 50) + 5}px`;
+  }
 }
 
 function updateMoreDialogIcons(node: HTMLElement, col: Column) {
@@ -401,45 +422,7 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
  */
 export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dropAble(
-    node.querySelector(`.${cssClass('place-left')}`),
-    [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX],
-    (result) => {
-      let col: Column | null = null;
-      const data = result.data;
-      if (!(`${MIMETYPE_PREFIX}-ref` in data)) {
-        const desc = JSON.parse(data[MIMETYPE_PREFIX]);
-        col = ctx.provider.create(ctx.provider.fromDescRef(desc));
-        return col != null && column.insertBeforeMe(col) != null;
-      }
-
-      // find by reference
-      const id = data[`${MIMETYPE_PREFIX}-ref`];
-      col = ctx.provider.find(id);
-      if (!col || (col === column && !result.effect.startsWith('copy'))) {
-        return false;
-      }
-      if (result.effect.startsWith('copy')) {
-        col = ctx.provider.clone(col!);
-        return col != null && column.insertBeforeMe(col) != null;
-      }
-      // detect whether it is an internal move operation or an real remove/insert operation
-      const toInsertParent = col.parent;
-      if (!toInsertParent) {
-        // no parent will always be a move
-        return column.insertBeforeMe(col) != null;
-      }
-      if (toInsertParent === column.parent) {
-        // move operation
-        return toInsertParent.moveBefore(col, column) != null;
-      }
-      col.removeMe();
-      return column.insertBeforeMe(col) != null;
-    },
-    null,
-    true
-  );
-  dropAble(
-    node.querySelector(`.${cssClass('place-right')}`),
+    node,
     [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX],
     (result) => {
       let col: Column | null = null;
