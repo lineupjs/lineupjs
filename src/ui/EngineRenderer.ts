@@ -13,11 +13,12 @@ import EngineRanking, { IEngineRankingContext } from './EngineRanking';
 import { EMode, IRankingHeaderContext, IRankingHeaderContextContainer } from './interfaces';
 import SlopeGraph from './SlopeGraph';
 import type { ADialog } from './dialogs';
+import SelectionIndicator from './SelectionIndicator';
 
 /**
  * emitted when the highlight changes
  * @asMemberOf EngineRenderer
- * @param dataIndex the highlghted data index or -1 for none
+ * @param dataIndex the highlighted data index or -1 for none
  * @event
  */
 export declare function highlightChanged(dataIndex: number): void;
@@ -57,6 +58,7 @@ export default class EngineRenderer extends AEventDispatcher {
   readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
 
   private enabledHighlightListening = false;
+  readonly selectionIndicator: SelectionIndicator;
 
   constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
@@ -130,10 +132,9 @@ export default class EngineRenderer extends AEventDispatcher {
 
     {
       // helper object for better resizing experience
-      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`)!;
-      const copy = footer.cloneNode(true) as HTMLElement;
-      copy.classList.add(cssClass('resize-helper'));
-      footer!.insertAdjacentElement('afterend', copy);
+      const body = this.table.node.querySelector<HTMLElement>(`.${engineCssClass('body')}`)!;
+      this.selectionIndicator = new SelectionIndicator(body);
+      parent.insertBefore(this.selectionIndicator.node, this.node);
     }
 
     //apply rules
@@ -308,6 +309,8 @@ export default class EngineRenderer extends AEventDispatcher {
     this.rankings.forEach((r) => r.updateSelection(s));
 
     this.slopeGraphs.forEach((r) => r.updateSelection(s));
+
+    this.selectionIndicator.updateSelection(s);
   }
 
   private updateHist(ranking?: EngineRanking, col?: Column) {
@@ -445,6 +448,11 @@ export default class EngineRenderer extends AEventDispatcher {
         return pad + groupPadding * groupEndLevel(v, topNGetter);
       });
       r.render(grouped, rowContext);
+
+      if (r === this.rankings[0]) {
+        // first ranking
+        this.selectionIndicator.updateData(grouped, rowContext);
+      }
     }
 
     this.updateSlopeGraphs(rankings);
