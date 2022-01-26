@@ -34,6 +34,8 @@ import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 import DateCellRenderer from './DateCellRenderer';
 import DateHistogramCellRenderer from './DateHistogramCellRenderer';
 import StringHistogramCellRenderer from './StringHistogramCellRenderer';
+import TickCellRenderer from './TickCellRenderer';
+import CategoricalTickCellRenderer from './CategoricalTickCellRenderer';
 
 const defaultCellRenderer = new DefaultCellRenderer();
 /**
@@ -75,6 +77,8 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   table: new TableCellRenderer(),
   upset: new UpSetCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
+  tick: new TickCellRenderer(),
+  cattick: new CategoricalTickCellRenderer(),
 };
 
 export function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {

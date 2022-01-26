@@ -34,3 +34,5 @@ export { default as TableCellRenderer } from './TableCellRenderer';
 export { default as UpSetCellRenderer } from './UpSetCellRenderer';
 export { default as VerticalBarCellRenderer } from './VerticalBarCellRenderer';
 export { default as StringHistogramCellRenderer } from './StringHistogramCellRenderer';
+export { default as TickCellRenderer } from './TickCellRenderer';
+export { default as CategoricalTickCellRenderer } from './CategoricalTickCellRenderer';

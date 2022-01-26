@@ -28,9 +28,9 @@ export const COLUMN_PADDING = Number.parseInt(getStyle('lu_engine_grip_gap', '5p
 export const FILTERED_OPACITY = Number.parseFloat(getStyle('lu_filtered_opacity', '0.2'));
 /** @internal */
 export const DASH = {
-  width: Number.parseInt(getStyle('lu_missing_dash_width', '3px'), 10),
+  width: Number.parseInt(getStyle('lu_missing_dash_width', '2px'), 10),
   height: Number.parseInt(getStyle('lu_missing_dash_height', '10px'), 10),
-  color: getStyle('lu_missing_dash_color', 'gray'),
+  color: getStyle('lu_missing_dash_color', '#dbdbdb'),
 };
 /** @internal */
 export const UPSET = {
@@ -42,6 +42,13 @@ export const DOT = {
   color: getStyle('lu_renderer_dot_color', 'gray'),
   size: Number.parseInt(getStyle('lu_renderer_dot_size', '5px'), 10),
   opacity: Number.parseFloat(getStyle('lu_renderer_dot_opacity', '0.5')),
+  opacitySingle: Number.parseFloat(getStyle('lu_renderer_dot_opacity', '1')),
+};
+/** @internal */
+export const TICK = {
+  color: getStyle('lu_renderer_tick_color', 'gray'),
+  size: Number.parseInt(getStyle('lu_renderer_tick_size', '3px'), 10),
+  opacity: Number.parseFloat(getStyle('lu_renderer_tick_opacity', '1')),
 };
 /** @internal */
 export const BOX_PLOT = {
