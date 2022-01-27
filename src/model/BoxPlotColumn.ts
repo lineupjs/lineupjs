@@ -100,7 +100,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     super(id, desc);
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
-    this.deriveMapping = this.mapping.domain.map((d) => Number.isNaN(d));
+    this.deriveMapping = this.mapping.domain.map((d) => d == null || Number.isNaN(d));
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping);
 
     if (desc.numberFormat) {
