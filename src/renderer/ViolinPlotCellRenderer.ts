@@ -15,7 +15,7 @@ import {
   IRenderContext,
   ISummaryRenderer,
 } from './interfaces';
-import { adaptColor, BIG_MARK_LIGHTNESS_FACTOR, noRenderer } from './utils';
+import { adaptColor, BIG_MARK_LIGHTNESS_FACTOR, noRenderer, SMALL_MARK_LIGHTNESS_FACTOR } from './utils';
 
 export default class ViolinPlotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Violin Plot';
@@ -51,8 +51,9 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
           if (isMissing) {
             return;
           }
-          const color = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
-          renderViolin(col, n, data[0].group, data[1].group, sort, color);
+          const color = adaptColor(colorOf(col, null, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
+          const fillColor = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
+          renderViolin(col, n, data[0].group, data[1].group, sort, color, fillColor);
         });
       },
     };
@@ -92,8 +93,9 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
             const range = col.getRange();
             Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
           }
-          const color = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
-          renderViolin(col, n, mappedSummary, rawSummary, sort, color);
+          const color = adaptColor(colorOf(col, null, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
+          const fillColor = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
+          renderViolin(col, n, mappedSummary, rawSummary, sort, color, fillColor);
         });
       },
     };
@@ -140,12 +142,14 @@ function renderViolin(
   data: IAdvancedBoxPlotData,
   label: IAdvancedBoxPlotData,
   _sort: string,
-  color: string | null
+  color: string | null,
+  fillColor: string | null
 ) {
   n.title = computeLabel(col, label);
   const svg = n.firstElementChild as SVGSVGElement;
   svg.style.color = color;
   const path = svg.firstElementChild as SVGPathElement;
+  path.style.fill = fillColor;
   const xScale = scaleLinear([0, col.getWidth()]).domain([0, 1]);
   path.setAttribute('d', computePath(xScale, data));
   const iqrLine = svg.children[1] as SVGLineElement;
