@@ -88,7 +88,7 @@
     "watch": "webpack --mode development --watch --devtool source-map",
     "start": "webpack serve --mode development --devtool source-map",
     "prepare": "echo 'dummy prepare since prepack has no dev dependencies'",
-    "prepack": "yarn run clean && yarn run compile && yarn run build",
+    "prepack": "npm run clean && npm run compile && npm run build",
     "cy:compile": "yarn run compile && cd cypress && tsc",
     "cy:clean": "rimraf \"cypress/*.tsbuildinfo\" \"cypress/integration/**/*.+(js|d.ts)\"",
     "cy:open": "cypress open",
