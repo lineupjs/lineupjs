@@ -22,6 +22,10 @@ export default class LineUp extends ALineUp {
 
     merge(this.options, options);
 
+    if (this.options.copyableRows) {
+      this.addCopyListener();
+    }
+
     if (!this.isBrowserSupported) {
       this.renderer = null;
       this.panel = null;
