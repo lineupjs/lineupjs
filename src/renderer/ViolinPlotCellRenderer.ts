@@ -15,7 +15,7 @@ import {
   IRenderContext,
   ISummaryRenderer,
 } from './interfaces';
-import { noRenderer } from './utils';
+import { adaptColor, BIG_MARK_LIGHTNESS_FACTOR, noRenderer } from './utils';
 
 export default class ViolinPlotCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Violin Plot';
@@ -46,12 +46,13 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
             data[0] == null ||
             data[0].group.count === 0 ||
             data[0].group.count === data[0].group.missing;
+
           n.classList.toggle(cssClass('missing'), isMissing);
           if (isMissing) {
             return;
           }
-          console.log(data[0].group);
-          renderViolin(col, n, data[0].group, data[1].group, sort, colorOf(col, null, imposer));
+          const color = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
+          renderViolin(col, n, data[0].group, data[1].group, sort, color);
         });
       },
     };
@@ -91,8 +92,8 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
             const range = col.getRange();
             Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
           }
-
-          renderViolin(col, n, mappedSummary, rawSummary, sort, colorOf(col, null, imposer));
+          const color = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
+          renderViolin(col, n, mappedSummary, rawSummary, sort, color);
         });
       },
     };
