@@ -45,7 +45,7 @@ export interface IMapAbleDesc {
   /**
    * either map or domain should be available
    */
-  domain?: [number, number];
+  domain?: [number | null, number | null];
   /**
    * @default [0,1]
    */

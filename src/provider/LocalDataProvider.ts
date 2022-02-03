@@ -12,6 +12,7 @@ import {
   INumberColumn,
   IOrderedGroup,
   CompositeColumn,
+  ValueColumn,
 } from '../model';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
@@ -82,6 +83,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
         : new ScheduleRenderTasks(this.ooptions);
     this.tasks.setData(this._dataRows);
 
+    for (const ranking of this.getRankings()) {
+      for (const col of ranking.flatColumns) {
+        if (col instanceof ValueColumn) {
+          col.onDataUpdate(this._dataRows);
+        }
+      }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     this.reorderAll = function (this: { source?: Ranking; type: string }) {
@@ -140,11 +149,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
     this.tasks.setData(this._dataRows);
 
     for (const ranking of this.getRankings()) {
+      for (const col of ranking.flatColumns) {
+        if (col instanceof ValueColumn && col.isLoaded()) {
+          col.onDataUpdate(this._dataRows);
+        }
+      }
+      // since it uses normalized data
       this.tasks.preComputeData(ranking);
     }
 
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
-    this.reorderAll.call({ type: Ranking.EVENT_FILTER_CHANGED });
+    this.reorderAll.call({ type: 'data' });
   }
 
   clearData() {
@@ -190,12 +205,16 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const cols = ranking.flatColumns;
     const addKey = `${Ranking.EVENT_ADD_COLUMN}.cache`;
     const removeKey = `${Ranking.EVENT_REMOVE_COLUMN}.cache`;
+    const loadedKey = `${ValueColumn.EVENT_DATA_LOADED}.cache`;
 
     const removeCol = (col: Column) => {
       this.tasks.dirtyColumn(col, 'data');
       if (col instanceof CompositeColumn) {
         col.on(addKey, null);
         col.on(removeKey, null);
+      }
+      if (col instanceof ValueColumn) {
+        col.on(loadedKey, null);
       }
     };
 
@@ -205,7 +224,19 @@ export default class LocalDataProvider extends ACommonDataProvider {
         col.on(addKey, addCol);
         col.on(removeKey, removeCol);
       }
+      if (col instanceof ValueColumn) {
+        col.on(loadedKey, dataLoaded);
+      }
     };
+
+    function dataLoaded(this: IEventContext, _, loaded: boolean) {
+      if (!loaded) {
+        return;
+      }
+      if (this.origin instanceof ValueColumn) {
+        this.origin.onDataUpdate(that._dataRows);
+      }
+    }
 
     ranking.on(addKey, addCol);
     ranking.on(removeKey, removeCol);
@@ -213,6 +244,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
       if (col instanceof CompositeColumn) {
         col.on(addKey, addCol);
         col.on(removeKey, removeCol);
+      }
+      if (col instanceof ValueColumn) {
+        col.on(loadedKey, dataLoaded);
       }
     }
 
@@ -224,6 +258,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     this.tasks.preComputeData(ranking);
+  }
+
+  protected patchColumn(column: Column): Column {
+    const c = super.patchColumn(column);
+    if (c instanceof ValueColumn && c.isLoaded()) {
+      c.onDataUpdate(this._dataRows);
+    }
+    return c;
   }
 
   cleanUpRanking(ranking: Ranking) {
