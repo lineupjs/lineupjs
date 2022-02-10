@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <title>LineUp Builder Test</title>
+
+    <link href="./LineUpJS.css" rel="stylesheet" />
+    <link href="./demo.css" rel="stylesheet" />
+  </head>
+  <body>
+    <script src="./LineUpJS.js"></script>
+    <button id="add">Add More Rows</button>
+    <button id="lazy">Lazy Data</button>
+
+    <script>
+      window.onload = function () {
+        const arr = [];
+        const cats = ['c1', 'c2', 'c3'];
+        for (let i = 0; i < 100; ++i) {
+          arr.push({
+            s: 'Row ' + i,
+            a: Math.random() * 10 * (i < 20 ? 5 : 10),
+            cat: cats[Math.floor(Math.random() * (i < 20 ? 2 : 3))],
+            d: new Date(Date.now() - Math.floor(Math.random() * 1000000000000)),
+          });
+        }
+        let loaded = false;
+        const lineupData = new LineUpJS.LocalDataProvider(arr.slice(0, 20), [
+          {
+            type: 'text',
+            column: 's',
+          },
+          {
+            type: 'number',
+            column: 'a',
+            domain: [0, Number.NaN],
+          },
+          {
+            type: 'categorical',
+            column: 'cat',
+          },
+          {
+            type: 'number',
+            label: 'Lazy',
+            accessor: (row) => (loaded ? row.v.a : undefined),
+            lazyLoaded: true,
+            domain: [0, Number.NaN],
+          },
+        ]);
+        lineupData.deriveDefault(true);
+        const lineup = new LineUpJS.LineUp(document.body, lineupData);
+
+        document.querySelector('#add').addEventListener('click', () => {
+          lineupData.appendData(arr.slice(20));
+        });
+        document.querySelector('#lazy').addEventListener('click', () => {
+          loaded = true;
+          lineupData.find((d) => d.label == 'Lazy').setLoaded(true);
+        });
+
+        setTimeout(() => {
+          lineupData.appendData(arr.slice(20));
+        }, 10000);
+      };
+    </script>
+  </body>
+</html>

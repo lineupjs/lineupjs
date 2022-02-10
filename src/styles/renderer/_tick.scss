@@ -1,0 +1,20 @@
+@use 'sass:math';
+
+@import '../vars';
+
+.#{$lu_css_prefix}-renderer-tick {
+  > div {
+    background: $lu_renderer_tick_color;
+    width: $lu_renderer_tick_size;
+    opacity: $lu_renderer_tick_opacity;
+    height: 100%;
+    top: 0%;
+    transform: translate(-50%, 0);
+    position: absolute;
+    z-index: -1;
+  }
+}
+
+.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-tick[data-group='d'] {
+  overflow-x: unset;
+}

@@ -26,7 +26,7 @@ import {
   widthChanged,
   dirtyCaches,
 } from './Column';
-import type { IEventListener } from '../internal';
+import type { IEventListener, ISequence } from '../internal';
 import { toCategories } from './internalCategorical';
 
 export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string | null>;
@@ -59,6 +59,29 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
+  }
+
+  onDataUpdate(rows: ISequence<IDataRow>): void {
+    super.onDataUpdate(rows);
+    if ((this.desc as ICategoricalsColumnDesc).categories) {
+      return;
+    }
+    // derive
+    const categories = new Set<string>();
+    rows.forEach((row) => {
+      const value = super.getValue(row);
+      if (!value || !Array.isArray(value) || value.length === 0) {
+        return;
+      }
+      for (const kv of value) {
+        if (!kv) {
+          continue;
+        }
+        categories.add(String(kv));
+      }
+    });
+    this.categories.splice(0, this.categories.length, ...toCategories({ categories: Array.from(categories) }));
+    this.categories.forEach((d) => this.lookup.set(d.name, d));
   }
 
   protected createEventList() {

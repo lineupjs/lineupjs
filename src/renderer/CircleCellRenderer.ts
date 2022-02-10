@@ -10,11 +10,17 @@ import {
   ISummaryRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
-import { noRenderer, setText } from './utils';
+import { adaptColor, noRenderer, setText, SMALL_MARK_LIGHTNESS_FACTOR } from './utils';
 import { cssClass } from '../styles';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Proportional Symbol';
+
+  /**
+   * flag to always render the value
+   * @type {boolean}
+   */
+  constructor(private readonly renderValue: boolean = false) {}
 
   canRender(col: Column, mode: ERenderMode): boolean {
     return isNumberColumn(col) && mode === ERenderMode.CELL && !isNumbersColumn(col);
@@ -23,7 +29,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   create(col: INumberColumn, _context: IRenderContext, imposer?: IImposer): ICellRenderer {
     return {
       template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
-              <div class="${cssClass('hover-only')} ${cssClass('bar-label')}"></div>
+              <div class="${this.renderValue ? '' : cssClass('hover-only')} ${cssClass('bar-label')}"></div>
           </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const v = col.getNumber(d);
@@ -31,7 +37,10 @@ export default class CircleCellRenderer implements ICellRendererFactory {
         const missing = renderMissingDOM(n, col, d);
         n.style.background = missing
           ? null
-          : `radial-gradient(circle closest-side, ${colorOf(col, d, imposer)} ${p}%, transparent ${p}%)`;
+          : `radial-gradient(circle closest-side, ${adaptColor(
+              colorOf(col, d, imposer),
+              SMALL_MARK_LIGHTNESS_FACTOR
+            )} ${p}%, transparent ${p}%)`;
         setText(n.firstElementChild!, col.getLabel(d));
       },
     };
