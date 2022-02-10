@@ -32,9 +32,11 @@ import { addIconDOM, actionCSSClass, isActionMode, updateIconState } from './hea
 
 export { createToolbarMenuItems, actionCSSClass } from './headerTooltip';
 
-function setTextOrEmpty(node: HTMLElement, condition: boolean, text: string) {
+function setTextOrEmpty(node: HTMLElement, condition: boolean, text: string, asHTML = false) {
   if (condition) {
     node.innerHTML = '&nbsp;';
+  } else if (asHTML) {
+    node.innerHTML = text;
   } else {
     node.textContent = text;
   }
@@ -77,8 +79,18 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="${extra('spacing')}"></div>
     <div class="${extra('handle')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"></div>
   `;
-  setTextOrEmpty(node.firstElementChild as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH, col.label);
-  setTextOrEmpty(node.children[1] as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH || !summary, summary);
+  setTextOrEmpty(
+    node.firstElementChild as HTMLElement,
+    col.getWidth() < MIN_LABEL_WIDTH,
+    col.label,
+    col.desc.labelAsHTML
+  );
+  setTextOrEmpty(
+    node.children[1] as HTMLElement,
+    col.getWidth() < MIN_LABEL_WIDTH || !summary,
+    summary,
+    col.desc.summaryAsHTML
+  );
 
   // addTooltip(node, col);
 
@@ -110,11 +122,11 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
   const label = node.getElementsByClassName(cssClass('label'))[0]! as HTMLElement;
-  setTextOrEmpty(label, col.getWidth() < minWidth, col.label);
+  setTextOrEmpty(label, col.getWidth() < minWidth, col.label, col.desc.labelAsHTML);
   const summary = col.getMetaData().summary;
   const subLabel = node.getElementsByClassName(cssClass('sublabel'))[0] as HTMLElement;
   if (subLabel) {
-    setTextOrEmpty(subLabel, col.getWidth() < minWidth || !summary, summary);
+    setTextOrEmpty(subLabel, col.getWidth() < minWidth || !summary, summary, col.desc.summaryAsHTML);
   }
 
   let title = col.label;

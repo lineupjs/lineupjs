@@ -21,7 +21,7 @@ export interface IDialogContext {
   level: number;
   manager: DialogManager;
   idPrefix: string;
-  sanitize(v: string): string;
+  sanitize(v: string, dontSanitize?: boolean): string;
 }
 
 export function dialogContext(

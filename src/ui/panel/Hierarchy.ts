@@ -45,11 +45,21 @@ export default class Hierarchy {
         node.classList.toggle(cssClass('searchbox-summary-entry'), Boolean(summary));
         if (summary) {
           const label = node.ownerDocument.createElement('span');
-          label.textContent = summary;
+          if (item.col.desc.labelAsHTML) {
+            label.innerHTML = item.text;
+          } else {
+            label.textContent = item.text
+          }
           node.appendChild(label);
           const desc = node.ownerDocument.createElement('span');
-          desc.textContent = summary;
+          if (item.col.desc.summaryAsHTML) {
+            label.innerHTML = summary;
+          } else {
+            label.textContent = summary;
+          }
           node.appendChild(desc);
+        } else if (item.col.desc.labelAsHTML) {
+          node.innerHTML = item.text;
         } else {
           node.textContent = item.text;
         }
