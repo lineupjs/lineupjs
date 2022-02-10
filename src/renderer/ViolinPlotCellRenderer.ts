@@ -2,7 +2,6 @@ import { scaleLinear } from 'd3-scale';
 import { GUESSES_GROUP_HEIGHT } from '../constants';
 import { IAdvancedBoxPlotData, extent } from '../internal';
 import { Column, INumberColumn, IOrderedGroup, isMapAbleColumn, isNumberColumn, NumberColumn } from '../model';
-import { tasksAll } from '../provider';
 import { cssClass } from '../styles';
 import { computeLabel } from './BoxplotCellRenderer';
 import { colorOf } from './impose';
@@ -33,28 +32,16 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
     return {
       template: createViolinTemplate(col.getWidth(), false),
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return tasksAll([
-          context.tasks.groupBoxPlotStats(col, group, false),
-          context.tasks.groupBoxPlotStats(col, group, true),
-        ]).then((data) => {
-          if (typeof data === 'symbol') {
-            return;
-          }
-          // render
-          const isMissing =
-            data == null ||
-            data[0] == null ||
-            data[0].group.count === 0 ||
-            data[0].group.count === data[0].group.missing;
-
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          const color = adaptColor(colorOf(col, null, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
-          const fillColor = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
-          renderViolin(col, n, data[0].group, data[1].group, sort, color, fillColor);
-        });
+        const mapped = context.tasks.groupBoxPlotStats(col, group, false);
+        const raw = context.tasks.groupBoxPlotStats(col, group, true);
+        const isMissing = mapped == null || mapped.group.count === 0 || mapped.group.count === mapped.group.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        const color = adaptColor(colorOf(col, null, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
+        const fillColor = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
+        renderViolin(col, n, mapped.group, raw.group, sort, color, fillColor);
       },
     };
   }
@@ -68,35 +55,26 @@ export default class ViolinPlotCellRenderer implements ICellRendererFactory {
     return {
       template: createViolinTemplate(col.getWidth(), isMapAbleColumn(col)),
       update: (n: HTMLElement) => {
-        return tasksAll([
-          context.tasks.summaryBoxPlotStats(col, false),
-          context.tasks.summaryBoxPlotStats(col, true),
-        ]).then((data) => {
-          if (typeof data === 'symbol') {
-            return;
-          }
-          const isMissing =
-            data == null ||
-            data[0] == null ||
-            data[0].summary.count === 0 ||
-            data[0].summary.count === data[0].summary.missing;
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          const mappedSummary = data[0].summary;
-          const rawSummary = data[1].summary;
-          const sort =
-            col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined ? col.getSortMethod() : '';
+        const mapped = context.tasks.summaryBoxPlotStats(col, false);
+        const raw = context.tasks.summaryBoxPlotStats(col, true);
+        const isMissing =
+          mapped == null || mapped.summary.count === 0 || mapped.summary.count === mapped.summary.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        const mappedSummary = mapped.summary;
+        const rawSummary = raw.summary;
+        const sort =
+          col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined ? col.getSortMethod() : '';
 
-          if (isMapAbleColumn(col)) {
-            const range = col.getRange();
-            Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
-          }
-          const color = adaptColor(colorOf(col, null, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
-          const fillColor = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
-          renderViolin(col, n, mappedSummary, rawSummary, sort, color, fillColor);
-        });
+        if (isMapAbleColumn(col)) {
+          const range = col.getRange();
+          Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
+        }
+        const color = adaptColor(colorOf(col, null, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
+        const fillColor = adaptColor(colorOf(col, null, imposer), BIG_MARK_LIGHTNESS_FACTOR);
+        renderViolin(col, n, mappedSummary, rawSummary, sort, color, fillColor);
       },
     };
   }
