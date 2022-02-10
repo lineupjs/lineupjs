@@ -1,8 +1,8 @@
 /* eslint-env node */
 
 module.exports = {
-  plugins: ['@typescript-eslint', 'prettier'],
-  extends: ['react-app', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended', 'prettier'],
+  plugins: ['prettier'],
+  extends: ['react-app', 'plugin:prettier/recommended', 'prettier'],
   settings: {
     react: {
       version: '99.99.99',

@@ -119,13 +119,9 @@ export default class RenderColumn implements IColumn {
       return node;
     }
     let summary = node.getElementsByClassName(cssClass('summary'))[0]! as HTMLElement;
-    const oldRenderer = summary.dataset.renderer;
-    const currentRenderer = this.renderers.summaryId;
-    if (oldRenderer !== currentRenderer) {
-      summary.remove();
-      summary = this.summaryRenderer()!;
-      node.appendChild(summary);
-    }
+    summary.remove();
+    summary = this.summaryRenderer()!;
+    node.appendChild(summary);
     const ready = this.renderers.summary.update(summary);
     if (ready) {
       return { item: node, ready };
