@@ -48,7 +48,7 @@ export default class Hierarchy {
           if (item.col.desc.labelAsHTML) {
             label.innerHTML = item.text;
           } else {
-            label.textContent = item.text
+            label.textContent = item.text;
           }
           node.appendChild(label);
           const desc = node.ownerDocument.createElement('span');
