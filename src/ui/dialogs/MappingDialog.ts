@@ -99,7 +99,10 @@ export default class MappingDialog extends ADialog {
         }
       </select>
       </div>
-        <div class=${cssClass('dialog-mapper-domain')}>
+        <div class="${cssClass('dialog-mapper-warning')}">
+          Warning: All items with values outside of the input domain will be set to the min/max value of the input domain.
+        </div>
+        <div class="${cssClass('dialog-mapper-domain')}">
           <input id="${this.idPrefix}min" required type="number" value="${round(this.rawDomain[0], 3)}" step="any">
           <span>Input Domain (min - max)</span>
           <input id="${this.idPrefix}max" required type="number" value="${round(this.rawDomain[1], 3)}" step="any">
@@ -198,6 +201,8 @@ export default class MappingDialog extends ADialog {
         }
         d.setCustomValidity('');
         this.rawDomain[i] = v;
+        this.updateDomainWarning();
+
         this.scale = this.computeScale();
         const patchedDomain = this.scale.domain.slice();
         patchedDomain[0] = this.rawDomain[0];
@@ -224,6 +229,15 @@ export default class MappingDialog extends ADialog {
         }
       });
     });
+
+    this.updateDomainWarning();
+  }
+
+  private updateDomainWarning() {
+    const warningNode = this.node.querySelector<HTMLElement>(`.${cssClass('dialog-mapper-warning')}`);
+    const originalDomain = this.column.getOriginalMapping().domain;
+    const showWarning = this.rawDomain.some((d, i) => originalDomain[i] !== d);
+    warningNode.style.display = showWarning ? '' : 'none';
   }
 
   private createMappings() {
@@ -266,6 +280,7 @@ export default class MappingDialog extends ADialog {
     this.update();
     this.createMappings();
     this.updateLines();
+    this.updateDomainWarning();
   }
 
   private copyMapping(columnId: string) {

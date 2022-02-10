@@ -43,6 +43,7 @@ import {
   ITypeFactory,
   RankColumn,
   Ranking,
+  ValueColumn,
 } from '../model';
 import { restoreCategoricalColorMapping } from '../model/CategoricalColorMappingFunction';
 import { colorMappingFunctions, createColorMappingFunction } from '../model/ColorMappingFunction';
@@ -373,7 +374,7 @@ export default class DataProvider extends AEventDispatcher implements IDataProvi
       }
       const c = this.instantiateColumn(type, '', desc, this.typeFactory);
       c.restore(d, factory);
-      return c;
+      return this.patchColumn(c);
     }) as ITypeFactory;
     factory.colorMappingFunction = createColorMappingFunction(this.colorMappingFunctionTypes, factory);
     factory.mappingFunction = createMappingFunction(this.mappingFunctionTypes);
@@ -702,9 +703,16 @@ export default class DataProvider extends AEventDispatcher implements IDataProvi
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
     if (type) {
-      return this.instantiateColumn(type, this.nextId(), desc, this.typeFactory);
+      return this.patchColumn(this.instantiateColumn(type, this.nextId(), desc, this.typeFactory));
     }
     return null;
+  }
+
+  protected patchColumn(column: Column): Column {
+    if (column instanceof ValueColumn && column.isLoaded()) {
+      column.onDataUpdate(this._dataRows);
+    }
+    return column;
   }
 
   protected instantiateColumn(type: IColumnConstructor, id: string, desc: IColumnDesc, typeFactory: ITypeFactory) {
@@ -1295,8 +1303,16 @@ export default class DataProvider extends AEventDispatcher implements IDataProvi
   private dataChanged() {
     this.tasks.setData(this._dataRows);
 
+    for (const ranking of this.getRankings()) {
+      for (const col of ranking.flatColumns) {
+        if (col instanceof ValueColumn && col.isLoaded()) {
+          col.onDataUpdate(this._dataRows);
+        }
+      }
+    }
+
     this.fire(ADataProvider.EVENT_DATA_CHANGED, this._dataRows);
-    this.reorderAll.call({ type: Ranking.EVENT_FILTER_CHANGED });
+    this.reorderAll.call({ type: 'data' });
   }
 
   clearData() {
@@ -1350,12 +1366,16 @@ export default class DataProvider extends AEventDispatcher implements IDataProvi
     const cols = ranking.flatColumns;
     const addKey = `${Ranking.EVENT_ADD_COLUMN}.cache`;
     const removeKey = `${Ranking.EVENT_REMOVE_COLUMN}.cache`;
+    const loadedKey = `${ValueColumn.EVENT_DATA_LOADED}.cache`;
 
     const removeCol = (col: Column) => {
       this.tasks.dirtyColumn(col, 'data');
       if (col instanceof CompositeColumn) {
         col.on(addKey, null);
         col.on(removeKey, null);
+      }
+      if (col instanceof ValueColumn) {
+        col.on(loadedKey, null);
       }
     };
 
@@ -1364,7 +1384,19 @@ export default class DataProvider extends AEventDispatcher implements IDataProvi
         col.on(addKey, addCol);
         col.on(removeKey, removeCol);
       }
+      if (col instanceof ValueColumn) {
+        col.on(loadedKey, dataLoaded);
+      }
     };
+
+    function dataLoaded(this: IEventContext, _, loaded: boolean) {
+      if (!loaded) {
+        return;
+      }
+      if (this.origin instanceof ValueColumn) {
+        this.origin.onDataUpdate(that._dataRows);
+      }
+    }
 
     ranking.on(addKey, addCol);
     ranking.on(removeKey, removeCol);
@@ -1372,6 +1404,9 @@ export default class DataProvider extends AEventDispatcher implements IDataProvi
       if (col instanceof CompositeColumn) {
         col.on(addKey, addCol);
         col.on(removeKey, removeCol);
+      }
+      if (col instanceof ValueColumn) {
+        col.on(loadedKey, dataLoaded);
       }
     }
 

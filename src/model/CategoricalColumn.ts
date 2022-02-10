@@ -89,6 +89,24 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
+  onDataUpdate(rows: ISequence<IDataRow>): void {
+    super.onDataUpdate(rows);
+    if ((this.desc as ICategoricalColumnDesc).categories) {
+      return;
+    }
+    // derive
+    const categories = new Set<string>();
+    rows.forEach((row) => {
+      const value = super.getValue(row);
+      if (!value) {
+        return;
+      }
+      categories.add(String(value));
+    });
+    this.categories.splice(0, this.categories.length, ...toCategories({ categories: Array.from(categories) }));
+    this.categories.forEach((d) => this.lookup.set(d.name, d));
+  }
+
   protected createEventList() {
     return super
       .createEventList()

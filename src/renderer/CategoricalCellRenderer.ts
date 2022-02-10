@@ -63,10 +63,11 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   }
 
   createGroup(col: ICategoricalLikeColumn, context: IRenderContext): IGroupCellRenderer {
-    const { template, update } = hist(col, false, context.sanitize);
+    const { template, update, matchBins } = hist(col, false, context.sanitize);
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
+        matchBins(n);
         const r = context.tasks.groupCategoricalStats(col, group);
         const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
         n.classList.toggle(cssClass('missing'), isMissing);
@@ -105,14 +106,15 @@ function staticSummary(col: ICategoricalLikeColumn, context: IRenderContext, int
 }
 
 function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, interactive: boolean) {
-  const { template, update } = hist(col, interactive || wideEnough(col), context.sanitize);
+  const { template, update, matchBins } = hist(col, interactive || wideEnough(col), context.sanitize);
   let filterUpdate: (missing: number, col: HasCategoricalFilter) => void;
   return {
     template: `${template}${interactive ? filterMissingNumberMarkup(false, 0) : ''}</div>`,
     update: (n: HTMLElement) => {
       n.classList.toggle(cssClass('histogram-i'), interactive);
 
-      if (!filterUpdate) {
+      const matchedBins = matchBins(n);
+      if (!filterUpdate || matchedBins) {
         filterUpdate = interactiveHist(col, n);
       }
       const r = context.tasks.summaryCategoricalStats(col);
@@ -130,21 +132,54 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
 }
 
 function hist(col: ICategoricalLikeColumn, showLabels: boolean, sanitize: (v: string) => string) {
-  const mapping = col.getColorMapping();
-  const bins = col.categories
-    .map(
-      (c) =>
-        `<div class="${cssClass('histogram-bin')}" title="${sanitize(c.label)}: 0" data-cat="${sanitize(c.name)}" ${
-          showLabels ? `data-title="${sanitize(c.label)}"` : ''
-        }><div style="height: 0; background-color: ${mapping.apply(c)}"></div></div>`
-    )
-    .join('');
-  const template = `<div class="${cssClass('histogram')} ${
-    col.categories.length! > DENSE_HISTOGRAM ? cssClass('dense') : ''
-  }">${bins}`; // no closing div to be able to append things
+  const createBin = (c: ICategory, color: string) => {
+    return `<div class="${cssClass('histogram-bin')}" title="${sanitize(c.label)}: 0" data-cat="${sanitize(c.name)}" ${
+      showLabels ? `data-title="${sanitize(c.label)}"` : ''
+    }><div style="height: 0; background-color: ${color}"></div></div>`;
+  };
 
   return {
-    template,
+    template: (() => {
+      const mapping = col.getColorMapping();
+      const bins = col.categories.map((c) => createBin(c, mapping.apply(c))).join('');
+      return `<div class="${cssClass('histogram')} ${
+        col.categories.length! > DENSE_HISTOGRAM ? cssClass('dense') : ''
+      }">${bins}`; // no closing div to be able to append things
+    })(),
+    matchBins: (n: HTMLElement) => {
+      // matches bins to current categories, since they can change now
+      const categories = col.categories;
+      const mapping = col.getColorMapping();
+      n.classList.toggle(cssClass('dense'), categories.length! > DENSE_HISTOGRAM);
+      // match the histogram bins to the current categories
+      const bins = Array.from(n.querySelectorAll<HTMLElement>('[data-cat]'));
+      let lastBin: HTMLElement | null = null;
+      let changed = false;
+      for (const category of categories) {
+        let bin = bins[0];
+        if (bin && bin.dataset.cat === category.name) {
+          lastBin = bin;
+          bins.shift(); // remove first since handled
+          continue;
+        }
+        // oh no
+        changed = true;
+        if (lastBin) {
+          lastBin.insertAdjacentHTML('afterend', createBin(category, mapping.apply(category)));
+          bin = lastBin.nextElementSibling as HTMLElement;
+        } else {
+          n.insertAdjacentHTML('afterbegin', createBin(category, mapping.apply(category)));
+          bin = n.firstElementChild as HTMLElement;
+        }
+        lastBin = bin;
+      }
+      for (const toRemove of bins) {
+        // delete extra bins
+        changed = true;
+        toRemove.remove();
+      }
+      return changed;
+    },
     update: (n: HTMLElement, hist: ICategoricalStatistics, gHist?: ICategoricalStatistics) => {
       const mapping = col.getColorMapping();
 

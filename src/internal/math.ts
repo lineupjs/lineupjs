@@ -161,17 +161,84 @@ export interface IBuilder<T, R> {
   build(): R;
 }
 
+const GAUSSIAN_CONST = Math.sqrt(2 * Math.PI);
+
+// See <http://en.wikipedia.org/wiki/Kernel_(statistics)>.
+function gaussian(u: number) {
+  return Math.exp(-0.5 * u * u) / GAUSSIAN_CONST;
+}
+
+function toSampleVariance(variance: number, len: number) {
+  return (variance * len) / (len - 1);
+}
+
+/**
+ *
+ * The ["normal reference distribution"
+ * rule-of-thumb](https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/bandwidth.nrd.html),
+ * a commonly used version of [Silverman's
+ * rule-of-thumb](https://en.wikipedia.org/wiki/Kernel_density_estimation#A_rule-of-thumb_bandwidth_estimator).
+ */
+function nrd(iqr: number, variance: number, len: number) {
+  let s = Math.sqrt(toSampleVariance(variance, len));
+  if (typeof iqr === 'number') {
+    s = Math.min(s, iqr / 1.34);
+  }
+  return 1.06 * s * Math.pow(len, -0.2);
+}
+
+function computeVariance(s: ArrayLike<number>, len: number, mean: number): number {
+  let variance = 0;
+  for (let i = 0; i < len; i++) {
+    const v = s[i];
+    variance += (v - mean) * (v - mean);
+  }
+  variance /= len;
+  return variance;
+}
+
+function computeKDE(
+  s: ArrayLike<number>,
+  len: number,
+  points: number,
+  min: number,
+  max: number,
+  variance: number,
+  iqr: number
+): { v: number; p: number }[] {
+  const bandwidth = nrd(iqr, variance, len);
+  const computePoint = (x: number) => {
+    let i = 0;
+    let sum = 0;
+    for (i = 0; i < len; i++) {
+      const v = s[i];
+      sum += gaussian((x - v) / bandwidth);
+    }
+    return sum / bandwidth / len;
+  };
+  const step = (max - min) / (points - 1);
+  return Array.from({ length: points }, (_, i) => {
+    const v = i === points - 1 ? max : min + i * step;
+    return {
+      v,
+      p: computePoint(v),
+    };
+  });
+}
+
 /**
  * @internal
  */
 export function boxplotBuilder(
-  fixedLength?: number
+  fixedLength?: number,
+  kdePoints?: number
 ): IBuilder<number, IAdvancedBoxPlotData> & { buildArr: (s: Float32Array) => IAdvancedBoxPlotData } {
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
   let sum = 0;
   let length = 0;
   let missing = 0;
+  const kdePointCount = kdePoints ?? 100;
 
   // if fixed size use the typed array else a regular array
   const values: number[] = [];
@@ -213,6 +280,7 @@ export function boxplotBuilder(
     median: NaN,
     q1: NaN,
     q3: NaN,
+    kdePoints: [],
   };
 
   const buildImpl = (s: ArrayLike<number>) => {
@@ -224,6 +292,8 @@ export function boxplotBuilder(
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     const right = q3 + 1.5 * iqr;
+    const mean = sum / valid;
+    const variance = computeVariance(s, valid, mean);
 
     let outlier: number[] = [];
     // look for the closest value which is bigger than the computed left
@@ -253,6 +323,8 @@ export function boxplotBuilder(
 
     outlier = outlier.concat(reversedOutliers.reverse());
 
+    const kdePoints: { v: number; p: number }[] = computeKDE(s, valid, kdePointCount, min, max, variance, iqr);
+
     return {
       min,
       max,
@@ -265,6 +337,7 @@ export function boxplotBuilder(
       median,
       q1,
       q3,
+      kdePoints,
     };
   };
 

@@ -1,0 +1,14 @@
+@use 'sass:math';
+
+@import '../vars';
+
+.#{$lu_css_prefix}-renderer-cattick {
+  > div {
+    background: $lu_renderer_tick_color;
+    opacity: $lu_renderer_tick_opacity;
+    height: 100%;
+    top: 0%;
+    position: absolute;
+    z-index: -1;
+  }
+}

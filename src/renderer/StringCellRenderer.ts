@@ -172,9 +172,7 @@ export function matchDataList(node: HTMLDataListElement, matches: readonly { val
       node.appendChild(child);
     }
     child.value = m.value;
-    if (m.count > 1) {
-      setText(child, `${m.value} (${m.count.toLocaleString()})`);
-    }
+    setText(child, m.count > 1 ? `${m.value} (${m.count.toLocaleString()})` : m.value);
   }
   // remove extra
   for (let i = children.length - 1; i >= matches.length; i--) {
