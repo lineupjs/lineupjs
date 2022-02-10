@@ -120,7 +120,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     );
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
-    this.deriveMapping = this.mapping.domain.map((d) => Number.isNaN(d));
+    this.deriveMapping = this.mapping.domain.map((d) => d == null || Number.isNaN(d));
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
 
     if (desc.numberFormat) {
