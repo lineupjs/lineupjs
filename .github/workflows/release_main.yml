@@ -19,9 +19,9 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.5.0
+      - uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: 16
       - name: Extract version
         id: extract_version
         run: |
@@ -52,13 +52,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.5.0
+      - uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
+          node-version: 16
       - run: npm i -g yarn
       - run: yarn config set checksumBehavior ignore
       - name: Cache Node.js modules
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v2
         with:
           path: |
             ./.yarn/cache
@@ -76,7 +76,7 @@ jobs:
       - run: yarn docs
       - run: yarn cy:compile
       - run: yarn cy:junit
-      - uses: actions/upload-artifact@v2.3.1
+      - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: cypress-artifacts
@@ -106,12 +106,12 @@ jobs:
           yarn config set npmAuthToken "${{ secrets.NPM_TOKEN }}"
           yarn pack
           yarn npm publish --tag "${{ needs.create_release.outputs.npm_tag }}"
-      - name: Upload Release Asset
-        uses: AButler/upload-release-assets@v2.0
-        with:
-          files: '*.tgz'
-          repo-token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-          release-tag: ${{ needs.create_release.outputs.tag_name }}
+      # - name: Upload Release Asset
+      #   uses: AButler/upload-release-assets@v2
+      #   with:
+      #     files: '*.tgz'
+      #     repo-token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+      #     release-tag: ${{ needs.create_release.outputs.tag_name }}
 
   sync_dev:
     needs: correct_repository

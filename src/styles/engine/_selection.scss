@@ -24,3 +24,21 @@
 .#{$engine_css_prefix}-tbody.#{$lu_css_prefix}-selection-active {
   @include user_select_none();
 }
+
+.#{$lu_css_prefix}-selection-indicator {
+  float: right;
+  width: 4px;
+  left: 0;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  > canvas {
+    background: #efefef;
+  }
+
+  &.#{$lu_css_prefix}-some-selection {
+    display: flex;
+  }
+}

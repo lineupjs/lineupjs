@@ -144,7 +144,7 @@ function compareCategory(a: ICategory | null, b: ICategory | null) {
   return a.value - b.value;
 }
 
-export function toCategories(desc: ICategoricalDesc) {
+export function toCategories(desc: Pick<ICategoricalDesc, 'categories'>) {
   if (!desc.categories) {
     return [];
   }
