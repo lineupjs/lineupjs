@@ -14,7 +14,11 @@
   background: white;
 
   &.#{$lu_css_prefix}-dragging {
-    opacity: 0.5;
+    > .#{$lu_css_prefix}-label,
+    > .#{$lu_css_prefix}-toolbar,
+    > .#{$lu_css_prefix}-summary {
+      opacity: 0.5;
+    }
   }
 }
 
