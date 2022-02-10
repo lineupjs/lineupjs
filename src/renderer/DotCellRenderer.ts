@@ -201,23 +201,22 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        const data = context.tasks
-          .groupRows(col, group, 'dot', (rows) => {
-            //value, color, label,
+        const data = context.tasks.groupRows(col, group, 'dot', (rows) => {
+          //value, color, label,
 
-            if (!isNumbersColumn(col)) {
-              return Array.from(rows.map((r) => ({ value: col.getNumber(r), color: colorOf(col, r, imposer) })));
-            }
-            // concatenate all columns
-            const vs = rows.map((r) => {
-              const color = adaptColor(colorOf(col, r, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
-              return col
-                .getNumbers(r)
-                .filter((vi: number) => !Number.isNaN(vi))
-                .map((value) => ({ value, color }));
-            });
-            return Array.from(concatSeq(vs));
-          })
+          if (!isNumbersColumn(col)) {
+            return Array.from(rows.map((r) => ({ value: col.getNumber(r), color: colorOf(col, r, imposer) })));
+          }
+          // concatenate all columns
+          const vs = rows.map((r) => {
+            const color = adaptColor(colorOf(col, r, imposer), SMALL_MARK_LIGHTNESS_FACTOR);
+            return col
+              .getNumbers(r)
+              .filter((vi: number) => !Number.isNaN(vi))
+              .map((value) => ({ value, color }));
+          });
+          return Array.from(concatSeq(vs));
+        });
 
         const isMissing = !data || data.length === 0 || data.every((v) => Number.isNaN(v.value));
         n.classList.toggle(cssClass('missing'), isMissing);
