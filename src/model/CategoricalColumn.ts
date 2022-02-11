@@ -89,30 +89,12 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.categoryOrder = desc.categoryOrder || 'given';
-
-    // static sorting we can do statically
-    if (typeof this.categoryOrder === 'function') {
-      this.adaptCategoryOrder(this.categoryOrder);
-    }
-
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
-  }
-
-  private adaptCategoryOrder(sorter: (categories: readonly ICategory[]) => ICategory[]) {
-    this.categories.splice(0, this.categories.length, ...sorter(this.categories));
-    // patch the ICategory.value to match the new order
-    this.categories.forEach((cat, i) => {
-      cat.value = i / this.categories.length;
-    });
   }
 
   onDataUpdate(rows: ISequence<IDataRow>): void {
     super.onDataUpdate(rows);
-    if (
-      Array.isArray((this.desc as ICategoricalColumnDesc).categories) &&
-      this.categoryOrder !== 'large-to-small' &&
-      this.categoryOrder !== 'small-to-large'
-    ) {
+    if (Array.isArray((this.desc as ICategoricalColumnDesc).categories) && this.categoryOrder === 'given') {
       return;
     }
     // derive hist
@@ -138,18 +120,30 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       this.categories.splice(0, this.categories.length, ...toCategories({ categories: categoryNames }));
       this.categories.forEach((d) => this.lookup.set(d.name, d));
     }
+    this.sortCategories(categories);
+  }
+
+  private sortCategories(hist: ReadonlyMap<string, { name: string; count: number }>) {
+    // patch values of categories
+    for (const cat of this.categories) {
+      cat.value = hist.get(cat.name)?.count ?? 0;
+    }
     // sort
     if (typeof this.categoryOrder === 'function') {
-      this.adaptCategoryOrder(this.categoryOrder);
-    } else if (this.categoryOrder === 'small-to-large' || this.categoryOrder === 'large-to-small') {
-      const factor = this.categoryOrder === 'large-to-small' ? -1 : 1;
-
-      // patch values of categories
+      this.categories.splice(0, this.categories.length, ...this.categoryOrder(this.categories));
+    } else if (this.categoryOrder === 'large-to-small') {
+      // revert order of value
       for (const cat of this.categories) {
-        cat.value = factor * (categories.get(cat.name)?.count ?? 0);
+        cat.value = -1 * cat.value;
       }
       this.categories.sort(compareCategory);
+    } else if (this.categoryOrder === 'small-to-large') {
+      this.categories.sort(compareCategory);
     }
+    // patch the ICategory.value to match the new order
+    this.categories.forEach((cat, i) => {
+      cat.value = i / this.categories.length;
+    });
   }
 
   protected createEventList() {
