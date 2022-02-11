@@ -80,7 +80,12 @@ let idCounter = 0;
  * @param {boolean} stopPropagation whether to stop propagation in case of success
  * @internal
  */
-export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult, stopPropagation = false) {
+export function dragAble(
+  node: HTMLElement,
+  onDragStart: () => IDragStartResult,
+  onDragEnd?: () => void,
+  stopPropagation = false
+) {
   const id = ++idCounter;
 
   node.classList.add(cssClass('dragable'));
@@ -130,6 +135,10 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     const over = node.ownerDocument!.getElementsByClassName(cssClass('dragover'))[0] as HTMLElement;
     if (over) {
       over.classList.remove(cssClass('dragover'));
+    }
+
+    if (onDragEnd) {
+      onDragEnd();
     }
   });
 }

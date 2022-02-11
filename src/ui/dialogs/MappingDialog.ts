@@ -93,7 +93,9 @@ export default class MappingDialog extends ADialog {
         ${
           others.length > 0
             ? `<optgroup label="Copy From">${others
-                .map((d) => `<option value="copy_${d.id}">${this.dialog.sanitize(d.label)}</option>`)
+                .map(
+                  (d) => `<option value="copy_${d.id}">${this.dialog.sanitize(d.label, d.desc.labelAsHTML)}</option>`
+                )
                 .join('')}</optgroup>`
             : ''
         }
