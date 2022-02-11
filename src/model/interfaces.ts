@@ -19,6 +19,11 @@ export interface IStyleColumn {
    * column summary line (subtitle)
    */
   summary: string;
+  /**
+   * whether to render the description as HTML (unsafe)
+   * @default false
+   */
+  summaryAsHTML?: boolean;
 
   /**
    * color of this column
@@ -71,6 +76,13 @@ export interface IColumnDesc extends Partial<IStyleColumn> {
    * label of the column
    */
   label: string;
+
+  /**
+   * whether to render the label as HTML (unsafe)
+   * @default false
+   */
+  labelAsHTML?: boolean;
+
   /**
    * the column type
    */
