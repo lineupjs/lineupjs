@@ -447,6 +447,42 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
+   * inserts the given column before itself
+   * @param col the column to insert
+   * @returns {boolean} was successful
+   */
+  insertBeforeMe(col: Column) {
+    if (this.parent) {
+      return this.parent.insertBefore(col, this) != null;
+    }
+    return false;
+  }
+
+  /**
+   * returns the next sibling
+   * @returns {Column | null}
+   */
+  nextSibling(): Column | null {
+    if (this.parent) {
+      const index = this.parent.indexOf(this);
+      return index < 0 ? null : this.parent.at(index + 1) ?? null;
+    }
+    return null;
+  }
+
+  /**
+   * returns the previous sibling
+   * @returns {Column | null}
+   */
+  previousSibling(): Column | null {
+    if (this.parent) {
+      const index = this.parent.indexOf(this);
+      return index < 1 ? null : this.parent.at(index - 1) ?? null;
+    }
+    return null;
+  }
+
+  /**
    * finds the underlying ranking column
    * @returns {Ranking|null} my current ranking
    */
