@@ -30,11 +30,11 @@ export { createToolbarMenuItems, actionCSSClass } from './headerTooltip';
 
 function setTextOrEmpty(node: HTMLElement, condition: boolean, text: string, asHTML = false) {
   if (condition) {
-    node.textContent = ' ';
+    setText(node, ' ');
   } else if (asHTML) {
     node.innerHTML = text;
   } else {
-    node.textContent = text;
+    setText(node, text);
   }
   return node;
 }
