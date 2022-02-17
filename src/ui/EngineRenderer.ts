@@ -132,6 +132,13 @@ export default class EngineRenderer extends AEventDispatcher {
 
     {
       // helper object for better resizing experience
+      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`)!;
+      const copy = footer.cloneNode(true) as HTMLElement;
+      copy.classList.add(cssClass('resize-helper'));
+      footer!.insertAdjacentElement('afterend', copy);
+    }
+    {
+      // selection indicator
       const body = this.table.node.querySelector<HTMLElement>(`.${engineCssClass('body')}`)!;
       this.selectionIndicator = new SelectionIndicator(body);
       parent.insertBefore(this.selectionIndicator.node, this.node);
