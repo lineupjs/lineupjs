@@ -19,6 +19,11 @@ export interface IStyleColumn {
    * column summary line (subtitle)
    */
   summary: string;
+  /**
+   * whether to render the description as HTML (unsafe)
+   * @default false
+   */
+  summaryAsHTML?: boolean;
 
   /**
    * color of this column
@@ -71,6 +76,13 @@ export interface IColumnDesc extends Partial<IStyleColumn> {
    * label of the column
    */
   label: string;
+
+  /**
+   * whether to render the label as HTML (unsafe)
+   * @default false
+   */
+  labelAsHTML?: boolean;
+
   /**
    * the column type
    */
@@ -103,10 +115,13 @@ export interface IColumnParent {
 
   insert(col: Column, index?: number): Column | null;
 
+  insertBefore(col: Column, reference: Column): Column | null;
+
   insertAfter(col: Column, reference: Column): Column | null;
 
   move(col: Column, index?: number): Column | null;
 
+  moveBefore(col: Column, reference: Column): Column | null;
   moveAfter(col: Column, reference: Column): Column | null;
 
   findMyRanker(): Ranking | null;

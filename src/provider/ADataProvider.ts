@@ -309,7 +309,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       }
       const c = this.instantiateColumn(type, '', desc, this.typeFactory);
       c.restore(d, factory);
-      return c;
+      return this.patchColumn(c);
     }) as ITypeFactory;
     factory.colorMappingFunction = createColorMappingFunction(this.colorMappingFunctionTypes, factory);
     factory.mappingFunction = createMappingFunction(this.mappingFunctionTypes);
@@ -667,9 +667,14 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
     if (type) {
-      return this.instantiateColumn(type, this.nextId(), desc, this.typeFactory);
+      return this.patchColumn(this.instantiateColumn(type, this.nextId(), desc, this.typeFactory));
     }
     return null;
+  }
+
+  protected patchColumn(column: Column): Column {
+    // hook for adapting columns
+    return column;
   }
 
   protected instantiateColumn(type: IColumnConstructor, id: string, desc: IColumnDesc, typeFactory: ITypeFactory) {

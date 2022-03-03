@@ -31,6 +31,8 @@ export interface IAdvancedBoxPlotData extends IBoxPlotData {
 
   readonly missing: number;
   readonly count: number;
+
+  readonly kdePoints: { v: number; p: number }[];
 }
 
 export interface IHistogramStats<T> {

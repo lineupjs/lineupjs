@@ -48,6 +48,13 @@ function fixDomain(domain: number[], type: string) {
   if (type === 'log' && domain[0] === 0) {
     domain[0] = 0.0000001; //0 is bad
   }
+  // replace Null with NaN since D3 converts them to 0
+  if (domain[0] == null) {
+    domain[0] = Number.NaN;
+  }
+  if (domain[1] == null) {
+    domain[1] = Number.NaN;
+  }
   return domain;
 }
 
@@ -70,7 +77,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     } else {
       const dump = domain;
       this.type = dump.type;
-      this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
+      this.s = toScale(dump.type).domain(fixDomain(dump.domain, dump.type)).range(dump.range);
     }
   }
 
@@ -236,7 +243,7 @@ export function restoreMapping(desc: IMapAbleDesc, factory: ITypeFactory): IMapp
   if (desc.map) {
     return factory.mappingFunction(desc.map);
   }
-  return new ScaleMappingFunction(desc.domain || [0, 1], 'linear', desc.range || [0, 1]);
+  return new ScaleMappingFunction(fixDomain(desc.domain || [0, 1], 'linear'), 'linear', desc.range || [0, 1]);
 }
 
 export function mappingFunctions() {

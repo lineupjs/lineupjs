@@ -1149,7 +1149,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         // fast pass
         return index * c.defaultRowHeight;
       }
-      const before = c.exceptions.reverse().find((d) => d.index <= index);
+      const before = c.exceptions
+        .slice()
+        .reverse()
+        .find((d) => d.index <= index);
       if (!before) {
         return -1;
       }

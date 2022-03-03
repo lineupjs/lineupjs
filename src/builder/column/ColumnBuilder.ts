@@ -14,6 +14,11 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
     this.desc.label = label;
     return this;
   }
+  htmlLabel(label: string) {
+    this.desc.label = label;
+    this.desc.labelAsHTML = true;
+    return this;
+  }
 
   /**
    * hide this column by default
@@ -28,6 +33,11 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
    */
   summary(summary: string) {
     this.desc.summary = summary;
+    return this;
+  }
+  htmlSummary(label: string) {
+    this.desc.summary = label;
+    this.desc.summaryAsHTML = true;
     return this;
   }
 

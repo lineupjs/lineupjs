@@ -32,6 +32,7 @@ import {
   isEqualCategoricalFilter,
   toCompareCategoryValue,
   toGroupCompareCategoryValue,
+  compareCategory,
 } from './internalCategorical';
 
 /**
@@ -81,12 +82,68 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    * @private
    */
   private currentFilter: ICategoricalFilter | null = null;
+  private readonly categoryOrder: ICategoricalColumnDesc['categoryOrder'];
 
   constructor(id: string, desc: Readonly<ICategoricalColumnDesc>) {
     super(id, desc);
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
+    this.categoryOrder = desc.categoryOrder || 'given';
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
+  }
+
+  onDataUpdate(rows: ISequence<IDataRow>): void {
+    super.onDataUpdate(rows);
+    if (Array.isArray((this.desc as ICategoricalColumnDesc).categories) && this.categoryOrder === 'given') {
+      return;
+    }
+    // derive hist
+    const categories = new Map<string, { name: string; count: number }>();
+    rows.forEach((row) => {
+      const value = super.getValue(row);
+      if (!value) {
+        return;
+      }
+      const sValue = String(value);
+      const entry = categories.get(sValue);
+      if (!entry) {
+        categories.set(sValue, { name: sValue, count: 1 });
+      } else {
+        entry.count++;
+      }
+    });
+
+    if (!Array.isArray((this.desc as ICategoricalColumnDesc).categories)) {
+      // derive
+      const categoryNames = Array.from(categories.keys());
+      categoryNames.sort();
+      this.categories.splice(0, this.categories.length, ...toCategories({ categories: categoryNames }));
+      this.categories.forEach((d) => this.lookup.set(d.name, d));
+    }
+    this.sortCategories(categories);
+  }
+
+  private sortCategories(hist: ReadonlyMap<string, { name: string; count: number }>) {
+    // patch values of categories
+    for (const cat of this.categories) {
+      cat.value = hist.get(cat.name)?.count ?? 0;
+    }
+    // sort
+    if (typeof this.categoryOrder === 'function') {
+      this.categories.splice(0, this.categories.length, ...this.categoryOrder(this.categories));
+    } else if (this.categoryOrder === 'large-to-small') {
+      // revert order of value
+      for (const cat of this.categories) {
+        cat.value = -1 * cat.value;
+      }
+      this.categories.sort(compareCategory);
+    } else if (this.categoryOrder === 'small-to-large') {
+      this.categories.sort(compareCategory);
+    }
+    // patch the ICategory.value to match the new order
+    this.categories.forEach((cat, i) => {
+      cat.value = i / this.categories.length;
+    });
   }
 
   protected createEventList() {
