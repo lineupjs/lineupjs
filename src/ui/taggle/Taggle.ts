@@ -88,7 +88,7 @@ export default class Taggle extends ALineUp {
   }
 
   isOverviewMode() {
-    return this.renderer?.getRule() == this.spaceFillingRule;
+    return this.renderer?.getRule() === this.spaceFillingRule;
   }
 
   setOverviewMode(overviewMode: boolean) {
