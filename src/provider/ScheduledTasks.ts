@@ -348,7 +348,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
                 'boxplotStats',
                 {},
                 key,
-                this.valueCacheData.get(key) as Float32Array,
+                this.valueCacheData.get(key) as Float64Array,
                 `${ranking.id}:${group.name}`,
                 group.order
               )
@@ -374,7 +374,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
                 'numberStats',
                 { numberOfBins: summary.hist.length, domain: this.resolveDomain(col, raw) },
                 key,
-                this.valueCacheData.get(key) as Float32Array,
+                this.valueCacheData.get(key) as Float64Array,
                 `${ranking.id}:${group.name}`,
                 group.order
               )
@@ -467,7 +467,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               'boxplotStats',
               {},
               key,
-              this.valueCacheData.get(key) as Float32Array,
+              this.valueCacheData.get(key) as Float64Array,
               ranking.id,
               order ? order.joined : ranking.getOrder()
             )
@@ -489,7 +489,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
               'numberStats',
               { numberOfBins: data.hist.length, domain: this.resolveDomain(col, raw) },
               key,
-              this.valueCacheData.get(key) as Float32Array,
+              this.valueCacheData.get(key) as Float64Array,
               ranking.id,
               order ? order.joined : ranking.getOrder()
             )
@@ -691,7 +691,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
           'boxplotStats',
           {},
           valueCacheKey,
-          this.valueCacheData.get(valueCacheKey)! as Float32Array
+          this.valueCacheData.get(valueCacheKey)! as Float64Array
         )
       );
     }
