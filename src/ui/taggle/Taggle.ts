@@ -6,7 +6,7 @@ import type { DataProvider } from '../../provider';
 import { cssClass, engineCssClass } from '../../styles';
 import { ALineUp } from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
-import { spaceFillingRule } from './rules';
+import { spaceFillingRule, IRule } from './rules';
 import TaggleRenderer from './TaggleRenderer';
 
 export default class Taggle extends ALineUp {
@@ -18,6 +18,7 @@ export default class Taggle extends ALineUp {
   private readonly spaceFilling: HTMLElement | null;
   private readonly renderer: TaggleRenderer | null;
   private readonly panel: SidePanel | null;
+  private readonly spaceFillingRule: IRule;
 
   private readonly options = defaultOptions();
 
@@ -31,6 +32,7 @@ export default class Taggle extends ALineUp {
     if (this.options.copyableRows) {
       this.addCopyListener();
     }
+    this.spaceFillingRule = spaceFillingRule(this.options);
 
     if (!this.isBrowserSupported) {
       this.spaceFilling = null;
@@ -42,13 +44,14 @@ export default class Taggle extends ALineUp {
     this.node.classList.add(cssClass(), cssClass('taggle'));
 
     this.renderer = new TaggleRenderer(data, this.node, this.options);
-    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument!, {
-      collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true,
-      hierarchy: this.options.hierarchyIndicator && this.options.flags.advancedRankingFeatures,
-    });
-    this.renderer.pushUpdateAble((ctx) => this.panel!.update(ctx));
-    this.node.insertBefore(this.panel.node, this.node.firstChild);
-    {
+
+    if (this.options.sidePanel) {
+      this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument!, {
+        collapseable: this.options.sidePanelCollapsed ? 'collapsed' : true,
+        hierarchy: this.options.hierarchyIndicator && this.options.flags.advancedRankingFeatures,
+      });
+      this.renderer.pushUpdateAble((ctx) => this.panel!.update(ctx));
+      this.node.insertBefore(this.panel.node, this.node.firstChild);
       this.panel.node.insertAdjacentHTML(
         'afterbegin',
         `<div class="${cssClass('rule-button-chooser')} ${cssClass('feature-advanced')} ${cssClass(
@@ -59,22 +62,19 @@ export default class Taggle extends ALineUp {
             <div class="${cssClass('rule-violation')}"></div>
           </label></div>`
       );
-      const spaceFilling = spaceFillingRule(this.options);
       this.spaceFilling = this.panel.node.querySelector<HTMLElement>(`.${cssClass('rule-button-chooser')}`)!;
       const input = this.spaceFilling.querySelector<HTMLInputElement>('input');
       input.onchange = () => {
-        const selected = this.spaceFilling!.classList.toggle(cssClass('chosen'));
         setTimeout(() => {
-          this.updateLodRules(selected);
-          this.renderer!.switchRule(selected ? spaceFilling : null);
+          this.setOverviewMode(!this.isOverviewMode());
         });
       };
-      if (this.options.overviewMode) {
-        input.checked = true;
-        this.spaceFilling.classList.toggle(cssClass('chosen'));
-        this.updateLodRules(true);
-        this.renderer.switchRule(spaceFilling);
-      }
+    } else {
+      this.panel = null;
+      this.spaceFilling = null;
+    }
+    if (this.options.overviewMode) {
+      this.setOverviewMode(true);
     }
     this.forward(
       this.renderer,
@@ -85,6 +85,22 @@ export default class Taggle extends ALineUp {
         TaggleRenderer.EVENT_DIALOG_CLOSED
       )
     );
+  }
+
+  isOverviewMode() {
+    return this.renderer?.getRule() === this.spaceFillingRule;
+  }
+
+  setOverviewMode(overviewMode: boolean) {
+    if (!this.renderer) {
+      return;
+    }
+    this.updateLodRules(overviewMode);
+    this.renderer.switchRule(overviewMode ? this.spaceFillingRule : null);
+    if (this.spaceFilling) {
+      this.spaceFilling.classList.toggle(cssClass('chosen'), overviewMode);
+      this.spaceFilling.querySelector<HTMLInputElement>('input')!.checked = overviewMode;
+    }
   }
 
   private updateLodRules(overviewMode: boolean) {
