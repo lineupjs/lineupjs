@@ -949,12 +949,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     for (let i = this.visibleColumns.first; i < index; ++i) {
       x += columns[i].width + COLUMN_PADDING;
     }
+    // may not match if not all left columns are shown
+    const nodeIndex = index - this.visibleColumns.first;
     super.forEachRow((row, rowIndex) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
         this.updateCanvasCell(row.firstElementChild! as HTMLCanvasElement, row, rowIndex, column, x);
         return;
       }
-      this.updateCellImpl(column, row.children[index] as HTMLElement, rowIndex);
+      this.updateCellImpl(column, row.children[nodeIndex] as HTMLElement, rowIndex);
     });
     return true;
   }
