@@ -289,7 +289,7 @@ export class ARenderTasks {
 
       if (order == null && !this.valueCacheData.has(key)) {
         // build and valueCache
-        const vs = new Float32Array(this.data.length);
+        const vs = new Float64Array(this.data.length);
         let i = 0;
         return this.builder(
           {
