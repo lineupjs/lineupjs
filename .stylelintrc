@@ -5,6 +5,7 @@
   ],
   "rules": {
     "string-quotes": "single",
+    "keyframes-name-pattern": null,
     "no-descending-specificity": null,
     "value-list-comma-newline-after": null,
     "declaration-colon-newline-after": null,

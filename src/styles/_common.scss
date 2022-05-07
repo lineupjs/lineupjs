@@ -7,8 +7,8 @@
 
 .#{$lu_css_prefix}-dragable {
   cursor: pointer;
-  cursor: -moz-grab;
-  cursor: -webkit-grab; // indicate grab able
+  cursor: grab;
+  cursor: grab; // indicate grab able
 }
 
 .#{$lu_css_prefix}-dragover {
