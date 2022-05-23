@@ -687,6 +687,8 @@ Otherwise follow the steps to setup a local development environment.
 
 **Installation**
 
+The setup requires [Node.js v16 or higher](https://nodejs.org/en/download/).
+
 ```bash
 git clone https://github.com/lineupjs/lineupjs.git -b develop
 cd lineupjs
