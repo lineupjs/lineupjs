@@ -76,7 +76,7 @@ $lu_icon_window_restore: '\f2d2';
   @if $lu_use_font_awesome == true {
     @include fa-icon();
 
-    font-family: 'Font Awesome 5 Free', serif;
+    font-family: 'Font Awesome 6 Free', serif;
     font-weight: 900;
   } @else {
     display: inline-block;
