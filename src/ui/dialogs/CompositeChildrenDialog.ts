@@ -12,7 +12,7 @@ export default class CompositeChildrenDialog extends APopup {
 
   constructor(private readonly column: CompositeColumn, dialog: IDialogContext, private ctx: IRankingHeaderContext) {
     super(dialog);
-    this.id = `.dialog${Math.random().toString(36).slice(-8).substr(0, 3)}`;
+    this.id = `.dialog${Math.random().toString(36).slice(-8).substring(0, 3)}`;
   }
 
   cleanUp(action: 'cancel' | 'confirm' | 'handled') {

@@ -194,4 +194,13 @@ export default class LineUpBuilder {
     this.options.flags!.advancedUIFeatures = false;
     return this;
   }
+
+  /**
+   * identifier for this LineUp instance. by default a random id is generated.
+   * @default random string
+   */
+  instanceId(instanceId: string) {
+    this.options.instanceId = instanceId;
+    return this;
+  }
 }
