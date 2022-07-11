@@ -14,6 +14,6 @@ describe('builder', () => {
   );
 
   it('default', () => {
-    cy.get('main.le').should('have.id', 'lu-custom-instance-id');
-  });
+    cy.get('#lu-custom-instance-id'); // note the `lu-` prefix
+  };);
 });
