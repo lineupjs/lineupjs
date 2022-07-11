@@ -7,7 +7,7 @@ describe('builder', () => {
     withLineUp((l, document) => {
       lineUpJS = l;
       const b = lineUpJS.builder([]);
-      b.options.instanceId = 'custom-instance-id';
+      b.instanceId('custom-instance-id');
       b.build(document.body);
       waitReady(lineup);
     })
