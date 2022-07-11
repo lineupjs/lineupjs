@@ -15,5 +15,5 @@ describe('builder', () => {
 
   it('default', () => {
     cy.get('#lu-custom-instance-id'); // note the `lu-` prefix
-  };);
+  });
 });
