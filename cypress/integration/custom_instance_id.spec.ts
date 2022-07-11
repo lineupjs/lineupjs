@@ -8,7 +8,7 @@ describe('builder', () => {
       lineUpJS = l;
       const b = lineUpJS.builder([]);
       b.instanceId('custom-instance-id');
-      b.build(document.body);
+      lineup = b.buildTaggle(document.body);
       waitReady(lineup);
     })
   );
