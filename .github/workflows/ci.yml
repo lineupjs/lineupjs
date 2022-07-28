@@ -57,7 +57,7 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
           personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-          external_repository: lineupjs/lineup.js.org
+          external_repository: lineupjs/lineupjs.github.io
           publish_branch: main
           publish_dir: ./public
           enable_jekyll: true
@@ -70,7 +70,7 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
           personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-          external_repository: lineupjs/lineup.js.org
+          external_repository: lineupjs/lineupjs.github.io
           publish_branch: main
           publish_dir: ./public_dev
           enable_jekyll: true
