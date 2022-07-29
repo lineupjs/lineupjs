@@ -619,8 +619,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   private triggerGroupResort(bak: ISortCriteria | ISortCriteria[] | null) {
-    const sortCriterias = this.getGroupSortCriteria();
-    const bakMulti = Array.isArray(bak) ? bak : sortCriterias;
+    const sortCriteria = this.getGroupSortCriteria();
+    const bakMulti = Array.isArray(bak) ? bak : sortCriteria;
     this.fire(
       [
         Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED,
@@ -630,13 +630,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         Ranking.EVENT_DIRTY,
       ],
       bakMulti,
-      sortCriterias
+      sortCriteria
     );
   }
 
   private triggerResort(bak: ISortCriteria | ISortCriteria[] | null) {
-    const sortCriterias = this.getSortCriteria();
-    const bakMulti = Array.isArray(bak) ? bak : sortCriterias;
+    const sortCriteria = this.getSortCriteria();
+    const bakMulti = Array.isArray(bak) ? bak : sortCriteria;
     this.fire(
       [
         Ranking.EVENT_SORT_CRITERIA_CHANGED,
@@ -646,7 +646,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         Ranking.EVENT_DIRTY,
       ],
       bakMulti,
-      sortCriterias
+      sortCriteria
     );
   }
 

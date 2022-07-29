@@ -123,7 +123,7 @@ const sortGroupBy: IToolbarAction = {
   },
   options: {
     mode: (col: Column, mode: 'sidePanel' | 'header') =>
-      col.isGroupSortedByMe() && mode === 'header' ? 'menu+shortcut' : 'menu',
+      col.isGroupSortedByMe().priority != null && mode === 'header' ? 'menu+shortcut' : 'menu',
     order: 3,
     featureCategory: 'ranking',
     featureLevel: 'advanced',
