@@ -122,7 +122,8 @@ const sortGroupBy: IToolbarAction = {
     dialog.open();
   },
   options: {
-    mode: 'menu',
+    mode: (col: Column, mode: 'sidePanel' | 'header') =>
+      col.isGroupSortedByMe() && mode === 'header' ? 'menu+shortcut' : 'menu',
     order: 3,
     featureCategory: 'ranking',
     featureLevel: 'advanced',
