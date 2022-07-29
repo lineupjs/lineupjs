@@ -4,12 +4,7 @@
     "module": "commonjs",
     "target": "es5",
     "allowJs": true,
-    "rootDir": ".",
+    "rootDir": "."
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "tsd.d.ts",
-    "node_modules"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tsd.d.ts", "node_modules"]
 }
