@@ -25,7 +25,7 @@ import { integrateDefaults } from './internal';
  * @returns {{type: string, label: string}}
  */
 export function createSelectionDesc(label = 'Selections') {
-  return { type: 'selection', label, fixed: true };
+  return { type: 'selection', label };
 }
 
 export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
