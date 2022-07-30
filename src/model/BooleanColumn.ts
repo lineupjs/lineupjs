@@ -178,14 +178,6 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return CategoricalColumn.prototype.getValues.call(this, row);
   }
 
-  getMap(row: IDataRow) {
-    return CategoricalColumn.prototype.getMap.call(this, row);
-  }
-
-  getMapLabel(row: IDataRow) {
-    return CategoricalColumn.prototype.getMapLabel.call(this, row);
-  }
-
   getSet(row: IDataRow) {
     const v = this.getValue(row);
     const r = new Set<ICategory>();

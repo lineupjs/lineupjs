@@ -194,14 +194,6 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return CategoricalColumn.prototype.getValues.call(this, row);
   }
 
-  getMap(row: IDataRow) {
-    return CategoricalColumn.prototype.getMap.call(this, row);
-  }
-
-  getMapLabel(row: IDataRow) {
-    return CategoricalColumn.prototype.getMapLabel.call(this, row);
-  }
-
   getSet(row: IDataRow) {
     return CategoricalColumn.prototype.getSet.call(this, row);
   }

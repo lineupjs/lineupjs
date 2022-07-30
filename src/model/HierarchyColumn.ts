@@ -309,14 +309,6 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return CategoricalColumn.prototype.getValues.call(this, row);
   }
 
-  getMap(row: IDataRow) {
-    return CategoricalColumn.prototype.getMap.call(this, row);
-  }
-
-  getMapLabel(row: IDataRow) {
-    return CategoricalColumn.prototype.getMapLabel.call(this, row);
-  }
-
   getSet(row: IDataRow) {
     return CategoricalColumn.prototype.getSet.call(this, row);
   }

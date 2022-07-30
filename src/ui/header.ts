@@ -7,12 +7,10 @@ import {
   isArrayColumn,
   isBoxPlotColumn,
   isCategoricalColumn,
-  isMapColumn,
   isNumberColumn,
   isNumbersColumn,
   Column,
   createImpositionDesc,
-  createImpositionsDesc,
   createImpositionBoxPlotDesc,
   CompositeColumn,
   IMultiLevelColumn,
@@ -405,10 +403,6 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
         data[`${MIMETYPE_PREFIX}-boxplot`] = ref;
         data[`${MIMETYPE_PREFIX}-boxplot-ref`] = column.id;
       }
-      if (isMapColumn(column)) {
-        data[`${MIMETYPE_PREFIX}-map`] = ref;
-        data[`${MIMETYPE_PREFIX}-map-ref`] = column.id;
-      }
       if (isArrayColumn(column)) {
         data[`${MIMETYPE_PREFIX}-array`] = ref;
         data[`${MIMETYPE_PREFIX}-array-ref`] = column.id;
@@ -543,15 +537,11 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
       pushChild
     );
   }
-  if (isNumbersColumn(column)) {
-    node.dataset.draginfo = 'Color by';
-    return dropAble(node, categorical, mergeWith(createImpositionsDesc()));
-  }
   if (isBoxPlotColumn(column)) {
     node.dataset.draginfo = 'Color by';
     return dropAble(node, categorical, mergeWith(createImpositionBoxPlotDesc()));
   }
-  if (isNumberColumn(column)) {
+  if (isNumberColumn(column) && !isNumbersColumn(column)) {
     node.dataset.draginfo = 'Merge';
     return dropAble(
       node,

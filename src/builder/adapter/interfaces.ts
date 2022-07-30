@@ -90,7 +90,6 @@ export interface IBuilderAdapter {
 
 export interface IBuilderAdapterColumnDescProps extends Partial<IColumnDesc> {
   column: string;
-  asMap?: boolean;
   asArray?: string[] | number | boolean;
   custom?: { [key: string]: any };
 }
