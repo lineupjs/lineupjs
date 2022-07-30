@@ -12,8 +12,8 @@
 }
 
 .#{$lu_css_prefix}-violin-path {
-  fill: currentColor;
-  stroke: currentColor;
+  fill: currentcolor;
+  stroke: currentcolor;
   vector-effect: non-scaling-stroke;
 }
 
@@ -24,6 +24,6 @@
 .#{$lu_css_prefix}-violin-median,
 .#{$lu_css_prefix}-violin-mean,
 .#{$lu_css_prefix}-violin-iqr {
-  stroke: currentColor;
+  stroke: currentcolor;
   vector-effect: non-scaling-stroke;
 }

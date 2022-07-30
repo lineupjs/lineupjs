@@ -2,7 +2,7 @@
 <html>
   <head lang="en">
     <meta charset="UTF-8" />
-    <title>LineUp Builder Test</title>
+    <title>LineUp Taggle Test</title>
 
     <link href="./LineUpJS.css" rel="stylesheet" />
     <link href="./demo.css" rel="stylesheet" />
@@ -15,17 +15,22 @@
       window.onload = function () {
         const arr = [];
         const cats = ['c1', 'c2', 'c3'];
-        const f = d3.timeFormat('%x');
-        for (let i = 0; i < 100; ++i) {
-          const d = new Date(Date.now() - Math.floor(Math.random() * 1000000000000));
+        for (let i = 0; i < 1000; ++i) {
           arr.push({
-            dateObj: d,
-            dateIso: d.toISOString(),
-            dateFormatted: f(d),
-            dateYYYYMMDD: `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`,
+            a: Math.random() * 10,
+            d: 'Row ' + i,
+            cat: cats[Math.floor(Math.random() * 3)],
+            cat2: cats[Math.floor(Math.random() * 3)],
           });
         }
-        const lineup = LineUpJS.asTaggle(document.body, arr);
+
+        const b = LineUpJS.builder(arr).deriveColumns();
+        b.sidePanel(false);
+        const taggle = b.buildTaggle(document.body);
+
+        setTimeout(() => {
+          taggle.setOverviewMode(true);
+        }, 3000);
       };
     </script>
   </body>

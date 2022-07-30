@@ -11,10 +11,14 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
   /**
    * defines the mapping for this number column to normalize the data
    * @param {"linear" | "sqrt" | "pow1.1" | "pow2" | "pow3"} type mapping type
-   * @param {[number , number]} domain input data domain [min, max]
+   * @param {[number | null, number | null]} domain input data domain [min, max]
    * @param {[number , number]} range optional output domain [0, 1]
    */
-  mapping(type: 'linear' | 'sqrt' | 'pow1.1' | 'pow2' | 'pow3', domain: [number, number], range?: [number, number]) {
+  mapping(
+    type: 'linear' | 'sqrt' | 'pow1.1' | 'pow2' | 'pow3',
+    domain: [number | null, number | null],
+    range?: [number, number]
+  ) {
     if (type === 'linear') {
       this.desc.domain = domain;
       if (range) {
@@ -124,12 +128,12 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
       this.mapping('linear', this.derive(data));
     } else {
       const d = this.desc.domain || this.desc.map!.domain;
-      if (Number.isNaN(d[0]) || Number.isNaN(d[1])) {
+      if (Number.isNaN(d[0]) || d[0] == null || Number.isNaN(d[1]) || d[1] == null) {
         const ext = this.derive(data);
-        if (Number.isNaN(d[0])) {
+        if (Number.isNaN(d[0]) || d[0] == null) {
           d[0] = ext[0];
         }
-        if (Number.isNaN(d[1])) {
+        if (Number.isNaN(d[1]) || d[1] == null) {
           d[1] = ext[1];
         }
       }
@@ -141,10 +145,10 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
 /**
  * builds numerical column builder
  * @param {string} column column which contains the associated data
- * @param {[number , number]} domain domain (min, max) of this column
+ * @param {[number | null, number | null]} domain domain (min, max) of this column
  * @returns {NumberColumnBuilder}
  */
-export function buildNumberColumn(column: string, domain?: [number, number]) {
+export function buildNumberColumn(column: string, domain?: [number | null, number | null]) {
   const r = new NumberColumnBuilder(column);
   if (domain) {
     r.mapping('linear', domain);

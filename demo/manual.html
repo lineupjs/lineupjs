@@ -36,8 +36,15 @@
             domain: [0, Number.NaN],
           },
           {
+            type: 'number',
+            label: 'a_null',
+            column: 'a',
+            domain: [0, null],
+          },
+          {
             type: 'categorical',
             column: 'cat',
+            categoryOrder: 'small-to-large',
           },
           {
             type: 'number',

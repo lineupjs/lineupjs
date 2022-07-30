@@ -8,24 +8,27 @@
     <link href="./demo.css" rel="stylesheet" />
   </head>
   <body>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="./LineUpJS.js"></script>
 
     <script>
       window.onload = function () {
         const arr = [];
         const cats = ['c1', 'c2', 'c3'];
-        const f = d3.timeFormat('%x');
         for (let i = 0; i < 100; ++i) {
-          const d = new Date(Date.now() - Math.floor(Math.random() * 1000000000000));
           arr.push({
-            dateObj: d,
-            dateIso: d.toISOString(),
-            dateFormatted: f(d),
-            dateYYYYMMDD: `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`,
+            d: 'Row ' + i,
+            a: Math.random() * 10,
+            cat: cats[Math.floor(Math.random() * 3)],
           });
         }
-        const lineup = LineUpJS.asTaggle(document.body, arr);
+        const builder = LineUpJS.builder(arr);
+
+        // manually define columns
+        builder.deriveColumns().column(LineUpJS.buildStringColumn('d').htmlLabel('<strong>STRONG</strong>'));
+
+        builder.defaultRanking();
+
+        const lineup = builder.build(document.body);
       };
     </script>
   </body>

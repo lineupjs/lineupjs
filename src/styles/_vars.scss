@@ -16,7 +16,7 @@ $lu_hover_header_color: #f3f3f3 !default;
 $lu_selected_color: #ffa500 !default;
 $lu_filtered_opacity: 0.2 !default;
 
-$lu_drag_over: rgba(151, 151, 151, 0.8) !default;
+$lu_drag_over: rgb(151 151 151 / 80%) !default;
 
 $lu_header_background: #6d6c6c !default;
 
@@ -25,8 +25,8 @@ $lu_body_text_hover_color: darkblue !default;
 
 $lu_slope_width: 200px !default;
 $lu_slope_color: darkgray !default;
-$lu_slope_group_color: rgba(169, 169, 169, 0.5) !default;
-$lu_slope_group_selected_color: rgba(255, 165, 0, 0.5) !default;
+$lu_slope_group_color: rgb(169 169 169 / 50%) !default;
+$lu_slope_group_selected_color: rgb(255 165 0 / 50%) !default;
 $lu_slope_stroke_width: 1 !default;
 
 $lu_renderer_boxplot_box: #e0e0e0 !default;
@@ -100,8 +100,5 @@ $lu_include_font_awesome: false !default;
 $lu_histogram_drag_hint_width: 7em !default;
 
 @mixin user_select_none() {
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }

@@ -939,22 +939,44 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
   }
 
+  private computeShiftedIndex(index: number) {
+    const columns = this.context.columns;
+    // may not match if not all left columns are shown
+    let leftOffset = 0;
+    let indexOffset = 0;
+    // shift frozen ones
+    for (let frozenIndex of this.visibleColumns.frozen) {
+      if (frozenIndex >= this.visibleColumns.first) {
+        break;
+      }
+      leftOffset += columns[frozenIndex].width + COLUMN_PADDING;
+      indexOffset--;
+    }
+    // shift visible before
+    indexOffset += this.visibleColumns.first;
+    for (let i = this.visibleColumns.first; i < index; ++i) {
+      leftOffset += columns[i].width + COLUMN_PADDING;
+    }
+    return {
+      leftOffset,
+      indexOffset,
+    };
+  }
+
   private updateColumn(index: number) {
     const columns = this.context.columns;
     const column = columns[index];
     if (!column) {
       return false;
     }
-    let x = 0;
-    for (let i = this.visibleColumns.first; i < index; ++i) {
-      x += columns[i].width + COLUMN_PADDING;
-    }
+    const { leftOffset, indexOffset } = this.computeShiftedIndex(index);
+
     super.forEachRow((row, rowIndex) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
-        this.updateCanvasCell(row.firstElementChild! as HTMLCanvasElement, row, rowIndex, column, x);
+        this.updateCanvasCell(row.firstElementChild! as HTMLCanvasElement, row, rowIndex, column, leftOffset);
         return;
       }
-      this.updateCellImpl(column, row.children[index] as HTMLElement, rowIndex);
+      this.updateCellImpl(column, row.children[index - indexOffset] as HTMLElement, rowIndex);
     });
     return true;
   }

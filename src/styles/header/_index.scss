@@ -14,25 +14,11 @@
   background: white;
 
   &.#{$lu_css_prefix}-dragging {
-    opacity: 0.5;
-  }
-
-  &.#{$lu_css_prefix}-dragover::after {
-    @include user_select_none();
-
-    content: attr(data-draginfo);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    background: lighten($lu_drag_over, 35%);
-    border: 2px dashed $lu_drag_over;
+    > .#{$lu_css_prefix}-label,
+    > .#{$lu_css_prefix}-toolbar,
+    > .#{$lu_css_prefix}-summary {
+      opacity: 0.5;
+    }
   }
 }
 

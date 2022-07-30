@@ -1,9 +1,7 @@
 import { MIN_LABEL_WIDTH } from '../constants';
-import { equalArrays, dragAble, dropAble, hasDnDType, IDropResult } from '../internal';
+import { dragAble, dropAble, hasDnDType, IDropResult } from '../internal';
 import { categoryOf } from '../model';
 import {
-  createNestedDesc,
-  createReduceDesc,
   createStackDesc,
   IColumnDesc,
   isArrayColumn,
@@ -26,14 +24,17 @@ import type { IRankingHeaderContext, IOnClickHandler } from './interfaces';
 import { getToolbar } from './toolbarResolvers';
 import { dialogContext } from './dialogs';
 import { addIconDOM, actionCSSClass, isActionMode, updateIconState } from './headerTooltip';
+import { setText } from '../renderer/utils';
 
 export { createToolbarMenuItems, actionCSSClass } from './headerTooltip';
 
-function setTextOrEmpty(node: HTMLElement, condition: boolean, text: string) {
+function setTextOrEmpty(node: HTMLElement, condition: boolean, text: string, asHTML = false) {
   if (condition) {
-    node.innerHTML = '&nbsp;';
+    setText(node, ' ');
+  } else if (asHTML) {
+    node.innerHTML = text;
   } else {
-    node.textContent = text;
+    setText(node, text);
   }
   return node;
 }
@@ -73,9 +74,25 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     <div class="${extra('toolbar')}"></div>
     <div class="${extra('spacing')}"></div>
     <div class="${extra('handle')} ${cssClass('feature-advanced')} ${cssClass('feature-ui')}"></div>
+    ${options.mergeDropAble ? `<div class="${extra('header-drop')} ${extra('merger')}"></div>` : ''}
+    ${
+      options.rearrangeAble
+        ? `<div class="${extra('header-drop')} ${extra('placer')}" data-draginfo="Place here"></div>`
+        : ''
+    }
   `;
-  setTextOrEmpty(node.firstElementChild as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH, col.label);
-  setTextOrEmpty(node.children[1] as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH || !summary, summary);
+  setTextOrEmpty(
+    node.firstElementChild as HTMLElement,
+    col.getWidth() < MIN_LABEL_WIDTH,
+    col.label,
+    col.desc.labelAsHTML
+  );
+  setTextOrEmpty(
+    node.children[1] as HTMLElement,
+    col.getWidth() < MIN_LABEL_WIDTH || !summary,
+    summary,
+    col.desc.summaryAsHTML
+  );
 
   // addTooltip(node, col);
 
@@ -93,10 +110,22 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     dragAbleColumn(node, col, ctx);
   }
   if (options.mergeDropAble) {
-    mergeDropAble(node, col, ctx);
+    const merger = node.getElementsByClassName(cssClass('merger'))[0]! as HTMLElement;
+    if (!options.rearrangeAble) {
+      merger.style.left = '0';
+      merger.style.width = '100%';
+    }
+    mergeDropAble(merger, col, ctx);
   }
   if (options.rearrangeAble) {
-    rearrangeDropAble(node.getElementsByClassName(cssClass('handle'))[0]! as HTMLElement, col, ctx);
+    const placer = node.getElementsByClassName(cssClass('placer'))[0]! as HTMLElement;
+    const nextSibling = col.nextSibling();
+    const widthFactor = !options.rearrangeAble ? 0.5 : 0.2;
+    if (!options.rearrangeAble) {
+      placer.style.left = '50%';
+    }
+    placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() / 2 ?? 50)}px`;
+    rearrangeDropAble(placer, col, ctx);
   }
   if (options.resizeable) {
     dragWidth(col, node);
@@ -107,11 +136,11 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 /** @internal */
 export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
   const label = node.getElementsByClassName(cssClass('label'))[0]! as HTMLElement;
-  setTextOrEmpty(label, col.getWidth() < minWidth, col.label);
+  setTextOrEmpty(label, col.getWidth() < minWidth, col.label, col.desc.labelAsHTML);
   const summary = col.getMetaData().summary;
   const subLabel = node.getElementsByClassName(cssClass('sublabel'))[0] as HTMLElement;
   if (subLabel) {
-    setTextOrEmpty(subLabel, col.getWidth() < minWidth || !summary, summary);
+    setTextOrEmpty(subLabel, col.getWidth() < minWidth || !summary, summary, col.desc.summaryAsHTML);
   }
 
   let title = col.label;
@@ -129,6 +158,14 @@ export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABE
   updateIconState(node, col);
 
   updateMoreDialogIcons(node, col);
+
+  // update width for width of next sibling
+  const placer = node.getElementsByClassName(cssClass('placer'))[0]! as HTMLElement;
+  if (placer) {
+    const nextSibling = col.nextSibling();
+    const widthFactor = node.getElementsByClassName(cssClass('merger')).length === 0 ? 0.5 : 0.2;
+    placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() * widthFactor ?? 50) + 5}px`;
+  }
 }
 
 function updateMoreDialogIcons(node: HTMLElement, col: Column) {
@@ -346,6 +383,10 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
   dragAble(
     node,
     () => {
+      const header = node.closest(`.${engineCssClass('header')}`);
+      if (header) {
+        header.classList.add(cssClass('dragging-column'));
+      }
       const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
       const data: any = {
         'text/plain': column.label,
@@ -376,6 +417,12 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
         effectAllowed: 'copyMove',
         data,
       };
+    },
+    () => {
+      const header = node.closest(`.${engineCssClass('header')}`);
+      if (header) {
+        header.classList.remove(cssClass('dragging-column'));
+      }
     },
     true
   );
@@ -420,91 +467,6 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
       }
       col.removeMe();
       return column.insertAfterMe(col) != null;
-    },
-    null,
-    true
-  );
-}
-
-/**
- * dropper for allowing to change the order by dropping it at a certain position
- * @internal
- */
-export function resortDropAble(
-  node: HTMLElement,
-  column: Column,
-  ctx: IRankingHeaderContext,
-  where: 'before' | 'after',
-  autoGroup: boolean
-) {
-  dropAble(
-    node,
-    [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX],
-    (result) => {
-      let col: Column | null = null;
-      const data = result.data;
-      if (`${MIMETYPE_PREFIX}-ref` in data) {
-        const id = data[`${MIMETYPE_PREFIX}-ref`];
-        col = ctx.provider.find(id);
-        if (!col || col === column) {
-          return false;
-        }
-      } else {
-        const desc = JSON.parse(data[MIMETYPE_PREFIX]);
-        col = ctx.provider.create(ctx.provider.fromDescRef(desc));
-        if (col) {
-          column.findMyRanker()!.push(col);
-        }
-      }
-      const ranking = column.findMyRanker()!;
-      if (!col || col === column || !ranking) {
-        return false;
-      }
-
-      const criteria = ranking.getSortCriteria();
-      const groups = ranking.getGroupCriteria();
-
-      const removeFromSort = (col: Column) => {
-        const existing = criteria.findIndex((d) => d.col === col);
-        if (existing >= 0) {
-          // remove existing column but keep asc state
-          return criteria.splice(existing, 1)[0].asc;
-        }
-        return false;
-      };
-
-      // remove the one to add
-      const asc = removeFromSort(col);
-
-      const groupIndex = groups.indexOf(column);
-      const index = criteria.findIndex((d) => d.col === column);
-
-      if (autoGroup && groupIndex >= 0) {
-        // before the grouping, so either un group or regroup
-        removeFromSort(column);
-        if (isCategoricalColumn(col)) {
-          // we can group by it
-          groups.splice(groupIndex + (where === 'after' ? 1 : 0), 0, col);
-        } else {
-          // remove all before and shift to sorting + sorting
-          const removed = groups.splice(0, groups.length - groupIndex);
-          criteria.unshift(...removed.reverse().map((d) => ({ asc: false, col: d }))); // now a first sorting criteria
-          criteria.unshift({ asc, col });
-        }
-      } else if (index < 0) {
-        criteria.push({ asc, col });
-      } else if (index === 0 && autoGroup && isCategoricalColumn(col)) {
-        // make group criteria
-        groups.push(col);
-      } else {
-        criteria.splice(index + (where === 'after' ? 1 : 0), 0, { asc, col });
-      }
-
-      if (!equalArrays(groups, ranking.getGroupCriteria())) {
-        ranking.setGroupCriteria(groups);
-      }
-      ranking.setSortCriteria(criteria);
-      return true;
     },
     null,
     true
@@ -565,53 +527,17 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
   };
 
   const all = [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX];
-  const numberish = [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`];
+  const numberlike = [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`];
   const categorical = [`${MIMETYPE_PREFIX}-categorical-ref`, `${MIMETYPE_PREFIX}-categorical`];
-  const boxplot = [`${MIMETYPE_PREFIX}-boxplot-ref`, `${MIMETYPE_PREFIX}-boxplot`];
 
-  node.dataset.draginfo = '+';
-  if (column instanceof ImpositionCompositeColumn) {
-    return dropAble(
-      node,
-      categorical.concat(numberish),
-      pushChild,
-      (e) => {
-        if (hasDnDType(e, ...categorical)) {
-          node.dataset.draginfo = 'Color by';
-          return;
-        }
-        if (hasDnDType(e, ...numberish)) {
-          node.dataset.draginfo = 'Wrap';
-        }
-      },
-      false,
-      () => column.children.length < 2
-    );
-  }
-  if (column instanceof ImpositionBoxPlotColumn) {
-    return dropAble(
-      node,
-      categorical.concat(boxplot),
-      pushChild,
-      (e) => {
-        if (hasDnDType(e, ...categorical)) {
-          node.dataset.draginfo = 'Color by';
-          return;
-        }
-        if (hasDnDType(e, ...boxplot)) {
-          node.dataset.draginfo = 'Wrap';
-        }
-      },
-      false,
-      () => column.children.length < 2
-    );
-  }
-  if (isMultiLevelColumn(column)) {
+  if (isMultiLevelColumn(column) || column instanceof CompositeColumn) {
     // stack column or nested
-    return dropAble(node, (column as IMultiLevelColumn).canJustAddNumbers ? numberish : all, pushChild);
-  }
-  if (column instanceof CompositeColumn) {
-    return dropAble(node, (column as CompositeColumn).canJustAddNumbers ? numberish : all, pushChild);
+    node.dataset.draginfo = '+';
+    return dropAble(
+      node,
+      (column as IMultiLevelColumn | CompositeColumn).canJustAddNumbers ? numberlike : all,
+      pushChild
+    );
   }
   if (isBoxPlotColumn(column)) {
     node.dataset.draginfo = 'Color by';
@@ -621,8 +547,8 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
     node.dataset.draginfo = 'Merge';
     return dropAble(
       node,
-      categorical.concat(numberish),
-      (result: IDropResult, evt: DragEvent) => {
+      categorical.concat(numberlike),
+      (result: IDropResult) => {
         const col: Column | null = resolveDrop(result);
         if (col == null) {
           return false;
@@ -631,7 +557,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
           return mergeImpl(col, createImpositionDesc());
         }
         if (isNumberColumn(col)) {
-          return mergeImpl(col, evt.shiftKey ? createReduceDesc() : createStackDesc());
+          return mergeImpl(col, createStackDesc());
         }
         return false;
       },
@@ -640,12 +566,10 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
           node.dataset.draginfo = 'Color by';
           return;
         }
-        if (hasDnDType(e, ...numberish)) {
-          node.dataset.draginfo = e.shiftKey ? 'Min/Max' : 'Sum';
+        if (hasDnDType(e, ...numberlike)) {
+          node.dataset.draginfo = 'Sum';
         }
       }
     );
   }
-  node.dataset.draginfo = 'Group';
-  return dropAble(node, all, mergeWith(createNestedDesc()));
 }
