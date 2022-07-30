@@ -4,15 +4,11 @@
     <meta charset="UTF-8" />
     <title>LineUp Builder Test</title>
 
-    <link href="https://unpkg.com/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link href="./LineUpJS.css" rel="stylesheet" />
     <link href="./demo.css" rel="stylesheet" />
   </head>
-
   <body>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="./LineUpJS.js"></script>
-    <div></div>
 
     <script>
       window.onload = function () {
@@ -20,20 +16,19 @@
         const cats = ['c1', 'c2', 'c3'];
         for (let i = 0; i < 100; ++i) {
           arr.push({
-            'a adf asdf afadf öadfja sdf': Math.random() * 10,
             d: 'Row ' + i,
+            a: Math.random() * 10,
             cat: cats[Math.floor(Math.random() * 3)],
-            cat2: cats[Math.floor(Math.random() * 3)],
           });
         }
         const builder = LineUpJS.builder(arr);
 
         // manually define columns
-        const lineup = builder
-          .labelRotation(45)
-          .deriveColumns()
-          .defaultRanking()
-          .buildTaggle(document.querySelector('div'));
+        builder.deriveColumns().column(LineUpJS.buildStringColumn('d').htmlLabel('<strong>STRONG</strong>'));
+
+        builder.defaultRanking();
+
+        const lineup = builder.build(document.body);
       };
     </script>
   </body>

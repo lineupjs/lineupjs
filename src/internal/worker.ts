@@ -170,7 +170,7 @@ export class WorkerTaskScheduler {
     type: 'numberStats',
     args: Partial<INumberStatsMessageRequest>,
     refData: string,
-    data: Float32Array,
+    data: Float64Array,
     refIndices?: string,
     indices?: IndicesArray
   ): Promise<IStatistics>;
@@ -178,7 +178,7 @@ export class WorkerTaskScheduler {
     type: 'boxplotStats',
     args: Partial<IBoxPlotStatsMessageRequest>,
     refData: string,
-    data: Float32Array,
+    data: Float64Array,
     refIndices?: string,
     indices?: IndicesArray
   ): Promise<IAdvancedBoxPlotData>;

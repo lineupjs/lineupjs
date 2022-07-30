@@ -75,16 +75,28 @@ export default class SidePanel {
           node.classList.toggle(cssClass('searchbox-summary-entry'), Boolean(summary));
           if (summary) {
             const label = node.ownerDocument.createElement('span');
-            label.textContent = w.desc.label;
+            if (w.desc.labelAsHTML) {
+              label.innerHTML = w.desc.label;
+            } else {
+              label.textContent = w.desc.label;
+            }
             node.appendChild(label);
             const desc = node.ownerDocument.createElement('span');
-            desc.textContent = summary;
+            if (w.desc.summaryAsHTML) {
+              desc.innerHTML = summary;
+            } else {
+              desc.textContent = summary;
+            }
             node.appendChild(desc);
             return undefined;
           }
         }
       }
-      setText(node, item.text);
+      if (isWrapper(item) && item.desc.labelAsHTML) {
+        node.innerHTML = item.text;
+      } else {
+        setText(node, item.text);
+      }
     },
     collapseable: true,
   };

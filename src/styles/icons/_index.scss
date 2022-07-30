@@ -2,6 +2,7 @@
 
 $fa-font-path: '~@fortawesome/fontawesome-free/webfonts' !default;
 @import '~@fortawesome/fontawesome-free/scss/mixins';
+@import '~@fortawesome/fontawesome-free/scss/functions';
 @import '~@fortawesome/fontawesome-free/scss/variables';
 
 $lu_icon_check_square_o: fa-content($fa-var-check-square) !global;
@@ -53,8 +54,8 @@ $lu_icon_window_restore: fa-content($fa-var-window-restore) !global;
 @mixin lu_icons() {
   @include fa-icon();
 
-  font-family: 'Font Awesome 5 Free', serif;
-  font-weight: 900;
+  font-family: $fa-style-family, serif;
+  font-weight: $fa-style;
 }
 
 @mixin lu_brand_icons() {
