@@ -55,7 +55,7 @@ export default class EngineRenderer extends AEventDispatcher {
 
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
-  readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
+  readonly idPrefix;
 
   private enabledHighlightListening = false;
   readonly selectionIndicator: SelectionIndicator;
@@ -63,6 +63,11 @@ export default class EngineRenderer extends AEventDispatcher {
   constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
+
+    this.idPrefix = this.options.instanceId
+      ? `lu-${this.options.instanceId}`
+      : `lu-${Math.random().toString(36).slice(-8).substring(0, 3)}`;
+
     this.node = parent.ownerDocument!.createElement('main');
     this.node.id = this.idPrefix;
     // FIXME inline
@@ -132,6 +137,13 @@ export default class EngineRenderer extends AEventDispatcher {
 
     {
       // helper object for better resizing experience
+      const footer = this.table.node.querySelector(`.${engineCssClass('body')} .${engineCssClass('footer')}`)!;
+      const copy = footer.cloneNode(true) as HTMLElement;
+      copy.classList.add(cssClass('resize-helper'));
+      footer!.insertAdjacentElement('afterend', copy);
+    }
+    {
+      // selection indicator
       const body = this.table.node.querySelector<HTMLElement>(`.${engineCssClass('body')}`)!;
       this.selectionIndicator = new SelectionIndicator(body);
       parent.insertBefore(this.selectionIndicator.node, this.node);

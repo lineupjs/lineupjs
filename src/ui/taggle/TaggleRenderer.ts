@@ -188,6 +188,10 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.update();
   }
 
+  getRule(): IRule | null {
+    return this.rule;
+  }
+
   destroy() {
     this.renderer.destroy();
     window.removeEventListener('resize', this.resizeListener);

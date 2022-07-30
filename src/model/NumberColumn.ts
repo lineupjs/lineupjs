@@ -25,7 +25,7 @@ import {
   IColorMappingFunction,
   IMapAbleColumn,
 } from './INumberColumn';
-import { restoreMapping, ScaleMappingFunction } from './MappingFunction';
+import { restoreMapping } from './MappingFunction';
 import { isMissingValue, isUnknown, missingGroup } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
@@ -191,10 +191,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
-    if (dump.map) {
-      this.mapping = factory.mappingFunction(dump.map);
-    } else if (dump.domain) {
-      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    if (dump.map || dump.domain) {
+      this.mapping = restoreMapping(dump, factory);
     }
     if (dump.colorMapping) {
       this.colorMapping = factory.colorMappingFunction(dump.colorMapping);

@@ -722,6 +722,14 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.move(col, i + 1);
   }
 
+  moveBefore(col: Column, reference: Column) {
+    const i = this.columns.indexOf(reference);
+    if (i < 0) {
+      return null;
+    }
+    return this.move(col, i);
+  }
+
   get fqpath() {
     return '';
   }
@@ -750,6 +758,14 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return null;
     }
     return this.insert(col, i + 1);
+  }
+
+  insertBefore(col: Column, ref: Column) {
+    const i = this.columns.indexOf(ref);
+    if (i < 0) {
+      return null;
+    }
+    return this.insert(col, i);
   }
 
   push(col: Column) {

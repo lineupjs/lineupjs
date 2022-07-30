@@ -246,6 +246,22 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this.move(col, i + 1);
   }
 
+  insertBefore(col: Column, ref: Column) {
+    const i = this.indexOf(ref);
+    if (i < 0) {
+      return null;
+    }
+    return this.insert(col, i);
+  }
+
+  moveBefore(col: Column, ref: Column) {
+    const i = this.indexOf(ref);
+    if (i < 0) {
+      return null;
+    }
+    return this.move(col, i);
+  }
+
   remove(col: Column) {
     const i = this._children.indexOf(col);
     if (i < 0) {
