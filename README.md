@@ -29,6 +29,7 @@ npm install lineupjs
 ```
 
 ```html
+<link href="https://unpkg.com/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet" />
 <link href="https://unpkg.com/lineupjs/build/LineUpJS.css" rel="stylesheet" />
 <script src="https://unpkg.com/lineupjs/build/LineUpJS.js"></script>
 ```

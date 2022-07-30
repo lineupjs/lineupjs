@@ -10,31 +10,31 @@
   }
 
   &[data-type-cat='composite']::before {
-    @include lu_custom_icon($lu_icon_type_composite, composite);
+    @include lu_custom_icon(composite);
   }
 
   &[data-type-cat='map']::before {
-    @include lu_custom_icon($lu_icon_type_map, map);
+    @include lu_custom_icon(map);
   }
 
   &[data-type-cat='string']::before {
-    @include lu_custom_icon($lu_icon_type_string, string);
+    @include lu_custom_icon(string);
   }
 
   &[data-type-cat='categorical']::before {
-    @include lu_custom_icon($lu_icon_type_categorical, categorical);
+    @include lu_custom_icon(categorical);
   }
 
   &[data-type-cat='number']::before {
-    @include lu_custom_icon($lu_icon_type_numerical, numerical);
+    @include lu_custom_icon(numerical);
   }
 
   &[data-type-cat='date']::before {
-    @include lu_custom_icon($lu_icon_type_date, date);
+    @include lu_custom_icon(date);
   }
 
   &[data-type-cat='array']::before {
-    @include lu_custom_icon($lu_icon_type_matrix, matrix);
+    @include lu_custom_icon(matrix);
   }
 }
 

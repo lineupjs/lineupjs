@@ -63,7 +63,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     if (!this.isBrowserSupported) {
       this.node.classList.add(cssClass('unsupported-browser'));
       this.node.innerHTML = `<span>${error}</span>
-      <div class="${cssClass('unsupported-browser')}">
+      <div class="${cssClass('unsupported-browser-hint')}">
         <a href="https://www.mozilla.org/en-US/firefox/" rel="noopener" target="_blank" data-browser="firefox" data-version="${SUPPORTED_FIREFOX_VERSION}"></a>
         <a href="https://www.google.com/chrome/index.html" rel="noopener" target="_blank" data-browser="chrome" data-version="${SUPPORTED_CHROME_VERSION}" title="best support"></a>
         <a href="https://www.microsoft.com/en-us/windows/microsoft-edge" rel="noopener" target="_blank" data-browser="edge" data-version="${SUPPORTED_EDGE_VERSION}"></a>

@@ -19,7 +19,7 @@
   color: black;
 
   &::before {
-    @include lu_icons();
+    @include lu_brand_icons();
 
     font-size: 200%;
     transition: font-size 0.25s ease;

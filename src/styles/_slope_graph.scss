@@ -70,11 +70,11 @@ section.#{$lu-css_prefix}-slopegraph-header {
     }
 
     &[title='Item']::before {
-      @include lu_custom_icon($lu_icon_slope_item, slope_item);
+      @include lu_custom_icon(slope_item);
     }
 
     &[title='Band']::before {
-      @include lu_custom_icon($lu_icon_slope_band, slope_band);
+      @include lu_custom_icon(slope_band);
     }
   }
 }

@@ -1,122 +1,96 @@
 @import '../vars';
+
+$fa-font-path: '~@fortawesome/fontawesome-free/webfonts' !default;
+// there is no variable
+$fab-style-family: 'Font Awesome 6 Brands' !default;
+$fab-style: 400 !default;
+
 @import '~@fortawesome/fontawesome-free/scss/mixins';
-@import './font_awesome';
+@import '~@fortawesome/fontawesome-free/scss/functions';
+@import '~@fortawesome/fontawesome-free/scss/variables';
 
-$lu_icon_check_square_o: '\f14a';
-$lu_icon_caret_down: '\f0d7';
-$lu_icon_caret_right: '\f0da';
-$lu_icon_exclamation_triangle: '\f071';
-$lu_icon_check: '\f00c';
-$lu_icon_expand: '\f065';
-$lu_icon_compress: '\f066';
-$lu_icon_search: '\f002';
-$lu_icon_scissors: '\f0c4';
-$lu_icon_gears: '\f085';
-$lu_icon_pencil_square_o: '\f044';
-$lu_icon_undo: '\f0e2';
-$lu_icon_times: '\f00d';
+$lu_icon_check_square_o: fa-content($fa-var-check-square);
+$lu_icon_caret_down: fa-content($fa-var-caret-down);
+$lu_icon_caret_right: fa-content($fa-var-caret-right);
+$lu_icon_exclamation_triangle: fa-content($fa-var-exclamation-triangle);
+$lu_icon_check: fa-content($fa-var-check);
+$lu_icon_expand: fa-content($fa-var-expand);
+$lu_icon_compress: fa-content($fa-var-compress);
+$lu_icon_search: fa-content($fa-var-search);
+$lu_icon_scissors: fa-content($fa-var-cut);
+$lu_icon_gears: fa-content($fa-var-cogs);
+$lu_icon_pencil_square_o: fa-content($fa-var-edit);
+$lu_icon_undo: fa-content($fa-var-undo);
+$lu_icon_times: fa-content($fa-var-times);
 
-// custom
-$lu_icon_type_ordinal: '\e80e';
-$lu_icon_type_matrix: '\e80b';
-$lu_icon_type_string: '\e80d';
-$lu_icon_type_categorical: '\e810';
-$lu_icon_type_numerical: '\e80f';
-$lu_icon_type_date: '\e812';
-$lu_icon_type_composite: '\e813';
-$lu_icon_type_map: '\e811';
-$lu_icon_slope_item: '\e815';
-$lu_icon_slope_band: '\e814';
-$lu_icon_logo: '\e816';
+$lu_icon_down_open: fa-content($fa-var-angle-down);
+$lu_icon_up_open: fa-content($fa-var-angle-up);
 
-$lu_icon_left_dir: '\f053';
-$lu_icon_up_dir: '\e819';
-$lu_icon_down_open: '\f078';
-$lu_icon_left_open: '\e81b';
-$lu_icon_right_open: '\f053';
-$lu_icon_up_open: '\f077';
-$lu_icon_lock: '\f023';
-$lu_icon_lock_open: '\f3c1';
-$lu_icon_star: '\f005';
-$lu_icon_star_empty: '\e801';
-$lu_icon_star_half: '\f089';
-$lu_icon_star_half_alt: '\f5c0';
-$lu_icon_lock_open_alt: '\f13e';
-
-$lu_icon_external_link: '\f35d';
-$lu_icon_square_o: '\f0c8';
-$lu_icon_tasks: '\f0ae';
-$lu_icon_filter: '\f0b0';
-$lu_icon_bars: '\f0c9';
-$lu_icon_columns: '\f0db';
-$lu_icon_sort: '\f0dc';
-$lu_icon_sort_desc: '\f0dd';
-$lu_icon_sort_asc: '\f0de';
-$lu_icon_sitemap: '\f0e8';
-$lu_icon_exchange: '\f362';
-$lu_icon_code_fork: '\f126';
-$lu_icon_ellipsis_h: '\f141';
-$lu_icon_toggle_right: '\f152';
-$lu_icon_sort_alpha_asc: '\f15d';
-$lu_icon_sort_alpha_desc: '\f15e';
-$lu_icon_sort_amount_asc: '\f160';
-$lu_icon_sort_amount_desc: '\f161';
-$lu_icon_sort_numeric_asc: '\f162';
-$lu_icon_sort_numeric_desc: '\f163';
-$lu_icon_toggle_left: '\f191';
-$lu_icon_sliders: '\f1de';
-$lu_icon_trash: '\f2ed';
-$lu_icon_brush: '\f1fc';
-$lu_icon_chrome: '\f268';
-$lu_icon_firefox: '\f269';
-$lu_icon_edge: '\f282';
-$lu_icon_window_restore: '\f2d2';
+$lu_icon_external_link: fa-content($fa-var-external-link-alt);
+$lu_icon_square_o: fa-content($fa-var-square);
+$lu_icon_tasks: fa-content($fa-var-tasks);
+$lu_icon_filter: fa-content($fa-var-filter);
+$lu_icon_bars: fa-content($fa-var-bars);
+$lu_icon_columns: fa-content($fa-var-columns);
+$lu_icon_sort: fa-content($fa-var-sort);
+$lu_icon_sort_desc: fa-content($fa-var-sort-up);
+$lu_icon_sort_asc: fa-content($fa-var-sort-down);
+$lu_icon_sitemap: fa-content($fa-var-sitemap);
+$lu_icon_exchange: fa-content($fa-var-exchange-alt);
+$lu_icon_code_fork: fa-content($fa-var-code-branch);
+$lu_icon_ellipsis_h: fa-content($fa-var-ellipsis-h);
+$lu_icon_sort_alpha_asc: fa-content($fa-var-sort-alpha-down);
+$lu_icon_sort_alpha_desc: fa-content($fa-var-sort-alpha-up);
+$lu_icon_sort_amount_asc: fa-content($fa-var-sort-amount-down-alt);
+$lu_icon_sort_amount_desc: fa-content($fa-var-sort-amount-up-alt);
+$lu_icon_sort_numeric_asc: fa-content($fa-var-sort-numeric-down);
+$lu_icon_sort_numeric_desc: fa-content($fa-var-sort-numeric-up);
+$lu_icon_toggle_left: fa-content($fa-var-caret-square-left);
+$lu_icon_toggle_right: fa-content($fa-var-caret-square-right);
+$lu_icon_sliders: fa-content($fa-var-sliders-h);
+$lu_icon_trash: fa-content($fa-var-trash);
+$lu_icon_brush: fa-content($fa-var-paint-brush);
+$lu_icon_chrome: fa-content($fa-var-chrome);
+$lu_icon_firefox: fa-content($fa-var-firefox);
+$lu_icon_edge: fa-content($fa-var-edge);
+$lu_icon_window_restore: fa-content($fa-var-window-restore);
 
 @mixin lu_icons() {
-  @if $lu_use_font_awesome == true {
-    @include fa-icon();
+  @include fa-icon();
 
-    font-family: $fa-style-family, serif;
-    font-weight: $fa-style;
-  } @else {
-    display: inline-block;
-    font: normal normal normal 14px/1 lu-font, serif; // shortening font declaration
-    font-size: inherit; // can't have font-size inherit on line above, so need to override
-    text-rendering: auto; // optimizelegibility throws things off #1094
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  font-family: $fa-style-family, serif;
+  font-weight: $fa-style;
+}
+
+@mixin lu_brand_icons() {
+  @include fa-icon();
+
+  font-family: $fab-style-family, serif;
+  font-weight: $fab-style;
 }
 
 @mixin lu_icons_o() {
   @include lu_icons();
-  @if $lu_use_font_awesome == true {
-    font-weight: 400;
-  }
+
+  font-weight: 400;
+}
+
+@mixin lu_icons_brands() {
+  @include lu_icons();
+
+  font-weight: 400;
 }
 
 @mixin lu_custom_icons() {
-  @if $lu_use_font_awesome == true {
-    content: '\2003';
-    display: inline;
-    width: 1em;
-    background-position: left center;
-    background-repeat: no-repeat;
-    background-size: 75%;
-    filter: contrast(0);
-  } @else {
-    @include lu_icons();
-  }
+  content: '\2003';
+  display: inline;
+  width: 1em;
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 75%;
+  filter: contrast(0);
 }
 
-@mixin lu_custom_icon($icon, $name) {
-  @if $lu_use_font_awesome == true {
-    background-image: url('#{$lu_assets}/icon_#{$name}.svg');
-  } @else {
-    content: $icon;
-  }
-}
-
-@if $lu_use_font_awesome == true {
-  @include lu_fontawesome_var_icons();
+@mixin lu_custom_icon($name) {
+  background-image: url('#{$lu_assets}/icon_#{$name}.svg');
 }
