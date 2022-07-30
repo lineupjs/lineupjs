@@ -296,7 +296,7 @@ function createFilterContext(
         min: minValue === domain[0] ? Number.NEGATIVE_INFINITY : minValue,
         max: maxValue === domain[1] ? Number.POSITIVE_INFINITY : maxValue,
       }),
-    edit: (value, attachment) => {
+    edit: (value, attachment, type, otherValue) => {
       return new Promise((resolve) => {
         const dialogCtx = {
           attachment,
@@ -307,8 +307,8 @@ function createFilterContext(
         };
         const dialog = new InputNumberDialog(dialogCtx, resolve, {
           value,
-          min: domain[0],
-          max: domain[1],
+          min: type === 'max' && !Number.isNaN(otherValue) ? Math.min(domain[0], otherValue) : domain[0],
+          max: type === 'min' && !Number.isNaN(otherValue) ? Math.max(domain[1], otherValue) : domain[1],
         });
         dialog.open();
       });
