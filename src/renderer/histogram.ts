@@ -109,7 +109,7 @@ export interface IFilterContext<T> {
   formatRaw(v: T): string;
   parseRaw(v: string): T;
   setFilter(filterMissing: boolean, min: T, max: T): void;
-  edit(value: T, attachment: HTMLElement, type: 'min' | 'max'): Promise<T>;
+  edit(value: T, attachment: HTMLElement, type: 'min' | 'max', otherValue: T): Promise<T>;
   domain: [T, T];
 }
 
@@ -152,8 +152,9 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     evt.stopPropagation();
 
     const value = context.parseRaw(min.dataset.raw!);
+    const maxValue = context.parseRaw(max.dataset.raw!);
 
-    context.edit(value, min, 'min').then((newValue) => {
+    context.edit(value, min, 'min', maxValue).then((newValue) => {
       minHint.style.width = `${context.percent(newValue)}%`;
       min.dataset.value = context.format(newValue);
       min.dataset.raw = context.formatRaw(newValue);
@@ -176,8 +177,9 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     evt.stopPropagation();
 
     const value = context.parseRaw(max.dataset.raw!);
+    const minValue = context.parseRaw(min.dataset.raw!);
 
-    context.edit(value, max, 'max').then((newValue) => {
+    context.edit(value, max, 'max', minValue).then((newValue) => {
       maxHint.style.width = `${100 - context.percent(newValue)}%`;
       max.dataset.value = context.format(newValue);
       max.dataset.raw = context.formatRaw(newValue);
@@ -202,21 +204,28 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     filter: (evt) => evt.button === 0 && !evt.shiftKey && !evt.ctrlKey,
     onStart: (handle) => handle.classList.add(cssClass('hist-dragging')),
     onDrag: (handle, x) => {
+      const isMin = (handle as HTMLElement).classList.contains(cssClass('histogram-min'));
       const total = node.clientWidth;
       const px = Math.max(0, Math.min(x, total));
-      const percent = Math.round((100 * px) / total);
-      (handle as HTMLElement).dataset.value = context.format(context.unpercent(percent));
-      (handle as HTMLElement).dataset.raw = context.formatRaw(context.unpercent(percent));
+      let percent = Math.round((100 * px) / total);
+      let rawValue = context.unpercent(percent);
+      const otherValue = context.parseRaw((isMin ? max : min).dataset.raw!);
+      if ((isMin && rawValue > otherValue) || (!isMin && rawValue < otherValue)) {
+        rawValue = otherValue;
+        percent = context.percent(rawValue);
+      }
+      (handle as HTMLElement).dataset.value = context.format(rawValue);
+      (handle as HTMLElement).dataset.raw = context.formatRaw(rawValue);
 
-      if ((handle as HTMLElement).classList.contains(cssClass('histogram-min'))) {
+      if (isMin) {
         handle.style.left = `${percent}%`;
         handle.classList.toggle(cssClass('swap-hint'), percent > 15);
         minHint.style.width = `${percent}%`;
-        return;
+      } else {
+        handle.style.right = `${100 - percent}%`;
+        handle.classList.toggle(cssClass('swap-hint'), percent < 85);
+        maxHint.style.width = `${100 - percent}%`;
       }
-      handle.style.right = `${100 - percent}%`;
-      handle.classList.toggle(cssClass('swap-hint'), percent < 85);
-      maxHint.style.width = `${100 - percent}%`;
     },
     onEnd: (handle) => {
       handle.classList.remove(cssClass('hist-dragging'));
