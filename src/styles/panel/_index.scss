@@ -23,7 +23,8 @@
   }
 }
 
-.#{$lu_css_prefix}-stats-reset {
+.#{$lu_css_prefix}-stats-reset,
+.#{$lu_css_prefix}-stats-clear-selection {
   padding: 2px;
   font-style: normal;
   display: unset;

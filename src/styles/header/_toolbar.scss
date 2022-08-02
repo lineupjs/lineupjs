@@ -134,6 +134,10 @@
   content: $lu_icon_toggle_left;
 }
 
+.#{$lu_css_prefix}-action-clear-selection::before {
+  content: $lu_icon_times;
+}
+
 .#{$lu_css_prefix}-action-invert-selection::before {
   content: $lu_icon_check_square_o;
 }
