@@ -19,16 +19,13 @@ import ImageCellRenderer from './ImageCellRenderer';
 import { ERenderMode, ICellRendererFactory } from './interfaces';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import LinkCellRenderer from './LinkCellRenderer';
-import LinkMapCellRenderer from './LinkMapCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
-import MapBarCellRenderer from './MapBarCellRenderer';
 import MultiLevelCellRenderer from './MultiLevelCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
 import SelectionRenderer from './SelectionRenderer';
 import SetCellRenderer from './SetCellRenderer';
 import SparklineCellRenderer from './SparklineCellRenderer';
 import StringCellRenderer from './StringCellRenderer';
-import TableCellRenderer from './TableCellRenderer';
 import UpSetCellRenderer from './UpSetCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 import DateCellRenderer from './DateCellRenderer';
@@ -63,11 +60,9 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   image: new ImageCellRenderer(),
   interleaving: new InterleavingCellRenderer(),
   link: new LinkCellRenderer(),
-  linkMap: new LinkMapCellRenderer(),
   loading: new LoadingCellRenderer(),
   nested: new MultiLevelCellRenderer(false),
   number: new BarCellRenderer(),
-  mapbars: new MapBarCellRenderer(),
   rank: new RankCellRenderer(),
   selection: new SelectionRenderer(),
   set: new SetCellRenderer(),
@@ -75,7 +70,6 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   stack: new MultiLevelCellRenderer(),
   string: new StringCellRenderer(),
   stringhist: new StringHistogramCellRenderer(),
-  table: new TableCellRenderer(),
   upset: new UpSetCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
   violin: new ViolinPlotCellRenderer(),

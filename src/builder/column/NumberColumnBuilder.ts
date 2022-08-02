@@ -79,17 +79,6 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
   }
 
   /**
-   * @inheritDoc
-   * @param {EAdvancedSortMethod} sort sorting criteria when sorting by this column
-   */
-  asMap(sort?: EAdvancedSortMethod) {
-    if (sort) {
-      (this.desc as any).sort = sort;
-    }
-    return super.asMap();
-  }
-
-  /**
    * converts type to a boxplot column type
    * @param {ESortMethod} sort sorting criteria when sorting by this column
    */

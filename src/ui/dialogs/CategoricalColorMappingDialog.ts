@@ -1,10 +1,4 @@
-import type {
-  ICategoricalColumn,
-  CategoricalsColumn,
-  CategoricalMapColumn,
-  ICategory,
-  ICategoricalColorMappingFunction,
-} from '../../model';
+import type { ICategoricalColumn, CategoricalsColumn, ICategory, ICategoricalColorMappingFunction } from '../../model';
 import ADialog, { IDialogContext } from './ADialog';
 import { uniqueId } from './utils';
 import { cssClass } from '../../styles';
@@ -39,10 +33,7 @@ const sets: { [key: string]: ReadonlyArray<string> } = {
 export default class CategoricalColorMappingDialog extends ADialog {
   private readonly before: ICategoricalColorMappingFunction;
 
-  constructor(
-    private readonly column: ICategoricalColumn | CategoricalsColumn | CategoricalMapColumn,
-    dialog: IDialogContext
-  ) {
+  constructor(private readonly column: ICategoricalColumn | CategoricalsColumn, dialog: IDialogContext) {
     super(dialog, {
       livePreview: 'colorMapping',
     });

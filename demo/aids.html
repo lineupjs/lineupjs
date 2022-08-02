@@ -3,15 +3,16 @@
   <head lang="en">
     <meta charset="UTF-8" />
     <title>LineUp AIDS Test</title>
+    <link href="https://unpkg.com/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link href="./LineUpJS.css" rel="stylesheet" />
     <link href="./demo.css" rel="stylesheet" />
   </head>
   <body>
-    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="./LineUpJS.js"></script>
     <script>
       window.onload = function () {
-        d3.csv('./aids.csv', function (data) {
+        d3.csv('./aids.csv').then((data) => {
           const desc = [
             { column: 'AIDS_Countries', type: 'string' },
             { column: 'Sex before 15 (15-24, %, 2015)', type: 'number', domain: [0.5, 29.3] },
