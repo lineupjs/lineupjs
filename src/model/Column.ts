@@ -20,7 +20,7 @@ import type Ranking from './Ranking';
  * default color that should be used
  * @type {string}
  */
-export const DEFAULT_COLOR = '#C1C1C1';
+export const DEFAULT_COLOR = '#a0a0a0';
 
 /**
  * emitted when the width property changes
