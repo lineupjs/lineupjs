@@ -293,6 +293,7 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
     featureLevel: 'basic',
   }),
   filterSelection: uiDialog('Filter …', SelectionFilterDialog, (ctx) => [ctx], {
+    order: 8,
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
@@ -357,6 +358,17 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
     },
     { featureCategory: 'model', featureLevel: 'advanced' }
   ),
+  clearSelection: ui(
+    'Clear Selection',
+    (_col, _evt, ctx, level) => {
+      ctx.dialogManager.removeAboveLevel(level - 1); // close itself
+      const s = ctx.provider.getSelection();
+      if (s.length > 0) {
+        ctx.provider.setSelection([]);
+      }
+    },
+    { featureCategory: 'model', featureLevel: 'advanced', order: 11 }
+  ),
   invertSelection: ui(
     'Invert Selection',
     (col, _evt, ctx, level) => {
@@ -371,7 +383,7 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
       const others = order.filter((d) => !ss.has(d));
       ctx.provider.setSelection(others);
     },
-    { featureCategory: 'model', featureLevel: 'advanced' }
+    { featureCategory: 'model', featureLevel: 'advanced', order: 10 }
   ),
 };
 
