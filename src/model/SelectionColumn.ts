@@ -61,7 +61,7 @@ export declare function filterChanged_SEC(previous: Set<number> | null, current:
  * a checkbox column for selections
  */
 @SupportType()
-@toolbar('sort', 'sortBy', 'group', 'groupBy', 'invertSelection', 'filterSelection')
+@toolbar('sort', 'sortBy', 'group', 'groupBy', 'clearSelection', 'invertSelection', 'filterSelection')
 @Category('support')
 export default class SelectionColumn extends ValueColumn<boolean> {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';

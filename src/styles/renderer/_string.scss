@@ -15,6 +15,16 @@
   white-space: normal;
 }
 
+.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-string,
+.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-link,
+.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-date,
+.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-group {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .#{$lu_css_prefix}-annotate-input {
   position: absolute;
   left: 0;
