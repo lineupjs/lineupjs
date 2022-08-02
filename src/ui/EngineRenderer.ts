@@ -558,10 +558,12 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   destroy() {
+    if (this.node.parentElement) {
+      this.resizeObserver.unobserve(this.node.parentElement);
+    }
+    this.resizeObserver.disconnect();
     this.takeDownProvider();
     this.table.destroy();
-    this.resizeObserver.unobserve(this.node.parentElement);
-    this.resizeObserver.disconnect();
     this.node.remove();
   }
 }
