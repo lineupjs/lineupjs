@@ -26,6 +26,7 @@
     selected state extends hover state
     */
     @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
+    background-color: $lu_selected_color;
   }
 
   > canvas {
