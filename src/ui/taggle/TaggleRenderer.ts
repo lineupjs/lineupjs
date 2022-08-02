@@ -1,6 +1,6 @@
 import type { GridStyleManager } from 'lineupengine';
 import type { ILineUpOptions } from '../../config';
-import { debounce, AEventDispatcher, IEventListener, suffix } from '../../internal';
+import { AEventDispatcher, IEventListener, suffix } from '../../internal';
 import { IGroupData, IGroupItem, isGroup, Ranking, IGroup } from '../../model';
 import { DataProvider } from '../../provider';
 import type { IRenderContext } from '../../renderer';
@@ -48,7 +48,6 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   private rule: IRule | null = null;
   private levelOfDetail: ((rowIndex: number) => 'high' | 'low') | null = null;
-  private readonly resizeListener = () => debounce(() => this.update(), 100);
   private readonly renderer: EngineRenderer;
 
   private readonly options: Readonly<ITaggleOptions> = {
@@ -93,10 +92,6 @@ export default class TaggleRenderer extends AEventDispatcher {
         EngineRenderer.EVENT_DIALOG_CLOSED
       )
     );
-
-    window.addEventListener('resize', this.resizeListener, {
-      passive: true,
-    });
   }
 
   get style(): GridStyleManager {
@@ -194,7 +189,6 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   destroy() {
     this.renderer.destroy();
-    window.removeEventListener('resize', this.resizeListener);
   }
 
   update() {
