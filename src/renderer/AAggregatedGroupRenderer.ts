@@ -28,13 +28,8 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
     return {
       template: single.template,
       update: (node: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks
-          .groupRows(col, group, 'aggregated', (rows) => this.aggregatedIndex(rows, col))
-          .then((data) => {
-            if (typeof data !== 'symbol') {
-              single.update(node, data.row, data.index, group);
-            }
-          });
+        const data = context.tasks.groupRows(col, group, 'aggregated', (rows) => this.aggregatedIndex(rows, col));
+        single.update(node, data.row, data.index, group);
       },
     };
   }

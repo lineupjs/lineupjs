@@ -86,7 +86,7 @@
           { label: 'B', type: 'hierarchy', column: 'b', hierarchy: hierarchy },
         ];
 
-        const p = new LineUpJS.LocalDataProvider(data, desc);
+        const p = new LineUpJS.DataProvider(data, desc);
         p.deriveDefault();
 
         const lineup = new LineUpJS.LineUp(document.body, p);

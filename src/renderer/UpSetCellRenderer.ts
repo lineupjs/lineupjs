@@ -109,15 +109,11 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupCategoricalStats(col, group).then((r) => {
-          if (typeof r === 'symbol') {
-            return;
-          }
-          render(
-            n,
-            r.group.hist.map((d) => d.count > 0)
-          );
-        });
+        const r = context.tasks.groupCategoricalStats(col, group);
+        render(
+          n,
+          r.group.hist.map((d) => d.count > 0)
+        );
       },
     };
   }
@@ -127,15 +123,11 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement) => {
-        return context.tasks.summaryCategoricalStats(col).then((r) => {
-          if (typeof r === 'symbol') {
-            return;
-          }
-          render(
-            n,
-            r.summary.hist.map((d) => d.count > 0)
-          );
-        });
+        const r = context.tasks.summaryCategoricalStats(col);
+        render(
+          n,
+          r.summary.hist.map((d) => d.count > 0)
+        );
       },
     };
   }

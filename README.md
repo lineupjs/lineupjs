@@ -171,7 +171,7 @@ buildRanking(): RankingBuilder
 
 ### LineUp classes and manual creation
 
-The relevant classes for creating a LineUp instance manually are [LineUp](https://lineup.js.org/main/docs/classes/_ui_lineup_.lineup.html), [Taggle](https://lineup.js.org/main/docs/classes/_ui_taggle_taggle_.taggle.html), and [LocalDataProvider](https://lineup.js.org/main/docs/classes/_provider_localdataprovider_.localdataprovider.html). A `LocalDataProvider` is an sub class of `ADataProvider` implementing the data model management based on a local JavaScript array. `LineUp` and `Taggle` are the visual interfaces to the `LocalDataProvider`.
+The relevant classes for creating a LineUp instance manually are [LineUp](https://lineup.js.org/main/docs/classes/_ui_lineup_.lineup.html), [Taggle](https://lineup.js.org/main/docs/classes/_ui_taggle_taggle_.taggle.html), and [LocalDataProvider](https://lineup.js.org/main/docs/classes/_provider_dataprovider_.dataprovider.html). A `DataProvider` is implementing the data model management based on a local JavaScript array. `LineUp` and `Taggle` are the visual interfaces to the `DataProvider`.
 
 The classes can be instantiated either using the factory pattern or via their regular class constructors:
 
@@ -180,13 +180,13 @@ createLineUp(container: HTMLElement, data: ADataProvider, config?: Partial<ILine
 
 createTaggle(container: HTMLElement, data: ADataProvider, config?: Partial<ITaggleOptions>): Taggle
 
-createLocalDataProvider(data: any[], columns: IColumnDesc[], options?: Partial<ILocalDataProviderOptions>): LocalDataProvider
+createDataProvider(data: any[], columns: IColumnDesc[], options?: Partial<IDataProviderOptions>): DataProvider
 ```
 
 ```ts
 new LineUp(node: HTMLElement, data: DataProvider, options?: Partial<ILineUpOptions>): LineUp
 new Taggle(node: HTMLElement, data: DataProvider, options?: Partial<ITaggleOptions>): Taggle
-new LocalDataProvider(data: any[], columns?: IColumnDesc[], options?: Partial<ILocalDataProviderOptions & IDataProviderOptions>): LocalDataProvider
+new DataProvider(data: any[], columns?: IColumnDesc[], options?: Partial<IDataProviderOptions & IDataProviderOptions>): DataProvider
 ```
 
 Both `LineUp` and `Taggle` are sub classes of [ALineUp](https://lineup.js.org/main/docs/classes/_ui_alineup_.alineup.html). The most important functions of this class include:

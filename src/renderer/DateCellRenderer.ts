@@ -37,25 +37,15 @@ export default class DateCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
         const isGrouped = col.isGroupedBy() >= 0;
         if (isGrouped) {
-          return context.tasks
-            .groupRows(col, group, 'date', (rows) => chooseAggregatedDate(rows, col.getDateGrouper(), col))
-            .then((chosen) => {
-              if (typeof chosen === 'symbol') {
-                return;
-              }
-              n.classList.toggle(cssClass('missing'), !chosen);
-              setText(n, chosen ? chosen.name : '');
-            });
+          const chosen = context.tasks.groupRows(col, group, 'date', (rows) =>
+            chooseAggregatedDate(rows, col.getDateGrouper(), col)
+          );
+          n.classList.toggle(cssClass('missing'), !chosen);
+          setText(n, chosen ? chosen.name : '');
         }
-        return context.tasks
-          .groupExampleRows(col, group, 'date', (sample) => exampleText(col, sample))
-          .then((text) => {
-            if (typeof text === 'symbol') {
-              return;
-            }
-            n.classList.toggle(cssClass('missing'), !text);
-            setText(n, text);
-          });
+        const text = context.tasks.groupExampleRows(col, group, 'date', (sample) => exampleText(col, sample));
+        n.classList.toggle(cssClass('missing'), !text);
+        setText(n, text);
       },
     };
   }

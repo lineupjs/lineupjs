@@ -79,26 +79,20 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks
-          .groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows))
-          .then((data) => {
-            if (typeof data === 'symbol') {
-              return;
-            }
-            const ctx = (n as HTMLCanvasElement).getContext('2d')!;
-            ctx.canvas.width = width;
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        const data = context.tasks.groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows));
+        const ctx = (n as HTMLCanvasElement).getContext('2d')!;
+        ctx.canvas.width = width;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-            const isMissing = !data || data.normalized.length === 0 || data.normalized.every((v) => Number.isNaN(v));
-            n.classList.toggle(cssClass('missing'), isMissing);
-            if (isMissing) {
-              return;
-            }
+        const isMissing = !data || data.normalized.length === 0 || data.normalized.every((v) => Number.isNaN(v));
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
 
-            n.onmousemove = mover(n, data.raw.map(formatter), `${getSortLabel(col.getSortMethod())} `);
-            n.onmouseleave = () => (n.title = '');
-            render(ctx, data.normalized, data.row!, GUESSED_ROW_HEIGHT);
-          });
+        n.onmousemove = mover(n, data.raw.map(formatter), `${getSortLabel(col.getSortMethod())} `);
+        n.onmouseleave = () => (n.title = '');
+        render(ctx, data.normalized, data.row!, GUESSED_ROW_HEIGHT);
       },
     };
   }

@@ -135,7 +135,7 @@
           { label: 'Image', type: 'string', column: 'img', pattern: '$1', renderer: 'image' },
         ];
 
-        const p = new LineUpJS.LocalDataProvider(arr, desc);
+        const p = new LineUpJS.DataProvider(arr, desc);
         const lazy = p.create(desc[12]);
         {
           const r = p.pushRanking();

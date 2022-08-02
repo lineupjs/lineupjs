@@ -22,12 +22,11 @@ export default class StringHistogramCellRenderer extends StringCellRenderer {
     return {
       template,
       update: (node: HTMLElement, group) => {
-        return context.tasks.groupStringStats(col, group).then((r) => {
-          if (typeof r === 'symbol' || !r) {
-            return;
-          }
-          update(node, r.group, r.summary);
-        });
+        const r = context.tasks.groupStringStats(col, group);
+        if (!r) {
+          return;
+        }
+        update(node, r.group, r.summary);
       },
     };
   }
@@ -40,12 +39,11 @@ export default class StringHistogramCellRenderer extends StringCellRenderer {
     return {
       template,
       update: (node: HTMLElement) => {
-        return context.tasks.summaryStringStats(col).then((r) => {
-          if (typeof r === 'symbol' || !r) {
-            return;
-          }
-          update(node, r.summary);
-        });
+        const r = context.tasks.summaryStringStats(col);
+        if (!r) {
+          return;
+        }
+        update(node, r.summary);
       },
     };
   }

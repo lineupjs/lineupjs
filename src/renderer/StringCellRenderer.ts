@@ -43,20 +43,14 @@ export default class StringCellRenderer implements ICellRendererFactory {
     return {
       template: `<div> </div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
-        return context.tasks
-          .groupExampleRows(col, group, 'string', (rows) => exampleText(col, rows))
-          .then((text) => {
-            if (typeof text === 'symbol') {
-              return;
-            }
-            n.classList.toggle(cssClass('missing'), !text);
-            if (col.escape) {
-              setText(n, text);
-            } else {
-              n.innerHTML = text;
-              n.title = text;
-            }
-          });
+        const text = context.tasks.groupExampleRows(col, group, 'string', (rows) => exampleText(col, rows));
+        n.classList.toggle(cssClass('missing'), !text);
+        if (col.escape) {
+          setText(n, text);
+        } else {
+          n.innerHTML = text;
+          n.title = text;
+        }
       },
     };
   }
@@ -143,13 +137,8 @@ export default class StringCellRenderer implements ICellRendererFactory {
         const dl = node.querySelector('datalist')!;
 
         // no return here = loading indicator since it won't affect the rendering
-        void context.tasks.summaryStringStats(col).then((r) => {
-          if (typeof r === 'symbol') {
-            return;
-          }
-          const { summary } = r;
-          matchDataList(dl, summary.topN);
-        });
+        const { summary } = context.tasks.summaryStringStats(col);
+        matchDataList(dl, summary.topN);
       },
     };
   }

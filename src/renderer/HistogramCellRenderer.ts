@@ -24,7 +24,7 @@ import {
   ISummaryRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
-import { cssClass, engineCssClass } from '../styles';
+import { cssClass } from '../styles';
 import {
   histogramUpdate,
   histogramTemplate,
@@ -69,19 +69,14 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupNumberStats(col, group).then((r) => {
-          if (typeof r === 'symbol') {
-            return;
-          }
-          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
+        const r = context.tasks.groupNumberStats(col, group);
+        const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
 
-          const { summary, group } = r;
-          render(n, group, summary);
-        });
+        render(n, r.group, r.summary);
       },
     };
   }
@@ -117,17 +112,13 @@ function staticSummary(
         mappingHintUpdate(node, col.getRange());
       }
 
-      return context.tasks.summaryNumberStats(col).then((r) => {
-        if (typeof r === 'symbol') {
-          return;
-        }
-        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
-        node.classList.toggle(cssClass('missing'), isMissing);
-        if (isMissing) {
-          return;
-        }
-        render(node, r.summary);
-      });
+      const r = context.tasks.summaryNumberStats(col);
+      const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+      node.classList.toggle(cssClass('missing'), isMissing);
+      if (isMissing) {
+        return;
+      }
+      render(node, r.summary);
     },
   };
 }
@@ -149,21 +140,15 @@ function interactiveSummary(
       if (!updateFilter) {
         updateFilter = initFilter(node, fContext);
       }
-      return context.tasks.summaryNumberStats(col, true /* raw */).then((r) => {
-        if (typeof r === 'symbol') {
-          return;
-        }
-        const { summary, data } = r;
+      const { summary, data } = context.tasks.summaryNumberStats(col, true /* raw */);
+      updateFilter(data ? data.missing : summary ? summary.missing : 0, createFilterInfo(col));
 
-        updateFilter(data ? data.missing : summary ? summary.missing : 0, createFilterInfo(col));
-
-        node.classList.add(cssClass('histogram-i'));
-        node.classList.toggle(cssClass('missing'), !summary);
-        if (!summary) {
-          return;
-        }
-        render(node, summary, data);
-      });
+      node.classList.add(cssClass('histogram-i'));
+      node.classList.toggle(cssClass('missing'), !summary);
+      if (!summary) {
+        return;
+      }
+      render(node, summary, data);
     },
   };
 }
@@ -197,25 +182,14 @@ export function createNumberFilter(
   const updateFilter = initFilter(summaryNode, fContext);
 
   const rerender = () => {
-    const ready = context.tasks.summaryNumberStats(col, true /* raw */).then((r) => {
-      if (typeof r === 'symbol') {
-        return;
-      }
-      const { summary, data } = r;
-      updateFilter(data ? data.missing : summary ? summary.missing : 0, currentFilter);
-      summaryNode.classList.toggle(cssClass('missing'), !summary);
-      if (!summary) {
-        return;
-      }
-      renderer.render(summaryNode, summary, data);
-    });
-    if (!ready) {
+    const { summary, data } = context.tasks.summaryNumberStats(col, true /* raw */);
+
+    updateFilter(data ? data.missing : summary ? summary.missing : 0, currentFilter);
+    summaryNode.classList.toggle(cssClass('missing'), !summary);
+    if (!summary) {
       return;
     }
-    summaryNode.classList.add(engineCssClass('loading'));
-    ready.then(() => {
-      summaryNode.classList.remove(engineCssClass('loading'));
-    });
+    renderer.render(summaryNode, summary, data);
   };
 
   const ranking = col.findMyRanker()!;

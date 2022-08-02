@@ -39,17 +39,13 @@ export default class CategoricalStackedDistributionlCellRenderer implements ICel
     return {
       template: `${template}</div>`,
       update: (n: HTMLElement, group: IOrderedGroup) => {
-        return context.tasks.groupCategoricalStats(col, group).then((r) => {
-          if (typeof r === 'symbol') {
-            return;
-          }
-          const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
-          n.classList.toggle(cssClass('missing'), isMissing);
-          if (isMissing) {
-            return;
-          }
-          update(n, r.group);
-        });
+        const r = context.tasks.groupCategoricalStats(col, group);
+        const isMissing = !r || r.group == null || r.group.count === 0 || r.group.count === r.group.missing;
+        n.classList.toggle(cssClass('missing'), isMissing);
+        if (isMissing) {
+          return;
+        }
+        update(n, r.group);
       },
     };
   }
@@ -66,17 +62,13 @@ function staticSummary(col: ICategoricalColumn, context: IRenderContext) {
   return {
     template: `${template}</div>`,
     update: (n: HTMLElement) => {
-      return context.tasks.summaryCategoricalStats(col).then((r) => {
-        if (typeof r === 'symbol') {
-          return;
-        }
-        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
-        n.classList.toggle(cssClass('missing'), isMissing);
-        if (isMissing) {
-          return;
-        }
-        update(n, r.summary, r.data);
-      });
+      const r = context.tasks.summaryCategoricalStats(col);
+      const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
+      n.classList.toggle(cssClass('missing'), isMissing);
+      if (isMissing) {
+        return;
+      }
+      update(n, r.summary, r.data);
     },
   };
 }
@@ -90,22 +82,16 @@ function interactiveSummary(col: HasCategoricalFilter, context: IRenderContext, 
       if (!filterUpdate) {
         filterUpdate = interactiveHist(col, n);
       }
-      return context.tasks.summaryCategoricalStats(col).then((r) => {
-        if (typeof r === 'symbol') {
-          return;
-        }
-        const { summary, data } = r;
+      const { summary, data } = context.tasks.summaryCategoricalStats(col);
+      const missing = interactive && data ? data.missing : summary ? summary.missing : 0;
+      filterUpdate(missing, col);
 
-        const missing = interactive && data ? data.missing : summary ? summary.missing : 0;
-        filterUpdate(missing, col);
-
-        const isMissing = !r || r.summary == null || r.summary.count === 0 || r.summary.count === r.summary.missing;
-        n.classList.toggle(cssClass('missing'), isMissing);
-        if (isMissing) {
-          return;
-        }
-        update(n, summary, data);
-      });
+      const isMissing = summary == null || summary.count === 0 || summary.count === summary.missing;
+      n.classList.toggle(cssClass('missing'), isMissing);
+      if (isMissing) {
+        return;
+      }
+      update(n, summary, data);
     },
   };
 }

@@ -1,5 +1,5 @@
 import type { Ranking } from '../../model';
-import type { LocalDataProvider } from '../../provider';
+import type { DataProvider } from '../../provider';
 import {
   INestedBuilder,
   IReduceBuilder,
@@ -20,7 +20,7 @@ import type {
 /*
  * build the column description
  */
-export function buildRanking(props: IBuilderAdapterRankingProps, data: LocalDataProvider): Ranking {
+export function buildRanking(props: IBuilderAdapterRankingProps, data: DataProvider): Ranking {
   const r = buildRankingImpl();
 
   if (props.sortBy) {

@@ -75,13 +75,8 @@ export abstract class ANumbersCellRenderer {
       template: `<div class="${clazz}">${templateRow}</div>`,
       update: (n: HTMLDivElement, group: IOrderedGroup) => {
         // render a heatmap
-        return context.tasks
-          .groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows))
-          .then((data) => {
-            if (typeof data !== 'symbol') {
-              update(n, data.normalized, data.raw, data.row!, `${getSortLabel(col.getSortMethod())} `);
-            }
-          });
+        const data = context.tasks.groupRows(col, group, this.title, (rows) => ANumbersCellRenderer.choose(col, rows));
+        update(n, data.normalized, data.raw, data.row!, `${getSortLabel(col.getSortMethod())} `);
       },
     };
   }

@@ -79,16 +79,8 @@ export default class StringFilterDialog extends ADialog {
     const isRegex = node.querySelector<HTMLInputElement>('input[type="checkbox"]');
 
     const dl = node.querySelector('datalist')!;
-    this.ctx.provider
-      .getTaskExecutor()
-      .summaryStringStats(this.column)
-      .then((r) => {
-        if (typeof r === 'symbol') {
-          return;
-        }
-        const { summary } = r;
-        matchDataList(dl, summary.topN);
-      });
+    const { summary } = this.ctx.provider.getTaskExecutor().summaryStringStats(this.column);
+    matchDataList(dl, summary.topN);
 
     this.enableLivePreviews([filterMissing, input, isRegex]);
 
