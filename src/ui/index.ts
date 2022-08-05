@@ -5,6 +5,7 @@ export { default as EngineRenderer } from './EngineRenderer';
 export * from './interfaces';
 export { default as LineUp } from './LineUp';
 export * from './LineUp';
+export { default as ALineUp } from './ALineUp';
 export * from './panel';
 export { default as SlopeGraph, ISlopeGraphOptions } from './SlopeGraph';
 export * from './taggle';
