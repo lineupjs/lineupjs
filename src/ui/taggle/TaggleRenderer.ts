@@ -33,9 +33,18 @@ export declare function dialogOpened(dialog: ADialog): void;
  */
 export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confirm'): void;
 
-export interface ITaggleOptions {
+/**
+ * list of taggle options
+ */
+export interface ITaggleRendererOptions {
+  /**
+   * notification when a violation has changed
+   */
   violationChanged(rule: IRule | null, violation: string): void;
 
+  /**
+   * row padding
+   */
   rowPadding: number;
 }
 
@@ -50,7 +59,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   private levelOfDetail: ((rowIndex: number) => 'high' | 'low') | null = null;
   private readonly renderer: EngineRenderer;
 
-  private readonly options: Readonly<ITaggleOptions> = {
+  private readonly options: Readonly<ITaggleRendererOptions> = {
     violationChanged: () => undefined,
     rowPadding: 2,
   };
@@ -58,7 +67,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   constructor(
     public data: DataProvider,
     parent: HTMLElement,
-    options: Partial<ITaggleOptions> & Readonly<ILineUpOptions>
+    options: Partial<ITaggleRendererOptions> & Readonly<ILineUpOptions>
   ) {
     super();
     Object.assign(this.options, options);
