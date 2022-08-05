@@ -36,7 +36,7 @@ export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confir
 /**
  * list of taggle options
  */
-export interface ITaggleOptions {
+export interface ITaggleRendererOptions {
   /**
    * notification when a violation has changed
    */
@@ -59,7 +59,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   private levelOfDetail: ((rowIndex: number) => 'high' | 'low') | null = null;
   private readonly renderer: EngineRenderer;
 
-  private readonly options: Readonly<ITaggleOptions> = {
+  private readonly options: Readonly<ITaggleRendererOptions> = {
     violationChanged: () => undefined,
     rowPadding: 2,
   };
@@ -67,7 +67,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   constructor(
     public data: DataProvider,
     parent: HTMLElement,
-    options: Partial<ITaggleOptions> & Readonly<ILineUpOptions>
+    options: Partial<ITaggleRendererOptions> & Readonly<ILineUpOptions>
   ) {
     super();
     Object.assign(this.options, options);
