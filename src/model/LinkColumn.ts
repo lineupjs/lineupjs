@@ -22,7 +22,7 @@ import StringColumn from './StringColumn';
 
 export interface ILinkDesc extends IStringDesc {
   /**
-   * replacement pattern, use use <code>${value}</code> for the current value, <code>${escapedValue}</code> for an url safe value and <code>${item}</code> for the whole item
+   * replacement pattern, use use `${value}` for the current value, `${escapedValue}` for an url safe value and `${item}` for the whole item
    */
   pattern?: string;
 

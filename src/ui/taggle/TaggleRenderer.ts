@@ -33,9 +33,18 @@ export declare function dialogOpened(dialog: ADialog): void;
  */
 export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confirm'): void;
 
+/**
+ * list of taggle options
+ */
 export interface ITaggleOptions {
+  /**
+   * notification when a violation has changed
+   */
   violationChanged(rule: IRule | null, violation: string): void;
 
+  /**
+   * row padding
+   */
   rowPadding: number;
 }
 
