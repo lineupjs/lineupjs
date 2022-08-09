@@ -194,7 +194,7 @@ Both `LineUp` and `Taggle` are sub classes of [ALineUp](https://lineup.js.org/ma
   to get and set the highlighted row identified by its index in the data. If none is highlighted `-1` is returned.
 - [`getSelection(): number[]`](https://lineup.js.org/main/docs/classes/ALineUp.html#getSelection) / [`setSelection(dataIndices: number[]): void`](https://lineup.js.org/main/docs/classes/ALineUp.html#setSelection)
   to get and set the selected rows identified by their indices in the data
-- [`on(type: string, listener: IEventListener | null): this`](https://lineup.js.org/main/docs/classes/ALineUp.html#on) to listen to highlight and selection events. LineUp.js event mechanism is based on [d3 dispatch](https://github.com/d3/d3-dispatch), thus instead of and `off` method `null` is passed to disable listening to the event. The following events are sent out:
+- [`on(type: string, listener: IEventListener | null): this`](https://lineup.js.org/main/docs/classes/ALineUp.html#on) to listen to highlight and selection events. LineUp.js event mechanism is based on [d3 dispatch](https://github.com/d3/d3-dispatch), thus instead of an `off` method `null` is passed to disable listening to the event. The following events are sent out:
   - [`highlightChanged(dataIndex: number): void`](https://lineup.js.org/main/docs/classes/ALineUp.html#on)
   - [`selectionChanged(dataIndices: number[]): void`](https://lineup.js.org/main/docs/classes/ALineUp.html#on)
 
