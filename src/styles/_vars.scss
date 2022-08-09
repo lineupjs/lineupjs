@@ -1,5 +1,12 @@
 // COPY TO index.ts, not using webpack to be ES6 compatible
+$lu_hover_color: #ffe8be !default;
+$lu_selected_color: #ffcf76 !default;
+
 $engine_assets: 'lineupengine/src/assets';
+$engine_highlight_mode: 'background';
+$engine_row_outline_color: $lu_hover_color;
+$engine_row_background_color: $lu_hover_color;
+
 @import 'lineupengine/src/styles/vars';
 
 $lu_css_prefix: 'lu' !default;
@@ -11,12 +18,11 @@ $lu_toolbar_color_base: #c1c1c1 !default;
 $lu_toolbar_color_base2: #999 !default;
 $lu_toolbar_color_hover: black !default;
 
-$lu_hover_color: #e5e5e5 !default;
+$lu_hover_button_color: #e5e5e5 !default;
 $lu_hover_header_color: #f3f3f3 !default;
-$lu_selected_color: #ffa500 !default;
 $lu_filtered_opacity: 0.2 !default;
 
-$lu_drag_over: rgba(151, 151, 151, 0.8) !default;
+$lu_drag_over: rgb(151 151 151 / 80%) !default;
 
 $lu_header_background: #6d6c6c !default;
 
@@ -25,8 +31,8 @@ $lu_body_text_hover_color: darkblue !default;
 
 $lu_slope_width: 200px !default;
 $lu_slope_color: darkgray !default;
-$lu_slope_group_color: rgba(169, 169, 169, 0.5) !default;
-$lu_slope_group_selected_color: rgba(255, 165, 0, 0.5) !default;
+$lu_slope_group_color: rgb(169 169 169 / 50%) !default;
+$lu_slope_group_selected_color: rgb(255 165 0 / 50%) !default;
 $lu_slope_stroke_width: 1 !default;
 
 $lu_renderer_boxplot_box: #e0e0e0 !default;
@@ -43,7 +49,11 @@ $lu_renderer_dot_opacity: 0.5 !default;
 
 $lu_renderer_dot_single_color: $lu_renderer_dot_color !default;
 $lu_renderer_dot_single_size: 7px !default;
-$lu_renderer_dot_single_opacity: 0.75 !default;
+$lu_renderer_dot_single_opacity: 1 !default;
+
+$lu_renderer_tick_color: $lu_renderer_dot_color !default;
+$lu_renderer_tick_size: 3px !default;
+$lu_renderer_tick_opacity: $lu_renderer_dot_single_opacity !default;
 
 $lu_hist_color: #c1c1c1;
 
@@ -52,14 +62,14 @@ $lu_engine_row_outline_width: 2px !default;
 $lu_engine_resize_space: 50px !default;
 $lu_engine_resize_animation_duration: 1000ms !default;
 
-$lu_missing_dash_height: 3px !default;
+$lu_missing_dash_height: 2px !default;
 $lu_missing_dash_width: 10px !default;
-$lu_missing_dash_color: #c1c1c1 !default;
+$lu_missing_dash_color: #a0a0a0 !default;
 
 $lu_axis_color: #c1c1c1 !default;
 
 $lu_mapping_box: $lu_toolbar_color_base !default;
-$lu_mapping_line: $lu_hover_color !default;
+$lu_mapping_line: $lu_hover_button_color !default;
 $lu_mapping_handle: $lu_toolbar_color_hover !default;
 $lu_mapping_hover: $lu_selected_color !default;
 
@@ -96,8 +106,5 @@ $lu_include_font_awesome: false !default;
 $lu_histogram_drag_hint_width: 7em !default;
 
 @mixin user_select_none() {
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }

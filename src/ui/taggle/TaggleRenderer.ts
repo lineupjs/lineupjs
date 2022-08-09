@@ -1,6 +1,6 @@
 import type { GridStyleManager } from 'lineupengine';
 import type { ILineUpOptions } from '../../config';
-import { debounce, AEventDispatcher, IEventListener, suffix } from '../../internal';
+import { AEventDispatcher, IEventListener, suffix } from '../../internal';
 import { IGroupData, IGroupItem, isGroup, Ranking, IGroup } from '../../model';
 import { DataProvider } from '../../provider';
 import type { IRenderContext } from '../../renderer';
@@ -33,9 +33,18 @@ export declare function dialogOpened(dialog: ADialog): void;
  */
 export declare function dialogClosed(dialog: ADialog, action: 'cancel' | 'confirm'): void;
 
-export interface ITaggleOptions {
+/**
+ * list of taggle options
+ */
+export interface ITaggleRendererOptions {
+  /**
+   * notification when a violation has changed
+   */
   violationChanged(rule: IRule | null, violation: string): void;
 
+  /**
+   * row padding
+   */
   rowPadding: number;
 }
 
@@ -48,10 +57,9 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   private rule: IRule | null = null;
   private levelOfDetail: ((rowIndex: number) => 'high' | 'low') | null = null;
-  private readonly resizeListener = () => debounce(() => this.update(), 100);
   private readonly renderer: EngineRenderer;
 
-  private readonly options: Readonly<ITaggleOptions> = {
+  private readonly options: Readonly<ITaggleRendererOptions> = {
     violationChanged: () => undefined,
     rowPadding: 2,
   };
@@ -59,7 +67,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   constructor(
     public data: DataProvider,
     parent: HTMLElement,
-    options: Partial<ITaggleOptions> & Readonly<ILineUpOptions>
+    options: Partial<ITaggleRendererOptions> & Readonly<ILineUpOptions>
   ) {
     super();
     Object.assign(this.options, options);
@@ -93,10 +101,6 @@ export default class TaggleRenderer extends AEventDispatcher {
         EngineRenderer.EVENT_DIALOG_CLOSED
       )
     );
-
-    window.addEventListener('resize', this.resizeListener, {
-      passive: true,
-    });
   }
 
   get style(): GridStyleManager {
@@ -188,9 +192,12 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.update();
   }
 
+  getRule(): IRule | null {
+    return this.rule;
+  }
+
   destroy() {
     this.renderer.destroy();
-    window.removeEventListener('resize', this.resizeListener);
   }
 
   update() {

@@ -43,6 +43,11 @@ div.#{$lu_css_prefix}-dialog-mapper-script {
   text-align: center;
 }
 
+.#{$lu_css_prefix}-dialog-mapper-warning {
+  padding: 0 0.4em;
+  transform: translate(0, 10px);
+}
+
 .#{$lu_css_prefix}-dialog-mapper-range {
   padding: 20px 2px 0.4em;
   transform: translate(0, -24px);
@@ -52,7 +57,7 @@ div.#{$lu_css_prefix}-dialog-mapper-script {
 }
 
 svg.#{$lu_css_prefix}-dialog-mapper-details {
-  shape-rendering: geometricPrecision;
+  shape-rendering: geometricprecision;
   z-index: 1;
   height: math.div(25em * 6, 10);
   background: transparent;

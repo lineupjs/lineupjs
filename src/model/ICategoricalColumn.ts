@@ -4,7 +4,11 @@ import { IArrayColumn, isArrayColumn } from './IArrayColumn';
 import type { IValueColumnDesc, IColumnDesc, IDataRow, ITypedDump } from './interfaces';
 
 export interface ICategoricalDesc {
-  categories: (string | Partial<ICategory>)[];
+  categories?: (string | Partial<ICategory>)[];
+  /**
+   * @default given or name if not provided
+   */
+  categoryOrder?: 'given' | 'small-to-large' | 'large-to-small' | ((categories: readonly ICategory[]) => ICategory[]);
 }
 
 export declare type ICategoricalColumnDesc = IValueColumnDesc<string> & ICategoricalDesc;

@@ -24,8 +24,8 @@ import { integrateDefaults } from './internal';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createSelectionDesc(label = 'Selection Checkboxes') {
-  return { type: 'selection', label, fixed: true };
+export function createSelectionDesc(label = 'Selections') {
+  return { type: 'selection', label };
 }
 
 export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
@@ -61,7 +61,7 @@ export declare function filterChanged_SEC(previous: Set<number> | null, current:
  * a checkbox column for selections
  */
 @SupportType()
-@toolbar('sort', 'sortBy', 'group', 'groupBy', 'invertSelection', 'filterSelection')
+@toolbar('sort', 'sortBy', 'group', 'groupBy', 'clearSelection', 'invertSelection', 'filterSelection')
 @Category('support')
 export default class SelectionColumn extends ValueColumn<boolean> {
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
@@ -82,7 +82,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     super(
       id,
       integrateDefaults(desc, {
-        width: 20,
+        width: 50,
       })
     );
   }

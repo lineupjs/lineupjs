@@ -1,6 +1,6 @@
 import { GridStyleManager, MultiTableRowRenderer, nonUniformContext } from 'lineupengine';
 import type { ILineUpFlags, ILineUpOptions } from '../config';
-import { AEventDispatcher, IEventListener, round, suffix } from '../internal';
+import { AEventDispatcher, debounce, IEventListener, round, suffix } from '../internal';
 import { Column, IGroupData, IGroupItem, isGroup, Ranking, IGroup } from '../model';
 import { DataProvider } from '../provider';
 import { isSummaryGroup, groupEndLevel } from '../provider/internal';
@@ -13,11 +13,12 @@ import EngineRanking, { IEngineRankingContext } from './EngineRanking';
 import { EMode, IRankingHeaderContext, IRankingHeaderContextContainer } from './interfaces';
 import SlopeGraph from './SlopeGraph';
 import type { ADialog } from './dialogs';
+import SelectionIndicator from './SelectionIndicator';
 
 /**
  * emitted when the highlight changes
  * @asMemberOf EngineRenderer
- * @param dataIndex the highlghted data index or -1 for none
+ * @param dataIndex the highlighted data index or -1 for none
  * @event
  */
 export declare function highlightChanged(dataIndex: number): void;
@@ -46,6 +47,7 @@ export default class EngineRenderer extends AEventDispatcher {
   protected readonly options: Readonly<ILineUpOptions>;
 
   readonly node: HTMLElement;
+  private readonly resizeObserver: ResizeObserver;
   private readonly table: MultiTableRowRenderer;
   private readonly rankings: EngineRanking[] = [];
   private readonly slopeGraphs: SlopeGraph[] = [];
@@ -54,13 +56,19 @@ export default class EngineRenderer extends AEventDispatcher {
 
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
-  readonly idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
+  readonly idPrefix;
 
   private enabledHighlightListening = false;
+  readonly selectionIndicator: SelectionIndicator;
 
   constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
+
+    this.idPrefix = this.options.instanceId
+      ? `lu-${this.options.instanceId}`
+      : `lu-${Math.random().toString(36).slice(-8).substring(0, 3)}`;
+
     this.node = parent.ownerDocument!.createElement('main');
     this.node.id = this.idPrefix;
     // FIXME inline
@@ -134,6 +142,12 @@ export default class EngineRenderer extends AEventDispatcher {
       const copy = footer.cloneNode(true) as HTMLElement;
       copy.classList.add(cssClass('resize-helper'));
       footer!.insertAdjacentElement('afterend', copy);
+    }
+    {
+      // selection indicator
+      const body = this.table.node.querySelector<HTMLElement>(`.${engineCssClass('body')}`)!;
+      this.selectionIndicator = new SelectionIndicator(body);
+      parent.insertBefore(this.selectionIndicator.node, this.node);
     }
 
     //apply rules
@@ -210,6 +224,16 @@ export default class EngineRenderer extends AEventDispatcher {
     }
 
     this.initProvider(data);
+
+    // update on container resizes
+    this.resizeObserver = new ResizeObserver(
+      debounce(() => {
+        this.update();
+      }, 100)
+    );
+    this.resizeObserver.observe(this.node.parentElement, {
+      box: 'content-box',
+    });
   }
 
   get style(): GridStyleManager {
@@ -308,6 +332,8 @@ export default class EngineRenderer extends AEventDispatcher {
     this.rankings.forEach((r) => r.updateSelection(s));
 
     this.slopeGraphs.forEach((r) => r.updateSelection(s));
+
+    this.selectionIndicator.updateSelection(s);
   }
 
   private updateHist(ranking?: EngineRanking, col?: Column) {
@@ -445,6 +471,11 @@ export default class EngineRenderer extends AEventDispatcher {
         return pad + groupPadding * groupEndLevel(v, topNGetter);
       });
       r.render(grouped, rowContext);
+
+      if (r === this.rankings[0]) {
+        // first ranking
+        this.selectionIndicator.updateData(grouped, rowContext);
+      }
     }
 
     this.updateSlopeGraphs(rankings);
@@ -527,6 +558,10 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   destroy() {
+    if (this.node.parentElement) {
+      this.resizeObserver.unobserve(this.node.parentElement);
+    }
+    this.resizeObserver.disconnect();
     this.takeDownProvider();
     this.table.destroy();
     this.node.remove();

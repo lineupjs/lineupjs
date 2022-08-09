@@ -25,7 +25,7 @@ import {
   IColorMappingFunction,
   IMapAbleColumn,
 } from './INumberColumn';
-import { restoreMapping, ScaleMappingFunction } from './MappingFunction';
+import { restoreMapping } from './MappingFunction';
 import { isMissingValue, isUnknown, missingGroup } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
@@ -94,6 +94,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private mapping: IMappingFunction;
   private colorMapping: IColorMappingFunction;
   private original: IMappingFunction;
+  private deriveMapping: readonly boolean[];
 
   /**
    * currently active filter
@@ -124,6 +125,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
     this.mapping = restoreMapping(desc, factory);
     this.original = this.mapping.clone();
+    this.deriveMapping = this.mapping.domain.map((d) => d == null || Number.isNaN(d));
+
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
 
     if (desc.numberFormat) {
@@ -137,6 +140,41 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   getNumberFormat() {
     return this.numberFormat;
+  }
+
+  onDataUpdate(rows: ISequence<IDataRow>): void {
+    super.onDataUpdate(rows);
+    if (!this.deriveMapping.some(Boolean)) {
+      return;
+    }
+    // hook for listening to data updates
+    const minMax = rows
+      .map((row) => this.getRawValue(row))
+      .reduce(
+        (acc, v) => {
+          if (v == null || Number.isNaN(v)) {
+            return acc;
+          }
+          if (v < acc.min) {
+            acc.min = v;
+          }
+          if (v > acc.max) {
+            acc.max = v;
+          }
+          return acc;
+        },
+        { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY }
+      );
+
+    const domain = this.mapping.domain.slice();
+    if (this.deriveMapping[0]) {
+      domain[0] = minMax.min;
+    }
+    if (this.deriveMapping[this.deriveMapping.length - 1]) {
+      domain[domain.length - 1] = minMax.max;
+    }
+    this.mapping.domain = domain;
+    (this.original as IMappingFunction).domain = domain;
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -153,10 +191,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
-    if (dump.map) {
-      this.mapping = factory.mappingFunction(dump.map);
-    } else if (dump.domain) {
-      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    if (dump.map || dump.domain) {
+      this.mapping = restoreMapping(dump, factory);
     }
     if (dump.colorMapping) {
       this.colorMapping = factory.colorMappingFunction(dump.colorMapping);
@@ -301,6 +337,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (this.mapping.eq(mapping)) {
       return;
     }
+    this.deriveMapping = [];
     this.fire(
       [
         NumberColumn.EVENT_MAPPING_CHANGED,

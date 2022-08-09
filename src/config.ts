@@ -206,6 +206,18 @@ export interface ILineUpOptions {
    * @default false
    */
   ignoreUnsupportedBrowser: boolean;
+
+  /**
+   * option to enable to copy selected rows using ctrl-c
+   * @default false
+   */
+  copyableRows: boolean;
+
+  /**
+   * identifier for this LineUp instance. by default a random id is generated.
+   * @default random string
+   */
+  instanceId: string;
 }
 
 export interface ITaggleOptions extends ILineUpOptions {
@@ -298,5 +310,8 @@ export function defaultOptions(): ITaggleOptions {
     },
 
     ignoreUnsupportedBrowser: false,
+    copyableRows: true,
+
+    instanceId: Math.random().toString(36).slice(-8).substring(0, 3), // generate a random string with length 3
   };
 }

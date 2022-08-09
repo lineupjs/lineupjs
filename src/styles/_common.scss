@@ -7,8 +7,7 @@
 
 .#{$lu_css_prefix}-dragable {
   cursor: pointer;
-  cursor: -moz-grab;
-  cursor: -webkit-grab; // indicate grab able
+  cursor: grab; // indicate grab able
 }
 
 .#{$lu_css_prefix}-dragover {
@@ -107,4 +106,8 @@
 
 .#{$lu_css_prefix}-busy * {
   cursor: wait !important;
+}
+
+.#{$lu_css_prefix}-text-shadow {
+  text-shadow: 0 0 1px white;
 }

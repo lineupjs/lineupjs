@@ -229,7 +229,7 @@ export default class TaskScheduler {
     }
     // eslint-disable-next-line no-restricted-globals
     const ww = self as any as IPoorManIdleCallback;
-    if (ww.requestIdleCallback) {
+    if (ww.requestIdleCallback && ww.clearIdleCallback) {
       ww.clearIdleCallback(this.taskId);
     } else {
       clearTimeout(this.taskId);

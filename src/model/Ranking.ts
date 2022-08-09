@@ -463,8 +463,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   /**
    * replaces, moves, or remove the given column in the sorting hierarchy
-   * @param col {Column}
-   * @param priority {number} when priority < 0 remove the column only else replace at the given priority
+   * @param col
+   * @param priority when priority < 0 remove the column only else replace at the given priority
    */
   sortBy(col: Column, ascending = false, priority = 0) {
     if (col.findMyRanker() !== this) {
@@ -482,8 +482,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   /**
    * replaces, moves, or remove the given column in the group sorting hierarchy
-   * @param col {Column}
-   * @param priority {number} when priority < 0 remove the column only else replace at the given priority
+   * @param col
+   * @param priority when priority < 0 remove the column only else replace at the given priority
    */
   groupSortBy(col: Column, ascending = false, priority = 0) {
     if (col.findMyRanker() !== this) {
@@ -515,8 +515,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   /**
    * replaces, moves, or remove the given column in the grouping hierarchy
-   * @param col {Column}
-   * @param priority {number} when priority < 0 remove the column only else replace at the given priority
+   * @param col
+   * @param priority when priority < 0 remove the column only else replace at the given priority
    */
   groupBy(col: Column, priority = 0): boolean {
     if (col.findMyRanker() !== this) {
@@ -722,6 +722,14 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.move(col, i + 1);
   }
 
+  moveBefore(col: Column, reference: Column) {
+    const i = this.columns.indexOf(reference);
+    if (i < 0) {
+      return null;
+    }
+    return this.move(col, i);
+  }
+
   get fqpath() {
     return '';
   }
@@ -750,6 +758,14 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return null;
     }
     return this.insert(col, i + 1);
+  }
+
+  insertBefore(col: Column, ref: Column) {
+    const i = this.columns.indexOf(ref);
+    if (i < 0) {
+      return null;
+    }
+    return this.insert(col, i);
   }
 
   push(col: Column) {

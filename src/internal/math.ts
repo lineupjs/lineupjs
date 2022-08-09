@@ -162,21 +162,88 @@ export interface IBuilder<T, R> {
   build(): R;
 }
 
+const GAUSSIAN_CONST = Math.sqrt(2 * Math.PI);
+
+// See <http://en.wikipedia.org/wiki/Kernel_(statistics)>.
+function gaussian(u: number) {
+  return Math.exp(-0.5 * u * u) / GAUSSIAN_CONST;
+}
+
+function toSampleVariance(variance: number, len: number) {
+  return (variance * len) / (len - 1);
+}
+
+/**
+ *
+ * The ["normal reference distribution"
+ * rule-of-thumb](https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/bandwidth.nrd.html),
+ * a commonly used version of [Silverman's
+ * rule-of-thumb](https://en.wikipedia.org/wiki/Kernel_density_estimation#A_rule-of-thumb_bandwidth_estimator).
+ */
+function nrd(iqr: number, variance: number, len: number) {
+  let s = Math.sqrt(toSampleVariance(variance, len));
+  if (typeof iqr === 'number') {
+    s = Math.min(s, iqr / 1.34);
+  }
+  return 1.06 * s * Math.pow(len, -0.2);
+}
+
+function computeVariance(s: ArrayLike<number>, len: number, mean: number): number {
+  let variance = 0;
+  for (let i = 0; i < len; i++) {
+    const v = s[i];
+    variance += (v - mean) * (v - mean);
+  }
+  variance /= len;
+  return variance;
+}
+
+function computeKDE(
+  s: ArrayLike<number>,
+  len: number,
+  points: number,
+  min: number,
+  max: number,
+  variance: number,
+  iqr: number
+): { v: number; p: number }[] {
+  const bandwidth = nrd(iqr, variance, len);
+  const computePoint = (x: number) => {
+    let i = 0;
+    let sum = 0;
+    for (i = 0; i < len; i++) {
+      const v = s[i];
+      sum += gaussian((x - v) / bandwidth);
+    }
+    return sum / bandwidth / len;
+  };
+  const step = (max - min) / (points - 1);
+  return Array.from({ length: points }, (_, i) => {
+    const v = i === points - 1 ? max : min + i * step;
+    return {
+      v,
+      p: computePoint(v),
+    };
+  });
+}
+
 /**
  * @internal
  */
 export function boxplotBuilder(
-  fixedLength?: number
-): IBuilder<number, IAdvancedBoxPlotData> & { buildArr: (s: Float32Array) => IAdvancedBoxPlotData } {
+  fixedLength?: number,
+  kdePoints?: number
+): IBuilder<number, IAdvancedBoxPlotData> & { buildArr: (s: Float32Array | Float64Array) => IAdvancedBoxPlotData } {
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
   let sum = 0;
   let length = 0;
   let missing = 0;
+  const kdePointCount = kdePoints ?? 100;
 
   // if fixed size use the typed array else a regular array
   const values: number[] = [];
-  const vs: Float32Array | null = fixedLength != null ? new Float32Array(fixedLength) : null;
+  const vs: Float64Array | null = fixedLength != null ? new Float64Array(fixedLength) : null;
 
   const push = (v: number) => {
     length += 1;
@@ -214,6 +281,7 @@ export function boxplotBuilder(
     median: NaN,
     q1: NaN,
     q3: NaN,
+    kdePoints: [],
   };
 
   const buildImpl = (s: ArrayLike<number>) => {
@@ -225,6 +293,8 @@ export function boxplotBuilder(
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     const right = q3 + 1.5 * iqr;
+    const mean = sum / valid;
+    const variance = computeVariance(s, valid, mean);
 
     let outlier: number[] = [];
     // look for the closest value which is bigger than the computed left
@@ -254,6 +324,8 @@ export function boxplotBuilder(
 
     outlier = outlier.concat(reversedOutliers.reverse());
 
+    const kdePoints: { v: number; p: number }[] = computeKDE(s, valid, kdePointCount, min, max, variance, iqr);
+
     return {
       min,
       max,
@@ -266,6 +338,7 @@ export function boxplotBuilder(
       median,
       q1,
       q3,
+      kdePoints,
     };
   };
 
@@ -276,11 +349,11 @@ export function boxplotBuilder(
       return invalid;
     }
 
-    const s = vs ? vs.sort() : Float32Array.from(values).sort();
+    const s = vs ? vs.sort() : Float64Array.from(values).sort();
     return buildImpl(s);
   };
 
-  const buildArr = (vs: Float32Array) => {
+  const buildArr = (vs: Float64Array) => {
     const s = vs.slice().sort();
 
     for (let j = 0; j < vs.length; ++j) {
@@ -913,7 +986,7 @@ export interface INumberStatsMessageRequest {
   indices?: UIntTypedArray;
 
   refData: string;
-  data?: Float32Array;
+  data?: Float64Array;
 
   domain: [number, number];
   numberOfBins: number;
@@ -940,7 +1013,7 @@ export interface IBoxPlotStatsMessageRequest {
   indices?: UIntTypedArray;
 
   refData: string;
-  data?: Float32Array;
+  data?: Float64Array;
 }
 
 /**
@@ -1093,7 +1166,7 @@ function sortWorkerMain() {
     }
   };
 
-  const resolveRefs = <T extends UIntTypedArray | Float32Array | Int32Array | readonly string[]>(
+  const resolveRefs = <T extends UIntTypedArray | Float32Array | Float64Array | Int32Array | readonly string[]>(
     r: IStatsWorkerMessage
   ) => {
     // resolve refs or save the new data
@@ -1174,7 +1247,7 @@ function sortWorkerMain() {
   };
 
   const numberStats = (r: INumberStatsMessageRequest) => {
-    const { data, indices } = resolveRefs<Float32Array>(r);
+    const { data, indices } = resolveRefs<Float64Array>(r);
 
     const b = numberStatsBuilder(r.domain ?? [0, 1], r.numberOfBins);
 
@@ -1196,7 +1269,7 @@ function sortWorkerMain() {
   };
 
   const boxplotStats = (r: IBoxPlotStatsMessageRequest) => {
-    const { data, indices } = resolveRefs<Float32Array>(r);
+    const { data, indices } = resolveRefs<Float64Array>(r);
 
     const b = boxplotBuilder(indices ? indices.length : undefined);
 

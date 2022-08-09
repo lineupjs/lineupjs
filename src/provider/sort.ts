@@ -52,7 +52,7 @@ function toCompareLookUp(rawLength: number, type: ECompareValueType): ILookUpArr
       return [] as string[];
     case ECompareValueType.FLOAT_ASC:
     case ECompareValueType.FLOAT:
-      return new Float32Array(rawLength);
+      return new Float64Array(rawLength);
     case ECompareValueType.DOUBLE_ASC:
     case ECompareValueType.DOUBLE:
       return new Float64Array(rawLength);
@@ -143,7 +143,7 @@ export class CompareLookup {
     // so a typed array
     return this.data
       .map((d) => d.lookup)
-      .filter((d): d is UIntTypedArray | Float32Array => !Array.isArray(d))
+      .filter((d): d is UIntTypedArray | Float64Array => !Array.isArray(d))
       .map((d) => d.buffer);
   }
 

@@ -32,6 +32,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
       render: (n: HTMLElement, value: (number | boolean)[]) => {
         forEachChild(n, (d: HTMLElement, i) => {
           const v = value[i];
+          d.style.backgroundColor = mapping.apply(categories[i]);
           d.style.opacity = typeof v === 'boolean' ? (v ? '1' : '0') : round(v, 2).toString();
         });
       },

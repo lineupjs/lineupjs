@@ -65,6 +65,47 @@
   }
 }
 
+.#{$lu_css_prefix}-header-drop {
+  @include user_select_none();
+
+  position: absolute;
+  top: 0;
+  height: 100%;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: lighten($lu_drag_over, 35%);
+  border: 2px dashed $lu_drag_over;
+  font-size: small;
+  text-align: center;
+  opacity: 0;
+
+  &::before {
+    content: attr(data-draginfo);
+    overflow: hidden;
+  }
+
+  &.#{$lu_css_prefix}-dragover {
+    transition: opacity 0.2s ease;
+    opacity: 1;
+  }
+}
+
+.#{$lu_css_prefix}-merger {
+  left: 20%;
+  width: 60%;
+}
+
+.#{$lu_css_prefix}-placer {
+  left: 80%;
+  width: 40%;
+}
+
+.#{$lu_css_prefix}-dragging-column .#{$lu_css_prefix}-header-drop {
+  display: flex;
+}
+
 .#{$lu_css_prefix}-handle {
   position: absolute;
   right: -$lu-engine_grip_gap;
@@ -76,29 +117,8 @@
   text-align: center;
   bottom: -1px;
 
-  &.#{$lu_css_prefix}-dragover {
-    @include user_select_none();
-
-    transition: width 0.2s ease, right 0.2s ease;
-    color: $lu_toolbar_color_hover;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px dashed $lu_drag_over;
-    background-color: lighten($lu_drag_over, 35%);
-    width: 50px;
-    right: -25px;
-    z-index: 10;
-    font-size: small;
-
-    &::before {
-      content: 'Place here';
-      overflow: hidden;
-    }
-  }
-
   &:hover {
-    background-color: $lu_hover_color;
+    background-color: $lu_hover_button_color;
   }
 }
 
@@ -122,14 +142,6 @@
   left: 0;
   right: 0;
   cursor: inherit;
-
-  &.#{$lu_css_prefix}-dragover {
-    transition: bottom 0.2s ease, height 0.2s ease;
-    height: 50px;
-    bottom: ($lu_engine_grip_gap * -1) - 1px - 15px -25px;
-    width: 100%;
-    right: 0;
-  }
 }
 
 // FIXME

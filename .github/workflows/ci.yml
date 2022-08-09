@@ -6,14 +6,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '14.x'
+          node-version: 16
       - run: npm i -g yarn
       - run: yarn config set checksumBehavior ignore
       - name: Cache Node.js modules
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v3
         with:
           path: |
             ./.yarn/cache
@@ -31,7 +31,7 @@ jobs:
       - run: yarn docs
       - run: yarn cy:compile
       - run: yarn cy:junit
-      - uses: actions/upload-artifact@v2.2.4
+      - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: cypress-artifacts
@@ -57,7 +57,7 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
           personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-          external_repository: lineupjs/lineup.js.org
+          external_repository: lineupjs/lineupjs.github.io
           publish_branch: main
           publish_dir: ./public
           enable_jekyll: true
@@ -70,7 +70,7 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
           personal_token: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
-          external_repository: lineupjs/lineup.js.org
+          external_repository: lineupjs/lineupjs.github.io
           publish_branch: main
           publish_dir: ./public_dev
           enable_jekyll: true

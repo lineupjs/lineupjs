@@ -36,7 +36,7 @@ import {
 import { models } from '../model/models';
 import { forEachIndices, everyIndices, toGroupID, unifyParents } from '../model/internal';
 import { IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions } from './interfaces';
-import { exportRanking, map2Object, object2Map } from './utils';
+import { exportRanking, map2Object, object2Map, exportTable, isPromiseLike } from './utils';
 import type { IRenderTasks } from '../renderer';
 import { restoreCategoricalColorMapping } from '../model/CategoricalColorMappingFunction';
 import { createColorMappingFunction, colorMappingFunctions } from '../model/ColorMappingFunction';
@@ -309,7 +309,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       }
       const c = this.instantiateColumn(type, '', desc, this.typeFactory);
       c.restore(d, factory);
-      return c;
+      return this.patchColumn(c);
     }) as ITypeFactory;
     factory.colorMappingFunction = createColorMappingFunction(this.colorMappingFunctionTypes, factory);
     factory.mappingFunction = createMappingFunction(this.mappingFunctionTypes);
@@ -667,9 +667,14 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
     if (type) {
-      return this.instantiateColumn(type, this.nextId(), desc, this.typeFactory);
+      return this.patchColumn(this.instantiateColumn(type, this.nextId(), desc, this.typeFactory));
     }
     return null;
+  }
+
+  protected patchColumn(column: Column): Column {
+    // hook for adapting columns
+    return column;
   }
 
   protected instantiateColumn(type: IColumnConstructor, id: string, desc: IColumnDesc, typeFactory: ITypeFactory) {
@@ -1165,8 +1170,32 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: Ranking, options: Partial<IExportOptions> = {}) {
-    return Promise.resolve(this.view(ranking.getOrder())).then((data) => exportRanking(ranking, data, options));
+  exportTable(ranking: Ranking, options: Partial<IExportOptions> = {}): Promise<string> | string {
+    const data = this.view(ranking.getOrder());
+    if (isPromiseLike(data)) {
+      return data.then((dataImpl) => exportRanking(ranking, dataImpl, options));
+    }
+    return exportRanking(ranking, data, options);
+  }
+  /**
+   * utility to export the selection within the given ranking to a table with the given separator
+   * @param ranking
+   * @param options
+   * @returns {Promise<string>}
+   */
+  exportSelection(options: Partial<IExportOptions> & { ranking?: Ranking } = {}): Promise<string> | string {
+    const selection = this.getSelection();
+    const ranking = options.ranking || this.getFirstRanking();
+    if (!ranking) {
+      return '';
+    }
+    const rows = selection.map((s) => this.getRow(s));
+    if (rows.some((row) => isPromiseLike(row))) {
+      return Promise.all(rows).then((data) => {
+        return exportTable(ranking, data, options);
+      });
+    }
+    return exportTable(ranking, rows as IDataRow[], options);
   }
 }
 
