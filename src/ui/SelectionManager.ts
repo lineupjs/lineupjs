@@ -82,6 +82,10 @@ export default class SelectionManager extends AEventDispatcher {
       'mousedown',
       (evt) => {
         const r = root.getBoundingClientRect();
+        const inSelectionColumn = (evt.target as HTMLElement).closest(`.${cssClass('renderer-selection')}`);
+        if (!inSelectionColumn) {
+          return;
+        }
         this.start = { x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: evt.target as HTMLElement };
 
         body.addEventListener('mousemove', mouseMove, {
