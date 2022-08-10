@@ -12,13 +12,8 @@ export * from './IArrayColumn';
 
 export { toCategories } from './internalCategorical';
 
-export {
-  ScaleMappingFunction,
-  ScriptMappingFunction,
-  mappingFunctions,
-  IScriptMappingFunctionType,
-  IScriptMappingFunctionContext,
-} from './MappingFunction';
+export { ScaleMappingFunction, ScriptMappingFunction, mappingFunctions } from './MappingFunction';
+export type { IScriptMappingFunctionType, IScriptMappingFunctionContext } from './MappingFunction';
 export { DEFAULT_CATEGORICAL_COLOR_FUNCTION, ReplacementColorMappingFunction } from './CategoricalColorMappingFunction';
 export {
   CustomColorMappingFunction,
