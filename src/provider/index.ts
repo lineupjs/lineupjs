@@ -5,6 +5,7 @@ export * from './LocalDataProvider';
 export * from './RemoteDataProvider';
 export { deriveColors, deriveColumnDescriptions, exportRanking, exportTable } from './utils';
 export * from './interfaces';
-export { tasksAll, IRenderTaskExecutor } from './tasks';
+export { tasksAll } from './tasks';
+export type { IRenderTaskExecutor } from './tasks';
 export type { CompareLookup } from './sort';
 export type { ITopNGetter, IGroupMeta } from './internal';
