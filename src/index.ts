@@ -9,7 +9,8 @@ import type { ILineUpOptions, ITaggleOptions } from './config';
 
 export * from './builder';
 export * from './config';
-export { default as AEventDispatcher, IEventContext, IEventHandler, IEventListener } from './internal/AEventDispatcher';
+export { default as AEventDispatcher } from './internal/AEventDispatcher';
+export type { IEventContext, IEventHandler, IEventListener } from './internal/AEventDispatcher';
 export type { ISequence, IForEachAble } from './internal/interable';
 export type { ILookUpArray } from './internal/math';
 export * from './internal/mathInterfaces';
