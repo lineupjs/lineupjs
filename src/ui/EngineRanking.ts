@@ -137,6 +137,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       advancedModelFeatures: true,
       advancedRankingFeatures: true,
       advancedUIFeatures: true,
+      combineViaDragNDrop: true,
     },
   };
 

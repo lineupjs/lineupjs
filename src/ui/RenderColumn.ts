@@ -93,7 +93,7 @@ export default class RenderColumn implements IColumn {
     const node = createHeader(this.c, this.ctx, {
       extraPrefix: 'th',
       dragAble: this.flags.advancedUIFeatures,
-      mergeDropAble: this.flags.advancedModelFeatures,
+      mergeDropAble: this.flags.advancedModelFeatures && this.flags.combineViaDragNDrop,
       rearrangeAble: this.flags.advancedUIFeatures,
       resizeable: this.flags.advancedUIFeatures,
     });

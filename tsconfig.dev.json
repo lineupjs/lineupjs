@@ -5,6 +5,8 @@
   },
   "typedocOptions": {
     "name": "LineUpJS",
+    "entryPoints": "src",
+    "basePath": "./src",
     "out": "./docs",
     "theme": "default",
     "excludeExternals": true,

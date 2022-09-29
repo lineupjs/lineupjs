@@ -21,7 +21,7 @@ export default function getStyle(key: string, defaultValue = '') {
   return defaultValue;
 }
 /** @internal */
-export const SELECTED_COLOR = getStyle('lu_selected_color', '#ffa500');
+export const SELECTED_COLOR = getStyle('lu_selected_color', '#ffcf76');
 /** @internal */
 export const COLUMN_PADDING = Number.parseInt(getStyle('lu_engine_grip_gap', '5px'), 10);
 /** @internal */
@@ -30,7 +30,7 @@ export const FILTERED_OPACITY = Number.parseFloat(getStyle('lu_filtered_opacity'
 export const DASH = {
   width: Number.parseInt(getStyle('lu_missing_dash_width', '2px'), 10),
   height: Number.parseInt(getStyle('lu_missing_dash_height', '10px'), 10),
-  color: getStyle('lu_missing_dash_color', '#dbdbdb'),
+  color: getStyle('lu_missing_dash_color', '#a0a0a0'),
 };
 /** @internal */
 export const UPSET = {

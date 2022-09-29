@@ -120,8 +120,8 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   if (options.rearrangeAble) {
     const placer = node.getElementsByClassName(cssClass('placer'))[0]! as HTMLElement;
     const nextSibling = col.nextSibling();
-    const widthFactor = !options.rearrangeAble ? 0.5 : 0.2;
-    if (!options.rearrangeAble) {
+    const widthFactor = !options.mergeDropAble ? 0.5 : 0.2;
+    if (!options.mergeDropAble) {
       placer.style.left = '50%';
     }
     placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() / 2 ?? 50)}px`;
