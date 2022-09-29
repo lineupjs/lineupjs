@@ -19,11 +19,12 @@
 
   > span {
     padding: 2px;
-    border: 1px solid $lu_selected_color;
+    background-color: $lu_selected_color;
   }
 }
 
-.#{$lu_css_prefix}-stats-reset {
+.#{$lu_css_prefix}-stats-reset,
+.#{$lu_css_prefix}-stats-clear-selection {
   padding: 2px;
   font-style: normal;
   display: unset;

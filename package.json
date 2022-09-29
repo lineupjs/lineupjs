@@ -79,7 +79,7 @@
     "stylelint": "stylelint \"src/**/*.scss\"",
     "stylelint:fix": "npm run stylelint -- --fix",
     "lint": "npm run eslint && npm run prettier && npm run stylelint",
-    "docs": "npm run clean:compile && typedoc --tsconfig tsconfig.dev.json --out ./docs/ src tsd.d.ts",
+    "docs": "npm run clean:compile && typedoc --tsconfig tsconfig.dev.json",
     "test": "jest --passWithNoTests --detectOpenHandles --forceExit",
     "test:watch": "npm run test -- --watch",
     "test:coverage": "npm run test -- --coverage",
@@ -167,5 +167,10 @@
     "lodash.get": "^4.4.2",
     "reflect-metadata": "^0.1.13"
   },
-  "packageManager": "yarn@3.2.2"
+  "packageManager": "yarn@3.2.2",
+  "dependenciesMeta": {
+    "lineupengine@2.5.0": {
+      "unplugged": true
+    }
+  }
 }

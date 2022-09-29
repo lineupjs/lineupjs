@@ -355,12 +355,18 @@ export default class SidePanel {
     }
     const stats = this.node.querySelector<HTMLElement>(`.${cssClass('stats')}`);
     const s = this.data.getSelection();
+    const clearSelection =
+      s.length === 0
+        ? ''
+        : `<i class="${cssClass('action')} ${cssClass('action-clear-selection')} ${cssClass(
+            'stats-clear-selection'
+          )}" title="Clear selection"><span class="${cssClass('aria')}" aria-hidden="true">Clear Selection</span></i>`;
     const r = this.data.getFirstRanking();
     const f = format(',d');
     const visible = r ? r.getGroups().reduce((a, b) => a + b.order.length, 0) : 0;
     const total = this.data.getTotalNumberOfRows();
     stats.innerHTML = `Showing <strong>${f(visible)}</strong> of ${f(total)} items${
-      s.length > 0 ? `; <span>${f(s.length)} selected</span>` : ''
+      s.length > 0 ? `; <span>${f(s.length)} selected ${clearSelection}</span>` : ''
     }${
       visible < total
         ? ` <i class="${cssClass('action')} ${cssClass('action-filter')} ${cssClass(
@@ -370,14 +376,22 @@ export default class SidePanel {
     }`;
 
     const resetButton = stats.querySelector<HTMLElement>(`.${cssClass('stats-reset')}`);
-    if (!resetButton) {
-      return;
+    if (resetButton) {
+      resetButton.onclick = (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        this.data.clearFilters();
+      };
     }
-    resetButton.onclick = (evt) => {
-      evt.preventDefault();
-      evt.stopPropagation();
-      this.data.clearFilters();
-    };
+
+    const clearButton = stats.querySelector<HTMLElement>(`.${cssClass('stats-clear-selection')}`);
+    if (clearButton) {
+      clearButton.onclick = (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        this.data.setSelection([]);
+      };
+    }
   }
 
   destroy() {

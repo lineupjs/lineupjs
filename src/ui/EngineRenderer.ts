@@ -1,6 +1,6 @@
 import { GridStyleManager, MultiTableRowRenderer, nonUniformContext } from 'lineupengine';
 import type { ILineUpFlags, ILineUpOptions } from '../config';
-import { AEventDispatcher, IEventListener, round, suffix } from '../internal';
+import { AEventDispatcher, debounce, IEventListener, round, suffix } from '../internal';
 import { Column, IGroupData, IGroupItem, isGroup, Ranking, IGroup } from '../model';
 import { DataProvider } from '../provider';
 import { isSummaryGroup, groupEndLevel } from '../provider/internal';
@@ -47,6 +47,7 @@ export default class EngineRenderer extends AEventDispatcher {
   protected readonly options: Readonly<ILineUpOptions>;
 
   readonly node: HTMLElement;
+  private readonly resizeObserver: ResizeObserver;
   private readonly table: MultiTableRowRenderer;
   private readonly rankings: EngineRanking[] = [];
   private readonly slopeGraphs: SlopeGraph[] = [];
@@ -223,6 +224,16 @@ export default class EngineRenderer extends AEventDispatcher {
     }
 
     this.initProvider(data);
+
+    // update on container resizes
+    this.resizeObserver = new ResizeObserver(
+      debounce(() => {
+        this.update();
+      }, 100)
+    );
+    this.resizeObserver.observe(this.node.parentElement, {
+      box: 'content-box',
+    });
   }
 
   get style(): GridStyleManager {
@@ -547,6 +558,10 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   destroy() {
+    if (this.node.parentElement) {
+      this.resizeObserver.unobserve(this.node.parentElement);
+    }
+    this.resizeObserver.disconnect();
     this.takeDownProvider();
     this.table.destroy();
     this.node.remove();

@@ -305,7 +305,7 @@ function createFilterContext(
         min: Math.abs(minValue - domain[0]) < 0.001 ? Number.NEGATIVE_INFINITY : shiftFilterDateDay(minValue, 'min'),
         max: Math.abs(maxValue - domain[1]) < 0.001 ? Number.POSITIVE_INFINITY : shiftFilterDateDay(maxValue, 'max'),
       }),
-    edit: (value, attachment, type) => {
+    edit: (value, attachment, type, otherValue) => {
       return new Promise((resolve) => {
         const dialogCtx = {
           attachment,
@@ -317,7 +317,10 @@ function createFilterContext(
         const dialog = new InputDateDialog(
           dialogCtx,
           (d) => resolve(d == null ? NaN : shiftFilterDateDay(d.getTime(), type)),
-          { value: Number.isNaN(value) ? null : new Date(value) }
+          {
+            value: Number.isNaN(value) ? null : new Date(value),
+            [type === 'min' ? 'max' : 'min']: Number.isNaN(otherValue) ? null : new Date(otherValue),
+          }
         );
         dialog.open();
       });
