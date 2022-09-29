@@ -50,6 +50,11 @@ export interface ILineUpFlags {
    * @default true
    */
   advancedUIFeatures: boolean;
+  /**
+   * whether one can combine via drag and drop
+   * @default true
+   */
+  combineViaDragNDrop: boolean;
 }
 
 export interface IToolbarLookup<T> {
@@ -307,6 +312,7 @@ export function defaultOptions(): ITaggleOptions {
       advancedRankingFeatures: true,
       advancedModelFeatures: true,
       advancedUIFeatures: true,
+      combineViaDragNDrop: true,
     },
 
     ignoreUnsupportedBrowser: false,
