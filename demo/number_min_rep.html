@@ -30,31 +30,17 @@
       let testData = [
         { n: 0, m: 1 },
         { n: 20, m: 10 },
-        { n: 100, m: 100 }
+        { n: 100, m: 100 },
       ];
-      for(let i = 0; i < 5; i++) {
+      for (let i = 0; i < 5; i++) {
         testData = [...testData, ...testData];
       }
       const builder = LineUpJS.builder(testData);
 
-      builder.column(
-        LineUpJS.buildNumberColumn('n')
-          .label('N')
-          .custom('showMinimumRepresentation', true)
-      );
-      builder.column(
-        LineUpJS.buildNumberColumn('m')
-          .label('M')
-          .custom('showMinimumRepresentation', true)
-      );
-      builder.column(
-        LineUpJS.buildNumberColumn('n')
-          .label('N 2')
-      );
-      builder.column(
-        LineUpJS.buildNumberColumn('m')
-          .label('M 2')
-      );
+      builder.column(LineUpJS.buildNumberColumn('n').label('N').custom('showMinimumRepresentation', true));
+      builder.column(LineUpJS.buildNumberColumn('m').label('M').custom('showMinimumRepresentation', true));
+      builder.column(LineUpJS.buildNumberColumn('n').label('N 2'));
+      builder.column(LineUpJS.buildNumberColumn('m').label('M 2'));
       builder.buildTaggle(document.body);
     </script>
   </body>

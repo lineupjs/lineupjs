@@ -44,7 +44,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         n.title = title;
 
         const bar = n.firstElementChild! as HTMLElement;
-        bar.style.width = missing ? '100%' : (showMin ? `max(1px, ${w}%)`: `${w}%`);
+        bar.style.width = missing ? '100%' : showMin ? `max(1px, ${w}%)` : `${w}%`;
         const color = adaptColor(colorOf(col, d, imposer, value), BIG_MARK_LIGHTNESS_FACTOR);
         bar.style.backgroundColor = missing ? null : color;
         setText(bar.firstElementChild!, title);
