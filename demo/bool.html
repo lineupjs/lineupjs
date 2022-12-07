@@ -13,17 +13,36 @@
     <script>
       window.onload = function () {
         const arr = [];
-        const vs = ['y', 'yes', 'true', true, '1','1.0', 1, 1.0, 'n', 'no', 'false', false, '0', '0.0', 0,0.0, 'on', 'off'];
+        const vs = [
+          'y',
+          'yes',
+          'true',
+          true,
+          '1',
+          '1.0',
+          1,
+          1.0,
+          'n',
+          'no',
+          'false',
+          false,
+          '0',
+          '0.0',
+          0,
+          0.0,
+          'on',
+          'off',
+        ];
         for (let i = 0; i < vs.length; ++i) {
           arr.push({
             s: 'Row ' + i,
-            bool: vs[i]
+            bool: vs[i],
           });
         }
         for (let i = 0; i < vs.length; ++i) {
           arr.push({
             s: 'Row ' + i,
-            bool:typeof vs[i] === 'string' ? vs[i].toUpperCase() : vs[i]
+            bool: typeof vs[i] === 'string' ? vs[i].toUpperCase() : vs[i],
           });
         }
         const b = LineUpJS.builder(arr);
