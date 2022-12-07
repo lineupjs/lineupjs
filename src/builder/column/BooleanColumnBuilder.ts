@@ -15,6 +15,11 @@ export default class BooleanColumnBuilder extends ColumnBuilder<IBooleanColumnDe
     this.desc.falseMarker = marker;
     return this;
   }
+
+  trueValues(values: readonly any[]) {
+    this.desc.trueValues = values;
+    return this;
+  }
 }
 
 /**

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <title>LineUp Builder Test</title>
+
+    <link href="./LineUpJS.css" rel="stylesheet" />
+    <link href="./demo.css" rel="stylesheet" />
+  </head>
+  <body>
+    <script src="./LineUpJS.js"></script>
+
+    <script>
+      window.onload = function () {
+        const arr = [];
+        const vs = ['y', 'yes', 'true', true, '1','1.0', 1, 1.0, 'n', 'no', 'false', false, '0', '0.0', 0,0.0, 'on', 'off'];
+        for (let i = 0; i < vs.length; ++i) {
+          arr.push({
+            s: 'Row ' + i,
+            bool: vs[i]
+          });
+        }
+        for (let i = 0; i < vs.length; ++i) {
+          arr.push({
+            s: 'Row ' + i,
+            bool:typeof vs[i] === 'string' ? vs[i].toUpperCase() : vs[i]
+          });
+        }
+        const b = LineUpJS.builder(arr);
+
+        b.column(LineUpJS.buildStringColumn('s').label('label'));
+        b.column(LineUpJS.buildBooleanColumn('bool').label('bool'));
+
+        b.build(document.body);
+      };
+    </script>
+  </body>
+</html>
