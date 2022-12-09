@@ -97,7 +97,13 @@ export default class StringFilterDialog extends ADialog {
     }
     input.addEventListener(
       'input',
-      debounce(() => this.submit(), 100),
+      debounce(() => {
+        const input = this.findInput('input[type="text"]').value;
+        if (input.length > 0 && !this.before) {
+          findFilterMissing(this.node).checked = true;
+        }
+        this.submit()
+      }, 100),
       {
         passive: true,
       }
