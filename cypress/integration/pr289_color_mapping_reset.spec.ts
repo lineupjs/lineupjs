@@ -5,7 +5,7 @@ import { openMoreDialog, closeDialog, resetDialog } from './utils/ui';
 describe('pr275_sort_group', () => {
   let lineup: LineUp;
   let lineUpJS: LineUpJSType;
-  before(
+  beforeEach(
     withLineUp((l, document) => {
       lineUpJS = l;
       const arr = generateData({
