@@ -51,7 +51,7 @@ export default class CategoricalFilterDialog extends ADialog {
           </span>
         </label>`
           )
-        .join('')}
+          .join('')}
         <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}" data-missing="">
           <input type="checkbox" ${!this.before.filterMissing ? 'checked="checked"' : ''} data-missing="">
           <span>
@@ -113,7 +113,7 @@ export default class CategoricalFilterDialog extends ADialog {
         if (!summary || !data) {
           return;
         }
-        const missingNode = this.find(`label[data-missing] .${cssClass('dialog-filter-table-entry-stats')}`)
+        const missingNode = this.find(`label[data-missing] .${cssClass('dialog-filter-table-entry-stats')}`);
         missingNode.textContent = `${summary.missing.toLocaleString()}/${data.count.toLocaleString()}`;
         this.forEach(`label[data-cat] .${cssClass('dialog-filter-table-entry-stats')}`, (n: HTMLElement, i) => {
           const bin = summary.hist[i];

@@ -102,7 +102,7 @@ export default class StringFilterDialog extends ADialog {
         if (input.length > 0 && !this.before) {
           findFilterMissing(this.node).checked = true;
         }
-        this.submit()
+        this.submit();
       }, 100),
       {
         passive: true,
