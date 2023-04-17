@@ -24,7 +24,10 @@
         const builder = LineUpJS.builder(arr);
 
         // manually define columns
-        builder.deriveColumns().column(LineUpJS.buildStringColumn('d').htmlLabel('<strong>STRONG</strong>'));
+        builder
+          .deriveColumns()
+          .column(LineUpJS.buildStringColumn('d').htmlLabel('<strong>STRONG</strong>'))
+          .column(LineUpJS.buildStringColumn('d').htmlLabel('DD', (col, ctx) => `<i>${col.label}</i>`));
 
         builder.defaultRanking();
 
