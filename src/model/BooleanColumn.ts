@@ -42,7 +42,7 @@ export interface IBooleanDesc {
 
   /**
    * list of values that indicate true values (case insensitive)
-   * @default 'y', 'yes', 'true', true, '1','1.0', 1, 1.0
+   * @default 'y', 'yes', 'true', true, '1','1.0', 1, 1.0, 'on'
    */
   trueValues?: readonly any[];
 }
