@@ -37,18 +37,21 @@
           arr.push({
             s: 'Row ' + i,
             bool: vs[i],
+            custombool: i % 2 === 0 ? 'yeah' : 'nope',
           });
         }
         for (let i = 0; i < vs.length; ++i) {
           arr.push({
             s: 'Row ' + i,
             bool: typeof vs[i] === 'string' ? vs[i].toUpperCase() : vs[i],
+            custombool: i % 2 === 0 ? 'yeah'.toUpperCase() : 'nope'.toUpperCase(),
           });
         }
         const b = LineUpJS.builder(arr);
 
         b.column(LineUpJS.buildStringColumn('s').label('label'));
         b.column(LineUpJS.buildBooleanColumn('bool').label('bool'));
+        b.column(LineUpJS.buildBooleanColumn('custombool').label('custombool').summary('custom true values').trueValues(['yeah']));
 
         b.build(document.body);
       };
