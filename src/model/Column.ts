@@ -703,4 +703,48 @@ export default class Column extends AEventDispatcher {
         ]);
     }
   }
+
+  getHeaderLabel(ctx: 'header' | 'sidePanel' | 'reorder'): { content: string; asHTML: boolean } {
+    if (this.desc.labelAsHTML === true) {
+      return {
+        content: this.label,
+        asHTML: true,
+      };
+    }
+    if (typeof this.desc.labelAsHTML === 'function') {
+      return {
+        content: this.desc.labelAsHTML(this, ctx),
+        asHTML: true,
+      };
+    }
+    return {
+      content: this.label,
+      asHTML: false,
+    };
+  }
+  getSummaryLabel(
+    ctx: 'header' | 'sidePanel' | 'reorder',
+    fallback: boolean = false
+  ): { content: string; asHTML: boolean } {
+    let summary = this.desc.summary;
+    if (!summary && fallback) {
+      summary = this.description;
+    }
+    if (this.desc.summaryAsHTML === true) {
+      return {
+        content: summary,
+        asHTML: true,
+      };
+    }
+    if (typeof this.desc.summaryAsHTML === 'function') {
+      return {
+        content: this.desc.summaryAsHTML(this, ctx),
+        asHTML: true,
+      };
+    }
+    return {
+      content: summary,
+      asHTML: false,
+    };
+  }
 }

@@ -52,7 +52,7 @@ export default class SidePanelEntryVis {
 
   update(ctx: IRankingHeaderContext = this.ctx) {
     this.ctx = ctx;
-    updateHeader(this.node, this.column);
+    updateHeader(this.node, this.column, 'sidePanel');
     this.updateSummary();
   }
 

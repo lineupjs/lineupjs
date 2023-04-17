@@ -41,27 +41,28 @@ export default class Hierarchy {
         node.dataset.typeCat = categoryOf(item.col).name;
         node.dataset.type = item.col.desc.type;
 
-        const summary = item.col.getMetaData().summary || item.col.description;
+        const header = item.col.getHeaderLabel('reorder');
+        const summary = item.col.getSummaryLabel('reorder', true);
         node.classList.toggle(cssClass('searchbox-summary-entry'), Boolean(summary));
         if (summary) {
           const label = node.ownerDocument.createElement('span');
-          if (item.col.desc.labelAsHTML) {
-            label.innerHTML = item.text;
+          if (header.asHTML) {
+            label.innerHTML = header.content;
           } else {
-            label.textContent = item.text;
+            label.textContent = header.content;
           }
           node.appendChild(label);
           const desc = node.ownerDocument.createElement('span');
-          if (item.col.desc.summaryAsHTML) {
-            label.innerHTML = summary;
+          if (summary.asHTML) {
+            label.innerHTML = summary.content;
           } else {
-            label.textContent = summary;
+            label.textContent = summary.content;
           }
           node.appendChild(desc);
-        } else if (item.col.desc.labelAsHTML) {
-          node.innerHTML = item.text;
+        } else if (header.asHTML) {
+          node.innerHTML = header.content;
         } else {
-          node.textContent = item.text;
+          node.textContent = header.content;
         }
       },
     };
@@ -105,7 +106,7 @@ export default class Hierarchy {
       const item = cache.get(col.id);
       if (item) {
         node.appendChild(item);
-        updateHeader(item, col, 0);
+        updateHeader(item, col, 'reorder', 0);
         return;
       }
       const addons = getToolbarDialogAddons(col, addonKey, this.ctx);
@@ -150,7 +151,7 @@ export default class Hierarchy {
 
       extras(d, last);
 
-      updateHeader(last, col, 0);
+      updateHeader(last, col, 'reorder', 0);
     });
   }
 
