@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <link href="./LineUpJS.css" rel="stylesheet" />
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .lu {
+        clear: both;
+        position: absolute;
+        top: 1px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="./LineUpJS.js"></script>
+    <script>
+      let testData = [
+        { n: 0, m: 1 },
+        { n: 20, m: 10 },
+        { n: 100, m: 100 },
+      ];
+      for (let i = 0; i < 5; i++) {
+        testData = [...testData, ...testData];
+      }
+      const builder = LineUpJS.builder(testData);
+
+      builder.column(LineUpJS.buildNumberColumn('n').label('N').custom('showMinimumRepresentation', true));
+      builder.column(LineUpJS.buildNumberColumn('m').label('M').custom('showMinimumRepresentation', true));
+      builder.column(LineUpJS.buildNumberColumn('n').label('N 2'));
+      builder.column(LineUpJS.buildNumberColumn('m').label('M 2'));
+      builder.buildTaggle(document.body);
+    </script>
+  </body>
+</html>
