@@ -1,5 +1,5 @@
 import { round } from '../internal';
-import { Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAULT_COLOR } from '../model';
+import { Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAULT_COLOR, INumberDesc } from '../model';
 import { setText, adaptDynamicColorToBgColor, noRenderer, BIG_MARK_LIGHTNESS_FACTOR, adaptColor } from './utils';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import { colorOf } from './impose';
@@ -29,6 +29,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
 
   create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
+    const showMin = (col.desc as INumberDesc).showMinimumRepresentation;
     return {
       template: `<div title="">
           <div class="${cssClass('bar-label')}" style='background-color: ${DEFAULT_COLOR}'>
@@ -43,7 +44,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         n.title = title;
 
         const bar = n.firstElementChild! as HTMLElement;
-        bar.style.width = missing ? '100%' : `${w}%`;
+        bar.style.width = missing ? '100%' : showMin ? `max(1px, ${w}%)` : `${w}%`;
         const color = adaptColor(colorOf(col, d, imposer, value), BIG_MARK_LIGHTNESS_FACTOR);
         bar.style.backgroundColor = missing ? null : color;
         setText(bar.firstElementChild!, title);
@@ -58,7 +59,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         const value = col.getNumber(d);
         ctx.fillStyle = adaptColor(colorOf(col, d, imposer, value) || DEFAULT_COLOR, BIG_MARK_LIGHTNESS_FACTOR);
         const w = width * value;
-        ctx.fillRect(0, 0, Number.isNaN(w) ? 0 : w, CANVAS_HEIGHT);
+        ctx.fillRect(0, 0, Number.isNaN(w) ? 0 : Math.max(w, showMin ? 1 : 0), CANVAS_HEIGHT);
       },
     };
   }

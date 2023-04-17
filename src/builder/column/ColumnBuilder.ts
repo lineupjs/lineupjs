@@ -1,4 +1,4 @@
-import type { IArrayDesc, IColumnDesc } from '../../model';
+import type { IArrayDesc, IColumnDesc, IStyleHTMLWrapper } from '../../model';
 
 export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
   protected readonly desc: T;
@@ -14,9 +14,9 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
     this.desc.label = label;
     return this;
   }
-  htmlLabel(label: string) {
+  htmlLabel(label: string, render?: IStyleHTMLWrapper) {
     this.desc.label = label;
-    this.desc.labelAsHTML = true;
+    this.desc.labelAsHTML = render ?? true;
     return this;
   }
 
@@ -35,9 +35,9 @@ export default class ColumnBuilder<T extends IColumnDesc = IColumnDesc> {
     this.desc.summary = summary;
     return this;
   }
-  htmlSummary(label: string) {
+  htmlSummary(label: string, render?: IStyleHTMLWrapper) {
     this.desc.summary = label;
-    this.desc.summaryAsHTML = true;
+    this.desc.summaryAsHTML = render ?? true;
     return this;
   }
 

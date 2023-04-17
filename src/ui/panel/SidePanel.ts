@@ -75,15 +75,19 @@ export default class SidePanel {
           node.classList.toggle(cssClass('searchbox-summary-entry'), Boolean(summary));
           if (summary) {
             const label = node.ownerDocument.createElement('span');
-            if (w.desc.labelAsHTML) {
+            if (w.desc.labelAsHTML === true) {
               label.innerHTML = w.desc.label;
+            } else if (typeof w.desc.labelAsHTML === 'function') {
+              label.innerHTML = w.desc.labelAsHTML(w.desc, 'chooser');
             } else {
               label.textContent = w.desc.label;
             }
             node.appendChild(label);
             const desc = node.ownerDocument.createElement('span');
-            if (w.desc.summaryAsHTML) {
+            if (w.desc.summaryAsHTML === true) {
               desc.innerHTML = summary;
+            } else if (typeof w.desc.summaryAsHTML === 'function') {
+              desc.innerHTML = w.desc.summaryAsHTML(w.desc, 'chooser');
             } else {
               desc.textContent = summary;
             }
@@ -93,7 +97,11 @@ export default class SidePanel {
         }
       }
       if (isWrapper(item) && item.desc.labelAsHTML) {
-        node.innerHTML = item.text;
+        if (typeof item.desc.labelAsHTML === 'function') {
+          node.innerHTML = item.desc.labelAsHTML(item.desc, 'chooser');
+        } else {
+          node.innerHTML = item.text;
+        }
       } else {
         setText(node, item.text);
       }
