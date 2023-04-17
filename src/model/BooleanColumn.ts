@@ -77,7 +77,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   static readonly GROUP_TRUE = { name: 'True', color: '#444444' };
   static readonly GROUP_FALSE = { name: 'False', color: '#dddddd' };
-  static readonly DEFAULT_TRUE_VALUES: any[] = ['y', 'yes', 'true', true, '1', '1.0', 1, 1.0];
+  static readonly DEFAULT_TRUE_VALUES: any[] = ['y', 'yes', 'true', true, '1', '1.0', 1, 1.0, 'on'];
 
   private currentFilter: ICategoricalFilter | null = null;
 
