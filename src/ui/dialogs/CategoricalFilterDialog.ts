@@ -6,7 +6,6 @@ import {
   Ranking,
   BooleanColumn,
 } from '../../model';
-import { findFilterMissing, updateFilterMissingNumberMarkup, filterMissingNumberMarkup } from '../missing';
 import ADialog, { IDialogContext } from './ADialog';
 import { forEach } from './utils';
 import { cssClass, engineCssClass } from '../../styles';
@@ -53,6 +52,14 @@ export default class CategoricalFilterDialog extends ADialog {
         </label>`
           )
           .join('')}
+        <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}" data-missing="">
+          <input type="checkbox" ${!this.before.filterMissing ? 'checked="checked"' : ''} data-missing="">
+          <span>
+            <span class="${cssClass('dialog-filter-table-color')} ${cssClass('missing')}"></span>
+            <div class="${cssClass('dialog-filter-table-entry-label')}">missing value rows</div>
+            <div class="${cssClass('dialog-filter-table-entry-stats')}">0</div>
+          </span>
+        </label>
     </div>`
     );
     const categories = this.column.categories;
@@ -64,7 +71,7 @@ export default class CategoricalFilterDialog extends ADialog {
     // selectAll
     const selectAll = this.findInput('input:not([data-cat])');
     selectAll.onchange = () => {
-      forEach(node, 'input[data-cat]', (n: HTMLInputElement) => (n.checked = selectAll.checked));
+      forEach(node, 'input[data-cat],input[data-missing]', (n: HTMLInputElement) => (n.checked = selectAll.checked));
     };
     if (this.column instanceof SetColumn) {
       const some = (this.before as ISetCategoricalFilter).mode !== 'every';
@@ -84,8 +91,6 @@ export default class CategoricalFilterDialog extends ADialog {
       </label>`
       );
     }
-    node.insertAdjacentHTML('beforeend', filterMissingNumberMarkup(this.before.filterMissing, 0));
-
     this.enableLivePreviews('input[type=checkbox],input[type=radio]');
 
     const ranking = this.column.findMyRanker()!;
@@ -104,12 +109,13 @@ export default class CategoricalFilterDialog extends ADialog {
           return;
         }
         const { summary, data } = r;
-        const missing = data ? data.missing : summary ? summary.missing : 0;
-        updateFilterMissingNumberMarkup(findFilterMissing(this.node).parentElement, missing);
+
         if (!summary || !data) {
           return;
         }
-        this.forEach(`.${cssClass('dialog-filter-table-entry-stats')}`, (n: HTMLElement, i) => {
+        const missingNode = this.find(`label[data-missing] .${cssClass('dialog-filter-table-entry-stats')}`);
+        missingNode.textContent = `${summary.missing.toLocaleString()}/${data.count.toLocaleString()}`;
+        this.forEach(`label[data-cat] .${cssClass('dialog-filter-table-entry-stats')}`, (n: HTMLElement, i) => {
           const bin = summary.hist[i];
           const raw = data.hist[i];
           n.textContent = `${bin.count.toLocaleString()}/${raw.count.toLocaleString()}`;
@@ -135,7 +141,8 @@ export default class CategoricalFilterDialog extends ADialog {
 
   protected reset() {
     this.forEach('input[data-cat]', (n: HTMLInputElement) => (n.checked = true));
-    findFilterMissing(this.node).checked = false;
+    this.findInput('input[data-missing]').checked = true;
+
     const mode = this.findInput('input[value=every]');
     if (mode) {
       mode.checked = true;
@@ -156,7 +163,8 @@ export default class CategoricalFilterDialog extends ADialog {
       // all checked = no filter
       f = null;
     }
-    const filterMissing = findFilterMissing(this.node).checked;
+    // TODO
+    const filterMissing = !this.findInput('input[data-missing]').checked;
     const mode = this.findInput('input[value=some]');
     this.updateFilter(f, filterMissing, mode != null && mode.checked);
     return true;
