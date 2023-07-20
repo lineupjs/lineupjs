@@ -204,8 +204,8 @@ export function updateLodRules(style: GridStyleManager, overviewMode: boolean, o
   .${engineCssClass('tr')}.${cssClass('selected')},
   .${engineCssClass('tr')}.${cssClass('low')}:hover + .${engineCssClass('tr')}.${cssClass('low')},
   .${engineCssClass('tr')}.${cssClass('low')}.${engineCssClass('highlighted')} + .${engineCssClass('tr')}.${cssClass(
-      'low'
-    )},
+    'low'
+  )},
   .${engineCssClass('tr')}.${cssClass('selected')} + .${engineCssClass('tr')}.${cssClass('low')}`,
     {
       marginTop: `${options.rowPadding}px !important`,

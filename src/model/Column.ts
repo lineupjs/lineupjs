@@ -144,7 +144,10 @@ export default class Column extends AEventDispatcher {
   private summaryRenderer: string;
   private visible: boolean;
 
-  constructor(id: string, public readonly desc: Readonly<IColumnDesc>) {
+  constructor(
+    id: string,
+    public readonly desc: Readonly<IColumnDesc>
+  ) {
     super();
     this.uid = fixCSS(id);
     this.renderer = this.desc.renderer || this.desc.type;

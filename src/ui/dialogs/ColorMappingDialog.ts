@@ -79,8 +79,8 @@ export default class ColorMappingDialog extends ADialog {
         'color-gradient'
       )}"><input name="color" type="radio" value="custom:solid" ${refColor && !has ? 'checked="checked"' : ''}>
         <span class="${cssClass('color-custom')}"><input type="color" name="solid" list="${id}L" value="${
-        current instanceof SolidColorFunction ? this.ctx.sanitize(current.color) : DEFAULT_COLOR
-      }" ${refColor && !has ? '' : 'disabled'}></span>
+          current instanceof SolidColorFunction ? this.ctx.sanitize(current.color) : DEFAULT_COLOR
+        }" ${refColor && !has ? '' : 'disabled'}></span>
       </label>`;
     }
     h += '</div>';
@@ -94,17 +94,17 @@ export default class ColorMappingDialog extends ADialog {
     h += '<div>';
     h += `<div><label class="${cssClass('checkbox')}">
       <input name="kindS" type="radio" id="${id}KC_S" value="continuous" ${
-      !(wrapped instanceof QuantizedColorFunction) ? 'checked' : ''
-    }>
+        !(wrapped instanceof QuantizedColorFunction) ? 'checked' : ''
+      }>
       <span>Continuous</span>
     </label>
     <label class="${cssClass('checkbox')}">
       <input name="kindS" type="radio" id="${id}KQ_S" value="quantized" ${
-      wrapped instanceof QuantizedColorFunction ? 'checked' : ''
-    }>
+        wrapped instanceof QuantizedColorFunction ? 'checked' : ''
+      }>
       <span>Discrete&nbsp;<input type="number" id="${id}KQS_S" min="2" step="1" style="width: 3em" value="${
-      wrapped instanceof QuantizedColorFunction ? `${wrapped.steps}"` : '5" disabled'
-    }>&nbsp; steps</span>
+        wrapped instanceof QuantizedColorFunction ? `${wrapped.steps}"` : '5" disabled'
+      }>&nbsp; steps</span>
     </label></div>`;
     {
       const name = current instanceof SequentialColorFunction ? current.name : '';
@@ -120,11 +120,11 @@ export default class ColorMappingDialog extends ADialog {
         <input name="color" type="radio" value="custom:sequential" ${isCustom ? 'checked' : ''}>
         <span class="${cssClass('color-custom')}">
           <input type="color" name="interpolate0" list="${id}LW" ${
-        !isCustom ? 'disabled' : `value="${entries[0].color}"`
-      }>
+            !isCustom ? 'disabled' : `value="${entries[0].color}"`
+          }>
           <input type="color" name="interpolate1" list="${id}LW" ${
-        !isCustom ? 'disabled' : `value="${entries[entries.length - 1].color}"`
-      }>
+            !isCustom ? 'disabled' : `value="${entries[entries.length - 1].color}"`
+          }>
         </span>
       </label>`;
     }
@@ -138,17 +138,17 @@ export default class ColorMappingDialog extends ADialog {
     h += '<div>';
     h += `<div><label class="${cssClass('checkbox')}">
       <input name="kindD" type="radio" id="${id}KC_D" value="continuous" ${
-      !(wrapped instanceof QuantizedColorFunction) ? 'checked' : ''
-    }>
+        !(wrapped instanceof QuantizedColorFunction) ? 'checked' : ''
+      }>
       <span>Continuous</span>
     </label>
     <label class="${cssClass('checkbox')}">
       <input name="kindD" type="radio" id="${id}KQ_D" value="quantized" ${
-      wrapped instanceof QuantizedColorFunction ? 'checked' : ''
-    }>
+        wrapped instanceof QuantizedColorFunction ? 'checked' : ''
+      }>
       <span>Discrete&nbsp;<input type="number" id="${id}KQS_D" min="2" step="1" style="width: 3em" value="${
-      wrapped instanceof QuantizedColorFunction ? `${wrapped.steps}"` : '5" disabled'
-    }>&nbsp; steps</span>
+        wrapped instanceof QuantizedColorFunction ? `${wrapped.steps}"` : '5" disabled'
+      }>&nbsp; steps</span>
     </label></div>`;
 
     {
@@ -165,14 +165,14 @@ export default class ColorMappingDialog extends ADialog {
         <input name="color" type="radio" value="custom:divergent" ${isCustom ? 'checked' : ''}>
         <span class="${cssClass('color-custom')}">
           <input type="color" name="divergingm1" list="${id}L" ${
-        !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[0].color)}"`
-      }>
+            !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[0].color)}"`
+          }>
           <input type="color" name="diverging0" list="${id}LW" ${
-        !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[1].color)}"`
-      }>
+            !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[1].color)}"`
+          }>
           <input type="color" name="diverging1" list="${id}L" ${
-        !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[2].color)}"`
-      }>
+            !isCustom ? 'disabled' : `value="${this.ctx.sanitize(entries[2].color)}"`
+          }>
         </span>
       </label>`;
     }

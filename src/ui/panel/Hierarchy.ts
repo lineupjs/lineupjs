@@ -22,7 +22,10 @@ export default class Hierarchy {
   readonly sortAdder: SearchBox<IColumnItem>;
   readonly groupSortAdder: SearchBox<IColumnItem>;
 
-  constructor(private readonly ctx: IRankingHeaderContext, document: Document) {
+  constructor(
+    private readonly ctx: IRankingHeaderContext,
+    document: Document
+  ) {
     this.node = document.createElement('aside');
     this.node.classList.add(cssClass('hierarchy'), cssClass('feature-advanced'), cssClass('feature-ranking'));
     this.node.innerHTML = `
@@ -209,8 +212,8 @@ export default class Hierarchy {
         'afterbegin',
         `
       <i title="Sort" class="${actionCSSClass('sort')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria(
-          'Toggle Sorting'
-        )}</i>`
+        'Toggle Sorting'
+      )}</i>`
       );
       last.querySelector<HTMLElement>('i[title=Sort]')!.onclick = (evt) => {
         evt.preventDefault();
@@ -250,8 +253,8 @@ export default class Hierarchy {
         'afterbegin',
         `
       <i title="Sort Group" class="${actionCSSClass('sort-groups')}" data-sort="${s.asc ? 'asc' : 'desc'}">${aria(
-          'Toggle Sorting'
-        )}</i>`
+        'Toggle Sorting'
+      )}</i>`
       );
       last.querySelector<HTMLElement>('i[title="Sort Group"]')!.onclick = (evt) => {
         evt.preventDefault();

@@ -13,7 +13,11 @@ interface ISlope {
 }
 
 class ItemSlope implements ISlope {
-  constructor(private readonly left: number, private readonly right: number, public readonly dataIndices: number[]) {}
+  constructor(
+    private readonly left: number,
+    private readonly right: number,
+    public readonly dataIndices: number[]
+  ) {}
 
   isSelected(selection: { has(dataIndex: number): boolean }) {
     return this.dataIndices.length === 1

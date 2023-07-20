@@ -6,7 +6,11 @@ import { debounce } from '../../internal';
 
 /** @internal */
 export default class SearchDialog extends ADialog {
-  constructor(private readonly column: Column, dialog: IDialogContext, private readonly provider: IDataProvider) {
+  constructor(
+    private readonly column: Column,
+    dialog: IDialogContext,
+    private readonly provider: IDataProvider
+  ) {
     super(dialog, {
       livePreview: 'search',
     });
