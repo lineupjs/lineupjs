@@ -1,4 +1,4 @@
-import { Column, RankColumn, IDataRow, IOrderedGroup } from '../model';
+import { Column, RankColumn, type IDataRow, type IOrderedGroup } from '../model';
 import type { ICellRendererFactory, ISummaryRenderer, IGroupCellRenderer, ICellRenderer } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';

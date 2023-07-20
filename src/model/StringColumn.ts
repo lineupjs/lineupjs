@@ -14,17 +14,17 @@ import Column, {
 } from './Column';
 import {
   defaultGroup,
-  IDataRow,
-  IGroup,
+  type IDataRow,
+  type IGroup,
   ECompareValueType,
-  IValueColumnDesc,
+  type IValueColumnDesc,
   othersGroup,
-  ITypeFactory,
+  type ITypeFactory,
 } from './interfaces';
 import { missingGroup, isMissingValue } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
-import { equal, IEventListener, ISequence, isSeqEmpty } from '../internal';
+import { equal, type IEventListener, type ISequence, isSeqEmpty } from '../internal';
 import { integrateDefaults } from './internal';
 
 export enum EAlignment {

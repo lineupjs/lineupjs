@@ -2,9 +2,9 @@ import { timeFormat, timeParse } from 'd3-time-format';
 import type { IDateColumn, IDateFilter } from './IDateColumn';
 import type { IKeyValue } from './IArrayColumn';
 import type { IDataRow, ITypeFactory } from './interfaces';
-import MapColumn, { IMapColumnDesc } from './MapColumn';
+import MapColumn, { type IMapColumnDesc } from './MapColumn';
 import { isMissingValue } from './missing';
-import DatesColumn, { EDateSort, IDatesDesc } from './DatesColumn';
+import DatesColumn, { EDateSort, type IDatesDesc } from './DatesColumn';
 import DateColumn from './DateColumn';
 import { dialogAddons, toolbar } from './annotations';
 import type {

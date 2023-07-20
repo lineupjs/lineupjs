@@ -1,25 +1,25 @@
-import { IBoxPlotData, IAdvancedBoxPlotData, round } from '../internal';
+import { type IBoxPlotData, type IAdvancedBoxPlotData, round } from '../internal';
 import {
   NumberColumn,
-  IBoxPlotColumn,
-  INumberColumn,
+  type IBoxPlotColumn,
+  type INumberColumn,
   isBoxPlotColumn,
   Column,
-  IDataRow,
+  type IDataRow,
   isNumberColumn,
   isMapAbleColumn,
-  IOrderedGroup,
+  type IOrderedGroup,
 } from '../model';
 import { BOX_PLOT, CANVAS_HEIGHT, DOT, cssClass } from '../styles';
 import { colorOf } from './impose';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  IImposer,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
+  type ICellRendererFactory,
+  type IImposer,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas } from './missing';
 import { tasksAll } from '../provider';

@@ -1,11 +1,11 @@
-import { IDataRow, LinkMapColumn, Column, ILink, IKeyValue, IOrderedGroup } from '../model';
+import { type IDataRow, LinkMapColumn, Column, type ILink, type IKeyValue, type IOrderedGroup } from '../model';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  ISummaryRenderer,
-  IGroupCellRenderer,
-  ICellRenderer,
+  type ICellRendererFactory,
+  type ISummaryRenderer,
+  type IGroupCellRenderer,
+  type ICellRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { groupByKey } from './TableCellRenderer';

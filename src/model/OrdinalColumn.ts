@@ -1,4 +1,4 @@
-import { equalArrays, extent, IEventListener, ISequence } from '../internal';
+import { equalArrays, extent, type IEventListener, type ISequence } from '../internal';
 import { Category, toolbar } from './annotations';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';

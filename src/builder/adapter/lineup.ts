@@ -3,8 +3,8 @@ import type { IColumnDesc } from '../../model';
 import {
   deriveColors,
   deriveColumnDescriptions,
-  IDataProviderOptions,
-  ILocalDataProviderOptions,
+  type IDataProviderOptions,
+  type ILocalDataProviderOptions,
   LocalDataProvider,
 } from '../../provider';
 import { LineUp, Taggle } from '../../ui';

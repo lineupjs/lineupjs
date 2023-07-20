@@ -1,7 +1,7 @@
 import { format } from 'd3-format';
-import { boxplotBuilder, IAdvancedBoxPlotData, IEventListener, ISequence } from '../internal';
+import { boxplotBuilder, type IAdvancedBoxPlotData, type IEventListener, type ISequence } from '../internal';
 import { dialogAddons, SortByDefault, toolbar } from './annotations';
-import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import ArrayColumn, { type IArrayColumnDesc } from './ArrayColumn';
 import Column, {
   dirty,
   dirtyCaches,
@@ -16,7 +16,7 @@ import Column, {
   widthChanged,
 } from './Column';
 import type { IArrayDesc } from './IArrayColumn';
-import { IDataRow, ECompareValueType, ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type ITypeFactory } from './interfaces';
 import {
   DEFAULT_FORMATTER,
   getBoxPlotNumber,
@@ -27,11 +27,11 @@ import {
 } from './internalNumber';
 import {
   EAdvancedSortMethod,
-  IColorMappingFunction,
-  IMappingFunction,
-  INumberDesc,
-  INumberFilter,
-  INumbersColumn,
+  type IColorMappingFunction,
+  type IMappingFunction,
+  type INumberDesc,
+  type INumberFilter,
+  type INumbersColumn,
 } from './INumberColumn';
 import { restoreMapping } from './MappingFunction';
 import { isMissingValue } from './missing';

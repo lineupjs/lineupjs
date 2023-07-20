@@ -1,10 +1,10 @@
-import { dateStatsBuilder, IDateStatistics } from '../internal';
+import { dateStatsBuilder, type IDateStatistics } from '../internal';
 import {
   Column,
-  IDataRow,
-  IDateColumn,
-  IDatesColumn,
-  IOrderedGroup,
+  type IDataRow,
+  type IDateColumn,
+  type IDatesColumn,
+  type IOrderedGroup,
   isDateColumn,
   isDatesColumn,
   Ranking,
@@ -12,12 +12,12 @@ import {
 import { cssClass, engineCssClass } from '../styles';
 import {
   ERenderMode,
-  ICellRendererFactory,
-  IRenderContext,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
-  IRenderTasks,
+  type ICellRendererFactory,
+  type IRenderContext,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
+  type IRenderTasks,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { colorOf } from './utils';
@@ -26,8 +26,8 @@ import {
   histogramTemplate,
   mappingHintTemplate,
   mappingHintUpdate,
-  IFilterInfo,
-  IFilterContext,
+  type IFilterInfo,
+  type IFilterContext,
   filteredHistTemplate,
   initFilter,
 } from './histogram';

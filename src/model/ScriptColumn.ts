@@ -16,15 +16,15 @@ import Column, {
 } from './Column';
 import type { addColumn, moveColumn, removeColumn } from './CompositeColumn';
 import type CompositeColumn from './CompositeColumn';
-import CompositeNumberColumn, { ICompositeNumberDesc } from './CompositeNumberColumn';
+import CompositeNumberColumn, { type ICompositeNumberDesc } from './CompositeNumberColumn';
 import type { IDataRow, ITypeFactory } from './interfaces';
 import { isDummyNumberFilter, noNumberFilter, restoreNumberFilter } from './internalNumber';
 import {
-  IColorMappingFunction,
-  IMapAbleColumn,
-  IMapAbleDesc,
-  IMappingFunction,
-  INumberFilter,
+  type IColorMappingFunction,
+  type IMapAbleColumn,
+  type IMapAbleDesc,
+  type IMappingFunction,
+  type INumberFilter,
   isNumberColumn,
 } from './INumberColumn';
 import { restoreMapping } from './MappingFunction';

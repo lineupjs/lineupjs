@@ -1,5 +1,5 @@
-import { round, similar, dragHandle, IDragHandleOptions } from '../../internal';
-import ADialog, { IDialogContext } from './ADialog';
+import { round, similar, dragHandle, type IDragHandleOptions } from '../../internal';
+import ADialog, { type IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 
 function clamp(v: number) {

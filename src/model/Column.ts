@@ -1,18 +1,18 @@
-import { AEventDispatcher, ISequence, similar, fixCSS, IEventListener } from '../internal';
+import { AEventDispatcher, type ISequence, similar, fixCSS, type IEventListener } from '../internal';
 import { isSortingAscByDefault } from './annotations';
 import {
-  IColumnDump,
-  ISortCriteria,
+  type IColumnDump,
+  type ISortCriteria,
   defaultGroup,
   ECompareValueType,
-  IColumnDesc,
-  IDataRow,
-  IGroup,
-  IColumnParent,
-  IColumnMetaData,
-  IFlatColumn,
-  ICompareValue,
-  ITypeFactory,
+  type IColumnDesc,
+  type IDataRow,
+  type IGroup,
+  type IColumnParent,
+  type IColumnMetaData,
+  type IFlatColumn,
+  type ICompareValue,
+  type ITypeFactory,
 } from './interfaces';
 import type Ranking from './Ranking';
 

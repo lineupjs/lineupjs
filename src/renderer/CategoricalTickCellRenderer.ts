@@ -1,16 +1,16 @@
 import { DENSE_HISTOGRAM } from '../constants';
 import { round } from '../internal';
-import { Column, IDataRow, isCategoricalColumn, ICategoricalColumn } from '../model';
+import { Column, type IDataRow, isCategoricalColumn, type ICategoricalColumn } from '../model';
 import { CANVAS_HEIGHT, cssClass, TICK } from '../styles';
 import { colorOf } from './impose';
 import {
   ERenderMode,
-  ICellRenderer,
-  ICellRendererFactory,
-  IGroupCellRenderer,
-  IImposer,
-  IRenderContext,
-  ISummaryRenderer,
+  type ICellRenderer,
+  type ICellRendererFactory,
+  type IGroupCellRenderer,
+  type IImposer,
+  type IRenderContext,
+  type ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { adaptColor, noRenderer, SMALL_MARK_LIGHTNESS_FACTOR } from './utils';

@@ -1,4 +1,4 @@
-import { Column, IDataRow, DateColumn, IOrderedGroup } from '../model';
+import { Column, type IDataRow, DateColumn, type IOrderedGroup } from '../model';
 import type {
   IRenderContext,
   ICellRendererFactory,

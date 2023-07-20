@@ -16,7 +16,7 @@ import GroupCellRenderer from './GroupCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
 import HistogramCellRenderer from './HistogramCellRenderer';
 import ImageCellRenderer from './ImageCellRenderer';
-import { ERenderMode, ICellRendererFactory } from './interfaces';
+import { ERenderMode, type ICellRendererFactory } from './interfaces';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import LinkCellRenderer from './LinkCellRenderer';
 import LinkMapCellRenderer from './LinkMapCellRenderer';

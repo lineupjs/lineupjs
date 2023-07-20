@@ -1,5 +1,5 @@
 import { DENSE_HISTOGRAM } from '../constants';
-import { IBin, round, IDragHandleOptions, dragHandle } from '../internal';
+import { type IBin, round, type IDragHandleOptions, dragHandle } from '../internal';
 import { cssClass, FILTERED_OPACITY } from '../styles';
 import { color } from 'd3-color';
 import { filterMissingNumberMarkup, updateFilterMissingNumberMarkup } from '../ui/missing';

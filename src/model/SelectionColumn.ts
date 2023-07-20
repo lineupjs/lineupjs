@@ -1,5 +1,12 @@
 import { Category, SupportType, toolbar } from './annotations';
-import { IndicesArray, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
+import {
+  type IndicesArray,
+  type IDataRow,
+  type IGroup,
+  ECompareValueType,
+  type IValueColumnDesc,
+  type ITypeFactory,
+} from './interfaces';
 import type {
   widthChanged,
   labelChanged,

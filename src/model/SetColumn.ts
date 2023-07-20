@@ -22,7 +22,7 @@ import type {
   ISetColumn,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import { IDataRow, ECompareValueType, IValueColumnDesc, IGroup, ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type IValueColumnDesc, type IGroup, type ITypeFactory } from './interfaces';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
 import type { IEventListener } from '../internal';

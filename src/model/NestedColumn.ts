@@ -1,5 +1,5 @@
 import type { IDataRow, ECompareValueType } from './interfaces';
-import MultiLevelCompositeColumn, { IMultiLevelCompositeColumnDesc } from './MultiLevelCompositeColumn';
+import MultiLevelCompositeColumn, { type IMultiLevelCompositeColumnDesc } from './MultiLevelCompositeColumn';
 import { concat } from '../internal';
 import { toolbar } from './annotations';
 

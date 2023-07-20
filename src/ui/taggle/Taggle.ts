@@ -6,7 +6,7 @@ import type { DataProvider } from '../../provider';
 import { cssClass, engineCssClass } from '../../styles';
 import { ALineUp } from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
-import { spaceFillingRule, IRule } from './rules';
+import { spaceFillingRule, type IRule } from './rules';
 import TaggleRenderer from './TaggleRenderer';
 
 export default class Taggle extends ALineUp {

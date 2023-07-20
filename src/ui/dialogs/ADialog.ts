@@ -1,4 +1,4 @@
-import { createPopper, Placement, Instance } from '@popperjs/core';
+import { createPopper, type Placement, type Instance } from '@popperjs/core';
 import type DialogManager from './DialogManager';
 import { cssClass } from '../../styles';
 import type { IRankingHeaderContext } from '../interfaces';

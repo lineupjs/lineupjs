@@ -1,39 +1,39 @@
-import { numberStatsBuilder, IStatistics, getNumberOfBins } from '../internal';
+import { numberStatsBuilder, type IStatistics, getNumberOfBins } from '../internal';
 import {
   Column,
-  IDataRow,
-  IOrderedGroup,
-  INumberColumn,
-  INumbersColumn,
+  type IDataRow,
+  type IOrderedGroup,
+  type INumberColumn,
+  type INumbersColumn,
   isNumberColumn,
   isNumbersColumn,
-  IMapAbleColumn,
+  type IMapAbleColumn,
   isMapAbleColumn,
   Ranking,
 } from '../model';
 import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import { colorOf } from './impose';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  IImposer,
-  IRenderTasks,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
+  type ICellRendererFactory,
+  type IImposer,
+  type IRenderTasks,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { cssClass, engineCssClass } from '../styles';
 import {
   histogramUpdate,
   histogramTemplate,
-  IHistogramLike,
+  type IHistogramLike,
   mappingHintTemplate,
   mappingHintUpdate,
-  IFilterInfo,
+  type IFilterInfo,
   filteredHistTemplate,
-  IFilterContext,
+  type IFilterContext,
   initFilter,
 } from './histogram';
 import { noNumberFilter } from '../model/internalNumber';

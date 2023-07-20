@@ -1,11 +1,11 @@
 import { GUESSES_GROUP_HEIGHT, GUESSED_ROW_HEIGHT } from '../constants';
-import { concatSeq, ISequence, round } from '../internal';
+import { concatSeq, type ISequence, round } from '../internal';
 import {
   Column,
   DEFAULT_COLOR,
-  IDataRow,
-  INumberColumn,
-  IOrderedGroup,
+  type IDataRow,
+  type INumberColumn,
+  type IOrderedGroup,
   isNumberColumn,
   isNumbersColumn,
 } from '../model';
@@ -13,12 +13,12 @@ import { CANVAS_HEIGHT, DOT, cssClass } from '../styles';
 import { colorOf } from './impose';
 import {
   ERenderMode,
-  ICellRendererFactory,
-  IImposer,
-  IRenderContext,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
+  type ICellRendererFactory,
+  type IImposer,
+  type IRenderContext,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { adaptColor, noRenderer, SMALL_MARK_LIGHTNESS_FACTOR } from './utils';

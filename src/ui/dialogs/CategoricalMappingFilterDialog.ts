@@ -2,7 +2,7 @@ import { round } from '../../internal';
 import type { OrdinalColumn, ICategoricalFilter } from '../../model';
 import { isCategoryIncluded } from '../../model/internalCategorical';
 import { filterMissingMarkup, findFilterMissing } from '../missing';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { forEach } from './utils';
 import { cssClass } from '../../styles';
 

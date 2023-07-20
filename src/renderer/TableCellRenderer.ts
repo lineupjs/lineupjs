@@ -1,12 +1,12 @@
 import {
-  IArrayColumn,
-  IMapColumn,
+  type IArrayColumn,
+  type IMapColumn,
   isArrayColumn,
   isMapColumn,
   Column,
-  IDataRow,
+  type IDataRow,
   isMissingValue,
-  IOrderedGroup,
+  type IOrderedGroup,
 } from '../model';
 import type {
   IRenderContext,

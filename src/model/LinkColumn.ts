@@ -17,7 +17,7 @@ import { patternFunction, integrateDefaults } from './internal';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
 import type { IEventListener, ISequence } from '../internal';
-import { IStringDesc, EAlignment, IStringGroupCriteria, EStringGroupCriteriaType, IStringFilter } from './StringColumn';
+import { type IStringDesc, EAlignment, type IStringGroupCriteria, EStringGroupCriteriaType, type IStringFilter } from './StringColumn';
 import StringColumn from './StringColumn';
 
 export interface ILinkDesc extends IStringDesc {

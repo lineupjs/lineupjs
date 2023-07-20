@@ -2,7 +2,7 @@ import type { IMapAbleColumn, INumberFilter } from '../../model';
 import { createNumberFilter } from '../../renderer/HistogramCellRenderer';
 import { cssClass } from '../../styles';
 import type { IRankingHeaderContext } from '../interfaces';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 
 /** @internal */
 export default class NumberFilterDialog extends ADialog {

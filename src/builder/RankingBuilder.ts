@@ -16,8 +16,8 @@ import {
   createSelectionDesc,
   createStackDesc,
   EAdvancedSortMethod,
-  IColumnDesc,
-  ISortCriteria,
+  type IColumnDesc,
+  type ISortCriteria,
 } from '../model';
 import type { DataProvider } from '../provider';
 

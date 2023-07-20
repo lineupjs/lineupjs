@@ -5,9 +5,9 @@ import {
   SUPPORTED_FIREFOX_VERSION,
 } from '../browser';
 import type { ILineUpLike } from '../config';
-import { AEventDispatcher, IEventListener, clear } from '../internal';
+import { AEventDispatcher, type IEventListener, clear } from '../internal';
 import type { Column } from '../model';
-import { DataProvider, IDataProviderDump } from '../provider';
+import { DataProvider, type IDataProviderDump } from '../provider';
 import { cssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import type { ADialog } from './dialogs';

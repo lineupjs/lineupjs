@@ -1,6 +1,6 @@
 import type { Column } from '../../model';
 import type { IRankingHeaderContext, IRenderInfo } from '../interfaces';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 
 /** @internal */

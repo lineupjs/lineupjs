@@ -1,5 +1,5 @@
-import { OrderedSet, AEventDispatcher, IEventListener } from '../internal';
-import { IGroupData, IGroupItem, isGroup } from '../model';
+import { OrderedSet, AEventDispatcher, type IEventListener } from '../internal';
+import { type IGroupData, type IGroupItem, isGroup } from '../model';
 import type { IDataProvider } from '../provider';
 import { cssClass, engineCssClass } from '../styles';
 import { forEachIndices } from '../model/internal';

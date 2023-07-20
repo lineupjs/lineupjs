@@ -1,41 +1,41 @@
 import {
   ACellTableSection,
   GridStyleManager,
-  IAbortAblePromise,
-  ICellRenderContext,
-  IExceptionContext,
+  type IAbortAblePromise,
+  type ICellRenderContext,
+  type IExceptionContext,
   isAbortAble,
   isAsyncUpdate,
   isLoadingCell,
-  ITableSection,
+  type ITableSection,
   nonUniformContext,
   PrefetchMixin,
   tableIds,
   uniformContext,
-  IAsyncUpdate,
+  type IAsyncUpdate,
 } from 'lineupengine';
 import type { ILineUpFlags } from '../config';
 import { HOVER_DELAY_SHOW_DETAIL } from '../constants';
-import { AEventDispatcher, clear, debounce, IEventContext, IEventHandler, IEventListener, suffix } from '../internal';
+import { AEventDispatcher, clear, debounce, type IEventContext, type IEventHandler, type IEventListener, suffix } from '../internal';
 import {
   Column,
-  IGroupData,
-  IGroupItem,
-  IOrderedGroup,
+  type IGroupData,
+  type IGroupItem,
+  type IOrderedGroup,
   isGroup,
   isMultiLevelColumn,
   Ranking,
   StackColumn,
-  IGroupParent,
+  type IGroupParent,
   defaultGroup,
-  IGroup,
+  type IGroup,
 } from '../model';
 import type { IImposer, IRenderCallback, IRenderContext } from '../renderer';
 import { CANVAS_HEIGHT, COLUMN_PADDING, cssClass, engineCssClass } from '../styles';
 import { lineupAnimation } from './animation';
 import type { IRankingBodyContext, IRankingHeaderContextContainer } from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
-import RenderColumn, { IRenderers } from './RenderColumn';
+import RenderColumn, { type IRenderers } from './RenderColumn';
 import SelectionManager from './SelectionManager';
 import { groupRoots } from '../model/internal';
 import { isAlwaysShowingGroupStrategy, toRowMeta } from '../provider/internal';

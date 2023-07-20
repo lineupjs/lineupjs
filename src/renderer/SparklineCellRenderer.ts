@@ -1,20 +1,20 @@
 import {
   Column,
-  INumbersColumn,
+  type INumbersColumn,
   NumbersColumn,
   isNumbersColumn,
-  IDataRow,
-  IOrderedGroup,
+  type IDataRow,
+  type IOrderedGroup,
   isMissingValue,
 } from '../model';
 import { matchRows } from './ANumbersCellRenderer';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  ISummaryRenderer,
-  IGroupCellRenderer,
-  ICellRenderer,
+  type ICellRendererFactory,
+  type ISummaryRenderer,
+  type IGroupCellRenderer,
+  type ICellRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { forEachChild, noRenderer } from './utils';

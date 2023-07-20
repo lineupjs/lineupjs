@@ -1,4 +1,4 @@
-import { Column, SelectionColumn, IDataRow, IOrderedGroup } from '../model';
+import { Column, SelectionColumn, type IDataRow, type IOrderedGroup } from '../model';
 import type {
   IRenderContext,
   ICellRendererFactory,

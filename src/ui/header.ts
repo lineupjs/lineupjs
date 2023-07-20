@@ -1,9 +1,9 @@
 import { MIN_LABEL_WIDTH } from '../constants';
-import { dragAble, dropAble, hasDnDType, IDropResult } from '../internal';
+import { dragAble, dropAble, hasDnDType, type IDropResult } from '../internal';
 import { categoryOf } from '../model';
 import {
   createStackDesc,
-  IColumnDesc,
+  type IColumnDesc,
   isArrayColumn,
   isBoxPlotColumn,
   isCategoricalColumn,
@@ -15,7 +15,7 @@ import {
   createImpositionsDesc,
   createImpositionBoxPlotDesc,
   CompositeColumn,
-  IMultiLevelColumn,
+  type IMultiLevelColumn,
   isMultiLevelColumn,
 } from '../model';
 import { aria, cssClass, engineCssClass, RESIZE_ANIMATION_DURATION, RESIZE_SPACE } from '../styles';

@@ -1,6 +1,6 @@
 import type { Column } from '../../model';
 import type { IDataProvider } from '../../provider';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 import { debounce } from '../../internal';
 

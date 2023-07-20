@@ -1,5 +1,5 @@
 import type { Column } from '../../model';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { uniqueId, forEach } from './utils';
 import { getToolbarDialogAddons } from '../toolbarResolvers';
 import type { IRankingHeaderContext, IToolbarDialogAddonHandler } from '../interfaces';

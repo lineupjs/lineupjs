@@ -1,16 +1,24 @@
 import { round } from '../internal';
-import { Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn, DEFAULT_COLOR, INumberDesc } from '../model';
+import {
+  Column,
+  isNumbersColumn,
+  type IDataRow,
+  type INumberColumn,
+  isNumberColumn,
+  DEFAULT_COLOR,
+  type INumberDesc,
+} from '../model';
 import { setText, adaptDynamicColorToBgColor, noRenderer, BIG_MARK_LIGHTNESS_FACTOR, adaptColor } from './utils';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import { colorOf } from './impose';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  IImposer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
-  ICellRenderer,
+  type ICellRendererFactory,
+  type IImposer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
+  type ICellRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 

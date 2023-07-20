@@ -1,5 +1,11 @@
-import { Column, IDataRow, LinkColumn } from '../model';
-import { ERenderMode, ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer } from './interfaces';
+import { Column, type IDataRow, LinkColumn } from '../model';
+import {
+  ERenderMode,
+  type ICellRendererFactory,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
+} from './interfaces';
 import { renderMissingDOM } from './missing';
 import { noRenderer } from './utils';
 import { abortAble } from 'lineupengine';

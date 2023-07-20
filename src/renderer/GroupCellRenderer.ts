@@ -1,4 +1,4 @@
-import { Column, GroupColumn, IOrderedGroup, IGroup, defaultGroup, IDataRow } from '../model';
+import { Column, GroupColumn, type IOrderedGroup, type IGroup, defaultGroup, type IDataRow } from '../model';
 import type { ICellRendererFactory, ICellRenderer, IGroupCellRenderer, ISummaryRenderer } from './interfaces';
 import { noRenderer } from './utils';
 

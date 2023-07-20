@@ -1,7 +1,7 @@
-import { IExceptionContext, ITableSection, range } from 'lineupengine';
-import { IGroupData, IGroupItem, IOrderedGroup, isGroup, Ranking } from '../model';
+import { type IExceptionContext, type ITableSection, range } from 'lineupengine';
+import { type IGroupData, type IGroupItem, type IOrderedGroup, isGroup, Ranking } from '../model';
 import { aria, cssClass, engineCssClass, SLOPEGRAPH_WIDTH } from '../styles';
-import { IRankingHeaderContextContainer, EMode } from './interfaces';
+import { type IRankingHeaderContextContainer, EMode } from './interfaces';
 import { forEachIndices, filterIndices } from '../model/internal';
 
 interface ISlope {

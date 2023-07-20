@@ -1,4 +1,4 @@
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import {
   schemeCategory10,
   schemeSet1,
@@ -18,7 +18,7 @@ import {
   SequentialColorFunction,
   DivergentColorFunction,
 } from '../../model/ColorMappingFunction';
-import { IMapAbleColumn, DEFAULT_COLOR, IColorMappingFunction, IMapAbleDesc } from '../../model';
+import { type IMapAbleColumn, DEFAULT_COLOR, type IColorMappingFunction, type IMapAbleDesc } from '../../model';
 import { cssClass } from '../../styles';
 import type { IRankingHeaderContext } from '../interfaces';
 

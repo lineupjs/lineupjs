@@ -1,6 +1,6 @@
 import { Column, BooleanColumn } from '../model';
 import { DefaultCellRenderer } from './DefaultCellRenderer';
-import { ERenderMode, ICellRenderer } from './interfaces';
+import { ERenderMode, type ICellRenderer } from './interfaces';
 import { cssClass } from '../styles';
 
 export default class BooleanCellRenderer extends DefaultCellRenderer {

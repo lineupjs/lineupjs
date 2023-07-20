@@ -1,4 +1,4 @@
-import { suffix, IEventListener, ISequence } from '../internal';
+import { suffix, type IEventListener, type ISequence } from '../internal';
 import { toolbar, SortByDefault } from './annotations';
 import Column, {
   widthChanged,
@@ -18,12 +18,12 @@ import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } f
 import type { IDataRow, IGroup, IColumnDesc } from './interfaces';
 import {
   isNumberColumn,
-  INumberColumn,
+  type INumberColumn,
   isMapAbleColumn,
-  IColorMappingFunction,
-  IMappingFunction,
-  IMapAbleColumn,
-  INumberFilter,
+  type IColorMappingFunction,
+  type IMappingFunction,
+  type IMapAbleColumn,
+  type INumberFilter,
 } from './INumberColumn';
 import NumberColumn from './NumberColumn';
 import { DEFAULT_FORMATTER, noNumberFilter } from './internalNumber';

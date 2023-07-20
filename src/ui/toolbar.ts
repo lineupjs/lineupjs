@@ -4,12 +4,12 @@ import {
   EAdvancedSortMethod,
   EDateSort,
   ESortMethod,
-  IMultiLevelColumn,
+  type IMultiLevelColumn,
   isSortingAscByDefault,
   isSupportType,
 } from '../model';
 import { cssClass } from '../styles';
-import ADialog, { dialogContext, IDialogContext } from './dialogs/ADialog';
+import ADialog, { dialogContext, type IDialogContext } from './dialogs/ADialog';
 import CategoricalColorMappingDialog from './dialogs/CategoricalColorMappingDialog';
 import CategoricalFilterDialog from './dialogs/CategoricalFilterDialog';
 import CategoricalMappingFilterDialog from './dialogs/CategoricalMappingFilterDialog';

@@ -1,4 +1,4 @@
-import { abortAbleAll, IAbortAblePromise, IAsyncUpdate, isAsyncUpdate, StyleManager } from 'lineupengine';
+import { abortAbleAll, type IAbortAblePromise, type IAsyncUpdate, isAsyncUpdate, StyleManager } from 'lineupengine';
 import { round } from '../internal';
 import type { Column, IMultiLevelColumn } from '../model';
 import type { ISummaryRenderer } from '../renderer';

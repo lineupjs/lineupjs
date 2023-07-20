@@ -1,23 +1,23 @@
-import { ICategoricalStatistics, round } from '../internal';
+import { type ICategoricalStatistics, round } from '../internal';
 import {
   CategoricalColumn,
   Column,
   OrdinalColumn,
-  ICategoricalColumn,
+  type ICategoricalColumn,
   isCategoricalColumn,
-  IOrderedGroup,
-  ISetColumn,
+  type IOrderedGroup,
+  type ISetColumn,
   DEFAULT_COLOR,
 } from '../model';
 import { filterMissingNumberMarkup } from '../ui/missing';
-import { interactiveHist, HasCategoricalFilter } from './CategoricalCellRenderer';
+import { interactiveHist, type HasCategoricalFilter } from './CategoricalCellRenderer';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
+  type ICellRendererFactory,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { noRenderer, adaptTextColorToBgColor } from './utils';
 import { cssClass, FILTERED_OPACITY } from '../styles';

@@ -1,11 +1,11 @@
-import { IDataRow, IOrderedGroup, ActionColumn, Column } from '../model';
+import { type IDataRow, type IOrderedGroup, ActionColumn, Column } from '../model';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
+  type ICellRendererFactory,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { forEachChild, noRenderer } from './utils';
 import { cssClass } from '../styles';

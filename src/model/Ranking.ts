@@ -1,4 +1,4 @@
-import { equalArrays, fixCSS, IEventListener, suffix, joinIndexArrays, AEventDispatcher } from '../internal';
+import { equalArrays, fixCSS, type IEventListener, suffix, joinIndexArrays, AEventDispatcher } from '../internal';
 import { isSortingAscByDefault } from './annotations';
 import Column, {
   dirty,
@@ -11,18 +11,18 @@ import Column, {
 } from './Column';
 import CompositeColumn from './CompositeColumn';
 import {
-  IRankingDump,
+  type IRankingDump,
   defaultGroup,
-  IndicesArray,
-  IOrderedGroup,
-  IDataRow,
-  IColumnParent,
-  IFlatColumn,
-  ISortCriteria,
-  UIntTypedArray,
-  IGroupParent,
-  ITypeFactory,
-  IGroup,
+  type IndicesArray,
+  type IOrderedGroup,
+  type IDataRow,
+  type IColumnParent,
+  type IFlatColumn,
+  type ISortCriteria,
+  type UIntTypedArray,
+  type IGroupParent,
+  type ITypeFactory,
+  type IGroup,
 } from './interfaces';
 import { groupRoots, traverseGroupsDFS } from './internal';
 import AggregateGroupColumn from './AggregateGroupColumn';

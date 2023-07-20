@@ -1,4 +1,4 @@
-import { ILineUpOptions, defaultOptions } from '../config';
+import { type ILineUpOptions, defaultOptions } from '../config';
 import { merge, suffix } from '../internal';
 import type { DataProvider } from '../provider';
 import { cssClass } from '../styles';

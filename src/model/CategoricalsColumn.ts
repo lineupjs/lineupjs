@@ -1,4 +1,4 @@
-import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import ArrayColumn, { type IArrayColumnDesc } from './ArrayColumn';
 import type {
   ICategoricalDesc,
   ICategory,

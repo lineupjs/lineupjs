@@ -1,5 +1,5 @@
 import { timeFormat, timeParse } from 'd3-time-format';
-import { ISequence, equal, IEventListener } from '../internal';
+import { type ISequence, equal, type IEventListener } from '../internal';
 import { Category, dialogAddons, toolbar } from './annotations';
 import Column, {
   dirty,
@@ -16,7 +16,14 @@ import Column, {
   DEFAULT_COLOR,
 } from './Column';
 import type { IDateColumn, IDateDesc, IDateFilter, IDateGrouper } from './IDateColumn';
-import { defaultGroup, IDataRow, IGroup, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
+import {
+  defaultGroup,
+  type IDataRow,
+  type IGroup,
+  ECompareValueType,
+  type IValueColumnDesc,
+  type ITypeFactory,
+} from './interfaces';
 import { isMissingValue, isUnknown, missingGroup } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
