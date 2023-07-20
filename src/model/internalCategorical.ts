@@ -1,4 +1,4 @@
-import * as internal from '../internal';
+import { type ISequence, isSeqEmpty, empty } from '../internal';
 import { colorPool } from './internal';
 import type {
   ICategoricalColumn,
@@ -40,8 +40,8 @@ export function toCompareCategoryValue(v: ICategory | null) {
 }
 
 function findMostFrequent(
-  rows: internal.ISequence<ICategory | null>,
-  valueCache?: internal.ISequence<ICategory | null>
+  rows: ISequence<ICategory | null>,
+  valueCache?: ISequence<ICategory | null>
 ): { cat: ICategory | null; count: number } {
   const hist = new Map<ICategory | null, number>();
 
@@ -76,11 +76,11 @@ function findMostFrequent(
 }
 
 /** @internal */
-export function toMostFrequentCategoricals(rows: internal.ISequence<IDataRow>, col: ICategoricalsColumn): (ICategory | null)[] {
-  if (internal.isSeqEmpty(rows)) {
-    return internal.empty(col.dataLength!);
+export function toMostFrequentCategoricals(rows: ISequence<IDataRow>, col: ICategoricalsColumn): (ICategory | null)[] {
+  if (isSeqEmpty(rows)) {
+    return empty(col.dataLength!);
   }
-  const maps = internal.empty(col.dataLength!).map(() => new Map<ICategory | null, number>());
+  const maps = empty(col.dataLength!).map(() => new Map<ICategory | null, number>());
   rows.forEach((row) => {
     const vs = col.getCategories(row);
     if (!vs) {
@@ -111,11 +111,11 @@ export function toMostFrequentCategoricals(rows: internal.ISequence<IDataRow>, c
 
 /** @internal */
 export function toGroupCompareCategoryValue(
-  rows: internal.ISequence<IDataRow>,
+  rows: ISequence<IDataRow>,
   col: ICategoricalColumn,
-  valueCache?: internal.ISequence<ICategory | null>
+  valueCache?: ISequence<ICategory | null>
 ): ICompareValue[] {
-  if (internal.isSeqEmpty(rows)) {
+  if (isSeqEmpty(rows)) {
     return [NaN, null];
   }
   const mostFrequent = findMostFrequent(

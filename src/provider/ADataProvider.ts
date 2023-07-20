@@ -35,7 +35,13 @@ import {
 } from '../model';
 import { models } from '../model/models';
 import { forEachIndices, everyIndices, toGroupID, unifyParents } from '../model/internal';
-import { type IDataProvider, type IDataProviderDump, type IDataProviderOptions, SCHEMA_REF, type IExportOptions } from './interfaces';
+import {
+  type IDataProvider,
+  type IDataProviderDump,
+  type IDataProviderOptions,
+  SCHEMA_REF,
+  type IExportOptions,
+} from './interfaces';
 import { exportRanking, map2Object, object2Map, exportTable, isPromiseLike } from './utils';
 import type { IRenderTasks } from '../renderer';
 import { restoreCategoricalColorMapping } from '../model/CategoricalColorMappingFunction';

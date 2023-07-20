@@ -16,7 +16,15 @@ import {
 } from 'lineupengine';
 import type { ILineUpFlags } from '../config';
 import { HOVER_DELAY_SHOW_DETAIL } from '../constants';
-import { AEventDispatcher, clear, debounce, type IEventContext, type IEventHandler, type IEventListener, suffix } from '../internal';
+import {
+  AEventDispatcher,
+  clear,
+  debounce,
+  type IEventContext,
+  type IEventHandler,
+  type IEventListener,
+  suffix,
+} from '../internal';
 import {
   Column,
   type IGroupData,
