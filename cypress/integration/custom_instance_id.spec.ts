@@ -3,7 +3,7 @@ import { withLineUp, waitReady, LineUpJSType, Taggle } from './utils/lineup';
 describe('builder', () => {
   let lineup: Taggle;
   let lineUpJS: LineUpJSType;
-  before(
+  beforeEach(
     withLineUp((l, document) => {
       lineUpJS = l;
       const b = lineUpJS.builder([]);

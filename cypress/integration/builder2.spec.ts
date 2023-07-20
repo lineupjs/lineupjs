@@ -4,7 +4,7 @@ import { generateData, DEFAULT_CATEGORIES } from './utils/data';
 describe('builder2', () => {
   let lineup: LineUp;
   let lineUpJS: LineUpJSType;
-  before(
+  beforeEach(
     withLineUp((l, document) => {
       lineUpJS = l;
       const arr = generateData();

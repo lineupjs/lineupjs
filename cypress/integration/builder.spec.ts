@@ -4,7 +4,7 @@ import { generateData } from './utils/data';
 describe('builder', () => {
   let lineup: Taggle;
   let lineUpJS: LineUpJSType;
-  before(
+  beforeEach(
     withLineUp((l, document) => {
       lineUpJS = l;
       const arr = generateData();
