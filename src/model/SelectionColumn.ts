@@ -6,6 +6,7 @@ import {
   ECompareValueType,
   type IValueColumnDesc,
   type ITypeFactory,
+  type IColumnDump,
 } from './interfaces';
 import type {
   widthChanged,
@@ -25,6 +26,7 @@ import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
 import type { IEventListener } from '../internal';
 import { integrateDefaults } from './internal';
+import { restoreValue } from './diff';
 
 /**
  * factory for creating a description creating a rank column
@@ -94,30 +96,36 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     );
   }
 
-  get frozen() {
+  override get frozen() {
     return this.desc.frozen !== false;
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([SelectionColumn.EVENT_SELECT, SelectionColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof SelectionColumn.EVENT_SELECT, listener: typeof select_SEC | null): this;
-  on(type: typeof SelectionColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SEC | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof SelectionColumn.EVENT_SELECT, listener: typeof select_SEC | null): this;
+  override on(type: typeof SelectionColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SEC | null): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
@@ -154,41 +162,45 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     return !old;
   }
 
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     const v = this.getValue(row) === true;
     return v ? 1 : 0;
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return ECompareValueType.BINARY;
   }
 
-  group(row: IDataRow) {
+  override group(row: IDataRow) {
     const isSelected = this.getValue(row);
     return Object.assign({}, isSelected ? SelectionColumn.SELECTED_GROUP : SelectionColumn.NOT_SELECTED_GROUP);
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = super.dump(toDescRef);
-    r.filter = this.currentFilter ? Array.from(this.currentFilter).sort((a, b) => a - b) : null;
+  override toJSON() {
+    const r = super.toJSON();
+    r.filter = this.getFilter();
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    super.restore(dump, factory);
-    if (dump.filter) {
-      const filter = dump.filter;
-      this.currentFilter = new Set(filter);
-    } else {
-      this.currentFilter = null;
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
+    const current = this.getFilter();
+    const target = restoreValue(dump.filter, current, changed, [
+      SelectionColumn.EVENT_FILTER_CHANGED,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    if (target !== current) {
+      this.currentFilter = target != null ? new Set(target) : target;
     }
+    return changed;
   }
 
-  isFiltered() {
+  override isFiltered() {
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow) {
+  override filter(row: IDataRow) {
     if (!this.isFiltered()) {
       return true;
     }
@@ -212,7 +224,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     );
   }
 
-  clearFilter() {
+  override clearFilter() {
     const was = this.isFiltered();
     this.setFilter(null);
     return was;

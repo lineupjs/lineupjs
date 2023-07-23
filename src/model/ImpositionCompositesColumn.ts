@@ -77,7 +77,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     );
   }
 
-  get label() {
+  override get label() {
     const l = super.getMetaData().label;
     const c = this._children;
     if (l !== 'Imposition' || c.length === 0) {
@@ -100,7 +100,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return this._children.filter((d) => d !== w);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     const c = this._children;
     if (c.length === 0) {
       return '';
@@ -113,7 +113,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return `${w ? w.getLabel(row) : '?'} (${rest.map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
   }
 
-  getColor(row: IDataRow) {
+  override getColor(row: IDataRow) {
     const c = this._children;
     switch (c.length) {
       case 0:
@@ -125,7 +125,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     }
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([
@@ -134,28 +134,37 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
       ]);
   }
 
-  on(
+  override on(
     type: typeof ImpositionCompositesColumn.EVENT_COLOR_MAPPING_CHANGED,
     listener: typeof colorMappingChanged_ICCS | null
   ): this;
-  on(type: typeof ImpositionCompositesColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_ICCS | null): this;
-  on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
-  on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
-  on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(
+    type: typeof ImpositionCompositesColumn.EVENT_MAPPING_CHANGED,
+    listener: typeof mappingChanged_ICCS | null
+  ): this;
+  override on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  override on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  override on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
+  override on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 
@@ -174,7 +183,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getNumberFormat() : DEFAULT_FORMATTER;
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.getValue(row) : [];
   }
@@ -189,7 +198,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getRawNumber(row) : NaN;
   }
 
-  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+  override getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       const value = this.getRawNumber(row);
       if (Number.isNaN(value)) {
@@ -301,23 +310,23 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return w ? w.getValues(row) : [];
   }
 
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     return NumbersColumn.prototype.toCompareValue.call(this, row);
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return NumbersColumn.prototype.toCompareValueType.call(this);
   }
 
-  toCompareGroupValue(rows: IDataRow[], group: IGroup) {
+  override toCompareGroupValue(rows: IDataRow[], group: IGroup) {
     return NumbersColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
-  toCompareGroupValueType() {
+  override toCompareGroupValueType() {
     return NumbersColumn.prototype.toCompareGroupValueType.call(this);
   }
 
-  insert(col: Column, index: number): Column | null {
+  override insert(col: Column, index: number): Column | null {
     if (this._children.length === 1 && !this.wrapper && !isNumbersColumn(col)) {
       // at least one has to be a number column
       return null;
@@ -329,7 +338,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return super.insert(col, index);
   }
 
-  protected insertImpl(col: Column, index: number) {
+  protected override insertImpl(col: Column, index: number) {
     if (isNumbersColumn(col)) {
       this.forward(col, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
     }
@@ -339,7 +348,7 @@ export default class ImpositionCompositesColumn extends CompositeColumn implemen
     return super.insertImpl(col, index);
   }
 
-  protected removeImpl(child: Column, index: number) {
+  protected override removeImpl(child: Column, index: number) {
     if (isNumbersColumn(child)) {
       this.unforward(child, ...suffix('.impose', NumbersColumn.EVENT_MAPPING_CHANGED));
     }

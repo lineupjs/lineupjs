@@ -18,19 +18,19 @@ export function createNestedDesc(label = 'Nested', showNestedSummaries = true): 
  */
 @toolbar('rename', 'clone', 'sort', 'sortBy')
 export default class NestedColumn extends MultiLevelCompositeColumn {
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     return concat(this.children.map((d) => d.toCompareValue(row)));
   }
 
-  toCompareValueType(): ECompareValueType[] {
+  override toCompareValueType(): ECompareValueType[] {
     return concat(this.children.map((d) => d.toCompareValueType()));
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     return this.children.map((d) => d.getLabel(row)).join(';');
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     return this.children.map((d) => d.getValue(row)).join(';');
   }
 }

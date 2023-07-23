@@ -29,7 +29,7 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> implements IArrayCo
     return this._dataLength;
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const r = this.getValues(row);
     return r.every((d) => d === null) ? null : r;
   }
@@ -43,7 +43,7 @@ export default class ArrayColumn<T> extends ValueColumn<T[]> implements IArrayCo
     return this.getValues(row).map(String);
   }
 
-  getLabel(row: IDataRow): string {
+  override getLabel(row: IDataRow): string {
     const v = this.getLabels(row);
     if (v.length === 0) {
       return '';

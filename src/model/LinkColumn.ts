@@ -12,7 +12,7 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import type { IDataRow, IGroup, IValueColumnDesc, ITypeFactory } from './interfaces';
+import type { IDataRow, IGroup, IValueColumnDesc, ITypeFactory, IColumnDump } from './interfaces';
 import { patternFunction, integrateDefaults } from './internal';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
@@ -25,6 +25,7 @@ import {
   type IStringFilter,
 } from './StringColumn';
 import StringColumn from './StringColumn';
+import { restoreValue } from './diff';
 
 export interface ILinkDesc extends IStringDesc {
   /**
@@ -137,33 +138,39 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return this.pattern;
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([LinkColumn.EVENT_PATTERN_CHANGED, LinkColumn.EVENT_GROUPING_CHANGED, LinkColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof LinkColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged_LC | null): this;
-  on(type: typeof LinkColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_LC | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof LinkColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_LC | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof LinkColumn.EVENT_PATTERN_CHANGED, listener: typeof patternChanged_LC | null): this;
+  override on(type: typeof LinkColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_LC | null): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof LinkColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_LC | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const l = this.getLink(row);
     return l == null ? null : l.href;
   }
@@ -195,31 +202,34 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return v;
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     const l = this.getLink(row);
     return l == null ? '' : l.alt;
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = StringColumn.prototype.dump.call(this, toDescRef);
-    if (this.pattern !== (this.desc as any).pattern) {
-      r.pattern = this.pattern;
-    }
+  override toJSON() {
+    const r = StringColumn.prototype.toJSON.call(this);
+    r.pattern = this.pattern;
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    StringColumn.prototype.restore.call(this, dump, factory);
-    if (dump.pattern) {
-      this.pattern = dump.pattern;
-    }
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = StringColumn.prototype.restore.call(this, dump, factory);
+    this.pattern = restoreValue(dump.pattern, this.pattern, changed, [
+      LinkColumn.EVENT_PATTERN_CHANGED,
+      Column.EVENT_DIRTY_HEADER,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY_CACHES,
+      Column.EVENT_DIRTY,
+    ]);
+    return changed;
   }
 
-  isFiltered() {
+  override isFiltered() {
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow) {
+  override filter(row: IDataRow) {
     return StringColumn.prototype.filter.call(this, row);
   }
 
@@ -231,7 +241,7 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return StringColumn.prototype.setFilter.call(this, filter);
   }
 
-  clearFilter() {
+  override clearFilter() {
     return StringColumn.prototype.clearFilter.call(this);
   }
 
@@ -243,23 +253,23 @@ export default class LinkColumn extends ValueColumn<string | ILink> {
     return StringColumn.prototype.setGroupCriteria.call(this, value);
   }
 
-  toCompareValue(a: IDataRow) {
+  override toCompareValue(a: IDataRow) {
     return StringColumn.prototype.toCompareValue.call(this, a);
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return StringColumn.prototype.toCompareValueType.call(this);
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+  override toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
     return StringColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
-  toCompareGroupValueType() {
+  override toCompareGroupValueType() {
     return StringColumn.prototype.toCompareGroupValueType.call(this);
   }
 
-  group(row: IDataRow): IGroup {
+  override group(row: IDataRow): IGroup {
     return StringColumn.prototype.group.call(this, row);
   }
 }

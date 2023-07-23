@@ -12,9 +12,10 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import { type IDataRow, type IGroup, ECompareValueType } from './interfaces';
+import { type IDataRow, type IGroup, ECompareValueType, type IColumnDump, type ITypeFactory } from './interfaces';
 import { missingGroup } from './missing';
 import type { IEventListener, ISequence } from '../internal';
+import { restoreValue } from './diff';
 
 export function createGroupDesc(label = 'Group Name') {
   return { type: 'group', label };
@@ -41,36 +42,42 @@ export default class GroupColumn extends Column {
 
   private groupSortMethod: EGroupSortMethod = EGroupSortMethod.name;
 
-  get frozen() {
+  override get frozen() {
     return this.desc.frozen !== false;
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([GroupColumn.EVENT_SORTMETHOD_CHANGED]);
   }
 
-  on(type: typeof GroupColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof GroupColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
-  getLabel() {
+  override getLabel() {
     return '';
   }
 
-  getValue() {
+  override getValue() {
     return '';
   }
 
@@ -89,14 +96,31 @@ export default class GroupColumn extends Column {
     }
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+  override toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
     if (this.groupSortMethod === 'count') {
       return rows.length;
     }
     return group.name === missingGroup.name ? null : group.name.toLowerCase();
   }
 
-  toCompareGroupValueType() {
+  override toCompareGroupValueType() {
     return this.groupSortMethod === 'count' ? ECompareValueType.COUNT : ECompareValueType.STRING;
+  }
+
+  override toJSON() {
+    const r = super.toJSON();
+    r.groupSortMethod = this.groupSortMethod;
+    return r;
+  }
+
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
+    this.groupSortMethod = restoreValue(
+      dump.groupSortMethod,
+      this.groupSortMethod,
+      changed,
+      GroupColumn.EVENT_SORTMETHOD_CHANGED
+    );
+    return changed;
   }
 }

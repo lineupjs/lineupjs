@@ -37,7 +37,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return this.numberFormat;
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     if (!this.isLoaded()) {
       return '';
     }
@@ -46,7 +46,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return String(typeof v === 'number' && !Number.isNaN(v) && isFinite(v) ? this.numberFormat(v) : v);
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     if (!this.isLoaded()) {
       return null;
     }
@@ -79,7 +79,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return [this.getRawNumber(row)];
   }
 
-  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+  override getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       return {
         value: this.getRawNumber(row),
@@ -89,23 +89,23 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return super.getExportValue(row, format);
   }
 
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     return NumberColumn.prototype.toCompareValue.call(this, row);
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return NumberColumn.prototype.toCompareValueType.call(this);
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+  override toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
     return NumberColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
-  toCompareGroupValueType() {
+  override toCompareGroupValueType() {
     return NumberColumn.prototype.toCompareGroupValueType.call(this);
   }
 
-  getRenderer(): string {
+  override getRenderer(): string {
     return NumberColumn.prototype.getRenderer.call(this);
   }
 }

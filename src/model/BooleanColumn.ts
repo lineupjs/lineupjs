@@ -21,12 +21,19 @@ import type {
   ICategoricalColorMappingFunction,
   ICategoricalFilter,
 } from './ICategoricalColumn';
-import { type IDataRow, ECompareValueType, type IValueColumnDesc, type ITypeFactory } from './interfaces';
+import {
+  type IDataRow,
+  ECompareValueType,
+  type IValueColumnDesc,
+  type ITypeFactory,
+  type IColumnDump,
+} from './interfaces';
 import type { IEventListener } from '../internal';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import { integrateDefaults } from './internal';
 import { missingGroup } from './missing';
 import { isCategoryIncluded, isEqualCategoricalFilter } from './internalCategorical';
+import { restoreTypedValue, restoreValue } from './diff';
 
 export interface IBooleanDesc {
   /**
@@ -111,28 +118,37 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([BooleanColumn.EVENT_COLOR_MAPPING_CHANGED, BooleanColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof BooleanColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_BC | null): this;
-  on(type: typeof BooleanColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_BC | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof BooleanColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_BC | null): this;
+  override on(
+    type: typeof BooleanColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_BC | null
+  ): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
@@ -144,7 +160,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return this.categories.map((d) => d.label);
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const v: any = super.getValue(row);
     if (typeof v === 'undefined' || v == null) {
       return null;
@@ -171,11 +187,11 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return [this.getCategory(row)];
   }
 
-  getColor(row: IDataRow) {
+  override getColor(row: IDataRow) {
     return CategoricalColumn.prototype.getColor.call(this, row);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     return CategoricalColumn.prototype.getLabel.call(this, row);
   }
 
@@ -204,26 +220,42 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return r;
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = super.dump(toDescRef);
+  override toJSON() {
+    const r = super.toJSON();
     r.colorMapping = this.colorMapping.toJSON();
-    if (this.currentFilter != null) {
-      r.filter = this.currentFilter;
-    }
+    r.filter = this.getFilter();
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    super.restore(dump, factory);
-    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
-    if (typeof dump.filter === 'boolean') {
-      this.currentFilter = {
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
+    this.colorMapping = restoreTypedValue(
+      dump.colorMapping,
+      this.colorMapping,
+      (target) => factory.categoricalColorMappingFunction(target, this.categories),
+      changed,
+      [
+        BooleanColumn.EVENT_COLOR_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ]
+    );
+
+    let dumped = dump.filter;
+    if (typeof dumped === 'boolean') {
+      dumped = {
         filter: [this.getCategoryOfBoolean(dump.filter)!.name],
         filterMissing: false,
       };
-    } else if (typeof dump.filter !== 'undefined') {
-      this.currentFilter = dump.filter;
     }
+    this.currentFilter = restoreValue(dump.filter, this.currentFilter, changed, [
+      BooleanColumn.EVENT_FILTER_CHANGED,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    return changed;
   }
 
   getColorMapping() {
@@ -247,11 +279,11 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     );
   }
 
-  isFiltered() {
+  override isFiltered() {
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow) {
+  override filter(row: IDataRow) {
     return isCategoryIncluded(this.currentFilter, this.getCategory(row));
   }
 
@@ -274,13 +306,13 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     );
   }
 
-  clearFilter() {
+  override clearFilter() {
     const was = this.isFiltered();
     this.setFilter(null);
     return was;
   }
 
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
     if (v == null) {
       return NaN;
@@ -288,11 +320,11 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return v ? 1 : 0;
   }
 
-  toCompareValueType(): ECompareValueType {
+  override toCompareValueType(): ECompareValueType {
     return ECompareValueType.BINARY;
   }
 
-  group(row: IDataRow) {
+  override group(row: IDataRow) {
     const v = this.getValue(row);
     if (v == null) {
       return Object.assign({}, missingGroup);

@@ -22,13 +22,21 @@ import type {
   ISetColumn,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import { type IDataRow, ECompareValueType, type IValueColumnDesc, type IGroup, type ITypeFactory } from './interfaces';
+import {
+  type IDataRow,
+  ECompareValueType,
+  type IValueColumnDesc,
+  type IGroup,
+  type ITypeFactory,
+  type IColumnDump,
+} from './interfaces';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
 import type { IEventListener } from '../internal';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import { toCategories, isCategoryIncluded, isEqualSetCategoricalFilter } from './internalCategorical';
 import { chooseUIntByDataLength, integrateDefaults } from './internal';
+import { restoreTypedValue, restoreValue } from './diff';
 
 export interface ISetDesc extends ICategoricalDesc {
   separator?: string;
@@ -94,26 +102,35 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([SetColumn.EVENT_COLOR_MAPPING_CHANGED, SetColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof SetColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SSC | null): this;
-  on(type: typeof SetColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_SSC | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof SetColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SSC | null): this;
+  override on(
+    type: typeof SetColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_SSC | null
+  ): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
@@ -125,7 +142,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return this.categories.length;
   }
 
-  getValue(row: IDataRow): string[] | null {
+  override getValue(row: IDataRow): string[] | null {
     const v = this.getSortedSet(row);
     if (v.length === 0) {
       return null;
@@ -133,7 +150,7 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return v.map((d) => d.name);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     return `(${this.getSortedSet(row)
       .map((d) => d.label)
       .join(',')})`;
@@ -211,33 +228,46 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return [null];
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = super.dump(toDescRef);
-    r.filter = this.currentFilter;
+  override toJSON() {
+    const r = super.toJSON();
+    r.filter = this.getFilter();
     r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    super.restore(dump, factory);
-    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
-    if (!('filter' in dump)) {
-      this.currentFilter = null;
-      return;
-    }
-    const bak = dump.filter;
-    if (typeof bak === 'string' || Array.isArray(bak)) {
-      this.currentFilter = { filter: bak, filterMissing: false, mode: 'some' };
-    } else {
-      this.currentFilter = bak;
-    }
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
+
+    this.colorMapping = restoreTypedValue(
+      dump.colorMapping,
+      this.colorMapping,
+      (target) => factory.categoricalColorMappingFunction(target, this.categories),
+      changed,
+      [
+        CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ]
+    );
+
+    this.currentFilter = restoreValue(
+      typeof dump.filter === 'string' || Array.isArray(dump.filter)
+        ? { filter: dump.filter, filterMissing: false, mode: 'some' }
+        : dump.filter,
+      this.currentFilter,
+      changed,
+      [CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]
+    );
+    return changed;
   }
 
-  isFiltered() {
+  override isFiltered() {
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow): boolean {
+  override filter(row: IDataRow): boolean {
     if (!this.currentFilter) {
       return true;
     }
@@ -266,11 +296,11 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     );
   }
 
-  clearFilter() {
+  override clearFilter() {
     return CategoricalColumn.prototype.clearFilter.call(this);
   }
 
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     const v = this.getSet(row);
 
     const vs = [v.size];
@@ -280,11 +310,11 @@ export default class SetColumn extends ValueColumn<string[]> implements IArrayCo
     return vs;
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return [chooseUIntByDataLength(this.categories.length)].concat(this.categories.map(() => ECompareValueType.BINARY));
   }
 
-  group(row: IDataRow): IGroup {
+  override group(row: IDataRow): IGroup {
     const v = this.getSet(row);
     const cardinality = v.size;
     const categories = this.categories.filter((c) => v.has(c));

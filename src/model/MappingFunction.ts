@@ -113,7 +113,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     return this.type;
   }
 
-  toJSON() {
+  override toJSON() {
     return {
       type: this.type,
       domain: this.domain,
@@ -197,7 +197,7 @@ export class ScriptMappingFunction implements IMappingFunction {
     return NaN;
   }
 
-  toJSON() {
+  override toJSON() {
     return {
       type: 'script',
       code: this.code,

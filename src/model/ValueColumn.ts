@@ -11,8 +11,9 @@ import Column, {
   summaryRendererChanged,
   visibilityChanged,
 } from './Column';
-import type { IValueColumnDesc, IDataRow, ITypeFactory } from './interfaces';
+import type { IValueColumnDesc, IDataRow, ITypeFactory, IColumnDump } from './interfaces';
 import type { IEventListener, ISequence } from '../internal';
+import { restoreValue } from './diff';
 
 /**
  * emitted when the data of this column has been loaded
@@ -48,28 +49,34 @@ export default class ValueColumn<T> extends Column {
     // hook for listening to data updates
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([ValueColumn.EVENT_DATA_LOADED]);
   }
 
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     if (!this.isLoaded()) {
       return '';
     }
@@ -84,7 +91,7 @@ export default class ValueColumn<T> extends Column {
     return this.accessor(row, this.desc);
   }
 
-  getValue(row: IDataRow): T | null {
+  override getValue(row: IDataRow): T | null {
     return this.getRaw(row);
   }
 
@@ -109,32 +116,28 @@ export default class ValueColumn<T> extends Column {
     );
   }
 
-  getRenderer(): string {
+  override getRenderer(): string {
     if (!this.isLoaded()) {
       return ValueColumn.RENDERER_LOADING;
     }
     return super.getRenderer();
   }
 
-  /**
-   * patch the dump such that the loaded attribute is defined (for lazy loading columns)
-   * @param toDescRef
-   * @returns {any}
-   */
-  dump(toDescRef: (desc: any) => any): any {
-    const r = super.dump(toDescRef);
+  override toJSON() {
+    const r = super.toJSON();
     r.loaded = this.loaded;
-
-    if (!this.loaded && r.renderer === ValueColumn.RENDERER_LOADING) {
-      delete r.renderer;
-    }
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    if (dump.loaded !== undefined) {
-      this.loaded = dump.loaded;
-    }
-    super.restore(dump, factory);
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
+    this.loaded = restoreValue(dump.loaded, this.loaded, changed, [
+      ValueColumn.EVENT_DATA_LOADED,
+      Column.EVENT_DIRTY_HEADER,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY_CACHES,
+      Column.EVENT_DIRTY,
+    ]);
+    return changed;
   }
 }

@@ -10,6 +10,8 @@
     "declarationMap": true,
     "verbatimModuleSyntax": true,
     "experimentalDecorators": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
     "forceConsistentCasingInFileNames": true,
     "strictBindCallApply": true,
     "stripInternal": true,

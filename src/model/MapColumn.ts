@@ -17,7 +17,7 @@ export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements
     );
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const r = this.getMap(row);
     return r.length === 0 ? null : r;
   }
@@ -35,7 +35,7 @@ export default class MapColumn<T> extends ValueColumn<IKeyValue<T>[]> implements
     return this.getLabels(row);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     const v = this.getLabels(row);
     return `{${v.map(({ key, value }) => `${key}: ${value}`).join(', ')}}`;
   }

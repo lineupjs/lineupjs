@@ -76,7 +76,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     );
   }
 
-  get label() {
+  override get label() {
     const l = super.getMetaData().label;
     const c = this._children;
     if (l !== 'Imposition' || c.length === 0) {
@@ -99,7 +99,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return this._children.filter((d) => d !== w);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     const c = this._children;
     if (c.length === 0) {
       return '';
@@ -112,7 +112,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return `${w ? w.getLabel(row) : '?'} (${rest.map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
   }
 
-  getColor(row: IDataRow) {
+  override getColor(row: IDataRow) {
     const c = this._children;
     switch (c.length) {
       case 0:
@@ -124,34 +124,43 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     }
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([ImpositionBoxPlotColumn.EVENT_MAPPING_CHANGED, ImpositionBoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(
+  override on(
     type: typeof ImpositionBoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED,
     listener: typeof colorMappingChanged_IPBC | null
   ): this;
-  on(type: typeof ImpositionBoxPlotColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_IPBC | null): this;
-  on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
-  on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
-  on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(
+    type: typeof ImpositionBoxPlotColumn.EVENT_MAPPING_CHANGED,
+    listener: typeof mappingChanged_IPBC | null
+  ): this;
+  override on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  override on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  override on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
+  override on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 
@@ -160,7 +169,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return w ? w.getNumberFormat() : DEFAULT_FORMATTER;
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const w = this.wrapper;
     return w ? w.getValue(row) : null;
   }
@@ -183,7 +192,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return [this.getRawNumber(row)];
   }
 
-  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+  override getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       const value = this.getRawNumber(row);
       if (Number.isNaN(value)) {
@@ -258,27 +267,27 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return w ? w.getRange() : ['0', '1'];
   }
 
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     return BoxPlotColumn.prototype.toCompareValue.call(this, row);
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return BoxPlotColumn.prototype.toCompareValueType.call(this);
   }
 
-  group(row: IDataRow) {
+  override group(row: IDataRow) {
     return BoxPlotColumn.prototype.group.call(this, row);
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
+  override toCompareGroupValue(rows: ISequence<IDataRow>, group: IGroup) {
     return BoxPlotColumn.prototype.toCompareGroupValue.call(this, rows, group);
   }
 
-  toCompareGroupValueType() {
+  override toCompareGroupValueType() {
     return BoxPlotColumn.prototype.toCompareGroupValueType.call(this);
   }
 
-  insert(col: Column, index: number): Column | null {
+  override insert(col: Column, index: number): Column | null {
     if (this._children.length === 1 && !this.wrapper && !isBoxPlotColumn(col)) {
       // at least one has to be a number column
       return null;
@@ -290,7 +299,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return super.insert(col, index);
   }
 
-  protected insertImpl(col: Column, index: number) {
+  protected override insertImpl(col: Column, index: number) {
     if (isBoxPlotColumn(col)) {
       this.forward(
         col,
@@ -302,7 +311,7 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     return super.insertImpl(col, index);
   }
 
-  protected removeImpl(child: Column, index: number) {
+  protected override removeImpl(child: Column, index: number) {
     if (isBoxPlotColumn(child)) {
       this.unforward(
         child,

@@ -56,11 +56,11 @@ export default class ActionColumn extends Column {
     this.groupActions = desc.groupActions || [];
   }
 
-  getLabel() {
+  override getLabel() {
     return '';
   }
 
-  getValue() {
+  override getValue() {
     return '';
   }
 

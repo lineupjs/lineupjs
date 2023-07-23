@@ -1,6 +1,6 @@
 import { AEventDispatcher, type ISequence, similar, fixCSS, type IEventListener } from '../internal';
 import { isSortingAscByDefault } from './annotations';
-import { dumpValue, restoreValue } from './diff';
+import { restoreValue } from './diff';
 import {
   type IColumnDump,
   type ISortCriteria,
@@ -200,7 +200,7 @@ export default class Column extends AEventDispatcher {
     return this.parent ? `${this.parent.fqpath}@${this.parent.indexOf(this)}` : '';
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([
@@ -218,19 +218,25 @@ export default class Column extends AEventDispatcher {
       ]);
   }
 
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 
@@ -375,13 +381,13 @@ export default class Column extends AEventDispatcher {
     if (!ranker) {
       return { asc: undefined, priority: undefined };
     }
-    const criterias = selector(ranker);
-    const index = criterias.findIndex((c) => c.col === this);
+    const criteria = selector(ranker);
+    const index = criteria.findIndex((c) => c.col === this);
     if (index < 0) {
       return { asc: undefined, priority: undefined };
     }
     return {
-      asc: criterias[index].asc ? 'asc' : 'desc',
+      asc: criteria[index].asc ? 'asc' : 'desc',
       priority: index,
     };
   }
@@ -502,19 +508,26 @@ export default class Column extends AEventDispatcher {
    * @param toDescRef helper mapping function
    * @returns {any} dump of this column
    */
-  dump(toDescRef: (desc: any) => any): any {
-    const r: IColumnDump = {
-      id: this.id,
+  dump(toDescRef: (desc: any) => any): IColumnDump {
+    const r = {
       desc: toDescRef(this.desc),
+      ...this.toJSON(),
     };
-    dumpValue(r, 'width', this.width, defaultWidth(this.width));
-    dumpValue(r, 'visible', this.visible, this.desc.visible !== false);
-    dumpValue(r, 'label', this.label, this.desc.label ?? this.id);
-    dumpValue(r, 'summary', this.metadata.summary, this.desc.summary ?? '');
-    dumpValue(r, 'description', this.metadata.description, this.desc.description ?? '');
-    dumpValue(r, 'renderer', this.renderer, this.desc.renderer ?? this.desc.type);
-    dumpValue(r, 'groupRenderer', this.groupRenderer, this.desc.groupRenderer ?? this.desc.type);
-    dumpValue(r, 'summaryRenderer', this.summaryRenderer, this.desc.summaryRenderer ?? this.desc.type);
+    return r as IColumnDump;
+  }
+
+  toJSON() {
+    const r: Record<string, any> = {
+      id: this.id,
+      width: this.width,
+      visible: this.visible,
+      label: this.label,
+      summary: this.metadata.summary,
+      description: this.metadata.description,
+      renderer: this.renderer,
+      groupRenderer: this.groupRenderer,
+      summaryRenderer: this.summaryRenderer,
+    };
     return r;
   }
 

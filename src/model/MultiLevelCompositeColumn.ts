@@ -14,7 +14,8 @@ import Column, {
   dirtyCaches,
 } from './Column';
 import CompositeColumn, { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
-import type { IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn, ITypeFactory } from './interfaces';
+import { restoreValue } from './diff';
+import type { IDataRow, IColumnDesc, IFlatColumn, IMultiLevelColumn, ITypeFactory, IColumnDump } from './interfaces';
 import { integrateDefaults } from './internal';
 import StackColumn from './StackColumn';
 
@@ -70,34 +71,43 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     };
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED]);
   }
 
-  on(type: typeof MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, listener: typeof collapseChanged_MC | null): this;
-  on(
+  override on(
+    type: typeof MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED,
+    listener: typeof collapseChanged_MC | null
+  ): this;
+  override on(
     type: typeof MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED,
     listener: typeof nestedChildRatio_MC | null
   ): this;
-  on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
-  on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
-  on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
-  on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof CompositeColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged | null): this;
+  override on(type: typeof CompositeColumn.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  override on(type: typeof CompositeColumn.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
+  override on(type: typeof CompositeColumn.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 
@@ -120,18 +130,24 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     return (this.desc as IMultiLevelCompositeColumnDesc).showNestedSummaries !== false;
   }
 
-  dump(toDescRef: (desc: any) => any) {
-    const r = super.dump(toDescRef);
+  override toJSON() {
+    const r = super.toJSON();
     r.collapsed = this.collapsed;
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    this.collapsed = dump.collapsed === true;
-    super.restore(dump, factory);
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
+    this.collapsed = restoreValue(dump.collapsed, this.collapsed, changed, [
+      StackColumn.EVENT_COLLAPSE_CHANGED,
+      Column.EVENT_DIRTY_HEADER,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    return changed;
   }
 
-  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
+  override flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     return StackColumn.prototype.flatten.call(this, r, offset, levelsToGo, padding);
   }
 
@@ -140,7 +156,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    * @param col
    * @param index
    */
-  insert(col: Column, index: number) {
+  override insert(col: Column, index: number) {
     col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
     //increase my width
     super.setWidth(this.length === 0 ? col.getWidth() : this.getWidth() + col.getWidth());
@@ -167,13 +183,13 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     super.setWidth(next);
   }
 
-  removeImpl(child: Column, index: number) {
+  protected override removeImpl(child: Column, index: number) {
     child.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, null);
     super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child, index);
   }
 
-  setWidth(value: number) {
+  override setWidth(value: number) {
     const act = this.getWidth();
     const factor = value / act;
     this._children.forEach((child) => {
@@ -190,14 +206,14 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     super.setWidth(value);
   }
 
-  getRenderer() {
+  override getRenderer() {
     if (this.getCollapsed()) {
       return MultiLevelCompositeColumn.COLLAPSED_RENDERER;
     }
     return super.getRenderer();
   }
 
-  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+  override getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       return {
         children: this.children.map((d) => d.getExportValue(row, format)),

@@ -26,7 +26,7 @@ export default class StringsColumn extends ArrayColumn<string> {
     this.escape = desc.escape !== false;
   }
 
-  getValues(row: IDataRow) {
+  override getValues(row: IDataRow) {
     return super.getValues(row).map((v) => {
       return isMissingValue(v) ? '' : String(v);
     });

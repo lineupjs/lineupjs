@@ -62,7 +62,7 @@ export default class AEventDispatcher implements IEventHandler {
     };
   }
 
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: string | string[], listener: IEventListener | null): this {
     if (Array.isArray(type)) {
       type.forEach((d) => {
         if (this.listenerEvents.has(d.split('.')[0])) {

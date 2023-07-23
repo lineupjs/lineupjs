@@ -20,12 +20,14 @@ import {
   type IValueColumnDesc,
   othersGroup,
   type ITypeFactory,
+  type IColumnDump,
 } from './interfaces';
 import { missingGroup, isMissingValue } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
 import { equal, type IEventListener, type ISequence, isSeqEmpty } from '../internal';
 import { integrateDefaults } from './internal';
+import { restoreValue } from './diff';
 
 export enum EAlignment {
   left = 'left',
@@ -111,112 +113,124 @@ export default class StringColumn extends ValueColumn<string> {
     this.escape = desc.escape !== false;
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([StringColumn.EVENT_GROUPING_CHANGED, StringColumn.EVENT_FILTER_CHANGED]);
   }
 
-  on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SC | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_SC | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof StringColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_SC | null): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof StringColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_SC | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
-  getValue(row: IDataRow): string | null {
+  override getValue(row: IDataRow): string | null {
     const v: any = super.getValue(row);
     return isMissingValue(v) ? null : String(v);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     return this.getValue(row) || '';
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = super.dump(toDescRef);
+  override toJSON() {
+    const r = super.toJSON();
     if (this.currentFilter instanceof RegExp) {
       r.filter = `REGEX:${(this.currentFilter as RegExp).source}`;
     } else {
       r.filter = this.currentFilter;
     }
-    if (this.currentGroupCriteria) {
-      const { type, values } = this.currentGroupCriteria;
-      r.groupCriteria = {
-        type,
-        values: values.map((value) =>
-          value instanceof RegExp && type === EStringGroupCriteriaType.regex ? value.source : value
-        ),
-      };
-    }
+    const { type, values } = this.currentGroupCriteria;
+    r.groupCriteria = {
+      type,
+      values: values.map((value) =>
+        value instanceof RegExp && type === EStringGroupCriteriaType.regex ? value.source : value
+      ),
+    };
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    super.restore(dump, factory);
-    if (dump.filter) {
-      const filter = dump.filter;
-      if (typeof filter === 'string') {
-        // compatibility case
-        if (filter.startsWith('REGEX:')) {
-          this.currentFilter = {
-            filter: new RegExp(filter.slice(6), 'm'),
-            filterMissing: false,
-          };
-        } else if (filter === StringColumn.FILTER_MISSING) {
-          this.currentFilter = {
-            filter: null,
-            filterMissing: true,
-          };
-        } else {
-          this.currentFilter = {
-            filter,
-            filterMissing: false,
-          };
-        }
-      } else {
-        this.currentFilter = {
-          filter:
-            filter.filter && (filter.filter as string).startsWith('REGEX:')
-              ? new RegExp(filter.slice(6), 'm')
-              : filter.filter || '',
-          filterMissing: filter.filterMissing === true,
-        };
-      }
-    } else {
-      this.currentFilter = null;
-    }
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
 
-    // tslint:disable-next-line: early-exit
-    if (dump.groupCriteria) {
-      const { type, values } = dump.groupCriteria as IStringGroupCriteria;
-      this.currentGroupCriteria = {
+    function restoreGroupCriteria(d: IStringGroupCriteria): IStringGroupCriteria {
+      const { type, values } = d;
+      return {
         type,
         values: values.map((value) =>
           type === EStringGroupCriteriaType.regex ? new RegExp(value as string, 'm') : value
         ),
       };
     }
+    this.currentGroupCriteria = restoreValue(
+      dump.groupCriteria ? restoreGroupCriteria(dump.groupCriteria) : null,
+      this.currentGroupCriteria,
+      changed,
+      [StringColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]
+    );
+
+    function restoreFilter(filter) {
+      if (filter == null) {
+        return null;
+      }
+      if (typeof filter === 'string') {
+        // compatibility case
+        if (filter.startsWith('REGEX:')) {
+          return {
+            filter: new RegExp(filter.slice(6), 'm'),
+            filterMissing: false,
+          };
+        } else if (filter === StringColumn.FILTER_MISSING) {
+          return {
+            filter: null,
+            filterMissing: true,
+          };
+        } else {
+          return {
+            filter,
+            filterMissing: false,
+          };
+        }
+      }
+      return {
+        filter:
+          filter.filter && (filter.filter as string).startsWith('REGEX:')
+            ? new RegExp(filter.slice(6), 'm')
+            : filter.filter || '',
+        filterMissing: filter.filterMissing === true,
+      };
+    }
+    this.currentFilter = restoreValue(restoreFilter(dump.filter), this.currentFilter, changed, [
+      StringColumn.EVENT_FILTER_CHANGED,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    return changed;
   }
 
-  isFiltered() {
+  override isFiltered() {
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow) {
-    if (!this.isFiltered()) {
-      return true;
-    }
+  override filter(row: IDataRow) {
     const r = this.getLabel(row);
     const filter = this.currentFilter!;
     const ff = filter.filter;
@@ -259,7 +273,7 @@ export default class StringColumn extends ValueColumn<string> {
     );
   }
 
-  clearFilter() {
+  override clearFilter() {
     const was = this.isFiltered();
     this.setFilter(null);
     return was;
@@ -278,7 +292,7 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([StringColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  group(row: IDataRow): IGroup {
+  override group(row: IDataRow): IGroup {
     if (this.getValue(row) == null) {
       return Object.assign({}, missingGroup);
     }
@@ -323,16 +337,16 @@ export default class StringColumn extends ValueColumn<string> {
     return Object.assign({}, othersGroup);
   }
 
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     const v = this.getValue(row);
     return v === '' || v == null ? null : v.toLowerCase();
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return ECompareValueType.STRING;
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>) {
+  override toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>) {
     if (isSeqEmpty(rows)) {
       return null;
     }
@@ -346,7 +360,7 @@ export default class StringColumn extends ValueColumn<string> {
     }, null as null | string);
   }
 
-  toCompareGroupValueType() {
+  override toCompareGroupValueType() {
     return ECompareValueType.STRING;
   }
 }

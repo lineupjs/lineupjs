@@ -22,7 +22,14 @@ import type {
   ICategory,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import { type IDataRow, type IGroup, type ICompareValue, type ITypeFactory, ECompareValueType } from './interfaces';
+import {
+  type IDataRow,
+  type IGroup,
+  type ICompareValue,
+  type ITypeFactory,
+  ECompareValueType,
+  type IColumnDump,
+} from './interfaces';
 import { missingGroup } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
@@ -34,6 +41,7 @@ import {
   toGroupCompareCategoryValue,
   compareCategory,
 } from './internalCategorical';
+import { restoreTypedValue, restoreValue } from './diff';
 
 /**
  * emitted when the color mapping property changes
@@ -92,7 +100,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
-  onDataUpdate(rows: ISequence<IDataRow>): void {
+  override onDataUpdate(rows: ISequence<IDataRow>): void {
     super.onDataUpdate(rows);
     if (Array.isArray((this.desc as ICategoricalColumnDesc).categories) && this.categoryOrder === 'given') {
       return;
@@ -146,32 +154,41 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     });
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([CategoricalColumn.EVENT_FILTER_CHANGED, CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(type: typeof CategoricalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_CC | null): this;
-  on(type: typeof CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_CC | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof CategoricalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_CC | null): this;
+  override on(
+    type: typeof CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_CC | null
+  ): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const v = this.getCategory(row);
     return v ? v.name : null;
   }
@@ -193,7 +210,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.categories.map((d) => d.label);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     const v = this.getCategory(row);
     return v ? v.label : '';
   }
@@ -235,31 +252,42 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return [this.getCategory(row)];
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = super.dump(toDescRef);
-    r.filter = this.currentFilter;
+  override toJSON() {
+    const r = super.toJSON();
+    r.filter = this.getFilter();
     r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    super.restore(dump, factory);
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
 
-    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
+    this.colorMapping = restoreTypedValue(
+      dump.colorMapping,
+      this.colorMapping,
+      (target) => factory.categoricalColorMappingFunction(target, this.categories),
+      changed,
+      [
+        CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ]
+    );
 
-    if (typeof dump.filter === 'undefined') {
-      this.currentFilter = null;
-      return;
-    }
-    const bak = dump.filter;
-    if (typeof bak === 'string' || Array.isArray(bak)) {
-      this.currentFilter = { filter: bak, filterMissing: false };
-    } else {
-      this.currentFilter = bak;
-    }
+    this.currentFilter = restoreValue(
+      typeof dump.filter === 'string' || Array.isArray(dump.filter)
+        ? { filter: dump.filter, filterMissing: false }
+        : dump.filter,
+      this.currentFilter,
+      changed,
+      [CategoricalColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]
+    );
+    return changed;
   }
 
-  getColor(row: IDataRow) {
+  override getColor(row: IDataRow) {
     const v = this.getCategory(row);
     return v ? this.colorMapping.apply(v) : DEFAULT_COLOR;
   }
@@ -285,11 +313,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     );
   }
 
-  isFiltered() {
+  override isFiltered() {
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow, valueCache?: any): boolean {
+  override filter(row: IDataRow, valueCache?: any): boolean {
     return isCategoryIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
@@ -308,21 +336,21 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     );
   }
 
-  clearFilter() {
+  override clearFilter() {
     const was = this.isFiltered();
     this.setFilter(null);
     return was;
   }
 
-  toCompareValue(row: IDataRow, valueCache?: any) {
+  override toCompareValue(row: IDataRow, valueCache?: any) {
     return toCompareCategoryValue(valueCache !== undefined ? valueCache : this.getCategory(row));
   }
 
-  toCompareValueType(): ECompareValueType {
+  override toCompareValueType(): ECompareValueType {
     return ECompareValueType.FLOAT_ASC;
   }
 
-  group(row: IDataRow, valueCache?: any): IGroup {
+  override group(row: IDataRow, valueCache?: any): IGroup {
     const cat = valueCache !== undefined ? valueCache : this.getCategory(row);
     if (!cat) {
       return Object.assign({}, missingGroup);
@@ -330,15 +358,19 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return { name: cat.label, color: cat.color };
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): ICompareValue[] {
+  override toCompareGroupValue(
+    rows: ISequence<IDataRow>,
+    _group: IGroup,
+    valueCache?: ISequence<any>
+  ): ICompareValue[] {
     return toGroupCompareCategoryValue(rows, this, valueCache);
   }
 
-  toCompareGroupValueType() {
+  override toCompareGroupValueType() {
     return [ECompareValueType.FLOAT, ECompareValueType.STRING];
   }
 
-  getGroupRenderer() {
+  override getGroupRenderer() {
     const current = super.getGroupRenderer();
     if (current === this.desc.type && this.isGroupedBy() >= 0) {
       // still the default and the stratification criteria

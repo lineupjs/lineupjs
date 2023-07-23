@@ -27,7 +27,7 @@ export default class RankColumn extends Column {
     );
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     return String(this.getValue(row));
   }
 
@@ -39,12 +39,12 @@ export default class RankColumn extends Column {
     return ranking.getRank(row.i);
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const r = this.getRaw(row);
     return r === -1 ? null : r;
   }
 
-  get frozen() {
+  override get frozen() {
     return this.desc.frozen !== false;
   }
 }

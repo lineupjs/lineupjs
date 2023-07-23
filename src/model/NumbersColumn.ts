@@ -16,11 +16,10 @@ import Column, {
   widthChanged,
 } from './Column';
 import type { IArrayDesc } from './IArrayColumn';
-import { type IDataRow, ECompareValueType, type ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type ITypeFactory, type IColumnDump } from './interfaces';
 import {
   DEFAULT_FORMATTER,
   getBoxPlotNumber,
-  isDummyNumberFilter,
   noNumberFilter,
   restoreNumberFilter,
   toCompareBoxPlotValue,
@@ -28,6 +27,7 @@ import {
 import {
   EAdvancedSortMethod,
   type IColorMappingFunction,
+  type IMapAbleDesc,
   type IMappingFunction,
   type INumberDesc,
   type INumberFilter,
@@ -39,6 +39,7 @@ import NumberColumn from './NumberColumn';
 import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
 import { integrateDefaults } from './internal';
+import { restoreTypedValue, restoreValue } from './diff';
 
 export interface INumbersDesc extends IArrayDesc, INumberDesc {
   readonly sort?: EAdvancedSortMethod;
@@ -130,7 +131,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     this.sort = desc.sort || EAdvancedSortMethod.median;
   }
 
-  onDataUpdate(rows: ISequence<IDataRow>): void {
+  override onDataUpdate(rows: ISequence<IDataRow>): void {
     super.onDataUpdate(rows);
     if (!this.deriveMapping.some(Boolean)) {
       return;
@@ -174,11 +175,11 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return this.numberFormat;
   }
 
-  toCompareValue(row: IDataRow): number {
+  override toCompareValue(row: IDataRow): number {
     return toCompareBoxPlotValue(this, row);
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return ECompareValueType.FLOAT;
   }
 
@@ -226,12 +227,12 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return getBoxPlotNumber(this, row, 'raw');
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const v = this.getValues(row);
     return v.every(Number.isNaN) ? null : v;
   }
 
-  getValues(row: IDataRow) {
+  override getValues(row: IDataRow) {
     return this.getRawValue(row).map((d) => (Number.isNaN(d) ? NaN : this.mapping.apply(d)));
   }
 
@@ -258,11 +259,11 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     return r == null ? [] : r.map((d) => (isMissingValue(d) ? NaN : +d));
   }
 
-  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+  override getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     return format === 'json' ? this.getRawValue(row) : super.getExportValue(row, format);
   }
 
-  getLabels(row: IDataRow) {
+  override getLabels(row: IDataRow) {
     return this.getRawValue(row).map(this.numberFormat);
   }
 
@@ -291,32 +292,56 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     }
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = super.dump(toDescRef);
-    r.sortMethod = this.getSortMethod();
-    r.filter = !isDummyNumberFilter(this.currentFilter) ? this.currentFilter : null;
+  override toJSON() {
+    const r = super.toJSON();
     r.map = this.mapping.toJSON();
+    r.colorMapping = this.colorMapping.toJSON();
+    r.filter = this.getFilter();
+    r.sortMethod = this.sort;
     r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    super.restore(dump, factory);
-    if (dump.sortMethod) {
-      this.sort = dump.sortMethod;
-    }
-    if (dump.filter) {
-      this.currentFilter = restoreNumberFilter(dump.filter);
-    }
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
     if (dump.map || dump.domain) {
-      this.mapping = restoreMapping(dump, factory);
+      const v = restoreMapping(dump as unknown as IMapAbleDesc, factory);
+      const current = this.mapping.toJSON();
+      const target = restoreValue(v.toJSON(), current, changed, [
+        NumbersColumn.EVENT_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ]);
+      if (target !== current) {
+        this.mapping = v;
+      }
     }
-    if (dump.colorMapping) {
-      this.colorMapping = factory.colorMappingFunction(dump.colorMapping);
-    }
+    this.colorMapping = restoreTypedValue(
+      dump.colorMapping,
+      this.colorMapping,
+      factory.colorMappingFunction.bind(factory),
+      changed,
+      [
+        NumbersColumn.EVENT_COLOR_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ]
+    );
+    this.sort = restoreValue(dump.sortMethod, this.sort, changed, NumbersColumn.EVENT_SORTMETHOD_CHANGED);
+    this.currentFilter = restoreValue(
+      dump.filter ? restoreNumberFilter(dump.filter) : undefined,
+      this.currentFilter,
+      changed,
+      [NumberColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]
+    );
+    return changed;
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([
@@ -327,24 +352,33 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
       ]);
   }
 
-  on(type: typeof NumbersColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_NCS | null): this;
-  on(type: typeof NumbersColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_NCS | null): this;
-  on(type: typeof NumbersColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_NCS | null): this;
-  on(type: typeof NumbersColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_NCS | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(
+    type: typeof NumbersColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_NCS | null
+  ): this;
+  override on(type: typeof NumbersColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_NCS | null): this;
+  override on(type: typeof NumbersColumn.EVENT_SORTMETHOD_CHANGED, listener: typeof sortMethodChanged_NCS | null): this;
+  override on(type: typeof NumbersColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_NCS | null): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
@@ -374,7 +408,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     );
   }
 
-  getColor(row: IDataRow) {
+  override getColor(row: IDataRow) {
     return NumberColumn.prototype.getColor.call(this, row);
   }
 
@@ -399,7 +433,7 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     );
   }
 
-  isFiltered() {
+  override isFiltered() {
     return NumberColumn.prototype.isFiltered.call(this);
   }
 
@@ -411,11 +445,11 @@ export default class NumbersColumn extends ArrayColumn<number> implements INumbe
     NumberColumn.prototype.setFilter.call(this, value);
   }
 
-  filter(row: IDataRow) {
+  override filter(row: IDataRow) {
     return NumberColumn.prototype.filter.call(this, row);
   }
 
-  clearFilter() {
+  override clearFilter() {
     return NumberColumn.prototype.clearFilter.call(this);
   }
 }

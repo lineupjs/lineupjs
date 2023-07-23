@@ -5,13 +5,13 @@ import type {
   ICategoricalColorMappingFunction,
   ICategoricalsColumn,
 } from './ICategoricalColumn';
-import type { IDataRow, ITypeFactory } from './interfaces';
+import type { IColumnDump, IDataRow, ITypeFactory } from './interfaces';
 import { toolbar } from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
-import type Column from './Column';
+import Column from './Column';
 import {
   DEFAULT_COLOR,
   labelChanged,
@@ -28,6 +28,7 @@ import {
 } from './Column';
 import type { IEventListener, ISequence } from '../internal';
 import { toCategories } from './internalCategorical';
+import { restoreTypedValue } from './diff';
 
 export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string | null>;
 
@@ -61,7 +62,7 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
-  onDataUpdate(rows: ISequence<IDataRow>): void {
+  override onDataUpdate(rows: ISequence<IDataRow>): void {
     super.onDataUpdate(rows);
     if ((this.desc as ICategoricalsColumnDesc).categories) {
       return;
@@ -84,28 +85,34 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     this.categories.forEach((d) => this.lookup.set(d.name, d));
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
-  on(
+  override on(
     type: typeof CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED,
     listener: typeof colorMappingChanged_CCS | null
   ): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
@@ -127,11 +134,11 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     return this.getCategories(row);
   }
 
-  getValues(row: IDataRow) {
+  override getValues(row: IDataRow) {
     return this.getCategories(row).map((v) => (v ? v.name : null));
   }
 
-  getLabels(row: IDataRow) {
+  override getLabels(row: IDataRow) {
     return this.getCategories(row).map((v) => (v ? v.label : ''));
   }
 
@@ -143,14 +150,29 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     return CategoricalColumn.prototype.setColorMapping.call(this, mapping);
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = super.dump(toDescRef);
+  override toJSON() {
+    const r = super.toJSON();
     r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    super.restore(dump, factory);
-    this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
+
+    this.colorMapping = restoreTypedValue(
+      dump.colorMapping,
+      this.colorMapping,
+      (target) => factory.categoricalColorMappingFunction(target, this.categories),
+      changed,
+      [
+        CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ]
+    );
+
+    return changed;
   }
 }

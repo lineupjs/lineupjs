@@ -22,7 +22,7 @@ import type {
   ICategory,
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
-import type { IDataRow, IValueColumnDesc, ITypeFactory } from './interfaces';
+import type { IDataRow, IValueColumnDesc, ITypeFactory, IColumnDump } from './interfaces';
 import NumberColumn from './NumberColumn';
 import type { INumberColumn } from './INumberColumn';
 import type { dataLoaded } from './ValueColumn';
@@ -30,6 +30,7 @@ import ValueColumn from './ValueColumn';
 import { toCategories } from './internalCategorical';
 import { DEFAULT_FORMATTER } from './internalNumber';
 import { integrateDefaults } from './internal';
+import { restoreValue } from './diff';
 
 export declare type IOrdinalColumnDesc = ICategoricalDesc & IValueColumnDesc<number>;
 
@@ -88,7 +89,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
   }
 
-  onDataUpdate(rows: ISequence<IDataRow>): void {
+  override onDataUpdate(rows: ISequence<IDataRow>): void {
     super.onDataUpdate(rows);
     if ((this.desc as IOrdinalColumnDesc).categories) {
       return;
@@ -106,7 +107,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     this.categories.forEach((d) => this.lookup.set(d.name, d));
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([
@@ -116,23 +117,32 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
       ]);
   }
 
-  on(type: typeof OrdinalColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_OC | null): this;
-  on(type: typeof OrdinalColumn.EVENT_COLOR_MAPPING_CHANGED, listener: typeof colorMappingChanged_OC | null): this;
-  on(type: typeof OrdinalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_OC | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof OrdinalColumn.EVENT_MAPPING_CHANGED, listener: typeof mappingChanged_OC | null): this;
+  override on(
+    type: typeof OrdinalColumn.EVENT_COLOR_MAPPING_CHANGED,
+    listener: typeof colorMappingChanged_OC | null
+  ): this;
+  override on(type: typeof OrdinalColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_OC | null): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
@@ -148,7 +158,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return this.categories.map((d) => d.label);
   }
 
-  getValue(row: IDataRow) {
+  override getValue(row: IDataRow) {
     const v = this.getNumber(row);
     return Number.isNaN(v) ? null : v;
   }
@@ -178,11 +188,11 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return [this.getRawNumber(row)];
   }
 
-  getColor(row: IDataRow) {
+  override getColor(row: IDataRow) {
     return CategoricalColumn.prototype.getColor.call(this, row);
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     return CategoricalColumn.prototype.getLabel.call(this, row);
   }
 
@@ -215,7 +225,7 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return this.getNumber(row);
   }
 
-  getExportValue(row: IDataRow, format: 'text' | 'json'): any {
+  override getExportValue(row: IDataRow, format: 'text' | 'json'): any {
     if (format === 'json') {
       const value = this.getNumber(row);
       if (Number.isNaN(value)) {
@@ -229,17 +239,26 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return super.getExportValue(row, format);
   }
 
-  dump(toDescRef: (desc: any) => any): any {
-    const r = CategoricalColumn.prototype.dump.call(this, toDescRef);
+  override toJSON() {
+    const r = CategoricalColumn.prototype.toJSON.call(this);
     r.mapping = this.getMapping();
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    CategoricalColumn.prototype.restore.call(this, dump, factory);
-    if (dump.mapping) {
-      this.setMapping(dump.mapping);
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = CategoricalColumn.prototype.restore.call(this, dump, factory);
+    const current = this.getMapping();
+    const target = restoreValue(dump.mapping, current, changed, [
+      OrdinalColumn.EVENT_MAPPING_CHANGED,
+      Column.EVENT_DIRTY_HEADER,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY_CACHES,
+      Column.EVENT_DIRTY,
+    ]);
+    if (target !== current) {
+      this.categories.forEach((d, i) => (d.value = target[i] || 0));
     }
+    return changed;
   }
 
   getMapping() {
@@ -275,15 +294,15 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return CategoricalColumn.prototype.setColorMapping.call(this, mapping);
   }
 
-  isFiltered() {
+  override isFiltered() {
     return this.currentFilter != null;
   }
 
-  filter(row: IDataRow): boolean {
+  override filter(row: IDataRow): boolean {
     return CategoricalColumn.prototype.filter.call(this, row);
   }
 
-  group(row: IDataRow) {
+  override group(row: IDataRow) {
     return CategoricalColumn.prototype.group.call(this, row);
   }
 
@@ -295,19 +314,19 @@ export default class OrdinalColumn extends ValueColumn<number> implements INumbe
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 
-  clearFilter() {
+  override clearFilter() {
     return CategoricalColumn.prototype.clearFilter.call(this);
   }
 
-  toCompareValue(row: IDataRow) {
+  override toCompareValue(row: IDataRow) {
     return CategoricalColumn.prototype.toCompareValue.call(this, row);
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return CategoricalColumn.prototype.toCompareValueType.call(this);
   }
 
-  getRenderer(): string {
+  override getRenderer(): string {
     return NumberColumn.prototype.getRenderer.call(this);
   }
 }

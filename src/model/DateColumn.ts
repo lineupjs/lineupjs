@@ -23,6 +23,7 @@ import {
   ECompareValueType,
   type IValueColumnDesc,
   type ITypeFactory,
+  type IColumnDump,
 } from './interfaces';
 import { isMissingValue, isUnknown, missingGroup } from './missing';
 import type { dataLoaded } from './ValueColumn';
@@ -31,7 +32,6 @@ import {
   noDateFilter,
   defaultDateGrouper,
   isDummyDateFilter,
-  isDefaultDateGrouper,
   restoreDateFilter,
   isEqualDateFilter,
   isDateIncluded,
@@ -39,6 +39,7 @@ import {
   chooseAggregatedDate,
 } from './internalDate';
 import { integrateDefaults } from './internal';
+import { restoreValue } from './diff';
 
 export declare type IDateColumnDesc = IValueColumnDesc<Date> & IDateDesc;
 
@@ -95,49 +96,59 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return this.format;
   }
 
-  dump(toDescRef: (desc: any) => any) {
-    const r = super.dump(toDescRef);
-    r.filter = isDummyDateFilter(this.currentFilter) ? null : this.currentFilter;
-    if (this.currentGrouper && !isDefaultDateGrouper(this.currentGrouper)) {
-      r.grouper = this.currentGrouper;
-    }
+  override toJSON() {
+    const r = super.toJSON();
+    r.filter = this.getFilter();
+    r.grouper = this.getDateGrouper();
     return r;
   }
 
-  restore(dump: any, factory: ITypeFactory) {
-    super.restore(dump, factory);
-    if (dump.filter) {
-      this.currentFilter = restoreDateFilter(dump.filter);
-    }
-    if (dump.grouper) {
-      this.currentGrouper = dump.grouper;
-    }
+  override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
+    const changed = super.restore(dump, factory);
+    this.currentFilter = restoreValue(
+      dump.filter ? restoreDateFilter(dump.filter) : undefined,
+      this.currentFilter,
+      changed,
+      [DateColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY]
+    );
+    this.currentGrouper = restoreValue(dump.grouper, this.currentGrouper, changed, [
+      DateColumn.EVENT_GROUPING_CHANGED,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    return changed;
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([DateColumn.EVENT_FILTER_CHANGED, DateColumn.EVENT_GROUPING_CHANGED]);
   }
 
-  on(type: typeof DateColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_DC | null): this;
-  on(type: typeof DateColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_DC | null): this;
-  on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
-  on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
-  on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
-  on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
-  on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
-  on(type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, listener: typeof groupRendererChanged | null): this;
-  on(type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED, listener: typeof summaryRendererChanged | null): this;
-  on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof DateColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_DC | null): this;
+  override on(type: typeof DateColumn.EVENT_GROUPING_CHANGED, listener: typeof groupingChanged_DC | null): this;
+  override on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
+  override on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
+  override on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
+  override on(type: typeof Column.EVENT_METADATA_CHANGED, listener: typeof metaDataChanged | null): this;
+  override on(type: typeof Column.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof Column.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof Column.EVENT_RENDERER_TYPE_CHANGED, listener: typeof rendererTypeChanged | null): this;
+  override on(
+    type: typeof Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+    listener: typeof groupRendererChanged | null
+  ): this;
+  override on(
+    type: typeof Column.EVENT_SUMMARY_RENDERER_TYPE_CHANGED,
+    listener: typeof summaryRendererChanged | null
+  ): this;
+  override on(type: typeof Column.EVENT_VISIBILITY_CHANGED, listener: typeof visibilityChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type as any, listener);
   }
 
-  getValue(row: IDataRow): Date | null {
+  override getValue(row: IDataRow): Date | null {
     return this.getDate(row);
   }
 
@@ -156,16 +167,16 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return [this.getDate(row)];
   }
 
-  getLabel(row: IDataRow) {
+  override getLabel(row: IDataRow) {
     const v = this.getValue(row);
     return this.format(v);
   }
 
-  isFiltered() {
+  override isFiltered() {
     return !isDummyDateFilter(this.currentFilter);
   }
 
-  clearFilter() {
+  override clearFilter() {
     const was = this.isFiltered();
     this.setFilter(null);
     return was;
@@ -192,11 +203,11 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
    * @param row
    * @returns {boolean}
    */
-  filter(row: IDataRow, valueCache?: any) {
+  override filter(row: IDataRow, valueCache?: any) {
     return isDateIncluded(this.currentFilter, valueCache !== undefined ? valueCache : this.getDate(row));
   }
 
-  toCompareValue(row: IDataRow, valueCache?: any) {
+  override toCompareValue(row: IDataRow, valueCache?: any) {
     const v = valueCache !== undefined ? valueCache : this.getValue(row);
     if (!(v instanceof Date)) {
       return NaN;
@@ -204,7 +215,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     return v.getTime();
   }
 
-  toCompareValueType() {
+  override toCompareValueType() {
     return ECompareValueType.DOUBLE_ASC;
   }
 
@@ -221,7 +232,7 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     this.fire([DateColumn.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }
 
-  group(row: IDataRow, valueCache?: any): IGroup {
+  override group(row: IDataRow, valueCache?: any): IGroup {
     const v = valueCache !== undefined ? valueCache : this.getDate(row);
     if (!v || !(v instanceof Date)) {
       return Object.assign({}, missingGroup);
@@ -236,12 +247,12 @@ export default class DateColumn extends ValueColumn<Date> implements IDateColumn
     };
   }
 
-  toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
+  override toCompareGroupValue(rows: ISequence<IDataRow>, _group: IGroup, valueCache?: ISequence<any>): number {
     const v = chooseAggregatedDate(rows, this.currentGrouper, this, valueCache).value;
     return v == null ? NaN : v;
   }
 
-  toCompareGroupValueType() {
+  override toCompareGroupValueType() {
     return ECompareValueType.DOUBLE_ASC;
   }
 }

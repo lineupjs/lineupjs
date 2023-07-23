@@ -1,14 +1,10 @@
-import type { IColumnDump } from './interfaces';
-
-export function dumpValue<T>(dump: IColumnDump, key: keyof IColumnDump, current: T, defaultValue: T | undefined) {
-  if (current === defaultValue) {
-    return;
-  }
-  dump[key] = current;
-}
+import { equal } from 'src/internal';
 
 export function restoreValue<T, E>(dumped: T | undefined, current: T, changed: Set<E>, changeName: E | E[]): T {
-  if (dumped === undefined || current === dumped) {
+  if (dumped === undefined) {
+    return current;
+  }
+  if (current === dumped || equal(dumped, current)) {
     return current;
   }
   if (Array.isArray(changeName)) {
@@ -19,4 +15,19 @@ export function restoreValue<T, E>(dumped: T | undefined, current: T, changed: S
     changed.add(changeName);
   }
   return dumped;
+}
+
+export function restoreTypedValue<T extends { toJSON(): R }, R, E>(
+  dumped: R | undefined,
+  current: T,
+  restore: (v: R) => T,
+  changed: Set<E>,
+  changeName: E | E[]
+): T {
+  const currentDump = current.toJSON();
+  const target = restoreValue(dumped, currentDump, changed, changeName);
+  if (target !== currentDump) {
+    return restore(target);
+  }
+  return current;
 }
