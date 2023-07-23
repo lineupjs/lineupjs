@@ -23,11 +23,13 @@ import {
   type IGroupParent,
   type ITypeFactory,
   type IGroup,
+  type IColumnDump,
 } from './interfaces';
 import { groupRoots, traverseGroupsDFS } from './internal';
 import AggregateGroupColumn from './AggregateGroupColumn';
 import SetColumn from './SetColumn';
 import { AGGREGATION_LEVEL_WIDTH } from '../styles';
+import { matchColumns, restoreValue } from './diff';
 
 export enum EDirtyReason {
   UNKNOWN = 'unknown',
@@ -352,37 +354,94 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   dump(toDescRef: (desc: any) => any): IRankingDump {
-    // FIXME dump
-    const r: IRankingDump = {};
-    r.columns = this.columns.map((d) => d.dump(toDescRef));
+    const r: IRankingDump = {
+      ...this.toCommonJSON(),
+      columns: this.columns.map((d) => d.dump(toDescRef)),
+    };
+    return r;
+  }
+
+  toCommonJSON() {
+    const r: Record<string, any> = {};
+    r.label = this.label;
     r.sortCriteria = this.sortCriteria.map((s) => ({ asc: s.asc, sortBy: s.col!.id }));
     r.groupSortCriteria = this.groupSortCriteria.map((s) => ({ asc: s.asc, sortBy: s.col!.id }));
     r.groupColumns = this.groupColumns.map((d) => d.id);
     return r;
   }
 
-  restore(dump: IRankingDump, factory: ITypeFactory) {
-    this.clear();
-    (dump.columns || []).forEach((child: any) => {
-      const c = factory(child);
-      if (c) {
-        this.push(c);
-      }
-    });
-    // compatibility case
-    if (dump.sortColumn && dump.sortColumn.sortBy) {
-      const help = this.columns.find((d) => d.id === dump.sortColumn!.sortBy);
-      if (help) {
-        this.sortBy(help, dump.sortColumn.asc);
-      }
+  toJSON(): Record<string, any> {
+    const r = this.toCommonJSON();
+    r.columns = this.columns.map((d) => d.toJSON());
+    return r;
+  }
+
+  restore(dump: IRankingDump, factory: ITypeFactory): Set<string> {
+    const changed = new Set<string>();
+    this.label = restoreValue(dump.label, this.label, changed, Ranking.EVENT_LABEL_CHANGED);
+    this.restoreColumns(dump.columns, factory, changed);
+    this.restoreGroupColumns(dump, changed);
+    this.restoreCriteria(dump.sortCriteria, dump.groupSortCriteria, dump.sortColumn, changed);
+    return changed;
+  }
+
+  private restoreColumns(columns: IColumnDump[] | undefined, factory: ITypeFactory, changed: Set<string>) {
+    if (columns == null) {
+      return;
     }
-    if (dump.groupColumns) {
-      const groupColumns = dump.groupColumns
-        .map((id: string) => this.columns.find((d) => d.id === id))
-        .filter((d) => d != null) as Column[];
-      this.setGroupCriteria(groupColumns);
+    const r = matchColumns(columns, this.columns, changed, factory);
+    if (r == null) {
+      return;
+    }
+    if (r.moved.length > 0) {
+      changed.add(CompositeColumn.EVENT_MOVE_COLUMN);
+    }
+    for (const added of r.added) {
+      this.insertImpl(added.column);
+      changed.add(Ranking.EVENT_ADD_COLUMN);
+    }
+    for (const removed of r.removed) {
+      this.removeImpl(removed.column);
+      changed.add(Ranking.EVENT_REMOVE_COLUMN);
     }
 
+    this.columns.splice(0, this.columns.length, ...r.columns);
+    changed.add(Ranking.EVENT_DIRTY_HEADER);
+    changed.add(Ranking.EVENT_DIRTY_VALUES);
+    changed.add(Ranking.EVENT_DIRTY_CACHES);
+    changed.add(Ranking.EVENT_DIRTY);
+  }
+
+  private restoreGroupColumns(dump: IRankingDump, changed: Set<string>) {
+    const target = (dump.groupColumns ?? []).map((id: string) => this.columns.find((d) => d.id === id));
+
+    if (equalArrays(this.groupColumns, target)) {
+      return; //same
+    }
+    this.groupColumns.forEach((groupColumn) => {
+      groupColumn.on(Ranking.COLUMN_GROUP_DIRTY, null);
+    });
+
+    this.groupColumns.splice(0, this.groupColumns.length, ...target);
+
+    this.groupColumns.forEach((groupColumn) => {
+      groupColumn.on(Ranking.COLUMN_GROUP_DIRTY, this.dirtyOrderGroupDirty);
+    });
+
+    changed.add(Ranking.EVENT_GROUP_CRITERIA_CHANGED);
+    changed.add(Ranking.EVENT_DIRTY_ORDER);
+    changed.add(Ranking.EVENT_DIRTY_HEADER);
+    changed.add(Ranking.EVENT_DIRTY_VALUES);
+    changed.add(Ranking.EVENT_DIRTY_CACHES);
+    changed.add(Ranking.EVENT_DIRTY);
+  }
+
+  private restoreCriteria(
+    sortCriteria: IRankingDump['sortCriteria'],
+    groupSortCriteria: IRankingDump['groupSortCriteria'],
+    sortColumn: IRankingDump['sortColumn'],
+    changed: Set<string>
+  ) {
     const restoreSortCriteria = (dumped: any) => {
       return dumped
         .map((s: { asc: boolean; sortBy: string }) => {
@@ -393,13 +452,44 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         })
         .filter((s: any) => s.col);
     };
-
-    if (dump.sortCriteria) {
-      this.setSortCriteria(restoreSortCriteria(dump.sortCriteria));
+    // compatibility case
+    if (sortColumn && sortColumn.sortBy) {
+      sortCriteria = [sortColumn];
+    }
+    if (sortCriteria) {
+      const dumped = restoreSortCriteria(sortCriteria);
+      if (!equalCriteria(dumped, this.sortCriteria)) {
+        this.sortCriteria.forEach((d) => {
+          d.col.on(Ranking.COLUMN_SORT_DIRTY, null!);
+        });
+      }
+      dumped.forEach((d) => {
+        d.col.on(Ranking.COLUMN_SORT_DIRTY, this.dirtyOrderSortDirty);
+      });
+      this.sortCriteria.splice(0, this.sortCriteria.length, ...dumped.slice());
+      changed.add(Ranking.EVENT_SORT_CRITERIA_CHANGED);
+      changed.add(Ranking.EVENT_DIRTY_ORDER);
+      changed.add(Ranking.EVENT_DIRTY_HEADER);
+      changed.add(Ranking.EVENT_DIRTY_VALUES);
+      changed.add(Ranking.EVENT_DIRTY);
     }
 
-    if (dump.groupSortCriteria) {
-      this.setGroupSortCriteria(restoreSortCriteria(dump.groupSortCriteria));
+    if (groupSortCriteria) {
+      const dumped = restoreSortCriteria(groupSortCriteria);
+      if (!equalCriteria(dumped, this.groupSortCriteria)) {
+        this.groupSortCriteria.forEach((d) => {
+          d.col.on(Ranking.COLUMN_GROUP_DIRTY, null!);
+        });
+      }
+      dumped.forEach((d) => {
+        d.col.on(Ranking.COLUMN_GROUP_DIRTY, this.dirtyOrderGroupDirty);
+      });
+      this.groupSortCriteria.splice(0, this.groupSortCriteria.length, ...dumped.slice());
+      changed.add(Ranking.EVENT_GROUP_CRITERIA_CHANGED);
+      changed.add(Ranking.EVENT_DIRTY_ORDER);
+      changed.add(Ranking.EVENT_DIRTY_HEADER);
+      changed.add(Ranking.EVENT_DIRTY_VALUES);
+      changed.add(Ranking.EVENT_DIRTY);
     }
   }
 
@@ -662,8 +752,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.columns.length;
   }
 
-  insert(col: Column, index: number = this.columns.length) {
-    this.columns.splice(index, 0, col);
+  private insertImpl(col: Column) {
     col.attach(this);
     this.forward(col, ...Ranking.FORWARD_COLUMN_EVENTS);
     col.on(`${Ranking.EVENT_FILTER_CHANGED}.order`, this.dirtyOrderFiltering);
@@ -680,7 +769,11 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         newValue
       )
     );
+  }
 
+  insert(col: Column, index: number = this.columns.length) {
+    this.columns.splice(index, 0, col);
+    this.insertImpl(col);
     this.fire(
       [Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY],
       col,
@@ -776,13 +869,18 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.insert(col);
   }
 
+  private removeImpl(col: Column) {
+    col.detach();
+    this.unforward(col, ...Ranking.FORWARD_COLUMN_EVENTS);
+  }
+
   remove(col: Column) {
     const i = this.columns.indexOf(col);
     if (i < 0) {
       return false;
     }
 
-    this.unforward(col, ...Ranking.FORWARD_COLUMN_EVENTS);
+    this.removeImpl(col);
 
     const isSortCriteria = this.sortCriteria.findIndex((d) => d.col === col);
     const sortCriteriaChanged = isSortCriteria >= 0;
@@ -804,7 +902,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       newGrouping.splice(isGroupColumn, 1);
     }
 
-    col.detach();
     this.columns.splice(i, 1);
 
     this.fire(

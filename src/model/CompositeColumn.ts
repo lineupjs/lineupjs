@@ -16,6 +16,7 @@ import { Category, toolbar } from './annotations';
 import type { IDataRow, IColumnParent, IFlatColumn, ITypeFactory, IColumnDump } from './interfaces';
 import ValueColumn from './ValueColumn';
 import { isNumberColumn } from './INumberColumn';
+import { matchColumns } from './diff';
 
 /**
  * emitted when the filter property changes
@@ -143,48 +144,29 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
     const changed = super.restore(dump, factory);
-    const lookup = new Map(this._children.map((d, i) => [d.id, { column: d, i }]));
-
-    let structureChanged = false;
-    const target = (dump.children as IColumnDump[]).map((child: IColumnDump, i) => {
-      const existing = lookup.get(child.id);
-      if (existing != null) {
-        lookup.delete(child.id);
-        if (existing.i !== i) {
-          structureChanged = true;
-          changed.add(CompositeColumn.EVENT_MOVE_COLUMN);
-          changed.add(Column.EVENT_RENDERER_TYPE_CHANGED);
-          changed.add(Column.EVENT_GROUP_RENDERER_TYPE_CHANGED);
-        }
-        const subChanged = existing.column.restore(child, factory);
-        subChanged.forEach((c) => changed.add(c));
-        return existing.column;
-      }
-      // need new
-      const c = factory(child);
-      this.insertImpl(c, i);
-      structureChanged = true;
-      changed.add(CompositeColumn.EVENT_ADD_COLUMN);
-      return c;
-    });
-    this._children.forEach((c, i) => {
-      if (lookup.has(c.id)) {
-        // used
-        return;
-      }
-      // remove
-      structureChanged = true;
-      changed.add(CompositeColumn.EVENT_REMOVE_COLUMN);
-      this.removeImpl(c, i);
-    });
-    if (structureChanged) {
-      this._children.splice(0, this._children.length);
-      this._children.push(...target);
-      changed.add(Column.EVENT_DIRTY_HEADER);
-      changed.add(Column.EVENT_DIRTY_VALUES);
-      changed.add(Column.EVENT_DIRTY_CACHES);
-      changed.add(Column.EVENT_DIRTY);
+    const r = matchColumns(dump.children, this._children, changed, factory);
+    if (r == null) {
+      return changed;
     }
+    if (r.moved.length > 0) {
+      changed.add(CompositeColumn.EVENT_MOVE_COLUMN);
+      changed.add(Column.EVENT_RENDERER_TYPE_CHANGED);
+      changed.add(Column.EVENT_GROUP_RENDERER_TYPE_CHANGED);
+    }
+    for (const added of r.added) {
+      this.insertImpl(added.column, added.i);
+      changed.add(CompositeColumn.EVENT_ADD_COLUMN);
+    }
+    for (const removed of r.removed) {
+      this.removeImpl(removed.column, removed.i);
+      changed.add(CompositeColumn.EVENT_REMOVE_COLUMN);
+    }
+
+    this._children.splice(0, this._children.length, ...r.columns);
+    changed.add(Column.EVENT_DIRTY_HEADER);
+    changed.add(Column.EVENT_DIRTY_VALUES);
+    changed.add(Column.EVENT_DIRTY_CACHES);
+    changed.add(Column.EVENT_DIRTY);
     return changed;
   }
 

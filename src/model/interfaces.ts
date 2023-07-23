@@ -248,7 +248,11 @@ export interface IColumnDump {
 
 export interface IRankingDump {
   /**
-   * columsn of this ranking
+   *
+   */
+  label?: string;
+  /**
+   * columns of this ranking
    */
   columns?: IColumnDump[];
 
