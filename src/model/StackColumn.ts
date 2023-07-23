@@ -218,11 +218,15 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     if (!Number.isNaN(weight)) {
       col.setWidth((weight / (1 - weight)) * this.getWidth());
     }
-    col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
     //increase my width
     super.setWidth(this.length === 0 ? col.getWidth() : this.getWidth() + col.getWidth());
 
     return super.insert(col, index);
+  }
+
+  protected override insertImpl(col: Column, index: number): Column {
+    col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
+    return super.insertImpl(col, index);
   }
 
   override push(col: Column, weight = NaN) {
@@ -321,9 +325,16 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     );
   }
 
+  override remove(col: Column): boolean {
+    const r = super.remove(col);
+    if (r) {
+      super.setWidth(this.length === 0 ? 100 : this.getWidth() - col.getWidth());
+    }
+    return r;
+  }
+
   override removeImpl(child: Column, index: number) {
     child.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, null);
-    super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child, index);
   }
 

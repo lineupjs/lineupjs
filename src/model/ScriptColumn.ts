@@ -18,7 +18,7 @@ import type { addColumn, moveColumn, removeColumn } from './CompositeColumn';
 import type CompositeColumn from './CompositeColumn';
 import CompositeNumberColumn, { type ICompositeNumberDesc } from './CompositeNumberColumn';
 import type { IColumnDump, IDataRow, ITypeFactory } from './interfaces';
-import { isDummyNumberFilter, noNumberFilter, restoreNumberFilter } from './internalNumber';
+import { noNumberFilter, restoreNumberFilter } from './internalNumber';
 import {
   type IColorMappingFunction,
   type IMapAbleColumn,

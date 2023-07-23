@@ -22,7 +22,7 @@ import type { IDateDesc, IDatesColumn, IDateFilter } from './IDateColumn';
 import { type IDataRow, ECompareValueType, type ITypeFactory, type IColumnDump } from './interfaces';
 import { isMissingValue } from './missing';
 import DateColumn from './DateColumn';
-import { noDateFilter, isDummyDateFilter, restoreDateFilter } from './internalDate';
+import { noDateFilter, restoreDateFilter } from './internalDate';
 import { chooseUIntByDataLength, integrateDefaults } from './internal';
 import { restoreValue } from './diff';
 

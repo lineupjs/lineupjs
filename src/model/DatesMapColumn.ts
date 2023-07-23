@@ -24,7 +24,7 @@ import Column from './Column';
 import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
 import type { IEventListener } from '../internal';
-import { noDateFilter, isDummyDateFilter, restoreDateFilter } from './internalDate';
+import { noDateFilter, restoreDateFilter } from './internalDate';
 import { integrateDefaults } from './internal';
 import { restoreValue } from './diff';
 

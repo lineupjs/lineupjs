@@ -213,7 +213,11 @@ export default class MultiLevelCellRenderer
     };
   }
 
-  createGroup(col: IMultiLevelColumn & Column, context: IRenderContext, imposer?: IImposer): IGroupCellRenderer {
+  override createGroup(
+    col: IMultiLevelColumn & Column,
+    context: IRenderContext,
+    imposer?: IImposer
+  ): IGroupCellRenderer {
     if (this.stacked && isNumberColumn(col)) {
       return super.createGroup(col, context, imposer);
     }

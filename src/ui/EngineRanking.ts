@@ -92,11 +92,11 @@ class RankingEvents extends AEventDispatcher {
   static readonly EVENT_RECREATE = 'recreate';
   static readonly EVENT_HIGHLIGHT_CHANGED = 'highlightChanged';
 
-  fire(type: string | string[], ...args: any[]) {
+  override fire(type: string | string[], ...args: any[]) {
     super.fire(type, ...args);
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([
@@ -383,14 +383,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return this.ranking.id;
   }
 
-  protected onVisibilityChanged(visible: boolean) {
+  protected override onVisibilityChanged(visible: boolean) {
     super.onVisibilityChanged(visible);
     if (visible) {
       this.delayedUpdate.call({ type: Ranking.EVENT_ORDER_CHANGED });
     }
   }
 
-  updateHeaders() {
+  override updateHeaders() {
     this.updateColumnSummaryFlag();
     return super.updateHeaders();
   }
@@ -703,7 +703,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return node && column;
   }
 
-  protected createRow(node: HTMLElement, rowIndex: number): void {
+  protected override createRow(node: HTMLElement, rowIndex: number): void {
     node.classList.add(this.style.cssClasses.tr);
     this.roptions.customRowUpdate(node, rowIndex);
     if (this.highlightHandler.enabled) {
@@ -748,7 +748,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.renderRow(canvas, node, rowIndex);
   }
 
-  protected updateRow(node: HTMLElement, rowIndex: number, hoverLod?: 'high' | 'low'): void {
+  protected override updateRow(node: HTMLElement, rowIndex: number, hoverLod?: 'high' | 'low'): void {
     this.roptions.customRowUpdate(node, rowIndex);
 
     const computedLod = this.roptions.levelOfDetail(rowIndex);
@@ -850,7 +850,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
   }
 
-  protected updateShifts(top: number, left: number) {
+  protected override updateShifts(top: number, left: number) {
     super.updateShifts(top, left);
 
     const width = this.visibleRenderedWidth();
@@ -907,7 +907,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.updateRow(row, index, hover ? 'high' : 'low');
   }
 
-  protected forEachRow(callback: (row: HTMLElement, rowIndex: number) => void, inplace = false) {
+  protected override forEachRow(callback: (row: HTMLElement, rowIndex: number) => void, inplace = false) {
     const adapter = (row: HTMLElement, rowIndex: number) => {
       if (EngineRanking.isCanvasRenderedRow(row)) {
         // skip canvas
@@ -929,7 +929,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }, true);
   }
 
-  updateColumnWidths() {
+  override updateColumnWidths() {
     // update the column context in place
     (this._context as any).column = nonUniformContext(
       this._context.columns.map((w) => w.width),
@@ -1013,7 +1013,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.classList.add(engineCssClass('td'), this.style.cssClasses.td, engineCssClass(`td-${this.tableId}`));
   }
 
-  destroy() {
+  override destroy() {
     super.destroy();
     this.style.deleteRule(`hoverOnly${this.tableId}`);
     this.style.deleteRule(`renderCanvas${this.tableId}`);

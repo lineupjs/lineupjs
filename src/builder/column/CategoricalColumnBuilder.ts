@@ -64,7 +64,7 @@ export default class CategoricalColumnBuilder extends ColumnBuilder<ICategorical
     this.categories(cleanCategories(categories));
   }
 
-  build(data: any[]): ICategoricalColumnDesc {
+  override build(data: any[]): ICategoricalColumnDesc {
     if (!this.desc.categories) {
       this.derive(data);
     }

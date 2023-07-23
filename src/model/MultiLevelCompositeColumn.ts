@@ -157,11 +157,14 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    * @param index
    */
   override insert(col: Column, index: number) {
-    col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
     //increase my width
     super.setWidth(this.length === 0 ? col.getWidth() : this.getWidth() + col.getWidth());
-
     return super.insert(col, index);
+  }
+
+  protected override insertImpl(col: Column, index: number): Column {
+    col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
+    return super.insertImpl(col, index);
   }
 
   /**
@@ -183,9 +186,16 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     super.setWidth(next);
   }
 
+  override remove(col: Column): boolean {
+    const r = super.remove(col);
+    if (r) {
+      super.setWidth(this.length === 0 ? 100 : this.getWidth() - col.getWidth());
+    }
+    return r;
+  }
+
   protected override removeImpl(child: Column, index: number) {
     child.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, null);
-    super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child, index);
   }
 

@@ -89,11 +89,11 @@ abstract class ACommonDataProvider extends ADataProvider {
    * @param desc
    * @returns {string}
    */
-  toDescRef(desc: any): any {
+  override toDescRef(desc: any): any {
     return typeof desc.column !== 'undefined' ? `${desc.type}@${desc.column}` : this.cleanDesc(Object.assign({}, desc));
   }
 
-  fromDescRef(descRef: any): any {
+  override fromDescRef(descRef: any): any {
     if (typeof descRef === 'string') {
       return this.columns.find((d: any) => `${d.type}@${d.column}` === descRef || d.type === descRef);
     }
@@ -106,7 +106,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     return descRef;
   }
 
-  restore(dump: IDataProviderDump) {
+  override restore(dump: IDataProviderDump) {
     super.restore(dump);
     this.rankingIndex = 1 + Math.max(...this.getRankings().map((r) => +r.id.substring(4)));
   }

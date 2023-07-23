@@ -121,7 +121,7 @@ export default class WeightsEditDialog extends ADialog {
     }
   }
 
-  protected appendDialogButtons() {
+  protected override appendDialogButtons() {
     super.appendDialogButtons();
     const buttons = this.node.querySelector<HTMLElement>(`.${cssClass('dialog-buttons')}`)!;
     buttons.insertAdjacentHTML(

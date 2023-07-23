@@ -74,7 +74,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     _data.on(`${DataProvider.EVENT_BUSY}.busy`, (busy) => this.node.classList.toggle(cssClass('busy'), busy));
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([
@@ -85,12 +85,12 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
       ]);
   }
 
-  on(type: typeof ALineUp.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
-  on(type: typeof ALineUp.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
-  on(type: typeof ALineUp.EVENT_DIALOG_OPENED, listener: typeof dialogOpened | null): this;
-  on(type: typeof ALineUp.EVENT_DIALOG_CLOSED, listener: typeof dialogClosed | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof ALineUp.EVENT_HIGHLIGHT_CHANGED, listener: typeof highlightChanged | null): this;
+  override on(type: typeof ALineUp.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
+  override on(type: typeof ALineUp.EVENT_DIALOG_OPENED, listener: typeof dialogOpened | null): this;
+  override on(type: typeof ALineUp.EVENT_DIALOG_CLOSED, listener: typeof dialogClosed | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 
@@ -154,7 +154,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
 
   abstract getHighlight(): number;
 
-  protected listenersChanged(type: string, enabled: boolean) {
+  protected override listenersChanged(type: string, enabled: boolean) {
     super.listenersChanged(type, enabled);
     if (!type.startsWith(ALineUp.EVENT_HIGHLIGHT_CHANGED)) {
       return;

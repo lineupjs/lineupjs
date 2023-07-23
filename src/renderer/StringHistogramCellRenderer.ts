@@ -15,9 +15,9 @@ const DEFAULT_FILTERED_COLOR = (() => {
  * one instance factory shared among strings
  */
 export default class StringHistogramCellRenderer extends StringCellRenderer {
-  readonly title: string = 'TopN Histogram';
+  override readonly title: string = 'TopN Histogram';
 
-  createGroup(col: StringColumn, context: IRenderContext): IGroupCellRenderer {
+  override createGroup(col: StringColumn, context: IRenderContext): IGroupCellRenderer {
     const { template, update } = hist(false);
     return {
       template,
@@ -32,7 +32,7 @@ export default class StringHistogramCellRenderer extends StringCellRenderer {
     };
   }
 
-  createSummary(col: StringColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
+  override createSummary(col: StringColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     if (interactive) {
       return super.createSummary(col, context, interactive);
     }

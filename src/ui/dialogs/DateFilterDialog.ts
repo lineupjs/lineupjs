@@ -38,7 +38,7 @@ export default class DateFilterDialog extends ADialog {
     );
   }
 
-  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+  override cleanUp(action: 'cancel' | 'confirm' | 'handled') {
     super.cleanUp(action);
     this.handler!.cleanUp();
   }

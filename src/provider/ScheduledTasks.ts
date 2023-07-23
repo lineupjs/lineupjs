@@ -48,7 +48,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     this.workers.deleteRefs();
   }
 
-  dirtyColumn(col: Column, type: 'data' | 'group' | 'summary') {
+  override dirtyColumn(col: Column, type: 'data' | 'group' | 'summary') {
     super.dirtyColumn(col, type);
     // order designed such that first groups, then summaries, then data is deleted
 

@@ -170,7 +170,7 @@ export default class CategoricalFilterDialog extends ADialog {
     return true;
   }
 
-  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+  override cleanUp(action: 'cancel' | 'confirm' | 'handled') {
     super.cleanUp(action);
     const ranking = this.column.findMyRanker()!;
     if (ranking) {

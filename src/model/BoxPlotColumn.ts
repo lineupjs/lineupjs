@@ -20,7 +20,6 @@ import {
   type IValueColumnDesc,
   type ITypeFactory,
   type IColumnDump,
-  type ITypedDump,
 } from './interfaces';
 import {
   ESortMethod,
@@ -40,7 +39,6 @@ import {
   noNumberFilter,
   toCompareBoxPlotValue,
   getBoxPlotNumber,
-  isDummyNumberFilter,
   restoreNumberFilter,
 } from './internalNumber';
 import { restoreTypedValue, restoreValue } from './diff';
@@ -95,7 +93,6 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   private mapping: IMappingFunction;
   private colorMapping: IColorMappingFunction;
-  private readonly defaultColorMapping: ITypedDump | string;
   private original: Readonly<IMappingFunction>;
   private deriveMapping: readonly boolean[];
 
@@ -112,7 +109,6 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     this.original = this.mapping.clone();
     this.deriveMapping = this.mapping.domain.map((d) => d == null || Number.isNaN(d));
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping);
-    this.defaultColorMapping = this.colorMapping.toJSON();
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);

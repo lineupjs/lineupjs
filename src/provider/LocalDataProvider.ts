@@ -130,7 +130,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return this._data;
   }
 
-  destroy() {
+  override destroy() {
     super.destroy();
     this.tasks.terminate();
   }
@@ -178,7 +178,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     this.dataChanged();
   }
 
-  cloneRanking(existing?: Ranking) {
+  override cloneRanking(existing?: Ranking) {
     const ranking = super.cloneRanking(existing);
 
     if (this.ooptions.filterGlobally) {
@@ -260,7 +260,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     this.tasks.preComputeData(ranking);
   }
 
-  protected patchColumn(column: Column): Column {
+  protected override patchColumn(column: Column): Column {
     const c = super.patchColumn(column);
     if (c instanceof ValueColumn && c.isLoaded()) {
       c.onDataUpdate(this._dataRows);
@@ -268,7 +268,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return c;
   }
 
-  cleanUpRanking(ranking: Ranking) {
+  override cleanUpRanking(ranking: Ranking) {
     if (this.ooptions.filterGlobally) {
       ranking.on(`${Ranking.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }

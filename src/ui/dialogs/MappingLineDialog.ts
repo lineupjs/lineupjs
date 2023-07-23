@@ -77,7 +77,7 @@ export default class MappingLineDialog extends ADialog {
     this.enableLivePreviews('input');
   }
 
-  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+  override cleanUp(action: 'cancel' | 'confirm' | 'handled') {
     super.cleanUp(action);
 
     this.dialog.attachment.classList.remove(cssClass('mapping-line-selected'));

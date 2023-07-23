@@ -509,6 +509,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any} dump of this column
    */
   dump(toDescRef: (desc: any) => any): IColumnDump {
+    // override directly in Composite
     const r = {
       desc: toDescRef(this.desc),
       ...this.toJSON(),

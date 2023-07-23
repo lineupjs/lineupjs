@@ -4,13 +4,13 @@ import { cssClass } from '../styles';
 import type { ICellRenderer } from './interfaces';
 
 export default class AnnotationRenderer extends StringCellRenderer {
-  readonly title: string = 'Default';
+  override readonly title: string = 'Default';
 
-  canRender(col: Column) {
+  override canRender(col: Column) {
     return super.canRender(col) && col instanceof AnnotateColumn;
   }
 
-  create(col: AnnotateColumn): ICellRenderer {
+  override create(col: AnnotateColumn): ICellRenderer {
     return {
       template: `<div>
         <span></span>

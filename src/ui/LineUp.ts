@@ -7,10 +7,10 @@ import EngineRenderer from './EngineRenderer';
 import SidePanel from './panel/SidePanel';
 
 export default class LineUp extends ALineUp {
-  static readonly EVENT_SELECTION_CHANGED = ALineUp.EVENT_SELECTION_CHANGED;
-  static readonly EVENT_DIALOG_OPENED = ALineUp.EVENT_DIALOG_OPENED;
-  static readonly EVENT_DIALOG_CLOSED = ALineUp.EVENT_DIALOG_CLOSED;
-  static readonly EVENT_HIGHLIGHT_CHANGED = ALineUp.EVENT_HIGHLIGHT_CHANGED;
+  static override readonly EVENT_SELECTION_CHANGED = ALineUp.EVENT_SELECTION_CHANGED;
+  static override readonly EVENT_DIALOG_OPENED = ALineUp.EVENT_DIALOG_OPENED;
+  static override readonly EVENT_DIALOG_CLOSED = ALineUp.EVENT_DIALOG_CLOSED;
+  static override readonly EVENT_HIGHLIGHT_CHANGED = ALineUp.EVENT_HIGHLIGHT_CHANGED;
 
   private readonly renderer: EngineRenderer | null;
   private readonly panel: SidePanel | null;
@@ -56,7 +56,7 @@ export default class LineUp extends ALineUp {
     );
   }
 
-  destroy() {
+  override destroy() {
     this.node.classList.remove(cssClass());
     if (this.renderer) {
       this.renderer.destroy();
@@ -73,7 +73,7 @@ export default class LineUp extends ALineUp {
     }
   }
 
-  setDataProvider(data: DataProvider, dump?: any) {
+  override setDataProvider(data: DataProvider, dump?: any) {
     super.setDataProvider(data, dump);
     if (!this.renderer) {
       return;
@@ -93,7 +93,7 @@ export default class LineUp extends ALineUp {
     return this.renderer ? this.renderer.getHighlight() : -1;
   }
 
-  protected enableHighlightListening(enable: boolean) {
+  protected override enableHighlightListening(enable: boolean) {
     if (this.renderer) {
       this.renderer.enableHighlightListening(enable);
     }

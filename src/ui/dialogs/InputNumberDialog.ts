@@ -44,7 +44,7 @@ export default class InputNumberDialog extends APopup {
     this.enableLivePreviews('input');
   }
 
-  submit() {
+  override submit() {
     this.callback(this.findInput('input[type=number]').valueAsNumber);
     return true;
   }

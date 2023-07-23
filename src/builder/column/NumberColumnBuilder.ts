@@ -38,7 +38,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    * sets the column color in case of numerical columns
    * @deprecated use colorMapping instead
    */
-  color(color: string) {
+  override color(color: string) {
     return this.colorMapping(color);
   }
 
@@ -71,7 +71,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    * @param {string[] | number} labels labels to use for each array item or the expected length of an value
    * @param {EAdvancedSortMethod} sort sorting criteria when sorting by this column
    */
-  asArray(labels?: string[] | number, sort?: EAdvancedSortMethod) {
+  override asArray(labels?: string[] | number, sort?: EAdvancedSortMethod) {
     if (sort) {
       (this.desc as any).sort = sort;
     }
@@ -82,7 +82,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
    * @inheritDoc
    * @param {EAdvancedSortMethod} sort sorting criteria when sorting by this column
    */
-  asMap(sort?: EAdvancedSortMethod) {
+  override asMap(sort?: EAdvancedSortMethod) {
     if (sort) {
       (this.desc as any).sort = sort;
     }
@@ -133,7 +133,7 @@ export default class NumberColumnBuilder extends ColumnBuilder<INumberColumnDesc
     return [minValue, maxValue];
   }
 
-  build(data: any[]): INumberColumnDesc {
+  override build(data: any[]): INumberColumnDesc {
     if (!this.desc.map && !this.desc.domain) {
       // derive domain
       this.mapping('linear', this.derive(data));

@@ -49,7 +49,7 @@ export class DirectRenderTasks extends ARenderTasks implements IRenderTaskExecut
     this.valueCacheData.clear();
   }
 
-  dirtyColumn(col: Column, type: 'data' | 'summary' | 'group') {
+  override dirtyColumn(col: Column, type: 'data' | 'summary' | 'group') {
     super.dirtyColumn(col, type);
 
     if (type === 'group') {

@@ -335,7 +335,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    *  * selectionChanged
    * @returns {string[]}
    */
-  protected createEventList() {
+  protected override createEventList() {
     return super
       .createEventList()
       .concat([
@@ -360,27 +360,27 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ]);
   }
 
-  on(type: typeof ADataProvider.EVENT_BUSY, listener: typeof busy | null): this;
-  on(type: typeof ADataProvider.EVENT_DATA_CHANGED, listener: typeof dataChanged | null): this;
-  on(type: typeof ADataProvider.EVENT_SHOWTOPN_CHANGED, listener: typeof showTopNChanged | null): this;
-  on(type: typeof ADataProvider.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
-  on(type: typeof ADataProvider.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
-  on(type: typeof ADataProvider.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
-  on(type: typeof ADataProvider.EVENT_ADD_RANKING, listener: typeof addRanking | null): this;
-  on(type: typeof ADataProvider.EVENT_REMOVE_RANKING, listener: typeof removeRanking | null): this;
-  on(type: typeof ADataProvider.EVENT_DIRTY, listener: typeof dirty | null): this;
-  on(type: typeof ADataProvider.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
-  on(type: typeof ADataProvider.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
-  on(type: typeof ADataProvider.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
-  on(type: typeof ADataProvider.EVENT_ORDER_CHANGED, listener: typeof orderChanged | null): this;
-  on(type: typeof ADataProvider.EVENT_ADD_DESC, listener: typeof addDesc | null): this;
-  on(type: typeof ADataProvider.EVENT_REMOVE_DESC, listener: typeof removeDesc | null): this;
-  on(type: typeof ADataProvider.EVENT_CLEAR_DESC, listener: typeof clearDesc | null): this;
-  on(type: typeof ADataProvider.EVENT_JUMP_TO_NEAREST, listener: typeof jumpToNearest | null): this;
-  on(type: typeof ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, listener: typeof aggregate | null): this;
-  on(type: typeof ADataProvider.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof ADataProvider.EVENT_BUSY, listener: typeof busy | null): this;
+  override on(type: typeof ADataProvider.EVENT_DATA_CHANGED, listener: typeof dataChanged | null): this;
+  override on(type: typeof ADataProvider.EVENT_SHOWTOPN_CHANGED, listener: typeof showTopNChanged | null): this;
+  override on(type: typeof ADataProvider.EVENT_ADD_COLUMN, listener: typeof addColumn | null): this;
+  override on(type: typeof ADataProvider.EVENT_MOVE_COLUMN, listener: typeof moveColumn | null): this;
+  override on(type: typeof ADataProvider.EVENT_REMOVE_COLUMN, listener: typeof removeColumn | null): this;
+  override on(type: typeof ADataProvider.EVENT_ADD_RANKING, listener: typeof addRanking | null): this;
+  override on(type: typeof ADataProvider.EVENT_REMOVE_RANKING, listener: typeof removeRanking | null): this;
+  override on(type: typeof ADataProvider.EVENT_DIRTY, listener: typeof dirty | null): this;
+  override on(type: typeof ADataProvider.EVENT_DIRTY_HEADER, listener: typeof dirtyHeader | null): this;
+  override on(type: typeof ADataProvider.EVENT_DIRTY_VALUES, listener: typeof dirtyValues | null): this;
+  override on(type: typeof ADataProvider.EVENT_DIRTY_CACHES, listener: typeof dirtyCaches | null): this;
+  override on(type: typeof ADataProvider.EVENT_ORDER_CHANGED, listener: typeof orderChanged | null): this;
+  override on(type: typeof ADataProvider.EVENT_ADD_DESC, listener: typeof addDesc | null): this;
+  override on(type: typeof ADataProvider.EVENT_REMOVE_DESC, listener: typeof removeDesc | null): this;
+  override on(type: typeof ADataProvider.EVENT_CLEAR_DESC, listener: typeof clearDesc | null): this;
+  override on(type: typeof ADataProvider.EVENT_JUMP_TO_NEAREST, listener: typeof jumpToNearest | null): this;
+  override on(type: typeof ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, listener: typeof aggregate | null): this;
+  override on(type: typeof ADataProvider.EVENT_SELECTION_CHANGED, listener: typeof selectionChanged | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 

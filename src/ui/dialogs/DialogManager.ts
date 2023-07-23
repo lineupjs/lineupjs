@@ -55,14 +55,14 @@ export default class DialogManager extends AEventDispatcher {
     };
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([DialogManager.EVENT_DIALOG_CLOSED, DialogManager.EVENT_DIALOG_OPENED]);
   }
 
-  on(type: typeof DialogManager.EVENT_DIALOG_OPENED, listener: typeof dialogOpened | null): this;
-  on(type: typeof DialogManager.EVENT_DIALOG_CLOSED, listener: typeof dialogClosed | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof DialogManager.EVENT_DIALOG_OPENED, listener: typeof dialogOpened | null): this;
+  override on(type: typeof DialogManager.EVENT_DIALOG_CLOSED, listener: typeof dialogClosed | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 

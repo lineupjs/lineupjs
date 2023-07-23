@@ -14,8 +14,8 @@ import Column, {
 } from './Column';
 import { Category, toolbar } from './annotations';
 import type { IDataRow, IColumnParent, IFlatColumn, ITypeFactory, IColumnDump } from './interfaces';
-import { isNumberColumn } from './INumberColumn';
 import ValueColumn from './ValueColumn';
+import { isNumberColumn } from './INumberColumn';
 
 /**
  * emitted when the filter property changes
@@ -129,9 +129,9 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   override dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
-    // inject the desc but that serializes the children twice
-    // TODO
-    r.children = this._children.map((d) => d.dump(toDescRef));
+    this._children.forEach((ci, i) => {
+      r.children[i].desc = toDescRef(ci.desc);
+    });
     return r;
   }
 
@@ -143,13 +143,49 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
     const changed = super.restore(dump, factory);
-    dump.children.forEach((child: any) => {
-      const c = factory(child);
-      if (c) {
-        this.push(c);
+    const lookup = new Map(this._children.map((d, i) => [d.id, { column: d, i }]));
+
+    let structureChanged = false;
+    const target = (dump.children as IColumnDump[]).map((child: IColumnDump, i) => {
+      const existing = lookup.get(child.id);
+      if (existing != null) {
+        lookup.delete(child.id);
+        if (existing.i !== i) {
+          structureChanged = true;
+          changed.add(CompositeColumn.EVENT_MOVE_COLUMN);
+          changed.add(Column.EVENT_RENDERER_TYPE_CHANGED);
+          changed.add(Column.EVENT_GROUP_RENDERER_TYPE_CHANGED);
+        }
+        const subChanged = existing.column.restore(child, factory);
+        subChanged.forEach((c) => changed.add(c));
+        return existing.column;
       }
+      // need new
+      const c = factory(child);
+      this.insertImpl(c, i);
+      structureChanged = true;
+      changed.add(CompositeColumn.EVENT_ADD_COLUMN);
+      return c;
     });
-    // return changed;
+    this._children.forEach((c, i) => {
+      if (lookup.has(c.id)) {
+        // used
+        return;
+      }
+      // remove
+      structureChanged = true;
+      changed.add(CompositeColumn.EVENT_REMOVE_COLUMN);
+      this.removeImpl(c, i);
+    });
+    if (structureChanged) {
+      this._children.splice(0, this._children.length);
+      this._children.push(...target);
+      changed.add(Column.EVENT_DIRTY_HEADER);
+      changed.add(Column.EVENT_DIRTY_VALUES);
+      changed.add(Column.EVENT_DIRTY_CACHES);
+      changed.add(Column.EVENT_DIRTY);
+    }
+    return changed;
   }
 
   /**
@@ -163,9 +199,22 @@ export default class CompositeColumn extends Column implements IColumnParent {
       //indicator it is a number type
       return null;
     }
+
     this._children.splice(index, 0, col);
     //listen and propagate events
-    return this.insertImpl(col, index);
+    const r = this.insertImpl(col, index);
+    this.fire(
+      [
+        CompositeColumn.EVENT_ADD_COLUMN,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      col,
+      index
+    );
+    return r;
   }
 
   move(col: Column, index: number): Column | null {
@@ -183,10 +232,24 @@ export default class CompositeColumn extends Column implements IColumnParent {
     // adapt target index based on previous index, i.e shift by one
     this._children.splice(old < index ? index - 1 : index, 0, col);
     //listen and propagate events
-    return this.moveImpl(col, index, old);
+    this.fire(
+      [
+        CompositeColumn.EVENT_MOVE_COLUMN,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+        Column.EVENT_RENDERER_TYPE_CHANGED,
+        Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
+      ],
+      col,
+      index,
+      old
+    );
+    return col;
   }
 
-  protected insertImpl(col: Column, index: number) {
+  protected insertImpl(col: Column, _index: number) {
     col.attach(this);
     this.forward(
       col,
@@ -200,35 +263,6 @@ export default class CompositeColumn extends Column implements IColumnParent {
         Column.EVENT_RENDERER_TYPE_CHANGED,
         Column.EVENT_GROUP_RENDERER_TYPE_CHANGED
       )
-    );
-    this.fire(
-      [
-        CompositeColumn.EVENT_ADD_COLUMN,
-        Column.EVENT_DIRTY_HEADER,
-        Column.EVENT_DIRTY_VALUES,
-        Column.EVENT_DIRTY_CACHES,
-        Column.EVENT_DIRTY,
-      ],
-      col,
-      index
-    );
-    return col;
-  }
-
-  protected moveImpl(col: Column, index: number, oldIndex: number) {
-    this.fire(
-      [
-        CompositeColumn.EVENT_MOVE_COLUMN,
-        Column.EVENT_DIRTY_HEADER,
-        Column.EVENT_DIRTY_VALUES,
-        Column.EVENT_DIRTY_CACHES,
-        Column.EVENT_DIRTY,
-        Column.EVENT_RENDERER_TYPE_CHANGED,
-        Column.EVENT_GROUP_RENDERER_TYPE_CHANGED,
-      ],
-      col,
-      index,
-      oldIndex
     );
     return col;
   }
@@ -283,10 +317,22 @@ export default class CompositeColumn extends Column implements IColumnParent {
       return false;
     }
     this._children.splice(i, 1); //remove and deregister listeners
-    return this.removeImpl(col, i);
+    const r = this.removeImpl(col, i);
+    this.fire(
+      [
+        CompositeColumn.EVENT_REMOVE_COLUMN,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY_VALUES,
+        Column.EVENT_DIRTY_CACHES,
+        Column.EVENT_DIRTY,
+      ],
+      col,
+      i
+    );
+    return r;
   }
 
-  protected removeImpl(col: Column, index: number) {
+  protected removeImpl(col: Column, _index: number) {
     col.detach();
     this.unforward(
       col,
@@ -298,17 +344,6 @@ export default class CompositeColumn extends Column implements IColumnParent {
         Column.EVENT_DIRTY,
         CompositeColumn.EVENT_FILTER_CHANGED
       )
-    );
-    this.fire(
-      [
-        CompositeColumn.EVENT_REMOVE_COLUMN,
-        Column.EVENT_DIRTY_HEADER,
-        Column.EVENT_DIRTY_VALUES,
-        Column.EVENT_DIRTY_CACHES,
-        Column.EVENT_DIRTY,
-      ],
-      col,
-      index
     );
     return true;
   }

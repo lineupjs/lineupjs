@@ -15,11 +15,11 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     return this.c as IMultiLevelColumn & Column;
   }
 
-  get width() {
+  override get width() {
     return this.c.getWidth() + COLUMN_PADDING * this.mc.length;
   }
 
-  createHeader() {
+  override createHeader() {
     const r = super.createHeader();
     const wrapper = this.ctx.document.createElement('div');
     wrapper.classList.add(cssClass('nested'));
@@ -102,7 +102,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     lookup.forEach((v) => v.node.remove());
   }
 
-  updateHeader(node: HTMLElement) {
+  override updateHeader(node: HTMLElement) {
     const r = super.updateHeader(node);
     node = isAsyncUpdate(r) ? r.item : r;
     const wrapper = node.getElementsByClassName(cssClass('nested'))[0] as HTMLElement;
@@ -113,7 +113,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     return this.updateNested(wrapper, r);
   }
 
-  hasSummaryLine() {
+  override hasSummaryLine() {
     return super.hasSummaryLine() || this.mc.children.some((c) => Boolean(c.getMetaData().summary));
   }
 

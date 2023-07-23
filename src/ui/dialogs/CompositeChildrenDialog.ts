@@ -15,7 +15,7 @@ export default class CompositeChildrenDialog extends APopup {
     this.id = `.dialog${Math.random().toString(36).slice(-8).substring(0, 3)}`;
   }
 
-  cleanUp(action: 'cancel' | 'confirm' | 'handled') {
+  override cleanUp(action: 'cancel' | 'confirm' | 'handled') {
     super.cleanUp(action);
     this.column.on(suffix(this.id, CompositeColumn.EVENT_ADD_COLUMN, CompositeColumn.EVENT_REMOVE_COLUMN), null);
   }

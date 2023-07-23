@@ -45,7 +45,7 @@ export default class InputDateDialog extends APopup {
     this.enableLivePreviews('input');
   }
 
-  submit() {
+  override submit() {
     this.callback(this.findInput('input[type=date]').valueAsDate);
     return true;
   }

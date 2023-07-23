@@ -93,13 +93,13 @@ export default class SelectionManager extends AEventDispatcher {
     );
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([SelectionManager.EVENT_SELECT_RANGE]);
   }
 
-  on(type: typeof SelectionManager.EVENT_SELECT_RANGE, listener: typeof selectRange | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof SelectionManager.EVENT_SELECT_RANGE, listener: typeof selectRange | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 

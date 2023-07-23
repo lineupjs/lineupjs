@@ -219,13 +219,13 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     return children.every((d) => d.classList.contains(cssClass('hidden')));
   }
 
-  protected createEventList() {
+  protected override createEventList() {
     return super.createEventList().concat([SearchBox.EVENT_SELECT]);
   }
 
-  on(type: typeof SearchBox.EVENT_SELECT, listener: typeof select | null): this;
-  on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
-  on(type: string | string[], listener: IEventListener | null): this {
+  override on(type: typeof SearchBox.EVENT_SELECT, listener: typeof select | null): this;
+  override on(type: string | string[], listener: IEventListener | null): this; // required for correct typings in *.d.ts
+  override on(type: string | string[], listener: IEventListener | null): this {
     return super.on(type, listener);
   }
 }
