@@ -1,5 +1,6 @@
 import { AEventDispatcher, type ISequence, similar, fixCSS, type IEventListener } from '../internal';
 import { isSortingAscByDefault } from './annotations';
+import { dumpValue, restoreValue } from './diff';
 import {
   type IColumnDump,
   type ISortCriteria,
@@ -99,6 +100,9 @@ export declare function summaryRendererChanged(previous: string, current: string
  */
 export declare function visibilityChanged(previous: boolean, current: boolean): void;
 
+function defaultWidth(width?: number) {
+  return width != null && width > 0 ? width : 100;
+}
 /**
  * a column in LineUp
  */
@@ -150,7 +154,7 @@ export default class Column extends AEventDispatcher {
     this.renderer = this.desc.renderer || this.desc.type;
     this.groupRenderer = this.desc.groupRenderer || this.desc.type;
     this.summaryRenderer = this.desc.summaryRenderer || this.desc.type;
-    this.width = this.desc.width != null && this.desc.width > 0 ? this.desc.width : 100;
+    this.width = defaultWidth(this.desc.width);
     this.visible = this.desc.visible !== false;
 
     this.metadata = {
@@ -502,23 +506,15 @@ export default class Column extends AEventDispatcher {
     const r: IColumnDump = {
       id: this.id,
       desc: toDescRef(this.desc),
-      width: this.width,
     };
-    if (this.label !== (this.desc.label || this.id)) {
-      r.label = this.label;
-    }
-    if (this.metadata.summary) {
-      r.summary = this.metadata.summary;
-    }
-    if (this.getRenderer() !== this.desc.type) {
-      r.renderer = this.getRenderer();
-    }
-    if (this.getGroupRenderer() !== this.desc.type) {
-      r.groupRenderer = this.getGroupRenderer();
-    }
-    if (this.getSummaryRenderer() !== this.desc.type) {
-      r.summaryRenderer = this.getSummaryRenderer();
-    }
+    dumpValue(r, 'width', this.width, defaultWidth(this.width));
+    dumpValue(r, 'visible', this.visible, this.desc.visible !== false);
+    dumpValue(r, 'label', this.label, this.desc.label ?? this.id);
+    dumpValue(r, 'summary', this.metadata.summary, this.desc.summary ?? '');
+    dumpValue(r, 'description', this.metadata.description, this.desc.description ?? '');
+    dumpValue(r, 'renderer', this.renderer, this.desc.renderer ?? this.desc.type);
+    dumpValue(r, 'groupRenderer', this.groupRenderer, this.desc.groupRenderer ?? this.desc.type);
+    dumpValue(r, 'summaryRenderer', this.summaryRenderer, this.desc.summaryRenderer ?? this.desc.type);
     return r;
   }
 
@@ -527,23 +523,57 @@ export default class Column extends AEventDispatcher {
    * @param dump column dump
    * @param _factory helper for creating columns
    */
-  restore(dump: IColumnDump, _factory: ITypeFactory) {
+  restore(dump: IColumnDump, _factory: ITypeFactory): Set<string> {
+    const changed = new Set<string>();
     this.uid = dump.id;
-    this.width = dump.width || this.width;
+    this.width = restoreValue(dump.width, this.width, changed, [
+      Column.EVENT_WIDTH_CHANGED,
+      Column.EVENT_DIRTY_HEADER,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    this.visible = restoreValue(dump.visible, this.visible, changed, [
+      Column.EVENT_VISIBILITY_CHANGED,
+      Column.EVENT_DIRTY_HEADER,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
     this.metadata = {
-      label: dump.label || this.label,
-      summary: dump.summary || '',
-      description: this.description,
+      label: restoreValue(dump.label, this.label, changed, [
+        Column.EVENT_LABEL_CHANGED,
+        Column.EVENT_METADATA_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY,
+      ]),
+      summary: restoreValue(dump.summary, this.metadata.summary, changed, [
+        Column.EVENT_LABEL_CHANGED,
+        Column.EVENT_METADATA_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY,
+      ]),
+      description: restoreValue(dump.description, this.description, changed, [
+        Column.EVENT_LABEL_CHANGED,
+        Column.EVENT_METADATA_CHANGED,
+        Column.EVENT_DIRTY_HEADER,
+        Column.EVENT_DIRTY,
+      ]),
     };
-    if (dump.renderer || dump.rendererType) {
-      this.renderer = dump.renderer || dump.rendererType || this.renderer;
-    }
-    if (dump.groupRenderer) {
-      this.groupRenderer = dump.groupRenderer;
-    }
-    if (dump.summaryRenderer) {
-      this.summaryRenderer = dump.summaryRenderer;
-    }
+    this.renderer = restoreValue(dump.renderer ?? dump.rendererType, this.renderer, changed, [
+      Column.EVENT_RENDERER_TYPE_CHANGED,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    this.groupRenderer = restoreValue(dump.groupRenderer, this.groupRenderer, changed, [
+      Column.EVENT_RENDERER_TYPE_CHANGED,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    this.summaryRenderer = restoreValue(dump.summaryRenderer, this.summaryRenderer, changed, [
+      Column.EVENT_RENDERER_TYPE_CHANGED,
+      Column.EVENT_DIRTY_VALUES,
+      Column.EVENT_DIRTY,
+    ]);
+    return changed;
   }
 
   /**

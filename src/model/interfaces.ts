@@ -227,10 +227,13 @@ export interface ITypedDump {
 
 export interface IColumnDump {
   id: string;
-  width?: number;
   desc: any;
+
+  width?: number;
   label?: string;
+  description?: string;
   summary?: string;
+
   renderer?: string;
   /**
    * @deprecated
