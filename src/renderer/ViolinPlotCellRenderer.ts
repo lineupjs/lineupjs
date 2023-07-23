@@ -121,8 +121,8 @@ function createViolinTemplate(width: number, isMapped: boolean) {
         <line x1="0" x2="0" y1="${h / 2}" y2="${h / 2}" class="${cssClass('violin-iqr')}"></line>
         <line x1="0" x2="0" y1="${h / 2 - h * 0.25}" y2="${h / 2 + h * 0.25}" class="${cssClass('violin-mean')}"></line>
         <line x1="0" x2="0" y1="${h / 2 - h * 0.25}" y2="${h / 2 + h * 0.25}" class="${cssClass(
-          'violin-median'
-        )}"></line>
+    'violin-median'
+  )}"></line>
       </svg>
       ${mappedHelper}
     </div>`;

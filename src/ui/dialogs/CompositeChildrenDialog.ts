@@ -10,11 +10,7 @@ import APopup from './APopup';
 export default class CompositeChildrenDialog extends APopup {
   private readonly id: string;
 
-  constructor(
-    private readonly column: CompositeColumn,
-    dialog: IDialogContext,
-    private ctx: IRankingHeaderContext
-  ) {
+  constructor(private readonly column: CompositeColumn, dialog: IDialogContext, private ctx: IRankingHeaderContext) {
     super(dialog);
     this.id = `.dialog${Math.random().toString(36).slice(-8).substring(0, 3)}`;
   }

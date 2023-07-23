@@ -57,8 +57,8 @@ export default class BrightnessCellRenderer implements ICellRendererFactory {
     return {
       template: `<div title="">
         <div class="${cssClass('cat-color')}" style="background-color: ${DEFAULT_COLOR}"></div><div class="${cssClass(
-          'cat-label'
-        )}"> </div>
+        'cat-label'
+      )}"> </div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);

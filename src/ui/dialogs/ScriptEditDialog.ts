@@ -6,10 +6,7 @@ import { cssClass } from '../../styles';
 export default class ScriptEditDialog extends ADialog {
   private readonly before: string;
 
-  constructor(
-    private readonly column: ScriptColumn,
-    dialog: IDialogContext
-  ) {
+  constructor(private readonly column: ScriptColumn, dialog: IDialogContext) {
     super(dialog);
     this.before = column.getScript();
   }

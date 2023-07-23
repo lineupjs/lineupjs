@@ -21,16 +21,16 @@ export default function groupNumber(
     <label class="${cssClass('checkbox')}">
       <input type="radio" name="threshold" value="threshold" ${isThreshold ? 'checked' : ''}>
       <span>at&nbsp;<input type="number" size="10" id="${dialog.idPrefix}N1" value="${
-        before.length > 0 ? before[0] : round((domain[1] - domain[0]) / 2, 2)
-      }"
+      before.length > 0 ? before[0] : round((domain[1] - domain[0]) / 2, 2)
+    }"
           required min="${domain[0]}" max="${domain[1]}" step="any" ${!isThreshold ? 'disabled' : ''}>
       </span>
     </label>
     <label class="${cssClass('checkbox')}">
       <input type="radio" name="threshold" value="bins" ${!isThreshold ? 'checked' : ''}>
       <span> in&nbsp;<input type="number" size="5" id="${dialog.idPrefix}N2" value="${
-        before.length > 1 ? before.length : getNumberOfBins(ranking.getOrderLength())
-      }"
+      before.length > 1 ? before.length : getNumberOfBins(ranking.getOrderLength())
+    }"
           required min="2" step="1" ${isThreshold ? 'disabled' : ''}>&nbsp;bins
       </span>
     </label>

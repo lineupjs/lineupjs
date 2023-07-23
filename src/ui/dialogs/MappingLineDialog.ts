@@ -54,12 +54,12 @@ export default class MappingLineDialog extends ADialog {
       'beforeend',
       `
         <button class="${cssClass('dialog-button')} lu-action-remove" title="Remove" type="button" ${
-          this.line.frozen ? 'style="display: none"' : ''
-        } ><span style="margin-left: 3px">Remove Mapping Line</span></button>
+        this.line.frozen ? 'style="display: none"' : ''
+      } ><span style="margin-left: 3px">Remove Mapping Line</span></button>
         <strong>Input Domain Value (min ... max)</strong>
         <input type="number" value="${this.adapter.formatter(this.adapter.unnormalizeRaw(this.line.domain))}" ${
-          this.line.frozen ? 'readonly disabled' : ''
-        } autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
+        this.line.frozen ? 'readonly disabled' : ''
+      } autofocus required min="${domain[0]}" max="${domain[1]}" step="any">
         <strong>Output Normalized Value (0 ... 1)</strong>
         <input type="number" value="${round(this.line.range / 100, 3)}" required min="0" max="1" step="any">
       `
@@ -107,12 +107,7 @@ export default class MappingLineDialog extends ADialog {
 export class MappingLine {
   readonly node: SVGGElement;
 
-  constructor(
-    g: SVGGElement,
-    public domain: number,
-    public range: number,
-    private readonly adapter: IMappingAdapter
-  ) {
+  constructor(g: SVGGElement, public domain: number, public range: number, private readonly adapter: IMappingAdapter) {
     const h = 52;
     g.insertAdjacentHTML(
       'beforeend',

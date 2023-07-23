@@ -15,10 +15,7 @@ function injectAccessor(d: any) {
 abstract class ACommonDataProvider extends ADataProvider {
   private rankingIndex = 0;
 
-  constructor(
-    private columns: IColumnDesc[] = [],
-    options: Partial<IDataProviderOptions> = {}
-  ) {
+  constructor(private columns: IColumnDesc[] = [], options: Partial<IDataProviderOptions> = {}) {
     super(options);
     //generate the accessor
     columns.forEach(injectAccessor);

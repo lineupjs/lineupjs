@@ -90,11 +90,7 @@ interface IColumnWrapper {
  * wrapper class for simpler column accessing
  */
 class ColumnWrapper implements IColumnWrapper {
-  constructor(
-    private readonly c: Column,
-    public readonly v: any,
-    public readonly raw: number | null
-  ) {}
+  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number | null) {}
 
   get type() {
     return this.c.desc.type;
@@ -110,10 +106,7 @@ class ColumnWrapper implements IColumnWrapper {
 }
 
 class LazyColumnWrapper implements IColumnWrapper {
-  constructor(
-    private readonly c: Column,
-    private readonly row: IDataRow
-  ) {}
+  constructor(private readonly c: Column, private readonly row: IDataRow) {}
 
   get type() {
     return this.c.desc.type;
@@ -143,10 +136,7 @@ class ColumnContext {
   private readonly lookup = new Map<string, IColumnWrapper>();
   private _all: ColumnContext | null = null;
 
-  constructor(
-    private readonly children: IColumnWrapper[],
-    private readonly allFactory?: () => ColumnContext
-  ) {
+  constructor(private readonly children: IColumnWrapper[], private readonly allFactory?: () => ColumnContext) {
     children.forEach((c) => {
       this.lookup.set(`ID@${c.id}`, c);
       this.lookup.set(`ID@${c.id.toLowerCase()}`, c);

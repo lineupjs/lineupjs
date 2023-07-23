@@ -29,14 +29,14 @@ export default class CutOffHierarchyDialog extends ADialog {
       'beforeend',
       `
         <input type="text" value="${s(this.before.node.label)}" required="required" autofocus="autofocus" list="ui${
-          this.ctx.idPrefix
-        }lineupHierarchyList" placeholder="cut off node">
+        this.ctx.idPrefix
+      }lineupHierarchyList" placeholder="cut off node">
         <input type="number" value="${
           isFinite(this.before.maxDepth) ? this.before.maxDepth : ''
         }" placeholder="max depth (&infin;)">
         <datalist id="ui${this.ctx.idPrefix}lineupHierarchyList">${this.innerNodes.map(
-          (node) => `<option value="${s(node.path)}">${s(node.label)}</option>`
-        )}</datalist>`
+        (node) => `<option value="${s(node.path)}">${s(node.label)}</option>`
+      )}</datalist>`
     );
 
     //custom validation

@@ -6,10 +6,7 @@ import type { IDataProvider } from '../../provider';
 export default class ShowTopNDialog extends ADialog {
   private readonly before: number;
 
-  constructor(
-    private readonly provider: IDataProvider,
-    dialog: IDialogContext
-  ) {
+  constructor(private readonly provider: IDataProvider, dialog: IDialogContext) {
     super(dialog);
 
     this.before = this.provider.getShowTopN();

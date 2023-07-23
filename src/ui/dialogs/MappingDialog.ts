@@ -31,11 +31,7 @@ export default class MappingDialog extends ADialog {
     formatter: this.column.getNumberFormat(),
   };
 
-  constructor(
-    private readonly column: IMapAbleColumn,
-    dialog: IDialogContext,
-    ctx: IRankingHeaderContext
-  ) {
+  constructor(private readonly column: IMapAbleColumn, dialog: IDialogContext, ctx: IRankingHeaderContext) {
     super(dialog, {
       livePreview: 'dataMapping',
       cancelSubDialogs: true,
@@ -82,8 +78,8 @@ export default class MappingDialog extends ADialog {
       'beforeend',
       `
         <div><label for="${this.idPrefix}mapping_type"><strong>Normalization Scaling:</strong></label><select id="${
-          this.idPrefix
-        }mapping_type" class="browser-default">
+        this.idPrefix
+      }mapping_type" class="browser-default">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>

@@ -12,11 +12,7 @@ export default class SidePanelEntryVis {
   private summary: ISummaryRenderer;
   private summaryUpdater: IAbortAblePromise<void> | null = null;
 
-  constructor(
-    public readonly column: Column,
-    private ctx: IRankingHeaderContext,
-    document: Document
-  ) {
+  constructor(public readonly column: Column, private ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('article');
     this.node.classList.add(cssClass('side-panel-entry'));
     this.node.dataset.colId = column.id;

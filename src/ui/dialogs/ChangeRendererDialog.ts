@@ -7,11 +7,7 @@ import { cssClass } from '../../styles';
 export default class ChangeRendererDialog extends ADialog {
   private readonly before: { renderer: string; group: string; summary: string };
 
-  constructor(
-    private readonly column: Column,
-    dialog: IDialogContext,
-    private readonly ctx: IRankingHeaderContext
-  ) {
+  constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
       livePreview: 'vis',
     });

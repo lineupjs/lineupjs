@@ -61,11 +61,7 @@ export default class EngineRenderer extends AEventDispatcher {
   private enabledHighlightListening = false;
   readonly selectionIndicator: SelectionIndicator;
 
-  constructor(
-    protected data: DataProvider,
-    parent: HTMLElement,
-    options: Readonly<ILineUpOptions>
-  ) {
+  constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
 

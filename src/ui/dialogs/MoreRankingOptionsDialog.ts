@@ -8,11 +8,7 @@ import APopup from './APopup';
 
 /** @internal */
 export default class MoreRankingOptionsDialog extends APopup {
-  constructor(
-    private readonly ranking: Ranking,
-    dialog: IDialogContext,
-    private readonly ctx: IRankingHeaderContext
-  ) {
+  constructor(private readonly ranking: Ranking, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
     super(dialog, {
       autoClose: true,
     });

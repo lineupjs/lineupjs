@@ -55,10 +55,7 @@ declare type ISequenceBase<T> = ISequence<T> | (ArrayLike<T> & Iterable<T>);
 class LazyFilter<T> implements ISequence<T> {
   private _length = -1;
 
-  constructor(
-    private readonly it: ISequenceBase<T>,
-    private readonly filters: ((v: T, i: number) => boolean)[]
-  ) {}
+  constructor(private readonly it: ISequenceBase<T>, private readonly filters: ((v: T, i: number) => boolean)[]) {}
 
   get length() {
     // cached
@@ -363,10 +360,7 @@ abstract class ALazyMap<T, T2> implements ISequence<T2> {
 }
 
 class LazyMap1<T1, T2> extends ALazyMap<T1, T2> implements ISequence<T2> {
-  constructor(
-    it: ISequenceBase<T1>,
-    protected readonly map12: (v: T1, i: number) => T2
-  ) {
+  constructor(it: ISequenceBase<T1>, protected readonly map12: (v: T1, i: number) => T2) {
     super(it);
   }
 

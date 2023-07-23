@@ -51,7 +51,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
         (n: HTMLElement, i) =>
           [n.dataset.colId!, { node: n, summary: this.summaries[i] }] as [
             string,
-            { node: HTMLElement; summary: ISummaryRenderer },
+            { node: HTMLElement; summary: ISummaryRenderer }
           ]
       )
     );

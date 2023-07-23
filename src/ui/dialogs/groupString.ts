@@ -17,20 +17,20 @@ export default function groupString(
     `
     <label class="${cssClass('checkbox')}">
       <input type="radio" name="${dialog.idPrefix}groupString" value="${EStringGroupCriteriaType.value}" id="${
-        dialog.idPrefix
-      }VAL" ${type === EStringGroupCriteriaType.value ? 'checked' : ''}>
+      dialog.idPrefix
+    }VAL" ${type === EStringGroupCriteriaType.value ? 'checked' : ''}>
       <span>Use text value</span>
     </label>
     <label class="${cssClass('checkbox')}">
       <input type="radio" name="${dialog.idPrefix}groupString" value="${EStringGroupCriteriaType.startsWith}" id="${
-        dialog.idPrefix
-      }RW" ${type === EStringGroupCriteriaType.startsWith ? 'checked' : ''}>
+      dialog.idPrefix
+    }RW" ${type === EStringGroupCriteriaType.startsWith ? 'checked' : ''}>
       <span>Text starts with …</span>
     </label>
     <label class="${cssClass('checkbox')}">
       <input type="radio" name="${dialog.idPrefix}groupString" value="${EStringGroupCriteriaType.regex}" id="${
-        dialog.idPrefix
-      }RE" ${type === EStringGroupCriteriaType.regex ? 'checked' : ''}>
+      dialog.idPrefix
+    }RE" ${type === EStringGroupCriteriaType.regex ? 'checked' : ''}>
       <span>Use regular expressions</span>
     </label>
     <textarea rows="5" placeholder="one value per row, e.g., \nA\nB" id="${dialog.idPrefix}T">${values

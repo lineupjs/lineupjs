@@ -118,10 +118,7 @@ export interface IRenderTaskExecutor extends IRenderTasks {
 export class MultiIndices {
   private _joined: IndicesArray | null = null;
 
-  constructor(
-    public readonly indices: IndicesArray[],
-    private readonly maxDataIndex: number
-  ) {}
+  constructor(public readonly indices: IndicesArray[], private readonly maxDataIndex: number) {}
 
   get joined() {
     if (this.indices.length === 1) {

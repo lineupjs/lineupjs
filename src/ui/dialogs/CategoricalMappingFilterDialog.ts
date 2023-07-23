@@ -10,10 +10,7 @@ import { cssClass } from '../../styles';
 export default class CategoricalMappingFilterDialog extends ADialog {
   private readonly before: ICategoricalFilter;
 
-  constructor(
-    private readonly column: OrdinalColumn,
-    dialog: IDialogContext
-  ) {
+  constructor(private readonly column: OrdinalColumn, dialog: IDialogContext) {
     super(dialog, {
       livePreview: 'filter',
     });
