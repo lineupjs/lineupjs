@@ -41,6 +41,7 @@ import {
   type IDataProviderOptions,
   SCHEMA_REF,
   type IExportOptions,
+  type IAggregationStrategy,
 } from './interfaces';
 import { exportRanking, map2Object, object2Map, exportTable, isPromiseLike } from './utils';
 import type { IRenderTasks } from '../renderer';
@@ -48,6 +49,7 @@ import { restoreCategoricalColorMapping } from '../model/CategoricalColorMapping
 import { createColorMappingFunction, colorMappingFunctions } from '../model/ColorMappingFunction';
 import { createMappingFunction, mappingFunctions } from '../model/MappingFunction';
 import { convertAggregationState } from './internal';
+import { matchElements, restoreValue } from 'src/model/diff';
 
 /**
  * emitted when a column has been added
@@ -450,6 +452,21 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   insertRanking(r: Ranking, index = this.rankings.length) {
     this.rankings.splice(index, 0, r);
+    this.listenRankingEvents(r);
+    this.fire(
+      [
+        ADataProvider.EVENT_ADD_RANKING,
+        ADataProvider.EVENT_DIRTY_HEADER,
+        ADataProvider.EVENT_DIRTY_VALUES,
+        ADataProvider.EVENT_DIRTY,
+      ],
+      r,
+      index
+    );
+    this.triggerReorder(r);
+  }
+
+  private listenRankingEvents(r: Ranking) {
     this.forward(r, ...ADataProvider.FORWARD_RANKING_EVENTS);
     //delayed reordering per ranking
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -464,17 +481,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
         mergeDirtyOrderContext
       )
     );
-    this.fire(
-      [
-        ADataProvider.EVENT_ADD_RANKING,
-        ADataProvider.EVENT_DIRTY_HEADER,
-        ADataProvider.EVENT_DIRTY_VALUES,
-        ADataProvider.EVENT_DIRTY,
-      ],
-      r,
-      index
-    );
-    this.triggerReorder(r);
   }
 
   private triggerReorder(ranking: Ranking, dirtyReason?: EDirtyReason[]) {
@@ -741,6 +747,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     };
   }
 
+  toJSON() {
+    return this.dump();
+  }
+
   /**
    * dumps a specific column
    */
@@ -770,45 +780,105 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return ranking;
   }
 
-  restore(dump: IDataProviderDump) {
-    //clean old
-    this.clearRankings();
+  restore(dump: IDataProviderDump, assignNewIds = true) {
+    const changed = new Set<string>();
+
+    this.uid = dump.uid ?? 0;
 
     //restore selection
-    this.uid = dump.uid || 0;
-    if (dump.selection) {
-      dump.selection.forEach((s: number) => this.selection.add(s));
-    }
-    if (dump.showTopN != null) {
-      this.showTopN = dump.showTopN;
-    }
+    this.restoreSelection(dump.selection, changed);
+
+    // restore aggregation like
+    this.showTopN = restoreValue(dump.showTopN, this.showTopN, changed, [
+      ADataProvider.EVENT_SHOWTOPN_CHANGED,
+      ADataProvider.EVENT_DIRTY_VALUES,
+      ADataProvider.EVENT_DIRTY,
+    ]);
     if (dump.aggregations) {
-      this.aggregations.clear();
-      if (Array.isArray(dump.aggregations)) {
-        dump.aggregations.forEach((a: string) => this.aggregations.set(a, 0));
-      } else {
-        object2Map(dump.aggregations).forEach((v, k) => this.aggregations.set(k, v));
+      let dumped = dump.aggregations;
+      if (Array.isArray(dumped)) {
+        const newValue: IDataProviderDump['aggregations'] = {};
+        for (const d of dumped) {
+          newValue[d] = 0;
+        }
+        dumped = newValue;
+      }
+      const current = map2Object(this.aggregations);
+      const target = restoreValue(dumped, current, changed, [
+        ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED,
+        ADataProvider.EVENT_DIRTY_VALUES,
+        ADataProvider.EVENT_DIRTY,
+      ]);
+      if (current !== target) {
+        this.aggregations.clear();
+        object2Map(target).forEach((v, k) => this.aggregations.set(k, v));
       }
     }
 
     //restore rankings
-    if (dump.rankings) {
-      dump.rankings.forEach((r: any) => {
-        const ranking = this.cloneRanking();
-        ranking.restore(r, this.typeFactory);
-        //if no rank column add one
-        if (!ranking.children.some((d) => d instanceof RankColumn)) {
-          ranking.insert(this.create(createRankDesc())!, 0);
-        }
-        this.insertRanking(ranking);
+    this.restoreRankings(dump.rankings, changed);
+
+    // only if something changed???
+    //assign new ids
+    if (assignNewIds) {
+      const idGenerator = this.nextId.bind(this);
+      this.rankings.forEach((r) => {
+        r.children.forEach((c) => c.assignNewId(idGenerator));
       });
     }
+    return changed;
+  }
 
-    //assign new ids
-    const idGenerator = this.nextId.bind(this);
-    this.rankings.forEach((r) => {
-      r.children.forEach((c) => c.assignNewId(idGenerator));
-    });
+  private restoreRankings(rankings: IRankingDump[] | undefined, changed: Set<string>) {
+    if (rankings == null) {
+      return;
+    }
+    // match rankings
+    const r = matchElements(
+      rankings,
+      this.rankings,
+      (ranking, dump) => {
+        const subChanged = ranking.restore(dump, this.typeFactory);
+        subChanged.forEach((c) => changed.add(c));
+      },
+      (dump) => {
+        const r = this.cloneRanking();
+        r.restore(dump, this.typeFactory);
+        return r;
+      }
+    );
+    if (r == null) {
+      return;
+    }
+    for (const added of r.added) {
+      this.listenRankingEvents(added.elem);
+      changed.add(ADataProvider.EVENT_ADD_COLUMN);
+    }
+    for (const removed of r.removed) {
+      this.unforward(removed.elem, ...ADataProvider.FORWARD_RANKING_EVENTS);
+      removed.elem.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, null);
+      this.cleanUpRanking(removed.elem);
+      changed.add(ADataProvider.EVENT_REMOVE_COLUMN);
+    }
+
+    this.rankings.splice(0, this.rankings.length, ...r.elems);
+    changed.add(Column.EVENT_DIRTY_HEADER);
+    changed.add(Column.EVENT_DIRTY_VALUES);
+    changed.add(Column.EVENT_DIRTY_CACHES);
+    changed.add(Column.EVENT_DIRTY);
+    return;
+  }
+
+  private restoreSelection(dumped: number[] | undefined, changed: Set<string>) {
+    if (dumped == null) {
+      return;
+    }
+    const current = this.getSelection();
+    const target = restoreValue(dumped, current, changed, ADataProvider.EVENT_SELECTION_CHANGED);
+    if (target !== current) {
+      this.selection.clear();
+      this.selection.addAll(target);
+    }
   }
 
   abstract findDesc(ref: string): IColumnDesc | null;

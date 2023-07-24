@@ -34,42 +34,41 @@ export function restoreTypedValue<T extends { toJSON(): R }, R, E>(
   return current;
 }
 
-export function matchColumns(
-  dumped: IColumnDump[] | undefined,
-  current: Column[],
-  changed: Set<string>,
-  factory: ITypeFactory
+export function matchElements<D extends { id: string }, T extends { id: string }>(
+  dumped: D[] | undefined,
+  current: T[],
+  restore: (elem: T, dump: D) => void,
+  factory: (dump: D) => T
 ):
   | {
-      columns: Column[];
-      moved: { column: Column; i: number }[];
-      added: { column: Column; i: number }[];
-      removed: { column: Column; i: number }[];
+      elems: T[];
+      moved: { elem: T; i: number }[];
+      added: { elem: T; i: number }[];
+      removed: { elem: T; i: number }[];
     }
   | undefined {
   if (dumped == null) {
     return undefined;
   }
 
-  const lookup = new Map(current.map((d, i) => [d.id, { column: d, i }]));
-  const moved: { column: Column; i: number }[] = [];
-  const added: { column: Column; i: number }[] = [];
-  const removed: { column: Column; i: number }[] = [];
+  const lookup = new Map(current.map((d, i) => [d.id, { elem: d, i }]));
+  const moved: { elem: T; i: number }[] = [];
+  const added: { elem: T; i: number }[] = [];
+  const removed: { elem: T; i: number }[] = [];
 
-  const target = dumped.map((child: IColumnDump, i) => {
-    const existing = lookup.get(child.id);
+  const target = dumped.map((dump, i) => {
+    const existing = lookup.get(dump.id);
     if (existing != null) {
-      lookup.delete(child.id);
+      lookup.delete(dump.id);
       if (existing.i !== i) {
         moved.push(existing);
       }
-      const subChanged = existing.column.restore(child, factory);
-      subChanged.forEach((c) => changed.add(c));
-      return existing.column;
+      restore(existing.elem, dump);
+      return existing.elem;
     }
     // need new
-    const c = factory(child);
-    added.push({ column: c, i });
+    const c = factory(dump);
+    added.push({ elem: c, i });
     return c;
   });
   current.forEach((c, i) => {
@@ -79,13 +78,13 @@ export function matchColumns(
     }
     // remove
     removed.push({
-      column: c,
+      elem: c,
       i,
     });
   });
   if (moved.length > 0 || added.length > 0 || removed.length > 0) {
     return {
-      columns: target,
+      elems: target,
       moved,
       added,
       removed,

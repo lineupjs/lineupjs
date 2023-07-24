@@ -7,7 +7,7 @@
   "properties": {
     "uid": {
       "type": "integer",
-      "title": "base for genrating new uids"
+      "title": "base for generating new uids"
     },
     "selection": {
       "type": "array",
@@ -32,6 +32,10 @@
         "type": "object",
         "title": "one ranking",
         "properties": {
+          "label": {
+            "type": "string",
+            "title": "Ranking label"
+          },
           "columns": {
             "type": "array",
             "title": "column dumps",
@@ -55,6 +59,14 @@
                   "examples": [100]
                 },
                 "label": {
+                  "type": "string",
+                  "title": "column label"
+                },
+                "summary": {
+                  "type": "string",
+                  "title": "column label"
+                },
+                "description": {
                   "type": "string",
                   "title": "column label"
                 },

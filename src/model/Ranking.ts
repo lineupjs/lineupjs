@@ -29,7 +29,7 @@ import { groupRoots, traverseGroupsDFS } from './internal';
 import AggregateGroupColumn from './AggregateGroupColumn';
 import SetColumn from './SetColumn';
 import { AGGREGATION_LEVEL_WIDTH } from '../styles';
-import { matchColumns, restoreValue } from './diff';
+import { matchElements, restoreValue } from './diff';
 
 export enum EDirtyReason {
   UNKNOWN = 'unknown',
@@ -363,6 +363,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   toCommonJSON() {
     const r: Record<string, any> = {};
+    r.id = this.id;
     r.label = this.label;
     r.sortCriteria = this.sortCriteria.map((s) => ({ asc: s.asc, sortBy: s.col!.id }));
     r.groupSortCriteria = this.groupSortCriteria.map((s) => ({ asc: s.asc, sortBy: s.col!.id }));
@@ -389,7 +390,15 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (columns == null) {
       return;
     }
-    const r = matchColumns(columns, this.columns, changed, factory);
+    const r = matchElements(
+      columns,
+      this.columns,
+      (col, dump) => {
+        const subChanged = col.restore(dump, factory);
+        subChanged.forEach((c) => changed.add(c));
+      },
+      factory
+    );
     if (r == null) {
       return;
     }
@@ -397,15 +406,15 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       changed.add(CompositeColumn.EVENT_MOVE_COLUMN);
     }
     for (const added of r.added) {
-      this.insertImpl(added.column);
+      this.insertImpl(added.elem);
       changed.add(Ranking.EVENT_ADD_COLUMN);
     }
     for (const removed of r.removed) {
-      this.removeImpl(removed.column);
+      this.removeImpl(removed.elem);
       changed.add(Ranking.EVENT_REMOVE_COLUMN);
     }
 
-    this.columns.splice(0, this.columns.length, ...r.columns);
+    this.columns.splice(0, this.columns.length, ...r.elems);
     changed.add(Ranking.EVENT_DIRTY_HEADER);
     changed.add(Ranking.EVENT_DIRTY_VALUES);
     changed.add(Ranking.EVENT_DIRTY_CACHES);

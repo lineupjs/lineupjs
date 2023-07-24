@@ -16,7 +16,7 @@ import { Category, toolbar } from './annotations';
 import type { IDataRow, IColumnParent, IFlatColumn, ITypeFactory, IColumnDump } from './interfaces';
 import ValueColumn from './ValueColumn';
 import { isNumberColumn } from './INumberColumn';
-import { matchColumns } from './diff';
+import { matchElements } from './diff';
 
 /**
  * emitted when the filter property changes
@@ -144,7 +144,15 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   override restore(dump: IColumnDump, factory: ITypeFactory): Set<string> {
     const changed = super.restore(dump, factory);
-    const r = matchColumns(dump.children, this._children, changed, factory);
+    const r = matchElements(
+      dump.children,
+      this._children,
+      (col, dump) => {
+        const subChanged = col.restore(dump, factory);
+        subChanged.forEach((c) => changed.add(c));
+      },
+      factory
+    );
     if (r == null) {
       return changed;
     }
@@ -154,15 +162,15 @@ export default class CompositeColumn extends Column implements IColumnParent {
       changed.add(Column.EVENT_GROUP_RENDERER_TYPE_CHANGED);
     }
     for (const added of r.added) {
-      this.insertImpl(added.column, added.i);
+      this.insertImpl(added.elem, added.i);
       changed.add(CompositeColumn.EVENT_ADD_COLUMN);
     }
     for (const removed of r.removed) {
-      this.removeImpl(removed.column, removed.i);
+      this.removeImpl(removed.elem, removed.i);
       changed.add(CompositeColumn.EVENT_REMOVE_COLUMN);
     }
 
-    this._children.splice(0, this._children.length, ...r.columns);
+    this._children.splice(0, this._children.length, ...r.elems);
     changed.add(Column.EVENT_DIRTY_HEADER);
     changed.add(Column.EVENT_DIRTY_VALUES);
     changed.add(Column.EVENT_DIRTY_CACHES);
