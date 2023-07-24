@@ -2,7 +2,7 @@ import type { GridStyleManager } from 'lineupengine';
 import { defaultOptions } from '../../config';
 import type { ITaggleOptions } from '../../config';
 import { merge, suffix } from '../../internal';
-import type { DataProvider } from '../../provider';
+import type { DataProvider, IDataProviderDump, ILineUpDump } from '../../provider';
 import { cssClass, engineCssClass } from '../../styles';
 import { ALineUp } from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
@@ -163,6 +163,23 @@ export default class Taggle extends ALineUp {
     this.renderer.setDataProvider(data);
     this.update();
     this.panel!.update(this.renderer.ctx);
+  }
+
+  override toJSON(): ILineUpDump {
+    const r = super.toJSON();
+    r.highlight = this.getHighlight();
+    r.overviewMode = this.isOverviewMode();
+    return r;
+  }
+
+  override async applyState(state: ILineUpDump): Promise<void> {
+    await super.applyState(state);
+    if (state.overviewMode != null && this.isOverviewMode() !== state.overviewMode) {
+      this.setOverviewMode(state.overviewMode);
+    }
+    if (state.highlight != null && this.getHighlight() !== state.highlight) {
+      this.setHighlight(state.highlight);
+    }
   }
 }
 

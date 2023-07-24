@@ -781,6 +781,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   restore(dump: IDataProviderDump, assignNewIds = true) {
+    this.fireBusy(true);
     const changed = new Set<string>();
 
     this.uid = dump.uid ?? 0;
@@ -826,7 +827,14 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
         r.children.forEach((c) => c.assignNewId(idGenerator));
       });
     }
+    this.fireBusy(false);
     return changed;
+  }
+
+  applyState(state: IDataProviderDump): Promise<void> {
+    const changed = this.restore(state, false);
+    // TODO act on it
+    return Promise.resolve();
   }
 
   private restoreRankings(rankings: IRankingDump[] | undefined, changed: Set<string>) {

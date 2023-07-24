@@ -106,9 +106,10 @@ abstract class ACommonDataProvider extends ADataProvider {
     return descRef;
   }
 
-  override restore(dump: IDataProviderDump) {
-    super.restore(dump);
+  override restore(dump: IDataProviderDump, assignNewIds = true): Set<string> {
+    const r = super.restore(dump, assignNewIds);
     this.rankingIndex = 1 + Math.max(...this.getRankings().map((r) => +r.id.substring(4)));
+    return r;
   }
 
   nextRankingId() {

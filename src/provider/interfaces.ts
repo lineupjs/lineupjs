@@ -148,6 +148,11 @@ export interface IDataProviderDump {
   showTopN?: number;
 }
 
+export interface ILineUpDump extends IDataProviderDump {
+  highlight?: number;
+  overviewMode?: boolean;
+}
+
 export interface IDeriveOptions {
   /**
    * maximal percentage of unique values to be treated as a categorical column
