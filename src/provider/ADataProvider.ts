@@ -17,7 +17,6 @@ import {
   type IAggregateGroupColumnDesc,
   isSupportType,
   EDirtyReason,
-  RankColumn,
   createRankDesc,
   createSelectionDesc,
   type IColumnDesc,
@@ -41,7 +40,6 @@ import {
   type IDataProviderOptions,
   SCHEMA_REF,
   type IExportOptions,
-  type IAggregationStrategy,
 } from './interfaces';
 import { exportRanking, map2Object, object2Map, exportTable, isPromiseLike } from './utils';
 import type { IRenderTasks } from '../renderer';
@@ -951,7 +949,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return -1;
   }
 
-  private unaggregateParents(ranking: Ranking, group: IGroup) {
+  private deaggregateParents(ranking: Ranking, group: IGroup) {
     let g: IGroup | undefined | null = group.parent;
     let changed = false;
     while (g) {
@@ -999,7 +997,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     for (let i = 0; i < groups.length; i++) {
       const group = groups[i];
       const target = typeof value === 'number' ? value : value[i];
-      changedParents = this.unaggregateParents(ranking, group) || changedParents;
+      changedParents = this.deaggregateParents(ranking, group) || changedParents;
       const current = this.getTopNAggregated(ranking, group);
       if (current === target) {
         continue;

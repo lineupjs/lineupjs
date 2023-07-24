@@ -11,7 +11,7 @@ import DialogManager from './dialogs/DialogManager';
 import domElementCache, { createSanitizer } from './domElementCache';
 import EngineRanking, { type IEngineRankingContext } from './EngineRanking';
 import { EMode, type IRankingHeaderContext, type IRankingHeaderContextContainer } from './interfaces';
-import SlopeGraph from './SlopeGraph';
+import SlopeGraph, { type ISlopeGraphState } from './SlopeGraph';
 import type { ADialog } from './dialogs';
 import SelectionIndicator from './SelectionIndicator';
 
@@ -38,6 +38,11 @@ export declare function dialogOpenedER(dialog: ADialog): void;
  * @event
  */
 export declare function dialogClosedER(dialog: ADialog, action: 'cancel' | 'confirm'): void;
+
+export interface IEngineRendererState {
+  zoomFactor: number;
+  slopeGraphs: ISlopeGraphState[];
+}
 
 export default class EngineRenderer extends AEventDispatcher {
   static readonly EVENT_HIGHLIGHT_CHANGED = EngineRanking.EVENT_HIGHLIGHT_CHANGED;
@@ -244,6 +249,26 @@ export default class EngineRenderer extends AEventDispatcher {
     this.zoomFactor = Math.max(this.zoomFactor - 0.1, 0.5);
     this.updateZoomFactor();
     this.update();
+  }
+
+  toJSON(): IEngineRendererState {
+    return {
+      zoomFactor: this.zoomFactor,
+      slopeGraphs: this.slopeGraphs.map((d) => d.toJSON()),
+    };
+  }
+
+  applyState(state: IEngineRendererState) {
+    let update = false;
+    if (this.zoomFactor !== state.zoomFactor) {
+      this.zoomFactor = state.zoomFactor;
+      this.updateZoomFactor();
+      update = true;
+    }
+    this.slopeGraphs.forEach((s, i) => {
+      s.applyState(state.slopeGraphs[i]);
+    });
+    return update;
   }
 
   zoomIn() {

@@ -7,7 +7,7 @@ import {
 import type { ILineUpLike } from '../config';
 import { AEventDispatcher, type IEventListener, clear } from '../internal';
 import type { Column } from '../model';
-import { DataProvider, type IDataProviderDump, type ILineUpDump } from '../provider';
+import { DataProvider, type IDataProviderDump, type ILineUpState } from '../provider';
 import { cssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import type { ADialog } from './dialogs';
@@ -108,18 +108,8 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     return this.data.dump();
   }
 
-  toJSON(): ILineUpDump {
-    return {
-      ...this.dump(),
-    };
-  }
-
   restore(dump: IDataProviderDump) {
     this._data.restore(dump);
-  }
-
-  async applyState(state: ILineUpDump): Promise<void> {
-    await this._data.applyState(state);
   }
 
   abstract update(): void;

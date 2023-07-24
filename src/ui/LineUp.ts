@@ -1,6 +1,6 @@
 import { type ILineUpOptions, defaultOptions } from '../config';
 import { merge, suffix } from '../internal';
-import type { DataProvider, IDataProviderDump, ILineUpDump } from '../provider';
+import type { DataProvider, ILineUpState } from '../provider';
 import { cssClass } from '../styles';
 import { ALineUp } from './ALineUp';
 import EngineRenderer from './EngineRenderer';
@@ -93,17 +93,21 @@ export default class LineUp extends ALineUp {
     return this.renderer ? this.renderer.getHighlight() : -1;
   }
 
-  override toJSON(): ILineUpDump {
-    const r = super.toJSON();
-    r.highlight = this.getHighlight();
-    return r;
-  }
-
-  override async applyState(state: ILineUpDump): Promise<void> {
-    await super.applyState(state);
+  async applyState(state: ILineUpState): Promise<void> {
+    await this.data.applyState(state);
+    this.renderer.applyState(state.ui);
     if (state.highlight != null && this.getHighlight() !== state.highlight) {
       this.setHighlight(state.highlight);
     }
+  }
+
+  toJSON(): ILineUpState {
+    const r: ILineUpState = {
+      ...super.dump(),
+      ui: this.renderer.toJSON(),
+      highlight: this.getHighlight(),
+    };
+    return r;
   }
 
   protected override enableHighlightListening(enable: boolean) {

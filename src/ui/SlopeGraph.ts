@@ -58,6 +58,11 @@ export interface ISlopeGraphOptions {
   mode: EMode;
 }
 
+export interface ISlopeGraphState {
+  mode: EMode;
+  hidden: boolean;
+}
+
 export default class SlopeGraph implements ITableSection {
   readonly node: SVGSVGElement;
 
@@ -142,14 +147,25 @@ export default class SlopeGraph implements ITableSection {
     });
   }
 
+  toJSON(): ISlopeGraphState {
+    return {
+      mode: this.mode,
+      hidden: this.hidden,
+    };
+  }
+
+  applyState(state: ISlopeGraphState) {
+    if (this.hidden !== state.hidden) {
+      this.hidden = state.hidden;
+    }
+    this.mode = state.mode;
+  }
+
   get mode() {
     return this._mode;
   }
 
   set mode(value: EMode) {
-    if (value === this._mode) {
-      return;
-    }
     this._mode = value;
     if (this.current) {
       this.rebuild(

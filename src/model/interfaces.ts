@@ -247,7 +247,7 @@ export interface IColumnDump {
 }
 
 export interface IRankingDump {
-  id: string;
+  id?: string;
   /**
    *
    */

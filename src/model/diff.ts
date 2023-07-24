@@ -1,6 +1,4 @@
 import { equal } from 'src/internal';
-import type { IColumnDump, ITypeFactory } from './interfaces';
-import type Column from './Column';
 
 export function restoreValue<T, E>(dumped: T | undefined, current: T, changed: Set<E>, changeName: E | E[]): T {
   if (dumped === undefined) {
@@ -34,7 +32,7 @@ export function restoreTypedValue<T extends { toJSON(): R }, R, E>(
   return current;
 }
 
-export function matchElements<D extends { id: string }, T extends { id: string }>(
+export function matchElements<D extends { id?: string }, T extends { id: string }>(
   dumped: D[] | undefined,
   current: T[],
   restore: (elem: T, dump: D) => void,

@@ -355,6 +355,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   dump(toDescRef: (desc: any) => any): IRankingDump {
     const r: IRankingDump = {
+      id: this.id,
       ...this.toCommonJSON(),
       columns: this.columns.map((d) => d.dump(toDescRef)),
     };

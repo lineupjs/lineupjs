@@ -5,7 +5,7 @@ import { type IGroupData, type IGroupItem, isGroup, Ranking, type IGroup } from 
 import { DataProvider } from '../../provider';
 import type { IRenderContext } from '../../renderer';
 import type { IEngineRankingContext } from '../EngineRanking';
-import EngineRenderer from '../EngineRenderer';
+import EngineRenderer, { type IEngineRendererState } from '../EngineRenderer';
 import type { IRankingHeaderContext, IRankingHeaderContextContainer } from '../interfaces';
 import type { IRule } from './rules';
 import type { ADialog } from '../dialogs';
@@ -228,5 +228,13 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   enableHighlightListening(enable: boolean) {
     this.renderer.enableHighlightListening(enable);
+  }
+
+  toJSON() {
+    return this.renderer.toJSON();
+  }
+
+  applyState(state: IEngineRendererState) {
+    return this.renderer.applyState(state);
   }
 }
