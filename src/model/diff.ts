@@ -1,4 +1,4 @@
-import { equal } from 'src/internal';
+import { equal } from '../internal';
 
 export function restoreValue<T, E>(dumped: T | undefined, current: T, changed: Set<E>, changeName: E | E[]): T {
   if (dumped === undefined) {
@@ -70,7 +70,7 @@ export function matchElements<D extends { id?: string }, T extends { id: string 
     return c;
   });
   current.forEach((c, i) => {
-    if (lookup.has(c.id)) {
+    if (!lookup.has(c.id)) {
       // used
       return;
     }

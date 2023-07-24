@@ -1,9 +1,10 @@
 import type { ILineUpFlags } from '../config';
 import type { Column, IGroupData, IGroupItem } from '../model';
-import type { IDataProvider } from '../provider';
+import type { IDataProvider, IDataProviderDump } from '../provider';
 import type { IImposer, IRenderContext, ISummaryRenderer } from '../renderer';
 import type DialogManager from './dialogs/DialogManager';
 import type { IDialogContext } from './dialogs';
+import type { IEngineRendererState } from './EngineRenderer';
 
 export interface IUIOptions {
   /**
@@ -105,4 +106,10 @@ export declare type IRankingContext = Readonly<IRankingBodyContext>;
 export enum EMode {
   ITEM = 'item',
   BAND = 'band',
+}
+
+export interface ILineUpState extends IDataProviderDump {
+  highlight?: number;
+  overviewMode?: boolean;
+  ui: IEngineRendererState;
 }

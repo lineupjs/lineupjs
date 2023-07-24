@@ -47,7 +47,7 @@ import { restoreCategoricalColorMapping } from '../model/CategoricalColorMapping
 import { createColorMappingFunction, colorMappingFunctions } from '../model/ColorMappingFunction';
 import { createMappingFunction, mappingFunctions } from '../model/MappingFunction';
 import { convertAggregationState } from './internal';
-import { matchElements, restoreValue } from 'src/model/diff';
+import { matchElements, restoreValue } from '../model/diff';
 
 /**
  * emitted when a column has been added
@@ -831,6 +831,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   applyState(state: IDataProviderDump): Promise<void> {
     const changed = this.restore(state, false);
+    console.log(changed);
     // TODO act on it
     return Promise.resolve();
   }

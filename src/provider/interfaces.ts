@@ -15,7 +15,6 @@ import type {
 import type { AEventDispatcher, ISequence } from '../internal';
 import type { IRenderTasks } from '../renderer';
 import type { IAbortAblePromise as IAbortAblePromiseImpl } from 'lineupengine';
-import type { IEngineRendererState } from 'src/ui/EngineRenderer';
 
 export { ABORTED } from 'lineupengine';
 export declare type IAbortAblePromise<T> = IAbortAblePromiseImpl<T>;
@@ -147,12 +146,6 @@ export interface IDataProviderDump {
    * custom show top N setting
    */
   showTopN?: number;
-}
-
-export interface ILineUpState extends IDataProviderDump {
-  highlight?: number;
-  overviewMode?: boolean;
-  ui: IEngineRendererState;
 }
 
 export interface IDeriveOptions {

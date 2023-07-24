@@ -2,12 +2,13 @@ import type { GridStyleManager } from 'lineupengine';
 import { defaultOptions } from '../../config';
 import type { ITaggleOptions } from '../../config';
 import { merge, suffix } from '../../internal';
-import type { DataProvider, ILineUpState } from '../../provider';
+import type { DataProvider } from '../../provider';
 import { cssClass, engineCssClass } from '../../styles';
 import { ALineUp } from '../ALineUp';
 import SidePanel from '../panel/SidePanel';
 import { spaceFillingRule, type IRule } from './rules';
 import TaggleRenderer from './TaggleRenderer';
+import type { ILineUpState } from '../interfaces';
 
 export default class Taggle extends ALineUp {
   static override readonly EVENT_SELECTION_CHANGED = ALineUp.EVENT_SELECTION_CHANGED;

@@ -1,9 +1,10 @@
 import { type ILineUpOptions, defaultOptions } from '../config';
 import { merge, suffix } from '../internal';
-import type { DataProvider, ILineUpState } from '../provider';
+import type { DataProvider } from '../provider';
 import { cssClass } from '../styles';
 import { ALineUp } from './ALineUp';
 import EngineRenderer from './EngineRenderer';
+import type { ILineUpState } from './interfaces';
 import SidePanel from './panel/SidePanel';
 
 export default class LineUp extends ALineUp {

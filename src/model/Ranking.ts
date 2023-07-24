@@ -114,6 +114,17 @@ export declare function groupsChanged(
  * @event
  */
 export declare function filterChanged(previous: any | null, current: any | null): void;
+
+function restoreSortCriteria(columns: Column[], dumped: any) {
+  return dumped
+    .map((s: { asc: boolean; sortBy: string }) => {
+      return {
+        asc: s.asc,
+        col: columns.find((d) => d.id === s.sortBy) || null,
+      };
+    })
+    .filter((s: any) => s.col);
+}
 /**
  * a ranking
  */
@@ -383,7 +394,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.label = restoreValue(dump.label, this.label, changed, Ranking.EVENT_LABEL_CHANGED);
     this.restoreColumns(dump.columns, factory, changed);
     this.restoreGroupColumns(dump, changed);
-    this.restoreCriteria(dump.sortCriteria, dump.groupSortCriteria, dump.sortColumn, changed);
+    this.restoreSortCriteria(dump.sortCriteria, dump.sortColumn, changed);
+    this.restoreGroupSortCriteria(dump.groupSortCriteria, changed);
     return changed;
   }
 
@@ -446,33 +458,23 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     changed.add(Ranking.EVENT_DIRTY);
   }
 
-  private restoreCriteria(
+  private restoreSortCriteria(
     sortCriteria: IRankingDump['sortCriteria'],
-    groupSortCriteria: IRankingDump['groupSortCriteria'],
     sortColumn: IRankingDump['sortColumn'],
     changed: Set<string>
   ) {
-    const restoreSortCriteria = (dumped: any) => {
-      return dumped
-        .map((s: { asc: boolean; sortBy: string }) => {
-          return {
-            asc: s.asc,
-            col: this.columns.find((d) => d.id === s.sortBy) || null,
-          };
-        })
-        .filter((s: any) => s.col);
-    };
     // compatibility case
     if (sortColumn && sortColumn.sortBy) {
       sortCriteria = [sortColumn];
     }
-    if (sortCriteria) {
-      const dumped = restoreSortCriteria(sortCriteria);
-      if (!equalCriteria(dumped, this.sortCriteria)) {
-        this.sortCriteria.forEach((d) => {
-          d.col.on(Ranking.COLUMN_SORT_DIRTY, null!);
-        });
-      }
+    if (!sortCriteria) {
+      return;
+    }
+    const dumped = restoreSortCriteria(this.columns, sortCriteria);
+    if (!equalCriteria(dumped, this.sortCriteria)) {
+      this.sortCriteria.forEach((d) => {
+        d.col.on(Ranking.COLUMN_SORT_DIRTY, null!);
+      });
       dumped.forEach((d) => {
         d.col.on(Ranking.COLUMN_SORT_DIRTY, this.dirtyOrderSortDirty);
       });
@@ -483,14 +485,16 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       changed.add(Ranking.EVENT_DIRTY_VALUES);
       changed.add(Ranking.EVENT_DIRTY);
     }
-
-    if (groupSortCriteria) {
-      const dumped = restoreSortCriteria(groupSortCriteria);
-      if (!equalCriteria(dumped, this.groupSortCriteria)) {
-        this.groupSortCriteria.forEach((d) => {
-          d.col.on(Ranking.COLUMN_GROUP_DIRTY, null!);
-        });
-      }
+  }
+  private restoreGroupSortCriteria(groupSortCriteria: IRankingDump['groupSortCriteria'], changed: Set<string>) {
+    if (!groupSortCriteria) {
+      return;
+    }
+    const dumped = restoreSortCriteria(this.columns, groupSortCriteria);
+    if (!equalCriteria(dumped, this.groupSortCriteria)) {
+      this.groupSortCriteria.forEach((d) => {
+        d.col.on(Ranking.COLUMN_GROUP_DIRTY, null!);
+      });
       dumped.forEach((d) => {
         d.col.on(Ranking.COLUMN_GROUP_DIRTY, this.dirtyOrderGroupDirty);
       });
