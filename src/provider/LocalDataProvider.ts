@@ -1,16 +1,16 @@
-import { createIndexArray, sortComplex, ISequence, lazySeq, IEventContext } from '../internal';
+import { createIndexArray, sortComplex, type ISequence, lazySeq, type IEventContext } from '../internal';
 import {
   Column,
   EDirtyReason,
   Ranking,
   defaultGroup,
-  IColumnDesc,
-  ICompareValue,
-  IDataRow,
-  IGroup,
-  IndicesArray,
-  INumberColumn,
-  IOrderedGroup,
+  type IColumnDesc,
+  type ICompareValue,
+  type IDataRow,
+  type IGroup,
+  type IndicesArray,
+  type INumberColumn,
+  type IOrderedGroup,
   CompositeColumn,
   ValueColumn,
 } from '../model';

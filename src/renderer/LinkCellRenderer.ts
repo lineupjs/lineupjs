@@ -1,16 +1,16 @@
-import { LinkColumn, Column, IDataRow, IOrderedGroup, ILink } from '../model';
+import { LinkColumn, Column, type IDataRow, type IOrderedGroup, type ILink } from '../model';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  ISummaryRenderer,
-  IGroupCellRenderer,
-  ICellRenderer,
+  type ICellRendererFactory,
+  type ISummaryRenderer,
+  type IGroupCellRenderer,
+  type ICellRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';
 import { cssClass } from '../styles';
-import { clear, ISequence } from '../internal';
+import { clear, type ISequence } from '../internal';
 
 export default class LinkCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Link';

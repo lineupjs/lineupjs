@@ -1,7 +1,7 @@
 import { GridStyleManager, MultiTableRowRenderer, nonUniformContext } from 'lineupengine';
 import type { ILineUpFlags, ILineUpOptions } from '../config';
-import { AEventDispatcher, debounce, IEventListener, round, suffix } from '../internal';
-import { Column, IGroupData, IGroupItem, isGroup, Ranking, IGroup } from '../model';
+import { AEventDispatcher, debounce, type IEventListener, round, suffix } from '../internal';
+import { Column, type IGroupData, type IGroupItem, isGroup, Ranking, type IGroup } from '../model';
 import { DataProvider } from '../provider';
 import { isSummaryGroup, groupEndLevel } from '../provider/internal';
 import type { IImposer, IRenderContext } from '../renderer';
@@ -9,8 +9,8 @@ import { chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossible
 import { cssClass, engineCssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import domElementCache, { createSanitizer } from './domElementCache';
-import EngineRanking, { IEngineRankingContext } from './EngineRanking';
-import { EMode, IRankingHeaderContext, IRankingHeaderContextContainer } from './interfaces';
+import EngineRanking, { type IEngineRankingContext } from './EngineRanking';
+import { EMode, type IRankingHeaderContext, type IRankingHeaderContextContainer } from './interfaces';
 import SlopeGraph from './SlopeGraph';
 import type { ADialog } from './dialogs';
 import SelectionIndicator from './SelectionIndicator';

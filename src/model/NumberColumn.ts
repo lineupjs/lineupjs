@@ -1,5 +1,5 @@
 import { format } from 'd3-format';
-import { equalArrays, IEventListener, ISequence } from '../internal';
+import { equalArrays, type IEventListener, type ISequence } from '../internal';
 import { Category, dialogAddons, SortByDefault, toolbar } from './annotations';
 import Column, {
   dirty,
@@ -15,15 +15,15 @@ import Column, {
   widthChanged,
   DEFAULT_COLOR,
 } from './Column';
-import { IDataRow, IGroup, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
+import { type IDataRow, type IGroup, ECompareValueType, type IValueColumnDesc, type ITypeFactory } from './interfaces';
 import {
-  INumberColumn,
+  type INumberColumn,
   EAdvancedSortMethod,
-  INumberDesc,
-  INumberFilter,
-  IMappingFunction,
-  IColorMappingFunction,
-  IMapAbleColumn,
+  type INumberDesc,
+  type INumberFilter,
+  type IMappingFunction,
+  type IColorMappingFunction,
+  type IMapAbleColumn,
 } from './INumberColumn';
 import { restoreMapping } from './MappingFunction';
 import { isMissingValue, isUnknown, missingGroup } from './missing';

@@ -1,10 +1,10 @@
 import type { Ranking } from '../../model';
 import type { LocalDataProvider } from '../../provider';
 import {
-  INestedBuilder,
-  IReduceBuilder,
-  IScriptedBuilder,
-  IWeightedSumBuilder,
+  type INestedBuilder,
+  type IReduceBuilder,
+  type IScriptedBuilder,
+  type IWeightedSumBuilder,
   buildRanking as buildRankingImpl,
 } from '../RankingBuilder';
 import type {

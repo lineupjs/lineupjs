@@ -1,5 +1,5 @@
 import { EAdvancedSortMethod, ReduceColumn } from '../../model';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { sortMethods } from './utils';
 import type { IToolbarDialogAddonHandler } from '../interfaces';
 

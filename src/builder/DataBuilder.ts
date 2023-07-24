@@ -4,9 +4,9 @@ import {
   LocalDataProvider,
   deriveColors,
   deriveColumnDescriptions,
-  IDataProviderOptions,
-  ILocalDataProviderOptions,
-  IAggregationStrategy,
+  type IDataProviderOptions,
+  type ILocalDataProviderOptions,
+  type IAggregationStrategy,
 } from '../provider';
 import { LineUp, Taggle } from '../ui';
 import ColumnBuilder from './column/ColumnBuilder';

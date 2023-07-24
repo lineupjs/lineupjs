@@ -1,13 +1,13 @@
 import {
   defaultPhases,
   EAnimationMode,
-  IAnimationContext,
-  IAnimationItem,
-  IExceptionContext,
-  IPhase,
+  type IAnimationContext,
+  type IAnimationItem,
+  type IExceptionContext,
+  type IPhase,
   KeyFinder,
 } from 'lineupengine';
-import { IGroupData, IGroupItem, isGroup } from '../model';
+import { type IGroupData, type IGroupItem, isGroup } from '../model';
 
 /** @internal */
 export interface IGroupLookUp {

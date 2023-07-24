@@ -1,4 +1,4 @@
-import { StringColumn, Column, IDataRow, IOrderedGroup, IStringFilter } from '../model';
+import { StringColumn, Column, type IDataRow, type IOrderedGroup, type IStringFilter } from '../model';
 import { filterMissingMarkup, findFilterMissing } from '../ui/missing';
 import type {
   IRenderContext,

@@ -1,6 +1,6 @@
 import { round } from '../../internal';
 import type { StackColumn } from '../../model';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { forEach, colorOf } from './utils';
 import { cssClass } from '../../styles';
 

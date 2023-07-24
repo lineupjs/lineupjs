@@ -1,4 +1,11 @@
-import Column, { IColumnDesc, IDataRow, Ranking, defaultGroup, IndicesArray, IOrderedGroup } from '../model';
+import Column, {
+  type IColumnDesc,
+  type IDataRow,
+  Ranking,
+  defaultGroup,
+  type IndicesArray,
+  type IOrderedGroup,
+} from '../model';
 import ACommonDataProvider from './ACommonDataProvider';
 import type { IDataProviderOptions } from './interfaces';
 import { DirectRenderTasks } from './DirectRenderTasks';

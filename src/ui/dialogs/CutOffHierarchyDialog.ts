@@ -1,6 +1,6 @@
 import type { IRankingHeaderContext } from '..';
-import { HierarchyColumn, ICategoryInternalNode, ICutOffNode, resolveInnerNodes } from '../../model';
-import ADialog, { IDialogContext } from './ADialog';
+import { HierarchyColumn, type ICategoryInternalNode, type ICutOffNode, resolveInnerNodes } from '../../model';
+import ADialog, { type IDialogContext } from './ADialog';
 
 /** @internal */
 export default class CutOffHierarchyDialog extends ADialog {

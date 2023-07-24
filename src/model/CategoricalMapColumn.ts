@@ -5,7 +5,7 @@ import type {
   ICategoricalColorMappingFunction,
 } from './ICategoricalColumn';
 import type { IDataRow, ITypeFactory } from './interfaces';
-import MapColumn, { IMapColumnDesc } from './MapColumn';
+import MapColumn, { type IMapColumnDesc } from './MapColumn';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import CategoricalColumn from './CategoricalColumn';
 import type ValueColumn from './ValueColumn';

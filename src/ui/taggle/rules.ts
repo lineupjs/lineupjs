@@ -1,5 +1,5 @@
-import { IGroupData, IGroupItem, isGroup } from '../../model';
-import { groupEndLevel, ITopNGetter } from '../../provider/internal';
+import { type IGroupData, type IGroupItem, isGroup } from '../../model';
+import { groupEndLevel, type ITopNGetter } from '../../provider/internal';
 
 export interface IRule {
   apply(

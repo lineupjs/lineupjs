@@ -1,5 +1,5 @@
 import type { Column, IColumnMetaData } from '../../model';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 
 /** @internal */

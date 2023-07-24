@@ -1,19 +1,26 @@
 import { scaleLinear } from 'd3-scale';
 import { GUESSES_GROUP_HEIGHT } from '../constants';
-import { IAdvancedBoxPlotData, extent } from '../internal';
-import { Column, INumberColumn, IOrderedGroup, isMapAbleColumn, isNumberColumn, NumberColumn } from '../model';
+import { type IAdvancedBoxPlotData, extent } from '../internal';
+import {
+  Column,
+  type INumberColumn,
+  type IOrderedGroup,
+  isMapAbleColumn,
+  isNumberColumn,
+  NumberColumn,
+} from '../model';
 import { tasksAll } from '../provider';
 import { cssClass } from '../styles';
 import { computeLabel } from './BoxplotCellRenderer';
 import { colorOf } from './impose';
 import {
   ERenderMode,
-  ICellRenderer,
-  ICellRendererFactory,
-  IGroupCellRenderer,
-  IImposer,
-  IRenderContext,
-  ISummaryRenderer,
+  type ICellRenderer,
+  type ICellRendererFactory,
+  type IGroupCellRenderer,
+  type IImposer,
+  type IRenderContext,
+  type ISummaryRenderer,
 } from './interfaces';
 import { adaptColor, BIG_MARK_LIGHTNESS_FACTOR, noRenderer, SMALL_MARK_LIGHTNESS_FACTOR } from './utils';
 

@@ -1,5 +1,12 @@
 import { MIN_LABEL_WIDTH } from '../constants';
-import { Column, IArrayColumn, IDataRow, ICategoricalLikeColumn, isMapAbleColumn, DEFAULT_COLOR } from '../model';
+import {
+  Column,
+  type IArrayColumn,
+  type IDataRow,
+  type ICategoricalLikeColumn,
+  isMapAbleColumn,
+  DEFAULT_COLOR,
+} from '../model';
 import { hsl } from 'd3-color';
 import { cssClass } from '../styles';
 import type { ISequence } from '../internal';

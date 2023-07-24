@@ -1,4 +1,4 @@
-import { IGroupData, IGroupItem, isGroup } from '../model';
+import { type IGroupData, type IGroupItem, isGroup } from '../model';
 import type { IExceptionContext } from 'lineupengine';
 import { cssClass, SELECTED_COLOR } from '../styles';
 import { everyIndices } from '../model/internal';

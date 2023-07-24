@@ -1,4 +1,4 @@
-import { IAbortAblePromise, ABORTED, IAbortAblePromiseBase } from 'lineupengine';
+import { type IAbortAblePromise, ABORTED, type IAbortAblePromiseBase } from 'lineupengine';
 export { ABORTED } from 'lineupengine';
 
 /**

@@ -1,7 +1,7 @@
 import { suffix } from '../../internal';
 import {
   categoryOfDesc,
-  IColumnCategory,
+  type IColumnCategory,
   createAggregateDesc,
   createGroupDesc,
   createImpositionDesc,
@@ -11,15 +11,15 @@ import {
   createScriptDesc,
   createSelectionDesc,
   createStackDesc,
-  IColumnDesc,
+  type IColumnDesc,
   Ranking,
 } from '../../model';
-import { DataProvider, IDataProvider } from '../../provider';
+import { DataProvider, type IDataProvider } from '../../provider';
 import { aria, cssClass } from '../../styles';
 import ChooseRankingDialog from '../dialogs/ChooseRankingDialog';
 import type { IRankingHeaderContext } from '../interfaces';
 import { dialogContext } from '../dialogs';
-import SearchBox, { IGroupSearchItem, ISearchBoxOptions } from './SearchBox';
+import SearchBox, { type IGroupSearchItem, type ISearchBoxOptions } from './SearchBox';
 import SidePanelRanking from './SidePanelRanking';
 import { format } from 'd3-format';
 import { setText } from '../../renderer/utils';

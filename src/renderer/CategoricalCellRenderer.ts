@@ -1,28 +1,28 @@
 import { DENSE_HISTOGRAM } from '../constants';
-import { ICategoricalStatistics, round } from '../internal';
+import { type ICategoricalStatistics, round } from '../internal';
 import {
   OrdinalColumn,
   isCategoricalColumn,
   isCategoricalLikeColumn,
-  ICategoricalLikeColumn,
-  ICategory,
+  type ICategoricalLikeColumn,
+  type ICategory,
   Column,
   CategoricalColumn,
-  ICategoricalColumn,
-  IDataRow,
-  IOrderedGroup,
+  type ICategoricalColumn,
+  type IDataRow,
+  type IOrderedGroup,
   SetColumn,
   BooleanColumn,
 } from '../model';
 import { CANVAS_HEIGHT, cssClass, FILTERED_OPACITY } from '../styles';
 import { filterMissingNumberMarkup, updateFilterMissingNumberMarkup } from '../ui/missing';
 import {
-  IRenderContext,
-  ICellRendererFactory,
+  type IRenderContext,
+  type ICellRendererFactory,
   ERenderMode,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { setText, wideEnough, forEach } from './utils';

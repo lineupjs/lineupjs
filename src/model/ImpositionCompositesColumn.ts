@@ -1,4 +1,4 @@
-import { suffix, IEventListener, IAdvancedBoxPlotData } from '../internal';
+import { suffix, type IEventListener, type IAdvancedBoxPlotData } from '../internal';
 import { toolbar, dialogAddons, SortByDefault } from './annotations';
 import type Column from './Column';
 import {
@@ -20,11 +20,11 @@ import type { IKeyValue } from './IArrayColumn';
 import type { IDataRow, IGroup, IColumnDesc } from './interfaces';
 import {
   EAdvancedSortMethod,
-  INumberFilter,
-  INumbersColumn,
+  type INumberFilter,
+  type INumbersColumn,
   isNumbersColumn,
-  IMappingFunction,
-  IColorMappingFunction,
+  type IMappingFunction,
+  type IColorMappingFunction,
   isMapAbleColumn,
 } from './INumberColumn';
 import { ScaleMappingFunction } from './MappingFunction';

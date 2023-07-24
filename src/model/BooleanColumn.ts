@@ -21,7 +21,7 @@ import type {
   ICategoricalColorMappingFunction,
   ICategoricalFilter,
 } from './ICategoricalColumn';
-import { IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type IValueColumnDesc, type ITypeFactory } from './interfaces';
 import type { IEventListener } from '../internal';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import { integrateDefaults } from './internal';

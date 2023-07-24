@@ -1,8 +1,8 @@
-import { ISequence, round } from '../../internal';
-import { IMapAbleColumn, IMappingFunction, isMissingValue, isMapAbleColumn } from '../../model';
+import { type ISequence, round } from '../../internal';
+import { type IMapAbleColumn, type IMappingFunction, isMissingValue, isMapAbleColumn } from '../../model';
 import type { IRankingHeaderContext } from '../interfaces';
-import ADialog, { IDialogContext } from './ADialog';
-import { IMappingAdapter, MappingLine } from './MappingLineDialog';
+import ADialog, { type IDialogContext } from './ADialog';
+import { type IMappingAdapter, MappingLine } from './MappingLineDialog';
 import { cssClass } from '../../styles';
 import { ScaleMappingFunction, ScriptMappingFunction } from '../../model/MappingFunction';
 

@@ -1,4 +1,4 @@
-import { IColumnDesc, Ranking } from '../model';
+import { type IColumnDesc, Ranking } from '../model';
 import ADataProvider from './ADataProvider';
 import type { IDataProviderDump, IDataProviderOptions } from './interfaces';
 import { isComplexAccessor, rowGetter, rowComplexGetter, rowGuessGetter } from '../internal';

@@ -1,39 +1,39 @@
 import { abortAble } from 'lineupengine';
 import {
   getNumberOfBins,
-  IAdvancedBoxPlotData,
-  ICategoricalStatistics,
-  IDateStatistics,
-  ISequence,
-  ISortMessageResponse,
-  IStatistics,
+  type IAdvancedBoxPlotData,
+  type ICategoricalStatistics,
+  type IDateStatistics,
+  type ISequence,
+  type ISortMessageResponse,
+  type IStatistics,
   lazySeq,
   toIndexArray,
   WorkerTaskScheduler,
   createWorkerBlob,
-  IStringStatistics,
+  type IStringStatistics,
 } from '../internal';
 import TaskScheduler, { ABORTED, oneShotIterator } from '../internal/scheduler';
 import Column, {
-  ICategoricalLikeColumn,
-  ICompareValue,
-  IDataRow,
-  IDateColumn,
-  IGroup,
-  IndicesArray,
-  INumberColumn,
-  IOrderedGroup,
+  type ICategoricalLikeColumn,
+  type ICompareValue,
+  type IDataRow,
+  type IDateColumn,
+  type IGroup,
+  type IndicesArray,
+  type INumberColumn,
+  type IOrderedGroup,
   isCategoricalLikeColumn,
   isDateColumn,
   isNumberColumn,
   Ranking,
   StringColumn,
-  UIntTypedArray,
+  type UIntTypedArray,
 } from '../model';
 import type { IRenderTask } from '../renderer';
 import { sortDirect } from './DirectRenderTasks';
 import type { CompareLookup } from './sort';
-import { ARenderTasks, IRenderTaskExecutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow } from './tasks';
+import { ARenderTasks, type IRenderTaskExecutor, MultiIndices, taskLater, TaskLater, taskNow, TaskNow } from './tasks';
 
 export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExecutor {
   private readonly cache = new Map<string, IRenderTask<any>>();

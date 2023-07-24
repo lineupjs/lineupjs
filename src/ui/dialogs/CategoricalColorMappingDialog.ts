@@ -5,7 +5,7 @@ import type {
   ICategory,
   ICategoricalColorMappingFunction,
 } from '../../model';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { uniqueId } from './utils';
 import { cssClass } from '../../styles';
 import { color } from 'd3-color';

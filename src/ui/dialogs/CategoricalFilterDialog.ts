@@ -1,12 +1,12 @@
 import {
   SetColumn,
   CategoricalColumn,
-  ICategoricalFilter,
-  ISetCategoricalFilter,
+  type ICategoricalFilter,
+  type ISetCategoricalFilter,
   Ranking,
   BooleanColumn,
 } from '../../model';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { forEach } from './utils';
 import { cssClass, engineCssClass } from '../../styles';
 import { isCategoryIncluded } from '../../model/internalCategorical';

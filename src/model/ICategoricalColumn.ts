@@ -1,6 +1,6 @@
 import type { IForEachAble } from '../internal';
 import Column from './Column';
-import { IArrayColumn, isArrayColumn } from './IArrayColumn';
+import { type IArrayColumn, isArrayColumn } from './IArrayColumn';
 import type { IValueColumnDesc, IColumnDesc, IDataRow, ITypedDump } from './interfaces';
 
 export interface ICategoricalDesc {

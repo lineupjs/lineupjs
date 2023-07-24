@@ -14,14 +14,14 @@ import Column, {
   visibilityChanged,
   widthChanged,
 } from './Column';
-import { IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type IValueColumnDesc, type ITypeFactory } from './interfaces';
 import {
   ESortMethod,
-  IBoxPlotColumn,
-  INumberDesc,
-  INumberFilter,
-  IColorMappingFunction,
-  IMappingFunction,
+  type IBoxPlotColumn,
+  type INumberDesc,
+  type INumberFilter,
+  type IColorMappingFunction,
+  type IMappingFunction,
 } from './INumberColumn';
 import { restoreMapping } from './MappingFunction';
 import NumberColumn from './NumberColumn';

@@ -1,30 +1,30 @@
-import { ISequence, round } from '../internal';
+import { type ISequence, round } from '../internal';
 import {
   Column,
-  IDataRow,
-  INumberColumn,
+  type IDataRow,
+  type INumberColumn,
   isNumberColumn,
-  IMultiLevelColumn,
+  type IMultiLevelColumn,
   isMultiLevelColumn,
-  IOrderedGroup,
+  type IOrderedGroup,
 } from '../model';
 import { medianIndex } from '../model/internalNumber';
 import { COLUMN_PADDING } from '../styles';
 import { AAggregatedGroupRenderer } from './AAggregatedGroupRenderer';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  IImposer,
-  IRenderCallback,
-  IGroupCellRenderer,
-  ICellRenderer,
-  ISummaryRenderer,
+  type ICellRendererFactory,
+  type IImposer,
+  type IRenderCallback,
+  type IGroupCellRenderer,
+  type ICellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { matchColumns, multiLevelGridCSSClass } from './utils';
 import { cssClass } from '../styles';
-import { IAbortAblePromise, abortAbleAll } from 'lineupengine';
+import { type IAbortAblePromise, abortAbleAll } from 'lineupengine';
 
 /** @internal */
 export interface ICols {

@@ -7,6 +7,7 @@
     "declaration": false,
     "declarationMap": false,
     "composite": false,
+    "verbatimModuleSyntax": false,
     "types": [
       "cypress",
       "d3-color",

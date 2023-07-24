@@ -11,17 +11,17 @@ import type {
   StringColumn,
 } from '../model';
 import type Column from '../model';
-import { ARenderTasks, IRenderTaskExecutor, taskNow } from './tasks';
+import { ARenderTasks, type IRenderTaskExecutor, taskNow } from './tasks';
 import {
-  ISequence,
+  type ISequence,
   toIndexArray,
   sortComplex,
   getNumberOfBins,
-  IDateStatistics,
-  IStringStatistics,
-  ICategoricalStatistics,
-  IAdvancedBoxPlotData,
-  IStatistics,
+  type IDateStatistics,
+  type IStringStatistics,
+  type ICategoricalStatistics,
+  type IAdvancedBoxPlotData,
+  type IStatistics,
 } from '../internal';
 import type { CompareLookup } from './sort';
 import type { IRenderTask } from '../renderer';

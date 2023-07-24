@@ -1,4 +1,4 @@
-import { dispatch, Dispatch } from 'd3-dispatch';
+import { dispatch, type Dispatch } from 'd3-dispatch';
 
 /**
  * helper function to suffix the given event types

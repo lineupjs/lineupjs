@@ -1,5 +1,5 @@
 import { color } from 'd3-color';
-import { IStringStatistics, round } from '../internal';
+import { type IStringStatistics, round } from '../internal';
 import { DEFAULT_COLOR, StringColumn } from '../model';
 import { cssClass, FILTERED_OPACITY } from '../styles';
 import type { IGroupCellRenderer, IRenderContext, ISummaryRenderer } from './interfaces';

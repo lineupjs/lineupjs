@@ -1,4 +1,4 @@
-import { similar, IEventListener } from '../internal';
+import { similar, type IEventListener } from '../internal';
 import { toolbar } from './annotations';
 import Column, {
   widthChanged,

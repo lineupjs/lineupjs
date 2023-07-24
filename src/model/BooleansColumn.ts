@@ -1,4 +1,4 @@
-import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import ArrayColumn, { type IArrayColumnDesc } from './ArrayColumn';
 import type { ISetColumn, ICategoricalColorMappingFunction } from './ICategoricalColumn';
 import type { IDataRow, ITypeFactory, ECompareValueType } from './interfaces';
 import CategoricalColumn from './CategoricalColumn';

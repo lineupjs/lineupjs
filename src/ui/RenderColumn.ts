@@ -1,4 +1,4 @@
-import { IColumn, IAbortAblePromise, IAsyncUpdate, isAbortAble } from 'lineupengine';
+import { type IColumn, type IAbortAblePromise, type IAsyncUpdate, isAbortAble } from 'lineupengine';
 import type { Column } from '../model';
 import type { ICellRenderer, IGroupCellRenderer } from '../renderer';
 import type { ISummaryRenderer, IRenderCallback } from '../renderer';

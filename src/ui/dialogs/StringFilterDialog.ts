@@ -1,6 +1,6 @@
 import type { StringColumn, IStringFilter } from '../../model';
 import { filterMissingMarkup, findFilterMissing } from '../missing';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 import { debounce } from '../../internal';
 import type { IRankingHeaderContext } from '../interfaces';

@@ -1,7 +1,7 @@
 import { toolbar } from './annotations';
-import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import ArrayColumn, { type IArrayColumnDesc } from './ArrayColumn';
 import type { IDataRow } from './interfaces';
-import { EAlignment, IStringDesc } from './StringColumn';
+import { EAlignment, type IStringDesc } from './StringColumn';
 import { isMissingValue } from './missing';
 import { integrateDefaults } from './internal';
 

@@ -1,4 +1,4 @@
-import { suffix, IEventListener } from '../internal';
+import { suffix, type IEventListener } from '../internal';
 import Column, {
   widthChanged,
   labelChanged,

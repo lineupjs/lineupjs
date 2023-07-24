@@ -15,20 +15,20 @@ import Column, {
 import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
 import type { IKeyValue } from './IArrayColumn';
-import { IDataRow, ECompareValueType, ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type ITypeFactory } from './interfaces';
 import {
   EAdvancedSortMethod,
-  IAdvancedBoxPlotColumn,
-  INumberDesc,
-  INumberFilter,
-  IMappingFunction,
-  IColorMappingFunction,
+  type IAdvancedBoxPlotColumn,
+  type INumberDesc,
+  type INumberFilter,
+  type IMappingFunction,
+  type IColorMappingFunction,
 } from './INumberColumn';
-import MapColumn, { IMapColumnDesc } from './MapColumn';
+import MapColumn, { type IMapColumnDesc } from './MapColumn';
 import { restoreMapping } from './MappingFunction';
 import { isMissingValue } from './missing';
 import NumberColumn from './NumberColumn';
-import { IEventListener, IAdvancedBoxPlotData, boxplotBuilder } from '../internal';
+import { type IEventListener, type IAdvancedBoxPlotData, boxplotBuilder } from '../internal';
 import { format } from 'd3-format';
 import {
   DEFAULT_FORMATTER,

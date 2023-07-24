@@ -1,4 +1,4 @@
-import { Column, isMapAbleColumn, IDataRow, DEFAULT_COLOR } from '../model';
+import { Column, isMapAbleColumn, type IDataRow, DEFAULT_COLOR } from '../model';
 import type { IImposer } from './interfaces';
 
 export function colorOf(col: Column, row: IDataRow | null, imposer?: IImposer, valueHint?: number) {

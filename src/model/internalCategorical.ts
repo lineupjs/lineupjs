@@ -1,4 +1,4 @@
-import { ISequence, isSeqEmpty, empty } from '../internal';
+import { type ISequence, isSeqEmpty, empty } from '../internal';
 import { colorPool } from './internal';
 import type {
   ICategoricalColumn,

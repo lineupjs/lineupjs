@@ -2,7 +2,7 @@ import type { DateColumn, IDateFilter } from '../../model';
 import { noDateFilter } from '../../model/internalDate';
 import { createDateFilter } from '../../renderer/DateHistogramCellRenderer';
 import { cssClass } from '../../styles';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import type { IRankingHeaderContext } from '../interfaces';
 
 /** @internal */

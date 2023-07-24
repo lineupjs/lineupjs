@@ -1,7 +1,7 @@
 import { timeFormat, timeParse } from 'd3-time-format';
-import { median, min, max, IEventListener } from '../internal';
+import { median, min, max, type IEventListener } from '../internal';
 import { dialogAddons, toolbar } from './annotations';
-import ArrayColumn, { IArrayColumnDesc } from './ArrayColumn';
+import ArrayColumn, { type IArrayColumnDesc } from './ArrayColumn';
 import type {
   widthChanged,
   labelChanged,
@@ -19,7 +19,7 @@ import type Column from './Column';
 import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
 import type { IDateDesc, IDatesColumn, IDateFilter } from './IDateColumn';
-import { IDataRow, ECompareValueType, ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type ITypeFactory } from './interfaces';
 import { isMissingValue } from './missing';
 import DateColumn from './DateColumn';
 import { noDateFilter, isDummyDateFilter, restoreDateFilter } from './internalDate';

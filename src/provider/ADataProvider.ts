@@ -1,41 +1,47 @@
 import {
   AEventDispatcher,
   debounce,
-  ISequence,
+  type ISequence,
   OrderedSet,
-  IDebounceContext,
-  IEventListener,
+  type IDebounceContext,
+  type IEventListener,
   suffix,
-  IEventContext,
+  type IEventContext,
 } from '../internal';
 import {
   Column,
-  IColumnConstructor,
+  type IColumnConstructor,
   Ranking,
   AggregateGroupColumn,
   createAggregateDesc,
-  IAggregateGroupColumnDesc,
+  type IAggregateGroupColumnDesc,
   isSupportType,
   EDirtyReason,
   RankColumn,
   createRankDesc,
   createSelectionDesc,
-  IColumnDesc,
-  IDataRow,
-  IGroup,
-  IndicesArray,
-  IOrderedGroup,
-  ISelectionColumnDesc,
+  type IColumnDesc,
+  type IDataRow,
+  type IGroup,
+  type IndicesArray,
+  type IOrderedGroup,
+  type ISelectionColumnDesc,
   EAggregationState,
-  IColumnDump,
-  IRankingDump,
-  IColorMappingFunctionConstructor,
-  IMappingFunctionConstructor,
-  ITypeFactory,
+  type IColumnDump,
+  type IRankingDump,
+  type IColorMappingFunctionConstructor,
+  type IMappingFunctionConstructor,
+  type ITypeFactory,
 } from '../model';
 import { models } from '../model/models';
 import { forEachIndices, everyIndices, toGroupID, unifyParents } from '../model/internal';
-import { IDataProvider, IDataProviderDump, IDataProviderOptions, SCHEMA_REF, IExportOptions } from './interfaces';
+import {
+  type IDataProvider,
+  type IDataProviderDump,
+  type IDataProviderOptions,
+  SCHEMA_REF,
+  type IExportOptions,
+} from './interfaces';
 import { exportRanking, map2Object, object2Map, exportTable, isPromiseLike } from './utils';
 import type { IRenderTasks } from '../renderer';
 import { restoreCategoricalColorMapping } from '../model/CategoricalColorMappingFunction';
