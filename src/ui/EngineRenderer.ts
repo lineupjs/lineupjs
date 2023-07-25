@@ -2,14 +2,14 @@ import { GridStyleManager, MultiTableRowRenderer, nonUniformContext } from 'line
 import type { ILineUpFlags, ILineUpOptions } from '../config';
 import { AEventDispatcher, debounce, type IEventListener, round, suffix } from '../internal';
 import { Column, type IGroupData, type IGroupItem, isGroup, Ranking, type IGroup } from '../model';
-import { DataProvider } from '../provider';
+import { DataProvider, type IDataProviderDump } from '../provider';
 import { isSummaryGroup, groupEndLevel } from '../provider/internal';
 import type { IImposer, IRenderContext } from '../renderer';
 import { chooseGroupRenderer, chooseRenderer, chooseSummaryRenderer, getPossibleRenderer } from '../renderer/renderers';
 import { cssClass, engineCssClass } from '../styles';
 import DialogManager from './dialogs/DialogManager';
 import domElementCache, { createSanitizer } from './domElementCache';
-import EngineRanking, { type IEngineRankingContext } from './EngineRanking';
+import EngineRanking, { type IEngineRankingContext, type IRankingRendererState } from './EngineRanking';
 import { EMode, type IRankingHeaderContext, type IRankingHeaderContextContainer } from './interfaces';
 import SlopeGraph, { type ISlopeGraphState } from './SlopeGraph';
 import type { ADialog } from './dialogs';
@@ -41,6 +41,7 @@ export declare function dialogClosedER(dialog: ADialog, action: 'cancel' | 'conf
 
 export interface IEngineRendererState {
   zoomFactor: number;
+  rankings: IRankingRendererState[];
   slopeGraphs: ISlopeGraphState[];
 }
 
@@ -254,21 +255,24 @@ export default class EngineRenderer extends AEventDispatcher {
   toJSON(): IEngineRendererState {
     return {
       zoomFactor: this.zoomFactor,
+      rankings: this.rankings.map((d) => d.toJSON()),
       slopeGraphs: this.slopeGraphs.map((d) => d.toJSON()),
     };
   }
 
-  applyState(state: IEngineRendererState) {
-    let update = false;
+  async applyState(dump: IDataProviderDump, state: IEngineRendererState): Promise<void> {
     if (this.zoomFactor !== state.zoomFactor) {
       this.zoomFactor = state.zoomFactor;
       this.updateZoomFactor();
-      update = true;
     }
+    await this.data.applyState(dump);
+    // TODO sync
+    this.rankings.forEach((s, i) => {
+      s.applyState(state.rankings[i]);
+    });
     this.slopeGraphs.forEach((s, i) => {
       s.applyState(state.slopeGraphs[i]);
     });
-    return update;
   }
 
   zoomIn() {

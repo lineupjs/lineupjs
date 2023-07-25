@@ -109,7 +109,6 @@ export enum EMode {
 }
 
 export interface ILineUpState extends IDataProviderDump {
-  highlight?: number;
   overviewMode?: boolean;
   ui: IEngineRendererState;
 }

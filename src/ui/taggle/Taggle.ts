@@ -170,19 +170,14 @@ export default class Taggle extends ALineUp {
     const r: ILineUpState = {
       ...super.dump(),
       ui: this.renderer.toJSON(),
-      highlight: this.getHighlight(),
       overviewMode: this.isOverviewMode(),
     };
     return r;
   }
   async applyState(state: ILineUpState): Promise<void> {
-    await this.data.applyState(state);
-    this.renderer.applyState(state.ui);
+    this.renderer.applyState(state, state.ui);
     if (state.overviewMode != null && this.isOverviewMode() !== state.overviewMode) {
       this.setOverviewMode(state.overviewMode);
-    }
-    if (state.highlight != null && this.getHighlight() !== state.highlight) {
-      this.setHighlight(state.highlight);
     }
   }
 }

@@ -52,6 +52,13 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
   createRenderer(c: Column, imposer?: IImposer): IRenderers;
 }
 
+export interface IRankingRendererState {
+  id: string;
+  highlight: number;
+  scrollTop: number;
+  scrollLeft: number;
+}
+
 export interface IEngineRankingOptions {
   animation: boolean;
   levelOfDetail: (rowIndex: number) => 'high' | 'low';
@@ -135,6 +142,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private currentCanvasWidth = 0;
 
   private readonly events = new RankingEvents();
+
+  private animation: boolean;
 
   private roptions: Readonly<IEngineRankingOptions> = {
     animation: true,
@@ -239,6 +248,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     super(header, body, tableId, style, { mixins: [PrefetchMixin], batchSize: 20 });
     Object.assign(this.roptions, roptions);
     body.dataset.ranking = ranking.id;
+    this.animation = this.roptions.animation;
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
@@ -381,6 +391,19 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   get id() {
     return this.ranking.id;
+  }
+
+  toJSON(): IRankingRendererState {
+    return {
+      id: this.id,
+      highlight: this.highlight,
+      scrollTop: this.body.scrollTop,
+      scrollLeft: this.body.scrollLeft,
+    };
+  }
+
+  applyState(state: IRankingRendererState) {
+    // TODO restore
   }
 
   protected override onVisibilityChanged(visible: boolean) {
@@ -1108,7 +1131,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return;
     }
     this.events.fire(EngineRanking.EVENT_RECREATE);
-    return super.recreate(this.roptions.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
+    return super.recreate(this.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
   }
 
   setHighlight(dataIndex: number) {

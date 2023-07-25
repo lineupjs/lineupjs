@@ -2,7 +2,7 @@ import type { GridStyleManager } from 'lineupengine';
 import type { ILineUpOptions } from '../../config';
 import { AEventDispatcher, type IEventListener, suffix } from '../../internal';
 import { type IGroupData, type IGroupItem, isGroup, Ranking, type IGroup } from '../../model';
-import { DataProvider } from '../../provider';
+import { DataProvider, type IDataProviderDump } from '../../provider';
 import type { IRenderContext } from '../../renderer';
 import type { IEngineRankingContext } from '../EngineRanking';
 import EngineRenderer, { type IEngineRendererState } from '../EngineRenderer';
@@ -234,7 +234,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     return this.renderer.toJSON();
   }
 
-  applyState(state: IEngineRendererState) {
-    return this.renderer.applyState(state);
+  applyState(dump: IDataProviderDump, state: IEngineRendererState) {
+    return this.renderer.applyState(dump, state);
   }
 }
