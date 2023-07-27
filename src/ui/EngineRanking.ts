@@ -1266,10 +1266,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       col.renderers = this.ctx.createRenderer(c);
       debounceUpdate();
     });
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-    c.on(`${Column.EVENT_DIRTY_HEADER}.body`, function (this: IEventContext) {
-      const valid = that.updateHeaderOf(col.c);
+    c.on(`${Column.EVENT_DIRTY_HEADER}.body`, () => {
+      const valid = this.updateHeaderOf(col.c);
       if (!valid) {
         EngineRanking.disableListener(c); // destroy myself
       }
