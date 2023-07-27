@@ -70,6 +70,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         const data = col.getBoxPlotData(d);
         n.classList.toggle(cssClass('missing'), !data);
         if (!data) {
+          n.title = '';
           return;
         }
         const label = col.getRawBoxPlotData(d)!;
