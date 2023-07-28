@@ -1,4 +1,4 @@
-import { median, quantile, IEventListener } from '../internal';
+import { median, quantile, type IEventListener } from '../internal';
 import { toolbar } from './annotations';
 import Column, {
   widthChanged,
@@ -16,7 +16,7 @@ import Column, {
 } from './Column';
 import type CompositeColumn from './CompositeColumn';
 import type { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
-import CompositeNumberColumn, { ICompositeNumberColumnDesc } from './CompositeNumberColumn';
+import CompositeNumberColumn, { type ICompositeNumberColumnDesc } from './CompositeNumberColumn';
 import type { IDataRow, ITypeFactory } from './interfaces';
 import { EAdvancedSortMethod } from './INumberColumn';
 import { integrateDefaults } from './internal';

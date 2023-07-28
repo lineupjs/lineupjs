@@ -1,5 +1,5 @@
 import { format } from 'd3-format';
-import { IBoxPlotData, similar, ISequence, IAdvancedBoxPlotData, boxplotBuilder } from '../internal';
+import { type IBoxPlotData, similar, type ISequence, type IAdvancedBoxPlotData, boxplotBuilder } from '../internal';
 import type { IDataRow } from './interfaces';
 import type { IBoxPlotColumn, INumberFilter, INumberColumn } from './INumberColumn';
 import { FIRST_IS_NAN } from './missing';

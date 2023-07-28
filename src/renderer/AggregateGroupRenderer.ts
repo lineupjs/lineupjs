@@ -1,11 +1,11 @@
 import {
-  IDataRow,
+  type IDataRow,
   Column,
   AggregateGroupColumn,
   EAggregationState,
-  IOrderedGroup,
-  IGroupParent,
-  IGroup,
+  type IOrderedGroup,
+  type IGroupParent,
+  type IGroup,
   defaultGroup,
 } from '../model';
 import { AGGREGATE, CANVAS_HEIGHT, cssClass } from '../styles';

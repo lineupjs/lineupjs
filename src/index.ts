@@ -3,7 +3,7 @@
  */
 
 import type { IColumnDesc } from './model';
-import { DataProvider, LocalDataProvider, ILocalDataProviderOptions } from './provider';
+import { DataProvider, LocalDataProvider, type ILocalDataProviderOptions } from './provider';
 import { LineUp, Taggle } from './ui';
 import type { ILineUpOptions, ITaggleOptions } from './config';
 

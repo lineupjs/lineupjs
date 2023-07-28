@@ -2,14 +2,14 @@ import {
   Ranking,
   isNumberColumn,
   Column,
-  IColumnDesc,
+  type IColumnDesc,
   isSupportType,
   isMapAbleColumn,
   DEFAULT_COLOR,
-  IDataRow,
+  type IDataRow,
 } from '../model';
 import { colorPool, MAX_COLORS } from '../model/internal';
-import { concat, equal, extent, range, resolveValue, ISequence } from '../internal';
+import { concat, equal, extent, range, resolveValue, type ISequence } from '../internal';
 import { timeParse } from 'd3-time-format';
 import type { IDataProvider, IDeriveOptions, IExportOptions } from './interfaces';
 

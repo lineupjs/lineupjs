@@ -5,7 +5,7 @@ import { openMoreDialog, closeDialog, resetDialog } from './utils/ui';
 describe('pr275_sort_group', () => {
   let lineup: LineUp;
   let lineUpJS: LineUpJSType;
-  before(
+  beforeEach(
     withLineUp((l, document) => {
       lineUpJS = l;
       const arr = generateData({
@@ -41,7 +41,7 @@ describe('pr275_sort_group', () => {
   it('choose divergent color mapping', () => {
     openColorMappingDialog().within(() => {
       // select another color
-      cy.contains('Diverging Color').click();
+      cy.get('[data-toggle]').contains('Diverging Color').click();
       cy.get('input[value="interpolateBrBG"]').check();
     });
     closeDialog();

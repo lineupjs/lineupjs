@@ -28,7 +28,6 @@ jobs:
       - run: yarn build
       - run: yarn lint
       - run: yarn test:coverage
-      - run: yarn docs
       - run: yarn cy:compile
       - run: yarn cy:junit
       - uses: actions/upload-artifact@v2
@@ -39,6 +38,7 @@ jobs:
             cypress/screenshots
             cypress/videos
 
+      - run: yarn docs
       - run: |
           mkdir -p public/main
           cp -rt public/main/ docs demo/* build/*

@@ -1,13 +1,13 @@
-import { createIndexArray, ILookUpArray } from '../internal';
+import { createIndexArray, type ILookUpArray } from '../internal';
 import {
   FIRST_IS_MISSING,
   FIRST_IS_NAN,
   ECompareValueType,
-  ICompareValue,
+  type ICompareValue,
   Column,
-  UIntTypedArray,
+  type UIntTypedArray,
   Ranking,
-  IDataRow,
+  type IDataRow,
 } from '../model';
 
 const missingUInt8 = FIRST_IS_MISSING > 0 ? 255 : 0;

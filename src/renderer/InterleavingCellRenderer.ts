@@ -1,14 +1,14 @@
 import type { INumberBin, IStatistics } from '../internal';
-import { Column, CompositeNumberColumn, IDataRow, IOrderedGroup, INumberColumn } from '../model';
+import { Column, CompositeNumberColumn, type IDataRow, type IOrderedGroup, type INumberColumn } from '../model';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import { getHistDOMRenderer } from './HistogramCellRenderer';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  ISummaryRenderer,
-  IGroupCellRenderer,
-  ICellRenderer,
+  type ICellRendererFactory,
+  type ISummaryRenderer,
+  type IGroupCellRenderer,
+  type ICellRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { createData } from './MultiLevelCellRenderer';

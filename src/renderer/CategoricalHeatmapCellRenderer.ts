@@ -1,4 +1,11 @@
-import { Column, ICategoricalsColumn, ICategory, IDataRow, IOrderedGroup, isCategoricalsColumn } from '../model';
+import {
+  Column,
+  type ICategoricalsColumn,
+  type ICategory,
+  type IDataRow,
+  type IOrderedGroup,
+  isCategoricalsColumn,
+} from '../model';
 import { toMostFrequentCategoricals } from '../model/internalCategorical';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import type {

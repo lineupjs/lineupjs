@@ -1,5 +1,5 @@
 import { DataBuilder } from '../../src/builder/DataBuilder';
-import { IColumnDesc, Column, ITypeFactory } from '../../src/model';
+import { IColumnDesc, Column, type ITypeFactory } from '../../src/model';
 
 interface IMyCustomDesc extends IColumnDesc {
   test: string;

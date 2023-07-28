@@ -8,7 +8,7 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "importsNotUsedAsValues": "error",
+    "verbatimModuleSyntax": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "strictBindCallApply": true,

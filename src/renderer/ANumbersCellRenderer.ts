@@ -1,7 +1,7 @@
 import type { IDataRow, INumbersColumn, EAdvancedSortMethod, IOrderedGroup } from '../model';
 import type { IRenderContext, IImposer, ICellRenderer, IGroupCellRenderer } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
-import { ISequence, boxplotBuilder, getSortLabel } from '../internal';
+import { type ISequence, boxplotBuilder, getSortLabel } from '../internal';
 
 export abstract class ANumbersCellRenderer {
   abstract readonly title: string;

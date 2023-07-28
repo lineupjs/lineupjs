@@ -1,6 +1,6 @@
 import { timeDay, timeHour, timeMinute, timeMonth, timeSecond, timeWeek } from 'd3-time';
 import { timeFormat } from 'd3-time-format';
-import { equal, ISequence, isSeqEmpty } from '../internal';
+import { equal, type ISequence, isSeqEmpty } from '../internal';
 import type { INumberFilter } from './INumberColumn';
 import { isNumberIncluded } from './internalNumber';
 import type { IDateColumn, IDateGrouper } from './IDateColumn';

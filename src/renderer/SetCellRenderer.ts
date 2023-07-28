@@ -1,4 +1,11 @@
-import { Column, ICategoricalLikeColumn, IDataRow, IOrderedGroup, ISetColumn, isSetColumn } from '../model';
+import {
+  Column,
+  type ICategoricalLikeColumn,
+  type IDataRow,
+  type IOrderedGroup,
+  type ISetColumn,
+  isSetColumn,
+} from '../model';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import type {
   ICellRendererFactory,

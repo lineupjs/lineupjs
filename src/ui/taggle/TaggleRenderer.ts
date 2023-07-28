@@ -1,7 +1,7 @@
 import type { GridStyleManager } from 'lineupengine';
 import type { ILineUpOptions } from '../../config';
-import { AEventDispatcher, IEventListener, suffix } from '../../internal';
-import { IGroupData, IGroupItem, isGroup, Ranking, IGroup } from '../../model';
+import { AEventDispatcher, type IEventListener, suffix } from '../../internal';
+import { type IGroupData, type IGroupItem, isGroup, Ranking, type IGroup } from '../../model';
 import { DataProvider } from '../../provider';
 import type { IRenderContext } from '../../renderer';
 import type { IEngineRankingContext } from '../EngineRanking';

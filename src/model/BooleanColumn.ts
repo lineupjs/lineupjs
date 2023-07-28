@@ -21,7 +21,7 @@ import type {
   ICategoricalColorMappingFunction,
   ICategoricalFilter,
 } from './ICategoricalColumn';
-import { IDataRow, ECompareValueType, IValueColumnDesc, ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type IValueColumnDesc, type ITypeFactory } from './interfaces';
 import type { IEventListener } from '../internal';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import { integrateDefaults } from './internal';
@@ -39,6 +39,12 @@ export interface IBooleanDesc {
    * @default (empty)
    */
   falseMarker?: string;
+
+  /**
+   * list of values that indicate true values (case insensitive)
+   * @default 'y', 'yes', 'true', true, '1','1.0', 1, 1.0, 'on'
+   */
+  trueValues?: readonly any[];
 }
 
 export declare type IBooleanColumnDesc = IValueColumnDesc<boolean> & IBooleanDesc;
@@ -71,6 +77,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   static readonly GROUP_TRUE = { name: 'True', color: '#444444' };
   static readonly GROUP_FALSE = { name: 'False', color: '#dddddd' };
+  static readonly DEFAULT_TRUE_VALUES: any[] = ['y', 'yes', 'true', true, '1', '1.0', 1, 1.0, 'on'];
 
   private currentFilter: ICategoricalFilter | null = null;
 
@@ -142,7 +149,9 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     if (typeof v === 'undefined' || v == null) {
       return null;
     }
-    return v === true || v === 'true' || v === 'yes' || v === 'x';
+    const trueValues = (this.desc as IBooleanDesc).trueValues ?? BooleanColumn.DEFAULT_TRUE_VALUES;
+    const vs = String(v).toLowerCase();
+    return trueValues.some((d) => d === v || d === vs);
   }
 
   getCategoryOfBoolean(v: boolean | null) {

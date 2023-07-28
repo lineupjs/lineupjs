@@ -1,23 +1,23 @@
 import { clear, round } from '../internal';
 import {
   Column,
-  IMapColumn,
-  IMapAbleColumn,
+  type IMapColumn,
+  type IMapAbleColumn,
   isMapAbleColumn,
   isMapColumn,
-  IDataRow,
+  type IDataRow,
   isNumberColumn,
-  INumberColumn,
+  type INumberColumn,
 } from '../model';
 import { colorOf } from './impose';
 import {
-  ICellRendererFactory,
-  IImposer,
-  IRenderContext,
+  type ICellRendererFactory,
+  type IImposer,
+  type IRenderContext,
   ERenderMode,
-  ISummaryRenderer,
-  IGroupCellRenderer,
-  ICellRenderer,
+  type ISummaryRenderer,
+  type IGroupCellRenderer,
+  type ICellRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { noRenderer, adaptColor, BIG_MARK_LIGHTNESS_FACTOR } from './utils';

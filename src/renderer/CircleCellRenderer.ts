@@ -1,13 +1,13 @@
-import { Column, isNumbersColumn, IDataRow, INumberColumn, isNumberColumn } from '../model';
+import { Column, isNumbersColumn, type IDataRow, type INumberColumn, isNumberColumn } from '../model';
 import { colorOf } from './impose';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  IImposer,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
+  type ICellRendererFactory,
+  type IImposer,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { adaptColor, noRenderer, setText, SMALL_MARK_LIGHTNESS_FACTOR } from './utils';

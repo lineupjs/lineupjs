@@ -1,8 +1,14 @@
-import { Column, NumbersColumn, IDataRow, INumbersColumn, isNumbersColumn } from '../model';
+import { Column, NumbersColumn, type IDataRow, type INumbersColumn, isNumbersColumn } from '../model';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import { ANumbersCellRenderer } from './ANumbersCellRenderer';
 import { toHeatMapColor } from './BrightnessCellRenderer';
-import { IRenderContext, ERenderMode, ICellRendererFactory, IImposer, ISummaryRenderer } from './interfaces';
+import {
+  type IRenderContext,
+  ERenderMode,
+  type ICellRendererFactory,
+  type IImposer,
+  type ISummaryRenderer,
+} from './interfaces';
 import { forEachChild, noRenderer } from './utils';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer implements ICellRendererFactory {

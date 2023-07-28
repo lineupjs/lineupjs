@@ -1,4 +1,4 @@
-import { round, IEventListener, similar } from '../internal';
+import { round, type IEventListener, similar } from '../internal';
 import { toolbar } from './annotations';
 import Column, {
   widthChanged,
@@ -15,7 +15,7 @@ import Column, {
 } from './Column';
 import type CompositeColumn from './CompositeColumn';
 import type { addColumn, filterChanged, moveColumn, removeColumn } from './CompositeColumn';
-import CompositeNumberColumn, { ICompositeNumberDesc } from './CompositeNumberColumn';
+import CompositeNumberColumn, { type ICompositeNumberDesc } from './CompositeNumberColumn';
 import type { IDataRow, IFlatColumn, IMultiLevelColumn, ITypeFactory } from './interfaces';
 import { integrateDefaults } from './internal';
 

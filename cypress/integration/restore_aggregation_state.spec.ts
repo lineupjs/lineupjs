@@ -29,7 +29,7 @@ describe('restore_aggregation_state', () => {
     });
   }
 
-  before(
+  beforeEach(
     withLineUp((l, document) => {
       lineUpJS = l;
       const arr = generateData({

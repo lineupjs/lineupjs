@@ -12,7 +12,7 @@ import Column, {
   visibilityChanged,
   dirtyCaches,
 } from './Column';
-import { IDataRow, IGroup, ECompareValueType } from './interfaces';
+import { type IDataRow, type IGroup, ECompareValueType } from './interfaces';
 import { missingGroup } from './missing';
 import type { IEventListener, ISequence } from '../internal';
 

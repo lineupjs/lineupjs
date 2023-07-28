@@ -2,8 +2,8 @@ import { hsl } from 'd3-color';
 import {
   Column,
   isNumbersColumn,
-  IDataRow,
-  INumberColumn,
+  type IDataRow,
+  type INumberColumn,
   isNumberColumn,
   isMapAbleColumn,
   DEFAULT_COLOR,
@@ -12,13 +12,13 @@ import {
 import { CANVAS_HEIGHT, cssClass } from '../styles';
 import { colorOf } from './impose';
 import {
-  IRenderContext,
+  type IRenderContext,
   ERenderMode,
-  ICellRendererFactory,
-  IImposer,
-  ICellRenderer,
-  IGroupCellRenderer,
-  ISummaryRenderer,
+  type ICellRendererFactory,
+  type IImposer,
+  type ICellRenderer,
+  type IGroupCellRenderer,
+  type ISummaryRenderer,
 } from './interfaces';
 import { renderMissingCanvas, renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';

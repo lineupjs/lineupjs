@@ -1,4 +1,4 @@
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
 import type { IDataProvider } from '../../provider';
 

@@ -1,9 +1,9 @@
 import { MIN_LABEL_WIDTH } from '../constants';
-import { dragAble, dropAble, hasDnDType, IDropResult } from '../internal';
+import { dragAble, dropAble, hasDnDType, type IDropResult } from '../internal';
 import { categoryOf } from '../model';
 import {
   createStackDesc,
-  IColumnDesc,
+  type IColumnDesc,
   isArrayColumn,
   isBoxPlotColumn,
   isCategoricalColumn,
@@ -15,7 +15,7 @@ import {
   createImpositionsDesc,
   createImpositionBoxPlotDesc,
   CompositeColumn,
-  IMultiLevelColumn,
+  type IMultiLevelColumn,
   isMultiLevelColumn,
 } from '../model';
 import { aria, cssClass, engineCssClass, RESIZE_ANIMATION_DURATION, RESIZE_SPACE } from '../styles';
@@ -67,7 +67,6 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
   const extra = options.extraPrefix
     ? (name: string) => `${cssClass(name)} ${cssClass(`${options.extraPrefix}-${name}`)}`
     : cssClass;
-  const summary = col.getMetaData().summary;
   node.innerHTML = `
     <div class="${extra('label')} ${cssClass('typed-icon')}"></div>
     <div class="${extra('sublabel')}"></div>
@@ -81,17 +80,15 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
         : ''
     }
   `;
-  setTextOrEmpty(
-    node.firstElementChild as HTMLElement,
-    col.getWidth() < MIN_LABEL_WIDTH,
-    col.label,
-    col.desc.labelAsHTML
-  );
+
+  const label = col.getHeaderLabel('header');
+  setTextOrEmpty(node.firstElementChild as HTMLElement, col.getWidth() < MIN_LABEL_WIDTH, label.content, label.asHTML);
+  const summary = col.getSummaryLabel('header');
   setTextOrEmpty(
     node.children[1] as HTMLElement,
     col.getWidth() < MIN_LABEL_WIDTH || !summary,
-    summary,
-    col.desc.summaryAsHTML
+    summary.content,
+    summary.asHTML
   );
 
   // addTooltip(node, col);
@@ -134,13 +131,25 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
 }
 
 /** @internal */
-export function updateHeader(node: HTMLElement, col: Column, minWidth = MIN_LABEL_WIDTH) {
+export function updateHeader(
+  node: HTMLElement,
+  col: Column,
+  labelCtx: 'header' | 'sidePanel' | 'reorder' = 'header',
+  minWidth = MIN_LABEL_WIDTH
+) {
   const label = node.getElementsByClassName(cssClass('label'))[0]! as HTMLElement;
-  setTextOrEmpty(label, col.getWidth() < minWidth, col.label, col.desc.labelAsHTML);
-  const summary = col.getMetaData().summary;
+  const labelText = col.getHeaderLabel(labelCtx);
+  setTextOrEmpty(label, col.getWidth() < minWidth, labelText.content, labelText.asHTML);
+  const summaryText = col.getSummaryLabel(labelCtx);
+  const summary = col.desc.summary;
   const subLabel = node.getElementsByClassName(cssClass('sublabel'))[0] as HTMLElement;
   if (subLabel) {
-    setTextOrEmpty(subLabel, col.getWidth() < minWidth || !summary, summary, col.desc.summaryAsHTML);
+    setTextOrEmpty(
+      subLabel,
+      col.getWidth() < minWidth || !summaryText.content,
+      summaryText.content,
+      summaryText.asHTML
+    );
   }
 
   let title = col.label;

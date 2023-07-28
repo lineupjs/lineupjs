@@ -1,5 +1,5 @@
 import type { Column } from '../../model';
-import ADialog, { IDialogContext } from './ADialog';
+import ADialog, { type IDialogContext } from './ADialog';
 import type { IToolbarDialogAddon, IRankingHeaderContext, IToolbarDialogAddonHandler } from '../interfaces';
 
 /** @internal */
