@@ -163,9 +163,13 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.server.mappingSample((col as any).desc.column);
   }
 
-  searchAndJump(search: string | RegExp, col: Column) {
+  searchAndJump(search: string | RegExp, col: Column, first?: boolean) {
     this.server.search(search, (col as any).desc.column).then((indices) => {
-      this.jumpToNearest(indices);
+      if (indices.length > 0 && first) {
+        this.jumpToNearest(indices.slice(0, 1));
+      } else {
+        this.jumpToNearest(indices);
+      }
     });
   }
 }
