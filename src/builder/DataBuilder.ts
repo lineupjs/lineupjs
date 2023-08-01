@@ -165,7 +165,7 @@ export class DataBuilder extends LineUpBuilder {
     const contained = new Set<string>();
     for (const col of this.columns) {
       const c = typeof col === 'function' ? col(this.data) : col;
-      const key = `${c.type}@${c.label}`;
+      const key = `${c.type}@${c.label}@${c.summary}`;
       if (!contained.has(key)) {
         columns.push(c);
         contained.add(key);
