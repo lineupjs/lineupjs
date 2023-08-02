@@ -165,13 +165,13 @@ export class DataBuilder extends LineUpBuilder {
     const contained = new Set<string>();
     for (const col of this.columns) {
       const c = typeof col === 'function' ? col(this.data) : col;
-      const key = `${c.type}@${c.label}`;
+      const key = `${c.type}@${c.label}@${c.summary}`;
       if (!contained.has(key)) {
         columns.push(c);
         contained.add(key);
         continue;
       }
-      const oldPos = columns.findIndex((d) => key === `${d.type}@${d.label}`);
+      const oldPos = columns.findIndex((d) => key === `${d.type}@${d.label}@${c.summary}`);
       columns.splice(oldPos, 1, c); // replace with new one
     }
     if (this._deriveColors) {
