@@ -171,7 +171,7 @@ export class DataBuilder extends LineUpBuilder {
         contained.add(key);
         continue;
       }
-      const oldPos = columns.findIndex((d) => key === `${d.type}@${d.label}`);
+      const oldPos = columns.findIndex((d) => key === `${d.type}@${d.label}@${c.summary}`);
       columns.splice(oldPos, 1, c); // replace with new one
     }
     if (this._deriveColors) {
