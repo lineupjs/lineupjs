@@ -47,6 +47,15 @@ function isEmpty(v: any) {
   );
 }
 
+function isLink(value: string) {
+  const separator = value.indexOf('://');
+  if (separator < 0) {
+    return false;
+  }
+  const protocol = value.slice(0, separator);
+  return ['http', 'https', 'ftp'].includes(protocol);
+}
+
 function deriveBaseType(value: any, all: () => any[], column: number | string, options: IDeriveOptions) {
   if (value == null) {
     console.warn('cannot derive from null value for column: ', column);
@@ -73,7 +82,7 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
 
   if (
     (typeof value === 'object' && value.alt != null && value.href != null) ||
-    (typeof value === 'string' && (value.startsWith('https://') || value.startsWith('http://')))
+    (typeof value === 'string' && isLink(value))
   ) {
     return {
       type: 'link',
