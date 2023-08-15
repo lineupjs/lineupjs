@@ -46,6 +46,7 @@ export declare function moveColumn(col: Column, index: number, oldIndex: number)
  */
 export declare function removeColumn(col: Column, index: number): void;
 
+const COMPOSITE_SUFFIX = '.internal-combine';
 /**
  * implementation of a combine column, standard operations how to select
  */
@@ -244,7 +245,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     this.forward(
       col,
       ...suffix(
-        '.combine',
+        COMPOSITE_SUFFIX,
         Column.EVENT_DIRTY_HEADER,
         Column.EVENT_DIRTY_VALUES,
         Column.EVENT_DIRTY_CACHES,
@@ -327,7 +328,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     this.unforward(
       col,
       ...suffix(
-        '.combine',
+        COMPOSITE_SUFFIX,
         Column.EVENT_DIRTY_HEADER,
         Column.EVENT_DIRTY_VALUES,
         Column.EVENT_DIRTY_CACHES,

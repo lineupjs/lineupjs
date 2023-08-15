@@ -55,6 +55,7 @@ export declare function mappingChanged_IPBC(previous: IMappingFunction, current:
  */
 export declare function colorMappingChanged_IPBC(previous: IColorMappingFunction, current: IColorMappingFunction): void;
 
+const IMPOSE_SUFFIX = '.internal-impose';
 /**
  * implementation of a combine column, standard operations how to select
  */
@@ -303,10 +304,10 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     if (isBoxPlotColumn(col)) {
       this.forward(
         col,
-        ...suffix('.impose', BoxPlotColumn.EVENT_MAPPING_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED)
+        ...suffix(IMPOSE_SUFFIX, BoxPlotColumn.EVENT_MAPPING_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED)
       );
     } else if (isMapAbleColumn(col)) {
-      this.forward(col, ...suffix('.impose', BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED));
+      this.forward(col, ...suffix(IMPOSE_SUFFIX, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED));
     }
     return super.insertImpl(col, index);
   }
@@ -315,10 +316,10 @@ export default class ImpositionBoxPlotColumn extends CompositeColumn implements 
     if (isBoxPlotColumn(child)) {
       this.unforward(
         child,
-        ...suffix('.impose', BoxPlotColumn.EVENT_MAPPING_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED)
+        ...suffix(IMPOSE_SUFFIX, BoxPlotColumn.EVENT_MAPPING_CHANGED, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED)
       );
     } else if (isMapAbleColumn(child)) {
-      this.unforward(child, ...suffix('.impose', BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED));
+      this.unforward(child, ...suffix(IMPOSE_SUFFIX, BoxPlotColumn.EVENT_COLOR_MAPPING_CHANGED));
     }
     return super.removeImpl(child, index);
   }
