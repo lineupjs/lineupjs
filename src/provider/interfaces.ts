@@ -88,7 +88,9 @@ export interface IDataProvider extends AEventDispatcher {
 
   mappingSample(col: Column): Promise<ISequence<number>> | ISequence<number>;
 
-  searchAndJump(search: string | RegExp, col: Column): void;
+  searchAndJump(search: string | RegExp, col: Column, first?: boolean): number[] | void;
+
+  jumpToNearest(indices: number[]);
 
   getRankings(): Ranking[];
 

@@ -612,8 +612,18 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return lazySeq(Array.from(indices)).map((i) => col.getRawNumber(this._dataRows[i]));
   }
 
-  searchAndJump(search: string | RegExp, col: Column) {
+  searchAndJump(search: string | RegExp, col: Column, first?: boolean) {
     //case insensitive search
+    const indices = this.search(search, col);
+    if (first && indices.length > 0) {
+      this.jumpToNearest(indices.slice(0, 1));
+    } else {
+      this.jumpToNearest(indices);
+    }
+    return indices;
+  }
+
+  search(search: string | RegExp, col: Column): number[] {
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f =
       typeof search === 'string'
@@ -625,7 +635,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         indices.push(i);
       }
     }
-    this.jumpToNearest(indices);
+    return indices;
   }
 }
 

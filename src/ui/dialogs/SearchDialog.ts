@@ -6,6 +6,13 @@ import { debounce } from '../../internal';
 
 /** @internal */
 export default class SearchDialog extends ADialog {
+  private current: {
+    isRegex: boolean;
+    search: string;
+    indices: number[];
+    index: number;
+  } | null = null;
+
   constructor(private readonly column: Column, dialog: IDialogContext, private readonly provider: IDataProvider) {
     super(dialog, {
       livePreview: 'search',
@@ -57,12 +64,28 @@ export default class SearchDialog extends ADialog {
     const input = this.findInput('input[type="text"]')!;
     const checkbox = this.findInput('input[type="checkbox"]')!;
 
-    let search: any = input.value;
+    let search: string = input.value;
     const isRegex = checkbox.checked;
-    if (isRegex) {
-      search = new RegExp(search);
+    if (this.current && this.current.search === search && this.current.isRegex === isRegex) {
+      const next = (this.current.index + 1) % this.current.indices.length;
+      this.current.index = next;
+      this.provider.jumpToNearest([this.current.indices[next]]);
+      return false;
+    } else {
+      const indices = this.provider.searchAndJump(isRegex ? new RegExp(search) : search, this.column, true);
+      if (indices) {
+        this.current = {
+          search,
+          isRegex,
+          indices,
+          index: 0,
+        };
+        return indices.length > 1;
+      } else {
+        this.current = null;
+      }
     }
-    this.provider.searchAndJump(search, this.column);
+
     return true;
   }
 
