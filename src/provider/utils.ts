@@ -47,6 +47,15 @@ function isEmpty(v: any) {
   );
 }
 
+function isLink(value: string) {
+  const separator = value.indexOf('://');
+  if (separator < 0) {
+    return false;
+  }
+  const protocol = value.slice(0, separator);
+  return ['http', 'https', 'ftp'].includes(protocol);
+}
+
 function deriveBaseType(value: any, all: () => any[], column: number | string, options: IDeriveOptions) {
   if (value == null) {
     console.warn('cannot derive from null value for column: ', column);
@@ -70,6 +79,16 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
       type: 'date',
     };
   }
+
+  if (
+    (typeof value === 'object' && value.alt != null && value.href != null) ||
+    (typeof value === 'string' && isLink(value))
+  ) {
+    return {
+      type: 'link',
+    };
+  }
+
   const formats = Array.isArray(options.datePattern) ? options.datePattern : [options.datePattern];
   for (const format of formats) {
     const dateParse = timeParse(format);
@@ -98,12 +117,6 @@ function deriveBaseType(value: any, all: () => any[], column: number | string, o
     }
     return {
       type: 'string',
-    };
-  }
-
-  if (typeof value === 'object' && value.alt != null && value.href != null) {
-    return {
-      type: 'link',
     };
   }
 
