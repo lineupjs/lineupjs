@@ -6,7 +6,10 @@ import { cssClass } from '../../styles';
 export default class RenameDialog extends ADialog {
   private readonly before: IColumnMetaData;
 
-  constructor(private readonly column: Column, dialog: IDialogContext) {
+  constructor(
+    private readonly column: Column,
+    dialog: IDialogContext
+  ) {
     super(dialog);
     this.before = column.getMetaData();
   }

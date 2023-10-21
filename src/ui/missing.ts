@@ -16,8 +16,8 @@ export function filterMissingNumberMarkup(bakMissing: boolean, count: number) {
   return `<label class="${cssClass('checkbox')}">
     <input type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''}>
     <span class="${cssClass('filter-missing')} ${
-    count === 0 ? cssClass('disabled') : ''
-  }">Filter ${count} missing value rows</span>
+      count === 0 ? cssClass('disabled') : ''
+    }">Filter ${count} missing value rows</span>
   </label>`;
 }
 

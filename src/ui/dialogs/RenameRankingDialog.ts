@@ -6,7 +6,10 @@ import { cssClass } from '../../styles';
 export default class RenameRankingDialog extends ADialog {
   private readonly before: string;
 
-  constructor(private readonly ranking: Ranking, dialog: IDialogContext) {
+  constructor(
+    private readonly ranking: Ranking,
+    dialog: IDialogContext
+  ) {
     super(dialog, {
       livePreview: 'rename',
     });
