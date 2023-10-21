@@ -53,7 +53,6 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
 }
 
 export interface IRankingRendererState {
-  id: string;
   highlight: number;
   scrollTop: number;
   scrollLeft: number;
@@ -395,7 +394,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   toJSON(): IRankingRendererState {
     return {
-      id: this.id,
       highlight: this.highlight,
       scrollTop: this.body.scrollTop,
       scrollLeft: this.body.scrollLeft,
@@ -404,6 +402,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   applyState(state: IRankingRendererState) {
     // TODO restore
+    this.highlight = state.highlight;
+    this.body.scrollTop = state.scrollTop;
+    this.body.scrollLeft = state.scrollLeft;
   }
 
   protected override onVisibilityChanged(visible: boolean) {

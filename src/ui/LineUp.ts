@@ -94,8 +94,8 @@ export default class LineUp extends ALineUp {
     return this.renderer ? this.renderer.getHighlight() : -1;
   }
 
-  async applyState(state: ILineUpState): Promise<void> {
-    await this.renderer.applyState(state, state.ui);
+  applyState(state: ILineUpState): Promise<void> {
+    return this.renderer.applyState(state, state.ui);
   }
 
   toJSON(): ILineUpState {

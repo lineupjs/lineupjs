@@ -175,7 +175,7 @@ export default class Taggle extends ALineUp {
     return r;
   }
   async applyState(state: ILineUpState): Promise<void> {
-    this.renderer.applyState(state, state.ui);
+    await this.renderer.applyState(state, state.ui);
     if (state.overviewMode != null && this.isOverviewMode() !== state.overviewMode) {
       this.setOverviewMode(state.overviewMode);
     }
