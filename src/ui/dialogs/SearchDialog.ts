@@ -13,7 +13,11 @@ export default class SearchDialog extends ADialog {
     index: number;
   } | null = null;
 
-  constructor(private readonly column: Column, dialog: IDialogContext, private readonly provider: IDataProvider) {
+  constructor(
+    private readonly column: Column,
+    dialog: IDialogContext,
+    private readonly provider: IDataProvider
+  ) {
     super(dialog, {
       livePreview: 'search',
     });

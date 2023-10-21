@@ -7,7 +7,10 @@ import type { IToolbarDialogAddonHandler } from '../interfaces';
 export default class ReduceDialog extends ADialog {
   private handler: IToolbarDialogAddonHandler | null = null;
 
-  constructor(private readonly column: ReduceColumn, dialog: IDialogContext) {
+  constructor(
+    private readonly column: ReduceColumn,
+    dialog: IDialogContext
+  ) {
     super(dialog, {
       livePreview: 'reduce',
     });

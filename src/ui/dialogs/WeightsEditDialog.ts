@@ -8,7 +8,10 @@ import { cssClass } from '../../styles';
 export default class WeightsEditDialog extends ADialog {
   private readonly weights: number[];
 
-  constructor(private readonly column: StackColumn, dialog: IDialogContext) {
+  constructor(
+    private readonly column: StackColumn,
+    dialog: IDialogContext
+  ) {
     super(dialog);
 
     this.weights = this.column.getWeights();

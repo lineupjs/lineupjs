@@ -32,7 +32,10 @@ export default class SelectionManager extends AEventDispatcher {
 
   private start: (IPoint & IShift) | null = null;
 
-  constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement) {
+  constructor(
+    private readonly ctx: { provider: IDataProvider },
+    private readonly body: HTMLElement
+  ) {
     super();
     const root = body.parentElement!.parentElement!;
     let hr = root.querySelector('hr');

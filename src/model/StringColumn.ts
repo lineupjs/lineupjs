@@ -354,10 +354,13 @@ export default class StringColumn extends ValueColumn<string> {
     if (valueCache) {
       return valueCache.reduce((acc, v) => (acc == null || v < acc ? v : acc), null as null | string);
     }
-    return rows.reduce((acc, d) => {
-      const v = this.getValue(d);
-      return acc == null || (v != null && v < acc) ? v : acc;
-    }, null as null | string);
+    return rows.reduce(
+      (acc, d) => {
+        const v = this.getValue(d);
+        return acc == null || (v != null && v < acc) ? v : acc;
+      },
+      null as null | string
+    );
   }
 
   override toCompareGroupValueType() {
