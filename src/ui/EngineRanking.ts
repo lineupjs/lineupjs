@@ -16,15 +16,7 @@ import {
 } from 'lineupengine';
 import type { ILineUpFlags } from '../config';
 import { HOVER_DELAY_SHOW_DETAIL } from '../constants';
-import {
-  AEventDispatcher,
-  clear,
-  debounce,
-  type IEventContext,
-  type IEventHandler,
-  type IEventListener,
-  suffix,
-} from '../internal';
+import { AEventDispatcher, clear, debounce, type IEventHandler, type IEventListener, suffix } from '../internal';
 import {
   Column,
   type IGroupData,
@@ -395,16 +387,28 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   toJSON(): IRankingRendererState {
     return {
       highlight: this.highlight,
-      scrollTop: this.body.scrollTop,
-      scrollLeft: this.body.scrollLeft,
+      scrollTop: this.bodyScroller.scrollTop,
+      scrollLeft: this.bodyScroller.scrollLeft,
     };
   }
 
   applyState(state: IRankingRendererState) {
     // TODO restore
-    this.highlight = state.highlight;
-    this.body.scrollTop = state.scrollTop;
-    this.body.scrollLeft = state.scrollLeft;
+    if (this.highlight !== state.highlight) {
+      this.setHighlight(state.highlight);
+    }
+    let dirty = false;
+    if (state.scrollTop != null && this.bodyScroller.scrollLeft !== state.scrollTop) {
+      this.bodyScroller.scrollTop = state.scrollTop;
+      dirty = true;
+    }
+    if (state.scrollLeft != null && this.bodyScroller.scrollLeft !== state.scrollLeft) {
+      this.bodyScroller.scrollLeft = state.scrollLeft;
+      dirty = true;
+    }
+    if (dirty) {
+      this.bodyScroller.dispatchEvent(new CustomEvent('scroll'));
+    }
   }
 
   protected override onVisibilityChanged(visible: boolean) {

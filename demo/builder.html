@@ -8,13 +8,15 @@
     <link href="./demo.css" rel="stylesheet" />
   </head>
   <body>
+    <button id="dump">Dump</button>
+    <button id="restore">Restore</button>
     <script src="./LineUpJS.js"></script>
 
     <script>
       window.onload = function () {
         const arr = [];
         const cats = ['c1', 'c2', 'c3'];
-        for (let i = 0; i < 100; ++i) {
+        for (let i = 0; i < 10000; ++i) {
           arr.push({
             s: 'Row ' + i,
             a: Math.random() * 10,
@@ -24,6 +26,17 @@
         }
         const lineup = LineUpJS.asTaggle(document.body, arr);
         window.lineup = lineup;
+
+        let state = null;
+        document.getElementById('dump').addEventListener('click', () => {
+          state = lineup.toJSON();
+          console.log(state);
+        });
+        document.getElementById('restore').addEventListener('click', async () => {
+          console.log('restore state');
+          await lineup.applyState(state);
+          console.log(state);
+        });
       };
     </script>
   </body>
