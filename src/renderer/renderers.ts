@@ -37,6 +37,7 @@ import StringHistogramCellRenderer from './StringHistogramCellRenderer';
 import ViolinPlotCellRenderer from './ViolinPlotCellRenderer';
 import TickCellRenderer from './TickCellRenderer';
 import CategoricalTickCellRenderer from './CategoricalTickCellRenderer';
+import EventCellRenderer from './EventCellRenderer';
 
 const defaultCellRenderer = new DefaultCellRenderer();
 /**
@@ -55,6 +56,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   date: new DateCellRenderer(),
   default: defaultCellRenderer,
   dot: new DotCellRenderer(),
+  event: new EventCellRenderer(),
   group: new GroupCellRenderer(),
   heatmap: new HeatmapCellRenderer(),
   catheatmap: new CategoricalHeatmapCellRenderer(),

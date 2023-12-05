@@ -14,3 +14,5 @@ export * from './ActionsColumnBuilder';
 export { default as ActionsColumnBuilder } from './ActionsColumnBuilder';
 export * from './BooleanColumnBuilder';
 export { default as BooleanColumnBuilder } from './BooleanColumnBuilder';
+export * from './EventColumnBuilder';
+export { default as EventColumnBuilder } from './EventColumnBuilder';

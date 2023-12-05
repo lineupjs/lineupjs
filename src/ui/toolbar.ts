@@ -7,6 +7,7 @@ import {
   type IMultiLevelColumn,
   isSortingAscByDefault,
   isSupportType,
+  EventColumn,
 } from '../model';
 import { cssClass } from '../styles';
 import ADialog, { dialogContext, type IDialogContext } from './dialogs/ADialog';
@@ -42,6 +43,7 @@ import appendDate from './dialogs/groupDate';
 import appendNumber from './dialogs/groupNumber';
 import appendString from './dialogs/groupString';
 import { sortMethods } from './dialogs/utils';
+import EventSettingsDialog from './dialogs/EventSettingsDialog';
 
 interface IDialogClass {
   new (col: any, dialog: IDialogContext, ...args: any[]): ADialog;
@@ -246,6 +248,18 @@ const expand: IToolbarAction = {
   options: { featureCategory: 'model', featureLevel: 'advanced' },
 };
 
+const eventSettings: IToolbarAction = {
+  title: 'Event Settings …',
+  onClick: (col, evt, ctx, level) => {
+    const dialog = new EventSettingsDialog(col as EventColumn, dialogContext(ctx, level, evt));
+    dialog.open();
+  },
+  options: {
+    featureCategory: 'ui',
+    featureLevel: 'advanced',
+  },
+};
+
 const setShowTopN: IToolbarAction = {
   title: 'Change Show Top N',
   onClick: (_col, evt, ctx, level) => {
@@ -270,6 +284,7 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   clone,
   remove,
   rename,
+  eventSettings,
   setShowTopN,
   search: uiDialog('Search …', SearchDialog, (ctx) => [ctx.provider], {
     mode: 'menu+shortcut',
