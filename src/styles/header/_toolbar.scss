@@ -29,6 +29,10 @@
   content: $lu_icon_pencil_square_o;
 }
 
+.#{$lu_css_prefix}-action-event-settings::before {
+  content: $lu_icon_gears;
+}
+
 .#{$lu_css_prefix}-action-clone::before {
   content: $lu_icon_code_fork;
 }

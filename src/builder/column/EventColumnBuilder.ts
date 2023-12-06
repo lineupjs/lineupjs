@@ -1,4 +1,4 @@
-import { IEventBoxplotDataKeys, type ICategory, type IEventColumnDesc } from '../../model';
+import { EEventBoxplotDataKeys, ETimeUnit, EventColumn, type ICategory, type IEventColumnDesc } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 /**
@@ -10,7 +10,8 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
   }
 
   /**
-   * Sets whether the event column supports boxplot visualization.
+   * Sets whether the event data supports boxplot visualization.
+   * The default is false. If set to true, the boxplot visualization and related settings will be available in the LineUp UI.
    * @param boxplotPossible - A boolean indicating if boxplot visualization is possible.
    * @returns The updated EventColumnBuilder instance.
    */
@@ -19,15 +20,40 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
     return this;
   }
 
+  /**
+   * Sets the reference event for the boxplot visualization.
+   * All boxplots will be drawn relative to this event.
+   * The default is to use the first event in the event list.
+   * @param boxPlotReferenceColumn - The reference column to set.
+   * @returns The updated EventColumnBuilder instance.
+   */
   boxPlotReferenceColumn(boxPlotReferenceColumn: string) {
-    this.desc.boxPlotReferenceColumn = boxPlotReferenceColumn;
+    this.desc.boxplotReferenceColumn = boxPlotReferenceColumn;
     return this;
   }
 
   /**
-   * Sets the list of display events for the event column.
+   * Sets the unit of the boxplot data as {@link ETimeUnit}.
+   * If the unit is set to {@link ETimeUnit.custom}, the milliseconds per unit can be specified.
+   * The default is {@link ETimeUnit.d}.
+   * @param boxplotUnit - The unit of the boxplot data.
+   * @param msPerUnit - The milliseconds per unit for a custom time unit.
+   * @returns The updated EventColumnBuilder instance.
+   */
+  boxplotUnit(boxplotUnit: ETimeUnit, msPerUnit?: number) {
+    if (boxplotUnit === ETimeUnit.custom) {
+      this.desc.msPerBoxplotUnit = msPerUnit;
+    } else {
+      this.desc.msPerBoxplotUnit = EventColumn.TIME_UNITS_IN_MS[boxplotUnit];
+    }
+    return this;
+  }
+
+  /**
+   * Sets the list of event for that should be displayed on initialization.
+   * The default is to display all events specified in {@link eventList}.
    * @param displayEventList - The list of display events.
-   *                          It should be an array of strings representing the events to be displayed.
+   *        It should be an array of strings representing the events to be displayed.
    * @returns The updated EventColumnBuilder instance.
    */
   displayEventList(displayEventList: string[]) {
@@ -37,8 +63,8 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
 
   /**
    * Sets the list of events for the event column. Other events will be ignored.
-   * @param eventList - The list of events.
-   *                    It should be an array of strings representing the events.
+   * The default is to display all events of the data.
+   * @param eventList - String array representing the events.
    * @returns The updated EventColumnBuilder instance.
    */
   eventList(eventList: string[]) {
@@ -47,7 +73,9 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
   }
 
   /**
-   * Sets the minimum and maximum values for the event column scale. Values outside will only be visible when zooming.
+   * Sets the minimum and maximum values for the event column scale.
+   * Values outside the bounds will only be visible when zooming.
+   * The default is to use the minimum and maximum values of the data.
    * @param min - The minimum value.
    * @param max - The maximum value.
    * @returns The updated EventColumnBuilder instance.
@@ -60,6 +88,7 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
 
   /**
    * Sets the number of bins for the heatmap summary visualization.
+   * The default is 50.
    * @param heatmapBinCount - The number of bins.
    * @returns The updated EventColumnBuilder instance.
    */
@@ -70,7 +99,7 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
 
   /**
    * Sets the legend update callback function for displaying a legend outside of LineUp.
-   * @param legendUpdateCallback - The callback function.
+   * @param legendUpdateCallback - The callback function getting the new Categories on color mapping changes.
    * @returns The updated EventColumnBuilder instance.
    */
   legendUpdateCallback(legendUpdateCallback: (categories: ICategory[]) => void) {
@@ -80,16 +109,23 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
 
   /**
    * Sets the milliseconds per unit of the event scale.
-   * @param maxEvents - The maximum number of events.
+   * @param eventScaleUnit - The unit of the event scale as {@link ETimeUnit}.
+   * @param msPerUnit - The milliseconds per unit for a custom time unit ({@link ETimeUnit.custom}).
    * @returns The updated EventColumnBuilder instance.
    */
-  msPerUnit(msPerUnit: number) {
-    this.desc.msPerUnit = msPerUnit;
+  eventScaleUnit(eventScaleUnit: ETimeUnit, msPerUnit?: number) {
+    this.desc.eventScaleUnit = eventScaleUnit;
+    if (eventScaleUnit === ETimeUnit.custom) {
+      this.desc.msPerScaleUnit = msPerUnit;
+    } else {
+      this.desc.msPerScaleUnit = EventColumn.TIME_UNITS_IN_MS[eventScaleUnit];
+    }
     return this;
   }
 
   /**
    * Sets the reference event for all other events.
+   * The default is to use the current date from {@link Date.now()}.
    * @param referenceEvent - The reference column to set.
    * @returns The EventColumnBuilder instance.
    */
@@ -100,6 +136,7 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
 
   /**
    * Sets the sort event for the event column.
+   * The default is to use the first event in the event list.
    * @param sortEvent - The event to sort by.
    * @returns The updated EventColumnBuilder instance.
    */
@@ -114,16 +151,22 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
     data.forEach((d) => {
       const v = Object.keys(d[col]);
       v.forEach((vi) => {
-        if (!Object.keys(IEventBoxplotDataKeys).includes(vi)) events.add(vi);
+        if (!Object.keys(EEventBoxplotDataKeys).includes(vi)) events.add(vi);
       });
     });
     this.desc.eventList = Array.from(events);
   }
 
+  /**
+   * Builds the event column and derives all events from the data if no event list is specified.
+   * The scale unit will be added to the column label.
+   */
   build(data: any[]): IEventColumnDesc {
     if (!this.desc.eventList) {
       this.deriveEvents(data);
     }
+    const eventScaleUnit = this.desc.eventScaleUnit || ETimeUnit.d;
+    this.label((this.desc as any).column + ' [' + eventScaleUnit + ']');
     return super.build(data);
   }
 }

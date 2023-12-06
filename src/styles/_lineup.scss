@@ -11,6 +11,7 @@
 @import './panel/index';
 @import './datatypes';
 @import './taggle/index';
+@import './tooltip';
 @import './supported_browser';
 @import './safari';
 
@@ -35,10 +36,4 @@
     content: '';
     clear: both;
   }
-}
-
-svg {
-  width: 100%;
-  height: 100%;
-  display: flex;
 }

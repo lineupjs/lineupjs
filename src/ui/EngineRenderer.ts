@@ -90,6 +90,21 @@ export default class EngineRenderer extends AEventDispatcher {
     );
 
     parent.appendChild(dialogManager.node);
+
+    // append global tooltip node for popper.js
+    const tooltipNode = parent.ownerDocument!.createElement('div');
+    tooltipNode.id = `${this.idPrefix}-tooltip-node`;
+    tooltipNode.classList.add(cssClass('tooltip-node'));
+    parent.appendChild(tooltipNode);
+    const tooltipContentNode = parent.ownerDocument!.createElement('div');
+    tooltipContentNode.id = `${this.idPrefix}-tooltip-content`;
+    tooltipNode.appendChild(tooltipContentNode);
+    const tooltipArrow = parent.ownerDocument!.createElement('div');
+    tooltipArrow.id = `${this.idPrefix}-tooltip-arrow`;
+    tooltipArrow.classList.add(cssClass('tooltip-arrow'));
+    tooltipArrow.setAttribute('data-popper-arrow', '');
+    tooltipNode.appendChild(tooltipArrow);
+
     this.ctx = {
       idPrefix: this.idPrefix,
       document: parent.ownerDocument!,

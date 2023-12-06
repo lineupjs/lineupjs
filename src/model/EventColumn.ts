@@ -12,6 +12,7 @@ import Column, {
   visibilityChanged,
   widthChanged,
 } from './Column';
+import { select } from 'd3-selection';
 import { zoomIdentity } from 'd3-zoom';
 import { schemeSet1 } from 'd3-scale-chromatic';
 import type { EAdvancedSortMethod, IColorMappingFunction, IMappingFunction, INumberFilter } from './INumberColumn';
@@ -27,6 +28,10 @@ import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
 import type { IEventListener } from '../internal';
 import { integrateDefaults } from './internal';
+import { format } from 'd3-format';
+import { cssClass } from '../styles';
+import { createPopper, type Instance } from '@popperjs/core';
+import type { IRenderContext } from 'src/renderer';
 
 export interface IEventBoxplotData {
   min: number;
@@ -37,12 +42,31 @@ export interface IEventBoxplotData {
   outliers: number[];
 }
 
-export enum IEventBoxplotDataKeys {
+export enum EEventBoxplotDataKeys {
   min = 'min',
   q1 = 'q1',
   median = 'median',
   q3 = 'q3',
   max = 'max',
+}
+
+export enum ETimeUnit {
+  ms = 'ms',
+  s = 's',
+  min = 'min',
+  h = 'h',
+  d = 'd',
+  w = 'w',
+  m = 'm',
+  y = 'y',
+  custom = 'custom',
+}
+
+interface ITooltipRow {
+  eventName: string;
+  value: string;
+  color: string;
+  date?: Date;
 }
 
 /**
@@ -73,20 +97,96 @@ export declare function sortMethodChangedNMC(previous: EAdvancedSortMethod, curr
 export declare function filterChangedNMC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 export declare type IEventColumnDesc = IMapColumnDesc<number> & {
+  /**
+   * indicates if boxplots can be displayed. When set to false, settings related to boxplots are hidden.
+   * @default false
+   */
   boxplotPossible?: boolean;
-  boxPlotReferenceColumn?: string;
+
+  /**
+   * The reference column for the boxplot visualization. All boxplots will be drawn relative to this event.
+   * @default 'Current Date'
+   */
+  boxplotReferenceColumn?: string;
+
+  /**
+   * The list of events to be displayed on initialization.
+   * default are the events from {@link IEventColumnDesc.eventList}
+   */
   displayEventList?: string[];
+
+  /**
+   * The list of events used in the {@link EventColumn}. All other events in the data are ignored.
+   * default are all events in the data.
+   */
   eventList: string[];
-  eventScaleMax?: number;
+
+  /**
+   * Minimum number of the event scale. If events are smaller than this value, they will be cut off and only visible on zoom in.
+   * @default -Infinity
+   */
   eventScaleMin?: number;
+
+  /**
+   * Maximum number of the event scale. If events are larger than this value, they will be cut off and only visible on zoom out.
+   * @default Infinity
+   */
+  eventScaleMax?: number;
+
+  /**
+   * The unit of the event data scale used for display in the header.
+   * @default 'd'
+   */
+  eventScaleUnit?: ETimeUnit;
+
+  /**
+   * Bin count of the summary visualization heatmap.
+   * @default 50
+   */
   heatmapBinCount?: number;
+
+  /**
+   * Callback function to update a legend outside of LineUp.
+   * It is called whenever the color mapping changes.
+   * @param categories - The categories of the legend.
+   */
   legendUpdateCallback?: (categories: ICategory[]) => void;
-  msPerUnit?: number;
+
+  /**
+   * The unit of the event scale in milliseconds.
+   * @default 1000 * 60 * 60 * 24
+   */
+  msPerScaleUnit?: number;
+
+  /**
+   * The unit of the boxplot data in milliseconds.
+   * @default 1
+   */
+  msPerBoxplotUnit?: number;
+
+  /**
+   * The reference event for the event scale. All events will be displayed relative to this event.
+   * This means that the value on the event scale will be 0 for this event.
+   * @default 'Current Date'
+   */
   referenceEvent?: string;
+
+  /**
+   * The event used for sorting the column.
+   *
+   * Default is the first event in {@link IEventColumnDesc.eventList}
+   */
   sortEvent?: string;
-  // tooltipServiceWrapper?: ITooltipServiceWrapper;
 };
 
+/**
+ * Column storing events as map of numbers.
+ * Each key of the map represents an event and the value represents the time of the event in milliseconds since 1.1.1970.
+ * Keys can also be boxplotvalues defined in {@link EEventBoxplotDataKeys}.
+ * All events values are displayed relative to the reference event.
+ * @see {@link IEventColumnDesc} for a detailed description of the parameters.
+ * @extends MapColumn<number>
+ */
 @toolbar('rename', 'sort', 'sortBy', 'eventSettings', 'colorMappedCategorical')
 @dialogAddons('sort', 'eventSort')
 @Category('event')
@@ -106,11 +206,25 @@ export default class EventColumn extends MapColumn<number> {
 
   static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
 
+  static readonly TIME_UNITS_IN_MS = {
+    ms: 1,
+    s: 1000,
+    min: 1000 * 60,
+    h: 1000 * 60 * 60,
+    d: 1000 * 60 * 60 * 24,
+    w: 1000 * 60 * 60 * 24 * 7,
+    m: 1000 * 60 * 60 * 24 * 30,
+    y: 1000 * 60 * 60 * 24 * 365,
+    custom: -1,
+  };
+
   private sortEvent: string;
 
   private colorMapping: ICategoricalColorMappingFunction;
 
   private boxplotReferenceColumn: string;
+
+  private msPerBoxplotUnit: number;
 
   private displayEventList: string[] = [];
 
@@ -131,8 +245,6 @@ export default class EventColumn extends MapColumn<number> {
     boxPlotColor?: string
   ) => void;
 
-  // private tooltipServiceWrapper: ITooltipServiceWrapper;
-
   private scaleMin: number;
 
   private scaleMax: number;
@@ -148,6 +260,7 @@ export default class EventColumn extends MapColumn<number> {
   transform = zoomIdentity;
   private showBoxplot: boolean;
   private heatmapBinCount: number = 50;
+  private popperInstance: Instance;
 
   constructor(id: string, desc: Readonly<IEventColumnDesc>) {
     super(
@@ -158,7 +271,7 @@ export default class EventColumn extends MapColumn<number> {
         summaryRenderer: 'event',
       })
     );
-    this.boxplotReferenceColumn = desc.boxPlotReferenceColumn || EventColumn.CURRENT_DATE_REFERENCE;
+    this.boxplotReferenceColumn = desc.boxplotReferenceColumn || EventColumn.CURRENT_DATE_REFERENCE;
     this.scaleMinBound = desc.eventScaleMin || -Infinity;
     this.scaleMaxBound = desc.eventScaleMax || Infinity;
     this.heatmapBinCount = desc.heatmapBinCount || 50;
@@ -169,12 +282,12 @@ export default class EventColumn extends MapColumn<number> {
     this.displayEventListOverview = [...this.displayEventList];
     this.eventListOverview = [...this.eventList];
     this.legendUpdateCallback = desc.legendUpdateCallback || null;
-    // this.tooltipServiceWrapper = desc.tooltipServiceWrapper || null;
     this.referenceEvent = desc.referenceEvent || EventColumn.CURRENT_DATE_REFERENCE;
-    this.msPerUnit = desc.msPerUnit || 1000 * 60 * 60 * 24;
+    this.msPerUnit = desc.msPerScaleUnit || 1000 * 60 * 60 * 24;
+    this.msPerBoxplotUnit = desc.msPerBoxplotUnit || 1;
     if (this.boxplotPossible) {
-      this.displayEventListOverview.push(IEventBoxplotDataKeys.median);
-      for (const val of Object.keys(IEventBoxplotDataKeys)) {
+      this.displayEventListOverview.push(EEventBoxplotDataKeys.median);
+      for (const val of Object.keys(EEventBoxplotDataKeys)) {
         this.eventListOverview.push(val);
       }
     }
@@ -215,46 +328,108 @@ export default class EventColumn extends MapColumn<number> {
     }
   }
 
-  // addTooltips(row: IDataRow, selection: d3.Selection<d3.BaseType, unknown, null, undefined>) {
-  //   if (!this.tooltipServiceWrapper) return;
-  //   const events = this.getMap(row);
-  //   const formatter = (x) => valueFormatter.format(x, '0.###');
-  //   const tooltipList = this.getDisplayEventList().map((x) => {
-  //     return {
-  //       displayName: x,
-  //       value: formatter(this.getEventValue(events, x)),
-  //       color: this.getCategoryColor(x),
-  //       header: 'Event Data',
-  //     } as powerbi.extensibility.VisualTooltipDataItem;
-  //   });
+  addTooltips(row: IDataRow, div: HTMLElement, context: IRenderContext) {
+    const tooltipDiv = document.getElementById(context.idPrefix + '-tooltip-node');
+    const tooltipContentDiv = document.getElementById(context.idPrefix + '-tooltip-content');
+    const events = this.getMap(row);
+    const tooltipList: ITooltipRow[] = this.getTooltipData(events);
 
-  //   if (this.boxplotPossible && this.showBoxplot) {
-  //     this.getEventValues(events, false, Object.keys(IBoxPlotDataKeys))
-  //       .map((x) => {
-  //         return {
-  //           displayName: x.key,
-  //           value: formatter(x.value),
-  //           color: this.getCategoryColor(Constants.BOXPLOT_COLOR_NAME),
-  //         } as powerbi.extensibility.VisualTooltipDataItem;
-  //       })
-  //       .filter((x) => x.value !== 'NaN')
-  //       .forEach((x) => tooltipList.push(x));
-  //   }
+    this.getTooltipTable(tooltipContentDiv, tooltipList);
 
-  //   this.tooltipServiceWrapper.addTooltip(
-  //     selection,
-  //     () => tooltipList,
-  //     () => null
-  //   );
-  // }
+    const showTooltip = () => {
+      const tooltipArrowDiv = document.getElementById(context.idPrefix + '-tooltip-arrow');
+      if (this.popperInstance) {
+        this.popperInstance.destroy();
+      }
+      this.popperInstance = createPopper(div, tooltipDiv, {
+        strategy: 'fixed',
+        placement: 'auto-start',
+        modifiers: [
+          { name: 'arrow', options: { element: tooltipArrowDiv } },
+          {
+            name: 'offset',
+            options: {
+              offset: [0, 4],
+            },
+          },
+        ],
+      });
+
+      tooltipDiv.hidden = false;
+    };
+    const hideTooltip = () => {
+      if (this.popperInstance) {
+        this.popperInstance.destroy();
+      }
+      this.popperInstance.setOptions((options) => ({
+        ...options,
+        modifiers: [...options.modifiers, { name: 'eventListeners', enabled: false }],
+      }));
+      tooltipDiv.hidden = true;
+    };
+
+    for (const event of ['mouseenter']) {
+      div.addEventListener(event, showTooltip);
+    }
+    for (const event of ['mouseleave', 'focus', 'blur']) {
+      div.addEventListener(event, hideTooltip);
+    }
+  }
+
+  private getTooltipTable(tooltipContentDiv: HTMLElement, tooltipList: ITooltipRow[]) {
+    const tooltipSelection = select(tooltipContentDiv);
+    tooltipSelection.selectAll('*').remove();
+    const table = tooltipSelection.append('table').attr('class', cssClass('event-tooltip-table'));
+    table
+      .append('thead')
+      .selectAll('th')
+      .data(['', 'Event', 'Value', 'Date'])
+      .join('th')
+      .text((d) => d);
+    const rows = table.append('tbody').selectAll('tr').data(tooltipList).join('tr');
+    rows
+      .append('td')
+      .append('div')
+      .style('background-color', (d) => d.color)
+      .attr('class', cssClass('event-tooltip') + ' circle');
+    rows
+      .append('td')
+      .attr('class', 'event-name')
+      .text((d) => d.eventName);
+    rows.append('td').text((d) => d.value);
+    rows.append('td').text((d) => (d.date ? d.date.toLocaleString() : ''));
+  }
+
+  private getTooltipData(events: IKeyValue<number>[]) {
+    const formatter = format('.3f');
+    const tooltipList: ITooltipRow[] = this.getDisplayEventList().map((x) => {
+      const dateVal = events.filter((e) => e.key === x)[0]?.value ?? undefined;
+      return {
+        eventName: x,
+        value: formatter(this.getEventValue(events, x)),
+        color: this.getCategoryColor(x),
+        date: dateVal ? new Date(dateVal) : undefined,
+      };
+    });
+
+    if (this.boxplotPossible && this.showBoxplot) {
+      this.getEventValues(events, false, Object.keys(EEventBoxplotDataKeys))
+        .map((x) => {
+          return {
+            eventName: x.key,
+            value: formatter(x.value),
+            color: this.getCategoryColor(EventColumn.BOXPLOT_COLOR_NAME),
+          };
+        })
+        .filter((x) => x.value !== 'NaN')
+        .forEach((x) => tooltipList.push(x));
+    }
+    return tooltipList;
+  }
 
   getHeatmapBinCount() {
     return this.heatmapBinCount;
   }
-
-  // getTooltipServiceWrapper() {
-  //   return this.tooltipServiceWrapper;
-  // }
 
   getColorMapping(): ICategoricalColorMappingFunction {
     return this.colorMapping.clone();
@@ -277,7 +452,7 @@ export default class EventColumn extends MapColumn<number> {
   }
 
   getCategoryColor(category: string) {
-    category = Object.keys(IEventBoxplotDataKeys).includes(category) ? EventColumn.BOXPLOT_COLOR_NAME : category;
+    category = Object.keys(EEventBoxplotDataKeys).includes(category) ? EventColumn.BOXPLOT_COLOR_NAME : category;
     const filtered = this.categories.filter((x) => x.name === category);
     if (filtered.length === 1) {
       return this.colorMapping.apply(filtered[0]);
@@ -338,7 +513,7 @@ export default class EventColumn extends MapColumn<number> {
   }
 
   getBoxplotData(eventData: IKeyValue<number>[]): IEventBoxplotData {
-    const BPkeys = Object.keys(IEventBoxplotDataKeys);
+    const BPkeys = Object.keys(EEventBoxplotDataKeys);
     const dataKeys = eventData.map((x) => x.key);
     if (
       !BPkeys.every((key) => {
@@ -349,11 +524,11 @@ export default class EventColumn extends MapColumn<number> {
     }
 
     return {
-      min: this.getEventValue(eventData, IEventBoxplotDataKeys.min),
-      max: this.getEventValue(eventData, IEventBoxplotDataKeys.max),
-      median: this.getEventValue(eventData, IEventBoxplotDataKeys.median),
-      q1: this.getEventValue(eventData, IEventBoxplotDataKeys.q1),
-      q3: this.getEventValue(eventData, IEventBoxplotDataKeys.q3),
+      min: this.getEventValue(eventData, EEventBoxplotDataKeys.min),
+      max: this.getEventValue(eventData, EEventBoxplotDataKeys.max),
+      median: this.getEventValue(eventData, EEventBoxplotDataKeys.median),
+      q1: this.getEventValue(eventData, EEventBoxplotDataKeys.q1),
+      q3: this.getEventValue(eventData, EEventBoxplotDataKeys.q3),
       outliers: [],
     };
   }
@@ -373,8 +548,8 @@ export default class EventColumn extends MapColumn<number> {
       const referenceValueFiltered = events.filter((x) => x.key === this.referenceEvent);
       reference = referenceValueFiltered.length === 1 ? referenceValueFiltered[0].value : 0;
     }
-    if (Object.keys(IEventBoxplotDataKeys).includes(valKey)) {
-      eventVal = eventVal * this.msPerUnit + this.getBoxplotOffset(events);
+    if (Object.keys(EEventBoxplotDataKeys).includes(valKey)) {
+      eventVal = eventVal * this.msPerBoxplotUnit + this.getBoxplotOffset(events);
     }
     return (eventVal - reference) / this.msPerUnit;
   }

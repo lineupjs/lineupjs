@@ -46,7 +46,11 @@
         });
       }
       const builder = LineUpJS.builder(arr);
-      builder.column(LineUpJS.buildEventColumn('Events', eventNames).boxplotPossible(true))
+      builder.column(LineUpJS.buildEventColumn('Events', eventNames)
+        .boxplotPossible(true)
+        .boxplotUnit('d')
+        .eventScaleUnit('d')
+        .width(500))
         .column(LineUpJS.buildCategoricalColumn('Category'))
         .aggregationStrategy('group+top+item')
         .ranking(LineUpJS.buildRanking()

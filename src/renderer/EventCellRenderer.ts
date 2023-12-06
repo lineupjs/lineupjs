@@ -6,7 +6,7 @@ import {
   type IRenderContext,
   type ISummaryRenderer,
 } from './interfaces';
-import { EventColumn, IEventBoxplotDataKeys, type IDataRow, type IKeyValue, type IOrderedGroup } from '../model';
+import { EventColumn, EEventBoxplotDataKeys, type IDataRow, type IKeyValue, type IOrderedGroup } from '../model';
 import { scaleLinear, scaleSequential, type ScaleLinear } from 'd3-scale';
 import { select, type Selection } from 'd3-selection';
 import { bin, max } from 'd3-array';
@@ -35,7 +35,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
     let max = Number.NEGATIVE_INFINITY;
     //TODO: get overview mode
     const eventKeys = col.getDisplayEventList();
-    if (col.getBoxplotPossible()) eventKeys.push(IEventBoxplotDataKeys.max);
+    if (col.getBoxplotPossible()) eventKeys.push(EEventBoxplotDataKeys.max);
     arr.forEach((a) => {
       col.getEventValues(a, false, eventKeys).forEach((d) => {
         if (d.value === undefined) return;
@@ -59,11 +59,15 @@ export default class EventCellRenderer implements ICellRendererFactory {
 
   create(col: EventColumn, context: IRenderContext): any {
     context.tasks
-      .groupRows(col, { color: 'black', name: 'mygroup', order: col.findMyRanker().getOrder() }, 'minMax', (rows) =>
-        this.getMinMax(
-          rows.map((r) => col.getMap(r)),
-          col
-        )
+      .groupRows(
+        col,
+        { color: 'black', name: 'eventGrouping', order: col.findMyRanker().getOrder() },
+        'minMax',
+        (rows) =>
+          this.getMinMax(
+            rows.map((r) => col.getMap(r)),
+            col
+          )
       )
       .then((data) => {
         if (typeof data === 'symbol') {
@@ -80,7 +84,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
       .range([EventCellRenderer.MARGIN_LEFT, colWidth - EventCellRenderer.MARGIN_RIGHT]);
     this.Xzoomed = col.transform.rescaleX(this.X);
     return {
-      template: `<div class="svg-container">
+      template: `<div class="svg-container" >
                     <svg class="svg-content">
                     </svg>
                 </div>`,
@@ -90,6 +94,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
         svg.selectAll('*').remove();
         const mainG = svg.append('g'); //.attr('transform', 'translate(' + LayoutConstants.MARGIN_LEFT + ',' + 0 + ')');
         const eventData = col.getMap(dataRow);
+        col.addTooltips(dataRow, n, context);
         const X = this.Xzoomed;
         if (col.getShowBoxplot()) this.createBoxPlot(mainG, eventData, X, col);
 
@@ -102,9 +107,6 @@ export default class EventCellRenderer implements ICellRendererFactory {
           .attr('cy', '50%')
           .attr('r', EventCellRenderer.CIRCLE_RADIUS)
           .attr('fill', (x) => col.getCategoryColor(x.key));
-
-        //TODO: add tooltips
-        // col.addTooltips(dataRow, svg);
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         const eventData = col.getMap(d);
@@ -123,6 +125,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
       },
     };
   }
+
   private createBoxPlot(
     mainG: Selection<SVGGElement, unknown, null, undefined>,
     eventData: IKeyValue<number>[],
@@ -306,10 +309,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
           return;
         }
 
-        const g = svg
-          .append('g')
-          .attr('transform', 'translate(0,' + EventCellRenderer.SUMMARY_HEIGHT + ')')
-          .call(axisTop(this.Xzoomed));
+        const g = svg.append('g').attr('transform', 'translate(0,' + EventCellRenderer.SUMMARY_HEIGHT + ')');
 
         const zoomElement = zoom<SVGSVGElement, unknown>()
           .scaleExtent([0.001, 1000])
@@ -320,7 +320,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
           .on('zoom', (event: D3ZoomEvent<Element, unknown>) => {
             const transform: ZoomTransform = event.transform;
             this.Xzoomed = transform.rescaleX(this.X);
-            g.call(axisTop(this.Xzoomed));
+            g.call(axisTop(this.Xzoomed).ticks(EventCellRenderer.getTickNumberForXAxis(context.colWidth(col))));
             if (!event.sourceEvent) return;
             if (event.sourceEvent && event.sourceEvent.constructor.name === 'MouseEvent') {
               return;
@@ -341,5 +341,13 @@ export default class EventCellRenderer implements ICellRendererFactory {
         svg.call(zoomElement.transform, col.transform);
       },
     };
+  }
+
+  private static getTickNumberForXAxis(width: number) {
+    if (width < 100) return 2;
+    if (width < 200) return 4;
+    if (width < 500) return 6;
+    if (width < 800) return 8;
+    return 10;
   }
 }
