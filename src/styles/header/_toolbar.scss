@@ -29,8 +29,12 @@
   content: $lu_icon_pencil_square_o;
 }
 
-.#{$lu_css_prefix}-action-event-settings::before {
-  content: $lu_icon_gears;
+.#{$lu_css_prefix}-action-event-display-settings::before {
+  content: $lu_icon_ellipsis_h;
+}
+
+.#{$lu_css_prefix}-action-event-references::before {
+  content: $lu_icon_caret_right;
 }
 
 .#{$lu_css_prefix}-action-clone::before {

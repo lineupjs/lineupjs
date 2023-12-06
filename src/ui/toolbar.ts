@@ -43,7 +43,8 @@ import appendDate from './dialogs/groupDate';
 import appendNumber from './dialogs/groupNumber';
 import appendString from './dialogs/groupString';
 import { sortMethods } from './dialogs/utils';
-import EventSettingsDialog from './dialogs/EventSettingsDialog';
+import EventDisplaySettingsDialog from './dialogs/EventDisplaySettingsDialog';
+import EventReferenceDialog from './dialogs/EventReferenceDialog';
 
 interface IDialogClass {
   new (col: any, dialog: IDialogContext, ...args: any[]): ADialog;
@@ -248,10 +249,22 @@ const expand: IToolbarAction = {
   options: { featureCategory: 'model', featureLevel: 'advanced' },
 };
 
-const eventSettings: IToolbarAction = {
-  title: 'Event Settings …',
+const eventDisplaySettings: IToolbarAction = {
+  title: 'Event Display Settings …',
   onClick: (col, evt, ctx, level) => {
-    const dialog = new EventSettingsDialog(col as EventColumn, dialogContext(ctx, level, evt));
+    const dialog = new EventDisplaySettingsDialog(col as EventColumn, dialogContext(ctx, level, evt));
+    dialog.open();
+  },
+  options: {
+    featureCategory: 'ui',
+    featureLevel: 'advanced',
+  },
+};
+
+const eventReferences: IToolbarAction = {
+  title: 'Event References …',
+  onClick: (col, evt, ctx, level) => {
+    const dialog = new EventReferenceDialog(col as EventColumn, dialogContext(ctx, level, evt));
     dialog.open();
   },
   options: {
@@ -284,7 +297,8 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   clone,
   remove,
   rename,
-  eventSettings,
+  eventReferences,
+  eventSettings: eventDisplaySettings,
   setShowTopN,
   search: uiDialog('Search …', SearchDialog, (ctx) => [ctx.provider], {
     mode: 'menu+shortcut',

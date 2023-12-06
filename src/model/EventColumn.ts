@@ -30,8 +30,7 @@ import type { IEventListener } from '../internal';
 import { integrateDefaults } from './internal';
 import { format } from 'd3-format';
 import { cssClass } from '../styles';
-import { createPopper, type Instance } from '@popperjs/core';
-import type { IRenderContext } from 'src/renderer';
+import { type Instance } from '@popperjs/core';
 
 export interface IEventBoxplotData {
   min: number;
@@ -187,7 +186,7 @@ export declare type IEventColumnDesc = IMapColumnDesc<number> & {
  * @see {@link IEventColumnDesc} for a detailed description of the parameters.
  * @extends MapColumn<number>
  */
-@toolbar('rename', 'sort', 'sortBy', 'eventSettings', 'colorMappedCategorical')
+@toolbar('rename', 'sort', 'sortBy', 'eventSettings', 'eventReferences', 'colorMappedCategorical')
 @dialogAddons('sort', 'eventSort')
 @Category('event')
 @SortByDefault('descending')
@@ -260,7 +259,8 @@ export default class EventColumn extends MapColumn<number> {
   transform = zoomIdentity;
   private showBoxplot: boolean;
   private heatmapBinCount: number = 50;
-  private popperInstance: Instance;
+
+  popperInstance: Instance;
 
   constructor(id: string, desc: Readonly<IEventColumnDesc>) {
     super(
@@ -328,52 +328,10 @@ export default class EventColumn extends MapColumn<number> {
     }
   }
 
-  addTooltips(row: IDataRow, div: HTMLElement, context: IRenderContext) {
-    const tooltipDiv = document.getElementById(context.idPrefix + '-tooltip-node');
-    const tooltipContentDiv = document.getElementById(context.idPrefix + '-tooltip-content');
+  updateTooltipContent(row: IDataRow, tooltipContentDiv: HTMLElement) {
     const events = this.getMap(row);
     const tooltipList: ITooltipRow[] = this.getTooltipData(events);
-
     this.getTooltipTable(tooltipContentDiv, tooltipList);
-
-    const showTooltip = () => {
-      const tooltipArrowDiv = document.getElementById(context.idPrefix + '-tooltip-arrow');
-      if (this.popperInstance) {
-        this.popperInstance.destroy();
-      }
-      this.popperInstance = createPopper(div, tooltipDiv, {
-        strategy: 'fixed',
-        placement: 'auto-start',
-        modifiers: [
-          { name: 'arrow', options: { element: tooltipArrowDiv } },
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 4],
-            },
-          },
-        ],
-      });
-
-      tooltipDiv.hidden = false;
-    };
-    const hideTooltip = () => {
-      if (this.popperInstance) {
-        this.popperInstance.destroy();
-      }
-      this.popperInstance.setOptions((options) => ({
-        ...options,
-        modifiers: [...options.modifiers, { name: 'eventListeners', enabled: false }],
-      }));
-      tooltipDiv.hidden = true;
-    };
-
-    for (const event of ['mouseenter']) {
-      div.addEventListener(event, showTooltip);
-    }
-    for (const event of ['mouseleave', 'focus', 'blur']) {
-      div.addEventListener(event, hideTooltip);
-    }
   }
 
   private getTooltipTable(tooltipContentDiv: HTMLElement, tooltipList: ITooltipRow[]) {

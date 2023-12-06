@@ -14,6 +14,7 @@ import { format } from 'd3-format';
 import { interpolateRgbBasis } from 'd3-interpolate';
 import { zoom, type D3ZoomEvent, ZoomTransform, zoomIdentity } from 'd3-zoom';
 import { axisTop } from 'd3-axis';
+import { createPopper } from '@popperjs/core';
 
 export default class EventCellRenderer implements ICellRendererFactory {
   readonly title: string = 'EventCellRenderer';
@@ -92,11 +93,22 @@ export default class EventCellRenderer implements ICellRendererFactory {
         const div = select(n);
         const svg = div.select('svg');
         svg.selectAll('*').remove();
-        const mainG = svg.append('g'); //.attr('transform', 'translate(' + LayoutConstants.MARGIN_LEFT + ',' + 0 + ')');
+        const mainG = svg.append('g');
         const eventData = col.getMap(dataRow);
-        col.addTooltips(dataRow, n, context);
+        this.addTooltipListeners(context, col, n, dataRow);
+
         const X = this.Xzoomed;
         if (col.getShowBoxplot()) this.createBoxPlot(mainG, eventData, X, col);
+
+        // add zero line
+        mainG
+          .append('line')
+          .attr('x1', X(0))
+          .attr('x2', X(0))
+          .attr('y1', '0%')
+          .attr('y2', '100%')
+          .attr('stroke', 'lightgrey')
+          .attr('stroke-width', '1px');
 
         mainG
           .selectAll('circle')
@@ -124,6 +136,50 @@ export default class EventCellRenderer implements ICellRendererFactory {
         }
       },
     };
+  }
+
+  private addTooltipListeners(context: IRenderContext, col: EventColumn, n: HTMLImageElement, dataRow: IDataRow) {
+    const tooltipDiv = document.getElementById(context.idPrefix + '-tooltip-node');
+    const showTooltip = () => {
+      const tooltipContentDiv = document.getElementById(context.idPrefix + '-tooltip-content');
+      col.updateTooltipContent(dataRow, tooltipContentDiv);
+      const tooltipArrowDiv = document.getElementById(context.idPrefix + '-tooltip-arrow');
+      if (col.popperInstance) {
+        col.popperInstance.destroy();
+      }
+      col.popperInstance = createPopper(n, tooltipDiv, {
+        strategy: 'fixed',
+        placement: 'auto-start',
+        modifiers: [
+          { name: 'arrow', options: { element: tooltipArrowDiv } },
+          {
+            name: 'offset',
+            options: {
+              offset: [0, 4],
+            },
+          },
+        ],
+      });
+
+      tooltipDiv.hidden = false;
+    };
+    const hideTooltip = () => {
+      if (col.popperInstance) {
+        col.popperInstance.destroy();
+      }
+      col.popperInstance.setOptions((options) => ({
+        ...options,
+        modifiers: [...options.modifiers, { name: 'eventListeners', enabled: false }],
+      }));
+      tooltipDiv.hidden = true;
+    };
+
+    for (const event of ['mouseenter']) {
+      n.addEventListener(event, showTooltip);
+    }
+    for (const event of ['mouseleave', 'focus', 'blur']) {
+      n.addEventListener(event, hideTooltip);
+    }
   }
 
   private createBoxPlot(
