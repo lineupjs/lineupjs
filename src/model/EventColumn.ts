@@ -115,6 +115,11 @@ export declare type IEventColumnDesc = IMapColumnDesc<number> & {
   displayEventList?: string[];
 
   /**
+   * Displays a line at 0 on the event scale if set to true. The default is false.
+   */
+  displayZeroLine?: boolean;
+
+  /**
    * The list of events used in the {@link EventColumn}. All other events in the data are ignored.
    * default are all events in the data.
    */
@@ -229,6 +234,8 @@ export default class EventColumn extends MapColumn<number> {
 
   private displayEventListOverview: string[] = [];
 
+  private displayZeroLine: boolean;
+
   private eventListOverview: string[] = [];
 
   private eventList: string[] = [];
@@ -278,6 +285,7 @@ export default class EventColumn extends MapColumn<number> {
     this.boxplotPossible = desc.boxplotPossible || false;
     this.showBoxplot = this.boxplotPossible;
     this.eventList = desc.eventList || [];
+    this.displayZeroLine = desc.displayZeroLine || false;
     this.displayEventList = desc.displayEventList || [...this.eventList];
     this.displayEventListOverview = [...this.displayEventList];
     this.eventListOverview = [...this.eventList];
@@ -407,6 +415,15 @@ export default class EventColumn extends MapColumn<number> {
       (this.colorMapping = mapping)
     );
     this.updateLegend();
+  }
+
+  getDisplayZeroLine() {
+    return this.displayZeroLine;
+  }
+
+  setDisplayZeroLine(displayZeroLine: boolean) {
+    this.displayZeroLine = displayZeroLine;
+    this.fire([Column.EVENT_DIRTY_VALUES]);
   }
 
   getCategoryColor(category: string) {

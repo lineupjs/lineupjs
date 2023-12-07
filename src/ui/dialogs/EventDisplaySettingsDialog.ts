@@ -11,7 +11,8 @@ export default class EventDisplaySettingsDialog extends ADialog {
   private static readonly EVENT_DISPLAY_COLUMN_OVERVIEW_NAME = 'eventDisplayColumnOverview';
   private static readonly SHOW_BOXPLOT_HEADER_TEXT = 'Show Boxplot';
   private static readonly SHOW_BOXPLOT_NAME: string = 'showBoxplot';
-  private static readonly REFERENCE_COLUMN_NAME: string = 'referenceColumn';
+  private static readonly SHOW_ZERO_LINE_HEADER_TEXT = 'Show Zero Line';
+  private static readonly SHOW_ZERO_LINE_NAME: string = 'showZeroLine';
 
   constructor(
     private readonly column: EventColumn,
@@ -24,6 +25,7 @@ export default class EventDisplaySettingsDialog extends ADialog {
       displayEventList: column.getDisplayEventList(),
       displayEventListOverview: column.getDisplayEventList(true),
       showBoxplot: column.getShowBoxplot(),
+      displayZeroLine: column.getDisplayZeroLine(),
     };
   }
 
@@ -43,9 +45,31 @@ export default class EventDisplaySettingsDialog extends ADialog {
       this.column.getDisplayEventList(true)
     );
     if (this.column.getBoxplotPossible()) {
-      this.showBoxplotSetting(node);
+      this.checkboxSettings(
+        node,
+        EventDisplaySettingsDialog.SHOW_BOXPLOT_NAME,
+        EventDisplaySettingsDialog.SHOW_BOXPLOT_HEADER_TEXT,
+        this.column.getShowBoxplot()
+      );
     }
+
+    this.checkboxSettings(
+      node,
+      EventDisplaySettingsDialog.SHOW_ZERO_LINE_NAME,
+      EventDisplaySettingsDialog.SHOW_ZERO_LINE_HEADER_TEXT,
+      this.column.getDisplayZeroLine()
+    );
     this.livePreviews(node);
+  }
+
+  private checkboxSettings(node: HTMLElement, name: string, headerText: string, checked: boolean = false) {
+    node.insertAdjacentHTML(
+      'beforeend',
+      `
+      <label class="lu-checkbox "><input type="checkbox" name="${name}" 
+      ${checked ? 'checked' : ''}><strong>${headerText}</strong></label>
+       `
+    );
   }
 
   private livePreviews(node: HTMLElement) {
@@ -57,18 +81,6 @@ export default class EventDisplaySettingsDialog extends ADialog {
         }
       });
     this.enableLivePreviews('input');
-  }
-
-  private showBoxplotSetting(node: HTMLElement) {
-    node.insertAdjacentHTML(
-      'beforeend',
-      `
-      <label class="lu-checkbox "><input type="checkbox" name="${EventDisplaySettingsDialog.SHOW_BOXPLOT_NAME}" 
-      ${this.column.getShowBoxplot() ? 'checked' : ''}><strong>${
-        EventDisplaySettingsDialog.SHOW_BOXPLOT_HEADER_TEXT
-      }</strong></label>
-       `
-    );
   }
 
   private eventDisplaySettings(
@@ -97,7 +109,9 @@ export default class EventDisplaySettingsDialog extends ADialog {
       this.findInput('input[name=' + EventDisplaySettingsDialog.SHOW_BOXPLOT_NAME + ']').checked =
         this.before.showBoxplot;
     }
-    this.findInput('input[name=' + EventDisplaySettingsDialog.REFERENCE_COLUMN_NAME + ']:checked').checked = false;
+
+    this.findInput('input[name=' + EventDisplaySettingsDialog.SHOW_ZERO_LINE_NAME + ']').checked =
+      this.before.displayZeroLine;
 
     select(this.node)
       .selectAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_NAME}]`)
@@ -121,6 +135,11 @@ export default class EventDisplaySettingsDialog extends ADialog {
       const showBoxplot = this.findInput('input[name=' + EventDisplaySettingsDialog.SHOW_BOXPLOT_NAME + ']').checked;
       this.column.setShowBoxplot(showBoxplot);
     }
+
+    const displayZeroLine = this.findInput(
+      'input[name=' + EventDisplaySettingsDialog.SHOW_ZERO_LINE_NAME + ']'
+    ).checked;
+    this.column.setDisplayZeroLine(displayZeroLine);
     const selectedEventsList = select(this.node)
       .selectAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_NAME}]:checked`)
       .nodes()
@@ -139,5 +158,6 @@ export default class EventDisplaySettingsDialog extends ADialog {
     this.column.setDisplayEventList(this.before.displayEventList);
     this.column.setDisplayEventList(this.before.displayEventListOverview, true);
     this.column.setShowBoxplot(this.before.showBoxplot);
+    this.column.setDisplayZeroLine(this.before.displayZeroLine);
   }
 }

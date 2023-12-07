@@ -62,6 +62,17 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
   }
 
   /**
+   * Displays a zero line in the event column if set to true.
+   * The default is false.
+   * @param displayZeroLine - A boolean indicating if the zero line should be displayed.
+   * @returns The updated EventColumnBuilder instance.
+   */
+  displayZeroLine(displayZeroLine: boolean) {
+    this.desc.displayZeroLine = displayZeroLine;
+    return this;
+  }
+
+  /**
    * Sets the list of events for the event column. Other events will be ignored.
    * The default is to display all events of the data.
    * @param eventList - String array representing the events.

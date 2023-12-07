@@ -100,16 +100,16 @@ export default class EventCellRenderer implements ICellRendererFactory {
         const X = this.Xzoomed;
         if (col.getShowBoxplot()) this.createBoxPlot(mainG, eventData, X, col);
 
-        // add zero line
-        mainG
-          .append('line')
-          .attr('x1', X(0))
-          .attr('x2', X(0))
-          .attr('y1', '0%')
-          .attr('y2', '100%')
-          .attr('stroke', 'lightgrey')
-          .attr('stroke-width', '1px');
-
+        if (col.getDisplayZeroLine()) {
+          mainG
+            .append('line')
+            .attr('x1', X(0))
+            .attr('x2', X(0))
+            .attr('y1', '0%')
+            .attr('y2', '100%')
+            .attr('stroke', 'lightgrey')
+            .attr('stroke-width', '1px');
+        }
         mainG
           .selectAll('circle')
           .data(col.getEventValues(eventData))
