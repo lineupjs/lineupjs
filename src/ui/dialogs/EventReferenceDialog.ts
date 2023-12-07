@@ -5,10 +5,10 @@ import { select } from 'd3-selection';
 export default class EventReferenceDialog extends ADialog {
   private readonly before;
 
-  private static readonly BOXPLOT_REFERENCE_HEADER_TEXT = 'Boxplot Reference Column';
-  private static readonly BOXPLOT_REFERENCE_COLUMN_NAME = 'boxplotReferenceColumn';
-  private static readonly REFERENCE_COLUMN_HEADER_TEXT: string = 'Reference Column';
-  private static readonly REFERENCE_COLUMN_NAME: string = 'referenceColumn';
+  private static readonly BOXPLOT_REFERENCE_HEADER_TEXT = 'Boxplot Reference Event';
+  private static readonly BOXPLOT_REFERENCE_COLUMN_NAME = 'boxplotReferenceEvent';
+  private static readonly REFERENCE_COLUMN_HEADER_TEXT: string = 'Reference Event';
+  private static readonly REFERENCE_COLUMN_NAME: string = 'referenceEvent';
 
   constructor(
     private readonly column: EventColumn,
@@ -18,13 +18,13 @@ export default class EventReferenceDialog extends ADialog {
       livePreview: 'dataMapping',
     });
     this.before = {
-      boxplotReferenceColumn: column.getBoxplotReferenceColumn(),
-      referenceColumn: column.getReferenceColumn(),
+      boxplotReferenceEvent: column.getBoxplotReferenceEvent(),
+      referenceEvent: column.getReferenceEvent(),
     };
   }
 
   protected build(node: HTMLElement): boolean | void {
-    this.referenceColumnSettings(node);
+    this.referenceEventSettings(node);
     if (this.column.getBoxplotPossible()) {
       this.boxplotReferenceSettings(node);
     }
@@ -44,7 +44,7 @@ export default class EventReferenceDialog extends ADialog {
 
   private boxplotReferenceSettings(node: HTMLElement) {
     const columns = [EventColumn.CURRENT_DATE_REFERENCE];
-    const currentReference = this.column.getBoxplotReferenceColumn();
+    const currentReference = this.column.getBoxplotReferenceEvent();
     columns.push(...this.column.getEventList());
     node.insertAdjacentHTML(
       'beforeend',
@@ -62,9 +62,9 @@ export default class EventReferenceDialog extends ADialog {
     );
   }
 
-  private referenceColumnSettings(node: HTMLElement) {
+  private referenceEventSettings(node: HTMLElement) {
     const columns = [EventColumn.CURRENT_DATE_REFERENCE];
-    const currentReference = this.column.getReferenceColumn();
+    const currentReference = this.column.getReferenceEvent();
     columns.push(...this.column.getEventList());
     node.insertAdjacentHTML(
       'beforeend',
@@ -90,14 +90,14 @@ export default class EventReferenceDialog extends ADialog {
         'input[name=' +
           EventReferenceDialog.BOXPLOT_REFERENCE_COLUMN_NAME +
           '][value="' +
-          this.before.boxplotReferenceColumn +
+          this.before.boxplotReferenceEvent +
           '"]'
       ).checked = true;
     }
     this.findInput('input[name=' + EventReferenceDialog.REFERENCE_COLUMN_NAME + ']:checked').checked = false;
 
     this.findInput(
-      'input[name=' + EventReferenceDialog.REFERENCE_COLUMN_NAME + '][value="' + this.before.referenceColumn + '"]'
+      'input[name=' + EventReferenceDialog.REFERENCE_COLUMN_NAME + '][value="' + this.before.referenceEvent + '"]'
     ).checked = true;
 
     this.submit();
@@ -105,22 +105,23 @@ export default class EventReferenceDialog extends ADialog {
 
   protected submit(): boolean | undefined {
     if (this.column.getBoxplotPossible()) {
-      const boxplotReferenceColumn = this.findInput(
+      const boxplotReferenceEvent = this.findInput(
         'input[name=' + EventReferenceDialog.BOXPLOT_REFERENCE_COLUMN_NAME + ']:checked'
       ).value;
-      this.column.setBoxplotReferenceColumn(boxplotReferenceColumn);
+      this.column.setBoxplotReferenceEvent(boxplotReferenceEvent);
     }
 
-    const referenceColumn = this.findInput(
+    const referenceEvent = this.findInput(
       'input[name=' + EventReferenceDialog.REFERENCE_COLUMN_NAME + ']:checked'
     ).value;
-    this.column.setReferenceColumn(referenceColumn);
+    this.column.setReferenceEvent(referenceEvent);
 
     this.column.markDirty('values');
     return true;
   }
   protected cancel(): void {
-    this.column.setReferenceColumn(this.before.referenceColumn);
-    this.column.setBoxplotReferenceColumn(this.before.boxplotReferenceColumn);
+    this.column.setReferenceEvent(this.before.referenceEvent);
+    this.column.setBoxplotReferenceEvent(this.before.boxplotReferenceEvent);
+    this.column.markDirty('values');
   }
 }

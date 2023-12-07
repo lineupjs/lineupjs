@@ -103,10 +103,10 @@ export declare type IEventColumnDesc = IMapColumnDesc<number> & {
   boxplotPossible?: boolean;
 
   /**
-   * The reference column for the boxplot visualization. All boxplots will be drawn relative to this event.
+   * The reference event for the boxplot visualization. All boxplots will be drawn relative to this event.
    * @default 'Current Date'
    */
-  boxplotReferenceColumn?: string;
+  boxplotReferenceEvent?: string;
 
   /**
    * The list of events to be displayed on initialization.
@@ -221,7 +221,7 @@ export default class EventColumn extends MapColumn<number> {
 
   private colorMapping: ICategoricalColorMappingFunction;
 
-  private boxplotReferenceColumn: string;
+  private boxplotReferenceEvent: string;
 
   private msPerBoxplotUnit: number;
 
@@ -271,7 +271,7 @@ export default class EventColumn extends MapColumn<number> {
         summaryRenderer: 'event',
       })
     );
-    this.boxplotReferenceColumn = desc.boxplotReferenceColumn || EventColumn.CURRENT_DATE_REFERENCE;
+    this.boxplotReferenceEvent = desc.boxplotReferenceEvent || EventColumn.CURRENT_DATE_REFERENCE;
     this.scaleMinBound = desc.eventScaleMin || -Infinity;
     this.scaleMaxBound = desc.eventScaleMax || Infinity;
     this.heatmapBinCount = desc.heatmapBinCount || 50;
@@ -316,7 +316,7 @@ export default class EventColumn extends MapColumn<number> {
       let boxPlotColor = undefined;
       if (this.showBoxplot) {
         const boxplotCategory = this.categories.filter((x) => x.name === EventColumn.BOXPLOT_COLOR_NAME)[0];
-        boxPlotLabel = 'Deviation from ' + this.boxplotReferenceColumn;
+        boxPlotLabel = 'Deviation from ' + this.boxplotReferenceEvent;
         boxPlotColor = this.colorMapping.apply(boxplotCategory);
       }
       this.legendUpdateCallback(
@@ -453,12 +453,12 @@ export default class EventColumn extends MapColumn<number> {
     return this.scaleMax;
   }
 
-  getBoxplotReferenceColumn() {
-    return this.boxplotReferenceColumn;
+  getBoxplotReferenceEvent() {
+    return this.boxplotReferenceEvent;
   }
 
-  setBoxplotReferenceColumn(boxplotReferenceColumn: string) {
-    this.boxplotReferenceColumn = boxplotReferenceColumn;
+  setBoxplotReferenceEvent(boxplotReferenceEvent: string) {
+    this.boxplotReferenceEvent = boxplotReferenceEvent;
     this.updateLegend();
   }
 
@@ -492,8 +492,8 @@ export default class EventColumn extends MapColumn<number> {
   }
 
   private getBoxplotOffset(eventData: IKeyValue<number>[]): number {
-    if (this.boxplotReferenceColumn === EventColumn.CURRENT_DATE_REFERENCE) return Date.now();
-    const referenceValueFiltered = eventData.filter((x) => x.key === this.boxplotReferenceColumn);
+    if (this.boxplotReferenceEvent === EventColumn.CURRENT_DATE_REFERENCE) return Date.now();
+    const referenceValueFiltered = eventData.filter((x) => x.key === this.boxplotReferenceEvent);
     const offset = referenceValueFiltered.length === 1 ? referenceValueFiltered[0].value : 0;
     return offset;
   }
@@ -538,12 +538,12 @@ export default class EventColumn extends MapColumn<number> {
     return this.sortEvent;
   }
 
-  getReferenceColumn() {
+  getReferenceEvent() {
     return this.referenceEvent;
   }
 
-  setReferenceColumn(referenceColumn: string) {
-    this.referenceEvent = referenceColumn;
+  setReferenceEvent(referenceEvent: string) {
+    this.referenceEvent = referenceEvent;
   }
 
   setSortMethod(sort: string) {
@@ -569,14 +569,14 @@ export default class EventColumn extends MapColumn<number> {
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.boxplotReferenceColumn = this.boxplotReferenceColumn;
+    r.boxplotReferenceEvent = this.boxplotReferenceEvent;
     r.displayEventList = this.displayEventList;
     r.displayEventListOverview = this.displayEventListOverview;
     r.showBoxplot = this.showBoxplot;
     r.colorMapping = this.colorMapping.toJSON();
     r.categories = this.categories;
     r.msPerUnit = this.msPerUnit;
-    r.referenceColumn = this.referenceEvent;
+    r.referenceEvent = this.referenceEvent;
     return r;
   }
 
@@ -585,8 +585,8 @@ export default class EventColumn extends MapColumn<number> {
     if (dump.sortMethod) {
       this.sortEvent = dump.sortMethod;
     }
-    if (dump.boxplotReferenceColumn) {
-      this.boxplotReferenceColumn = dump.boxplotReferenceColumn;
+    if (dump.boxplotReferenceEvent) {
+      this.boxplotReferenceEvent = dump.boxplotReferenceEvent;
     }
     if (dump.displayEventList) {
       this.displayEventList = dump.displayEventList;
@@ -606,8 +606,8 @@ export default class EventColumn extends MapColumn<number> {
     if (dump.msPerUnit) {
       this.msPerUnit = dump.msPerUnit;
     }
-    if (dump.referenceColumn) {
-      this.referenceEvent = dump.referenceColumn;
+    if (dump.referenceEvent) {
+      this.referenceEvent = dump.referenceEvent;
     }
     this.updateLegend();
   }

@@ -24,11 +24,11 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
    * Sets the reference event for the boxplot visualization.
    * All boxplots will be drawn relative to this event.
    * The default is to use the first event in the event list.
-   * @param boxPlotReferenceColumn - The reference column to set.
+   * @param boxPlotReferenceEvent - The reference event to set.
    * @returns The updated EventColumnBuilder instance.
    */
-  boxPlotReferenceColumn(boxPlotReferenceColumn: string) {
-    this.desc.boxplotReferenceColumn = boxPlotReferenceColumn;
+  boxPlotReferenceEvent(boxPlotReferenceEvent: string) {
+    this.desc.boxplotReferenceEvent = boxPlotReferenceEvent;
     return this;
   }
 
@@ -126,7 +126,7 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
   /**
    * Sets the reference event for all other events.
    * The default is to use the current date from {@link Date.now()}.
-   * @param referenceEvent - The reference column to set.
+   * @param referenceEvent - The reference event to set.
    * @returns The EventColumnBuilder instance.
    */
   referenceEvent(referenceEvent: string) {
