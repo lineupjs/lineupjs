@@ -35,7 +35,7 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
   /**
    * Sets the unit of the boxplot data as {@link ETimeUnit}.
    * If the unit is set to {@link ETimeUnit.custom}, the milliseconds per unit can be specified.
-   * The default is {@link ETimeUnit.d}.
+   * The default is {@link ETimeUnit.D}.
    * @param boxplotUnit - The unit of the boxplot data.
    * @param msPerUnit - The milliseconds per unit for a custom time unit.
    * @returns The updated EventColumnBuilder instance.
@@ -176,7 +176,7 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
     if (!this.desc.eventList) {
       this.deriveEvents(data);
     }
-    const eventScaleUnit = this.desc.eventScaleUnit || ETimeUnit.d;
+    const eventScaleUnit = this.desc.eventScaleUnit || ETimeUnit.D;
     this.label((this.desc as any).column + ' [' + eventScaleUnit + ']');
     return super.build(data);
   }

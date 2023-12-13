@@ -35,6 +35,7 @@
         q3 = median + Math.random() * 10;
         max = q3 + Math.random() * 10;
         const events = { min: min, q1: q1, median: median, q3: q3, max: max };
+
         for (let j = 0; j < eventNames.length; j++) {
           const event = eventNames[j];
           events[event] = getDateFromRange(ranges[j]);
@@ -48,8 +49,8 @@
       const builder = LineUpJS.builder(arr);
       builder.column(LineUpJS.buildEventColumn('Events', eventNames)
         .boxplotPossible(true)
-        .boxplotUnit('d')
-        .eventScaleUnit('d')
+        .boxplotUnit('D')
+        .eventScaleUnit('D')
         .referenceEvent('B')
         .boxPlotReferenceEvent('A')
         .displayZeroLine(true)

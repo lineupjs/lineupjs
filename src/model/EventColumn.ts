@@ -54,10 +54,10 @@ export enum ETimeUnit {
   s = 's',
   min = 'min',
   h = 'h',
-  d = 'd',
-  w = 'w',
-  m = 'm',
-  y = 'y',
+  D = 'D',
+  W = 'W',
+  M = 'M',
+  Y = 'Y',
   custom = 'custom',
 }
 
@@ -139,7 +139,7 @@ export declare type IEventColumnDesc = IMapColumnDesc<number> & {
 
   /**
    * The unit of the event data scale used for display in the header.
-   * @default 'd'
+   * @default 'D'
    */
   eventScaleUnit?: ETimeUnit;
 
@@ -215,10 +215,10 @@ export default class EventColumn extends MapColumn<number> {
     s: 1000,
     min: 1000 * 60,
     h: 1000 * 60 * 60,
-    d: 1000 * 60 * 60 * 24,
-    w: 1000 * 60 * 60 * 24 * 7,
-    m: 1000 * 60 * 60 * 24 * 30,
-    y: 1000 * 60 * 60 * 24 * 365,
+    D: 1000 * 60 * 60 * 24,
+    W: 1000 * 60 * 60 * 24 * 7,
+    M: 1000 * 60 * 60 * 24 * 30,
+    Y: 1000 * 60 * 60 * 24 * 365,
     custom: -1,
   };
 
@@ -232,7 +232,7 @@ export default class EventColumn extends MapColumn<number> {
 
   private displayEventList: string[] = [];
 
-  private displayEventListOverview: string[] = [];
+  private displayEventListOverview: string[] = []; 
 
   private displayZeroLine: boolean;
 

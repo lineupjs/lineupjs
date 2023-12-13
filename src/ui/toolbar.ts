@@ -45,6 +45,7 @@ import appendString from './dialogs/groupString';
 import { sortMethods } from './dialogs/utils';
 import EventDisplaySettingsDialog from './dialogs/EventDisplaySettingsDialog';
 import EventReferenceDialog from './dialogs/EventReferenceDialog';
+import sortEvent from './dialogs/sortEvent';
 
 interface IDialogClass {
   new (col: any, dialog: IDialogContext, ...args: any[]): ADialog;
@@ -448,4 +449,9 @@ export const toolbarDialogAddons: { [key: string]: IToolbarDialogAddon } = {
     order: 2,
     append: appendDate,
   } as IToolbarDialogAddon,
+  eventSort: {
+     title: 'Sort By',
+            order: 2,
+            append: sortEvent,
+  }
 };
