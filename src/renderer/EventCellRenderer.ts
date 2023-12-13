@@ -164,6 +164,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
       tooltipDiv.hidden = false;
     };
     const hideTooltip = () => {
+      tooltipDiv.hidden = true;
       if (col.popperInstance) {
         col.popperInstance.destroy();
       }
@@ -171,13 +172,12 @@ export default class EventCellRenderer implements ICellRendererFactory {
         ...options,
         modifiers: [...options.modifiers, { name: 'eventListeners', enabled: false }],
       }));
-      tooltipDiv.hidden = true;
     };
 
     for (const event of ['mouseenter']) {
       n.addEventListener(event, showTooltip);
     }
-    for (const event of ['mouseleave', 'focus', 'blur']) {
+    for (const event of ['mouseleave', 'blur']) {
       n.addEventListener(event, hideTooltip);
     }
   }
