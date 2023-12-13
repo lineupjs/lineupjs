@@ -25,7 +25,7 @@
       const categories = ['W', 'X', 'Y', 'Z'];
 
       const ranges = [[-30, 0], [-10, 20], [10, 45]];
-      for (let i = 0; i < 100; ++i) {
+      for (let i = 0; i < 200; ++i) {
 
 
         //generate boxplot data
@@ -53,13 +53,18 @@
         .eventScaleUnit('D')
         .referenceEvent('B')
         .boxPlotReferenceEvent('A')
+        .sortEvent('q3')
         .displayZeroLine(true)
+        .heatmapBinCount(40)
         .width(500))
+
         .column(LineUpJS.buildCategoricalColumn('Category'))
-        .aggregationStrategy('group+item+top')
+        .aggregationStrategy('group+top+item')
+        .showTopN(8)
         .ranking(LineUpJS.buildRanking()
           .supportTypes()
           .groupBy('Category')
+          .sortBy('Events', 'asc')
           .allColumns())
         .buildTaggle(document.body);
     };

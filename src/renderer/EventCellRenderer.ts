@@ -271,19 +271,21 @@ export default class EventCellRenderer implements ICellRendererFactory {
         if (typeof data === 'symbol') {
           return;
         }
-        const range = col.getRange();
-        const binning = bin().domain(range).thresholds(col.getHeatmapBinCount());
-        let X = this.Xzoomed;
         const Y = scaleLinear().domain([0, keyList.length]).range([0, 100]);
         const div = select(n);
         const svg = div.select('svg');
         let formatter = format('.5f');
         svg.selectAll('*').remove();
         const mainG = svg.append('g');
+        let X = this.Xzoomed;
+        const range = X.domain();
+        if (!range[0] || !range[1] || range[0] > range[1]) return;
         if (isSummary) {
-          X = this.X.copy().range([0.01, 0.99]);
+          X = this.Xzoomed.copy().range([0.01, 0.99]);
           formatter = format('.5%');
         }
+
+        const binning = bin().domain([range[0], range[1]]).thresholds(col.getHeatmapBinCount());
 
         for (let i = 0; i < keyList.length; i++) {
           const currentKey = keyList[i];
@@ -293,7 +295,6 @@ export default class EventCellRenderer implements ICellRendererFactory {
           const binnedData = binning(values);
           if (binnedData.length < 2) continue;
           const color = col.getCategoryColor(currentKey);
-
           const maxVal = max(binnedData, (d) => d.length);
           const colorScale = scaleSequential()
             .domain([0, maxVal])
@@ -315,9 +316,9 @@ export default class EventCellRenderer implements ICellRendererFactory {
             .attr('title', (d) => `[${d.x0};${d.x1}]: ${d.length}`)
             .append('title')
             .text((d) => `[${d.x0}; ${d.x1}]: ${d.length}`);
+
           mainG
             .append('rect')
-
             .attr('x', formatter(X(binnedData[0].x0)))
             .attr('y', Y(i) + 1 + '%')
             .attr('width', formatter(X(binnedData[binnedData.length - 1].x1) - X(binnedData[0].x0)))

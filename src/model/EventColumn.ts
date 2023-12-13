@@ -232,7 +232,7 @@ export default class EventColumn extends MapColumn<number> {
 
   private displayEventList: string[] = [];
 
-  private displayEventListOverview: string[] = []; 
+  private displayEventListOverview: string[] = [];
 
   private displayZeroLine: boolean;
 
@@ -299,7 +299,7 @@ export default class EventColumn extends MapColumn<number> {
         this.eventListOverview.push(val);
       }
     }
-    this.sortEvent = desc.sortEvent || this.displayEventList.length > 0 ? this.displayEventList[0] : undefined;
+    this.sortEvent = desc.sortEvent || (this.displayEventList.length > 0 ? this.displayEventList[0] : undefined);
     this.categories = this.eventList.map((d, i) => {
       return {
         name: d,
