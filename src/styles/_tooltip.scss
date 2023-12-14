@@ -1,13 +1,11 @@
 @import './vars';
 
 .#{$lu_css_prefix}-tooltip-node {
-
   background: #444;
   color: white;
   font-weight: bold;
   padding: 4px 8px;
   border-radius: 4px;
-
 }
 
 .#{$lu_css_prefix}-tooltip-node[data-popper-placement^='top'] > .#{$lu_css_prefix}-tooltip-arrow {
@@ -26,8 +24,6 @@
   left: -4px;
 }
 
-
-
 .#{$lu_css_prefix}-tooltip-arrow,
 .#{$lu_css_prefix}-tooltip-arrow::before {
   position: absolute;
@@ -40,8 +36,8 @@
   visibility: visible;
   content: '';
   transform: rotate(45deg);
- }
+}
 
- .#{$lu_css_prefix}-tooltip-arrow{
+.#{$lu_css_prefix}-tooltip-arrow {
   visibility: hidden;
- }
+}
