@@ -450,8 +450,8 @@ export const toolbarDialogAddons: { [key: string]: IToolbarDialogAddon } = {
     append: appendDate,
   } as IToolbarDialogAddon,
   eventSort: {
-     title: 'Sort By',
-            order: 2,
-            append: sortEvent,
-  }
+    title: 'Sort By',
+    order: 2,
+    append: sortEvent,
+  },
 };
