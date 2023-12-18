@@ -32,7 +32,7 @@ jobs:
       - run: yarn test:coverage
       - run: yarn cy:compile
       - run: yarn cy:junit
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-artifacts
