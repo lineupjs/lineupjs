@@ -162,10 +162,10 @@ export default class EventCellRenderer implements ICellRendererFactory {
         ],
       });
 
-      tooltipDiv.hidden = false;
+      tooltipDiv.style.display = 'block';
     };
     const hideTooltip = () => {
-      tooltipDiv.hidden = true;
+      tooltipDiv.style.display = 'none';
       if (col.popperInstance) {
         col.popperInstance.destroy();
       }
