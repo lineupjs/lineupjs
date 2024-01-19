@@ -61,7 +61,7 @@ export enum ETimeUnit {
   custom = 'custom',
 }
 
-interface ITooltipRow {
+export interface ITooltipRow {
   eventName: string;
   value: string;
   color: string;
@@ -107,6 +107,12 @@ export declare type IEventColumnDesc = IMapColumnDesc<number> & {
    * @default 'Current Date'
    */
   boxplotReferenceEvent?: string;
+
+  /**
+   * Callback function to create a tooltip outside of LineUp.
+   * @param tooltipData - The data for the tooltip.
+   */
+  customTooltipCallback?: (tooltipData: ITooltipRow[]) => void;
 
   /**
    * The list of events to be displayed on initialization.
@@ -228,6 +234,8 @@ export default class EventColumn extends MapColumn<number> {
 
   private boxplotReferenceEvent: string;
 
+  private customTooltipCallback: (tooltipData: ITooltipRow[]) => void;
+
   private msPerBoxplotUnit: number;
 
   private displayEventList: string[] = [];
@@ -290,6 +298,8 @@ export default class EventColumn extends MapColumn<number> {
     this.displayEventListOverview = [...this.displayEventList];
     this.eventListOverview = [...this.eventList];
     this.legendUpdateCallback = desc.legendUpdateCallback || null;
+    this.customTooltipCallback = desc.customTooltipCallback || null;
+
     this.referenceEvent = desc.referenceEvent || EventColumn.CURRENT_DATE_REFERENCE;
     this.msPerUnit = desc.msPerScaleUnit || 1000 * 60 * 60 * 24;
     this.msPerBoxplotUnit = desc.msPerBoxplotUnit || 1;
@@ -336,10 +346,15 @@ export default class EventColumn extends MapColumn<number> {
     }
   }
 
-  updateTooltipContent(row: IDataRow, tooltipContentDiv: HTMLElement) {
+  updateTooltipContent(row: IDataRow, tooltipContentDiv: HTMLElement): boolean {
     const events = this.getMap(row);
     const tooltipList: ITooltipRow[] = this.getTooltipData(events);
+    if (this.customTooltipCallback) {
+      this.customTooltipCallback(tooltipList);
+      return false;
+    }
     this.getTooltipTable(tooltipContentDiv, tooltipList);
+    return true;
   }
 
   private getTooltipTable(tooltipContentDiv: HTMLElement, tooltipList: ITooltipRow[]) {

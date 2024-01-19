@@ -142,7 +142,8 @@ export default class EventCellRenderer implements ICellRendererFactory {
     const tooltipDiv = document.getElementById(context.idPrefix + '-tooltip-node');
     const showTooltip = () => {
       const tooltipContentDiv = document.getElementById(context.idPrefix + '-tooltip-content');
-      col.updateTooltipContent(dataRow, tooltipContentDiv);
+      const createTooltip = col.updateTooltipContent(dataRow, tooltipContentDiv);
+      if (!createTooltip) return;
       const tooltipArrowDiv = document.getElementById(context.idPrefix + '-tooltip-arrow');
       if (col.popperInstance) {
         col.popperInstance.destroy();
@@ -161,10 +162,10 @@ export default class EventCellRenderer implements ICellRendererFactory {
         ],
       });
 
-      tooltipDiv.hidden = false;
+      tooltipDiv.style.display = 'block';
     };
     const hideTooltip = () => {
-      tooltipDiv.hidden = true;
+      tooltipDiv.style.display = 'none';
       if (col.popperInstance) {
         col.popperInstance.destroy();
       }

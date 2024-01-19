@@ -1,4 +1,11 @@
-import { EEventBoxplotDataKeys, ETimeUnit, EventColumn, type ICategory, type IEventColumnDesc } from '../../model';
+import {
+  EEventBoxplotDataKeys,
+  ETimeUnit,
+  EventColumn,
+  type ICategory,
+  type IEventColumnDesc,
+  type ITooltipRow,
+} from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
 /**
@@ -46,6 +53,18 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
     } else {
       this.desc.msPerBoxplotUnit = EventColumn.TIME_UNITS_IN_MS[boxplotUnit];
     }
+    return this;
+  }
+
+  /**
+   * Sets the callback function for custom tooltips.
+   * The callback function will be called when hovering over an event cell receives an array of {@link ITooltipRow} objects.
+   * When no callback function is specified, the default tooltip with popperjs will be displayed.
+   * @param tooltipCallback - callback function.
+   * @returns The updated EventColumnBuilder instance.
+   */
+  customTooltip(tooltipCallback: (tooltipData: ITooltipRow[]) => void) {
+    this.desc.customTooltipCallback = tooltipCallback;
     return this;
   }
 
