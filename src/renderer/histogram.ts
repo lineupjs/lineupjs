@@ -76,8 +76,8 @@ export function histogramUpdate<T>(
         relY === 0
           ? color
           : relY === 100
-          ? filteredColor(color)
-          : `linear-gradient(${filteredColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`;
+            ? filteredColor(color)
+            : `linear-gradient(${filteredColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`;
     } else {
       d.title = `${formatter(x0)} - ${formatter(x1)} (${count})`;
       inner.style.height = `${round((count * 100) / stats.maxBin, 2)}%`;

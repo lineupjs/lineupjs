@@ -6,11 +6,8 @@
   "rules": {
     "keyframes-name-pattern": null,
     "no-descending-specificity": null,
-    "value-list-comma-newline-after": null,
-    "declaration-colon-newline-after": null,
     "at-rule-no-unknown": null,
     "at-rule-empty-line-before": null,
-    "block-closing-brace-newline-after": null,
     "selector-id-pattern": null,
     "scss/at-rule-no-unknown": true,
     "scss/no-global-function-names": null,
