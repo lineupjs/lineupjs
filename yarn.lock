@@ -8293,10 +8293,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lineupengine@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "lineupengine@npm:2.5.1"
-  checksum: bc2cf6b109731f9ce80fce41dfd69fc09dc2770c53771544600495a3c5c01c3c78493409018ec52d50405a1fe0fa8ce129f603b639b95d0f8bf18bedb59b44a2
+"lineupengine@npm:^2.5.2":
+  version: 2.5.2
+  resolution: "lineupengine@npm:2.5.2"
+  checksum: 06e179c5db5e9b7b55aaaae4317d2abf5edf94e090a261e7fbf6217f8ecf588ed8fce55669d4b2f90ad4fa3d1d1f50e716bfb14fff4a1ed9d340d7ff79e0e853
   languageName: node
   linkType: hard
 
@@ -8346,7 +8346,7 @@ __metadata:
     fork-ts-checker-webpack-plugin: "npm:^9.0.2"
     jest: "npm:^29.7.0"
     jest-environment-jsdom: "npm:^29.7.0"
-    lineupengine: "npm:^2.5.1"
+    lineupengine: "npm:^2.5.2"
     lodash.get: "npm:^4.4.2"
     mini-css-extract-plugin: "npm:^2.7.7"
     mkdirp: "npm:^3.0.1"
