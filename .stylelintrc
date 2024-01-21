@@ -18,7 +18,7 @@
     "scss/at-function-pattern": null,
     "scss/at-if-closing-brace-newline-after": "always-last-in-chain",
     "scss/at-if-closing-brace-space-after": "always-intermediate",
-    "scss/at-import-no-partial-leading-underscore": true,
+    "load-no-partial-leading-underscore": true,
     "scss/at-import-partial-extension-blacklist": null,
     "scss/at-import-partial-extension-whitelist": null,
     "scss/at-mixin-argumentless-call-parentheses": "always",
