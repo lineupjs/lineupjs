@@ -30,8 +30,8 @@ export function addIconDOM(
     const m = isActionMode(col, action, mode, 'shortcut')
       ? 'o'
       : isActionMode(col, action, mode, 'menu+shortcut')
-      ? 's'
-      : 'r';
+        ? 's'
+        : 'r';
     const title = ctx.sanitize(action.title);
     node.insertAdjacentHTML(
       'beforeend',

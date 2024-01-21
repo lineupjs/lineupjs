@@ -83,8 +83,8 @@ function hist(showLabels: boolean) {
             relY === 0
               ? DEFAULT_COLOR
               : relY === 100
-              ? DEFAULT_FILTERED_COLOR
-              : `linear-gradient(${DEFAULT_FILTERED_COLOR} ${relY}%, ${DEFAULT_COLOR} ${relY}%, ${DEFAULT_COLOR} 100%)`;
+                ? DEFAULT_FILTERED_COLOR
+                : `linear-gradient(${DEFAULT_FILTERED_COLOR} ${relY}%, ${DEFAULT_COLOR} ${relY}%, ${DEFAULT_COLOR} 100%)`;
         } else {
           d.title = `${bin.value}: ${bin.count}`;
           const inner = d.firstElementChild! as HTMLElement;

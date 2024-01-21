@@ -313,8 +313,8 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
   const columns: (number | string)[] = Array.isArray(first)
     ? range(first.length)
     : config.columns.length > 0
-    ? selectColumns(Object.keys(first), config.columns)
-    : Object.keys(first);
+      ? selectColumns(Object.keys(first), config.columns)
+      : Object.keys(first);
 
   return columns.map((key) => {
     let v = resolveValue(first, key);
