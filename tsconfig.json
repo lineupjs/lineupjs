@@ -26,8 +26,8 @@
     "baseUrl": "./",
     "paths": {
       "@": ["./src"],
-      "*": ["*", "node_modules/*"]
-    }
+      "*": ["*", "node_modules/*"],
+    },
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tsd.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tsd.d.ts"],
 }
