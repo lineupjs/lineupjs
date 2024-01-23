@@ -12,8 +12,7 @@ import Column, {
   visibilityChanged,
   widthChanged,
 } from './Column';
-import { select } from 'd3-selection';
-import { zoomIdentity } from 'd3-zoom';
+import { ZoomTransform, zoomIdentity } from 'd3-zoom';
 import { schemeSet1 } from 'd3-scale-chromatic';
 import type { EAdvancedSortMethod, IColorMappingFunction, IMappingFunction, INumberFilter } from './INumberColumn';
 import type { IMapColumnDesc } from './MapColumn';
@@ -26,22 +25,12 @@ import { ECompareValueType, type IDataRow, type ITypeFactory } from './interface
 import type { IKeyValue } from './IArrayColumn';
 import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
-import type { IEventListener } from '../internal';
+import type { IBoxPlotData, IEventListener } from '../internal';
 import { integrateDefaults } from './internal';
 import { format } from 'd3-format';
-import { cssClass } from '../styles';
-import { type Instance } from '@popperjs/core';
+import { scaleLinear, type ScaleLinear } from 'd3-scale';
 
-export interface IEventBoxplotData {
-  min: number;
-  max: number;
-  median: number;
-  q1: number;
-  q3: number;
-  outliers: number[];
-}
-
-export enum EEventBoxplotDataKeys {
+export enum EBoxplotDataKeys {
   min = 'min',
   q1 = 'q1',
   median = 'median',
@@ -192,7 +181,7 @@ export declare type IEventColumnDesc = IMapColumnDesc<number> & {
 /**
  * Column storing events as map of numbers.
  * Each key of the map represents an event and the value represents the time of the event in milliseconds since 1.1.1970.
- * Keys can also be boxplotvalues defined in {@link EEventBoxplotDataKeys}.
+ * Keys can also be boxplotvalues defined in {@link EBoxplotDataKeys}.
  * All events values are displayed relative to the reference event.
  * @see {@link IEventColumnDesc} for a detailed description of the parameters.
  * @extends MapColumn<number>
@@ -271,11 +260,11 @@ export default class EventColumn extends MapColumn<number> {
 
   private msPerUnit: number;
 
-  transform = zoomIdentity;
+  private scaleTransform = zoomIdentity;
   private showBoxplot: boolean;
   private heatmapBinCount: number = 50;
-
-  popperInstance: Instance;
+  private xScale: ScaleLinear<number, number>;
+  private xScaleZoomed: ScaleLinear<number, number>;
 
   constructor(id: string, desc: Readonly<IEventColumnDesc>) {
     super(
@@ -287,8 +276,8 @@ export default class EventColumn extends MapColumn<number> {
       })
     );
     this.boxplotReferenceEvent = desc.boxplotReferenceEvent || EventColumn.CURRENT_DATE_REFERENCE;
-    this.scaleMinBound = desc.eventScaleMin || -Infinity;
-    this.scaleMaxBound = desc.eventScaleMax || Infinity;
+    this.scaleMinBound = typeof desc.eventScaleMin !== 'undefined' ? desc.eventScaleMin : -Infinity;
+    this.scaleMaxBound = typeof desc.eventScaleMax !== 'undefined' ? desc.eventScaleMax : Infinity;
     this.heatmapBinCount = desc.heatmapBinCount || 50;
     this.boxplotPossible = desc.boxplotPossible || false;
     this.showBoxplot = this.boxplotPossible;
@@ -304,8 +293,8 @@ export default class EventColumn extends MapColumn<number> {
     this.msPerUnit = desc.msPerScaleUnit || 1000 * 60 * 60 * 24;
     this.msPerBoxplotUnit = desc.msPerBoxplotUnit || 1;
     if (this.boxplotPossible) {
-      this.displayEventListOverview.push(EEventBoxplotDataKeys.median);
-      for (const val of Object.keys(EEventBoxplotDataKeys)) {
+      this.displayEventListOverview.push(EBoxplotDataKeys.median);
+      for (const val of Object.keys(EBoxplotDataKeys)) {
         this.eventListOverview.push(val);
       }
     }
@@ -338,7 +327,7 @@ export default class EventColumn extends MapColumn<number> {
         boxPlotColor = this.colorMapping.apply(boxplotCategory);
       }
       this.legendUpdateCallback(
-        JSON.parse(JSON.stringify(this.categories.filter((x) => x.name !== EventColumn.BOXPLOT_COLOR_NAME))),
+        structuredClone(this.categories.filter((x) => x.name !== EventColumn.BOXPLOT_COLOR_NAME)),
         this.colorMapping,
         boxPlotLabel,
         boxPlotColor
@@ -346,39 +335,24 @@ export default class EventColumn extends MapColumn<number> {
     }
   }
 
-  updateTooltipContent(row: IDataRow, tooltipContentDiv: HTMLElement): boolean {
+  getTooltipContent(row: IDataRow): ITooltipRow[] | null {
     const events = this.getMap(row);
     const tooltipList: ITooltipRow[] = this.getTooltipData(events);
     if (this.customTooltipCallback) {
       this.customTooltipCallback(tooltipList);
-      return false;
+      return null;
     }
-    this.getTooltipTable(tooltipContentDiv, tooltipList);
-    return true;
+    return tooltipList;
   }
 
-  private getTooltipTable(tooltipContentDiv: HTMLElement, tooltipList: ITooltipRow[]) {
-    const tooltipSelection = select(tooltipContentDiv);
-    tooltipSelection.selectAll('*').remove();
-    const table = tooltipSelection.append('table').attr('class', cssClass('event-tooltip-table'));
-    table
-      .append('thead')
-      .selectAll('th')
-      .data(['', 'Event', 'Value', 'Date'])
-      .join('th')
-      .text((d) => d);
-    const rows = table.append('tbody').selectAll('tr').data(tooltipList).join('tr');
-    rows
-      .append('td')
-      .append('div')
-      .style('background-color', (d) => d.color)
-      .attr('class', cssClass('event-tooltip') + ' circle');
-    rows
-      .append('td')
-      .attr('class', 'event-name')
-      .text((d) => d.eventName);
-    rows.append('td').text((d) => d.value);
-    rows.append('td').text((d) => (d.date ? d.date.toLocaleString() : ''));
+  createXScale() {
+    this.xScale = scaleLinear().domain([this.scaleMin, this.scaleMax]).range([0, this.getWidth()]);
+    this.xScaleZoomed = this.scaleTransform.rescaleX(this.xScale);
+  }
+
+  getXScale(zoomed = true) {
+    if (!this.xScale) this.createXScale();
+    return zoomed ? this.xScaleZoomed : this.xScale;
   }
 
   private getTooltipData(events: IKeyValue<number>[]) {
@@ -394,7 +368,7 @@ export default class EventColumn extends MapColumn<number> {
     });
 
     if (this.boxplotPossible && this.showBoxplot) {
-      this.getEventValues(events, false, Object.keys(EEventBoxplotDataKeys))
+      this.getEventValues(events, false, Object.keys(EBoxplotDataKeys))
         .map((x) => {
           return {
             eventName: x.key,
@@ -442,7 +416,7 @@ export default class EventColumn extends MapColumn<number> {
   }
 
   getCategoryColor(category: string) {
-    category = Object.keys(EEventBoxplotDataKeys).includes(category) ? EventColumn.BOXPLOT_COLOR_NAME : category;
+    category = Object.keys(EBoxplotDataKeys).includes(category) ? EventColumn.BOXPLOT_COLOR_NAME : category;
     const filtered = this.categories.filter((x) => x.name === category);
     if (filtered.length === 1) {
       return this.colorMapping.apply(filtered[0]);
@@ -477,14 +451,6 @@ export default class EventColumn extends MapColumn<number> {
     return this.boxplotPossible;
   }
 
-  getScaleMin() {
-    return this.scaleMin;
-  }
-
-  getScaleMax() {
-    return this.scaleMax;
-  }
-
   getBoxplotReferenceEvent() {
     return this.boxplotReferenceEvent;
   }
@@ -502,8 +468,8 @@ export default class EventColumn extends MapColumn<number> {
     this.updateLegend();
   }
 
-  getBoxplotData(eventData: IKeyValue<number>[]): IEventBoxplotData {
-    const BPkeys = Object.keys(EEventBoxplotDataKeys);
+  getBoxplotData(eventData: IKeyValue<number>[]): IBoxPlotData {
+    const BPkeys = Object.keys(EBoxplotDataKeys);
     const dataKeys = eventData.map((x) => x.key);
     if (
       !BPkeys.every((key) => {
@@ -514,12 +480,11 @@ export default class EventColumn extends MapColumn<number> {
     }
 
     return {
-      min: this.getEventValue(eventData, EEventBoxplotDataKeys.min),
-      max: this.getEventValue(eventData, EEventBoxplotDataKeys.max),
-      median: this.getEventValue(eventData, EEventBoxplotDataKeys.median),
-      q1: this.getEventValue(eventData, EEventBoxplotDataKeys.q1),
-      q3: this.getEventValue(eventData, EEventBoxplotDataKeys.q3),
-      outliers: [],
+      min: this.getEventValue(eventData, EBoxplotDataKeys.min),
+      max: this.getEventValue(eventData, EBoxplotDataKeys.max),
+      median: this.getEventValue(eventData, EBoxplotDataKeys.median),
+      q1: this.getEventValue(eventData, EBoxplotDataKeys.q1),
+      q3: this.getEventValue(eventData, EBoxplotDataKeys.q3),
     };
   }
 
@@ -538,7 +503,7 @@ export default class EventColumn extends MapColumn<number> {
       const referenceValueFiltered = events.filter((x) => x.key === this.referenceEvent);
       reference = referenceValueFiltered.length === 1 ? referenceValueFiltered[0].value : 0;
     }
-    if (Object.keys(EEventBoxplotDataKeys).includes(valKey)) {
+    if (Object.keys(EBoxplotDataKeys).includes(valKey)) {
       eventVal = eventVal * this.msPerBoxplotUnit + this.getBoxplotOffset(events);
     }
     return (eventVal - reference) / this.msPerUnit;
@@ -566,6 +531,15 @@ export default class EventColumn extends MapColumn<number> {
     return [this.scaleMin, this.scaleMax];
   }
 
+  getScaleTransform() {
+    return this.scaleTransform;
+  }
+
+  setScaleTransform(transform: ZoomTransform) {
+    this.scaleTransform = transform;
+    this.createXScale();
+  }
+
   getSortMethod() {
     return this.sortEvent;
   }
@@ -590,12 +564,10 @@ export default class EventColumn extends MapColumn<number> {
     this.markDirty('values');
   }
 
-  setScaleMin(min: number) {
+  setScaleDimensions(min: number, max: number) {
     this.scaleMin = Math.max(min, this.scaleMinBound);
-  }
-
-  setScaleMax(max: number) {
     this.scaleMax = Math.min(max, this.scaleMaxBound);
+    this.createXScale();
   }
 
   dump(toDescRef: (desc: any) => any): any {

@@ -1,27 +1,27 @@
 @import './vars';
 
-.#{$lu_css_prefix}-tooltip-node {
-  background: #444;
-  color: white;
+.#{$lu_tooltip_class} {
+  background: $lu_tooltip_background_color;
+  color: $lu_tooltip_text_color;
   font-weight: bold;
   padding: 4px 8px;
   border-radius: 4px;
   display: none;
 }
 
-.#{$lu_css_prefix}-tooltip-node[data-popper-placement^='top'] > .#{$lu_css_prefix}-tooltip-arrow {
+.#{$lu_tooltip_class}[data-popper-placement^='top'] > .#{$lu_css_prefix}-tooltip-arrow {
   bottom: -4px;
 }
 
-.#{$lu_css_prefix}-tooltip-node[data-popper-placement^='bottom'] > .#{$lu_css_prefix}-tooltip-arrow {
+.#{$lu_tooltip_class}[data-popper-placement^='bottom'] > .#{$lu_css_prefix}-tooltip-arrow {
   top: -4px;
 }
 
-.#{$lu_css_prefix}-tooltip-node[data-popper-placement^='left'] > .#{$lu_css_prefix}-tooltip-arrow {
+.#{$lu_tooltip_class}[data-popper-placement^='left'] > .#{$lu_css_prefix}-tooltip-arrow {
   right: -4px;
 }
 
-.#{$lu_css_prefix}-tooltip-node[data-popper-placement^='right'] > .#{$lu_css_prefix}-tooltip-arrow {
+.#{$lu_tooltip_class}[data-popper-placement^='right'] > .#{$lu_css_prefix}-tooltip-arrow {
   left: -4px;
 }
 

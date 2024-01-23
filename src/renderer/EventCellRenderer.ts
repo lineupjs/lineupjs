@@ -6,15 +6,23 @@ import {
   type IRenderContext,
   type ISummaryRenderer,
 } from './interfaces';
-import { EventColumn, EEventBoxplotDataKeys, type IDataRow, type IKeyValue, type IOrderedGroup } from '../model';
+import {
+  EventColumn,
+  EBoxplotDataKeys,
+  type IDataRow,
+  type IKeyValue,
+  type IOrderedGroup,
+  type ITooltipRow,
+} from '../model';
 import { scaleLinear, scaleSequential, type ScaleLinear } from 'd3-scale';
 import { select, type Selection } from 'd3-selection';
 import { bin, max } from 'd3-array';
 import { format } from 'd3-format';
 import { interpolateRgbBasis } from 'd3-interpolate';
-import { zoom, type D3ZoomEvent, ZoomTransform, zoomIdentity } from 'd3-zoom';
+import { zoom, type D3ZoomEvent, zoomIdentity, ZoomTransform } from 'd3-zoom';
 import { axisTop } from 'd3-axis';
-import { createPopper } from '@popperjs/core';
+import { createPopper, type Instance } from '@popperjs/core';
+import { cssClass } from '../styles';
 
 export default class EventCellRenderer implements ICellRendererFactory {
   readonly title: string = 'EventCellRenderer';
@@ -22,21 +30,18 @@ export default class EventCellRenderer implements ICellRendererFactory {
 
   //Layout constants
   private static readonly EVENT_COLUMN_WIDTH = 500;
-  private static readonly MARGIN_LEFT = 5;
-  private static readonly MARGIN_RIGHT = 5;
   private static readonly CIRCLE_RADIUS = 4;
   private static readonly OVERVIEW_RECT_SIZE = 4;
   private static readonly BOXPLOT_OPACITY = 0.7;
   private static readonly SUMMARY_HEIGHT = 20;
-  X: ScaleLinear<number, number>;
-  Xzoomed: ScaleLinear<number, number>;
+  private popperInstance: Instance;
 
   getMinMax(arr: ISequence<IKeyValue<number>[]>, col: EventColumn): [number, number] {
     let min = Number.POSITIVE_INFINITY;
     let max = Number.NEGATIVE_INFINITY;
     //TODO: get overview mode
     const eventKeys = col.getDisplayEventList();
-    if (col.getBoxplotPossible()) eventKeys.push(EEventBoxplotDataKeys.max);
+    if (col.getBoxplotPossible()) eventKeys.push(EBoxplotDataKeys.max);
     arr.forEach((a) => {
       col.getEventValues(a, false, eventKeys).forEach((d) => {
         if (d.value === undefined) return;
@@ -74,16 +79,9 @@ export default class EventCellRenderer implements ICellRendererFactory {
         if (typeof data === 'symbol') {
           return;
         }
-        col.setScaleMin(data[0]);
-        col.setScaleMax(data[1]);
+        col.setScaleDimensions(data[0], data[1]);
       });
-    const min = col.getScaleMin() ? col.getScaleMin() : 0;
-    const max = col.getScaleMax() ? col.getScaleMax() : 100;
-    const colWidth = context.colWidth(col);
-    this.X = scaleLinear()
-      .domain([min, max])
-      .range([EventCellRenderer.MARGIN_LEFT, colWidth - EventCellRenderer.MARGIN_RIGHT]);
-    this.Xzoomed = col.transform.rescaleX(this.X);
+
     return {
       template: `<div class="svg-container" >
                     <svg class="svg-content">
@@ -96,8 +94,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
         const mainG = svg.append('g');
         const eventData = col.getMap(dataRow);
         this.addTooltipListeners(context, col, n, dataRow);
-
-        const X = this.Xzoomed;
+        const X = col.getXScale();
         if (col.getShowBoxplot()) this.createBoxPlot(mainG, eventData, X, col);
 
         if (col.getDisplayZeroLine()) {
@@ -122,7 +119,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         const eventData = col.getMap(d);
-        const X = this.Xzoomed;
+        const X = col.getXScale();
         for (const eventKey of col.getDisplayEventList(true)) {
           eventData
             .filter((x) => x.key === eventKey)
@@ -141,14 +138,16 @@ export default class EventCellRenderer implements ICellRendererFactory {
   private addTooltipListeners(context: IRenderContext, col: EventColumn, n: HTMLImageElement, dataRow: IDataRow) {
     const tooltipDiv = document.getElementById(context.idPrefix + '-tooltip-node');
     const showTooltip = () => {
+      const tooltipList = col.getTooltipContent(dataRow);
+
+      if (tooltipList === null) return;
       const tooltipContentDiv = document.getElementById(context.idPrefix + '-tooltip-content');
-      const createTooltip = col.updateTooltipContent(dataRow, tooltipContentDiv);
-      if (!createTooltip) return;
+      this.createTooltipTable(tooltipContentDiv, tooltipList);
       const tooltipArrowDiv = document.getElementById(context.idPrefix + '-tooltip-arrow');
-      if (col.popperInstance) {
-        col.popperInstance.destroy();
+      if (this.popperInstance) {
+        this.popperInstance.destroy();
       }
-      col.popperInstance = createPopper(n, tooltipDiv, {
+      this.popperInstance = createPopper(n, tooltipDiv, {
         strategy: 'fixed',
         placement: 'auto-start',
         modifiers: [
@@ -166,10 +165,10 @@ export default class EventCellRenderer implements ICellRendererFactory {
     };
     const hideTooltip = () => {
       tooltipDiv.style.display = 'none';
-      if (col.popperInstance) {
-        col.popperInstance.destroy();
+      if (this.popperInstance) {
+        this.popperInstance.destroy();
       }
-      col.popperInstance.setOptions((options) => ({
+      this.popperInstance.setOptions((options) => ({
         ...options,
         modifiers: [...options.modifiers, { name: 'eventListeners', enabled: false }],
       }));
@@ -278,11 +277,11 @@ export default class EventCellRenderer implements ICellRendererFactory {
         let formatter = format('.5f');
         svg.selectAll('*').remove();
         const mainG = svg.append('g');
-        let X = this.Xzoomed;
+        let X = col.getXScale();
         const range = X.domain();
         if (!range[0] || !range[1] || range[0] > range[1]) return;
         if (isSummary) {
-          X = this.Xzoomed.copy().range([0.01, 0.99]);
+          X = X.copy().range([0.01, 0.99]);
           formatter = format('.5%');
         }
 
@@ -377,8 +376,10 @@ export default class EventCellRenderer implements ICellRendererFactory {
           ])
           .on('zoom', (event: D3ZoomEvent<Element, unknown>) => {
             const transform: ZoomTransform = event.transform;
-            this.Xzoomed = transform.rescaleX(this.X);
-            g.call(axisTop(this.Xzoomed).ticks(EventCellRenderer.getTickNumberForXAxis(context.colWidth(col))));
+            const xScale = col.getXScale(false);
+            g.call(
+              axisTop(transform.rescaleX(xScale)).ticks(EventCellRenderer.getTickNumberForXAxis(context.colWidth(col)))
+            );
             if (!event.sourceEvent) return;
             if (event.sourceEvent && event.sourceEvent.constructor.name === 'MouseEvent') {
               return;
@@ -386,17 +387,17 @@ export default class EventCellRenderer implements ICellRendererFactory {
           })
           .on('end', (event: D3ZoomEvent<Element, unknown>) => {
             const transform = event.transform;
-            if (col.transform === transform) return;
-            col.transform = transform;
+            if (col.getScaleTransform() === transform) return;
+            col.setScaleTransform(transform);
             col.markDirty('values');
           });
 
         svg.call(zoomElement);
         svg.on('dblclick.zoom', () => {
-          col.transform = zoomIdentity;
+          col.setScaleTransform(zoomIdentity);
           col.markDirty('values');
         });
-        svg.call(zoomElement.transform, col.transform);
+        svg.call(zoomElement.transform, col.getScaleTransform());
       },
     };
   }
@@ -407,5 +408,29 @@ export default class EventCellRenderer implements ICellRendererFactory {
     if (width < 500) return 6;
     if (width < 800) return 8;
     return 10;
+  }
+
+  private createTooltipTable(tooltipContentDiv: HTMLElement, tooltipList: ITooltipRow[]) {
+    const tooltipSelection = select(tooltipContentDiv);
+    tooltipSelection.selectAll('*').remove();
+    const table = tooltipSelection.append('table').attr('class', cssClass('event-tooltip-table'));
+    table
+      .append('thead')
+      .selectAll('th')
+      .data(['', 'Event', 'Value', 'Date'])
+      .join('th')
+      .text((d) => d);
+    const rows = table.append('tbody').selectAll('tr').data(tooltipList).join('tr');
+    rows
+      .append('td')
+      .append('div')
+      .style('background-color', (d) => d.color)
+      .attr('class', cssClass('event-tooltip') + ' circle');
+    rows
+      .append('td')
+      .attr('class', 'event-name')
+      .text((d) => d.eventName);
+    rows.append('td').text((d) => d.value);
+    rows.append('td').text((d) => (d.date ? d.date.toLocaleString() : ''));
   }
 }

@@ -1,13 +1,12 @@
 import { EventColumn } from '../../model';
 import { ADialog, type IDialogContext } from '.';
-import { select } from 'd3-selection';
 
 export default class EventReferenceDialog extends ADialog {
-  private readonly before;
+  private readonly before: { boxplotReferenceEvent: string; referenceEvent: string };
 
   private static readonly BOXPLOT_REFERENCE_HEADER_TEXT = 'Boxplot Reference Event';
   private static readonly BOXPLOT_REFERENCE_COLUMN_NAME = 'boxplotReferenceEvent';
-  private static readonly REFERENCE_COLUMN_HEADER_TEXT: string = 'Reference Event';
+  private static readonly REFERENCE_COLUMN_HEADER_TEXT = 'Reference Event';
   private static readonly REFERENCE_COLUMN_NAME: string = 'referenceEvent';
 
   constructor(
@@ -32,13 +31,13 @@ export default class EventReferenceDialog extends ADialog {
   }
 
   private livePreviews(node: HTMLElement) {
-    select(node)
-      .selectAll('.lu-checkbox')
-      .on('click', () => {
+    node.querySelectorAll('.lu-checkbox').forEach((d) =>
+      d.addEventListener('click', () => {
         if (this.showLivePreviews) {
           this.submit();
         }
-      });
+      })
+    );
     this.enableLivePreviews('input');
   }
 

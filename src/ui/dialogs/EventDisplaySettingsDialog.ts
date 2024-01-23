@@ -1,9 +1,13 @@
 import { EventColumn } from '../../model';
 import { ADialog, type IDialogContext } from '.';
-import { select } from 'd3-selection';
 
 export default class EventDisplaySettingsDialog extends ADialog {
-  private readonly before;
+  private readonly before: {
+    displayEventList: string[];
+    displayEventListOverview: string[];
+    showBoxplot: boolean;
+    displayZeroLine: boolean;
+  };
 
   private static readonly EVENT_DISPLAY_COLUMN_HEADER_TEXT = 'Show Events';
   private static readonly EVENT_DISPLAY_COLUMN_OVERVIEW_HEADER_TEXT = 'Show Events in Overview';
@@ -29,15 +33,15 @@ export default class EventDisplaySettingsDialog extends ADialog {
     };
   }
 
-  protected build(node: HTMLElement): boolean | void {
-    this.eventDisplaySettings(
+  protected build(node: HTMLElement): void {
+    this.buildEventDisplaySettings(
       node,
       EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_HEADER_TEXT,
       this.column.getEventList(),
       EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_NAME,
       this.column.getDisplayEventList()
     );
-    this.eventDisplaySettings(
+    this.buildEventDisplaySettings(
       node,
       EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_OVERVIEW_HEADER_TEXT,
       this.column.getEventList(true),
@@ -45,7 +49,7 @@ export default class EventDisplaySettingsDialog extends ADialog {
       this.column.getDisplayEventList(true)
     );
     if (this.column.getBoxplotPossible()) {
-      this.checkboxSettings(
+      this.buildEventCheckboxSettings(
         node,
         EventDisplaySettingsDialog.SHOW_BOXPLOT_NAME,
         EventDisplaySettingsDialog.SHOW_BOXPLOT_HEADER_TEXT,
@@ -53,7 +57,7 @@ export default class EventDisplaySettingsDialog extends ADialog {
       );
     }
 
-    this.checkboxSettings(
+    this.buildEventCheckboxSettings(
       node,
       EventDisplaySettingsDialog.SHOW_ZERO_LINE_NAME,
       EventDisplaySettingsDialog.SHOW_ZERO_LINE_HEADER_TEXT,
@@ -62,7 +66,7 @@ export default class EventDisplaySettingsDialog extends ADialog {
     this.livePreviews(node);
   }
 
-  private checkboxSettings(node: HTMLElement, name: string, headerText: string, checked: boolean = false) {
+  private buildEventCheckboxSettings(node: HTMLElement, name: string, headerText: string, checked: boolean = false) {
     node.insertAdjacentHTML(
       'beforeend',
       `
@@ -73,17 +77,18 @@ export default class EventDisplaySettingsDialog extends ADialog {
   }
 
   private livePreviews(node: HTMLElement) {
-    select(node)
-      .selectAll('.lu-checkbox')
-      .on('click', () => {
+    node.querySelectorAll('.lu-checkbox').forEach((d) =>
+      d.addEventListener('click', () => {
         if (this.showLivePreviews) {
           this.submit();
         }
-      });
+      })
+    );
+
     this.enableLivePreviews('input');
   }
 
-  private eventDisplaySettings(
+  private buildEventDisplaySettings(
     node: HTMLElement,
     headerText: string,
     allEventsList: string[],
@@ -113,16 +118,14 @@ export default class EventDisplaySettingsDialog extends ADialog {
     this.findInput('input[name=' + EventDisplaySettingsDialog.SHOW_ZERO_LINE_NAME + ']').checked =
       this.before.displayZeroLine;
 
-    select(this.node)
-      .selectAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_NAME}]`)
-      .nodes()
+    this.node
+      .querySelectorAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_NAME}]`)
       .forEach((d: HTMLInputElement) => {
         d.checked = this.before.displayEventList.includes(d.value);
       });
 
-    select(this.node)
-      .selectAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_OVERVIEW_NAME}]`)
-      .nodes()
+    this.node
+      .querySelectorAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_OVERVIEW_NAME}]`)
       .forEach((d: HTMLInputElement) => {
         d.checked = this.before.displayEventListOverview.includes(d.value);
       });
@@ -130,7 +133,7 @@ export default class EventDisplaySettingsDialog extends ADialog {
     this.submit();
   }
 
-  protected submit(): boolean | undefined {
+  protected submit(): boolean {
     if (this.column.getBoxplotPossible()) {
       const showBoxplot = this.findInput('input[name=' + EventDisplaySettingsDialog.SHOW_BOXPLOT_NAME + ']').checked;
       this.column.setShowBoxplot(showBoxplot);
@@ -140,17 +143,20 @@ export default class EventDisplaySettingsDialog extends ADialog {
       'input[name=' + EventDisplaySettingsDialog.SHOW_ZERO_LINE_NAME + ']'
     ).checked;
     this.column.setDisplayZeroLine(displayZeroLine);
-    const selectedEventsList = select(this.node)
-      .selectAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_NAME}]:checked`)
-      .nodes()
-      .map((d: HTMLInputElement) => d.value);
+    const selectedEventsList = [];
+    this.node
+      .querySelectorAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_NAME}]:checked`)
+      .forEach((d: HTMLInputElement) => {
+        selectedEventsList.push(d.value);
+      });
     this.column.setDisplayEventList(selectedEventsList);
-    const selectedEventsListOverview = select(this.node)
-      .selectAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_OVERVIEW_NAME}]:checked`)
-      .nodes()
-      .map((d: HTMLInputElement) => d.value);
+    const selectedEventsListOverview = [];
+    this.node
+      .querySelectorAll(`input[name=${EventDisplaySettingsDialog.EVENT_DISPLAY_COLUMN_OVERVIEW_NAME}]:checked`)
+      .forEach((d: HTMLInputElement) => {
+        selectedEventsListOverview.push(d.value);
+      });
     this.column.setDisplayEventList(selectedEventsListOverview, true);
-
     this.column.markDirty('values');
     return true;
   }

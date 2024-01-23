@@ -98,6 +98,10 @@ $lu_aggregate_hierarchy_color: #000 !default;
 
 $lu_taggle_border_color: #6d6c6c !default;
 
+$lu_tooltip_class: #{$lu_css_prefix}-tooltip-node !default;
+$lu_tooltip_background_color: #444 !default;
+$lu_tooltip_text_color: white !default;
+
 $lu_assets: './assets' !default;
 
 // $lu_use_font_awesome: true !default;

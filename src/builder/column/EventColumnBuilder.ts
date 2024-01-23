@@ -1,5 +1,5 @@
 import {
-  EEventBoxplotDataKeys,
+  EBoxplotDataKeys,
   ETimeUnit,
   EventColumn,
   type ICategory,
@@ -181,7 +181,7 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
     data.forEach((d) => {
       const v = Object.keys(d[col]);
       v.forEach((vi) => {
-        if (!Object.keys(EEventBoxplotDataKeys).includes(vi)) events.add(vi);
+        if (!Object.keys(EBoxplotDataKeys).includes(vi)) events.add(vi);
       });
     });
     this.desc.eventList = Array.from(events);
