@@ -21,7 +21,7 @@ import { format } from 'd3-format';
 import { interpolateRgbBasis } from 'd3-interpolate';
 import { zoom, type D3ZoomEvent, zoomIdentity, ZoomTransform } from 'd3-zoom';
 import { axisTop } from 'd3-axis';
-import { createPopper, type Instance } from '@popperjs/core';
+
 import { cssClass } from '../styles';
 
 export default class EventCellRenderer implements ICellRendererFactory {
@@ -34,7 +34,6 @@ export default class EventCellRenderer implements ICellRendererFactory {
   private static readonly OVERVIEW_RECT_SIZE = 4;
   private static readonly BOXPLOT_OPACITY = 0.7;
   private static readonly SUMMARY_HEIGHT = 20;
-  private popperInstance: Instance;
 
   getMinMax(arr: ISequence<IKeyValue<number>[]>, col: EventColumn): [number, number] {
     let min = Number.POSITIVE_INFINITY;
@@ -136,42 +135,15 @@ export default class EventCellRenderer implements ICellRendererFactory {
   }
 
   private addTooltipListeners(context: IRenderContext, col: EventColumn, n: HTMLImageElement, dataRow: IDataRow) {
-    const tooltipDiv = document.getElementById(context.idPrefix + '-tooltip-node');
     const showTooltip = () => {
       const tooltipList = col.getTooltipContent(dataRow);
 
       if (tooltipList === null) return;
-      const tooltipContentDiv = document.getElementById(context.idPrefix + '-tooltip-content');
-      this.createTooltipTable(tooltipContentDiv, tooltipList);
-      const tooltipArrowDiv = document.getElementById(context.idPrefix + '-tooltip-arrow');
-      if (this.popperInstance) {
-        this.popperInstance.destroy();
-      }
-      this.popperInstance = createPopper(n, tooltipDiv, {
-        strategy: 'fixed',
-        placement: 'auto-start',
-        modifiers: [
-          { name: 'arrow', options: { element: tooltipArrowDiv } },
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 4],
-            },
-          },
-        ],
-      });
-
-      tooltipDiv.style.display = 'block';
+      context.tooltipManager.updateTooltipContent(this.createTooltipTable(tooltipList));
+      context.tooltipManager.showTooltip(n);
     };
     const hideTooltip = () => {
-      tooltipDiv.style.display = 'none';
-      if (this.popperInstance) {
-        this.popperInstance.destroy();
-      }
-      this.popperInstance.setOptions((options) => ({
-        ...options,
-        modifiers: [...options.modifiers, { name: 'eventListeners', enabled: false }],
-      }));
+      context.tooltipManager.hideTooltip();
     };
 
     for (const event of ['mouseenter']) {
@@ -357,7 +329,6 @@ export default class EventCellRenderer implements ICellRendererFactory {
         const div = select(n);
         const svg = div.select('svg') as Selection<SVGSVGElement, unknown, null, undefined>;
         svg.selectAll('*').remove();
-
         if (n.classList.contains('lu-side-panel-summary')) {
           const order = context.provider.getFirstRanking().getOrder();
           const group = { color: 'black', name: 'mygroup', order };
@@ -410,10 +381,9 @@ export default class EventCellRenderer implements ICellRendererFactory {
     return 10;
   }
 
-  private createTooltipTable(tooltipContentDiv: HTMLElement, tooltipList: ITooltipRow[]) {
-    const tooltipSelection = select(tooltipContentDiv);
-    tooltipSelection.selectAll('*').remove();
-    const table = tooltipSelection.append('table').attr('class', cssClass('event-tooltip-table'));
+  private createTooltipTable(tooltipList: ITooltipRow[]): HTMLElement {
+    const node = document.createElement('div');
+    const table = select(node).append('table').attr('class', cssClass('event-tooltip-table'));
     table
       .append('thead')
       .selectAll('th')
@@ -432,5 +402,6 @@ export default class EventCellRenderer implements ICellRendererFactory {
       .text((d) => d.eventName);
     rows.append('td').text((d) => d.value);
     rows.append('td').text((d) => (d.date ? d.date.toLocaleString() : ''));
+    return node;
   }
 }

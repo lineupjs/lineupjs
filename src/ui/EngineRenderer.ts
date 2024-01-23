@@ -14,6 +14,7 @@ import { EMode, type IRankingHeaderContext, type IRankingHeaderContextContainer 
 import SlopeGraph from './SlopeGraph';
 import type { ADialog } from './dialogs';
 import SelectionIndicator from './SelectionIndicator';
+import TooltipManager from './TooltipManager';
 
 /**
  * emitted when the highlight changes
@@ -91,26 +92,15 @@ export default class EngineRenderer extends AEventDispatcher {
 
     parent.appendChild(dialogManager.node);
 
-    // append global tooltip node for popper.js
-    const tooltipNode = parent.ownerDocument!.createElement('div');
-    tooltipNode.id = `${this.idPrefix}-tooltip-node`;
-    tooltipNode.classList.add(cssClass('tooltip-node'));
-    parent.appendChild(tooltipNode);
-    const tooltipContentNode = parent.ownerDocument!.createElement('div');
-    tooltipContentNode.id = `${this.idPrefix}-tooltip-content`;
-    tooltipNode.appendChild(tooltipContentNode);
-    const tooltipArrow = parent.ownerDocument!.createElement('div');
-    tooltipArrow.id = `${this.idPrefix}-tooltip-arrow`;
-    tooltipArrow.classList.add(cssClass('tooltip-arrow'));
-    tooltipArrow.setAttribute('data-popper-arrow', '');
-    tooltipNode.appendChild(tooltipArrow);
-
+    const tooltipManager = new TooltipManager({ doc: parent.ownerDocument!, idPrefix: this.idPrefix });
+    parent.appendChild(tooltipManager.node);
     this.ctx = {
       idPrefix: this.idPrefix,
       document: parent.ownerDocument!,
       provider: data,
       tasks: data.getTaskExecutor(),
       dialogManager,
+      tooltipManager,
       resolveToolbarActions: (col, keys) => this.options.resolveToolbarActions(col, keys, this.options.toolbarActions),
       resolveToolbarDialogAddons: (col, keys) =>
         this.options.resolveToolbarDialogAddons(col, keys, this.options.toolbarDialogAddons),
