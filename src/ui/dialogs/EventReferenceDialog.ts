@@ -114,13 +114,10 @@ export default class EventReferenceDialog extends ADialog {
       'input[name=' + EventReferenceDialog.REFERENCE_COLUMN_NAME + ']:checked'
     ).value;
     this.column.setReferenceEvent(referenceEvent);
-
-    this.column.markDirty('values');
     return true;
   }
   protected cancel(): void {
     this.column.setReferenceEvent(this.before.referenceEvent);
     this.column.setBoxplotReferenceEvent(this.before.boxplotReferenceEvent);
-    this.column.markDirty('values');
   }
 }

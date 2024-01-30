@@ -25,7 +25,7 @@ import { ECompareValueType, type IDataRow, type ITypeFactory } from './interface
 import type { IKeyValue } from './IArrayColumn';
 import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
-import type { IBoxPlotData, IEventListener } from '../internal';
+import type { IBoxPlotData, IEventListener, ISequence } from '../internal';
 import { integrateDefaults } from './internal';
 import { format } from 'd3-format';
 import { scaleLinear, type ScaleLinear } from 'd3-scale';
@@ -58,6 +58,21 @@ export interface ITooltipRow {
 }
 
 /**
+ * Callback function to update a legend outside of LineUp.
+ * It is called whenever the color mapping changes.
+ * @param categories - The categories of the legend.
+ * @param colorMapping - Color mapping function to obtain a color for each category.
+ * @param boxPlotlabel - The label for the boxplot legend.
+ * @param boxPlotColor - The color for the boxplot legend.
+ */
+export type TEventLegendUpdateCallback = (
+  categories: ICategory[],
+  colorMapping: ICategoricalColorMappingFunction,
+  boxPlotlabel?: string,
+  boxPlotColor?: string
+) => void;
+
+/**
  * emitted when the mapping property changes
  * @asMemberOf NumberMapColumn
  * @event
@@ -85,6 +100,14 @@ export declare function sortMethodChangedNMC(previous: EAdvancedSortMethod, curr
 export declare function filterChangedNMC(previous: INumberFilter | null, current: INumberFilter | null): void;
 
 export declare type IEventColumnDesc = IMapColumnDesc<number> & {
+  /**
+   * indicates if the axis should be adapted to the current filters.
+   * If set to true, the minimum and maximum axis value will adapt to data rows currently present in the table.
+   * If set to false, the axis will always show global minimum and maximum event values.
+   * @default false
+   */
+  adaptAxisToFilters?: boolean;
+
   /**
    * indicates if boxplots can be displayed. When set to false, settings related to boxplots are hidden.
    * @default false
@@ -147,9 +170,9 @@ export declare type IEventColumnDesc = IMapColumnDesc<number> & {
   /**
    * Callback function to update a legend outside of LineUp.
    * It is called whenever the color mapping changes.
-   * @param categories - The categories of the legend.
+   * Its type is {@link TEventLegendUpdateCallback}.
    */
-  legendUpdateCallback?: (categories: ICategory[]) => void;
+  legendUpdateCallback?: TEventLegendUpdateCallback;
 
   /**
    * The unit of the event scale in milliseconds.
@@ -205,7 +228,7 @@ export default class EventColumn extends MapColumn<number> {
 
   static readonly EVENT_FILTER_CHANGED = NumberColumn.EVENT_FILTER_CHANGED;
 
-  static readonly TIME_UNITS_IN_MS = {
+  static readonly TIME_UNITS_IN_MS: Record<ETimeUnit, number> = {
     ms: 1,
     s: 1000,
     min: 1000 * 60,
@@ -241,12 +264,7 @@ export default class EventColumn extends MapColumn<number> {
 
   private readonly boxplotPossible: boolean;
 
-  private legendUpdateCallback: (
-    categories: ICategory[],
-    colorMapping: ICategoricalColorMappingFunction,
-    boxPlotlabel?: string,
-    boxPlotColor?: string
-  ) => void;
+  private legendUpdateCallback: TEventLegendUpdateCallback;
 
   private scaleMin: number;
 
@@ -265,6 +283,9 @@ export default class EventColumn extends MapColumn<number> {
   private heatmapBinCount: number = 50;
   private xScale: ScaleLinear<number, number>;
   private xScaleZoomed: ScaleLinear<number, number>;
+  private minMaxCache: Map<number, [number, number]> = new Map();
+  private minMaxPrecomputed: Map<string, [number, number]> = new Map();
+  private adaptAxisToFilters: boolean;
 
   constructor(id: string, desc: Readonly<IEventColumnDesc>) {
     super(
@@ -314,25 +335,85 @@ export default class EventColumn extends MapColumn<number> {
       value: 0,
     });
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
+    this.adaptAxisToFilters = typeof desc.adaptAxisToFilters !== 'undefined' ? desc.adaptAxisToFilters : false;
     this.updateLegend();
   }
 
-  private updateLegend() {
-    if (this.legendUpdateCallback) {
-      let boxPlotLabel = undefined;
-      let boxPlotColor = undefined;
-      if (this.showBoxplot) {
-        const boxplotCategory = this.categories.filter((x) => x.name === EventColumn.BOXPLOT_COLOR_NAME)[0];
-        boxPlotLabel = 'Deviation from ' + this.boxplotReferenceEvent;
-        boxPlotColor = this.colorMapping.apply(boxplotCategory);
-      }
-      this.legendUpdateCallback(
-        structuredClone(this.categories.filter((x) => x.name !== EventColumn.BOXPLOT_COLOR_NAME)),
-        this.colorMapping,
-        boxPlotLabel,
-        boxPlotColor
-      );
+  private eventMappingChanged() {
+    if (this.adaptAxisToFilters) {
+      this.minMaxCache.clear();
+    } else {
+      this.loadMinMax();
     }
+
+    this.markDirty('values');
+  }
+
+  private updateLegend() {
+    if (!this.legendUpdateCallback) return;
+    let boxPlotLabel = undefined;
+    let boxPlotColor = undefined;
+    if (this.showBoxplot) {
+      const boxplotCategory = this.categories.filter((x) => x.name === EventColumn.BOXPLOT_COLOR_NAME)[0];
+      boxPlotLabel = 'Deviation from ' + this.boxplotReferenceEvent;
+      boxPlotColor = this.colorMapping.apply(boxplotCategory);
+    }
+    this.legendUpdateCallback(
+      structuredClone(this.categories.filter((x) => x.name !== EventColumn.BOXPLOT_COLOR_NAME)),
+      this.colorMapping,
+      boxPlotLabel,
+      boxPlotColor
+    );
+  }
+
+  onDataUpdate(_rows: ISequence<IDataRow>): void {
+    super.onDataUpdate(_rows);
+    const currentState = {
+      referenceEvent: this.referenceEvent,
+      boxplotReferenceEvent: this.boxplotReferenceEvent,
+      eventDisplayList: [...this.displayEventList],
+      showBoxplot: this.showBoxplot,
+    };
+    this.minMaxPrecomputed.clear();
+    for (const referenceEvent of this.eventList) {
+      this.referenceEvent = referenceEvent;
+      for (const displayEvent of this.eventList) {
+        this.displayEventList = [displayEvent];
+        this.boxplotReferenceEvent = displayEvent;
+        for (const showBoxplot of this.getBoxplotPossible() ? [true, false] : [false]) {
+          this.showBoxplot = showBoxplot;
+          this.minMaxPrecomputed.set(
+            referenceEvent + displayEvent + showBoxplot,
+            this.computeMinMax(_rows.map((x) => this.getMap(x)))
+          );
+        }
+      }
+    }
+    this.referenceEvent = currentState.referenceEvent;
+    this.boxplotReferenceEvent = currentState.boxplotReferenceEvent;
+    this.displayEventList = currentState.eventDisplayList;
+    this.showBoxplot = currentState.showBoxplot;
+    if (!this.adaptAxisToFilters) {
+      this.loadMinMax();
+    }
+  }
+
+  private loadMinMax() {
+    if (this.minMaxPrecomputed.size === 0) {
+      return;
+    }
+    const [min, max] = this.getDisplayEventList()
+      .map((displayEvent) => {
+        const showBoxplot = this.boxplotReferenceEvent === displayEvent && this.getShowBoxplot();
+        return this.minMaxPrecomputed.get(this.referenceEvent + displayEvent + showBoxplot);
+      })
+      .reduce(
+        (acc, val) => {
+          return [Math.min(acc[0], val[0]), Math.max(acc[1], val[1])];
+        },
+        [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]
+      );
+    this.setScaleDimensions(min, max);
   }
 
   getTooltipContent(row: IDataRow): ITooltipRow[] | null {
@@ -353,6 +434,41 @@ export default class EventColumn extends MapColumn<number> {
   getXScale(zoomed = true) {
     if (!this.xScale) this.createXScale();
     return zoomed ? this.xScaleZoomed : this.xScale;
+  }
+
+  computeMinMax(dataRows: ISequence<IKeyValue<number>[]>, rowIndices?: number[]): [number, number] {
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+    const eventKeys = this.getDisplayEventList();
+    if (this.getBoxplotPossible() && this.getShowBoxplot()) {
+      eventKeys.push(EBoxplotDataKeys.min);
+      eventKeys.push(EBoxplotDataKeys.max);
+    }
+    const useCache = typeof rowIndices !== 'undefined' && rowIndices.length > 0;
+    dataRows.forEach((row, i) => {
+      const rowIndex = useCache ? rowIndices[i] : -1;
+      let rowMin = Number.POSITIVE_INFINITY;
+      let rowMax = Number.NEGATIVE_INFINITY;
+      if (!useCache || !this.minMaxCache.has(rowIndex)) {
+        this.getEventValues(row, false, eventKeys).forEach((d) => {
+          if (d.value === undefined) return;
+          if (d.value < rowMin) {
+            rowMin = d.value;
+          }
+          if (d.value > rowMax) {
+            rowMax = d.value;
+          }
+        });
+        useCache && this.minMaxCache.set(rowIndex, [rowMin, rowMax]);
+      } else {
+        const cached = this.minMaxCache.get(rowIndex);
+        rowMin = cached[0];
+        rowMax = cached[1];
+      }
+      min = Math.min(min, rowMin);
+      max = Math.max(max, rowMax);
+    });
+    return [min, max];
   }
 
   private getTooltipData(events: IKeyValue<number>[]) {
@@ -410,6 +526,18 @@ export default class EventColumn extends MapColumn<number> {
     return this.displayZeroLine;
   }
 
+  getAdaptAxisToFilters() {
+    return this.adaptAxisToFilters;
+  }
+
+  setAdaptAxisToFilters(adaptAxisToFilters: boolean) {
+    this.adaptAxisToFilters = adaptAxisToFilters;
+    if (adaptAxisToFilters) {
+      this.loadMinMax();
+    }
+    this.eventMappingChanged();
+  }
+
   setDisplayZeroLine(displayZeroLine: boolean) {
     this.displayZeroLine = displayZeroLine;
     this.fire([Column.EVENT_DIRTY_VALUES]);
@@ -444,7 +572,8 @@ export default class EventColumn extends MapColumn<number> {
       this.displayEventListOverview = eventList;
       return;
     }
-    this.displayEventList = eventList;
+    this.displayEventList = eventList.slice();
+    this.eventMappingChanged();
   }
 
   getBoxplotPossible() {
@@ -458,6 +587,7 @@ export default class EventColumn extends MapColumn<number> {
   setBoxplotReferenceEvent(boxplotReferenceEvent: string) {
     this.boxplotReferenceEvent = boxplotReferenceEvent;
     this.updateLegend();
+    this.eventMappingChanged();
   }
 
   getShowBoxplot() {
@@ -465,7 +595,9 @@ export default class EventColumn extends MapColumn<number> {
   }
   setShowBoxplot(showBoxplot: boolean) {
     this.showBoxplot = showBoxplot;
+    this.eventMappingChanged();
     this.updateLegend();
+    console.log('show boxplot', showBoxplot);
   }
 
   getBoxplotData(eventData: IKeyValue<number>[]): IBoxPlotData {
@@ -538,6 +670,7 @@ export default class EventColumn extends MapColumn<number> {
   setScaleTransform(transform: ZoomTransform) {
     this.scaleTransform = transform;
     this.createXScale();
+    this.markDirty('values');
   }
 
   getSortMethod() {
@@ -550,6 +683,7 @@ export default class EventColumn extends MapColumn<number> {
 
   setReferenceEvent(referenceEvent: string) {
     this.referenceEvent = referenceEvent;
+    this.eventMappingChanged();
   }
 
   setSortMethod(sort: string) {
@@ -565,6 +699,7 @@ export default class EventColumn extends MapColumn<number> {
   }
 
   setScaleDimensions(min: number, max: number) {
+    if (this.scaleMin === min && this.scaleMax === max) return;
     this.scaleMin = Math.max(min, this.scaleMinBound);
     this.scaleMax = Math.min(max, this.scaleMaxBound);
     this.createXScale();

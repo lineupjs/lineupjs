@@ -6,14 +6,7 @@ import {
   type IRenderContext,
   type ISummaryRenderer,
 } from './interfaces';
-import {
-  EventColumn,
-  EBoxplotDataKeys,
-  type IDataRow,
-  type IKeyValue,
-  type IOrderedGroup,
-  type ITooltipRow,
-} from '../model';
+import { EventColumn, type IDataRow, type IKeyValue, type IOrderedGroup, type ITooltipRow } from '../model';
 import { scaleLinear, scaleSequential, type ScaleLinear } from 'd3-scale';
 import { select, type Selection } from 'd3-selection';
 import { bin, max } from 'd3-array';
@@ -29,31 +22,10 @@ export default class EventCellRenderer implements ICellRendererFactory {
   readonly group: string = 'advanced';
 
   //Layout constants
-  private static readonly EVENT_COLUMN_WIDTH = 500;
   private static readonly CIRCLE_RADIUS = 4;
   private static readonly OVERVIEW_RECT_SIZE = 4;
   private static readonly BOXPLOT_OPACITY = 0.7;
   private static readonly SUMMARY_HEIGHT = 20;
-
-  getMinMax(arr: ISequence<IKeyValue<number>[]>, col: EventColumn): [number, number] {
-    let min = Number.POSITIVE_INFINITY;
-    let max = Number.NEGATIVE_INFINITY;
-    //TODO: get overview mode
-    const eventKeys = col.getDisplayEventList();
-    if (col.getBoxplotPossible()) eventKeys.push(EBoxplotDataKeys.max);
-    arr.forEach((a) => {
-      col.getEventValues(a, false, eventKeys).forEach((d) => {
-        if (d.value === undefined) return;
-        if (d.value < min) {
-          min = d.value;
-        }
-        if (d.value > max) {
-          max = d.value;
-        }
-      });
-    });
-    return [min, max];
-  }
 
   canRender(col: any, mode: ERenderMode): boolean {
     if (col instanceof EventColumn) {
@@ -63,42 +35,42 @@ export default class EventCellRenderer implements ICellRendererFactory {
   }
 
   create(col: EventColumn, context: IRenderContext): any {
-    context.tasks
-      .groupRows(
-        col,
-        { color: 'black', name: 'eventGrouping', order: col.findMyRanker().getOrder() },
-        'minMax',
-        (rows) =>
-          this.getMinMax(
-            rows.map((r) => col.getMap(r)),
-            col
-          )
-      )
-      .then((data) => {
-        if (typeof data === 'symbol') {
-          return;
-        }
-        col.setScaleDimensions(data[0], data[1]);
-      });
+    if (col.getAdaptAxisToFilters()) {
+      context.tasks
+        .groupRows(
+          col,
+          { color: 'black', name: 'eventGrouping', order: col.findMyRanker().getOrder() },
+          'minMax',
+          (rows) => {
+            const eventData = rows.map((r) => col.getMap(r));
+            const rowIndices = eventData['it'];
+            return col.computeMinMax(eventData, rowIndices);
+          }
+        )
+        .then((data) => {
+          if (typeof data === 'symbol') {
+            return;
+          }
+          col.setScaleDimensions(data[0], data[1]);
+        });
+    }
 
     return {
       template: `<div class="svg-container" >
                     <svg class="svg-content">
                     </svg>
                 </div>`,
-      update: (n: HTMLImageElement, dataRow: IDataRow) => {
+      update: (n: HTMLDivElement, dataRow: IDataRow) => {
         const div = select(n);
-        const svg = div.select('svg');
-        svg.selectAll('*').remove();
-        const mainG = svg.append('g');
+        const svg = div.select('svg') as Selection<SVGSVGElement, unknown, null, undefined>;
         const eventData = col.getMap(dataRow);
         this.addTooltipListeners(context, col, n, dataRow);
         const X = col.getXScale();
-        if (col.getShowBoxplot()) this.createBoxPlot(mainG, eventData, X, col);
-
+        this.updateBoxPlot(svg, eventData, X, col);
         if (col.getDisplayZeroLine()) {
-          mainG
-            .append('line')
+          svg
+            .selectAll('.zeroLine')
+            .join((enter) => enter.append('line').attr('class', 'zeroLine'))
             .attr('x1', X(0))
             .attr('x2', X(0))
             .attr('y1', '0%')
@@ -106,11 +78,10 @@ export default class EventCellRenderer implements ICellRendererFactory {
             .attr('stroke', 'lightgrey')
             .attr('stroke-width', '1px');
         }
-        mainG
-          .selectAll('circle')
+        svg
+          .selectAll('.eventCircle')
           .data(col.getEventValues(eventData))
-          .enter()
-          .append('circle')
+          .join((enter) => enter.append('circle').attr('class', 'eventCircle'))
           .attr('cx', (x) => X(x.value))
           .attr('cy', '50%')
           .attr('r', EventCellRenderer.CIRCLE_RADIUS)
@@ -134,7 +105,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private addTooltipListeners(context: IRenderContext, col: EventColumn, n: HTMLImageElement, dataRow: IDataRow) {
+  private addTooltipListeners(context: IRenderContext, col: EventColumn, n: HTMLDivElement, dataRow: IDataRow) {
     const showTooltip = () => {
       const tooltipList = col.getTooltipContent(dataRow);
 
@@ -154,29 +125,31 @@ export default class EventCellRenderer implements ICellRendererFactory {
     }
   }
 
-  private createBoxPlot(
-    mainG: Selection<SVGGElement, unknown, null, undefined>,
+  private updateBoxPlot(
+    svg: Selection<SVGElement, unknown, null, undefined>,
     eventData: IKeyValue<number>[],
     X: ScaleLinear<number, number, never>,
     col: EventColumn
   ) {
-    const data = col.getBoxplotData(eventData);
+    const showBoxplot = col.getShowBoxplot();
+    const data = showBoxplot ? col.getBoxplotData(eventData) : null;
 
-    if (!data || isNaN(data.median)) return;
-    const boxSvg = mainG.append('g');
-
+    if (showBoxplot && (!data || isNaN(data.median))) return;
     const yCenter = 50;
     const boxHeight = 50;
 
     // vertical lines
-    boxSvg
-      .selectAll('mainLines')
-      .data([
-        [data.min, data.q1],
-        [data.q3, data.max],
-      ])
-      .enter()
-      .append('line')
+    svg
+      .selectAll('.mainLines')
+      .data(
+        showBoxplot
+          ? [
+              [data.min, data.q1],
+              [data.q3, data.max],
+            ]
+          : []
+      )
+      .join((enter) => enter.append('line').attr('class', 'mainLines'))
       .attr('y1', yCenter + '%')
       .attr('y2', yCenter + '%')
       .attr('x1', (d) => X(d[0]))
@@ -184,29 +157,26 @@ export default class EventCellRenderer implements ICellRendererFactory {
       .attr('stroke', 'black');
 
     // box
-    boxSvg
-      .append('rect')
+    svg
+      .selectAll('.boxplotBox')
+      .data(showBoxplot ? [data] : [])
+      .join((enter) => enter.append('rect').attr('class', 'boxplotBox'))
       .attr('y', yCenter - boxHeight / 2 + '%')
-      .attr('x', X(data.q1))
-      .attr('width', X(data.q3) - X(data.q1))
+      .attr('x', (d) => X(d.q1))
+      .attr('width', (d) => X(d.q3) - X(d.q1))
       .attr('height', boxHeight + '%')
       .attr('stroke', 'black')
       .style('fill', col.getCategoryColor(EventColumn.BOXPLOT_COLOR_NAME))
       .style('opacity', EventCellRenderer.BOXPLOT_OPACITY);
     // horizontal lines
-    boxSvg
-      .selectAll('toto')
-      .data([data.min, data.median, data.max])
-      .enter()
-      .append('line')
+    svg
+      .selectAll('.boxPlotVerticalLines')
+      .data(showBoxplot ? [data.min, data.median, data.max] : [])
+      .join((enter) => enter.append('line').attr('class', 'boxPlotVerticalLines'))
       .attr('y1', yCenter - boxHeight / 2 + '%')
       .attr('y2', yCenter + boxHeight / 2 + '%')
-      .attr('x1', function (d) {
-        return X(d);
-      })
-      .attr('x2', function (d) {
-        return X(d);
-      })
+      .attr('x1', (d) => X(d))
+      .attr('x2', (d) => X(d))
       .attr('stroke', 'black');
   }
 
@@ -216,7 +186,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
                     <svg class="svg-content">
                     </svg>
                 </div>`,
-      update: (n: HTMLImageElement, group: IOrderedGroup) => {
+      update: (n: HTMLDivElement, group: IOrderedGroup) => {
         const keyList = col.getDisplayEventList();
         this.drawHeatmap(context, col, group, keyList, n);
       },
@@ -228,7 +198,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
     col: EventColumn,
     group: IOrderedGroup,
     keyList: string[],
-    n: HTMLImageElement,
+    n: HTMLDivElement,
     isSummary = false
   ) {
     context.tasks
@@ -245,20 +215,21 @@ export default class EventCellRenderer implements ICellRendererFactory {
         }
         const Y = scaleLinear().domain([0, keyList.length]).range([0, 100]);
         const div = select(n);
-        const svg = div.select('svg');
+        const svg = div.select('svg') as Selection<SVGSVGElement, unknown, null, undefined>;
         let formatter = format('.5f');
-        svg.selectAll('*').remove();
-        const mainG = svg.append('g');
         let X = col.getXScale();
         const range = X.domain();
-        if (!range[0] || !range[1] || range[0] > range[1]) return;
+        if (typeof range[0] === 'undefined' || typeof range[1] === 'undefined' || range[0] > range[1]) return;
         if (isSummary) {
           X = X.copy().range([0.01, 0.99]);
           formatter = format('.5%');
         }
+        const heatmapContentG = svg
+          .selectAll('.heatmapContentG')
+          .data(['heatmapContentG'])
+          .join((enter) => enter.append('g').attr('class', (d) => d));
 
         const binning = bin().domain([range[0], range[1]]).thresholds(col.getHeatmapBinCount());
-
         for (let i = 0; i < keyList.length; i++) {
           const currentKey = keyList[i];
           const filtered = data.filter((x) => x.key === currentKey);
@@ -272,11 +243,10 @@ export default class EventCellRenderer implements ICellRendererFactory {
             .domain([0, maxVal])
             .interpolator(interpolateRgbBasis(['white', color]));
           if (maxVal === 0) colorScale.interpolator(interpolateRgbBasis(['white', 'white']));
-          mainG
-            .selectAll('row' + i)
+          heatmapContentG
+            .selectAll('.heatmapRect' + i)
             .data(binnedData.filter((d) => X(d.x1) > 0))
-            .enter()
-            .append('rect')
+            .join((enter) => enter.append('rect').attr('class', 'heatmapRect' + i))
             .attr('x', (d) => {
               return isSummary ? formatter(X(d.x0)) : X(d.x0);
             })
@@ -289,11 +259,13 @@ export default class EventCellRenderer implements ICellRendererFactory {
             .append('title')
             .text((d) => `[${d.x0}; ${d.x1}]: ${d.length}`);
 
-          mainG
-            .append('rect')
-            .attr('x', formatter(X(binnedData[0].x0)))
+          svg
+            .selectAll('.heatmapRectOutline' + i)
+            .data([{ first: binnedData[0], last: binnedData[binnedData.length - 1] }])
+            .join((enter) => enter.append('rect').attr('class', 'heatmapRectOutline' + i))
+            .attr('x', (d) => formatter(X(d.first.x0)))
             .attr('y', Y(i) + 1 + '%')
-            .attr('width', formatter(X(binnedData[binnedData.length - 1].x1) - X(binnedData[0].x0)))
+            .attr('width', (d) => formatter(X(d.last.x1) - X(d.first.x0)))
             .attr('height', Y(i + 1) - Y(i) - 2 + '%')
             .attr('stroke', color)
             .attr('fill', 'none')
@@ -319,17 +291,18 @@ export default class EventCellRenderer implements ICellRendererFactory {
       .map(([key, values]) => ({ key, values }));
   }
 
-  createSummary(col: EventColumn, context: IRenderContext): ISummaryRenderer {
+  createSummary(col: EventColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     return {
       template: `<div class="svg-container">
                     <svg class="svg-content">
                     </svg>
                 </div>`,
-      update: (n: HTMLImageElement) => {
+      update: (n: HTMLDivElement) => {
         const div = select(n);
         const svg = div.select('svg') as Selection<SVGSVGElement, unknown, null, undefined>;
         svg.selectAll('*').remove();
-        if (n.classList.contains('lu-side-panel-summary')) {
+
+        if (interactive) {
           const order = context.provider.getFirstRanking().getOrder();
           const group = { color: 'black', name: 'mygroup', order };
           const keyList = col.getDisplayEventList();
@@ -337,13 +310,22 @@ export default class EventCellRenderer implements ICellRendererFactory {
           return;
         }
 
-        const g = svg.append('g').attr('transform', 'translate(0,' + EventCellRenderer.SUMMARY_HEIGHT + ')');
+        const g = svg
+          .selectAll('.xAxisG')
+          .data(['xAxisG'])
+          .join((enter) => enter.append('g').attr('class', (d) => d))
+          .attr('transform', 'translate(0,' + EventCellRenderer.SUMMARY_HEIGHT + ')') as Selection<
+          SVGGElement,
+          unknown,
+          null,
+          undefined
+        >;
 
         const zoomElement = zoom<SVGSVGElement, unknown>()
           .scaleExtent([0.001, 1000])
           .extent([
             [0, 0],
-            [EventCellRenderer.EVENT_COLUMN_WIDTH, EventCellRenderer.SUMMARY_HEIGHT],
+            [col.getWidth(), EventCellRenderer.SUMMARY_HEIGHT],
           ])
           .on('zoom', (event: D3ZoomEvent<Element, unknown>) => {
             const transform: ZoomTransform = event.transform;
@@ -360,13 +342,11 @@ export default class EventCellRenderer implements ICellRendererFactory {
             const transform = event.transform;
             if (col.getScaleTransform() === transform) return;
             col.setScaleTransform(transform);
-            col.markDirty('values');
           });
 
         svg.call(zoomElement);
         svg.on('dblclick.zoom', () => {
           col.setScaleTransform(zoomIdentity);
-          col.markDirty('values');
         });
         svg.call(zoomElement.transform, col.getScaleTransform());
       },

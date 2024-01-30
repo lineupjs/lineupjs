@@ -2,9 +2,9 @@ import {
   EBoxplotDataKeys,
   ETimeUnit,
   EventColumn,
-  type ICategory,
   type IEventColumnDesc,
   type ITooltipRow,
+  type TEventLegendUpdateCallback,
 } from '../../model';
 import ColumnBuilder from './ColumnBuilder';
 
@@ -14,6 +14,18 @@ import ColumnBuilder from './ColumnBuilder';
 export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> {
   constructor(column: string) {
     super('event', column);
+  }
+
+  /**
+   * Sets whether the event column should adapt to the filters.
+   * The default is false.
+   * @param adaptAxisToFilters - A boolean indicating if the event column axis adapts to rows currently included in the filtered table or uses the global minimum and maximum.
+   * @default false
+   * @returns The updated EventColumnBuilder instance.
+   */
+  adaptAxisToFilters(adaptAxisToFilters: boolean) {
+    this.desc.adaptAxisToFilters = adaptAxisToFilters;
+    return this;
   }
 
   /**
@@ -132,7 +144,7 @@ export default class EventColumnBuilder extends ColumnBuilder<IEventColumnDesc> 
    * @param legendUpdateCallback - The callback function getting the new Categories on color mapping changes.
    * @returns The updated EventColumnBuilder instance.
    */
-  legendUpdateCallback(legendUpdateCallback: (categories: ICategory[]) => void) {
+  legendUpdateCallback(legendUpdateCallback: TEventLegendUpdateCallback) {
     this.desc.legendUpdateCallback = legendUpdateCallback;
     return this;
   }

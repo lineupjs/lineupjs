@@ -2,6 +2,11 @@ import { createPopper, type Instance, type Modifier, type OptionsGeneric } from 
 import AEventDispatcher from '../internal/AEventDispatcher';
 import { TOOLTIP_CLASS, cssClass } from '../styles';
 
+type VirtualElement = {
+  getBoundingClientRect: () => DOMRect;
+  contextElement?: Element;
+};
+
 export default class TooltipManager extends AEventDispatcher {
   static readonly EVENT_TOOLTIP_OPENED = 'tooltipOpened';
   static readonly EVENT_TOOLTIP_CLOSED = 'tooltipClosed';
@@ -11,6 +16,7 @@ export default class TooltipManager extends AEventDispatcher {
   readonly tooltipArrow: HTMLElement;
   private popperInstance: Instance;
   private popperOptions: Partial<OptionsGeneric<Partial<Modifier<any, any>>>>;
+  private targetElement: VirtualElement;
 
   constructor(options: {
     doc: Document;
@@ -41,29 +47,43 @@ export default class TooltipManager extends AEventDispatcher {
         },
       ],
     };
+    this.targetElement = {
+      getBoundingClientRect: () => this.node.getBoundingClientRect(),
+    };
+    this.popperInstance = createPopper(this.targetElement, this.node, this.popperOptions);
+    this.hideTooltip();
   }
 
   updateTooltipContent(element: HTMLElement) {
     this.contentNode.replaceChildren(element);
   }
 
-  showTooltip(
-    targetElement: HTMLElement,
-    contentUpdate?: HTMLElement,
-    popperOptions?: Partial<OptionsGeneric<Partial<Modifier<any, any>>>>
-  ) {
+  showTooltip(targetElement: HTMLElement, contentUpdate?: HTMLElement) {
     if (contentUpdate) {
       this.updateTooltipContent(contentUpdate);
     }
-    this.popperInstance = createPopper(targetElement, this.node, popperOptions || this.popperOptions);
+    if (this.popperInstance) {
+      this.popperInstance.setOptions((options) => ({
+        ...options,
+        modifiers: [...options.modifiers, { name: 'eventListeners', enabled: true }],
+      }));
+      this.targetElement.getBoundingClientRect = () => targetElement.getBoundingClientRect();
+    }
     this.node.style.display = 'block';
+    this.fire(TooltipManager.EVENT_TOOLTIP_OPENED);
   }
 
   hideTooltip() {
     if (this.popperInstance) {
-      this.popperInstance.destroy();
+      this.popperInstance.setOptions((options) => ({
+        ...options,
+        modifiers: [...options.modifiers, { name: 'eventListeners', enabled: false }],
+      }));
+    } else {
+      console.warn('No popper instance found');
     }
     this.node.style.display = 'none';
+    this.fire(TooltipManager.EVENT_TOOLTIP_CLOSED);
   }
 
   protected createEventList() {

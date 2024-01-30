@@ -157,7 +157,6 @@ export default class EventDisplaySettingsDialog extends ADialog {
         selectedEventsListOverview.push(d.value);
       });
     this.column.setDisplayEventList(selectedEventsListOverview, true);
-    this.column.markDirty('values');
     return true;
   }
   protected cancel(): void {
