@@ -303,7 +303,7 @@ export default class EventCellRenderer implements ICellRendererFactory {
         svg.selectAll('*').remove();
 
         if (interactive) {
-          const order = context.provider.getFirstRanking().getOrder();
+          const order = col.findMyRanker().getOrder();
           const group = { color: 'black', name: 'mygroup', order };
           const keyList = col.getDisplayEventList();
           this.drawHeatmap(context, col, group, keyList, n, true);

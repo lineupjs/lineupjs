@@ -209,7 +209,7 @@ export declare type IEventColumnDesc = IMapColumnDesc<number> & {
  * @see {@link IEventColumnDesc} for a detailed description of the parameters.
  * @extends MapColumn<number>
  */
-@toolbar('rename', 'sort', 'sortBy', 'eventSettings', 'eventReferences', 'colorMappedCategorical')
+@toolbar('rename', 'clone', 'sort', 'sortBy', 'eventSettings', 'eventReferences', 'colorMappedCategorical')
 @dialogAddons('sort', 'eventSort')
 @Category('event')
 @SortByDefault('descending')
@@ -597,7 +597,6 @@ export default class EventColumn extends MapColumn<number> {
     this.showBoxplot = showBoxplot;
     this.eventMappingChanged();
     this.updateLegend();
-    console.log('show boxplot', showBoxplot);
   }
 
   getBoxplotData(eventData: IKeyValue<number>[]): IBoxPlotData {
