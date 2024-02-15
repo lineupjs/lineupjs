@@ -95,7 +95,7 @@ export default class SearchDialog extends ADialog {
     if (this.current) {
       const searchCount = this.find<HTMLElement>(`.${cssClass('search-count')}`)!;
       const current = searchCount.querySelector(`.${cssClass('search-current')}`)!;
-      
+
       const previous = (this.current.index - 1 + this.current.indices.length) % this.current.indices.length;
       this.current.index = previous;
       current.textContent = String(previous + 1);
@@ -107,7 +107,7 @@ export default class SearchDialog extends ADialog {
     if (this.current) {
       const searchCount = this.find<HTMLElement>(`.${cssClass('search-count')}`)!;
       const current = searchCount.querySelector(`.${cssClass('search-current')}`)!;
-      
+
       const next = (this.current.index + 1) % this.current.indices.length;
       this.current.index = next;
       current.textContent = String(next + 1);
@@ -124,7 +124,7 @@ export default class SearchDialog extends ADialog {
 
     let search: string = input.value;
     const isRegex = checkbox.checked;
-    
+
     if (search.length === 0) {
       this.current = null;
       previous.disabled = true;
@@ -152,7 +152,6 @@ export default class SearchDialog extends ADialog {
       next.disabled = indices.length < 1;
 
       return indices.length > 1;
-      
     } else {
       this.current = null;
       searchCount.hidden = true;
