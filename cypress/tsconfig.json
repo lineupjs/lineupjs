@@ -18,9 +18,9 @@
       "d3-time",
       "d3-time-format",
       "detect-browser",
-      "lodash.get"
-    ]
+      "lodash.get",
+    ],
   },
   "include": ["**/*.ts"],
-  "exclude": ["**/*.d.ts"]
+  "exclude": ["**/*.d.ts"],
 }

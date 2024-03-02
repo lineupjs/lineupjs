@@ -76,8 +76,8 @@ export function histogramUpdate<T>(
         relY === 0
           ? color
           : relY === 100
-          ? filteredColor(color)
-          : `linear-gradient(${filteredColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`;
+            ? filteredColor(color)
+            : `linear-gradient(${filteredColor(color)} ${relY}%, ${color} ${relY}%, ${color} 100%)`;
     } else {
       d.title = `${formatter(x0)} - ${formatter(x1)} (${count})`;
       inner.style.height = `${round((count * 100) / stats.maxBin, 2)}%`;
@@ -125,11 +125,11 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
     <div class="${cssClass('histogram-min')}" data-value="${c.format(f.filterMin)}" data-raw="${c.formatRaw(
-    f.filterMin
-  )}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
+      f.filterMin
+    )}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
     <div class="${cssClass('histogram-max')}" data-value="${c.format(f.filterMax)}" data-raw="${c.formatRaw(
-    f.filterMax
-  )}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
+      f.filterMax
+    )}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
     ${filterMissingNumberMarkup(f.filterMissing, 0)}
   `;
 }

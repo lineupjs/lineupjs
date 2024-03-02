@@ -215,8 +215,8 @@ function hist(col: ICategoricalLikeColumn, showLabels: boolean, sanitize: (v: st
             relY === 0
               ? mapping.apply(cat)
               : relY === 100
-              ? selected[i]
-              : `linear-gradient(${selected[i]} ${relY}%, ${mapping.apply(cat)} ${relY}%, ${mapping.apply(cat)} 100%)`;
+                ? selected[i]
+                : `linear-gradient(${selected[i]} ${relY}%, ${mapping.apply(cat)} ${relY}%, ${mapping.apply(cat)} 100%)`;
         } else {
           d.title = `${col.categories[i].label}: ${count}`;
           const inner = d.firstElementChild! as HTMLElement;

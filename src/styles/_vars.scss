@@ -26,7 +26,13 @@ $lu_drag_over: rgb(151 151 151 / 80%) !default;
 
 $lu_header_background: #6d6c6c !default;
 
-$lu_body_font: 10pt 'Helvetica Neue', helvetica, arial, sans-serif !default;
+/* stylelint-disable */
+$lu_body_font:
+  10pt 'Helvetica Neue',
+  helvetica,
+  arial,
+  sans-serif !default;
+/* stylelint-enable */
 $lu_body_text_hover_color: darkblue !default;
 
 $lu_slope_width: 200px !default;

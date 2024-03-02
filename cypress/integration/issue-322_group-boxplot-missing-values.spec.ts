@@ -33,6 +33,9 @@ describe('issue 322', () => {
   it('Check for .lu-missing in boxplot renderer', () => {
     aggregateAll();
 
-    cy.get('.le-tr[data-index="0"] > .lu-renderer-boxplot[data-group="g"]').should('have.class', 'lu-missing');
+    cy.wait(200)
+      .get('.le-tr[data-index="0"] > .lu-renderer-boxplot[data-group="g"]')
+      .wait(200)
+      .should('have.class', 'lu-missing');
   });
 });

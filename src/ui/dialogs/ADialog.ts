@@ -55,7 +55,10 @@ abstract class ADialog {
   readonly node: HTMLFormElement;
   private popper: Instance | null = null;
 
-  constructor(protected readonly dialog: Readonly<IDialogContext>, options: Partial<IDialogOptions> = {}) {
+  constructor(
+    protected readonly dialog: Readonly<IDialogContext>,
+    options: Partial<IDialogOptions> = {}
+  ) {
     Object.assign(this.options, options);
     this.node = dialog.attachment.ownerDocument!.createElement('form');
     this.node.classList.add(cssClass('dialog'));

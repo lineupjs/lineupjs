@@ -9,7 +9,11 @@ import { cssClass } from '../../styles';
 export default class GroupDialog extends ADialog {
   private readonly handlers: IToolbarDialogAddonHandler[] = [];
 
-  constructor(private readonly column: Column, dialog: IDialogContext, private readonly ctx: IRankingHeaderContext) {
+  constructor(
+    private readonly column: Column,
+    dialog: IDialogContext,
+    private readonly ctx: IRankingHeaderContext
+  ) {
     super(dialog, {
       livePreview: 'group',
     });
@@ -69,11 +73,11 @@ function sortOrder(node: HTMLElement, column: Column, idPrefix: string): IToolba
     `
         <strong>Group By</strong>
         <label class="${cssClass('checkbox')}"><input type="radio" name="grouped" value="true" ${
-      enabled ? 'checked' : ''
-    } ><span>Enabled</span></label>
+          enabled ? 'checked' : ''
+        } ><span>Enabled</span></label>
         <label class="${cssClass('checkbox')}"><input type="radio" name="grouped" value="false" ${
-      !enabled ? 'checked' : ''
-    } ><span>Disabled</span></label>
+          !enabled ? 'checked' : ''
+        } ><span>Disabled</span></label>
         <strong>Group Priority</strong>
         <input type="number" id="${id}P" step="1" min="1" max="${current.length + 1}" value="${order + 1}">
     `

@@ -54,7 +54,11 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
 
   readonly isBrowserSupported: boolean;
 
-  constructor(public readonly node: HTMLElement, private _data: DataProvider, ignoreIncompatibleBrowser: boolean) {
+  constructor(
+    public readonly node: HTMLElement,
+    private _data: DataProvider,
+    ignoreIncompatibleBrowser: boolean
+  ) {
     super();
 
     const error = getUnsupportedBrowserError();
