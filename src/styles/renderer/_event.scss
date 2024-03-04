@@ -1,0 +1,31 @@
+@import '../vars';
+
+.#{$lu_css_prefix}-renderer-event {
+  > svg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+  }
+}
+
+.#{$lu_css_prefix}-event-tooltip {
+  &.circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+}
+
+.#{$lu_css_prefix}-event-tooltip-table {
+  > tbody {
+    > tr {
+      > td {
+        text-align: right;
+      }
+
+      > td.event-name {
+        text-align: left;
+      }
+    }
+  }
+}

@@ -37,3 +37,4 @@ export { default as StringHistogramCellRenderer } from './StringHistogramCellRen
 export { default as ViolinPlotCellRenderer } from './ViolinPlotCellRenderer';
 export { default as TickCellRenderer } from './TickCellRenderer';
 export { default as CategoricalTickCellRenderer } from './CategoricalTickCellRenderer';
+export { default as EventCellRenderer } from './EventCellRenderer';

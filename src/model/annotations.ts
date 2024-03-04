@@ -31,6 +31,7 @@ export class Categories {
   readonly composite = { label: 'combined', order: 7, name: 'composite', featureLevel: 'advanced' };
   readonly support = { label: 'support', order: 8, name: 'support', featureLevel: 'advanced' };
   readonly other = { label: 'others', order: 9, name: 'other', featureLevel: 'advanced' };
+  readonly event = { label: 'event', order: 10, name: 'event', featureLevel: 'basic' };
 }
 
 export const categories = new Categories();

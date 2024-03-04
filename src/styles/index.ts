@@ -76,6 +76,9 @@ export const CSS_PREFIX = getStyle('lu_css_prefix', 'lu');
 export const ENGINE_CSS_PREFIX = 'le';
 
 /** @internal */
+export const TOOLTIP_CLASS = getStyle('lu_tooltip_class', cssClass('tooltip-node'));
+
+/** @internal */
 export const RESIZE_SPACE = Number.parseInt(getStyle('lu_engine_resize_space', '50px'), 10);
 /** @internal */
 export const RESIZE_ANIMATION_DURATION = Number.parseInt(getStyle('lu_engine_resize_animation_duration', '1000ms'), 10);

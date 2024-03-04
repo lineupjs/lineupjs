@@ -18,6 +18,7 @@ import type {
   IStatistics,
   IStringStatistics,
 } from '../internal';
+import type TooltipManager from 'src/ui/TooltipManager';
 
 export interface IImposer {
   color?(row: IDataRow | null, valueHint?: number): string | null;
@@ -168,6 +169,7 @@ export interface IRenderContext {
 
   readonly provider: IDataProvider;
   readonly dialogManager: DialogManager;
+  readonly tooltipManager: TooltipManager;
 }
 
 export enum ERenderMode {
