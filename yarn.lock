@@ -8351,6 +8351,7 @@ __metadata:
     mini-css-extract-plugin: "npm:^2.7.7"
     mkdirp: "npm:^3.0.1"
     mocha-junit-reporter: "npm:^2.2.1"
+    popper-max-size-modifier: "npm:0.1.0"
     postcss: "npm:^8.4.33"
     prettier: "npm:^3.2.4"
     reflect-metadata: "npm:^0.2.1"
@@ -9417,6 +9418,15 @@ __metadata:
   dependencies:
     find-up: "npm:^4.0.0"
   checksum: c56bda7769e04907a88423feb320babaed0711af8c436ce3e56763ab1021ba107c7b0cafb11cde7529f669cfc22bffcaebffb573645cbd63842ea9fb17cd7728
+  languageName: node
+  linkType: hard
+
+"popper-max-size-modifier@npm:0.1.0":
+  version: 0.1.0
+  resolution: "popper-max-size-modifier@npm:0.1.0"
+  peerDependencies:
+    "@popperjs/core": ^2.1.1
+  checksum: 198afd5c00f59b5ffcaf92d9f1648189ddd858b004827c9b609cbe09f24c3ff43c4baf89dd9d7ce50bc20dac4a93d8b90831a2f1cbfab25e03f5719982e9c67d
   languageName: node
   linkType: hard
 
