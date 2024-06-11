@@ -1,26 +1,8 @@
-import { createPopper, type Instance } from '@popperjs/core';
-import maxSize from "popper-max-size-modifier";
+import { computePosition, autoUpdate, flip, shift, limitShift, size } from '@floating-ui/dom';
 import type DialogManager from './DialogManager';
 import { cssClass } from '../../styles';
 import type { IRankingHeaderContext } from '../interfaces';
 import type { ILivePreviewOptions } from '../../config';
-
-/**
- * Popper modifier to apply the maximum size of the dialog
- * @see https://popper.js.org/docs/v2/modifiers/community-modifiers/
- * @internal
- */
-const applyMaxSize = {
-  name: 'applyMaxSize',
-  enabled: true,
-  phase: 'beforeWrite',
-  requires: ['maxSize'],
-  fn({ state }) {
-    const { height } = state.modifiersData.maxSize;
-    state.styles.popper.maxHeight = `${height}px`;
-    state.styles.popper.overflowY = 'auto';
-  }
-};
 
 export interface IDialogOptions {
   title: string;
@@ -69,7 +51,7 @@ abstract class ADialog {
   };
 
   readonly node: HTMLFormElement;
-  private popper: Instance | null = null;
+  protected floatingUiCleanup: (() => void) | null = null;
 
   constructor(
     protected readonly dialog: Readonly<IDialogContext>,
@@ -154,19 +136,35 @@ abstract class ADialog {
     }
 
     parent.appendChild(this.node);
-    this.popper = createPopper(this.attachment, this.node, {
-      modifiers: [
-        {
-          name: 'flip',
-          options: {
-            fallbackPlacements: ['top-start', 'right-start', 'left-start'],
-          },
-        },
-        maxSize,
-        applyMaxSize
-      ],
-      placement: (this.dialog.level === 0) ? 'bottom-start' : 'right-start',
-      ...this.options,
+    this.floatingUiCleanup = autoUpdate(this.attachment, this.node, () => {
+      computePosition(this.attachment, this.node, {
+        placement: (this.dialog.level === 0) ? 'bottom-start' : 'right-start',
+        middleware: [
+          flip(),
+          shift({ limiter: limitShift() }),
+          size({
+            apply({ availableWidth, availableHeight, elements }) {
+              const offset = 12;
+              Object.assign(elements.floating.style, {
+                maxWidth: `${availableWidth}px`,
+                maxHeight: `${availableHeight - offset}px`,
+                overflowY: 'auto', // add vertical scrollbar if needed
+              });
+            },
+          }),
+        ],
+      }).then(({x, y}) => {
+        function roundByDPR(value) {
+          const dpr = window.devicePixelRatio || 1;
+          return Math.round(value * dpr) / dpr;
+        }
+        
+        Object.assign(this.node.style, {
+          top: '0',
+          left: '0',
+          transform: `translate(${roundByDPR(x)}px,${roundByDPR(y)}px)`,
+        });
+      });
     });
 
     const auto = this.find<HTMLInputElement>('input[autofocus]');
@@ -249,8 +247,8 @@ abstract class ADialog {
       this.dialog.manager.triggerDialogClosed(this, action);
     }
 
-    if (this.popper) {
-      this.popper.destroy();
+    if (this.floatingUiCleanup) {
+      this.floatingUiCleanup();
     }
     this.node.remove();
   }
