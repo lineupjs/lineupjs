@@ -1,15 +1,32 @@
-import { createPopper, type Placement, type Instance } from '@popperjs/core';
+import { createPopper, type Instance } from '@popperjs/core';
+import maxSize from "popper-max-size-modifier";
 import type DialogManager from './DialogManager';
 import { cssClass } from '../../styles';
 import type { IRankingHeaderContext } from '../interfaces';
 import type { ILivePreviewOptions } from '../../config';
+
+/**
+ * Popper modifier to apply the maximum size of the dialog
+ * @see https://popper.js.org/docs/v2/modifiers/community-modifiers/
+ * @internal
+ */
+const applyMaxSize = {
+  name: 'applyMaxSize',
+  enabled: true,
+  phase: 'beforeWrite',
+  requires: ['maxSize'],
+  fn({ state }) {
+    const { height } = state.modifiersData.maxSize;
+    state.styles.popper.maxHeight = `${height}px`;
+    state.styles.popper.overflowY = 'auto';
+  }
+};
 
 export interface IDialogOptions {
   title: string;
   livePreview: boolean | keyof ILivePreviewOptions;
   popup: boolean;
   // popper options
-  placement?: Placement;
   eventsEnabled?: boolean;
   toggleDialog: boolean;
   cancelSubDialogs?: boolean;
@@ -46,7 +63,6 @@ abstract class ADialog {
     title: '',
     livePreview: false,
     popup: false,
-    placement: 'bottom-start',
     toggleDialog: true,
     cancelSubDialogs: false,
     autoClose: false,
@@ -141,12 +157,15 @@ abstract class ADialog {
     this.popper = createPopper(this.attachment, this.node, {
       modifiers: [
         {
-          name: 'preventOverflow',
+          name: 'flip',
           options: {
-            boundariesElement: parent,
+            fallbackPlacements: ['top-start', 'right-start', 'left-start'],
           },
         },
+        maxSize,
+        applyMaxSize
       ],
+      placement: (this.dialog.level === 0) ? 'bottom-start' : 'right-start',
       ...this.options,
     });
 
