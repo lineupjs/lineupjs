@@ -138,7 +138,7 @@ abstract class ADialog {
     parent.appendChild(this.node);
     this.floatingUiCleanup = autoUpdate(this.attachment, this.node, () => {
       computePosition(this.attachment, this.node, {
-        placement: (this.dialog.level === 0) ? 'bottom-start' : 'right-start',
+        placement: this.dialog.level === 0 ? 'bottom-start' : 'right-start',
         middleware: [
           flip(),
           shift({ limiter: limitShift() }),
@@ -153,12 +153,12 @@ abstract class ADialog {
             },
           }),
         ],
-      }).then(({x, y}) => {
+      }).then(({ x, y }) => {
         function roundByDPR(value) {
           const dpr = window.devicePixelRatio || 1;
           return Math.round(value * dpr) / dpr;
         }
-        
+
         Object.assign(this.node.style, {
           top: '0',
           left: '0',

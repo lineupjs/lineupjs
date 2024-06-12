@@ -45,7 +45,7 @@ export function addIconDOM(
     i.onclick = (evt) => {
       evt.stopPropagation();
       ctx.dialogManager.setHighlightColumn(col);
-      
+
       // highlight node as active when the next dialog is opened
       ctx.dialogManager.on(`dialogOpened.${col.fqid}`, () => {
         ctx.dialogManager.on(`dialogOpened.${col.fqid}`, null);

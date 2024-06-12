@@ -237,28 +237,28 @@
 
   $arrow_size: 5px;
 
-    &[data-popper-placement^='bottom'] div[data-popper-arrow] {
+  &[data-popper-placement^='bottom'] div[data-popper-arrow] {
     border-left: $arrow_size solid transparent;
     border-right: $arrow_size solid transparent;
     border-bottom: $arrow_size solid black;
     top: -$arrow_size;
   }
 
-    &[data-popper-placement^='left'] div[data-popper-arrow] {
+  &[data-popper-placement^='left'] div[data-popper-arrow] {
     border-top: $arrow_size solid transparent;
     border-bottom: $arrow_size solid transparent;
     border-left: $arrow_size solid black;
     right: -$arrow_size;
   }
 
-    &[data-popper-placement^='right'] div[data-popper-arrow] {
+  &[data-popper-placement^='right'] div[data-popper-arrow] {
     border-top: $arrow_size solid transparent;
     border-bottom: $arrow_size solid transparent;
     border-right: $arrow_size solid black;
     left: -$arrow_size;
   }
 
-    &[data-popper-placement^='top'] div[data-popper-arrow] {
+  &[data-popper-placement^='top'] div[data-popper-arrow] {
     border-left: $arrow_size solid transparent;
     border-right: $arrow_size solid transparent;
     border-top: $arrow_size solid black;
