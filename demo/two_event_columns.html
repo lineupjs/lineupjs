@@ -1,101 +1,99 @@
 <!doctype html>
 <html>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <title>LineUp Builder Test</title>
 
-<head lang="en">
-  <meta charset="UTF-8" />
-  <title>LineUp Builder Test</title>
+    <link href="./LineUpJS.css" rel="stylesheet" />
+    <link href="./demo.css" rel="stylesheet" />
+  </head>
 
-  <link href="./LineUpJS.css" rel="stylesheet" />
-  <link href="./demo.css" rel="stylesheet" />
-</head>
+  <body>
+    <script src="./LineUpJS.js"></script>
 
-<body>
-  <script src="./LineUpJS.js"></script>
-
-  <script>
-    const ms_per_day = 24 * 60 * 60 * 1000;
-    function getDateFromRange(range) {
-      return Date.now() + range[0] * ms_per_day + Math.round(Math.random() * (range[1] - range[0]) * ms_per_day);
-    }
-    //TODO: fix bug where you can't change reference column of second event column to current date
-    window.onload = function () {
-      const arr = [];
-      const eventNamesOne = ['A', 'B', 'C'];
-      const eventNamesTwo = ['E', 'F', 'G', 'H'];
-      const categories = ['W', 'X', 'Y', 'Z'];
-
-      const rangesOne = [
-        [-30, 0],
-        [-10, 20],
-        [10, 45],
-      ];
-
-      const rangesTwo = [
-        [-40, -10],
-        [-10, 20],
-        [10, 30],
-        [5, 35],
-      ];
-      for (let i = 0; i < 200; ++i) {
-        //generate boxplot data
-        min = Math.random() * 10;
-        q1 = min + Math.random() * 10;
-        median = q1 + Math.random() * 10;
-        q3 = median + Math.random() * 10;
-        max = q3 + Math.random() * 10;
-        const eventsOne = { min: min, q1: q1, median: median, q3: q3, max: max };
-        const eventsTwo = { min: min, q1: q1, median: median, q3: q3, max: max };
-        for (let j = 0; j < eventNamesOne.length; j++) {
-          const event = eventNamesOne[j];
-          eventsOne[event] = getDateFromRange(rangesOne[j]);
-        }
-        for (let j = 0; j < eventNamesTwo.length; j++) {
-          const event = eventNamesTwo[j];
-          eventsTwo[event] = getDateFromRange(rangesTwo[j]);
-        }
-
-        arr.push({
-          EventsOne: eventsOne,
-          EventsTwo: eventsTwo,
-          Category: categories[Math.floor(Math.random() * categories.length)],
-        });
+    <script>
+      const ms_per_day = 24 * 60 * 60 * 1000;
+      function getDateFromRange(range) {
+        return Date.now() + range[0] * ms_per_day + Math.round(Math.random() * (range[1] - range[0]) * ms_per_day);
       }
-      const builder = LineUpJS.builder(arr);
-      builder
-        .column(
-          LineUpJS.buildEventColumn('EventsOne', eventNamesOne)
-            .boxplotPossible(true)
-            .boxplotUnit('D')
-            .eventScaleUnit('D')
-            .referenceEvent('B')
-            .boxPlotReferenceEvent('A')
-            .sortEvent('q3')
-            .displayZeroLine(true)
-            .heatmapBinCount(40)
-            .width(500)
-            .adaptAxisToFilters(true)
-        )
-        .column(
-          LineUpJS.buildEventColumn('EventsTwo', eventNamesTwo)
-            .label('Other Events')
-            .boxplotPossible(true)
-            .boxplotUnit('D')
-            .eventScaleUnit('D')
-            .referenceEvent('F')
-            .boxPlotReferenceEvent('E')
-            .sortEvent('median')
-            .displayZeroLine(false)
-            .heatmapBinCount(40)
-            .width(500)
-        )
+      //TODO: fix bug where you can't change reference column of second event column to current date
+      window.onload = function () {
+        const arr = [];
+        const eventNamesOne = ['A', 'B', 'C'];
+        const eventNamesTwo = ['E', 'F', 'G', 'H'];
+        const categories = ['W', 'X', 'Y', 'Z'];
 
-        .column(LineUpJS.buildCategoricalColumn('Category'))
-        .aggregationStrategy('group+top+item')
-        .showTopN(8)
-        .ranking(LineUpJS.buildRanking().supportTypes().groupBy('Category').sortBy('Events', 'asc').allColumns())
-        .buildTaggle(document.body);
-    };
-  </script>
-</body>
+        const rangesOne = [
+          [-30, 0],
+          [-10, 20],
+          [10, 45],
+        ];
 
+        const rangesTwo = [
+          [-40, -10],
+          [-10, 20],
+          [10, 30],
+          [5, 35],
+        ];
+        for (let i = 0; i < 200; ++i) {
+          //generate boxplot data
+          min = Math.random() * 10;
+          q1 = min + Math.random() * 10;
+          median = q1 + Math.random() * 10;
+          q3 = median + Math.random() * 10;
+          max = q3 + Math.random() * 10;
+          const eventsOne = { min: min, q1: q1, median: median, q3: q3, max: max };
+          const eventsTwo = { min: min, q1: q1, median: median, q3: q3, max: max };
+          for (let j = 0; j < eventNamesOne.length; j++) {
+            const event = eventNamesOne[j];
+            eventsOne[event] = getDateFromRange(rangesOne[j]);
+          }
+          for (let j = 0; j < eventNamesTwo.length; j++) {
+            const event = eventNamesTwo[j];
+            eventsTwo[event] = getDateFromRange(rangesTwo[j]);
+          }
+
+          arr.push({
+            EventsOne: eventsOne,
+            EventsTwo: eventsTwo,
+            Category: categories[Math.floor(Math.random() * categories.length)],
+          });
+        }
+        const builder = LineUpJS.builder(arr);
+        builder
+          .column(
+            LineUpJS.buildEventColumn('EventsOne', eventNamesOne)
+              .boxplotPossible(true)
+              .boxplotUnit('D')
+              .eventScaleUnit('D')
+              .referenceEvent('B')
+              .boxPlotReferenceEvent('A')
+              .sortEvent('q3')
+              .displayZeroLine(true)
+              .heatmapBinCount(40)
+              .width(500)
+              .adaptAxisToFilters(true)
+          )
+          .column(
+            LineUpJS.buildEventColumn('EventsTwo', eventNamesTwo)
+              .label('Other Events')
+              .boxplotPossible(true)
+              .boxplotUnit('D')
+              .eventScaleUnit('D')
+              .referenceEvent('F')
+              .boxPlotReferenceEvent('E')
+              .sortEvent('median')
+              .displayZeroLine(false)
+              .heatmapBinCount(40)
+              .width(500)
+          )
+
+          .column(LineUpJS.buildCategoricalColumn('Category'))
+          .aggregationStrategy('group+top+item')
+          .showTopN(8)
+          .ranking(LineUpJS.buildRanking().supportTypes().groupBy('Category').sortBy('Events', 'asc').allColumns())
+          .buildTaggle(document.body);
+      };
+    </script>
+  </body>
 </html>

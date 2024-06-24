@@ -55,11 +55,10 @@ jobs:
 
       - name: Deploy build
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add -f build  # Adjust this to your build directory
           git commit -m "Deploy build output"
           git push -f origin `echo $GITHUB_REF | sed -e 's/refs\\/heads\\///'`:`echo $GITHUB_REF | sed -e 's/refs\\/heads\\///'`-build
-      
