@@ -237,31 +237,73 @@
 
   $arrow_size: 5px;
 
-  &[data-popper-placement='bottom'] div[data-popper-arrow] {
+  &[data-popper-placement^='bottom'] div[data-popper-arrow] {
     border-left: $arrow_size solid transparent;
     border-right: $arrow_size solid transparent;
     border-bottom: $arrow_size solid black;
     top: -$arrow_size;
   }
 
-  &[data-popper-placement='left'] div[data-popper-arrow] {
+  &[data-popper-placement^='left'] div[data-popper-arrow] {
     border-top: $arrow_size solid transparent;
     border-bottom: $arrow_size solid transparent;
     border-left: $arrow_size solid black;
     right: -$arrow_size;
   }
 
-  &[data-popper-placement='right'] div[data-popper-arrow] {
+  &[data-popper-placement^='right'] div[data-popper-arrow] {
     border-top: $arrow_size solid transparent;
     border-bottom: $arrow_size solid transparent;
     border-right: $arrow_size solid black;
     left: -$arrow_size;
   }
 
-  &[data-popper-placement='top'] div[data-popper-arrow] {
+  &[data-popper-placement^='top'] div[data-popper-arrow] {
     border-left: $arrow_size solid transparent;
     border-right: $arrow_size solid transparent;
     border-top: $arrow_size solid black;
     bottom: -$arrow_size;
+  }
+}
+
+/* search dialog for string columns */
+.#{$lu_css_prefix}-string-search-dialog {
+  display: flex;
+  gap: 5px;
+
+  .#{$lu_css_prefix}-search-count {
+    color: $lu_toolbar_color_base;
+  }
+
+  button {
+    border: none;
+    background: none;
+    color: $lu_toolbar_color_base2;
+
+    &:disabled {
+      color: $lu_toolbar_color_base;
+    }
+
+    &:not(:disabled) {
+      cursor: pointer;
+
+      &:hover,
+      &:active,
+      &:focus {
+        color: $lu_toolbar_color_hover;
+      }
+    }
+
+    &::before {
+      @include lu_icons();
+    }
+
+    &.#{$lu_css_prefix}-previous-result::before {
+      content: $lu_icon_up_open;
+    }
+
+    &.#{$lu_css_prefix}-next-result::before {
+      content: $lu_icon_down_open;
+    }
   }
 }

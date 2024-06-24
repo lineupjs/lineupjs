@@ -116,7 +116,11 @@ export default class SidePanel {
   private data: IDataProvider;
   private readonly rankings: SidePanelRanking[] = [];
 
-  constructor(private ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
+  constructor(
+    private ctx: IRankingHeaderContext,
+    document: Document,
+    options: Partial<ISidePanelOptions> = {}
+  ) {
     Object.assign(this.options, options);
 
     this.node = document.createElement('aside');

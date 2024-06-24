@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <title>LineUp Builder Test</title>
+
+    <link href="./LineUpJS.css" rel="stylesheet" />
+    <link href="./demo.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <script src="./LineUpJS.js"></script>
+
+    <script>
+      const ms_per_day = 24 * 60 * 60 * 1000;
+      function getDateFromRange(range) {
+        return Date.now() + range[0] * ms_per_day + Math.round(Math.random() * (range[1] - range[0]) * ms_per_day);
+      }
+
+      window.onload = function () {
+        const arr = [];
+        const eventNames = ['A', 'B', 'C'];
+
+        const categories = ['W', 'X', 'Y', 'Z'];
+
+        const ranges = [
+          [-30, 0],
+          [-10, 20],
+          [10, 45],
+        ];
+        for (let i = 0; i < 200; ++i) {
+          //generate boxplot data
+          min = Math.random() * 10;
+          q1 = min + Math.random() * 10;
+          median = q1 + Math.random() * 10;
+          q3 = median + Math.random() * 10;
+          max = q3 + Math.random() * 10;
+          const events = { min: min, q1: q1, median: median, q3: q3, max: max };
+
+          for (let j = 0; j < eventNames.length; j++) {
+            const event = eventNames[j];
+            events[event] = getDateFromRange(ranges[j]);
+          }
+
+          arr.push({
+            Events: events,
+            Category: categories[Math.floor(Math.random() * categories.length)],
+          });
+        }
+        const builder = LineUpJS.builder(arr);
+        builder
+          .column(
+            LineUpJS.buildEventColumn('Events', eventNames)
+              .boxplotPossible(true)
+              .boxplotUnit('D')
+              .eventScaleUnit('D')
+              .referenceEvent('B')
+              .boxPlotReferenceEvent('A')
+              .sortEvent('q3')
+              .displayZeroLine(true)
+              .heatmapBinCount(40)
+              .width(500)
+          )
+
+          .column(LineUpJS.buildCategoricalColumn('Category'))
+          .aggregationStrategy('group+top+item')
+          .showTopN(8)
+          .ranking(LineUpJS.buildRanking().supportTypes().groupBy('Category').sortBy('Events', 'asc').allColumns())
+          .buildTaggle(document.body);
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+@import './vars';
+
+.#{$lu_tooltip_class} {
+  background: $lu_tooltip_background_color;
+  color: $lu_tooltip_text_color;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: none;
+}
+
+.#{$lu_tooltip_class}[data-popper-placement^='top'] > .#{$lu_css_prefix}-tooltip-arrow {
+  bottom: -4px;
+}
+
+.#{$lu_tooltip_class}[data-popper-placement^='bottom'] > .#{$lu_css_prefix}-tooltip-arrow {
+  top: -4px;
+}
+
+.#{$lu_tooltip_class}[data-popper-placement^='left'] > .#{$lu_css_prefix}-tooltip-arrow {
+  right: -4px;
+}
+
+.#{$lu_tooltip_class}[data-popper-placement^='right'] > .#{$lu_css_prefix}-tooltip-arrow {
+  left: -4px;
+}
+
+.#{$lu_css_prefix}-tooltip-arrow,
+.#{$lu_css_prefix}-tooltip-arrow::before {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+}
+
+.#{$lu_css_prefix}-tooltip-arrow::before {
+  visibility: visible;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.#{$lu_css_prefix}-tooltip-arrow {
+  visibility: hidden;
+}

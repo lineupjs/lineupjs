@@ -76,14 +76,14 @@ function sortOrder(
     `
         <strong>Sort Order</strong>
         <label class="${cssClass('checkbox')}"><input type="radio" name="sortorder" value="asc"  ${
-      order.asc === 'asc' ? 'checked' : ''
-    } ><span>Ascending</span></label>
+          order.asc === 'asc' ? 'checked' : ''
+        } ><span>Ascending</span></label>
         <label class="${cssClass('checkbox')}"><input type="radio" name="sortorder" value="desc"  ${
-      order.asc === 'desc' ? 'checked' : ''
-    } ><span>Descending</span></label>
+          order.asc === 'desc' ? 'checked' : ''
+        } ><span>Descending</span></label>
         <label class="${cssClass('checkbox')}"><input type="radio" name="sortorder" value="none"  ${
-      order.asc === undefined ? 'checked' : ''
-    } ><span>Unsorted</span></label>
+          order.asc === undefined ? 'checked' : ''
+        } ><span>Unsorted</span></label>
         <strong>Sort Priority</strong>
         <input type="number" id="${id}P" step="1" min="1" max="${current.length + 1}" value="${priority + 1}">
     `

@@ -7,6 +7,7 @@ import {
   type IMultiLevelColumn,
   isSortingAscByDefault,
   isSupportType,
+  EventColumn,
 } from '../model';
 import { cssClass } from '../styles';
 import ADialog, { dialogContext, type IDialogContext } from './dialogs/ADialog';
@@ -42,6 +43,9 @@ import appendDate from './dialogs/groupDate';
 import appendNumber from './dialogs/groupNumber';
 import appendString from './dialogs/groupString';
 import { sortMethods } from './dialogs/utils';
+import EventDisplaySettingsDialog from './dialogs/EventDisplaySettingsDialog';
+import EventReferenceDialog from './dialogs/EventReferenceDialog';
+import appendEventColumnNames from './dialogs/sortEventColumnNames';
 
 interface IDialogClass {
   new (col: any, dialog: IDialogContext, ...args: any[]): ADialog;
@@ -246,6 +250,30 @@ const expand: IToolbarAction = {
   options: { featureCategory: 'model', featureLevel: 'advanced' },
 };
 
+const eventDisplaySettings: IToolbarAction = {
+  title: 'Event Display Settings …',
+  onClick: (col, evt, ctx, level) => {
+    const dialog = new EventDisplaySettingsDialog(col as EventColumn, dialogContext(ctx, level, evt));
+    dialog.open();
+  },
+  options: {
+    featureCategory: 'ui',
+    featureLevel: 'advanced',
+  },
+};
+
+const eventReferences: IToolbarAction = {
+  title: 'Event References …',
+  onClick: (col, evt, ctx, level) => {
+    const dialog = new EventReferenceDialog(col as EventColumn, dialogContext(ctx, level, evt));
+    dialog.open();
+  },
+  options: {
+    featureCategory: 'ui',
+    featureLevel: 'advanced',
+  },
+};
+
 const setShowTopN: IToolbarAction = {
   title: 'Change Show Top N',
   onClick: (_col, evt, ctx, level) => {
@@ -270,6 +298,8 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
   clone,
   remove,
   rename,
+  eventReferences,
+  eventSettings: eventDisplaySettings,
   setShowTopN,
   search: uiDialog('Search …', SearchDialog, (ctx) => [ctx.provider], {
     mode: 'menu+shortcut',
@@ -419,4 +449,9 @@ export const toolbarDialogAddons: { [key: string]: IToolbarDialogAddon } = {
     order: 2,
     append: appendDate,
   } as IToolbarDialogAddon,
+  eventSort: {
+    title: 'Sort By',
+    order: 2,
+    append: appendEventColumnNames,
+  },
 };

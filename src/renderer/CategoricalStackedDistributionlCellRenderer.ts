@@ -175,8 +175,8 @@ function stackedBar(col: ISetColumn, sanitize: (v: string) => string) {
           relY === 0
             ? cats[i].color
             : relY === 100
-            ? cats[i].selected
-            : `linear-gradient(${cats[i].selected} ${relY}%, ${cats[i].color} ${relY}%, ${cats[i].color} 100%)`;
+              ? cats[i].selected
+              : `linear-gradient(${cats[i].selected} ${relY}%, ${cats[i].color} ${relY}%, ${cats[i].color} 100%)`;
       }
     },
   };
