@@ -222,6 +222,8 @@
     cursor: pointer;
     padding-left: 0;
 
+    &.#{$lu_css_prefix}-active,
+    &:focus,
     &:hover {
       background: $lu_hover_button_color;
     }

@@ -1,4 +1,4 @@
-import { createPopper, type Placement, type Instance } from '@popperjs/core';
+import { computePosition, autoUpdate, flip, shift, limitShift, size } from '@floating-ui/dom';
 import type DialogManager from './DialogManager';
 import { cssClass } from '../../styles';
 import type { IRankingHeaderContext } from '../interfaces';
@@ -9,7 +9,6 @@ export interface IDialogOptions {
   livePreview: boolean | keyof ILivePreviewOptions;
   popup: boolean;
   // popper options
-  placement?: Placement;
   eventsEnabled?: boolean;
   toggleDialog: boolean;
   cancelSubDialogs?: boolean;
@@ -46,14 +45,13 @@ abstract class ADialog {
     title: '',
     livePreview: false,
     popup: false,
-    placement: 'bottom-start',
     toggleDialog: true,
     cancelSubDialogs: false,
     autoClose: false,
   };
 
   readonly node: HTMLFormElement;
-  private popper: Instance | null = null;
+  protected floatingUiCleanup: (() => void) | null = null;
 
   constructor(
     protected readonly dialog: Readonly<IDialogContext>,
@@ -138,16 +136,35 @@ abstract class ADialog {
     }
 
     parent.appendChild(this.node);
-    this.popper = createPopper(this.attachment, this.node, {
-      modifiers: [
-        {
-          name: 'preventOverflow',
-          options: {
-            boundariesElement: parent,
-          },
-        },
-      ],
-      ...this.options,
+    this.floatingUiCleanup = autoUpdate(this.attachment, this.node, () => {
+      computePosition(this.attachment, this.node, {
+        placement: this.dialog.level === 0 ? 'bottom-start' : 'right-start',
+        middleware: [
+          flip(),
+          shift({ limiter: limitShift() }),
+          size({
+            apply({ availableWidth, availableHeight, elements }) {
+              const offset = 12;
+              Object.assign(elements.floating.style, {
+                maxWidth: `${availableWidth}px`,
+                maxHeight: `${availableHeight - offset}px`,
+                overflowY: 'auto', // add vertical scrollbar if needed
+              });
+            },
+          }),
+        ],
+      }).then(({ x, y }) => {
+        function roundByDPR(value) {
+          const dpr = window.devicePixelRatio || 1;
+          return Math.round(value * dpr) / dpr;
+        }
+
+        Object.assign(this.node.style, {
+          top: '0',
+          left: '0',
+          transform: `translate(${roundByDPR(x)}px,${roundByDPR(y)}px)`,
+        });
+      });
     });
 
     const auto = this.find<HTMLInputElement>('input[autofocus]');
@@ -230,8 +247,8 @@ abstract class ADialog {
       this.dialog.manager.triggerDialogClosed(this, action);
     }
 
-    if (this.popper) {
-      this.popper.destroy();
+    if (this.floatingUiCleanup) {
+      this.floatingUiCleanup();
     }
     this.node.remove();
   }
