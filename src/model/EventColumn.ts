@@ -375,7 +375,9 @@ export default class EventColumn extends MapColumn<number> {
       showBoxplot: this.showBoxplot,
     };
     this.minMaxPrecomputed.clear();
-    for (const referenceEvent of this.eventList) {
+    const referenceEvents = this.eventList.slice();
+    referenceEvents.push(EventColumn.CURRENT_DATE_REFERENCE);
+    for (const referenceEvent of referenceEvents) {
       this.referenceEvent = referenceEvent;
       for (const displayEvent of this.eventList) {
         this.displayEventList = [displayEvent];
@@ -409,7 +411,10 @@ export default class EventColumn extends MapColumn<number> {
       })
       .reduce(
         (acc, val) => {
-          return [Math.min(acc[0], val[0]), Math.max(acc[1], val[1])];
+          return [
+            Math.min(acc[0], val?.[0] ?? Number.POSITIVE_INFINITY),
+            Math.max(acc[1], val?.[1] ?? Number.NEGATIVE_INFINITY),
+          ];
         },
         [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]
       );
