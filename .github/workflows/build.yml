@@ -1,0 +1,49 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i -g yarn
+      - run: yarn config set checksumBehavior ignore
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./.yarn/cache
+            ./.yarn/unplugged
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-yarn2-v4-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn2-v4
+      - run: yarn install
+      - run: yarn clean
+      - run: yarn compile
+      - run: yarn build
+      - run: |
+          mkdir -p public/main
+          cp -rt public/main/ demo/* build/* src/*
+          mkdir -p public/app
+          cp -rt public/app/ build/LineUpJS.* build/*.ttf build/*.eot build/*.svg
+
+      - name: Deploy build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH="build"
+          git push origin --delete $BRANCH || true
+          git checkout --orphan $BRANCH
+          git add -fA build
+          git commit -m "Deploy build output"
+          git push -f origin $BRANCH
