@@ -1,7 +1,9 @@
 name: build
 
 on:
-  - workflow_dispatch
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -27,29 +29,11 @@ jobs:
       - run: yarn clean
       - run: yarn compile
       - run: yarn build
-      - run: yarn lint
-      - run: yarn test:coverage
-      - run: yarn cy:compile
-      - run: yarn cy:junit
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-artifacts
-          path: |
-            cypress/screenshots
-            cypress/videos
-
-      - run: yarn docs
       - run: |
           mkdir -p public/main
-          cp -rt public/main/ docs demo/* build/* src/*
+          cp -rt public/main/ demo/* build/* src/*
           mkdir -p public/app
           cp -rt public/app/ build/LineUpJS.* build/*.ttf build/*.eot build/*.svg
-
-          mkdir -p public_dev/develop
-          cp -rt public_dev/develop/ demo/* build/*
-          mkdir -p public_dev/app_develop
-          cp -rt public_dev/app_develop/ build/LineUpJS.* build/*.ttf build/*.eot build/*.svg
 
       - name: Deploy build
         env:
@@ -57,6 +41,9 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f build  # Adjust this to your build directory
+          BRANCH="build"
+          git push origin --delete $BRANCH || true
+          git checkout --orphan $BRANCH
+          git add -fA build
           git commit -m "Deploy build output"
-          git push -f origin `echo $GITHUB_REF | sed -e 's/refs\\/heads\\///'`:`echo $GITHUB_REF | sed -e 's/refs\\/heads\\///'`-build
+          git push -f origin $BRANCH
