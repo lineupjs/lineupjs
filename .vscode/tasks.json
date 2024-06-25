@@ -1,0 +1,48 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "start server",
+      "type": "shell",
+      "command": "yarn start",
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "line": 1,
+              "column": 1,
+              "message": 1
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": {
+              "regexp": ".*"
+            },
+            "endsPattern": {
+              "regexp": ".*compiled.successfully.*"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "stop server",
+      "command": "echo ${input:terminate}",
+      "type": "shell"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "terminate",
+      "type": "command",
+      "command": "workbench.action.tasks.terminate",
+      "args": "terminateAll"
+    }
+  ]
+}
