@@ -332,10 +332,10 @@ function toColor(input: HTMLInputElement, node: HTMLElement) {
         { color: s0, value: 0 },
         { color: s1, value: 1 },
       ]);
-    case 'custom:diverging':
-      const dm1 = node.querySelector<HTMLInputElement>('input[name=divergentm1]')!.value;
-      const d0 = node.querySelector<HTMLInputElement>('input[name=divergent0]')!.value;
-      const d1 = node.querySelector<HTMLInputElement>('input[name=divergent1]')!.value;
+    case 'custom:divergent':
+      const dm1 = node.querySelector<HTMLInputElement>('input[name=divergingm1]')!.value;
+      const d0 = node.querySelector<HTMLInputElement>('input[name=diverging0]')!.value;
+      const d1 = node.querySelector<HTMLInputElement>('input[name=diverging1]')!.value;
       return new CustomColorMappingFunction([
         { color: dm1, value: 0 },
         { color: d0, value: 0.5 },
