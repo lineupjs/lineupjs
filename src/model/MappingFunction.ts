@@ -169,7 +169,7 @@ export class ScriptMappingFunction implements IMappingFunction {
       code = dump.code;
     }
     this.code = typeof code === 'string' ? code : code.toString();
-    // eslint-disable-next-line no-new-func
+
     this.f = typeof code === 'function' ? code : (new Function('value', code) as any);
   }
 

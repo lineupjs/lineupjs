@@ -14,25 +14,28 @@ export function getUnsupportedBrowserError() {
   }
   const prefix = `unsupported browser detected:`;
   switch (info.name) {
-    case 'firefox':
+    case 'firefox': {
       const fVersion = Number.parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
       if (fVersion <= SUPPORTED_FIREFOX_VERSION && fVersion !== 52) {
         // ESR
         return `${prefix} Firefox ${info.version} (&lt; ${SUPPORTED_FIREFOX_VERSION})`;
       }
       return null;
-    case 'edge':
+    }
+    case 'edge': {
       const eVersion = Number.parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
       if (eVersion <= SUPPORTED_EDGE_VERSION) {
         return `${prefix} Edge ${info.version} (&lt; ${SUPPORTED_EDGE_VERSION})`;
       }
       return null;
-    case 'chrome':
+    }
+    case 'chrome': {
       const cVersion = Number.parseInt(info.version.slice(0, info.version.indexOf('.')), 10);
       if (cVersion <= SUPPORTED_CHROME_VERSION) {
         return `${prefix} Chrome ${info.version} (&lt; ${SUPPORTED_CHROME_VERSION})`;
       }
       return null;
+    }
     case 'ie':
       return `${prefix} Internet Explorer`;
   }

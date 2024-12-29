@@ -800,7 +800,7 @@ export function joinIndexArrays(groups: IndicesArray[], maxDataIndex?: number) {
       return [];
     case 1:
       return groups[0];
-    default:
+    default: {
       const total = groups.reduce((a, b) => a + b.length, 0);
       const r = createLike(groups[0], total, maxDataIndex);
       let shift = 0;
@@ -809,6 +809,7 @@ export function joinIndexArrays(groups: IndicesArray[], maxDataIndex?: number) {
         shift += g.length;
       }
       return r;
+    }
   }
 }
 
@@ -844,14 +845,15 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: { a
     case 0:
       // sort by indices
       return indices.sort();
-    case 1:
+    case 1: {
       const c = comparators[0]!.asc ? asc : desc;
       const cLookup = comparators[0]!.lookup;
       return indices.sort((a, b) => {
         const r = c(cLookup[a]!, cLookup[b]!);
         return r !== 0 ? r : a - b;
       });
-    case 2:
+    }
+    case 2: {
       const c1 = comparators[0]!.asc ? asc : desc;
       const c1Lookup = comparators[0]!.lookup;
       const c2 = comparators[1]!.asc ? asc : desc;
@@ -861,7 +863,8 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: { a
         r = r !== 0 ? r : c2(c2Lookup[a], c2Lookup[b]);
         return r !== 0 ? r : a - b;
       });
-    default:
+    }
+    default: {
       const l = comparators.length;
       const fs = comparators.map((d) => (d.asc ? asc : desc));
       return indices.sort((a, b) => {
@@ -874,6 +877,7 @@ export function sortComplex(indices: UIntTypedArray | number[], comparators: { a
         }
         return a - b;
       });
+    }
   }
 }
 
@@ -1121,7 +1125,6 @@ export function categoricalValueCache2Value<T extends { name: string }>(v: numbe
 }
 
 function sortWorkerMain() {
-  // eslint-disable-next-line no-restricted-globals
   const workerSelf = self as any as IPoorManWorkerScope;
 
   // stored refs to avoid duplicate copy

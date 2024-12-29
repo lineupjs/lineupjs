@@ -42,7 +42,7 @@ export function build<T extends IBuilderAdapterColumnDescProps>(props: T, _data?
       'fixed',
     ] as (keyof IBuilderAdapterColumnDescProps)[]
   ).forEach((key) => {
-    if (props.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(props, key)) {
       desc[key] = props[key];
     }
   });
@@ -106,7 +106,7 @@ export function buildDate(props: IBuilderAdapterDateColumnDescProps): IDateColum
   const desc: any = build({ ...props, type: 'date' });
 
   (['dateFormat', 'dateParse'] as const).forEach((key) => {
-    if (props.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(props, key)) {
       desc[key] = props[key];
     }
   });
@@ -117,7 +117,7 @@ export function buildHierarchy(props: Partial<IBuilderAdapterHierarchyColumnDesc
   const desc: any = build({ ...(props as any), type: 'hierarchy' });
 
   (['hierarchy', 'hierarchySeparator'] as const).forEach((key) => {
-    if (props.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(props, key)) {
       desc[key] = props[key];
     }
   });
@@ -129,11 +129,11 @@ export function buildNumber(props: IBuilderAdapterNumberColumnDescProps, data: a
 
   const domain = props.domain ? props.domain : extent(data, (d) => resolveValue(d, (desc as any).column) as number);
 
-  if (props.hasOwnProperty('color')) {
+  if (Object.prototype.hasOwnProperty.call(props, 'color')) {
     desc.colorMapping = props.color;
   }
   (['sort', 'colorMapping'] as const).forEach((key) => {
-    if (props.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(props, key)) {
       desc[key] = props[key];
     }
   });
@@ -158,7 +158,7 @@ export function buildString(props: IBuilderAdapterStringColumnDescProps): ILinkC
   const desc: any = build({ ...props, type: 'string' });
 
   (['pattern', 'patternTemplate', 'alignment'] as const).forEach((key) => {
-    if (props.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(props, key)) {
       desc[key] = props[key];
     }
   });
@@ -178,7 +178,7 @@ export function buildBoolean(props: IBuilderAdapterBooleanColumnDescProps): IBoo
   const desc: any = build({ ...props, type: 'boolean' });
 
   (['trueMarker', 'falseMarker'] as const).forEach((key) => {
-    if (props.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(props, key)) {
       desc[key] = props[key];
     }
   });
@@ -189,7 +189,7 @@ export function buildActions(props: IBuilderAdapterActionsColumnDescProps): IAct
   const desc: any = build({ ...props, type: 'actions' });
 
   (['actions', 'groupActions'] as const).forEach((key) => {
-    if (props.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(props, key)) {
       desc[key] = props[key];
     }
   });

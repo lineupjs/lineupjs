@@ -396,7 +396,6 @@ export default class ScriptColumn extends CompositeNumberColumn implements IMapA
 
   protected compute(row: IDataRow) {
     if (this.f == null) {
-      // eslint-disable-next-line no-new-func
       this.f = new Function('children', 'values', 'raws', 'col', 'row', 'index', wrapWithContext(this.script)) as any;
     }
     const children = this._children;
