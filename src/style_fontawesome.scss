@@ -1,3 +1,5 @@
-$lu_use_font_awesome: true !default;
-
-@import 'styles/lineup';
+@use 'styles/vars' with (
+  $lu_use_font_awesome: true
+);
+@use 'styles/patch';
+@use 'styles/lineup';

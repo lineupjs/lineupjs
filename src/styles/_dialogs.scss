@@ -2,6 +2,7 @@
   popups, e.g., rename dialogs,...
  */
 
+@use 'sass:color';
 @import './vars';
 @import './icons/index';
 
@@ -101,11 +102,11 @@
 
   &[type='submit'] {
     float: right;
-    color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
+    color:  color.adjust($lu_toolbar_color_base, $lightness: -20%); // slightly darker primary action
   }
 
   &[title='Remove'] {
-    color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
+    color: color.adjust($lu_toolbar_color_base, $lightness: -20%); // slightly darker primary action
   }
 }
 

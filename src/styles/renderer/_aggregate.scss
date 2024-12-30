@@ -1,5 +1,6 @@
 @import '../vars';
 @import '../icons/index';
+@import '~lineupengine/src/styles/vars';
 
 .#{$lu_css_prefix}-renderer-aggregate {
   display: flex;

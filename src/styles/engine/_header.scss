@@ -1,4 +1,6 @@
+@use 'sass:color';
 @import '../vars';
+@import '~lineupengine/src/styles/vars';
 
 .#{$engine_css_prefix}-th {
   color: black;
@@ -75,7 +77,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  background: lighten($lu_drag_over, 35%);
+  background:  color.adjust($lu_drag_over, $lightness: 35%);
   border: 2px dashed $lu_drag_over;
   font-size: small;
   text-align: center;

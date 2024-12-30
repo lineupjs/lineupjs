@@ -1,3 +1,4 @@
+@use 'sass:color';
 @import '../vars';
 @import '../icons/index';
 
@@ -51,7 +52,7 @@
   color: white;
 
   &:hover {
-    background: darken($lu_toolbar_color_base, 10%);
+    background:  color.adjust($lu_toolbar_color_base, $lightness: -10%);
   }
 
   &::before {

@@ -1,5 +1,6 @@
 @import './vars';
 @import './icons/index';
+@import '~lineupengine/src/styles/vars';
 
 section.#{$lu-css_prefix}-slopegraph {
   width: $lu_slope_width;

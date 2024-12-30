@@ -1,3 +1,4 @@
+@use 'sass:color';
 @import './vars';
 @import './icons/index';
 
@@ -23,7 +24,7 @@
 
     font-size: 200%;
     transition: font-size 0.25s ease;
-    color: lighten(black, 50%);
+    color:  color.adjust(black, $lightness: 50%);
   }
 
   &:hover::before {

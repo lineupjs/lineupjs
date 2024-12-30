@@ -1,5 +1,6 @@
 @import '../vars';
 @import '../icons/index';
+@import '~lineupengine/src/styles/vars';
 
 .#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-selection {
   display: flex;

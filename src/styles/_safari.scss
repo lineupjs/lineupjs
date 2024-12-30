@@ -2,6 +2,7 @@
 // see https://stackoverflow.com/questions/16348489/is-there-a-css-hack-for-safari-only-not-chrome#25975282
 
 @import './vars';
+@import '~lineupengine/src/styles/vars';
 
 $lu_safari_check: 0.001dpcm;
 

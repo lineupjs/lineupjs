@@ -1,6 +1,7 @@
 @use 'sass:math';
 
 @import '../vars';
+@import '~lineupengine/src/styles/vars';
 
 .#{$lu_css_prefix}-renderer-dot {
   > div {

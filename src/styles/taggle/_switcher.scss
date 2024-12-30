@@ -1,3 +1,4 @@
+@use 'sass:color';
 @import '../vars';
 @import '../icons/index';
 @import '~lineupengine/src/styles/import_once';
@@ -44,7 +45,7 @@
 .#{$lu_css_prefix}-rule-violation {
   display: none;
   position: absolute;
-  background: lighten(#ffd700, 45%);
+  background:  color.adjust(#ffd700, $lightness: 45%);
   border: 1px solid black;
   top: 110%;
   left: 5px;
