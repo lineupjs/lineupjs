@@ -77,7 +77,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  background:  color.adjust(vars.$lu_drag_over, $lightness: 35%);
+  background: color.adjust(vars.$lu_drag_over, $lightness: 35%);
   border: 2px dashed vars.$lu_drag_over;
   font-size: small;
   text-align: center;

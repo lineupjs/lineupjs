@@ -1,7 +1,7 @@
 @use 'index' as i;
 @use '../vars';
 @use 'custom_font';
-@use "font_awesome";
+@use 'font_awesome';
 
 .#{vars.$lu_css_prefix}-icon-checked::before {
   @include i.lu_icons_o();

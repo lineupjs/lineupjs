@@ -1,4 +1,4 @@
-@use "vars" as *;
+@use 'vars' as *;
 
 @use 'lineupengine/src/styles/vars' as * with (
   $engine_assets: 'lineupengine/src/assets',

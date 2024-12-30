@@ -102,7 +102,7 @@
 
   &[type='submit'] {
     float: right;
-    color:  color.adjust(vars.$lu_toolbar_color_base, $lightness: -20%); // slightly darker primary action
+    color: color.adjust(vars.$lu_toolbar_color_base, $lightness: -20%); // slightly darker primary action
   }
 
   &[title='Remove'] {

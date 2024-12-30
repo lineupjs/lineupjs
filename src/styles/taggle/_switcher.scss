@@ -46,7 +46,7 @@
 .#{vars.$lu_css_prefix}-rule-violation {
   display: none;
   position: absolute;
-  background:  color.adjust(#ffd700, $lightness: 45%);
+  background: color.adjust(#ffd700, $lightness: 45%);
   border: 1px solid black;
   top: 110%;
   left: 5px;

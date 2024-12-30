@@ -52,7 +52,7 @@
   color: white;
 
   &:hover {
-    background:  color.adjust(vars.$lu_toolbar_color_base, $lightness: -10%);
+    background: color.adjust(vars.$lu_toolbar_color_base, $lightness: -10%);
   }
 
   &::before {

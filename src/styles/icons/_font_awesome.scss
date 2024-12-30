@@ -2,7 +2,7 @@
 @use '_fa_variables_copy' as fa with (
   $fa-font-path: '@fortawesome/fontawesome-free/webfonts'
 );
-@forward '_fa_variables_copy';
+@forward 'fa_variables_copy';
 // @use '@fortawesome/fontawesome-free/scss/variables' as fa with (
 //   $fa-font-path: '@fortawesome/fontawesome-free/webfonts'
 // );

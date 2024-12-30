@@ -67,8 +67,10 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
   }
 }
 
-.#{vars.$lu_css_prefix}-histogram:not(.#{vars.$lu_css_prefix}-dense) > .#{vars.$lu_css_prefix}-histogram-bin[data-title]::before,
-.#{vars.$lu_css_prefix}-heatmap:not(.#{vars.$lu_css_prefix}-dense) > .#{vars.$lu_css_prefix}-heatmap-cell[data-title]::before {
+.#{vars.$lu_css_prefix}-histogram:not(.#{vars.$lu_css_prefix}-dense)
+  > .#{vars.$lu_css_prefix}-histogram-bin[data-title]::before,
+.#{vars.$lu_css_prefix}-heatmap:not(.#{vars.$lu_css_prefix}-dense)
+  > .#{vars.$lu_css_prefix}-heatmap-cell[data-title]::before {
   content: attr(data-title);
   position: absolute;
   bottom: -15px;
