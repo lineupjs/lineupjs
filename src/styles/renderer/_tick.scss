@@ -1,13 +1,13 @@
 @use 'sass:math';
 
-@import '../vars';
-@import '~lineupengine/src/styles/vars';
+@use '../vars';
+@use 'lineupengine/src/styles/vars' as le;
 
-.#{$lu_css_prefix}-renderer-tick {
+.#{vars.$lu_css_prefix}-renderer-tick {
   > div {
-    background: $lu_renderer_tick_color;
-    width: $lu_renderer_tick_size;
-    opacity: $lu_renderer_tick_opacity;
+    background: vars.$lu_renderer_tick_color;
+    width: vars.$lu_renderer_tick_size;
+    opacity: vars.$lu_renderer_tick_opacity;
     height: 100%;
     top: 0%;
     transform: translate(-50%, 0);
@@ -16,6 +16,6 @@
   }
 }
 
-.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-tick[data-group='d'] {
+.#{le.$engine_css_prefix}-td.#{vars.$lu_css_prefix}-renderer-tick[data-group='d'] {
   overflow-x: unset;
 }

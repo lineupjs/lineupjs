@@ -1,7 +1,7 @@
-@import '../vars';
-@import '~lineupengine/src/styles/vars';
+@use '../vars';
+@use 'lineupengine/src/styles/vars' as le;
 
-.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-date {
+.#{le.$engine_css_prefix}-td.#{vars.$lu_css_prefix}-renderer-date {
   display: flex;
   align-items: center;
 }

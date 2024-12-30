@@ -1,20 +1,20 @@
-@import './vars';
+@use 'vars';
 
-@import './common';
-@import './icons/icon_style';
-@import './dialogs';
-@import './mappingeditor';
-@import './header/index';
-@import './engine/index';
-@import './renderer/index';
-@import './slope_graph';
-@import './panel/index';
-@import './datatypes';
-@import './taggle/index';
-@import './supported_browser';
-@import './safari';
+@use 'common';
+@use 'icons/icon_style';
+@use 'dialogs';
+@use 'mappingeditor';
+@use 'header/index';
+@use 'engine/index' as index2;
+@use 'renderer/index' as index3;
+@use 'slope_graph';
+@use 'panel/index' as index4;
+@use 'datatypes';
+@use 'taggle/index' as index5;
+@use 'supported_browser';
+@use 'safari';
 
-.#{$lu_css_prefix} {
+.#{vars.$lu_css_prefix} {
   position: relative;
   line-height: normal;
 
@@ -22,7 +22,7 @@
     float: right;
     display: flex;
     flex-direction: column;
-    border-left: 1px solid $lu_taggle_border_color;
+    border-left: 1px solid vars.$lu_taggle_border_color;
     border-radius: 0;
     height: 100%;
   }

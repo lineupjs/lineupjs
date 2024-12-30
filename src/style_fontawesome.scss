@@ -1,5 +1,5 @@
-@use 'styles/vars' with (
+@forward 'styles/vars' with (
   $lu_use_font_awesome: true
 );
-@use 'styles/patch';
-@use 'styles/lineup';
+@forward 'styles/patch';
+@forward 'styles/lineup';

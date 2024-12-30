@@ -1,32 +1,32 @@
-@import '../vars';
-@import '~lineupengine/src/styles/vars';
+@use '../vars';
+@use 'lineupengine/src/styles/vars' as le;
 
-.#{$lu_css_prefix}-hr {
+.#{vars.$lu_css_prefix}-hr {
   position: absolute;
   left: 0;
   top: 0;
   width: 1px;
   height: 2px;
   margin: 0;
-  background-color: $lu_selected_color;
+  background-color: vars.$lu_selected_color;
   border: none;
   transform-origin: left center;
   display: none;
   pointer-events: none;
 
-  @include user_select_none();
+  @include vars.user_select_none();
 
-  &.#{$lu_css_prefix}-selection-active {
+  &.#{vars.$lu_css_prefix}-selection-active {
     display: block;
     z-index: 1000;
   }
 }
 
-.#{$engine_css_prefix}-tbody.#{$lu_css_prefix}-selection-active {
-  @include user_select_none();
+.#{le.$engine_css_prefix}-tbody.#{vars.$lu_css_prefix}-selection-active {
+  @include vars.user_select_none();
 }
 
-.#{$lu_css_prefix}-selection-indicator {
+.#{vars.$lu_css_prefix}-selection-indicator {
   float: right;
   width: 4px;
   left: 0;
@@ -39,7 +39,7 @@
     background: #efefef;
   }
 
-  &.#{$lu_css_prefix}-some-selection {
+  &.#{vars.$lu_css_prefix}-some-selection {
     display: flex;
   }
 }

@@ -1,16 +1,16 @@
-@import './vars';
+@use 'vars';
 
-.#{$lu_css_prefix}-aria,
-.#{$lu_css_prefix}-hidden {
+.#{vars.$lu_css_prefix}-aria,
+.#{vars.$lu_css_prefix}-hidden {
   display: none !important;
 }
 
-.#{$lu_css_prefix}-dragable {
+.#{vars.$lu_css_prefix}-dragable {
   cursor: pointer;
   cursor: grab; // indicate grab able
 }
 
-.#{$lu_css_prefix}-dragover {
+.#{vars.$lu_css_prefix}-dragover {
   pointer-events: all !important;
 
   &::before,
@@ -23,7 +23,7 @@
   }
 }
 
-.#{$lu_css_prefix}-checkbox {
+.#{vars.$lu_css_prefix}-checkbox {
   display: inline;
 
   > input {
@@ -35,11 +35,11 @@
   }
 }
 
-.#{$lu_css_prefix}-color-line {
+.#{vars.$lu_css_prefix}-color-line {
   display: flex;
 }
 
-.#{$lu_css_prefix}-checkbox-color {
+.#{vars.$lu_css_prefix}-checkbox-color {
   width: 1.2em;
   height: 1.2em;
   margin: 0.1em;
@@ -59,7 +59,7 @@
   }
 }
 
-.#{$lu_css_prefix}-color-gradient {
+.#{vars.$lu_css_prefix}-color-gradient {
   display: flex;
 
   input:checked + span {
@@ -72,12 +72,12 @@
   }
 }
 
-.#{$lu_css_prefix}-summary .#{$lu_css_prefix}-checkbox > span {
+.#{vars.$lu_css_prefix}-summary .#{vars.$lu_css_prefix}-checkbox > span {
   display: inline-flex;
 }
 
-.#{$lu_css_prefix}-gradient-text {
-  @include user_select_none();
+.#{vars.$lu_css_prefix}-gradient-text {
+  @include vars.user_select_none();
 
   position: absolute;
   overflow: hidden;
@@ -86,14 +86,14 @@
   z-index: 1;
 }
 
-.#{$lu_css_prefix}-missing {
+.#{vars.$lu_css_prefix}-missing {
   background-image: linear-gradient(
     180deg,
-    $lu_missing_dash_color $lu_missing_dash_height,
-    transparent $lu_missing_dash_height
+    vars.$lu_missing_dash_color vars.$lu_missing_dash_height,
+    transparent vars.$lu_missing_dash_height
   );
   background-position: center center;
-  background-size: $lu_missing_dash_width $lu_missing_dash_height;
+  background-size: vars.$lu_missing_dash_width vars.$lu_missing_dash_height;
   background-repeat: no-repeat;
 
   > * {
@@ -101,10 +101,10 @@
   }
 }
 
-.#{$lu_css_prefix}-busy * {
+.#{vars.$lu_css_prefix}-busy * {
   cursor: wait !important;
 }
 
-.#{$lu_css_prefix}-text-shadow {
+.#{vars.$lu_css_prefix}-text-shadow {
   text-shadow: 0 0 1px white;
 }

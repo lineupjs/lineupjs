@@ -1,27 +1,27 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-histogram {
+.#{vars.$lu_css_prefix}-histogram {
   display: flex;
   flex-direction: row;
 
-  &.#{$lu_css_prefix}-histogram-i > .#{$lu_css_prefix}-histogram-bin {
+  &.#{vars.$lu_css_prefix}-histogram-i > .#{vars.$lu_css_prefix}-histogram-bin {
     cursor: pointer;
   }
 
-  .#{$lu_css_prefix}-checkbox {
+  .#{vars.$lu_css_prefix}-checkbox {
     position: absolute;
     bottom: -45px;
   }
 
-  &.#{$lu_css_prefix}-dense {
-    > .#{$lu_css_prefix}-histogram-bin {
+  &.#{vars.$lu_css_prefix}-dense {
+    > .#{vars.$lu_css_prefix}-histogram-bin {
       margin: 0;
     }
   }
 }
 
-span.#{$lu_css_prefix}-mapping-hint {
-  @include user_select_none();
+span.#{vars.$lu_css_prefix}-mapping-hint {
+  @include vars.user_select_none();
 
   position: absolute;
   bottom: -15px;
@@ -48,7 +48,7 @@ span.#{$lu_css_prefix}-mapping-hint {
   }
 }
 
-.#{$lu_css_prefix}-histogram-bin {
+.#{vars.$lu_css_prefix}-histogram-bin {
   flex: 1 1 auto;
   position: relative;
   margin: 0 1px 0 0;
@@ -62,13 +62,13 @@ span.#{$lu_css_prefix}-mapping-hint {
     width: 100%;
   }
 
-  > .#{$lu_css_prefix}-selected {
-    background-color: $lu_selected_color;
+  > .#{vars.$lu_css_prefix}-selected {
+    background-color: vars.$lu_selected_color;
   }
 }
 
-.#{$lu_css_prefix}-histogram:not(.#{$lu_css_prefix}-dense) > .#{$lu_css_prefix}-histogram-bin[data-title]::before,
-.#{$lu_css_prefix}-heatmap:not(.#{$lu_css_prefix}-dense) > .#{$lu_css_prefix}-heatmap-cell[data-title]::before {
+.#{vars.$lu_css_prefix}-histogram:not(.#{vars.$lu_css_prefix}-dense) > .#{vars.$lu_css_prefix}-histogram-bin[data-title]::before,
+.#{vars.$lu_css_prefix}-heatmap:not(.#{vars.$lu_css_prefix}-dense) > .#{vars.$lu_css_prefix}-heatmap-cell[data-title]::before {
   content: attr(data-title);
   position: absolute;
   bottom: -15px;
@@ -80,8 +80,8 @@ span.#{$lu_css_prefix}-mapping-hint {
   text-align: center;
 }
 
-.#{$lu_css_prefix}-histogram-min,
-.#{$lu_css_prefix}-histogram-max {
+.#{vars.$lu_css_prefix}-histogram-min,
+.#{vars.$lu_css_prefix}-histogram-max {
   position: absolute;
   top: 0;
   height: 100%;
@@ -95,30 +95,30 @@ span.#{$lu_css_prefix}-mapping-hint {
     content: attr(data-value);
     position: absolute;
     bottom: -15px;
-    width: $lu_histogram_drag_hint_width;
+    width: vars.$lu_histogram_drag_hint_width;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 }
 
-.#{$lu_css_prefix}-histogram-max {
+.#{vars.$lu_css_prefix}-histogram-max {
   right: 0;
   border-right: none;
   transform: translate(1px, 0);
   border-left: 1px solid black;
 }
 
-.#{$lu_css_prefix}-histogram-min.#{$lu_css_prefix}-swap-hint,
-.#{$lu_css_prefix}-histogram-max:not(.#{$lu_css_prefix}-swap-hint) {
+.#{vars.$lu_css_prefix}-histogram-min.#{vars.$lu_css_prefix}-swap-hint,
+.#{vars.$lu_css_prefix}-histogram-max:not(.#{vars.$lu_css_prefix}-swap-hint) {
   &::before {
-    left: -$lu_histogram_drag_hint_width;
+    left: -(vars.$lu_histogram_drag_hint_width);
     text-align: right;
   }
 }
 
-.#{$lu_css_prefix}-histogram-min-hint,
-.#{$lu_css_prefix}-histogram-max-hint {
+.#{vars.$lu_css_prefix}-histogram-min-hint,
+.#{vars.$lu_css_prefix}-histogram-max-hint {
   pointer-events: none;
   position: absolute;
   top: 0;
@@ -132,19 +132,19 @@ span.#{$lu_css_prefix}-mapping-hint {
   );
 }
 
-.#{$lu_css_prefix}-histogram-max-hint {
+.#{vars.$lu_css_prefix}-histogram-max-hint {
   right: 0;
 }
 
-.#{$lu_css_prefix}-histogram.#{$lu_css_prefix}-histogram-i {
+.#{vars.$lu_css_prefix}-histogram.#{vars.$lu_css_prefix}-histogram-i {
   margin-bottom: 3.75em;
 
   &:hover {
-    > .#{$lu_css_prefix}-histogram-min {
+    > .#{vars.$lu_css_prefix}-histogram-min {
       border-right-width: 5px;
     }
 
-    > .#{$lu_css_prefix}-histogram-max {
+    > .#{vars.$lu_css_prefix}-histogram-max {
       border-left-width: 5px;
     }
   }

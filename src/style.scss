@@ -1,2 +1,2 @@
-@use 'styles/patch';
-@use 'styles/lineup';
+@forward 'styles/patch';
+@forward 'styles/lineup';

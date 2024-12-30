@@ -1,6 +1,6 @@
-@import '../vars';
-@import '~@fortawesome/fontawesome-free/scss/mixins';
-@import './font_awesome';
+@use '../vars';
+@use '@fortawesome/fontawesome-free/scss/mixins' as *;
+@use 'font_awesome' as *;
 
 $lu_icon_check_square_o: '\f14a';
 $lu_icon_caret_down: '\f0d7';
@@ -73,7 +73,7 @@ $lu_icon_edge: '\f282';
 $lu_icon_window_restore: '\f2d2';
 
 @mixin lu_icons() {
-  @if $lu_use_font_awesome == true {
+  @if vars.$lu_use_font_awesome == true {
     @include fa-icon();
 
     font-family: $fa-style-family, serif;
@@ -93,13 +93,13 @@ $lu_icon_window_restore: '\f2d2';
 
 @mixin lu_icons_o() {
   @include lu_icons();
-  @if $lu_use_font_awesome == true {
+  @if vars.$lu_use_font_awesome == true {
     font-weight: 400;
   }
 }
 
 @mixin lu_custom_icons() {
-  @if $lu_use_font_awesome == true {
+  @if vars.$lu_use_font_awesome == true {
     content: '\2003';
     display: inline;
     width: 1em;
@@ -113,13 +113,13 @@ $lu_icon_window_restore: '\f2d2';
 }
 
 @mixin lu_custom_icon($icon, $name) {
-  @if $lu_use_font_awesome == true {
-    background-image: url('#{$lu_assets}/icon_#{$name}.svg');
+  @if vars.$lu_use_font_awesome == true {
+    background-image: url('#{vars.$lu_assets}/icon_#{$name}.svg');
   } @else {
     content: $icon;
   }
 }
 
-@if $lu_use_font_awesome == true {
+@if vars.$lu_use_font_awesome == true {
   @include lu_fontawesome_var_icons();
 }

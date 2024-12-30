@@ -1,21 +1,21 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-side-panel-entry {
+.#{vars.$lu_css_prefix}-side-panel-entry {
   background-color: #fff;
 }
 
-.#{$lu_css_prefix}-side-panel-entry-header {
+.#{vars.$lu_css_prefix}-side-panel-entry-header {
   display: flex;
   align-content: space-between;
   align-items: center;
-  background: $lu_side_panel_bg_color;
+  background: vars.$lu_side_panel_bg_color;
   padding: 0.4em 0.5em;
   position: relative;
-  font-size: $lu_side_panel_font_size;
+  font-size: vars.$lu_side_panel_font_size;
   font-weight: 500;
 }
 
-.#{$lu_css_prefix}-side-panel-labels {
+.#{vars.$lu_css_prefix}-side-panel-labels {
   margin: 0 1em 0 0;
   padding: 0 0 0 0.4em;
   overflow: hidden !important;
@@ -24,12 +24,12 @@
   white-space: nowrap;
 }
 
-.#{$lu_css_prefix}-side-panel-toolbar {
-  color: $lu_toolbar_color_base2;
+.#{vars.$lu_css_prefix}-side-panel-toolbar {
+  color: vars.$lu_toolbar_color_base2;
   padding: 0;
 }
 
-.#{$lu_css_prefix}-side-panel-summary {
+.#{vars.$lu_css_prefix}-side-panel-summary {
   margin: 0.5em;
   font-size: small;
   height: 50px;
@@ -38,8 +38,8 @@
     display: none;
   }
 
-  &.#{$lu_css_prefix}-renderer-string,
-  &.#{$lu_css_prefix}-renderer-stringhist {
+  &.#{vars.$lu_css_prefix}-renderer-string,
+  &.#{vars.$lu_css_prefix}-renderer-stringhist {
     display: flex;
     flex-direction: column;
     height: auto;

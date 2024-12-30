@@ -1,32 +1,32 @@
-@import '../vars';
-@import '~lineupengine/src/styles/vars';
+@use '../vars';
+@use 'lineupengine/src/styles/vars' as le;
 
-.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-string {
+.#{le.$engine_css_prefix}-td.#{vars.$lu_css_prefix}-renderer-string {
   display: flex;
   align-items: center;
 }
 
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-string,
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-link,
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-date,
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-group {
+.#{vars.$lu_css_prefix}-group.#{vars.$lu_css_prefix}-renderer-string,
+.#{vars.$lu_css_prefix}-group.#{vars.$lu_css_prefix}-renderer-link,
+.#{vars.$lu_css_prefix}-group.#{vars.$lu_css_prefix}-renderer-date,
+.#{vars.$lu_css_prefix}-group.#{vars.$lu_css_prefix}-renderer-group {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
 }
 
-.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-string,
-.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-link,
-.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-date,
-.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-group {
+.#{vars.$lu_css_prefix}-summary.#{vars.$lu_css_prefix}-renderer-string,
+.#{vars.$lu_css_prefix}-summary.#{vars.$lu_css_prefix}-renderer-link,
+.#{vars.$lu_css_prefix}-summary.#{vars.$lu_css_prefix}-renderer-date,
+.#{vars.$lu_css_prefix}-summary.#{vars.$lu_css_prefix}-renderer-group {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.#{$lu_css_prefix}-annotate-input {
+.#{vars.$lu_css_prefix}-annotate-input {
   position: absolute;
   left: 0;
   top: 0;
@@ -37,12 +37,12 @@
   box-sizing: border-box;
 }
 
-.#{$lu_css_prefix}-right {
+.#{vars.$lu_css_prefix}-right {
   justify-content: flex-end;
   text-align: right;
 }
 
-.#{$lu_css_prefix}-center {
+.#{vars.$lu_css_prefix}-center {
   justify-content: center;
   text-align: left;
 }

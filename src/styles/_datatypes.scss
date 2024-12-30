@@ -1,46 +1,46 @@
-@import './vars';
-@import './icons/index';
+@use 'vars';
+@use 'icons/index' as icons;
 
-.#{$lu_css_prefix}-typed-icon {
+.#{vars.$lu_css_prefix}-typed-icon {
   &[data-type-cat]::before {
-    @include lu_custom_icons();
+    @include icons.lu_custom_icons();
 
-    color: $lu_toolbar_color_base2;
+    color: vars.$lu_toolbar_color_base2;
     width: 1.2em;
   }
 
   &[data-type-cat='composite']::before {
-    @include lu_custom_icon($lu_icon_type_composite, composite);
+    @include icons.lu_custom_icon(icons.$lu_icon_type_composite, composite);
   }
 
   &[data-type-cat='map']::before {
-    @include lu_custom_icon($lu_icon_type_map, map);
+    @include icons.lu_custom_icon(icons.$lu_icon_type_map, map);
   }
 
   &[data-type-cat='string']::before {
-    @include lu_custom_icon($lu_icon_type_string, string);
+    @include icons.lu_custom_icon(icons.$lu_icon_type_string, string);
   }
 
   &[data-type-cat='categorical']::before {
-    @include lu_custom_icon($lu_icon_type_categorical, categorical);
+    @include icons.lu_custom_icon(icons.$lu_icon_type_categorical, categorical);
   }
 
   &[data-type-cat='number']::before {
-    @include lu_custom_icon($lu_icon_type_numerical, numerical);
+    @include icons.lu_custom_icon(icons.$lu_icon_type_numerical, numerical);
   }
 
   &[data-type-cat='date']::before {
-    @include lu_custom_icon($lu_icon_type_date, date);
+    @include icons.lu_custom_icon(icons.$lu_icon_type_date, date);
   }
 
   &[data-type-cat='array']::before {
-    @include lu_custom_icon($lu_icon_type_matrix, matrix);
+    @include icons.lu_custom_icon(icons.$lu_icon_type_matrix, matrix);
   }
 }
 
-.#{$lu_css_prefix}-header {
-  > .#{$lu_css_prefix}-typed-icon[data-type-cat='support'],
-  > .#{$lu_css_prefix}-typed-icon[data-type-cat='other'] {
+.#{vars.$lu_css_prefix}-header {
+  > .#{vars.$lu_css_prefix}-typed-icon[data-type-cat='support'],
+  > .#{vars.$lu_css_prefix}-typed-icon[data-type-cat='other'] {
     padding: 0;
 
     &::before {

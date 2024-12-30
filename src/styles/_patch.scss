@@ -1,7 +1,7 @@
 @use "vars" as *;
 
-@use '~lineupengine/src/styles/vars' as * with (
-  $engine_assets: '~lineupengine/src/assets',
+@use 'lineupengine/src/styles/vars' as * with (
+  $engine_assets: 'lineupengine/src/assets',
   $engine_highlight_mode: 'background',
   $engine_row_outline_color: $lu_hover_color,
   $engine_row_background_color: $lu_hover_color
