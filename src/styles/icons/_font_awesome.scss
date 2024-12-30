@@ -1,5 +1,5 @@
 @use '@fortawesome/fontawesome-free/scss/functions' as *;
-@use '_fa_variables_copy' as fa with (
+@use 'fa_variables_copy' as fa with (
   $fa-font-path: '@fortawesome/fontawesome-free/webfonts'
 );
 @forward 'fa_variables_copy';
