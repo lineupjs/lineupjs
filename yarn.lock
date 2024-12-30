@@ -6523,6 +6523,9 @@ __metadata:
     webpack: "npm:^5.97.1"
     webpack-cli: "npm:^6.0.1"
     webpack-dev-server: "npm:^5.2.0"
+  dependenciesMeta:
+    lineupengine@2.5.3:
+      unplugged: true
   languageName: unknown
   linkType: soft
 

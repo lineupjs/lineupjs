@@ -162,5 +162,10 @@
     "lodash.get": "^4.4.2",
     "reflect-metadata": "^0.2.2"
   },
-  "packageManager": "yarn@4.5.3"
+  "packageManager": "yarn@4.5.3",
+  "dependenciesMeta": {
+    "lineupengine@2.5.3": {
+      "unplugged": true
+    }
+  }
 }
