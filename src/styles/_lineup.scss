@@ -1,10 +1,10 @@
 @use 'vars';
 
 @use 'common';
-@use 'icons/icon_style';
+@use 'icons/index';
 @use 'dialogs';
 @use 'mappingeditor';
-@use 'header/index';
+@use 'header/index' as index6;
 @use 'engine/index' as index2;
 @use 'renderer/index' as index3;
 @use 'slope_graph';
