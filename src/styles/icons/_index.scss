@@ -173,7 +173,6 @@ $lu_icon_window_restore: '\f2d2';
       font-style: normal;
       font-weight: 900;
       font-display: fa.$fa-font-display;
-      src: url('#{fa.$fa-font-path}/fa-solid-900.eot');
       src:
         url('#{fa.$fa-font-path}/fa-solid-900.woff2') format('woff2'),
         url('#{fa.$fa-font-path}/fa-solid-900.ttf') format('truetype');
@@ -183,7 +182,6 @@ $lu_icon_window_restore: '\f2d2';
       font-style: normal;
       font-weight: 400;
       font-display: fa.$fa-font-display;
-      src: url('#{fa.$fa-font-path}/fa-regular-400.eot');
       src:
         url('#{fa.$fa-font-path}/fa-regular-400.woff2') format('woff2'),
         url('#{fa.$fa-font-path}/fa-regular-400.ttf') format('truetype');
@@ -193,7 +191,6 @@ $lu_icon_window_restore: '\f2d2';
   @at-root {
     @font-face {
       font-family: lu-font;
-      src: url('#{vars.$lu_assets}/font/lu-font.eot');
       src:
         url('#{vars.$lu_assets}/font/lu-font.woff2') format('woff2'),
         url('#{vars.$lu_assets}/font/lu-font.ttf') format('truetype');
