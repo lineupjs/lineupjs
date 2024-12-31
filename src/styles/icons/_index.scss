@@ -3,7 +3,7 @@
 @use '@fortawesome/fontawesome-free/scss/functions' as *;
 @use '@fortawesome/fontawesome-free/scss/mixins' as *;
 @use 'fa_variables_copy' as fa with (
-  $fa-font-path: '@fortawesome/fontawesome-free/webfonts'
+  $fa-font-path: '~@fortawesome/fontawesome-free/webfonts'
 );
 
 @mixin lu_icons() {
@@ -175,11 +175,8 @@ $lu_icon_window_restore: '\f2d2';
       font-display: fa.$fa-font-display;
       src: url('#{fa.$fa-font-path}/fa-solid-900.eot');
       src:
-        url('#{fa.$fa-font-path}/fa-solid-900.eot?#iefix') format('embedded-opentype'),
         url('#{fa.$fa-font-path}/fa-solid-900.woff2') format('woff2'),
-        url('#{fa.$fa-font-path}/fa-solid-900.woff') format('woff'),
-        url('#{fa.$fa-font-path}/fa-solid-900.ttf') format('truetype'),
-        url('#{fa.$fa-font-path}/fa-solid-900.svg#fontawesome') format('svg');
+        url('#{fa.$fa-font-path}/fa-solid-900.ttf') format('truetype');
     }
     @font-face {
       font-family: 'Font Awesome 5 Free';
@@ -188,11 +185,8 @@ $lu_icon_window_restore: '\f2d2';
       font-display: fa.$fa-font-display;
       src: url('#{fa.$fa-font-path}/fa-regular-400.eot');
       src:
-        url('#{fa.$fa-font-path}/fa-regular-400.eot?#iefix') format('embedded-opentype'),
         url('#{fa.$fa-font-path}/fa-regular-400.woff2') format('woff2'),
-        url('#{fa.$fa-font-path}/fa-regular-400.woff') format('woff'),
-        url('#{fa.$fa-font-path}/fa-regular-400.ttf') format('truetype'),
-        url('#{fa.$fa-font-path}/fa-regular-400.svg#fontawesome') format('svg');
+        url('#{fa.$fa-font-path}/fa-regular-400.ttf') format('truetype');
     }
   }
 } @else {
@@ -201,11 +195,8 @@ $lu_icon_window_restore: '\f2d2';
       font-family: lu-font;
       src: url('#{vars.$lu_assets}/font/lu-font.eot');
       src:
-        url('#{vars.$lu_assets}/font/lu-font.eot') format('embedded-opentype'),
         url('#{vars.$lu_assets}/font/lu-font.woff2') format('woff2'),
-        url('#{vars.$lu_assets}/font/lu-font.woff') format('woff'),
-        url('#{vars.$lu_assets}/font/lu-font.ttf') format('truetype'),
-        url('#{vars.$lu_assets}/font/lu-font.svg') format('svg');
+        url('#{vars.$lu_assets}/font/lu-font.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
