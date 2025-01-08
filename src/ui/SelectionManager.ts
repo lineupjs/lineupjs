@@ -100,7 +100,6 @@ export default class SelectionManager extends AEventDispatcher {
             yShift: r.top,
             node: evt.target as HTMLElement,
           };
-          console.log(this.start.node);
 
           this.body.classList.add(cssClass('selection-active'));
           body.addEventListener('mousemove', mouseMove, {
