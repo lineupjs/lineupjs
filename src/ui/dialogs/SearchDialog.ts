@@ -122,7 +122,7 @@ export default class SearchDialog extends ADialog {
     const next = this.find<HTMLButtonElement>(`.${cssClass('next-result')}`)!;
     const searchCount = this.find<HTMLElement>(`.${cssClass('search-count')}`)!;
 
-    let search: string = input.value;
+    const search: string = input.value;
     const isRegex = checkbox.checked;
 
     if (search.length === 0) {

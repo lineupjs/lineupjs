@@ -1,13 +1,13 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-hierarchy {
+.#{vars.$lu_css_prefix}-hierarchy {
   position: relative;
   order: 2;
 }
 
-.#{$lu_css_prefix}-group-hierarchy,
-.#{$lu_css_prefix}-sort-hierarchy,
-.#{$lu_css_prefix}-sort-groups-hierarchy {
+.#{vars.$lu_css_prefix}-group-hierarchy,
+.#{vars.$lu_css_prefix}-sort-hierarchy,
+.#{vars.$lu_css_prefix}-sort-groups-hierarchy {
   counter-reset: hierarchy-counter;
   margin-bottom: 0.5em;
 
@@ -15,7 +15,7 @@
     content: '';
     display: block;
     font-size: small;
-    color: $lu_toolbar_color_base2;
+    color: vars.$lu_toolbar_color_base2;
     padding: 0.5em;
   }
 
@@ -24,7 +24,7 @@
   }
 }
 
-.#{$lu_css_prefix}-group-hierarchy {
+.#{vars.$lu_css_prefix}-group-hierarchy {
   &::before {
     content: 'Grouping Hierarchy';
   }
@@ -34,42 +34,42 @@
   }
 }
 
-.#{$lu_css_prefix}-sort-hierarchy {
+.#{vars.$lu_css_prefix}-sort-hierarchy {
   &::before {
     content: 'Sorting Hierarchy';
   }
 }
 
-.#{$lu_css_prefix}-sort-groups-hierarchy {
+.#{vars.$lu_css_prefix}-sort-groups-hierarchy {
   &::before {
     content: 'Group Sorting Hierarchy';
   }
 }
 
-.#{$lu_css_prefix}-hierarchy-entry,
-.#{$lu_css_prefix}-hierarchy-adder {
+.#{vars.$lu_css_prefix}-hierarchy-entry,
+.#{vars.$lu_css_prefix}-hierarchy-adder {
   padding: 6px 0.5em 0;
   display: flex;
-  color: $lu_toolbar_color_base2;
-  border-top: 1px solid $lu_side_panel_separator_color;
-  font-size: $lu_toolbar_font_size;
+  color: vars.$lu_toolbar_color_base2;
+  border-top: 1px solid vars.$lu_side_panel_separator_color;
+  font-size: vars.$lu_toolbar_font_size;
   font-weight: 500;
   counter-increment: hierarchy-counter;
 
   &::before {
-    color: $lu_toolbar_color_base2;
+    color: vars.$lu_toolbar_color_base2;
     padding-right: 0.2em;
     content: counter(hierarchy-counter);
   }
 }
 
-.#{$lu_css_prefix}-hierarchy-entry {
+.#{vars.$lu_css_prefix}-hierarchy-entry {
   i {
     opacity: 0;
     transition: opacity 0.1s linear;
   }
 
-  > .#{$lu_css_prefix}-label {
+  > .#{vars.$lu_css_prefix}-label {
     color: inherit;
     flex: 1 1 0;
   }
@@ -95,7 +95,7 @@
   }
 }
 
-.#{$lu_css_prefix}-hierarchy-adder > .#{$lu_css_prefix}-search {
+.#{vars.$lu_css_prefix}-hierarchy-adder > .#{vars.$lu_css_prefix}-search {
   color: inherit;
   flex: 1 1 0;
 

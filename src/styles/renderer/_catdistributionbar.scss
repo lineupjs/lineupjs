@@ -1,10 +1,10 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-renderer-catdistributionbar {
+.#{vars.$lu_css_prefix}-renderer-catdistributionbar {
   display: flex;
 }
 
-.#{$lu_css_prefix}-distribution-bar {
+.#{vars.$lu_css_prefix}-distribution-bar {
   overflow: hidden;
   width: 0;
   display: flex;

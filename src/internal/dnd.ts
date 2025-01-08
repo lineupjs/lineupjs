@@ -106,7 +106,7 @@ export function dragAble(
       try {
         e.dataTransfer!.setData(k, payload.data[k]);
         return true;
-      } catch (e) {
+      } catch {
         return false;
       }
     });

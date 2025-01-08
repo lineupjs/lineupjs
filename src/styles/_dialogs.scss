@@ -2,10 +2,11 @@
   popups, e.g., rename dialogs,...
  */
 
-@import './vars';
-@import './icons/index';
+@use 'sass:color';
+@use 'vars';
+@use 'icons/index' as icons;
 
-@keyframes #{$lu_css_prefix}-dialogs-fade-in {
+@keyframes #{vars.$lu_css_prefix}-dialogs-fade-in {
   from {
     opacity: 0;
   }
@@ -15,22 +16,22 @@
   }
 }
 
-.#{$lu_css_prefix}-backdrop {
+.#{vars.$lu_css_prefix}-backdrop {
   display: none;
   position: absolute;
   inset: 0;
   z-index: 8;
 }
 
-.#{$lu_css_prefix}-backdrop-bg {
+.#{vars.$lu_css_prefix}-backdrop-bg {
   position: absolute;
   inset: 0;
   background: rgb(0 0 0 / 10%);
-  animation: #{$lu_css_prefix}-dialogs-fade-in 0.2s;
+  animation: #{vars.$lu_css_prefix}-dialogs-fade-in 0.2s;
 }
 
-.#{$lu_css_prefix}-dialog,
-.#{$lu_css_prefix}-tooltip {
+.#{vars.$lu_css_prefix}-dialog,
+.#{vars.$lu_css_prefix}-tooltip {
   background-color: white;
   border: 1px solid black;
   display: flex;
@@ -38,9 +39,9 @@
   position: absolute;
   padding: 5px;
   z-index: 9;
-  font-size: $lu_dialog_font_size;
+  font-size: vars.$lu_dialog_font_size;
   clear: right;
-  animation: #{$lu_css_prefix}-dialogs-fade-in 0.4s;
+  animation: #{vars.$lu_css_prefix}-dialogs-fade-in 0.4s;
 
   strong {
     margin: 1em 0.2em 0.4em;
@@ -48,7 +49,7 @@
   }
 }
 
-.#{$lu_css_prefix}-dialog {
+.#{vars.$lu_css_prefix}-dialog {
   label {
     font-weight: normal;
   }
@@ -57,7 +58,7 @@
     font-size: 8pt;
   }
 
-  .#{$lu_css_prefix}-checkbox:not(.#{$lu_css_prefix}-dialog-filter-table-entry) > span {
+  .#{vars.$lu_css_prefix}-checkbox:not(.#{vars.$lu_css_prefix}-dialog-filter-table-entry) > span {
     font-weight: normal;
     align-items: center;
     margin: 5px 0;
@@ -65,10 +66,10 @@
   }
 }
 
-.#{$lu_css_prefix}-dialog-button {
+.#{vars.$lu_css_prefix}-dialog-button {
   border: none;
   background: none;
-  color: $lu_toolbar_color_base;
+  color: vars.$lu_toolbar_color_base;
   transition: all 0.5s ease;
   margin-top: 1em;
   cursor: pointer;
@@ -76,44 +77,44 @@
   &:hover,
   &:active,
   &:focus {
-    color: $lu_toolbar_color_hover;
+    color: vars.$lu_toolbar_color_hover;
   }
 
   &::before {
-    @include lu_icons();
+    @include icons.lu_icons();
   }
 
   &[type='submit']::before {
-    content: $lu_icon_check;
+    content: icons.$lu_icon_check;
   }
 
   &[title='Cancel']::before {
-    content: $lu_icon_times;
+    content: icons.$lu_icon_times;
   }
 
   &[type='reset']::before {
-    content: $lu_icon_undo;
+    content: icons.$lu_icon_undo;
   }
 
-  &.#{$lu_css_prefix}-dialog-weights-distribute-button::before {
-    content: $lu_icon_sliders;
+  &.#{vars.$lu_css_prefix}-dialog-weights-distribute-button::before {
+    content: icons.$lu_icon_sliders;
   }
 
   &[type='submit'] {
     float: right;
-    color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
+    color: color.adjust(vars.$lu_toolbar_color_base, $lightness: -20%); // slightly darker primary action
   }
 
   &[title='Remove'] {
-    color: darken($lu_toolbar_color_base, 20%); // slightly darker primary action
+    color: color.adjust(vars.$lu_toolbar_color_base, $lightness: -20%); // slightly darker primary action
   }
 }
 
-.#{$lu_css_prefix}-dialog-sub-nested {
+.#{vars.$lu_css_prefix}-dialog-sub-nested {
   width: 150px;
 }
 
-.#{$lu_css_prefix}-dialog-table {
+.#{vars.$lu_css_prefix}-dialog-table {
   overflow-y: auto;
   max-height: 50vh;
 
@@ -122,7 +123,7 @@
   }
 }
 
-.#{$lu_css_prefix}-dialog-filter-table-entry {
+.#{vars.$lu_css_prefix}-dialog-filter-table-entry {
   display: flex;
 
   > input[type='checkbox']:not(:checked) + span {
@@ -135,7 +136,7 @@
   }
 }
 
-.#{$lu_css_prefix}-dialog-color-table-entry {
+.#{vars.$lu_css_prefix}-dialog-color-table-entry {
   min-width: 10em;
   display: block;
 
@@ -149,24 +150,24 @@
   }
 }
 
-.#{$lu_css_prefix}-dialog-table-entry-wide {
+.#{vars.$lu_css_prefix}-dialog-table-entry-wide {
   min-width: 19em;
 }
 
-.#{$lu_css_prefix}-dialog-filter-table-color {
+.#{vars.$lu_css_prefix}-dialog-filter-table-color {
   width: 1.2em;
   margin: 0 0.5em;
 }
 
-.#{$lu_css_prefix}-dialog-filter-table-entry-label {
+.#{vars.$lu_css_prefix}-dialog-filter-table-entry-label {
   flex-grow: 1;
 }
 
-.#{$lu_css_prefix}-dialog-filter-table-entry-stats {
-  color: $lu_toolbar_color_base;
+.#{vars.$lu_css_prefix}-dialog-filter-table-entry-stats {
+  color: vars.$lu_toolbar_color_base;
 }
 
-.#{$lu_css_prefix}-dialog-filter-color-bar {
+.#{vars.$lu_css_prefix}-dialog-filter-color-bar {
   width: 100px;
   position: relative;
 
@@ -180,11 +181,11 @@
   }
 }
 
-.#{$lu_css_prefix}-dialog-weights-table-entry {
+.#{vars.$lu_css_prefix}-dialog-weights-table-entry {
   display: flex;
 }
 
-.#{$lu_css_prefix}-dialog-color {
+.#{vars.$lu_css_prefix}-dialog-color {
   width: 17em;
   display: flex;
   flex-direction: column;
@@ -193,14 +194,14 @@
     cursor: pointer;
 
     &::before {
-      @include lu_icons();
+      @include icons.lu_icons();
 
-      content: $lu_icon_caret_right;
+      content: icons.$lu_icon_caret_right;
       width: 0.8em;
     }
 
     &[data-toggle='open']::before {
-      content: $lu_icon_caret_down;
+      content: icons.$lu_icon_caret_down;
     }
   }
 
@@ -214,7 +215,7 @@
   }
 }
 
-.#{$lu_css_prefix}-color-custom {
+.#{vars.$lu_css_prefix}-color-custom {
   display: inline-flex;
   justify-content: space-between;
 
@@ -224,7 +225,7 @@
   }
 }
 
-.#{$lu_css_prefix}-tooltip {
+.#{vars.$lu_css_prefix}-tooltip {
   pointer-events: none;
   min-width: 15em;
   max-width: 50em;
@@ -267,21 +268,21 @@
 }
 
 /* search dialog for string columns */
-.#{$lu_css_prefix}-string-search-dialog {
+.#{vars.$lu_css_prefix}-string-search-dialog {
   display: flex;
   gap: 5px;
 
-  .#{$lu_css_prefix}-search-count {
-    color: $lu_toolbar_color_base;
+  .#{vars.$lu_css_prefix}-search-count {
+    color: vars.$lu_toolbar_color_base;
   }
 
   button {
     border: none;
     background: none;
-    color: $lu_toolbar_color_base2;
+    color: vars.$lu_toolbar_color_base2;
 
     &:disabled {
-      color: $lu_toolbar_color_base;
+      color: vars.$lu_toolbar_color_base;
     }
 
     &:not(:disabled) {
@@ -290,20 +291,20 @@
       &:hover,
       &:active,
       &:focus {
-        color: $lu_toolbar_color_hover;
+        color: vars.$lu_toolbar_color_hover;
       }
     }
 
     &::before {
-      @include lu_icons();
+      @include icons.lu_icons();
     }
 
-    &.#{$lu_css_prefix}-previous-result::before {
-      content: $lu_icon_up_open;
+    &.#{vars.$lu_css_prefix}-previous-result::before {
+      content: icons.$lu_icon_up_open;
     }
 
-    &.#{$lu_css_prefix}-next-result::before {
-      content: $lu_icon_down_open;
+    &.#{vars.$lu_css_prefix}-next-result::before {
+      content: icons.$lu_icon_down_open;
     }
   }
 }

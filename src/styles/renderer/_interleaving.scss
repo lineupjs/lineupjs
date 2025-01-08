@@ -1,10 +1,10 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-renderer-interleaving {
+.#{vars.$lu_css_prefix}-renderer-interleaving {
   display: flex;
   flex-direction: column;
 
-  &.#{$lu_css_prefix}-histogram {
+  &.#{vars.$lu_css_prefix}-histogram {
     flex-direction: row;
   }
 

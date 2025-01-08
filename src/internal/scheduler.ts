@@ -120,7 +120,6 @@ export default class TaskScheduler {
       return;
     }
 
-    // eslint-disable-next-line no-restricted-globals
     const ww = self as any as IPoorManIdleCallback;
     if (ww.requestIdleCallback) {
       this.taskId = ww.requestIdleCallback(this.runTasks);
@@ -227,7 +226,7 @@ export default class TaskScheduler {
     if (this.taskId === -1) {
       return;
     }
-    // eslint-disable-next-line no-restricted-globals
+
     const ww = self as any as IPoorManIdleCallback;
     if (ww.requestIdleCallback && ww.clearIdleCallback) {
       ww.clearIdleCallback(this.taskId);

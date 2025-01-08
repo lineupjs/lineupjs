@@ -1,18 +1,18 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-renderer-categorical,
-.#{$lu_css_prefix}-renderer-brightness {
+.#{vars.$lu_css_prefix}-renderer-categorical,
+.#{vars.$lu_css_prefix}-renderer-brightness {
   display: flex;
   white-space: nowrap;
 }
 
-.#{$lu_css_prefix}-group.#{$lu_css_prefix}-renderer-brightness > div {
+.#{vars.$lu_css_prefix}-group.#{vars.$lu_css_prefix}-renderer-brightness > div {
   display: flex;
   white-space: nowrap;
   width: 100%;
 }
 
-.#{$lu_css_prefix}-cat-color {
+.#{vars.$lu_css_prefix}-cat-color {
   flex: 0 0 16px;
   line-height: 100%;
   margin-right: 0.5em;
@@ -20,7 +20,7 @@
   /* border-radius: 8px; */
 }
 
-.#{$lu_css_prefix}-cat-label {
+.#{vars.$lu_css_prefix}-cat-label {
   width: 0; // set 0 width for firefox to have proper ...
   flex: 1 1 auto;
   overflow: hidden;

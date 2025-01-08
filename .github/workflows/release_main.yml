@@ -88,7 +88,7 @@ jobs:
           mkdir -p public/main
           cp -rt public/main/ docs demo/* build/*
           mkdir -p public/app
-          cp -rt public/app/ build/LineUpJS.* build/*.ttf build/*.eot build/*.svg
+          cp -rt public/app/ build/LineUpJS.* build/*.ttf
 
       - name: Deploy Main
         uses: upsetjs/actions-gh-pages@sgratzl
@@ -100,7 +100,7 @@ jobs:
           publish_branch: main
           publish_dir: ./public
           enable_jekyll: true
-          remove_path_spec: 'main,app/LineUpJS.*,app/*.eot,app/*.ttf,app/*.svg'
+          remove_path_spec: 'main,app/LineUpJS.*,app/*.ttf'
       - name: Pack Publish
         run: |
           yarn config set npmAuthToken "${{ secrets.NPM_TOKEN }}"
