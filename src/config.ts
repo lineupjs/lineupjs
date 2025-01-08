@@ -246,7 +246,7 @@ function resolveToolbarActions(col: Column, keys: string[], lookup: IToolbarLook
   const actions: IToolbarAction[] = [];
 
   keys.forEach((key) => {
-    if (lookup.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(lookup, key)) {
       actions.push(lookup[key]);
     } else {
       console.warn(`cannot find toolbar action of type: "${col.desc.type}" with key "${key}"`);
@@ -259,7 +259,7 @@ function resolveToolbarDialogAddons(col: Column, keys: string[], lookup: IToolba
   const actions: IToolbarDialogAddon[] = [];
 
   keys.forEach((key) => {
-    if (lookup.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(lookup, key)) {
       actions.push(lookup[key]);
     } else {
       console.warn(`cannot find toolbar dialog addon of type: "${col.desc.type}" with key "${key}"`);

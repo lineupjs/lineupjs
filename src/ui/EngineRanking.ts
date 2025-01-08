@@ -954,7 +954,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     let leftOffset = 0;
     let indexOffset = 0;
     // shift frozen ones
-    for (let frozenIndex of this.visibleColumns.frozen) {
+    for (const frozenIndex of this.visibleColumns.frozen) {
       if (frozenIndex >= this.visibleColumns.first) {
         break;
       }

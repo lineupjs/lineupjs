@@ -1,6 +1,6 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-renderer-image {
+.#{vars.$lu_css_prefix}-renderer-image {
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;

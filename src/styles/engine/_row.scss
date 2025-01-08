@@ -1,33 +1,34 @@
-@import '../vars';
-@import '~lineupengine/src/styles/mixins';
+@use '../vars';
+@use 'lineupengine/src/styles/vars' as le;
+@use 'lineupengine/src/styles/mixins' as *;
 
-.#{$lu_css_prefix}-hover-only {
+.#{vars.$lu_css_prefix}-hover-only {
   visibility: hidden;
   padding-left: 4px;
 
-  > .#{$lu_css_prefix}-gradient-text {
+  > .#{vars.$lu_css_prefix}-gradient-text {
     left: 4px;
   }
 }
 
-.#{$engine-css_prefix}-tr {
+.#{le.$engine-css_prefix}-tr {
   /*
   &:hover,
-  &.#{$lu_css_prefix}-selected,
-  &.#{$engine_css_prefix}-highlighted {
-    .#{$lu_css_prefix}-hover-only {
+  &.#{vars.$lu_css_prefix}-selected,
+  &.#{le.$engine_css_prefix}-highlighted {
+    .#{vars.$lu_css_prefix}-hover-only {
       visibility: visible;
     }
   }
   */
 
-  &.#{$lu_css_prefix}-selected {
+  &.#{vars.$lu_css_prefix}-selected {
     /**
     selected state extends hover state
     */
-    @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
+    @include collapsing-row-border(vars.$lu_engine_row_outline_width, vars.$lu_selected_color);
 
-    background-color: $lu_selected_color;
+    background-color: vars.$lu_selected_color;
   }
 
   > canvas {
@@ -36,24 +37,24 @@
   }
 }
 
-.#{$engine-css_prefix}-td[data-group='d'] {
+.#{le.$engine-css_prefix}-td[data-group='d'] {
   white-space: nowrap;
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
 
 // FIXME
-.#{$lu-css_prefix}-whole-hover {
-  .#{$lu-css_prefix}-row:hover {
+.#{vars.$lu-css_prefix}-whole-hover {
+  .#{vars.$lu-css_prefix}-row:hover {
     height: auto !important;
     white-space: unset;
   }
 }
 
-.#{$engine-css_prefix}-td.#{$engine_css_prefix}-shifted.#{$engine_css_prefix}-frozen {
+.#{le.$engine-css_prefix}-td.#{le.$engine_css_prefix}-shifted.#{le.$engine_css_prefix}-frozen {
   /**
   add a dummy white blocker for the margin-right
     */
-  border-right: $lu-engine_grip_gap solid white;
+  border-right: vars.$lu-engine_grip_gap solid white;
   box-sizing: content-box;
 }

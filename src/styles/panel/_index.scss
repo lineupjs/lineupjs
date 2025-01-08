@@ -1,37 +1,38 @@
-@import '../vars';
-@import '../icons/index';
+@use 'sass:color';
+@use '../vars';
+@use '../icons/index' as icons;
 
-@import './search';
-@import './entry';
-@import './hierarchy';
-@import './ranking';
+@use 'search';
+@use 'entry';
+@use 'hierarchy';
+@use 'ranking';
 
-.#{$lu_css_prefix}-side-panel {
+.#{vars.$lu_css_prefix}-side-panel {
   display: flex;
   flex-direction: column;
   width: 20em;
   transform: translate3d(0, 0, 1px); // separate layer
 }
 
-.#{$lu_css_prefix}-stats {
+.#{vars.$lu_css_prefix}-stats {
   font-size: small;
   padding: 1em 0.5em;
 
   > span {
     padding: 2px;
-    background-color: $lu_selected_color;
+    background-color: vars.$lu_selected_color;
   }
 }
 
-.#{$lu_css_prefix}-stats-reset,
-.#{$lu_css_prefix}-stats-clear-selection {
+.#{vars.$lu_css_prefix}-stats-reset,
+.#{vars.$lu_css_prefix}-stats-clear-selection {
   padding: 2px;
   font-style: normal;
   display: unset;
-  color: $lu_toolbar_color_base2;
+  color: vars.$lu_toolbar_color_base2;
 
   &:hover {
-    color: $lu_toolbar_color_hover;
+    color: vars.$lu_toolbar_color_hover;
   }
 
   > span {
@@ -39,7 +40,7 @@
   }
 }
 
-.#{$lu_css_prefix}-collapser {
+.#{vars.$lu_css_prefix}-collapser {
   position: absolute;
   right: 0;
   top: 0;
@@ -47,23 +48,23 @@
   padding: 0.7em 0.2em;
   cursor: pointer;
   border-radius: 0.4em 0 0 0.4em;
-  background: $lu_toolbar_color_base;
+  background: vars.$lu_toolbar_color_base;
   color: white;
 
   &:hover {
-    background: darken($lu_toolbar_color_base, 10%);
+    background: color.adjust(vars.$lu_toolbar_color_base, $lightness: -10%);
   }
 
   &::before {
-    @include lu_icons();
+    @include icons.lu_icons();
 
-    content: $lu_icon_caret_right;
+    content: icons.$lu_icon_caret_right;
     width: 0.8em;
     text-align: center;
   }
 }
 
-.#{$lu_css_prefix}-side-panel.#{$lu_css_prefix}-collapsed {
+.#{vars.$lu_css_prefix}-side-panel.#{vars.$lu_css_prefix}-collapsed {
   width: 0;
   transform: unset;
 
@@ -71,9 +72,9 @@
     display: none;
   }
 
-  .#{$lu_css_prefix}-collapser {
+  .#{vars.$lu_css_prefix}-collapser {
     display: block;
-    border-right: 1px solid $lu_taggle_border_color;
+    border-right: 1px solid vars.$lu_taggle_border_color;
 
     &::before {
       transform: scale(-1, 1);

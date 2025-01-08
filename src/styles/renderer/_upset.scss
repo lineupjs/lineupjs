@@ -1,27 +1,27 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-renderer-upset {
+.#{vars.$lu_css_prefix}-renderer-upset {
   display: flex;
   align-items: center;
   justify-content: space-around;
 }
 
-.#{$lu_css_prefix}-upset-line {
+.#{vars.$lu_css_prefix}-upset-line {
   position: absolute;
   top: 0;
   height: 50%;
   transform: translateY(-1px);
-  border-bottom: 3px solid $lu_renderer_upset_color; // line
+  border-bottom: 3px solid vars.$lu_renderer_upset_color; // line
 }
 
-.#{$lu_css_prefix}-upset-dot {
+.#{vars.$lu_css_prefix}-upset-dot {
   border-radius: 50%;
-  background-color: $lu_renderer_upset_color;
-  opacity: $lu_renderer_upset_inactive_opacity;
+  background-color: vars.$lu_renderer_upset_color;
+  opacity: vars.$lu_renderer_upset_inactive_opacity;
   width: 15px;
   height: 15px;
 
-  &.#{$lu_css_prefix}-enabled {
+  &.#{vars.$lu_css_prefix}-enabled {
     opacity: 1;
   }
 }

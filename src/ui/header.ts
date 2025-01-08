@@ -121,7 +121,7 @@ export function createHeader(col: Column, ctx: IRankingHeaderContext, options: P
     if (!options.mergeDropAble) {
       placer.style.left = '50%';
     }
-    placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() / 2 ?? 50)}px`;
+    placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() ?? 100) / 2}px`;
     rearrangeDropAble(placer, col, ctx);
   }
   if (options.resizeable) {
@@ -173,7 +173,7 @@ export function updateHeader(
   if (placer) {
     const nextSibling = col.nextSibling();
     const widthFactor = node.getElementsByClassName(cssClass('merger')).length === 0 ? 0.5 : 0.2;
-    placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() * widthFactor ?? 50) + 5}px`;
+    placer.style.width = `${col.getWidth() * widthFactor + (nextSibling?.getWidth() ?? 100) * widthFactor + 5}px`;
   }
 }
 

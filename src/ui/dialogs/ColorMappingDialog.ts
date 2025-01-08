@@ -325,14 +325,15 @@ function toColor(input: HTMLInputElement, node: HTMLElement) {
   switch (input.value) {
     case 'custom:solid':
       return new SolidColorFunction(node.querySelector<HTMLInputElement>('input[name=solid]')!.value);
-    case 'custom:sequential':
+    case 'custom:sequential': {
       const s0 = node.querySelector<HTMLInputElement>('input[name=interpolate0]')!.value;
       const s1 = node.querySelector<HTMLInputElement>('input[name=interpolate1]')!.value;
       return new CustomColorMappingFunction([
         { color: s0, value: 0 },
         { color: s1, value: 1 },
       ]);
-    case 'custom:diverging':
+    }
+    case 'custom:diverging': {
       const dm1 = node.querySelector<HTMLInputElement>('input[name=divergentm1]')!.value;
       const d0 = node.querySelector<HTMLInputElement>('input[name=divergent0]')!.value;
       const d1 = node.querySelector<HTMLInputElement>('input[name=divergent1]')!.value;
@@ -341,6 +342,7 @@ function toColor(input: HTMLInputElement, node: HTMLElement) {
         { color: d0, value: 0.5 },
         { color: d1, value: 1 },
       ]);
+    }
   }
   if (input.value in SequentialColorFunction.FUNCTIONS) {
     return new SequentialColorFunction(input.value);

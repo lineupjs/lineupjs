@@ -167,11 +167,12 @@ export default class MappingDialog extends ADialog {
               [1, 0, 1]
             );
             break;
-          case 'script':
+          case 'script': {
             const s = new ScriptMappingFunction(this.rawDomain.slice());
             this.scale = s;
             textarea.value = s.code;
             break;
+          }
           case 'unknown':
             // clone original again
             this.scale = this.column.getOriginalMapping().clone();

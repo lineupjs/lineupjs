@@ -11,7 +11,7 @@ export function isTypeInstance(clazz: any, superClass: any) {
 export function pick<T extends Record<string, unknown>>(obj: T, keys: (keyof T)[]): Pick<T, keyof T> {
   const r: Pick<T, keyof T> = {} as any;
   keys.forEach((k) => {
-    if (obj.hasOwnProperty(k)) {
+    if (Object.prototype.hasOwnProperty.call(obj, k)) {
       r[k] = obj[k];
     }
   });
