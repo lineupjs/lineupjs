@@ -165,24 +165,26 @@ $lu_icon_window_restore: '\f2d2';
   $lu_icon_align_justify: fa-content(fa.$fa-var-align-justify) !global;
   $lu_icon_bars: fa-content(fa.$fa-var-bars) !global;
 
-  @at-root {
-    @font-face {
-      font-family: 'Font Awesome 5 Free';
-      font-style: normal;
-      font-weight: 900;
-      font-display: fa.$fa-font-display;
-      src:
-        url('#{fa.$fa-font-path}/fa-solid-900.woff2') format('woff2'),
-        url('#{fa.$fa-font-path}/fa-solid-900.ttf') format('truetype');
-    }
-    @font-face {
-      font-family: 'Font Awesome 5 Free';
-      font-style: normal;
-      font-weight: 400;
-      font-display: fa.$fa-font-display;
-      src:
-        url('#{fa.$fa-font-path}/fa-regular-400.woff2') format('woff2'),
-        url('#{fa.$fa-font-path}/fa-regular-400.ttf') format('truetype');
+  @if vars.$lu_include_font_awesome == true {
+    @at-root {
+      @font-face {
+        font-family: 'Font Awesome 5 Free';
+        font-style: normal;
+        font-weight: 900;
+        font-display: fa.$fa-font-display;
+        src:
+          url('#{fa.$fa-font-path}/fa-solid-900.woff2') format('woff2'),
+          url('#{fa.$fa-font-path}/fa-solid-900.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'Font Awesome 5 Free';
+        font-style: normal;
+        font-weight: 400;
+        font-display: fa.$fa-font-display;
+        src:
+          url('#{fa.$fa-font-path}/fa-regular-400.woff2') format('woff2'),
+          url('#{fa.$fa-font-path}/fa-regular-400.ttf') format('truetype');
+      }
     }
   }
 } @else {
