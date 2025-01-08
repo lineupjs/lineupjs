@@ -29,14 +29,17 @@ export default class SelectionManager extends AEventDispatcher {
   private static readonly MIN_DISTANCE = 10;
 
   private readonly hr: HTMLHRElement;
+  private readonly selectionActivateFilter: boolean | string = true;
 
   private start: (IPoint & IShift) | null = null;
 
   constructor(
     private readonly ctx: { provider: IDataProvider },
-    private readonly body: HTMLElement
+    private readonly body: HTMLElement,
+    { selectionActivateFilter = true }: { selectionActivateFilter?: boolean | string } = {}
   ) {
     super();
+    this.selectionActivateFilter = selectionActivateFilter;
     const root = body.parentElement!.parentElement!;
     let hr = root.querySelector('hr');
     if (!hr) {
@@ -73,27 +76,48 @@ export default class SelectionManager extends AEventDispatcher {
       this.select(evt.ctrlKey, startNode, endNode);
     };
 
-    body.addEventListener(
-      'mousedown',
-      (evt) => {
-        const r = root.getBoundingClientRect();
-        this.start = { x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: evt.target as HTMLElement };
+    if (this.selectionActivateFilter !== false) {
+      body.addEventListener(
+        'mousedown',
+        (evt) => {
+          // activate only when filter is satisfied
+          if (
+            !(
+              this.selectionActivateFilter !== false &&
+              (this.selectionActivateFilter === true ||
+                (evt.target as HTMLElement)?.matches(this.selectionActivateFilter) ||
+                (evt.target as HTMLElement)?.closest(this.selectionActivateFilter) != null)
+            )
+          ) {
+            return;
+          }
 
-        this.body.classList.add(cssClass('selection-active'));
-        body.addEventListener('mousemove', mouseMove, {
+          const r = root.getBoundingClientRect();
+          this.start = {
+            x: evt.clientX,
+            y: evt.clientY,
+            xShift: r.left,
+            yShift: r.top,
+            node: evt.target as HTMLElement,
+          };
+          console.log(this.start.node);
+
+          this.body.classList.add(cssClass('selection-active'));
+          body.addEventListener('mousemove', mouseMove, {
+            passive: true,
+          });
+          body.addEventListener('mouseup', mouseUp, {
+            passive: true,
+          });
+          body.addEventListener('mouseleave', mouseUp, {
+            passive: true,
+          });
+        },
+        {
           passive: true,
-        });
-        body.addEventListener('mouseup', mouseUp, {
-          passive: true,
-        });
-        body.addEventListener('mouseleave', mouseUp, {
-          passive: true,
-        });
-      },
-      {
-        passive: true,
-      }
-    );
+        }
+      );
+    }
   }
 
   protected createEventList() {
