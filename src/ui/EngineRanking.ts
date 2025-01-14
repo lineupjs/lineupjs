@@ -57,6 +57,7 @@ export interface IEngineRankingOptions {
   levelOfDetail: (rowIndex: number) => 'high' | 'low';
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
   flags: ILineUpFlags;
+  selectionActivateFilter: boolean | string;
 }
 
 /**
@@ -147,6 +148,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       advancedUIFeatures: true,
       combineViaDragNDrop: true,
     },
+    selectionActivateFilter: true,
   };
 
   private readonly delayedUpdate: (this: { type: string }) => void;
@@ -318,7 +320,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     );
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
 
-    this.selection = new SelectionManager(this.ctx, body);
+    this.selection = new SelectionManager(this.ctx, body, this.roptions);
     this.selection.on(SelectionManager.EVENT_SELECT_RANGE, (from: number, to: number, additional: boolean) => {
       this.selection.selectRange(this.data.slice(from, to + 1), additional);
     });

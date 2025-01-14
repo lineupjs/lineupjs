@@ -376,6 +376,7 @@ export default class EngineRenderer extends AEventDispatcher {
           customRowUpdate: this.options.customRowUpdate || (() => undefined),
           levelOfDetail: this.options.levelOfDetail || (() => 'high'),
           flags: this.options.flags as ILineUpFlags,
+          selectionActivateFilter: this.options.selectionActivateFilter,
         })
     );
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => {
