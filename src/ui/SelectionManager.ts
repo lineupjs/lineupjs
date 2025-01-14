@@ -4,6 +4,7 @@ import type { IDataProvider } from '../provider';
 import { cssClass, engineCssClass } from '../styles';
 import { forEachIndices } from '../model/internal';
 import { rangeSelection } from '../provider/utils';
+import { detect } from 'detect-browser';
 
 interface IPoint {
   x: number;
@@ -32,6 +33,8 @@ export default class SelectionManager extends AEventDispatcher {
   private readonly selectionActivateFilter: boolean | string = true;
 
   private start: (IPoint & IShift) | null = null;
+
+  private readonly isFirefox = detect()?.name === 'firefox';
 
   constructor(
     private readonly ctx: { provider: IDataProvider },
@@ -164,6 +167,13 @@ export default class SelectionManager extends AEventDispatcher {
 
   add(node: HTMLElement) {
     node.onclick = (evt) => {
+      if (this.isFirefox) {
+        const bb = node.getBoundingClientRect();
+        // mouse up outside the element
+        if (evt.offsetY < 0 || evt.offsetY > bb.height || evt.offsetX < 0 || evt.offsetY > bb.width) {
+          return;
+        }
+      }
       const dataIndex = Number.parseInt(node.dataset.i!, 10);
       if (evt.shiftKey) {
         const relIndex = Number.parseInt(node.dataset.index!, 10);
