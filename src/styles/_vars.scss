@@ -2,13 +2,6 @@
 $lu_hover_color: #ffe8be !default;
 $lu_selected_color: #ffcf76 !default;
 
-$engine_assets: 'lineupengine/src/assets';
-$engine_highlight_mode: 'background';
-$engine_row_outline_color: $lu_hover_color;
-$engine_row_background_color: $lu_hover_color;
-
-@import 'lineupengine/src/styles/vars';
-
 $lu_css_prefix: 'lu' !default;
 
 $lu_dialog_font_size: 11pt !default;

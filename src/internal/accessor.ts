@@ -13,7 +13,7 @@ export function isComplexAccessor(column: any) {
  * @internal
  */
 export function resolveValue(value: any, column: string | number) {
-  if (value != null && value.hasOwnProperty(column)) {
+  if (value != null && value[column] != null) {
     // well complex but a direct hit
     return value[column];
   }

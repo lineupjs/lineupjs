@@ -65,7 +65,7 @@ export function isDefaultDateGrouper(grouper: IDateGrouper) {
  */
 export function toDateGroup(grouper: IDateGrouper, value: Date): { value: number; name: string } {
   switch (grouper.granularity) {
-    case 'century':
+    case 'century': {
       const centuryP = Math.floor(value.getFullYear() / 100);
       if (grouper.circular) {
         const century = centuryP % 10;
@@ -78,7 +78,8 @@ export function toDateGroup(grouper: IDateGrouper, value: Date): { value: number
         value: centuryP,
         name: `${centuryP}00`,
       };
-    case 'decade':
+    }
+    case 'decade': {
       const decadeP = Math.floor(value.getFullYear() / 10);
       if (grouper.circular) {
         const decade = decadeP % 10;
@@ -91,6 +92,7 @@ export function toDateGroup(grouper: IDateGrouper, value: Date): { value: number
         value: decadeP,
         name: `${decadeP}0`,
       };
+    }
     case 'year':
       if (grouper.circular) {
         const year = value.getFullYear() % 10;

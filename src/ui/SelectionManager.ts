@@ -4,6 +4,7 @@ import type { IDataProvider } from '../provider';
 import { cssClass, engineCssClass } from '../styles';
 import { forEachIndices } from '../model/internal';
 import { rangeSelection } from '../provider/utils';
+import { detect } from 'detect-browser';
 
 interface IPoint {
   x: number;
@@ -29,14 +30,19 @@ export default class SelectionManager extends AEventDispatcher {
   private static readonly MIN_DISTANCE = 10;
 
   private readonly hr: HTMLHRElement;
+  private readonly selectionActivateFilter: boolean | string = true;
 
   private start: (IPoint & IShift) | null = null;
 
+  private readonly isFirefox = detect()?.name === 'firefox';
+
   constructor(
     private readonly ctx: { provider: IDataProvider },
-    private readonly body: HTMLElement
+    private readonly body: HTMLElement,
+    { selectionActivateFilter = true }: { selectionActivateFilter?: boolean | string } = {}
   ) {
     super();
+    this.selectionActivateFilter = selectionActivateFilter;
     const root = body.parentElement!.parentElement!;
     let hr = root.querySelector('hr');
     if (!hr) {
@@ -73,27 +79,47 @@ export default class SelectionManager extends AEventDispatcher {
       this.select(evt.ctrlKey, startNode, endNode);
     };
 
-    body.addEventListener(
-      'mousedown',
-      (evt) => {
-        const r = root.getBoundingClientRect();
-        this.start = { x: evt.clientX, y: evt.clientY, xShift: r.left, yShift: r.top, node: evt.target as HTMLElement };
+    if (this.selectionActivateFilter !== false) {
+      body.addEventListener(
+        'mousedown',
+        (evt) => {
+          // activate only when filter is satisfied
+          if (
+            !(
+              this.selectionActivateFilter !== false &&
+              (this.selectionActivateFilter === true ||
+                (evt.target as HTMLElement)?.matches(this.selectionActivateFilter) ||
+                (evt.target as HTMLElement)?.closest(this.selectionActivateFilter) != null)
+            )
+          ) {
+            return;
+          }
 
-        this.body.classList.add(cssClass('selection-active'));
-        body.addEventListener('mousemove', mouseMove, {
+          const r = root.getBoundingClientRect();
+          this.start = {
+            x: evt.clientX,
+            y: evt.clientY,
+            xShift: r.left,
+            yShift: r.top,
+            node: evt.target as HTMLElement,
+          };
+
+          this.body.classList.add(cssClass('selection-active'));
+          body.addEventListener('mousemove', mouseMove, {
+            passive: true,
+          });
+          body.addEventListener('mouseup', mouseUp, {
+            passive: true,
+          });
+          body.addEventListener('mouseleave', mouseUp, {
+            passive: true,
+          });
+        },
+        {
           passive: true,
-        });
-        body.addEventListener('mouseup', mouseUp, {
-          passive: true,
-        });
-        body.addEventListener('mouseleave', mouseUp, {
-          passive: true,
-        });
-      },
-      {
-        passive: true,
-      }
-    );
+        }
+      );
+    }
   }
 
   protected createEventList() {
@@ -141,6 +167,13 @@ export default class SelectionManager extends AEventDispatcher {
 
   add(node: HTMLElement) {
     node.onclick = (evt) => {
+      if (this.isFirefox) {
+        const bb = node.getBoundingClientRect();
+        // mouse up outside the element
+        if (evt.offsetY < 0 || evt.offsetY > bb.height || evt.offsetX < 0 || evt.offsetY > bb.width) {
+          return;
+        }
+      }
       const dataIndex = Number.parseInt(node.dataset.i!, 10);
       if (evt.shiftKey) {
         const relIndex = Number.parseInt(node.dataset.index!, 10);

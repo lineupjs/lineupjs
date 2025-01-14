@@ -278,16 +278,19 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
     featureLevel: 'basic',
   }),
   filterNumber: uiDialog('Filter …', NumberFilterDialog, (ctx) => [ctx], {
+    order: 8,
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
   filterDate: uiDialog('Filter …', DateFilterDialog, (ctx) => [ctx], {
+    order: 8,
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
   filterString: uiDialog('Filter …', StringFilterDialog, (ctx) => [ctx], {
+    order: 8,
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
@@ -299,11 +302,13 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
     featureLevel: 'basic',
   }),
   filterCategorical: uiDialog('Filter …', CategoricalFilterDialog, (ctx) => [ctx], {
+    order: 8,
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
   }),
   filterOrdinal: uiDialog('Filter …', CategoricalMappingFilterDialog, () => [], {
+    order: 8,
     mode: 'menu+shortcut',
     featureCategory: 'ranking',
     featureLevel: 'basic',
@@ -332,6 +337,7 @@ export const toolbarActions: { [key: string]: IToolbarAction } = {
     featureLevel: 'advanced',
   }),
   editMapping: uiDialog('Data Mapping …', MappingDialog, (ctx) => [ctx], {
+    mode: 'menu+shortcut',
     featureCategory: 'model',
     featureLevel: 'advanced',
   }),

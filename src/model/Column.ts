@@ -468,7 +468,7 @@ export default class Column extends AEventDispatcher {
   nextSibling(): Column | null {
     if (this.parent) {
       const index = this.parent.indexOf(this);
-      return index < 0 ? null : this.parent.at(index + 1) ?? null;
+      return index < 0 ? null : (this.parent.at(index + 1) ?? null);
     }
     return null;
   }
@@ -480,7 +480,7 @@ export default class Column extends AEventDispatcher {
   previousSibling(): Column | null {
     if (this.parent) {
       const index = this.parent.indexOf(this);
-      return index < 1 ? null : this.parent.at(index - 1) ?? null;
+      return index < 1 ? null : (this.parent.at(index - 1) ?? null);
     }
     return null;
   }

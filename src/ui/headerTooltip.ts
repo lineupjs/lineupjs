@@ -1,4 +1,4 @@
-import Column, { getSortType } from '../model';
+import Column, { getSortType, isMapAbleColumn } from '../model';
 import { cssClass } from '../styles';
 import type { IRankingHeaderContext, IToolbarAction } from './interfaces';
 import { getToolbar } from './toolbarResolvers';
@@ -132,12 +132,21 @@ export function updateIconState(node: HTMLElement, col: Column) {
   }
 
   const filter = node.getElementsByClassName(cssClass('action-filter'))[0]! as HTMLElement;
-  if (!filter) {
+  if (filter) {
+    if (col.isFiltered()) {
+      filter.dataset.active = '';
+    } else {
+      delete filter.dataset.active;
+    }
+  }
+
+  const mapping = node.getElementsByClassName(cssClass('action-data-mapping'))[0]! as HTMLElement;
+  if (!mapping || !isMapAbleColumn(col)) {
     return;
   }
-  if (col.isFiltered()) {
-    filter.dataset.active = '';
+  if (!col.getMapping().eq(col.getOriginalMapping())) {
+    mapping.dataset.active = '';
   } else {
-    delete filter.dataset.active;
+    delete mapping.dataset.active;
   }
 }

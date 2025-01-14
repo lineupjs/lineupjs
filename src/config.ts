@@ -214,7 +214,7 @@ export interface ILineUpOptions {
 
   /**
    * option to enable to copy selected rows using ctrl-c
-   * @default false
+   * @default true
    */
   copyableRows: boolean;
 
@@ -223,6 +223,12 @@ export interface ILineUpOptions {
    * @default random string
    */
   instanceId: string;
+
+  /**
+   * additional filter (CSS selector to match or closest exist) to enable row selection, false to disable
+   * @default true all cells
+   */
+  selectionActivateFilter: boolean | string;
 }
 
 export interface ITaggleOptions extends ILineUpOptions {
@@ -246,7 +252,7 @@ function resolveToolbarActions(col: Column, keys: string[], lookup: IToolbarLook
   const actions: IToolbarAction[] = [];
 
   keys.forEach((key) => {
-    if (lookup.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(lookup, key)) {
       actions.push(lookup[key]);
     } else {
       console.warn(`cannot find toolbar action of type: "${col.desc.type}" with key "${key}"`);
@@ -259,7 +265,7 @@ function resolveToolbarDialogAddons(col: Column, keys: string[], lookup: IToolba
   const actions: IToolbarDialogAddon[] = [];
 
   keys.forEach((key) => {
-    if (lookup.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(lookup, key)) {
       actions.push(lookup[key]);
     } else {
       console.warn(`cannot find toolbar dialog addon of type: "${col.desc.type}" with key "${key}"`);
@@ -297,6 +303,8 @@ export function defaultOptions(): ITaggleOptions {
       colorMapping: true,
     },
     onDialogBackgroundClick: 'confirm',
+
+    selectionActivateFilter: true,
 
     rowHeight: 18,
     groupHeight: 40,

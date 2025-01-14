@@ -1,6 +1,6 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-rtable {
+.#{vars.$lu_css_prefix}-rtable {
   font-size: 60%;
   padding: 0;
   margin: 0;
@@ -10,13 +10,13 @@
   grid-gap: 0.2em;
 }
 
-.#{$lu_css_prefix}-table-cell {
+.#{vars.$lu_css_prefix}-table-cell {
   overflow: hidden;
   min-height: 1.2em;
   text-overflow: ellipsis;
 }
 
-.#{$lu_css_prefix}-renderer-mapbars > div[title] {
+.#{vars.$lu_css_prefix}-renderer-mapbars > div[title] {
   position: relative;
 
   > div {

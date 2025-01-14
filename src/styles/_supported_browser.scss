@@ -1,7 +1,8 @@
-@import './vars';
-@import './icons/index';
+@use 'sass:color';
+@use 'vars';
+@use 'icons/index' as icons;
 
-.#{$lu_css_prefix}-unsupported-browser {
+.#{vars.$lu_css_prefix}-unsupported-browser {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12,18 +13,18 @@
   }
 }
 
-.#{$lu_css_prefix}-unsupported-browser-hint > a {
+.#{vars.$lu_css_prefix}-unsupported-browser-hint > a {
   text-decoration: none !important;
   position: relative;
   padding: 0.5em 1em;
   color: black;
 
   &::before {
-    @include lu_icons();
+    @include icons.lu_icons();
 
     font-size: 200%;
     transition: font-size 0.25s ease;
-    color: lighten(black, 50%);
+    color: color.adjust(black, $lightness: 50%);
   }
 
   &:hover::before {
@@ -31,16 +32,16 @@
   }
 
   &[data-browser='chrome']::before {
-    content: $lu_icon_chrome;
+    content: icons.$lu_icon_chrome;
     color: black;
   }
 
   &[data-browser='firefox']::before {
-    content: $lu_icon_firefox;
+    content: icons.$lu_icon_firefox;
   }
 
   &[data-browser='edge']::before {
-    content: $lu_icon_edge;
+    content: icons.$lu_icon_edge;
   }
 
   &::after {

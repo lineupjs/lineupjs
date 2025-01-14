@@ -1,23 +1,23 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-heatmap {
+.#{vars.$lu_css_prefix}-heatmap {
   display: flex;
   flex-direction: row;
   align-content: stretch;
   align-items: stretch;
 }
 
-.#{$lu_css_prefix}-heatmap-cell {
+.#{vars.$lu_css_prefix}-heatmap-cell {
   flex: 1 1 auto;
   position: relative;
 
-  &.#{$lu_css_prefix}-missing {
+  &.#{vars.$lu_css_prefix}-missing {
     // transform the dash to a square
-    background-size: $lu_missing_dash_height $lu_missing_dash_height;
+    background-size: vars.$lu_missing_dash_height vars.$lu_missing_dash_height;
   }
 }
 
-.#{$lu_css_prefix}-heatmap:not(.#{$lu_css_prefix}-dense) > div[data-title] {
+.#{vars.$lu_css_prefix}-heatmap:not(.#{vars.$lu_css_prefix}-dense) > div[data-title] {
   // special alignment of heatmap labels
   &:first-of-type::before {
     text-align: left;
