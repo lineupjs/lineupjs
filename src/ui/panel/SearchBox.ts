@@ -114,7 +114,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
       case 'Escape':
         this.search.blur();
         break;
-      case 'Enter':
+      case 'Enter': {
         const h = this.highlighted;
         if (h) {
           h.click();
@@ -122,6 +122,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
           evt.preventDefault();
         }
         break;
+      }
       case 'ArrowUp':
         this.highlightPrevious();
         break;

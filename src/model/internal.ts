@@ -23,7 +23,6 @@ export function integrateDefaults<T>(desc: T, defaults: Partial<T> = {}) {
 
 /** @internal */
 export function patternFunction(pattern: string, ...args: string[]): (value: string) => string {
-  // eslint-disable-next-line no-new-func
   return new Function(
     'value',
     ...args,

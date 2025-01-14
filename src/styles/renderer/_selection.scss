@@ -1,28 +1,30 @@
-@import '../vars';
-@import '../icons/index';
+@use '../vars';
+@use '../icons/index' as icons;
 
-.#{$engine_css_prefix}-td.#{$lu_css_prefix}-renderer-selection {
+@use 'lineupengine/src/styles/vars' as le;
+
+.#{le.$engine_css_prefix}-td.#{vars.$lu_css_prefix}-renderer-selection {
   display: flex;
   align-items: center;
   text-align: center;
   justify-content: center;
 
   &::before {
-    @include lu_icons_o();
+    @include icons.lu_icons_o();
 
     cursor: pointer;
     display: inline;
-    content: $lu_icon_square_o;
+    content: icons.$lu_icon_square_o;
   }
 }
 
-.#{$lu_css_prefix}-summary.#{$lu_css_prefix}-renderer-selection {
+.#{vars.$lu_css_prefix}-summary.#{vars.$lu_css_prefix}-renderer-selection {
   cursor: pointer;
   font-size: medium;
   text-align: center;
 }
 
-.#{$engine_css_prefix}-tr.#{$lu_css_prefix}-selected > .#{$lu_css_prefix}-renderer-selection::before,
-.#{$engine_css_prefix}-td.#{$lu_css_prefix}-group-selected::before {
-  content: $lu_icon_check_square_o;
+.#{le.$engine_css_prefix}-tr.#{vars.$lu_css_prefix}-selected > .#{vars.$lu_css_prefix}-renderer-selection::before,
+.#{le.$engine_css_prefix}-td.#{vars.$lu_css_prefix}-group-selected::before {
+  content: icons.$lu_icon_check_square_o;
 }

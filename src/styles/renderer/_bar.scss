@@ -1,6 +1,6 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-bar-label {
+.#{vars.$lu_css_prefix}-bar-label {
   position: absolute;
   width: 100%;
   top: 0;
@@ -10,17 +10,17 @@
   flex-direction: column;
   font-variant-numeric: tabular-nums;
 
-  > span.#{$lu_css_prefix}-hover-only {
+  > span.#{vars.$lu_css_prefix}-hover-only {
     position: relative; // required to position .lu-gradient-text
   }
 }
 
-.#{$lu_css_prefix}-renderer-stack .#{$lu_css_prefix}-renderer[data-renderer$='number'] > div {
+.#{vars.$lu_css_prefix}-renderer-stack .#{vars.$lu_css_prefix}-renderer[data-renderer$='number'] > div {
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
 
-.#{$lu_css_prefix}-group[data-renderer$='number'] > div > div {
+.#{vars.$lu_css_prefix}-group[data-renderer$='number'] > div > div {
   display: flex;
   justify-content: center;
   flex-direction: column;

@@ -1,182 +1,182 @@
-@import '../vars';
-@import '../icons/index';
+@use '../vars';
+@use '../icons/index' as icons;
 
-.#{$lu_css_prefix}-toolbar {
+.#{vars.$lu_css_prefix}-toolbar {
   position: relative;
-  font-size: $lu_toolbar_font_size;
+  font-size: vars.$lu_toolbar_font_size;
   display: flex;
   justify-content: center;
   padding: 3px;
 }
 
-.#{$lu_css_prefix}-action {
+.#{vars.$lu_css_prefix}-action {
   padding: 2px 4px;
   cursor: pointer;
   position: relative;
   display: flex;
 
   &:hover {
-    color: $lu_toolbar_color_hover;
+    color: vars.$lu_toolbar_color_hover;
   }
 
   &::before {
-    @include lu_icons();
+    @include icons.lu_icons();
   }
 }
 
-.#{$lu_css_prefix}-action-rename::before,
-.#{$lu_css_prefix}-action-rename---color::before {
-  content: $lu_icon_pencil_square_o;
+.#{vars.$lu_css_prefix}-action-rename::before,
+.#{vars.$lu_css_prefix}-action-rename---color::before {
+  content: icons.$lu_icon_pencil_square_o;
 }
 
-.#{$lu_css_prefix}-action-clone::before {
-  content: $lu_icon_code_fork;
+.#{vars.$lu_css_prefix}-action-clone::before {
+  content: icons.$lu_icon_code_fork;
 }
 
-.#{$lu_css_prefix}-action-sort-groups::before {
-  content: $lu_icon_sort;
+.#{vars.$lu_css_prefix}-action-sort-groups::before {
+  content: icons.$lu_icon_sort;
 }
 
-.#{$lu_css_prefix}-action-visualization::before {
-  content: $lu_icon_exchange;
+.#{vars.$lu_css_prefix}-action-visualization::before {
+  content: icons.$lu_icon_exchange;
 }
 
-.#{$lu_css_prefix}-action-edit-pattern::before {
-  content: $lu_icon_external_link;
+.#{vars.$lu_css_prefix}-action-edit-pattern::before {
+  content: icons.$lu_icon_external_link;
 }
 
-.#{$lu_css_prefix}-action-color-mapping::before {
-  content: $lu_icon_brush;
+.#{vars.$lu_css_prefix}-action-color-mapping::before {
+  content: icons.$lu_icon_brush;
 }
 
-.#{$lu_css_prefix}-action-data-mapping::before {
-  content: $lu_icon_sliders;
+.#{vars.$lu_css_prefix}-action-data-mapping::before {
+  content: icons.$lu_icon_sliders;
 }
 
-.#{$lu_css_prefix}-action-change-show-top-n::before,
-.#{$lu_css_prefix}-action-reduce-by::before,
-.#{$lu_css_prefix}-action-edit-combine-script::before,
-.#{$lu_css_prefix}-action-customize::before {
-  content: $lu_icon_gears;
+.#{vars.$lu_css_prefix}-action-change-show-top-n::before,
+.#{vars.$lu_css_prefix}-action-reduce-by::before,
+.#{vars.$lu_css_prefix}-action-edit-combine-script::before,
+.#{vars.$lu_css_prefix}-action-customize::before {
+  content: icons.$lu_icon_gears;
 }
 
-.#{$lu_css_prefix}-action-split-combined-column::before {
-  content: $lu_icon_window_restore;
+.#{vars.$lu_css_prefix}-action-split-combined-column::before {
+  content: icons.$lu_icon_window_restore;
 }
 
-.#{$lu_css_prefix}-action-filter::before {
-  content: $lu_icon_filter;
+.#{vars.$lu_css_prefix}-action-filter::before {
+  content: icons.$lu_icon_filter;
 }
 
-.#{$lu_css_prefix}-action-data-mapping[data-active]::before,
-.#{$lu_css_prefix}-action-filter[data-active]::before {
-  color: $lu_selected_color;
+.#{vars.$lu_css_prefix}-action-data-mapping[data-active]::before,
+.#{vars.$lu_css_prefix}-action-filter[data-active]::before {
+  color: vars.$lu_selected_color;
 }
 
-.#{$lu_css_prefix}-action-group::before {
-  content: $lu_icon_columns;
+.#{vars.$lu_css_prefix}-action-group::before {
+  content: icons.$lu_icon_columns;
   transform: rotate(-90deg);
   height: 14px;
 }
 
-.#{$lu_css_prefix}-action-sort {
+.#{vars.$lu_css_prefix}-action-sort {
   &::before {
-    content: $lu_icon_sort_amount_asc;
+    content: icons.$lu_icon_sort_amount_asc;
   }
 
   &[data-sort='desc']::before {
-    content: $lu_icon_sort_amount_desc;
+    content: icons.$lu_icon_sort_amount_desc;
   }
 
   &[data-type='abc'] {
     &::before {
-      content: $lu_icon_sort_alpha_asc;
+      content: icons.$lu_icon_sort_alpha_asc;
     }
 
     &[data-sort='desc']::before {
-      content: $lu_icon_sort_alpha_desc;
+      content: icons.$lu_icon_sort_alpha_desc;
     }
   }
 
   &[data-type='num'] {
     &::before {
-      content: $lu_icon_sort_numeric_asc;
+      content: icons.$lu_icon_sort_numeric_asc;
     }
 
     &[data-sort='desc']::before {
-      content: $lu_icon_sort_numeric_desc;
+      content: icons.$lu_icon_sort_numeric_desc;
     }
   }
 }
 
-.#{$lu_css_prefix}-action-sort[data-sort$='sc']::before,
-.#{$lu_css_prefix}-action-sort-groups[data-sort$='sc']::before,
-.#{$lu_css_prefix}-action-group[data-group='true']::before {
-  color: $lu_selected_color;
+.#{vars.$lu_css_prefix}-action-sort[data-sort$='sc']::before,
+.#{vars.$lu_css_prefix}-action-sort-groups[data-sort$='sc']::before,
+.#{vars.$lu_css_prefix}-action-group[data-group='true']::before {
+  color: vars.$lu_selected_color;
 }
 
-.#{$lu_css_prefix}-action-set-cut-off::before {
-  content: $lu_icon_scissors;
+.#{vars.$lu_css_prefix}-action-set-cut-off::before {
+  content: icons.$lu_icon_scissors;
 }
 
-.#{$lu_css_prefix}-action-search::before {
-  content: $lu_icon_search;
+.#{vars.$lu_css_prefix}-action-search::before {
+  content: icons.$lu_icon_search;
 }
 
-.#{$lu_css_prefix}-action-edit-weights::before {
-  content: $lu_icon_tasks;
+.#{vars.$lu_css_prefix}-action-edit-weights::before {
+  content: icons.$lu_icon_tasks;
 }
 
-.#{$lu_css_prefix}-action-uncollapse::before {
-  content: $lu_icon_toggle_right;
+.#{vars.$lu_css_prefix}-action-uncollapse::before {
+  content: icons.$lu_icon_toggle_right;
 }
 
-.#{$lu_css_prefix}-action-collapse::before {
-  content: $lu_icon_toggle_left;
+.#{vars.$lu_css_prefix}-action-collapse::before {
+  content: icons.$lu_icon_toggle_left;
 }
 
-.#{$lu_css_prefix}-action-clear-selection::before {
-  content: $lu_icon_times;
+.#{vars.$lu_css_prefix}-action-clear-selection::before {
+  content: icons.$lu_icon_times;
 }
 
-.#{$lu_css_prefix}-action-invert-selection::before {
-  content: $lu_icon_check_square_o;
+.#{vars.$lu_css_prefix}-action-invert-selection::before {
+  content: icons.$lu_icon_check_square_o;
 }
 
-.#{$lu_css_prefix}-action-expand::before {
-  content: $lu_icon_expand;
+.#{vars.$lu_css_prefix}-action-expand::before {
+  content: icons.$lu_icon_expand;
 }
 
-.#{$lu_css_prefix}-action-compress::before {
-  content: $lu_icon_compress;
+.#{vars.$lu_css_prefix}-action-compress::before {
+  content: icons.$lu_icon_compress;
 }
 
-.#{$lu_css_prefix}-action-remove::before {
-  content: $lu_icon_trash;
+.#{vars.$lu_css_prefix}-action-remove::before {
+  content: icons.$lu_icon_trash;
 }
 
-.#{$lu_css_prefix}-action-choose::before {
-  content: $lu_icon_caret_down;
+.#{vars.$lu_css_prefix}-action-choose::before {
+  content: icons.$lu_icon_caret_down;
 }
 
-.#{$lu_css_prefix}-action-more::before {
-  content: $lu_icon_ellipsis_h;
+.#{vars.$lu_css_prefix}-action-more::before {
+  content: icons.$lu_icon_ellipsis_h;
 }
 
-.#{$lu_css_prefix}-action-contained-columns::before {
-  content: $lu_icon_sitemap;
+.#{vars.$lu_css_prefix}-action-contained-columns::before {
+  content: icons.$lu_icon_sitemap;
 }
 
-.#{$lu_css_prefix}-action-move-up::before {
-  content: $lu_icon_up_open;
+.#{vars.$lu_css_prefix}-action-move-up::before {
+  content: icons.$lu_icon_up_open;
 }
 
-.#{$lu_css_prefix}-action-move-down::before {
-  content: $lu_icon_down_open;
+.#{vars.$lu_css_prefix}-action-move-down::before {
+  content: icons.$lu_icon_down_open;
 }
 
-.#{$lu_css_prefix}-action-group[data-priority],
-.#{$lu_css_prefix}-action-sort[data-priority] {
+.#{vars.$lu_css_prefix}-action-group[data-priority],
+.#{vars.$lu_css_prefix}-action-sort[data-priority] {
   padding-left: 10px;
 
   &::after {
@@ -187,7 +187,7 @@
     margin-top: 2px;
     margin-right: 65%;
     text-align: right;
-    color: $lu_selected_color;
+    color: vars.$lu_selected_color;
     font-style: normal;
     font-size: 10px;
     font-weight: bold;
@@ -196,7 +196,7 @@
   }
 }
 
-.#{$lu_css_prefix}-action-group[data-priority] {
+.#{vars.$lu_css_prefix}-action-group[data-priority] {
   padding-left: 15px;
 
   &::after {
@@ -204,8 +204,8 @@
   }
 }
 
-.#{$lu_css_prefix}-more-options {
-  font-size: $lu_toolbar_font_size;
+.#{vars.$lu_css_prefix}-more-options {
+  font-size: vars.$lu_toolbar_font_size;
   padding: 0;
 
   > i {
@@ -215,10 +215,10 @@
     cursor: pointer;
     padding-left: 0;
 
-    &.#{$lu_css_prefix}-active,
+    &.#{vars.$lu_css_prefix}-active,
     &:focus,
     &:hover {
-      background: $lu_hover_button_color;
+      background: vars.$lu_hover_button_color;
     }
 
     &::before {
@@ -232,8 +232,8 @@
     }
   }
 
-  > .#{$lu_css_prefix}-action-sort,
-  > .#{$lu_css_prefix}-action-group {
+  > .#{vars.$lu_css_prefix}-action-sort,
+  > .#{vars.$lu_css_prefix}-action-group {
     padding-left: 0;
 
     &::after {

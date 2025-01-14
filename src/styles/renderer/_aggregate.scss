@@ -1,16 +1,18 @@
-@import '../vars';
-@import '../icons/index';
+@use '../vars';
+@use '../icons/index' as icons;
 
-.#{$lu_css_prefix}-renderer-aggregate {
+@use 'lineupengine/src/styles/vars' as le;
+
+.#{vars.$lu_css_prefix}-renderer-aggregate {
   display: flex;
 
-  &.#{$engine_css_prefix}-td {
+  &.#{le.$engine_css_prefix}-td {
     overflow: visible;
   }
 }
 
-.#{$lu_css_prefix}-renderer-group {
-  &.#{$engine_css_prefix}-td {
+.#{vars.$lu_css_prefix}-renderer-group {
+  &.#{le.$engine_css_prefix}-td {
     overflow: visible;
 
     > div {
@@ -20,53 +22,53 @@
   }
 }
 
-.#{$lu_css_prefix}-agg-level {
-  flex: 0 0 $lu_aggregate_level_width;
+.#{vars.$lu_css_prefix}-agg-level {
+  flex: 0 0 vars.$lu_aggregate_level_width;
   position: relative; // square bracket around
 
   &::after {
     content: '';
     pointer-events: none;
     position: absolute;
-    left: $lu_aggregate_level_offset;
+    left: vars.$lu_aggregate_level_offset;
     bottom: 0;
-    width: $lu_aggregate_square_bracket_width;
-    border-left: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    width: vars.$lu_aggregate_square_bracket_width;
+    border-left: vars.$lu_aggregate_square_bracket_stroke_width solid vars.$lu_aggregate_square_bracket_stroke_color;
   }
 
   &[data-level][data-meta~='first']::after {
     top: 0;
-    border-top: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    border-top: vars.$lu_aggregate_square_bracket_stroke_width solid vars.$lu_aggregate_square_bracket_stroke_color;
   }
 
   &[data-meta~='last']::after {
-    border-bottom: $lu_aggregate_square_bracket_stroke_width solid $lu_aggregate_square_bracket_stroke_color;
+    border-bottom: vars.$lu_aggregate_square_bracket_stroke_width solid vars.$lu_aggregate_square_bracket_stroke_color;
   }
 }
 
-.#{$lu_css_prefix}-agg-expand {
-  flex: 0 0 $lu_aggregate_level_width;
+.#{vars.$lu_css_prefix}-agg-expand {
+  flex: 0 0 vars.$lu_aggregate_level_width;
   position: relative;
-  color: $lu_toolbar_color_base;
+  color: vars.$lu_toolbar_color_base;
 
   &::before {
-    @include lu_icons();
+    @include icons.lu_icons();
 
     cursor: pointer;
     padding-left: 0.5em;
-    content: $lu_icon_caret_down;
+    content: icons.$lu_icon_caret_down;
   }
 
   &:hover {
-    color: $lu_toolbar_color_hover;
+    color: vars.$lu_toolbar_color_hover;
   }
 
-  &.#{$lu_css_prefix}-agg-collapse::before {
-    content: $lu_icon_caret_right;
+  &.#{vars.$lu_css_prefix}-agg-collapse::before {
+    content: icons.$lu_icon_caret_right;
   }
 }
 
-.#{$lu_css_prefix}-agg-inner {
+.#{vars.$lu_css_prefix}-agg-inner {
   &::before {
     content: '\2012';
     position: absolute;
@@ -82,43 +84,43 @@
   }
 }
 
-.#{$lu_css_prefix}-agg-all {
+.#{vars.$lu_css_prefix}-agg-all {
   cursor: pointer;
   position: absolute;
   bottom: 2px;
   padding-left: 0.4em;
   left: 0;
-  width: $lu_aggregate_level_width;
-  color: $lu_toolbar_color_base;
+  width: vars.$lu_aggregate_level_width;
+  color: vars.$lu_toolbar_color_base;
 
   &::before {
-    @include lu_icons();
+    @include icons.lu_icons();
 
-    content: $lu_icon_expand;
+    content: icons.$lu_icon_expand;
     transform: rotate(-45deg);
   }
 
   &:hover {
-    color: $lu_toolbar_color_hover;
+    color: vars.$lu_toolbar_color_hover;
   }
 
-  &.#{$lu_css_prefix}-agg-compress::before {
-    content: $lu_icon_compress;
+  &.#{vars.$lu_css_prefix}-agg-compress::before {
+    content: icons.$lu_icon_compress;
   }
 
   &[data-level='1'] {
-    left: $lu_aggregate_level_width;
+    left: vars.$lu_aggregate_level_width;
   }
 
   &[data-level='2'] {
-    left: $lu_aggregate_level_width * 2;
+    left: vars.$lu_aggregate_level_width * 2;
   }
 
   &[data-level='3'] {
-    left: $lu_aggregate_level_width * 3;
+    left: vars.$lu_aggregate_level_width * 3;
   }
 
   &[data-level='4'] {
-    left: $lu_aggregate_level_width * 4;
+    left: vars.$lu_aggregate_level_width * 4;
   }
 }

@@ -165,7 +165,7 @@ export class RankingBuilder {
         return this.nested(label, column.columns[0], ...column.columns.slice(1));
       case 'script':
         return this.scripted(label, column.code, ...column.columns);
-      case 'weightedSum':
+      case 'weightedSum': {
         console.assert(column.columns.length >= 2);
         console.assert(column.columns.length === column.weights.length);
         const mixed: (string | number)[] = [];
@@ -181,6 +181,7 @@ export class RankingBuilder {
           column.weights[1],
           ...mixed
         );
+      }
     }
   }
 

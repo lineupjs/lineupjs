@@ -1,18 +1,18 @@
 @use 'sass:math';
 
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-renderer-boxplot {
+.#{vars.$lu_css_prefix}-renderer-boxplot {
   display: flex;
   flex-direction: row;
   align-items: center;
 }
 
-.#{$lu_css_prefix}-boxplot-whisker {
+.#{vars.$lu_css_prefix}-boxplot-whisker {
   // whiskers + contains everything
   position: relative;
-  border-left: 1px solid $lu_renderer_boxplot_stroke;
-  border-right: 1px solid $lu_renderer_boxplot_stroke;
+  border-left: 1px solid vars.$lu_renderer_boxplot_stroke;
+  border-right: 1px solid vars.$lu_renderer_boxplot_stroke;
   height: 90%;
   max-height: 30px;
 
@@ -24,20 +24,20 @@
     left: 0;
     height: 50%;
     width: 100%;
-    border-bottom: 1px solid $lu_renderer_boxplot_stroke;
+    border-bottom: 1px solid vars.$lu_renderer_boxplot_stroke;
   }
 
   &[data-sort='min'] {
-    border-left-color: $lu_renderer_boxplot_sort_indicator;
+    border-left-color: vars.$lu_renderer_boxplot_sort_indicator;
   }
 
   &[data-sort='max'] {
-    border-right-color: $lu_renderer_boxplot_sort_indicator;
+    border-right-color: vars.$lu_renderer_boxplot_sort_indicator;
   }
 
   &[data-sort='q1'],
   &[data-sort='q3'] {
-    > .#{$lu_css_prefix}-boxplot-box {
+    > .#{vars.$lu_css_prefix}-boxplot-box {
       &::after {
         content: '';
         position: absolute;
@@ -47,51 +47,51 @@
     }
   }
 
-  &[data-sort='q1'] > .#{$lu_css_prefix}-boxplot-box::after {
+  &[data-sort='q1'] > .#{vars.$lu_css_prefix}-boxplot-box::after {
     left: -1px;
-    border-left: 1px solid $lu_renderer_boxplot_sort_indicator;
+    border-left: 1px solid vars.$lu_renderer_boxplot_sort_indicator;
   }
 
-  &[data-sort='q3'] > .#{$lu_css_prefix}-boxplot-box::after {
+  &[data-sort='q3'] > .#{vars.$lu_css_prefix}-boxplot-box::after {
     right: -1px;
-    border-right: 1px solid $lu_renderer_boxplot_sort_indicator;
+    border-right: 1px solid vars.$lu_renderer_boxplot_sort_indicator;
   }
 
-  &[data-sort='median'] > .#{$lu_css_prefix}-boxplot-median {
-    background-color: $lu_renderer_boxplot_sort_indicator;
+  &[data-sort='median'] > .#{vars.$lu_css_prefix}-boxplot-median {
+    background-color: vars.$lu_renderer_boxplot_sort_indicator;
   }
 
-  &[data-sort='mean'] > .#{$lu_css_prefix}-boxplot-mean {
+  &[data-sort='mean'] > .#{vars.$lu_css_prefix}-boxplot-mean {
     background: repeating-linear-gradient(
       to bottom,
       transparent 0%,
       transparent 5%,
-      $lu_renderer_boxplot_sort_indicator 5%,
-      $lu_renderer_boxplot_sort_indicator 15%,
+      vars.$lu_renderer_boxplot_sort_indicator 5%,
+      vars.$lu_renderer_boxplot_sort_indicator 15%,
       transparent 15%,
       transparent 20%
     );
   }
 }
 
-.#{$lu_css_prefix}-boxplot-box {
+.#{vars.$lu_css_prefix}-boxplot-box {
   // box
   position: absolute;
   top: 10%;
   height: 80%;
-  background: $lu_renderer_boxplot_box;
-  outline: 1px solid $lu_renderer_boxplot_stroke;
+  background: vars.$lu_renderer_boxplot_box;
+  outline: 1px solid vars.$lu_renderer_boxplot_stroke;
 }
 
-.#{$lu_css_prefix}-boxplot-median {
+.#{vars.$lu_css_prefix}-boxplot-median {
   position: absolute;
   top: 10%;
   height: 80%;
   width: 1px;
-  background: $lu_renderer_boxplot_stroke;
+  background: vars.$lu_renderer_boxplot_stroke;
 }
 
-.#{$lu_css_prefix}-boxplot-mean {
+.#{vars.$lu_css_prefix}-boxplot-mean {
   position: absolute;
   top: 10%;
   height: 80%;
@@ -100,8 +100,8 @@
     to bottom,
     transparent 0%,
     transparent 5%,
-    $lu_renderer_boxplot_stroke 5%,
-    $lu_renderer_boxplot_stroke 15%,
+    vars.$lu_renderer_boxplot_stroke 5%,
+    vars.$lu_renderer_boxplot_stroke 15%,
     transparent 15%,
     transparent 20%
   );
@@ -111,16 +111,16 @@
 outlier
   */
 
-.#{$lu_css_prefix}-boxplot-outlier {
+.#{vars.$lu_css_prefix}-boxplot-outlier {
   position: absolute;
   top: 50%;
-  width: $lu_renderer_dot_size;
-  height: $lu_renderer_dot_size;
-  margin: math.div($lu_renderer_dot_size, -2);
-  background: $lu_renderer_boxplot_outlier;
+  width: vars.$lu_renderer_dot_size;
+  height: vars.$lu_renderer_dot_size;
+  margin: math.div(vars.$lu_renderer_dot_size, -2);
+  background: vars.$lu_renderer_boxplot_outlier;
   border-radius: 50%;
 
   &[data-sort] {
-    background: $lu_renderer_boxplot_sort_indicator;
+    background: vars.$lu_renderer_boxplot_sort_indicator;
   }
 }

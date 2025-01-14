@@ -1,6 +1,6 @@
-@import '../vars';
+@use '../vars';
 
-.#{$lu_css_prefix}-renderer-sparkline {
+.#{vars.$lu_css_prefix}-renderer-sparkline {
   height: 100%;
   display: block;
 
@@ -11,7 +11,7 @@
   }
 
   > line {
-    stroke: $lu_axis_color;
+    stroke: vars.$lu_axis_color;
     stroke-width: 1;
     vector-effect: non-scaling-stroke;
   }

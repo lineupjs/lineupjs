@@ -1,34 +1,35 @@
-@import '../vars';
+@use 'sass:meta';
+@use '../vars';
+@use 'lineupengine/src/styles/vars' as le;
+@use 'lineupengine/src/style';
 
-@import '~lineupengine/src/style';
-
-.#{$engine_css_prefix}-th,
-.#{$lu_css_prefix}-nested-th {
+.#{le.$engine_css_prefix}-th,
+.#{vars.$lu_css_prefix}-nested-th {
   box-sizing: border-box;
-  margin-right: $lu_engine_grip_gap;
+  margin-right: vars.$lu_engine_grip_gap;
 }
 
-.#{$engine_css_prefix}-td {
+.#{le.$engine_css_prefix}-td {
   box-sizing: border-box;
 }
 
-.#{$engine_css_prefix}-footer {
+.#{le.$engine_css_prefix}-footer {
   // extra space to the right using a width for easier last column resizing
-  width: $lu_engine_resize_space;
+  width: vars.$lu_engine_resize_space;
 }
 
-.#{$lu_css_prefix}-resize-helper {
+.#{vars.$lu_css_prefix}-resize-helper {
   display: none;
 }
 
-.#{$lu_css_prefix}-resize-helper.#{$lu_css_prefix}-resize-animated {
-  transition: transform $lu_engine_resize_animation_duration linear !important;
+.#{vars.$lu_css_prefix}-resize-helper.#{vars.$lu_css_prefix}-resize-animated {
+  transition: transform vars.$lu_engine_resize_animation_duration linear !important;
 }
 
-.#{$lu_css_prefix}-resize-helper.#{$lu_css_prefix}-resizing {
+.#{vars.$lu_css_prefix}-resize-helper.#{vars.$lu_css_prefix}-resizing {
   display: unset;
 }
 
-@import './header';
-@import './selection';
-@import './row';
+@include meta.load-css('header');
+@include meta.load-css('selection');
+@include meta.load-css('row');
