@@ -68,6 +68,7 @@
   content: icons.$lu_icon_filter;
 }
 
+.#{vars.$lu_css_prefix}-action-data-mapping[data-active]::before,
 .#{vars.$lu_css_prefix}-action-filter[data-active]::before {
   color: vars.$lu_selected_color;
 }
