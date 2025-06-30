@@ -57,9 +57,9 @@ export default class Hierarchy {
           node.appendChild(label);
           const desc = node.ownerDocument.createElement('span');
           if (summary.asHTML) {
-            label.innerHTML = summary.content;
+            desc.innerHTML = summary.content;
           } else {
-            label.textContent = summary.content;
+            desc.textContent = summary.content;
           }
           node.appendChild(desc);
         } else if (header.asHTML) {
