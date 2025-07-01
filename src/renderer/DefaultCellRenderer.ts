@@ -1,4 +1,4 @@
-import type { Column, IDataRow, NumberColumn } from '../model';
+import type { Column, IDataRow } from '../model';
 import type {
   ERenderMode,
   ICellRendererFactory,
@@ -7,6 +7,7 @@ import type {
   ICellRenderer,
   IRenderContext,
 } from './interfaces';
+import { NumberColumn } from '../model';
 import { renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';
 import { cssClass } from '../styles';
