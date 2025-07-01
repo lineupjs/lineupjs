@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Number Alignment Demo</title>
+    <link href="./LineUpJS.css" rel="stylesheet" />
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .lu {
+        clear: both;
+        position: absolute;
+        top: 1px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="./LineUpJS.js"></script>
+    <script>
+      let testData = [
+        { small: 1, medium: 42, large: 1000, veryLarge: 123456 },
+        { small: 5, medium: 789, large: 5000, veryLarge: 987654 },
+        { small: 12, medium: 156, large: 12000, veryLarge: 555777 },
+        { small: 3, medium: 234, large: 3000, veryLarge: 111222 },
+        { small: 88, medium: 567, large: 88000, veryLarge: 999888 },
+      ];
+      
+      // Duplicate data for more examples
+      for (let i = 0; i < 3; i++) {
+        testData = [...testData, ...testData];
+      }
+      
+      const builder = LineUpJS.builder(testData);
+
+      // Right-aligned columns (default)
+      builder.column(LineUpJS.buildNumberColumn('small').label('Small (Right)'));
+      builder.column(LineUpJS.buildNumberColumn('medium').label('Medium (Right)'));
+      
+      // Left-aligned columns for compatibility testing
+      builder.column(LineUpJS.buildNumberColumn('large').label('Large (Left)').alignment('left'));
+      builder.column(LineUpJS.buildNumberColumn('veryLarge').label('Very Large (Left)').alignment('left'));
+      
+      // Center-aligned for testing
+      builder.column(LineUpJS.buildNumberColumn('small').label('Small (Center)').alignment('center'));
+      
+      builder.buildTaggle(document.body);
+    </script>
+  </body>
+</html>
