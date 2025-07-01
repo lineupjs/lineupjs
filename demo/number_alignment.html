@@ -10,21 +10,62 @@
     <style>
       body {
         margin: 0;
-        padding: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
       }
 
       .lu {
         clear: both;
         position: absolute;
-        top: 1px;
+        top: 60px;
         bottom: 0;
         left: 0;
         right: 0;
         padding: 0;
       }
+      
+      .demo-info {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #f0f0f0;
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        z-index: 1000;
+        font-size: 14px;
+      }
+      
+      .demo-info h1 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+      }
+      
+      .demo-info p {
+        margin: 5px 0;
+      }
+      
+      .highlight {
+        background-color: #ffffcc;
+        padding: 2px 4px;
+        border-radius: 2px;
+      }
     </style>
   </head>
   <body>
+    <div class="demo-info">
+      <h1>Number Alignment Demo - LineUp.js Enhancement</h1>
+      <p><strong>Feature:</strong> Right-aligned numerical values by default for better comparison</p>
+      <p><strong>Columns:</strong> 
+        <span class="highlight">Small (Right - Default)</span> | 
+        <span class="highlight">Medium (Right - Default)</span> | 
+        <span class="highlight">Large (Left - Compatibility)</span> | 
+        <span class="highlight">Very Large (Left - Compatibility)</span> | 
+        <span class="highlight">Small (Center - Optional)</span>
+      </p>
+      <p><em>Notice how right-aligned numbers are easier to compare at a glance!</em></p>
+    </div>
+    
     <script src="./LineUpJS.js"></script>
     <script>
       let testData = [
@@ -33,24 +74,27 @@
         { small: 12, medium: 156, large: 12000, veryLarge: 555777 },
         { small: 3, medium: 234, large: 3000, veryLarge: 111222 },
         { small: 88, medium: 567, large: 88000, veryLarge: 999888 },
+        { small: 234, medium: 89, large: 234000, veryLarge: 444333 },
+        { small: 6, medium: 1234, large: 6000, veryLarge: 777888 },
+        { small: 999, medium: 45, large: 999000, veryLarge: 333444 },
       ];
       
       // Duplicate data for more examples
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 2; i++) {
         testData = [...testData, ...testData];
       }
       
       const builder = LineUpJS.builder(testData);
 
-      // Right-aligned columns (default)
-      builder.column(LineUpJS.buildNumberColumn('small').label('Small (Right)'));
-      builder.column(LineUpJS.buildNumberColumn('medium').label('Medium (Right)'));
+      // Right-aligned columns (new default behavior)
+      builder.column(LineUpJS.buildNumberColumn('small').label('Small Numbers (Right)'));
+      builder.column(LineUpJS.buildNumberColumn('medium').label('Medium Numbers (Right)'));
       
       // Left-aligned columns for compatibility testing
-      builder.column(LineUpJS.buildNumberColumn('large').label('Large (Left)').alignment('left'));
+      builder.column(LineUpJS.buildNumberColumn('large').label('Large Numbers (Left)').alignment('left'));
       builder.column(LineUpJS.buildNumberColumn('veryLarge').label('Very Large (Left)').alignment('left'));
       
-      // Center-aligned for testing
+      // Center-aligned for demonstration
       builder.column(LineUpJS.buildNumberColumn('small').label('Small (Center)').alignment('center'));
       
       builder.buildTaggle(document.body);
