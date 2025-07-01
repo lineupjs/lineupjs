@@ -729,7 +729,7 @@ export default class Column extends AEventDispatcher {
     ctx: 'header' | 'sidePanel' | 'reorder',
     fallback: boolean = false
   ): { content: string; asHTML: boolean } {
-    let summary = this.desc.summary;
+    let summary = this.metadata.summary;
     if (!summary && fallback) {
       summary = this.description;
     }
