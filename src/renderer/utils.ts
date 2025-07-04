@@ -179,18 +179,28 @@ const NUM_EXAMPLE_VALUES = 5;
 /** @internal */
 export function exampleText(col: Column, rows: ISequence<IDataRow>) {
   const examples: string[] = [];
+  let stoppedEarly = false;
+
   rows.every((row) => {
     if (col.getValue(row) == null) {
       return true;
     }
     const v = col.getLabel(row);
-    examples.push(v);
-    return examples.length < NUM_EXAMPLE_VALUES;
+    // Only add the value if it's not already in the examples array (deduplication)
+    if (!examples.includes(v)) {
+      examples.push(v);
+      if (examples.length >= NUM_EXAMPLE_VALUES) {
+        stoppedEarly = true;
+        return false; // Stop processing
+      }
+    }
+    return true;
   });
+
   if (examples.length === 0) {
     return '';
   }
-  return `${examples.join(', ')}${examples.length < rows.length ? ', ...' : ''}`;
+  return `${examples.join(', ')}${stoppedEarly ? ', ...' : ''}`;
 }
 
 /** @internal */
