@@ -8,10 +8,10 @@
 
 .#{vars.$lu_css_prefix}-upset-line {
   position: absolute;
-  top: 0;
-  height: 50%;
-  transform: translateY(1px);
-  border-bottom: 2px solid vars.$lu_renderer_upset_color; // line
+  transform: translateY(-50%); // center
+  margin-top: 1px; // center according to line height
+  height: 2px; // line height
+  background-color: vars.$lu_renderer_upset_color; // line color
 }
 
 .#{vars.$lu_css_prefix}-upset-dot {
