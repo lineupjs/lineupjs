@@ -10,8 +10,8 @@
   position: absolute;
   top: 0;
   height: 50%;
-  transform: translateY(-1px);
-  border-bottom: 3px solid vars.$lu_renderer_upset_color; // line
+  transform: translateY(1px);
+  border-bottom: 2px solid vars.$lu_renderer_upset_color; // line
 }
 
 .#{vars.$lu_css_prefix}-upset-dot {
