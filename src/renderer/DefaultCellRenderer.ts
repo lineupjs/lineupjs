@@ -5,9 +5,12 @@ import type {
   IGroupCellRenderer,
   ISummaryRenderer,
   ICellRenderer,
+  IRenderContext,
 } from './interfaces';
+import { NumberColumn } from '../model';
 import { renderMissingDOM } from './missing';
 import { noRenderer, setText } from './utils';
+import { cssClass } from '../styles';
 
 /**
  * default renderer instance rendering the value as a text
@@ -21,9 +24,12 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     return true;
   }
 
-  create(col: Column): ICellRenderer {
+  create(col: Column, context?: IRenderContext): ICellRenderer {
+    const align = (col instanceof NumberColumn && col.alignment !== 'left') 
+      ? (context ? context.sanitize(col.alignment) : col.alignment)
+      : '';
     return {
-      template: `<div> </div>`,
+      template: `<div${align ? ` class="${cssClass(align)}"` : ''}> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         const l = col.getLabel(d);

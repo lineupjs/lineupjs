@@ -1,5 +1,5 @@
 import { round } from '../internal';
-import { Column, type IDataRow, type INumberColumn, isNumberColumn } from '../model';
+import { Column, type IDataRow, type INumberColumn, isNumberColumn, NumberColumn } from '../model';
 import { CANVAS_HEIGHT, cssClass, TICK } from '../styles';
 import { colorOf } from './impose';
 import {
@@ -30,8 +30,9 @@ export default class TickCellRenderer implements ICellRendererFactory {
 
   create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const width = col.getWidth();
+    const align = (col instanceof NumberColumn && col.alignment !== 'left') ? context.sanitize(col.alignment) : '';
     return {
-      template: `<div><div></div><span ${
+      template: `<div${align ? ` class="${cssClass(align)}"` : ''}><div></div><span ${
         this.renderValue ? '' : `class="${cssClass('text-shadow')} ${cssClass('hover-only')}"`
       }></span></div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {

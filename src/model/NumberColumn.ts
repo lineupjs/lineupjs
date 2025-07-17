@@ -28,6 +28,7 @@ import {
 import { restoreMapping } from './MappingFunction';
 import { isMissingValue, isUnknown, missingGroup } from './missing';
 import type { dataLoaded } from './ValueColumn';
+import { EAlignment } from './StringColumn';
 import ValueColumn from './ValueColumn';
 import {
   noNumberFilter,
@@ -114,6 +115,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private currentGroupThresholds: number[] = [];
   private groupSortMethod: EAdvancedSortMethod = EAdvancedSortMethod.median;
 
+  readonly alignment: EAlignment;
+
   constructor(id: string, desc: INumberColumnDesc, factory: ITypeFactory) {
     super(
       id,
@@ -128,6 +131,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.deriveMapping = this.mapping.domain.map((d) => d == null || Number.isNaN(d));
 
     this.colorMapping = factory.colorMappingFunction(desc.colorMapping || desc.color);
+    this.alignment = desc.alignment ?? EAlignment.right;
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
