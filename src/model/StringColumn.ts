@@ -27,6 +27,95 @@ import ValueColumn from './ValueColumn';
 import { equal, type IEventListener, type ISequence, isSeqEmpty } from '../internal';
 import { integrateDefaults } from './internal';
 
+/**
+ * Parse a search query into terms and quoted phrases
+ * @param query The search query string
+ * @returns Array of search terms and quoted phrases
+ * @internal
+ */
+function parseSearchQuery(query: string): string[] {
+  const terms: string[] = [];
+  const trimmed = query.trim();
+  
+  if (!trimmed) {
+    return terms;
+  }
+  
+  let current = '';
+  let inQuotes = false;
+  let i = 0;
+  
+  while (i < trimmed.length) {
+    const char = trimmed[i];
+    
+    if (char === '"') {
+      if (inQuotes) {
+        // End quote - add the quoted phrase if not empty
+        if (current.trim()) {
+          terms.push(current.trim());
+        }
+        current = '';
+        inQuotes = false;
+      } else {
+        // Start quote - save any current term first
+        if (current.trim()) {
+          // Split by spaces/commas and add non-empty terms
+          current.split(/[\s,]+/).forEach(term => {
+            if (term.trim()) {
+              terms.push(term.trim());
+            }
+          });
+        }
+        current = '';
+        inQuotes = true;
+      }
+    } else if (inQuotes) {
+      // Inside quotes, add everything
+      current += char;
+    } else if (char === ' ' || char === ',') {
+      // Outside quotes, space or comma ends a term
+      if (current.trim()) {
+        terms.push(current.trim());
+      }
+      current = '';
+    } else {
+      // Regular character outside quotes
+      current += char;
+    }
+    
+    i++;
+  }
+  
+  // Add any remaining term
+  if (current.trim()) {
+    if (inQuotes) {
+      // Unclosed quote - treat as regular term
+      terms.push(current.trim());
+    } else {
+      // Split by spaces/commas and add non-empty terms
+      current.split(/[\s,]+/).forEach(term => {
+        if (term.trim()) {
+          terms.push(term.trim());
+        }
+      });
+    }
+  }
+  
+  return terms;
+}
+
+/**
+ * Check if a text matches any of the search terms (case-insensitive)
+ * @param text The text to search in
+ * @param terms Array of search terms
+ * @returns true if any term matches
+ * @internal
+ */
+function matchesAnyTerm(text: string, terms: string[]): boolean {
+  const lowerText = text.toLowerCase();
+  return terms.some(term => lowerText.includes(term.toLowerCase()));
+}
+
 export enum EAlignment {
   left = 'left',
   center = 'center',
@@ -230,6 +319,18 @@ export default class StringColumn extends ValueColumn<string> {
     if (ff instanceof RegExp) {
       return r !== '' && r.match(ff) != null; // You can not use RegExp.test(), because of https://stackoverflow.com/a/6891667
     }
+    
+    // Multi-term search for string filters
+    const searchTerms = parseSearchQuery(ff);
+    if (searchTerms.length > 1) {
+      // Multiple terms - match any of them
+      return r !== '' && matchesAnyTerm(r, searchTerms);
+    } else if (searchTerms.length === 1) {
+      // Single term - use the parsed term for consistency
+      return r !== '' && r.toLowerCase().includes(searchTerms[0].toLowerCase());
+    }
+    
+    // Fallback to original behavior for empty or invalid queries
     return r !== '' && r.toLowerCase().includes(ff.toLowerCase());
   }
 

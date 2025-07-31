@@ -71,7 +71,11 @@ export default class StringFilterDialog extends ADialog {
       <span>Use regular expressions</span>
     </label>
     ${filterMissingMarkup(bak.filterMissing)}
-    <datalist id="${this.dialog.idPrefix}_sdl"></datalist>`
+    <datalist id="${this.dialog.idPrefix}_sdl"></datalist>
+    <div class="${cssClass('search-help')}" style="font-size: 0.8em; color: #666; margin-top: 0.5em;">
+      <div>💡 <strong>Multi-term search:</strong> Use spaces or commas to search for multiple terms (e.g., "apple orange")</div>
+      <div>💡 <strong>Exact phrases:</strong> Use quotes for exact matches (e.g., "red apple")</div>
+    </div>`
     );
 
     const filterMissing = findFilterMissing(node);
