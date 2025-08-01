@@ -11,7 +11,7 @@ function toInput(text: string, filterType: EStringFilterType) {
   if (v === '') {
     return null;
   }
-  return filterType === EStringFilterType.regex ? new RegExp(v, 'm') : v;
+  return filterType === EStringFilterType.regex ? new RegExp(v, 'mi') : v;
 }
 
 /** @internal */
