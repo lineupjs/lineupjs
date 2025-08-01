@@ -164,11 +164,9 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.server.mappingSample((col as any).desc.column);
   }
 
-  searchAndJump(search: string | RegExp, col: Column, first?: boolean, filterType?: EStringFilterType) {
+  searchAndJump(search: string | RegExp, col: Column, first?: boolean, _filterType?: EStringFilterType) {
     // For remote data provider, we'll pass the filterType to the server if needed
     // For now, maintain backward compatibility by ignoring filterType
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _filterType = filterType; // Acknowledge parameter to avoid unused warning
     this.server.search(search, (col as any).desc.column).then((indices) => {
       if (indices.length > 0 && first) {
         this.jumpToNearest(indices.slice(0, 1));
