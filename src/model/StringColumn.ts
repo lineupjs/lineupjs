@@ -192,7 +192,7 @@ export default class StringColumn extends ValueColumn<string> {
         // compatibility case
         if (filter.startsWith('REGEX:')) {
           this.currentFilter = {
-            filter: new RegExp(filter.slice(6), 'm'),
+            filter: new RegExp(filter.slice(6), 'mi'),
             filterMissing: false,
             filterType: EStringFilterType.contains,
           };
@@ -213,7 +213,7 @@ export default class StringColumn extends ValueColumn<string> {
         this.currentFilter = {
           filter:
             filter.filter && (filter.filter as string).startsWith('REGEX:')
-              ? new RegExp((filter.filter as string).slice(6), 'm')
+              ? new RegExp((filter.filter as string).slice(6), 'mi')
               : filter.filter || '',
           filterMissing: filter.filterMissing === true,
           filterType: filter.filterType || EStringFilterType.contains,
@@ -229,7 +229,7 @@ export default class StringColumn extends ValueColumn<string> {
       this.currentGroupCriteria = {
         type,
         values: values.map((value) =>
-          type === EStringGroupCriteriaType.regex ? new RegExp(value as string, 'm') : value
+          type === EStringGroupCriteriaType.regex ? new RegExp(value as string, 'mi') : value
         ),
       };
     }
