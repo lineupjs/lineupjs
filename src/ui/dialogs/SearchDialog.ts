@@ -197,6 +197,8 @@ export default class SearchDialog extends ADialog {
   }
 
   protected reset() {
+    this.provider.jumpToNearest([-1]); // remove row highlight from ranking
+
     const input = this.findInput('input[type="text"]')!;
     const previous = this.find<HTMLButtonElement>(`.${cssClass('previous-result')}`)!;
     const next = this.find<HTMLButtonElement>(`.${cssClass('next-result')}`)!;

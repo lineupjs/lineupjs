@@ -542,6 +542,7 @@ export default class EngineRenderer extends AEventDispatcher {
     if (nearest >= 0) {
       return this.setHighlight(nearest, scrollIntoView);
     }
+    this.setHighlight(-1, false); // remove highlight
     return false;
   }
 
