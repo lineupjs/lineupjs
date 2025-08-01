@@ -165,8 +165,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   }
 
   searchAndJump(search: string | RegExp, col: Column, first?: boolean, _filterType?: EStringFilterType) {
-    // For remote data provider, we'll pass the filterType to the server if needed
-    // For now, maintain backward compatibility by ignoring filterType
+    // TODO: Use and implement the filterType for remote data provider. For now, maintain backward compatibility by ignoring `filterType`.
     this.server.search(search, (col as any).desc.column).then((indices) => {
       if (indices.length > 0 && first) {
         this.jumpToNearest(indices.slice(0, 1));
