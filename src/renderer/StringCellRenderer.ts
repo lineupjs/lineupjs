@@ -1,4 +1,11 @@
-import { StringColumn, Column, type IDataRow, type IOrderedGroup, type IStringFilter, EStringFilterType } from '../model';
+import {
+  StringColumn,
+  Column,
+  type IDataRow,
+  type IOrderedGroup,
+  type IStringFilter,
+  EStringFilterType,
+} from '../model';
 import { filterMissingMarkup, findFilterMissing } from '../ui/missing';
 import type {
   IRenderContext,
@@ -82,7 +89,9 @@ export default class StringCellRenderer implements ICellRendererFactory {
       const filterType = (checkedRadio?.value as EStringFilterType) || EStringFilterType.contains;
 
       if (valid.length <= 0) {
-        const filter = filterMissing.checked ? { filter: null, filterMissing: filterMissing.checked, filterType } : null;
+        const filter = filterMissing.checked
+          ? { filter: null, filterMissing: filterMissing.checked, filterType }
+          : null;
         col.setFilter(filter);
         return;
       }
@@ -124,12 +133,14 @@ export default class StringCellRenderer implements ICellRendererFactory {
       const isRegexFilter = f.filter instanceof RegExp;
       const displayFilterType = isRegexFilter ? EStringFilterType.regex : currentFilterType;
       const bak = f.filter;
-      
+
       filterMissing.checked = f.filterMissing;
       input.value = bak instanceof RegExp ? bak.source : bak || '';
-      
+
       // Update radio button selection
-      const targetRadio = node.querySelector<HTMLInputElement>(`input[name="searchOptions"][value="${displayFilterType}"]`);
+      const targetRadio = node.querySelector<HTMLInputElement>(
+        `input[name="searchOptions"][value="${displayFilterType}"]`
+      );
       if (targetRadio) {
         targetRadio.checked = true;
       }
