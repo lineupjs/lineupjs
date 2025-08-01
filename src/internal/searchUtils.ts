@@ -33,7 +33,7 @@ export function parseSearchQuery(query: string): string[] {
         // Start quote - save any current term first
         if (current.trim()) {
           // Split by spaces/commas and add non-empty terms
-          current.split(/[\s,]+/).forEach(term => {
+          current.split(/[\s,]+/).forEach((term) => {
             if (term.trim()) {
               terms.push(term.trim());
             }
@@ -66,7 +66,7 @@ export function parseSearchQuery(query: string): string[] {
       terms.push(current.trim());
     } else {
       // Split by spaces/commas and add non-empty terms
-      current.split(/[\s,]+/).forEach(term => {
+      current.split(/[\s,]+/).forEach((term) => {
         if (term.trim()) {
           terms.push(term.trim());
         }
@@ -85,9 +85,13 @@ export function parseSearchQuery(query: string): string[] {
  * @returns true if any term matches
  * @internal
  */
-export function matchesAnyTerm(text: string, terms: string[], filterType: EStringFilterType = EStringFilterType.contains): boolean {
+export function matchesAnyTerm(
+  text: string,
+  terms: string[],
+  filterType: EStringFilterType = EStringFilterType.contains
+): boolean {
   const lowerText = text.toLowerCase();
-  return terms.some(term => {
+  return terms.some((term) => {
     const lowerTerm = term.toLowerCase();
     switch (filterType) {
       case EStringFilterType.exact:
@@ -109,7 +113,11 @@ export function matchesAnyTerm(text: string, terms: string[], filterType: EStrin
  * @returns true if the text matches the search criteria
  * @internal
  */
-export function searchText(text: string, searchQuery: string | RegExp, filterType: EStringFilterType = EStringFilterType.contains): boolean {
+export function searchText(
+  text: string,
+  searchQuery: string | RegExp,
+  filterType: EStringFilterType = EStringFilterType.contains
+): boolean {
   if (!text) {
     return false;
   }

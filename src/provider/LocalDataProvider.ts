@@ -615,7 +615,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return lazySeq(Array.from(indices)).map((i) => col.getRawNumber(this._dataRows[i]));
   }
 
-  searchAndJump(search: string | RegExp, col: Column, first?: boolean, filterType: EStringFilterType = EStringFilterType.contains) {
+  searchAndJump(
+    search: string | RegExp,
+    col: Column,
+    first?: boolean,
+    filterType: EStringFilterType = EStringFilterType.contains
+  ) {
     //case insensitive search
     const indices = this.search(search, col, filterType);
     if (first && indices.length > 0) {

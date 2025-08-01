@@ -27,8 +27,6 @@ import ValueColumn from './ValueColumn';
 import { equal, type IEventListener, type ISequence, isSeqEmpty, parseSearchQuery, matchesAnyTerm } from '../internal';
 import { integrateDefaults } from './internal';
 
-
-
 export enum EAlignment {
   left = 'left',
   center = 'center',
@@ -301,7 +299,11 @@ export default class StringColumn extends ValueColumn<string> {
     if (filter === this.currentFilter) {
       return;
     }
-    const current = this.currentFilter || { filter: null, filterMissing: false, filterType: EStringFilterType.contains };
+    const current = this.currentFilter || {
+      filter: null,
+      filterMissing: false,
+      filterType: EStringFilterType.contains,
+    };
     const target = filter || { filter: null, filterMissing: false, filterType: EStringFilterType.contains };
 
     // Ensure backward compatibility by setting default filterType if not provided

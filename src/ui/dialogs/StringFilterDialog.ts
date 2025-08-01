@@ -31,7 +31,11 @@ export default class StringFilterDialog extends ADialog {
     this.before = this.column.getFilter();
   }
 
-  private updateFilter(filter: string | RegExp | null, filterMissing: boolean, filterType: EStringFilterType = EStringFilterType.contains) {
+  private updateFilter(
+    filter: string | RegExp | null,
+    filterMissing: boolean,
+    filterType: EStringFilterType = EStringFilterType.contains
+  ) {
     if (filter == null && !filterMissing) {
       this.column.setFilter(null);
     } else {
@@ -43,7 +47,9 @@ export default class StringFilterDialog extends ADialog {
     this.findInput('input[type="text"]').value = '';
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => (n.checked = false));
     // Reset radio buttons to contains search option
-    const containsRadio = this.node.querySelector<HTMLInputElement>(`input[name="searchOptions"][value="${EStringFilterType.contains}"]`);
+    const containsRadio = this.node.querySelector<HTMLInputElement>(
+      `input[name="searchOptions"][value="${EStringFilterType.contains}"]`
+    );
     if (containsRadio) {
       containsRadio.checked = true;
     }

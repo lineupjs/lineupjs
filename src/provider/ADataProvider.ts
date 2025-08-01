@@ -1045,7 +1045,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param first
    * @param filterType
    */
-  abstract searchAndJump(search: string | RegExp, col: Column, first?: boolean, filterType?: EStringFilterType): number[] | void;
+  abstract searchAndJump(
+    search: string | RegExp,
+    col: Column,
+    first?: boolean,
+    filterType?: EStringFilterType
+  ): number[] | void;
 
   jumpToNearest(indices: number[]) {
     if (indices.length === 0) {
