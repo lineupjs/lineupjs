@@ -1,4 +1,4 @@
-import StringColumn from '../../src/model/StringColumn';
+import StringColumn, { EStringFilterType } from '../../src/model/StringColumn';
 import type { IDataRow } from '../../src/model/interfaces';
 
 describe('StringColumn Multi-term Search', () => {
@@ -122,6 +122,77 @@ describe('StringColumn Multi-term Search', () => {
       column.setFilter({ filter: '"(special)"', filterMissing: true });
       const matches = testData.filter(row => column.filter(row));
       expect(matches).toHaveLength(1);
+    });
+  });
+
+  describe('new search options', () => {
+    describe('contains filter type', () => {
+      it('should work with single terms', () => {
+        column.setFilter({ filter: 'apple', filterMissing: true, filterType: EStringFilterType.contains });
+        const matches = testData.filter(row => column.filter(row));
+        expect(matches).toHaveLength(4); // Apple Juice, Apple Pie, Apple Orange Juice, Red Apple
+      });
+
+      it('should work with multi-term search', () => {
+        column.setFilter({ filter: 'apple orange', filterMissing: true, filterType: EStringFilterType.contains });
+        const matches = testData.filter(row => column.filter(row));
+        expect(matches).toHaveLength(6); // All items with apple OR orange
+      });
+
+      it('should default to contains when filterType is undefined', () => {
+        column.setFilter({ filter: 'apple', filterMissing: true });
+        const matches = testData.filter(row => column.filter(row));
+        expect(matches).toHaveLength(4); // Should behave like contains
+      });
+    });
+
+    describe('startsWith filter type', () => {
+      it('should work with single terms', () => {
+        column.setFilter({ filter: 'apple', filterMissing: true, filterType: EStringFilterType.startsWith });
+        const matches = testData.filter(row => column.filter(row));
+        expect(matches).toHaveLength(3); // Apple Juice, Apple Pie, Apple Orange Juice (not Red Apple)
+      });
+
+      it('should work with multi-term search', () => {
+        column.setFilter({ filter: 'apple orange', filterMissing: true, filterType: EStringFilterType.startsWith });
+        const matches = testData.filter(row => column.filter(row));
+        expect(matches).toHaveLength(4); // Apple Juice, Apple Pie, Apple Orange Juice, Orange Soda
+      });
+
+      it('should be case insensitive', () => {
+        column.setFilter({ filter: 'APPLE', filterMissing: true, filterType: EStringFilterType.startsWith });
+        const matches = testData.filter(row => column.filter(row));
+        expect(matches).toHaveLength(3); // Apple Juice, Apple Pie, Apple Orange Juice
+      });
+
+      it('should work with quoted phrases', () => {
+        column.setFilter({ filter: '"Apple Juice"', filterMissing: true, filterType: EStringFilterType.startsWith });
+        const matches = testData.filter(row => column.filter(row));
+        expect(matches).toHaveLength(1); // Only exact match "Apple Juice"
+      });
+    });
+
+    describe('regex filter type compatibility', () => {
+      it('should work with regex patterns', () => {
+        column.setFilter({ filter: new RegExp('^Apple'), filterMissing: true, filterType: EStringFilterType.regex });
+        const matches = testData.filter(row => column.filter(row));
+        expect(matches).toHaveLength(3); // Apple Juice, Apple Pie, Apple Orange Juice
+      });
+    });
+  });
+
+  describe('backward compatibility with new interface', () => {
+    it('should work without filterType specified', () => {
+      const filter = { filter: 'apple', filterMissing: true };
+      column.setFilter(filter);
+      const matches = testData.filter(row => column.filter(row));
+      expect(matches).toHaveLength(4); // Should default to contains behavior
+    });
+
+    it('should preserve RegExp behavior', () => {
+      column.setFilter({ filter: /^Apple/, filterMissing: true, filterType: EStringFilterType.contains });
+      const matches = testData.filter(row => column.filter(row));
+      expect(matches).toHaveLength(3); // RegExp should override filterType
     });
   });
 });

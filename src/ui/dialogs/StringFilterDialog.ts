@@ -1,4 +1,4 @@
-import type { StringColumn, IStringFilter } from '../../model';
+import type { StringColumn, IStringFilter, EStringFilterType } from '../../model';
 import { filterMissingMarkup, findFilterMissing } from '../missing';
 import ADialog, { type IDialogContext } from './ADialog';
 import { cssClass } from '../../styles';
@@ -6,12 +6,12 @@ import { debounce } from '../../internal';
 import type { IRankingHeaderContext } from '../interfaces';
 import { filterToString, matchDataList } from '../../renderer/StringCellRenderer';
 
-function toInput(text: string, isRegex: boolean) {
+function toInput(text: string, filterType: EStringFilterType) {
   const v = text.trim();
   if (v === '') {
     return null;
   }
-  return isRegex ? new RegExp(v, 'm') : v;
+  return filterType === EStringFilterType.regex ? new RegExp(v, 'm') : v;
 }
 
 /** @internal */
@@ -30,57 +30,83 @@ export default class StringFilterDialog extends ADialog {
     this.before = this.column.getFilter();
   }
 
-  private updateFilter(filter: string | RegExp | null, filterMissing: boolean) {
+  private updateFilter(filter: string | RegExp | null, filterMissing: boolean, filterType: EStringFilterType = EStringFilterType.contains) {
     if (filter == null && !filterMissing) {
       this.column.setFilter(null);
     } else {
-      this.column.setFilter({ filter, filterMissing });
+      this.column.setFilter({ filter, filterMissing, filterType });
     }
   }
 
   protected reset() {
     this.findInput('input[type="text"]').value = '';
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => (n.checked = false));
+    // Reset radio buttons to "Contains word"
+    const containsRadio = this.node.querySelector<HTMLInputElement>(`input[name="searchOptions"][value="${EStringFilterType.contains}"]`);
+    if (containsRadio) {
+      containsRadio.checked = true;
+    }
   }
 
   protected cancel() {
     if (this.before) {
-      this.updateFilter(this.before.filter === '' ? null : this.before.filter, this.before.filterMissing);
+      this.updateFilter(
+        this.before.filter === '' ? null : this.before.filter, 
+        this.before.filterMissing,
+        this.before.filterType || EStringFilterType.contains
+      );
     } else {
-      this.updateFilter(null, false);
+      this.updateFilter(null, false, EStringFilterType.contains);
     }
   }
 
   protected submit() {
     const filterMissing = findFilterMissing(this.node).checked;
     const input = this.findInput('input[type="text"]').value;
-    const isRegex = this.findInput('input[type="checkbox"]').checked;
-    this.updateFilter(toInput(input, isRegex), filterMissing);
+    const checkedRadio = this.node.querySelector<HTMLInputElement>('input[name="searchOptions"]:checked');
+    const filterType = (checkedRadio?.value as EStringFilterType) || EStringFilterType.contains;
+    this.updateFilter(toInput(input, filterType), filterMissing, filterType);
     return true;
   }
 
   protected build(node: HTMLElement) {
     const s = this.ctx.sanitize;
-    const bak = this.column.getFilter() || { filter: '', filterMissing: false };
+    const bak = this.column.getFilter() || { filter: '', filterMissing: false, filterType: EStringFilterType.contains };
+    const currentFilterType = bak.filterType || EStringFilterType.contains;
+    const isRegexFilter = bak.filter instanceof RegExp;
+    const displayFilterType = isRegexFilter ? EStringFilterType.regex : currentFilterType;
+    
     node.insertAdjacentHTML(
       'beforeend',
       `<input type="text" placeholder="Filter ${s(this.column.desc.label)} …" autofocus
          value="${filterToString(bak)}" list="${this.dialog.idPrefix}_sdl">
-    <label class="${cssClass('checkbox')}">
-      <input type="checkbox" ${bak.filter instanceof RegExp ? 'checked="checked"' : ''}>
-      <span>Use regular expressions</span>
-    </label>
     ${filterMissingMarkup(bak.filterMissing)}
     <datalist id="${this.dialog.idPrefix}_sdl"></datalist>
-    <div class="${cssClass('search-help')}" style="font-size: 0.8em; color: #666; margin-top: 0.5em;">
-      <div>💡 <strong>Multi-term search:</strong> Use spaces or commas to search for multiple terms (e.g., "apple orange")</div>
-      <div>💡 <strong>Exact phrases:</strong> Use quotes for exact matches (e.g., "red apple")</div>
-    </div>`
+    <details class="${cssClass('advanced-options')}" style="margin-top: 1em;">
+      <summary>Advanced options</summary>
+      <div style="margin-top: 0.5em;">
+        <fieldset>
+          <legend>Search options</legend>
+          <label class="${cssClass('checkbox')}">
+            <input type="radio" name="searchOptions" value="${EStringFilterType.contains}" ${displayFilterType === EStringFilterType.contains ? 'checked="checked"' : ''}>
+            <span>Contains word</span>
+          </label>
+          <label class="${cssClass('checkbox')}">
+            <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}" ${displayFilterType === EStringFilterType.startsWith ? 'checked="checked"' : ''}>
+            <span>Starts with word</span>
+          </label>
+          <label class="${cssClass('checkbox')}">
+            <input type="radio" name="searchOptions" value="${EStringFilterType.regex}" ${displayFilterType === EStringFilterType.regex ? 'checked="checked"' : ''}>
+            <span>Use regular expressions</span>
+          </label>
+        </fieldset>
+      </div>
+    </details>`
     );
 
     const filterMissing = findFilterMissing(node);
     const input = node.querySelector<HTMLInputElement>('input[type="text"]');
-    const isRegex = node.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    const radioButtons = node.querySelectorAll<HTMLInputElement>('input[name="searchOptions"]');
 
     const dl = node.querySelector('datalist')!;
     this.ctx.provider
@@ -94,7 +120,7 @@ export default class StringFilterDialog extends ADialog {
         matchDataList(dl, summary.topN);
       });
 
-    this.enableLivePreviews([filterMissing, input, isRegex]);
+    this.enableLivePreviews([filterMissing, input, ...Array.from(radioButtons)]);
 
     if (!this.showLivePreviews()) {
       return;

@@ -108,12 +108,22 @@ function parseSearchQuery(query: string): string[] {
  * Check if a text matches any of the search terms (case-insensitive)
  * @param text The text to search in
  * @param terms Array of search terms
+ * @param filterType The type of search to perform
  * @returns true if any term matches
  * @internal
  */
-function matchesAnyTerm(text: string, terms: string[]): boolean {
+function matchesAnyTerm(text: string, terms: string[], filterType: EStringFilterType = EStringFilterType.contains): boolean {
   const lowerText = text.toLowerCase();
-  return terms.some(term => lowerText.includes(term.toLowerCase()));
+  return terms.some(term => {
+    const lowerTerm = term.toLowerCase();
+    switch (filterType) {
+      case EStringFilterType.startsWith:
+        return lowerText.startsWith(lowerTerm);
+      case EStringFilterType.contains:
+      default:
+        return lowerText.includes(lowerTerm);
+    }
+  });
 }
 
 export enum EAlignment {
@@ -148,9 +158,16 @@ export interface IStringDesc {
 
 export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 
+export enum EStringFilterType {
+  contains = 'contains',
+  startsWith = 'startsWith',
+  regex = 'regex',
+}
+
 export interface IStringFilter {
   filter: string | RegExp | null;
   filterMissing: boolean;
+  filterType?: EStringFilterType;
 }
 
 /**
@@ -234,8 +251,20 @@ export default class StringColumn extends ValueColumn<string> {
 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
-    if (this.currentFilter instanceof RegExp) {
-      r.filter = `REGEX:${(this.currentFilter as RegExp).source}`;
+    if (this.currentFilter) {
+      if (this.currentFilter.filter instanceof RegExp) {
+        r.filter = {
+          filter: `REGEX:${(this.currentFilter.filter as RegExp).source}`,
+          filterMissing: this.currentFilter.filterMissing,
+          filterType: this.currentFilter.filterType,
+        };
+      } else {
+        r.filter = {
+          filter: this.currentFilter.filter,
+          filterMissing: this.currentFilter.filterMissing,
+          filterType: this.currentFilter.filterType,
+        };
+      }
     } else {
       r.filter = this.currentFilter;
     }
@@ -261,25 +290,29 @@ export default class StringColumn extends ValueColumn<string> {
           this.currentFilter = {
             filter: new RegExp(filter.slice(6), 'm'),
             filterMissing: false,
+            filterType: EStringFilterType.contains,
           };
         } else if (filter === StringColumn.FILTER_MISSING) {
           this.currentFilter = {
             filter: null,
             filterMissing: true,
+            filterType: EStringFilterType.contains,
           };
         } else {
           this.currentFilter = {
             filter,
             filterMissing: false,
+            filterType: EStringFilterType.contains,
           };
         }
       } else {
         this.currentFilter = {
           filter:
             filter.filter && (filter.filter as string).startsWith('REGEX:')
-              ? new RegExp(filter.slice(6), 'm')
+              ? new RegExp((filter.filter as string).slice(6), 'm')
               : filter.filter || '',
           filterMissing: filter.filterMissing === true,
+          filterType: filter.filterType || EStringFilterType.contains,
         };
       }
     } else {
@@ -309,6 +342,7 @@ export default class StringColumn extends ValueColumn<string> {
     const r = this.getLabel(row);
     const filter = this.currentFilter!;
     const ff = filter.filter;
+    const filterType = filter.filterType || EStringFilterType.contains;
 
     if (r == null || r.trim() === '') {
       return !filter.filterMissing;
@@ -323,15 +357,31 @@ export default class StringColumn extends ValueColumn<string> {
     // Multi-term search for string filters
     const searchTerms = parseSearchQuery(ff);
     if (searchTerms.length > 1) {
-      // Multiple terms - match any of them
-      return r !== '' && matchesAnyTerm(r, searchTerms);
+      // Multiple terms - match any of them with the specified filter type
+      return r !== '' && matchesAnyTerm(r, searchTerms, filterType);
     } else if (searchTerms.length === 1) {
-      // Single term - use the parsed term for consistency
-      return r !== '' && r.toLowerCase().includes(searchTerms[0].toLowerCase());
+      // Single term - use the parsed term for consistency with the specified filter type
+      const lowerText = r.toLowerCase();
+      const lowerTerm = searchTerms[0].toLowerCase();
+      switch (filterType) {
+        case EStringFilterType.startsWith:
+          return r !== '' && lowerText.startsWith(lowerTerm);
+        case EStringFilterType.contains:
+        default:
+          return r !== '' && lowerText.includes(lowerTerm);
+      }
     }
     
     // Fallback to original behavior for empty or invalid queries
-    return r !== '' && r.toLowerCase().includes(ff.toLowerCase());
+    const lowerText = r.toLowerCase();
+    const lowerFilter = ff.toLowerCase();
+    switch (filterType) {
+      case EStringFilterType.startsWith:
+        return r !== '' && lowerText.startsWith(lowerFilter);
+      case EStringFilterType.contains:
+      default:
+        return r !== '' && lowerText.includes(lowerFilter);
+    }
   }
 
   getFilter() {
@@ -342,10 +392,17 @@ export default class StringColumn extends ValueColumn<string> {
     if (filter === this.currentFilter) {
       return;
     }
-    const current = this.currentFilter || { filter: null, filterMissing: false };
-    const target = filter || { filter: null, filterMissing: false };
+    const current = this.currentFilter || { filter: null, filterMissing: false, filterType: EStringFilterType.contains };
+    const target = filter || { filter: null, filterMissing: false, filterType: EStringFilterType.contains };
+    
+    // Ensure backward compatibility by setting default filterType if not provided
+    if (filter && filter.filterType === undefined) {
+      filter.filterType = EStringFilterType.contains;
+    }
+    
     if (
       current.filterMissing === target.filterMissing &&
+      current.filterType === target.filterType &&
       (current.filter === target.filter ||
         (current.filter instanceof RegExp &&
           target.filter instanceof RegExp &&
