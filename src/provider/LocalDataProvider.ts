@@ -633,7 +633,15 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   search(search: string | RegExp, col: Column, filterType: EStringFilterType = EStringFilterType.contains): number[] {
     const indices: number[] = [];
-    for (let i = 0; i < this._dataRows.length; ++i) {
+    // Get the ranking of the column or the first ranking as fallback
+    const ranking = col.findMyRanker() || this.getRankings()[0];
+    if (!ranking) {
+      return indices;
+    }
+    // Get the visible row indices from the current ranking
+    const visibleIndices = ranking.getOrder();
+    for (let j = 0; j < visibleIndices.length; ++j) {
+      const i = visibleIndices[j];
       const text = col.getLabel(this._dataRows[i]);
       if (searchText(text, search, filterType)) {
         indices.push(i);
