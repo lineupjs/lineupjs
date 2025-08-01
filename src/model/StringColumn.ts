@@ -24,8 +24,7 @@ import {
 import { missingGroup, isMissingValue } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
-import { equal, type IEventListener, type ISequence, isSeqEmpty } from '../internal';
-import { parseSearchQuery, matchesAnyTerm } from '../internal/searchUtils';
+import { equal, type IEventListener, type ISequence, isSeqEmpty, parseSearchQuery, matchesAnyTerm } from '../internal';
 import { integrateDefaults } from './internal';
 
 

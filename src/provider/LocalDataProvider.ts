@@ -1,5 +1,4 @@
-import { createIndexArray, sortComplex, type ISequence, lazySeq, type IEventContext } from '../internal';
-import { searchText } from '../internal/searchUtils';
+import { createIndexArray, sortComplex, type ISequence, lazySeq, type IEventContext, searchText } from '../internal';
 import {
   Column,
   EDirtyReason,
