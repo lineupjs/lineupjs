@@ -42,7 +42,7 @@ export default class StringFilterDialog extends ADialog {
   protected reset() {
     this.findInput('input[type="text"]').value = '';
     this.forEach('input[type=checkbox]', (n: HTMLInputElement) => (n.checked = false));
-    // Reset radio buttons to "Contains word"
+    // Reset radio buttons to contains search option
     const containsRadio = this.node.querySelector<HTMLInputElement>(`input[name="searchOptions"][value="${EStringFilterType.contains}"]`);
     if (containsRadio) {
       containsRadio.checked = true;
@@ -52,7 +52,7 @@ export default class StringFilterDialog extends ADialog {
   protected cancel() {
     if (this.before) {
       this.updateFilter(
-        this.before.filter === '' ? null : this.before.filter, 
+        this.before.filter === '' ? null : this.before.filter,
         this.before.filterMissing,
         this.before.filterType || EStringFilterType.contains
       );
@@ -76,32 +76,32 @@ export default class StringFilterDialog extends ADialog {
     const currentFilterType = bak.filterType || EStringFilterType.contains;
     const isRegexFilter = bak.filter instanceof RegExp;
     const displayFilterType = isRegexFilter ? EStringFilterType.regex : currentFilterType;
-    
+
     node.insertAdjacentHTML(
       'beforeend',
       `<input type="text" placeholder="Filter ${s(this.column.desc.label)} …" autofocus
          value="${filterToString(bak)}" list="${this.dialog.idPrefix}_sdl">
     ${filterMissingMarkup(bak.filterMissing)}
     <datalist id="${this.dialog.idPrefix}_sdl"></datalist>
-    <details class="${cssClass('advanced-options')}" style="margin-top: 1em;">
+    <details class="${cssClass('string-advanced-options')}">
       <summary>Advanced options</summary>
-      <div style="margin-top: 0.5em;">
-        <fieldset>
-          <legend>Search options</legend>
-          <label class="${cssClass('checkbox')}">
-            <input type="radio" name="searchOptions" value="${EStringFilterType.contains}" ${displayFilterType === EStringFilterType.contains ? 'checked="checked"' : ''}>
+      <span class="${cssClass('search-options-title')}">Find rows that &hellip;</span>
+      <label class="${cssClass('checkbox')}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.contains}" ${displayFilterType === EStringFilterType.contains ? 'checked="checked"' : ''}>
+        <span>Contain the search terms</span>
+      </label>
             <span>Contains word</span>
           </label>
           <label class="${cssClass('checkbox')}">
             <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}" ${displayFilterType === EStringFilterType.startsWith ? 'checked="checked"' : ''}>
-            <span>Starts with word</span>
-          </label>
-          <label class="${cssClass('checkbox')}">
-            <input type="radio" name="searchOptions" value="${EStringFilterType.regex}" ${displayFilterType === EStringFilterType.regex ? 'checked="checked"' : ''}>
-            <span>Use regular expressions</span>
-          </label>
-        </fieldset>
-      </div>
+      <label class="${cssClass('checkbox')}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}" ${displayFilterType === EStringFilterType.startsWith ? 'checked="checked"' : ''}>
+        <span>Start with the search terms</span>
+      </label>
+      <label class="${cssClass('checkbox')}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.regex}" ${displayFilterType === EStringFilterType.regex ? 'checked="checked"' : ''}>
+        <span>Match as regular expression</span>
+      </label>
     </details>`
     );
 
