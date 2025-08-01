@@ -1,4 +1,5 @@
-import StringColumn, { EStringFilterType } from '../../src/model/StringColumn';
+import StringColumn from '../../src/model/StringColumn';
+import { EStringFilterType } from '../../src/model/interfaces';
 import type { IDataRow } from '../../src/model/interfaces';
 
 describe('StringColumn Multi-term Search', () => {

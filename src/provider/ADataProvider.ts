@@ -33,7 +33,7 @@ import {
   type IMappingFunctionConstructor,
   type ITypeFactory,
 } from '../model';
-import { EStringFilterType } from '../model/StringColumn';
+import { EStringFilterType } from '../model/interfaces';
 import { models } from '../model/models';
 import { forEachIndices, everyIndices, toGroupID, unifyParents } from '../model/internal';
 import {

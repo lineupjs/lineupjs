@@ -1,5 +1,5 @@
 import type { Column } from '../../model';
-import { EStringFilterType } from '../../model/StringColumn';
+import { EStringFilterType } from '../../model/interfaces';
 import type { IDataProvider } from '../../provider';
 import ADialog, { type IDialogContext } from './ADialog';
 import { aria, cssClass } from '../../styles';

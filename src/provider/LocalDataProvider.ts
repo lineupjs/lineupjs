@@ -14,7 +14,7 @@ import {
   CompositeColumn,
   ValueColumn,
 } from '../model';
-import { EStringFilterType } from '../model/StringColumn';
+import { EStringFilterType } from '../model/interfaces';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import type { IDataProviderOptions } from './interfaces';

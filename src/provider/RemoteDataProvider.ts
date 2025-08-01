@@ -6,7 +6,7 @@ import Column, {
   type IndicesArray,
   type IOrderedGroup,
 } from '../model';
-import { EStringFilterType } from '../model/StringColumn';
+import { EStringFilterType } from '../model/interfaces';
 import ACommonDataProvider from './ACommonDataProvider';
 import type { IDataProviderOptions } from './interfaces';
 import { DirectRenderTasks } from './DirectRenderTasks';

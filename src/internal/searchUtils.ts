@@ -1,4 +1,4 @@
-import { EStringFilterType } from '../model/StringColumn';
+import { EStringFilterType } from '../model/interfaces';
 
 /**
  * Parse a search query into terms and quoted phrases

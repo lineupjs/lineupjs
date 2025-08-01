@@ -26,6 +26,9 @@ import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
 import { equal, type IEventListener, type ISequence, isSeqEmpty, parseSearchQuery, matchesAnyTerm } from '../internal';
 import { integrateDefaults } from './internal';
+import { EStringFilterType } from './interfaces';
+
+export { EStringFilterType } from './interfaces'; // re-export for backward compatibility
 
 export enum EAlignment {
   left = 'left',
@@ -58,13 +61,6 @@ export interface IStringDesc {
 }
 
 export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
-
-export enum EStringFilterType {
-  contains = 'contains',
-  exact = 'exact',
-  startsWith = 'startsWith',
-  regex = 'regex',
-}
 
 export interface IStringFilter {
   filter: string | RegExp | null;

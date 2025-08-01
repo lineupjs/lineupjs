@@ -12,7 +12,7 @@ import type {
   IMappingFunctionConstructor,
   ITypeFactory,
 } from '../model';
-import { EStringFilterType } from '../model/StringColumn';
+import { EStringFilterType } from '../model/interfaces';
 import type { AEventDispatcher, ISequence } from '../internal';
 import type { IRenderTasks } from '../renderer';
 import type { IAbortAblePromise as IAbortAblePromiseImpl } from 'lineupengine';
