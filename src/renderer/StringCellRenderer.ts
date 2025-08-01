@@ -166,6 +166,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
       template: `<form><input type="text" placeholder="Filter ${context.sanitize(col.desc.label)}..." autofocus
       list="${context.idPrefix}${col.id}_dl" value="${context.sanitize(filterToString(f))}">
           ${filterMissingMarkup(f.filterMissing)}
+          <datalist id="${context.idPrefix}${col.id}_dl"></datalist>
           <details class="${cssClass('string-advanced-options')}">
             <summary>Advanced options</summary>
             <span class="${cssClass('search-options-title')}">Find rows that &hellip;</span>
@@ -186,7 +187,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
               <span>Match as regular expression</span>
             </label>
           </details>
-          <datalist id="${context.idPrefix}${col.id}_dl"></datalist></form>`,
+          </form>`,
       update: (node: HTMLElement) => {
         if (!update) {
           update = StringCellRenderer.interactiveSummary(col, node);
