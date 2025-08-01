@@ -154,7 +154,7 @@ export default class StringColumn extends ValueColumn<string> {
         r.filter = {
           filter: `REGEX:${(this.currentFilter.filter as RegExp).source}`,
           filterMissing: this.currentFilter.filterMissing,
-          filterType: this.currentFilter.filterType,
+          filterType: EStringFilterType.regex,
         };
       } else {
         r.filter = {
@@ -188,7 +188,7 @@ export default class StringColumn extends ValueColumn<string> {
           this.currentFilter = {
             filter: new RegExp(filter.slice(6), 'mi'),
             filterMissing: false,
-            filterType: EStringFilterType.contains,
+            filterType: EStringFilterType.regex,
           };
         } else if (filter === StringColumn.FILTER_MISSING) {
           this.currentFilter = {
