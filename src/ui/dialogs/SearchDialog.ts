@@ -37,21 +37,25 @@ export default class SearchDialog extends ADialog {
         <button type="submit" class="${cssClass('next-result')}" title="Next search result" disabled>${aria('Next search result')}</button>
       </div>
       <details class="${cssClass('string-advanced-options')}">
-        <summary>Advanced options</summary>
-        <span class="${cssClass('search-options-title')}">Search for &hellip;</span>
-        <label class="${cssClass('checkbox')}">
-          <input type="radio" name="searchOptions" value="${EStringFilterType.contains}" checked="checked">
-          <span>Contains word</span>
-        </label>
-        <label class="${cssClass('checkbox')}">
-          <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}">
-          <span>Starts with word</span>
-        </label>
-        <label class="${cssClass('checkbox')}">
-          <input type="radio" name="searchOptions" value="${EStringFilterType.regex}">
-          <span>Use regular expressions</span>
-        </label>
-      </details>`
+      <summary>Advanced options</summary>
+      <span class="${cssClass('search-options-title')}">Find rows that &hellip;</span>
+      <label class="${cssClass('checkbox')}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.contains}">
+        <span>Contain the search terms</span>
+      </label>
+      <label class="${cssClass('checkbox')}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.exact}">
+        <span>Exactly match the search terms</span>
+      </label>
+      <label class="${cssClass('checkbox')}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}">
+        <span>Start with the search terms</span>
+      </label>
+      <label class="${cssClass('checkbox')}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.regex}">
+        <span>Match as regular expression</span>
+      </label>
+    </details>`
     );
 
     const input = node.querySelector<HTMLInputElement>('input[type="text"]')!;
@@ -188,13 +192,13 @@ export default class SearchDialog extends ADialog {
 
     this.current = null;
     input.value = '';
-    
+
     // Reset to contains search option
     const containsRadio = this.node.querySelector<HTMLInputElement>(`input[name="searchOptions"][value="${EStringFilterType.contains}"]`);
     if (containsRadio) {
       containsRadio.checked = true;
     }
-    
+
     previous.disabled = true;
     next.disabled = true;
     searchCount.hidden = true;
