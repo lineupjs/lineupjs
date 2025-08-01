@@ -36,18 +36,18 @@ import { integrateDefaults } from './internal';
 function parseSearchQuery(query: string): string[] {
   const terms: string[] = [];
   const trimmed = query.trim();
-  
+
   if (!trimmed) {
     return terms;
   }
-  
+
   let current = '';
   let inQuotes = false;
   let i = 0;
-  
+
   while (i < trimmed.length) {
     const char = trimmed[i];
-    
+
     if (char === '"') {
       if (inQuotes) {
         // End quote - add the quoted phrase if not empty
@@ -82,10 +82,10 @@ function parseSearchQuery(query: string): string[] {
       // Regular character outside quotes
       current += char;
     }
-    
+
     i++;
   }
-  
+
   // Add any remaining term
   if (current.trim()) {
     if (inQuotes) {
@@ -100,7 +100,7 @@ function parseSearchQuery(query: string): string[] {
       });
     }
   }
-  
+
   return terms;
 }
 
@@ -160,6 +160,7 @@ export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 
 export enum EStringFilterType {
   contains = 'contains',
+  exact = 'exact',
   startsWith = 'startsWith',
   regex = 'regex',
 }
@@ -353,7 +354,12 @@ export default class StringColumn extends ValueColumn<string> {
     if (ff instanceof RegExp) {
       return r !== '' && r.match(ff) != null; // You can not use RegExp.test(), because of https://stackoverflow.com/a/6891667
     }
-    
+
+    // Handle exact match case
+    if (filterType === EStringFilterType.exact) {
+      return r !== '' && r.toLowerCase() === ff.toLowerCase();
+    }
+
     // Multi-term search for string filters
     const searchTerms = parseSearchQuery(ff);
     if (searchTerms.length > 1) {
@@ -371,7 +377,7 @@ export default class StringColumn extends ValueColumn<string> {
           return r !== '' && lowerText.includes(lowerTerm);
       }
     }
-    
+
     // Fallback to original behavior for empty or invalid queries
     const lowerText = r.toLowerCase();
     const lowerFilter = ff.toLowerCase();
@@ -394,12 +400,12 @@ export default class StringColumn extends ValueColumn<string> {
     }
     const current = this.currentFilter || { filter: null, filterMissing: false, filterType: EStringFilterType.contains };
     const target = filter || { filter: null, filterMissing: false, filterType: EStringFilterType.contains };
-    
+
     // Ensure backward compatibility by setting default filterType if not provided
     if (filter && filter.filterType === undefined) {
       filter.filterType = EStringFilterType.contains;
     }
-    
+
     if (
       current.filterMissing === target.filterMissing &&
       current.filterType === target.filterType &&

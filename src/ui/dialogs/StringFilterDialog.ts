@@ -90,10 +90,10 @@ export default class StringFilterDialog extends ADialog {
         <input type="radio" name="searchOptions" value="${EStringFilterType.contains}" ${displayFilterType === EStringFilterType.contains ? 'checked="checked"' : ''}>
         <span>Contain the search terms</span>
       </label>
-            <span>Contains word</span>
-          </label>
-          <label class="${cssClass('checkbox')}">
-            <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}" ${displayFilterType === EStringFilterType.startsWith ? 'checked="checked"' : ''}>
+      <label class="${cssClass('checkbox')}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.exact}" ${displayFilterType === EStringFilterType.exact ? 'checked="checked"' : ''}>
+        <span>Exactly match the search terms</span>
+      </label>
       <label class="${cssClass('checkbox')}">
         <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}" ${displayFilterType === EStringFilterType.startsWith ? 'checked="checked"' : ''}>
         <span>Start with the search terms</span>
