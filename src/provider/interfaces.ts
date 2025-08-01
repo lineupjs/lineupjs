@@ -12,6 +12,7 @@ import type {
   IMappingFunctionConstructor,
   ITypeFactory,
 } from '../model';
+import { EStringFilterType } from '../model/StringColumn';
 import type { AEventDispatcher, ISequence } from '../internal';
 import type { IRenderTasks } from '../renderer';
 import type { IAbortAblePromise as IAbortAblePromiseImpl } from 'lineupengine';
@@ -88,7 +89,7 @@ export interface IDataProvider extends AEventDispatcher {
 
   mappingSample(col: Column): Promise<ISequence<number>> | ISequence<number>;
 
-  searchAndJump(search: string | RegExp, col: Column, first?: boolean): number[] | void;
+  searchAndJump(search: string | RegExp, col: Column, first?: boolean, filterType?: EStringFilterType): number[] | void;
 
   jumpToNearest(indices: number[]);
 

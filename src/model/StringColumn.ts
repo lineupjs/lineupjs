@@ -25,106 +25,10 @@ import { missingGroup, isMissingValue } from './missing';
 import type { dataLoaded } from './ValueColumn';
 import ValueColumn from './ValueColumn';
 import { equal, type IEventListener, type ISequence, isSeqEmpty } from '../internal';
+import { parseSearchQuery, matchesAnyTerm } from '../internal/searchUtils';
 import { integrateDefaults } from './internal';
 
-/**
- * Parse a search query into terms and quoted phrases
- * @param query The search query string
- * @returns Array of search terms and quoted phrases
- * @internal
- */
-function parseSearchQuery(query: string): string[] {
-  const terms: string[] = [];
-  const trimmed = query.trim();
 
-  if (!trimmed) {
-    return terms;
-  }
-
-  let current = '';
-  let inQuotes = false;
-  let i = 0;
-
-  while (i < trimmed.length) {
-    const char = trimmed[i];
-
-    if (char === '"') {
-      if (inQuotes) {
-        // End quote - add the quoted phrase if not empty
-        if (current.trim()) {
-          terms.push(current.trim());
-        }
-        current = '';
-        inQuotes = false;
-      } else {
-        // Start quote - save any current term first
-        if (current.trim()) {
-          // Split by spaces/commas and add non-empty terms
-          current.split(/[\s,]+/).forEach(term => {
-            if (term.trim()) {
-              terms.push(term.trim());
-            }
-          });
-        }
-        current = '';
-        inQuotes = true;
-      }
-    } else if (inQuotes) {
-      // Inside quotes, add everything
-      current += char;
-    } else if (char === ' ' || char === ',') {
-      // Outside quotes, space or comma ends a term
-      if (current.trim()) {
-        terms.push(current.trim());
-      }
-      current = '';
-    } else {
-      // Regular character outside quotes
-      current += char;
-    }
-
-    i++;
-  }
-
-  // Add any remaining term
-  if (current.trim()) {
-    if (inQuotes) {
-      // Unclosed quote - treat as regular term
-      terms.push(current.trim());
-    } else {
-      // Split by spaces/commas and add non-empty terms
-      current.split(/[\s,]+/).forEach(term => {
-        if (term.trim()) {
-          terms.push(term.trim());
-        }
-      });
-    }
-  }
-
-  return terms;
-}
-
-/**
- * Check if a text matches any of the search terms (case-insensitive)
- * @param text The text to search in
- * @param terms Array of search terms
- * @param filterType The type of search to perform
- * @returns true if any term matches
- * @internal
- */
-function matchesAnyTerm(text: string, terms: string[], filterType: EStringFilterType = EStringFilterType.contains): boolean {
-  const lowerText = text.toLowerCase();
-  return terms.some(term => {
-    const lowerTerm = term.toLowerCase();
-    switch (filterType) {
-      case EStringFilterType.startsWith:
-        return lowerText.startsWith(lowerTerm);
-      case EStringFilterType.contains:
-      default:
-        return lowerText.includes(lowerTerm);
-    }
-  });
-}
 
 export enum EAlignment {
   left = 'left',

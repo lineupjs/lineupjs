@@ -1,4 +1,5 @@
 import type { Column } from '../../model';
+import { EStringFilterType } from '../../model/StringColumn';
 import type { IDataProvider } from '../../provider';
 import ADialog, { type IDialogContext } from './ADialog';
 import { aria, cssClass } from '../../styles';
@@ -7,7 +8,7 @@ import { debounce } from '../../internal';
 /** @internal */
 export default class SearchDialog extends ADialog {
   private current: {
-    isRegex: boolean;
+    filterType: EStringFilterType;
     search: string;
     indices: number[];
     index: number;
@@ -35,17 +36,28 @@ export default class SearchDialog extends ADialog {
         <button type="button" class="${cssClass('previous-result')}" title="Previous search result" disabled>${aria('Previous search result')}</button>
         <button type="submit" class="${cssClass('next-result')}" title="Next search result" disabled>${aria('Next search result')}</button>
       </div>
-      <label class="${cssClass('checkbox')}">
-        <input type="checkbox">
-        <span>Use regular expressions</span>
-      </label>
-    `
+      <details class="${cssClass('string-advanced-options')}">
+        <summary>Advanced options</summary>
+        <span class="${cssClass('search-options-title')}">Search for &hellip;</span>
+        <label class="${cssClass('checkbox')}">
+          <input type="radio" name="searchOptions" value="${EStringFilterType.contains}" checked="checked">
+          <span>Contains word</span>
+        </label>
+        <label class="${cssClass('checkbox')}">
+          <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}">
+          <span>Starts with word</span>
+        </label>
+        <label class="${cssClass('checkbox')}">
+          <input type="radio" name="searchOptions" value="${EStringFilterType.regex}">
+          <span>Use regular expressions</span>
+        </label>
+      </details>`
     );
 
     const input = node.querySelector<HTMLInputElement>('input[type="text"]')!;
-    const checkbox = node.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+    const radioButtons = node.querySelectorAll<HTMLInputElement>('input[name="searchOptions"]')!;
     const previous = node.querySelector<HTMLButtonElement>(`.${cssClass('previous-result')}`)!;
-    const next = node.querySelector<HTMLButtonElement>(`.${cssClass('next-result')}`)!;
+    const next = node.querySelector<HTMLButtonElement>(`.${cssClass('next-result')}`)!;;
 
     const update = () => {
       const search: any = input.value;
@@ -60,8 +72,10 @@ export default class SearchDialog extends ADialog {
       passive: true,
     });
 
-    checkbox.addEventListener('change', update, {
-      passive: true,
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', update, {
+        passive: true,
+      });
     });
 
     previous.addEventListener('click', (evt) => {
@@ -76,7 +90,7 @@ export default class SearchDialog extends ADialog {
       this.jumpToNextResult();
     });
 
-    this.enableLivePreviews([input, checkbox]);
+    this.enableLivePreviews([input, ...Array.from(radioButtons)]);
 
     if (!this.showLivePreviews()) {
       return;
@@ -117,13 +131,13 @@ export default class SearchDialog extends ADialog {
 
   private searchAndJump() {
     const input = this.findInput('input[type="text"]')!;
-    const checkbox = this.findInput('input[type="checkbox"]')!;
+    const checkedRadio = this.node.querySelector<HTMLInputElement>('input[name="searchOptions"]:checked')!;
     const previous = this.find<HTMLButtonElement>(`.${cssClass('previous-result')}`)!;
     const next = this.find<HTMLButtonElement>(`.${cssClass('next-result')}`)!;
     const searchCount = this.find<HTMLElement>(`.${cssClass('search-count')}`)!;
 
     const search: string = input.value;
-    const isRegex = checkbox.checked;
+    const filterType = (checkedRadio?.value as EStringFilterType) || EStringFilterType.contains;
 
     if (search.length === 0) {
       this.current = null;
@@ -133,11 +147,11 @@ export default class SearchDialog extends ADialog {
       return false;
     }
 
-    const indices = this.provider.searchAndJump(isRegex ? new RegExp(search) : search, this.column, true);
+    const indices = this.provider.searchAndJump(search, this.column, true, filterType);
     if (indices) {
       this.current = {
         search,
-        isRegex,
+        filterType,
         indices,
         index: 0,
       };
@@ -168,14 +182,19 @@ export default class SearchDialog extends ADialog {
 
   protected reset() {
     const input = this.findInput('input[type="text"]')!;
-    const checkbox = this.findInput('input[type="checkbox"]')!;
     const previous = this.find<HTMLButtonElement>(`.${cssClass('previous-result')}`)!;
     const next = this.find<HTMLButtonElement>(`.${cssClass('next-result')}`)!;
     const searchCount = this.find<HTMLElement>(`.${cssClass('search-count')}`)!;
 
     this.current = null;
     input.value = '';
-    checkbox.checked = false;
+    
+    // Reset to contains search option
+    const containsRadio = this.node.querySelector<HTMLInputElement>(`input[name="searchOptions"][value="${EStringFilterType.contains}"]`);
+    if (containsRadio) {
+      containsRadio.checked = true;
+    }
+    
     previous.disabled = true;
     next.disabled = true;
     searchCount.hidden = true;

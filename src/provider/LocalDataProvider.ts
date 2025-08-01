@@ -1,4 +1,5 @@
 import { createIndexArray, sortComplex, type ISequence, lazySeq, type IEventContext } from '../internal';
+import { searchText } from '../internal/searchUtils';
 import {
   Column,
   EDirtyReason,
@@ -14,6 +15,7 @@ import {
   CompositeColumn,
   ValueColumn,
 } from '../model';
+import { EStringFilterType } from '../model/StringColumn';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import type { IDataProviderOptions } from './interfaces';
@@ -614,9 +616,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return lazySeq(Array.from(indices)).map((i) => col.getRawNumber(this._dataRows[i]));
   }
 
-  searchAndJump(search: string | RegExp, col: Column, first?: boolean) {
+  searchAndJump(search: string | RegExp, col: Column, first?: boolean, filterType: EStringFilterType = EStringFilterType.contains) {
     //case insensitive search
-    const indices = this.search(search, col);
+    const indices = this.search(search, col, filterType);
     if (first && indices.length > 0) {
       this.jumpToNearest(indices.slice(0, 1));
     } else {
@@ -625,15 +627,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return indices;
   }
 
-  search(search: string | RegExp, col: Column): number[] {
-    search = typeof search === 'string' ? search.toLowerCase() : search;
-    const f =
-      typeof search === 'string'
-        ? (v: string) => v.toLowerCase().indexOf(search as string) >= 0
-        : (search as RegExp).test.bind(search);
+  search(search: string | RegExp, col: Column, filterType: EStringFilterType = EStringFilterType.contains): number[] {
     const indices: number[] = [];
     for (let i = 0; i < this._dataRows.length; ++i) {
-      if (f(col.getLabel(this._dataRows[i]))) {
+      const text = col.getLabel(this._dataRows[i]);
+      if (searchText(text, search, filterType)) {
         indices.push(i);
       }
     }
