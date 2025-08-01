@@ -9,7 +9,7 @@ import { debounce } from '../../internal';
 export default class SearchDialog extends ADialog {
   private current: {
     filterType: EStringFilterType;
-    search: string;
+    search: string | RegExp;
     indices: number[];
     index: number;
   } | null = null;
@@ -25,6 +25,8 @@ export default class SearchDialog extends ADialog {
   }
 
   protected build(node: HTMLElement) {
+    const displayFilterType = this.current?.filterType || EStringFilterType.contains;
+
     // NOTE: the next button is of type submit to enable jumping to the next search result with the enter key in the search input field
     node.insertAdjacentHTML(
       'beforeend',
@@ -40,19 +42,19 @@ export default class SearchDialog extends ADialog {
       <summary>Advanced options</summary>
       <span class="${cssClass('search-options-title')}">Find rows that &hellip;</span>
       <label class="${cssClass('checkbox')}">
-        <input type="radio" name="searchOptions" value="${EStringFilterType.contains}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.contains}" ${displayFilterType === EStringFilterType.contains ? 'checked="checked"' : ''}>
         <span>Contain the search terms</span>
       </label>
       <label class="${cssClass('checkbox')}">
-        <input type="radio" name="searchOptions" value="${EStringFilterType.exact}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.exact}" ${displayFilterType === EStringFilterType.exact ? 'checked="checked"' : ''}>
         <span>Exactly match the search terms</span>
       </label>
       <label class="${cssClass('checkbox')}">
-        <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}" ${displayFilterType === EStringFilterType.startsWith ? 'checked="checked"' : ''}>
         <span>Start with the search terms</span>
       </label>
       <label class="${cssClass('checkbox')}">
-        <input type="radio" name="searchOptions" value="${EStringFilterType.regex}">
+        <input type="radio" name="searchOptions" value="${EStringFilterType.regex}" ${displayFilterType === EStringFilterType.regex ? 'checked="checked"' : ''}>
         <span>Match as regular expression</span>
       </label>
     </details>`
@@ -61,10 +63,10 @@ export default class SearchDialog extends ADialog {
     const input = node.querySelector<HTMLInputElement>('input[type="text"]')!;
     const radioButtons = node.querySelectorAll<HTMLInputElement>('input[name="searchOptions"]')!;
     const previous = node.querySelector<HTMLButtonElement>(`.${cssClass('previous-result')}`)!;
-    const next = node.querySelector<HTMLButtonElement>(`.${cssClass('next-result')}`)!;;
+    const next = node.querySelector<HTMLButtonElement>(`.${cssClass('next-result')}`)!;
 
     const update = () => {
-      const search: any = input.value;
+      const search = input.value;
       if (search.length === 0) {
         input.setCustomValidity('Enter a search term');
         return;
@@ -76,10 +78,18 @@ export default class SearchDialog extends ADialog {
       passive: true,
     });
 
-    radioButtons.forEach(radio => {
-      radio.addEventListener('change', update, {
-        passive: true,
-      });
+    radioButtons.forEach((radio) => {
+      radio.addEventListener(
+        'change',
+        () => {
+          this.current!.filterType = radio.value as EStringFilterType;
+          update();
+          this.searchAndJump();
+        },
+        {
+          passive: true,
+        }
+      );
     });
 
     previous.addEventListener('click', (evt) => {
@@ -140,10 +150,12 @@ export default class SearchDialog extends ADialog {
     const next = this.find<HTMLButtonElement>(`.${cssClass('next-result')}`)!;
     const searchCount = this.find<HTMLElement>(`.${cssClass('search-count')}`)!;
 
-    const search: string = input.value;
     const filterType = (checkedRadio?.value as EStringFilterType) || EStringFilterType.contains;
+    const search: string | RegExp = filterType == EStringFilterType.regex ? new RegExp(input.value, 'mi') : input.value;
 
-    if (search.length === 0) {
+    if (search instanceof RegExp) {
+      search.lastIndex = 0; // reset regex lastIndex
+    } else if (search.length === 0) {
       this.current = null;
       previous.disabled = true;
       next.disabled = true;
@@ -194,7 +206,9 @@ export default class SearchDialog extends ADialog {
     input.value = '';
 
     // Reset to contains search option
-    const containsRadio = this.node.querySelector<HTMLInputElement>(`input[name="searchOptions"][value="${EStringFilterType.contains}"]`);
+    const containsRadio = this.node.querySelector<HTMLInputElement>(
+      `input[name="searchOptions"][value="${EStringFilterType.contains}"]`
+    );
     if (containsRadio) {
       containsRadio.checked = true;
     }
