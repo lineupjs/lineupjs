@@ -65,7 +65,7 @@ export default function groupString(
         .filter((d) => d.length > 0);
 
       if (newType === EStringGroupCriteriaType.regex) {
-        items = items.map((d) => new RegExp(d.toString(), 'm'));
+        items = items.map((d) => new RegExp(d.toString(), 'mi'));
       }
       col.setGroupCriteria({
         type: newType,

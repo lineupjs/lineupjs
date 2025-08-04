@@ -6,6 +6,7 @@ import Column, {
   type IndicesArray,
   type IOrderedGroup,
 } from '../model';
+import { EStringFilterType } from '../model/interfaces';
 import ACommonDataProvider from './ACommonDataProvider';
 import type { IDataProviderOptions } from './interfaces';
 import { DirectRenderTasks } from './DirectRenderTasks';
@@ -163,7 +164,8 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.server.mappingSample((col as any).desc.column);
   }
 
-  searchAndJump(search: string | RegExp, col: Column, first?: boolean) {
+  searchAndJump(search: string | RegExp, col: Column, first?: boolean, _filterType?: EStringFilterType) {
+    // TODO: Use and implement the filterType for remote data provider. For now, maintain backward compatibility by ignoring `filterType`.
     this.server.search(search, (col as any).desc.column).then((indices) => {
       if (indices.length > 0 && first) {
         this.jumpToNearest(indices.slice(0, 1));
