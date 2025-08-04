@@ -301,3 +301,10 @@ export interface ISortCriteria {
   readonly col: Column;
   readonly asc: boolean;
 }
+
+export enum EStringFilterType {
+  contains = 'contains',
+  exact = 'exact',
+  startsWith = 'startsWith',
+  regex = 'regex',
+}

@@ -1,4 +1,4 @@
-import { createIndexArray, sortComplex, type ISequence, lazySeq, type IEventContext } from '../internal';
+import { createIndexArray, sortComplex, type ISequence, lazySeq, type IEventContext, searchText } from '../internal';
 import {
   Column,
   EDirtyReason,
@@ -14,6 +14,7 @@ import {
   CompositeColumn,
   ValueColumn,
 } from '../model';
+import { EStringFilterType } from '../model/interfaces';
 import ACommonDataProvider from './ACommonDataProvider';
 import ADataProvider from './ADataProvider';
 import type { IDataProviderOptions } from './interfaces';
@@ -614,9 +615,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return lazySeq(Array.from(indices)).map((i) => col.getRawNumber(this._dataRows[i]));
   }
 
-  searchAndJump(search: string | RegExp, col: Column, first?: boolean) {
+  searchAndJump(
+    search: string | RegExp,
+    col: Column,
+    first?: boolean,
+    filterType: EStringFilterType = EStringFilterType.contains
+  ) {
     //case insensitive search
-    const indices = this.search(search, col);
+    const indices = this.search(search, col, filterType);
     if (first && indices.length > 0) {
       this.jumpToNearest(indices.slice(0, 1));
     } else {
@@ -625,15 +631,19 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return indices;
   }
 
-  search(search: string | RegExp, col: Column): number[] {
-    search = typeof search === 'string' ? search.toLowerCase() : search;
-    const f =
-      typeof search === 'string'
-        ? (v: string) => v.toLowerCase().indexOf(search as string) >= 0
-        : (search as RegExp).test.bind(search);
+  search(search: string | RegExp, col: Column, filterType: EStringFilterType = EStringFilterType.contains): number[] {
     const indices: number[] = [];
-    for (let i = 0; i < this._dataRows.length; ++i) {
-      if (f(col.getLabel(this._dataRows[i]))) {
+    // Get the ranking of the column or the first ranking as fallback
+    const ranking = col.findMyRanker() || this.getRankings()[0];
+    if (!ranking) {
+      return indices;
+    }
+    // Get the visible row indices from the current ranking
+    const visibleIndices = ranking.getOrder();
+    for (let j = 0; j < visibleIndices.length; ++j) {
+      const i = visibleIndices[j];
+      const text = col.getLabel(this._dataRows[i]);
+      if (searchText(text, search, filterType)) {
         indices.push(i);
       }
     }

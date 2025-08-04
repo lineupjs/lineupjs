@@ -203,4 +203,24 @@ export default class LineUpBuilder {
     this.options.instanceId = instanceId;
     return this;
   }
+
+  /**
+   * option to add an additional filter (CSS selector to match or closest exist) to enable row selection, false to disable.
+   * Use the filter `.lu-renderer-rank, .lu-renderer-selection` to restrict the selection to the rank and selection column.
+   * @param filter whether to restrict the selection to specific columns
+   * @default true all cells
+   */
+  selectionActivateFilter(filter: boolean | string) {
+    this.options.selectionActivateFilter = filter;
+    return this;
+  }
+
+  /**
+   * option to enable to copy selected rows using ctrl-c
+   * @param enable enable flag
+   */
+  copyableRows(enable: boolean) {
+    this.options.copyableRows = enable;
+    return this;
+  }
 }

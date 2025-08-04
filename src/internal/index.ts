@@ -9,6 +9,7 @@ export * from './math';
 export * from './mathInterfaces';
 export { default as merge } from './merge';
 export { default as OrderedSet } from './OrderedSet';
+export * from './searchUtils';
 export * from './utils';
 export * from './worker';
 export * from './accessor';

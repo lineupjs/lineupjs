@@ -33,6 +33,7 @@ import {
   type IMappingFunctionConstructor,
   type ITypeFactory,
 } from '../model';
+import { EStringFilterType } from '../model/interfaces';
 import { models } from '../model/models';
 import { forEachIndices, everyIndices, toGroupID, unifyParents } from '../model/internal';
 import {
@@ -1041,8 +1042,15 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * hook for selecting elements matching the given arguments
    * @param search
    * @param col
+   * @param first
+   * @param filterType
    */
-  abstract searchAndJump(search: string | RegExp, col: Column, first?: boolean): number[] | void;
+  abstract searchAndJump(
+    search: string | RegExp,
+    col: Column,
+    first?: boolean,
+    filterType?: EStringFilterType
+  ): number[] | void;
 
   jumpToNearest(indices: number[]) {
     if (indices.length === 0) {

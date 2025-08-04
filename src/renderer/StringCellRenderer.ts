@@ -1,4 +1,11 @@
-import { StringColumn, Column, type IDataRow, type IOrderedGroup, type IStringFilter } from '../model';
+import {
+  StringColumn,
+  Column,
+  type IDataRow,
+  type IOrderedGroup,
+  type IStringFilter,
+  EStringFilterType,
+} from '../model';
 import { filterMissingMarkup, findFilterMissing } from '../ui/missing';
 import type {
   IRenderContext,
@@ -65,19 +72,33 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const form = node as HTMLFormElement;
     const filterMissing = findFilterMissing(node);
     const input = node.querySelector<HTMLInputElement>('input[type="text"]');
-    const isRegex = node.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    const radioButtons = node.querySelectorAll<HTMLInputElement>('input[name="searchOptions"]');
     let isInputFocused = false;
+
+    const toInput = (text: string, filterType: EStringFilterType) => {
+      const v = text.trim();
+      if (v === '') {
+        return null;
+      }
+      return filterType === EStringFilterType.regex ? new RegExp(v, 'mi') : v;
+    };
 
     const update = () => {
       const valid = input.value.trim();
+      const checkedRadio = node.querySelector<HTMLInputElement>('input[name="searchOptions"]:checked');
+      const filterType = (checkedRadio?.value as EStringFilterType) || EStringFilterType.contains;
+
       if (valid.length <= 0) {
-        const filter = filterMissing.checked ? { filter: null, filterMissing: filterMissing.checked } : null;
+        const filter = filterMissing.checked
+          ? { filter: null, filterMissing: filterMissing.checked, filterType }
+          : null;
         col.setFilter(filter);
         return;
       }
       col.setFilter({
-        filter: isRegex.checked ? new RegExp(input.value) : input.value,
+        filter: toInput(input.value, filterType),
         filterMissing: filterMissing.checked,
+        filterType,
       });
     };
 
@@ -90,7 +111,9 @@ export default class StringCellRenderer implements ICellRendererFactory {
     input.onblur = () => {
       isInputFocused = false;
     };
-    isRegex.onchange = update;
+    radioButtons.forEach((radio) => {
+      radio.onchange = update;
+    });
     form.onsubmit = (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
@@ -105,11 +128,22 @@ export default class StringCellRenderer implements ICellRendererFactory {
         return;
       }
       col = actCol;
-      const f = col.getFilter() || { filter: null, filterMissing: false };
+      const f = col.getFilter() || { filter: null, filterMissing: false, filterType: EStringFilterType.contains };
+      const currentFilterType = f.filterType || EStringFilterType.contains;
+      const isRegexFilter = f.filter instanceof RegExp;
+      const displayFilterType = isRegexFilter ? EStringFilterType.regex : currentFilterType;
       const bak = f.filter;
+
       filterMissing.checked = f.filterMissing;
       input.value = bak instanceof RegExp ? bak.source : bak || '';
-      isRegex.checked = bak instanceof RegExp;
+
+      // Update radio button selection
+      const targetRadio = node.querySelector<HTMLInputElement>(
+        `input[name="searchOptions"][value="${displayFilterType}"]`
+      );
+      if (targetRadio) {
+        targetRadio.checked = true;
+      }
     };
   }
 
@@ -123,18 +157,37 @@ export default class StringCellRenderer implements ICellRendererFactory {
         },
       };
     }
-    const f = col.getFilter() || { filter: null, filterMissing: false };
-    const bak = f.filter || '';
+    const f = col.getFilter() || { filter: null, filterMissing: false, filterType: EStringFilterType.contains };
+    const currentFilterType = f.filterType || EStringFilterType.contains;
+    const isRegexFilter = f.filter instanceof RegExp;
+    const displayFilterType = isRegexFilter ? EStringFilterType.regex : currentFilterType;
     let update: (col: StringColumn) => void;
     return {
       template: `<form><input type="text" placeholder="Filter ${context.sanitize(col.desc.label)}..." autofocus
       list="${context.idPrefix}${col.id}_dl" value="${context.sanitize(filterToString(f))}">
-          <label class="${cssClass('checkbox')}">
-            <input type="checkbox" ${bak instanceof RegExp ? 'checked="checked"' : ''}>
-            <span>Use regular expressions</span>
-          </label>
           ${filterMissingMarkup(f.filterMissing)}
-          <datalist id="${context.idPrefix}${col.id}_dl"></datalist></form>`,
+          <datalist id="${context.idPrefix}${col.id}_dl"></datalist>
+          <details class="${cssClass('string-advanced-options')}">
+            <summary>Advanced options</summary>
+            <span class="${cssClass('search-options-title')}">Find rows that &hellip;</span>
+            <label class="${cssClass('checkbox')}">
+              <input type="radio" name="searchOptions" value="${EStringFilterType.contains}" ${displayFilterType === EStringFilterType.contains ? 'checked="checked"' : ''}>
+              <span>Contain the search terms</span>
+            </label>
+            <label class="${cssClass('checkbox')}">
+              <input type="radio" name="searchOptions" value="${EStringFilterType.exact}" ${displayFilterType === EStringFilterType.exact ? 'checked="checked"' : ''}>
+              <span>Exactly match the search terms</span>
+            </label>
+            <label class="${cssClass('checkbox')}">
+              <input type="radio" name="searchOptions" value="${EStringFilterType.startsWith}" ${displayFilterType === EStringFilterType.startsWith ? 'checked="checked"' : ''}>
+              <span>Start with the search terms</span>
+            </label>
+            <label class="${cssClass('checkbox')}">
+              <input type="radio" name="searchOptions" value="${EStringFilterType.regex}" ${displayFilterType === EStringFilterType.regex ? 'checked="checked"' : ''}>
+              <span>Match as regular expression</span>
+            </label>
+          </details>
+          </form>`,
       update: (node: HTMLElement) => {
         if (!update) {
           update = StringCellRenderer.interactiveSummary(col, node);
