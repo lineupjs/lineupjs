@@ -165,7 +165,7 @@
     "lodash.get": "^4.4.2",
     "reflect-metadata": "^0.2.2"
   },
-  "packageManager": "yarn@4.5.3",
+  "packageManager": "yarn@4.11.0",
   "dependenciesMeta": {
     "@fortawesome/fontawesome-free@6.7.2": {
       "unplugged": true
