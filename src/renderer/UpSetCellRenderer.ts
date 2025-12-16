@@ -42,7 +42,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
           children[i].classList.toggle(cssClass('enabled'), v);
         }
 
-        let titleParts: string[] = [];
+        const titleParts: string[] = [];
         for (let i = 0; i < categories.length && i < value.length; i++) {
           if (categories[i] && value[i]) {
             titleParts.push(sanitize(categories[i].label));
