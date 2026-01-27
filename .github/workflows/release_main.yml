@@ -19,9 +19,9 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
       - name: Extract version
         id: extract_version
         run: |
@@ -50,11 +50,15 @@ jobs:
   npm_publish:
     needs: create_release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
       - run: npm i -g yarn
       - run: yarn config set checksumBehavior ignore
       - name: Cache Node.js modules
@@ -103,7 +107,6 @@ jobs:
           remove_path_spec: 'main,app/LineUpJS.*,app/*.ttf'
       - name: Pack Publish
         run: |
-          yarn config set npmAuthToken "${{ secrets.NPM_TOKEN }}"
           yarn pack
           yarn npm publish --tag "${{ needs.create_release.outputs.npm_tag }}"
       # - name: Upload Release Asset
