@@ -11,25 +11,29 @@
     <script src="./LineUpJS.js"></script>
     <script>
       window.onload = function () {
-    d3.csv('./groups.csv', function row(d) {
-      d.value = +d.value; // make value numerical
-      return d;
-    }, function done(error, data) {
-      if (error) throw error;
+        d3.csv(
+          './groups.csv',
+          function row(d) {
+            d.value = +d.value; // make value numerical
+            return d;
+          },
+          function done(error, data) {
+            if (error) throw error;
 
-      const desc = [
-        { column: 'id', type: 'string' },
-        { column: 'category', type: 'categorical' },
-        { column: 'value', type: 'number', domain: [0, 100] },
-      ];
-      console.log('data',data)
-      const p = new LineUpJS.LocalDataProvider(data, desc);
-      p.deriveDefault();
-      p.getLastRanking().insert(p.create(LineUpJS.createSelectionDesc()), 1);
+            const desc = [
+              { column: 'id', type: 'string' },
+              { column: 'category', type: 'categorical' },
+              { column: 'value', type: 'number', domain: [0, 100] },
+            ];
+            console.log('data', data);
+            const p = new LineUpJS.LocalDataProvider(data, desc);
+            p.deriveDefault();
+            p.getLastRanking().insert(p.create(LineUpJS.createSelectionDesc()), 1);
 
-      const lineup = new LineUpJS.Taggle(document.body, p);
-      lineup.update();
-        });
+            const lineup = new LineUpJS.Taggle(document.body, p);
+            lineup.update();
+          }
+        );
       };
     </script>
   </body>
