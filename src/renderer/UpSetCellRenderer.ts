@@ -29,20 +29,26 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
 
   private static createDOMContext(col: ISetColumn, sanitize: (v: string) => string) {
     const categories = col.categories;
-    let templateRows = '';
-    for (const cat of categories) {
-      templateRows += `<div class="${cssClass('upset-dot')}" title="${sanitize(cat.label)}"></div>`;
-    }
+
+    const templateRows = `<div class="${cssClass('upset-dot')}"></div>`.repeat(categories.length);
+
     return {
       template: `<div><div class="${cssClass('upset-line')}"></div>${templateRows}</div>`,
       render: (n: HTMLElement, value: boolean[]) => {
-        Array.from(n.children)
-          .slice(1)
-          .forEach((d, i) => {
-            const v = value[i];
-            d.classList.toggle(cssClass('enabled'), v);
-          });
+        const children = n.children;
 
+        for (let i = 1; i < children.length; i++) {
+          const v = value[i - 1];
+          children[i].classList.toggle(cssClass('enabled'), v);
+        }
+
+        const titleParts: string[] = [];
+        for (let i = 0; i < categories.length && i < value.length; i++) {
+          if (categories[i] && value[i]) {
+            titleParts.push(sanitize(categories[i].label));
+          }
+        }
+        n.title = titleParts.join(', ');
         const line = n.firstElementChild as HTMLElement;
         const left = value.findIndex((d) => d);
         const right = value.length - 1 - value.reverse().findIndex((d) => d);
