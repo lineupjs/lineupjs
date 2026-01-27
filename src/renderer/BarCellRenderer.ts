@@ -7,6 +7,7 @@ import {
   isNumberColumn,
   DEFAULT_COLOR,
   type INumberDesc,
+  NumberColumn,
 } from '../model';
 import { setText, adaptDynamicColorToBgColor, noRenderer, BIG_MARK_LIGHTNESS_FACTOR, adaptColor } from './utils';
 import { CANVAS_HEIGHT, cssClass } from '../styles';
@@ -38,8 +39,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
   create(col: INumberColumn, context: IRenderContext, imposer?: IImposer): ICellRenderer {
     const width = context.colWidth(col);
     const showMin = (col.desc as INumberDesc).showMinimumRepresentation;
+    const align = (col instanceof NumberColumn && col.alignment !== 'left') ? context.sanitize(col.alignment) : '';
     return {
-      template: `<div title="">
+      template: `<div title=""${align ? ` class="${cssClass(align)}"` : ''}>
           <div class="${cssClass('bar-label')}" style='background-color: ${DEFAULT_COLOR}'>
             <span ${this.renderValue ? '' : `class="${cssClass('hover-only')}"`}></span>
           </div>

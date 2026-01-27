@@ -2,6 +2,7 @@ import type { IAdvancedBoxPlotData, IBoxPlotData, IForEachAble } from '../intern
 import Column from './Column';
 import type { IArrayColumn } from './IArrayColumn';
 import type { IColumnDesc, IDataRow, ITypedDump, ITypeFactory } from './interfaces';
+import { EAlignment } from './StringColumn';
 
 export interface IColorMappingFunction {
   apply(v: number): string;
@@ -122,6 +123,12 @@ export interface INumberDesc extends IMapAbleDesc {
    * @default false
    */
   showMinimumRepresentation?: boolean;
+
+  /**
+   * column alignment: left, center, right
+   * @default right
+   */
+  alignment?: EAlignment;
 }
 
 /**
