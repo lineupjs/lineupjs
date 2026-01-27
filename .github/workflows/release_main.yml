@@ -109,8 +109,6 @@ jobs:
         run: |
           yarn pack
           yarn npm publish --tag "${{ needs.create_release.outputs.npm_tag }}"
-        env:
-          YARN_NPM_AUTH_TOKEN: ${{ env.NODE_AUTH_TOKEN }}
       # - name: Upload Release Asset
       #   uses: AButler/upload-release-assets@v2
       #   with:
