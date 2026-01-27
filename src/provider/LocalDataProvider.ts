@@ -554,7 +554,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     const groupLookup =
       isGroupedSortedBy && needsGroupSorting
-        ? new CompareLookup(Math.max(...groupOrder.map((g) => g.rows.length)), false, ranking)
+        ? new CompareLookup(
+            groupOrder.reduce((m, g) => Math.max(m, g.rows.length), groupOrder.length), // max(group count, row count of the largest group)
+            false,
+            ranking
+          )
         : undefined;
 
     return Promise.all(
