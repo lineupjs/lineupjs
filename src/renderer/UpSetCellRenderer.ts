@@ -31,7 +31,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     const categories = col.categories;
 
     const templateRows = `<div class="${cssClass('upset-dot')}"></div>`.repeat(categories.length);
-    
+
     return {
       template: `<div><div class="${cssClass('upset-line')}"></div>${templateRows}</div>`,
       render: (n: HTMLElement, value: boolean[]) => {
