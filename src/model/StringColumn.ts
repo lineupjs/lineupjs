@@ -252,11 +252,6 @@ export default class StringColumn extends ValueColumn<string> {
       return r !== '' && r.match(ff) != null; // You can not use RegExp.test(), because of https://stackoverflow.com/a/6891667
     }
 
-    // Handle exact match case
-    if (filterType === EStringFilterType.exact) {
-      return r !== '' && r.toLowerCase() === ff.toLowerCase();
-    }
-
     // Multi-term search for string filters
     const searchTerms = parseSearchQuery(ff);
     if (searchTerms.length > 1) {
@@ -267,6 +262,8 @@ export default class StringColumn extends ValueColumn<string> {
       const lowerText = r.toLowerCase();
       const lowerTerm = searchTerms[0].toLowerCase();
       switch (filterType) {
+        case EStringFilterType.exact:
+          return r !== '' && lowerText === lowerTerm;
         case EStringFilterType.startsWith:
           return r !== '' && lowerText.startsWith(lowerTerm);
         case EStringFilterType.contains:

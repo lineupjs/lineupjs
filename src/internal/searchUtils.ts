@@ -131,11 +131,6 @@ export function searchText(
     return true;
   }
 
-  // Handle exact match case
-  if (filterType === EStringFilterType.exact) {
-    return text.toLowerCase() === query.toLowerCase();
-  }
-
   // Multi-term search for string filters
   const searchTerms = parseSearchQuery(query);
   if (searchTerms.length > 1) {
@@ -146,6 +141,8 @@ export function searchText(
     const lowerText = text.toLowerCase();
     const lowerTerm = searchTerms[0].toLowerCase();
     switch (filterType) {
+      case EStringFilterType.exact:
+        return lowerText === lowerTerm;
       case EStringFilterType.startsWith:
         return lowerText.startsWith(lowerTerm);
       case EStringFilterType.contains:
