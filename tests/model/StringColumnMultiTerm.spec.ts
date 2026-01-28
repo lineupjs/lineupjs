@@ -147,6 +147,30 @@ describe('StringColumn Multi-term Search', () => {
       });
     });
 
+    describe('exact filter type', () => {
+      it('should match the rows with values one of the terms', () => {
+        column.setFilter({
+          filter: '"Red Apple" "orange soda"',
+          filterMissing: true,
+          filterType: EStringFilterType.exact,
+        });
+        const matches = testData.filter((row) => column.filter(row));
+        expect(matches).toHaveLength(2);
+      });
+
+      it('should not match partial terms', () => {
+        column.setFilter({ filter: 'apple', filterMissing: true, filterType: EStringFilterType.exact });
+        const matches = testData.filter((row) => column.filter(row));
+        expect(matches).toHaveLength(0);
+      });
+
+      it('should work with `,` separator', () => {
+        column.setFilter({ filter: '"apple juice","orange soda"', filterMissing: true });
+        const matches = testData.filter((row) => column.filter(row));
+        expect(matches).toHaveLength(2);
+      });
+    });
+
     describe('startsWith filter type', () => {
       it('should work with single terms', () => {
         column.setFilter({ filter: 'apple', filterMissing: true, filterType: EStringFilterType.startsWith });
