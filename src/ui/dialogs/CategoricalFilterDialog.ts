@@ -1,6 +1,7 @@
 import {
   SetColumn,
   CategoricalColumn,
+  CategoricalsColumn,
   type ICategoricalFilter,
   type ISetCategoricalFilter,
   Ranking,
@@ -17,7 +18,7 @@ export default class CategoricalFilterDialog extends ADialog {
   private readonly before: ICategoricalFilter;
 
   constructor(
-    private readonly column: CategoricalColumn | SetColumn | BooleanColumn,
+    private readonly column: CategoricalColumn | CategoricalsColumn | SetColumn | BooleanColumn,
     dialog: IDialogContext,
     private readonly ctx: IRankingHeaderContext
   ) {
@@ -73,7 +74,7 @@ export default class CategoricalFilterDialog extends ADialog {
     selectAll.onchange = () => {
       forEach(node, 'input[data-cat],input[data-missing]', (n: HTMLInputElement) => (n.checked = selectAll.checked));
     };
-    if (this.column instanceof SetColumn) {
+    if (this.column instanceof SetColumn || this.column instanceof CategoricalsColumn) {
       const some = (this.before as ISetCategoricalFilter).mode !== 'every';
       node.insertAdjacentHTML('beforeend', `<strong>Show rows where</strong>`);
       node.insertAdjacentHTML(
@@ -133,7 +134,7 @@ export default class CategoricalFilterDialog extends ADialog {
   private updateFilter(filter: string[] | null | RegExp | string, filterMissing: boolean, someMode = false) {
     const noFilter = filter == null && filterMissing === false;
     const f: ISetCategoricalFilter = { filter: filter!, filterMissing };
-    if (this.column instanceof SetColumn) {
+    if (this.column instanceof SetColumn || this.column instanceof CategoricalsColumn) {
       f.mode = someMode ? 'some' : 'every';
     }
     this.column.setFilter(noFilter ? null : f);

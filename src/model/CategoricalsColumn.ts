@@ -3,16 +3,16 @@ import type {
   ICategoricalDesc,
   ICategory,
   ICategoricalColorMappingFunction,
+  ISetCategoricalFilter,
   ICategoricalsColumn,
 } from './ICategoricalColumn';
-import type { IDataRow, ITypeFactory } from './interfaces';
+import { type IDataRow, ECompareValueType, type ITypeFactory } from './interfaces';
 import { toolbar } from './annotations';
 import CategoricalColumn from './CategoricalColumn';
 import { DEFAULT_CATEGORICAL_COLOR_FUNCTION } from './CategoricalColorMappingFunction';
 import type { dataLoaded } from './ValueColumn';
 import type ValueColumn from './ValueColumn';
-import type Column from './Column';
-import {
+import Column, {
   DEFAULT_COLOR,
   labelChanged,
   metaDataChanged,
@@ -27,8 +27,8 @@ import {
   dirtyCaches,
 } from './Column';
 import type { IEventListener, ISequence } from '../internal';
-import { toCategories } from './internalCategorical';
-import { integrateDefaults } from './internal';
+import { isCategoryIncluded, isEqualSetCategoricalFilter, toCategories } from './internalCategorical';
+import { chooseUIntByDataLength, integrateDefaults } from './internal';
 
 export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string | null>;
 
@@ -43,11 +43,22 @@ export declare function colorMappingChanged_CCS(
 ): void;
 
 /**
+ * emitted when the filter property changes
+ * @asMemberOf CategoricalsColumn
+ * @event
+ */
+export declare function filterChanged_CCS(
+  previous: ISetCategoricalFilter | null,
+  current: ISetCategoricalFilter | null
+): void;
+
+/**
  * a string column with optional alignment
  */
-@toolbar('rename', 'colorMappedCategorical')
+@toolbar('rename', 'sort', 'sortBy', 'filterCategorical', 'colorMappedCategorical')
 export default class CategoricalsColumn extends ArrayColumn<string | null> implements ICategoricalsColumn {
   static readonly EVENT_COLOR_MAPPING_CHANGED = CategoricalColumn.EVENT_COLOR_MAPPING_CHANGED;
+  static readonly EVENT_FILTER_CHANGED = CategoricalColumn.EVENT_FILTER_CHANGED;
 
   readonly categories: ICategory[];
 
@@ -55,13 +66,15 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
 
   private colorMapping: ICategoricalColorMappingFunction;
 
+  private currentFilter: ISetCategoricalFilter | null = null;
+
   constructor(id: string, desc: Readonly<ICategoricalsColumnDesc>) {
     super(
       id,
       integrateDefaults(desc, {
         renderer: 'categoricalshistogram',
-        groupRenderer: 'categoricalshistogram',
-        summaryRenderer: 'categoricalshistogram',
+        groupRenderer: 'categorical',
+        summaryRenderer: 'categorical',
       })
     );
     this.categories = toCategories(desc);
@@ -93,13 +106,16 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
   }
 
   protected createEventList() {
-    return super.createEventList().concat([CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED]);
+    return super
+      .createEventList()
+      .concat([CategoricalsColumn.EVENT_FILTER_CHANGED, CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED]);
   }
 
   on(
     type: typeof CategoricalsColumn.EVENT_COLOR_MAPPING_CHANGED,
     listener: typeof colorMappingChanged_CCS | null
   ): this;
+  on(type: typeof CategoricalsColumn.EVENT_FILTER_CHANGED, listener: typeof filterChanged_CCS | null): this;
   on(type: typeof ValueColumn.EVENT_DATA_LOADED, listener: typeof dataLoaded | null): this;
   on(type: typeof Column.EVENT_WIDTH_CHANGED, listener: typeof widthChanged | null): this;
   on(type: typeof Column.EVENT_LABEL_CHANGED, listener: typeof labelChanged | null): this;
@@ -151,8 +167,77 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
     return CategoricalColumn.prototype.setColorMapping.call(this, mapping);
   }
 
+  isFiltered() {
+    return this.currentFilter != null;
+  }
+
+  filter(row: IDataRow): boolean {
+    if (!this.currentFilter) {
+      return true;
+    }
+    const categories = this.getCategories(row).filter((d): d is ICategory => d != null);
+    if (categories.length === 0) {
+      return isCategoryIncluded(this.currentFilter, null);
+    }
+    if (this.currentFilter.mode === 'every') {
+      return categories.every((c) => isCategoryIncluded(this.currentFilter, c));
+    }
+    return categories.some((c) => isCategoryIncluded(this.currentFilter, c));
+  }
+
+  getFilter(): ISetCategoricalFilter | null {
+    return this.currentFilter == null ? null : Object.assign({}, this.currentFilter);
+  }
+
+  setFilter(filter: ISetCategoricalFilter | null) {
+    if (isEqualSetCategoricalFilter(this.currentFilter, filter)) {
+      return;
+    }
+    this.fire(
+      [CategoricalsColumn.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY],
+      this.currentFilter,
+      (this.currentFilter = filter)
+    );
+  }
+
+  clearFilter() {
+    const was = this.isFiltered();
+    this.setFilter(null);
+    return was;
+  }
+
+  toCompareValue(row: IDataRow) {
+    const categories = this.getCategories(row).filter((d): d is ICategory => d != null);
+    if (categories.length === 0) {
+      return [0, 0, ''];
+    }
+
+    // count-aware (duplicates matter): primary = total count, secondary = #unique, tie-break = stable signature
+    const counts = new Map<string, number>();
+    for (const c of categories) {
+      counts.set(c.name, (counts.get(c.name) ?? 0) + 1);
+    }
+
+    const signature = Array.from(counts.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      // fixed width so lexical order matches numeric order (e.g., 2 vs 10)
+      .map(([name, count]) => {
+        const c = String(count);
+        const padded = c.length >= 9 ? c : `000000000${c}`.slice(-9);
+        return `${name}:${padded}`;
+      })
+      .join('\u0001');
+
+    return [categories.length, counts.size, signature];
+  }
+
+  toCompareValueType() {
+    return [ECompareValueType.UINT32, chooseUIntByDataLength(this.categories.length), ECompareValueType.STRING];
+  }
+
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
+    r.filter = this.currentFilter;
     r.colorMapping = this.colorMapping.toJSON();
     return r;
   }
@@ -160,5 +245,16 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
   restore(dump: any, factory: ITypeFactory) {
     super.restore(dump, factory);
     this.colorMapping = factory.categoricalColorMappingFunction(dump.colorMapping, this.categories);
+
+    if (!('filter' in dump)) {
+      this.currentFilter = null;
+      return;
+    }
+    const bak = dump.filter;
+    if (typeof bak === 'string' || Array.isArray(bak)) {
+      this.currentFilter = { filter: bak, filterMissing: false, mode: 'some' };
+    } else {
+      this.currentFilter = bak;
+    }
   }
 }

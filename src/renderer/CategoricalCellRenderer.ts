@@ -11,6 +11,7 @@ import {
   type IOrderedGroup,
   SetColumn,
   BooleanColumn,
+  CategoricalsColumn,
 } from '../model';
 import { CANVAS_HEIGHT, cssClass, FILTERED_OPACITY } from '../styles';
 import { filterMissingNumberMarkup, updateFilterMissingNumberMarkup } from '../ui/missing';
@@ -28,7 +29,12 @@ import { color } from 'd3-color';
 import { categoricalHistogram } from './categoricalHistogram';
 
 /** @internal */
-export declare type HasCategoricalFilter = CategoricalColumn | OrdinalColumn | SetColumn | BooleanColumn;
+export declare type HasCategoricalFilter =
+  | CategoricalColumn
+  | OrdinalColumn
+  | SetColumn
+  | BooleanColumn
+  | CategoricalsColumn;
 
 export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Color & Label';
@@ -86,7 +92,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     return col instanceof CategoricalColumn ||
       col instanceof OrdinalColumn ||
       col instanceof SetColumn ||
-      col instanceof BooleanColumn
+      col instanceof BooleanColumn ||
+      col instanceof CategoricalsColumn
       ? interactiveSummary(col, context, interactive)
       : staticSummary(col, context, interactive);
   }
