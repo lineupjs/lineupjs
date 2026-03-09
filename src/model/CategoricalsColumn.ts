@@ -28,6 +28,7 @@ import {
 } from './Column';
 import type { IEventListener, ISequence } from '../internal';
 import { toCategories } from './internalCategorical';
+import { integrateDefaults } from './internal';
 
 export declare type ICategoricalsColumnDesc = ICategoricalDesc & IArrayColumnDesc<string | null>;
 
@@ -55,7 +56,14 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
   private colorMapping: ICategoricalColorMappingFunction;
 
   constructor(id: string, desc: Readonly<ICategoricalsColumnDesc>) {
-    super(id, desc);
+    super(
+      id,
+      integrateDefaults(desc, {
+        renderer: 'categoricalshistogram',
+        groupRenderer: 'categoricalshistogram',
+        summaryRenderer: 'categoricalshistogram',
+      })
+    );
     this.categories = toCategories(desc);
     this.categories.forEach((d) => this.lookup.set(d.name, d));
     this.colorMapping = DEFAULT_CATEGORICAL_COLOR_FUNCTION;
