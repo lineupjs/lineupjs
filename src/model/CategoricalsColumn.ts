@@ -180,6 +180,15 @@ export default class CategoricalsColumn extends ArrayColumn<string | null> imple
       return isCategoryIncluded(this.currentFilter, null);
     }
     if (this.currentFilter.mode === 'every') {
+      const filterObj = this.currentFilter.filter;
+      if (Array.isArray(filterObj)) {
+        if (filterObj.length === 0) {
+          return false;
+        }
+        const present = new Set(categories.map((c) => c.name));
+        return filterObj.every((name) => present.has(name));
+      }
+      // fallback for string / regex filter modes
       return categories.every((c) => isCategoryIncluded(this.currentFilter, c));
     }
     return categories.some((c) => isCategoryIncluded(this.currentFilter, c));
