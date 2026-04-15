@@ -10,6 +10,7 @@ export { default as BrightnessCellRenderer } from './BrightnessCellRenderer';
 export { default as CategoricalCellRenderer } from './CategoricalCellRenderer';
 export { default as CategoricalHeatmapCellRenderer } from './CategoricalHeatmapCellRenderer';
 export { default as CategoricalStackedDistributionlCellRenderer } from './CategoricalStackedDistributionlCellRenderer';
+export { default as CategoricalsHistogramCellRenderer } from './CategoricalsHistogramCellRenderer';
 export { default as CircleCellRenderer } from './CircleCellRenderer';
 export { default as DateCellRenderer } from './DateCellRenderer';
 export { default as DateHistogramCellRenderer } from './DateHistogramCellRenderer';

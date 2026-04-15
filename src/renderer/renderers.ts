@@ -9,6 +9,7 @@ import BrightnessCellRenderer from './BrightnessCellRenderer';
 import CategoricalCellRenderer from './CategoricalCellRenderer';
 import CategoricalHeatmapCellRenderer from './CategoricalHeatmapCellRenderer';
 import CategoricalStackedDistributionlCellRenderer from './CategoricalStackedDistributionlCellRenderer';
+import CategoricalsHistogramCellRenderer from './CategoricalsHistogramCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
 import { DefaultCellRenderer } from './DefaultCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
@@ -51,6 +52,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   brightness: new BrightnessCellRenderer(),
   catdistributionbar: new CategoricalStackedDistributionlCellRenderer(),
   categorical: new CategoricalCellRenderer(),
+  categoricalshistogram: new CategoricalsHistogramCellRenderer(),
   circle: new CircleCellRenderer(),
   date: new DateCellRenderer(),
   default: defaultCellRenderer,
