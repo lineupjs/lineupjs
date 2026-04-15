@@ -4,9 +4,9 @@ import {
   Column,
   OrdinalColumn,
   type ICategoricalColumn,
+  type ICategoricalLikeColumn,
   isCategoricalColumn,
   type IOrderedGroup,
-  type ISetColumn,
   DEFAULT_COLOR,
 } from '../model';
 import { filterMissingNumberMarkup } from '../ui/missing';
@@ -116,7 +116,7 @@ function selectedCol(value: string) {
   return c.toString();
 }
 
-function stackedBar(col: ISetColumn, sanitize: (v: string) => string) {
+function stackedBar(col: ICategoricalLikeColumn, sanitize: (v: string) => string) {
   const s = sanitize;
   const mapping = col.getColorMapping();
   const cats = col.categories.map((c) => ({
