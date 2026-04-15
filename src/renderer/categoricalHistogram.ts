@@ -67,7 +67,7 @@ export function categoricalHistogram(
         return c.toString();
       });
 
-      const maxBin = gHist ? gHist.maxBin : hist.maxBin;
+      const maxBin = Math.max(1, gHist ? gHist.maxBin : hist.maxBin);
       forEach(n, '[data-cat]', (d: HTMLElement, i) => {
         const cat = col.categories[i];
         const { count } = hist.hist[i];
@@ -76,7 +76,8 @@ export function categoricalHistogram(
           const { count: gCount } = gHist.hist[i];
           d.title = `${cat.label}: ${count} of ${gCount}`;
           inner.style.height = `${round((gCount * 100) / maxBin, 2)}%`;
-          const relY = 100 - round((count * 100) / gCount, 2);
+          const selectedRatio = gCount === 0 ? 0 : round((count * 100) / gCount, 2);
+          const relY = 100 - selectedRatio;
           inner.style.background =
             relY === 0
               ? mapping.apply(cat)
