@@ -32,7 +32,7 @@ export function parseSearchQuery(query: string): string[] {
       } else {
         // Start quote - save any current term first
         if (current.trim()) {
-          // Split by spaces/commas and add non-empty terms
+          // Split by spaces, commas, and semicolons and add non-empty terms
           current.split(/[\s,;]+/).forEach((term) => {
             if (term.trim()) {
               terms.push(term.trim());
@@ -65,7 +65,7 @@ export function parseSearchQuery(query: string): string[] {
       // Unclosed quote - treat as regular term
       terms.push(current.trim());
     } else {
-      // Split by spaces/commas and add non-empty terms
+      // Split by spaces, commas, and semicolons and add non-empty terms
       current.split(/[\s,;]+/).forEach((term) => {
         if (term.trim()) {
           terms.push(term.trim());
