@@ -82,6 +82,24 @@ describe('StringColumn Multi-term Search', () => {
       const matches = testData.filter((row) => column.filter(row));
       expect(matches).toHaveLength(6); // All items with apple OR orange
     });
+
+    it('should parse multiple semicolon-separated terms', () => {
+      column.setFilter({ filter: 'apple;banana', filterMissing: true });
+      const matches = testData.filter((row) => column.filter(row));
+      expect(matches).toHaveLength(5); // All items with apple OR banana
+    });
+
+    it('should handle whitespace and semicolons correctly', () => {
+      column.setFilter({ filter: ' apple ; orange ', filterMissing: true });
+      const matches = testData.filter((row) => column.filter(row));
+      expect(matches).toHaveLength(6); // All items with apple OR orange
+    });
+
+    it('should parse mixed separators (comma and semicolon)', () => {
+      column.setFilter({ filter: 'apple,banana;cherry', filterMissing: true });
+      const matches = testData.filter((row) => column.filter(row));
+      expect(matches).toHaveLength(6); // All items with apple OR banana OR cherry
+    });
   });
 
   describe('backward compatibility', () => {
