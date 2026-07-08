@@ -286,8 +286,8 @@ function createFilterContext(
   col: IDateColumn,
   domain: [number, number]
 ): IFilterContext<number> {
-  const f = timeFormat('%Y-%m-%d');
-  const p = timeParse('%Y-%m-%d');
+  const dateFormatter = timeFormat('%Y-%m-%d');
+  const dateParser = timeParse('%Y-%m-%d');
   const clamp = (v: number) => Math.max(0, Math.min(100, v));
   const percent = (v: number) => clamp(Math.round((100 * (v - domain[0])) / (domain[1] - domain[0])));
   const unpercent = (v: number) => (v / 100) * (domain[1] - domain[0]) + domain[0];
@@ -296,10 +296,10 @@ function createFilterContext(
     unpercent,
     domain,
     format: (v) => (Number.isNaN(v) ? '' : col.getFormatter()(new Date(v))),
-    formatRaw: (v) => (Number.isNaN(v) ? '' : f(new Date(v))),
+    formatRaw: (v) => (Number.isNaN(v) ? '' : dateFormatter(new Date(v))),
     parseRaw: (v) => {
-      const date = p(v);
-      return date == null ? NaN : date.getTime();
+      const date = dateParser(v);
+      return date === null ? NaN : date.getTime();
     },
     inputType: 'date',
     setFilter: (filterMissing, minValue, maxValue) =>
