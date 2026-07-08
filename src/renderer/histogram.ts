@@ -111,6 +111,11 @@ export interface IFilterContext<T> {
   setFilter(filterMissing: boolean, min: T, max: T): void;
   edit(value: T, attachment: HTMLElement, type: 'min' | 'max', otherValue: T): Promise<T>;
   domain: [T, T];
+  /**
+   * when enabled, handles are not draggable and a single click opens the exact-value editor
+   * @default false
+   */
+  precisionMode?: boolean;
 }
 
 /** @internal */
@@ -121,15 +126,16 @@ export interface IFilterInfo<T> {
 }
 
 export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>) {
+  const handleHint = c.precisionMode ? 'click to set exact value' : 'drag or double click to change';
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
     <div class="${cssClass('histogram-min')}" data-value="${c.format(f.filterMin)}" data-raw="${c.formatRaw(
       f.filterMin
-    )}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
+    )}" style="left: ${c.percent(f.filterMin)}%" title="min filter, ${handleHint}"></div>
     <div class="${cssClass('histogram-max')}" data-value="${c.format(f.filterMax)}" data-raw="${c.formatRaw(
       f.filterMax
-    )}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
+    )}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, ${handleHint}"></div>
     ${filterMissingNumberMarkup(f.filterMissing, 0)}
   `;
 }
@@ -164,14 +170,6 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     });
   };
 
-  min.onclick = (evt) => {
-    if (!evt.shiftKey && !evt.ctrlKey) {
-      return;
-    }
-    minImpl(evt);
-  };
-  min.ondblclick = minImpl;
-
   const maxImpl = (evt: MouseEvent) => {
     evt.preventDefault();
     evt.stopPropagation();
@@ -189,51 +187,64 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     });
   };
 
-  max.onclick = (evt) => {
-    if (!evt.shiftKey && !evt.ctrlKey) {
-      return;
-    }
-    maxImpl(evt);
-  };
-  max.ondblclick = maxImpl;
-
   filterMissing.onchange = () => setFilter();
 
-  const options: Partial<IDragHandleOptions> = {
-    minDelta: 0,
-    filter: (evt) => evt.button === 0 && !evt.shiftKey && !evt.ctrlKey,
-    onStart: (handle) => handle.classList.add(cssClass('hist-dragging')),
-    onDrag: (handle, x) => {
-      const isMin = (handle as HTMLElement).classList.contains(cssClass('histogram-min'));
-      const total = node.clientWidth;
-      const px = Math.max(0, Math.min(x, total));
-      let percent = Math.round((100 * px) / total);
-      let rawValue = context.unpercent(percent);
-      const otherValue = context.parseRaw((isMin ? max : min).dataset.raw!);
-      if ((isMin && rawValue > otherValue) || (!isMin && rawValue < otherValue)) {
-        rawValue = otherValue;
-        percent = context.percent(rawValue);
+  if (context.precisionMode) {
+    min.onclick = minImpl;
+    max.onclick = maxImpl;
+  } else {
+    min.onclick = (evt) => {
+      if (!evt.shiftKey && !evt.ctrlKey) {
+        return;
       }
-      (handle as HTMLElement).dataset.value = context.format(rawValue);
-      (handle as HTMLElement).dataset.raw = context.formatRaw(rawValue);
+      minImpl(evt);
+    };
+    min.ondblclick = minImpl;
 
-      if (isMin) {
-        handle.style.left = `${percent}%`;
-        handle.classList.toggle(cssClass('swap-hint'), percent > 15);
-        minHint.style.width = `${percent}%`;
-      } else {
-        handle.style.right = `${100 - percent}%`;
-        handle.classList.toggle(cssClass('swap-hint'), percent < 85);
-        maxHint.style.width = `${100 - percent}%`;
+    max.onclick = (evt) => {
+      if (!evt.shiftKey && !evt.ctrlKey) {
+        return;
       }
-    },
-    onEnd: (handle) => {
-      handle.classList.remove(cssClass('hist-dragging'));
-      setFilter();
-    },
-  };
-  dragHandle(min, options);
-  dragHandle(max, options);
+      maxImpl(evt);
+    };
+    max.ondblclick = maxImpl;
+
+    const options: Partial<IDragHandleOptions> = {
+      minDelta: 0,
+      filter: (evt) => evt.button === 0 && !evt.shiftKey && !evt.ctrlKey,
+      onStart: (handle) => handle.classList.add(cssClass('hist-dragging')),
+      onDrag: (handle, x) => {
+        const isMin = (handle as HTMLElement).classList.contains(cssClass('histogram-min'));
+        const total = node.clientWidth;
+        const px = Math.max(0, Math.min(x, total));
+        let percent = Math.round((100 * px) / total);
+        let rawValue = context.unpercent(percent);
+        const otherValue = context.parseRaw((isMin ? max : min).dataset.raw!);
+        if ((isMin && rawValue > otherValue) || (!isMin && rawValue < otherValue)) {
+          rawValue = otherValue;
+          percent = context.percent(rawValue);
+        }
+        (handle as HTMLElement).dataset.value = context.format(rawValue);
+        (handle as HTMLElement).dataset.raw = context.formatRaw(rawValue);
+
+        if (isMin) {
+          handle.style.left = `${percent}%`;
+          handle.classList.toggle(cssClass('swap-hint'), percent > 15);
+          minHint.style.width = `${percent}%`;
+        } else {
+          handle.style.right = `${100 - percent}%`;
+          handle.classList.toggle(cssClass('swap-hint'), percent < 85);
+          maxHint.style.width = `${100 - percent}%`;
+        }
+      },
+      onEnd: (handle) => {
+        handle.classList.remove(cssClass('hist-dragging'));
+        setFilter();
+      },
+    };
+    dragHandle(min, options);
+    dragHandle(max, options);
+  }
 
   return (missing: number, f: IFilterInfo<T>) => {
     minHint.style.width = `${context.percent(f.filterMin)}%`;
