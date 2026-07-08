@@ -104,6 +104,17 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
   }
 }
 
+.#{vars.$lu_css_prefix}-histogram.#{vars.$lu_css_prefix}-histogram-precision {
+  > .#{vars.$lu_css_prefix}-histogram-bin {
+    cursor: default;
+  }
+
+  > .#{vars.$lu_css_prefix}-histogram-min,
+  > .#{vars.$lu_css_prefix}-histogram-max {
+    cursor: pointer;
+  }
+}
+
 .#{vars.$lu_css_prefix}-histogram-max {
   right: 0;
   border-right: none;

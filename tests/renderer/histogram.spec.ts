@@ -128,6 +128,10 @@ describe('initFilter - default mode', () => {
     const max = node.querySelector('.lu-histogram-max') as HTMLElement;
     expect(max.onmousedown).toBeDefined();
   });
+
+  it('does not mark the histogram as precision mode in default mode', () => {
+    expect(node.classList.contains('lu-histogram-precision')).toBe(false);
+  });
 });
 
 describe('initFilter - precision mode', () => {
@@ -168,6 +172,10 @@ describe('initFilter - precision mode', () => {
   it('does not attach drag (mousedown) handler to max handle in precision mode', () => {
     const max = node.querySelector('.lu-histogram-max') as HTMLElement;
     expect(max.onmousedown).toBeNull();
+  });
+
+  it('marks the histogram as precision mode for cursor styling', () => {
+    expect(node.classList.contains('lu-histogram-precision')).toBe(true);
   });
 });
 

@@ -141,6 +141,7 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
 }
 
 export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
+  node.classList.toggle(cssClass('histogram-precision'), !!context.precisionMode);
   const min = node.getElementsByClassName(cssClass('histogram-min'))[0] as HTMLElement;
   const max = node.getElementsByClassName(cssClass('histogram-max'))[0] as HTMLElement;
   const minHint = node.getElementsByClassName(cssClass('histogram-min-hint'))[0] as HTMLElement;
