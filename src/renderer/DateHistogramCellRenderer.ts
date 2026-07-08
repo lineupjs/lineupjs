@@ -286,7 +286,7 @@ function createFilterContext(
   col: IDateColumn,
   domain: [number, number]
 ): IFilterContext<number> {
-  // HTML date inputs exchange values as yyyy-mm-dd strings, so keep the raw filter
+  // HTML date inputs expect values as yyyy-mm-dd strings, so keep the raw filter
   // values in the same format for the always-visible inline editors.
   const dateFormatter = timeFormat('%Y-%m-%d');
   const dateParser = timeParse('%Y-%m-%d');

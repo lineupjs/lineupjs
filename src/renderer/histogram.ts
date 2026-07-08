@@ -102,7 +102,7 @@ export function mappingHintUpdate(n: HTMLElement, range: [string, string]) {
   Array.from(n.getElementsByTagName('span')).forEach((d: HTMLElement, i) => (d.textContent = range[i]));
 }
 
-export interface IFilterContext<T> {
+export interface IFilterContext<T extends number> {
   percent(v: T): number;
   unpercent(p: number): T;
   format(v: T): string;
@@ -115,13 +115,13 @@ export interface IFilterContext<T> {
 }
 
 /** @internal */
-export interface IFilterInfo<T> {
+export interface IFilterInfo<T extends number> {
   filterMissing: boolean;
   filterMin: T;
   filterMax: T;
 }
 
-export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>) {
+export function filteredHistTemplate<T extends number>(c: IFilterContext<T>, f: IFilterInfo<T>) {
   const handleHint = 'drag to change; edit exact values below';
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
@@ -148,7 +148,7 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
   `;
 }
 
-export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
+export function initFilter<T extends number>(node: HTMLElement, context: IFilterContext<T>) {
   const min = node.getElementsByClassName(cssClass('histogram-min'))[0] as HTMLElement;
   const max = node.getElementsByClassName(cssClass('histogram-max'))[0] as HTMLElement;
   const minHint = node.getElementsByClassName(cssClass('histogram-min-hint'))[0] as HTMLElement;
@@ -163,6 +163,17 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     const maxValue = context.parseRaw(max.dataset.raw!);
     context.setFilter(filterMissing.checked, minValue, maxValue);
   };
+
+  const parseInputValue = (input: HTMLInputElement, fallback: string) => {
+    const value = context.parseRaw(input.value);
+    if (Number.isNaN(value)) {
+      input.value = fallback;
+      return null;
+    }
+    return value;
+  };
+
+  const clampValue = (value: T, lower: T, upper: T) => Math.max(lower, Math.min(value, upper)) as T;
 
   const updateInputBounds = () => {
     minInput.min = context.formatRaw(context.domain[0]);
@@ -194,24 +205,22 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   filterMissing.onchange = () => setFilter();
 
   minInput.onchange = () => {
-    const newValue = context.parseRaw(minInput.value);
-    if (Number.isNaN(newValue as number)) {
-      minInput.value = min.dataset.raw!;
+    const newValue = parseInputValue(minInput, min.dataset.raw!);
+    if (newValue == null) {
       return;
     }
     const maxValue = context.parseRaw(max.dataset.raw!);
-    updateMin(Math.max(context.domain[0] as number, Math.min(newValue as number, maxValue as number)) as T);
+    updateMin(clampValue(newValue, context.domain[0], maxValue));
     setFilter();
   };
 
   maxInput.onchange = () => {
-    const newValue = context.parseRaw(maxInput.value);
-    if (Number.isNaN(newValue as number)) {
-      maxInput.value = max.dataset.raw!;
+    const newValue = parseInputValue(maxInput, max.dataset.raw!);
+    if (newValue == null) {
       return;
     }
     const minValue = context.parseRaw(min.dataset.raw!);
-    updateMax(Math.min(context.domain[1] as number, Math.max(newValue as number, minValue as number)) as T);
+    updateMax(clampValue(newValue, minValue, context.domain[1]));
     setFilter();
   };
 
