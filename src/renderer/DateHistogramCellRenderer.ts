@@ -84,7 +84,7 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
   createSummary(col: IDateColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     const r = getHistDOMRenderer(col);
     return interactive
-      ? interactiveSummary(col, context, r.template, r.render)
+      ? interactiveSummary(col, context as IRenderContext & { flags?: ILineUpFlags }, r.template, r.render)
       : staticSummary(col, context, false, r.template, r.render);
   }
 }
@@ -122,7 +122,7 @@ function staticSummary(
 
 function interactiveSummary(
   col: IDateColumn,
-  context: IRenderContext,
+  context: IRenderContext & { readonly flags?: ILineUpFlags },
   template: string,
   render: (n: HTMLElement, stats: IDateStatistics, unfiltered?: IDateStatistics) => void
 ) {
@@ -131,8 +131,7 @@ function interactiveSummary(
     isFinite(filter.min) ? filter.min : 0,
     isFinite(filter.max) ? filter.max : 100,
   ];
-  const flags = (context as unknown as { flags?: Partial<ILineUpFlags> }).flags;
-  const precisionMode = flags?.numberFilterPrecisionMode;
+  const precisionMode = context.flags?.numberFilterPrecisionMode;
 
   template += filteredHistTemplate(
     createFilterContext(col, context, dummyDomain, precisionMode),

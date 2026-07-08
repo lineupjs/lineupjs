@@ -98,7 +98,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     const staticHist = !interactive || !isMapAbleColumn(col);
     return staticHist
       ? staticSummary(col, context, r.template, r.render)
-      : interactiveSummary(col as IMapAbleColumn, context, r.template, r.render);
+      : interactiveSummary(col as IMapAbleColumn, context as IRenderContext & { flags?: ILineUpFlags }, r.template, r.render);
   }
 }
 
@@ -135,12 +135,11 @@ function staticSummary(
 
 function interactiveSummary(
   col: IMapAbleColumn,
-  context: IRenderContext,
+  context: IRenderContext & { readonly flags?: ILineUpFlags },
   template: string,
   render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void
 ) {
-  const flags = (context as unknown as { flags?: Partial<ILineUpFlags> }).flags;
-  const fContext = createFilterContext(col, context, flags?.numberFilterPrecisionMode);
+  const fContext = createFilterContext(col, context, context.flags?.numberFilterPrecisionMode);
   template += filteredHistTemplate(fContext, createFilterInfo(col));
 
   let updateFilter: (missing: number, f: IFilterInfo<number>) => void;
