@@ -109,6 +109,14 @@ export interface IFilterContext<T> {
   formatRaw(v: T): string;
   parseRaw(v: string): T;
   setFilter(filterMissing: boolean, min: T, max: T): void;
+  /**
+   * Whether to render always-visible min/max numeric inputs below the histogram.
+   * If disabled, exact value editing can be provided through {@link IFilterContext.edit}.
+   */
+  showMinMaxInputs?: boolean;
+  /**
+   * Optional exact editor used by filters that don't render always-visible inputs.
+   */
   edit?(value: T, attachment: HTMLElement, type: 'min' | 'max', otherValue: T): Promise<T>;
   domain: [T, T];
 }
@@ -121,21 +129,26 @@ export interface IFilterInfo<T> {
 }
 
 export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>) {
+  const showMinMaxInputs = c.showMinMaxInputs === true;
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
-    <div class="${cssClass('histogram-min')}" data-raw="${c.formatRaw(f.filterMin)}" style="left: ${c.percent(
+    <div class="${cssClass('histogram-min')}" ${showMinMaxInputs ? '' : `data-value="${c.format(f.filterMin)}"`} data-raw="${c.formatRaw(
       f.filterMin
-    )}%" title="min filter, drag to change"></div>
-    <div class="${cssClass('histogram-max')}" data-raw="${c.formatRaw(f.filterMax)}" style="right: ${
-      100 - c.percent(f.filterMax)
-    }%" title="max filter, drag to change"></div>
-    <input class="${cssClass('histogram-input')} ${cssClass('histogram-min-input')}" type="number" step="any" value="${c.formatRaw(
-      f.filterMin
-    )}" title="min filter value">
+    )}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag${showMinMaxInputs ? '' : ' or double click'} to change"></div>
+    <div class="${cssClass('histogram-max')}" ${showMinMaxInputs ? '' : `data-value="${c.format(f.filterMax)}"`} data-raw="${c.formatRaw(
+      f.filterMax
+    )}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag${showMinMaxInputs ? '' : ' or double click'} to change"></div>
+    ${
+      showMinMaxInputs
+        ? `<input class="${cssClass('histogram-input')} ${cssClass('histogram-min-input')}" type="number" step="any" value="${c.formatRaw(
+            f.filterMin
+          )}" title="min filter value">
     <input class="${cssClass('histogram-input')} ${cssClass('histogram-max-input')}" type="number" step="any" value="${c.formatRaw(
       f.filterMax
-    )}" title="max filter value">
+    )}" title="max filter value">`
+        : ''
+    }
     ${filterMissingNumberMarkup(f.filterMissing, 0)}
   `;
 }
@@ -143,11 +156,15 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
 export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   const min = node.getElementsByClassName(cssClass('histogram-min'))[0] as HTMLElement;
   const max = node.getElementsByClassName(cssClass('histogram-max'))[0] as HTMLElement;
-  const minInput = node.getElementsByClassName(cssClass('histogram-min-input'))[0] as HTMLInputElement;
-  const maxInput = node.getElementsByClassName(cssClass('histogram-max-input'))[0] as HTMLInputElement;
+  const minInput = node.getElementsByClassName(cssClass('histogram-min-input'))[0] as HTMLInputElement | undefined;
+  const maxInput = node.getElementsByClassName(cssClass('histogram-max-input'))[0] as HTMLInputElement | undefined;
+  const showMinMaxInputs = Boolean(minInput && maxInput);
   const minHint = node.getElementsByClassName(cssClass('histogram-min-hint'))[0] as HTMLElement;
   const maxHint = node.getElementsByClassName(cssClass('histogram-max-hint'))[0] as HTMLElement;
-  const filterMissing = node.querySelector<HTMLInputElement>(`label.${cssClass('checkbox')} > input[type=checkbox]`)!;
+  const filterMissing = node.querySelector<HTMLInputElement>(`label.${cssClass('checkbox')} > input[type=checkbox]`);
+  if (!filterMissing) {
+    throw new Error('number/date filter checkbox is missing');
+  }
 
   const setFilter = () => {
     const minValue = context.parseRaw(min.dataset.raw!);
@@ -157,48 +174,100 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   const updateMin = (newValue: T) => {
     minHint.style.width = `${context.percent(newValue)}%`;
     min.dataset.raw = context.formatRaw(newValue);
-    minInput.value = context.formatRaw(newValue);
+    if (minInput) {
+      minInput.value = context.formatRaw(newValue);
+    }
     min.style.left = `${context.percent(newValue)}%`;
     min.classList.toggle(cssClass('swap-hint'), context.percent(newValue) > 15);
   };
   const updateMax = (newValue: T) => {
     maxHint.style.width = `${100 - context.percent(newValue)}%`;
     max.dataset.raw = context.formatRaw(newValue);
-    maxInput.value = context.formatRaw(newValue);
+    if (maxInput) {
+      maxInput.value = context.formatRaw(newValue);
+    }
     max.style.right = `${100 - context.percent(newValue)}%`;
     max.classList.toggle(cssClass('swap-hint'), context.percent(newValue) < 85);
   };
 
-  const minInputChange = () => {
-    const rawInput = context.parseRaw(minInput.value);
-    const currentMin = context.parseRaw(min.dataset.raw!);
-    const currentMax = context.parseRaw(max.dataset.raw!);
-    if (Number.isNaN(rawInput as number)) {
-      minInput.value = context.formatRaw(currentMin);
-      return;
-    }
-    const bounded = Math.max(context.domain[0] as number, Math.min(rawInput as number, currentMax as number)) as T;
-    updateMin(bounded);
-    setFilter();
-  };
+  if (showMinMaxInputs) {
+    // Always-visible min/max inputs are enabled only for numeric filters.
+    const ensureNumber = (value: T) => (typeof value === 'number' ? value : Number(value));
+    const minInputChange = () => {
+      const rawInput = context.parseRaw(minInput.value);
+      const currentMin = context.parseRaw(min.dataset.raw!);
+      const currentMax = context.parseRaw(max.dataset.raw!);
+      const rawValue = ensureNumber(rawInput);
+      if (Number.isNaN(rawValue)) {
+        minInput.value = context.formatRaw(currentMin);
+        return;
+      }
+      const bounded = Math.max(ensureNumber(context.domain[0]), Math.min(rawValue, ensureNumber(currentMax))) as T;
+      updateMin(bounded);
+      setFilter();
+    };
 
-  const maxInputChange = () => {
-    const rawInput = context.parseRaw(maxInput.value);
-    const currentMin = context.parseRaw(min.dataset.raw!);
-    const currentMax = context.parseRaw(max.dataset.raw!);
-    if (Number.isNaN(rawInput as number)) {
-      maxInput.value = context.formatRaw(currentMax);
-      return;
-    }
-    const bounded = Math.max(currentMin as number, Math.min(rawInput as number, context.domain[1] as number)) as T;
-    updateMax(bounded);
-    setFilter();
-  };
+    const maxInputChange = () => {
+      const rawInput = context.parseRaw(maxInput.value);
+      const currentMin = context.parseRaw(min.dataset.raw!);
+      const currentMax = context.parseRaw(max.dataset.raw!);
+      const rawValue = ensureNumber(rawInput);
+      if (Number.isNaN(rawValue)) {
+        maxInput.value = context.formatRaw(currentMax);
+        return;
+      }
+      const bounded = Math.max(ensureNumber(currentMin), Math.min(rawValue, ensureNumber(context.domain[1]))) as T;
+      updateMax(bounded);
+      setFilter();
+    };
 
-  minInput.onchange = () => minInputChange();
-  minInput.onblur = () => minInputChange();
-  maxInput.onchange = () => maxInputChange();
-  maxInput.onblur = () => maxInputChange();
+    minInput.onchange = () => minInputChange();
+    minInput.onblur = () => minInputChange();
+    maxInput.onchange = () => maxInputChange();
+    maxInput.onblur = () => maxInputChange();
+  } else if (context.edit) {
+    const minImpl = (evt: MouseEvent) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      const value = context.parseRaw(min.dataset.raw!);
+      const maxValue = context.parseRaw(max.dataset.raw!);
+
+      context.edit!(value, min, 'min', maxValue).then((newValue) => {
+        updateMin(newValue);
+        setFilter();
+      });
+    };
+
+    min.onclick = (evt) => {
+      if (!evt.shiftKey && !evt.ctrlKey) {
+        return;
+      }
+      minImpl(evt);
+    };
+    min.ondblclick = minImpl;
+
+    const maxImpl = (evt: MouseEvent) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      const value = context.parseRaw(max.dataset.raw!);
+      const minValue = context.parseRaw(min.dataset.raw!);
+
+      context.edit!(value, max, 'max', minValue).then((newValue) => {
+        updateMax(newValue);
+        setFilter();
+      });
+    };
+
+    max.onclick = (evt) => {
+      if (!evt.shiftKey && !evt.ctrlKey) {
+        return;
+      }
+      maxImpl(evt);
+    };
+    max.ondblclick = maxImpl;
+  }
 
   filterMissing.onchange = () => setFilter();
 

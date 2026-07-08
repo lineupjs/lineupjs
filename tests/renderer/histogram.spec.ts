@@ -17,9 +17,14 @@ function createContext(setFilter: (filterMissing: boolean, min: number, max: num
     format: (v) => v.toFixed(2),
     formatRaw: String,
     parseRaw: Number.parseFloat,
+    showMinMaxInputs: true,
     setFilter,
     domain: [0, 10],
   };
+}
+
+function getLastFilterCall(setFilter: jest.Mock) {
+  return setFilter.mock.calls[setFilter.mock.calls.length - 1] as [boolean, number, number];
 }
 
 describe('histogram number filter', () => {
@@ -31,7 +36,7 @@ describe('histogram number filter', () => {
     const node = document.createElement('div');
     node.innerHTML = filteredHistTemplate(createContext(jest.fn()), {
       filterMissing: false,
-      filterMin: 1.23456879,
+      filterMin: 1.23456789,
       filterMax: 9.87654321,
     });
 
@@ -42,7 +47,7 @@ describe('histogram number filter', () => {
 
     expect(minInput).not.toBeNull();
     expect(maxInput).not.toBeNull();
-    expect(minInput.value).toBe('1.23456879');
+    expect(minInput.value).toBe('1.23456789');
     expect(maxInput.value).toBe('9.87654321');
     expect(minHandle.hasAttribute('data-value')).toBe(false);
     expect(maxHandle.hasAttribute('data-value')).toBe(false);
@@ -64,17 +69,25 @@ describe('histogram number filter', () => {
     minInput.value = '8.123456789';
     minInput.dispatchEvent(new Event('change'));
 
-    let [, minValue, maxValue] = setFilter.mock.calls[setFilter.mock.calls.length - 1];
+    let [, minValue, maxValue] = getLastFilterCall(setFilter);
     expect(minValue).toBeCloseTo(8.123456789);
     expect(maxValue).toBe(9);
 
     maxInput.value = '7';
     maxInput.dispatchEvent(new Event('change'));
 
-    [, minValue, maxValue] = setFilter.mock.calls[setFilter.mock.calls.length - 1];
+    [, minValue, maxValue] = getLastFilterCall(setFilter);
     expect(minValue).toBeCloseTo(8.123456789);
     expect(maxValue).toBeCloseTo(8.123456789);
     expect(maxInput.value).toBe('8.123456789');
+
+    minInput.value = '-1';
+    minInput.dispatchEvent(new Event('change'));
+
+    [, minValue, maxValue] = getLastFilterCall(setFilter);
+    expect(minValue).toBe(0);
+    expect(maxValue).toBeCloseTo(8.123456789);
+    expect(minInput.value).toBe('0');
   });
 
   it('keeps drag handles working and clamps crossing drags', () => {
@@ -98,7 +111,7 @@ describe('histogram number filter', () => {
     dragOptions.onDrag(minHandle, 95);
     dragOptions.onEnd(minHandle);
 
-    const [, minValue, maxValue] = setFilter.mock.calls[setFilter.mock.calls.length - 1];
+    const [, minValue, maxValue] = getLastFilterCall(setFilter);
     expect(minValue).toBe(9);
     expect(maxValue).toBe(9);
   });
