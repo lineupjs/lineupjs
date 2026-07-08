@@ -33,6 +33,7 @@ export default class NumberFilterDialog extends ADialog {
         idPrefix: this.ctx.idPrefix,
         tasks: this.ctx.provider.getTaskExecutor(),
         sanitize: this.ctx.sanitize,
+        flags: this.ctx.flags,
       },
       this.showLivePreviews()
     );

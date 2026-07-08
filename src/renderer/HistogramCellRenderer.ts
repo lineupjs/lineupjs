@@ -38,6 +38,7 @@ import {
 } from './histogram';
 import { noNumberFilter } from '../model/internalNumber';
 import type DialogManager from '../ui/dialogs/DialogManager';
+import type { ILineUpFlags } from '../config';
 
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';
@@ -138,7 +139,8 @@ function interactiveSummary(
   template: string,
   render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void
 ) {
-  const fContext = createFilterContext(col, context);
+  const flags = (context as unknown as { flags?: Partial<ILineUpFlags> }).flags;
+  const fContext = createFilterContext(col, context, flags?.numberFilterPrecisionMode);
   template += filteredHistTemplate(fContext, createFilterInfo(col));
 
   let updateFilter: (missing: number, f: IFilterInfo<number>) => void;
@@ -172,11 +174,17 @@ function interactiveSummary(
 export function createNumberFilter(
   col: INumberColumn & IMapAbleColumn,
   parent: HTMLElement,
-  context: { idPrefix: string; dialogManager: DialogManager; tasks: IRenderTasks; sanitize: (v: string) => string },
+  context: {
+    idPrefix: string;
+    dialogManager: DialogManager;
+    tasks: IRenderTasks;
+    sanitize: (v: string) => string;
+    flags?: Partial<ILineUpFlags>;
+  },
   livePreviews: boolean
 ) {
   const renderer = getHistDOMRenderer(col);
-  const fContext = createFilterContext(col, context);
+  const fContext = createFilterContext(col, context, context.flags?.numberFilterPrecisionMode);
 
   parent.innerHTML = `${renderer.template}${filteredHistTemplate(fContext, createFilterInfo(col))}</div>`;
   const summaryNode = parent.firstElementChild! as HTMLElement;
@@ -276,7 +284,8 @@ function createFilterInfo(col: IMapAbleColumn, filter = col.getFilter()): IFilte
 
 function createFilterContext(
   col: IMapAbleColumn,
-  context: { idPrefix: string; dialogManager: DialogManager; sanitize: (v: string) => string }
+  context: { idPrefix: string; dialogManager: DialogManager; sanitize: (v: string) => string },
+  precisionMode?: boolean
 ): IFilterContext<number> {
   const domain = col.getMapping().domain;
   const format = col.getNumberFormat();
@@ -290,6 +299,7 @@ function createFilterContext(
     format,
     formatRaw: String,
     parseRaw: Number.parseFloat,
+    precisionMode: precisionMode ?? false,
     setFilter: (filterMissing, minValue, maxValue) =>
       col.setFilter({
         filterMissing,

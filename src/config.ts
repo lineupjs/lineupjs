@@ -55,6 +55,12 @@ export interface ILineUpFlags {
    * @default true
    */
   combineViaDragNDrop: boolean;
+  /**
+   * when enabled, number (and date) filter handles are not draggable and a single click
+   * opens the exact-value editor instead of requiring a double-click or modifier key.
+   * @default false
+   */
+  numberFilterPrecisionMode: boolean;
 }
 
 export interface IToolbarLookup<T> {
@@ -321,6 +327,7 @@ export function defaultOptions(): ITaggleOptions {
       advancedModelFeatures: true,
       advancedUIFeatures: true,
       combineViaDragNDrop: true,
+      numberFilterPrecisionMode: false,
     },
 
     ignoreUnsupportedBrowser: false,

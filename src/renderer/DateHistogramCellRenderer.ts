@@ -34,6 +34,7 @@ import {
 import InputDateDialog from '../ui/dialogs/InputDateDialog';
 import { shiftFilterDateDay, noDateFilter } from '../model/internalDate';
 import type DialogManager from '../ui/dialogs/DialogManager';
+import type { ILineUpFlags } from '../config';
 
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';
@@ -130,8 +131,13 @@ function interactiveSummary(
     isFinite(filter.min) ? filter.min : 0,
     isFinite(filter.max) ? filter.max : 100,
   ];
+  const flags = (context as unknown as { flags?: Partial<ILineUpFlags> }).flags;
+  const precisionMode = flags?.numberFilterPrecisionMode;
 
-  template += filteredHistTemplate(createFilterContext(col, context, dummyDomain), createFilterInfo(col, dummyDomain));
+  template += filteredHistTemplate(
+    createFilterContext(col, context, dummyDomain, precisionMode),
+    createFilterInfo(col, dummyDomain)
+  );
 
   let fContext: IFilterContext<number>;
   let updateFilter: (missing: number, f: IFilterInfo<number>) => void;
@@ -149,7 +155,7 @@ function interactiveSummary(
             data.min ? data.min.getTime() : Date.now(),
             data.max ? data.max.getTime() : Date.now(),
           ];
-          fContext = createFilterContext(col, context, domain);
+          fContext = createFilterContext(col, context, domain, precisionMode);
           updateFilter = initFilter(node, fContext);
         }
 
@@ -170,15 +176,22 @@ function interactiveSummary(
 export function createDateFilter(
   col: IDateColumn,
   parent: HTMLElement,
-  context: { idPrefix: string; dialogManager: DialogManager; tasks: IRenderTasks; sanitize: (v: string) => string },
+  context: {
+    idPrefix: string;
+    dialogManager: DialogManager;
+    tasks: IRenderTasks;
+    sanitize: (v: string) => string;
+    flags?: Partial<ILineUpFlags>;
+  },
   livePreviews: boolean
 ) {
   const renderer = getHistDOMRenderer(col);
   const filter = col.getFilter();
+  const precisionMode = context.flags?.numberFilterPrecisionMode;
 
   let domain: [number, number] = [isFinite(filter.min) ? filter.min : 0, isFinite(filter.max) ? filter.max : 100];
 
-  let fContext = createFilterContext(col, context, domain);
+  let fContext = createFilterContext(col, context, domain, precisionMode);
   let applyFilter = fContext.setFilter;
   let currentFilter = createFilterInfo(col, domain);
   fContext.setFilter = (filterMissing, min, max) => {
@@ -198,7 +211,7 @@ export function createDateFilter(
   const prepareRender = (min: Date | null, max: Date | null) => {
     // reinit with proper domain
     domain = [min ? min.getTime() : Date.now(), max ? max.getTime() : Date.now()];
-    fContext = createFilterContext(col, context, domain);
+    fContext = createFilterContext(col, context, domain, precisionMode);
     applyFilter = fContext.setFilter;
     currentFilter = createFilterInfo(col, domain);
     fContext.setFilter = (filterMissing, min, max) => {
@@ -287,7 +300,8 @@ function createFilterInfo(col: IDateColumn, domain: [number, number], filter = c
 function createFilterContext(
   col: IDateColumn,
   context: { idPrefix: string; dialogManager: DialogManager; sanitize: (v: string) => string },
-  domain: [number, number]
+  domain: [number, number],
+  precisionMode?: boolean
 ): IFilterContext<number> {
   const clamp = (v: number) => Math.max(0, Math.min(100, v));
   const percent = (v: number) => clamp(Math.round((100 * (v - domain[0])) / (domain[1] - domain[0])));
@@ -299,6 +313,7 @@ function createFilterContext(
     format: (v) => (Number.isNaN(v) ? '' : col.getFormatter()(new Date(v))),
     formatRaw: String,
     parseRaw: (v) => Number.parseInt(v, 10),
+    precisionMode: precisionMode ?? false,
     setFilter: (filterMissing, minValue, maxValue) =>
       col.setFilter({
         filterMissing,
