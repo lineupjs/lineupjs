@@ -92,27 +92,6 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
   transition: border-width 0.2s ease;
   width: 1px;
   cursor: ew-resize;
-
-  &::before {
-    content: attr(data-value);
-    position: absolute;
-    bottom: -15px;
-    width: vars.$lu_histogram_drag_hint_width;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-}
-
-.#{vars.$lu_css_prefix}-histogram.#{vars.$lu_css_prefix}-histogram-precision {
-  > .#{vars.$lu_css_prefix}-histogram-bin {
-    cursor: default;
-  }
-
-  > .#{vars.$lu_css_prefix}-histogram-min,
-  > .#{vars.$lu_css_prefix}-histogram-max {
-    cursor: pointer;
-  }
 }
 
 .#{vars.$lu_css_prefix}-histogram-max {
@@ -122,11 +101,19 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
   border-left: 1px solid black;
 }
 
-.#{vars.$lu_css_prefix}-histogram-min.#{vars.$lu_css_prefix}-swap-hint,
-.#{vars.$lu_css_prefix}-histogram-max:not(.#{vars.$lu_css_prefix}-swap-hint) {
-  &::before {
-    left: -(vars.$lu_histogram_drag_hint_width);
-    text-align: right;
+.#{vars.$lu_css_prefix}-histogram-filter-inputs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2.2em;
+  display: flex;
+  gap: 0.4em;
+  align-items: center;
+
+  > input {
+    min-width: 0;
+    width: 50%;
+    font-size: x-small;
   }
 }
 
@@ -150,7 +137,7 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
 }
 
 .#{vars.$lu_css_prefix}-histogram.#{vars.$lu_css_prefix}-histogram-i {
-  margin-bottom: 3.75em;
+  margin-bottom: 5em;
 
   &:hover {
     > .#{vars.$lu_css_prefix}-histogram-min {

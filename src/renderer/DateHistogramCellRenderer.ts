@@ -1,4 +1,5 @@
 import { dateStatsBuilder, type IDateStatistics } from '../internal';
+import { timeFormat, timeParse } from 'd3-time-format';
 import {
   Column,
   type IDataRow,
@@ -31,10 +32,7 @@ import {
   filteredHistTemplate,
   initFilter,
 } from './histogram';
-import InputDateDialog from '../ui/dialogs/InputDateDialog';
 import { shiftFilterDateDay, noDateFilter } from '../model/internalDate';
-import type DialogManager from '../ui/dialogs/DialogManager';
-import type { ILineUpFlags } from '../config';
 
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';
@@ -83,9 +81,7 @@ export default class DateHistogramCellRenderer implements ICellRendererFactory {
 
   createSummary(col: IDateColumn, context: IRenderContext, interactive: boolean): ISummaryRenderer {
     const r = getHistDOMRenderer(col);
-    return interactive
-      ? interactiveSummary(col, context as IRenderContext & { flags?: Partial<ILineUpFlags> }, r.template, r.render)
-      : staticSummary(col, context, false, r.template, r.render);
+    return interactive ? interactiveSummary(col, context, r.template, r.render) : staticSummary(col, context, false, r.template, r.render);
   }
 }
 
@@ -122,7 +118,7 @@ function staticSummary(
 
 function interactiveSummary(
   col: IDateColumn,
-  context: IRenderContext & { readonly flags?: Partial<ILineUpFlags> },
+  context: IRenderContext,
   template: string,
   render: (n: HTMLElement, stats: IDateStatistics, unfiltered?: IDateStatistics) => void
 ) {
@@ -131,12 +127,7 @@ function interactiveSummary(
     isFinite(filter.min) ? filter.min : 0,
     isFinite(filter.max) ? filter.max : 100,
   ];
-  const precisionMode = context.flags?.numberFilterPrecisionMode;
-
-  template += filteredHistTemplate(
-    createFilterContext(col, context, dummyDomain, precisionMode),
-    createFilterInfo(col, dummyDomain)
-  );
+  template += filteredHistTemplate(createFilterContext(col, dummyDomain), createFilterInfo(col, dummyDomain));
 
   let fContext: IFilterContext<number>;
   let updateFilter: (missing: number, f: IFilterInfo<number>) => void;
@@ -154,7 +145,7 @@ function interactiveSummary(
             data.min ? data.min.getTime() : Date.now(),
             data.max ? data.max.getTime() : Date.now(),
           ];
-          fContext = createFilterContext(col, context, domain, precisionMode);
+          fContext = createFilterContext(col, domain);
           updateFilter = initFilter(node, fContext);
         }
 
@@ -176,21 +167,16 @@ export function createDateFilter(
   col: IDateColumn,
   parent: HTMLElement,
   context: {
-    idPrefix: string;
-    dialogManager: DialogManager;
     tasks: IRenderTasks;
-    sanitize: (v: string) => string;
-    flags?: Partial<ILineUpFlags>;
   },
   livePreviews: boolean
 ) {
   const renderer = getHistDOMRenderer(col);
   const filter = col.getFilter();
-  const precisionMode = context.flags?.numberFilterPrecisionMode;
 
   let domain: [number, number] = [isFinite(filter.min) ? filter.min : 0, isFinite(filter.max) ? filter.max : 100];
 
-  let fContext = createFilterContext(col, context, domain, precisionMode);
+  let fContext = createFilterContext(col, domain);
   let applyFilter = fContext.setFilter;
   let currentFilter = createFilterInfo(col, domain);
   fContext.setFilter = (filterMissing, min, max) => {
@@ -210,7 +196,7 @@ export function createDateFilter(
   const prepareRender = (min: Date | null, max: Date | null) => {
     // reinit with proper domain
     domain = [min ? min.getTime() : Date.now(), max ? max.getTime() : Date.now()];
-    fContext = createFilterContext(col, context, domain, precisionMode);
+    fContext = createFilterContext(col, domain);
     applyFilter = fContext.setFilter;
     currentFilter = createFilterInfo(col, domain);
     fContext.setFilter = (filterMissing, min, max) => {
@@ -298,10 +284,10 @@ function createFilterInfo(col: IDateColumn, domain: [number, number], filter = c
 
 function createFilterContext(
   col: IDateColumn,
-  context: { idPrefix: string; dialogManager: DialogManager; sanitize: (v: string) => string },
-  domain: [number, number],
-  precisionMode?: boolean
+  domain: [number, number]
 ): IFilterContext<number> {
+  const f = timeFormat('%Y-%m-%d');
+  const p = timeParse('%Y-%m-%d');
   const clamp = (v: number) => Math.max(0, Math.min(100, v));
   const percent = (v: number) => clamp(Math.round((100 * (v - domain[0])) / (domain[1] - domain[0])));
   const unpercent = (v: number) => (v / 100) * (domain[1] - domain[0]) + domain[0];
@@ -310,40 +296,17 @@ function createFilterContext(
     unpercent,
     domain,
     format: (v) => (Number.isNaN(v) ? '' : col.getFormatter()(new Date(v))),
-    formatRaw: String,
-    parseRaw: (v) => Number.parseInt(v, 10),
-    precisionMode: precisionMode ?? false,
+    formatRaw: (v) => (Number.isNaN(v) ? '' : f(new Date(v))),
+    parseRaw: (v) => {
+      const date = p(v);
+      return date == null ? NaN : date.getTime();
+    },
+    inputType: 'date',
     setFilter: (filterMissing, minValue, maxValue) =>
       col.setFilter({
         filterMissing,
         min: Math.abs(minValue - domain[0]) < 0.001 ? Number.NEGATIVE_INFINITY : shiftFilterDateDay(minValue, 'min'),
         max: Math.abs(maxValue - domain[1]) < 0.001 ? Number.POSITIVE_INFINITY : shiftFilterDateDay(maxValue, 'max'),
       }),
-    edit: (value, attachment, type, otherValue) => {
-      return new Promise((resolve) => {
-        const dialogCtx = {
-          attachment,
-          manager: context.dialogManager,
-          level: context.dialogManager.maxLevel + 1,
-          idPrefix: context.idPrefix,
-          sanitize: context.sanitize,
-        };
-        const dialog = new InputDateDialog(
-          dialogCtx,
-          (d) => resolve(d == null ? NaN : shiftFilterDateDay(d.getTime(), type)),
-          {
-            value: Number.isNaN(value) ? null : new Date(value),
-            [type === 'min' ? 'max' : 'min']: Number.isNaN(otherValue) ? null : new Date(otherValue),
-          }
-        );
-        const cleanUp = dialog.cleanUp.bind(dialog);
-        attachment.dataset.editing = 'true';
-        dialog.cleanUp = (action) => {
-          delete attachment.dataset.editing;
-          cleanUp(action);
-        };
-        dialog.open();
-      });
-    },
   };
 }

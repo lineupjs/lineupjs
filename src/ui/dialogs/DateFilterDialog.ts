@@ -29,11 +29,7 @@ export default class DateFilterDialog extends ADialog {
       this.column,
       node,
       {
-        dialogManager: this.ctx.dialogManager,
-        idPrefix: this.ctx.idPrefix,
         tasks: this.ctx.provider.getTaskExecutor(),
-        sanitize: this.ctx.sanitize,
-        flags: this.ctx.flags,
       },
       this.showLivePreviews()
     );

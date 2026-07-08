@@ -196,15 +196,6 @@ export default class LineUpBuilder {
   }
 
   /**
-   * enables precision mode for number (and date) filter handles:
-   * handles are not draggable and hovering opens the exact-value editor.
-   */
-  enableNumberFilterPrecisionMode() {
-    this.options.flags!.numberFilterPrecisionMode = true;
-    return this;
-  }
-
-  /**
    * identifier for this LineUp instance. by default a random id is generated.
    * @default random string
    */

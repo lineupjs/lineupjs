@@ -109,13 +109,9 @@ export interface IFilterContext<T> {
   formatRaw(v: T): string;
   parseRaw(v: string): T;
   setFilter(filterMissing: boolean, min: T, max: T): void;
-  edit(value: T, attachment: HTMLElement, type: 'min' | 'max', otherValue: T): Promise<T>;
+  inputType: 'number' | 'date';
+  inputStep?: string;
   domain: [T, T];
-  /**
-   * when enabled, handles are not draggable and a single click opens the exact-value editor
-   * @default false
-   */
-  precisionMode?: boolean;
 }
 
 /** @internal */
@@ -126,7 +122,7 @@ export interface IFilterInfo<T> {
 }
 
 export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>) {
-  const handleHint = c.precisionMode ? 'hover or click to set exact value' : 'drag or double click to change';
+  const handleHint = 'drag to change; edit exact values below';
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
@@ -136,17 +132,32 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
     <div class="${cssClass('histogram-max')}" data-value="${c.format(f.filterMax)}" data-raw="${c.formatRaw(
       f.filterMax
     )}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, ${handleHint}"></div>
+    <div class="${cssClass('histogram-filter-inputs')}">
+      <input class="${cssClass('histogram-filter-input')} ${cssClass('histogram-filter-input-min')}" type="${
+        c.inputType
+      }" value="${c.formatRaw(f.filterMin)}" min="${c.formatRaw(c.domain[0])}" max="${c.formatRaw(
+        f.filterMax
+      )}"${c.inputStep ? ` step="${c.inputStep}"` : ''}>
+      <input class="${cssClass('histogram-filter-input')} ${cssClass('histogram-filter-input-max')}" type="${
+        c.inputType
+      }" value="${c.formatRaw(f.filterMax)}" min="${c.formatRaw(f.filterMin)}" max="${c.formatRaw(
+        c.domain[1]
+      )}"${c.inputStep ? ` step="${c.inputStep}"` : ''}>
+    </div>
     ${filterMissingNumberMarkup(f.filterMissing, 0)}
   `;
 }
 
 export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
-  node.classList.toggle(cssClass('histogram-precision'), !!context.precisionMode);
   const min = node.getElementsByClassName(cssClass('histogram-min'))[0] as HTMLElement;
   const max = node.getElementsByClassName(cssClass('histogram-max'))[0] as HTMLElement;
   const minHint = node.getElementsByClassName(cssClass('histogram-min-hint'))[0] as HTMLElement;
   const maxHint = node.getElementsByClassName(cssClass('histogram-max-hint'))[0] as HTMLElement;
-  const filterMissing = node.getElementsByTagName('input')[0] as HTMLInputElement;
+  const minInput = node.getElementsByClassName(cssClass('histogram-filter-input-min'))[0] as HTMLInputElement;
+  const maxInput = node.getElementsByClassName(cssClass('histogram-filter-input-max'))[0] as HTMLInputElement;
+  const filterMissing = node.querySelector<HTMLElement>(`.${cssClass('checkbox')}`)!.getElementsByTagName(
+    'input'
+  )[0] as HTMLInputElement;
 
   const setFilter = () => {
     const minValue = context.parseRaw(min.dataset.raw!);
@@ -154,126 +165,92 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     context.setFilter(filterMissing.checked, minValue, maxValue);
   };
 
-  const minImpl = (evt: MouseEvent) => {
-    evt.preventDefault();
-    evt.stopPropagation();
-
-    const value = context.parseRaw(min.dataset.raw!);
-    const maxValue = context.parseRaw(max.dataset.raw!);
-
-    context.edit(value, min, 'min', maxValue).then((newValue) => {
-      minHint.style.width = `${context.percent(newValue)}%`;
-      min.dataset.value = context.format(newValue);
-      min.dataset.raw = context.formatRaw(newValue);
-      min.style.left = `${context.percent(newValue)}%`;
-      min.classList.toggle(cssClass('swap-hint'), context.percent(newValue) > 15);
-      setFilter();
-    });
+  const updateInputBounds = () => {
+    minInput.min = context.formatRaw(context.domain[0]);
+    minInput.max = max.dataset.raw!;
+    maxInput.min = min.dataset.raw!;
+    maxInput.max = context.formatRaw(context.domain[1]);
   };
 
-  const maxImpl = (evt: MouseEvent) => {
-    evt.preventDefault();
-    evt.stopPropagation();
+  const updateMin = (newValue: T) => {
+    const percent = context.percent(newValue);
+    minHint.style.width = `${percent}%`;
+    min.dataset.value = context.format(newValue);
+    min.dataset.raw = context.formatRaw(newValue);
+    min.style.left = `${percent}%`;
+    minInput.value = context.formatRaw(newValue);
+    updateInputBounds();
+  };
 
-    const value = context.parseRaw(max.dataset.raw!);
-    const minValue = context.parseRaw(min.dataset.raw!);
-
-    context.edit(value, max, 'max', minValue).then((newValue) => {
-      maxHint.style.width = `${100 - context.percent(newValue)}%`;
-      max.dataset.value = context.format(newValue);
-      max.dataset.raw = context.formatRaw(newValue);
-      max.style.right = `${100 - context.percent(newValue)}%`;
-      max.classList.toggle(cssClass('swap-hint'), context.percent(newValue) < 85);
-      setFilter();
-    });
+  const updateMax = (newValue: T) => {
+    const percent = context.percent(newValue);
+    maxHint.style.width = `${100 - percent}%`;
+    max.dataset.value = context.format(newValue);
+    max.dataset.raw = context.formatRaw(newValue);
+    max.style.right = `${100 - percent}%`;
+    maxInput.value = context.formatRaw(newValue);
+    updateInputBounds();
   };
 
   filterMissing.onchange = () => setFilter();
 
-  if (context.precisionMode) {
-    min.onmouseenter = minImpl;
-    min.onclick = (evt) => {
-      if (min.dataset.editing === 'true') {
-        evt.preventDefault();
-        evt.stopPropagation();
-        return;
-      }
-      minImpl(evt);
-    };
-    max.onmouseenter = maxImpl;
-    max.onclick = (evt) => {
-      if (max.dataset.editing === 'true') {
-        evt.preventDefault();
-        evt.stopPropagation();
-        return;
-      }
-      maxImpl(evt);
-    };
-  } else {
-    min.onclick = (evt) => {
-      if (!evt.shiftKey && !evt.ctrlKey) {
-        return;
-      }
-      minImpl(evt);
-    };
-    min.ondblclick = minImpl;
+  minInput.onchange = () => {
+    const newValue = context.parseRaw(minInput.value);
+    if (Number.isNaN(newValue as number)) {
+      minInput.value = min.dataset.raw!;
+      return;
+    }
+    const maxValue = context.parseRaw(max.dataset.raw!);
+    updateMin(newValue > maxValue ? maxValue : newValue < context.domain[0] ? context.domain[0] : newValue);
+    setFilter();
+  };
 
-    max.onclick = (evt) => {
-      if (!evt.shiftKey && !evt.ctrlKey) {
-        return;
+  maxInput.onchange = () => {
+    const newValue = context.parseRaw(maxInput.value);
+    if (Number.isNaN(newValue as number)) {
+      maxInput.value = max.dataset.raw!;
+      return;
+    }
+    const minValue = context.parseRaw(min.dataset.raw!);
+    updateMax(newValue < minValue ? minValue : newValue > context.domain[1] ? context.domain[1] : newValue);
+    setFilter();
+  };
+
+  const options: Partial<IDragHandleOptions> = {
+    minDelta: 0,
+    filter: (evt) => evt.button === 0 && !evt.shiftKey && !evt.ctrlKey,
+    onStart: (handle) => handle.classList.add(cssClass('hist-dragging')),
+    onDrag: (handle, x) => {
+      const isMin = (handle as HTMLElement).classList.contains(cssClass('histogram-min'));
+      const total = node.clientWidth;
+      const px = Math.max(0, Math.min(x, total));
+      let percent = Math.round((100 * px) / total);
+      let rawValue = context.unpercent(percent);
+      const otherValue = context.parseRaw((isMin ? max : min).dataset.raw!);
+      if ((isMin && rawValue > otherValue) || (!isMin && rawValue < otherValue)) {
+        rawValue = otherValue;
+        percent = context.percent(rawValue);
       }
-      maxImpl(evt);
-    };
-    max.ondblclick = maxImpl;
 
-    const options: Partial<IDragHandleOptions> = {
-      minDelta: 0,
-      filter: (evt) => evt.button === 0 && !evt.shiftKey && !evt.ctrlKey,
-      onStart: (handle) => handle.classList.add(cssClass('hist-dragging')),
-      onDrag: (handle, x) => {
-        const isMin = (handle as HTMLElement).classList.contains(cssClass('histogram-min'));
-        const total = node.clientWidth;
-        const px = Math.max(0, Math.min(x, total));
-        let percent = Math.round((100 * px) / total);
-        let rawValue = context.unpercent(percent);
-        const otherValue = context.parseRaw((isMin ? max : min).dataset.raw!);
-        if ((isMin && rawValue > otherValue) || (!isMin && rawValue < otherValue)) {
-          rawValue = otherValue;
-          percent = context.percent(rawValue);
-        }
-        (handle as HTMLElement).dataset.value = context.format(rawValue);
-        (handle as HTMLElement).dataset.raw = context.formatRaw(rawValue);
+      if (isMin) {
+        updateMin(rawValue);
+      } else {
+        updateMax(rawValue);
+      }
+    },
+    onEnd: (handle) => {
+      handle.classList.remove(cssClass('hist-dragging'));
+      setFilter();
+    },
+  };
+  dragHandle(min, options);
+  dragHandle(max, options);
 
-        if (isMin) {
-          handle.style.left = `${percent}%`;
-          handle.classList.toggle(cssClass('swap-hint'), percent > 15);
-          minHint.style.width = `${percent}%`;
-        } else {
-          handle.style.right = `${100 - percent}%`;
-          handle.classList.toggle(cssClass('swap-hint'), percent < 85);
-          maxHint.style.width = `${100 - percent}%`;
-        }
-      },
-      onEnd: (handle) => {
-        handle.classList.remove(cssClass('hist-dragging'));
-        setFilter();
-      },
-    };
-    dragHandle(min, options);
-    dragHandle(max, options);
-  }
+  updateInputBounds();
 
   return (missing: number, f: IFilterInfo<T>) => {
-    minHint.style.width = `${context.percent(f.filterMin)}%`;
-    maxHint.style.width = `${100 - context.percent(f.filterMax)}%`;
-    min.dataset.value = context.format(f.filterMin);
-    max.dataset.value = context.format(f.filterMax);
-    min.dataset.raw = context.formatRaw(f.filterMin);
-    max.dataset.raw = context.formatRaw(f.filterMax);
-    min.style.left = `${context.percent(f.filterMin)}%`;
-    max.style.right = `${100 - context.percent(f.filterMax)}%`;
-    min.classList.toggle(cssClass('swap-hint'), context.percent(f.filterMin) > 15);
-    max.classList.toggle(cssClass('swap-hint'), context.percent(f.filterMax) < 85);
+    updateMin(f.filterMin);
+    updateMax(f.filterMax);
     filterMissing.checked = f.filterMissing;
     updateFilterMissingNumberMarkup(filterMissing.parentElement as HTMLElement, missing);
   };

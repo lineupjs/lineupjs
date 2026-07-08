@@ -11,7 +11,6 @@ import {
   isMapAbleColumn,
   Ranking,
 } from '../model';
-import InputNumberDialog from '../ui/dialogs/InputNumberDialog';
 import { colorOf } from './impose';
 import {
   type IRenderContext,
@@ -37,8 +36,6 @@ import {
   initFilter,
 } from './histogram';
 import { noNumberFilter } from '../model/internalNumber';
-import type DialogManager from '../ui/dialogs/DialogManager';
-import type { ILineUpFlags } from '../config';
 
 export default class HistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';
@@ -98,7 +95,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     const staticHist = !interactive || !isMapAbleColumn(col);
     return staticHist
       ? staticSummary(col, context, r.template, r.render)
-      : interactiveSummary(col as IMapAbleColumn, context as IRenderContext & { flags?: Partial<ILineUpFlags> }, r.template, r.render);
+      : interactiveSummary(col as IMapAbleColumn, context, r.template, r.render);
   }
 }
 
@@ -135,11 +132,11 @@ function staticSummary(
 
 function interactiveSummary(
   col: IMapAbleColumn,
-  context: IRenderContext & { readonly flags?: Partial<ILineUpFlags> },
+  context: IRenderContext,
   template: string,
   render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void
 ) {
-  const fContext = createFilterContext(col, context, context.flags?.numberFilterPrecisionMode);
+  const fContext = createFilterContext(col);
   template += filteredHistTemplate(fContext, createFilterInfo(col));
 
   let updateFilter: (missing: number, f: IFilterInfo<number>) => void;
@@ -174,16 +171,12 @@ export function createNumberFilter(
   col: INumberColumn & IMapAbleColumn,
   parent: HTMLElement,
   context: {
-    idPrefix: string;
-    dialogManager: DialogManager;
     tasks: IRenderTasks;
-    sanitize: (v: string) => string;
-    flags?: Partial<ILineUpFlags>;
   },
   livePreviews: boolean
 ) {
   const renderer = getHistDOMRenderer(col);
-  const fContext = createFilterContext(col, context, context.flags?.numberFilterPrecisionMode);
+  const fContext = createFilterContext(col);
 
   parent.innerHTML = `${renderer.template}${filteredHistTemplate(fContext, createFilterInfo(col))}</div>`;
   const summaryNode = parent.firstElementChild! as HTMLElement;
@@ -282,9 +275,7 @@ function createFilterInfo(col: IMapAbleColumn, filter = col.getFilter()): IFilte
 }
 
 function createFilterContext(
-  col: IMapAbleColumn,
-  context: { idPrefix: string; dialogManager: DialogManager; sanitize: (v: string) => string },
-  precisionMode?: boolean
+  col: IMapAbleColumn
 ): IFilterContext<number> {
   const domain = col.getMapping().domain;
   const format = col.getNumberFormat();
@@ -298,35 +289,13 @@ function createFilterContext(
     format,
     formatRaw: String,
     parseRaw: Number.parseFloat,
-    precisionMode: precisionMode ?? false,
+    inputType: 'number',
+    inputStep: 'any',
     setFilter: (filterMissing, minValue, maxValue) =>
       col.setFilter({
         filterMissing,
         min: minValue === domain[0] ? Number.NEGATIVE_INFINITY : minValue,
         max: maxValue === domain[1] ? Number.POSITIVE_INFINITY : maxValue,
       }),
-    edit: (value, attachment, type, otherValue) => {
-      return new Promise((resolve) => {
-        const dialogCtx = {
-          attachment,
-          manager: context.dialogManager,
-          level: context.dialogManager.maxLevel + 1,
-          idPrefix: context.idPrefix,
-          sanitize: context.sanitize,
-        };
-        const dialog = new InputNumberDialog(dialogCtx, resolve, {
-          value,
-          min: type === 'max' && !Number.isNaN(otherValue) ? Math.min(domain[0], otherValue) : domain[0],
-          max: type === 'min' && !Number.isNaN(otherValue) ? Math.max(domain[1], otherValue) : domain[1],
-        });
-        const cleanUp = dialog.cleanUp.bind(dialog);
-        attachment.dataset.editing = 'true';
-        dialog.cleanUp = (action) => {
-          delete attachment.dataset.editing;
-          cleanUp(action);
-        };
-        dialog.open();
-      });
-    },
   };
 }
