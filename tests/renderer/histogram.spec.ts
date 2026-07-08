@@ -17,7 +17,6 @@ function createContext(setFilter: (filterMissing: boolean, min: number, max: num
     format: (v) => v.toFixed(2),
     formatRaw: String,
     parseRaw: Number.parseFloat,
-    showMinMaxInputs: true,
     setFilter,
     domain: [0, 10],
   };
@@ -42,11 +41,15 @@ describe('histogram number filter', () => {
 
     const minInput = node.querySelector(`.${cssClass('histogram-min-input')}`) as HTMLInputElement;
     const maxInput = node.querySelector(`.${cssClass('histogram-max-input')}`) as HTMLInputElement;
+    const minLabel = node.querySelector(`.${cssClass('histogram-min-input-label')}`) as HTMLElement;
+    const maxLabel = node.querySelector(`.${cssClass('histogram-max-input-label')}`) as HTMLElement;
     const minHandle = node.querySelector(`.${cssClass('histogram-min')}`) as HTMLElement;
     const maxHandle = node.querySelector(`.${cssClass('histogram-max')}`) as HTMLElement;
 
     expect(minInput).not.toBeNull();
     expect(maxInput).not.toBeNull();
+    expect(minLabel.textContent).toBe('Min');
+    expect(maxLabel.textContent).toBe('Max');
     expect(minInput.value).toBe('1.23456789');
     expect(maxInput.value).toBe('9.87654321');
     expect(minHandle.hasAttribute('data-value')).toBe(false);

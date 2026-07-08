@@ -286,7 +286,6 @@ function createFilterContext(col: IMapAbleColumn): IFilterContext<number> {
     format,
     formatRaw: String,
     parseRaw: Number.parseFloat,
-    showMinMaxInputs: true,
     setFilter: (filterMissing, minValue, maxValue) =>
       col.setFilter({
         filterMissing,
