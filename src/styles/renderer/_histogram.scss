@@ -145,8 +145,16 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
     position: absolute;
     bottom: -3.3em;
     width: calc(50% - 0.5em);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+    line-height: 1;
     font-size: 0.75em;
     color: #777;
+  }
+
+  > .#{vars.$lu_css_prefix}-histogram-input-label > .#{vars.$lu_css_prefix}-histogram-input {
+    width: 100%;
   }
 
   > .#{vars.$lu_css_prefix}-histogram-min-input-label {
@@ -157,21 +165,15 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
   > .#{vars.$lu_css_prefix}-histogram-max-input-label {
     right: 0;
     text-align: right;
+    align-items: flex-end;
   }
 
-  > .#{vars.$lu_css_prefix}-histogram-input {
-    position: absolute;
-    bottom: -1.75em;
-    width: calc(50% - 0.5em);
-  }
-
-  > .#{vars.$lu_css_prefix}-histogram-min-input {
+  .#{vars.$lu_css_prefix}-histogram-min-input {
     left: 0;
     text-align: left;
   }
 
-  > .#{vars.$lu_css_prefix}-histogram-max-input {
-    right: 0;
+  .#{vars.$lu_css_prefix}-histogram-max-input {
     text-align: right;
   }
 

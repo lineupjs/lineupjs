@@ -16,8 +16,8 @@ import {
   type IRenderContext,
   type ICellRenderer,
   type IGroupCellRenderer,
-  type IRenderTasks,
   type ISummaryRenderer,
+  type IRenderTasks,
 } from './interfaces';
 import { renderMissingDOM } from './missing';
 import { colorOf } from './utils';
@@ -168,7 +168,7 @@ function interactiveSummary(
 export function createDateFilter(
   col: IDateColumn,
   parent: HTMLElement,
-  context: { idPrefix: string; dialogManager: unknown; tasks: IRenderTasks; sanitize: (v: string) => string },
+  context: { tasks: IRenderTasks },
   livePreviews: boolean
 ) {
   const renderer = getHistDOMRenderer(col);

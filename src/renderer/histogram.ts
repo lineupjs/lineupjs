@@ -129,14 +129,16 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
     <div class="${cssClass('histogram-max')}" data-raw="${c.formatRaw(f.filterMax)}" style="right: ${
       100 - c.percent(f.filterMax)
     }%" title="max filter, drag to change"></div>
-    <span class="${cssClass('histogram-input-label')} ${cssClass('histogram-min-input-label')}">Min</span>
-    <span class="${cssClass('histogram-input-label')} ${cssClass('histogram-max-input-label')}">Max</span>
-    <input class="${cssClass('histogram-input')} ${cssClass('histogram-min-input')}" type="number" step="any" value="${c.formatRaw(
-      f.filterMin
-    )}" title="min filter value">
-    <input class="${cssClass('histogram-input')} ${cssClass('histogram-max-input')}" type="number" step="any" value="${c.formatRaw(
-      f.filterMax
-    )}" title="max filter value">
+    <label class="${cssClass('histogram-input-label')} ${cssClass('histogram-min-input-label')}">Min
+      <input class="${cssClass('histogram-input')} ${cssClass('histogram-min-input')}" type="number" step="any" value="${c.formatRaw(
+        f.filterMin
+      )}" title="min filter value">
+    </label>
+    <label class="${cssClass('histogram-input-label')} ${cssClass('histogram-max-input-label')}">Max
+      <input class="${cssClass('histogram-input')} ${cssClass('histogram-max-input')}" type="number" step="any" value="${c.formatRaw(
+        f.filterMax
+      )}" title="max filter value">
+    </label>
     ${filterMissingNumberMarkup(f.filterMissing, 0)}
   `;
 }

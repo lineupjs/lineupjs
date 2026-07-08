@@ -48,8 +48,8 @@ describe('histogram number filter', () => {
 
     expect(minInput).not.toBeNull();
     expect(maxInput).not.toBeNull();
-    expect(minLabel.textContent).toBe('Min');
-    expect(maxLabel.textContent).toBe('Max');
+    expect(minLabel.textContent?.trim()).toBe('Min');
+    expect(maxLabel.textContent?.trim()).toBe('Max');
     expect(minInput.value).toBe('1.23456789');
     expect(maxInput.value).toBe('9.87654321');
     expect(minHandle.hasAttribute('data-value')).toBe(false);
