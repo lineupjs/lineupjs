@@ -155,9 +155,8 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   const maxHint = node.getElementsByClassName(cssClass('histogram-max-hint'))[0] as HTMLElement;
   const minInput = node.getElementsByClassName(cssClass('histogram-filter-input-min'))[0] as HTMLInputElement;
   const maxInput = node.getElementsByClassName(cssClass('histogram-filter-input-max'))[0] as HTMLInputElement;
-  const filterMissing = node.querySelector<HTMLElement>(`.${cssClass('checkbox')}`)!.getElementsByTagName(
-    'input'
-  )[0] as HTMLInputElement;
+  const filterMissingCheckbox = node.querySelector<HTMLElement>(`.${cssClass('checkbox')}`)!;
+  const filterMissing = filterMissingCheckbox.getElementsByTagName('input')[0] as HTMLInputElement;
 
   const setFilter = () => {
     const minValue = context.parseRaw(min.dataset.raw!);
@@ -201,7 +200,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
       return;
     }
     const maxValue = context.parseRaw(max.dataset.raw!);
-    updateMin(newValue > maxValue ? maxValue : newValue < context.domain[0] ? context.domain[0] : newValue);
+    updateMin(Math.max(context.domain[0] as number, Math.min(newValue as number, maxValue as number)) as T);
     setFilter();
   };
 
@@ -212,7 +211,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
       return;
     }
     const minValue = context.parseRaw(min.dataset.raw!);
-    updateMax(newValue < minValue ? minValue : newValue > context.domain[1] ? context.domain[1] : newValue);
+    updateMax(Math.min(context.domain[1] as number, Math.max(newValue as number, minValue as number)) as T);
     setFilter();
   };
 
