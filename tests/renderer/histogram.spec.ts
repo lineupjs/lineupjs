@@ -25,7 +25,7 @@ function createFilterInfo(): IFilterInfo<number> {
 
 function buildHistogramDOM(context: IFilterContext<number>, info: IFilterInfo<number>): HTMLElement {
   const node = document.createElement('div');
-  node.innerHTML = `${filteredHistTemplate(context, info)}</div>`;
+  node.innerHTML = filteredHistTemplate(context, info);
   return node;
 }
 
