@@ -98,7 +98,7 @@ export default class HistogramCellRenderer implements ICellRendererFactory {
     const staticHist = !interactive || !isMapAbleColumn(col);
     return staticHist
       ? staticSummary(col, context, r.template, r.render)
-      : interactiveSummary(col as IMapAbleColumn, context as IRenderContext & { flags?: ILineUpFlags }, r.template, r.render);
+      : interactiveSummary(col as IMapAbleColumn, context as IRenderContext & { flags?: Partial<ILineUpFlags> }, r.template, r.render);
   }
 }
 
@@ -135,7 +135,7 @@ function staticSummary(
 
 function interactiveSummary(
   col: IMapAbleColumn,
-  context: IRenderContext & { readonly flags?: ILineUpFlags },
+  context: IRenderContext & { readonly flags?: Partial<ILineUpFlags> },
   template: string,
   render: (n: HTMLElement, stats: IStatistics, unfiltered?: IStatistics) => void
 ) {
