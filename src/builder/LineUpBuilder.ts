@@ -197,7 +197,7 @@ export default class LineUpBuilder {
 
   /**
    * enables precision mode for number (and date) filter handles:
-   * handles are not draggable and a single click opens the exact-value editor.
+   * handles are not draggable and hovering opens the exact-value editor.
    */
   enableNumberFilterPrecisionMode() {
     this.options.flags!.numberFilterPrecisionMode = true;

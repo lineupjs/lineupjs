@@ -126,7 +126,7 @@ export interface IFilterInfo<T> {
 }
 
 export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>) {
-  const handleHint = c.precisionMode ? 'click to set exact value' : 'drag or double click to change';
+  const handleHint = c.precisionMode ? 'hover to set exact value' : 'drag or double click to change';
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
@@ -191,8 +191,8 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   filterMissing.onchange = () => setFilter();
 
   if (context.precisionMode) {
-    min.onclick = minImpl;
-    max.onclick = maxImpl;
+    min.onmouseenter = minImpl;
+    max.onmouseenter = maxImpl;
   } else {
     min.onclick = (evt) => {
       if (!evt.shiftKey && !evt.ctrlKey) {
