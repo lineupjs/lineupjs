@@ -336,6 +336,12 @@ function createFilterContext(
             [type === 'min' ? 'max' : 'min']: Number.isNaN(otherValue) ? null : new Date(otherValue),
           }
         );
+        const cleanUp = dialog.cleanUp.bind(dialog);
+        attachment.dataset.editing = 'true';
+        dialog.cleanUp = (action) => {
+          delete attachment.dataset.editing;
+          cleanUp(action);
+        };
         dialog.open();
       });
     },

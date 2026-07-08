@@ -38,11 +38,11 @@ describe('filteredHistTemplate', () => {
     expect(html).not.toContain('hover to set exact value');
   });
 
-  it('shows "hover to set exact value" hint in precision mode', () => {
+  it('shows "hover or click to set exact value" hint in precision mode', () => {
     const ctx = createFilterContext(true);
     const info = createFilterInfo();
     const html = filteredHistTemplate(ctx, info);
-    expect(html).toContain('hover to set exact value');
+    expect(html).toContain('hover or click to set exact value');
     expect(html).not.toContain('drag or double click to change');
   });
 
@@ -150,11 +150,11 @@ describe('initFilter - precision mode', () => {
     document.body.removeChild(node);
   });
 
-  it('does not open editor on single click on min handle in precision mode', () => {
+  it('opens editor on single click on min handle in precision mode', () => {
     const min = node.querySelector('.lu-histogram-min') as HTMLElement;
     const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
     min.dispatchEvent(evt);
-    expect(context.edit).not.toHaveBeenCalled();
+    expect(context.edit).toHaveBeenCalledWith(expect.any(Number), min, 'min', expect.any(Number));
   });
 
   it('opens editor on hover on min handle in precision mode', () => {
@@ -164,11 +164,11 @@ describe('initFilter - precision mode', () => {
     expect(context.edit).toHaveBeenCalledWith(expect.any(Number), min, 'min', expect.any(Number));
   });
 
-  it('does not open editor on single click on max handle in precision mode', () => {
+  it('opens editor on single click on max handle in precision mode', () => {
     const max = node.querySelector('.lu-histogram-max') as HTMLElement;
     const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
     max.dispatchEvent(evt);
-    expect(context.edit).not.toHaveBeenCalled();
+    expect(context.edit).toHaveBeenCalledWith(expect.any(Number), max, 'max', expect.any(Number));
   });
 
   it('opens editor on hover on max handle in precision mode', () => {
@@ -176,6 +176,22 @@ describe('initFilter - precision mode', () => {
     const evt = new MouseEvent('mouseenter', { cancelable: true });
     max.dispatchEvent(evt);
     expect(context.edit).toHaveBeenCalledWith(expect.any(Number), max, 'max', expect.any(Number));
+  });
+
+  it('does not reopen the min editor on click while it is already open in precision mode', () => {
+    const min = node.querySelector('.lu-histogram-min') as HTMLElement;
+    min.dataset.editing = 'true';
+    const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+    min.dispatchEvent(evt);
+    expect(context.edit).not.toHaveBeenCalled();
+  });
+
+  it('does not reopen the max editor on click while it is already open in precision mode', () => {
+    const max = node.querySelector('.lu-histogram-max') as HTMLElement;
+    max.dataset.editing = 'true';
+    const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+    max.dispatchEvent(evt);
+    expect(context.edit).not.toHaveBeenCalled();
   });
 
   it('does not attach drag (mousedown) handler to min handle in precision mode', () => {

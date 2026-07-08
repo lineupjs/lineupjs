@@ -319,6 +319,12 @@ function createFilterContext(
           min: type === 'max' && !Number.isNaN(otherValue) ? Math.min(domain[0], otherValue) : domain[0],
           max: type === 'min' && !Number.isNaN(otherValue) ? Math.max(domain[1], otherValue) : domain[1],
         });
+        const cleanUp = dialog.cleanUp.bind(dialog);
+        attachment.dataset.editing = 'true';
+        dialog.cleanUp = (action) => {
+          delete attachment.dataset.editing;
+          cleanUp(action);
+        };
         dialog.open();
       });
     },
