@@ -159,7 +159,7 @@ describe('initFilter - precision mode', () => {
 
   it('opens editor on hover on min handle in precision mode', () => {
     const min = node.querySelector('.lu-histogram-min') as HTMLElement;
-    const evt = new MouseEvent('mouseenter', { bubbles: false, cancelable: true });
+    const evt = new MouseEvent('mouseenter', { cancelable: true });
     min.dispatchEvent(evt);
     expect(context.edit).toHaveBeenCalledWith(expect.any(Number), min, 'min', expect.any(Number));
   });
@@ -173,7 +173,7 @@ describe('initFilter - precision mode', () => {
 
   it('opens editor on hover on max handle in precision mode', () => {
     const max = node.querySelector('.lu-histogram-max') as HTMLElement;
-    const evt = new MouseEvent('mouseenter', { bubbles: false, cancelable: true });
+    const evt = new MouseEvent('mouseenter', { cancelable: true });
     max.dispatchEvent(evt);
     expect(context.edit).toHaveBeenCalledWith(expect.any(Number), max, 'max', expect.any(Number));
   });
