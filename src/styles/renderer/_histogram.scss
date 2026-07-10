@@ -10,7 +10,7 @@
 
   .#{vars.$lu_css_prefix}-checkbox {
     position: absolute;
-    bottom: -45px;
+    bottom: -7em;
   }
 
   &.#{vars.$lu_css_prefix}-dense {
@@ -139,18 +139,14 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
 }
 
 .#{vars.$lu_css_prefix}-histogram.#{vars.$lu_css_prefix}-histogram-i {
-  margin-bottom: 4.75em;
+  margin-bottom: 6.8em;
 
   > .#{vars.$lu_css_prefix}-histogram-input-label {
     position: absolute;
     bottom: -3.3em;
-    width: calc(50% - 0.5em);
+    width: calc(40% - .5em);
     display: flex;
     flex-direction: column;
-    gap: 0.25em;
-    line-height: 1;
-    font-size: 0.75em;
-    color: #777;
   }
 
   > .#{vars.$lu_css_prefix}-histogram-input-label > .#{vars.$lu_css_prefix}-histogram-input {
