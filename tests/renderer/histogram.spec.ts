@@ -93,7 +93,7 @@ describe('histogram number filter', () => {
     expect(minInput.value).toBe('0');
   });
 
-  it('keeps dialog key handling from closing on Enter in min/max inputs', () => {
+  it('prevents dialog from closing when Enter is pressed in min/max inputs', () => {
     const setFilter = jest.fn();
     const node = document.createElement('div');
     node.innerHTML = filteredHistTemplate(createContext(setFilter), {
@@ -113,6 +113,7 @@ describe('histogram number filter', () => {
     const dispatched = minInput.dispatchEvent(enterEvent);
 
     expect(dispatched).toBe(false);
+    expect(enterEvent.defaultPrevented).toBe(true);
     expect(parentKeydown).not.toHaveBeenCalled();
 
     const [, minValue, maxValue] = getLastFilterCall(setFilter);
