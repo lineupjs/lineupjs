@@ -204,10 +204,21 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     setFilter();
   };
 
+  const onInputEnter = (evt: KeyboardEvent, apply: () => void) => {
+    if (evt.key !== 'Enter') {
+      return;
+    }
+    evt.preventDefault();
+    evt.stopPropagation();
+    apply();
+  };
+
   minInput.onchange = () => minInputChange();
   minInput.onblur = () => minInputChange();
+  minInput.onkeydown = (evt) => onInputEnter(evt, minInputChange);
   maxInput.onchange = () => maxInputChange();
   maxInput.onblur = () => maxInputChange();
+  maxInput.onkeydown = (evt) => onInputEnter(evt, maxInputChange);
 
   filterMissing.onchange = () => setFilter();
 

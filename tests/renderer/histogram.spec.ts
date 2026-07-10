@@ -93,6 +93,33 @@ describe('histogram number filter', () => {
     expect(minInput.value).toBe('0');
   });
 
+  it('keeps dialog key handling from closing on Enter in min/max inputs', () => {
+    const setFilter = jest.fn();
+    const node = document.createElement('div');
+    node.innerHTML = filteredHistTemplate(createContext(setFilter), {
+      filterMissing: false,
+      filterMin: 1,
+      filterMax: 9,
+    });
+    initFilter(node, createContext(setFilter));
+
+    const minInput = node.querySelector(`.${cssClass('histogram-min-input')}`) as HTMLInputElement;
+    minInput.value = '2.5';
+
+    const parentKeydown = jest.fn();
+    node.addEventListener('keydown', parentKeydown);
+
+    const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    const dispatched = minInput.dispatchEvent(enterEvent);
+
+    expect(dispatched).toBe(false);
+    expect(parentKeydown).not.toHaveBeenCalled();
+
+    const [, minValue, maxValue] = getLastFilterCall(setFilter);
+    expect(minValue).toBe(2.5);
+    expect(maxValue).toBe(9);
+  });
+
   it('keeps drag handles working and clamps crossing drags', () => {
     const setFilter = jest.fn();
     const node = document.createElement('div');
