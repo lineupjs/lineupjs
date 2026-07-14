@@ -194,10 +194,9 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   };
 
   const maxInputChange = () => {
-    const rawInput = context.parseRaw(maxInput.value);
     const currentMin = context.parseRaw(min.dataset.raw!);
     const currentMax = context.parseRaw(max.dataset.raw!);
-    const rawValue = ensureNumber(rawInput);
+    const rawValue = maxInput.value.trim() === '' ? NaN : Number(maxInput.value);
     if (Number.isNaN(rawValue)) {
       maxInput.value = context.formatRaw(currentMax);
       return;
