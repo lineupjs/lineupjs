@@ -163,14 +163,18 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   const updateMin = (newValue: T) => {
     minHint.style.width = `${context.percent(newValue)}%`;
     min.dataset.raw = context.formatRaw(newValue);
-    minInput.value = context.formatRaw(newValue);
+    if (document.activeElement !== minInput) {
+      minInput.value = context.formatRaw(newValue);
+    }
     min.style.left = `${context.percent(newValue)}%`;
     min.classList.toggle(cssClass('swap-hint'), context.percent(newValue) > 15);
   };
   const updateMax = (newValue: T) => {
     maxHint.style.width = `${100 - context.percent(newValue)}%`;
     max.dataset.raw = context.formatRaw(newValue);
-    maxInput.value = context.formatRaw(newValue);
+    if (document.activeElement !== maxInput) {
+      maxInput.value = context.formatRaw(newValue);
+    }
     max.style.right = `${100 - context.percent(newValue)}%`;
     max.classList.toggle(cssClass('swap-hint'), context.percent(newValue) < 85);
   };
@@ -214,10 +218,8 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   };
 
   minInput.onchange = () => minInputChange();
-  minInput.onblur = () => minInputChange();
   minInput.onkeydown = (evt) => onInputEnter(evt, minInputChange);
   maxInput.onchange = () => maxInputChange();
-  maxInput.onblur = () => maxInputChange();
   maxInput.onkeydown = (evt) => onInputEnter(evt, maxInputChange);
 
   filterMissing.onchange = () => setFilter();
