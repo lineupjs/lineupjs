@@ -44,4 +44,8 @@
     flex-direction: column;
     height: auto;
   }
+
+  &.#{vars.$lu_css_prefix}-histogram > .#{vars.$lu_css_prefix}-checkbox {
+    bottom: -6.3em;
+  }
 }

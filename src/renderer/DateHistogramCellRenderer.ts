@@ -31,9 +31,7 @@ import {
   filteredHistTemplate,
   initFilter,
 } from './histogram';
-import InputDateDialog from '../ui/dialogs/InputDateDialog';
 import { shiftFilterDateDay, noDateFilter } from '../model/internalDate';
-import type DialogManager from '../ui/dialogs/DialogManager';
 
 export default class DateHistogramCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Histogram';
@@ -131,7 +129,7 @@ function interactiveSummary(
     isFinite(filter.max) ? filter.max : 100,
   ];
 
-  template += filteredHistTemplate(createFilterContext(col, context, dummyDomain), createFilterInfo(col, dummyDomain));
+  template += filteredHistTemplate(createFilterContext(col, dummyDomain), createFilterInfo(col, dummyDomain));
 
   let fContext: IFilterContext<number>;
   let updateFilter: (missing: number, f: IFilterInfo<number>) => void;
@@ -149,7 +147,7 @@ function interactiveSummary(
             data.min ? data.min.getTime() : Date.now(),
             data.max ? data.max.getTime() : Date.now(),
           ];
-          fContext = createFilterContext(col, context, domain);
+          fContext = createFilterContext(col, domain);
           updateFilter = initFilter(node, fContext);
         }
 
@@ -170,7 +168,7 @@ function interactiveSummary(
 export function createDateFilter(
   col: IDateColumn,
   parent: HTMLElement,
-  context: { idPrefix: string; dialogManager: DialogManager; tasks: IRenderTasks; sanitize: (v: string) => string },
+  context: { tasks: IRenderTasks },
   livePreviews: boolean
 ) {
   const renderer = getHistDOMRenderer(col);
@@ -178,7 +176,7 @@ export function createDateFilter(
 
   let domain: [number, number] = [isFinite(filter.min) ? filter.min : 0, isFinite(filter.max) ? filter.max : 100];
 
-  let fContext = createFilterContext(col, context, domain);
+  let fContext = createFilterContext(col, domain);
   let applyFilter = fContext.setFilter;
   let currentFilter = createFilterInfo(col, domain);
   fContext.setFilter = (filterMissing, min, max) => {
@@ -198,7 +196,7 @@ export function createDateFilter(
   const prepareRender = (min: Date | null, max: Date | null) => {
     // reinit with proper domain
     domain = [min ? min.getTime() : Date.now(), max ? max.getTime() : Date.now()];
-    fContext = createFilterContext(col, context, domain);
+    fContext = createFilterContext(col, domain);
     applyFilter = fContext.setFilter;
     currentFilter = createFilterInfo(col, domain);
     fContext.setFilter = (filterMissing, min, max) => {
@@ -284,11 +282,7 @@ function createFilterInfo(col: IDateColumn, domain: [number, number], filter = c
   };
 }
 
-function createFilterContext(
-  col: IDateColumn,
-  context: { idPrefix: string; dialogManager: DialogManager; sanitize: (v: string) => string },
-  domain: [number, number]
-): IFilterContext<number> {
+function createFilterContext(col: IDateColumn, domain: [number, number]): IFilterContext<number> {
   const clamp = (v: number) => Math.max(0, Math.min(100, v));
   const percent = (v: number) => clamp(Math.round((100 * (v - domain[0])) / (domain[1] - domain[0])));
   const unpercent = (v: number) => (v / 100) * (domain[1] - domain[0]) + domain[0];
@@ -305,25 +299,5 @@ function createFilterContext(
         min: Math.abs(minValue - domain[0]) < 0.001 ? Number.NEGATIVE_INFINITY : shiftFilterDateDay(minValue, 'min'),
         max: Math.abs(maxValue - domain[1]) < 0.001 ? Number.POSITIVE_INFINITY : shiftFilterDateDay(maxValue, 'max'),
       }),
-    edit: (value, attachment, type, otherValue) => {
-      return new Promise((resolve) => {
-        const dialogCtx = {
-          attachment,
-          manager: context.dialogManager,
-          level: context.dialogManager.maxLevel + 1,
-          idPrefix: context.idPrefix,
-          sanitize: context.sanitize,
-        };
-        const dialog = new InputDateDialog(
-          dialogCtx,
-          (d) => resolve(d == null ? NaN : shiftFilterDateDay(d.getTime(), type)),
-          {
-            value: Number.isNaN(value) ? null : new Date(value),
-            [type === 'min' ? 'max' : 'min']: Number.isNaN(otherValue) ? null : new Date(otherValue),
-          }
-        );
-        dialog.open();
-      });
-    },
   };
 }

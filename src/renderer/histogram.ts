@@ -109,7 +109,6 @@ export interface IFilterContext<T> {
   formatRaw(v: T): string;
   parseRaw(v: string): T;
   setFilter(filterMissing: boolean, min: T, max: T): void;
-  edit(value: T, attachment: HTMLElement, type: 'min' | 'max', otherValue: T): Promise<T>;
   domain: [T, T];
 }
 
@@ -124,12 +123,22 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
-    <div class="${cssClass('histogram-min')}" data-value="${c.format(f.filterMin)}" data-raw="${c.formatRaw(
+    <div class="${cssClass('histogram-min')}" data-raw="${c.formatRaw(f.filterMin)}" style="left: ${c.percent(
       f.filterMin
-    )}" style="left: ${c.percent(f.filterMin)}%" title="min filter, drag or double click to change"></div>
-    <div class="${cssClass('histogram-max')}" data-value="${c.format(f.filterMax)}" data-raw="${c.formatRaw(
-      f.filterMax
-    )}" style="right: ${100 - c.percent(f.filterMax)}%" title="max filter, drag or double click to change"></div>
+    )}%" title="min filter, drag to change"></div>
+    <div class="${cssClass('histogram-max')}" data-raw="${c.formatRaw(f.filterMax)}" style="right: ${
+      100 - c.percent(f.filterMax)
+    }%" title="max filter, drag to change"></div>
+    <label class="${cssClass('histogram-input-label')} ${cssClass('histogram-min-input-label')}">Min
+      <input class="${cssClass('histogram-input')} ${cssClass('histogram-min-input')}" type="number" step="any" value="${c.formatRaw(
+        f.filterMin
+      )}" title="min filter value">
+    </label>
+    <label class="${cssClass('histogram-input-label')} ${cssClass('histogram-max-input-label')}">Max
+      <input class="${cssClass('histogram-input')} ${cssClass('histogram-max-input')}" type="number" step="any" value="${c.formatRaw(
+        f.filterMax
+      )}" title="max filter value">
+    </label>
     ${filterMissingNumberMarkup(f.filterMissing, 0)}
   `;
 }
@@ -137,65 +146,79 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
 export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   const min = node.getElementsByClassName(cssClass('histogram-min'))[0] as HTMLElement;
   const max = node.getElementsByClassName(cssClass('histogram-max'))[0] as HTMLElement;
+  const minInput = node.getElementsByClassName(cssClass('histogram-min-input'))[0] as HTMLInputElement;
+  const maxInput = node.getElementsByClassName(cssClass('histogram-max-input'))[0] as HTMLInputElement;
   const minHint = node.getElementsByClassName(cssClass('histogram-min-hint'))[0] as HTMLElement;
   const maxHint = node.getElementsByClassName(cssClass('histogram-max-hint'))[0] as HTMLElement;
-  const filterMissing = node.getElementsByTagName('input')[0] as HTMLInputElement;
+  const filterMissing = node.querySelector<HTMLInputElement>(`label.${cssClass('checkbox')} > input[type=checkbox]`);
+  if (!filterMissing || !minInput || !maxInput) {
+    throw new Error('number/date filter controls are missing');
+  }
 
   const setFilter = () => {
     const minValue = context.parseRaw(min.dataset.raw!);
     const maxValue = context.parseRaw(max.dataset.raw!);
     context.setFilter(filterMissing.checked, minValue, maxValue);
   };
-
-  const minImpl = (evt: MouseEvent) => {
-    evt.preventDefault();
-    evt.stopPropagation();
-
-    const value = context.parseRaw(min.dataset.raw!);
-    const maxValue = context.parseRaw(max.dataset.raw!);
-
-    context.edit(value, min, 'min', maxValue).then((newValue) => {
-      minHint.style.width = `${context.percent(newValue)}%`;
-      min.dataset.value = context.format(newValue);
-      min.dataset.raw = context.formatRaw(newValue);
-      min.style.left = `${context.percent(newValue)}%`;
-      min.classList.toggle(cssClass('swap-hint'), context.percent(newValue) > 15);
-      setFilter();
-    });
+  const updateMin = (newValue: T) => {
+    minHint.style.width = `${context.percent(newValue)}%`;
+    min.dataset.raw = context.formatRaw(newValue);
+    if (document.activeElement !== minInput) {
+      minInput.value = context.formatRaw(newValue);
+    }
+    min.style.left = `${context.percent(newValue)}%`;
+    min.classList.toggle(cssClass('swap-hint'), context.percent(newValue) > 15);
+  };
+  const updateMax = (newValue: T) => {
+    maxHint.style.width = `${100 - context.percent(newValue)}%`;
+    max.dataset.raw = context.formatRaw(newValue);
+    if (document.activeElement !== maxInput) {
+      maxInput.value = context.formatRaw(newValue);
+    }
+    max.style.right = `${100 - context.percent(newValue)}%`;
+    max.classList.toggle(cssClass('swap-hint'), context.percent(newValue) < 85);
   };
 
-  min.onclick = (evt) => {
-    if (!evt.shiftKey && !evt.ctrlKey) {
+  const ensureNumber = (value: T) => (typeof value === 'number' ? value : Number(value));
+  const minInputChange = () => {
+    const currentMin = context.parseRaw(min.dataset.raw!);
+    const currentMax = context.parseRaw(max.dataset.raw!);
+    const rawValue = minInput.value.trim() === '' ? NaN : Number(minInput.value);
+    if (Number.isNaN(rawValue)) {
+      minInput.value = context.formatRaw(currentMin);
       return;
     }
-    minImpl(evt);
-  };
-  min.ondblclick = minImpl;
-
-  const maxImpl = (evt: MouseEvent) => {
-    evt.preventDefault();
-    evt.stopPropagation();
-
-    const value = context.parseRaw(max.dataset.raw!);
-    const minValue = context.parseRaw(min.dataset.raw!);
-
-    context.edit(value, max, 'max', minValue).then((newValue) => {
-      maxHint.style.width = `${100 - context.percent(newValue)}%`;
-      max.dataset.value = context.format(newValue);
-      max.dataset.raw = context.formatRaw(newValue);
-      max.style.right = `${100 - context.percent(newValue)}%`;
-      max.classList.toggle(cssClass('swap-hint'), context.percent(newValue) < 85);
-      setFilter();
-    });
+    const bounded = Math.max(ensureNumber(context.domain[0]), Math.min(rawValue, ensureNumber(currentMax))) as T;
+    updateMin(bounded);
+    setFilter();
   };
 
-  max.onclick = (evt) => {
-    if (!evt.shiftKey && !evt.ctrlKey) {
+  const maxInputChange = () => {
+    const currentMin = context.parseRaw(min.dataset.raw!);
+    const currentMax = context.parseRaw(max.dataset.raw!);
+    const rawValue = maxInput.value.trim() === '' ? NaN : Number(maxInput.value);
+    if (Number.isNaN(rawValue)) {
+      maxInput.value = context.formatRaw(currentMax);
       return;
     }
-    maxImpl(evt);
+    const bounded = Math.max(ensureNumber(currentMin), Math.min(rawValue, ensureNumber(context.domain[1]))) as T;
+    updateMax(bounded);
+    setFilter();
   };
-  max.ondblclick = maxImpl;
+
+  const onInputEnter = (evt: KeyboardEvent, apply: () => void) => {
+    if (evt.key !== 'Enter') {
+      return;
+    }
+    evt.preventDefault();
+    evt.stopPropagation();
+    apply();
+  };
+
+  minInput.onchange = () => minInputChange();
+  minInput.onkeydown = (evt) => onInputEnter(evt, minInputChange);
+  maxInput.onchange = () => maxInputChange();
+  maxInput.onkeydown = (evt) => onInputEnter(evt, maxInputChange);
 
   filterMissing.onchange = () => setFilter();
 
@@ -207,24 +230,16 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
       const isMin = (handle as HTMLElement).classList.contains(cssClass('histogram-min'));
       const total = node.clientWidth;
       const px = Math.max(0, Math.min(x, total));
-      let percent = Math.round((100 * px) / total);
-      let rawValue = context.unpercent(percent);
+      let rawValue = context.unpercent(Math.round((100 * px) / total));
       const otherValue = context.parseRaw((isMin ? max : min).dataset.raw!);
       if ((isMin && rawValue > otherValue) || (!isMin && rawValue < otherValue)) {
         rawValue = otherValue;
-        percent = context.percent(rawValue);
       }
-      (handle as HTMLElement).dataset.value = context.format(rawValue);
-      (handle as HTMLElement).dataset.raw = context.formatRaw(rawValue);
 
       if (isMin) {
-        handle.style.left = `${percent}%`;
-        handle.classList.toggle(cssClass('swap-hint'), percent > 15);
-        minHint.style.width = `${percent}%`;
+        updateMin(rawValue);
       } else {
-        handle.style.right = `${100 - percent}%`;
-        handle.classList.toggle(cssClass('swap-hint'), percent < 85);
-        maxHint.style.width = `${100 - percent}%`;
+        updateMax(rawValue);
       }
     },
     onEnd: (handle) => {
@@ -236,16 +251,8 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   dragHandle(max, options);
 
   return (missing: number, f: IFilterInfo<T>) => {
-    minHint.style.width = `${context.percent(f.filterMin)}%`;
-    maxHint.style.width = `${100 - context.percent(f.filterMax)}%`;
-    min.dataset.value = context.format(f.filterMin);
-    max.dataset.value = context.format(f.filterMax);
-    min.dataset.raw = context.formatRaw(f.filterMin);
-    max.dataset.raw = context.formatRaw(f.filterMax);
-    min.style.left = `${context.percent(f.filterMin)}%`;
-    max.style.right = `${100 - context.percent(f.filterMax)}%`;
-    min.classList.toggle(cssClass('swap-hint'), context.percent(f.filterMin) > 15);
-    max.classList.toggle(cssClass('swap-hint'), context.percent(f.filterMax) < 85);
+    updateMin(f.filterMin);
+    updateMax(f.filterMax);
     filterMissing.checked = f.filterMissing;
     updateFilterMissingNumberMarkup(filterMissing.parentElement as HTMLElement, missing);
   };
