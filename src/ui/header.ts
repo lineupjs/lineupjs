@@ -306,7 +306,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
   let start = 0;
   let originalWidth = 0;
-  const mouseMove = (evt: MouseEvent) => {
+  const pointerMove = (evt: PointerEvent) => {
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
@@ -330,15 +330,15 @@ export function dragWidth(col: Column, node: HTMLElement) {
     toggleToolbarIcons(node, col);
   };
 
-  const mouseUp = (evt: MouseEvent) => {
+  const pointerUp = (evt: PointerEvent) => {
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
     node.classList.remove(cssClass('change-width'));
 
-    ueberElement.removeEventListener('mousemove', mouseMove);
-    ueberElement.removeEventListener('mouseup', mouseUp);
-    ueberElement.removeEventListener('mouseleave', mouseUp);
+    ueberElement.removeEventListener('pointermove', pointerMove);
+    ueberElement.removeEventListener('pointerup', pointerUp);
+    ueberElement.removeEventListener('pointercancel', pointerUp);
     ueberElement.classList.remove(cssClass('resizing'));
     node.style.width = null;
     setTimeout(() => {
@@ -354,17 +354,19 @@ export function dragWidth(col: Column, node: HTMLElement) {
     col.setWidth(width);
     toggleToolbarIcons(node, col);
   };
-  handle.onmousedown = (evt) => {
+  handle.addEventListener('pointerdown', (evt: PointerEvent) => {
     evt.stopPropagation();
     evt.preventDefault();
     node.classList.add(cssClass('change-width'));
 
+    handle.setPointerCapture(evt.pointerId);
+
     originalWidth = col.getWidth();
     start = evt.clientX;
     ueberElement = node.closest<HTMLElement>('body') || node.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
-    ueberElement.addEventListener('mousemove', mouseMove);
-    ueberElement.addEventListener('mouseup', mouseUp);
-    ueberElement.addEventListener('mouseleave', mouseUp);
+    ueberElement.addEventListener('pointermove', pointerMove);
+    ueberElement.addEventListener('pointerup', pointerUp);
+    ueberElement.addEventListener('pointercancel', pointerUp);
     ueberElement.classList.add(cssClass('resizing'));
 
     sizeHelper = node
@@ -373,7 +375,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     currentFooterTransformation = (sizeHelper.previousElementSibling! as HTMLElement).style.transform!;
     sizeHelper.style.transform = `${currentFooterTransformation} translate(${-RESIZE_SPACE}px, 0px)`;
     sizeHelper.classList.add(cssClass('resizing'));
-  };
+  });
   handle.onclick = (evt) => {
     // avoid resorting
     evt.stopPropagation();

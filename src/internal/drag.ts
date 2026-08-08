@@ -54,8 +54,8 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
   let last = 0;
   let handleShift = 0;
 
-  const mouseMove = (evt: MouseEvent) => {
-    if (!o.filter(evt)) {
+  const pointerMove = (evt: PointerEvent) => {
+    if (evt.pointerType === 'mouse' && !o.filter(evt as unknown as MouseEvent)) {
       return;
     }
     evt.stopPropagation();
@@ -67,21 +67,22 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
       return;
     }
 
+    const delta = end - last;
     last = end;
-    o.onDrag(handle, end, last - end, evt);
+    o.onDrag(handle, end, delta, evt as unknown as MouseEvent);
   };
 
-  const mouseUp = (evt: MouseEvent) => {
-    if (!o.filter(evt)) {
+  const pointerUp = (evt: PointerEvent) => {
+    if (evt.pointerType === 'mouse' && !o.filter(evt as unknown as MouseEvent)) {
       return;
     }
     evt.stopPropagation();
     evt.preventDefault();
 
     const end = toContainerRelative(evt.clientX, o.container) - handleShift;
-    ueberElement!.removeEventListener('mousemove', mouseMove);
-    ueberElement!.removeEventListener('mouseup', mouseUp);
-    ueberElement!.removeEventListener('mouseleave', mouseUp);
+    ueberElement!.removeEventListener('pointermove', pointerMove);
+    ueberElement!.removeEventListener('pointerup', pointerUp);
+    ueberElement!.removeEventListener('pointercancel', pointerUp);
     ueberElement!.classList.remove(cssClass('dragging'));
 
     if (Math.abs(start - end) < 2) {
@@ -89,26 +90,28 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
       return;
     }
 
-    o.onEnd(handle, end, start - end, evt);
+    o.onEnd(handle, end, start - end, evt as unknown as MouseEvent);
   };
 
-  handle.onmousedown = (evt) => {
-    if (!o.filter(evt)) {
+  handle.addEventListener('pointerdown', (evt: PointerEvent) => {
+    if (evt.pointerType === 'mouse' && !o.filter(evt as unknown as MouseEvent)) {
       return;
     }
     evt.stopPropagation();
     evt.preventDefault();
+
+    (handle as Element).setPointerCapture(evt.pointerId);
 
     handleShift = toContainerRelative(evt.clientX, handle);
     start = last = toContainerRelative(evt.clientX, o.container) - handleShift;
 
     // register other event listeners
     ueberElement = handle.closest('body') || handle.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
-    ueberElement.addEventListener('mousemove', mouseMove);
-    ueberElement.addEventListener('mouseup', mouseUp);
-    ueberElement.addEventListener('mouseleave', mouseUp);
+    ueberElement.addEventListener('pointermove', pointerMove);
+    ueberElement.addEventListener('pointerup', pointerUp);
+    ueberElement.addEventListener('pointercancel', pointerUp);
     ueberElement.classList.add(cssClass('dragging'));
 
-    o.onStart(handle, start, 0, evt);
-  };
+    o.onStart(handle, start, 0, evt as unknown as MouseEvent);
+  });
 }
