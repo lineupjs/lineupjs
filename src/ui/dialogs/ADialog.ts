@@ -135,7 +135,7 @@ abstract class ADialog {
         header.appendChild(title);
       }
       const cancelBtn = this.node.ownerDocument!.createElement('button');
-      cancelBtn.classList.add(cssClass('dialog-button'));
+      cancelBtn.classList.add(cssClass('dialog-button'), cssClass('dialog-cancel-button'));
       cancelBtn.type = 'button';
       cancelBtn.title = 'Cancel';
       cancelBtn.setAttribute('aria-label', 'Cancel');

@@ -78,7 +78,7 @@
     flex-grow: 1;
   }
 
-  .#{vars.$lu_css_prefix}-dialog-button[title='Cancel'] {
+  .#{vars.$lu_css_prefix}-dialog-cancel-button {
     margin-top: 0;
     flex-shrink: 0;
   }
@@ -113,7 +113,7 @@
     content: icons.$lu_icon_check;
   }
 
-  &[title='Cancel']::before {
+  &.#{vars.$lu_css_prefix}-dialog-cancel-button::before {
     content: icons.$lu_icon_times;
   }
 
