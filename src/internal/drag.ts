@@ -59,9 +59,6 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     if (evt.pointerId !== activePointerId) {
       return;
     }
-    if (evt.pointerType === 'mouse' && !o.filter(evt as unknown as MouseEvent)) {
-      return;
-    }
     evt.stopPropagation();
     evt.preventDefault();
 
@@ -78,9 +75,6 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
 
   const pointerUp = (evt: PointerEvent) => {
     if (evt.pointerId !== activePointerId) {
-      return;
-    }
-    if (evt.pointerType === 'mouse' && !o.filter(evt as unknown as MouseEvent)) {
       return;
     }
     evt.stopPropagation();
