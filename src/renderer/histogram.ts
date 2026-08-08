@@ -110,6 +110,20 @@ export interface IFilterContext<T> {
   parseRaw(v: string): T;
   setFilter(filterMissing: boolean, min: T, max: T): void;
   domain: [T, T];
+  /**
+   * optional input type for the filter inputs, defaults to 'number'
+   */
+  inputType?: 'number' | 'date';
+  /**
+   * optional formatter for the input value (e.g. YYYY-MM-DD for date inputs),
+   * defaults to formatRaw
+   */
+  formatInput?: (v: T) => string;
+  /**
+   * optional parser for the input value (e.g. from YYYY-MM-DD for date inputs),
+   * defaults to parseRaw
+   */
+  parseInput?: (v: string) => T;
 }
 
 /** @internal */
@@ -120,6 +134,9 @@ export interface IFilterInfo<T> {
 }
 
 export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>) {
+  const inputType = c.inputType ?? 'number';
+  const fmtInput = c.formatInput ?? c.formatRaw;
+  const extraAttrs = inputType === 'number' ? ' step="any"' : '';
   return `
     <div class="${cssClass('histogram-min-hint')}" style="width: ${c.percent(f.filterMin)}%"></div>
     <div class="${cssClass('histogram-max-hint')}" style="width: ${100 - c.percent(f.filterMax)}%"></div>
@@ -130,12 +147,12 @@ export function filteredHistTemplate<T>(c: IFilterContext<T>, f: IFilterInfo<T>)
       100 - c.percent(f.filterMax)
     }%" title="max filter, drag to change"></div>
     <label class="${cssClass('histogram-input-label')} ${cssClass('histogram-min-input-label')}">Min
-      <input class="${cssClass('histogram-input')} ${cssClass('histogram-min-input')}" type="number" step="any" value="${c.formatRaw(
+      <input class="${cssClass('histogram-input')} ${cssClass('histogram-min-input')}" type="${inputType}"${extraAttrs} value="${fmtInput(
         f.filterMin
       )}" title="min filter value">
     </label>
     <label class="${cssClass('histogram-input-label')} ${cssClass('histogram-max-input-label')}">Max
-      <input class="${cssClass('histogram-input')} ${cssClass('histogram-max-input')}" type="number" step="any" value="${c.formatRaw(
+      <input class="${cssClass('histogram-input')} ${cssClass('histogram-max-input')}" type="${inputType}"${extraAttrs} value="${fmtInput(
         f.filterMax
       )}" title="max filter value">
     </label>
@@ -155,6 +172,9 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     throw new Error('number/date filter controls are missing');
   }
 
+  const fmtInput = context.formatInput ?? context.formatRaw;
+  const parseInput = context.parseInput ?? context.parseRaw;
+
   const setFilter = () => {
     const minValue = context.parseRaw(min.dataset.raw!);
     const maxValue = context.parseRaw(max.dataset.raw!);
@@ -164,7 +184,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     minHint.style.width = `${context.percent(newValue)}%`;
     min.dataset.raw = context.formatRaw(newValue);
     if (document.activeElement !== minInput) {
-      minInput.value = context.formatRaw(newValue);
+      minInput.value = fmtInput(newValue);
     }
     min.style.left = `${context.percent(newValue)}%`;
     min.classList.toggle(cssClass('swap-hint'), context.percent(newValue) > 15);
@@ -173,7 +193,7 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
     maxHint.style.width = `${100 - context.percent(newValue)}%`;
     max.dataset.raw = context.formatRaw(newValue);
     if (document.activeElement !== maxInput) {
-      maxInput.value = context.formatRaw(newValue);
+      maxInput.value = fmtInput(newValue);
     }
     max.style.right = `${100 - context.percent(newValue)}%`;
     max.classList.toggle(cssClass('swap-hint'), context.percent(newValue) < 85);
@@ -183,9 +203,9 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   const minInputChange = () => {
     const currentMin = context.parseRaw(min.dataset.raw!);
     const currentMax = context.parseRaw(max.dataset.raw!);
-    const rawValue = minInput.value.trim() === '' ? NaN : Number(minInput.value);
+    const rawValue = minInput.value.trim() === '' ? NaN : ensureNumber(parseInput(minInput.value));
     if (Number.isNaN(rawValue)) {
-      minInput.value = context.formatRaw(currentMin);
+      minInput.value = fmtInput(currentMin);
       return;
     }
     const bounded = Math.max(ensureNumber(context.domain[0]), Math.min(rawValue, ensureNumber(currentMax))) as T;
@@ -196,9 +216,9 @@ export function initFilter<T>(node: HTMLElement, context: IFilterContext<T>) {
   const maxInputChange = () => {
     const currentMin = context.parseRaw(min.dataset.raw!);
     const currentMax = context.parseRaw(max.dataset.raw!);
-    const rawValue = maxInput.value.trim() === '' ? NaN : Number(maxInput.value);
+    const rawValue = maxInput.value.trim() === '' ? NaN : ensureNumber(parseInput(maxInput.value));
     if (Number.isNaN(rawValue)) {
-      maxInput.value = context.formatRaw(currentMax);
+      maxInput.value = fmtInput(currentMax);
       return;
     }
     const bounded = Math.max(ensureNumber(currentMin), Math.min(rawValue, ensureNumber(context.domain[1]))) as T;

@@ -293,6 +293,35 @@ function createFilterContext(col: IDateColumn, domain: [number, number]): IFilte
     format: (v) => (Number.isNaN(v) ? '' : col.getFormatter()(new Date(v))),
     formatRaw: String,
     parseRaw: (v) => Number.parseInt(v, 10),
+    inputType: 'date',
+    formatInput: (v: number) => {
+      if (Number.isNaN(v)) {
+        return '';
+      }
+      // Format as YYYY-MM-DD for date inputs (using local time)
+      const d = new Date(v);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+    parseInput: (v: string) => {
+      if (!v || v.trim() === '') {
+        return NaN;
+      }
+      // Parse explicitly as local midnight to guarantee consistent behavior
+      const parts = v.split('-');
+      if (parts.length !== 3) {
+        return NaN;
+      }
+      const year = Number(parts[0]);
+      const month = Number(parts[1]) - 1;
+      const day = Number(parts[2]);
+      if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+        return NaN;
+      }
+      return new Date(year, month, day).getTime();
+    },
     setFilter: (filterMissing, minValue, maxValue) =>
       col.setFilter({
         filterMissing,
