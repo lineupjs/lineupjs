@@ -53,8 +53,12 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
   let start = 0;
   let last = 0;
   let handleShift = 0;
+  let activePointerId = -1;
 
   const pointerMove = (evt: PointerEvent) => {
+    if (evt.pointerId !== activePointerId) {
+      return;
+    }
     if (evt.pointerType === 'mouse' && !o.filter(evt as unknown as MouseEvent)) {
       return;
     }
@@ -73,16 +77,20 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
   };
 
   const pointerUp = (evt: PointerEvent) => {
+    if (evt.pointerId !== activePointerId) {
+      return;
+    }
     if (evt.pointerType === 'mouse' && !o.filter(evt as unknown as MouseEvent)) {
       return;
     }
     evt.stopPropagation();
     evt.preventDefault();
 
+    activePointerId = -1;
     const end = toContainerRelative(evt.clientX, o.container) - handleShift;
-    ueberElement!.removeEventListener('pointermove', pointerMove);
-    ueberElement!.removeEventListener('pointerup', pointerUp);
-    ueberElement!.removeEventListener('pointercancel', pointerUp);
+    handle.removeEventListener('pointermove', pointerMove);
+    handle.removeEventListener('pointerup', pointerUp);
+    handle.removeEventListener('pointercancel', pointerUp);
     ueberElement!.classList.remove(cssClass('dragging'));
 
     if (Math.abs(start - end) < 2) {
@@ -100,16 +108,19 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     evt.stopPropagation();
     evt.preventDefault();
 
+    activePointerId = evt.pointerId;
     (handle as Element).setPointerCapture(evt.pointerId);
 
     handleShift = toContainerRelative(evt.clientX, handle);
     start = last = toContainerRelative(evt.clientX, o.container) - handleShift;
 
-    // register other event listeners
+    // With pointer capture active all subsequent pointer events are delivered to
+    // the handle itself, so we register move/up/cancel on the handle too.
+    handle.addEventListener('pointermove', pointerMove);
+    handle.addEventListener('pointerup', pointerUp);
+    handle.addEventListener('pointercancel', pointerUp);
+
     ueberElement = handle.closest('body') || handle.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
-    ueberElement.addEventListener('pointermove', pointerMove);
-    ueberElement.addEventListener('pointerup', pointerUp);
-    ueberElement.addEventListener('pointercancel', pointerUp);
     ueberElement.classList.add(cssClass('dragging'));
 
     o.onStart(handle, start, 0, evt as unknown as MouseEvent);

@@ -306,13 +306,18 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
   let start = 0;
   let originalWidth = 0;
+  let activePointerId = -1;
+
   const pointerMove = (evt: PointerEvent) => {
+    if (evt.pointerId !== activePointerId) {
+      return;
+    }
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
     const delta = end - start;
 
-    if (Math.abs(start - end) < 2) {
+    if (Math.abs(delta) < 2) {
       //ignore
       return;
     }
@@ -331,42 +336,43 @@ export function dragWidth(col: Column, node: HTMLElement) {
   };
 
   const pointerUp = (evt: PointerEvent) => {
+    if (evt.pointerId !== activePointerId) {
+      return;
+    }
     evt.stopPropagation();
     evt.preventDefault();
-    const end = evt.clientX;
+
+    activePointerId = -1;
     node.classList.remove(cssClass('change-width'));
 
-    ueberElement.removeEventListener('pointermove', pointerMove);
-    ueberElement.removeEventListener('pointerup', pointerUp);
-    ueberElement.removeEventListener('pointercancel', pointerUp);
+    handle.removeEventListener('pointermove', pointerMove);
+    handle.removeEventListener('pointerup', pointerUp);
+    handle.removeEventListener('pointercancel', pointerUp);
     ueberElement.classList.remove(cssClass('resizing'));
     node.style.width = null;
+    toggleToolbarIcons(node, col);
     setTimeout(() => {
       sizeHelper.classList.remove(cssClass('resizing'), cssClass('resize-animated'));
     }, RESIZE_ANIMATION_DURATION * 1.2); // after animation ended
-
-    if (Math.abs(start - end) < 2) {
-      //ignore
-      return;
-    }
-    const delta = end - start;
-    const width = Math.max(0, col.getWidth() + delta);
-    col.setWidth(width);
-    toggleToolbarIcons(node, col);
   };
+
   handle.addEventListener('pointerdown', (evt: PointerEvent) => {
     evt.stopPropagation();
     evt.preventDefault();
     node.classList.add(cssClass('change-width'));
 
+    activePointerId = evt.pointerId;
     handle.setPointerCapture(evt.pointerId);
 
     originalWidth = col.getWidth();
     start = evt.clientX;
     ueberElement = node.closest<HTMLElement>('body') || node.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
-    ueberElement.addEventListener('pointermove', pointerMove);
-    ueberElement.addEventListener('pointerup', pointerUp);
-    ueberElement.addEventListener('pointercancel', pointerUp);
+
+    // With pointer capture active all subsequent pointer events are delivered to
+    // the handle itself, so we register move/up/cancel on the handle too.
+    handle.addEventListener('pointermove', pointerMove);
+    handle.addEventListener('pointerup', pointerUp);
+    handle.addEventListener('pointercancel', pointerUp);
     ueberElement.classList.add(cssClass('resizing'));
 
     sizeHelper = node
