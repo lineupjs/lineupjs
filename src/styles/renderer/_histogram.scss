@@ -92,6 +92,7 @@ span.#{vars.$lu_css_prefix}-mapping-hint {
   transition: border-width 0.2s ease;
   width: 1px;
   cursor: ew-resize;
+  touch-action: none;
 
   &::before {
     content: attr(data-value);

@@ -345,9 +345,9 @@ export function dragWidth(col: Column, node: HTMLElement) {
     activePointerId = -1;
     node.classList.remove(cssClass('change-width'));
 
-    handle.removeEventListener('pointermove', pointerMove);
-    handle.removeEventListener('pointerup', pointerUp);
-    handle.removeEventListener('pointercancel', pointerUp);
+    document.removeEventListener('pointermove', pointerMove, true);
+    document.removeEventListener('pointerup', pointerUp, true);
+    document.removeEventListener('pointercancel', pointerUp, true);
     ueberElement.classList.remove(cssClass('resizing'));
     node.style.width = null;
     toggleToolbarIcons(node, col);
@@ -362,17 +362,15 @@ export function dragWidth(col: Column, node: HTMLElement) {
     node.classList.add(cssClass('change-width'));
 
     activePointerId = evt.pointerId;
-    handle.setPointerCapture(evt.pointerId);
-
     originalWidth = col.getWidth();
     start = evt.clientX;
     ueberElement = node.closest<HTMLElement>('body') || node.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
 
-    // With pointer capture active all subsequent pointer events are delivered to
-    // the handle itself, so we register move/up/cancel on the handle too.
-    handle.addEventListener('pointermove', pointerMove);
-    handle.addEventListener('pointerup', pointerUp);
-    handle.addEventListener('pointercancel', pointerUp);
+    // Use capture-phase listeners on document so the drag is never interrupted
+    // by DOM mutations (e.g. re-renders triggered during resize).
+    document.addEventListener('pointermove', pointerMove, true);
+    document.addEventListener('pointerup', pointerUp, true);
+    document.addEventListener('pointercancel', pointerUp, true);
     ueberElement.classList.add(cssClass('resizing'));
 
     sizeHelper = node

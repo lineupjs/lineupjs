@@ -118,6 +118,7 @@
   border-bottom: 1px solid white;
   text-align: center;
   bottom: -1px;
+  touch-action: none;
 
   &:hover {
     background-color: vars.$lu_hover_button_color;

@@ -88,9 +88,9 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
 
     activePointerId = -1;
     const end = toContainerRelative(evt.clientX, o.container) - handleShift;
-    handle.removeEventListener('pointermove', pointerMove);
-    handle.removeEventListener('pointerup', pointerUp);
-    handle.removeEventListener('pointercancel', pointerUp);
+    document.removeEventListener('pointermove', pointerMove, true);
+    document.removeEventListener('pointerup', pointerUp, true);
+    document.removeEventListener('pointercancel', pointerUp, true);
     ueberElement!.classList.remove(cssClass('dragging'));
 
     if (Math.abs(start - end) < 2) {
@@ -109,16 +109,15 @@ export function dragHandle(handle: HTMLElement | SVGElement, options: Partial<ID
     evt.preventDefault();
 
     activePointerId = evt.pointerId;
-    (handle as Element).setPointerCapture(evt.pointerId);
 
     handleShift = toContainerRelative(evt.clientX, handle);
     start = last = toContainerRelative(evt.clientX, o.container) - handleShift;
 
-    // With pointer capture active all subsequent pointer events are delivered to
-    // the handle itself, so we register move/up/cancel on the handle too.
-    handle.addEventListener('pointermove', pointerMove);
-    handle.addEventListener('pointerup', pointerUp);
-    handle.addEventListener('pointercancel', pointerUp);
+    // Use capture-phase listeners on document so the drag is never interrupted
+    // by DOM mutations (e.g. re-renders triggered by onDrag callbacks).
+    document.addEventListener('pointermove', pointerMove, true);
+    document.addEventListener('pointerup', pointerUp, true);
+    document.addEventListener('pointercancel', pointerUp, true);
 
     ueberElement = handle.closest('body') || handle.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
     ueberElement.classList.add(cssClass('dragging'));

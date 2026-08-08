@@ -88,6 +88,7 @@ svg.#{vars.$lu_css_prefix}-dialog-mapper-details {
 
 g.#{vars.$lu_css_prefix}-dialog-mapper-mapping {
   cursor: ew-resize;
+  touch-action: none;
 
   > line:first-child {
     stroke-width: 5;
