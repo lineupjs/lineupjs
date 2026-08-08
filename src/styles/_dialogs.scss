@@ -66,6 +66,31 @@
   }
 }
 
+.#{vars.$lu_css_prefix}-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.2em;
+
+  strong {
+    margin: 0.2em;
+    display: inline-block;
+    flex-grow: 1;
+  }
+
+  .#{vars.$lu_css_prefix}-dialog-button[title='Cancel'] {
+    margin-top: 0;
+    flex-shrink: 0;
+  }
+}
+
+.#{vars.$lu_css_prefix}-dialog-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5em;
+}
+
 .#{vars.$lu_css_prefix}-dialog-button {
   border: none;
   background: none;
@@ -94,6 +119,7 @@
 
   &[type='reset']::before {
     content: icons.$lu_icon_undo;
+    margin-right: 0.3em;
   }
 
   &.#{vars.$lu_css_prefix}-dialog-weights-distribute-button::before {

@@ -107,12 +107,12 @@ abstract class ADialog {
   }
 
   protected appendDialogButtons() {
+    const livePreview = this.showLivePreviews();
     this.node.insertAdjacentHTML(
       'beforeend',
       `<div class="${cssClass('dialog-buttons')}">
-      <button class="${cssClass('dialog-button')}" type="submit" title="Apply"></button>
-      <button class="${cssClass('dialog-button')}" type="button" title="Cancel"></button>
-      <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values"></button>
+      <button class="${cssClass('dialog-button')}" type="reset" title="Reset to default values">Reset</button>
+      ${livePreview ? '' : `<button class="${cssClass('dialog-button')}" type="submit" title="Apply"></button>`}
     </div>`
     );
   }
@@ -126,10 +126,21 @@ abstract class ADialog {
     }
     const parent = this.attachment.closest<HTMLElement>(`.${cssClass()}`)!;
 
-    if (this.options.title) {
-      const title = this.node.ownerDocument!.createElement('strong');
-      title.textContent = this.options.title;
-      this.node.insertAdjacentElement('afterbegin', title);
+    {
+      const header = this.node.ownerDocument!.createElement('div');
+      header.classList.add(cssClass('dialog-header'));
+      if (this.options.title) {
+        const title = this.node.ownerDocument!.createElement('strong');
+        title.textContent = this.options.title;
+        header.appendChild(title);
+      }
+      const cancelBtn = this.node.ownerDocument!.createElement('button');
+      cancelBtn.classList.add(cssClass('dialog-button'));
+      cancelBtn.type = 'button';
+      cancelBtn.title = 'Cancel';
+      cancelBtn.setAttribute('aria-label', 'Cancel');
+      header.appendChild(cancelBtn);
+      this.node.insertAdjacentElement('afterbegin', header);
     }
     if (!this.options.popup) {
       this.appendDialogButtons();
