@@ -84,14 +84,12 @@ export default class SelectionManager extends AEventDispatcher {
         'mousedown',
         (evt) => {
           // activate only when filter is satisfied
-          if (
-            !(
-              this.selectionActivateFilter !== false &&
-              (this.selectionActivateFilter === true ||
-                (evt.target as HTMLElement)?.matches(this.selectionActivateFilter) ||
-                (evt.target as HTMLElement)?.closest(this.selectionActivateFilter) != null)
-            )
-          ) {
+          if (!(
+            this.selectionActivateFilter !== false &&
+            (this.selectionActivateFilter === true ||
+              (evt.target as HTMLElement)?.matches(this.selectionActivateFilter) ||
+              (evt.target as HTMLElement)?.closest(this.selectionActivateFilter) != null)
+          )) {
             return;
           }
 

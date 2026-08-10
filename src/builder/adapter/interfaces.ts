@@ -23,12 +23,7 @@ export interface IBuilderAdapterRankingProps {
     | (string | { column: string; asc: 'asc' | 'desc' | boolean })[];
   groupBy?: string[] | string;
   columns?: (
-    | string
-    | IImposeColumnBuilder
-    | INestedBuilder
-    | IWeightedSumBuilder
-    | IReduceBuilder
-    | IScriptedBuilder
+    string | IImposeColumnBuilder | INestedBuilder | IWeightedSumBuilder | IReduceBuilder | IScriptedBuilder
   )[];
 }
 

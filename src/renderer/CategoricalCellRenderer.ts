@@ -30,11 +30,7 @@ import { categoricalHistogram } from './categoricalHistogram';
 
 /** @internal */
 export declare type HasCategoricalFilter =
-  | CategoricalColumn
-  | OrdinalColumn
-  | SetColumn
-  | BooleanColumn
-  | CategoricalsColumn;
+  CategoricalColumn | OrdinalColumn | SetColumn | BooleanColumn | CategoricalsColumn;
 
 export default class CategoricalCellRenderer implements ICellRendererFactory {
   readonly title: string = 'Color & Label';

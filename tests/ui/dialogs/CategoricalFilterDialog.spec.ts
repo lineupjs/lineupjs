@@ -237,12 +237,10 @@ describe('CategoricalFilterDialog – text filter field', () => {
 
     // Show only apple/apricot, then uncheck both
     filterBy(search, 'ap');
-    node
-      .querySelectorAll<HTMLInputElement>(`label[data-cat]:not(.${cls('hidden')}) input[data-cat]`)
-      .forEach((i) => {
-        i.checked = false;
-        i.dispatchEvent(new Event('change'));
-      });
+    node.querySelectorAll<HTMLInputElement>(`label[data-cat]:not(.${cls('hidden')}) input[data-cat]`).forEach((i) => {
+      i.checked = false;
+      i.dispatchEvent(new Event('change'));
+    });
 
     const selectAll = getSelectAll(node)!;
     expect(selectAll.indeterminate).toBe(false);
