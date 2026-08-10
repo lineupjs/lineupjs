@@ -18,7 +18,6 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true,
     "moduleResolution": "node",
     "jsx": "react",
     "esModuleInterop": true,
