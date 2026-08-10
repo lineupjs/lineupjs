@@ -6804,6 +6804,7 @@ __metadata:
     fork-ts-checker-webpack-plugin: "npm:^9.0.2"
     jest: "npm:^29.7.0"
     jest-environment-jsdom: "npm:^29.7.0"
+    jest-util: "npm:^29.7.0"
     lineupengine: "npm:^2.5.3"
     lodash.get: "npm:^4.4.2"
     mini-css-extract-plugin: "npm:^2.9.2"

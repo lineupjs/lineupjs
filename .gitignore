@@ -1,6 +1,7 @@
 /.tscache
 /.idea
 /build/
+/coverage/
 /dist/
 /docs/
 node_modules/

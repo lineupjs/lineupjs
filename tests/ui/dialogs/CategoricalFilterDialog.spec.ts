@@ -37,8 +37,8 @@ function makeCtx() {
     sanitize: (v: string) => v,
     provider: {
       getTaskExecutor: () => ({
-        // Returning null skips the async stats update branch
-        summaryCategoricalStats: () => null,
+        // Resolve to a symbol so updateStats() bails out before touching summary/data
+        summaryCategoricalStats: () => Promise.resolve(Symbol('pending')),
       }),
     },
     dialogManager: {
@@ -54,7 +54,7 @@ function makeDialogContext(): IDialogContext {
   return {
     attachment,
     level: 0,
-    manager: { removeLike: () => false } as any,
+    manager: { removeLike: () => false, livePreviews: {} } as any,
     idPrefix: 'test',
     sanitize: (v: string) => v,
   };
