@@ -1143,7 +1143,7 @@ function sortWorkerMain() {
         ref: r.ref,
         order,
       } as ISortMessageResponse,
-      [r.indices.buffer]
+      [r.indices.buffer as ArrayBuffer]
     );
   };
 
