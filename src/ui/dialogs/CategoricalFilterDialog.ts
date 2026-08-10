@@ -31,7 +31,7 @@ export default class CategoricalFilterDialog extends ADialog {
   protected build(node: HTMLElement) {
     node.insertAdjacentHTML(
       'beforeend',
-      `<input type="text" placeholder="Filter categories…" class="${cssClass('dialog-filter-cat-search')}">
+      `<input type="text" placeholder="Filter categories…" aria-label="Filter categories" class="${cssClass('dialog-filter-cat-search')}">
       <div class="${cssClass('dialog-table')}">
         <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
           <input type="checkbox" checked>
