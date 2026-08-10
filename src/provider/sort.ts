@@ -144,7 +144,7 @@ export class CompareLookup {
     return this.data
       .map((d) => d.lookup)
       .filter((d): d is UIntTypedArray | Float64Array => !Array.isArray(d))
-      .map((d) => d.buffer);
+      .map((d) => d.buffer as ArrayBuffer);
   }
 
   push(row: IDataRow) {

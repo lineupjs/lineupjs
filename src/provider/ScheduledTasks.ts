@@ -733,7 +733,7 @@ export class ScheduleRenderTasks extends ARenderTasks implements IRenderTaskExec
     }
 
     const indexArray = toIndexArray(indices, maxDataIndex);
-    const toTransfer = [indexArray.buffer];
+    const toTransfer = [indexArray.buffer as ArrayBuffer];
 
     if (singleCall) {
       // can transfer otherwise need to copy
