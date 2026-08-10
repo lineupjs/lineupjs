@@ -137,8 +137,8 @@ abstract class ADialog {
       const cancelBtn = this.node.ownerDocument!.createElement('button');
       cancelBtn.classList.add(cssClass('dialog-button'), cssClass('dialog-cancel-button'));
       cancelBtn.type = 'button';
-      cancelBtn.title = 'Cancel';
-      cancelBtn.setAttribute('aria-label', 'Cancel');
+      cancelBtn.title = 'Close';
+      cancelBtn.setAttribute('aria-label', 'Close');
       header.appendChild(cancelBtn);
       this.node.insertAdjacentElement('afterbegin', header);
     }
@@ -200,13 +200,18 @@ abstract class ADialog {
       evt.preventDefault();
       return this.triggerSubmit();
     };
-    const cancel = this.find<HTMLButtonElement>('button[title=Cancel]');
+    const cancel = this.find<HTMLButtonElement>('button[title=Close]');
     if (cancel) {
       cancel.onclick = (evt) => {
         evt.stopPropagation();
         evt.preventDefault();
-        this.cancel();
-        this.destroy('cancel');
+        if (this.showLivePreviews()) {
+          // changes are already applied live; closing should keep them
+          this.destroy('confirm');
+        } else {
+          this.cancel();
+          this.destroy('cancel');
+        }
       };
     }
 
