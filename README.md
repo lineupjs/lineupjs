@@ -461,7 +461,6 @@ conat data = { arr, cats };
 ```
 
 TODO
-[CodePen](<>)
 
 Result is same as the builder minimal example
 
@@ -482,7 +481,6 @@ Result is same as the builder minimal example
 ```
 
 TODO
-[CodePen](<>)
 
 Result is same as the builder advanced example
 
