@@ -1,4 +1,4 @@
-import type { DateColumn, IDateFilter } from '../../model';
+import type { IDateColumn, IDateFilter } from '../../model';
 import { noDateFilter } from '../../model/internalDate';
 import { createDateFilter } from '../../renderer/DateHistogramCellRenderer';
 import { cssClass } from '../../styles';
@@ -11,7 +11,7 @@ export default class DateFilterDialog extends ADialog {
   private handler: { reset: () => void; submit: () => void; cleanUp: () => void } | null = null;
 
   constructor(
-    private readonly column: DateColumn,
+    private readonly column: IDateColumn,
     dialog: IDialogContext,
     private readonly ctx: IRankingHeaderContext
   ) {
