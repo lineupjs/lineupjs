@@ -11,42 +11,45 @@ import { openMoreDialog, closeDialog } from './utils/ui';
  * `dragHandle` (src/internal/drag.ts) and `dragWidth` (src/ui/header.ts).
  */
 function pointerDrag(selector: string, deltaX: number, deltaY = 0) {
-  return cy.get(selector).first().then(($el) => {
-    const el = $el[0];
-    const rect = el.getBoundingClientRect();
-    const startX = rect.left + rect.width / 2;
-    const startY = rect.top + rect.height / 2;
+  return cy
+    .get(selector)
+    .first()
+    .then(($el) => {
+      const el = $el[0];
+      const rect = el.getBoundingClientRect();
+      const startX = rect.left + rect.width / 2;
+      const startY = rect.top + rect.height / 2;
 
-    const pointerId = 1;
-    const pointerOpts = {
-      pointerId,
-      pointerType: 'mouse' as const,
-      button: 0,
-      buttons: 1,
-      bubbles: true,
-      cancelable: true,
-    };
+      const pointerId = 1;
+      const pointerOpts = {
+        pointerId,
+        pointerType: 'mouse' as const,
+        button: 0,
+        buttons: 1,
+        bubbles: true,
+        cancelable: true,
+      };
 
-    // pointerdown on the handle itself
-    el.dispatchEvent(new PointerEvent('pointerdown', { ...pointerOpts, clientX: startX, clientY: startY }));
+      // pointerdown on the handle itself
+      el.dispatchEvent(new PointerEvent('pointerdown', { ...pointerOpts, clientX: startX, clientY: startY }));
 
-    // pointermove on the document (capture phase listener)
-    const steps = 5;
-    for (let i = 1; i <= steps; i++) {
+      // pointermove on the document (capture phase listener)
+      const steps = 5;
+      for (let i = 1; i <= steps; i++) {
+        el.ownerDocument!.dispatchEvent(
+          new PointerEvent('pointermove', {
+            ...pointerOpts,
+            clientX: startX + (deltaX * i) / steps,
+            clientY: startY + (deltaY * i) / steps,
+          })
+        );
+      }
+
+      // pointerup on the document (capture phase listener)
       el.ownerDocument!.dispatchEvent(
-        new PointerEvent('pointermove', {
-          ...pointerOpts,
-          clientX: startX + (deltaX * i) / steps,
-          clientY: startY + (deltaY * i) / steps,
-        })
+        new PointerEvent('pointerup', { ...pointerOpts, clientX: startX + deltaX, clientY: startY + deltaY })
       );
-    }
-
-    // pointerup on the document (capture phase listener)
-    el.ownerDocument!.dispatchEvent(
-      new PointerEvent('pointerup', { ...pointerOpts, clientX: startX + deltaX, clientY: startY + deltaY })
-    );
-  });
+    });
 }
 
 describe('drag_interactions', () => {
@@ -183,16 +186,15 @@ describe('drag_interactions', () => {
         .then(($circle) => {
           const originalTransform = $circle.closest('g.lu-dialog-mapper-mapping')[0].getAttribute('transform') ?? '';
 
-          pointerDrag(
-            '.lu-dialog-mapper-details > g > g.lu-dialog-mapper-mapping > circle:first-of-type',
-            15
-          ).then(() => {
-            cy.get('.lu-dialog-mapper-details > g > g.lu-dialog-mapper-mapping')
-              .first()
-              .should(($el) => {
-                expect($el[0].getAttribute('transform')).to.not.equal(originalTransform);
-              });
-          });
+          pointerDrag('.lu-dialog-mapper-details > g > g.lu-dialog-mapper-mapping > circle:first-of-type', 15).then(
+            () => {
+              cy.get('.lu-dialog-mapper-details > g > g.lu-dialog-mapper-mapping')
+                .first()
+                .should(($el) => {
+                  expect($el[0].getAttribute('transform')).to.not.equal(originalTransform);
+                });
+            }
+          );
         });
     });
 
@@ -202,16 +204,15 @@ describe('drag_interactions', () => {
         .then(($circle) => {
           const originalCx = $circle[0].getAttribute('cx') ?? '';
 
-          pointerDrag(
-            '.lu-dialog-mapper-details > g > g.lu-dialog-mapper-mapping > circle:last-of-type',
-            15
-          ).then(() => {
-            cy.get('.lu-dialog-mapper-details > g > g.lu-dialog-mapper-mapping > circle:last-of-type')
-              .first()
-              .should(($el) => {
-                expect($el[0].getAttribute('cx')).to.not.equal(originalCx);
-              });
-          });
+          pointerDrag('.lu-dialog-mapper-details > g > g.lu-dialog-mapper-mapping > circle:last-of-type', 15).then(
+            () => {
+              cy.get('.lu-dialog-mapper-details > g > g.lu-dialog-mapper-mapping > circle:last-of-type')
+                .first()
+                .should(($el) => {
+                  expect($el[0].getAttribute('cx')).to.not.equal(originalCx);
+                });
+            }
+          );
         });
     });
   });
