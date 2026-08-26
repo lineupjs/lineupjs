@@ -18,11 +18,11 @@ function cat(name: string, label: string): ICategory {
   return { name, label, color: '#aabbcc', value: 0 };
 }
 
-/** Build a minimal mock column with the given categories and no active filter. */
-function makeColumn(categories: ICategory[]) {
+/** Build a minimal mock column with the given categories and an optional active filter. */
+function makeColumn(categories: ICategory[], filter: { filter: string[]; filterMissing: boolean } | null = null) {
   return {
     categories,
-    getFilter: () => null,
+    getFilter: () => filter,
     setFilter: jest.fn(),
     findMyRanker: () => null,
     // instanceof checks inside the dialog use the prototype chain; returning a plain
@@ -61,8 +61,8 @@ function makeDialogContext(): IDialogContext {
 }
 
 /** Create the dialog and invoke build(), returning the dialog instance and its root node. */
-function buildDialog(categories: ICategory[]) {
-  const column = makeColumn(categories);
+function buildDialog(categories: ICategory[], filter: { filter: string[]; filterMissing: boolean } | null = null) {
+  const column = makeColumn(categories, filter);
   const ctx = makeCtx();
   const dialogCtx = makeDialogContext();
   const dialog = new CategoricalFilterDialog(column, dialogCtx, ctx);
@@ -271,5 +271,34 @@ describe('CategoricalFilterDialog – text filter field', () => {
     const missingLabel = node.querySelector<HTMLElement>('label[data-missing]')!;
     expect(missingLabel).not.toBeNull();
     expect(missingLabel.classList.contains(cls('hidden'))).toBe(false);
+  });
+
+  it('"Un/Select All" reflects a pre-existing partial filter as soon as the dialog opens', () => {
+    // only apple/apricot are pre-selected; banana/cherry are excluded by the existing filter
+    const { node } = buildDialog(categories, { filter: ['apple', 'apricot'], filterMissing: false });
+
+    const selectAll = getSelectAll(node)!;
+    expect(selectAll.indeterminate).toBe(true);
+    expect(selectAll.checked).toBe(false);
+  });
+
+  it('"Un/Select All" is checked on open when the pre-existing filter includes every category', () => {
+    const allNames = categories.map((c) => c.name);
+    const { node } = buildDialog(categories, { filter: allNames, filterMissing: false });
+
+    const selectAll = getSelectAll(node)!;
+    expect(selectAll.indeterminate).toBe(false);
+    expect(selectAll.checked).toBe(true);
+  });
+
+  it('pressing Enter in the search field does not submit (and close) the dialog', () => {
+    const { node } = buildDialog(categories);
+    const search = getSearchInput(node)!;
+    search.value = 'ap';
+
+    const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+    search.dispatchEvent(enterEvent);
+
+    expect(enterEvent.defaultPrevented).toBe(true);
   });
 });
