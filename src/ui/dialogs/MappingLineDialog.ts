@@ -148,6 +148,7 @@ export class MappingLine {
 
       const common: Partial<IDragHandleOptions> = {
         container: g.parentElement!,
+        minDelta: 0,
         filter: (evt) => evt.button === 0 && !evt.shiftKey,
         onStart: (_, x) => {
           beforeDomain = this.domain;

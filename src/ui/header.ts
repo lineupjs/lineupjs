@@ -306,13 +306,18 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
   let start = 0;
   let originalWidth = 0;
-  const mouseMove = (evt: MouseEvent) => {
+  let activePointerId = -1;
+
+  const pointerMove = (evt: PointerEvent) => {
+    if (evt.pointerId !== activePointerId) {
+      return;
+    }
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
     const delta = end - start;
 
-    if (Math.abs(start - end) < 2) {
+    if (Math.abs(delta) < 2) {
       //ignore
       return;
     }
@@ -330,41 +335,42 @@ export function dragWidth(col: Column, node: HTMLElement) {
     toggleToolbarIcons(node, col);
   };
 
-  const mouseUp = (evt: MouseEvent) => {
+  const pointerUp = (evt: PointerEvent) => {
+    if (evt.pointerId !== activePointerId) {
+      return;
+    }
     evt.stopPropagation();
     evt.preventDefault();
-    const end = evt.clientX;
+
+    activePointerId = -1;
     node.classList.remove(cssClass('change-width'));
 
-    ueberElement.removeEventListener('mousemove', mouseMove);
-    ueberElement.removeEventListener('mouseup', mouseUp);
-    ueberElement.removeEventListener('mouseleave', mouseUp);
+    document.removeEventListener('pointermove', pointerMove, true);
+    document.removeEventListener('pointerup', pointerUp, true);
+    document.removeEventListener('pointercancel', pointerUp, true);
     ueberElement.classList.remove(cssClass('resizing'));
     node.style.width = null;
+    toggleToolbarIcons(node, col);
     setTimeout(() => {
       sizeHelper.classList.remove(cssClass('resizing'), cssClass('resize-animated'));
     }, RESIZE_ANIMATION_DURATION * 1.2); // after animation ended
-
-    if (Math.abs(start - end) < 2) {
-      //ignore
-      return;
-    }
-    const delta = end - start;
-    const width = Math.max(0, col.getWidth() + delta);
-    col.setWidth(width);
-    toggleToolbarIcons(node, col);
   };
-  handle.onmousedown = (evt) => {
+
+  handle.addEventListener('pointerdown', (evt: PointerEvent) => {
     evt.stopPropagation();
     evt.preventDefault();
     node.classList.add(cssClass('change-width'));
 
+    activePointerId = evt.pointerId;
     originalWidth = col.getWidth();
     start = evt.clientX;
     ueberElement = node.closest<HTMLElement>('body') || node.closest<HTMLElement>(`.${cssClass()}`)!; // take the whole body or root lineup
-    ueberElement.addEventListener('mousemove', mouseMove);
-    ueberElement.addEventListener('mouseup', mouseUp);
-    ueberElement.addEventListener('mouseleave', mouseUp);
+
+    // Use capture-phase listeners on document so the drag is never interrupted
+    // by DOM mutations (e.g. re-renders triggered during resize).
+    document.addEventListener('pointermove', pointerMove, true);
+    document.addEventListener('pointerup', pointerUp, true);
+    document.addEventListener('pointercancel', pointerUp, true);
     ueberElement.classList.add(cssClass('resizing'));
 
     sizeHelper = node
@@ -373,7 +379,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     currentFooterTransformation = (sizeHelper.previousElementSibling! as HTMLElement).style.transform!;
     sizeHelper.style.transform = `${currentFooterTransformation} translate(${-RESIZE_SPACE}px, 0px)`;
     sizeHelper.classList.add(cssClass('resizing'));
-  };
+  });
   handle.onclick = (evt) => {
     // avoid resorting
     evt.stopPropagation();

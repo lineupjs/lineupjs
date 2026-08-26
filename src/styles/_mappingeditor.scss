@@ -61,6 +61,7 @@ svg.#{vars.$lu_css_prefix}-dialog-mapper-details {
   z-index: 1;
   height: math.div(25em * 6, 10);
   background: transparent;
+  touch-action: none;
 
   rect {
     fill: transparent;
@@ -88,6 +89,12 @@ svg.#{vars.$lu_css_prefix}-dialog-mapper-details {
 
 g.#{vars.$lu_css_prefix}-dialog-mapper-mapping {
   cursor: ew-resize;
+  touch-action: none;
+
+  > line,
+  > circle {
+    touch-action: none;
+  }
 
   > line:first-child {
     stroke-width: 5;
