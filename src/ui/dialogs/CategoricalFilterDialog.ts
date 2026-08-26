@@ -81,14 +81,14 @@ export default class CategoricalFilterDialog extends ADialog {
         'beforeend',
         `<label class="${cssClass('checkbox')}">
         <input type="radio" ${!some ? 'checked="checked"' : ''} name="mode" value="every">
-        <span>all are selected</span>
+        <span title="The row must include every selected category.">Contains all selected values</span>
       </label>`
       );
       node.insertAdjacentHTML(
         'beforeend',
         `<label class="${cssClass('checkbox')}" style="padding-bottom: 0.6em">
         <input type="radio" ${some ? 'checked="checked"' : ''} name="mode" value="some">
-        <span>some are selected</span>
+        <span title="The row must include one or more selected categories.">Contains at least one selected value</span>
       </label>`
       );
     }
