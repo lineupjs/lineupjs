@@ -123,6 +123,13 @@
   }
 }
 
+.#{vars.$lu_css_prefix}-dialog-filter-cat-search {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0.3em;
+}
+
 .#{vars.$lu_css_prefix}-dialog-filter-table-entry {
   display: flex;
 

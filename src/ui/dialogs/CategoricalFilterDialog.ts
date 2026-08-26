@@ -31,7 +31,8 @@ export default class CategoricalFilterDialog extends ADialog {
   protected build(node: HTMLElement) {
     node.insertAdjacentHTML(
       'beforeend',
-      `<div class="${cssClass('dialog-table')}">
+      `<input type="text" placeholder="Filter categories…" aria-label="Filter categories" class="${cssClass('dialog-filter-cat-search')}">
+      <div class="${cssClass('dialog-table')}">
         <label class="${cssClass('checkbox')} ${cssClass('dialog-filter-table-entry')}">
           <input type="checkbox" checked>
           <span>
@@ -64,16 +65,46 @@ export default class CategoricalFilterDialog extends ADialog {
     </div>`
     );
     const categories = this.column.categories;
+    const catLabels = new Map<string, string>();
     Array.from(node.querySelectorAll(`label.${cssClass('checkbox')}[data-cat]`)).forEach((n, i) => {
       const cat = categories[i];
       (n.firstElementChild as HTMLElement).dataset.cat = cat.name;
       n.querySelector(`.${cssClass('dialog-filter-table-entry-label')}`).textContent = cat.label;
+      catLabels.set(cat.name, cat.label.toLowerCase());
     });
+
     // selectAll
-    const selectAll = this.findInput('input:not([data-cat])');
+    const selectAll = this.findInput('input[type=checkbox]:not([data-cat]):not([data-missing])');
     selectAll.onchange = () => {
-      forEach(node, 'input[data-cat],input[data-missing]', (n: HTMLInputElement) => (n.checked = selectAll.checked));
+      forEach(
+        node,
+        `label[data-cat]:not(.${cssClass('hidden')}) input[data-cat],input[data-missing]`,
+        (n: HTMLInputElement) => (n.checked = selectAll.checked)
+      );
     };
+
+    const searchInput = node.querySelector<HTMLInputElement>(`.${cssClass('dialog-filter-cat-search')}`)!;
+    searchInput.oninput = () => {
+      const query = searchInput.value.toLowerCase().trim();
+      node.querySelectorAll<HTMLElement>(`label[data-cat]`).forEach((label) => {
+        const catName = (label.firstElementChild as HTMLInputElement).dataset.cat ?? '';
+        const labelText = catLabels.get(catName) ?? catName.toLowerCase();
+        const hidden = query.length > 0 && !labelText.includes(query);
+        label.classList.toggle(cssClass('hidden'), hidden);
+      });
+      this.updateSelectAll();
+    };
+    // prevent Enter from implicitly submitting (and closing) the dialog while searching
+    searchInput.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter') {
+        evt.preventDefault();
+      }
+    });
+    node.querySelectorAll<HTMLInputElement>('input[data-cat]').forEach((input) => {
+      input.addEventListener('change', () => this.updateSelectAll());
+    });
+    // reflect the initial (possibly partial) selection in the select-all checkbox
+    this.updateSelectAll();
     if (this.column instanceof SetColumn || this.column instanceof CategoricalsColumn) {
       const some = (this.before as ISetCategoricalFilter).mode !== 'every';
       node.insertAdjacentHTML('beforeend', `<strong>Show rows where</strong>`);
@@ -99,6 +130,30 @@ export default class CategoricalFilterDialog extends ADialog {
       ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.catFilter`, () => this.updateStats());
     }
     this.updateStats();
+  }
+
+  private updateSelectAll() {
+    const selectAll = this.findInput('input[type=checkbox]:not([data-cat]):not([data-missing])');
+    const visibleInputs = this.forEach(
+      `label[data-cat]:not(.${cssClass('hidden')}) input[data-cat]`,
+      (n: HTMLInputElement) => n
+    );
+    if (visibleInputs.length === 0) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+      return;
+    }
+    const checkedCount = visibleInputs.filter((n) => n.checked).length;
+    if (checkedCount === 0) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+    } else if (checkedCount === visibleInputs.length) {
+      selectAll.checked = true;
+      selectAll.indeterminate = false;
+    } else {
+      selectAll.checked = false;
+      selectAll.indeterminate = true;
+    }
   }
 
   private updateStats() {
@@ -143,6 +198,15 @@ export default class CategoricalFilterDialog extends ADialog {
   protected reset() {
     this.forEach('input[data-cat]', (n: HTMLInputElement) => (n.checked = true));
     this.findInput('input[data-missing]').checked = true;
+    // clear the search field and restore all category rows
+    const searchInput = this.node.querySelector<HTMLInputElement>(`.${cssClass('dialog-filter-cat-search')}`);
+    if (searchInput) {
+      searchInput.value = '';
+      this.node.querySelectorAll<HTMLElement>(`label[data-cat]`).forEach((label) => {
+        label.classList.remove(cssClass('hidden'));
+      });
+    }
+    this.updateSelectAll();
 
     const mode = this.findInput('input[value=every]');
     if (mode) {
