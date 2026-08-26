@@ -18,9 +18,12 @@ for (const d of [
 
 module.exports = {
   testEnvironment: 'jsdom',
+  preset: 'ts-jest',
   testRegex: '/tests/.*\\.spec\\.(ts|tsx|js)$',
   moduleNameMapper: mapper,
-  transform: {
-    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.test.json' }],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json',
+    },
   },
 };

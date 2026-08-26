@@ -247,8 +247,12 @@ export function getHistDOMRenderer(col: INumberColumn, imposer?: IImposer) {
   const formatter = col.getNumberFormat();
 
   const render = (n: HTMLElement, stats: IHistogramLike<number>, unfiltered?: IHistogramLike<number>) => {
-    return histogramUpdate(n, stats, unfiltered || null, formatter, (bin) =>
-      colorOf(col, null, imposer, (bin.x1 + bin.x0) / 2)!
+    return histogramUpdate(
+      n,
+      stats,
+      unfiltered || null,
+      formatter,
+      (bin) => colorOf(col, null, imposer, (bin.x1 + bin.x0) / 2)!
     );
   };
   return {

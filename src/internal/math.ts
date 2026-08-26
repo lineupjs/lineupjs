@@ -822,7 +822,15 @@ function desc(a: any, b: any) {
 }
 
 export declare type ILookUpArray =
-  Uint8Array | Uint16Array | Uint32Array | Int8Array | Int16Array | Int32Array | string[] | Float32Array | Float64Array;
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | string[]
+  | Float32Array
+  | Float64Array;
 
 /**
  * sort the given index array based on the lookup array
@@ -1135,7 +1143,7 @@ function sortWorkerMain() {
         ref: r.ref,
         order,
       } as ISortMessageResponse,
-      [r.indices.buffer as ArrayBuffer]
+      [r.indices.buffer]
     );
   };
 
